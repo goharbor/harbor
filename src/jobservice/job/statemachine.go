@@ -22,6 +22,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice/config"
 	"github.com/vmware/harbor/src/jobservice/replication"
+	"github.com/vmware/harbor/src/jobservice/scan"
 )
 
 // SM is the state machine to handle job, it handles one job at a time.
@@ -54,7 +55,7 @@ func (sm *SM) EnterState(s string) (string, error) {
 			return "", err
 		}
 	} else {
-		log.Debugf("Job: %d, no handler found for state:%s, skip", sm.CurrentJob, sm.CurrentState)
+		log.Debugf("Job: %v, no exit handler found for state:%s, skip", sm.CurrentJob, sm.CurrentState)
 	}
 	enterHandler, ok := sm.Handlers[s]
 	var next = models.JobContinue
@@ -76,6 +77,13 @@ func (sm *SM) EnterState(s string) (string, error) {
 // It will search the transit map if the next state is "_continue", and
 // will enter error state if there's more than one possible path when next state is "_continue"
 func (sm *SM) Start(s string) {
+	defer func() {
+		if r := recover(); r != nil {
+			sm.Logger.Errorf("Panic: %v, entering error state", r)
+			log.Warningf("Panic when handling job: %v, panic: %v, entering error state", sm.CurrentJob, r)
+			sm.EnterState(models.JobError)
+		}
+	}()
 	n, err := sm.EnterState(s)
 	log.Debugf("Job: %v, next state from handler: %s", sm.CurrentJob, n)
 	for len(n) > 0 && err == nil {
@@ -101,7 +109,7 @@ func (sm *SM) Start(s string) {
 		log.Debugf("Job: %v, next state from handler: %s", sm.CurrentJob, n)
 	}
 	if err != nil {
-		log.Warningf("Job: %v, the statemachin will enter error state due to error: %v", sm.CurrentJob, err)
+		log.Warningf("Job: %v, the statemachine will enter error state due to error: %v", sm.CurrentJob, err)
 		sm.EnterState(models.JobError)
 	}
 }
@@ -187,6 +195,7 @@ func (sm *SM) Reset(j Job) error {
 	sm.AddTransition(models.JobRetrying, models.JobRunning, StatusUpdater{sm.CurrentJob, models.JobRunning})
 	sm.Handlers[models.JobError] = StatusUpdater{sm.CurrentJob, models.JobError}
 	sm.Handlers[models.JobStopped] = StatusUpdater{sm.CurrentJob, models.JobStopped}
+	sm.Handlers[models.JobCanceled] = StatusUpdater{sm.CurrentJob, models.JobCanceled}
 	sm.Handlers[models.JobRetrying] = Retry{sm.CurrentJob}
 	if err := sm.CurrentJob.Init(); err != nil {
 		return err
@@ -201,12 +210,14 @@ func (sm *SM) kickOff() error {
 	if repJob, ok := sm.CurrentJob.(*RepJob); ok {
 		if repJob.parm.Enabled == 0 {
 			log.Debugf("The policy of job:%v is disabled, will cancel the job", repJob)
-			if err := repJob.UpdateStatus(models.JobCanceled); err != nil {
-				log.Warningf("Failed to update status of job: %v to 'canceled', error: %v", repJob, err)
-
+			_, err := sm.EnterState(models.JobCanceled)
+			if err != nil {
+				log.Warningf("For job: %v, failed to update state to 'canceled', error: %v", repJob, err)
 			}
+			return err
 		}
 	}
+	log.Debugf("In kickOff: will start job: %v", sm.CurrentJob)
 	sm.Start(models.JobRunning)
 	return nil
 }
@@ -228,7 +239,12 @@ func (sm *SM) initTransitions() error {
 			return fmt.Errorf("unsupported operation: %s", jobParm.Operation)
 		}
 	case ScanType:
-		log.Debugf("TODO for scan job, job: %v", sm.CurrentJob)
+		scanJob, ok := sm.CurrentJob.(*ScanJob)
+		if !ok {
+			//Shouldn't be here.
+			return fmt.Errorf("The job: %v is not a type of ScanJob", sm.CurrentJob)
+		}
+		addImgScanTransition(sm, scanJob.parm)
 		return nil
 	default:
 		return fmt.Errorf("Unsupported job type: %v", sm.CurrentJob.Type())
@@ -243,6 +259,23 @@ func addTestTransition(sm *SM) error {
 	return nil
 }
 */
+
+func addImgScanTransition(sm *SM, parm *ScanJobParm) {
+	ctx := &scan.JobContext{
+		Repository: parm.Repository,
+		Tag:        parm.Tag,
+		Digest:     parm.Digest,
+		JobID:      sm.CurrentJob.ID(),
+		Logger:     sm.Logger,
+	}
+
+	layerScanHandler := &scan.LayerScanHandler{Context: ctx}
+	sm.AddTransition(models.JobRunning, scan.StateInitialize, &scan.Initializer{Context: ctx})
+	sm.AddTransition(scan.StateInitialize, scan.StateScanLayer, layerScanHandler)
+	sm.AddTransition(scan.StateScanLayer, scan.StateScanLayer, layerScanHandler)
+	sm.AddTransition(scan.StateScanLayer, scan.StateSummarize, &scan.SummarizeHandler{Context: ctx})
+	sm.AddTransition(scan.StateSummarize, models.JobFinished, &StatusUpdater{sm.CurrentJob, models.JobFinished})
+}
 
 func addImgTransferTransition(sm *SM, parm *RepJobParm) {
 	base := replication.InitBaseHandler(parm.Repository, parm.LocalRegURL, config.JobserviceSecret(),

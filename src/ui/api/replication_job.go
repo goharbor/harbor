@@ -16,8 +16,6 @@ package api
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -25,29 +23,30 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-    "github.com/vmware/harbor/src/common/api"
+	"github.com/vmware/harbor/src/ui/utils"
 )
 
 // RepJobAPI handles request to /api/replicationJobs /api/replicationJobs/:id/log
 type RepJobAPI struct {
-	api.BaseAPI
+	BaseController
 	jobID int64
 }
 
 // Prepare validates that whether user has system admin role
 func (ra *RepJobAPI) Prepare() {
-	uid := ra.ValidateUser()
-	isAdmin, err := dao.IsAdminRole(uid)
-	if err != nil {
-		log.Errorf("Failed to Check if the user is admin, error: %v, uid: %d", err, uid)
-	}
-	if !isAdmin {
-		ra.CustomAbort(http.StatusForbidden, "")
+	ra.BaseController.Prepare()
+	if !ra.SecurityCtx.IsAuthenticated() {
+		ra.HandleUnauthorized()
+		return
 	}
 
-	idStr := ra.Ctx.Input.Param(":id")
-	if len(idStr) != 0 {
-		id, err := strconv.ParseInt(idStr, 10, 64)
+	if !ra.SecurityCtx.IsSysAdmin() {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+
+	if len(ra.GetStringFromPath(":id")) != 0 {
+		id, err := ra.GetInt64FromPath(":id")
 		if err != nil {
 			ra.CustomAbort(http.StatusBadRequest, "ID is invalid")
 		}
@@ -146,38 +145,12 @@ func (ra *RepJobAPI) GetLog() {
 	if ra.jobID == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "id is nil")
 	}
-
-	req, err := http.NewRequest("GET", buildJobLogURL(strconv.FormatInt(ra.jobID, 10)), nil)
+	url := buildJobLogURL(strconv.FormatInt(ra.jobID, 10), ReplicationJobType)
+	err := utils.RequestAsUI(http.MethodGet, url, nil, utils.NewJobLogRespHandler(&ra.BaseAPI))
 	if err != nil {
-		log.Errorf("failed to create a request: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
-	}
-	addAuthentication(req)
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Errorf("failed to get log for job %d: %v", ra.jobID, err)
-		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
-		ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), resp.Header.Get(http.CanonicalHeaderKey("Content-Length")))
-		ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
-
-		if _, err = io.Copy(ra.Ctx.ResponseWriter, resp.Body); err != nil {
-			log.Errorf("failed to write log to response; %v", err)
-			ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
+		ra.RenderError(http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Errorf("failed to read reponse body: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	ra.CustomAbort(resp.StatusCode, string(b))
 }
 
 //TODO:add Post handler to call job service API to submit jobs by policy

@@ -15,23 +15,23 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 const (
-	// MPC : count of my projects
-	MPC = "my_project_count"
-	// MRC : count of my repositories
-	MRC = "my_repo_count"
-	// PPC : count of public projects
-	PPC = "public_project_count"
-	// PRC : count of public repositories
-	PRC = "public_repo_count"
+	// PriPC : count of private projects
+	PriPC = "private_project_count"
+	// PriRC : count of private repositories
+	PriRC = "private_repo_count"
+	// PubPC : count of public projects
+	PubPC = "public_project_count"
+	// PubRC : count of public repositories
+	PubRC = "public_repo_count"
 	// TPC : total count of projects
 	TPC = "total_project_count"
 	// TRC : total count of repositories
@@ -40,82 +40,87 @@ const (
 
 // StatisticAPI handles request to /api/statistics/
 type StatisticAPI struct {
-	api.BaseAPI
-	userID int
+	BaseController
+	username string
 }
 
 //Prepare validates the URL and the user
 func (s *StatisticAPI) Prepare() {
-	s.userID = s.ValidateUser()
+	s.BaseController.Prepare()
+	if !s.SecurityCtx.IsAuthenticated() {
+		s.HandleUnauthorized()
+		return
+	}
+	s.username = s.SecurityCtx.GetUsername()
 }
 
 // Get total projects and repos of the user
 func (s *StatisticAPI) Get() {
 	statistic := map[string]int64{}
-	t := true
-	n, err := dao.GetTotalOfProjects(&models.QueryParam{
-		Public: &t,
-	})
+	pubProjs, err := s.ProjectMgr.GetPublic()
 	if err != nil {
-		log.Errorf("failed to get total of public projects: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "")
+		s.ParseAndHandleError("failed to get public projects", err)
+		return
 	}
-	statistic[PPC] = n
 
-	n, err = dao.GetTotalOfPublicRepositories("")
+	statistic[PubPC] = (int64)(len(pubProjs))
+
+	ids := []int64{}
+	for _, p := range pubProjs {
+		ids = append(ids, p.ProjectID)
+	}
+	n, err := dao.GetTotalOfRepositoriesByProject(ids, "")
 	if err != nil {
 		log.Errorf("failed to get total of public repositories: %v", err)
 		s.CustomAbort(http.StatusInternalServerError, "")
 	}
-	statistic[PRC] = n
+	statistic[PubRC] = n
 
-	isAdmin, err := dao.IsAdminRole(s.userID)
-	if err != nil {
-		log.Errorf("Error occured in check admin, error: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-
-	if isAdmin {
-		n, err := dao.GetTotalOfProjects(nil)
+	if s.SecurityCtx.IsSysAdmin() {
+		n, err := s.ProjectMgr.GetTotal(nil)
 		if err != nil {
 			log.Errorf("failed to get total of projects: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")
 		}
-		statistic[MPC] = n
 		statistic[TPC] = n
+		statistic[PriPC] = n - statistic[PubPC]
 
 		n, err = dao.GetTotalOfRepositories("")
 		if err != nil {
 			log.Errorf("failed to get total of repositories: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")
 		}
-		statistic[MRC] = n
 		statistic[TRC] = n
+		statistic[PriRC] = n - statistic[PubRC]
 	} else {
-		user, err := dao.GetUser(models.User{
-			UserID: s.userID,
-		})
-		if err != nil {
-			log.Errorf("failed to get user %d: %v", s.userID, err)
-			s.CustomAbort(http.StatusInternalServerError, "")
-		}
-		n, err := dao.GetTotalOfProjects(&models.QueryParam{
-			Member: &models.Member{
-				Name: user.Username,
+		value := false
+		projects, err := s.ProjectMgr.GetAll(&models.ProjectQueryParam{
+			Public: &value,
+			Member: &models.MemberQuery{
+				Name: s.username,
 			},
 		})
 		if err != nil {
-			log.Errorf("failed to get total of projects for user %d: %v", s.userID, err)
-			s.CustomAbort(http.StatusInternalServerError, "")
+			s.ParseAndHandleError(fmt.Sprintf(
+				"failed to get projects of user %s", s.username), err)
+			return
 		}
-		statistic[MPC] = n
 
-		n, err = dao.GetTotalOfUserRelevantRepositories(s.userID, "")
-		if err != nil {
-			log.Errorf("failed to get total of repositories for user %d: %v", s.userID, err)
-			s.CustomAbort(http.StatusInternalServerError, "")
+		statistic[PriPC] = (int64)(len(projects))
+
+		ids := []int64{}
+		for _, p := range projects {
+			ids = append(ids, p.ProjectID)
 		}
-		statistic[MRC] = n
+
+		n, err = dao.GetTotalOfRepositoriesByProject(ids, "")
+		if err != nil {
+			s.HandleInternalServerError(fmt.Sprintf(
+				"failed to get total of repositories for user %s: %v",
+				s.username, err))
+			return
+		}
+		statistic[PriRC] = n
 	}
 
 	s.Data["json"] = statistic

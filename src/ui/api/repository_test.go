@@ -15,6 +15,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -97,6 +98,23 @@ func TestGetReposTags(t *testing.T) {
 			t.Error("unexpected response")
 		}
 	}
+
+	//-------------------case 3 : response code = 404------------------------//
+	fmt.Println("case 3 : response code = 404")
+	repository = "library/hello-world"
+	tag := "not_exist_tag"
+	code, result, err := apiTest.GetTag(*admin, repository, tag)
+	assert.Nil(err)
+	assert.Equal(http.StatusNotFound, code)
+
+	//-------------------case 4 : response code = 200------------------------//
+	fmt.Println("case 4 : response code = 200")
+	repository = "library/hello-world"
+	tag = "latest"
+	code, result, err = apiTest.GetTag(*admin, repository, tag)
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, code)
+	assert.Equal(tag, result.Name)
 
 	fmt.Printf("\n")
 }

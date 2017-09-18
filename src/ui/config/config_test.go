@@ -125,6 +125,9 @@ func TestConfig(t *testing.T) {
 	if WithNotary() {
 		t.Errorf("Withnotary should be false")
 	}
+	if WithClair() {
+		t.Errorf("WithClair should be false")
+	}
 	if !WithAdmiral() {
 		t.Errorf("WithAdmiral should be true")
 	}
@@ -152,4 +155,9 @@ func TestConfig(t *testing.T) {
 	if mode != "db_auth" {
 		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
 	}
+
+	if s := ScanAllPolicy(); s.Type != "daily" {
+		t.Errorf("unexpected scan all policy %v", s)
+	}
+
 }

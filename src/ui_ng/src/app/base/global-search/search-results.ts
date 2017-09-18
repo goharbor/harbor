@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Project } from '../../project/project';
-import { Repository } from '../../repository/repository';
+import { Repository } from 'harbor-ui';
 
 export class SearchResults {
     constructor(){

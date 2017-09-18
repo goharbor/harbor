@@ -16,12 +16,16 @@ package db
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
-	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	errutil "github.com/vmware/harbor/src/common/utils/error"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
+
+const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
 // ProjectManager implements pm.PM interface based on database
 type ProjectManager struct{}
@@ -62,63 +66,11 @@ func (p *ProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
 	return project.Public == 1, nil
 }
 
-// GetRoles return a role list which contains the user's roles to the project
-func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) ([]int, error) {
-	roles := []int{}
-
-	user, err := dao.GetUser(models.User{
-		Username: username,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user %s: %v",
-			username, err)
-	}
-	if user == nil {
-		return roles, nil
-	}
-
-	project, err := p.Get(projectIDOrName)
-	if err != nil {
-		return nil, err
-	}
-	if project == nil {
-		return roles, nil
-	}
-
-	roleList, err := dao.GetUserProjectRoles(user.UserID, project.ProjectID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, role := range roleList {
-		switch role.RoleCode {
-		case "MDRWS":
-			roles = append(roles, common.RoleProjectAdmin)
-		case "RWS":
-			roles = append(roles, common.RoleDeveloper)
-		case "RS":
-			roles = append(roles, common.RoleGuest)
-		}
-	}
-
-	return roles, nil
-}
-
 // GetPublic returns all public projects
 func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
 	t := true
-	return p.GetAll(&models.QueryParam{
+	return p.GetAll(&models.ProjectQueryParam{
 		Public: &t,
-	})
-}
-
-// GetByMember returns all projects which the user is a member of
-func (p *ProjectManager) GetByMember(username string) (
-	[]*models.Project, error) {
-	return p.GetAll(&models.QueryParam{
-		Member: &models.Member{
-			Name: username,
-		},
 	})
 }
 
@@ -158,7 +110,21 @@ func (p *ProjectManager) Create(project *models.Project) (int64, error) {
 		UpdateTime:   t,
 	}
 
-	return dao.AddProject(*pro)
+	id, err := dao.AddProject(*pro)
+	if err != nil {
+		dup, e := regexp.MatchString(dupProjectPattern, err.Error())
+		if e != nil {
+			log.Errorf("failed to match duplicate project pattern: %v", e)
+		}
+
+		if dup {
+			err = errutil.ErrDupProject
+		}
+
+		return 0, err
+	}
+
+	return id, nil
 }
 
 // Delete ...
@@ -190,13 +156,13 @@ func (p *ProjectManager) Update(projectIDOrName interface{},
 }
 
 // GetAll returns a project list according to the query parameters
-func (p *ProjectManager) GetAll(query *models.QueryParam) (
+func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (
 	[]*models.Project, error) {
-	return dao.GetProjects(query)
+	return dao.GetProjects(query, base...)
 }
 
 // GetTotal returns the total count according to the query parameters
-func (p *ProjectManager) GetTotal(query *models.QueryParam) (
+func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (
 	int64, error) {
-	return dao.GetTotalOfProjects(query)
+	return dao.GetTotalOfProjects(query, base...)
 }

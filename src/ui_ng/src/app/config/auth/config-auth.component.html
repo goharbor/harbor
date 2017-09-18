@@ -131,7 +131,8 @@
             <clr-checkbox name="selfReg" id="selfReg" [(ngModel)]="currentConfig.self_registration.value" [disabled]="disabled(currentConfig.self_registration)">
                 <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">
                     <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                    <span class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION' | translate}}</span>
+                    <span  *ngIf="checkboxenable; else elseBlock" class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_ENABLE' | translate}}</span>
+                    <ng-template #elseBlock><span class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_DISABLE' | translate}}</span></ng-template>
                 </a>
             </clr-checkbox>
         </div>

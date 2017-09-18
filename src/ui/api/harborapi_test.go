@@ -25,6 +25,7 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"runtime"
+	"strconv"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -87,22 +88,25 @@ func init() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 
+	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
 	beego.Router("/api/projects/:id", &ProjectAPI{}, "delete:Delete;get:Get")
-	beego.Router("/api/users/?:id", &UserAPI{})
+	beego.Router("/api/users/:id", &UserAPI{}, "get:Get")
+	beego.Router("/api/users", &UserAPI{}, "get:List;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
-	beego.Router("/api/projects/:id([0-9]+)/logs/filter", &ProjectAPI{}, "post:FilterAccessLog")
+	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
+	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/repositories", &RepositoryAPI{})
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/logs", &LogAPI{})
-	beego.Router("/api/repositories/*/tags/?:tag", &RepositoryAPI{}, "delete:Delete")
+	beego.Router("/api/repositories/*/tags/:tag", &RepositoryAPI{}, "delete:Delete;get:GetTag")
 	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &RepositoryAPI{}, "get:GetSignatures")
@@ -128,7 +132,7 @@ func init() {
 	_ = updateInitPassword(1, "Harbor12345")
 
 	//syncRegistry
-	if err := SyncRegistry(); err != nil {
+	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Fatalf("failed to sync repositories from registry: %v", err)
 	}
 
@@ -226,20 +230,14 @@ func (a testapi) StatisticGet(user usrInfo) (int, apilib.StatisticMap, error) {
 	return httpStatusCode, successPayload, err
 }
 
-func (a testapi) LogGet(user usrInfo, startTime, endTime, lines string) (int, []apilib.AccessLog, error) {
+func (a testapi) LogGet(user usrInfo) (int, []apilib.AccessLog, error) {
 	_sling := sling.New().Get(a.basePath)
 
 	// create path and map variables
 	path := "/api/logs/"
 	fmt.Printf("logs path: %s\n", path)
 	_sling = _sling.Path(path)
-	type QueryParams struct {
-		StartTime string `url:"start_time,omitempty"`
-		EndTime   string `url:"end_time,omitempty"`
-		Lines     string `url:"lines,omitempty"`
-	}
 
-	_sling = _sling.QueryStruct(&QueryParams{StartTime: startTime, EndTime: endTime, Lines: lines})
 	var successPayload []apilib.AccessLog
 	code, body, err := request(_sling, jsonAcceptHeader, user)
 	if 200 == code && nil == err {
@@ -335,17 +333,10 @@ func (a testapi) ProjectsGetByPID(projectID string) (int, apilib.Project, error)
 }
 
 //Search projects by projectName and isPublic
-func (a testapi) ProjectsGet(projectName string, isPublic int32, authInfo ...usrInfo) (int, []apilib.Project, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	//create api path
-	path := "api/projects"
-	_sling = _sling.Path(path)
-	type QueryParams struct {
-		ProjectName string `url:"project_name,omitempty"`
-		IsPubilc    int32  `url:"is_public,omitempty"`
-	}
-	_sling = _sling.QueryStruct(&QueryParams{ProjectName: projectName, IsPubilc: isPublic})
+func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (int, []apilib.Project, error) {
+	_sling := sling.New().Get(a.basePath).
+		Path("api/projects").
+		QueryStruct(query)
 
 	var successPayload []apilib.Project
 
@@ -360,6 +351,8 @@ func (a testapi) ProjectsGet(projectName string, isPublic int32, authInfo ...usr
 
 	if err == nil && httpStatusCode == 200 {
 		err = json.Unmarshal(body, &successPayload)
+	} else {
+		log.Println(string(body))
 	}
 
 	return httpStatusCode, successPayload, err
@@ -385,27 +378,36 @@ func (a testapi) ToggleProjectPublicity(prjUsr usrInfo, projectID string, ispubl
 }
 
 //Get access logs accompany with a relevant project.
-func (a testapi) ProjectLogsFilter(prjUsr usrInfo, projectID string, accessLog apilib.AccessLogFilter) (int, []byte, error) {
-	//func (a testapi) ProjectLogsFilter(prjUsr usrInfo, projectID string, accessLog apilib.AccessLog) (int, apilib.AccessLog, error) {
-	_sling := sling.New().Post(a.basePath)
+func (a testapi) ProjectLogs(prjUsr usrInfo, projectID string, query *apilib.LogQuery) (int, []byte, error) {
+	_sling := sling.New().Get(a.basePath).
+		Path("/api/projects/" + projectID + "/logs").
+		QueryStruct(query)
 
-	path := "/api/projects/" + projectID + "/logs/filter"
+	return request(_sling, jsonAcceptHeader, prjUsr)
+}
 
-	_sling = _sling.Path(path)
+// ProjectDeletable check whether a project can be deleted
+func (a testapi) ProjectDeletable(prjUsr usrInfo, projectID int64) (int, bool, error) {
+	_sling := sling.New().Get(a.basePath).
+		Path("/api/projects/" + strconv.FormatInt(projectID, 10) + "/_deletable")
 
-	// body params
-	_sling = _sling.BodyJSON(accessLog)
+	code, body, err := request(_sling, jsonAcceptHeader, prjUsr)
+	if err != nil {
+		return 0, false, err
+	}
 
-	//var successPayload []apilib.AccessLog
+	if code != http.StatusOK {
+		return code, false, nil
+	}
 
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
-	/*
-		if err == nil && httpStatusCode == 200 {
-			err = json.Unmarshal(body, &successPayload)
-		}
-	*/
-	return httpStatusCode, body, err
-	//	return httpStatusCode, successPayload, err
+	deletable := struct {
+		Deletable bool `json:"deletable"`
+	}{}
+	if err = json.Unmarshal(body, &deletable); err != nil {
+		return 0, false, err
+	}
+
+	return code, deletable.Deletable, nil
 }
 
 //-------------------------Member Test---------------------------------------//
@@ -507,6 +509,25 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID, keyword string) (
 	}
 
 	return code, nil, nil
+}
+
+func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *tagResp, error) {
+	_sling := sling.New().Get(a.basePath).Path(fmt.Sprintf("/api/repositories/%s/tags/%s", repository, tag))
+	code, data, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	if code != http.StatusOK {
+		log.Printf("failed to get tag of %s:%s: %d %s \n", repository, tag, code, string(data))
+		return code, nil, nil
+	}
+
+	result := tagResp{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return 0, nil, err
+	}
+	return http.StatusOK, &result, nil
 }
 
 //Get tags of a relevant repository
@@ -1010,7 +1031,7 @@ func (a testapi) GetConfig(authInfo usrInfo) (int, map[string]*value, error) {
 	return code, cfg, err
 }
 
-func (a testapi) PutConfig(authInfo usrInfo, cfg map[string]string) (int, error) {
+func (a testapi) PutConfig(authInfo usrInfo, cfg map[string]interface{}) (int, error) {
 	_sling := sling.New().Base(a.basePath).Put("/api/configurations").BodyJSON(cfg)
 
 	code, _, err := request(_sling, jsonAcceptHeader, authInfo)

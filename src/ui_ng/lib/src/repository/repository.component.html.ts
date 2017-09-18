@@ -10,6 +10,6 @@ export const REPOSITORY_TEMPLATE = `
     </div>
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
-    <hbr-list-repository [projectId]="projectId" [repositories]="changedRepositories" (delete)="deleteRepo($event)" [hasProjectAdminRole]="hasProjectAdminRole" (paginate)="retrieve($event)"></hbr-list-repository>
+    <hbr-list-repository [urlPrefix]="urlPrefix" [projectId]="projectId" [repositories]="changedRepositories" (delete)="deleteRepo($event)" [hasProjectAdminRole]="hasProjectAdminRole" (paginate)="retrieve($event)"></hbr-list-repository>
   </div>
 </div>`;

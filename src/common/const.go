@@ -20,16 +20,13 @@ const (
 	LDAPAuth            = "ldap_auth"
 	ProCrtRestrEveryone = "everyone"
 	ProCrtRestrAdmOnly  = "adminonly"
-	LDAPScopeBase       = "1"
-	LDAPScopeOnelevel   = "2"
-	LDAPScopeSubtree    = "3"
+	LDAPScopeBase       = 1
+	LDAPScopeOnelevel   = 2
+	LDAPScopeSubtree    = 3
 
 	RoleProjectAdmin = 1
 	RoleDeveloper    = 2
 	RoleGuest        = 3
-
-	DeployModeStandAlone  = "standalone"
-	DeployModeIntegration = "integration"
 
 	ExtEndpoint                = "ext_endpoint"
 	AUTHMode                   = "auth_mode"
@@ -58,6 +55,7 @@ const (
 	EmailFrom                  = "email_from"
 	EmailSSL                   = "email_ssl"
 	EmailIdentity              = "email_identity"
+	EmailInsecure              = "email_insecure"
 	ProjectCreationRestriction = "project_creation_restriction"
 	VerifyRemoteCert           = "verify_remote_cert"
 	MaxJobWorkers              = "max_job_workers"
@@ -67,4 +65,9 @@ const (
 	AdminInitialPassword       = "admin_initial_password"
 	AdmiralEndpoint            = "admiral_url"
 	WithNotary                 = "with_notary"
+	WithClair                  = "with_clair"
+	ScanAllPolicy              = "scan_all_policy"
+	ClairDBPassword            = "clair_db_password"
+
+	DefaultClairEndpoint = "http://clair:6060"
 )

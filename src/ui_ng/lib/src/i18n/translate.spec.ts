@@ -3,13 +3,36 @@ import { SharedModule } from '../shared/shared.module';
 import { TranslateService } from '@ngx-translate/core';
 import { DEFAULT_LANG } from '../utils';
 
+import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
+
+const EN_US_LANG: any = {
+  "SIGN_UP": {
+    "TITLE": "Sign Up"
+  },
+}
+
+const ZH_CN_LANG: any = {
+  "SIGN_UP": {
+    "TITLE": "注册"
+  },
+}
+
 describe('TranslateService', () => {
+  let testConfig: IServiceConfig = {
+    langMessageLoader: 'local',
+    localI18nMessageVariableMap: {
+      "en-us": EN_US_LANG,
+      "zh-cn": ZH_CN_LANG
+    }
+  };
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule
       ],
-      providers: []
+      providers: [{
+        provide: SERVICE_CONFIG, useValue: testConfig
+      }]
     });
   });
 
@@ -25,8 +48,8 @@ describe('TranslateService', () => {
 
   it('should translate key to text [en-us]', inject([TranslateService], (service: TranslateService) => {
     service.use(DEFAULT_LANG);
-    service.get('APP_TITLE.HARBOR').subscribe(text => {
-      expect(text).toEqual('Harbor');
+    service.get('SIGN_UP.TITLE').subscribe(text => {
+      expect(text).toEqual('Sign Up');
     });
   }));
 

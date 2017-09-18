@@ -31,7 +31,8 @@
         "MORE_INFO": "更多信息...",
         "YES": "是",
         "NO": "否",
-        "NEGATIVE": "否"
+        "NEGATIVE": "否",
+        "COPY": "拷贝"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
@@ -82,8 +83,7 @@
         "PROFILE": "用户设置",
         "CHANGE_PWD": "修改密码",
         "ABOUT": "关于",
-        "LOGOUT": "退出",
-        "ROOT_CERT": "下载根证书"
+        "LOGOUT": "退出"
     },
     "GLOBAL_SEARCH": {
         "PLACEHOLDER": "搜索 Harbor...",
@@ -117,6 +117,7 @@
         "DELETION_TITLE": "删除用户确认",
         "DELETION_SUMMARY": "你确认删除用户 {{param}}?",
         "DELETE_SUCCESS": "成功删除用户。",
+        "OF": "共计",
         "ITEMS": "条记录"
     },
     "PROJECT": {
@@ -132,7 +133,8 @@
         "MAKE": "设为",
         "NEW_POLICY": "新建规则",
         "DELETE": "删除",
-        "MY_PROJECTS": "所有项目",
+        "ALL_PROJECTS": "所有项目",
+        "PRIVATE_PROJECTS": "私有项目",
         "PUBLIC_PROJECTS": "公开项目",
         "PROJECT": "项目",
         "NEW_PROJECT": "新建项目",
@@ -142,6 +144,7 @@
         "NAME_ALREADY_EXISTS": "项目名称已存在。",
         "NAME_IS_ILLEGAL": "项目名称非法。",
         "UNKNOWN_ERROR": "创建项目时发生未知错误。",
+        "OF": "共计",
         "ITEMS": "条记录",
         "DELETION_TITLE": "删除项目确认",
         "DELETION_SUMMARY": "你确认删除项目 {{param}}？",
@@ -170,6 +173,7 @@
         "DEVELOPER": "开发人员",
         "GUEST": "访客",
         "DELETE": "删除",
+        "OF": "共计",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
         "USERNAME_IS_REQUIRED": "用户名为必填项。",
@@ -198,6 +202,7 @@
         "OTHERS": "其他",
         "ADVANCED": "高级检索",
         "SIMPLE": "简单检索",
+        "OF": "共计",
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志",
         "INVALID_DATE": "无效日期。"
@@ -253,9 +258,11 @@
         "STATUS": "状态",
         "OPERATION": "操作",
         "CREATION_TIME": "创建时间",
-        "END_TIME": "结束时间",
+        "UPDATE_TIME": "更新时间",
         "LOGS": "日志",
+        "OF": "共计",
         "ITEMS": "条记录",
+        "NO_LOGS": "无日志",
         "TOGGLE_ENABLE_TITLE": "启用规则",
         "CONFIRM_TOGGLE_ENABLE_POLICY": "启用规则后，该项目下的所有镜像仓库将复制到目标实例。\n请确认继续。",
         "TOGGLE_DISABLE_TITLE": "停用规则",
@@ -269,7 +276,10 @@
         "POLICY_ALREADY_EXISTS": "规则已存在。",
         "FAILED_TO_DELETE_POLICY_ENABLED": "删除复制规则失败： 仍有未完成的任务或规则未停用。",
         "FOUND_ERROR_IN_JOBS": "复制任务中包含错误，请检查。",
-        "INVALID_DATE": "无效日期。"
+        "INVALID_DATE": "无效日期。",
+        "PLACEHOLDER": "未发现任何复制规则!",
+        "JOB_PLACEHOLDER": "未发现任何复制任务!",
+        "JOB_LOG_VIEWER": "查看复制任务日志"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -291,17 +301,18 @@
         "INVALID_NAME": "无效的目标名称。",
         "FAILED_TO_GET_TARGET": "获取目标失败。",
         "CREATION_TIME": "创建时间",
+        "OF": "共计",
         "ITEMS": "条记录",
         "CREATED_SUCCESS": "成功创建目标。",
         "UPDATED_SUCCESS": "成功更新目标。",
         "DELETED_SUCCESS": "成功删除目标。",
         "DELETED_FAILED": "删除目标失败。",
         "CANNOT_EDIT": "当复制规则启用时目标无法修改。",
-        "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。"
+        "FAILED_TO_DELETE_TARGET_IN_USED": "无法删除正在使用的目标。",
+        "PLACEHOLDER": "未发现任何复制目标!"
     },
     "REPOSITORY": {
-        "COPY_ID": "复制ID",
-        "COPY_PARENT_ID": "复制父级ID",
+        "COPY_DIGEST_ID": "复制摘要",
         "DELETE": "删除",
         "NAME": "名称",
         "TAGS_COUNT": "标签数",
@@ -310,7 +321,9 @@
         "MY_REPOSITORY": "我的仓库",
         "PUBLIC_REPOSITORY": "公共仓库",
         "DELETION_TITLE_REPO": "删除镜像仓库确认",
-        "DELETION_SUMMARY_REPO": "确认删除镜像仓库 {{param}}?",
+        "DELETION_TITLE_REPO_SIGNED": "仓库不能被删除",
+        "DELETION_SUMMARY_REPO_SIGNED": "镜像仓库 '{{repoName}}' 不能被删除，因为存在以下签名镜像.\n{{signedImages}} \n在删除镜像仓库前需先删除所有的签名镜像",
+        "DELETION_SUMMARY_REPO": "确认删除镜像仓库 {{repoName}}?",
         "DELETION_TITLE_TAG": "删除镜像标签确认",
         "DELETION_SUMMARY_TAG": "确认删除镜像标签 {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "已签名的镜像不能被删除",
@@ -325,12 +338,14 @@
         "OS": "操作系统",
         "SHOW_DETAILS": "显示详细",
         "REPOSITORIES": "镜像仓库",
+        "OF": "共计",
         "ITEMS": "条记录",
         "POP_REPOS": "受欢迎的镜像仓库",
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",
         "DELETED_TAG_SUCCESS": "成功删除镜像标签。",
         "COPY": "复制",
-        "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。"
+        "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。",
+        "PLACEHOLDER": "未发现任何镜像库!"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -375,8 +390,11 @@
         "SCOPE_SUBTREE": "子树",
         "PRO_CREATION_EVERYONE": "所有人",
         "PRO_CREATION_ADMIN": "仅管理员",
+        "ROOT_CERT": "镜像库根证书",
+        "ROOT_CERT_LINK": "下载",
         "TOOLTIP": {
-            "SELF_REGISTRATION": "激活注册功能。",
+            "SELF_REGISTRATION_ENABLE": "激活注册功能。",
+            "SELF_REGISTRATION_DISABLE": "禁用注册功能。",
             "VERIFY_REMOTE_CERT": "确定镜像复制是否要验证远程Harbor实例的证书。如果远程实例使用的是自签或者非信任证书，不要勾选此项。",
             "AUTH_MODE": "默认认证模式为数据库认证，即用户凭证存储在本地数据库。如果使用LDAP来认证用户，则设置为LDAP。",
             "LDAP_SEARCH_DN": "有搜索权限的LDAP用户DN。如果LDAP服务器不支持匿名搜索，则需要配置此DN及其密码。",
@@ -384,7 +402,9 @@
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
             "LDAP_SCOPE": "搜索用户的范围。",
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
-            "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。"
+            "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
+            "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
+            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -394,6 +414,19 @@
             "FILTER": "LDAP过滤器",
             "UID": "LDAP用户UID的属性",
             "SCOPE": "LDAP搜索范围"
+        },
+        "SCANNING": {
+            "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
+            "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}",
+            "TITLE": "缺陷扫描",
+            "SCAN_ALL": "扫描所有",
+            "SCAN_NOW": "开始扫描",
+            "NONE_POLICY": "无",
+            "DAILY_POLICY": "每日定时",
+            "REFRESH_POLICY": "缺陷库刷新后",
+            "DB_REFRESH_TIME": "数据库更新于",
+            "DB_NOT_READY": "缺陷数据库可能没有完全准备好!",
+            "NEXT_SCAN": "下次可用时间"
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常。",
         "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常。",
@@ -425,7 +458,7 @@
         "TITLE": "统计",
         "PRO_ITEM": "项目",
         "REPO_ITEM": "镜像仓库",
-        "INDEX_MY": "私有",
+        "INDEX_PRIVATE": "私有",
         "INDEX_MY_PROJECTS": "我的项目",
         "INDEX_MY_REPOSITORIES": "我的镜像仓库",
         "INDEX_PUB": "公开",
@@ -436,6 +469,68 @@
     "SEARCH": {
         "IN_PROGRESS": "搜索中...",
         "BACK": "返回"
+    },
+    "VULNERABILITY": {
+        "STATE": {
+            "STOPPED": "未扫描",
+            "QUEUED": "已入队列",
+            "ERROR": "查看日志",
+            "SCANNING": "扫描中",
+            "UNKNOWN": "未知"
+        },
+        "GRID": {
+            "PLACEHOLDER": "没有扫描结果！",
+            "COLUMN_ID": "缺陷码",
+            "COLUMN_SEVERITY": "严重度",
+            "COLUMN_PACKAGE": "组件",
+            "COLUMN_VERSION": "当前版本",
+            "COLUMN_FIXED": "修复版本",
+            "COLUMN_DESCRIPTION": "简介",
+            "FOOT_ITEMS": "项目",
+            "FOOT_OF": "总共"
+        },
+        "CHART": {
+            "SCANNING_TIME": "扫描完成时间:",
+            "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}.",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}."
+        },
+        "SEVERITY": {
+            "HIGH": "严重",
+            "MEDIUM": "中等",
+            "LOW": "一般",
+            "NEGLIGIBLE": "可忽略",
+            "UNKNOWN": "未知",
+            "NONE": "无"
+        },
+        "SINGULAR": "漏洞",
+        "OVERALL_SEVERITY": "漏洞严重度:",
+        "NO_VULNERABILITY": "没有漏洞",
+        "PLURAL": "漏洞",
+        "PLACEHOLDER": "过滤漏洞",
+        "PACKAGE": "组件",
+        "PACKAGES": "组件",
+        "SCAN_NOW": "扫描",
+        "JOB_LOG_VIEWER": "查看扫描日志"
+    },
+    "PUSH_IMAGE": {
+        "TITLE": "推送镜像",
+        "TOOLTIP": "推送一个镜像到当前项目的参考命令。",
+        "TAG_COMMAND": "在项目中标记镜像：",
+        "PUSH_COMMAND": "推送镜像到当前项目：",
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"
+    },
+    "TAG": {
+        "CREATION_TIME_PREFIX": "创建时间：",
+        "CREATOR_PREFIX": "创建者：",
+        "ANONYMITY": "匿名用户",
+        "IMAGE_DETAILS": "镜像详情",
+        "DOCKER_VERSION": "Docker版本",
+        "ARCHITECTURE": "架构",
+        "OS": "操作系统",
+        "SCAN_COMPLETION_TIME": "扫描完成时间",
+        "IMAGE_VULNERABILITIES": "镜像缺陷",
+        "PLACEHOLDER": "未发现任何标签!",
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝。"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",

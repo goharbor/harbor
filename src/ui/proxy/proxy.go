@@ -41,7 +41,7 @@ func Init(urls ...string) error {
 		return err
 	}
 	Proxy = httputil.NewSingleHostReverseProxy(targetURL)
-	handlers = handlerChain{head: urlHandler{next: contentTrustHandler{next: Proxy}}}
+	handlers = handlerChain{head: urlHandler{next: listReposHandler{next: contentTrustHandler{next: vulnerableHandler{next: Proxy}}}}}
 	return nil
 }
 

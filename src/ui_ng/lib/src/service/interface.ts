@@ -12,37 +12,14 @@ export interface Base {
 }
 
 /**
- * Interface for tag history
- * 
- * @export
- * @interface TagCompatibility
- */
-export interface TagCompatibility {
-    v1Compatibility: string;
-}
-
-/**
- * Interface for tag manifest
- * 
- * @export
- * @interface TagManifest
- */
-export interface TagManifest {
-    schemaVersion: number;
-    name: string;
-    tag: string;
-    architecture: string;
-    history: TagCompatibility[];
-}
-
-/**
- * Interface for Repository
+ * Interface for Repository Info
  * 
  * @export
  * @interface Repository
  * @extends {Base}
  */
-export interface Repository extends Base {
+export interface RepositoryItem extends Base {
+    [key: string]: any | any[]
     name: string;
     tags_count: number;
     owner_id?: number;
@@ -53,16 +30,34 @@ export interface Repository extends Base {
 }
 
 /**
+ * Interface for repository
+ * 
+ * @export
+ * @interface Repository
+ */
+export interface Repository {
+    metadata?: Metadata;
+    data: RepositoryItem[];
+}
+
+/**
  * Interface for the tag of repository
  * 
  * @export
  * @interface Tag
  * @extends {Base}
  */
+
 export interface Tag extends Base {
-    tag: string;
-    manifest: TagManifest;
-    signed?: number; //May NOT exist
+    digest: string;
+    name: string;
+    architecture: string;
+    os: string;
+    docker_version: string;
+    author: string;
+    created: Date;
+    signature?: string;
+    scan_overview?: VulnerabilitySummary;
 }
 
 /**
@@ -105,12 +100,34 @@ export interface ReplicationRule extends Base {
  * @export
  * @interface ReplicationJob
  */
-export interface ReplicationJob extends Base {
+export interface ReplicationJob {
+    metadata?: Metadata;
+    data: ReplicationJobItem[];
+}
+
+/**
+ * Interface for replication job item.
+ * 
+ * @export
+ * @interface ReplicationJob
+ */
+export interface ReplicationJobItem extends Base {
+    [key: string]: any | any[]
     status: string;
     repository: string;
     policy_id: number;
     operation: string;
     tags: string;
+}
+
+/**
+ * Interface for storing metadata of response.
+ * 
+ * @export
+ * @interface Metadata
+ */
+export interface Metadata {
+    xTotalCount: number;
 }
 
 /**
@@ -120,6 +137,18 @@ export interface ReplicationJob extends Base {
  * @interface AccessLog
  */
 export interface AccessLog {
+    metadata?: Metadata;
+    data: AccessLogItem[];
+}
+
+/**
+ * The access log data.
+ * 
+ * @export
+ * @interface AccessLogItem
+ */
+export interface AccessLogItem {
+    [key: string]: any | any[]
     log_id: number;
     project_id: number;
     repo_name: string;
@@ -133,42 +162,82 @@ export interface AccessLog {
 }
 
 /**
- * Session related info.
+ * Global system info.
  * 
  * @export 
- * @interface SessionInfo
+ * @interface SystemInfo
+ * 
  */
-export interface SessionInfo {
-    withNotary?: boolean;
-    hasProjectAdminRole?: boolean;
-    hasSignedIn?: boolean;
-    registryUrl?: string;
+export interface SystemInfo {
+    with_clair?: boolean;
+    with_notary?: boolean;
+    with_admiral?: boolean;
+    admiral_endpoint?: string;
+    auth_mode?: string;
+    registry_url?: string;
+    project_creation_restriction?: string;
+    self_registration?: boolean;
+    has_ca_root?: boolean;
+    harbor_version?: string;
+    clair_vulnerability_status?: ClairDBStatus;
+    next_scan_all?: number;
 }
 
-//Not finalized yet
+/**
+ * Clair database status info.
+ * 
+ * @export
+ * @interface ClairDetail
+ */
+export interface ClairDetail {
+    namespace: string;
+    last_update: number;
+}
+
+export interface ClairDBStatus {
+    overall_last_update: number;
+    details: ClairDetail[];
+}
+
 export enum VulnerabilitySeverity {
-    LOW, MEDIUM, HIGH, UNKNOWN, NONE
+    _SEVERITY, NONE, UNKNOWN, LOW, MEDIUM, HIGH
 }
 
-export interface ScanningBaseResult {
+export interface VulnerabilityBase {
     id: string;
     severity: VulnerabilitySeverity;
     package: string;
     version: string;
 }
 
-export interface ScanningDetailResult extends ScanningBaseResult {
+export interface VulnerabilityItem extends VulnerabilityBase {
+    link: string;
     fixedVersion: string;
-    layer: string;
+    layer?: string;
     description: string;
 }
 
-export interface ScanningResultSummary {
-    totalComponents: number;
-    noneComponents: number;
-    completeTimestamp: Date;
-    high: ScanningBaseResult[];
-    medium: ScanningBaseResult[];
-    low: ScanningBaseResult[];
-    unknown: ScanningBaseResult[];
+export interface VulnerabilitySummary {
+    image_digest?: string;
+    scan_status: string;
+    job_id?: number;
+    severity: VulnerabilitySeverity;
+    components: VulnerabilityComponents;
+    update_time: Date; //Use as complete timestamp
+}
+
+export interface VulnerabilityComponents {
+    total: number;
+    summary: VulnerabilitySeverityMetrics[];
+}
+
+export interface VulnerabilitySeverityMetrics {
+    severity: VulnerabilitySeverity;
+    count: number;
+}
+
+export interface TagClickEvent {
+    project_id: string | number;
+    repository_name: string;
+    tag_name: string;
 }

@@ -16,6 +16,7 @@ package job
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -32,6 +33,9 @@ type workerPool struct {
 
 // WorkerPools is a map contains workerpools for different types of jobs.
 var WorkerPools map[Type]*workerPool
+
+// For WorkerPools initialization.
+var once sync.Once
 
 //TODO: remove the hard code?
 const maxScanWorker = 3
@@ -103,9 +107,10 @@ func (w *Worker) handle(job Job) {
 }
 
 // NewWorker returns a pointer to new instance of worker
-func NewWorker(id int, wp *workerPool) *Worker {
+func NewWorker(id int, t Type, wp *workerPool) *Worker {
 	w := &Worker{
 		ID:    id,
+		Type:  t,
 		Jobs:  make(chan Job),
 		quit:  make(chan bool),
 		queue: wp.workerChan,
@@ -117,27 +122,26 @@ func NewWorker(id int, wp *workerPool) *Worker {
 
 // InitWorkerPools create worker pools for different types of jobs.
 func InitWorkerPools() error {
-	if len(WorkerPools) > 0 {
-		return fmt.Errorf("The WorkerPool map has been initialised")
-	}
 	maxRepWorker, err := config.MaxJobWorkers()
 	if err != nil {
 		return err
 	}
-	WorkerPools = make(map[Type]*workerPool)
-	WorkerPools[ReplicationType] = createWorkerPool(maxRepWorker)
-	WorkerPools[ScanType] = createWorkerPool(maxScanWorker)
+	once.Do(func() {
+		WorkerPools = make(map[Type]*workerPool)
+		WorkerPools[ReplicationType] = createWorkerPool(maxRepWorker, ReplicationType)
+		WorkerPools[ScanType] = createWorkerPool(maxScanWorker, ScanType)
+	})
 	return nil
 }
 
 //createWorkerPool create workers according to parm
-func createWorkerPool(n int) *workerPool {
+func createWorkerPool(n int, t Type) *workerPool {
 	wp := &workerPool{
 		workerChan: make(chan *Worker, n),
 		workerList: make([]*Worker, 0, n),
 	}
 	for i := 0; i < n; i++ {
-		worker := NewWorker(i, wp)
+		worker := NewWorker(i, t, wp)
 		wp.workerList = append(wp.workerList, worker)
 		worker.Start()
 		log.Debugf("worker %v started", worker)

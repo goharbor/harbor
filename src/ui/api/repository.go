@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sort"
+	"strconv"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
@@ -27,11 +27,13 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/clair"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/common/utils/registry"
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
 	"github.com/vmware/harbor/src/ui/config"
+	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -64,7 +66,8 @@ type tag struct {
 
 type tagResp struct {
 	tag
-	Signature *notary.Target `json:"signature"`
+	Signature    *notary.Target          `json:"signature"`
+	ScanOverview *models.ImgScanOverview `json:"scan_overview,omitempty"`
 }
 
 type manifestResp struct {
@@ -82,8 +85,8 @@ func (ra *RepositoryAPI) Get() {
 
 	exist, err := ra.ProjectMgr.Exist(projectID)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %d: %v",
-			projectID, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d",
+			projectID), err)
 		return
 	}
 
@@ -103,7 +106,8 @@ func (ra *RepositoryAPI) Get() {
 
 	keyword := ra.GetString("q")
 
-	total, err := dao.GetTotalOfRepositoriesByProject(projectID, keyword)
+	total, err := dao.GetTotalOfRepositoriesByProject(
+		[]int64{projectID}, keyword)
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to get total of repositories of project %d: %v",
 			projectID, err))
@@ -164,14 +168,14 @@ func (ra *RepositoryAPI) Delete() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	project, err := ra.ProjectMgr.Get(projectName)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			projectName, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to get the project %s",
+			projectName), err)
 		return
 	}
 
-	if !exist {
+	if project == nil {
 		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
 		return
 	}
@@ -186,7 +190,7 @@ func (ra *RepositoryAPI) Delete() {
 		return
 	}
 
-	rc, err := ra.initRepositoryClient(repoName)
+	rc, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -197,7 +201,7 @@ func (ra *RepositoryAPI) Delete() {
 	if len(tag) == 0 {
 		tagList, err := rc.ListTag()
 		if err != nil {
-			if regErr, ok := err.(*registry_error.Error); ok {
+			if regErr, ok := err.(*registry_error.HTTPError); ok {
 				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 			}
 
@@ -239,7 +243,7 @@ func (ra *RepositoryAPI) Delete() {
 
 	for _, t := range tags {
 		if err = rc.DeleteTag(t); err != nil {
-			if regErr, ok := err.(*registry_error.Error); ok {
+			if regErr, ok := err.(*registry_error.HTTPError); ok {
 				if regErr.StatusCode == http.StatusNotFound {
 					continue
 				}
@@ -249,21 +253,10 @@ func (ra *RepositoryAPI) Delete() {
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 		log.Infof("delete tag: %s:%s", repoName, t)
-		go TriggerReplicationByRepository(repoName, []string{t}, models.RepOpDelete)
+
+		go TriggerReplicationByRepository(project.ProjectID, repoName, []string{t}, models.RepOpDelete)
 
 		go func(tag string) {
-			project, err := ra.ProjectMgr.Get(projectName)
-			if err != nil {
-				log.Errorf("failed to get the project %s: %v",
-					projectName, err)
-				return
-			}
-
-			if project == nil {
-				log.Errorf("project %s not found", projectName)
-				return
-			}
-
 			if err := dao.AddAccessLog(models.AccessLog{
 				Username:  ra.SecurityCtx.GetUsername(),
 				ProjectID: project.ProjectID,
@@ -277,7 +270,7 @@ func (ra *RepositoryAPI) Delete() {
 		}(t)
 	}
 
-	exist, err = repositoryExist(repoName, rc)
+	exist, err := repositoryExist(repoName, rc)
 	if err != nil {
 		log.Errorf("failed to check the existence of repository %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
@@ -290,6 +283,52 @@ func (ra *RepositoryAPI) Delete() {
 	}
 }
 
+// GetTag returns the tag of a repository
+func (ra *RepositoryAPI) GetTag() {
+	repository := ra.GetString(":splat")
+	tag := ra.GetString(":tag")
+	exist, _, err := ra.checkExistence(repository, tag)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of resource, error: %v", err))
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("resource: %s:%s not found", repository, tag))
+		return
+	}
+	project, _ := utils.ParseRepository(repository)
+	if !ra.SecurityCtx.HasReadPerm(project) {
+		if !ra.SecurityCtx.IsAuthenticated() {
+			ra.HandleUnauthorized()
+			return
+		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+
+	client, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repository)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to initialize the client for %s: %v",
+			repository, err))
+		return
+	}
+
+	_, exist, err = client.ManifestExist(tag)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of %s:%s: %v", repository, tag, err))
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("%s not found", tag))
+		return
+	}
+
+	result := assemble(client, repository, []string{tag},
+		ra.SecurityCtx.GetUsername())
+	ra.Data["json"] = result[0]
+	ra.ServeJSON()
+}
+
 // GetTags returns tags of a repository
 func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString(":splat")
@@ -297,8 +336,8 @@ func (ra *RepositoryAPI) GetTags() {
 	projectName, _ := utils.ParseRepository(repoName)
 	exist, err := ra.ProjectMgr.Exist(projectName)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			projectName, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			projectName), err)
 		return
 	}
 
@@ -316,139 +355,110 @@ func (ra *RepositoryAPI) GetTags() {
 		return
 	}
 
-	client, err := ra.initRepositoryClient(repoName)
+	client, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
-	// get tags
-	tags, err := getDetailedTags(client)
+	tags, err := client.ListTag()
 	if err != nil {
-		regErr, ok := err.(*registry_error.Error)
-		if !ok {
-			ra.HandleInternalServerError(fmt.Sprintf(
-				"failed to list tags of repository %s: %v", repoName, err))
-			return
-		}
-		ra.RenderError(regErr.StatusCode, regErr.Detail)
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get tag of %s: %v", repoName, err))
 		return
 	}
 
-	// get signatures
-	signatures := map[string]*notary.Target{}
-	if config.WithNotary() {
-		signatures, err = getSignatures(repoName, ra.SecurityCtx.GetUsername())
-		if err != nil {
-			ra.HandleInternalServerError(fmt.Sprintf(
-				"failed to get signatures of repository %s: %v", repoName, err))
-			return
-		}
-	}
-
-	// assemble the response
-	tagResps := []*tagResp{}
-	for _, tag := range tags {
-		tagResp := &tagResp{
-			tag: *tag,
-		}
-
-		// compare both digest and tag
-		if signature, ok := signatures[tag.Digest]; ok {
-			if tag.Name == signature.Tag {
-				tagResp.Signature = signature
-			}
-		}
-
-		tagResps = append(tagResps, tagResp)
-	}
-
-	ra.Data["json"] = tagResps
+	ra.Data["json"] = assemble(client, repoName, tags, ra.SecurityCtx.GetUsername())
 	ra.ServeJSON()
 }
 
-// get tags of the repository, read manifest for every tag
-// and assemble necessary attrs(os, architecture, etc.) into
-// one struct
-func getDetailedTags(client *registry.Repository) ([]*tag, error) {
-	ts, err := getSimpleTags(client)
-	if err != nil {
-		return nil, err
-	}
+// get config, signature and scan overview and assemble them into one
+// struct for each tag in tags
+func assemble(client *registry.Repository, repository string,
+	tags []string, username string) []*tagResp {
 
-	list := []*tag{}
-
-	for _, t := range ts {
-		// the ignored manifest can be used to calculate the image size
-		digest, _, config, err := getV2Manifest(client, t)
+	var err error
+	signatures := map[string][]notary.Target{}
+	if config.WithNotary() {
+		signatures, err = getSignatures(username, repository)
 		if err != nil {
-			return nil, err
+			signatures = map[string][]notary.Target{}
+			log.Errorf("failed to get signatures of %s: %v", repository, err)
 		}
-
-		tag := &tag{}
-		if err = json.Unmarshal(config, tag); err != nil {
-			return nil, err
-		}
-
-		tag.Name = t
-		tag.Digest = digest
-
-		list = append(list, tag)
 	}
 
-	return list, nil
+	result := []*tagResp{}
+	for _, t := range tags {
+		item := &tagResp{}
+
+		// tag configuration
+		digest, _, cfg, err := getV2Manifest(client, t)
+		if err != nil {
+			cfg = &tag{
+				Digest: digest,
+				Name:   t,
+			}
+			log.Errorf("failed to get v2 manifest of %s:%s: %v", repository, t, err)
+		}
+		if cfg != nil {
+			item.tag = *cfg
+		}
+
+		// scan overview
+		if config.WithClair() {
+			item.ScanOverview = getScanOverview(item.Digest, item.Name)
+		}
+
+		// signature, compare both digest and tag
+		if config.WithNotary() {
+			if sigs, ok := signatures[item.Digest]; ok {
+				for _, sig := range sigs {
+					if item.Name == sig.Tag {
+						item.Signature = &sig
+					}
+				}
+			}
+		}
+
+		result = append(result, item)
+	}
+
+	return result
 }
 
 // get v2 manifest of tag, returns digest, manifest,
 // manifest config and error. The manifest config contains
 // architecture, os, author, etc.
-func getV2Manifest(client *registry.Repository, tag string) (
-	string, *schema2.DeserializedManifest, []byte, error) {
-	digest, _, payload, err := client.PullManifest(tag, []string{schema2.MediaTypeManifest})
+func getV2Manifest(client *registry.Repository, tagName string) (
+	string, *schema2.DeserializedManifest, *tag, error) {
+	digest, _, payload, err := client.PullManifest(tagName, []string{schema2.MediaTypeManifest})
 	if err != nil {
 		return "", nil, nil, err
 	}
 
 	manifest := &schema2.DeserializedManifest{}
 	if err = manifest.UnmarshalJSON(payload); err != nil {
-		return "", nil, nil, err
+		return digest, nil, nil, err
 	}
 
 	_, reader, err := client.PullBlob(manifest.Target().Digest.String())
 	if err != nil {
-		return "", nil, nil, err
+		return digest, manifest, nil, err
 	}
 
-	config, err := ioutil.ReadAll(reader)
+	configData, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return "", nil, nil, err
+		return digest, manifest, nil, err
 	}
+
+	config := &tag{}
+	if err = json.Unmarshal(configData, config); err != nil {
+		return digest, manifest, nil, err
+	}
+
+	config.Name = tagName
+	config.Digest = digest
+
 	return digest, manifest, config, nil
-}
-
-// return tag name list for the repository
-func getSimpleTags(client *registry.Repository) ([]string, error) {
-	tags := []string{}
-
-	ts, err := client.ListTag()
-	if err != nil {
-		// TODO remove the logic if the bug of registry is fixed
-		// It's a workaround for a bug of registry: when listing tags of
-		// a repository which is being pushed, a "NAME_UNKNOWN" error will
-		// been returned, while the catalog API can list this repository.
-
-		if regErr, ok := err.(*registry_error.Error); ok &&
-			regErr.StatusCode == http.StatusNotFound {
-			return tags, nil
-		}
-
-		return nil, err
-	}
-
-	tags = append(tags, ts...)
-	sort.Strings(tags)
-
-	return tags, nil
 }
 
 // GetManifests returns the manifest of a tag
@@ -468,8 +478,8 @@ func (ra *RepositoryAPI) GetManifests() {
 	projectName, _ := utils.ParseRepository(repoName)
 	exist, err := ra.ProjectMgr.Exist(projectName)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %s: %v",
-			projectName, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			projectName), err)
 		return
 	}
 
@@ -488,7 +498,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		return
 	}
 
-	rc, err := ra.initRepositoryClient(repoName)
+	rc, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -496,7 +506,7 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	manifest, err := getManifest(rc, tag, version)
 	if err != nil {
-		if regErr, ok := err.(*registry_error.Error); ok {
+		if regErr, ok := err.(*registry_error.HTTPError); ok {
 			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
 
@@ -550,16 +560,6 @@ func getManifest(client *registry.Repository,
 	return result, nil
 }
 
-func (ra *RepositoryAPI) initRepositoryClient(repoName string) (r *registry.Repository, err error) {
-	endpoint, err := config.RegistryURL()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewRepositoryClient(endpoint, true, ra.SecurityCtx.GetUsername(),
-		repoName, "repository", repoName, "pull", "push", "*")
-}
-
 //GetTopRepos returns the most populor repositories
 func (ra *RepositoryAPI) GetTopRepos() {
 	count, err := ra.GetInt("count", 10)
@@ -570,14 +570,14 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	projectIDs := []int64{}
 	projects, err := ra.ProjectMgr.GetPublic()
 	if err != nil {
-		log.Errorf("failed to get the public projects: %v", err)
+		ra.ParseAndHandleError("failed to get public projects", err)
 		return
 	}
 	if ra.SecurityCtx.IsAuthenticated() {
-		list, err := ra.ProjectMgr.GetByMember(ra.SecurityCtx.GetUsername())
+		list, err := ra.SecurityCtx.GetMyProjects()
 		if err != nil {
-			log.Errorf("failed to get projects which the user %s is a member of: %v",
-				ra.SecurityCtx.GetUsername(), err)
+			ra.HandleInternalServerError(fmt.Sprintf("failed to get projects which the user %s is a member of: %v",
+				ra.SecurityCtx.GetUsername(), err))
 			return
 		}
 		projects = append(projects, list...)
@@ -607,6 +607,28 @@ func (ra *RepositoryAPI) GetTopRepos() {
 func (ra *RepositoryAPI) GetSignatures() {
 	repoName := ra.GetString(":splat")
 
+	projectName, _ := utils.ParseRepository(repoName)
+	exist, err := ra.ProjectMgr.Exist(projectName)
+	if err != nil {
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			projectName), err)
+		return
+	}
+
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		return
+	}
+
+	if !ra.SecurityCtx.HasReadPerm(projectName) {
+		if !ra.SecurityCtx.IsAuthenticated() {
+			ra.HandleUnauthorized()
+			return
+		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
@@ -617,21 +639,209 @@ func (ra *RepositoryAPI) GetSignatures() {
 	ra.ServeJSON()
 }
 
-func getSignatures(repository, username string) (map[string]*notary.Target, error) {
+//ScanImage handles request POST /api/repository/$repository/tags/$tag/scan to trigger image scan manually.
+func (ra *RepositoryAPI) ScanImage() {
+	if !config.WithClair() {
+		log.Warningf("Harbor is not deployed with Clair, scan is disabled.")
+		ra.RenderError(http.StatusServiceUnavailable, "")
+		return
+	}
+	repoName := ra.GetString(":splat")
+	tag := ra.GetString(":tag")
+	projectName, _ := utils.ParseRepository(repoName)
+	exist, err := ra.ProjectMgr.Exist(projectName)
+	if err != nil {
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+			projectName), err)
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		return
+	}
+	if !ra.SecurityCtx.IsAuthenticated() {
+		ra.HandleUnauthorized()
+		return
+	}
+	if !ra.SecurityCtx.HasAllPerm(projectName) {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+	err = uiutils.TriggerImageScan(repoName, tag)
+	//TODO better check existence
+	if err != nil {
+		log.Errorf("Error while calling job service to trigger image scan: %v", err)
+		ra.HandleInternalServerError("Failed to scan image, please check log for details")
+		return
+	}
+}
+
+// VulnerabilityDetails fetch vulnerability info from clair, transform to Harbor's format and return to client.
+func (ra *RepositoryAPI) VulnerabilityDetails() {
+	if !config.WithClair() {
+		log.Warningf("Harbor is not deployed with Clair, it's not impossible to get vulnerability details.")
+		ra.RenderError(http.StatusServiceUnavailable, "")
+		return
+	}
+	repository := ra.GetString(":splat")
+	tag := ra.GetString(":tag")
+	exist, digest, err := ra.checkExistence(repository, tag)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of resource, error: %v", err))
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("resource: %s:%s not found", repository, tag))
+		return
+	}
+	project, _ := utils.ParseRepository(repository)
+	if !ra.SecurityCtx.HasReadPerm(project) {
+		if !ra.SecurityCtx.IsAuthenticated() {
+			ra.HandleUnauthorized()
+			return
+		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+	res := []*models.VulnerabilityItem{}
+	overview, err := dao.GetImgScanOverview(digest)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get the scan overview, error: %v", err))
+		return
+	}
+	if overview != nil && len(overview.DetailsKey) > 0 {
+		clairClient := clair.NewClient(config.ClairEndpoint(), nil)
+		log.Debugf("The key for getting details: %s", overview.DetailsKey)
+		details, err := clairClient.GetResult(overview.DetailsKey)
+		if err != nil {
+			ra.HandleInternalServerError(fmt.Sprintf("Failed to get scan details from Clair, error: %v", err))
+			return
+		}
+		res = transformVulnerabilities(details)
+	}
+	ra.Data["json"] = res
+	ra.ServeJSON()
+}
+
+// ScanAll handles the api to scan all images on Harbor.
+func (ra *RepositoryAPI) ScanAll() {
+	if !config.WithClair() {
+		log.Warningf("Harbor is not deployed with Clair, it's not possible to scan images.")
+		ra.RenderError(http.StatusServiceUnavailable, "")
+		return
+	}
+	if !ra.SecurityCtx.IsAuthenticated() {
+		ra.HandleUnauthorized()
+		return
+	}
+	projectIDStr := ra.GetString("project_id")
+	if len(projectIDStr) > 0 { //scan images under the project only.
+		pid, err := strconv.ParseInt(projectIDStr, 10, 64)
+		if err != nil || pid <= 0 {
+			ra.HandleBadRequest(fmt.Sprintf("Invalid project_id %s", projectIDStr))
+			return
+		}
+		if !ra.SecurityCtx.HasAllPerm(pid) {
+			ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+			return
+		}
+		if err := uiutils.ScanImagesByProjectID(pid); err != nil {
+			log.Errorf("Failed triggering scan images in project: %d, error: %v", pid, err)
+			ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
+			return
+		}
+	} else { //scan all images in Harbor
+		if !ra.SecurityCtx.IsSysAdmin() {
+			ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+			return
+		}
+		if !utils.ScanAllMarker().Check() {
+			log.Warningf("There is a scan all scheduled at: %v, the request will not be processed.", utils.ScanAllMarker().Next())
+			ra.RenderError(http.StatusPreconditionFailed, "Unable handle frequent scan all requests")
+			return
+		}
+
+		if err := uiutils.ScanAllImages(); err != nil {
+			log.Errorf("Failed triggering scan all images, error: %v", err)
+			ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
+			return
+		}
+		utils.ScanAllMarker().Mark()
+	}
+	ra.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
+}
+
+func getSignatures(username, repository string) (map[string][]notary.Target, error) {
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		username, repository)
 	if err != nil {
 		return nil, err
 	}
 
-	signatures := map[string]*notary.Target{}
+	signatures := map[string][]notary.Target{}
 	for _, tgt := range targets {
 		digest, err := notary.DigestFromTarget(tgt)
 		if err != nil {
 			return nil, err
 		}
-		signatures[digest] = &tgt
+		signatures[digest] = append(signatures[digest], tgt)
 	}
 
 	return signatures, nil
+}
+
+func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, error) {
+	project, _ := utils.ParseRepository(repository)
+	exist, err := ra.ProjectMgr.Exist(project)
+	if err != nil {
+		return false, "", err
+	}
+	if !exist {
+		log.Errorf("project %s not found", project)
+		return false, "", nil
+	}
+	client, err := uiutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repository)
+	if err != nil {
+		return false, "", fmt.Errorf("failed to initialize the client for %s: %v", repository, err)
+	}
+	digest, exist, err := client.ManifestExist(tag)
+	if err != nil {
+		return false, "", fmt.Errorf("failed to check the existence of %s:%s: %v", repository, tag, err)
+	}
+	if !exist {
+		log.Errorf("%s not found", tag)
+		return false, "", nil
+	}
+	return true, digest, nil
+}
+
+//will return nil when it failed to get data.  The parm "tag" is for logging only.
+func getScanOverview(digest string, tag string) *models.ImgScanOverview {
+	if len(digest) == 0 {
+		log.Debug("digest is nil")
+		return nil
+	}
+	data, err := dao.GetImgScanOverview(digest)
+	if err != nil {
+		log.Errorf("Failed to get scan result for tag:%s, digest: %s, error: %v", tag, digest, err)
+	}
+	if data == nil {
+		return nil
+	}
+	job, err := dao.GetScanJob(data.JobID)
+	if err != nil {
+		log.Errorf("Failed to get scan job for id:%d, error: %v", data.JobID, err)
+		return nil
+	} else if job == nil { //job does not exist
+		log.Errorf("The scan job with id: %d does not exist, returning nil", data.JobID)
+		return nil
+	}
+	data.Status = job.Status
+	if data.Status != models.JobFinished {
+		log.Debugf("Unsetting vulnerable related historical values, job status: %s", data.Status)
+		data.Sev = 0
+		data.CompOverview = nil
+		data.DetailsKey = ""
+	}
+	return data
 }

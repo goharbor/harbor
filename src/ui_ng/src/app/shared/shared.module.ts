@@ -20,7 +20,6 @@ import { MessageComponent } from '../global-message/message.component';
 
 import { MessageService } from '../global-message/message.service';
 import { MaxLengthExtValidatorDirective } from './max-length-ext.directive';
-import { FilterComponent } from './filter/filter.component';
 import { TranslateModule } from "@ngx-translate/core";
 
 import { RouterModule } from '@angular/router';
@@ -30,9 +29,6 @@ import { ConfirmationDialogService } from './confirmation-dialog/confirmation-di
 import { SystemAdminGuard } from './route/system-admin-activate.service';
 import { NewUserFormComponent } from './new-user-form/new-user-form.component';
 import { InlineAlertComponent } from './inline-alert/inline-alert.component';
-
-import { ListPolicyComponent } from './list-policy/list-policy.component';
-import { CreateEditPolicyComponent } from './create-edit-policy/create-edit-policy.component';
 
 import { PortValidatorDirective } from './port.directive';
 
@@ -56,21 +52,37 @@ import { GaugeComponent } from './gauge/gauge.component';
 import { StatisticHandler } from './statictics/statistic-handler.service';
 import { DateValidatorDirective } from '../shared/date-validator.directive';
 
+import {
+  IServiceConfig,
+  SERVICE_CONFIG,
+  ErrorHandler,
+  HarborLibraryModule
+} from 'harbor-ui';
+
+const uiLibConfig: IServiceConfig = {
+  enablei18Support: true,
+  langCookieKey: "harbor-lang",
+  langMessageLoader: "http",
+  langMessagePathForHttpLoader: "i18n/lang/",
+  langMessageFileSuffixForHttpLoader: "-lang.json"
+};
+
 @NgModule({
   imports: [
     CoreModule,
     TranslateModule,
-    RouterModule
+    RouterModule,
+    HarborLibraryModule.forRoot({
+      config: { provide: SERVICE_CONFIG, useValue: uiLibConfig },
+      errorHandler: { provide: ErrorHandler, useClass: MessageHandlerService }
+    })
   ],
   declarations: [
     MessageComponent,
     MaxLengthExtValidatorDirective,
-    FilterComponent,
     ConfirmationDialogComponent,
     NewUserFormComponent,
     InlineAlertComponent,
-    ListPolicyComponent,
-    CreateEditPolicyComponent,
     PortValidatorDirective,
     PageNotFoundComponent,
     AboutDialogComponent,
@@ -84,15 +96,13 @@ import { DateValidatorDirective } from '../shared/date-validator.directive';
   ],
   exports: [
     CoreModule,
+    HarborLibraryModule,
     MessageComponent,
     MaxLengthExtValidatorDirective,
-    FilterComponent,
     TranslateModule,
     ConfirmationDialogComponent,
     NewUserFormComponent,
     InlineAlertComponent,
-    ListPolicyComponent,
-    CreateEditPolicyComponent,
     PortValidatorDirective,
     PageNotFoundComponent,
     AboutDialogComponent,

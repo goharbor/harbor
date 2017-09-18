@@ -116,8 +116,9 @@ describe('EndpointComponent (inline template)', () => {
 
   it('should open create endpoint modal', async(() => {
     fixture.detectChanges();
-    comp.editTarget(mockOne);
-    fixture.whenStable().then(()=>{
+    fixture.whenStable().then(()=>{      
+      fixture.detectChanges();
+      comp.editTarget(mockOne);
       fixture.detectChanges();
       expect(comp.target.name).toEqual('target_01');
     });
@@ -125,7 +126,6 @@ describe('EndpointComponent (inline template)', () => {
 
   it('should filter endpoints by keyword', async(() => {
     fixture.detectChanges();
-  
     fixture.whenStable().then(()=>{
       fixture.detectChanges();
       comp.doSearchTargets('target_02');

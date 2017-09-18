@@ -33,8 +33,7 @@ export class MessageComponent implements OnInit, OnDestroy {
   globalMessageOpened: boolean;
   messageText: string = "";
   timer: any = null;
-  hideOuter: boolean = true;
-
+  
   appLevelMsgSub: Subscription;
   msgSub: Subscription;
   clearSub: Subscription;
@@ -79,8 +78,6 @@ export class MessageComponent implements OnInit, OnDestroy {
               let hackDom: any = queryDoms[0];
               hackDom.className += ' alert-global alert-global-align';
             }
-
-            this.hideOuter = false;
           }, 0);
 
         }
@@ -138,6 +135,5 @@ export class MessageComponent implements OnInit, OnDestroy {
       clearTimeout(this.timer);
     }
     this.globalMessageOpened = false;
-    this.hideOuter = true;
   }
 }

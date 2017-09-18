@@ -3,10 +3,13 @@ import 'rxjs/add/observable/of';
 import { Injectable, Inject } from "@angular/core";
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { Http, URLSearchParams } from '@angular/http';
-import { HTTP_JSON_OPTIONS } from '../utils';
+import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';
+import { RequestQueryParams } from './RequestQueryParams';
 
-import { ScanningDetailResult } from './interface';
-import { VulnerabilitySeverity, ScanningBaseResult, ScanningResultSummary } from './interface';
+import {
+    VulnerabilityItem,
+    VulnerabilitySummary
+} from './interface';
 
 /**
  * Get the vulnerabilities scanning results for the specified tag.
@@ -21,45 +24,91 @@ export abstract class ScanningResultService {
      * 
      * @abstract
      * @param {string} tagId
-     * @returns {(Observable<ScanningResultSummary> | Promise<ScanningResultSummary> | ScanningResultSummary)}
+     * @returns {(Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary)}
      * 
      * @memberOf ScanningResultService
      */
-    abstract getScanningResultSummary(tagId: string): Observable<ScanningResultSummary> | Promise<ScanningResultSummary> | ScanningResultSummary;
+    abstract getVulnerabilityScanningSummary(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary;
 
     /**
      * Get the detailed vulnerabilities scanning results.
      * 
      * @abstract
      * @param {string} tagId
-     * @returns {(Observable<ScanningDetailResult[]> | Promise<ScanningDetailResult[]> | ScanningDetailResult[])}
+     * @returns {(Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[])}
      * 
      * @memberOf ScanningResultService
      */
-    abstract getScanningResults(tagId: string): Observable<ScanningDetailResult[]> | Promise<ScanningDetailResult[]> | ScanningDetailResult[];
+    abstract getVulnerabilityScanningResults(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[];
+
+
+    /**
+     * Start a new vulnerability scanning
+     * 
+     * @abstract
+     * @param {string} repoName
+     * @param {string} tagId
+     * @returns {(Observable<any> | Promise<any> | any)}
+     * 
+     * @memberOf ScanningResultService
+     */
+    abstract startVulnerabilityScanning(repoName: string, tagId: string): Observable<any> | Promise<any> | any;
+
+    /**
+     * Trigger the scanning all action.
+     * 
+     * @abstract
+     * @returns {(Observable<any> | Promise<any> | any)}
+     * 
+     * @memberOf ScanningResultService
+     */
+    abstract startScanningAll(): Observable<any> | Promise<any> | any;
 }
 
 @Injectable()
 export class ScanningResultDefaultService extends ScanningResultService {
+    _baseUrl: string = '/api/repositories';
+
     constructor(
         private http: Http,
         @Inject(SERVICE_CONFIG) private config: IServiceConfig) {
         super();
+        if (this.config && this.config.vulnerabilityScanningBaseEndpoint) {
+            this._baseUrl = this.config.vulnerabilityScanningBaseEndpoint;
+        }
     }
 
-    getScanningResultSummary(tagId: string): Observable<ScanningResultSummary> | Promise<ScanningResultSummary> | ScanningResultSummary {
-        if (!tagId || tagId.trim() === '') {
+    getVulnerabilityScanningSummary(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary {
+        if (!repoName || repoName.trim() === '' || !tagId || tagId.trim() === '') {
             return Promise.reject('Bad argument');
         }
 
         return Observable.of({});
     }
 
-    getScanningResults(tagId: string): Observable<ScanningDetailResult[]> | Promise<ScanningDetailResult[]> | ScanningDetailResult[] {
-        if (!tagId || tagId.trim() === '') {
+    getVulnerabilityScanningResults(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[] {
+        if (!repoName || repoName.trim() === '' || !tagId || tagId.trim() === '') {
             return Promise.reject('Bad argument');
         }
 
-        return Observable.of([]);
+        return this.http.get(`${this._baseUrl}/${repoName}/tags/${tagId}/vulnerability/details`, buildHttpRequestOptions(queryParams)).toPromise()
+            .then(response => response.json() as VulnerabilityItem[])
+            .catch(error => Promise.reject(error));
+    }
+
+    startVulnerabilityScanning(repoName: string, tagId: string): Observable<any> | Promise<any> | any {
+        if (!repoName || repoName.trim() === '' || !tagId || tagId.trim() === '') {
+            return Promise.reject('Bad argument');
+        }
+
+        return this.http.post(`${this._baseUrl}/${repoName}/tags/${tagId}/scan`, null).toPromise()
+            .then(() => { return true })
+            .catch(error => Promise.reject(error));
+    }
+
+    startScanningAll(): Observable<any> | Promise<any> | any {
+        return this.http.post(`${this._baseUrl}/scanAll`,{}).toPromise()
+        .then(() => {return true})
+        .catch(error => Promise.reject(error));
     }
 }

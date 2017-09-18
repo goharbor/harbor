@@ -60,8 +60,8 @@ func TestPutConfig(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	cfg := map[string]string{
-		common.VerifyRemoteCert: "0",
+	cfg := map[string]interface{}{
+		common.VerifyRemoteCert: false,
 	}
 
 	code, err := apiTest.PutConfig(*admin, cfg)

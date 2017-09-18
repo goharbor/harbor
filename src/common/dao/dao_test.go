@@ -407,14 +407,14 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestListUsers(t *testing.T) {
-	users, err := ListUsers(models.User{})
+	users, err := ListUsers(nil)
 	if err != nil {
 		t.Errorf("Error occurred in ListUsers: %v", err)
 	}
 	if len(users) != 1 {
 		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
 	}
-	users2, err := ListUsers(models.User{Username: username})
+	users2, err := ListUsers(&models.UserQuery{Username: username})
 	if len(users2) != 1 {
 		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
 	}
@@ -504,7 +504,7 @@ func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
 }
 
 func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
-	projects, err := SearchProjects(currentUser.UserID)
+	projects, err := GetHasReadPermProjects(currentUser.Username)
 	if err != nil {
 		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
 	}
@@ -570,11 +570,11 @@ func TestGetAccessLog(t *testing.T) {
 		t.Errorf("failed to add access log: %v", err)
 	}
 
-	queryAccessLog := models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
+	query := &models.LogQueryParam{
+		Username:   currentUser.Username,
+		ProjectIDs: []int64{currentProject.ProjectID},
 	}
-	accessLogs, err := GetAccessLogs(queryAccessLog, 1000, 0)
+	accessLogs, err := GetAccessLogs(query)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -587,11 +587,11 @@ func TestGetAccessLog(t *testing.T) {
 }
 
 func TestGetTotalOfAccessLogs(t *testing.T) {
-	queryAccessLog := models.AccessLog{
-		Username:  currentUser.Username,
-		ProjectID: currentProject.ProjectID,
+	query := &models.LogQueryParam{
+		Username:   currentUser.Username,
+		ProjectIDs: []int64{currentProject.ProjectID},
 	}
-	total, err := GetTotalOfAccessLogs(queryAccessLog)
+	total, err := GetTotalOfAccessLogs(query)
 	if err != nil {
 		t.Fatalf("failed to get total of access log: %v", err)
 	}
@@ -617,7 +617,15 @@ func TestAddAccessLog(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in AddAccessLog: %v", err)
 	}
-	accessLogList, err = GetAccessLogs(accessLog, 1000, 0)
+
+	query := &models.LogQueryParam{
+		Username:   accessLog.Username,
+		ProjectIDs: []int64{accessLog.ProjectID},
+		Repository: accessLog.RepoName,
+		Tag:        accessLog.RepoTag,
+		Operations: []string{accessLog.Operation},
+	}
+	accessLogList, err = GetAccessLogs(query)
 	if err != nil {
 		t.Errorf("Error occurred in GetAccessLog: %v", err)
 	}
@@ -676,6 +684,7 @@ func TestCountPull(t *testing.T) {
 	}
 }
 
+/*
 func TestProjectExists(t *testing.T) {
 	var exists bool
 	var err error
@@ -694,7 +703,7 @@ func TestProjectExists(t *testing.T) {
 		t.Errorf("The project with name: %s, does not exist", currentProject.Name)
 	}
 }
-
+*/
 func TestGetProjectById(t *testing.T) {
 	id := currentProject.ProjectID
 	p, err := GetProjectByID(id)
@@ -760,13 +769,14 @@ func TestToggleProjectPublicity(t *testing.T) {
 
 }
 
+/*
 func TestIsProjectPublic(t *testing.T) {
 
 	if isPublic := IsProjectPublic(projectName); isPublic {
 		t.Errorf("project, id: %d, its publicity is not false after turning off", currentProject.ProjectID)
 	}
 }
-
+*/
 func TestGetUserProjectRoles(t *testing.T) {
 	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {
@@ -783,6 +793,7 @@ func TestGetUserProjectRoles(t *testing.T) {
 	}
 }
 
+/*
 func TestProjectPermission(t *testing.T) {
 	roleCode, err := GetPermission(currentUser.Username, currentProject.Name)
 	if err != nil {
@@ -792,7 +803,7 @@ func TestProjectPermission(t *testing.T) {
 		t.Errorf("The expected role code is MDRWS,but actual: %s", roleCode)
 	}
 }
-
+*/
 func TestGetTotalOfProjects(t *testing.T) {
 	total, err := GetTotalOfProjects(nil)
 	if err != nil {
@@ -819,7 +830,7 @@ func TestGetProjects(t *testing.T) {
 
 func TestGetPublicProjects(t *testing.T) {
 	value := true
-	projects, err := GetProjects(&models.QueryParam{
+	projects, err := GetProjects(&models.ProjectQueryParam{
 		Public: &value,
 	})
 	if err != nil {
@@ -950,16 +961,6 @@ func TestChangeUserProfile(t *testing.T) {
 		if loginedUser.Comment != "Unit Test" {
 			t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
 		}
-	}
-}
-
-func TestGetRecentLogs(t *testing.T) {
-	logs, err := GetRecentLogs(currentUser.Username, 10, "2016-05-13 00:00:00", time.Now().String())
-	if err != nil {
-		t.Errorf("error occured in getting recent logs, error: %v", err)
-	}
-	if len(logs) <= 0 {
-		t.Errorf("get logs error, expected: %d, actual: %d", 1, len(logs))
 	}
 }
 
@@ -1639,7 +1640,7 @@ var sj2 = models.ScanJob{
 	Status:     models.JobPending,
 	Repository: "library/ubuntu",
 	Tag:        "15.10",
-	Digest:     "sha256:1234567890",
+	Digest:     "sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f",
 }
 
 func TestAddScanJob(t *testing.T) {
@@ -1694,5 +1695,99 @@ func TestUpdateScanJobStatus(t *testing.T) {
 	assert.NotNil(err)
 	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
+}
 
+func TestImgScanOverview(t *testing.T) {
+	assert := assert.New(t)
+	err := ClearTable(models.ScanOverviewTable)
+	assert.Nil(err)
+	digest := "sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f"
+	res, err := GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Nil(res)
+	err = SetScanJobForImg(digest, 33)
+	assert.Nil(err)
+	res, err = GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Equal(int64(33), res.JobID)
+	err = SetScanJobForImg(digest, 22)
+	assert.Nil(err)
+	res, err = GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Equal(int64(22), res.JobID)
+	pk := "22-sha256:sdfsdfarfwefwr23r43t34ggregergerger"
+	comp := &models.ComponentsOverview{
+		Total: 2,
+		Summary: []*models.ComponentsOverviewEntry{
+			&models.ComponentsOverviewEntry{
+				Sev:   int(models.SevMedium),
+				Count: 2,
+			},
+		},
+	}
+	err = UpdateImgScanOverview(digest, pk, models.SevMedium, comp)
+	assert.Nil(err)
+	res, err = GetImgScanOverview(digest)
+	assert.Nil(err)
+	assert.Equal(pk, res.DetailsKey)
+	assert.Equal(int(models.SevMedium), res.Sev)
+	assert.Equal(2, res.CompOverview.Summary[0].Count)
+}
+
+func TestVulnTimestamp(t *testing.T) {
+
+	assert := assert.New(t)
+	err := ClearTable(models.ClairVulnTimestampTable)
+	assert.Nil(err)
+	ns := "ubuntu:14"
+	res, err := ListClairVulnTimestamps()
+	assert.Nil(err)
+	assert.Equal(0, len(res))
+	err = SetClairVulnTimestamp(ns, time.Now())
+	assert.Nil(err)
+	res, err = ListClairVulnTimestamps()
+	assert.Nil(err)
+	assert.Equal(1, len(res))
+	assert.Equal(ns, res[0].Namespace)
+	old := time.Now()
+	t.Logf("Sleep 3 seconds")
+	time.Sleep(3 * time.Second)
+	err = SetClairVulnTimestamp(ns, time.Now())
+	assert.Nil(err)
+	res, err = ListClairVulnTimestamps()
+	assert.Nil(err)
+	assert.Equal(1, len(res))
+
+	d := res[0].LastUpdate.Sub(old)
+	if d < 2*time.Second {
+		t.Errorf("Delta should be larger than 2 seconds! old: %v, lastupdate: %v", old, res[0].LastUpdate)
+	}
+}
+
+func TestListScanOverviews(t *testing.T) {
+	assert := assert.New(t)
+	err := ClearTable(models.ScanOverviewTable)
+	assert.Nil(err)
+	l, err := ListImgScanOverviews()
+	assert.Nil(err)
+	assert.Equal(0, len(l))
+	err = ClearTable(models.ScanOverviewTable)
+	assert.Nil(err)
+}
+
+func TestGetScanJobsByStatus(t *testing.T) {
+	assert := assert.New(t)
+	err := ClearTable(models.ScanOverviewTable)
+	assert.Nil(err)
+	id, err := AddScanJob(sj1)
+	assert.Nil(err)
+	err = UpdateScanJobStatus(id, models.JobRunning)
+	assert.Nil(err)
+	r1, err := GetScanJobsByStatus(models.JobPending, models.JobCanceled)
+	assert.Nil(err)
+	assert.Equal(0, len(r1))
+	r2, err := GetScanJobsByStatus(models.JobPending, models.JobRunning)
+	assert.Nil(err)
+	assert.Equal(1, len(r2))
+	assert.Equal(sj1.Repository, r2[0].Repository)
 }

@@ -11,16 +11,26 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import {
     AccessLogService,
-    AccessLog
+    AccessLog,
+    AccessLogItem,
+    RequestQueryParams
 } from '../service/index';
 import { ErrorHandler } from '../error-handler/index';
 import { Observable } from 'rxjs/Observable';
-import { toPromise } from '../utils';
+import { toPromise, CustomComparator } from '../utils';
 import { LOG_TEMPLATE, LOG_STYLES } from './recent-log.template';
+import {
+    DEFAULT_PAGE_SIZE,
+    calculatePage,
+    doFiltering,
+    doSorting
+} from '../utils';
+
+import { Comparator, State } from 'clarity-angular';
 
 @Component({
     selector: 'hbr-log',
@@ -29,71 +39,109 @@ import { LOG_TEMPLATE, LOG_STYLES } from './recent-log.template';
 })
 
 export class RecentLogComponent implements OnInit {
-    recentLogs: AccessLog[];
-    logsCache: AccessLog[];
-    onGoing: boolean = false;
-    lines: number = 10; //Support 10, 25 and 50
+    recentLogs: AccessLogItem[] = [];
+    logsCache: AccessLog;
+    loading: boolean = true;
     currentTerm: string;
+    @Input() withTitle: boolean = false;
+
+    pageSize: number = DEFAULT_PAGE_SIZE;
+    currentPage: number = 1;//Double bound to pagination component
+    currentPagePvt: number = 0; //Used to confirm whether page is changed
+    currentState: State;
+
+    opTimeComparator: Comparator<AccessLogItem> = new CustomComparator<AccessLogItem>('op_time', 'date');
 
     constructor(
         private logService: AccessLogService,
         private errorHandler: ErrorHandler) { }
 
     ngOnInit(): void {
-        this.retrieveLogs();
     }
 
-    handleOnchange($event: any) {
-        this.currentTerm = '';
-        if ($event && $event.target && $event.target["value"]) {
-            this.lines = $event.target["value"];
-            if (this.lines < 10) {
-                this.lines = 10;
-            }
-            this.retrieveLogs();
-        }
-    }
-
-    public get logNumber(): number {
-        return this.recentLogs ? this.recentLogs.length : 0;
+    public get totalCount(): number {
+        return this.logsCache && this.logsCache.metadata ? this.logsCache.metadata.xTotalCount : 0;
     }
 
     public get inProgress(): boolean {
-        return this.onGoing;
+        return this.loading;
     }
 
     public doFilter(terms: string): void {
-        if (terms.trim() === "") {
-            this.recentLogs = this.logsCache.filter(log => log.username != "");
-            return;
+        this.currentTerm = terms.trim();
+        //Trigger data loading and start from first page
+        this.loading = true;
+        this.currentPage = 1;
+        if (this.currentPagePvt === 1) {
+            //Force reloading
+            let st: State = this.currentState;
+            if (!st) {
+                st = {
+                    page: {}
+                };
+            }
+            st.page.from = 0;
+            st.page.to = this.pageSize - 1;
+            st.page.size = this.pageSize;
+
+            this.currentPagePvt = 0;//Reset pvt
+
+            this.load(st);
         }
-        this.currentTerm = terms;
-        this.recentLogs = this.logsCache.filter(log => this.isMatched(terms, log));
     }
 
     public refresh(): void {
-        this.retrieveLogs();
+        this.doFilter("");
     }
 
-    retrieveLogs(): void {
-        if (this.lines < 10) {
-            this.lines = 10;
+    load(state: State) {
+        //Keep it for future filter
+        this.currentState = state;
+
+        let pageNumber: number = calculatePage(state);
+        if (pageNumber !== this.currentPagePvt) {
+            //load data
+            let params: RequestQueryParams = new RequestQueryParams();
+            params.set("page", '' + pageNumber);
+            params.set("page_size", '' + this.pageSize);
+            if (this.currentTerm && this.currentTerm !== "") {
+                params.set('repository', this.currentTerm);
+            }
+
+            this.loading = true;
+            toPromise<AccessLog>(this.logService.getRecentLogs(params))
+                .then(response => {
+                    this.logsCache = response; //Keep the data
+                    this.recentLogs = this.logsCache.data.filter(log => log.username != "");//To display
+
+                    //Do customized filter
+                    this.recentLogs = doFiltering<AccessLogItem>(this.recentLogs, state);
+
+                    //Do customized sorting
+                    this.recentLogs = doSorting<AccessLogItem>(this.recentLogs, state);
+
+                    this.currentPagePvt = pageNumber;
+
+                    this.loading = false;
+                })
+                .catch(error => {
+                    this.loading = false;
+                    this.errorHandler.error(error);
+                });
+        } else {
+            //Column sorting and filtering
+
+            this.recentLogs = this.logsCache.data.filter(log => log.username != "");//Reset data
+
+            //Do customized filter
+            this.recentLogs = doFiltering<AccessLogItem>(this.recentLogs, state);
+
+            //Do customized sorting
+            this.recentLogs = doSorting<AccessLogItem>(this.recentLogs, state);
         }
-
-        this.onGoing = true;
-        toPromise<AccessLog[]>(this.logService.getRecentLogs(this.lines))
-            .then(response => {
-                this.onGoing = false;
-                this.logsCache = response; //Keep the data
-                this.recentLogs = this.logsCache.filter(log => log.username != "");//To display
-            })
-            .catch(error => {
-                this.onGoing = false;
-                this.errorHandler.error(error);
-            });
     }
 
-    isMatched(terms: string, log: AccessLog): boolean {
+    isMatched(terms: string, log: AccessLogItem): boolean {
         let reg = new RegExp('.*' + terms + '.*', 'i');
         return reg.test(log.username) ||
             reg.test(log.repo_name) ||

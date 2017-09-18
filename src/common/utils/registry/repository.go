@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	//	"time"
@@ -30,7 +31,7 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 
 	"github.com/vmware/harbor/src/common/utils"
-	registry_error "github.com/vmware/harbor/src/common/utils/registry/error"
+	registry_error "github.com/vmware/harbor/src/common/utils/error"
 )
 
 // Repository holds information of a repository entity
@@ -58,20 +59,9 @@ func NewRepository(name, endpoint string, client *http.Client) (*Repository, err
 	return repository, nil
 }
 
-// NewRepositoryWithModifiers returns an instance of Repository according to the modifiers
-func NewRepositoryWithModifiers(name, endpoint string, insecure bool, modifiers ...Modifier) (*Repository, error) {
-
-	transport := NewTransport(GetHTTPTransport(insecure), modifiers...)
-	return NewRepository(name, endpoint, &http.Client{
-		Transport: transport,
-		//  for transferring large image, OS will handle i/o timeout
-		//	Timeout:   30 * time.Second,
-	})
-}
-
 func parseError(err error) error {
 	if urlErr, ok := err.(*url.Error); ok {
-		if regErr, ok := urlErr.Err.(*registry_error.Error); ok {
+		if regErr, ok := urlErr.Err.(*registry_error.HTTPError); ok {
 			return regErr
 		}
 	}
@@ -106,12 +96,20 @@ func (r *Repository) ListTag() ([]string, error) {
 		if err := json.Unmarshal(b, &tagsResp); err != nil {
 			return tags, err
 		}
-
+		sort.Strings(tags)
 		tags = tagsResp.Tags
 
 		return tags, nil
+	} else if resp.StatusCode == http.StatusNotFound {
+
+		// TODO remove the logic if the bug of registry is fixed
+		// It's a workaround for a bug of registry: when listing tags of
+		// a repository which is being pushed, a "NAME_UNKNOWN" error will
+		// been returned, while the catalog API can list this repository.
+		return tags, nil
 	}
-	return tags, &registry_error.Error{
+
+	return tags, &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
@@ -151,7 +149,7 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 		return
 	}
 
-	err = &registry_error.Error{
+	err = &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
@@ -188,7 +186,7 @@ func (r *Repository) PullManifest(reference string, acceptMediaTypes []string) (
 		return
 	}
 
-	err = &registry_error.Error{
+	err = &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
@@ -223,7 +221,7 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 		return
 	}
 
-	err = &registry_error.Error{
+	err = &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
@@ -254,7 +252,7 @@ func (r *Repository) DeleteManifest(digest string) error {
 		return err
 	}
 
-	return &registry_error.Error{
+	return &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
@@ -268,7 +266,7 @@ func (r *Repository) DeleteTag(tag string) error {
 	}
 
 	if !exist {
-		return &registry_error.Error{
+		return &registry_error.HTTPError{
 			StatusCode: http.StatusNotFound,
 		}
 	}
@@ -303,7 +301,7 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 		return false, err
 	}
 
-	return false, &registry_error.Error{
+	return false, &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
@@ -339,7 +337,7 @@ func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, er
 		return
 	}
 
-	err = &registry_error.Error{
+	err = &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
@@ -370,7 +368,7 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 		return
 	}
 
-	err = &registry_error.Error{
+	err = &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
@@ -400,7 +398,7 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 		return err
 	}
 
-	return &registry_error.Error{
+	return &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}
@@ -438,7 +436,7 @@ func (r *Repository) DeleteBlob(digest string) error {
 		return err
 	}
 
-	return &registry_error.Error{
+	return &registry_error.HTTPError{
 		StatusCode: resp.StatusCode,
 		Detail:     string(b),
 	}

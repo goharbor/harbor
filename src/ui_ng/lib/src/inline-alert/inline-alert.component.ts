@@ -22,7 +22,7 @@ import { INLINE_ALERT_STYLE } from './inline-alert.component.css';
 import { INLINE_ALERT_TEMPLATE } from './inline-alert.component.html';
 
 @Component({
-    selector: 'inline-alert',
+    selector: 'hbr-inline-alert',
     template: INLINE_ALERT_TEMPLATE,
     styles: [ INLINE_ALERT_STYLE ]
 })

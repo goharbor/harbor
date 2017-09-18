@@ -32,7 +32,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/security"
-	"github.com/vmware/harbor/src/common/security/rbac"
+	"github.com/vmware/harbor/src/common/security/local"
 	"github.com/vmware/harbor/src/common/security/secret"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
@@ -73,6 +73,8 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
+	Init()
+
 	os.Exit(m.Run())
 }
 
@@ -80,28 +82,14 @@ func TestSecurityFilter(t *testing.T) {
 	// nil request
 	ctx, err := newContext(nil)
 	if err != nil {
-		t.Fatalf("failed to crate context: %v", err)
-	}
-	SecurityFilter(ctx)
-	assert.Nil(t, securityContext(ctx))
-	assert.Nil(t, projectManager(ctx))
-
-	// the pattern of request does not need security check
-	req, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/static/index.html", nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", req)
-	}
-
-	ctx, err = newContext(req)
-	if err != nil {
-		t.Fatalf("failed to crate context: %v", err)
+		t.Fatalf("failed to create context: %v", err)
 	}
 	SecurityFilter(ctx)
 	assert.Nil(t, securityContext(ctx))
 	assert.Nil(t, projectManager(ctx))
 
 	// the pattern of request needs security check
-	req, err = http.NewRequest(http.MethodGet,
+	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", req)
@@ -116,8 +104,7 @@ func TestSecurityFilter(t *testing.T) {
 	assert.NotNil(t, projectManager(ctx))
 }
 
-func TestFillContext(t *testing.T) {
-	// secret
+func TestSecretReqCtxModifier(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)
 	if err != nil {
@@ -133,13 +120,40 @@ func TestFillContext(t *testing.T) {
 		t.Fatalf("failed to crate context: %v", err)
 	}
 
-	fillContext(ctx)
+	modifier := &secretReqCtxModifier{}
+	modified := modifier.Modify(ctx)
+	assert.True(t, modified)
 	assert.IsType(t, &secret.SecurityContext{},
 		securityContext(ctx))
 	assert.NotNil(t, projectManager(ctx))
+}
 
-	// session
-	req, err = http.NewRequest(http.MethodGet,
+func TestBasicAuthReqCtxModifier(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet,
+		"http://127.0.0.1/api/projects/", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", req)
+	}
+	req.SetBasicAuth("admin", "Harbor12345")
+
+	ctx, err := newContext(req)
+	if err != nil {
+		t.Fatalf("failed to crate context: %v", err)
+	}
+
+	modifier := &basicAuthReqCtxModifier{}
+	modified := modifier.Modify(ctx)
+	assert.True(t, modified)
+
+	sc := securityContext(ctx)
+	assert.IsType(t, &local.SecurityContext{}, sc)
+	s := sc.(security.Context)
+	assert.Equal(t, "admin", s.GetUsername())
+	assert.NotNil(t, projectManager(ctx))
+}
+
+func TestSessionReqCtxModifier(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", req)
@@ -162,52 +176,47 @@ func TestFillContext(t *testing.T) {
 	}
 	addSessionIDToCookie(req, store.SessionID())
 
-	ctx, err = newContext(req)
+	ctx, err := newContext(req)
 	if err != nil {
 		t.Fatalf("failed to crate context: %v", err)
 	}
-	fillContext(ctx)
+
+	modifier := &sessionReqCtxModifier{}
+	modified := modifier.Modify(ctx)
+
+	assert.True(t, modified)
 	sc := securityContext(ctx)
-	assert.IsType(t, &rbac.SecurityContext{}, sc)
+	assert.IsType(t, &local.SecurityContext{}, sc)
 	s := sc.(security.Context)
 	assert.Equal(t, "admin", s.GetUsername())
 	assert.True(t, s.IsSysAdmin())
 	assert.NotNil(t, projectManager(ctx))
+}
 
-	// basic auth
-	req, err = http.NewRequest(http.MethodGet,
-		"http://127.0.0.1/api/projects/", nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", req)
-	}
-	req.SetBasicAuth("admin", "Harbor12345")
+// TODO add test case
+func TestTokenReqCtxModifier(t *testing.T) {
 
-	ctx, err = newContext(req)
-	if err != nil {
-		t.Fatalf("failed to crate context: %v", err)
-	}
-	fillContext(ctx)
-	sc = securityContext(ctx)
-	assert.IsType(t, &rbac.SecurityContext{}, sc)
-	s = sc.(security.Context)
-	assert.Equal(t, "admin", s.GetUsername())
-	assert.NotNil(t, projectManager(ctx))
+}
 
-	// no credential
-	req, err = http.NewRequest(http.MethodGet,
+func TestUnauthorizedReqCtxModifier(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)
 	if err != nil {
 		t.Fatalf("failed to create request: %v", req)
 	}
 
-	ctx, err = newContext(req)
+	ctx, err := newContext(req)
 	if err != nil {
 		t.Fatalf("failed to crate context: %v", err)
 	}
-	fillContext(ctx)
-	sc = securityContext(ctx)
-	assert.IsType(t, &rbac.SecurityContext{}, sc)
-	s = sc.(security.Context)
+
+	modifier := &unauthorizedReqCtxModifier{}
+	modified := modifier.Modify(ctx)
+	assert.True(t, modified)
+
+	sc := securityContext(ctx)
+	assert.NotNil(t, sc)
+	s := sc.(security.Context)
 	assert.False(t, s.IsAuthenticated())
 	assert.NotNil(t, projectManager(ctx))
 }
@@ -241,6 +250,7 @@ func addSessionIDToCookie(req *http.Request, sessionID string) {
 func securityContext(ctx *beegoctx.Context) interface{} {
 	c, err := GetSecurityContext(ctx.Request)
 	if err != nil {
+		log.Printf("failed to get security context: %v \n", err)
 		return nil
 	}
 	return c
@@ -250,7 +260,7 @@ func projectManager(ctx *beegoctx.Context) interface{} {
 	if ctx.Request == nil {
 		return nil
 	}
-	return ctx.Request.Context().Value(HarborProjectManager)
+	return ctx.Request.Context().Value(pmKey)
 }
 
 func TestGetSecurityContext(t *testing.T) {
@@ -268,7 +278,7 @@ func TestGetSecurityContext(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		HarborSecurityContext, "test"))
+		securCtxKey, "test"))
 	ctx, err = GetSecurityContext(req)
 	assert.NotNil(t, err)
 
@@ -276,7 +286,7 @@ func TestGetSecurityContext(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		HarborSecurityContext, rbac.NewSecurityContext(nil, nil)))
+		securCtxKey, local.NewSecurityContext(nil, nil)))
 	ctx, err = GetSecurityContext(req)
 	assert.Nil(t, err)
 	_, ok := ctx.(security.Context)
@@ -298,7 +308,7 @@ func TestGetProjectManager(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		HarborProjectManager, "test"))
+		pmKey, "test"))
 	pm, err = GetProjectManager(req)
 	assert.NotNil(t, err)
 
@@ -306,7 +316,7 @@ func TestGetProjectManager(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		HarborProjectManager, &db.ProjectManager{}))
+		pmKey, &db.ProjectManager{}))
 	pm, err = GetProjectManager(req)
 	assert.Nil(t, err)
 	_, ok := pm.(projectmanager.ProjectManager)

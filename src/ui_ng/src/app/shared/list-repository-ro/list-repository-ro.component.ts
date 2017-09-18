@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationExtras } from '@angular/router';
-import { Repository } from '../../repository/repository';
+import { Repository } from 'harbor-ui';
 import { State } from 'clarity-angular';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';

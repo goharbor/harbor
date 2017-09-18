@@ -18,6 +18,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/src/common/models"
 
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -25,6 +26,9 @@ import (
 // AddScanJob ...
 func AddScanJob(job models.ScanJob) (int64, error) {
 	o := GetOrmer()
+	if len(job.Status) == 0 {
+		job.Status = models.JobPending
+	}
 	return o.Insert(&job)
 }
 
@@ -53,6 +57,17 @@ func GetScanJobsByDigest(digest string, limit ...int) ([]*models.ScanJob, error)
 	return res, err
 }
 
+// GetScanJobsByStatus return a list of scan jobs with any of the given statuses in param
+func GetScanJobsByStatus(status ...string) ([]*models.ScanJob, error) {
+	var res []*models.ScanJob
+	var t []interface{}
+	for _, s := range status {
+		t = append(t, interface{}(s))
+	}
+	_, err := scanJobQs().Filter("status__in", t...).All(&res)
+	return res, err
+}
+
 // UpdateScanJobStatus updates the status of a scan job.
 func UpdateScanJobStatus(id int64, status string) error {
 	o := GetOrmer()
@@ -75,4 +90,90 @@ func scanJobQs(limit ...int) orm.QuerySeter {
 		l = limit[0]
 	}
 	return o.QueryTable(models.ScanJobTable).Limit(l)
+}
+
+// SetScanJobForImg updates the scan_job_id based on the digest of image, if there's no data, it created one record.
+func SetScanJobForImg(digest string, jobID int64) error {
+	o := GetOrmer()
+	rec := &models.ImgScanOverview{
+		Digest:     digest,
+		JobID:      jobID,
+		UpdateTime: time.Now(),
+	}
+	created, _, err := o.ReadOrCreate(rec, "Digest")
+	if err != nil {
+		return err
+	}
+	if !created {
+		rec.JobID = jobID
+		rec.UpdateTime = time.Now()
+		n, err := o.Update(rec, "JobID", "UpdateTime")
+		if n == 0 {
+			return fmt.Errorf("Failed to set scan job for image with digest: %s, error: %v", digest, err)
+		}
+	}
+	return nil
+}
+
+// GetImgScanOverview returns the ImgScanOverview based on the digest.
+func GetImgScanOverview(digest string) (*models.ImgScanOverview, error) {
+	res := []*models.ImgScanOverview{}
+	_, err := scanOverviewQs().Filter("image_digest", digest).All(&res)
+	if err != nil {
+		return nil, err
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
+	if len(res) > 1 {
+		return nil, fmt.Errorf("Found multiple scan_overview entries for digest: %s", digest)
+	}
+	rec := res[0]
+	if len(rec.CompOverviewStr) > 0 {
+		co := &models.ComponentsOverview{}
+		if err := json.Unmarshal([]byte(rec.CompOverviewStr), co); err != nil {
+			return nil, err
+		}
+		rec.CompOverview = co
+	}
+	return rec, nil
+}
+
+// UpdateImgScanOverview updates the serverity and components status of a record in img_scan_overview
+func UpdateImgScanOverview(digest, detailsKey string, sev models.Severity, compOverview *models.ComponentsOverview) error {
+	o := GetOrmer()
+	rec, err := GetImgScanOverview(digest)
+	if err != nil {
+		return fmt.Errorf("Failed to getting scan_overview record for update: %v", err)
+	}
+	if rec == nil {
+		return fmt.Errorf("No scan_overview record for digest: %s", digest)
+	}
+	b, err := json.Marshal(compOverview)
+	if err != nil {
+		return err
+	}
+	rec.Sev = int(sev)
+	rec.CompOverviewStr = string(b)
+	rec.DetailsKey = detailsKey
+	rec.UpdateTime = time.Now()
+
+	_, err = o.Update(rec, "Sev", "CompOverviewStr", "DetailsKey", "UpdateTime")
+	if err != nil {
+		return fmt.Errorf("Failed to update scan overview record with digest: %s, error: %v", digest, err)
+	}
+	return nil
+}
+
+// ListImgScanOverviews list all records in table img_scan_overview, it is called in notificaiton handler when it needs to refresh the severity of all images.
+func ListImgScanOverviews() ([]*models.ImgScanOverview, error) {
+	var res []*models.ImgScanOverview
+	o := GetOrmer()
+	_, err := o.QueryTable(models.ScanOverviewTable).All(&res)
+	return res, err
+}
+
+func scanOverviewQs() orm.QuerySeter {
+	o := GetOrmer()
+	return o.QueryTable(models.ScanOverviewTable)
 }

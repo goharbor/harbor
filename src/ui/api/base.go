@@ -34,19 +34,26 @@ type BaseController struct {
 	ProjectMgr projectmanager.ProjectManager
 }
 
+const (
+	//ReplicationJobType ...
+	ReplicationJobType = "replication"
+	//ScanJobType ...
+	ScanJobType = "scan"
+)
+
 // Prepare inits security context and project manager from request
 // context
 func (b *BaseController) Prepare() {
 	ctx, err := filter.GetSecurityContext(b.Ctx.Request)
 	if err != nil {
-		log.Error("failed to get security context")
+		log.Errorf("failed to get security context: %v", err)
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
 	b.SecurityCtx = ctx
 
 	pm, err := filter.GetProjectManager(b.Ctx.Request)
 	if err != nil {
-		log.Error("failed to get project manager")
+		log.Errorf("failed to get project manager: %v", err)
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
 	b.ProjectMgr = pm

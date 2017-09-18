@@ -99,7 +99,7 @@ set -e
 # Login to the registry
 h2 "Login to the Docker registry"
 
-DOCKER_LOGIN="docker login --username $USERNAME --password $PASSWORD $4"
+DOCKER_LOGIN="docker login --username $USERNAME --password $PASSWORD $REGISTRY"
 info "docker login --username $USERNAME --password *******"
 DOCKER_LOGIN_OUTPUT=$($DOCKER_LOGIN)
 

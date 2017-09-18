@@ -13,31 +13,29 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { ReplicationManagementComponent } from './replication-management/replication-management.component';
 
-import { ReplicationComponent } from './replication.component';
-import { ListJobComponent } from './list-job/list-job.component';
-import { TotalReplicationComponent } from './total-replication/total-replication.component';
-import { DestinationComponent } from './destination/destination.component';
-import { CreateEditDestinationComponent } from './create-edit-destination/create-edit-destination.component';
+import { ReplicationManagementComponent } from './replication-management/replication-management.component';
+import { ReplicationPageComponent } from './replication-page.component';
+import { TotalReplicationPageComponent } from './total-replication/total-replication-page.component';
+import { DestinationPageComponent } from './destination/destination-page.component';
 
 import { SharedModule } from '../shared/shared.module';
-import { ReplicationService } from './replication.service';
 
 @NgModule({
-  imports: [ 
+  imports: [
     SharedModule,
     RouterModule
   ],
-  declarations: [ 
-    ReplicationComponent,
+  declarations: [
+    ReplicationPageComponent,
     ReplicationManagementComponent,
-    ListJobComponent,
-    TotalReplicationComponent,
-    DestinationComponent,
-    CreateEditDestinationComponent
+    TotalReplicationPageComponent,
+    DestinationPageComponent
   ],
-  exports: [ ReplicationComponent ],
-  providers: [ ReplicationService ]
+  exports: [
+    ReplicationPageComponent,
+    DestinationPageComponent,
+    TotalReplicationPageComponent
+  ]
 })
-export class ReplicationModule {}
+export class ReplicationModule { }

@@ -13,12 +13,9 @@
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { NgForm } from '@angular/forms';
 
 import { ConfigurationService } from './config.service';
-import { Configuration } from './config';
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';;
-import { StringValueItem } from './config';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { Subscription } from 'rxjs/Subscription';
 import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message'
@@ -29,13 +26,23 @@ import { ConfigurationEmailComponent } from './email/config-email.component';
 import { AppConfigService } from '../app-config.service';
 import { SessionService } from '../shared/session.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
+import {
+    Configuration,
+    StringValueItem,
+    ComplexValueItem,
+    ReplicationConfigComponent,
+    SystemSettingsComponent,
+    VulnerabilityConfigComponent,
+    ClairDBStatus
+} from 'harbor-ui';
 
 const fakePass = "aWpLOSYkIzJTTU4wMDkx";
 const TabLinkContentMap = {
     "config-auth": "authentication",
     "config-replication": "replication",
     "config-email": "email",
-    "config-system": "system_settings"
+    "config-system": "system_settings",
+    "config-vulnerability": "vulnerability"
 };
 
 @Component({
@@ -52,8 +59,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     testingMailOnGoing: boolean = false;
     testingLDAPOnGoing: boolean = false;
 
-    @ViewChild("repoConfigFrom") repoConfigForm: NgForm;
-    @ViewChild("systemConfigFrom") systemConfigForm: NgForm;
+    @ViewChild(ReplicationConfigComponent) replicationConfig: ReplicationConfigComponent;
+    @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
+    @ViewChild(VulnerabilityConfigComponent) vulnerabilityConfig: VulnerabilityConfigComponent;
     @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
     @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
 
@@ -63,6 +71,19 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         private confirmService: ConfirmationDialogService,
         private appConfigService: AppConfigService,
         private session: SessionService) { }
+
+    public get hasAdminRole(): boolean {
+        return this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role > 0;
+    }
+
+    public get hasCAFile(): boolean {
+        return this.appConfigService.getConfig().has_ca_root;
+    }
+
+    public get withClair(): boolean {
+        return this.appConfigService.getConfig().with_clair;
+    }
 
     isCurrentTabLink(tabId: string): boolean {
         return this.currentTabId === tabId;
@@ -100,6 +121,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 break;
             case "config-system":
                 properties = ["token_expiration"];
+                break;
+            case "config-vulnerability":
+                properties = ["scan_all_policy"];
                 break;
             default:
                 return null;
@@ -146,14 +170,21 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public isValid(): boolean {
-        return this.repoConfigForm &&
-            this.repoConfigForm.valid &&
-            this.systemConfigForm &&
-            this.systemConfigForm.valid &&
+        return this.replicationConfig &&
+            this.replicationConfig.isValid &&
+            this.systemSettingsConfig &&
+            this.systemSettingsConfig.isValid &&
             this.mailConfig &&
             this.mailConfig.isValid() &&
             this.authConfig &&
-            this.authConfig.isValid();
+            this.authConfig.isValid() &&
+            this.isVulnerabiltyValid;
+    }
+
+    public get isVulnerabiltyValid(): boolean {
+        return !this.appConfigService.getConfig().with_clair ||
+            (this.vulnerabilityConfig &&
+                this.vulnerabilityConfig.isValid);
     }
 
     public hasChanges(): boolean {
@@ -191,7 +222,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public tabLinkClick(tabLink: string) {
-        //Whether has unsave changes in current tab
+        //Whether has unsaved changes in current tab
         let changes = this.hasUnsavedChangesOfCurrentTab();
         if (!changes) {
             this.currentTabId = tabLink;
@@ -210,6 +241,14 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     public save(): void {
         let changes = this.getChanges();
         if (!this.isEmpty(changes)) {
+            //Fix policy parameters issue
+            let scanningAllPolicy = changes["scan_all_policy"];
+            if (scanningAllPolicy &&
+                scanningAllPolicy.type !== "daily" &&
+                scanningAllPolicy.parameters) {
+                delete (scanningAllPolicy.parameters);
+            }
+
             this.onGoing = true;
             this.configService.saveConfiguration(changes)
                 .then(response => {
@@ -247,7 +286,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         if (!this.isEmpty(changes)) {
             this.confirmUnsavedChanges(changes);
         } else {
-            //Inprop situation, should not come here
+            //Invalid situation, should not come here
             console.error("Nothing changed");
         }
     }
@@ -260,7 +299,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * @memberOf ConfigurationComponent
      */
     public testMailServer(): void {
-        if(this.testingMailOnGoing){
+        if (this.testingMailOnGoing) {
             return;//Should not come here
         }
         let mailSettings = {};
@@ -296,7 +335,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public testLDAPServer(): void {
-        if(this.testingLDAPOnGoing){
+        if (this.testingLDAPOnGoing) {
             return;//Should not come here
         }
 
@@ -364,14 +403,14 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     retrieveConfig(): void {
         this.onGoing = true;
         this.configService.getConfiguration()
-            .then(configurations => {
+            .then((configurations: Configuration) => {
                 this.onGoing = false;
 
                 //Add two password fields
                 configurations.email_password = new StringValueItem(fakePass, true);
                 configurations.ldap_search_password = new StringValueItem(fakePass, true);
-                this.allConfig = configurations;
 
+                this.allConfig = configurations;
                 //Keep the original copy of the data
                 this.originalCopy = this.clone(configurations);
             })
@@ -390,31 +429,43 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * 
      * @memberOf ConfigurationComponent
      */
-    getChanges(): any {
-        let changes = {};
+    getChanges(): { [key: string]: any | any[] } {
+        let changes: { [key: string]: any | any[] } = {};
         if (!this.allConfig || !this.originalCopy) {
             return changes;
         }
-
         for (let prop in this.allConfig) {
             let field = this.originalCopy[prop];
             if (field && field.editable) {
-                if (field.value != this.allConfig[prop].value) {
+                if (!this.compareValue(field.value, this.allConfig[prop].value)) {
                     changes[prop] = this.allConfig[prop].value;
-                    //Fix boolean issue
-                    if (typeof field.value === "boolean") {
-                        changes[prop] = changes[prop] ? "1" : "0";
+                    //Number 
+                    if (typeof field.value === "number") {
+                        changes[prop] = +changes[prop];
                     }
 
                     //Trim string value
-                    if(typeof field.value === "string") {
-                        changes[prop] = (''+changes[prop]).trim();
+                    if (typeof field.value === "string") {
+                        changes[prop] = ('' + changes[prop]).trim();
                     }
                 }
             }
         }
 
         return changes;
+    }
+
+    //private
+    compareValue(a: any, b: any): boolean {
+        if ((a && !b) || (!a && b)) return false;
+        if (!a && !b) return true;
+
+        return JSON.stringify(a) === JSON.stringify(b);
+    }
+
+    //private
+    isEmpty(obj: any): boolean {
+        return !obj || JSON.stringify(obj) === "{}";
     }
 
     /**
@@ -428,18 +479,11 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * @memberOf ConfigurationComponent
      */
     clone(src: Configuration): Configuration {
-        let dest = new Configuration();
         if (!src) {
-            return dest;//Empty
+            return new Configuration();//Empty
         }
 
-        for (let prop in src) {
-            if (src[prop]) {
-                dest[prop] = Object.assign({}, src[prop]); //Deep copy inner object
-            }
-        }
-
-        return dest;
+        return JSON.parse(JSON.stringify(src));
     }
 
     /**
@@ -455,21 +499,14 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         if (!this.isEmpty(changes)) {
             for (let prop in changes) {
                 if (this.originalCopy[prop]) {
-                    this.allConfig[prop] = Object.assign({}, this.originalCopy[prop]);
+                    this.allConfig[prop] = this.clone(this.originalCopy[prop]);
+                    //this.allConfig[prop] = Object.assign({}, this.originalCopy[prop]);
                 }
             }
         } else {
             //force reset
             this.retrieveConfig();
         }
-    }
-
-    isEmpty(obj: any) {
-        for (let key in obj) {
-            if (obj.hasOwnProperty(key))
-                return false;
-        }
-        return true;
     }
 
     disabled(prop: any): boolean {

@@ -14,7 +14,7 @@
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
 
 import { RepositoryService } from '../service/repository.service';
-import { Repository, SessionInfo } from '../service/interface';
+import { Repository, RepositoryItem } from '../service/interface';
 
 import { TranslateService } from '@ngx-translate/core';
 
@@ -39,17 +39,13 @@ import { REPOSITORY_STYLE } from './repository.component.css';
   styles: [REPOSITORY_STYLE]
 })
 export class RepositoryComponent implements OnInit {
-  changedRepositories: Repository[];
+  changedRepositories: RepositoryItem[];
 
   @Input() projectId: number;
-  @Input() sessionInfo: SessionInfo;
+  @Input() urlPrefix: string;
+  @Input() hasProjectAdminRole: boolean;
 
   lastFilteredRepoName: string;
-
-  totalPage: number;
-  totalRecordCount: number;
-
-  hasProjectAdminRole: boolean;
 
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
@@ -81,23 +77,16 @@ export class RepositoryComponent implements OnInit {
       this.errorHandler.error('Project ID cannot be unset.');
       return;
     }
-    if(!this.sessionInfo) {
-      this.errorHandler.error('Session info cannot be unset.');
-      return;
-    }
-    
-    this.hasProjectAdminRole = this.sessionInfo.hasProjectAdminRole || false;
-
     this.lastFilteredRepoName = '';
     this.retrieve();
   }
 
   retrieve(state?: State) {
-    toPromise<Repository[]>(this.repositoryService
+    toPromise<Repository>(this.repositoryService
       .getRepositories(this.projectId, this.lastFilteredRepoName))
       .then(
         response => {
-          this.changedRepositories = response;
+          this.changedRepositories = response.data;
       },
       error => this.errorHandler.error(error));
   }

@@ -152,12 +152,11 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 
 	var args []interface{}
 
-	sql := `select rp.id, rp.project_id, p.name as project_name, rp.target_id, 
+	sql := `select rp.id, rp.project_id, rp.target_id, 
 				rt.name as target_name, rp.name, rp.enabled, rp.description,
 				rp.cron_str, rp.start_time, rp.creation_time, rp.update_time, 
 				count(rj.status) as error_job_count 
 			from replication_policy rp 
-			left join project p on rp.project_id=p.project_id 
 			left join replication_target rt on rp.target_id=rt.id 
 			left join replication_job rj on rp.id=rj.policy_id and (rj.status="error" 
 				or rj.status="retrying") 
@@ -405,11 +404,16 @@ func UpdateRepJobStatus(id int64, status string) error {
 	return err
 }
 
-// ResetRunningJobs update all running jobs status to pending
+// ResetRunningJobs update all running jobs status to pending, including replication jobs and scan jobs.
 func ResetRunningJobs() error {
 	o := GetOrmer()
 	sql := fmt.Sprintf("update replication_job set status = '%s', update_time = ? where status = '%s'", models.JobPending, models.JobRunning)
 	_, err := o.Raw(sql, time.Now()).Exec()
+	if err != nil {
+		return err
+	}
+	sql = fmt.Sprintf("update %s set status = '%s', update_time = ? where status = '%s'", models.ScanJobTable, models.JobPending, models.JobRunning)
+	_, err = o.Raw(sql, time.Now()).Exec()
 	return err
 }
 

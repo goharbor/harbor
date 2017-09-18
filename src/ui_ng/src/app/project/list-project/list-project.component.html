@@ -1,4 +1,4 @@
-<clr-datagrid (clrDgRefresh)="refresh($event)">
+<clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="loading">
     <clr-dg-column>{{'PROJECT.NAME' | translate}}</clr-dg-column>
     <clr-dg-column>{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>
     <clr-dg-column *ngIf="showRoleInfo">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
@@ -17,7 +17,8 @@
         <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
-        {{(projects ? projects.length : 0)}} {{'PROJECT.ITEMS' | translate}}
-        <clr-dg-pagination [clrDgPageSize]="15"></clr-dg-pagination>
+        <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'PROJECT.OF' | translate}} </span>
+        {{pagination.totalItems }} {{'PROJECT.ITEMS' | translate}}
+        <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>

@@ -1,9 +1,12 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Router } from '@angular/router';
 
-import { State } from 'clarity-angular';
+import { State, Comparator } from 'clarity-angular';
+import { RepositoryItem } from '../service/interface';
 
-import { Repository } from '../service/interface';
 import { LIST_REPOSITORY_TEMPLATE } from './list-repository.component.html';
+
+import { CustomComparator } from '../utils';
 
 @Component({
   selector: 'hbr-list-repository',
@@ -11,8 +14,10 @@ import { LIST_REPOSITORY_TEMPLATE } from './list-repository.component.html';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListRepositoryComponent {
+  
+  @Input() urlPrefix: string;
   @Input() projectId: number;
-  @Input() repositories: Repository[];
+  @Input() repositories: RepositoryItem[];
 
   @Output() delete = new EventEmitter<string>();
   @Output() paginate = new EventEmitter<State>();
@@ -21,7 +26,12 @@ export class ListRepositoryComponent {
 
   pageOffset: number = 1;
 
+  pullCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('pull_count', 'number');
+  
+  tagsCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('tags_count', 'number');
+
   constructor(
+    private router: Router,
     private ref: ChangeDetectorRef) { 
     let hnd = setInterval(()=>ref.markForCheck(), 100);
     setTimeout(()=>clearInterval(hnd), 1000);
@@ -38,4 +48,9 @@ export class ListRepositoryComponent {
       this.paginate.emit(state);
     }
   }  
+
+  public gotoLink(projectId: number, repoName: string): void {
+    let linkUrl = [this.urlPrefix, 'tags', projectId, repoName];
+    this.router.navigate(linkUrl);
+  }
 }

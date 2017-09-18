@@ -19,8 +19,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/vmware/harbor/src/common/api"
-	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/utils/email"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -32,20 +30,20 @@ const (
 
 // EmailAPI ...
 type EmailAPI struct {
-	api.BaseAPI
+	BaseController
 }
 
 // Prepare ...
 func (e *EmailAPI) Prepare() {
-	userID := e.ValidateUser()
-	isSysAdmin, err := dao.IsAdminRole(userID)
-	if err != nil {
-		log.Errorf("failed to check the role of user: %v", err)
-		e.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	e.BaseController.Prepare()
+	if !e.SecurityCtx.IsAuthenticated() {
+		e.HandleUnauthorized()
+		return
 	}
 
-	if !isSysAdmin {
-		e.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
+	if !e.SecurityCtx.IsSysAdmin() {
+		e.HandleForbidden(e.SecurityCtx.GetUsername())
+		return
 	}
 }
 
@@ -53,7 +51,7 @@ func (e *EmailAPI) Prepare() {
 func (e *EmailAPI) Ping() {
 	var host, username, password, identity string
 	var port int
-	var ssl bool
+	var ssl, insecure bool
 	body := e.Ctx.Input.CopyBody(1 << 32)
 	if body == nil || len(body) == 0 {
 		cfg, err := config.Email()
@@ -68,6 +66,7 @@ func (e *EmailAPI) Ping() {
 		password = cfg.Password
 		identity = cfg.Identity
 		ssl = cfg.SSL
+		insecure = cfg.Insecure
 	} else {
 		settings := &struct {
 			Host     string  `json:"email_host"`
@@ -76,6 +75,7 @@ func (e *EmailAPI) Ping() {
 			Password *string `json:"email_password"`
 			SSL      bool    `json:"email_ssl"`
 			Identity string  `json:"email_identity"`
+			Insecure bool    `json:"email_insecure"`
 		}{}
 		e.DecodeJSONReq(&settings)
 
@@ -100,11 +100,12 @@ func (e *EmailAPI) Ping() {
 		password = *settings.Password
 		identity = settings.Identity
 		ssl = settings.SSL
+		insecure = settings.Insecure
 	}
 
 	addr := net.JoinHostPort(host, strconv.Itoa(port))
 	if err := email.Ping(addr, identity, username,
-		password, pingEmailTimeout, ssl, false); err != nil {
+		password, pingEmailTimeout, ssl, insecure); err != nil {
 		log.Debugf("ping %s failed: %v", addr, err)
 		e.CustomAbort(http.StatusBadRequest, err.Error())
 	}

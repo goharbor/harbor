@@ -23,6 +23,7 @@ import (
 	"github.com/astaxie/beego/validation"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	http_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
 
@@ -77,6 +78,21 @@ func (b *BaseAPI) HandleBadRequest(text string) {
 // HandleInternalServerError ...
 func (b *BaseAPI) HandleInternalServerError(text string) {
 	log.Error(text)
+	b.RenderError(http.StatusInternalServerError, "")
+}
+
+// ParseAndHandleError : if the err is an instance of utils/error.Error,
+// return the status code and the detail message contained in err, otherwise
+// return 500
+func (b *BaseAPI) ParseAndHandleError(text string, err error) {
+	if err == nil {
+		return
+	}
+	log.Errorf("%s: %v", text, err)
+	if e, ok := err.(*http_error.HTTPError); ok {
+		b.RenderError(e.StatusCode, e.Detail)
+		return
+	}
 	b.RenderError(http.StatusInternalServerError, "")
 }
 
@@ -179,9 +195,9 @@ func (b *BaseAPI) GetUserIDForRequest() (int, bool, bool) {
 // Redirect does redirection to resource URI with http header status code.
 func (b *BaseAPI) Redirect(statusCode int, resouceID string) {
 	requestURI := b.Ctx.Request.RequestURI
-	resoucreURI := requestURI + "/" + resouceID
+	resourceURI := requestURI + "/" + resouceID
 
-	b.Ctx.Redirect(statusCode, resoucreURI)
+	b.Ctx.Redirect(statusCode, resourceURI)
 }
 
 // GetIDFromURL checks the ID in request URL
@@ -205,7 +221,7 @@ func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 
 	link := ""
 
-	// SetPaginationHeader setprevious link
+	// SetPaginationHeader set previous link
 	if page > 1 && (page-1)*pageSize <= total {
 		u := *(b.Ctx.Request.URL)
 		q := u.Query()
@@ -217,7 +233,7 @@ func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 		link += fmt.Sprintf("<%s>; rel=\"prev\"", u.String())
 	}
 
-	// SetPaginationHeader setnext link
+	// SetPaginationHeader set next link
 	if pageSize*page < total {
 		u := *(b.Ctx.Request.URL)
 		q := u.Query()

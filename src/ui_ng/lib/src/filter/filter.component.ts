@@ -31,6 +31,7 @@ export class FilterComponent implements OnInit {
 
     placeHolder: string = "";
     filterTerms = new Subject<string>();
+    isExpanded: boolean = false;
 
     @Output("filter") private filterEvt = new EventEmitter<string>();
 
@@ -39,6 +40,8 @@ export class FilterComponent implements OnInit {
     public set flPlaceholder(placeHolder: string) {
         this.placeHolder = placeHolder;
     }
+    @Input() expandMode: boolean = false;
+    @Input() withDivider: boolean = false;
 
     ngOnInit(): void {
         this.filterTerms
@@ -53,5 +56,17 @@ export class FilterComponent implements OnInit {
     valueChange(): void {
         //Send out filter terms
         this.filterTerms.next(this.currentValue.trim());
+    }
+
+    onClick(): void {
+        //Only enabled when expandMode is set to false
+        if(this.expandMode){
+            return;
+        }
+        this.isExpanded = !this.isExpanded;
+    }
+
+    public get isShowSearchBox(): boolean {
+        return this.expandMode || (!this.expandMode && this.isExpanded);
     }
 }

@@ -14,6 +14,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * Pull and push images using Docker client.
 * Delete repositories and images.
 * Content trust.  
+* Vulnerability scanning via Clair.
 
 ## Role Based Access Control(RBAC)  
 
@@ -23,11 +24,11 @@ Harbor manages images through projects. Users can be added into one project as a
 
 * **Guest**: Guest has read-only privilege for a specified project.
 * **Developer**: Developer has read and write privileges for a project.
-* **ProjectAdmin**: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members.
+* **ProjectAdmin**: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members, starting a vulnerability scan.
 
 Besides the above three roles, there are two system-wide roles:  
 
-* **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator and delete users. The public project "library" is also owned by the administrator.  
+* **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users and set vulnerability scan policy for all images. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects.  
 
 ## User account
@@ -62,7 +63,7 @@ A project in Harbor contains all repositories of an application. No images can b
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
 * **Private**: A private project can only be accessed by users with proper privileges.  
 
-You can create a project after you signed in. Enabling the "Public" checkbox will make this project public.  
+You can create a project after you signed in. Check on the "Access Level" checkbox will make this project public.  
 
 ![create project](img/new_create_project.png)  
 
@@ -220,7 +221,7 @@ Run the below commands on the host which Harbor is deployed on to preview what f
 ```sh
 $ docker-compose stop
 
-$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.1-photon garbage-collect --dry-run /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.2-photon garbage-collect --dry-run /etc/registry/config.yml
 
 ```  
 **NOTE:** The above option "--dry-run" will print the progress without removing any data.  
@@ -229,7 +230,7 @@ Verify the result of the above test, then use the below commands to perform garb
 
 ```sh
 
-$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.1-photon garbage-collect  /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.2-photon garbage-collect  /etc/registry/config.yml
 
 $ docker-compose start
 ```  
@@ -237,14 +238,86 @@ $ docker-compose start
 For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
 
 ### Content trust  
+**NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**  
 If you want to enable content trust to ensure that images are signed, please set two environment variables in the command line before pushing or pulling any image:
 ```sh
 export DOCKER_CONTENT_TRUST=1
 export DOCKER_CONTENT_TRUST_SERVER=https://10.117.169.182:4443
 ```
+If you push the image for the first time, You will be asked to enter the root key passphrase. This will be needed every time you push a new image while the ``DOCKER_CONTENT_TRUST`` flag is set.  
+The root key is generated at: ``/root/.docker/trust/private/root_keys``  
+You will also be asked to enter a new passphrase for the image. This is generated at ``/root/.docker/trust/private/tuf_keys/[registry name] /[imagepath]``.  
 If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/docker/certs.d/10.117.169.182``` and ```$HOME/.docker/tls/10.117.169.182:4443/```. When an image is signed, it is indicated in the Web UI.  
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust, HTTPS must be enabled in Harbor.**  
   
 
 When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.  
 ![browse project](img/content_trust.png)
+
+### Vulnerability scanning via Clair 
+**CAUTION: Clair is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**
+
+Static analysis of vulnerabilities is provided through open source project [Clair](https://github.com/coreos/clair). You can initiate scanning on a particular image, or on all images in Harbor. Additionally, you can also set a policy to scan all the images at a specified time everyday.
+
+**Vulnerability metadata** 
+
+Clair depends on the vulnerability metadata to complete the analysis process. After the first initial installation, Clair will automatically start to update the metadata database from different vulnerability repositories. The updating process may take a while based on the data size and network connection. If the database has not been fully populated, there is a warning message at the footer of the repository datagrid view.
+![browse project](img/clair_not_ready.png)
+
+The 'database not fully ready' warning message is also displayed in the **'Vulnerability'** tab of **'Configuration'** section under **'Administration'** for your awareness.
+![browse project](img/clair_not_ready2.png)
+
+Once the database is ready, an overall database updated timestamp will be shown in the **'Vulnerability'** tab of **'Configuration'** section under **'Administration'**. 
+![browse project](img/clair_ready.png)
+
+**Scanning an image** 
+
+Enter your project and locate the specified repository. Expand the tag list via clicking the arrow icon on the left side. For each tag there will be an 'Vulnerability' column to display vulnerability scanning status and related information. You can click on the vertical ellipsis to open a popup menu and then click on 'Scan' to start the vulnerability analysis process. 
+![browse project](img/scan_menu_item.png)
+**NOTES: Only the users with 'Project Admin' role have the privilege to launch the analysis process.**
+
+The analysis process may have the following status that are indicated in the 'Vulnerability' column:
+* **Not Scanned:** The tag has never been scanned.
+* **Queued:** The scanning task is scheduled but not executed yet.
+* **Scanning:** The scanning process is in progress.
+* **Error:** The scanning process failed to complete.
+* **Complete:** The scanning process was successfully completed.
+
+For the **'Not Scanned'** and **'Queued'** statuses, a text label with status information is shown. For the **'Scanning'**, a progress bar will be displayed.
+If an error occurred, you can click on the **'View Log'** link to view the related logs.
+![browse project](img/log_viewer.png)
+
+If the process was successfully completed, a result bar is created. The width of the different colored sections indicates the percentage of features with vulnerabilities for a particular severity level.
+* **Red:** **High** level of vulnerabilities
+* **Orange:** **Medium** level of vulnerabilities
+* **Yellow:** **Low** level of vulnerabilities
+* **Grey:** **Unknown** level of vulnerabilities
+* **Green:** **No** vulnerabilities
+![browse project](img/bar_chart.png)
+
+Move the cursor over the bar, a tooltip with summary report will be displayed. Besides showing the total number of features with vulnerabilities and the total number of features in the scanned image tag, the report also lists the counts of features with vulnerabilities of different severity levels. The completion time of the last analysis process is shown at the bottom of the tooltip.
+![browse project](img/summary_tooltip.png)
+
+Click on the tag name link, the detail page will be opened. Besides the information about the tag, all the vulnerabilities found in the last analysis process will be listed with the related information. You can order or filter the list by columns.
+![browse project](img/tag_detail.png)
+
+**NOTES: You can initiate the vulnerability analysis for a tag at anytime you want as long as the status is not 'Queued' or 'Scanning'.** 
+
+**Scanning all images**
+
+In the **'Vulnerability'** tab of **'Configuration'** section under **'Administration'**, click on the **'SCAN NOW'** button to start the analysis process for all the existing images. 
+
+**NOTES: The scanning process is executed via multiple concurrent asynchronous tasks. There is no guarantee on the order of scanning or the returned results.** 
+![browse project](img/scan_all.png)
+
+To avoid frequently triggering the resource intensive scanning process, the availability of the button is restricted. It can be only triggered once in a predefined period. The next available time will be displayed besides the button.
+![browse project](img/scan_all2.png)
+
+**Scheduled Scan by Policy** 
+
+You can set policies to control the vulnerability analysis process. Currently, two options are available:
+* **None:** No policy is selected.
+* **Daily:** Policy is activated daily. It means an analysis job is scheduled to be executed at the specified time everyday. The scheduled job will scan all the images in Harbor.
+![browse project](img/scan_policy.png)
+
+**NOTES: Once the scheduled job is executed, the completion time of scanning all images will be updated accordingly. Please be aware that the completion time of the images may be different because the execution of analysis for each image may be carried out at different time.**

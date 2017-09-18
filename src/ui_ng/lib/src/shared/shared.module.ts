@@ -7,14 +7,26 @@ import { TranslateModule, TranslateLoader, TranslateService, MissingTranslationH
 import { MyMissingTranslationHandler } from '../i18n/missing-trans.handler';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslatorJsonLoader } from '../i18n/local-json.loader';
-
+import { IServiceConfig, SERVICE_CONFIG } from '../service.config';
+import { CookieService, CookieModule } from 'ngx-cookie';
+import { ClipboardModule } from '../third-party/ngx-clipboard/index';
 
 /*export function HttpLoaderFactory(http: Http) {
     return new TranslateHttpLoader(http, 'i18n/lang/', '-lang.json');
-}*/
+}
 
 export function LocalJsonLoaderFactory() {
     return new TranslatorJsonLoader();
+}*/
+
+export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
+    if (config && config.langMessageLoader === 'http') {
+        let prefix: string = config.langMessagePathForHttpLoader ? config.langMessagePathForHttpLoader : "i18n/lang/";
+        let suffix: string = config.langMessageFileSuffixForHttpLoader ? config.langMessageFileSuffixForHttpLoader : "-lang.json";
+        return new TranslateHttpLoader(http, prefix, suffix);
+    } else {
+        return new TranslatorJsonLoader(config);
+    }
 }
 
 /**
@@ -29,11 +41,14 @@ export function LocalJsonLoaderFactory() {
         CommonModule,
         HttpModule,
         FormsModule,
+        ClipboardModule,
+        CookieModule.forRoot(),
         ClarityModule.forRoot(),
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,
-                useFactory: (LocalJsonLoaderFactory)
+                useFactory: (GeneralTranslatorLoader),
+                deps: [Http, SERVICE_CONFIG]
             },
             missingTranslationHandler: {
                 provide: MissingTranslationHandler,
@@ -45,9 +60,12 @@ export function LocalJsonLoaderFactory() {
         CommonModule,
         HttpModule,
         FormsModule,
+        CookieModule,
+        ClipboardModule,
         ClarityModule,
         TranslateModule
-    ]
+    ],
+    providers: [CookieService]
 })
 
 export class SharedModule { }

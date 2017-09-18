@@ -16,9 +16,13 @@ package utils
 
 import (
 	"crypto/rand"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
+	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -113,4 +117,63 @@ func TestTCPConn(addr string, timeout, interval int) error {
 		cancel <- 1
 		return fmt.Errorf("failed to connect to tcp:%s after %d seconds", addr, timeout)
 	}
+}
+
+// ParseTimeStamp parse timestamp to time
+func ParseTimeStamp(timestamp string) (*time.Time, error) {
+	i, err := strconv.ParseInt(timestamp, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	t := time.Unix(i, 0)
+	return &t, nil
+}
+
+//ConvertMapToStruct is used to fill the specified struct with map.
+func ConvertMapToStruct(object interface{}, values interface{}) error {
+	if object == nil {
+		return errors.New("nil struct is not supported")
+	}
+
+	if reflect.TypeOf(object).Kind() != reflect.Ptr {
+		return errors.New("object should be referred by pointer")
+	}
+
+	bytes, err := json.Marshal(values)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(bytes, object)
+}
+
+// ParseProjectIDOrName parses value to ID(int64) or name(string)
+func ParseProjectIDOrName(value interface{}) (int64, string, error) {
+	if value == nil {
+		return 0, "", errors.New("harborIDOrName is nil")
+	}
+
+	var id int64
+	var name string
+	switch value.(type) {
+	case int:
+		i := value.(int)
+		id = int64(i)
+		if id == 0 {
+			return 0, "", fmt.Errorf("invalid ID: 0")
+		}
+	case int64:
+		id = value.(int64)
+		if id == 0 {
+			return 0, "", fmt.Errorf("invalid ID: 0")
+		}
+	case string:
+		name = value.(string)
+		if len(name) == 0 {
+			return 0, "", fmt.Errorf("empty name")
+		}
+	default:
+		return 0, "", fmt.Errorf("unsupported type")
+	}
+	return id, name, nil
 }

@@ -27,5 +27,7 @@ func init() {
 		new(Role),
 		new(AccessLog),
 		new(ScanJob),
-		new(RepoRecord))
+		new(RepoRecord),
+		new(ImgScanOverview),
+		new(ClairVulnTimestamp))
 }

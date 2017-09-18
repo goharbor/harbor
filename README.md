@@ -4,7 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/vmware/harbor/badge.svg?branch=master)](https://coveralls.io/github/vmware/harbor?branch=master)
 
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
-Please use [releases] instead of the `master` branch in order to get stable binaries.
+Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get stable binaries.
 
 <img alt="Harbor" src="docs/img/harbor_logo.png">
 
@@ -12,7 +12,8 @@ Project Harbor is an enterprise-class registry server that stores and distribute
 
 ### Features
 * **Role based access control**: Users and repositories are organized via 'projects' and a user can have different permission for images under a project.
-* **Policy based image replication**: Images can be replicated (synchronized) between multiple registry instances. Great for load balancing, high availability, multi-datacenter, hybrid and multi-cloud scenarios.
+* **Policy based image replication**: Images can be replicated (synchronized) between multiple registry instances, with auto-retry on errors. Great for load balancing, high availability, multi-datacenter, hybrid and multi-cloud scenarios.
+* **Vulnerability Scanning**: Harbor scans images regularly and warns users of vulnerabilities.
 * **LDAP/AD support**: Harbor integrates with existing enterprise LDAP/AD for user authentication and management.
 * **Image deletion & garbage collection**: Images can be deleted and their space can be recycled. 
 * **Notary**: Image authenticity can be ensured. 
@@ -32,9 +33,8 @@ Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releas
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
 ### Community
-**Slack:** Join Harbor's community here: [VMware {code}](https://code.vmware.com/join/), Channel: #harbor.  
+**Slack:** Join Harbor's community for discussion and ask questions: [VMware {code}](https://code.vmware.com/join/), Channel: #harbor.  
 **Email:** harbor@ vmware.com .  
-**WeChat Group:** Add WeChat id *connect1688* to join WeChat discussion group.  
 More info on [partners and users](partners.md). 
 
 ### Contribution
@@ -46,6 +46,10 @@ Harbor is available under the [Apache 2 license](LICENSE).
 This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
 
 * Photon OS 1.0: [docker image](https://hub.docker.com/_/photon/), [license](https://github.com/vmware/photon/blob/master/COPYING)
-* Docker Registry 2.6: [docker image](https://hub.docker.com/_/registry/), [license](https://github.com/docker/distribution/blob/master/LICENSE)
 * MySQL 5.6: [docker image](https://hub.docker.com/_/mysql/), [license](https://github.com/docker-library/mysql/blob/master/LICENSE)
-* NGINX 1.11.5: [docker image](https://hub.docker.com/_/nginx/), [license](https://github.com/nginxinc/docker-nginx/blob/master/LICENSE)
+
+### Commercial Support
+If you need commercial support of Harbor, please contact us for more information: harbor@ vmware.com .
+
+
+

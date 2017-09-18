@@ -12,10 +12,10 @@ class User(Base):
     __tablename__ = 'user'
 
     user_id = sa.Column(sa.Integer, primary_key=True)
-    username = sa.Column(sa.String(15), unique=True)
-    email = sa.Column(sa.String(30), unique=True)
+    username = sa.Column(sa.String(255), unique=True)
+    email = sa.Column(sa.String(255), unique=True)
     password = sa.Column(sa.String(40), nullable=False)
-    realname = sa.Column(sa.String(20), nullable=False)
+    realname = sa.Column(sa.String(255), nullable=False)
     comment = sa.Column(sa.String(30))
     deleted = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
     reset_uuid = sa.Column(sa.String(40))
@@ -106,7 +106,7 @@ class ReplicationTarget(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String(64))
     url = sa.Column(sa.String(64))
-    username = sa.Column(sa.String(40))
+    username = sa.Column(sa.String(255))
     password = sa.Column(sa.String(40))
     target_type = sa.Column(mysql.TINYINT(1), nullable=False, server_default=sa.text("'0'"))
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
@@ -139,4 +139,48 @@ class Repository(Base):
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
+class AccessLog(Base):
+    __tablename__ = "access_log"
 
+    user_id = sa.Column(sa.Integer, nullable=False)
+    log_id = sa.Column(sa.Integer, primary_key=True)
+    username = sa.Column(sa.String(255), nullable=False)
+    project_id = sa.Column(sa.Integer, nullable=False)
+    repo_name = sa.Column(sa.String(256))
+    repo_tag = sa.Column(sa.String(128))
+    GUID = sa.Column(sa.String(64))
+    operation = sa.Column(sa.String(20))
+    op_time = sa.Column(mysql.TIMESTAMP)
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+	
+    __table_args__ = (sa.Index('project_id', "op_time"),)
+	
+class ImageScanJob(Base):
+    __tablename__ = "img_scan_job"
+
+    id = sa.Column(sa.Integer, nullable=False, primary_key=True)
+    status = sa.Column(sa.String(64), nullable=False)
+    repository = sa.Column(sa.String(256), nullable=False)
+    tag = sa.Column(sa.String(128), nullable=False)
+    digest = sa.Column(sa.String(128))
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+	
+class ImageScanOverview(Base):
+    __tablename__ = "img_scan_overview"
+
+    id = sa.Column(sa.Integer, nullable=False, primary_key=True)
+    image_digest = sa.Column(sa.String(128), nullable=False)
+    scan_job_id = sa.Column(sa.Integer, nullable=False)
+    severity = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
+    components_overview = sa.Column(sa.String(2048))
+    details_key = sa.Column(sa.String(128))
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+	
+class ClairVulnTimestamp(Base):
+    __tablename__ = "clair_vuln_timestamp"
+
+    id = sa.Column(sa.Integer, nullable=False, primary_key=True)
+    namespace = sa.Column(sa.String(128), nullable=False, unique=True)
+    last_update = sa.Column(mysql.TIMESTAMP)

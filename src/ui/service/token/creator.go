@@ -17,13 +17,16 @@ package token
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/docker/distribution/registry/auth/token"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/filter"
+	promgr "github.com/vmware/harbor/src/ui/projectmanager"
 )
 
 var creatorMap map[string]Creator
@@ -31,8 +34,10 @@ var registryFilterMap map[string]accessFilter
 var notaryFilterMap map[string]accessFilter
 
 const (
-	notary   = "harbor-notary"
-	registry = "harbor-registry"
+	// Notary service
+	Notary = "harbor-notary"
+	// Registry service
+	Registry = "harbor-registry"
 )
 
 //InitCreators initialize the token creators for different services
@@ -55,21 +60,21 @@ func InitCreators() {
 				},
 			},
 		}
-		creatorMap[notary] = &generalCreator{
-			service:   notary,
+		creatorMap[Notary] = &generalCreator{
+			service:   Notary,
 			filterMap: notaryFilterMap,
 		}
 	}
 
-	creatorMap[registry] = &generalCreator{
-		service:   registry,
+	creatorMap[Registry] = &generalCreator{
+		service:   Registry,
 		filterMap: registryFilterMap,
 	}
 }
 
 // Creator creates a token ready to be served based on the http request.
 type Creator interface {
-	Create(r *http.Request) (*tokenJSON, error)
+	Create(r *http.Request) (*models.Token, error)
 }
 
 type imageParser interface {
@@ -122,13 +127,13 @@ func parseImg(s string) (*image, error) {
 
 // An accessFilter will filter access based on userinfo
 type accessFilter interface {
-	filter(ctx security.Context, a *token.ResourceActions) error
+	filter(ctx security.Context, pm promgr.ProjectManager, a *token.ResourceActions) error
 }
 
 type registryFilter struct {
 }
 
-func (reg registryFilter) filter(ctx security.Context,
+func (reg registryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
 	a *token.ResourceActions) error {
 	//Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {
@@ -146,7 +151,8 @@ type repositoryFilter struct {
 	parser imageParser
 }
 
-func (rep repositoryFilter) filter(ctx security.Context, a *token.ResourceActions) error {
+func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
+	a *token.ResourceActions) error {
 	//clear action list to assign to new acess element after perm check.
 	img, err := rep.parser.parse(a.Name)
 	if err != nil {
@@ -154,6 +160,17 @@ func (rep repositoryFilter) filter(ctx security.Context, a *token.ResourceAction
 	}
 	project := img.namespace
 	permission := ""
+
+	exist, err := pm.Exist(project)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		log.Debugf("project %s does not exist, set empty permission", project)
+		a.Actions = []string{}
+		return nil
+	}
+
 	if ctx.HasAllPerm(project) {
 		permission = "RWM"
 	} else if ctx.HasWritePerm(project) {
@@ -177,18 +194,19 @@ func (e *unauthorizedError) Error() string {
 	return "Unauthorized"
 }
 
-func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
+func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	var err error
-	var scopes []string
-	scopeParm := r.URL.Query()["scope"]
-	if len(scopeParm) > 0 {
-		scopes = strings.Split(r.URL.Query()["scope"][0], " ")
-	}
+	scopes := parseScopes(r.URL)
 	log.Debugf("scopes: %v", scopes)
 
 	ctx, err := filter.GetSecurityContext(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to  get security context from request")
+	}
+
+	pm, err := filter.GetProjectManager(r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to  get project manager from request")
 	}
 
 	// for docker login
@@ -198,9 +216,18 @@ func (g generalCreator) Create(r *http.Request) (*tokenJSON, error) {
 		}
 	}
 	access := GetResourceActions(scopes)
-	err = filterAccess(access, ctx, g.filterMap)
+	err = filterAccess(access, ctx, pm, g.filterMap)
 	if err != nil {
 		return nil, err
 	}
-	return makeToken(ctx.GetUsername(), g.service, access)
+	return MakeToken(ctx.GetUsername(), g.service, access)
+}
+
+func parseScopes(u *url.URL) []string {
+	var sector string
+	var result []string
+	for _, sector = range u.Query()["scope"] {
+		result = append(result, strings.Split(sector, " ")...)
+	}
+	return result
 }

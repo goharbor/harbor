@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vmware/harbor/src/common/utils/log"
+	//"github.com/vmware/harbor/src/common/utils/log"
 )
 
 //TODO:transaction, return err
@@ -50,6 +50,7 @@ func AddProject(project models.Project) (int64, error) {
 	return projectID, err
 }
 
+/*
 // IsProjectPublic ...
 func IsProjectPublic(projectName string) bool {
 	project, err := GetProjectByName(projectName)
@@ -85,6 +86,7 @@ func ProjectExists(nameOrID interface{}) (bool, error) {
 	return num > 0, nil
 
 }
+*/
 
 // GetProjectByID ...
 func GetProjectByID(id int64) (*models.Project, error) {
@@ -125,6 +127,7 @@ func GetProjectByName(name string) (*models.Project, error) {
 	return &p[0], nil
 }
 
+/*
 // GetPermission gets roles that the user has according to the project.
 func GetPermission(username, projectName string) (string, error) {
 	o := GetOrmer()
@@ -147,6 +150,7 @@ func GetPermission(username, projectName string) (string, error) {
 
 	return r[0].RoleCode, nil
 }
+*/
 
 // ToggleProjectPublicity toggles the publicity of the project.
 func ToggleProjectPublicity(projectID int64, publicity int) error {
@@ -156,11 +160,18 @@ func ToggleProjectPublicity(projectID int64, publicity int) error {
 	return err
 }
 
-// SearchProjects returns a project list,
+// GetHasReadPermProjects returns a project list,
 // which satisfies the following conditions:
 // 1. the project is not deleted
 // 2. the prject is public or the user is a member of the project
-func SearchProjects(userID int) ([]*models.Project, error) {
+func GetHasReadPermProjects(username string) ([]*models.Project, error) {
+	user, err := GetUser(models.User{
+		Username: username,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	o := GetOrmer()
 
 	sql :=
@@ -174,7 +185,7 @@ func SearchProjects(userID int) ([]*models.Project, error) {
 
 	var projects []*models.Project
 
-	if _, err := o.Raw(sql, userID).QueryRows(&projects); err != nil {
+	if _, err := o.Raw(sql, user.UserID).QueryRows(&projects); err != nil {
 		return nil, err
 	}
 
@@ -183,7 +194,7 @@ func SearchProjects(userID int) ([]*models.Project, error) {
 
 // GetTotalOfProjects returns the total count of projects
 // according to the query conditions
-func GetTotalOfProjects(query *models.QueryParam) (int64, error) {
+func GetTotalOfProjects(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (int64, error) {
 
 	var (
 		owner  string
@@ -203,7 +214,7 @@ func GetTotalOfProjects(query *models.QueryParam) (int64, error) {
 		}
 	}
 
-	sql, params := queryConditions(owner, name, public, member, role)
+	sql, params := projectQueryConditions(owner, name, public, member, role, base...)
 
 	sql = `select count(*) ` + sql
 
@@ -213,7 +224,7 @@ func GetTotalOfProjects(query *models.QueryParam) (int64, error) {
 }
 
 // GetProjects returns a project list according to the query conditions
-func GetProjects(query *models.QueryParam) ([]*models.Project, error) {
+func GetProjects(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) ([]*models.Project, error) {
 
 	var (
 		owner  string
@@ -239,7 +250,7 @@ func GetProjects(query *models.QueryParam) ([]*models.Project, error) {
 		}
 	}
 
-	sql, params := queryConditions(owner, name, public, member, role)
+	sql, params := projectQueryConditions(owner, name, public, member, role, base...)
 
 	sql = `select distinct p.project_id, p.name, p.public, p.owner_id, 
 				p.creation_time, p.update_time ` + sql
@@ -258,11 +269,34 @@ func GetProjects(query *models.QueryParam) ([]*models.Project, error) {
 	return projects, err
 }
 
-func queryConditions(owner, name string, public *bool, member string,
-	role int) (string, []interface{}) {
+func projectQueryConditions(owner, name string, public *bool, member string,
+	role int, base ...*models.BaseProjectCollection) (string, []interface{}) {
 	params := []interface{}{}
 
-	sql := ` from project p`
+	// the base project collections:
+	// 1. all projects
+	// 2. public projects
+	// 3. public projects and projects which the user is a member of
+	collection := `project `
+	if len(base) != 0 && base[0] != nil {
+		if len(base[0].Member) == 0 && base[0].Public {
+			collection = `(select * from project pr
+					where pr.public=1) `
+		}
+		if len(base[0].Member) > 0 && base[0].Public {
+			collection = `(select pr.project_id, pr.owner_id, pr.name, pr.
+						creation_time, pr.update_time, pr.deleted, pr.public 
+					from project pr
+					join project_member prm
+						on pr.project_id = prm.project_id
+					join user ur
+						on prm.user_id=ur.user_id
+					where ur.username=?  or pr.public=1 )`
+			params = append(params, base[0].Member)
+		}
+	}
+
+	sql := ` from ` + collection + ` as p`
 
 	if len(owner) != 0 {
 		sql += ` join user u1
