@@ -348,6 +348,7 @@
         "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
         "SIZE": "Size",
+        "VULNERABILITY": "Vulnerability",
         "SIGNED": "Signed",
         "AUTHOR": "Author",
         "CREATED": "Creation Time",
