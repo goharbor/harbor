@@ -43,11 +43,11 @@ spec:
               configMapKeyRef: 
                name: harbor-jobservice-config
                key: UI_SECRET
-          - name: SECRET_KEY
+          - name: JOBSERVICE_SECRET
             valueFrom: 
               configMapKeyRef: 
                name: harbor-jobservice-config
-               key: SECRET_KEY
+               key: JOBSERVICE_SECRET
           - name: CONFIG_PATH
             valueFrom: 
               configMapKeyRef: 

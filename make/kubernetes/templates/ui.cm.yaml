@@ -22,7 +22,7 @@ data:
   LDAP_SCOPE: "{{ldap_scope}}"
   LOG_LEVEL: debug
   UI_SECRET: "{{ui_secret}}"
-  SECRET_KEY: "{{secret_key}}"
+  JOBSERVICE_SECRET: "{{jobservice_secre}}"
   GODEBUG: netdns=cgo
   EXT_ENDPOINT: "{{ui_url}}"
   TOKEN_URL: http://ui

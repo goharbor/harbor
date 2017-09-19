@@ -29,6 +29,8 @@ parser.add_argument('-k', default='',
                     dest='private_key', help='[Optional] path of harbor https private key(pem)')
 parser.add_argument('-c', default='',
                     dest='cert', help='[Optional] harbor path of https cert(pem)')
+parser.add_argument('-j', default='',
+                    dest='jobservice_secret', help="[Optional] path of harbor secret key(16 characters)")
 parser.add_argument('-s', default='',
                     dest='secret_key', help="[Optional] path of harbor secret key(16 characters)")
 
@@ -99,7 +101,20 @@ else:
     cert_path = ''
 
 
-# read secret key
+# read jobservice secret key
+if args.jobservice_secret != '':
+    if os.path.isfile(args.jobservice_secret):
+        key = ''
+        with open(args.jobservice_secret, 'r') as skey:
+            key = skey.read()
+        if len(key) != 16:
+            raise Exception('Error: The length of secret key has to be 16 characters!')
+        set_config('jobservice_secret', key)
+else:
+    set_config('jobservice_secret', ''.join(random.choice(
+    string.ascii_letters + string.digits) for i in range(16)))
+
+# read ldap secret key
 if args.secret_key != '':
     if os.path.isfile(args.secret_key):
         key = ''
@@ -199,3 +214,4 @@ generate_template(os.path.join(template_dir, 'jobservice.cm.yaml'), os.path.join
 generate_template(os.path.join(template_dir, 'mysql.cm.yaml'), os.path.join(output_dir, 'mysql/mysql.cm.yaml'))
 generate_template(os.path.join(template_dir, 'nginx.cm.yaml'), os.path.join(output_dir, 'nginx/nginx.cm.yaml'))
 generate_template(os.path.join(template_dir, 'registry.cm.yaml'), os.path.join(output_dir, 'registry/registry.cm.yaml'))
+generate_template(os.path.join(template_dir, 'adminserver.cm.yaml'), os.path.join(output_dir, 'adminserver/adminserver.cm.yaml'))
