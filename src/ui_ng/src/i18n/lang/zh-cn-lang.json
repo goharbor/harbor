@@ -330,6 +330,7 @@
         "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。\n请执行如下Notary命令删除:\n{{param}}",
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
+        "VULNERABILITY": "漏洞",
         "SIGNED": "已签名",
         "AUTHOR": "作者",
         "CREATED": "创建时间",

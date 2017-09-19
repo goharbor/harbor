@@ -330,6 +330,7 @@
         "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.\nDelete from Notary via this command:\n{{param}}",
         "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
+        "VULNERABILITY": "Vulnerability",
         "SIGNED": "Signed",
         "AUTHOR": "Author",
         "CREATED": "Creation Time",

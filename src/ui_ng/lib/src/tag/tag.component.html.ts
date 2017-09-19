@@ -17,7 +17,7 @@ export const TAG_TEMPLATE = `
 <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded">
     <clr-dg-column style="width: 80px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
     <clr-dg-column style="min-width: 180px;">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
-    <clr-dg-column style="width: 160px;" *ngIf="withClair">{{'VULNERABILITY.SINGULAR' | translate}}</clr-dg-column>
+    <clr-dg-column style="width: 160px;" *ngIf="withClair">{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 80px;" *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 100px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 160px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
