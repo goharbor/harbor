@@ -115,9 +115,5 @@ func (c *cfgStore) Write(config map[string]interface{}) error {
 		return err
 	}
 
-	if err = ioutil.WriteFile(c.path, b, 0600); err != nil {
-		return err
-	}
-
-	return nil
+	return ioutil.WriteFile(c.path, b, 0600)
 }
