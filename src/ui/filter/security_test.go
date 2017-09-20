@@ -37,8 +37,8 @@ import (
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/projectmanager"
-	"github.com/vmware/harbor/src/ui/projectmanager/db"
+	"github.com/vmware/harbor/src/ui/promgr"
+	driver_local "github.com/vmware/harbor/src/ui/promgr/pmsdriver/local"
 )
 
 func TestMain(m *testing.M) {
@@ -316,9 +316,9 @@ func TestGetProjectManager(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		pmKey, &db.ProjectManager{}))
+		pmKey, &driver_local.ProjectManager{}))
 	pm, err = GetProjectManager(req)
 	assert.Nil(t, err)
-	_, ok := pm.(projectmanager.ProjectManager)
+	_, ok := pm.(promgr.ProMgr)
 	assert.True(t, ok)
 }

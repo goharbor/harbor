@@ -29,9 +29,9 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/projectmanager"
-	"github.com/vmware/harbor/src/ui/projectmanager/db"
-	"github.com/vmware/harbor/src/ui/projectmanager/pms"
+	"github.com/vmware/harbor/src/ui/promgr"
+	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
+	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/local"
 )
 
 const (
@@ -46,14 +46,14 @@ var (
 	// AdminserverClient is a client for adminserver
 	AdminserverClient client.Client
 	// GlobalProjectMgr is initialized based on the deploy mode
-	GlobalProjectMgr projectmanager.ProjectManager
+	GlobalProjectMgr promgr.ProMgr
 	mg               *comcfg.Manager
 	keyProvider      comcfg.KeyProvider
 	// AdmiralClient is initialized only under integration deploy mode
 	// and can be passed to project manager as a parameter
 	AdmiralClient *http.Client
 	// TokenReader is used in integration mode to read token
-	TokenReader pms.TokenReader
+	TokenReader admiral.TokenReader
 )
 
 // Init configurations
@@ -108,7 +108,7 @@ func initProjectManager() {
 	if !WithAdmiral() {
 		// standalone
 		log.Info("initializing the project manager based on database...")
-		GlobalProjectMgr = &db.ProjectManager{}
+		GlobalProjectMgr = &local.ProjectManager{}
 		return
 	}
 
@@ -128,10 +128,10 @@ func initProjectManager() {
 		path = defaultTokenFilePath
 	}
 	log.Infof("service token file path: %s", path)
-	TokenReader = &pms.FileTokenReader{
+	TokenReader = &admiral.FileTokenReader{
 		Path: path,
 	}
-	GlobalProjectMgr = pms.NewProjectManager(AdmiralClient,
+	GlobalProjectMgr = admiral.NewProjectManager(AdmiralClient,
 		AdmiralEndpoint(), TokenReader)
 }
 

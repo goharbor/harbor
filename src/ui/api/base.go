@@ -21,7 +21,7 @@ import (
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/filter"
-	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/promgr"
 )
 
 // BaseController ...
@@ -31,7 +31,7 @@ type BaseController struct {
 	SecurityCtx security.Context
 	// ProjectMgr is the project manager which abstracts the operations
 	// related to projects
-	ProjectMgr projectmanager.ProjectManager
+	ProjectMgr promgr.ProMgr
 }
 
 const (

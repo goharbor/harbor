@@ -25,7 +25,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/projectmanager/db"
+	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/local"
 )
 
 var (
@@ -47,7 +47,7 @@ var (
 		Email:    "guestUser@vmware.com",
 	}
 
-	pm = &db.ProjectManager{}
+	pm = &local.ProjectManager{}
 )
 
 func TestMain(m *testing.M) {

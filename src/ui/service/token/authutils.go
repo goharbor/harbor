@@ -29,7 +29,7 @@ import (
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
-	promgr "github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/promgr"
 )
 
 const (
@@ -81,7 +81,7 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 
 //filterAccess iterate a list of resource actions and try to use the filter that matches the resource type to filter the actions.
 func filterAccess(access []*token.ResourceActions, ctx security.Context,
-	pm promgr.ProjectManager, filters map[string]accessFilter) error {
+	pm promgr.ProMgr, filters map[string]accessFilter) error {
 	var err error
 	for _, a := range access {
 		f, ok := filters[a.Type]
