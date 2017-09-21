@@ -26,11 +26,11 @@ import (
 // auth context and project manager
 type SecurityContext struct {
 	ctx *authcontext.AuthContext
-	pm  promgr.ProMgr
+	pm  promgr.ProjectManager
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(ctx *authcontext.AuthContext, pm promgr.ProMgr) *SecurityContext {
+func NewSecurityContext(ctx *authcontext.AuthContext, pm promgr.ProjectManager) *SecurityContext {
 	return &SecurityContext{
 		ctx: ctx,
 		pm:  pm,
