@@ -21,7 +21,7 @@ export const TAG_TEMPLATE = `
     <clr-dg-column style="width: 80px;" *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 100px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 160px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
-    <clr-dg-column style="width: 80px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
+    <clr-dg-column style="width: 120px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 80px;" [clrDgField]="'architecture'" *ngIf="!withClair">{{'REPOSITORY.ARCHITECTURE' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 80px;" [clrDgField]="'os'" *ngIf="!withClair">{{'REPOSITORY.OS' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'TGA.PLACEHOLDER' | translate }}</clr-dg-placeholder>
@@ -49,11 +49,11 @@ export const TAG_TEMPLATE = `
       </clr-dg-cell>
       <clr-dg-cell style="width: 100px;">{{t.author}}</clr-dg-cell>
       <clr-dg-cell style="width: 160px;">{{t.created | date: 'short'}}</clr-dg-cell>
-      <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
+      <clr-dg-cell style="width: 120px;" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
       <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.architecture}}</clr-dg-cell>
       <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.os}}</clr-dg-cell>
     </clr-dg-row>
-    <clr-dg-footer> 
+    <clr-dg-footer>
       <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
       {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}&nbsp;&nbsp;&nbsp;&nbsp;
       <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>
