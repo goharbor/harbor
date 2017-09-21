@@ -9,7 +9,7 @@ import (
 	notarytest "github.com/vmware/harbor/src/common/utils/notary/test"
 	utilstest "github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/projectmanager/pms"
+	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
 
 	"net/http"
 	"net/http/httptest"
@@ -148,8 +148,8 @@ func TestPMSPolicyChecker(t *testing.T) {
 		panic(err)
 	}
 
-	pm := pms.NewProjectManager(http.DefaultClient,
-		admiralEndpoint, &pms.RawTokenReader{
+	pm := admiral.NewProjectManager(http.DefaultClient,
+		admiralEndpoint, &admiral.RawTokenReader{
 			Token: "token",
 		})
 	name := "project_for_test_get_sev_low"

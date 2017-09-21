@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package projectmanager
+package promgr
 
 import (
 	"github.com/vmware/harbor/src/common/models"
 )
 
-// ProjectManager is the project mamager which abstracts the operations related
+// ProMgr is the project mamager which abstracts the operations related
 // to projects
-type ProjectManager interface {
+type ProMgr interface {
 	Get(projectIDOrName interface{}) (*models.Project, error)
 	IsPublic(projectIDOrName interface{}) (bool, error)
 	Exist(projectIDOrName interface{}) (bool, error)

@@ -33,7 +33,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/promgr"
 	"github.com/vmware/harbor/src/ui/service/token"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
@@ -166,7 +166,7 @@ func postReplicationAction(policyID int64, acton string) error {
 }
 
 // SyncRegistry syncs the repositories of registry with database.
-func SyncRegistry(pm projectmanager.ProjectManager) error {
+func SyncRegistry(pm promgr.ProMgr) error {
 
 	log.Infof("Start syncing repositories from registry to DB... ")
 
@@ -254,7 +254,7 @@ func catalog() ([]string, error) {
 }
 
 func diffRepos(reposInRegistry []string, reposInDB []string,
-	pm projectmanager.ProjectManager) ([]string, []string, error) {
+	pm promgr.ProMgr) ([]string, []string, error) {
 	var needsAdd []string
 	var needsDel []string
 
@@ -359,7 +359,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 	return needsAdd, needsDel, nil
 }
 
-func projectExists(pm projectmanager.ProjectManager, repository string) (bool, error) {
+func projectExists(pm promgr.ProMgr, repository string) (bool, error) {
 	project, _ := utils.ParseRepository(repository)
 	return pm.Exist(project)
 }
