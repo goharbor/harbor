@@ -331,6 +331,7 @@
         "DELETION_SUMMARY_TAG_DENIED": "La etiqueta debe ser eliminada de la Notaría antes de eliminarla.\nEliminarla de la Notaría con este comando:\n{{param}}",
         "FILTER_FOR_REPOSITORIES": "Filtrar Repositorios",
         "TAG": "Etiqueta",
+        "VULNERABILITY": "Vulnerability",
         "SIGNED": "Firmada",
         "AUTHOR": "Autor",
         "CREATED": "Fecha de creación",
