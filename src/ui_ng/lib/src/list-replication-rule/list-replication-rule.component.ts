@@ -26,7 +26,7 @@ import {
 } from '@angular/core';
 
 import { ReplicationService } from '../service/replication.service';
-import { ReplicationRule } from '../service/interface';
+import {ReplicationJob, ReplicationJobItem, ReplicationRule} from '../service/interface';
 
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
@@ -70,6 +70,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   rules: ReplicationRule[];
   changedRules: ReplicationRule[];
   ruleName: string;
+  canDeleteRule: boolean;
 
   @ViewChild('toggleConfirmDialog')
   toggleConfirmDialog: ConfirmationDialogComponent;
@@ -199,15 +200,48 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     this.toggleConfirmDialog.open(toggleConfirmMessage);
   }
 
+  jobList(): Promise<void> {
+    let ruleData: ReplicationJobItem[];
+    this.canDeleteRule = true;
+    let count: number = 0;
+    return toPromise<ReplicationJob>(this.replicationService
+        .getJobs(this.selectedId))
+        .then(response => {
+          ruleData = response.data;
+          if (ruleData.length) {
+            ruleData.forEach(job => {
+              if ((job.status === 'pending') || (job.status === 'running') || (job.status === 'retrying')) {
+                count ++;
+              }
+            });
+          }
+          this.canDeleteRule = count > 0 ? false : true;
+        })
+        .catch(error => this.errorHandler.error(error));
+  }
+
   deleteRule(rule: ReplicationRule) {
-    let deletionMessage: ConfirmationMessage = new ConfirmationMessage(
-      'REPLICATION.DELETION_TITLE',
-      'REPLICATION.DELETION_SUMMARY',
-      rule.name || '',
-      rule.id,
-      ConfirmationTargets.POLICY,
-      ConfirmationButtons.DELETE_CANCEL);
-    this.deletionConfirmDialog.open(deletionMessage);
+    this.jobList().then(() => {
+      let deletionMessage: ConfirmationMessage;
+      if (!this.canDeleteRule) {
+        deletionMessage = new ConfirmationMessage(
+            'REPLICATION.DELETION_TITLE_FAILURE',
+            'REPLICATION.DELETION_SUMMARY_FAILURE',
+            rule.name || '',
+            rule.id,
+            ConfirmationTargets.POLICY,
+            ConfirmationButtons.CLOSE);
+      } else {
+        deletionMessage = new ConfirmationMessage(
+            'REPLICATION.DELETION_TITLE',
+            'REPLICATION.DELETION_SUMMARY',
+            rule.name || '',
+            rule.id,
+            ConfirmationTargets.POLICY,
+            ConfirmationButtons.DELETE_CANCEL);
+      }
+      this.deletionConfirmDialog.open(deletionMessage);
+    });
   }
 
 }
