@@ -27,7 +27,6 @@ EMAIL_FROM=$email_from
 EMAIL_IDENTITY=$email_identity
 HARBOR_ADMIN_PASSWORD=$harbor_admin_password
 PROJECT_CREATION_RESTRICTION=$project_creation_restriction
-VERIFY_REMOTE_CERT=$verify_remote_cert
 MAX_JOB_WORKERS=$max_job_workers
 UI_SECRET=$ui_secret
 JOBSERVICE_SECRET=$jobservice_secret
