@@ -139,6 +139,9 @@ ldap_uid = rcp.get("configuration", "ldap_uid")
 ldap_scope = rcp.get("configuration", "ldap_scope")
 ldap_timeout = rcp.get("configuration", "ldap_timeout")
 db_password = rcp.get("configuration", "db_password")
+db_host = rcp.get("configuration", "db_host")
+db_port = rcp.get("configuration", "db_port")
+db_user = rcp.get("configuration", "db_user")
 self_registration = rcp.get("configuration", "self_registration")
 if protocol == "https":
     cert_path = rcp.get("configuration", "ssl_cert")
@@ -210,6 +213,9 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         ldap_scope=ldap_scope,
         ldap_timeout=ldap_timeout,
         db_password=db_password,
+        db_host=db_host,
+        db_port=db_port,
+        db_user=db_user,
         email_host=email_host,
         email_port=email_port,
         email_usr=email_usr,
