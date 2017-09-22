@@ -30,7 +30,6 @@ import {
     Configuration,
     StringValueItem,
     ComplexValueItem,
-    ReplicationConfigComponent,
     SystemSettingsComponent,
     VulnerabilityConfigComponent,
     ClairDBStatus
@@ -59,7 +58,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     testingMailOnGoing: boolean = false;
     testingLDAPOnGoing: boolean = false;
 
-    @ViewChild(ReplicationConfigComponent) replicationConfig: ReplicationConfigComponent;
     @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
     @ViewChild(VulnerabilityConfigComponent) vulnerabilityConfig: VulnerabilityConfigComponent;
     @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
@@ -170,9 +168,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public isValid(): boolean {
-        return this.replicationConfig &&
-            this.replicationConfig.isValid &&
-            this.systemSettingsConfig &&
+        return this.systemSettingsConfig &&
             this.systemSettingsConfig.isValid &&
             this.mailConfig &&
             this.mailConfig.isValid() &&
