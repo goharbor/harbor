@@ -15,6 +15,10 @@ package job
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
@@ -22,9 +26,6 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/jobservice/config"
-	"os"
-	"strconv"
-	"testing"
 )
 
 var repJobID, scanJobID int64
@@ -192,10 +193,7 @@ func clearRepJobData() error {
 	if err := dao.ClearTable(models.RepPolicyTable); err != nil {
 		return err
 	}
-	if err := dao.ClearTable(models.RepTargetTable); err != nil {
-		return err
-	}
-	return nil
+	return dao.ClearTable(models.RepTargetTable)
 }
 
 func prepareScanJobData() error {
@@ -220,8 +218,5 @@ func clearScanJobData() error {
 	if err := dao.ClearTable(models.ScanJobTable); err != nil {
 		return err
 	}
-	if err := dao.ClearTable(models.ScanOverviewTable); err != nil {
-		return err
-	}
-	return nil
+	return dao.ClearTable(models.ScanOverviewTable)
 }

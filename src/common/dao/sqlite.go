@@ -42,11 +42,7 @@ func (s *sqlite) Register(alias ...string) error {
 	if len(alias) != 0 {
 		an = alias[0]
 	}
-	if err := orm.RegisterDataBase(an, "sqlite3", s.file); err != nil {
-		return err
-	}
-
-	return nil
+	return orm.RegisterDataBase(an, "sqlite3", s.file)
 }
 
 // Name returns the name of SQLite

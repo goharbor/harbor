@@ -267,8 +267,5 @@ func deleteRepository(name string) error {
 }
 
 func clearRepositoryData() error {
-	if err := ClearTable(models.RepoTable); err != nil {
-		return err
-	}
-	return nil
+	return ClearTable(models.RepoTable)
 }
