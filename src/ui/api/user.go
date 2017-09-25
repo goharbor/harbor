@@ -357,10 +357,7 @@ func validate(user models.User) error {
 	if isIllegalLength(user.Password, 8, 20) {
 		return fmt.Errorf("password with illegal length")
 	}
-	if err := commonValidate(user); err != nil {
-		return err
-	}
-	return nil
+	return commonValidate(user)
 }
 
 //commonValidate validates email, realname, comment information when user register or change their profile
