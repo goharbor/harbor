@@ -75,6 +75,7 @@ describe('RepositoryComponentStackview (inline template)', () => {
     {
       "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
       "name": "1.11.5",
+      "size": "2049",
       "architecture": "amd64",
       "os": "linux",
       "docker_version": "1.12.3",
