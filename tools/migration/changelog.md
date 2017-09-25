@@ -49,3 +49,7 @@ Changelog for harbor database schema
   - create table `img_scan_job`
   - create table `img_scan_overview`
   - create table `clair_vuln_timestamp`
+
+## 1.3.0
+
+  - add column `insecure` to table `replication_target`

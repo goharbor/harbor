@@ -53,7 +53,6 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.EmailInsecure:              false,
 	common.EmailIdentity:              "",
 	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
-	common.VerifyRemoteCert:           false,
 	common.MaxJobWorkers:              3,
 	common.TokenExpiration:            30,
 	common.CfgExpiration:              5,
