@@ -316,7 +316,7 @@ func TestGetProjectManager(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		pmKey, promgr.NewDefaultProjectManager(driver_local.NewDriver())))
+		pmKey, promgr.NewDefaultProjectManager(driver_local.NewDriver(), true)))
 	pm, err = GetProjectManager(req)
 	assert.Nil(t, err)
 	_, ok := pm.(promgr.ProjectManager)

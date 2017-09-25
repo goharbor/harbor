@@ -138,7 +138,7 @@ func initProjectManager() {
 		log.Info("initializing the project manager based on local database...")
 		driver = local.NewDriver()
 		// TODO move the statement out of the else block when admiral driver is completed
-		GlobalProjectMgr = promgr.NewDefaultProjectManager(driver)
+		GlobalProjectMgr = promgr.NewDefaultProjectManager(driver, true)
 	}
 
 }

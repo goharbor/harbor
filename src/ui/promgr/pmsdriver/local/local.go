@@ -128,8 +128,9 @@ func (d *driver) Delete(projectIDOrName interface{}) error {
 
 // Update ...
 func (d *driver) Update(projectIDOrName interface{},
-	metadata map[string]string) error {
-	return fmt.Errorf("unsupported")
+	project *models.Project) error {
+	// nil implement
+	return nil
 }
 
 // TODO remove base

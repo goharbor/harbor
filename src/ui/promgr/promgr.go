@@ -29,27 +29,30 @@ type ProjectManager interface {
 	Get(projectIDOrName interface{}) (*models.Project, error)
 	Create(*models.Project) (int64, error)
 	Delete(projectIDOrName interface{}) error
-	Update(projectIDOrName interface{}, metadata map[string]string) error
+	Update(projectIDOrName interface{}, project *models.Project) error
 	// TODO remove base
 	List(query *models.ProjectQueryParam,
 		base ...*models.BaseProjectCollection) (*models.ProjectQueryResult, error)
 	IsPublic(projectIDOrName interface{}) (bool, error)
-	Exist(projectIDOrName interface{}) (bool, error)
+	Exists(projectIDOrName interface{}) (bool, error)
 	// get all public project
 	GetPublic() ([]*models.Project, error)
 }
 
 type defaultProjectManager struct {
-	pmsDriver pmsdriver.PMSDriver
-	metaMgr   metamgr.ProjectMetadataManaegr
+	pmsDriver      pmsdriver.PMSDriver
+	metaMgrEnabled bool // if metaMgrEnabled is enabled, metaMgr will be used to CURD metadata
+	metaMgr        metamgr.ProjectMetadataManaegr
 }
 
-// NewDefaultProjectManager returns an instance of defaultProjectManager
-func NewDefaultProjectManager(driver pmsdriver.PMSDriver) ProjectManager {
+// NewDefaultProjectManager returns an instance of defaultProjectManager,
+// if metaMgrEnabled is true, a project metadata manager will be created
+// and used to CURD metadata
+func NewDefaultProjectManager(driver pmsdriver.PMSDriver, metaMgrEnabled bool) ProjectManager {
 	mgr := &defaultProjectManager{
 		pmsDriver: driver,
 	}
-	if driver.EnableExternalMetaMgr() {
+	if metaMgrEnabled {
 		mgr.metaMgr = metamgr.NewDefaultProjectMetadataManager()
 	}
 	return mgr
@@ -61,12 +64,17 @@ func (d *defaultProjectManager) Get(projectIDOrName interface{}) (*models.Projec
 		return nil, err
 	}
 
-	if project != nil && d.pmsDriver.EnableExternalMetaMgr() {
+	if project != nil && d.metaMgrEnabled {
 		meta, err := d.metaMgr.Get(project.ProjectID)
 		if err != nil {
 			return nil, err
 		}
-		project.Metadata = meta
+		if len(project.Metadata) == 0 {
+			project.Metadata = make(map[string]string)
+		}
+		for k, v := range meta {
+			project.Metadata[k] = v
+		}
 	}
 	return project, nil
 }
@@ -75,7 +83,7 @@ func (d *defaultProjectManager) Create(project *models.Project) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	if len(project.Metadata) > 0 && d.pmsDriver.EnableExternalMetaMgr() {
+	if len(project.Metadata) > 0 && d.metaMgrEnabled {
 		if err = d.metaMgr.Add(id, project.Metadata); err != nil {
 			log.Errorf("failed to add metadata for project %s: %v", project.Name, err)
 		}
@@ -91,7 +99,7 @@ func (d *defaultProjectManager) Delete(projectIDOrName interface{}) error {
 	if project == nil {
 		return nil
 	}
-	if project.Metadata != nil && d.pmsDriver.EnableExternalMetaMgr() {
+	if project.Metadata != nil && d.metaMgrEnabled {
 		if err = d.metaMgr.Delete(project.ProjectID); err != nil {
 			return err
 		}
@@ -99,12 +107,8 @@ func (d *defaultProjectManager) Delete(projectIDOrName interface{}) error {
 	return d.pmsDriver.Delete(project.ProjectID)
 }
 
-func (d *defaultProjectManager) Update(projectIDOrName interface{}, metadata map[string]string) error {
-	if len(metadata) == 0 {
-		return nil
-	}
-
-	if d.pmsDriver.EnableExternalMetaMgr() {
+func (d *defaultProjectManager) Update(projectIDOrName interface{}, project *models.Project) error {
+	if len(project.Metadata) > 0 && d.metaMgrEnabled {
 		project, err := d.Get(projectIDOrName)
 		if err != nil {
 			return err
@@ -112,10 +116,12 @@ func (d *defaultProjectManager) Update(projectIDOrName interface{}, metadata map
 		if project == nil {
 			return fmt.Errorf("project %v not found", projectIDOrName)
 		}
-		return d.metaMgr.Update(project.ProjectID, metadata)
+		if err = d.metaMgr.Update(project.ProjectID, project.Metadata); err != nil {
+			return err
+		}
 	}
 
-	return d.pmsDriver.Update(projectIDOrName, metadata)
+	return d.pmsDriver.Update(projectIDOrName, project)
 }
 
 // TODO remove base
@@ -125,7 +131,7 @@ func (d *defaultProjectManager) List(query *models.ProjectQueryParam,
 	if err != nil {
 		return nil, err
 	}
-	if d.pmsDriver.EnableExternalMetaMgr() {
+	if d.metaMgrEnabled {
 		for _, project := range result.Projects {
 			meta, err := d.metaMgr.Get(project.ProjectID)
 			if err != nil {
@@ -148,7 +154,7 @@ func (d *defaultProjectManager) IsPublic(projectIDOrName interface{}) (bool, err
 	return project.Public == 1, nil
 }
 
-func (d *defaultProjectManager) Exist(projectIDOrName interface{}) (bool, error) {
+func (d *defaultProjectManager) Exists(projectIDOrName interface{}) (bool, error) {
 	project, err := d.Get(projectIDOrName)
 	return project != nil, err
 }

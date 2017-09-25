@@ -84,7 +84,7 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
-	exist, err := ra.ProjectMgr.Exist(projectID)
+	exist, err := ra.ProjectMgr.Exists(projectID)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d",
 			projectID), err)
@@ -335,7 +335,7 @@ func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	exist, err := ra.ProjectMgr.Exists(projectName)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			projectName), err)
@@ -478,7 +478,7 @@ func (ra *RepositoryAPI) GetManifests() {
 	}
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	exist, err := ra.ProjectMgr.Exists(projectName)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			projectName), err)
@@ -610,7 +610,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	exist, err := ra.ProjectMgr.Exists(projectName)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			projectName), err)
@@ -651,7 +651,7 @@ func (ra *RepositoryAPI) ScanImage() {
 	repoName := ra.GetString(":splat")
 	tag := ra.GetString(":tag")
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	exist, err := ra.ProjectMgr.Exists(projectName)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			projectName), err)
@@ -794,7 +794,7 @@ func getSignatures(username, repository string) (map[string][]notary.Target, err
 
 func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, error) {
 	project, _ := utils.ParseRepository(repository)
-	exist, err := ra.ProjectMgr.Exist(project)
+	exist, err := ra.ProjectMgr.Exists(project)
 	if err != nil {
 		return false, "", err
 	}

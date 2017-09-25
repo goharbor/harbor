@@ -48,7 +48,7 @@ var (
 		Email:    "guestUser@vmware.com",
 	}
 
-	pm = promgr.NewDefaultProjectManager(local.NewDriver())
+	pm = promgr.NewDefaultProjectManager(local.NewDriver(), true)
 )
 
 func TestMain(m *testing.M) {

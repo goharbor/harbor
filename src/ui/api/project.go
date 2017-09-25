@@ -109,7 +109,7 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
-	exist, err := p.ProjectMgr.Exist(pro.Name)
+	exist, err := p.ProjectMgr.Exists(pro.Name)
 	if err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			pro.Name), err)
@@ -378,8 +378,10 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 	}
 
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
-		map[string]string{
-			models.ProMetaPublic: strconv.Itoa(req.Public),
+		&models.Project{
+			Metadata: map[string]string{
+				models.ProMetaPublic: strconv.Itoa(req.Public),
+			},
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
 			p.project.ProjectID), err)

@@ -361,7 +361,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 
 func projectExists(pm promgr.ProjectManager, repository string) (bool, error) {
 	project, _ := utils.ParseRepository(repository)
-	return pm.Exist(project)
+	return pm.Exists(project)
 }
 
 func initRegistryClient() (r *registry.Registry, err error) {

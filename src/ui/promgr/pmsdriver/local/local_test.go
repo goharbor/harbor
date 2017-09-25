@@ -147,7 +147,7 @@ func TestCreateAndDelete(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	pm := &driver{}
-	assert.NotNil(t, pm.Update(1, nil))
+	assert.Nil(t, pm.Update(1, nil))
 }
 
 func TestList(t *testing.T) {

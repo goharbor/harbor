@@ -27,16 +27,10 @@ type PMSDriver interface {
 	Create(*models.Project) (int64, error)
 	// Delete a project by ID or name
 	Delete(projectIDOrName interface{}) error
-	// Update metadata of a project when the metadatas are managed by the project
-	// management service itself.
-	// If the metadatas are stored in an external metadata manager, which means
-	// function EnableExternalMetaMgr() return true, this function will not be called.
-	Update(projectIDOrName interface{}, metadata map[string]string) error
+	// Update the properties of a project
+	Update(projectIDOrName interface{}, project *models.Project) error
 	// List lists projects according to the query conditions
 	// TODO remove base
 	List(query *models.ProjectQueryParam,
 		base ...*models.BaseProjectCollection) (*models.ProjectQueryResult, error)
-	// EnableExternalMetaMgr : if the driver needs an external metadata manager,returns
-	// true, otherwise return false.
-	EnableExternalMetaMgr() bool
 }

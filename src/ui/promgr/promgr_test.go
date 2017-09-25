@@ -49,7 +49,7 @@ func (f *fakePMSDriver) Delete(projectIDOrName interface{}) error {
 	return nil
 }
 
-func (f *fakePMSDriver) Update(projectIDOrName interface{}, metadata map[string]string) error {
+func (f *fakePMSDriver) Update(projectIDOrName interface{}, project *models.Project) error {
 	return nil
 }
 
@@ -60,12 +60,9 @@ func (f *fakePMSDriver) List(query *models.ProjectQueryParam,
 		Projects: []*models.Project{f.project},
 	}, nil
 }
-func (f *fakePMSDriver) EnableExternalMetaMgr() bool {
-	return false
-}
 
 var (
-	proMgr = NewDefaultProjectManager(newFakePMSDriver())
+	proMgr = NewDefaultProjectManager(newFakePMSDriver(), false)
 )
 
 func TestGet(t *testing.T) {
@@ -88,9 +85,12 @@ func TestDelete(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	assert.Nil(t, proMgr.Update(1, map[string]string{
-		models.ProMetaPublic: "true",
-	}))
+	assert.Nil(t, proMgr.Update(1,
+		&models.Project{
+			Metadata: map[string]string{
+				models.ProMetaPublic: "true",
+			},
+		}))
 }
 
 func TestList(t *testing.T) {
@@ -107,7 +107,7 @@ func TestIsPublic(t *testing.T) {
 }
 
 func TestExist(t *testing.T) {
-	exist, err := proMgr.Exist(1)
+	exist, err := proMgr.Exists(1)
 	require.Nil(t, err)
 	assert.True(t, exist)
 }

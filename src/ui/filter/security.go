@@ -272,7 +272,7 @@ func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 			})
 	*/
 	// TODO create the DefaultProjectManager with the real admiral PMSDriver
-	pm := promgr.NewDefaultProjectManager(nil)
+	pm := promgr.NewDefaultProjectManager(nil, false)
 
 	log.Debug("creating admiral security context...")
 	securCtx := admr.NewSecurityContext(authContext, pm)
@@ -297,7 +297,7 @@ func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 				config.AdmiralEndpoint(), nil)
 		*/
 		// TODO create the DefaultProjectManager with the real admiral PMSDriver
-		pm = promgr.NewDefaultProjectManager(nil)
+		pm = promgr.NewDefaultProjectManager(nil, false)
 		log.Debug("creating admiral security context...")
 		securCtx = admr.NewSecurityContext(nil, pm)
 	} else {
