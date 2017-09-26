@@ -50,7 +50,8 @@ type defaultProjectManager struct {
 // and used to CURD metadata
 func NewDefaultProjectManager(driver pmsdriver.PMSDriver, metaMgrEnabled bool) ProjectManager {
 	mgr := &defaultProjectManager{
-		pmsDriver: driver,
+		pmsDriver:      driver,
+		metaMgrEnabled: metaMgrEnabled,
 	}
 	if metaMgrEnabled {
 		mgr.metaMgr = metamgr.NewDefaultProjectMetadataManager()
@@ -70,7 +71,7 @@ func (d *defaultProjectManager) Get(projectIDOrName interface{}) (*models.Projec
 			return nil, err
 		}
 		if len(project.Metadata) == 0 {
-			project.Metadata = make(map[string]string)
+			project.Metadata = make(map[string]interface{})
 		}
 		for k, v := range meta {
 			project.Metadata[k] = v
@@ -109,14 +110,14 @@ func (d *defaultProjectManager) Delete(projectIDOrName interface{}) error {
 
 func (d *defaultProjectManager) Update(projectIDOrName interface{}, project *models.Project) error {
 	if len(project.Metadata) > 0 && d.metaMgrEnabled {
-		project, err := d.Get(projectIDOrName)
+		pro, err := d.Get(projectIDOrName)
 		if err != nil {
 			return err
 		}
-		if project == nil {
+		if pro == nil {
 			return fmt.Errorf("project %v not found", projectIDOrName)
 		}
-		if err = d.metaMgr.Update(project.ProjectID, project.Metadata); err != nil {
+		if err = d.metaMgr.Update(pro.ProjectID, project.Metadata); err != nil {
 			return err
 		}
 	}

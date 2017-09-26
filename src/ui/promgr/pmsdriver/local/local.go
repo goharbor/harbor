@@ -24,21 +24,17 @@ import (
 	"github.com/vmware/harbor/src/common/utils"
 	errutil "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/promgr/metamgr"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 )
 
 const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
 type driver struct {
-	metaMgr metamgr.ProjectMetadataManaegr
 }
 
 // NewDriver returns an instance of driver
 func NewDriver() pmsdriver.PMSDriver {
-	return &driver{
-		metaMgr: metamgr.NewDefaultProjectMetadataManager(),
-	}
+	return &driver{}
 }
 
 // Get ...
