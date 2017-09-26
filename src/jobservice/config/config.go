@@ -74,15 +74,6 @@ func initKeyProvider() {
 	keyProvider = comcfg.NewFileKeyProvider(path)
 }
 
-// VerifyRemoteCert returns bool value.
-func VerifyRemoteCert() (bool, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return true, err
-	}
-	return cfg[common.VerifyRemoteCert].(bool), nil
-}
-
 // Database ...
 func Database() (*models.Database, error) {
 	cfg, err := mg.Get()
