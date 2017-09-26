@@ -30,7 +30,7 @@ export const TAG_TEMPLATE = `
         <button class="action-item" *ngIf="hasProjectAdminRole" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
         <button class="action-item" (click)="showDigestId(t)">{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
       </clr-dg-action-overflow>
-      <clr-dg-cell style="width: 80px;" [ngSwitch]="withClair">
+      <clr-dg-cell style="width: 80px;" [ngSwitch]="existObservablePackage(t)">
         <a *ngSwitchCase="true" href="javascript:void(0)" (click)="onTagClick(t)">{{t.name}}</a>
         <span *ngSwitchDefault>{{t.name}}</span>
       </clr-dg-cell>

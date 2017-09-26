@@ -253,13 +253,20 @@ export class TagComponent implements OnInit {
     }
   }
 
-  //Get vulnerability scanning status 
+  //Get vulnerability scanning status
   scanStatus(t: Tag): string {
     if (t && t.scan_overview && t.scan_overview.scan_status) {
       return t.scan_overview.scan_status;
     }
 
     return VULNERABILITY_SCAN_STATUS.unknown;
+  }
+
+  existObservablePackage(t: Tag): boolean {
+    return t.scan_overview &&
+      t.scan_overview.components &&
+      t.scan_overview.components.total &&
+      t.scan_overview.components.total > 0 ? true : false;
   }
 
   //Whether show the 'scan now' menu
