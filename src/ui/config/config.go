@@ -15,7 +15,7 @@
 package config
 
 import (
-	"crypto/tls"
+	//"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -30,6 +30,7 @@ import (
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/promgr"
+	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/local"
 )
@@ -46,7 +47,7 @@ var (
 	// AdminserverClient is a client for adminserver
 	AdminserverClient client.Client
 	// GlobalProjectMgr is initialized based on the deploy mode
-	GlobalProjectMgr promgr.ProMgr
+	GlobalProjectMgr promgr.ProjectManager
 	mg               *comcfg.Manager
 	keyProvider      comcfg.KeyProvider
 	// AdmiralClient is initialized only under integration deploy mode
@@ -105,34 +106,41 @@ func initSecretStore() {
 }
 
 func initProjectManager() {
-	if !WithAdmiral() {
+	var driver pmsdriver.PMSDriver
+	if WithAdmiral() {
+		// TODO add support for admiral
+		/*
+			// integration with admiral
+			log.Info("initializing the project manager based on PMS...")
+			// TODO read ca/cert file and pass it to the TLS config
+			AdmiralClient = &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{
+						InsecureSkipVerify: true,
+					},
+				},
+			}
+
+			path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
+			if len(path) == 0 {
+				path = defaultTokenFilePath
+			}
+			log.Infof("service token file path: %s", path)
+			TokenReader = &admiral.FileTokenReader{
+				Path: path,
+			}
+			GlobalProjectMgr = admiral.NewProjectManager(AdmiralClient,
+			AdmiralEndpoint(), TokenReader)
+		*/
+		GlobalProjectMgr = nil
+	} else {
 		// standalone
-		log.Info("initializing the project manager based on database...")
-		GlobalProjectMgr = &local.ProjectManager{}
-		return
+		log.Info("initializing the project manager based on local database...")
+		driver = local.NewDriver()
+		// TODO move the statement out of the else block when admiral driver is completed
+		GlobalProjectMgr = promgr.NewDefaultProjectManager(driver, true)
 	}
 
-	// integration with admiral
-	log.Info("initializing the project manager based on PMS...")
-	// TODO read ca/cert file and pass it to the TLS config
-	AdmiralClient = &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-	}
-
-	path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
-	if len(path) == 0 {
-		path = defaultTokenFilePath
-	}
-	log.Infof("service token file path: %s", path)
-	TokenReader = &admiral.FileTokenReader{
-		Path: path,
-	}
-	GlobalProjectMgr = admiral.NewProjectManager(AdmiralClient,
-		AdmiralEndpoint(), TokenReader)
 }
 
 // Load configurations
@@ -379,6 +387,7 @@ func AdmiralEndpoint() string {
 		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint, error: %v", err)
 		return ""
 	}
+
 	if e, ok := cfg[common.AdmiralEndpoint].(string); !ok || e == "NA" {
 		return ""
 	}

@@ -71,7 +71,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestGet(t *testing.T) {
-	pm := &ProjectManager{}
+	pm := &driver{}
 
 	// project name
 	project, err := pm.Get("library")
@@ -95,45 +95,8 @@ func TestGet(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestExist(t *testing.T) {
-	pm := &ProjectManager{}
-
-	// exist project
-	exist, err := pm.Exist("library")
-	assert.Nil(t, err)
-	assert.True(t, exist)
-
-	// non-exist project
-	exist, err = pm.Exist("non-exist-project")
-	assert.Nil(t, err)
-	assert.False(t, exist)
-}
-
-func TestIsPublic(t *testing.T) {
-	pms := &ProjectManager{}
-	// public project
-	public, err := pms.IsPublic("library")
-	assert.Nil(t, err)
-	assert.True(t, public)
-	// non exist project
-	public, err = pms.IsPublic("non_exist_project")
-	assert.Nil(t, err)
-	assert.False(t, public)
-}
-
-func TestGetPublic(t *testing.T) {
-	pm := &ProjectManager{}
-	projects, err := pm.GetPublic()
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, len(projects))
-
-	for _, project := range projects {
-		assert.Equal(t, 1, project.Public)
-	}
-}
-
 func TestCreateAndDelete(t *testing.T) {
-	pm := &ProjectManager{}
+	pm := &driver{}
 
 	// nil project
 	_, err := pm.Create(nil)
@@ -183,63 +146,12 @@ func TestCreateAndDelete(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	pm := &ProjectManager{}
-
-	id, err := pm.Create(&models.Project{
-		Name:    "test",
-		OwnerID: 1,
-	})
-	assert.Nil(t, err)
-	defer pm.Delete(id)
-
-	project, err := pm.Get(id)
-	assert.Nil(t, err)
-	assert.Equal(t, 0, project.Public)
-
-	project.Public = 1
-	assert.Nil(t, pm.Update(id, project))
-
-	project, err = pm.Get(id)
-	assert.Nil(t, err)
-	assert.Equal(t, 1, project.Public)
+	pm := &driver{}
+	assert.Nil(t, pm.Update(1, nil))
 }
 
-func TestGetTotal(t *testing.T) {
-	pm := &ProjectManager{}
-
-	id, err := pm.Create(&models.Project{
-		Name:    "get_total_test",
-		OwnerID: 1,
-		Public:  1,
-	})
-	assert.Nil(t, err)
-	defer pm.Delete(id)
-
-	// get by name
-	total, err := pm.GetTotal(&models.ProjectQueryParam{
-		Name: "get_total_test",
-	})
-	assert.Nil(t, err)
-	assert.Equal(t, int64(1), total)
-
-	// get by owner
-	total, err = pm.GetTotal(&models.ProjectQueryParam{
-		Owner: "admin",
-	})
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, total)
-
-	// get by public
-	value := true
-	total, err = pm.GetTotal(&models.ProjectQueryParam{
-		Public: &value,
-	})
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, total)
-}
-
-func TestGetAll(t *testing.T) {
-	pm := &ProjectManager{}
+func TestList(t *testing.T) {
+	pm := &driver{}
 
 	id, err := pm.Create(&models.Project{
 		Name:    "get_all_test",
@@ -250,19 +162,19 @@ func TestGetAll(t *testing.T) {
 	defer pm.Delete(id)
 
 	// get by name
-	projects, err := pm.GetAll(&models.ProjectQueryParam{
+	result, err := pm.List(&models.ProjectQueryParam{
 		Name: "get_all_test",
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, id, projects[0].ProjectID)
+	assert.Equal(t, id, result.Projects[0].ProjectID)
 
 	// get by owner
-	projects, err = pm.GetAll(&models.ProjectQueryParam{
+	result, err = pm.List(&models.ProjectQueryParam{
 		Owner: "admin",
 	})
 	assert.Nil(t, err)
 	exist := false
-	for _, project := range projects {
+	for _, project := range result.Projects {
 		if project.ProjectID == id {
 			exist = true
 			break
@@ -272,12 +184,12 @@ func TestGetAll(t *testing.T) {
 
 	// get by public
 	value := true
-	projects, err = pm.GetAll(&models.ProjectQueryParam{
+	result, err = pm.List(&models.ProjectQueryParam{
 		Public: &value,
 	})
 	assert.Nil(t, err)
 	exist = false
-	for _, project := range projects {
+	for _, project := range result.Projects {
 		if project.ProjectID == id {
 			exist = true
 			break

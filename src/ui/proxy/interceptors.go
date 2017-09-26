@@ -88,7 +88,7 @@ func (ec envPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity)
 }
 
 type pmsPolicyChecker struct {
-	pm promgr.ProMgr
+	pm promgr.ProjectManager
 }
 
 func (pc pmsPolicyChecker) contentTrustEnabled(name string) bool {
@@ -109,7 +109,7 @@ func (pc pmsPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity)
 }
 
 // newPMSPolicyChecker returns an instance of an pmsPolicyChecker
-func newPMSPolicyChecker(pm promgr.ProMgr) policyChecker {
+func newPMSPolicyChecker(pm promgr.ProjectManager) policyChecker {
 	return &pmsPolicyChecker{
 		pm: pm,
 	}

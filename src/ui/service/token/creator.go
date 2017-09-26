@@ -127,13 +127,13 @@ func parseImg(s string) (*image, error) {
 
 // An accessFilter will filter access based on userinfo
 type accessFilter interface {
-	filter(ctx security.Context, pm promgr.ProMgr, a *token.ResourceActions) error
+	filter(ctx security.Context, pm promgr.ProjectManager, a *token.ResourceActions) error
 }
 
 type registryFilter struct {
 }
 
-func (reg registryFilter) filter(ctx security.Context, pm promgr.ProMgr,
+func (reg registryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
 	a *token.ResourceActions) error {
 	//Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {
@@ -151,7 +151,7 @@ type repositoryFilter struct {
 	parser imageParser
 }
 
-func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProMgr,
+func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
 	a *token.ResourceActions) error {
 	//clear action list to assign to new acess element after perm check.
 	img, err := rep.parser.parse(a.Name)
@@ -161,7 +161,7 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProMgr,
 	project := img.namespace
 	permission := ""
 
-	exist, err := pm.Exist(project)
+	exist, err := pm.Exists(project)
 	if err != nil {
 		return err
 	}

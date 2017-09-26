@@ -31,7 +31,7 @@ type BaseController struct {
 	SecurityCtx security.Context
 	// ProjectMgr is the project manager which abstracts the operations
 	// related to projects
-	ProjectMgr promgr.ProMgr
+	ProjectMgr promgr.ProjectManager
 }
 
 const (

@@ -109,7 +109,7 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
-	exist, err := p.ProjectMgr.Exist(pro.Name)
+	exist, err := p.ProjectMgr.Exists(pro.Name)
 	if err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			pro.Name), err)
@@ -325,19 +325,13 @@ func (p *ProjectAPI) List() {
 		}
 	}
 
-	total, err := p.ProjectMgr.GetTotal(query, base)
+	result, err := p.ProjectMgr.List(query, base)
 	if err != nil {
-		p.ParseAndHandleError("failed to get total of projects", err)
+		p.ParseAndHandleError("failed to list projects", err)
 		return
 	}
 
-	projects, err := p.ProjectMgr.GetAll(query, base)
-	if err != nil {
-		p.ParseAndHandleError("failed to get projects", err)
-		return
-	}
-
-	for _, project := range projects {
+	for _, project := range result.Projects {
 		if p.SecurityCtx.IsAuthenticated() {
 			roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
 			if len(roles) != 0 {
@@ -359,8 +353,8 @@ func (p *ProjectAPI) List() {
 		project.RepoCount = len(repos)
 	}
 
-	p.SetPaginationHeader(total, page, size)
-	p.Data["json"] = projects
+	p.SetPaginationHeader(result.Total, page, size)
+	p.Data["json"] = result.Projects
 	p.ServeJSON()
 }
 
@@ -385,7 +379,9 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
-			Public: req.Public,
+			Metadata: map[string]interface{}{
+				models.ProMetaPublic: req.Public,
+			},
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
 			p.project.ProjectID), err)

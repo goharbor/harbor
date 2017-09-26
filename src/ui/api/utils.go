@@ -166,7 +166,7 @@ func postReplicationAction(policyID int64, acton string) error {
 }
 
 // SyncRegistry syncs the repositories of registry with database.
-func SyncRegistry(pm promgr.ProMgr) error {
+func SyncRegistry(pm promgr.ProjectManager) error {
 
 	log.Infof("Start syncing repositories from registry to DB... ")
 
@@ -254,7 +254,7 @@ func catalog() ([]string, error) {
 }
 
 func diffRepos(reposInRegistry []string, reposInDB []string,
-	pm promgr.ProMgr) ([]string, []string, error) {
+	pm promgr.ProjectManager) ([]string, []string, error) {
 	var needsAdd []string
 	var needsDel []string
 
@@ -359,9 +359,9 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 	return needsAdd, needsDel, nil
 }
 
-func projectExists(pm promgr.ProMgr, repository string) (bool, error) {
+func projectExists(pm promgr.ProjectManager, repository string) (bool, error) {
 	project, _ := utils.ParseRepository(repository)
-	return pm.Exist(project)
+	return pm.Exists(project)
 }
 
 func initRegistryClient() (r *registry.Registry, err error) {

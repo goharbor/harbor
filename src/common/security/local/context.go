@@ -25,11 +25,11 @@ import (
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
 	user *models.User
-	pm   promgr.ProMgr
+	pm   promgr.ProjectManager
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(user *models.User, pm promgr.ProMgr) *SecurityContext {
+func NewSecurityContext(user *models.User, pm promgr.ProjectManager) *SecurityContext {
 	return &SecurityContext{
 		user: user,
 		pm:   pm,

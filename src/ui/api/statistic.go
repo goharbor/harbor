@@ -77,15 +77,15 @@ func (s *StatisticAPI) Get() {
 	statistic[PubRC] = n
 
 	if s.SecurityCtx.IsSysAdmin() {
-		n, err := s.ProjectMgr.GetTotal(nil)
+		result, err := s.ProjectMgr.List(nil)
 		if err != nil {
 			log.Errorf("failed to get total of projects: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")
 		}
-		statistic[TPC] = n
-		statistic[PriPC] = n - statistic[PubPC]
+		statistic[TPC] = result.Total
+		statistic[PriPC] = result.Total - statistic[PubPC]
 
-		n, err = dao.GetTotalOfRepositories("")
+		n, err := dao.GetTotalOfRepositories("")
 		if err != nil {
 			log.Errorf("failed to get total of repositories: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")
@@ -94,7 +94,7 @@ func (s *StatisticAPI) Get() {
 		statistic[PriRC] = n - statistic[PubRC]
 	} else {
 		value := false
-		projects, err := s.ProjectMgr.GetAll(&models.ProjectQueryParam{
+		result, err := s.ProjectMgr.List(&models.ProjectQueryParam{
 			Public: &value,
 			Member: &models.MemberQuery{
 				Name: s.username,
@@ -106,10 +106,10 @@ func (s *StatisticAPI) Get() {
 			return
 		}
 
-		statistic[PriPC] = (int64)(len(projects))
+		statistic[PriPC] = result.Total
 
 		ids := []int64{}
-		for _, p := range projects {
+		for _, p := range result.Projects {
 			ids = append(ids, p.ProjectID)
 		}
 

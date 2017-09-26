@@ -48,11 +48,12 @@ func (s *SearchAPI) Get() {
 	var err error
 
 	if isSysAdmin {
-		projects, err = s.ProjectMgr.GetAll(nil)
+		result, err := s.ProjectMgr.List(nil)
 		if err != nil {
 			s.ParseAndHandleError("failed to get projects", err)
 			return
 		}
+		projects = result.Projects
 	} else {
 		projects, err = s.ProjectMgr.GetPublic()
 		if err != nil {
