@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pms
+package admiral
 
 import (
 	"net/http"
@@ -196,7 +196,7 @@ func TestGet(t *testing.T) {
 
 	// get by invalid ID
 	project, err := pm.Get(int64(0))
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 	assert.Nil(t, project)
 
 	// get by invalid name

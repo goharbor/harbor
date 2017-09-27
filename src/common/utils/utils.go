@@ -159,19 +159,10 @@ func ParseProjectIDOrName(value interface{}) (int64, string, error) {
 	case int:
 		i := value.(int)
 		id = int64(i)
-		if id == 0 {
-			return 0, "", fmt.Errorf("invalid ID: 0")
-		}
 	case int64:
 		id = value.(int64)
-		if id == 0 {
-			return 0, "", fmt.Errorf("invalid ID: 0")
-		}
 	case string:
 		name = value.(string)
-		if len(name) == 0 {
-			return 0, "", fmt.Errorf("empty name")
-		}
 	default:
 		return 0, "", fmt.Errorf("unsupported type")
 	}

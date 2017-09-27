@@ -6,16 +6,22 @@
             <section class="form-block">
                 <div class="form-group">
                     <label for="member_name" class="col-md-4 form-group-label-override required">{{'MEMBER.NAME' | translate}}</label>
-                    <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="!isMemberNameValid" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left">
-            <input type="text" id="member_name"  [(ngModel)]="member.username" 
-            name="member_name" 
+                    <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="!isMemberNameValid"
+                           class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"  (mouseleave)="leaveInput()">
+            <input type="text" id="member_name"  [(ngModel)]="member.username"
+            name="member_name"
             size="20" 
             #memberName="ngModel" 
             required 
-            (keyup)='handleValidation()'>
+            (keyup)='handleValidation()' autocomplete="off">
             <span class="tooltip-content">
               {{ memberTooltip | translate }}
             </span>
+            <div class="selectBox"  [style.display]="selectUserName.length ? 'block' : 'none'" >
+                <ul>
+                    <li *ngFor="let name of selectUserName" (click)="selectedName(name)">{{name}}</li>
+                </ul>
+            </div>
           </label>
                     <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                 </div>

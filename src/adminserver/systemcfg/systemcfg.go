@@ -91,6 +91,10 @@ var (
 			env:   "EMAIL_SSL",
 			parse: parseStringToBool,
 		},
+		common.EmailInsecure: &parser{
+			env:   "EMAIL_INSECURE",
+			parse: parseStringToBool,
+		},
 		common.EmailFrom:     "EMAIL_FROM",
 		common.EmailIdentity: "EMAIL_IDENTITY",
 		common.RegistryURL:   "REGISTRY_URL",

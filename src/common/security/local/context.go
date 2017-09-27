@@ -19,17 +19,17 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/promgr"
 )
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
 	user *models.User
-	pm   projectmanager.ProjectManager
+	pm   promgr.ProjectManager
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(user *models.User, pm projectmanager.ProjectManager) *SecurityContext {
+func NewSecurityContext(user *models.User, pm promgr.ProjectManager) *SecurityContext {
 	return &SecurityContext{
 		user: user,
 		pm:   pm,

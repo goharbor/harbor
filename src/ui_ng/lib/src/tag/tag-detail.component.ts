@@ -24,6 +24,7 @@ export class TagDetailComponent implements OnInit {
     @Input() repositoryId: string;
     tagDetails: Tag = {
         name: "--",
+        size: "--",
         author: "--",
         created: new Date(),
         architecture: "--",

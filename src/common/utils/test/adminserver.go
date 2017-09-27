@@ -50,6 +50,7 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.EmailPassword:              "password",
 	common.EmailFrom:                  "from",
 	common.EmailSSL:                   true,
+	common.EmailInsecure:              false,
 	common.EmailIdentity:              "",
 	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
 	common.VerifyRemoteCert:           false,

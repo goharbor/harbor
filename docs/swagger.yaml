@@ -2586,6 +2586,9 @@ definitions:
       name:
         type: string
         description: The name of the tag.
+      size:
+        type: integer
+        description: The size of the image.
       architecture:
         type: string
         description: The architecture of the image.
@@ -2727,6 +2730,9 @@ definitions:
       email_ssl:
         type: boolean
         description: When it's set to true the system will access Email server via TLS by default.  If it's set to false, it still will handle "STARTTLS" from server side.
+      email_insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the email server.
       ldap_url:
         type: string
         description: The URL of LDAP server.

@@ -113,11 +113,11 @@ spec:
               configMapKeyRef: 
                name: harbor-ui-config
                key: UI_SECRET
-          - name: SECRET_KEY
+          - name: JOBSERVICE_SECRET
             valueFrom: 
               configMapKeyRef: 
                name: harbor-ui-config
-               key: SECRET_KEY
+               key: JOBSERVICE_SECRET
           - name: GODEBUG
             valueFrom: 
               configMapKeyRef: 
