@@ -45,12 +45,12 @@ Update User Comment
     Sleep  2
 
 Logout Harbor
-		Wait Until Element Is Visible  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-		Wait Until Element Is Enabled  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
+    Wait Until Element Is Visible  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
+    Wait Until Element Is Enabled  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
     Sleep  2
     Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//a[4]
-	Sleep  1
-	Capture Page Screenshot  Logout.png
-	Sleep  2
+    Sleep  1
+    Capture Page Screenshot  Logout.png
+    Sleep  2
     Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//sign-in//form//*[@class="title"]

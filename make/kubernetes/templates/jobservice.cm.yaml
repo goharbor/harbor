@@ -8,7 +8,7 @@ data:
   MYSQL_USR: root
   MYSQL_PWD: "{{db_password}}"
   UI_SECRET: "{{ui_secret}}"
-  SECRET_KEY: "{{secret_key}}"
+  JOBSERVICE_SECRET: "{{jobservice_secret}}"
   CONFIG_PATH: /etc/jobservice/app.conf
   REGISTRY_URL: http://registry:5000
   VERIFY_REMOTE_CERT: "{{verify_remote_cert}}"

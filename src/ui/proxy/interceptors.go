@@ -9,7 +9,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/promgr"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
 
 	"context"
@@ -88,7 +88,7 @@ func (ec envPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity)
 }
 
 type pmsPolicyChecker struct {
-	pm projectmanager.ProjectManager
+	pm promgr.ProjectManager
 }
 
 func (pc pmsPolicyChecker) contentTrustEnabled(name string) bool {
@@ -109,7 +109,7 @@ func (pc pmsPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity)
 }
 
 // newPMSPolicyChecker returns an instance of an pmsPolicyChecker
-func newPMSPolicyChecker(pm projectmanager.ProjectManager) policyChecker {
+func newPMSPolicyChecker(pm promgr.ProjectManager) policyChecker {
 	return &pmsPolicyChecker{
 		pm: pm,
 	}

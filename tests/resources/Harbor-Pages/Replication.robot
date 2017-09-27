@@ -21,23 +21,23 @@ ${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Create An New Rule With New Endpoint
-	[Arguments]  ${policy_name}  ${policy_description}  ${destination_name}  ${destination_url}  ${destination_username}  ${destination_password}
+    [Arguments]  ${policy_name}  ${policy_description}  ${destination_name}  ${destination_url}  ${destination_username}  ${destination_password}
     Click element  xpath=${new_name_xpath}
     Sleep  2
     	
-	Input Text  xpath=${policy_name_xpath}  ${policy_name}
+    Input Text  xpath=${policy_name_xpath}  ${policy_name}
     Input Text  xpath=${policy_description_xpath}   ${policy_description}
-	
+
     Click element  xpath=${policy_enable_checkbox}
     Click element  xpath=${policy_endpoint_checkbox}
-	
+
     Input text  xpath=${destination_name_xpath}  ${destination_name}
     Input text  xpath=${destination_url_xpath}  ${destination_url}
     Input text  xpath=${destination_username_xpath}  ${destination_username}
     Input text  xpath=${destination_password_xpath}  ${destination_password}
     Click element  xpath=${replicaton_save_xpath}
     Sleep  5
-	Capture Page Screenshot  rule_${policy_name}.png
-	Wait Until Page Contains  ${policy_name}
-	Wait Until Page Contains  ${policy_description}
-	Wait Until Page Contains  ${destination_name}
+    Capture Page Screenshot  rule_${policy_name}.png
+    Wait Until Page Contains  ${policy_name}
+    Wait Until Page Contains  ${policy_description}
+    Wait Until Page Contains  ${destination_name}

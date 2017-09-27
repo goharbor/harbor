@@ -54,9 +54,10 @@ type repoResp struct {
 	UpdateTime   time.Time `json:"update_time"`
 }
 
-type tag struct {
+type tagDetail struct {
 	Digest        string    `json:"digest"`
 	Name          string    `json:"name"`
+	Size          int64     `json:"size"`
 	Architecture  string    `json:"architecture"`
 	OS            string    `json:"os"`
 	DockerVersion string    `json:"docker_version"`
@@ -65,7 +66,7 @@ type tag struct {
 }
 
 type tagResp struct {
-	tag
+	tagDetail
 	Signature    *notary.Target          `json:"signature"`
 	ScanOverview *models.ImgScanOverview `json:"scan_overview,omitempty"`
 }
@@ -83,7 +84,7 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
-	exist, err := ra.ProjectMgr.Exist(projectID)
+	exist, err := ra.ProjectMgr.Exists(projectID)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d",
 			projectID), err)
@@ -334,7 +335,7 @@ func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	exist, err := ra.ProjectMgr.Exists(projectName)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			projectName), err)
@@ -390,17 +391,13 @@ func assemble(client *registry.Repository, repository string,
 	for _, t := range tags {
 		item := &tagResp{}
 
-		// tag configuration
-		digest, _, cfg, err := getV2Manifest(client, t)
+		// the detail information of tag
+		tagDetail, err := getTagDetail(client, t)
 		if err != nil {
-			cfg = &tag{
-				Digest: digest,
-				Name:   t,
-			}
 			log.Errorf("failed to get v2 manifest of %s:%s: %v", repository, t, err)
 		}
-		if cfg != nil {
-			item.tag = *cfg
+		if tagDetail != nil {
+			item.tagDetail = *tagDetail
 		}
 
 		// scan overview
@@ -425,40 +422,45 @@ func assemble(client *registry.Repository, repository string,
 	return result
 }
 
-// get v2 manifest of tag, returns digest, manifest,
-// manifest config and error. The manifest config contains
-// architecture, os, author, etc.
-func getV2Manifest(client *registry.Repository, tagName string) (
-	string, *schema2.DeserializedManifest, *tag, error) {
-	digest, _, payload, err := client.PullManifest(tagName, []string{schema2.MediaTypeManifest})
-	if err != nil {
-		return "", nil, nil, err
+// getTagDetail returns the detail information for v2 manifest image
+// The information contains architecture, os, author, size, etc.
+func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
+	detail := &tagDetail{
+		Name: tag,
 	}
+
+	digest, _, payload, err := client.PullManifest(tag, []string{schema2.MediaTypeManifest})
+	if err != nil {
+		return detail, err
+	}
+	detail.Digest = digest
 
 	manifest := &schema2.DeserializedManifest{}
 	if err = manifest.UnmarshalJSON(payload); err != nil {
-		return digest, nil, nil, err
+		return detail, err
+	}
+
+	// size of manifest + size of layers
+	detail.Size = int64(len(payload))
+	for _, ref := range manifest.References() {
+		detail.Size += ref.Size
 	}
 
 	_, reader, err := client.PullBlob(manifest.Target().Digest.String())
 	if err != nil {
-		return digest, manifest, nil, err
+		return detail, err
 	}
 
 	configData, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return digest, manifest, nil, err
+		return detail, err
 	}
 
-	config := &tag{}
-	if err = json.Unmarshal(configData, config); err != nil {
-		return digest, manifest, nil, err
+	if err = json.Unmarshal(configData, detail); err != nil {
+		return detail, err
 	}
 
-	config.Name = tagName
-	config.Digest = digest
-
-	return digest, manifest, config, nil
+	return detail, nil
 }
 
 // GetManifests returns the manifest of a tag
@@ -476,7 +478,7 @@ func (ra *RepositoryAPI) GetManifests() {
 	}
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	exist, err := ra.ProjectMgr.Exists(projectName)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			projectName), err)
@@ -608,7 +610,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 	repoName := ra.GetString(":splat")
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	exist, err := ra.ProjectMgr.Exists(projectName)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			projectName), err)
@@ -649,7 +651,7 @@ func (ra *RepositoryAPI) ScanImage() {
 	repoName := ra.GetString(":splat")
 	tag := ra.GetString(":tag")
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exist(projectName)
+	exist, err := ra.ProjectMgr.Exists(projectName)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
 			projectName), err)
@@ -792,7 +794,7 @@ func getSignatures(username, repository string) (map[string][]notary.Target, err
 
 func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, error) {
 	project, _ := utils.ParseRepository(repository)
-	exist, err := ra.ProjectMgr.Exist(project)
+	exist, err := ra.ProjectMgr.Exists(project)
 	if err != nil {
 		return false, "", err
 	}

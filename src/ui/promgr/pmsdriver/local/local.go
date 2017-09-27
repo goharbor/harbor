@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package db
+package local
 
 import (
 	"fmt"
@@ -21,61 +21,39 @@ import (
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 	errutil "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 )
 
 const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
 
-// ProjectManager implements pm.PM interface based on database
-type ProjectManager struct{}
+type driver struct {
+}
+
+// NewDriver returns an instance of driver
+func NewDriver() pmsdriver.PMSDriver {
+	return &driver{}
+}
 
 // Get ...
-func (p *ProjectManager) Get(projectIDOrName interface{}) (
+func (d *driver) Get(projectIDOrName interface{}) (
 	*models.Project, error) {
-	switch projectIDOrName.(type) {
-	case string:
-		return dao.GetProjectByName(projectIDOrName.(string))
-	case int64:
-		return dao.GetProjectByID(projectIDOrName.(int64))
-	default:
-		return nil, fmt.Errorf("unsupported type of %v, must be string or int64", projectIDOrName)
-	}
-}
-
-// Exist ...
-func (p *ProjectManager) Exist(projectIDOrName interface{}) (bool, error) {
-	project, err := p.Get(projectIDOrName)
+	id, name, err := utils.ParseProjectIDOrName(projectIDOrName)
 	if err != nil {
-		return false, err
-	}
-	return project != nil, nil
-}
-
-// IsPublic returns whether the project is public or not
-func (p *ProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
-	project, err := p.Get(projectIDOrName)
-	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	if project == nil {
-		return false, nil
+	if id > 0 {
+		return dao.GetProjectByID(id)
 	}
 
-	return project.Public == 1, nil
-}
-
-// GetPublic returns all public projects
-func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
-	t := true
-	return p.GetAll(&models.ProjectQueryParam{
-		Public: &t,
-	})
+	return dao.GetProjectByName(name)
 }
 
 // Create ...
-func (p *ProjectManager) Create(project *models.Project) (int64, error) {
+func (d *driver) Create(project *models.Project) (int64, error) {
 	if project == nil {
 		return 0, fmt.Errorf("project is nil")
 	}
@@ -128,10 +106,13 @@ func (p *ProjectManager) Create(project *models.Project) (int64, error) {
 }
 
 // Delete ...
-func (p *ProjectManager) Delete(projectIDOrName interface{}) error {
-	id, ok := projectIDOrName.(int64)
-	if !ok {
-		project, err := p.Get(projectIDOrName)
+func (d *driver) Delete(projectIDOrName interface{}) error {
+	id, name, err := utils.ParseProjectIDOrName(projectIDOrName)
+	if err != nil {
+		return err
+	}
+	if len(name) > 0 {
+		project, err := dao.GetProjectByName(name)
 		if err != nil {
 			return err
 		}
@@ -142,27 +123,31 @@ func (p *ProjectManager) Delete(projectIDOrName interface{}) error {
 }
 
 // Update ...
-func (p *ProjectManager) Update(projectIDOrName interface{},
+func (d *driver) Update(projectIDOrName interface{},
 	project *models.Project) error {
-	id, ok := projectIDOrName.(int64)
-	if !ok {
-		pro, err := p.Get(projectIDOrName)
-		if err != nil {
-			return err
-		}
-		id = pro.ProjectID
+	// nil implement
+	return nil
+}
+
+// TODO remove base
+// List returns a project list according to the query parameters
+func (d *driver) List(query *models.ProjectQueryParam,
+	base ...*models.BaseProjectCollection) (
+	*models.ProjectQueryResult, error) {
+	total, err := dao.GetTotalOfProjects(query, base...)
+	if err != nil {
+		return nil, err
 	}
-	return dao.ToggleProjectPublicity(id, project.Public)
+	projects, err := dao.GetProjects(query, base...)
+	if err != nil {
+		return nil, err
+	}
+	return &models.ProjectQueryResult{
+		Total:    total,
+		Projects: projects,
+	}, nil
 }
 
-// GetAll returns a project list according to the query parameters
-func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (
-	[]*models.Project, error) {
-	return dao.GetProjects(query, base...)
-}
-
-// GetTotal returns the total count according to the query parameters
-func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (
-	int64, error) {
-	return dao.GetTotalOfProjects(query, base...)
+func (d *driver) EnableExternalMetaMgr() bool {
+	return true
 }

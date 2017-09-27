@@ -46,96 +46,96 @@ Switch To Configure
     Sleep  2
 
 Set Pro Create Admin Only	
-	#set limit to admin only
-	Sleep  2
+    #set limit to admin only
+    Sleep  2
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
-	Sleep  1
+    Sleep  1
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="adminonly"]
-	Sleep  1
+    Sleep  1
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
-	Capture Page Screenshot  AdminCreateOnly.png
-	
+    Capture Page Screenshot  AdminCreateOnly.png
+
 Set Pro Create Every One	
-	#set limit to Every One	
+    #set limit to Every One	
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
-	Sleep  1
+    Sleep  1
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="everyone"]
-	Sleep  1	
+    Sleep  1	
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
     Sleep  2
-	Capture Page Screenshot  EveryoneCreate.png
+    Capture Page Screenshot  EveryoneCreate.png
 
 Disable Self Reg	
-	Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Mouse Down  xpath=${self_reg_xpath}
     Mouse Up  xpath=${self_reg_xpath}
-	Sleep  1
-	Self Reg Should Be Disabled
+    Sleep  1
+    Self Reg Should Be Disabled
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
-	Capture Page Screenshot  DisableSelfReg.png
-	Sleep  1
+    Capture Page Screenshot  DisableSelfReg.png
+    Sleep  1
 
 Enable Self Reg	
-	Mouse Down  xpath=${self_reg_xpath}
+    Mouse Down  xpath=${self_reg_xpath}
     Mouse Up  xpath=${self_reg_xpath}
-	Sleep  1
-	Self Reg Should Be Enabled
+    Sleep  1
+    Self Reg Should Be Enabled
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
-	Capture Page Screenshot  EnableSelfReg.png
-	Sleep  1
-	
+    Capture Page Screenshot  EnableSelfReg.png
+    Sleep  1
+
 Self Reg Should Be Disabled
-	Checkbox Should Not Be Selected  xpath=${self_reg_xpath}
+    Checkbox Should Not Be Selected  xpath=${self_reg_xpath}
 
 Self Reg Should Be Enabled
-	Checkbox Should Be Selected  xpath=${self_reg_xpath}
-	
+    Checkbox Should Be Selected  xpath=${self_reg_xpath}
+
 Project Creation Should Display
     Page Should Contain Element  xpath=${project_create_xpath}
 
 Project Creation Should Not Display
     Page Should Not Contain Element  xpath=${project_create_xpath}
-		
+
 ## System settings	
 Switch To System Settings
     Sleep  1
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
     Click Element  xpath=//config//ul/li[4]
-	
+
 Modify Token Expiration
-	[Arguments]  ${minutes}
-	Input Text  xpath=//*[@id="tokenExpiration"]  ${minutes}
+    [Arguments]  ${minutes}
+    Input Text  xpath=//*[@id="tokenExpiration"]  ${minutes}
     Click Button  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1] 
-	Sleep  1
-	
+    Sleep  1
+
 Token Must Be Match
-	[Arguments]  ${minutes}
-	Textfield Value Should Be  xpath=//*[@id="tokenExpiration"]  ${minutes}
+    [Arguments]  ${minutes}
+    Textfield Value Should Be  xpath=//*[@id="tokenExpiration"]  ${minutes}
 
 ## Replication	
 Check Verify Remote Cert	
     Mouse Down  xpath=//*[@id="clr-checkbox-verifyRemoteCert"] 
     Mouse Up  xpath=//*[@id="clr-checkbox-verifyRemoteCert"]
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
-	Capture Page Screenshot  RemoteCert.png
-	Sleep  1
+    Capture Page Screenshot  RemoteCert.png
+    Sleep  1
 
 Switch To System Replication
     Sleep  1
     Switch To Configure
     Click Element  xpath=//*[@id="config-replication"]
-	Sleep  1
-	
+    Sleep  1
+
 Should Verify Remote Cert Be Enabled
-	Checkbox Should Not Be Selected  xpath=//*[@id="clr-checkbox-verifyRemoteCert"]
-	
+    Checkbox Should Not Be Selected  xpath=//*[@id="clr-checkbox-verifyRemoteCert"]
+
 ## Email	
 Switch To Email
-	Switch To Configure
-	Click Element  xpath=//*[@id="config-email"]
-	Sleep  1
+    Switch To Configure
+    Click Element  xpath=//*[@id="config-email"]
+    Sleep  1
 
 Config Email
     Input Text  xpath=//*[@id="mailServer"]  smtp.vmware.com
@@ -143,13 +143,13 @@ Config Email
     Input Text  xpath=//*[@id="emailUsername"]  example@vmware.com 
     Input Text  xpath=//*[@id="emailPassword"]  example
     Input Text  xpath=//*[@id="emailFrom"]  example<example@vmware.com>
-	Sleep  1    
-	Mouse Down  xpath=//*[@id="clr-checkbox-emailSSL"]
+    Sleep  1    
+    Mouse Down  xpath=//*[@id="clr-checkbox-emailSSL"]
     Mouse Up  xpath=//*[@id="clr-checkbox-emailSSL"]
-	Sleep  1
+    Sleep  1
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
-	Sleep  6
-	
+    Sleep  6
+
 Verify Email
     Textfield Value Should Be  xpath=//*[@id="mailServer"]  smtp.vmware.com
     Textfield Value Should Be  xpath=//*[@id="emailPort"]  25
@@ -169,4 +169,3 @@ Set Scan All To Daily
     click element  //config//div/button[contains(.,'SAVE')]
 Click Scan Now
     click element  //vulnerability-config//button[contains(.,'SCAN')]
-   

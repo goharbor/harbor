@@ -21,24 +21,25 @@ import (
 // Project holds the details of a project.
 // TODO remove useless attrs
 type Project struct {
-	ProjectID       int64     `orm:"pk;auto;column(project_id)" json:"project_id"`
-	OwnerID         int       `orm:"column(owner_id)" json:"owner_id"`
-	Name            string    `orm:"column(name)" json:"name"`
-	CreationTime    time.Time `orm:"column(creation_time)" json:"creation_time"`
-	CreationTimeStr string    `orm:"-" json:"creation_time_str"`
-	Deleted         int       `orm:"column(deleted)" json:"deleted"`
-	//UserID          int `json:"UserId"`
-	OwnerName string `orm:"-" json:"owner_name"`
-	Public    int    `orm:"column(public)" json:"public"`
-	//This field does not have correspondent column in DB, this is just for UI to disable button
-	Togglable                                  bool      `orm:"-"`
-	UpdateTime                                 time.Time `orm:"update_time" json:"update_time"`
-	Role                                       int       `orm:"-" json:"current_user_role_id"`
-	RepoCount                                  int       `orm:"-" json:"repo_count"`
-	EnableContentTrust                         bool      `orm:"-" json:"enable_content_trust"`
-	PreventVulnerableImagesFromRunning         bool      `orm:"-" json:"prevent_vulnerable_images_from_running"`
-	PreventVulnerableImagesFromRunningSeverity string    `orm:"-" json:"prevent_vulnerable_images_from_running_severity"`
-	AutomaticallyScanImagesOnPush              bool      `orm:"-" json:"automatically_scan_images_on_push"`
+	ProjectID       int64                  `orm:"pk;auto;column(project_id)" json:"project_id"`
+	OwnerID         int                    `orm:"column(owner_id)" json:"owner_id"`
+	Name            string                 `orm:"column(name)" json:"name"`
+	CreationTime    time.Time              `orm:"column(creation_time)" json:"creation_time"`
+	UpdateTime      time.Time              `orm:"update_time" json:"update_time"`
+	Deleted         int                    `orm:"column(deleted)" json:"deleted"`
+	CreationTimeStr string                 `orm:"-" json:"creation_time_str"`
+	OwnerName       string                 `orm:"-" json:"owner_name"`
+	Togglable       bool                   `orm:"-"`
+	Role            int                    `orm:"-" json:"current_user_role_id"`
+	RepoCount       int                    `orm:"-" json:"repo_count"`
+	Metadata        map[string]interface{} `orm:"-" json:"metadata"`
+
+	// TODO remove
+	Public                                     int    `orm:"column(public)" json:"public"`
+	EnableContentTrust                         bool   `orm:"-" json:"enable_content_trust"`
+	PreventVulnerableImagesFromRunning         bool   `orm:"-" json:"prevent_vulnerable_images_from_running"`
+	PreventVulnerableImagesFromRunningSeverity string `orm:"-" json:"prevent_vulnerable_images_from_running_severity"`
+	AutomaticallyScanImagesOnPush              bool   `orm:"-" json:"automatically_scan_images_on_push"`
 }
 
 // ProjectSorter holds an array of projects
@@ -108,4 +109,10 @@ type ProjectRequest struct {
 	PreventVulnerableImagesFromRunning         bool   `json:"prevent_vulnerable_images_from_running"`
 	PreventVulnerableImagesFromRunningSeverity string `json:"prevent_vulnerable_images_from_running_severity"`
 	AutomaticallyScanImagesOnPush              bool   `json:"automatically_scan_images_on_push"`
+}
+
+// ProjectQueryResult ...
+type ProjectQueryResult struct {
+	Total    int64
+	Projects []*Project
 }

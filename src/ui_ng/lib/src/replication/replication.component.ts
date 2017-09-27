@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, Output, OnDestroy, EventEmitter } from '@angular/core';
 import { ResponseOptions, RequestOptions } from '@angular/http';
 import { NgModel } from '@angular/forms';
 
@@ -41,6 +41,8 @@ import { REPLICATION_STYLE } from './replication.component.css';
 
 import { JobLogViewerComponent } from '../job-log-viewer/index';
 import { State } from "clarity-angular";
+import {Observable} from "rxjs/Observable";
+import {Subscription} from "rxjs/Subscription";
 
 const ruleStatus: { [key: string]: any } = [
   { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS' },
@@ -79,7 +81,7 @@ export class SearchOption {
   template: REPLICATION_TEMPLATE,
   styles: [REPLICATION_STYLE]
 })
-export class ReplicationComponent implements OnInit {
+export class ReplicationComponent implements OnInit, OnDestroy {
 
   @Input() projectId: number | string;
   @Input() withReplicationJob: boolean;
@@ -124,6 +126,7 @@ export class ReplicationComponent implements OnInit {
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentState: State;
   jobsLoading: boolean = false;
+  timerDelay: Subscription;
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -143,6 +146,12 @@ export class ReplicationComponent implements OnInit {
     this.currentRuleStatus = this.ruleStatus[0];
     this.currentJobStatus = this.jobStatus[0];
     this.currentJobSearchOption = 0;
+  }
+
+  ngOnDestroy() {
+    if (this.timerDelay) {
+      this.timerDelay.unsubscribe();
+    }
   }
 
   openModal(): void {
@@ -196,6 +205,23 @@ export class ReplicationComponent implements OnInit {
       response => {
         this.totalCount = response.metadata.xTotalCount;
         this.jobs = response.data;
+
+        if (!this.timerDelay) {
+          this.timerDelay = Observable.timer(10000, 10000).subscribe(() => {
+            let count: number = 0;
+            this.jobs.forEach((job) => {
+              if ((job.status === 'pending') || (job.status === 'running') || (job.status === 'retrying')) {
+                count ++;
+              }
+            });
+            if (count > 0) {
+              this.clrLoadJobs(this.currentState);
+            }else {
+              this.timerDelay.unsubscribe();
+              this.timerDelay = null;
+            }
+          });
+        }
 
         //Do filtering and sorting
         this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
