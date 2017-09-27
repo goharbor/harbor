@@ -2657,7 +2657,7 @@ definitions:
     type: object
     properties:
       id:
-        type: string
+        type: integer
         description: The ID of repository.
       name:
         type: string
