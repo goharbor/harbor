@@ -20,6 +20,27 @@ if sys.version_info[:3][0] == 3:
     import io as StringIO
 
 def validate(conf, args): 
+    if args.ha_mode:
+        db_host = rcp.get("configuration", "db_host")
+        if db_host == "mysql":
+            raise Exception("Error: In HA mode, db_host in harbor.cfg needs to point to an external DB address")
+        registry_config_path = os.path.join(templates_dir,"registry","config_ha.yml")
+        if check_storage_config(registry_config_path):
+            raise Exception("Error: In HA model shared storage configuration is required registry, refer HA installation guide for detail.")
+        redis_url = rcp.get("configuration", "redis_url")
+        if redis_url is None or len(redis_url) < 1:
+            raise Exception("Error: In HA mode redis is required redis_url need to point to an redis cluster")
+        if args.notary_mode or args.clair_mode:
+            raise Exception("Error: HA mode doesn't support clair and notary currently")
+        cert_path = rcp.get("configuration", "ssl_cert")
+        cert_key_path = rcp.get("configuration", "ssl_cert_key")
+        shared_cert_key = os.path.join(base_dir, "ha", os.path.basename(cert_key_path))
+        shared_cert_path = os.path.join(base_dir, "ha", os.path.basename(cert_path))
+        if os.path.isfile(shared_cert_key):
+            shutil.copy2(shared_cert_key, cert_key_path)
+        if os.path.isfile(shared_cert_path):
+            shutil.copy2(shared_cert_path, cert_path)
+
     protocol = rcp.get("configuration", "ui_url_protocol")
     if protocol != "https" and args.notary_mode:
         raise Exception("Error: the protocol must be https when Harbor is deployed with Notary")
@@ -38,6 +59,63 @@ def validate(conf, args):
 
     if project_creation != "everyone" and project_creation != "adminonly":
         raise Exception("Error invalid value for project_creation_restriction: %s" % project_creation)
+
+def prepare_ha(conf, args):
+    #files under ha folder will have high prority
+    protocol = rcp.get("configuration", "ui_url_protocol")
+    if protocol == "https":
+        #copy nginx certificate
+        cert_path = rcp.get("configuration", "ssl_cert")
+        cert_key_path = rcp.get("configuration", "ssl_cert_key")
+        shared_cert_key = os.path.join(base_dir, "ha", os.path.basename(cert_key_path))
+        shared_cert_path = os.path.join(base_dir, "ha", os.path.basename(cert_path))
+        if os.path.isfile(shared_cert_key):
+            shutil.copy2(shared_cert_key, cert_key_path)
+        else: 
+            if os.path.isfile(cert_key_path):
+                shutil.copy2(cert_key_path, shared_cert_key)
+        if os.path.isfile(shared_cert_path):
+            shutil.copy2(shared_cert_path, cert_path)
+        else:
+            if os.path.isfile(cert_path):
+                shutil.copy2(cert_path, shared_cert_path)
+        #check if ca exsit
+        cert_ca_path = "/data/ca_download/ca.crt"
+        shared_ca_path = os.path.join(base_dir, "ha", os.path.basename(cert_ca_path))
+        if os.path.isfile(shared_ca_path):
+            shutil.copy2(shared_ca_path, cert_ca_path)
+        else:
+            if os.path.isfile(cert_ca_path):
+                shutil.copy2(cert_ca_path, shared_ca_path)
+    #check root.crt and priviate_key.pem
+    private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
+    root_crt = os.path.join(config_dir, "registry", "root.crt")
+    shared_private_key_pem = os.path.join(base_dir, "ha", "private_key.pem")
+    shared_root_crt = os.path.join(base_dir, "ha", "root.crt")
+    if os.path.isfile(shared_private_key_pem):
+        shutil.copy2(shared_private_key_pem, private_key_pem)
+    else:
+        if os.path.isfile(private_key_pem):
+            shutil.copy2(private_key_pem, shared_private_key_pem)
+    if os.path.isfile(shared_root_crt):
+        shutil.copy2(shared_root_crt, root_crt)
+    else:
+        if os.path.isfile(root_crt):
+            shutil.copy2(root_crt, shared_root_crt)
+    #secretkey
+    shared_secret_key = os.path.join(base_dir, "ha", "secretkey")
+    secretkey_path = rcp.get("configuration", "secretkey_path") 
+    secret_key = os.path.join(secretkey_path, "secretkey")
+    if os.path.isfile(shared_secret_key):
+        shutil.copy2(shared_secret_key, secret_key)
+    else:
+        if os.path.isfile(secret_key):
+            shutil.copy2(secret_key, shared_secret_key)
+
+def check_storage_config(path):
+    if 'Place_holder_for_Storage_configureation' in open(path).read():
+        return True
+    return False
 
 def get_secret_key(path):
     secret_key = _get_secret(path, "secretkey") 
@@ -96,6 +174,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
 parser.add_argument('--with-notary', dest='notary_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with notary")
 parser.add_argument('--with-clair', dest='clair_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with clair")
+parser.add_argument('--ha', dest='ha_mode', default=False, action='store_true', help="the Harbor instance is to be deployed in HA mode")
 args = parser.parse_args()
 
 delfile(config_dir)
@@ -106,7 +185,6 @@ conf.write(open(args.cfgfile).read())
 conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
-
 validate(rcp, args)
 
 hostname = rcp.get("configuration", "hostname")
@@ -141,8 +219,8 @@ ldap_scope = rcp.get("configuration", "ldap_scope")
 ldap_timeout = rcp.get("configuration", "ldap_timeout")
 db_password = rcp.get("configuration", "db_password")
 db_host = rcp.get("configuration", "db_host")
-db_port = rcp.get("configuration", "db_port")
 db_user = rcp.get("configuration", "db_user")
+db_port = rcp.get("configuration", "db_port")
 self_registration = rcp.get("configuration", "self_registration")
 if protocol == "https":
     cert_path = rcp.get("configuration", "ssl_cert")
@@ -161,9 +239,15 @@ uaa_endpoint = rcp.get("configuration", "uaa_endpoint")
 uaa_clientid = rcp.get("configuration", "uaa_clientid")
 uaa_clientsecret = rcp.get("configuration", "uaa_clientsecret")
 uaa_ca_root = rcp.get("configuration", "uaa_ca_root")
+
 secret_key = get_secret_key(secretkey_path)
 log_rotate_count = rcp.get("configuration", "log_rotate_count")
 log_rotate_size = rcp.get("configuration", "log_rotate_size")
+
+if rcp.has_option("configuration", "redis_url"):
+    redis_url = rcp.get("configuration", "redis_url")
+else:
+    redis_url = ""
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -229,8 +313,8 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         ldap_timeout=ldap_timeout,
         db_password=db_password,
         db_host=db_host,
-        db_port=db_port,
         db_user=db_user,
+        db_port=db_port,
         email_host=email_host,
         email_port=email_port,
         email_usr=email_usr,
@@ -258,12 +342,19 @@ render(os.path.join(templates_dir, "ui", "env"),
         ui_conf_env, 
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret,
+        redis_url = redis_url
         )
-
-render(os.path.join(templates_dir, "registry", 
-		"config.yml"),
-        registry_conf,
-        ui_url=ui_url)
+if args.ha_mode:
+    render(os.path.join(templates_dir, "registry",
+		"config_ha.yml"),
+                registry_conf,
+                ui_url=ui_url,
+                redis_url=redis_url)
+else:
+    render(os.path.join(templates_dir, "registry",
+                "config.yml"),
+                registry_conf,
+                ui_url=ui_url)
 
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
@@ -345,7 +436,7 @@ else:
     shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
     print("Copied configuration file: %s" % registry_config_dir + "root.crt")
     shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
-	
+
 if args.notary_mode:
     notary_config_dir = prep_conf_dir(config_dir, "notary")
     notary_temp_dir = os.path.join(templates_dir, "notary") 
@@ -412,6 +503,9 @@ if args.clair_mode:
     render(os.path.join(clair_temp_dir, "postgres_env"), postgres_env, password = pg_password)
     clair_conf = os.path.join(clair_config_dir, "config.yaml")
     render(os.path.join(clair_temp_dir, "config.yaml"), clair_conf, password = pg_password)
+
+if args.ha_mode:
+    prepare_ha(rcp, args)
 
 FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")
