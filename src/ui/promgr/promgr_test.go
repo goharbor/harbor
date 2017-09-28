@@ -87,8 +87,8 @@ func TestDelete(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	assert.Nil(t, proMgr.Update(1,
 		&models.Project{
-			Metadata: map[string]interface{}{
-				models.ProMetaPublic: true,
+			Metadata: map[string]string{
+				models.ProMetaPublic: "true",
 			},
 		}))
 }

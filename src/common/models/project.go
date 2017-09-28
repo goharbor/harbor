@@ -21,18 +21,18 @@ import (
 // Project holds the details of a project.
 // TODO remove useless attrs
 type Project struct {
-	ProjectID       int64                  `orm:"pk;auto;column(project_id)" json:"project_id"`
-	OwnerID         int                    `orm:"column(owner_id)" json:"owner_id"`
-	Name            string                 `orm:"column(name)" json:"name"`
-	CreationTime    time.Time              `orm:"column(creation_time)" json:"creation_time"`
-	UpdateTime      time.Time              `orm:"update_time" json:"update_time"`
-	Deleted         int                    `orm:"column(deleted)" json:"deleted"`
-	CreationTimeStr string                 `orm:"-" json:"creation_time_str"`
-	OwnerName       string                 `orm:"-" json:"owner_name"`
-	Togglable       bool                   `orm:"-"`
-	Role            int                    `orm:"-" json:"current_user_role_id"`
-	RepoCount       int                    `orm:"-" json:"repo_count"`
-	Metadata        map[string]interface{} `orm:"-" json:"metadata"`
+	ProjectID       int64             `orm:"pk;auto;column(project_id)" json:"project_id"`
+	OwnerID         int               `orm:"column(owner_id)" json:"owner_id"`
+	Name            string            `orm:"column(name)" json:"name"`
+	CreationTime    time.Time         `orm:"column(creation_time)" json:"creation_time"`
+	UpdateTime      time.Time         `orm:"update_time" json:"update_time"`
+	Deleted         int               `orm:"column(deleted)" json:"deleted"`
+	CreationTimeStr string            `orm:"-" json:"creation_time_str"`
+	OwnerName       string            `orm:"-" json:"owner_name"`
+	Togglable       bool              `orm:"-"`
+	Role            int               `orm:"-" json:"current_user_role_id"`
+	RepoCount       int               `orm:"-" json:"repo_count"`
+	Metadata        map[string]string `orm:"-" json:"metadata"`
 
 	// TODO remove
 	Public                                     int    `orm:"column(public)" json:"public"`

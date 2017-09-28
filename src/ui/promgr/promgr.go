@@ -71,7 +71,7 @@ func (d *defaultProjectManager) Get(projectIDOrName interface{}) (*models.Projec
 			return nil, err
 		}
 		if len(project.Metadata) == 0 {
-			project.Metadata = make(map[string]interface{})
+			project.Metadata = make(map[string]string)
 		}
 		for k, v := range meta {
 			project.Metadata[k] = v
