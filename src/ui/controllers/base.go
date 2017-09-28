@@ -171,7 +171,8 @@ func (cc *CommonController) SendEmail() {
 		settings.Username,
 		settings.Password,
 		60, settings.SSL,
-		false, settings.From,
+		settings.Insecure,
+		settings.From,
 		[]string{email},
 		"Reset Harbor user password",
 		message.String())

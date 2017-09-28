@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pms
+package admiral
 
 import (
 	"net/http"
@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common/models"
+	errutil "github.com/vmware/harbor/src/common/utils/error"
 )
 
 var (
@@ -195,7 +196,7 @@ func TestGet(t *testing.T) {
 
 	// get by invalid ID
 	project, err := pm.Get(int64(0))
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 	assert.Nil(t, project)
 
 	// get by invalid name
@@ -344,6 +345,12 @@ func TestCreate(t *testing.T) {
 	assert.True(t, project.PreventVulnerableImagesFromRunning)
 	assert.Equal(t, "medium", project.PreventVulnerableImagesFromRunningSeverity)
 	assert.True(t, project.AutomaticallyScanImagesOnPush)
+
+	// duplicate project name
+	_, err = pm.Create(&models.Project{
+		Name: name,
+	})
+	assert.Equal(t, errutil.ErrDupProject, err)
 }
 
 func TestDelete(t *testing.T) {

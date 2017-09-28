@@ -16,7 +16,7 @@ clair:
     # Deadline before an API request will respond with a 503
     timeout: 300s
   updater:
-    interval: 1h
+    interval: 12h
 
   notifier:
     attempts: 3

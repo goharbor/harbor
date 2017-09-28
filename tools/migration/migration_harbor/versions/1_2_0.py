@@ -69,7 +69,9 @@ def upgrade():
     ImageScanJob.__table__.create(bind)
     ImageScanOverview.__table__.create(bind)
     ClairVulnTimestamp.__table__.create(bind)
-	
+
+    session.commit()
+		
 def downgrade():
     """
     Downgrade has been disabled.

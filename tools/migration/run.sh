@@ -89,8 +89,13 @@ up|upgrade)
             mysql $DBCNF -e "insert into registry.alembic_version values ('0.1.1')"
         fi
     fi
+    alembic -c ./alembic.ini current
     alembic -c ./alembic.ini upgrade ${VERSION}
+    rc="$?"
+    alembic -c ./alembic.ini current	
     echo "Upgrade performed."
+    echo $rc
+    exit $rc	
     ;;
 backup)
     echo "Performing backup..."
@@ -102,6 +107,14 @@ export)
     ./export --dbuser ${DB_USR} --dbpwd ${DB_PWD} --exportpath ${EXPORTPATH}
     rc="$?"
     echo "Export performed."
+    echo $rc
+    exit $rc
+    ;;
+mapprojects)
+    echo "Performing map projects..."
+    ./mapprojects --dbuser ${DB_USR} --dbpwd ${DB_PWD} --mapprojectsfile ${MAPPROJECTFILE}
+    rc="$?"
+    echo "Map projects performed."
     echo $rc
     exit $rc
     ;;

@@ -19,18 +19,18 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/security/admiral/authcontext"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/promgr"
 )
 
 // SecurityContext implements security.Context interface based on
 // auth context and project manager
 type SecurityContext struct {
 	ctx *authcontext.AuthContext
-	pm  projectmanager.ProjectManager
+	pm  promgr.ProjectManager
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(ctx *authcontext.AuthContext, pm projectmanager.ProjectManager) *SecurityContext {
+func NewSecurityContext(ctx *authcontext.AuthContext, pm promgr.ProjectManager) *SecurityContext {
 	return &SecurityContext{
 		ctx: ctx,
 		pm:  pm,

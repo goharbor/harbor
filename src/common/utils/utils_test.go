@@ -217,14 +217,6 @@ func TestParseHarborIDOrName(t *testing.T) {
 	id, name, err := ParseProjectIDOrName(nil)
 	assert.NotNil(t, err)
 
-	// invalid ID
-	id, name, err = ParseProjectIDOrName(0)
-	assert.NotNil(t, err)
-
-	// invalid name
-	id, name, err = ParseProjectIDOrName("")
-	assert.NotNil(t, err)
-
 	// valid int ID
 	id, name, err = ParseProjectIDOrName(1)
 	assert.Nil(t, err)

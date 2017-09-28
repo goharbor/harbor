@@ -9,7 +9,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/promgr"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
 
 	"context"
@@ -88,7 +88,7 @@ func (ec envPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity)
 }
 
 type pmsPolicyChecker struct {
-	pm projectmanager.ProjectManager
+	pm promgr.ProjectManager
 }
 
 func (pc pmsPolicyChecker) contentTrustEnabled(name string) bool {
@@ -109,7 +109,7 @@ func (pc pmsPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity)
 }
 
 // newPMSPolicyChecker returns an instance of an pmsPolicyChecker
-func newPMSPolicyChecker(pm projectmanager.ProjectManager) policyChecker {
+func newPMSPolicyChecker(pm promgr.ProjectManager) policyChecker {
 	return &pmsPolicyChecker{
 		pm: pm,
 	}
@@ -140,20 +140,20 @@ func (uh urlHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if flag {
 		components := strings.SplitN(repository, "/", 2)
 		if len(components) < 2 {
-			http.Error(rw, marshalError(fmt.Sprintf("Bad repository name: %s", repository), http.StatusInternalServerError), http.StatusBadRequest)
+			http.Error(rw, marshalError(fmt.Sprintf("Bad repository name: %s", repository)), http.StatusBadRequest)
 			return
 		}
 
 		client, err := uiutils.NewRepositoryClientForUI(tokenUsername, repository)
 		if err != nil {
 			log.Errorf("Error creating repository Client: %v", err)
-			http.Error(rw, marshalError(fmt.Sprintf("Failed due to internal Error: %v", err), http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(rw, marshalError(fmt.Sprintf("Failed due to internal Error: %v", err)), http.StatusInternalServerError)
 			return
 		}
 		digest, _, err := client.ManifestExist(reference)
 		if err != nil {
 			log.Errorf("Failed to get digest for reference: %s, error: %v", reference, err)
-			http.Error(rw, marshalError(fmt.Sprintf("Failed due to internal Error: %v", err), http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(rw, marshalError(fmt.Sprintf("Failed due to internal Error: %v", err)), http.StatusInternalServerError)
 			return
 		}
 
@@ -244,12 +244,12 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 	}
 	match, err := matchNotaryDigest(img)
 	if err != nil {
-		http.Error(rw, marshalError("Failed in communication with Notary please check the log", http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(rw, marshalError("Failed in communication with Notary please check the log"), http.StatusInternalServerError)
 		return
 	}
 	if !match {
 		log.Debugf("digest mismatch, failing the response.")
-		http.Error(rw, marshalError("The image is not signed in Notary.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+		http.Error(rw, marshalError("The image is not signed in Notary."), http.StatusPreconditionFailed)
 		return
 	}
 	cth.next.ServeHTTP(rw, req)
@@ -278,19 +278,19 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 	overview, err := dao.GetImgScanOverview(img.digest)
 	if err != nil {
 		log.Errorf("failed to get ImgScanOverview with repo: %s, reference: %s, digest: %s. Error: %v", img.repository, img.reference, img.digest, err)
-		http.Error(rw, marshalError("Failed to get ImgScanOverview.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+		http.Error(rw, marshalError("Failed to get ImgScanOverview."), http.StatusPreconditionFailed)
 		return
 	}
-	if overview == nil {
+	// severity is 0 means that the image fails to scan or not scanned successfully.
+	if overview == nil || overview.Sev == 0 {
 		log.Debugf("cannot get the image scan overview info, failing the response.")
-		http.Error(rw, marshalError("Cannot get the image scan overview info.", http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+		http.Error(rw, marshalError("Cannot get the image severity."), http.StatusPreconditionFailed)
 		return
 	}
 	imageSev := overview.Sev
 	if imageSev >= int(projectVulnerableSeverity) {
 		log.Debugf("the image severity: %q is higher then project setting: %q, failing the response.", models.Severity(imageSev), projectVulnerableSeverity)
-		http.Error(rw, marshalError(fmt.Sprintf("The severity of vulnerability of the image: %q is equal or higher than the threshold in project setting: %q.", models.Severity(imageSev), projectVulnerableSeverity),
-			http.StatusPreconditionFailed), http.StatusPreconditionFailed)
+		http.Error(rw, marshalError(fmt.Sprintf("The severity of vulnerability of the image: %q is equal or higher than the threshold in project setting: %q.", models.Severity(imageSev), projectVulnerableSeverity)), http.StatusPreconditionFailed)
 		return
 	}
 	vh.next.ServeHTTP(rw, req)
@@ -340,13 +340,17 @@ func copyResp(rec *httptest.ResponseRecorder, rw http.ResponseWriter) {
 	rw.Write(rec.Body.Bytes())
 }
 
-func marshalError(msg string, statusCode int) string {
-	je := &JSONError{
-		Message: msg,
-		Code:    statusCode,
-		Details: msg,
+func marshalError(msg string) string {
+	var tmpErrs struct {
+		Errors []JSONError `json:"errors,omitempty"`
 	}
-	str, err := json.Marshal(je)
+	tmpErrs.Errors = append(tmpErrs.Errors, JSONError{
+		Code:    "PROJECT_POLICY_VIOLATION",
+		Message: msg,
+		Detail:  msg,
+	})
+
+	str, err := json.Marshal(tmpErrs)
 	if err != nil {
 		log.Debugf("failed to marshal json error, %v", err)
 		return msg
@@ -356,7 +360,7 @@ func marshalError(msg string, statusCode int) string {
 
 // JSONError wraps a concrete Code and Message, it's readable for docker deamon.
 type JSONError struct {
-	Code    int    `json:"code,omitempty"`
+	Code    string `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
-	Details string `json:"details,omitempty"`
+	Detail  string `json:"detail,omitempty"`
 }

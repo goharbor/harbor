@@ -25,6 +25,7 @@ import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
 
 import { MemberService } from '../member.service';
+import { UserService } from '../../../user/user.service';
 
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
@@ -36,11 +37,13 @@ import { Member } from '../member';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
+import {User} from "../../../user/user";
 
 @Component({
   selector: 'add-member',
   templateUrl: 'add-member.component.html',
   styleUrls: ['add-member.component.css'],
+  providers: [UserService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
@@ -69,13 +72,21 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   memberTooltip: string = 'MEMBER.USERNAME_IS_REQUIRED';
   nameChecker: Subject<string> = new Subject<string>();
   checkOnGoing: boolean = false;
+  selectUserName: string[] = [];
+  userLists: User[];
 
   constructor(private memberService: MemberService,
+    private userService: UserService,
     private messageHandlerService: MessageHandlerService,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+    this.userService.getUsers()
+        .then(users => {
+          this.userLists = users;
+        });
+
     this.nameChecker
       .debounceTime(500)
       .distinctUntilChanged()
@@ -97,6 +108,20 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
               .catch(error => {
                 this.checkOnGoing = false;
               });
+            //username autocomplete
+            if (this.userLists.length) {
+              this.selectUserName = [];
+              this.userLists.filter(data => {
+                if (data.username.startsWith(cont.value)) {
+                  if (this.selectUserName.length < 10) {
+                    this.selectUserName.push(data.username);
+                  }
+                }
+              });
+              setTimeout(() => {
+                setInterval(() => this.ref.markForCheck(), 100);
+              }, 1000);
+            }
           } else {
             this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
           }
@@ -148,6 +173,11 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     }, 1000);
   }
 
+  selectedName(username: string) {
+    this.member.username = username;
+    this.selectUserName = [];
+  }
+
   onCancel() {
     if (this.hasChanged) {
       this.inlineAlert.showInlineConfirmation({ message: 'ALERT.FORM_CHANGE_CONFIRMATION' });
@@ -157,6 +187,9 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     }
   }
 
+  leaveInput() {
+    this.selectUserName = [];
+  }
   ngAfterViewChecked(): void {
     if (this.memberForm !== this.currentForm) {
       this.memberForm = this.currentForm;
@@ -189,6 +222,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     this.member.username = '';
     this.isMemberNameValid = true;
     this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
+    this.selectUserName = [];
   }
 
   handleValidation(): void {
