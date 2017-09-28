@@ -43,4 +43,7 @@ export const PUSH_IMAGE_STYLE: string = `
 .btn-font {
     font-size: 14px !important;
 }
+.hide{
+    display:none;
+}
 `;
