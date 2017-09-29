@@ -101,12 +101,12 @@ func TestConvert(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, pro)
 	assert.Equal(t, "test", pro.Name)
-	assert.Equal(t, 1, pro.Public)
+	assert.True(t, pro.IsPublic())
 	assert.Equal(t, int64(1), pro.ProjectID)
-	assert.True(t, pro.EnableContentTrust)
-	assert.True(t, pro.PreventVulnerableImagesFromRunning)
-	assert.Equal(t, "medium", pro.PreventVulnerableImagesFromRunningSeverity)
-	assert.True(t, pro.AutomaticallyScanImagesOnPush)
+	assert.True(t, pro.ContentTrustEnabled())
+	assert.True(t, pro.VulPrevented())
+	assert.Equal(t, "medium", pro.Severity())
+	assert.True(t, pro.AutoScan())
 }
 
 func TestParse(t *testing.T) {
@@ -182,233 +182,130 @@ func TestParse(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
+	d := NewDriver(client, endpoint, tokenReader)
 	name := "project_for_test_get"
-	id, err := pm.Create(&models.Project{
+	id, err := d.Create(&models.Project{
 		Name: name,
 	})
 	require.Nil(t, err)
 	defer delete(t, id)
 
 	// get by invalid input type
-	_, err = pm.Get([]string{})
+	_, err = d.Get([]string{})
 	assert.NotNil(t, err)
 
 	// get by invalid ID
-	project, err := pm.Get(int64(0))
+	project, err := d.Get(int64(0))
 	assert.Nil(t, err)
 	assert.Nil(t, project)
 
 	// get by invalid name
-	project, err = pm.Get("invalid_name")
+	project, err = d.Get("invalid_name")
 	assert.Nil(t, err)
 	assert.Nil(t, project)
 
 	// get by valid ID
-	project, err = pm.Get(id)
+	project, err = d.Get(id)
 	assert.Nil(t, err)
 	assert.Equal(t, id, project.ProjectID)
 
 	// get by valid name
-	project, err = pm.Get(name)
+	project, err = d.Get(name)
 	assert.Nil(t, err)
 	assert.Equal(t, id, project.ProjectID)
 }
 
-func TestIsPublic(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-
-	// invalid input type
-	public, err := pm.IsPublic([]string{})
-	assert.NotNil(t, err)
-	assert.False(t, public)
-
-	// non-exist project
-	public, err = pm.IsPublic(int64(2))
-	assert.Nil(t, err)
-	assert.False(t, public)
-
-	// public project
-	name := "project_for_pm_based_on_pms_public"
-	id, err := pm.Create(&models.Project{
-		Name:   name,
-		Public: 1,
-	})
-	require.Nil(t, err)
-	defer delete(t, id)
-
-	public, err = pm.IsPublic(id)
-	assert.Nil(t, err)
-	assert.True(t, public)
-
-	public, err = pm.IsPublic(name)
-	assert.Nil(t, err)
-	assert.True(t, public)
-
-	// private project
-	name = "project_for_pm_based_on_pms_private"
-	id, err = pm.Create(&models.Project{
-		Name:   name,
-		Public: 0,
-	})
-	require.Nil(t, err)
-	defer delete(t, id)
-
-	public, err = pm.IsPublic(id)
-	assert.Nil(t, err)
-	assert.False(t, public)
-
-	public, err = pm.IsPublic(name)
-	assert.Nil(t, err)
-	assert.False(t, public)
-}
-
-func TestExist(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-
-	// invalid input type
-	exist, err := pm.Exist([]string{})
-	assert.NotNil(t, err)
-	assert.False(t, exist)
-
-	// non-exist project
-	exist, err = pm.Exist(int64(2))
-	assert.Nil(t, err)
-	assert.False(t, exist)
-
-	// exist project
-	name := "project_for_test_exist"
-	id, err := pm.Create(&models.Project{
-		Name: name,
-	})
-	require.Nil(t, err)
-	defer delete(t, id)
-
-	exist, err = pm.Exist(id)
-	assert.Nil(t, err)
-	assert.True(t, exist)
-
-	exist, err = pm.Exist(name)
-	assert.Nil(t, err)
-	assert.True(t, exist)
-}
-
-func TestGetPublic(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-
-	projects, err := pm.GetPublic()
-	assert.Nil(t, nil)
-	size := len(projects)
-
-	name := "project_for_test_get_public"
-	id, err := pm.Create(&models.Project{
-		Name:   name,
-		Public: 1,
-	})
-	require.Nil(t, err)
-	defer delete(t, id)
-
-	projects, err = pm.GetPublic()
-	assert.Nil(t, nil)
-	assert.Equal(t, size+1, len(projects))
-
-	found := false
-	for _, project := range projects {
-		if project.ProjectID == id {
-			found = true
-			break
-		}
-	}
-	assert.True(t, found)
-}
-
 func TestCreate(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
+	d := NewDriver(client, endpoint, tokenReader)
 
 	name := "project_for_test_create"
-	id, err := pm.Create(&models.Project{
-		Name:                                       name,
-		Public:                                     1,
-		EnableContentTrust:                         true,
-		PreventVulnerableImagesFromRunning:         true,
-		PreventVulnerableImagesFromRunningSeverity: "medium",
-		AutomaticallyScanImagesOnPush:              true,
+	id, err := d.Create(&models.Project{
+		Name: name,
+		Metadata: map[string]string{
+			models.ProMetaPublic:             "true",
+			models.ProMetaEnableContentTrust: "true",
+			models.ProMetaPreventVul:         "true",
+			models.ProMetaSeverity:           "medium",
+			models.ProMetaAutoScan:           "true",
+		},
 	})
 	require.Nil(t, err)
 	defer delete(t, id)
 
-	project, err := pm.Get(id)
+	project, err := d.Get(id)
 	assert.Nil(t, err)
 	assert.Equal(t, name, project.Name)
-	assert.Equal(t, 1, project.Public)
-	assert.True(t, project.EnableContentTrust)
-	assert.True(t, project.PreventVulnerableImagesFromRunning)
-	assert.Equal(t, "medium", project.PreventVulnerableImagesFromRunningSeverity)
-	assert.True(t, project.AutomaticallyScanImagesOnPush)
+	assert.True(t, project.IsPublic())
+	assert.True(t, project.ContentTrustEnabled())
+	assert.True(t, project.VulPrevented())
+	assert.Equal(t, "medium", project.Severity())
+	assert.True(t, project.AutoScan())
 
 	// duplicate project name
-	_, err = pm.Create(&models.Project{
+	_, err = d.Create(&models.Project{
 		Name: name,
 	})
 	assert.Equal(t, errutil.ErrDupProject, err)
 }
 
 func TestDelete(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
+	d := NewDriver(client, endpoint, tokenReader)
 
 	// non-exist project
-	err := pm.Delete(int64(0))
+	err := d.Delete(int64(0))
 	assert.NotNil(t, err)
 
 	// delete by ID
 	name := "project_for_pm_based_on_pms_id"
-	id, err := pm.Create(&models.Project{
+	id, err := d.Create(&models.Project{
 		Name: name,
 	})
 	require.Nil(t, err)
-	err = pm.Delete(id)
+	err = d.Delete(id)
 	assert.Nil(t, err)
 
 	// delete by name
 	name = "project_for_pm_based_on_pms_name"
-	id, err = pm.Create(&models.Project{
+	id, err = d.Create(&models.Project{
 		Name: name,
 	})
 	require.Nil(t, err)
-	err = pm.Delete(name)
+	err = d.Delete(name)
 	assert.Nil(t, err)
 }
 
 func TestUpdate(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-	err := pm.Update(nil, nil)
+	d := NewDriver(client, endpoint, tokenReader)
+	err := d.Update(nil, nil)
 	assert.NotNil(t, err)
 }
 
-func TestGetAll(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
+func TestList(t *testing.T) {
+	d := NewDriver(client, endpoint, tokenReader)
 
 	name1 := "project_for_test_get_all_01"
-	id1, err := pm.Create(&models.Project{
+	id1, err := d.Create(&models.Project{
 		Name: name1,
 	})
 	require.Nil(t, err)
 	defer delete(t, id1)
 
 	name2 := "project_for_test_get_all_02"
-	id2, err := pm.Create(&models.Project{
-		Name:   name2,
-		Public: 1,
+	id2, err := d.Create(&models.Project{
+		Name: name2,
+		Metadata: map[string]string{
+			models.ProMetaPublic: "true",
+		},
 	})
 	require.Nil(t, err)
 	defer delete(t, id2)
 
 	// no filter
-	projects, err := pm.GetAll(nil)
+	result, err := d.List(nil)
 	require.Nil(t, err)
 	found1 := false
 	found2 := false
-	for _, project := range projects {
+	for _, project := range result.Projects {
 		if project.ProjectID == id1 {
 			found1 = true
 		}
@@ -420,12 +317,12 @@ func TestGetAll(t *testing.T) {
 	assert.True(t, found2)
 
 	// filter by name
-	projects, err = pm.GetAll(&models.ProjectQueryParam{
+	result, err = d.List(&models.ProjectQueryParam{
 		Name: name1,
 	})
 	require.Nil(t, err)
 	found1 = false
-	for _, project := range projects {
+	for _, project := range result.Projects {
 		if project.ProjectID == id1 {
 			found1 = true
 			break
@@ -435,12 +332,12 @@ func TestGetAll(t *testing.T) {
 
 	// filter by public
 	value := true
-	projects, err = pm.GetAll(&models.ProjectQueryParam{
+	result, err = d.List(&models.ProjectQueryParam{
 		Public: &value,
 	})
 	require.Nil(t, err)
 	found2 = false
-	for _, project := range projects {
+	for _, project := range result.Projects {
 		if project.ProjectID == id2 {
 			found2 = true
 			break
@@ -449,27 +346,9 @@ func TestGetAll(t *testing.T) {
 	assert.True(t, found2)
 }
 
-func TestGetTotal(t *testing.T) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-
-	total1, err := pm.GetTotal(nil)
-	require.Nil(t, err)
-
-	name := "project_for_test_get_total"
-	id, err := pm.Create(&models.Project{
-		Name: name,
-	})
-	require.Nil(t, err)
-	defer delete(t, id)
-
-	total2, err := pm.GetTotal(nil)
-	require.Nil(t, err)
-	assert.Equal(t, total1+1, total2)
-}
-
 func delete(t *testing.T, id int64) {
-	pm := NewProjectManager(client, endpoint, tokenReader)
-	if err := pm.Delete(id); err != nil {
+	d := NewDriver(client, endpoint, tokenReader)
+	if err := d.Delete(id); err != nil {
 		t.Logf("failed to delete project %d: %v", id, err)
 	}
 }

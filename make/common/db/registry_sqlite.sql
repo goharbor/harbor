@@ -71,13 +71,12 @@ create table project (
  creation_time timestamp,
  update_time timestamp,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
- public tinyint (1) DEFAULT 0 NOT NULL,
  FOREIGN KEY (owner_id) REFERENCES user(user_id),
  UNIQUE (name)
 );
 
-insert into project (owner_id, name, creation_time, update_time, public) values 
-(1, 'library', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+insert into project (owner_id, name, creation_time, update_time) values 
+(1, 'library', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 create table project_member (
  project_id int NOT NULL,
