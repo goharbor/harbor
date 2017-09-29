@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
@@ -120,14 +121,23 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
+	if pro.Metadata == nil {
+		pro.Metadata = map[string]string{}
+	}
+	// accept the "public" property to make replication work well with old versions(<=1.2.0)
+	if pro.Public != nil && len(pro.Metadata[models.ProMetaPublic]) == 0 {
+		pro.Metadata[models.ProMetaPublic] = strconv.FormatBool(*pro.Public == 1)
+	}
+
+	// populate public metadata as false if it isn't set
+	if _, ok := pro.Metadata[models.ProMetaPublic]; !ok {
+		pro.Metadata[models.ProMetaPublic] = strconv.FormatBool(false)
+	}
+
 	projectID, err := p.ProjectMgr.Create(&models.Project{
-		Name:                                       pro.Name,
-		Public:                                     pro.Public,
-		OwnerName:                                  p.SecurityCtx.GetUsername(),
-		EnableContentTrust:                         pro.EnableContentTrust,
-		PreventVulnerableImagesFromRunning:         pro.PreventVulnerableImagesFromRunning,
-		PreventVulnerableImagesFromRunningSeverity: pro.PreventVulnerableImagesFromRunningSeverity,
-		AutomaticallyScanImagesOnPush:              pro.AutomaticallyScanImagesOnPush,
+		Name:      pro.Name,
+		OwnerName: p.SecurityCtx.GetUsername(),
+		Metadata:  pro.Metadata,
 	})
 	if err != nil {
 		if err == errutil.ErrDupProject {
@@ -178,7 +188,7 @@ func (p *ProjectAPI) Head() {
 
 // Get ...
 func (p *ProjectAPI) Get() {
-	if p.project.Public == 0 {
+	if !p.project.IsPublic() {
 		if !p.SecurityCtx.IsAuthenticated() {
 			p.HandleUnauthorized()
 			return
@@ -311,21 +321,52 @@ func (p *ProjectAPI) List() {
 		query.Public = &pub
 	}
 
-	// base project collection from which filter is done
-	base := &models.BaseProjectCollection{}
-	if !p.SecurityCtx.IsAuthenticated() {
-		// not login, only get public projects
-		base.Public = true
-	} else {
-		if !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
-			// login, but not system admin, get public projects and
-			// projects that the user is member of
-			base.Member = p.SecurityCtx.GetUsername()
-			base.Public = true
+	// standalone, filter projects according to the privilleges of the user first
+	if !config.WithAdmiral() {
+		var projects []*models.Project
+		if !p.SecurityCtx.IsAuthenticated() {
+			// not login, only get public projects
+			pros, err := p.ProjectMgr.GetPublic()
+			if err != nil {
+				p.HandleInternalServerError(fmt.Sprintf("failed to get public projects: %v", err))
+				return
+			}
+			projects = []*models.Project{}
+			projects = append(projects, pros...)
+		} else {
+			if !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
+				projects = []*models.Project{}
+				// login, but not system admin or solution user, get public projects and
+				// projects that the user is member of
+				pros, err := p.ProjectMgr.GetPublic()
+				if err != nil {
+					p.HandleInternalServerError(fmt.Sprintf("failed to get public projects: %v", err))
+					return
+				}
+				projects = append(projects, pros...)
+
+				mps, err := p.ProjectMgr.List(&models.ProjectQueryParam{
+					Member: &models.MemberQuery{
+						Name: p.SecurityCtx.GetUsername(),
+					},
+				})
+				if err != nil {
+					p.HandleInternalServerError(fmt.Sprintf("failed to list projects: %v", err))
+					return
+				}
+				projects = append(projects, mps.Projects...)
+			}
+		}
+		if projects != nil {
+			projectIDs := []int64{}
+			for _, project := range projects {
+				projectIDs = append(projectIDs, project.ProjectID)
+			}
+			query.ProjectIDs = projectIDs
 		}
 	}
 
-	result, err := p.ProjectMgr.List(query, base)
+	result, err := p.ProjectMgr.List(query)
 	if err != nil {
 		p.ParseAndHandleError("failed to list projects", err)
 		return
@@ -358,8 +399,8 @@ func (p *ProjectAPI) List() {
 	p.ServeJSON()
 }
 
-// ToggleProjectPublic ...
-func (p *ProjectAPI) ToggleProjectPublic() {
+// Put ...
+func (p *ProjectAPI) Put() {
 	if !p.SecurityCtx.IsAuthenticated() {
 		p.HandleUnauthorized()
 		return
@@ -372,16 +413,10 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 
 	var req *models.ProjectRequest
 	p.DecodeJSONReq(&req)
-	if req.Public != 0 && req.Public != 1 {
-		p.HandleBadRequest("public should be 0 or 1")
-		return
-	}
 
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
-			Metadata: map[string]string{
-				models.ProMetaPublic: strconv.Itoa(req.Public),
-			},
+			Metadata: req.Metadata,
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
 			p.project.ProjectID), err)
@@ -464,5 +499,39 @@ func validateProjectReq(req *models.ProjectRequest) error {
 	if !legal {
 		return fmt.Errorf("project name is not in lower case or contains illegal characters")
 	}
+
+	if req.Metadata != nil {
+		metas := req.Metadata
+		req.Metadata = map[string]string{}
+
+		boolMetas := []string{
+			models.ProMetaPublic,
+			models.ProMetaEnableContentTrust,
+			models.ProMetaPreventVul,
+			models.ProMetaAutoScan}
+
+		for _, boolMeta := range boolMetas {
+			value, exist := metas[boolMeta]
+			if exist {
+				b, err := strconv.ParseBool(value)
+				if err != nil {
+					log.Errorf("failed to parse %s to bool: %v", value, err)
+					b = false
+				}
+				req.Metadata[boolMeta] = strconv.FormatBool(b)
+			}
+		}
+
+		value, exist := metas[models.ProMetaSeverity]
+		if exist {
+			switch strings.ToLower(value) {
+			case models.SeverityHigh, models.SeverityMedium, models.SeverityLow, models.SeverityNone:
+				req.Metadata[models.ProMetaSeverity] = strings.ToLower(value)
+			default:
+				return fmt.Errorf("invalid severity %s", value)
+			}
+		}
+	}
+
 	return nil
 }
