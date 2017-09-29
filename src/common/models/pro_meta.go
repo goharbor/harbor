@@ -29,7 +29,6 @@ const (
 
 // ProjectMetadata holds the metadata of a project.
 type ProjectMetadata struct {
-	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	Name         string    `orm:"column(name)" json:"name"`
 	Value        string    `orm:"column(value)" json:"value"`
