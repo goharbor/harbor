@@ -3,17 +3,18 @@
 This Document decribes how to deploy Harbor on Kubernetes.  It has been verified on **Kubernetes v1.6.5** and **Harbor v1.2.0**
 
 ### Prerequisite
-* You need to download docker images of Harbor. 
+
+* You should have domain knowledge about Kubernetes (Replication Controller, Service, Persistent Volume, Persistent Volume Claim, Config Map). 
+* **Optional**: Load the docker images onto woker nodes.  *If you skip this step, worker node will pull images from Docker Hub when starting the pods.*
 	* Download the offline installer of Harbor v1.2.0 from the [release](https://github.com/vmware/harbor/releases) page.
-	* Uncompress the offline installer and get the images tgz file harbor.*.tgz.
+	* Uncompress the offline installer and get the images tgz file harbor.*.tgz, transfer it to each of the worker nodes.
 	* Load the images into docker:  
 		```
 		docker load -i harbor.*.tgz 
 		```
-* You should have domain knowledge about Kubernetes (Replication Controller, Service, Persistent Volume, Persistent Volume Claim, Config Map). 
 
 ### Configuration
-We provide a python script `make/kubernetes/prepare` to generate Kubernetes ConfigMap files. 
+We provide a python script `make/kubernetes/k8s-prepare` to generate Kubernetes ConfigMap files. 
 The script is written in python, so you need a version of python in your deployment environment.
 Also the script need `openssl` to generate private key and certification, make sure you have a workable `openssl`. 
 
@@ -22,7 +23,6 @@ There are some args of the python script:
 - -f: Default Value is `../harbor.cfg`. You can specify other config file of Harbor.
 - -k: Path to https private key. This arg can overwrite the value of `ssl_cert_key` in `harbor.cfg`.
 - -c: Path to https certification. This arg can overwrite the value of `ssl_cert` in `harbor.cfg`.
-- -s: Path to secret key. Must be 16 characters. If you don't set it, the script will generate it automatically. 
 
 #### Basic Configuration
 These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kubernetes.
@@ -84,7 +84,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
 Then you can generate ConfigMap files by :
 
 ```
-python make/kubernetes/prepare
+python make/kubernetes/k8s-prepare
 ```
 
 These files will be generated:
@@ -99,7 +99,7 @@ These files will be generated:
 #### Advanced Configuration
 If Basic Configuration was not covering your requirements, you can read this section for more details.
 
-`./prepare` has a specify format of placeholder:
+`./k8s-prepare` has a specify format of placeholder:
 
 - `{{key}}`: It means we should replace the placeholder with the value in `config.cfg` which name is `key`.
 - `{{num key}}`: It's used for multiple lines text. It will add `num` spaces to the leading of every line in text.
@@ -163,3 +163,8 @@ kubectl apply -f make/kubernetes/adminserver/adminserver.rc.yaml
 ```
 
 After the pods are running, you can access Harbor's UI via the configured endpoint `10.192.168.5` or issue docker commands such as `docker login 10.192.168.5` to interact with the registry.
+
+####Limitation
+1. Current deployment is http only, to enable https you need to either add another layer of proxy or modify the nginx.cm.yaml to enable https and include a correct certificate
+2. Current deployment does not include Clair and Notary, which are supported in docker-compose deployment.  They will be supported in near futuer, stay tuned.
+
