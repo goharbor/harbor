@@ -64,6 +64,12 @@ func TestProMetaDaoMethods(t *testing.T) {
 	assert.Equal(t, value1, m[name1].Value)
 	assert.Equal(t, value2, m[name2].Value)
 
+	// test list
+	metas, err = ListProjectMetadata(name1, value1)
+	require.Nil(t, err)
+	assert.Equal(t, 1, len(metas))
+	assert.Equal(t, int64(1), metas[0].ProjectID)
+
 	// test update
 	newValue1 := "new_value1"
 	meta1.Value = newValue1

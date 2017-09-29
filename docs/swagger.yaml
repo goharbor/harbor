@@ -167,6 +167,38 @@ paths:
           description: User need to log in first.
         '500':
           description: Internal errors.
+    put:
+      summary: Update properties for a selected project.
+      description: |
+        This endpoint is aimed to update the properties of a project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Selected project ID.
+        - name: project
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Project'
+          description: Updates of project.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Updated project properties successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to the project.
+        '404':
+          description: Project ID does not exist.
+        '500':
+          description: Unexpected internal errors.
     delete:
       summary: Delete project by projectID
       description: |
@@ -193,39 +225,6 @@ paths:
           description: 'Project contains policies, can not be deleted.'
         '500':
           description: Internal errors.
-  '/projects/{project_id}/publicity':
-    put:
-      summary: Update properties for a selected project.
-      description: |
-        This endpoint is aimed to toggle a project publicity status.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Selected project ID.
-        - name: project
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/Project'
-          description: Updates of project.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Updated project publicity status successfully.
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission to the project.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
   '/projects/{project_id}/logs':
     get:
       summary: Get access logs accompany with a relevant project.
@@ -2016,10 +2015,6 @@ definitions:
       owner_name:
         type: string
         description: The owner name of the project.
-      public:
-        type: integer
-        format: int
-        description: The public status of the project.
       Togglable:
         type: boolean
         description: >-
@@ -2031,6 +2026,18 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
+      metadata:
+        type: object
+        description: The metadata of the project.
+        items:
+          $ref: '#/definitions/ProjectMetadata'
+  ProjectMetadata:
+    type: object
+    properties:
+      public:
+        type: integer
+        format: int
+        description: The public status of the project.
       enable_content_trust:
         type: boolean
         description: >-

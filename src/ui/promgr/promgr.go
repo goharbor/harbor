@@ -16,6 +16,7 @@ package promgr
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -30,9 +31,7 @@ type ProjectManager interface {
 	Create(*models.Project) (int64, error)
 	Delete(projectIDOrName interface{}) error
 	Update(projectIDOrName interface{}, project *models.Project) error
-	// TODO remove base
-	List(query *models.ProjectQueryParam,
-		base ...*models.BaseProjectCollection) (*models.ProjectQueryResult, error)
+	List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error)
 	IsPublic(projectIDOrName interface{}) (bool, error)
 	Exists(projectIDOrName interface{}) (bool, error)
 	// get all public project
@@ -42,7 +41,7 @@ type ProjectManager interface {
 type defaultProjectManager struct {
 	pmsDriver      pmsdriver.PMSDriver
 	metaMgrEnabled bool // if metaMgrEnabled is enabled, metaMgr will be used to CURD metadata
-	metaMgr        metamgr.ProjectMetadataManaegr
+	metaMgr        metamgr.ProjectMetadataManager
 }
 
 // NewDefaultProjectManager returns an instance of defaultProjectManager,
@@ -117,7 +116,25 @@ func (d *defaultProjectManager) Update(projectIDOrName interface{}, project *mod
 		if pro == nil {
 			return fmt.Errorf("project %v not found", projectIDOrName)
 		}
-		if err = d.metaMgr.Update(pro.ProjectID, project.Metadata); err != nil {
+
+		// TODO transaction?
+		metaNeedUpdated := map[string]string{}
+		metaNeedCreated := map[string]string{}
+		if pro.Metadata == nil {
+			pro.Metadata = map[string]string{}
+		}
+		for key, value := range project.Metadata {
+			_, exist := pro.Metadata[key]
+			if exist {
+				metaNeedUpdated[key] = value
+			} else {
+				metaNeedCreated[key] = value
+			}
+		}
+		if err = d.metaMgr.Add(pro.ProjectID, metaNeedCreated); err != nil {
+			return err
+		}
+		if err = d.metaMgr.Update(pro.ProjectID, metaNeedUpdated); err != nil {
 			return err
 		}
 	}
@@ -125,13 +142,32 @@ func (d *defaultProjectManager) Update(projectIDOrName interface{}, project *mod
 	return d.pmsDriver.Update(projectIDOrName, project)
 }
 
-// TODO remove base
-func (d *defaultProjectManager) List(query *models.ProjectQueryParam,
-	base ...*models.BaseProjectCollection) (*models.ProjectQueryResult, error) {
-	result, err := d.pmsDriver.List(query, base...)
+func (d *defaultProjectManager) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
+	// query by public/private property with ProjectMetadataManager first
+	if d.metaMgrEnabled && query != nil && query.Public != nil {
+		projectIDs, err := d.filterByPublic(*query.Public)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(projectIDs) == 0 {
+			return &models.ProjectQueryResult{}, nil
+		}
+
+		if query.ProjectIDs == nil {
+			query.ProjectIDs = projectIDs
+		} else {
+			query.ProjectIDs = findInBoth(query.ProjectIDs, projectIDs)
+		}
+	}
+
+	// query by other properties
+	result, err := d.pmsDriver.List(query)
 	if err != nil {
 		return nil, err
 	}
+
+	// populate metadata
 	if d.metaMgrEnabled {
 		for _, project := range result.Projects {
 			meta, err := d.metaMgr.Get(project.ProjectID)
@@ -144,6 +180,35 @@ func (d *defaultProjectManager) List(query *models.ProjectQueryParam,
 	return result, nil
 }
 
+func (d *defaultProjectManager) filterByPublic(public bool) ([]int64, error) {
+	metas, err := d.metaMgr.List(models.ProMetaPublic, strconv.FormatBool(public))
+	if err != nil {
+		return nil, err
+	}
+
+	projectIDs := []int64{}
+	for _, meta := range metas {
+		projectIDs = append(projectIDs, meta.ProjectID)
+	}
+	return projectIDs, nil
+}
+
+func findInBoth(ids1 []int64, ids2 []int64) []int64 {
+	m := map[int64]struct{}{}
+	for _, id := range ids1 {
+		m[id] = struct{}{}
+	}
+
+	ids := []int64{}
+	for _, id := range ids2 {
+		if _, exist := m[id]; exist {
+			ids = append(ids, id)
+		}
+	}
+
+	return ids
+}
+
 func (d *defaultProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
 	project, err := d.Get(projectIDOrName)
 	if err != nil {
@@ -152,7 +217,7 @@ func (d *defaultProjectManager) IsPublic(projectIDOrName interface{}) (bool, err
 	if project == nil {
 		return false, nil
 	}
-	return project.Public == 1, nil
+	return project.IsPublic(), nil
 }
 
 func (d *defaultProjectManager) Exists(projectIDOrName interface{}) (bool, error) {

@@ -173,15 +173,15 @@ export class ListProjectComponent implements OnDestroy {
 
     toggleProject(p: Project) {
         if (p) {
-            p.public === 0 ? p.public = 1 : p.public = 0;
+            p.metadata.public === 'true' ? p.metadata.public = 'false' : p.metadata.public = 'true';
             this.proService
-                .toggleProjectPublic(p.project_id, p.public)
+                .toggleProjectPublic(p.project_id, p.metadata.public)
                 .subscribe(
                 response => {
                     this.msgHandler.showSuccess('PROJECT.TOGGLED_SUCCESS');
                     let pp: Project = this.projects.find((item: Project) => item.project_id === p.project_id);
                     if (pp) {
-                        pp.public = p.public;
+                        pp.metadata.public = p.metadata.public;
                         this.statisticHandler.refresh();
                     }
                 },

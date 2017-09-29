@@ -2,14 +2,14 @@ package proxy
 
 import (
 	"github.com/stretchr/testify/assert"
-	//"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/adminserver/client"
 	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	notarytest "github.com/vmware/harbor/src/common/utils/notary/test"
 	utilstest "github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/ui/config"
-	//"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
 
 	"net/http"
 	"net/http/httptest"
@@ -110,33 +110,19 @@ func TestMatchListRepos(t *testing.T) {
 
 }
 
-func TestEnvPolicyChecker(t *testing.T) {
-	assert := assert.New(t)
-	if err := os.Setenv("PROJECT_CONTENT_TRUST", "1"); err != nil {
-		t.Fatalf("Failed to set env variable: %v", err)
-	}
-	if err2 := os.Setenv("PROJECT_VULNERABLE", "1"); err2 != nil {
-		t.Fatalf("Failed to set env variable: %v", err2)
-	}
-	if err3 := os.Setenv("PROJECT_SEVERITY", "negligible"); err3 != nil {
-		t.Fatalf("Failed to set env variable: %v", err3)
-	}
-	contentTrustFlag := getPolicyChecker().contentTrustEnabled("whatever")
-	vulFlag, sev := getPolicyChecker().vulnerablePolicy("whatever")
-	assert.True(contentTrustFlag)
-	assert.True(vulFlag)
-	assert.Equal(sev, models.SevNone)
-}
-
-// TODO uncheck after admiral pms driver is implemented
-/*
 func TestPMSPolicyChecker(t *testing.T) {
 	var defaultConfigAdmiral = map[string]interface{}{
 		common.ExtEndpoint:     "https://" + endpoint,
 		common.WithNotary:      true,
 		common.CfgExpiration:   5,
-		common.AdmiralEndpoint: admiralEndpoint,
 		common.TokenExpiration: 30,
+		common.DatabaseType:    "mysql",
+		common.MySQLHost:       "127.0.0.1",
+		common.MySQLPort:       3306,
+		common.MySQLUsername:   "root",
+		common.MySQLPassword:   "root123",
+		common.MySQLDatabase:   "registry",
+		common.SQLiteFile:      "/tmp/registry.db",
 	}
 	adminServer, err := utilstest.NewAdminserver(defaultConfigAdmiral)
 	if err != nil {
@@ -149,34 +135,38 @@ func TestPMSPolicyChecker(t *testing.T) {
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
-	pm := admiral.NewProjectManager(http.DefaultClient,
-		admiralEndpoint, &admiral.RawTokenReader{
-			Token: "token",
-		})
+	database, err := config.Database()
+	if err != nil {
+		panic(err)
+	}
+	if err := dao.InitDatabase(database); err != nil {
+		panic(err)
+	}
+
 	name := "project_for_test_get_sev_low"
-	id, err := pm.Create(&models.Project{
-		Name:                                       name,
-		EnableContentTrust:                         true,
-		PreventVulnerableImagesFromRunning:         false,
-		PreventVulnerableImagesFromRunningSeverity: "low",
+	id, err := config.GlobalProjectMgr.Create(&models.Project{
+		Name:    name,
+		OwnerID: 1,
+		Metadata: map[string]string{
+			models.ProMetaEnableContentTrust: "true",
+			models.ProMetaPreventVul:         "true",
+			models.ProMetaSeverity:           "low",
+		},
 	})
 	require.Nil(t, err)
 	defer func(id int64) {
-		if err := pm.Delete(id); err != nil {
+		if err := config.GlobalProjectMgr.Delete(id); err != nil {
 			t.Logf("failed to delete project %d: %v", id, err)
 		}
 	}(id)
-	project, err := pm.Get(id)
-	assert.Nil(t, err)
-	assert.Equal(t, id, project.ProjectID)
 
 	contentTrustFlag := getPolicyChecker().contentTrustEnabled("project_for_test_get_sev_low")
 	assert.True(t, contentTrustFlag)
 	projectVulnerableEnabled, projectVulnerableSeverity := getPolicyChecker().vulnerablePolicy("project_for_test_get_sev_low")
-	assert.False(t, projectVulnerableEnabled)
+	assert.True(t, projectVulnerableEnabled)
 	assert.Equal(t, projectVulnerableSeverity, models.SevLow)
 }
-*/
+
 func TestMatchNotaryDigest(t *testing.T) {
 	assert := assert.New(t)
 	//The data from common/utils/notary/helper_test.go

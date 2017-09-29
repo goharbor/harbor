@@ -147,7 +147,7 @@ func filterRepositories(projects []*models.Project, keyword string) (
 			entry["repository_name"] = r.Name
 			entry["project_name"] = projects[j].Name
 			entry["project_id"] = projects[j].ProjectID
-			entry["project_public"] = projects[j].Public
+			entry["project_public"] = projects[j].IsPublic()
 			entry["pull_count"] = r.PullCount
 
 			tags, err := getTags(r.Name)

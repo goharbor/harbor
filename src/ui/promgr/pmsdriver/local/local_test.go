@@ -156,7 +156,9 @@ func TestList(t *testing.T) {
 	id, err := pm.Create(&models.Project{
 		Name:    "get_all_test",
 		OwnerID: 1,
-		Public:  1,
+		Metadata: map[string]string{
+			models.ProMetaPublic: "true",
+		},
 	})
 	assert.Nil(t, err)
 	defer pm.Delete(id)

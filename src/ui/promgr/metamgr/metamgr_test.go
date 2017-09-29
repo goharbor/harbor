@@ -54,6 +54,12 @@ func TestMetaMgrMethods(t *testing.T) {
 	assert.Equal(t, 1, len(m))
 	assert.Equal(t, value, m[key])
 
+	// test list
+	metas, err := mgr.List(key, value)
+	require.Nil(t, err)
+	assert.Equal(t, 1, len(metas))
+	assert.Equal(t, int64(1), metas[0].ProjectID)
+
 	// test update
 	require.Nil(t, mgr.Update(1, map[string]string{
 		key: newValue,

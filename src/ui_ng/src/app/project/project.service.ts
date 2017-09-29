@@ -58,20 +58,22 @@ export class ProjectService {
                .catch(error=>Observable.throw(error));
   }
 
-  createProject(name: string, isPublic: number): Observable<any> {
+  createProject(name: string, metadata: any): Observable<any> {
     return this.http
                .post(`/api/projects`,
-                JSON.stringify({'project_name': name, 'public': isPublic})
+                JSON.stringify({'project_name': name, 'metadata': {
+                  public: metadata.public ? 'true' : 'false',
+                }})
                 , this.options)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
 
-  toggleProjectPublic(projectId: number, isPublic: number): Observable<any> {
-    return this.http 
-               .put(`/api/projects/${projectId}/publicity`, { 'public': isPublic }, this.options)
-               .map(response=>response.status)
-               .catch(error=>Observable.throw(error));
+  toggleProjectPublic(projectId: number, isPublic: string): Observable<any> {
+    return this.http
+               .put(`/api/projects/${projectId}`, { 'metadata': {'public': isPublic} }, this.options)
+               .map(response => response.status)
+               .catch(error => Observable.throw(error));
   }
 
   deleteProject(projectId: number): Observable<any> {
