@@ -39,3 +39,6 @@ WITH_NOTARY=$with_notary
 WITH_CLAIR=$with_clair
 CLAIR_DB_PASSWORD=$pg_password
 RESET=false
+UAA_ENDPOINT=$uaa_endpoint
+UAA_CLIENTID=$uaa_clientid
+UAA_CLIENTSECRET=$uaa_clientsecret

@@ -26,6 +26,15 @@ import (
 // 1.5 seconds
 const frozenTime time.Duration = 1500 * time.Millisecond
 
+const (
+	// DBAuth is the database auth mode.
+	DBAuth = "db_auth"
+	// LDAPAuth is the ldap auth mode.
+	LDAPAuth = "ldap_auth"
+	// UAAAuth is the uaa auth mode.
+	UAAAuth = "uaa_auth"
+)
+
 var lock = NewUserLock(frozenTime)
 
 // Authenticator provides interface to authenticate user credentials.
