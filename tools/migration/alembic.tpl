@@ -30,7 +30,7 @@ script_location = migration_harbor
 # are written from script.py.mako
 # output_encoding = utf-8
 
-sqlalchemy.url = mysql://$DB_USR:$DB_PWD@localhost:3306/registry
+sqlalchemy.url = mysql://'$DB_USR':'$DB_PWD'@localhost:3306/registry
 
 # Logging configuration
 [loggers]
