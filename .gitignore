@@ -1,4 +1,5 @@
 harbor
+make/docker-compose.yml
 make/common/config/*
 make/dev/adminserver/harbor_adminserver
 make/dev/ui/harbor_ui
@@ -14,8 +15,10 @@ src/ui/static/*.html
 src/ui/static/*.bundle.js
 src/ui/static/*.bundle.js.map
 src/ui/static/harbor-logo.*.png
-src/ui/static/i18n/lang/en-us-lang.json
-src/ui/static/i18n/lang/zh-cn-lang.json
+src/ui/static/*.min.*
+src/ui/static/styles.css
+src/ui/static/i18n
+src/ui/static/shapes
 
 src/ui_ng/coverage/
 src/ui_ng/dist/
