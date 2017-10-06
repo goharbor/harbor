@@ -92,10 +92,10 @@ up|upgrade)
     alembic -c ./alembic.ini current
     alembic -c ./alembic.ini upgrade ${VERSION}
     rc="$?"
-    alembic -c ./alembic.ini current	
+    alembic -c ./alembic.ini current
     echo "Upgrade performed."
     echo $rc
-    exit $rc	
+    exit $rc
     ;;
 backup)
     echo "Performing backup..."
