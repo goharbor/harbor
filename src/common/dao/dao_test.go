@@ -16,7 +16,6 @@ package dao
 
 import (
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -141,12 +140,13 @@ func TestMain(m *testing.M) {
 		result := 1
 		switch database {
 		case "mysql":
-			result = testForMySQL(m)
+			PrepareTestForMySQL()
 		case "sqlite":
-			result = testForSQLite(m)
+			PrepareTestForSQLite()
 		default:
 			log.Fatalf("invalid database: %s", database)
 		}
+		result = testForAll(m)
 
 		if result != 0 {
 			os.Exit(result)
@@ -154,93 +154,10 @@ func TestMain(m *testing.M) {
 	}
 }
 
-func testForMySQL(m *testing.M) int {
-	dbHost := os.Getenv("MYSQL_HOST")
-	if len(dbHost) == 0 {
-		log.Fatalf("environment variable MYSQL_HOST is not set")
-	}
-	dbUser := os.Getenv("MYSQL_USR")
-	if len(dbUser) == 0 {
-		log.Fatalf("environment variable MYSQL_USR is not set")
-	}
-	dbPortStr := os.Getenv("MYSQL_PORT")
-	if len(dbPortStr) == 0 {
-		log.Fatalf("environment variable MYSQL_PORT is not set")
-	}
-	dbPort, err := strconv.Atoi(dbPortStr)
-	if err != nil {
-		log.Fatalf("invalid MYSQL_PORT: %v", err)
-	}
-
-	dbPassword := os.Getenv("MYSQL_PWD")
-	dbDatabase := os.Getenv("MYSQL_DATABASE")
-	if len(dbDatabase) == 0 {
-		log.Fatalf("environment variable MYSQL_DATABASE is not set")
-	}
-
-	database := &models.Database{
-		Type: "mysql",
-		MySQL: &models.MySQL{
-			Host:     dbHost,
-			Port:     dbPort,
-			Username: dbUser,
-			Password: dbPassword,
-			Database: dbDatabase,
-		},
-	}
-
-	log.Infof("MYSQL_HOST: %s, MYSQL_USR: %s, MYSQL_PORT: %d, MYSQL_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
-
-	return testForAll(m, database)
-}
-
-func testForSQLite(m *testing.M) int {
-	file := os.Getenv("SQLITE_FILE")
-	if len(file) == 0 {
-		log.Fatalf("environment variable SQLITE_FILE is not set")
-	}
-
-	database := &models.Database{
-		Type: "sqlite",
-		SQLite: &models.SQLite{
-			File: file,
-		},
-	}
-
-	return testForAll(m, database)
-}
-
-func testForAll(m *testing.M, database *models.Database) int {
-	initDatabaseForTest(database)
+func testForAll(m *testing.M) int {
 	clearUp(username)
 
 	return m.Run()
-}
-
-var defaultRegistered = false
-
-func initDatabaseForTest(db *models.Database) {
-	database, err := getDatabase(db)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Infof("initializing database: %s", database.String())
-
-	alias := database.Name()
-	if !defaultRegistered {
-		defaultRegistered = true
-		alias = "default"
-	}
-	if err := database.Register(alias); err != nil {
-		panic(err)
-	}
-
-	if alias != "default" {
-		if err = globalOrm.Using(alias); err != nil {
-			log.Fatalf("failed to create new orm: %v", err)
-		}
-	}
 }
 
 func TestRegister(t *testing.T) {
