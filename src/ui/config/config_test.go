@@ -160,4 +160,13 @@ func TestConfig(t *testing.T) {
 		t.Errorf("unexpected scan all policy %v", s)
 	}
 
+	us, err := UAASettings()
+	if err != nil {
+		t.Fatalf("failed to get UAA setting, error: %v", err)
+	}
+
+	if us.ClientID != "testid" || us.ClientSecret != "testsecret" || us.Endpoint != "10.192.168.5" {
+		t.Errorf("Unexpected UAA setting: %+v", *us)
+	}
+
 }

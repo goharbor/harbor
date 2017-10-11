@@ -7,10 +7,10 @@ data:
   AUTH_MODE: db_auth
   SELF_REGISTRATION: "on"
   LDAP_URL: ldaps://ldap.mydomain.com
-  LDAP_SEARCH_DN:
-  LDAP_SEARCH_PWD:
+  LDAP_SEARCH_DN: ""
+  LDAP_SEARCH_PWD: ""
   LDAP_BASE_DN: "ou=people,dc=mydomain,dc=com"
-  LDAP_FILTER:
+  LDAP_FILTER: ""
   LDAP_UID: uid
   LDAP_SCOPE: "3"
   LDAP_TIMEOUT: "5"
@@ -28,7 +28,7 @@ data:
   EMAIL_PWD: abc
   EMAIL_SSL: "false"
   EMAIL_FROM: "admin <sample_admin@mydomain.com>"
-  EMAIL_IDENTITY:
+  EMAIL_IDENTITY: ""
   HARBOR_ADMIN_PASSWORD: "{{harbor_admin_password}}"
   PROJECT_CREATION_RESTRICTION: everyone
   VERIFY_REMOTE_CERT: "on"

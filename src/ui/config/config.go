@@ -422,3 +422,17 @@ func ScanAllPolicy() models.ScanAllPolicy {
 func WithAdmiral() bool {
 	return len(AdmiralEndpoint()) > 0
 }
+
+//UAASettings returns the UAASettings to access UAA service.
+func UAASettings() (*models.UAASettings, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return nil, err
+	}
+	us := &models.UAASettings{
+		Endpoint:     cfg[common.UAAEndpoint].(string),
+		ClientID:     cfg[common.UAAClientID].(string),
+		ClientSecret: cfg[common.UAAClientSecret].(string),
+	}
+	return us, nil
+}

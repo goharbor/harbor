@@ -61,6 +61,9 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.AdmiralEndpoint:            "http://www.vmware.com",
 	common.WithNotary:                 false,
 	common.WithClair:                  false,
+	common.UAAClientID:                "testid",
+	common.UAAClientSecret:            "testsecret",
+	common.UAAEndpoint:                "10.192.168.5",
 }
 
 // NewAdminserver returns a mock admin server

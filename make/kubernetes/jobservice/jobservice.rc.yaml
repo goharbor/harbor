@@ -15,29 +15,9 @@ spec:
     spec:
       containers:
       - name: jobservice-app
-        image: harbor/jobservice
+        image: vmware/harbor-jobservice:v1.2.0
         imagePullPolicy: IfNotPresent
         env:
-          - name: MYSQL_HOST
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: MYSQL_HOST
-          - name: MYSQL_PORT
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: MYSQL_PORT
-          - name: MYSQL_USR
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: MYSQL_USR
-          - name: MYSQL_PWD
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: MYSQL_PWD
           - name: UI_SECRET
             valueFrom: 
               configMapKeyRef: 
@@ -53,46 +33,16 @@ spec:
               configMapKeyRef: 
                name: harbor-jobservice-config
                key: CONFIG_PATH
-          - name: REGISTRY_URL
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: REGISTRY_URL
-          - name: VERIFY_REMOTE_CERT
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: VERIFY_REMOTE_CERT
-          - name: MAX_JOB_WORKERS
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: MAX_JOB_WORKERS
           - name: LOG_LEVEL
             valueFrom: 
               configMapKeyRef: 
                name: harbor-jobservice-config
                key: LOG_LEVEL
-          - name: LOG_DIR
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: LOG_DIR
           - name: GODEBUG
             valueFrom: 
               configMapKeyRef: 
                name: harbor-jobservice-config
                key: GODEBUG
-          - name: EXT_ENDPOINT
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: EXT_ENDPOINT
-          - name: TOKEN_URL
-            valueFrom: 
-              configMapKeyRef: 
-               name: harbor-jobservice-config
-               key: TOKEN_URL
         ports:
         - containerPort: 80
         volumeMounts:

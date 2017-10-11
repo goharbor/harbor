@@ -15,6 +15,8 @@
 package metamgr
 
 import (
+	"strconv"
+
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 )
@@ -23,15 +25,15 @@ import (
 // implement
 type ProjectMetadataManaegr interface {
 	// Add metadatas for project specified by projectID
-	Add(projectID int64, meta map[string]interface{}) error
+	Add(projectID int64, meta map[string]string) error
 	// Delete metadatas whose keys are specified in parameter meta, if it
 	// is absent, delete all
-	Delete(projecdtID int64, meta ...[]string) error
+	Delete(projecdtID int64, meta ...string) error
 	// Update metadatas
-	Update(projectID int64, meta map[string]interface{}) error
+	Update(projectID int64, meta map[string]string) error
 	// Get metadatas whose keys are specified in parameter meta, if it is
 	// absent, get all
-	Get(projectID int64, meta ...[]string) (map[string]interface{}, error)
+	Get(projectID int64, meta ...string) (map[string]string, error)
 }
 
 type defaultProjectMetadataManaegr struct{}
@@ -41,25 +43,58 @@ func NewDefaultProjectMetadataManager() ProjectMetadataManaegr {
 	return &defaultProjectMetadataManaegr{}
 }
 
-// TODO add implement
-func (d *defaultProjectMetadataManaegr) Add(projectID int64, meta map[string]interface{}) error {
+func (d *defaultProjectMetadataManaegr) Add(projectID int64, meta map[string]string) error {
+	for k, v := range meta {
+		proMeta := &models.ProjectMetadata{
+			ProjectID: projectID,
+			Name:      k,
+			Value:     v,
+		}
+		if err := dao.AddProjectMetadata(proMeta); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func (d *defaultProjectMetadataManaegr) Delete(projectID int64, meta ...[]string) error {
-	return nil
+func (d *defaultProjectMetadataManaegr) Delete(projectID int64, meta ...string) error {
+	return dao.DeleteProjectMetadata(projectID, meta...)
 }
 
-func (d *defaultProjectMetadataManaegr) Update(projectID int64, meta map[string]interface{}) error {
+func (d *defaultProjectMetadataManaegr) Update(projectID int64, meta map[string]string) error {
+	for k, v := range meta {
+		if err := dao.UpdateProjectMetadata(&models.ProjectMetadata{
+			ProjectID: projectID,
+			Name:      k,
+			Value:     v,
+		}); err != nil {
+			return err
+		}
+	}
+
 	// TODO remove the logic
 	public, ok := meta[models.ProMetaPublic]
 	if ok {
-		return dao.ToggleProjectPublicity(projectID, public.(int))
+		i, err := strconv.Atoi(public)
+		if err != nil {
+			return err
+		}
+		return dao.ToggleProjectPublicity(projectID, i)
 	}
 
 	return nil
 }
 
-func (d *defaultProjectMetadataManaegr) Get(projectID int64, meta ...[]string) (map[string]interface{}, error) {
-	return nil, nil
+func (d *defaultProjectMetadataManaegr) Get(projectID int64, meta ...string) (map[string]string, error) {
+	proMetas, err := dao.GetProjectMetadata(projectID, meta...)
+	if err != nil {
+		return nil, nil
+	}
+
+	m := map[string]string{}
+	for _, proMeta := range proMetas {
+		m[proMeta.Name] = proMeta.Value
+	}
+
+	return m, nil
 }

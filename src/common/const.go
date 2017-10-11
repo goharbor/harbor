@@ -68,6 +68,9 @@ const (
 	WithClair                  = "with_clair"
 	ScanAllPolicy              = "scan_all_policy"
 	ClairDBPassword            = "clair_db_password"
+	UAAEndpoint                = "uaa_endpoint"
+	UAAClientID                = "uaa_client_id"
+	UAAClientSecret            = "uaa_client_secret"
 
 	DefaultClairEndpoint = "http://clair:6060"
 )

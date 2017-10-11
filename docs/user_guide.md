@@ -15,6 +15,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * Delete repositories and images.
 * Content trust.  
 * Vulnerability scanning via Clair.
+* Pull image from Harbor in Kubernetes.
 
 ## Role Based Access Control(RBAC)  
 
@@ -329,3 +330,9 @@ You can set policies to control the vulnerability analysis process. Currently, t
 **NOTES: Once the scheduled job is executed, the completion time of scanning all images will be updated accordingly. Please be aware that the completion time of the images may be different because the execution of analysis for each image may be carried out at different time.**
 
 **Video demo:** ![vulnerability scanning](img/demos/vul_scan.png) [youtube](https://www.youtube.com/watch?v=K4tJ6B2cGR4) , [Tencent Video](https://v.qq.com/x/page/s0553k9692d.html)
+
+### Pull image from Harbor in Kubernetes
+Kubernetes users can easily deploy pods with images stored in Harbor.  The settings are similar to that of another private registry.  There are two major issues:
+
+1. When your Harbor instance is hosting http and the certificate is self signed.  You need to modify daemon.json on each work node of your cluster, for details please refer to: https://docs.docker.com/registry/insecure/#deploy-a-plain-http-registry
+2. If your pod references an image under private project, you need to create a secret with the credentials of user who has permission to pull image from this project, for details refer to: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/

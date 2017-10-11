@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: nginx-app
-        image: harbor/nginx
+        image: vmware/nginx-photon:1.11.13
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80

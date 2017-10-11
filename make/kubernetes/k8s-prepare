@@ -158,10 +158,8 @@ with open(os.devnull, 'w') as devnull:
     openssl = subprocess.call(['which','openssl'], stdout=devnull, stderr=devnull)
     if openssl == 0:
         pkey = subprocess.check_output(['openssl','genrsa','4096'], stderr=devnull)
-        subj = '/C={0}/ST={1}/L={2}/O={3}/OU={4}/CN={5}/emailAddress={6}'.format(get_config('crt_country'), 
-                get_config('crt_state'), get_config('crt_location'), get_config('crt_organization'),
-                get_config('crt_organizationalunit'), get_config('crt_commonname'), get_config('crt_email'))
-        openssl = subprocess.Popen(['openssl', 'req', '-new', '-x509',  '-key', '/dev/stdin', '-days', '3650', '-subj', subj],
+        empty_subj = "/C=/ST=/L=/O=/CN=/"
+        openssl = subprocess.Popen(['openssl', 'req', '-new', '-x509',  '-key', '/dev/stdin', '-days', '3650', '-subj', empty_subj],
                                 stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=devnull)
         cert = openssl.communicate(input=pkey)[0]
         set_config('auth_pkey', pkey.decode())

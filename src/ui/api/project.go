@@ -379,8 +379,8 @@ func (p *ProjectAPI) ToggleProjectPublic() {
 
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
-			Metadata: map[string]interface{}{
-				models.ProMetaPublic: req.Public,
+			Metadata: map[string]string{
+				models.ProMetaPublic: strconv.Itoa(req.Public),
 			},
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
