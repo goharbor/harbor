@@ -98,7 +98,7 @@ func init() {
 	beego.Router("/api/users", &UserAPI{}, "get:List;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
-	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
+	beego.Router("/api/projects/:id([0-9]+)", &ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
@@ -358,23 +358,22 @@ func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (i
 	return httpStatusCode, successPayload, err
 }
 
-//Update properties for a selected project.
+//Update publicity for a selected project.
 func (a testapi) ToggleProjectPublicity(prjUsr usrInfo, projectID string, ispublic int32) (int, error) {
 	// create path and map variables
-	path := "/api/projects/" + projectID + "/publicity/"
+	path := "/api/projects/" + projectID
 	_sling := sling.New().Put(a.basePath)
 
 	_sling = _sling.Path(path)
 
 	type QueryParams struct {
-		Public int32 `json:"public,omitempty"`
+		Public int32 `json:"publicity,omitempty"`
 	}
 
 	_sling = _sling.BodyJSON(&QueryParams{Public: ispublic})
 
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
-
 }
 
 //Get access logs accompany with a relevant project.

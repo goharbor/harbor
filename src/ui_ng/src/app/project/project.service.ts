@@ -69,7 +69,7 @@ export class ProjectService {
 
   toggleProjectPublic(projectId: number, isPublic: number): Observable<any> {
     return this.http 
-               .put(`/api/projects/${projectId}/publicity`, { 'public': isPublic }, this.options)
+               .put(`/api/projects/${projectId}`, { 'publicity': isPublic }, this.options)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }

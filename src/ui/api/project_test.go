@@ -297,16 +297,7 @@ func TestToggleProjectPublicity(t *testing.T) {
 	} else {
 		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 401")
 	}
-	//-------------------case3: Response Code=400 Invalid project id------------------------------//
-	fmt.Println("case 3: respose code:400, Invalid project id")
-	httpStatusCode, err = apiTest.ToggleProjectPublicity(*admin, "cc", 1)
-	if err != nil {
-		t.Error("Error while search project by proId", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-	//-------------------case4: Response Code=404 Not found the project------------------------------//
+	//-------------------case3: Response Code=404 Not found the project------------------------------//
 	fmt.Println("case 4: respose code:404, Not found the project")
 	httpStatusCode, err = apiTest.ToggleProjectPublicity(*admin, "1234", 1)
 	if err != nil {
