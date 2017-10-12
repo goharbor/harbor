@@ -153,11 +153,11 @@ Expand Repo
     sleep  1
 
 Scan Repo
-    [Arguments]  ${projectname}
-    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+    [Arguments]  ${tagname}
+    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow
+    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
     Sleep  15
 
 Summary Chart Should Display
-    [Arguments]  ${projectname}
-    Page Should Contain Element  //clr-dg-row-master[contains(.,'${projectname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
+    [Arguments]  ${tagname}
+    Page Should Contain Element  //clr-dg-row-master[contains(.,'${tagname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
