@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: adminserver-app
-        image: 192.168.56.201:5000/vmware/harbor-adminserver:dev
+        image: vmware/harbor-adminserver:v1.2.0
         imagePullPolicy: IfNotPresent
         env:
           - name: LOG_LEVEL
@@ -218,6 +218,9 @@ spec:
               configMapKeyRef:
                 name: harbor-adminserver-config
                 key: RESET
+          #Workaround the volume API issue.
+          - name: IMAGE_STORE_PATH
+            value: "/"
         ports:
         - containerPort: 80
         volumeMounts:

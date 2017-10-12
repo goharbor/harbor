@@ -46,6 +46,7 @@ var (
 		common.MySQLPassword,
 		common.AdminInitialPassword,
 		common.ClairDBPassword,
+		common.UAAClientSecret,
 	}
 
 	// all configurations need read from environment variables
@@ -151,6 +152,9 @@ var (
 			parse: parseStringToBool,
 		},
 		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
+		common.UAAEndpoint:     "UAA_ENDPOINT",
+		common.UAAClientID:     "UAA_CLIENTID",
+		common.UAAClientSecret: "UAA_CLIENTSECRET",
 	}
 )
 

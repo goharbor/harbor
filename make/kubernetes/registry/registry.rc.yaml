@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: registry-app
-        image: harbor/registry
+        image: vmware/registry:2.6.2-photon
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000

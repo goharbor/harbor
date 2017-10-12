@@ -240,8 +240,8 @@ Test Case - Scan A Tag
     Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
     Go Into Project  project${d}
     Expand Repo  project${d}
-    Scan Repo  project${d}
-    Summary Chart Should Display  project${d}
+    Scan Repo  latest
+    Summary Chart Should Display  latest
     Close Browser
 
 Test Case-Manage Project Member

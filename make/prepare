@@ -157,6 +157,9 @@ if rcp.has_option("configuration", "admiral_url"):
 else:
     admiral_url = ""
 pg_password = rcp.get("configuration", "clair_db_password")
+uaa_endpoint = rcp.get("configuration", "uaa_endpoint")
+uaa_clientid = rcp.get("configuration", "uaa_clientid")
+uaa_clientsecret = rcp.get("configuration", "uaa_clientsecret")
 secret_key = get_secret_key(secretkey_path)
 ########
 
@@ -233,7 +236,10 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         admiral_url=admiral_url,
         with_notary=args.notary_mode,
         with_clair=args.clair_mode,
-        pg_password=pg_password
+        pg_password=pg_password,
+        uaa_endpoint=uaa_endpoint,
+        uaa_clientid=uaa_clientid,
+        uaa_clientsecret=uaa_clientsecret
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
