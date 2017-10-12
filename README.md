@@ -40,6 +40,13 @@ More info on [partners and users](partners.md).
 ### Contribution
 We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any questions: harbor @vmware.com .
 
+### Demos
+* ![play](docs/img/video.png) **Content Trust** ( [youtube](https://www.youtube.com/watch?v=pPklSTJZY2E) , [Tencent Video](https://v.qq.com/x/page/n0553fzzrnf.html) )
+* ![play](docs/img/video.png) **Role Based Access Control** ( [youtube](https://www.youtube.com/watch?v=2ZIu9XTvsC0) , [Tencent Video](https://v.qq.com/x/page/l0553yw19ek.html) )
+* ![play](docs/img/video.png) **Vulnerability Scanning** ( [youtube](https://www.youtube.com/watch?v=K4tJ6B2cGR4) , [Tencent Video](https://v.qq.com/x/page/s0553k9692d.html) )
+* ![play](docs/img/video.png) **Image Replication** ( [youtube](https://www.youtube.com/watch?v=1NPlzrm5ozE) , [Tencent Video](https://v.qq.com/x/page/a0553wc7fs9.html) )
+* ![play](docs/img/video.png) **VMworld 2017** ( [youtube](https://www.youtube.com/watch?v=tI5xMe24fJ4) )
+
 ### License
 Harbor is available under the [Apache 2 license](LICENSE).
 

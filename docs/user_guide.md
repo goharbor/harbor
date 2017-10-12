@@ -32,6 +32,8 @@ Besides the above three roles, there are two system-wide roles:
 * **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users and set vulnerability scan policy for all images. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects.  
 
+**Video demo:** ![RBAC](img/demos/rbac.png) [youtube](https://www.youtube.com/watch?v=2ZIu9XTvsC0) , [Tencent Video](https://v.qq.com/x/page/l0553yw19ek.html)
+
 ## User account
 Harbor supports two authentication modes:  
 
@@ -105,6 +107,8 @@ You can enable, disable or delete a rule in the rule list view. Only rules which
 Click a rule, jobs which belong to this rule will be listed. A job represents the progress of replicating the repository to the remote instance.  
 
 ![browse project](img/new_rule_list.png)
+
+**Video demo:** ![Image replication](img/demos/image_replication.png) [youtube](https://www.youtube.com/watch?v=1NPlzrm5ozE) , [Tencent Video](https://v.qq.com/x/page/a0553wc7fs9.html)
 
 ## Searching projects and repositories  
 Entering a keyword in the search field at the top lists all matching projects and repositories. The search result includes both public and private repositories you have access to.  
@@ -255,6 +259,8 @@ If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/
 When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.  
 ![browse project](img/content_trust.png)
 
+**Video demo:** ![content trust](img/demos/content_trust.png) [youtube](https://www.youtube.com/watch?v=pPklSTJZY2E) , [Tencent Video](https://v.qq.com/x/page/n0553fzzrnf.html)
+
 ### Vulnerability scanning via Clair 
 **CAUTION: Clair is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**
 
@@ -322,6 +328,8 @@ You can set policies to control the vulnerability analysis process. Currently, t
 ![browse project](img/scan_policy.png)
 
 **NOTES: Once the scheduled job is executed, the completion time of scanning all images will be updated accordingly. Please be aware that the completion time of the images may be different because the execution of analysis for each image may be carried out at different time.**
+
+**Video demo:** ![vulnerability scanning](img/demos/vul_scan.png) [youtube](https://www.youtube.com/watch?v=K4tJ6B2cGR4) , [Tencent Video](https://v.qq.com/x/page/s0553k9692d.html)
 
 ### Pull image from Harbor in Kubernetes
 Kubernetes users can easily deploy pods with images stored in Harbor.  The settings are similar to that of another private registry.  There are two major issues:
