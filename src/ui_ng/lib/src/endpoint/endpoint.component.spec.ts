@@ -25,6 +25,7 @@ describe('EndpointComponent (inline template)', () => {
         "name": "target_01",
         "username": "admin",
         "password": "",
+        "insecure": true,
         "type": 0
     },
     {
@@ -33,6 +34,7 @@ describe('EndpointComponent (inline template)', () => {
         "name": "target_02",
         "username": "AAA",
         "password": "",
+        "insecure": false,
         "type": 0
     },
     {
@@ -41,6 +43,7 @@ describe('EndpointComponent (inline template)', () => {
         "name": "target_03",
         "username": "admin",
         "password": "",
+        "insecure": false,
         "type": 0
     },
     {
@@ -49,6 +52,7 @@ describe('EndpointComponent (inline template)', () => {
         "name": "target_04",
         "username": "",
         "password": "",
+        "insecure": false,
         "type": 0
     }
   ];
@@ -59,6 +63,7 @@ describe('EndpointComponent (inline template)', () => {
     "name": "target_01",
     "username": "admin",
     "password": "",
+      "insecure": false,
     "type": 0
   };
 
