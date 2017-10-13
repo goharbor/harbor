@@ -161,6 +161,7 @@ uaa_endpoint = rcp.get("configuration", "uaa_endpoint")
 uaa_clientid = rcp.get("configuration", "uaa_clientid")
 uaa_clientsecret = rcp.get("configuration", "uaa_clientsecret")
 secret_key = get_secret_key(secretkey_path)
+log_rotate_days = rcp.get("configuration", "log_rotate_days")
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -176,6 +177,7 @@ job_config_dir = prep_conf_dir(config_dir, "jobservice")
 registry_config_dir = prep_conf_dir(config_dir, "registry")
 nginx_config_dir = prep_conf_dir (config_dir, "nginx")
 nginx_conf_d = prep_conf_dir(nginx_config_dir, "conf.d")
+log_config_dir = prep_conf_dir (config_dir, "log")
 
 adminserver_conf_env = os.path.join(config_dir, "adminserver", "env")
 ui_conf_env = os.path.join(config_dir, "ui", "env")
@@ -185,7 +187,8 @@ registry_conf = os.path.join(config_dir, "registry", "config.yml")
 db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
-cert_dir = os.path.join(config_dir, "nginx", "cert") 
+cert_dir = os.path.join(config_dir, "nginx", "cert")
+log_conf_env = os.path.join(config_dir, "log", "env") 
 
 if protocol == "https":
     target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
@@ -261,6 +264,10 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         job_conf_env,
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret)
+		
+render(os.path.join(templates_dir, "log", "env"),
+        log_conf_env,
+        log_rotate_days=log_rotate_days)
 
 print("Generated configuration file: %s" % jobservice_conf)
 shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)
