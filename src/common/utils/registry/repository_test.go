@@ -127,7 +127,7 @@ func TestPullBlob(t *testing.T) {
 		t.Fatalf("failed to read from reader: %v", err)
 	}
 
-	if bytes.Compare(b, blob) != 0 {
+	if !bytes.Compare(b, blob) {
 		t.Errorf("unexpected blob: %s != %s", string(b), string(blob))
 	}
 }
@@ -278,7 +278,7 @@ func TestPullManifest(t *testing.T) {
 		t.Errorf("unexpected media type of manifest: %s != %s", md, mediaType)
 	}
 
-	if bytes.Compare(payload, manifest) != 0 {
+	if !bytes.Compare(payload, manifest) {
 		t.Errorf("unexpected manifest: %s != %s", string(payload), string(manifest))
 	}
 }
