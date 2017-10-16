@@ -1,8 +1,9 @@
-FROM library/photon:1.0
+FROM vmware/photon:1.0
 
 ENV PGDATA /var/lib/postgresql/data
 
 RUN touch /etc/localtime.bak \
+    && tdnf distro-sync -y \
     && tdnf install -y sed shadow gzip postgresql\
     && groupadd -r postgres --gid=999 \
     && useradd -r -g postgres --uid=999 postgres \
@@ -14,7 +15,8 @@ RUN touch /etc/localtime.bak \
     && sed -i "s|#listen_addresses = 'localhost'.*|listen_addresses = '*'|g" /usr/share/postgresql/postgresql.conf.sample \
     && sed -i "s|#unix_socket_directories = '/tmp'.*|unix_socket_directories = '/run/postgresql'|g" /usr/share/postgresql/postgresql.conf.sample \
     && touch /usr/share/locale/locale.alias \
-    && locale-gen.sh en_US.UTF-8
+    && locale-gen.sh en_US.UTF-8 \
+    && tdnf clean all
 
 VOLUME /var/lib/postgresql/data
 
