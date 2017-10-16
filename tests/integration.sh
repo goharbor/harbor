@@ -92,14 +92,16 @@ fi
 
 ## --------------------------------------------- Upload Harbor Latest Build File ---------------------------------------
 if [ $upload_latest_build == true ] && [ $rc -eq 0 ]; then
+  echo "update latest build file."
   harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
+  echo $harbor_build_bundle 
   if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
-      echo 'https://storage.googleapis.com/harbor-builds/$harbor_build_bundle' > $latest_build_file
+      echo 'https://storage.googleapis.com/harbor-builds/'$harbor_build_bundle > $latest_build_file
       gsutil cp $latest_build_file gs://harbor-builds
       gsutil -D setacl public-read gs://harbor-builds/$latest_build_file &> /dev/null
   fi
   if [[ $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
-      echo 'https://storage.googleapis.com/harbor-releases/$harbor_build_bundle' > $latest_build_file
+      echo 'https://storage.googleapis.com/harbor-releases/'$harbor_build_bundle > $latest_build_file
       gsutil cp $latest_build_file gs://harbor-releases
       gsutil -D setacl public-read gs://harbor-releases/$latest_build_file &> /dev/null
   fi    
