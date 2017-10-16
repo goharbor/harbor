@@ -86,7 +86,7 @@
         "LOGOUT": "Cerrar sesión"
     },
     "GLOBAL_SEARCH": {
-        "PLACEHOLDER": "Buscar en Harbor...",
+        "PLACEHOLDER": "Buscar en {{param}}...",
         "PLACEHOLDER_VIC": "Buscar en el registro..."
     },
     "SIDE_NAV": {

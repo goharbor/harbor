@@ -86,7 +86,7 @@
         "LOGOUT": "退出"
     },
     "GLOBAL_SEARCH": {
-        "PLACEHOLDER": "搜索 Harbor...",
+        "PLACEHOLDER": "搜索 {{param}}...",
         "PLACEHOLDER_VIC": "搜索 Registry..."
     },
     "SIDE_NAV": {

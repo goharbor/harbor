@@ -86,7 +86,7 @@
         "LOGOUT": "Log Out"
     },
     "GLOBAL_SEARCH": {
-        "PLACEHOLDER": "Search Harbor...",
+        "PLACEHOLDER": "Search {{param}}...",
         "PLACEHOLDER_VIC": "Search Registry..."
     },
     "SIDE_NAV": {

@@ -26,6 +26,7 @@ import { supportedLangs, enLang, languageNames, CommonRoutes } from '../../share
 import { AppConfigService } from '../../app-config.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import {SkinableConfig} from "../../skinable-config.service";
 
 @Component({
     selector: 'navigator',
@@ -40,6 +41,8 @@ export class NavigatorComponent implements OnInit {
 
     selectedLang: string = enLang;
     appTitle: string = 'APP_TITLE.HARBOR';
+    customStyle: {[key: string]: any};
+    customProjectName: {[key: string]: any};
 
     constructor(
         private session: SessionService,
@@ -48,11 +51,20 @@ export class NavigatorComponent implements OnInit {
         private cookie: CookieService,
         private appConfigService: AppConfigService,
         private msgHandler: MessageHandlerService,
-        private searchTrigger: SearchTriggerService) {
-
+        private searchTrigger: SearchTriggerService,
+        private skinableConfig: SkinableConfig) {
     }
 
     ngOnInit(): void {
+        // custom skin
+        let customSkinObj = this.skinableConfig.getSkinConfig();
+        if (customSkinObj) {
+            if (customSkinObj.projects) {
+                this.customProjectName = customSkinObj.projects;
+            }
+            this.customStyle = customSkinObj;
+        }
+
         this.selectedLang = this.translate.currentLang;
         this.translate.onLangChange.subscribe((langChange: {lang: string}) => {
             this.selectedLang = langChange.lang;
