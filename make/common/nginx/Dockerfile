@@ -5,6 +5,10 @@ RUN tdnf install -y nginx \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && mkdir -p /var/run
 
+VOLUME ["/var/cache/nginx"]
+VOLUME ["/var/log/nginx"]
+VOLUME ["/var/run"]
+
 EXPOSE 80
 STOPSIGNAL SIGQUIT
 

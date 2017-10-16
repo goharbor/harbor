@@ -16,7 +16,8 @@ RUN touch /etc/localtime.bak \
     && touch /usr/share/locale/locale.alias \
     && locale-gen.sh en_US.UTF-8
 
-VOLUME /var/lib/postgresql/data
+VOLUME ["/var/lib/postgresql/data"]
+VOLUME ["/run/postgresql"]
 
 ADD docker-entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh

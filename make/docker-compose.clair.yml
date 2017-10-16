@@ -17,6 +17,7 @@ services:
         aliases:
           - postgres
     container_name: clair-db
+    read_only: true
     image: vmware/postgresql:9.6.4-photon
     restart: always
     depends_on:
@@ -26,15 +27,17 @@ services:
     volumes:
       - ./common/config/clair/postgresql-init.d/:/docker-entrypoint-initdb.d
       - /data/clair-db:/var/lib/postgresql/data
+      - /data/clair-db/run:/run/postgresql
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "clair-db"
   clair:
     networks:
       - harbor-clair
     container_name: clair
+    read_only: true
     image: vmware/clair:v2.0.1-photon
     restart: always
     cpu_quota: 150000
@@ -45,7 +48,7 @@ services:
     command: [-config, /config/config.yaml]
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "clair"
 networks:

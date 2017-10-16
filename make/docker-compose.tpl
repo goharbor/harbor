@@ -2,16 +2,19 @@ version: '2'
 services:
   log:
     image: vmware/harbor-log:__version__
-    container_name: harbor-log 
+    read_only: true
+    container_name: harbor-log
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/:z
+      - /data/harbor-log/run:/var/run
     ports:
       - 127.0.0.1:1514:514
     networks:
       - harbor
   registry:
     image: vmware/registry:2.6.2-photon
+    read_only: true
     container_name: registry
     restart: always
     volumes:
@@ -27,15 +30,18 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registry"
   mysql:
     image: vmware/harbor-db:__version__
+    read_only: true
     container_name: harbor-db
     restart: always
     volumes:
       - /data/database:/var/lib/mysql:z
+      - /data/database/tmp:/tmp
+      - /data/database/tmp:/var/run/mysqld
     networks:
       - harbor
     env_file:
@@ -44,11 +50,12 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "mysql"
   adminserver:
     image: vmware/harbor-adminserver:__version__
+    read_only: true
     container_name: harbor-adminserver
     env_file:
       - ./common/config/adminserver/env
@@ -63,11 +70,12 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "adminserver"
   ui:
     image: vmware/harbor-ui:__version__
+    read_only: true
     container_name: harbor-ui
     env_file:
       - ./common/config/ui/env
@@ -86,11 +94,12 @@ services:
       - registry
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "ui"
   jobservice:
     image: vmware/harbor-jobservice:__version__
+    read_only: true
     container_name: harbor-jobservice
     env_file:
       - ./common/config/jobservice/env
@@ -106,15 +115,19 @@ services:
       - adminserver
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   proxy:
     image: vmware/nginx-photon:1.11.13
+    read_only: true
     container_name: nginx
     restart: always
     volumes:
       - ./common/config/nginx:/etc/nginx:z
+      - /data/proxy/var/cache:/var/cache/nginx
+      - /data/proxy/var/log:/var/log/nginx
+      - /data/proxy/var/run:/var/run
     networks:
       - harbor
     ports:
@@ -128,7 +141,7 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
 networks:

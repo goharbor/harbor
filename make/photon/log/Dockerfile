@@ -9,7 +9,8 @@ ADD make/common/log/rotate.sh /etc/cron.weekly/rotate
 # rsyslog configuration file for docker
 ADD make/common/log/rsyslog_docker.conf /etc/rsyslog.d/
 
-VOLUME /var/log/docker/
+VOLUME ["/var/log/docker"]
+VOLUME ["/var/run"]
 
 EXPOSE 514
 

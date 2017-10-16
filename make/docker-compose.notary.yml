@@ -8,6 +8,7 @@ services:
       - harbor-notary
   notary-server:
     image: vmware/notary-photon:server-0.5.0
+    read_only: true
     container_name: notary-server
     restart: always
     networks:
@@ -23,11 +24,12 @@ services:
       - notary-signer
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-server"
   notary-signer:
     image: vmware/notary-photon:signer-0.5.0
+    read_only: true
     container_name: notary-signer
     restart: always
     networks:
@@ -45,11 +47,12 @@ services:
       - notary-db
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-signer"
   notary-db:
     image: vmware/harbor-notary-db:mariadb-10.1.10
+    read_only: true
     container_name: notary-db
     restart: always
     networks:
@@ -59,6 +62,7 @@ services:
     volumes:
       - ./common/config/notary/mysql-initdb.d:/docker-entrypoint-initdb.d
       - /data/notary-db:/var/lib/mysql
+      - /data/notary-db/tmp:/tmp
     environment:
       - TERM=dumb
       - MYSQL_ALLOW_EMPTY_PASSWORD="true"
@@ -67,7 +71,7 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-db"
 networks:
