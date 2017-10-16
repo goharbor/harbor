@@ -434,5 +434,8 @@ func UAASettings() (*models.UAASettings, error) {
 		ClientID:     cfg[common.UAAClientID].(string),
 		ClientSecret: cfg[common.UAAClientSecret].(string),
 	}
+	if len(os.Getenv("UAA_CA_ROOT")) != 0 {
+		us.CARootPath = os.Getenv("UAA_CA_ROOT")
+	}
 	return us, nil
 }
