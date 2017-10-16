@@ -123,7 +123,6 @@ export class CreateEditRuleComponent implements AfterViewChecked {
       name: '',
       username: '',
       password: '',
-      insecure: false,
       type: 0
     };
   }
