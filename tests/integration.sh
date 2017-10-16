@@ -59,6 +59,10 @@ if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRAN
     echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
     upload_latest_build=true
+elif [ $DRONE_BRANCH == "master" ]; then
+    echo "Package Harbor build."
+    pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+    upload_latest_build=true   
 elif (echo $buildinfo | grep -q "\[Specific CI="); then
     buildtype=$(echo $buildinfo | grep "\[Specific CI=")
     testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
@@ -92,7 +96,9 @@ fi
 
 ## --------------------------------------------- Upload Harbor Latest Build File ---------------------------------------
 if [ $upload_latest_build == true ] && [ $rc -eq 0 ]; then
+  echo "update latest build file.."
   harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
+  echo $harbor_build_bundle 
   if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
       echo 'https://storage.googleapis.com/harbor-builds/$harbor_build_bundle' > $latest_build_file
       gsutil cp $latest_build_file gs://harbor-builds
