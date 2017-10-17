@@ -1,4 +1,4 @@
-FROM vmware/photon:1.0
+FROM vmware/photon:1.0-20170928
 
 RUN tdnf erase vim -y \
     && tdnf distro-sync -y \
