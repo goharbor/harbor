@@ -293,6 +293,22 @@ Test Case - Ldap Sign in and out
     Sign In Harbor  ${HARBOR_URL}  user001  user001
     Close Browser
 
+Test Case - Ldap User Create Project
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  user001  user001
+    Create An New Project  project${d}
+    Close Browser
+
+Test Case - Ldap User Push An Image
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  user001  user001
+    Create An New Project  project${d}
+    Push Image  ${ip}  user001  user001  project${d}  hello-world:latest
+    Go Into Project  project${d}
+    Wait Until Page Contains  project${d}/hello-world
+
 Test Case - Admin Push Signed Image
     Switch To Notary
 
