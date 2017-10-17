@@ -3,6 +3,8 @@ services:
   log:
     image: vmware/harbor-log:__version__
     container_name: harbor-log 
+    env_file:
+      - ./common/config/log/env
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/:z

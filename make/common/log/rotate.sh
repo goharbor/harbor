@@ -3,7 +3,14 @@ set -e
 echo "Log rotate starting..."
 
 #The logs n days before will be compressed.
-n=14
+n=$LOG_ROTATE_DAYS
+if [ -z "$n" ]
+then
+	n=3
+fi
+
+echo "logs rotate days: $n"
+
 path=/var/log/docker
 
 list=""
