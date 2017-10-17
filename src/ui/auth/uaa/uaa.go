@@ -42,8 +42,7 @@ func GetClient() (uaa.Client, error) {
 		ClientID:     UAASettings.ClientID,
 		ClientSecret: UAASettings.ClientSecret,
 		Endpoint:     UAASettings.Endpoint,
-		//TODO: remove it
-		SkipTLSVerify: true,
+		CARootPath:   UAASettings.CARootPath,
 	}
 	client, err = uaa.NewDefaultClient(cfg)
 	return client, err

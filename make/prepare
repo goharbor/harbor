@@ -160,6 +160,7 @@ pg_password = rcp.get("configuration", "clair_db_password")
 uaa_endpoint = rcp.get("configuration", "uaa_endpoint")
 uaa_clientid = rcp.get("configuration", "uaa_clientid")
 uaa_clientsecret = rcp.get("configuration", "uaa_clientsecret")
+uaa_ca_root = rcp.get("configuration", "uaa_ca_root")
 secret_key = get_secret_key(secretkey_path)
 log_rotate_days = rcp.get("configuration", "log_rotate_days")
 ########
@@ -172,6 +173,7 @@ if not os.path.exists(adminserver_config_dir):
     os.makedirs(os.path.join(config_dir, "adminserver"))
 
 ui_config_dir = prep_conf_dir(config_dir,"ui")
+ui_certificates_dir =  prep_conf_dir(ui_config_dir,"certificates")
 db_config_dir = prep_conf_dir(config_dir, "db")
 job_config_dir = prep_conf_dir(config_dir, "jobservice")
 registry_config_dir = prep_conf_dir(config_dir, "registry")
@@ -204,6 +206,12 @@ if protocol == "https":
 else:
     render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
         nginx_conf)
+
+if auth_mode == "uaa_auth":
+    if os.path.isfile(uaa_ca_root):
+        shutil.copy2(uaa_ca_root, os.path.join(ui_certificates_dir, "uaa_ca.pem"))
+    else:
+        raise Exception("Error: Invalid path for uaa ca root: %s" % uaa_ca_root)
 		
 render(os.path.join(templates_dir, "adminserver", "env"),
         adminserver_conf_env,

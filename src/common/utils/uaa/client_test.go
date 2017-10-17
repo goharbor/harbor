@@ -5,6 +5,8 @@ import (
 	"github.com/vmware/harbor/src/common/utils/uaa/test"
 	"net/http/httptest"
 	"os"
+	"path"
+	"runtime"
 	"testing"
 )
 
@@ -39,4 +41,32 @@ func TestPasswordAuth(t *testing.T) {
 	assert.Nil(err)
 	_, err = client.PasswordAuth("wrong", "wrong")
 	assert.NotNil(err)
+}
+
+func currPath() string {
+	_, f, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("Failed to get current directory")
+	}
+	return path.Dir(f)
+}
+
+func TestNewClientWithCACert(t *testing.T) {
+	assert := assert.New(t)
+	cfg := &ClientConfig{
+		ClientID:      "uaa",
+		ClientSecret:  "secret",
+		Endpoint:      mockUAAServer.URL,
+		SkipTLSVerify: false,
+		CARootPath:    "/notexist",
+	}
+	_, err := NewDefaultClient(cfg)
+	assert.NotNil(err)
+	//Skip if it's malformed.
+	cfg.CARootPath = path.Join(currPath(), "test", "non-ca.pem")
+	_, err = NewDefaultClient(cfg)
+	assert.Nil(err)
+	cfg.CARootPath = path.Join(currPath(), "test", "ca.pem")
+	_, err = NewDefaultClient(cfg)
+	assert.Nil(err)
 }
