@@ -143,10 +143,6 @@ func (d *defaultProjectManager) Update(projectIDOrName interface{}, project *mod
 }
 
 func (d *defaultProjectManager) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
-	if query != nil && query.ProjectIDs != nil && len(query.ProjectIDs) == 0 {
-		return &models.ProjectQueryResult{}, nil
-	}
-
 	// query by public/private property with ProjectMetadataManager first
 	if d.metaMgrEnabled && query != nil && query.Public != nil {
 		projectIDs, err := d.filterByPublic(*query.Public)

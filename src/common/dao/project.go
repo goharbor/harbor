@@ -92,26 +92,15 @@ func GetProjectByName(name string) (*models.Project, error) {
 // GetTotalOfProjects returns the total count of projects
 // according to the query conditions
 func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {
-
-	var (
-		owner      string
-		name       string
-		member     string
-		role       int
-		projectIDs []int64
-	)
-
+	var pagination *models.Pagination
 	if query != nil {
-		owner = query.Owner
-		name = query.Name
-		if query.Member != nil {
-			member = query.Member.Name
-			role = query.Member.Role
-		}
-		projectIDs = query.ProjectIDs
+		pagination = query.Pagination
+		query.Pagination = nil
 	}
-
-	sql, params := projectQueryConditions(owner, name, member, role, projectIDs)
+	sql, params := projectQueryConditions(query)
+	if query != nil {
+		query.Pagination = pagination
+	}
 
 	sql = `select count(*) ` + sql
 
@@ -122,62 +111,38 @@ func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {
 
 // GetProjects returns a project list according to the query conditions
 func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
-
-	var (
-		owner      string
-		name       string
-		member     string
-		role       int
-		projectIDs []int64
-		page       int64
-		size       int64
-	)
-
-	if query != nil {
-		owner = query.Owner
-		name = query.Name
-		if query.Member != nil {
-			member = query.Member.Name
-			role = query.Member.Role
-		}
-		projectIDs = query.ProjectIDs
-		if query.Pagination != nil {
-			page = query.Pagination.Page
-			size = query.Pagination.Size
-		}
-	}
-
-	sql, params := projectQueryConditions(owner, name, member, role, projectIDs)
+	sql, params := projectQueryConditions(query)
 
 	sql = `select distinct p.project_id, p.name, p.owner_id, 
 				p.creation_time, p.update_time ` + sql
-	if size > 0 {
-		sql += ` limit ?`
-		params = append(params, size)
-
-		if page > 0 {
-			sql += ` offset ?`
-			params = append(params, (page-1)*size)
-		}
-	}
 
 	var projects []*models.Project
 	_, err := GetOrmer().Raw(sql, params).QueryRows(&projects)
 	return projects, err
 }
 
-func projectQueryConditions(owner, name string, member string,
-	role int, projectIDs []int64) (string, []interface{}) {
+func projectQueryConditions(query *models.ProjectQueryParam) (string, []interface{}) {
 	params := []interface{}{}
 
 	sql := ` from project as p`
 
-	if len(owner) != 0 {
+	if query == nil {
+		sql += ` where p.deleted=0 order by p.name`
+		return sql, params
+	}
+
+	// if query.ProjectIDs is not nil but has no element, the query will returns no rows
+	if query.ProjectIDs != nil && len(query.ProjectIDs) == 0 {
+		sql += ` where 1 = 0`
+		return sql, params
+	}
+
+	if len(query.Owner) != 0 {
 		sql += ` join user u1
 					on p.owner_id = u1.user_id`
 	}
 
-	if len(member) != 0 {
+	if query.Member != nil && len(query.Member.Name) != 0 {
 		sql += ` join project_member pm
 					on p.project_id = pm.project_id
 					join user u2
@@ -185,24 +150,24 @@ func projectQueryConditions(owner, name string, member string,
 	}
 	sql += ` where p.deleted=0`
 
-	if len(owner) != 0 {
+	if len(query.Owner) != 0 {
 		sql += ` and u1.username=?`
-		params = append(params, owner)
+		params = append(params, query.Owner)
 	}
 
-	if len(name) != 0 {
+	if len(query.Name) != 0 {
 		sql += ` and p.name like ?`
-		params = append(params, "%"+escape(name)+"%")
+		params = append(params, "%"+escape(query.Name)+"%")
 	}
 
-	if len(member) != 0 {
+	if query.Member != nil && len(query.Member.Name) != 0 {
 		sql += ` and u2.username=?`
-		params = append(params, member)
+		params = append(params, query.Member.Name)
 
-		if role > 0 {
+		if query.Member.Role > 0 {
 			sql += ` and pm.role = ?`
 			roleID := 0
-			switch role {
+			switch query.Member.Role {
 			case common.RoleProjectAdmin:
 				roleID = 1
 			case common.RoleDeveloper:
@@ -215,13 +180,23 @@ func projectQueryConditions(owner, name string, member string,
 		}
 	}
 
-	if projectIDs != nil {
+	if len(query.ProjectIDs) > 0 {
 		sql += fmt.Sprintf(` and p.project_id in ( %s )`,
-			paramPlaceholder(len(projectIDs)))
-		params = append(params, projectIDs)
+			paramPlaceholder(len(query.ProjectIDs)))
+		params = append(params, query.ProjectIDs)
 	}
 
 	sql += ` order by p.name`
+
+	if query.Pagination != nil && query.Pagination.Size > 0 {
+		sql += ` limit ?`
+		params = append(params, query.Pagination.Size)
+
+		if query.Pagination.Page > 0 {
+			sql += ` offset ?`
+			params = append(params, (query.Pagination.Page-1)*query.Pagination.Size)
+		}
+	}
 
 	return sql, params
 }

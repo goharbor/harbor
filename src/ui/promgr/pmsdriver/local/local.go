@@ -135,6 +135,7 @@ func (d *driver) List(query *models.ProjectQueryParam) (
 	if err != nil {
 		return nil, err
 	}
+
 	projects, err := dao.GetProjects(query)
 	if err != nil {
 		return nil, err
