@@ -308,6 +308,7 @@ Test Case - Ldap User Push An Image
     Push Image  ${ip}  user001  user001  project${d}  hello-world:latest
     Go Into Project  project${d}
     Wait Until Page Contains  project${d}/hello-world
+    Close Browser
 
 Test Case - Admin Push Signed Image
     Switch To Notary
