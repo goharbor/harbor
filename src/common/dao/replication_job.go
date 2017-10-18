@@ -112,7 +112,7 @@ func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 	}
 
 	params := []interface{}{}
-	params = append(params, policy.Name, policy.ProjectID, policy.TargetID, policy.Enabled, policy.Description, policy.CronStr)
+	params = append(params, policy.Name, policy.ProjectID, policy.TargetID, policy.Enabled, policy.Description, policy.Trigger)
 	now := time.Now()
 	if policy.Enabled == 1 {
 		params = append(params, now)
@@ -246,7 +246,7 @@ func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPol
 func UpdateRepPolicy(policy *models.RepPolicy) error {
 	o := GetOrmer()
 	policy.UpdateTime = time.Now()
-	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description", "CronStr", "UpdateTime")
+	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description", "Trigger", "UpdateTime")
 	return err
 }
 

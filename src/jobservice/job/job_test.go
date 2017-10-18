@@ -190,6 +190,9 @@ func clearRepJobData() error {
 	if err := dao.ClearTable(models.RepJobTable); err != nil {
 		return err
 	}
+	if err := dao.ClearTable("replication_filter"); err != nil {
+		return err
+	}
 	if err := dao.ClearTable(models.RepPolicyTable); err != nil {
 		return err
 	}
