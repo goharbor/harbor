@@ -15,7 +15,7 @@
 package config
 
 import (
-	//"crypto/tls"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -108,38 +108,32 @@ func initSecretStore() {
 func initProjectManager() {
 	var driver pmsdriver.PMSDriver
 	if WithAdmiral() {
-		// TODO add support for admiral
-		/*
-			// integration with admiral
-			log.Info("initializing the project manager based on PMS...")
-			// TODO read ca/cert file and pass it to the TLS config
-			AdmiralClient = &http.Client{
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{
-						InsecureSkipVerify: true,
-					},
+		// integration with admiral
+		log.Info("initializing the project manager based on PMS...")
+		// TODO read ca/cert file and pass it to the TLS config
+		AdmiralClient = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
 				},
-			}
+			},
+		}
 
-			path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
-			if len(path) == 0 {
-				path = defaultTokenFilePath
-			}
-			log.Infof("service token file path: %s", path)
-			TokenReader = &admiral.FileTokenReader{
-				Path: path,
-			}
-			GlobalProjectMgr = admiral.NewProjectManager(AdmiralClient,
-			AdmiralEndpoint(), TokenReader)
-		*/
-		GlobalProjectMgr = nil
+		path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
+		if len(path) == 0 {
+			path = defaultTokenFilePath
+		}
+		log.Infof("service token file path: %s", path)
+		TokenReader = &admiral.FileTokenReader{
+			Path: path,
+		}
+		driver = admiral.NewDriver(AdmiralClient, AdmiralEndpoint(), TokenReader)
 	} else {
 		// standalone
 		log.Info("initializing the project manager based on local database...")
 		driver = local.NewDriver()
-		// TODO move the statement out of the else block when admiral driver is completed
-		GlobalProjectMgr = promgr.NewDefaultProjectManager(driver, true)
 	}
+	GlobalProjectMgr = promgr.NewDefaultProjectManager(driver, true)
 
 }
 
