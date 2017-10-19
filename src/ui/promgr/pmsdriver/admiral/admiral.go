@@ -201,7 +201,7 @@ func convert(p *project) (*models.Project, error) {
 		Name: p.Name,
 	}
 	if p.Public {
-		project.Public = 1
+		project.SetMetadata(models.ProMetaPublic, "true")
 	}
 
 	value := p.CustomProperties["__projectIndex"]
@@ -221,7 +221,7 @@ func convert(p *project) (*models.Project, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse __enableContentTrust %s to bool: %v", value, err)
 		}
-		project.EnableContentTrust = enable
+		project.SetMetadata(models.ProMetaEnableContentTrust, strconv.FormatBool(enable))
 	}
 
 	value = p.CustomProperties["__preventVulnerableImagesFromRunning"]
@@ -230,12 +230,12 @@ func convert(p *project) (*models.Project, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse __preventVulnerableImagesFromRunning %s to bool: %v", value, err)
 		}
-		project.PreventVulnerableImagesFromRunning = prevent
+		project.SetMetadata(models.ProMetaPreventVul, strconv.FormatBool(prevent))
 	}
 
 	value = p.CustomProperties["__preventVulnerableImagesFromRunningSeverity"]
 	if len(value) != 0 {
-		project.PreventVulnerableImagesFromRunningSeverity = value
+		project.SetMetadata(models.ProMetaSeverity, value)
 	}
 
 	value = p.CustomProperties["__automaticallyScanImagesOnPush"]
@@ -244,7 +244,7 @@ func convert(p *project) (*models.Project, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse __automaticallyScanImagesOnPush %s to bool: %v", value, err)
 		}
-		project.AutomaticallyScanImagesOnPush = scan
+		project.SetMetadata(models.ProMetaAutoScan, strconv.FormatBool(scan))
 	}
 
 	return project, nil
@@ -356,11 +356,11 @@ func (p *ProjectManager) Create(pro *models.Project) (int64, error) {
 		CustomProperties: make(map[string]string),
 	}
 	proj.Name = pro.Name
-	proj.Public = pro.Public == 1
-	proj.CustomProperties["__enableContentTrust"] = strconv.FormatBool(pro.EnableContentTrust)
-	proj.CustomProperties["__preventVulnerableImagesFromRunning"] = strconv.FormatBool(pro.PreventVulnerableImagesFromRunning)
-	proj.CustomProperties["__preventVulnerableImagesFromRunningSeverity"] = pro.PreventVulnerableImagesFromRunningSeverity
-	proj.CustomProperties["__automaticallyScanImagesOnPush"] = strconv.FormatBool(pro.AutomaticallyScanImagesOnPush)
+	proj.Public = pro.IsPublic()
+	proj.CustomProperties["__enableContentTrust"] = strconv.FormatBool(pro.ContentTrustEnabled())
+	proj.CustomProperties["__preventVulnerableImagesFromRunning"] = strconv.FormatBool(pro.VulPrevented())
+	proj.CustomProperties["__preventVulnerableImagesFromRunningSeverity"] = pro.Severity()
+	proj.CustomProperties["__automaticallyScanImagesOnPush"] = strconv.FormatBool(pro.AutoScan())
 
 	data, err := json.Marshal(proj)
 	if err != nil {

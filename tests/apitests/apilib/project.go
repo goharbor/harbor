@@ -45,8 +45,8 @@ type Project struct {
 	// The owner name of the project.
 	OwnerName string `json:"owner_name,omitempty"`
 
-	// The public status of the project.
-	Public int32 `json:"public,omitempty"`
+	// The metadata of the project.
+	Metadata map[string]string `json:"metadata,omitempty"`
 
 	// Correspond to the UI about whether the project's publicity is  updatable (for UI)
 	Togglable bool `json:"Togglable,omitempty"`
