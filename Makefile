@@ -309,7 +309,7 @@ compile_clarity_harborui:
 
 compile_normal: compile_clarity compile_adminserver compile_ui compile_jobservice
 
-compile_harborui: compile_clarity_harborui
+compile_golangimage_with_local_library: compile_clarity_harborui
 	@echo "compiling binary for adminserver (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
