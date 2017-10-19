@@ -49,7 +49,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-signer"
   notary-db:
-    image: vmware/harbor-notary-db:mariadb-10.1.10
+    image: vmware/mariadb-photon:10.2.8
     container_name: notary-db
     restart: always
     networks:
