@@ -23,7 +23,7 @@
                 <div class="form-group" style="padding-left: 135px;">
                     <label class="col-md-4 form-group-label-override">{{'PROJECT.ACCESS_LEVEL' | translate}}</label>
                     <div class="checkbox-inline">
-                        <input type="checkbox" id="create_project_public" [(ngModel)]="project.public" name="public">
+                        <input type="checkbox" id="create_project_public" [(ngModel)]="project.metadata.public" name="public">
                         <label for="create_project_public"></label>
                         <span class="access-level-label">{{ accessLevelDisplayText | translate}}</span>
                         <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-md tooltip-bottom-right" style="top:-8px; left:-8px;">

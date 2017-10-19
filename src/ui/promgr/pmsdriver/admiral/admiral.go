@@ -30,13 +30,12 @@ import (
 	"github.com/vmware/harbor/src/common/utils"
 	er "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 )
 
 const dupProjectPattern = `Project name '\w+' is already used`
 
-// ProjectManager implements projectmanager.ProjecdtManager interface
-// base on project management service
-type ProjectManager struct {
+type driver struct {
 	client      *http.Client
 	endpoint    string
 	tokenReader TokenReader
@@ -57,10 +56,10 @@ type project struct {
 	Guests           []*user           `json:"viewers"`
 }
 
-// NewProjectManager returns an instance of ProjectManager
-func NewProjectManager(client *http.Client, endpoint string,
-	tokenReader TokenReader) *ProjectManager {
-	return &ProjectManager{
+// NewDriver returns an instance of driver
+func NewDriver(client *http.Client, endpoint string,
+	tokenReader TokenReader) pmsdriver.PMSDriver {
+	return &driver{
 		client:      client,
 		endpoint:    strings.TrimRight(endpoint, "/"),
 		tokenReader: tokenReader,
@@ -68,8 +67,8 @@ func NewProjectManager(client *http.Client, endpoint string,
 }
 
 // Get ...
-func (p *ProjectManager) Get(projectIDOrName interface{}) (*models.Project, error) {
-	project, err := p.get(projectIDOrName)
+func (d *driver) Get(projectIDOrName interface{}) (*models.Project, error) {
+	project, err := d.get(projectIDOrName)
 	if err != nil {
 		return nil, err
 	}
@@ -77,10 +76,10 @@ func (p *ProjectManager) Get(projectIDOrName interface{}) (*models.Project, erro
 }
 
 // get Admiral project with Harbor project ID or name
-func (p *ProjectManager) get(projectIDOrName interface{}) (*project, error) {
+func (d *driver) get(projectIDOrName interface{}) (*project, error) {
 	// if token is provided, search project from my projects list first
-	if len(p.getToken()) != 0 {
-		project, err := p.getFromMy(projectIDOrName)
+	if len(d.getToken()) != 0 {
+		project, err := d.getFromMy(projectIDOrName)
 		if err != nil {
 			return nil, err
 		}
@@ -90,18 +89,18 @@ func (p *ProjectManager) get(projectIDOrName interface{}) (*project, error) {
 	}
 
 	// try to get project from public projects list
-	return p.getFromPublic(projectIDOrName)
+	return d.getFromPublic(projectIDOrName)
 }
 
 // call GET /projects?$filter=xxx eq xxx, the API can only filter projects
 // which the user is a member of
-func (p *ProjectManager) getFromMy(projectIDOrName interface{}) (*project, error) {
-	return p.getAdmiralProject(projectIDOrName, false)
+func (d *driver) getFromMy(projectIDOrName interface{}) (*project, error) {
+	return d.getAdmiralProject(projectIDOrName, false)
 }
 
 // call GET /projects?public=true&$filter=xxx eq xxx
-func (p *ProjectManager) getFromPublic(projectIDOrName interface{}) (*project, error) {
-	project, err := p.getAdmiralProject(projectIDOrName, true)
+func (d *driver) getFromPublic(projectIDOrName interface{}) (*project, error) {
+	project, err := d.getAdmiralProject(projectIDOrName, true)
 	if project != nil {
 		// the projects returned by GET /projects?public=true&xxx have no
 		// "public" property, populate it here
@@ -110,7 +109,7 @@ func (p *ProjectManager) getFromPublic(projectIDOrName interface{}) (*project, e
 	return project, err
 }
 
-func (p *ProjectManager) getAdmiralProject(projectIDOrName interface{}, public bool) (*project, error) {
+func (d *driver) getAdmiralProject(projectIDOrName interface{}, public bool) (*project, error) {
 	m := map[string]string{}
 
 	id, name, err := utils.ParseProjectIDOrName(projectIDOrName)
@@ -126,7 +125,7 @@ func (p *ProjectManager) getAdmiralProject(projectIDOrName interface{}, public b
 		m["public"] = "true"
 	}
 
-	projects, err := p.filter(m)
+	projects, err := d.filter(m)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +144,7 @@ func (p *ProjectManager) getAdmiralProject(projectIDOrName interface{}, public b
 	return projects[0], nil
 }
 
-func (p *ProjectManager) filter(m map[string]string) ([]*project, error) {
+func (d *driver) filter(m map[string]string) ([]*project, error) {
 	query := ""
 	for k, v := range m {
 		if len(query) == 0 {
@@ -165,7 +164,7 @@ func (p *ProjectManager) filter(m map[string]string) ([]*project, error) {
 	}
 
 	path := "/projects" + query
-	data, err := p.send(http.MethodGet, path, nil)
+	data, err := d.send(http.MethodGet, path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -201,7 +200,7 @@ func convert(p *project) (*models.Project, error) {
 		Name: p.Name,
 	}
 	if p.Public {
-		project.Public = 1
+		project.SetMetadata(models.ProMetaPublic, "true")
 	}
 
 	value := p.CustomProperties["__projectIndex"]
@@ -221,7 +220,7 @@ func convert(p *project) (*models.Project, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse __enableContentTrust %s to bool: %v", value, err)
 		}
-		project.EnableContentTrust = enable
+		project.SetMetadata(models.ProMetaEnableContentTrust, strconv.FormatBool(enable))
 	}
 
 	value = p.CustomProperties["__preventVulnerableImagesFromRunning"]
@@ -230,12 +229,12 @@ func convert(p *project) (*models.Project, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse __preventVulnerableImagesFromRunning %s to bool: %v", value, err)
 		}
-		project.PreventVulnerableImagesFromRunning = prevent
+		project.SetMetadata(models.ProMetaPreventVul, strconv.FormatBool(prevent))
 	}
 
 	value = p.CustomProperties["__preventVulnerableImagesFromRunningSeverity"]
 	if len(value) != 0 {
-		project.PreventVulnerableImagesFromRunningSeverity = value
+		project.SetMetadata(models.ProMetaSeverity, value)
 	}
 
 	value = p.CustomProperties["__automaticallyScanImagesOnPush"]
@@ -244,93 +243,14 @@ func convert(p *project) (*models.Project, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse __automaticallyScanImagesOnPush %s to bool: %v", value, err)
 		}
-		project.AutomaticallyScanImagesOnPush = scan
+		project.SetMetadata(models.ProMetaAutoScan, strconv.FormatBool(scan))
 	}
 
 	return project, nil
 }
 
-// IsPublic ...
-func (p *ProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
-	project, err := p.get(projectIDOrName)
-	if err != nil {
-		return false, err
-	}
-
-	if project == nil {
-		return false, nil
-	}
-
-	return project.Public, nil
-}
-
-// Exist ...
-func (p *ProjectManager) Exist(projectIDOrName interface{}) (bool, error) {
-	project, err := p.get(projectIDOrName)
-	if err != nil {
-		return false, err
-	}
-
-	return project != nil, nil
-}
-
-/*
-// GetRoles gets roles that the user has to the project
-// This method is used in GET /projects API.
-// Jobservice calls GET /projects API to get information of source
-// project when trying to replicate the project. There is no auth
-// context in this use case, so the method is needed.
-func (p *ProjectManager) GetRoles(username string, projectIDOrName interface{}) ([]int, error) {
-	if len(username) == 0 || projectIDOrName == nil {
-		return nil, nil
-	}
-
-	id, err := p.getIDbyHarborIDOrName(projectIDOrName)
-	if err != nil {
-		return nil, err
-	}
-
-	// get expanded project which contains role info by GET /projects/id?expand=true
-	path := fmt.Sprintf("/projects/%s?expand=true", id)
-	data, err := p.send(http.MethodGet, path, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	pro := &project{}
-	if err = json.Unmarshal(data, pro); err != nil {
-		return nil, err
-	}
-
-	roles := []int{}
-
-	for _, user := range pro.Administrators {
-		if user.Email == username {
-			roles = append(roles, common.RoleProjectAdmin)
-			break
-		}
-	}
-
-	for _, user := range pro.Developers {
-		if user.Email == username {
-			roles = append(roles, common.RoleDeveloper)
-			break
-		}
-	}
-
-	for _, user := range pro.Guests {
-		if user.Email == username {
-			roles = append(roles, common.RoleGuest)
-			break
-		}
-	}
-
-	return roles, nil
-}
-*/
-
-func (p *ProjectManager) getIDbyHarborIDOrName(projectIDOrName interface{}) (string, error) {
-	pro, err := p.get(projectIDOrName)
+func (d *driver) getIDbyHarborIDOrName(projectIDOrName interface{}) (string, error) {
+	pro, err := d.get(projectIDOrName)
 	if err != nil {
 		return "", err
 	}
@@ -342,32 +262,24 @@ func (p *ProjectManager) getIDbyHarborIDOrName(projectIDOrName interface{}) (str
 	return pro.ID, nil
 }
 
-// GetPublic ...
-func (p *ProjectManager) GetPublic() ([]*models.Project, error) {
-	t := true
-	return p.GetAll(&models.ProjectQueryParam{
-		Public: &t,
-	})
-}
-
 // Create ...
-func (p *ProjectManager) Create(pro *models.Project) (int64, error) {
+func (d *driver) Create(pro *models.Project) (int64, error) {
 	proj := &project{
 		CustomProperties: make(map[string]string),
 	}
 	proj.Name = pro.Name
-	proj.Public = pro.Public == 1
-	proj.CustomProperties["__enableContentTrust"] = strconv.FormatBool(pro.EnableContentTrust)
-	proj.CustomProperties["__preventVulnerableImagesFromRunning"] = strconv.FormatBool(pro.PreventVulnerableImagesFromRunning)
-	proj.CustomProperties["__preventVulnerableImagesFromRunningSeverity"] = pro.PreventVulnerableImagesFromRunningSeverity
-	proj.CustomProperties["__automaticallyScanImagesOnPush"] = strconv.FormatBool(pro.AutomaticallyScanImagesOnPush)
+	proj.Public = pro.IsPublic()
+	proj.CustomProperties["__enableContentTrust"] = strconv.FormatBool(pro.ContentTrustEnabled())
+	proj.CustomProperties["__preventVulnerableImagesFromRunning"] = strconv.FormatBool(pro.VulPrevented())
+	proj.CustomProperties["__preventVulnerableImagesFromRunningSeverity"] = pro.Severity()
+	proj.CustomProperties["__automaticallyScanImagesOnPush"] = strconv.FormatBool(pro.AutoScan())
 
 	data, err := json.Marshal(proj)
 	if err != nil {
 		return 0, err
 	}
 
-	b, err := p.send(http.MethodPost, "/projects", bytes.NewBuffer(data))
+	b, err := d.send(http.MethodPost, "/projects", bytes.NewBuffer(data))
 	if err != nil {
 		// when creating a project with a duplicate name in Admiral, a 500 error
 		// with a specific message will be returned for now.
@@ -413,23 +325,23 @@ func (p *ProjectManager) Create(pro *models.Project) (int64, error) {
 }
 
 // Delete ...
-func (p *ProjectManager) Delete(projectIDOrName interface{}) error {
-	id, err := p.getIDbyHarborIDOrName(projectIDOrName)
+func (d *driver) Delete(projectIDOrName interface{}) error {
+	id, err := d.getIDbyHarborIDOrName(projectIDOrName)
 	if err != nil {
 		return err
 	}
 
-	_, err = p.send(http.MethodDelete, fmt.Sprintf("/projects/%s", id), nil)
+	_, err = d.send(http.MethodDelete, fmt.Sprintf("/projects/%s", id), nil)
 	return err
 }
 
 // Update ...
-func (p *ProjectManager) Update(projectIDOrName interface{}, project *models.Project) error {
+func (d *driver) Update(projectIDOrName interface{}, project *models.Project) error {
 	return errors.New("project update is unsupported")
 }
 
-// GetAll ...
-func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) ([]*models.Project, error) {
+// List ...
+func (d *driver) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
 	m := map[string]string{}
 	if query != nil {
 		if len(query.Name) > 0 {
@@ -440,7 +352,7 @@ func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models
 		}
 	}
 
-	projects, err := p.filter(m)
+	projects, err := d.filter(m)
 	if err != nil {
 		return nil, err
 	}
@@ -454,27 +366,24 @@ func (p *ProjectManager) GetAll(query *models.ProjectQueryParam, base ...*models
 		list = append(list, project)
 	}
 
-	return list, nil
+	return &models.ProjectQueryResult{
+		Total:    int64(len(list)),
+		Projects: list,
+	}, nil
 }
 
-// GetTotal ...
-func (p *ProjectManager) GetTotal(query *models.ProjectQueryParam, base ...*models.BaseProjectCollection) (int64, error) {
-	projects, err := p.GetAll(query)
-	return int64(len(projects)), err
-}
-
-func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, error) {
-	req, err := http.NewRequest(method, p.endpoint+path, body)
+func (d *driver) send(method, path string, body io.Reader) ([]byte, error) {
+	req, err := http.NewRequest(method, d.endpoint+path, body)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Add("x-xenon-auth-token", p.getToken())
+	req.Header.Add("x-xenon-auth-token", d.getToken())
 
 	url := req.URL.String()
 
 	req.URL.RawQuery = req.URL.Query().Encode()
-	resp, err := p.client.Do(req)
+	resp, err := d.client.Do(req)
 	if err != nil {
 		log.Debugf("\"%s %s\" failed", req.Method, url)
 		return nil, err
@@ -497,12 +406,12 @@ func (p *ProjectManager) send(method, path string, body io.Reader) ([]byte, erro
 	return b, nil
 }
 
-func (p *ProjectManager) getToken() string {
-	if p.tokenReader == nil {
+func (d *driver) getToken() string {
+	if d.tokenReader == nil {
 		return ""
 	}
 
-	token, err := p.tokenReader.ReadToken()
+	token, err := d.tokenReader.ReadToken()
 	if err != nil {
 		token = ""
 		log.Errorf("failed to read token: %v", err)

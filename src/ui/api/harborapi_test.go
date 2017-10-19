@@ -93,12 +93,11 @@ func init() {
 
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
-	beego.Router("/api/projects/:id", &ProjectAPI{}, "delete:Delete;get:Get")
+	beego.Router("/api/projects/:id", &ProjectAPI{}, "delete:Delete;get:Get;put:Put")
 	beego.Router("/api/users/:id", &UserAPI{}, "get:Get")
 	beego.Router("/api/users", &UserAPI{}, "get:List;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
-	beego.Router("/api/projects/:id/publicity", &ProjectAPI{}, "put:ToggleProjectPublic")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
@@ -359,18 +358,10 @@ func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (i
 }
 
 //Update properties for a selected project.
-func (a testapi) ToggleProjectPublicity(prjUsr usrInfo, projectID string, ispublic int32) (int, error) {
-	// create path and map variables
-	path := "/api/projects/" + projectID + "/publicity/"
-	_sling := sling.New().Put(a.basePath)
-
-	_sling = _sling.Path(path)
-
-	type QueryParams struct {
-		Public int32 `json:"public,omitempty"`
-	}
-
-	_sling = _sling.BodyJSON(&QueryParams{Public: ispublic})
+func (a testapi) ProjectsPut(prjUsr usrInfo, projectID string,
+	project *models.Project) (int, error) {
+	path := "/api/projects/" + projectID
+	_sling := sling.New().Put(a.basePath).Path(path).BodyJSON(project)
 
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
