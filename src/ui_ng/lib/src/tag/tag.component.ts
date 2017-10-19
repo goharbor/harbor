@@ -50,6 +50,7 @@ import {
 import { TranslateService } from '@ngx-translate/core';
 
 import { State, Comparator } from 'clarity-angular';
+import {CopyInputComponent} from "../push-image/copy-input.component";
 
 @Component({
   selector: 'hbr-tag',
@@ -91,6 +92,8 @@ export class TagComponent implements OnInit {
   confirmationDialog: ConfirmationDialogComponent;
 
   @ViewChild('digestTarget') textInput: ElementRef;
+  @ViewChild('copyInput') copyInput: CopyInputComponent;
+
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -253,7 +256,7 @@ export class TagComponent implements OnInit {
     }
   }
 
-  //Get vulnerability scanning status
+  //Get vulnerability scanning status 
   scanStatus(t: Tag): string {
     if (t && t.scan_overview && t.scan_overview.scan_status) {
       return t.scan_overview.scan_status;
@@ -284,5 +287,10 @@ export class TagComponent implements OnInit {
     if (tagId) {
       this.channel.publishScanEvent(this.repoName + "/" + tagId);
     }
+  }
+
+  //pull command
+  onCpError($event: any): void {
+      this.copyInput.setPullCommendShow();
   }
 }

@@ -23,9 +23,13 @@ import { ConfigurationModule } from './config/config.module';
 
 import { TranslateService } from "@ngx-translate/core";
 import { AppConfigService } from './app-config.service';
+import {SkinableConfig} from "./skinable-config.service";
 
-export function initConfig(configService: AppConfigService) {
-    return () => configService.load();
+export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
+    return () => {
+        skinableService.getCustomFile();
+        configService.load();
+    }
 }
 
 export function getCurrentLanguage(translateService: TranslateService) {
@@ -41,14 +45,15 @@ export function getCurrentLanguage(translateService: TranslateService) {
         BaseModule,
         AccountModule,
         HarborRoutingModule,
-        ConfigurationModule
+        ConfigurationModule,
     ],
     providers: [
       AppConfigService,
+        SkinableConfig,
       { 
         provide: APP_INITIALIZER, 
         useFactory: initConfig, 
-        deps: [ AppConfigService ],
+        deps: [ AppConfigService, SkinableConfig],
         multi: true
       },
       {
