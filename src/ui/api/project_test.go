@@ -31,7 +31,7 @@ var addProject *apilib.ProjectReq
 var addPID int
 
 func InitAddPro() {
-	addProject = &apilib.ProjectReq{"add_project", 1}
+	addProject = &apilib.ProjectReq{"add_project", map[string]string{models.ProMetaPublic: "true"}}
 }
 
 func TestAddProject(t *testing.T) {
@@ -82,7 +82,7 @@ func TestAddProject(t *testing.T) {
 	//case 4: reponse code = 400 : Project name is illegal in length
 	fmt.Println("case 4 : reponse code = 400 : Project name is illegal in length ")
 
-	result, err = apiTest.ProjectsPost(*admin, apilib.ProjectReq{"t", 1})
+	result, err = apiTest.ProjectsPost(*admin, apilib.ProjectReq{"t", map[string]string{models.ProMetaPublic: "true"}})
 	if err != nil {
 		t.Error("Error while creat project", err.Error())
 		t.Log(err)
@@ -112,7 +112,7 @@ func TestListProjects(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
-	assert.Equal(int32(1), result[0].Public, "Public is wrong")
+	assert.Equal("true", result[0].Metadata[models.ProMetaPublic], "Public is wrong")
 
 	//find add projectID
 	addPID = int(result[0].ProjectId)
@@ -130,7 +130,7 @@ func TestListProjects(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 		assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
-		assert.Equal(int32(1), result[0].Public, "Public is wrong")
+		assert.Equal("true", result[0].Metadata[models.ProMetaPublic], "Public is wrong")
 		assert.Equal(int32(1), result[0].CurrentUserRoleId, "User project role is wrong")
 	}
 
@@ -155,7 +155,7 @@ func TestListProjects(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 		assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
-		assert.Equal(int32(1), result[0].Public, "Public is wrong")
+		assert.Equal("true", result[0].Metadata[models.ProMetaPublic], "Public is wrong")
 		assert.Equal(int32(2), result[0].CurrentUserRoleId, "User project role is wrong")
 	}
 	id := strconv.Itoa(CommonGetUserID())
@@ -187,7 +187,7 @@ func TestProGetByID(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 		assert.Equal(addProject.ProjectName, result.ProjectName, "ProjectName is wrong")
-		assert.Equal(int32(1), result.Public, "Public is wrong")
+		assert.Equal("true", result.Metadata[models.ProMetaPublic], "Public is wrong")
 	}
 	fmt.Printf("\n")
 }
@@ -273,48 +273,37 @@ func TestProHead(t *testing.T) {
 	fmt.Printf("\n")
 }
 
-func TestToggleProjectPublicity(t *testing.T) {
+func TestPut(t *testing.T) {
 	fmt.Println("\nTest for Project PUT API: Update properties for a selected project")
 	assert := assert.New(t)
 
 	apiTest := newHarborAPI()
 
-	//-------------------case1: Response Code=200------------------------------//
+	project := &models.Project{
+		Metadata: map[string]string{
+			models.ProMetaPublic: "true",
+		},
+	}
+
 	fmt.Println("case 1: respose code:200")
-	httpStatusCode, err := apiTest.ToggleProjectPublicity(*admin, "1", 1)
-	if err != nil {
-		t.Error("Error while search project by proId", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-	}
-	//-------------------case2: Response Code=401 User need to log in first. ------------------------------//
+	code, err := apiTest.ProjectsPut(*admin, "1", project)
+	require.Nil(t, err)
+	assert.Equal(int(200), code)
+
 	fmt.Println("case 2: respose code:401, User need to log in first.")
-	httpStatusCode, err = apiTest.ToggleProjectPublicity(*unknownUsr, "1", 1)
-	if err != nil {
-		t.Error("Error while search project by proId", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 401")
-	}
-	//-------------------case3: Response Code=400 Invalid project id------------------------------//
+	code, err = apiTest.ProjectsPut(*unknownUsr, "1", project)
+	require.Nil(t, err)
+	assert.Equal(int(401), code)
+
 	fmt.Println("case 3: respose code:400, Invalid project id")
-	httpStatusCode, err = apiTest.ToggleProjectPublicity(*admin, "cc", 1)
-	if err != nil {
-		t.Error("Error while search project by proId", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-	//-------------------case4: Response Code=404 Not found the project------------------------------//
+	code, err = apiTest.ProjectsPut(*admin, "cc", project)
+	require.Nil(t, err)
+	assert.Equal(int(400), code)
+
 	fmt.Println("case 4: respose code:404, Not found the project")
-	httpStatusCode, err = apiTest.ToggleProjectPublicity(*admin, "1234", 1)
-	if err != nil {
-		t.Error("Error while search project by proId", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
-	}
+	code, err = apiTest.ProjectsPut(*admin, "1234", project)
+	require.Nil(t, err)
+	assert.Equal(int(404), code)
 
 	fmt.Printf("\n")
 }

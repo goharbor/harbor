@@ -82,7 +82,6 @@ func (d *driver) Create(project *models.Project) (int64, error) {
 	t := time.Now()
 	pro := &models.Project{
 		Name:         project.Name,
-		Public:       project.Public,
 		OwnerID:      project.OwnerID,
 		CreationTime: t,
 		UpdateTime:   t,
@@ -129,16 +128,15 @@ func (d *driver) Update(projectIDOrName interface{},
 	return nil
 }
 
-// TODO remove base
 // List returns a project list according to the query parameters
-func (d *driver) List(query *models.ProjectQueryParam,
-	base ...*models.BaseProjectCollection) (
+func (d *driver) List(query *models.ProjectQueryParam) (
 	*models.ProjectQueryResult, error) {
-	total, err := dao.GetTotalOfProjects(query, base...)
+	total, err := dao.GetTotalOfProjects(query)
 	if err != nil {
 		return nil, err
 	}
-	projects, err := dao.GetProjects(query, base...)
+
+	projects, err := dao.GetProjects(query)
 	if err != nil {
 		return nil, err
 	}

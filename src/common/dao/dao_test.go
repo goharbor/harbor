@@ -420,19 +420,6 @@ func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
 	}
 }
 
-func TestQueryRelevantProjectsWhenNoProjectAdded(t *testing.T) {
-	projects, err := GetHasReadPermProjects(currentUser.Username)
-	if err != nil {
-		t.Errorf("Error occurred in QueryRelevantProjects: %v", err)
-	}
-	if len(projects) != 1 {
-		t.Errorf("Expected only one project in DB, but actual: %d", len(projects))
-	}
-	if projects[0].Name != "library" {
-		t.Errorf("There name of the project does not match, expected: %s, actual: %s", "library", projects[0].Name)
-	}
-}
-
 func TestAddProject(t *testing.T) {
 
 	project := models.Project{
@@ -657,43 +644,6 @@ func TestGetUserByProject(t *testing.T) {
 
 }
 
-func TestToggleProjectPublicity(t *testing.T) {
-	err := ToggleProjectPublicity(currentProject.ProjectID, publicityOn)
-	if err != nil {
-		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
-	}
-
-	currentProject, err = GetProjectByName(projectName)
-	if err != nil {
-		t.Errorf("Error occurred in GetProjectByName: %v", err)
-	}
-	if currentProject.Public != publicityOn {
-		t.Errorf("project, id: %d, its publicity is not on", currentProject.ProjectID)
-	}
-	err = ToggleProjectPublicity(currentProject.ProjectID, publicityOff)
-	if err != nil {
-		t.Errorf("Error occurred in ToggleProjectPublicity: %v", err)
-	}
-
-	currentProject, err = GetProjectByName(projectName)
-	if err != nil {
-		t.Errorf("Error occurred in GetProjectByName: %v", err)
-	}
-
-	if currentProject.Public != publicityOff {
-		t.Errorf("project, id: %d, its publicity is not off", currentProject.ProjectID)
-	}
-
-}
-
-/*
-func TestIsProjectPublic(t *testing.T) {
-
-	if isPublic := IsProjectPublic(projectName); isPublic {
-		t.Errorf("project, id: %d, its publicity is not false after turning off", currentProject.ProjectID)
-	}
-}
-*/
 func TestGetUserProjectRoles(t *testing.T) {
 	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
 	if err != nil {
@@ -710,17 +660,6 @@ func TestGetUserProjectRoles(t *testing.T) {
 	}
 }
 
-/*
-func TestProjectPermission(t *testing.T) {
-	roleCode, err := GetPermission(currentUser.Username, currentProject.Name)
-	if err != nil {
-		t.Errorf("Error occurred in GetPermission: %v", err)
-	}
-	if roleCode != "MDRWS" {
-		t.Errorf("The expected role code is MDRWS,but actual: %s", roleCode)
-	}
-}
-*/
 func TestGetTotalOfProjects(t *testing.T) {
 	total, err := GetTotalOfProjects(nil)
 	if err != nil {
@@ -742,22 +681,6 @@ func TestGetProjects(t *testing.T) {
 	}
 	if projects[1].Name != projectName {
 		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
-	}
-}
-
-func TestGetPublicProjects(t *testing.T) {
-	value := true
-	projects, err := GetProjects(&models.ProjectQueryParam{
-		Public: &value,
-	})
-	if err != nil {
-		t.Errorf("Error occurred in getProjects: %v", err)
-	}
-	if len(projects) != 1 {
-		t.Errorf("Expected length of projects is 1, but actual: %d, the projects: %+v", len(projects), projects)
-	}
-	if projects[0].Name != "library" {
-		t.Errorf("Expected project name in the list: %s, actual: %s", "library", projects[0].Name)
 	}
 }
 
