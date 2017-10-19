@@ -28,7 +28,7 @@ type Project struct {
 	UpdateTime   time.Time         `orm:"update_time" json:"update_time"`
 	Deleted      int               `orm:"column(deleted)" json:"deleted"`
 	OwnerName    string            `orm:"-" json:"owner_name"`
-	Togglable    bool              `orm:"-"`
+	Togglable    bool              `orm:"-" json:"togglable"`
 	Role         int               `orm:"-" json:"current_user_role_id"`
 	RepoCount    int               `orm:"-" json:"repo_count"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
