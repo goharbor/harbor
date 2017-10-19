@@ -30,13 +30,13 @@ import (
 func ParseClairSev(clairSev string) models.Severity {
 	sev := strings.ToLower(clairSev)
 	switch sev {
-	case "negligible":
+	case models.SeverityNone:
 		return models.SevNone
-	case "low":
+	case models.SeverityLow:
 		return models.SevLow
-	case "medium":
+	case models.SeverityMedium:
 		return models.SevMedium
-	case "high":
+	case models.SeverityHigh:
 		return models.SevHigh
 	default:
 		return models.SevUnknown

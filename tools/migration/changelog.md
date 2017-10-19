@@ -54,3 +54,4 @@ Changelog for harbor database schema
 
   - create table `project_metadata`
   - insert data into table `project_metadata`
+  - delete column `public` from table `project`

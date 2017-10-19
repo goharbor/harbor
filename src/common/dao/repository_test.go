@@ -103,7 +103,6 @@ func TestGetTopRepos(t *testing.T) {
 	project1 := models.Project{
 		OwnerID: 1,
 		Name:    "project1",
-		Public:  0,
 	}
 	project1.ProjectID, err = AddProject(project1)
 	require.NoError(err)
@@ -112,7 +111,6 @@ func TestGetTopRepos(t *testing.T) {
 	project2 := models.Project{
 		OwnerID: 1,
 		Name:    "project2",
-		Public:  0,
 	}
 	project2.ProjectID, err = AddProject(project2)
 	require.NoError(err)
@@ -232,7 +230,6 @@ func TestGetAllRepositories(t *testing.T) {
 	project1 := models.Project{
 		OwnerID: 1,
 		Name:    "projectRepo",
-		Public:  0,
 	}
 	var err2 error
 	project1.ProjectID, err2 = AddProject(project1)

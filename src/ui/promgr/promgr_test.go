@@ -32,7 +32,9 @@ func newFakePMSDriver() pmsdriver.PMSDriver {
 		project: &models.Project{
 			ProjectID: 1,
 			Name:      "library",
-			Public:    1,
+			Metadata: map[string]string{
+				models.ProMetaPublic: "true",
+			},
 		},
 	}
 }
@@ -53,8 +55,7 @@ func (f *fakePMSDriver) Update(projectIDOrName interface{}, project *models.Proj
 	return nil
 }
 
-func (f *fakePMSDriver) List(query *models.ProjectQueryParam,
-	base ...*models.BaseProjectCollection) (*models.ProjectQueryResult, error) {
+func (f *fakePMSDriver) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
 	return &models.ProjectQueryResult{
 		Total:    1,
 		Projects: []*models.Project{f.project},
@@ -116,5 +117,5 @@ func TestGetPublic(t *testing.T) {
 	projects, err := proMgr.GetPublic()
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(projects))
-	assert.Equal(t, 1, projects[0].Public)
+	assert.True(t, projects[0].IsPublic())
 }

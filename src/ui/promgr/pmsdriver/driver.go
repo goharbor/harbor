@@ -30,7 +30,5 @@ type PMSDriver interface {
 	// Update the properties of a project
 	Update(projectIDOrName interface{}, project *models.Project) error
 	// List lists projects according to the query conditions
-	// TODO remove base
-	List(query *models.ProjectQueryParam,
-		base ...*models.BaseProjectCollection) (*models.ProjectQueryResult, error)
+	List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error)
 }

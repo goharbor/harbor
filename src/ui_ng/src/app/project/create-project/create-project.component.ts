@@ -73,7 +73,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
     private messageHandlerService: MessageHandlerService) { }
 
   public get accessLevelDisplayText(): string {
-    return this.project.public ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE';
+    return this.project.metadata.public ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE';
   }
 
   ngOnInit(): void {
@@ -115,7 +115,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
 
     this.isSubmitOnGoing=true;
     this.projectService
-      .createProject(this.project.name, this.project.public ? 1 : 0)
+      .createProject(this.project.name, this.project.metadata)
       .subscribe(
       status => {
         this.isSubmitOnGoing=false;
