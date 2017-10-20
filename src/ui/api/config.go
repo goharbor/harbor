@@ -49,7 +49,6 @@ var (
 		common.EmailIdentity,
 		common.EmailInsecure,
 		common.ProjectCreationRestriction,
-		common.VerifyRemoteCert,
 		common.TokenExpiration,
 		common.ScanAllPolicy,
 	}
@@ -81,7 +80,6 @@ var (
 		common.EmailSSL,
 		common.EmailInsecure,
 		common.SelfRegistration,
-		common.VerifyRemoteCert,
 	}
 
 	passwordKeys = []string{

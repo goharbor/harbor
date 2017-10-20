@@ -91,7 +91,8 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                 (this.target.endpoint && this.target.endpoint.trim() !== "") ||
                 (this.target.name && this.target.name.trim() !== "") ||
                 (this.target.username && this.target.username.trim() !== "") ||
-                (this.target.password && this.target.password.trim() !== ""));
+                (this.target.password && this.target.password.trim() !== "")) ||
+                this.target.insecure;
         } else {
             //Edit
             return !compareValue(this.target, this.initVal);
@@ -104,19 +105,21 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
             this.targetForm &&
             this.targetForm.valid &&
             this.editable &&
-            (this.targetNameHasChanged || this.endpointHasChanged);
+            (this.targetNameHasChanged || this.endpointHasChanged || this.checkboxHasChanged);
     }
 
     public get inProgress(): boolean {
         return this.onGoing || this.testOngoing;
     }
 
+    public get checkboxHasChanged(): boolean {
+        return (this.target.insecure !== this.initVal.insecure) ? true : false;
+    }
     ngOnDestroy(): void {
         if (this.valueChangesSub) {
             this.valueChangesSub.unsubscribe();
         }
     }
-
 
     initEndpoint(): Endpoint {
         return {
@@ -124,6 +127,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
             name: "",
             username: "",
             password: "",
+            insecure: false,
             type: 0
         };
     }
@@ -275,20 +279,28 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
         if (this.onGoing) {
             return;//Avoid duplicated submitting
         }
-        if (!(this.targetNameHasChanged || this.endpointHasChanged)) {
+        if (!(this.targetNameHasChanged || this.endpointHasChanged || this.checkboxHasChanged)) {
             return;//Avoid invalid submitting
         }
         let payload: Endpoint = this.initEndpoint();
         if (this.targetNameHasChanged) {
             payload.name = this.target.name;
-            delete payload.endpoint;
+        }else {
+            delete payload.name;
         }
         if (this.endpointHasChanged) {
             payload.endpoint = this.target.endpoint;
             payload.username = this.target.username;
             payload.password = this.target.password;
-            delete payload.name;
+        }else {
+            delete payload.endpoint;
         }
+        if (this.checkboxHasChanged) {
+            payload.insecure = this.target.insecure;
+        }else {
+            delete payload.insecure;
+        }
+
         if (!this.target.id) { return; }
 
         this.onGoing = true;
@@ -317,7 +329,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
 
     handleErrorMessageKey(status: number): string {
         switch (status) {
-            case 409: this
+            case 409:
                 return 'DESTINATION.CONFLICT_NAME';
             case 400:
                 return 'DESTINATION.INVALID_NAME';
@@ -356,7 +368,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                                 keyNumber++;
                             }
                         }
-                        if (keyNumber !== 4) {
+                        if (keyNumber !== 5) {
                             return;
                         }
 

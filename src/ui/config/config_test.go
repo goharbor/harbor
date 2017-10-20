@@ -108,10 +108,6 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get onldy admin create project: %v", err)
 	}
 
-	if _, err := VerifyRemoteCert(); err != nil {
-		t.Fatalf("failed to get verify remote cert: %v", err)
-	}
-
 	if _, err := Email(); err != nil {
 		t.Fatalf("failed to get email settings: %v", err)
 	}

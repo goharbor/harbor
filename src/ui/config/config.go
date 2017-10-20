@@ -276,15 +276,6 @@ func OnlyAdminCreateProject() (bool, error) {
 	return cfg[common.ProjectCreationRestriction].(string) == common.ProCrtRestrAdmOnly, nil
 }
 
-// VerifyRemoteCert returns bool value.
-func VerifyRemoteCert() (bool, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return true, err
-	}
-	return cfg[common.VerifyRemoteCert].(bool), nil
-}
-
 // Email returns email server settings
 func Email() (*models.Email, error) {
 	cfg, err := mg.Get()

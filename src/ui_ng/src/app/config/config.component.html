@@ -7,9 +7,6 @@
                 <button id="config-auth" class="btn btn-link nav-link active" aria-controls="authentication" [class.active]='isCurrentTabLink("config-auth")' type="button" (click)='tabLinkClick("config-auth")'>{{'CONFIG.AUTH' | translate }}</button>
             </li>
             <li role="presentation" class="nav-item">
-                <button id="config-replication" class="btn btn-link nav-link" aria-controls="replication" [class.active]='isCurrentTabLink("config-replication")' type="button" (click)='tabLinkClick("config-replication")'>{{'CONFIG.REPLICATION' | translate }}</button>
-            </li>
-            <li role="presentation" class="nav-item">
                 <button id="config-email" class="btn btn-link nav-link" aria-controls="email" [class.active]='isCurrentTabLink("config-email")' type="button" (click)='tabLinkClick("config-email")'>{{'CONFIG.EMAIL' | translate }}</button>
             </li>
             <li role="presentation" class="nav-item">
@@ -21,9 +18,6 @@
         </ul>
         <section id="authentication" role="tabpanel" aria-labelledby="config-auth" [hidden]='!isCurrentTabContent("authentication")'>
             <config-auth [ldapConfig]="allConfig"></config-auth>
-        </section>
-        <section id="replication" role="tabpanel" aria-labelledby="config-replication" [hidden]='!isCurrentTabContent("replication")'>
-            <replication-config [(replicationConfig)]="allConfig"></replication-config>
         </section>
         <section id="email" role="tabpanel" aria-labelledby="config-email" [hidden]='!isCurrentTabContent("email")'>
             <config-email [mailConfig]="allConfig"></config-email>
