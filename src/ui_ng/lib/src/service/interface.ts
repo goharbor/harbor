@@ -73,6 +73,7 @@ export interface Endpoint extends Base {
     name: string;
     username?: string;
     password?: string;
+    insecure: boolean;
     type: number;
 }
 

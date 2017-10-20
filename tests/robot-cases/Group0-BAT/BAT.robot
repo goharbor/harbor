@@ -176,23 +176,6 @@ Test Case - Edit Self-Registration
     Enable Self Reg
     Close Browser
 
-Test Case - Edit Verify Remote Cert
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-
-    Switch To System Replication
-    Check Verify Remote Cert
-
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-
-    Switch To System Replication
-    Should Verify Remote Cert Be Enabled
-
-    #restore setting
-    Check Verify Remote Cert
-    Close Browser
-
 Test Case - Edit Email Settings
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
