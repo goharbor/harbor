@@ -36,6 +36,8 @@ type ProjectManager interface {
 	Exists(projectIDOrName interface{}) (bool, error)
 	// get all public project
 	GetPublic() ([]*models.Project, error)
+	// if the project manager uses a metadata manager, return it, otherwise return nil
+	GetMetadataManager() metamgr.ProjectMetadataManager
 }
 
 type defaultProjectManager struct {
@@ -234,4 +236,8 @@ func (d *defaultProjectManager) GetPublic() ([]*models.Project, error) {
 		return nil, err
 	}
 	return result.Projects, nil
+}
+
+func (d *defaultProjectManager) GetMetadataManager() metamgr.ProjectMetadataManager {
+	return d.metaMgr
 }

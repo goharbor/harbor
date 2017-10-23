@@ -119,3 +119,8 @@ func TestGetPublic(t *testing.T) {
 	assert.Equal(t, 1, len(projects))
 	assert.True(t, projects[0].IsPublic())
 }
+
+func TestGetMetadataManager(t *testing.T) {
+	metaMgr := proMgr.GetMetadataManager()
+	assert.Nil(t, metaMgr)
+}
