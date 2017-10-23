@@ -1,4 +1,4 @@
-FROM vmware/rsyslog-photon:8.15.0-6
+FROM vmware/rsyslog-photon:8.15.0
 
 ADD make/common/log/rsyslog.conf /etc/rsyslog.conf
 

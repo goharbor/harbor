@@ -1,4 +1,4 @@
-FROM vmware/photon:1.0-20170928
+FROM vmware/photon:1.0
 
 #base image for rsyslog base on photon
 
