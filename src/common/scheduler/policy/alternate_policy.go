@@ -77,7 +77,7 @@ func (alp *AlternatePolicy) Done() <-chan bool {
 
 //AttachTasks is an implementation of same method in policy interface.
 func (alp *AlternatePolicy) AttachTasks(tasks ...task.Task) error {
-	if tasks == nil || len(tasks) == 0 {
+	if len(tasks) == 0 {
 		return errors.New("No tasks can be attached")
 	}
 
