@@ -3,7 +3,7 @@ FROM vmware/photon:1.0
 RUN tdnf distro-sync -y \
     && tdnf erase vim -y \
     && tdnf clean all \
-    &&mkdir /harbor/
+    && mkdir /harbor/
 
 COPY ./make/dev/ui/harbor_ui /harbor/
 
