@@ -1,7 +1,7 @@
-FROM vmware/photon:1.0-20170928
+FROM vmware/photon:1.0
 
 RUN mkdir /harbor/ \
-    && tdnf distro-sync -y \
+    && tdnf distro-sync -y || echo \
     && tdnf clean all
 COPY ./make/dev/jobservice/harbor_jobservice /harbor/
 

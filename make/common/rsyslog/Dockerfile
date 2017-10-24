@@ -2,7 +2,7 @@ FROM vmware/photon:1.0
 
 #base image for rsyslog base on photon
 
-RUN tdnf distro-sync -y \
+RUN tdnf distro-sync -y || echo \
     && tdnf install -y cronie rsyslog shadow tar gzip \
 	&& mkdir /etc/rsyslog.d/ \
     && mkdir /var/spool/rsyslog \

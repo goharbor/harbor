@@ -68,7 +68,13 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
 	DATADIR="$(_get_config 'datadir' "$@")"
 	mkdir -p "$DATADIR"
 	chown -R mysql:mysql "$DATADIR"
-        exec sudo -u mysql -E "$BASH_SOURCE" "$@"
+    if [ -d '/docker-entrypoint-initdb.d' ]; then
+        chmod -R +rx /docker-entrypoint-updatedb.d
+    fi
+    if [ -d '/docker-entrypoint-updatedb.d' ]; then
+        chmod -R +rx /docker-entrypoint-updatedb.d
+    fi
+    exec sudo -u mysql -E "$BASH_SOURCE" "$@"
 fi
 
 if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
@@ -86,8 +92,6 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 		fi
 
 		mkdir -p "$DATADIR"
-		echo "##### Current user id: $(id -u)"
-
 		echo 'Initializing database'
 		cd /usr
 		mysql_install_db --datadir="$DATADIR" --rpm
@@ -184,6 +188,16 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 		echo 'MySQL init process done. Ready for start up.'
 		echo
 	fi
+    for f in /docker-entrypoint-updatedb.d/*; do
+        case "$f" in
+            *.sh)     echo "$0: running $f"; . "$f" ;;
+###          Not supported for now... until needed
+#            *.sql)    echo "$0: running $f"; "${mysql[@]}" < "$f"; echo ;;
+#            *.sql.gz) echo "$0: running $f"; gunzip -c "$f" | "${mysql[@]}"; echo ;;
+            *)        echo "$0: ignoring $f" ;;
+        esac
+        echo
+    done
 fi
 
 exec "$@"
