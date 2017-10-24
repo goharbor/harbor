@@ -24,6 +24,7 @@ import { ConfigurationModule } from './config/config.module';
 import { TranslateService } from "@ngx-translate/core";
 import { AppConfigService } from './app-config.service';
 import {SkinableConfig} from "./skinable-config.service";
+import { ProjectConfigComponent } from './project/project-config/project-config.component';
 
 export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
     return () => {
@@ -39,6 +40,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
 @NgModule({
     declarations: [
         AppComponent,
+        ProjectConfigComponent,
     ],
     imports: [
         SharedModule,
@@ -49,10 +51,10 @@ export function getCurrentLanguage(translateService: TranslateService) {
     ],
     providers: [
       AppConfigService,
-        SkinableConfig,
-      { 
-        provide: APP_INITIALIZER, 
-        useFactory: initConfig, 
+      SkinableConfig,
+      {
+        provide: APP_INITIALIZER,
+        useFactory: initConfig,
         deps: [ AppConfigService, SkinableConfig],
         multi: true
       },
