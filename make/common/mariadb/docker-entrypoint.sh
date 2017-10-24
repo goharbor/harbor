@@ -68,9 +68,7 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
 	DATADIR="$(_get_config 'datadir' "$@")"
 	mkdir -p "$DATADIR"
 	chown -R mysql:mysql "$DATADIR"
-	echo "####before gosu"
         exec sudo -u mysql -E "$BASH_SOURCE" "$@"
-	echo "####after gosu"
 fi
 
 if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
@@ -101,7 +99,6 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 		pid="$!"
 
 		mysql=( mysql --protocol=socket -uroot -hlocalhost --socket="${SOCKET}" )
-		echo "#### mysql ${mysql}"
 
 		for i in {30..0}; do
 			if echo 'SELECT 1' | "${mysql[@]}" &> /dev/null; then
