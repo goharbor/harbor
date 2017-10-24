@@ -244,12 +244,20 @@ func RegistryURL() (string, error) {
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	return "http://jobservice"
+	jobserviceURL := os.Getenv("JOB_SERVICE_URL")
+        if len(jobserviceURL) == 0 {
+		jobserviceURL = "http://jobservice"
+	}
+	return jobserviceURL
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
 func InternalTokenServiceEndpoint() string {
-	return "http://ui/service/token"
+	uiURL := os.Getenv("UI_URL")
+        if len(uiURL) == 0 {
+        	uiURL = "http://ui"
+        }
+	return uiURL + "/service/token"
 }
 
 // InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
