@@ -57,8 +57,8 @@ if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRAN
     echo "Package Harbor build."
     pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
     echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
+	upload_latest_build=true
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
-    upload_latest_build=true
 elif (echo $buildinfo | grep -q "\[Specific CI="); then
     buildtype=$(echo $buildinfo | grep "\[Specific CI=")
     testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
@@ -68,12 +68,12 @@ elif (echo $buildinfo | grep -q "\[Full CI\]"); then
 elif (echo $buildinfo | grep -q "\[Skip CI\]"); then
     echo "Skip CI."
 elif (echo $buildinfo | grep -q "\[Upload Build\]"); then
+    upload_latest_build=true
+	upload_build=true
     echo "Package Harbor build."
     pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
     echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
-    upload_latest_build=true
-	upload_build=true
 else
 	# default mode is BAT.
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
