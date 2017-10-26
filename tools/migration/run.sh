@@ -8,8 +8,6 @@ fi
 
 source ./alembic.tpl > ./alembic.ini
 
-WAITTIME=60
-
 DBCNF="-hlocalhost -u${DB_USR}"
 
 #prevent shell to print insecure message
@@ -44,24 +42,21 @@ fi
 echo 'Trying to start mysql server...'
 DBRUN=0
 mysqld &
-for i in $(seq 1 $WAITTIME); do
-    echo "$(/usr/sbin/service mysql status)"
-    if [[ "$(/usr/sbin/service mysql status)" =~ "not running" ]]; then
-        sleep 1
-    else
-        DBRUN=1
+for i in {60..0}; do
+    mysqladmin -u$DB_USR -p$DB_PWD processlist >/dev/null 2>&1
+    if [ $? = 0 ]; then
         break
     fi
+    echo 'Waiting for MySQL start...'
+    sleep 1
 done
-
-if [[ $DBRUN -eq 0  ]]; then
+if [ "$i" = 0 ]; then
     echo "timeout. Can't run mysql server."
     if [[ $1 = "test" ]]; then
         echo "test failed."
     fi
     exit 1
 fi
-
 if [[ $1 = "test" ]]; then
     echo "test passed."
     exit 0
