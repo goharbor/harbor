@@ -81,6 +81,14 @@ export interface IServiceConfig {
     vulnerabilityScanningBaseEndpoint?: string;
 
     /**
+     * The base endpoint of the service used to handle project policy.
+     * 
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    projectPolicyEndpoint?: string;
+
+    /**
      * To determine whether or not to enable the i18 multiple languages supporting.
      * 
      * @type {boolean}

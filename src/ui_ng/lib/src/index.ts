@@ -18,3 +18,4 @@ export * from './third-party/index';
 export * from './config/index';
 export * from './job-log-viewer/index';
 export * from './channel/index';
+export * from './project-policy-config/index';

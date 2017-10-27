@@ -161,7 +161,22 @@
         "REPLICATION": "Replication",
         "USERS": "Members",
         "LOGS": "Logs",
-        "PROJECTS": "Projects"
+        "PROJECTS": "Projects",
+        "CONFIG": "Configuration"
+    },
+    "PROJECT_CONFIG": {
+        "REGISTRY": "Project registry",
+        "PUBLIC_TOGGLE": "Public",
+        "PUBLIC_POLICY": "Making a project registry public will make all repositories accessible to everyone.",
+        "SECURITY": "Deployment security",
+        "CONTENT_TRUST_TOGGLE": "Enable content trust",
+        "CONTENT_TRUST_POLCIY": "Only allow verified images to be deployed.",
+        "PREVENT_VULNERABLE_TOGGLE": "Prevent vulnerable images from running.",
+        "PREVENT_VULNERABLE_1": "Prevent images with vulnerability serverity of",
+        "PREVENT_VULNERABLE_2": "and above from being deployed.",
+        "SCAN": "Vulnerability scanning",
+        "AUTOSCAN_TOGGLE": "Automatically scan images on push",
+        "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_MEMBER": "New Member",

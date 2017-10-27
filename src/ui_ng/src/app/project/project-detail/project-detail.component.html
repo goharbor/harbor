@@ -16,6 +16,9 @@
         <li class="nav-item" *ngIf="isSessionValid && isSystemAdmin">
             <a class="nav-link" routerLink="replications" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
         </li>
+        <li class="nav-item" *ngIf="isSessionValid && isSystemAdmin">
+            <a class="nav-link" routerLink="configs" routerLinkActive="active">{{'PROJECT_DETAIL.CONFIG' | translate}}</a>
+        </li>
     </ul>
 </nav>
 <router-outlet></router-outlet>
