@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
@@ -500,38 +499,11 @@ func validateProjectReq(req *models.ProjectRequest) error {
 		return fmt.Errorf("project name is not in lower case or contains illegal characters")
 	}
 
-	if req.Metadata != nil {
-		metas := req.Metadata
-		req.Metadata = map[string]string{}
-
-		boolMetas := []string{
-			models.ProMetaPublic,
-			models.ProMetaEnableContentTrust,
-			models.ProMetaPreventVul,
-			models.ProMetaAutoScan}
-
-		for _, boolMeta := range boolMetas {
-			value, exist := metas[boolMeta]
-			if exist {
-				b, err := strconv.ParseBool(value)
-				if err != nil {
-					log.Errorf("failed to parse %s to bool: %v", value, err)
-					b = false
-				}
-				req.Metadata[boolMeta] = strconv.FormatBool(b)
-			}
-		}
-
-		value, exist := metas[models.ProMetaSeverity]
-		if exist {
-			switch strings.ToLower(value) {
-			case models.SeverityHigh, models.SeverityMedium, models.SeverityLow, models.SeverityNone:
-				req.Metadata[models.ProMetaSeverity] = strings.ToLower(value)
-			default:
-				return fmt.Errorf("invalid severity %s", value)
-			}
-		}
+	metas, err := validateProjectMetadata(req.Metadata)
+	if err != nil {
+		return err
 	}
 
+	req.Metadata = metas
 	return nil
 }

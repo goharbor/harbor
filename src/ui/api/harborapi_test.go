@@ -101,6 +101,9 @@ func init() {
 	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
+	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
+	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &MetadataAPI{}, "post:Post")
+	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &MetadataAPI{}, "put:Put;delete:Delete")
 	beego.Router("/api/repositories", &RepositoryAPI{})
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
@@ -1043,5 +1046,50 @@ func (a testapi) PingEmail(authInfo usrInfo, settings []byte) (int, string, erro
 
 	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
 
+	return code, string(body), err
+}
+
+func (a testapi) PostMeta(authInfor usrInfo, projectID int64, metas map[string]string) (int, string, error) {
+	_sling := sling.New().Base(a.basePath).
+		Post(fmt.Sprintf("/api/projects/%d/metadatas/", projectID)).
+		BodyJSON(metas)
+
+	code, body, err := request(_sling, jsonAcceptHeader, authInfor)
+	return code, string(body), err
+}
+
+func (a testapi) PutMeta(authInfor usrInfo, projectID int64, name string,
+	metas map[string]string) (int, string, error) {
+	_sling := sling.New().Base(a.basePath).
+		Put(fmt.Sprintf("/api/projects/%d/metadatas/%s", projectID, name)).
+		BodyJSON(metas)
+
+	code, body, err := request(_sling, jsonAcceptHeader, authInfor)
+	return code, string(body), err
+}
+
+func (a testapi) GetMeta(authInfor usrInfo, projectID int64, name ...string) (int, map[string]string, error) {
+	_sling := sling.New().Base(a.basePath).
+		Get(fmt.Sprintf("/api/projects/%d/metadatas/", projectID))
+	if len(name) > 0 {
+		_sling = _sling.Path(name[0])
+	}
+
+	code, body, err := request(_sling, jsonAcceptHeader, authInfor)
+	if err == nil && code == http.StatusOK {
+		metas := map[string]string{}
+		if err := json.Unmarshal(body, &metas); err != nil {
+			return 0, nil, err
+		}
+		return code, metas, nil
+	}
+	return code, nil, err
+}
+
+func (a testapi) DeleteMeta(authInfor usrInfo, projectID int64, name string) (int, string, error) {
+	_sling := sling.New().Base(a.basePath).
+		Delete(fmt.Sprintf("/api/projects/%d/metadatas/%s", projectID, name))
+
+	code, body, err := request(_sling, jsonAcceptHeader, authInfor)
 	return code, string(body), err
 }
