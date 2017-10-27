@@ -106,7 +106,7 @@ func TestRepJob(t *testing.T) {
 	j, err := dao.GetRepJob(repJobID)
 	assert.Equal(models.JobRetrying, j.Status)
 	assert.Equal(1, rj.parm.Enabled)
-	assert.True(rj.parm.Insecure)
+	assert.False(rj.parm.Insecure)
 	rj2 := NewRepJob(99999)
 	err = rj2.Init()
 	assert.NotNil(err)

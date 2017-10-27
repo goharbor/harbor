@@ -76,7 +76,7 @@ func DeleteRepTarget(id int64) error {
 func UpdateRepTarget(target models.RepTarget) error {
 	o := GetOrmer()
 	target.UpdateTime = time.Now()
-	_, err := o.Update(&target, "URL", "Name", "Username", "Password", "UpdateTime")
+	_, err := o.Update(&target, "URL", "Name", "Username", "Password", "Insecure", "UpdateTime")
 	return err
 }
 

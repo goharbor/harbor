@@ -39,6 +39,10 @@ export const CREATE_EDIT_ENDPOINT_TEMPLATE: string = `
           <input type="password" class="col-md-8" id="destination_password" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.password" size="20" name="password" #password="ngModel" (focus)="clearPassword($event)">
         </div>
         <div class="form-group">
+          <label for="destination_insecure" class="col-md-4 form-group-label-override">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</label>
+          <clr-checkbox #insecure  class="col-md-8" name="insecure" id="destination_insecure" [(ngModel)]="target.insecure"></clr-checkbox>
+        </div>
+        <div class="form-group">
           <label for="spin" class="col-md-4"></label>
           <span class="col-md-8 spinner spinner-inline" [hidden]="!inProgress"></span>
         </div>

@@ -33,7 +33,7 @@ import (
 	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/promgr"
-	//"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
+	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
 )
 
 type key string
@@ -264,15 +264,13 @@ func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		return false
 	}
 
-	/*
-		log.Debug("creating PMS project manager...")
-		pm := admiral.NewProjectManager(config.AdmiralClient,
-			config.AdmiralEndpoint(), &admiral.RawTokenReader{
-				Token: token,
-			})
-	*/
-	// TODO create the DefaultProjectManager with the real admiral PMSDriver
-	pm := promgr.NewDefaultProjectManager(nil, false)
+	log.Debug("creating PMS project manager...")
+	driver := admiral.NewDriver(config.AdmiralClient,
+		config.AdmiralEndpoint(), &admiral.RawTokenReader{
+			Token: token,
+		})
+
+	pm := promgr.NewDefaultProjectManager(driver, false)
 
 	log.Debug("creating admiral security context...")
 	securCtx := admr.NewSecurityContext(authContext, pm)
@@ -291,13 +289,10 @@ func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	var pm promgr.ProjectManager
 	if config.WithAdmiral() {
 		// integration with admiral
-		/*
-			log.Debug("creating PMS project manager...")
-			pm = admiral.NewProjectManager(config.AdmiralClient,
-				config.AdmiralEndpoint(), nil)
-		*/
-		// TODO create the DefaultProjectManager with the real admiral PMSDriver
-		pm = promgr.NewDefaultProjectManager(nil, false)
+		log.Debug("creating PMS project manager...")
+		driver := admiral.NewDriver(config.AdmiralClient,
+			config.AdmiralEndpoint(), nil)
+		pm = promgr.NewDefaultProjectManager(driver, false)
 		log.Debug("creating admiral security context...")
 		securCtx = admr.NewSecurityContext(nil, pm)
 	} else {

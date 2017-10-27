@@ -15,12 +15,12 @@ export const TAG_TEMPLATE = `
 
 <h2 *ngIf="!isEmbedded" class="sub-header-title">{{repoName}}</h2>
 <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded">
-    <clr-dg-column style="width: 80px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
-    <clr-dg-column style="width: 80px;" [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
-    <clr-dg-column style="min-width: 180px;">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
-    <clr-dg-column style="width: 160px;" *ngIf="withClair">{{'VULNERABILITY.SINGULAR' | translate}}</clr-dg-column>
+    <clr-dg-column style="min-width: 160px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
+    <clr-dg-column style="width: 90px;" [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
+    <clr-dg-column style="min-width: 120px; max-width:220px;">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
+    <clr-dg-column style="width: 140px;" *ngIf="withClair">{{'VULNERABILITY.SINGULAR' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 80px;" *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
-    <clr-dg-column style="width: 100px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
+    <clr-dg-column style="width: 130px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 160px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
     <clr-dg-column style="width: 80px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'TGA.PLACEHOLDER' | translate }}</clr-dg-placeholder>
@@ -30,13 +30,15 @@ export const TAG_TEMPLATE = `
         <button class="action-item" *ngIf="hasProjectAdminRole" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
         <button class="action-item" (click)="showDigestId(t)">{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
       </clr-dg-action-overflow>
-      <clr-dg-cell style="width: 80px;" [ngSwitch]="existObservablePackage(t)">
-        <a *ngSwitchCase="true" href="javascript:void(0)" (click)="onTagClick(t)">{{t.name}}</a>
+      <clr-dg-cell  class="truncated"  style="min-width: 160px;" [ngSwitch]="withClair">
+        <a *ngSwitchCase="true" href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
         <span *ngSwitchDefault>{{t.name}}</span>
       </clr-dg-cell>
-      <clr-dg-cell style="width: 80px;">{{t.size}}</clr-dg-cell>
-      <clr-dg-cell style="min-width: 180px;" class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">docker pull {{registryUrl}}/{{repoName}}:{{t.name}}</clr-dg-cell>
-      <clr-dg-cell style="width: 160px;" *ngIf="withClair">
+      <clr-dg-cell style="width: 90px;">{{t.size}}</clr-dg-cell>
+      <clr-dg-cell style="min-width: 120px; max-width:220px;" class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">
+           <hbr-copy-input #copyInput  (onCopyError)="onCpError($event)"  iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
+      </clr-dg-cell>
+      <clr-dg-cell style="width: 140px;" *ngIf="withClair">
         <hbr-vulnerability-bar [repoName]="repoName" [tagId]="t.name" [summary]="t.scan_overview"></hbr-vulnerability-bar>
       </clr-dg-cell>
       <clr-dg-cell style="width: 80px;" *ngIf="withNotary"  [ngSwitch]="t.signature !== null">
@@ -47,7 +49,7 @@ export const TAG_TEMPLATE = `
           <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
         </a>
       </clr-dg-cell>
-      <clr-dg-cell style="width: 100px;">{{t.author}}</clr-dg-cell>
+      <clr-dg-cell  class="truncated"  style="width: 130px;" title="{{t.author}}">{{t.author}}</clr-dg-cell>
       <clr-dg-cell style="width: 160px;">{{t.created | date: 'short'}}</clr-dg-cell>
       <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
     </clr-dg-row>

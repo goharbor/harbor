@@ -96,7 +96,6 @@ script:
   - go test -race -i ./src/ui ./src/adminserver ./src/jobservice
   - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
-
   - docker-compose -f make/docker-compose.test.yml down
   - sudo rm -rf /data/config/*  
   - ls /data/cert

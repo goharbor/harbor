@@ -102,7 +102,7 @@ Project Creation Should Not Display
 Switch To System Settings
     Sleep  1
     Click Element  xpath=//clr-main-container//nav//ul/li[3]
-    Click Element  xpath=//config//ul/li[4]
+    Click Element  xpath=//*[@id="config-system"]
 
 Modify Token Expiration
     [Arguments]  ${minutes}

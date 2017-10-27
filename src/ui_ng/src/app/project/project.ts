@@ -22,14 +22,14 @@
         "deleted": 0,
         "owner_name": "",
         "public": 1,
-        "Togglable": true,
+        "togglable": true,
         "update_time": "2017-02-10T07:57:56Z",
         "current_user_role_id": 1,
         "repo_count": 0
     }
   ]
 */
-export class Project { 
+export class Project {
     project_id: number;
     owner_id: number;
     name: string;
@@ -37,12 +37,22 @@ export class Project {
     creation_time_str: string;
     deleted: number;
     owner_name: string;
-    public: number;
-    Togglable: boolean;
+    togglable: boolean;
     update_time: Date;
     current_user_role_id: number;
     repo_count: number;
     has_project_admin_role: boolean;
     is_member: boolean;
     role_name: string;
+    metadata: {
+      public: string | boolean;
+      enable_content_trust: string | boolean;
+      prevent_vul: string | boolean;
+      severity: string;
+      auto_scan: string | boolean;
+    };
+    constructor () {
+      this.metadata = <any>{};
+      this.metadata.public = false;
+    }
 }

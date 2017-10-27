@@ -149,7 +149,6 @@ if protocol == "https":
 customize_crt = rcp.get("configuration", "customize_crt")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
-verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
 secretkey_path = rcp.get("configuration", "secretkey_path")
 if rcp.has_option("configuration", "admiral_url"):
@@ -239,7 +238,6 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         email_identity=email_identity,
         harbor_admin_password=harbor_admin_password,
         project_creation_restriction=proj_cre_restriction,
-        verify_remote_cert=verify_remote_cert,
         max_job_workers=max_job_workers,
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret,

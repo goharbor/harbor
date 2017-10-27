@@ -71,13 +71,12 @@ create table project (
  creation_time timestamp,
  update_time timestamp,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
- public tinyint (1) DEFAULT 0 NOT NULL,
  FOREIGN KEY (owner_id) REFERENCES user(user_id),
  UNIQUE (name)
 );
 
-insert into project (owner_id, name, creation_time, update_time, public) values 
-(1, 'library', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+insert into project (owner_id, name, creation_time, update_time) values 
+(1, 'library', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 create table project_member (
  project_id int NOT NULL,
@@ -181,6 +180,7 @@ create table replication_target (
  1 means it's a regulart registry
  */
  target_type tinyint(1) NOT NULL DEFAULT 0,
+ insecure tinyint(1) NOT NULL DEFAULT 0,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP
  );

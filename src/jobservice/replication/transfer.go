@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/docker/distribution"
@@ -258,13 +259,23 @@ func getProject(name string) (*models.Project, error) {
 }
 
 func (c *Checker) createProject(project *models.Project) error {
-	pro := &models.ProjectRequest{
-		Name:                                       project.Name,
-		Public:                                     project.Public,
-		EnableContentTrust:                         project.EnableContentTrust,
-		PreventVulnerableImagesFromRunning:         project.PreventVulnerableImagesFromRunning,
-		PreventVulnerableImagesFromRunningSeverity: project.PreventVulnerableImagesFromRunningSeverity,
-		AutomaticallyScanImagesOnPush:              project.AutomaticallyScanImagesOnPush,
+	// only replicate the public property of project
+	pro := struct {
+		models.ProjectRequest
+		Public int `json:"public"`
+	}{
+		ProjectRequest: models.ProjectRequest{
+			Name: project.Name,
+			Metadata: map[string]string{
+				models.ProMetaPublic: strconv.FormatBool(project.IsPublic()),
+			},
+		},
+	}
+
+	// put "public" property in both metadata and public field to keep compatibility
+	// with old version API(<=1.2.0)
+	if project.IsPublic() {
+		pro.Public = 1
 	}
 
 	data, err := json.Marshal(pro)

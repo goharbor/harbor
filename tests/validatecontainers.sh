@@ -1,5 +1,4 @@
 #!/bin/sh
-
 set -e
 
 if docker ps --filter "status=restarting" | grep 'vmware'; then

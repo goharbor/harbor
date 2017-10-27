@@ -49,10 +49,6 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to initialize configurations: %v", err)
 	}
 
-	if _, err := VerifyRemoteCert(); err != nil {
-		t.Fatalf("failed to get verify remote cert: %v", err)
-	}
-
 	if _, err := Database(); err != nil {
 		t.Fatalf("failed to get database settings: %v", err)
 	}

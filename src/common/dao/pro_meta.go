@@ -91,3 +91,12 @@ func paramPlaceholder(n int) string {
 	}
 	return strings.Join(placeholders, ",")
 }
+
+// ListProjectMetadata ...
+func ListProjectMetadata(name, value string) ([]*models.ProjectMetadata, error) {
+	sql := `select * from project_metadata 
+				where name = ? and value = ? and deleted = 0`
+	metadatas := []*models.ProjectMetadata{}
+	_, err := GetOrmer().Raw(sql, name, value).QueryRows(&metadatas)
+	return metadatas, err
+}

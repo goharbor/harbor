@@ -34,11 +34,11 @@ Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Har
 
 ### Community
 **Slack:** Join Harbor's community for discussion and ask questions: [VMware {code}](https://code.vmware.com/join/), Channel: #harbor.  
-**Email:** harbor@ vmware.com .  
-More info on [partners and users](partners.md). 
+**Email:** harbor@vmware.com .  
+More info on [partners and users](partners.md).
 
 ### Contribution
-We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any questions: harbor @vmware.com .
+We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any questions: harbor@vmware.com .
 
 ### Demos
 * ![play](docs/img/video.png) **Content Trust** ( [youtube](https://www.youtube.com/watch?v=pPklSTJZY2E) , [Tencent Video](https://v.qq.com/x/page/n0553fzzrnf.html) )
@@ -56,7 +56,7 @@ This project uses open source components which have additional licensing terms. 
 * MySQL 5.6: [docker image](https://hub.docker.com/_/mysql/), [license](https://github.com/docker-library/mysql/blob/master/LICENSE)
 
 ### Commercial Support
-If you need commercial support of Harbor, please contact us for more information: harbor@ vmware.com .
+If you need commercial support of Harbor, please contact us for more information: harbor@vmware.com .
 
 
 

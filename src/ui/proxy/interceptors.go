@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -37,9 +36,6 @@ var rec *httptest.ResponseRecorder
 
 // NotaryEndpoint , exported for testing.
 var NotaryEndpoint = config.InternalNotaryEndpoint()
-
-// EnvChecker is the instance of envPolicyChecker
-var EnvChecker = envPolicyChecker{}
 
 // MatchPullManifest checks if the request looks like a request to pull manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values
 func MatchPullManifest(req *http.Request) (bool, string, string) {
@@ -77,16 +73,6 @@ type policyChecker interface {
 	vulnerablePolicy(name string) (bool, models.Severity)
 }
 
-//For testing
-type envPolicyChecker struct{}
-
-func (ec envPolicyChecker) contentTrustEnabled(name string) bool {
-	return os.Getenv("PROJECT_CONTENT_TRUST") == "1"
-}
-func (ec envPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity) {
-	return os.Getenv("PROJECT_VULNERABLE") == "1", clair.ParseClairSev(os.Getenv("PROJECT_SEVERITY"))
-}
-
 type pmsPolicyChecker struct {
 	pm promgr.ProjectManager
 }
@@ -97,7 +83,7 @@ func (pc pmsPolicyChecker) contentTrustEnabled(name string) bool {
 		log.Errorf("Unexpected error when getting the project, error: %v", err)
 		return true
 	}
-	return project.EnableContentTrust
+	return project.ContentTrustEnabled()
 }
 func (pc pmsPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity) {
 	project, err := pc.pm.Get(name)
@@ -105,7 +91,7 @@ func (pc pmsPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity)
 		log.Errorf("Unexpected error when getting the project, error: %v", err)
 		return true, models.SevUnknown
 	}
-	return project.PreventVulnerableImagesFromRunning, clair.ParseClairSev(project.PreventVulnerableImagesFromRunningSeverity)
+	return project.VulPrevented(), clair.ParseClairSev(project.Severity())
 }
 
 // newPMSPolicyChecker returns an instance of an pmsPolicyChecker
@@ -116,10 +102,7 @@ func newPMSPolicyChecker(pm promgr.ProjectManager) policyChecker {
 }
 
 func getPolicyChecker() policyChecker {
-	if config.WithAdmiral() {
-		return newPMSPolicyChecker(config.GlobalProjectMgr)
-	}
-	return EnvChecker
+	return newPMSPolicyChecker(config.GlobalProjectMgr)
 }
 
 type imageInfo struct {
