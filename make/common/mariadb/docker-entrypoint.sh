@@ -69,7 +69,7 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
 	mkdir -p "$DATADIR"
 	chown -R mysql:mysql "$DATADIR"
     if [ -d '/docker-entrypoint-initdb.d' ]; then
-        chmod -R +rx /docker-entrypoint-updatedb.d
+        chmod -R +rx /docker-entrypoint-initdb.d
     fi
     if [ -d '/docker-entrypoint-updatedb.d' ]; then
         chmod -R +rx /docker-entrypoint-updatedb.d
