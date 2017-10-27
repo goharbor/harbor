@@ -510,7 +510,8 @@
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability package found"
         },
         "SEVERITY": {
             "HIGH": "high",
