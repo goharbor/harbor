@@ -57,19 +57,25 @@ if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRAN
     echo "Package Harbor build."
     pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
     echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
-    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
     upload_latest_build=true
+    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 elif (echo $buildinfo | grep -q "\[Specific CI="); then
     buildtype=$(echo $buildinfo | grep "\[Specific CI=")
     testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
     pybot -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
 elif (echo $buildinfo | grep -q "\[Full CI\]"); then
-    upload_build=true
     pybot -v ip:$container_ip --removekeywords TAG:secret --exclude skip tests/robot-cases
 elif (echo $buildinfo | grep -q "\[Skip CI\]"); then
     echo "Skip CI."
+elif (echo $buildinfo | grep -q "\[Upload Build\]"); then
+    upload_latest_build=true
+    upload_build=true
+    echo "Package Harbor build."
+    pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+    echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
+    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 else
-	# default mode is BAT.
+    # default mode is BAT.
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 fi
 
@@ -88,6 +94,13 @@ if [ -f "$outfile" ]; then
   gsutil -D setacl public-read gs://harbor-ci-logs/$outfile &> /dev/null
 else
   echo "No log output file to upload"
+fi
+
+## --------------------------------------------- Upload Harbor Build File ---------------------------------------
+if [ $upload_build == true ] && [ $rc -eq 0 ]; then
+  harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
+  gsutil cp $harbor_build_bundle gs://harbor-builds
+  gsutil -D setacl public-read gs://harbor-builds/$harbor_build_bundle &> /dev/null
 fi
 
 ## --------------------------------------------- Upload Harbor Latest Build File ---------------------------------------

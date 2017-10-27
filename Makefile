@@ -86,7 +86,7 @@ NGINXVERSION=1.11.13
 PHOTONVERSION=1.0
 NOTARYVERSION=server-0.5.0
 NOTARYSIGNERVERSION=signer-0.5.0
-MARIADBVERSION=mariadb-10.1.10
+MARIADBVERSION=10.2.8
 HTTPPROXY=
 REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
@@ -241,7 +241,7 @@ DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
 	DOCKERSAVE_PARA+= vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) \
-				vmware/harbor-notary-db:$(MARIADBVERSION)
+				vmware/mariadb-photon:$(MARIADBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
@@ -371,7 +371,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 		echo "pulling notary and harbor-notary-db..."; \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYSIGNERVERSION); \
-		$(DOCKERPULL) vmware/harbor-notary-db:$(MARIADBVERSION); \
+		$(DOCKERPULL) vmware/mariadb-photon:$(MARIADBVERSION); \
 	fi
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		echo "pulling claiy and postgres..."; \

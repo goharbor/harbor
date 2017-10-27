@@ -158,6 +158,7 @@ create table replication_target (
  1 means it's a regulart registry
  */
  target_type tinyint(1) NOT NULL DEFAULT 0,
+ insecure tinyint(1) NOT NULL DEFAULT 0,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP
  );

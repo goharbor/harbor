@@ -57,7 +57,6 @@ const (
 	EmailIdentity              = "email_identity"
 	EmailInsecure              = "email_insecure"
 	ProjectCreationRestriction = "project_creation_restriction"
-	VerifyRemoteCert           = "verify_remote_cert"
 	MaxJobWorkers              = "max_job_workers"
 	TokenExpiration            = "token_expiration"
 	CfgExpiration              = "cfg_expiration"

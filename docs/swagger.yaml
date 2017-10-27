@@ -2339,6 +2339,9 @@ definitions:
         type: integer
         format: int
         description: Reserved field.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
       creation_time:
         type: string
         description: The create time of the policy.
@@ -2360,6 +2363,9 @@ definitions:
       password:
         type: string
         description: The target server password.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
   PingTarget:
     type: object
     properties:
@@ -2372,6 +2378,9 @@ definitions:
       password:
         type: string
         description: The target server password.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
   PutTarget:
     type: object
     properties:
@@ -2387,6 +2396,9 @@ definitions:
       password:
         type: string
         description: The target server password.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
   HasAdminRole:
     type: object
     properties:

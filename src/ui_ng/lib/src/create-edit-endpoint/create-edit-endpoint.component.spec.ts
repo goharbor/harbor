@@ -21,6 +21,7 @@ describe('CreateEditEndpointComponent (inline template)', () => {
     "name": "target_01",
     "username": "admin",
     "password": "",
+    "insecure": false,
     "type": 0
   };
 

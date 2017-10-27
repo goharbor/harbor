@@ -111,10 +111,6 @@ var (
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
 		},
-		common.VerifyRemoteCert: &parser{
-			env:   "VERIFY_REMOTE_CERT",
-			parse: parseStringToBool,
-		},
 		common.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
 		common.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
 		common.AdmiralEndpoint:            "ADMIRAL_URL",
