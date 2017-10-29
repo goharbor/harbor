@@ -113,6 +113,7 @@ func initProjectManager() {
 		// TODO read ca/cert file and pass it to the TLS config
 		AdmiralClient = &http.Client{
 			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
 				},

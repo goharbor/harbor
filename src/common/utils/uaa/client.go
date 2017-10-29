@@ -79,6 +79,7 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 	}
 	hc := &http.Client{
 		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
 			TLSClientConfig: tc,
 		},
 	}

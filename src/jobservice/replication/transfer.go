@@ -293,6 +293,7 @@ func (c *Checker) createProject(project *models.Project) error {
 
 	client := &http.Client{
 		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: c.insecure,
 			},
