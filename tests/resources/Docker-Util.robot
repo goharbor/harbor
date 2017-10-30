@@ -40,11 +40,11 @@ Push image
     Log To Console  \nRunning docker push ${image}...
     ${rc}=  Run And Return Rc  docker pull ${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker tag ${image} ${ip}/${project}/${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
 
@@ -53,11 +53,11 @@ Push Image With Tag
     Log To Console  \nRunning docker push ${image}...
     ${rc}=  Run And Return Rc  docker pull ${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker tag ${image} ${tag}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${tag}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
 
@@ -66,7 +66,7 @@ Cannot Pull image
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/${project}/${image}
-    Log To Console  ${output}
+    Log  ${output}
     Should Not Be Equal As Integers  ${rc}  0
 
 Cannot Push image
@@ -74,11 +74,11 @@ Cannot Push image
     Log To Console  \nRunning docker push ${image}...
     ${rc}=  Run And Return Rc  docker pull ${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker tag ${image} ${ip}/${project}/${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}
-    Log To Console  ${output}
+    Log  ${output}
     Should Not Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
 

@@ -19,7 +19,7 @@ Suite Setup  Install Harbor to Test Server
 Default Tags  BAT
 
 *** Variables ***
-${HARBOR_URL}  http://localhost
+${HARBOR_URL}  https://${ip}
 
 *** Test Cases ***
 Test Case - Create An New User
@@ -84,7 +84,7 @@ Test Case - User View Logs
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
 				
-   Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
+    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
 
     Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
@@ -227,7 +227,7 @@ Test Case - Scan A Tag
     Summary Chart Should Display  latest
     Close Browser
 
-Test Case-Manage Project Member
+Test Case - Manage Project Member
     Init Chrome Driver
     ${d}=    Get current Date  result_format=%m%s
 
@@ -278,6 +278,26 @@ Test Case - Assign Sys Admin
     Administration Tag Should Display
     Close Browser
 
+Test Case - Admin Push Signed Image
+    Enabe Notary Client
+
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
+    Log  ${output}
+		
+    Push image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  library  hello-world:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    #Should Contain  ${output}  sha256
+
+Test Case - Admin Push Un-Signed Image	
+    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
+    Log To Console  ${output}
+	
 Test Case - Ldap Sign in and out
     Switch To LDAP
     Init Chrome Driver
@@ -305,25 +325,5 @@ Test Case - Ldap User Push An Image
     Wait Until Page Contains  project${d}/hello-world
     Close Browser
 
-Test Case - Admin Push Signed Image
-    Switch To Notary
-
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
-    Log To Console  ${output}
-		
-    Push image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  library  hello-world:latest
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
-
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    #Should Contain  ${output}  sha256
-
-Test Case - Admin Push Un-Signed Image	
-    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
-    Log To Console  ${output}
-
 Test Case - Clean Harbor Images	
-    Down Harbor  with_notary=true
+    Down Harbor
