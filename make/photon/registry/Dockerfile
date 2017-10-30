@@ -1,8 +1,11 @@
-FROM library/photon:1.0
+FROM vmware/photon:1.0
 
 MAINTAINER wangyan@vmware.com
 
 # The original script in the docker offical registry image.
+RUN tdnf distro-sync -y \
+    && tdnf erase vim -y \
+    && tdnf clean all
 COPY entrypoint.sh /
 RUN chmod u+x /entrypoint.sh
 
