@@ -396,6 +396,8 @@
         "MAIL_PASSWORD": "Contraseña del servidor de email",
         "MAIL_FROM": "Email De",
         "MAIL_SSL": "Email SSL",
+        "MAIL_INSECURE": "Verify Certificate",
+        "INSECURE_TOOLTIP": "Determina si la verificar el certificado de un registro Harbor remoto. Desmarque esta opción cuando el registro remoto use un certificado de confianza o autofirmado.",
         "SSL_TOOLTIP": "Activar SSL en conexiones al servidor de correo",
         "VERIFY_REMOTE_CERT": "Verificar Certificado Remoto",
         "TOKEN_EXPIRATION": "Expiración del Token (Minutos)",
