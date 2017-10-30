@@ -253,6 +253,18 @@ Test Case-Manage Project Member
 
     Close Browser
 
+Test Case - Delete A Project
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New Project With New User  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  tester${d}  Test1@34  harobr  project${d}  false
+    Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world  
+    Project Should Not Be Deleted  project${d}
+    Go Into Project  project${d}
+    Delete Repo  project${d}
+    Back To projects
+    Project Should Be Deleted  project${d}
+    Close Browser
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
