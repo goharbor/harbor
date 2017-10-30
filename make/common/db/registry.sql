@@ -97,18 +97,20 @@ insert into project_member (project_id, user_id, role, creation_time, update_tim
 (1, 1, 1, NOW(), NOW());
 
 create table project_metadata (
+ id int NOT NULL AUTO_INCREMENT,
  project_id int NOT NULL,
  name varchar(255) NOT NULL,
  value varchar(255),
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
- PRIMARY KEY (project_id, name),
+ PRIMARY KEY (id),
+ CONSTRAINT unique_project_id_and_name UNIQUE (project_id,name),
  FOREIGN KEY (project_id) REFERENCES project(project_id)
 );
 
-insert into project_metadata (project_id, name, value, creation_time, update_time, deleted) values
-(1, 'public', 'true', NOW(), NOW(), 0);
+insert into project_metadata (id, project_id, name, value, creation_time, update_time, deleted) values
+(1, 1, 'public', 'true', NOW(), NOW(), 0);
 
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,

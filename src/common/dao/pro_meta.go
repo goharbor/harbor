@@ -22,8 +22,6 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 )
 
-// Using raw sql instead of CRUD objects as beego does not support composite primary key
-
 // AddProjectMetadata adds metadata for a project
 func AddProjectMetadata(meta *models.ProjectMetadata) error {
 	now := time.Now()
