@@ -147,6 +147,9 @@ Config Email
     Mouse Down  xpath=//*[@id="clr-checkbox-emailSSL"]
     Mouse Up  xpath=//*[@id="clr-checkbox-emailSSL"]
     Sleep  1
+    Mouse Down  xpath=//*[@id="clr-checkbox-emailInsecure"]
+    Mouse Up  xpath=//*[@id="clr-checkbox-emailInsecure"]
+    Sleep  1
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
     Sleep  6
 
@@ -155,7 +158,8 @@ Verify Email
     Textfield Value Should Be  xpath=//*[@id="emailPort"]  25
     Textfield Value Should Be  xpath=//*[@id="emailUsername"]  example@vmware.com
     Textfield Value Should Be  xpath=//*[@id="emailFrom"]  example<example@vmware.com>
-    Checkbox Should Be Selected  xpath=//*[@id="clr-checkbox-emailSSL"]	
+    Checkbox Should Be Selected  xpath=//*[@id="clr-checkbox-emailSSL"]
+    Checkbox Should Be Selected  xpath=//*[@id="clr-checkbox-emailInsecure"]
 
 Set Scan All To None
     click element  //vulnerability-config//select

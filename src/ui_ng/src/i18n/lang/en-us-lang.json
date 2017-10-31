@@ -395,6 +395,8 @@
         "MAIL_PASSWORD": "Email Password",
         "MAIL_FROM": "Email From",
         "MAIL_SSL": "Email SSL",
+        "MAIL_INSECURE": "Verify Certificate",
+        "INSECURE_TOOLTIP": "Determine whether should verify the certificate of a remote Harbor registry. Uncheck this box when the remote registry uses a self-signed or untrusted certificate.",
         "SSL_TOOLTIP": "Enable SSL for email server connection",
         "VERIFY_REMOTE_CERT": "Verify Remote Cert",
         "TOKEN_EXPIRATION": "Token Expiration (Minutes)",

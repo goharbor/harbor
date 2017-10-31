@@ -25,7 +25,7 @@
                     <div class="checkbox-inline">
                         <input type="checkbox" id="create_project_public" [(ngModel)]="project.metadata.public" name="public">
                         <label for="create_project_public"></label>
-                        <span class="access-level-label">{{ accessLevelDisplayText | translate}}</span>
+                        <span class="access-level-label">{{ 'PROJECT.PUBLIC' | translate}}</span>
                         <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-md tooltip-bottom-right" style="top:-8px; left:-8px;">
                             <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                             <span class="tooltip-content" style="margin-left: 5px;">{{'PROJECT.INLINE_HELP_PUBLIC' | translate }}</span>
