@@ -119,6 +119,9 @@ func initRouters() {
 	beego.Router("/api/configurations", &api.ConfigAPI{})
 	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
+	beego.Router("/api/replication_filters/type", &api.RepFilterAPI{}, "get:GetTypes")
+	beego.Router("/api/replication_filters/", &api.RepFilterAPI{}, "get:List;post:Post")
+	beego.Router("/api/replication_filters/:id([0-9]+", &api.RepFilterAPI{}, "delete:Delete;put:Put")
 
 	beego.Router("/api/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")

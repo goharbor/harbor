@@ -107,6 +107,10 @@ func clearUp(username string) {
 	if err != nil {
 		log.Error(err)
 	}
+	err = execUpdate(o, `delete from replication_filter`)
+	if err != nil {
+		log.Error(err)
+	}
 	err = execUpdate(o, `delete from replication_policy where id < 99`)
 	if err != nil {
 		log.Error(err)

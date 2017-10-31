@@ -151,6 +151,30 @@ create table replication_policy (
  PRIMARY KEY (id)
  );
 
+create table replication_filter_type (
+ id int NOT NULL AUTO_INCREMENT,
+ name varchar(256) NOT NULL,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY (id)
+ );
+
+insert into replication_filter_type (name, creation_time, update_time) values('repository', NOW(), NOW());
+insert into replication_filter_type (name, creation_time, update_time) values('tag', NOW(), NOW());
+
+create table replication_filter (
+ id int NOT NULL AUTO_INCREMENT,
+ replication_policy_id int NOT NULL,
+ replication_filter_type_id int NOT NULL,
+ value varchar(256),
+ deleted tinyint (1) DEFAULT 0 NOT NULL,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY (id),
+ FOREIGN KEY (replication_policy_id) REFERENCES replication_policy(id),
+ FOREIGN KEY (replication_filter_type_id) REFERENCES replication_filter_type(id)
+ );
+
 create table replication_target (
  id int NOT NULL AUTO_INCREMENT,
  name varchar(64),

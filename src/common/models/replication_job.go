@@ -38,16 +38,15 @@ const (
 
 // RepPolicy is the model for a replication policy, which associate to a project and a target (destination)
 type RepPolicy struct {
-	ID          int64  `orm:"pk;auto;column(id)" json:"id"`
-	ProjectID   int64  `orm:"column(project_id)" json:"project_id"`
-	ProjectName string `json:"project_name,omitempty"`
-	TargetID    int64  `orm:"column(target_id)" json:"target_id"`
-	TargetName  string `json:"target_name,omitempty"`
-	Name        string `orm:"column(name)" json:"name"`
-	//	Target       RepTarget `orm:"-" json:"target"`
+	ID            int64     `orm:"pk;auto;column(id)" json:"id"`
+	ProjectID     int64     `orm:"column(project_id)" json:"project_id"`
+	ProjectName   string    `json:"project_name,omitempty"`
+	TargetID      int64     `orm:"column(target_id)" json:"target_id"`
+	TargetName    string    `json:"target_name,omitempty"`
+	Name          string    `orm:"column(name)" json:"name"`
 	Enabled       int       `orm:"column(enabled)" json:"enabled"`
 	Description   string    `orm:"column(description)" json:"description"`
-	CronStr       string    `orm:"column(cron_str)" json:"cron_str"`
+	Trigger       string    `orm:"column(cron_str)" json:"trigger"`
 	StartTime     time.Time `orm:"column(start_time)" json:"start_time"`
 	CreationTime  time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime    time.Time `orm:"column(update_time);auto_now" json:"update_time"`
@@ -77,8 +76,8 @@ func (r *RepPolicy) Valid(v *validation.Validation) {
 		v.SetError("enabled", "must be 0 or 1")
 	}
 
-	if len(r.CronStr) > 256 {
-		v.SetError("cron_str", "max length is 256")
+	if len(r.Trigger) > 256 {
+		v.SetError("trigger", "max length is 256")
 	}
 }
 

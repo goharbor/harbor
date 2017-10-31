@@ -12,24 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
-
-import (
-	"github.com/astaxie/beego/orm"
-)
-
-func init() {
-	orm.RegisterModel(new(RepTarget),
-		new(RepPolicy),
-		new(RepJob),
-		new(User),
-		new(Project),
-		new(Role),
-		new(AccessLog),
-		new(ScanJob),
-		new(RepoRecord),
-		new(ImgScanOverview),
-		new(ClairVulnTimestamp),
-		new(RepFilter),
-		new(RepFilterType))
-}
+package api

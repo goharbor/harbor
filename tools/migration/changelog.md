@@ -56,3 +56,8 @@ Changelog for harbor database schema
   - insert data into table `project_metadata`
   - delete column `public` from table `project`
   - add column `insecure` to table `replication_target`
+
+## 1.4.0
+  - create table `replication_filter`
+  - create table `replication_filter_type`
+  - insert data into table `replication_filter_type`
