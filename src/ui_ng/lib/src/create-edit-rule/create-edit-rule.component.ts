@@ -46,6 +46,7 @@ export interface CreateEditRule {
   endpointUrl?: string;
   username?: string;
   password?: string;
+  insecure?: boolean;
 }
 
 const FAKE_PASSWORD: string = 'ywJZnDTM';
@@ -99,7 +100,8 @@ export class CreateEditRuleComponent implements AfterViewChecked {
       endpointName: '',
       endpointUrl: '',
       username: '',
-      password: ''
+      password: '',
+      insecure: false
     };
   }
 
@@ -169,12 +171,14 @@ export class CreateEditRuleComponent implements AfterViewChecked {
               this.createEditRule.endpointName = initialEndpoint.name;
               this.createEditRule.endpointUrl = initialEndpoint.endpoint;
               this.createEditRule.username = initialEndpoint.username;
+              this.createEditRule.insecure = initialEndpoint.insecure;
               this.createEditRule.password = FAKE_PASSWORD;
 
               this.initVal.endpointId = this.createEditRule.endpointId;
               this.initVal.endpointUrl = this.createEditRule.endpointUrl;
               this.initVal.username = this.createEditRule.username;
               this.initVal.password = this.createEditRule.password;
+              this.initVal.insecure = this.createEditRule.insecure;
             }
           })
           .catch(error=>{ 
@@ -234,6 +238,7 @@ export class CreateEditRuleComponent implements AfterViewChecked {
       this.createEditRule.endpointUrl = '';
       this.createEditRule.username = '';
       this.createEditRule.password = '';
+      this.createEditRule.insecure = false;
     } else {
       this.prepareTargets();
     }
@@ -245,6 +250,7 @@ export class CreateEditRuleComponent implements AfterViewChecked {
       this.createEditRule.endpointId = result.id;
       this.createEditRule.endpointUrl = result.endpoint;
       this.createEditRule.username = result.username;
+      this.createEditRule.insecure = result.insecure;
       this.createEditRule.password = FAKE_PASSWORD;
     }
   }
@@ -267,6 +273,7 @@ export class CreateEditRuleComponent implements AfterViewChecked {
     endpoint.endpoint = this.createEditRule.endpointUrl || '';
     endpoint.username = this.createEditRule.username;
     endpoint.password = this.createEditRule.password;
+    endpoint.insecure = this.createEditRule.insecure;
     return endpoint;
   }
 
@@ -362,6 +369,10 @@ export class CreateEditRuleComponent implements AfterViewChecked {
     }
   }
 
+  setInsecureValue($event: any) {
+    this.createEditRule.insecure = !$event;
+  }
+
   confirmCancel(confirmed: boolean) {
     this.createEditRuleOpened = false;
     this.inlineAlert.close();
@@ -379,7 +390,8 @@ export class CreateEditRuleComponent implements AfterViewChecked {
         targetName: this.initVal.name,
         endpointUrl: this.initVal.endpointUrl,
         username: this.initVal.username,
-        password: this.initVal.password
+        password: this.initVal.password,
+        insecure: this.initVal.insecure
       };
       let self: CreateEditRuleComponent | any = this;
       if(self) {

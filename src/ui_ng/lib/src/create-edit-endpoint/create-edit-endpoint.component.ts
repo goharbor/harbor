@@ -115,6 +115,11 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
     public get checkboxHasChanged(): boolean {
         return (this.target.insecure !== this.initVal.insecure) ? true : false;
     }
+
+    setInsecureValue($event: any) {
+        this.target.insecure = !$event;
+    }
+
     ngOnDestroy(): void {
         if (this.valueChangesSub) {
             this.valueChangesSub.unsubscribe();

@@ -396,7 +396,7 @@
         "MAIL_FROM": "邮件来源",
         "MAIL_SSL": "邮件 SSL",
         "MAIL_INSECURE": "验证证书",
-        "INSECURE_TOOLTIP": "确定是否要验证远程Harbor实例的证书。如果远程实例使用的是自签或者非信任证书，不要勾选此项。",
+        "INSECURE_TOOLTIP": "确定是否要验证邮件服务器的证书。如果邮件服务器使用的是自签或者非信任证书，不要勾选此项。",
         "SSL_TOOLTIP": "启用SSL到邮件服务器连接。",
         "VERIFY_REMOTE_CERT": "验证远程证书",
         "TOKEN_EXPIRATION": "令牌过期时间（分钟）",
