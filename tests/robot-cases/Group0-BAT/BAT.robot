@@ -328,30 +328,38 @@ Test Case - Admin Push Signed Image
 Test Case - Admin Push Un-Signed Image	
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
     Log To Console  ${output}
-	
-Test Case - Ldap Sign in and out
+
+Test Case - Ldap Verify Cert
     Switch To LDAP
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Switch To Configure
+    Test Ldap Connection
+    Close Browser
+
+Test Case - Ldap Sign in and out
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Switch To Configure
     Init LDAP
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  user001  user001
+    Sign In Harbor  ${HARBOR_URL}  test  123456
     Close Browser
 
 Test Case - Ldap User Create Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  user001  user001
+    Sign In Harbor  ${HARBOR_URL}  test  123456
     Create An New Project  project${d}
     Close Browser
 
 Test Case - Ldap User Push An Image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  user001  user001
+    Sign In Harbor  ${HARBOR_URL}  test  123456
     Create An New Project  project${d}
-    Push Image  ${ip}  user001  user001  project${d}  hello-world:latest
+    
+    Push Image  ${ip}  test  123456  project${d}  hello-world:latest
     Go Into Project  project${d}
     Wait Until Page Contains  project${d}/hello-world
     Close Browser

@@ -18,3 +18,4 @@ Documentation  This resource provides any keywords related to the Harbor private
 *** Variables ***
 ${project_create_xpath}  //project//div[@class="option-left"]/button
 ${self_reg_xpath}  //input[@id="clr-checkbox-selfReg"]
+${test_ldap_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[3]

@@ -90,17 +90,26 @@ func TestLoadFromEnv(t *testing.T) {
 		t.Fatalf("failed to set env: %v", err)
 	}
 
+	if err := os.Setenv("LDAP_VERIFY_CERT", "false"); err != nil {
+		t.Fatalf("failed to set env: %v", err)
+	}
+
 	cfgs = map[string]interface{}{}
 	err = LoadFromEnv(cfgs, false)
 	assert.Nil(t, err)
 	assert.Equal(t, extEndpoint, cfgs[common.ExtEndpoint])
 	assert.Equal(t, ldapURL, cfgs[common.LDAPURL])
+	assert.Equal(t, false, cfgs[common.LDAPVerifyCert])
 
 	os.Clearenv()
 	if err := os.Setenv("LDAP_URL", ldapURL); err != nil {
 		t.Fatalf("failed to set env: %v", err)
 	}
 	if err := os.Setenv("EXT_ENDPOINT", extEndpoint); err != nil {
+		t.Fatalf("failed to set env: %v", err)
+	}
+
+	if err := os.Setenv("LDAP_VERIFY_CERT", "true"); err != nil {
 		t.Fatalf("failed to set env: %v", err)
 	}
 
@@ -111,4 +120,5 @@ func TestLoadFromEnv(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, extEndpoint, cfgs[common.ExtEndpoint])
 	assert.Equal(t, "ldap_url", cfgs[common.LDAPURL])
+	assert.Equal(t, true, cfgs[common.LDAPVerifyCert])
 }
