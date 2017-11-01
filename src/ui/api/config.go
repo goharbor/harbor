@@ -40,6 +40,7 @@ var (
 		common.LDAPFilter,
 		common.LDAPScope,
 		common.LDAPTimeout,
+		common.LDAPVerifyCert,
 		common.EmailHost,
 		common.EmailPort,
 		common.EmailUsername,
@@ -80,6 +81,7 @@ var (
 		common.EmailSSL,
 		common.SelfRegistration,
 		common.VerifyRemoteCert,
+		common.LDAPVerifyCert,
 	}
 
 	passwordKeys = []string{

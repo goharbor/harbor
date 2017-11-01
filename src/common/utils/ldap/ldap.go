@@ -60,6 +60,7 @@ func GetSystemLdapConf() (models.LdapConf, error) {
 	ldapConfs.LdapUID = ldap.UID
 	ldapConfs.LdapScope = ldap.Scope
 	ldapConfs.LdapConnectionTimeout = ldap.Timeout
+	ldapConfs.LdapVerifyCert = ldap.VerifyCert
 
 	//	ldapConfs = config.LDAP().URL
 	//	ldapConfs.LdapSearchDn = config.LDAP().SearchDn
@@ -337,6 +338,8 @@ func dialLDAP(ldapConfs models.LdapConf) (*goldap.Conn, error) {
 	var ldap *goldap.Conn
 	splitLdapURL := strings.Split(ldapConfs.LdapURL, "://")
 	protocol, hostport := splitLdapURL[0], splitLdapURL[1]
+	splithostport := strings.Split(hostport, ":")
+	host := splithostport[0]
 
 	// Sets a Dial Timeout for LDAP
 	connectionTimeout := ldapConfs.LdapConnectionTimeout
@@ -346,7 +349,14 @@ func dialLDAP(ldapConfs models.LdapConf) (*goldap.Conn, error) {
 	case "ldap":
 		ldap, err = goldap.Dial("tcp", hostport)
 	case "ldaps":
-		ldap, err = goldap.DialTLS("tcp", hostport, &tls.Config{InsecureSkipVerify: true})
+		if ldapConfs.LdapVerifyCert {
+			log.Error("Connect ldaps with verified certificate!")
+			ldap, err = goldap.DialTLS("tcp", hostport, &tls.Config{ServerName: host, InsecureSkipVerify: false})
+		} else {
+			log.Errorf("Connect ldaps skip verified certificate!, ldapConfs=%v", ldapConfs)
+			ldap, err = goldap.DialTLS("tcp", hostport, &tls.Config{InsecureSkipVerify: true})
+		}
+
 	}
 
 	return ldap, err

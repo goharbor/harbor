@@ -33,6 +33,7 @@ type LDAP struct {
 	UID            string `json:"uid"`
 	Scope          int    `json:"scope"`
 	Timeout        int    `json:"timeout"` // in second
+	VerifyCert     bool   `json:"verify_cert"`
 }
 
 // Database ...
