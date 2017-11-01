@@ -111,7 +111,7 @@ Project Should Not Be Deleted
     [Arguments]  ${projname}
     Delete Project  ${projname}
     Sleep  1
-    Page Should Contain Element  //clr-alert//span[contains(.,'cannot')]
+    Page Should Contain  ${projname}
 
 Project Should Be Deleted
     [Arguments]  ${projname}
