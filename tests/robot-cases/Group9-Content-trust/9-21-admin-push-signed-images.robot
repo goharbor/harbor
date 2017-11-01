@@ -19,10 +19,11 @@ Default Tags  regression
 
 *** Test Cases ***
 Test Case - Admin Push Signed Image
-    Install Harbor With Notary to Test Server
+    Install Harbor to Test Server
+    Enabe Notary Client
 
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
     ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'

@@ -24,81 +24,53 @@ ${CLAIR_BUILDER}  1.2.7
 
 *** Keywords ***
 Install Harbor to Test Server
-	Log To Console  \nStart Docker Daemon
-	Start Docker Daemon Locally
-	Sleep  5s
-	${rc}  ${output}=  Run And Return Rc And Output  docker ps
-    Should Be Equal As Integers  ${rc}  0
-    Log To Console  \n${output}
-    Log To Console  \nconfig harbor cfg
-    Run Keywords  Config Harbor cfg
-	Run Keywords  Prepare Cert
-    Log To Console  \ncomplile and up harbor now
-    Run Keywords  Compile and Up Harbor With Source Code
+    Log To Console  \nStart Docker Daemon
+    Start Docker Daemon Locally
+    Sleep  5s
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
-    Should Be Equal As Integers  ${rc}  0
-    Log To Console  \n${output}
-
-Install Harbor With Notary to Test Server
-	Log To Console  \nStart Docker Daemon
-	Start Docker Daemon Locally
-	Sleep  5s
-	${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
     Log To Console  \nconfig harbor cfg
     Config Harbor cfg  http_proxy=https
-	${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log  ${ip}
-	${rc}=  Run And Return Rc  sed "s/^IP=.*/IP=${ip}/g" -i ./tests/generateCerts.sh
-    Log  ${rc}
-	${rc}  ${output}=  Run And Return Rc And Output  ./tests/generateCerts.sh
-	Should Be Equal As Integers  ${rc}  0
-	${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
-	Should Be Equal As Integers  ${rc}  0
-	${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${ip}:4443/
-	Should Be Equal As Integers  ${rc}  0
-	${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
-	Log To Console  ${output}
-	Should Be Equal As Integers  ${rc}  0
-	${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${ip}:4443/
-	Log To Console  ${output}
-	Should Be Equal As Integers  ${rc}  0
+    Prepare Cert
     Log To Console  \ncomplile and up harbor now
-    Compile and Up Harbor With Source Code  with_notary=true
+    Compile and Up Harbor With Source Code
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
+    Generate Certificate Authority For Chrome
 
 Up Harbor
-	[Arguments]  ${with_notary}=true  ${with_clair}=true
-	${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
-	Log To Console  ${rc}
-	Should Be Equal As Integers  ${rc}  0
+    [Arguments]  ${with_notary}=true  ${with_clair}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  make start -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
+    Log  ${rc}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
 
 Down Harbor
-	[Arguments]  ${with_notary}=true  ${with_clair}=true
-	${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
-	Log To Console  ${rc}
-	Should Be Equal As Integers  ${rc}  0
+    [Arguments]  ${with_notary}=true  ${with_clair}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
+    Log  ${rc}
+    Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
-	[Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true
-	Log To Console  \nStart Docker Daemon
-	Start Docker Daemon Locally
-	${rc}  ${output}=  Run And Return Rc And Output  make package_offline DEVFLAG=false GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} HTTPPROXY=
-	Log To Console  ${rc}
-	Log  ${output}
-	Should Be Equal As Integers  ${rc}  0
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true
+    Log To Console  \nStart Docker Daemon
+    Start Docker Daemon Locally
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline DEVFLAG=false GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} HTTPPROXY=
+    Log  ${rc}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
 
 Switch To LDAP
-	Down Harbor  with_notary=false
-	${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data
-	Log To Console  ${rc}
-	Should Be Equal As Integers  ${rc}  0
-	Config Harbor cfg  auth=ldap_auth
-	Prepare  with_notary=false
-	Up Harbor  with_notary=false
+    Down Harbor
+    ${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data
+    Log  ${rc}
+    Should Be Equal As Integers  ${rc}  0
+    Prepare Cert
+    Config Harbor cfg  auth=ldap_auth  http_proxy=https
+    Prepare
+    Up Harbor
     ${rc}=  Run And Return Rc  docker pull vmware/harbor-ldap-test:1.1.1
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
@@ -106,81 +78,73 @@ Switch To LDAP
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0	
-
-Switch To Notary
-	Down Harbor  with_notary=false
-	${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data
-	Log To Console  ${rc}
-	${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
-	Log To Console  ${rc}
-	Should Be Equal As Integers  ${rc}  0
-	Config Harbor cfg  http_proxy=https
-	${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log  ${ip}
-	${rc}=  Run And Return Rc  sed "s/^IP=.*/IP=${ip}/g" -i ./tests/generateCerts.sh
+    Generate Certificate Authority For Chrome
+	
+Enabe Notary Client
+    ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log  ${rc}
-	${rc}  ${output}=  Run And Return Rc And Output  ./tests/generateCerts.sh
-	Should Be Equal As Integers  ${rc}  0
-	${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
-	Should Be Equal As Integers  ${rc}  0
-	${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${ip}:4443/
-	Should Be Equal As Integers  ${rc}  0
-	${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
-	Log To Console  ${output}
-	Should Be Equal As Integers  ${rc}  0
-	${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${ip}:4443/
-	Log To Console  ${output}
-	Should Be Equal As Integers  ${rc}  0
-	${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
-	Log To Console  ${output}
-	${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${ip}:4443/
-	Log To Console  ${output}
-	Prepare
-	Sleep  3s
-	Up Harbor
-    Sleep  30s
-	${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
-	Log To Console  \n${output}
+    Log  ${ip}
+    ${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${ip}:4443/
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${ip}:4443/
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
+    Log  ${output}
+    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${ip}:4443/
+    Log  ${output}
 
 Prepare
-	[Arguments]  ${with_notary}=true  ${with_clair}=true
-	${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
-	Log To Console  ${rc}
-	Log To Console  ${output}
-	Should Be Equal As Integers  ${rc}  0
+    [Arguments]  ${with_notary}=true  ${with_clair}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
+    Log  ${rc}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
 
 Config Harbor cfg
     # Will change the IP and Protocol in the harbor.cfg
     [Arguments]  ${http_proxy}=http  ${auth}=db_auth
     ${rc}  ${output}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
-    Log  ${output}
-    ${rc}=  Run And Return Rc  sed "s/reg.mydomain.com/${output}/" -i ./make/harbor.cfg
+    ${rc}=  Run And Return Rc  sed "s/^hostname = .*/hostname = ${output}/g" -i ./make/harbor.cfg
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  sed "s/^ui_url_protocol = .*/ui_url_protocol = ${http_proxy}/g" -i ./make/harbor.cfg
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
-	${rc}=  Run And Return Rc  sed "s/^auth_mode = .*/auth_mode = ${auth}/g" -i ./make/harbor.cfg
+    ${rc}=  Run And Return Rc  sed "s/^auth_mode = .*/auth_mode = ${auth}/g" -i ./make/harbor.cfg
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
+    ${out}=  Run  cat ./make/harbor.cfg
+    Log  ${out}		
 
 Prepare Cert
     # Will change the IP and Protocol in the harbor.cfg
-	${rc}=  Run And Return Rc  ./tests/generateCerts.sh
-	Log  ${rc}
-	Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${ip}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
+    Log  ${ip}
+    ${rc}=  Run And Return Rc  sed "s/^IP=.*/IP=${ip}/g" -i ./tests/generateCerts.sh
+    Log  ${rc}
+    ${out}=  Run  cat ./tests/generateCerts.sh
+    Log  ${out}	
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/generateCerts.sh
+    Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
-    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=false  ${with_clair}=true
-	${rc}  ${output}=  Run And Return Rc And Output  docker pull ${clarity_image}
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${clarity_image}
     Log  ${output}
-	Should Be Equal As Integers  ${rc}  0
-	${rc}  ${output}=  Run And Return Rc And Output  docker pull ${golang_image}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${golang_image}
     Log  ${output}
-	Should Be Equal As Integers  ${rc}  0
+    Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} HTTPPROXY=
-	Log  ${output}
-	Should Be Equal As Integers  ${rc}  0
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
     Sleep  20

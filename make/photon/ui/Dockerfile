@@ -1,7 +1,9 @@
-FROM library/photon:1.0
+FROM vmware/photon:1.0
 
-RUN mkdir /harbor/
-
+RUN tdnf distro-sync -y \
+    && tdnf erase vim -y \
+    && tdnf clean all \
+    && mkdir /harbor/
 COPY ./make/dev/ui/harbor_ui /harbor/
 
 COPY ./src/ui/views /harbor/views
