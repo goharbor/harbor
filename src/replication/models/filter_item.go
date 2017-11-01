@@ -4,16 +4,16 @@ package models
 type FilterItem struct {
 
 	//The kind of the filtering resources. Support 'project','repository' and 'tag' etc.
-	kind string
+	Kind string
 
 	//The key value of resource which can be used to filter out the resource matched with specified pattern.
 	//E.g:
 	//kind == 'project', value will be project name;
 	//kind == 'repository', value will be repository name
 	//kind == 'tag', value will be tag name.
-	value string
+	Value string
 
 	//Extension placeholder.
 	//To append more additional information if required by the filter.
-	metadata map[string]interface{}
+	Metadata map[string]interface{}
 }
