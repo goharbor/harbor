@@ -102,6 +102,12 @@ CLARITYSEEDPATH=/harbor_src
 CLARITYUTPATH=${CLARITYSEEDPATH}/ui_ng/lib
 CLARITYBUILDSCRIPT=/entrypoint.sh
 
+#claster parameters
+CLUSTERFLAG=false
+NODEIP=
+DBBACKENDIP=192.168.0.1
+INITFLAG=false
+
 # docker parameters
 DOCKERCMD=$(shell which docker)
 DOCKERBUILD=$(DOCKERCMD) build
@@ -165,6 +171,7 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 # common dockerfile
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
+DOCKERFILEPATH_DB_CLUSTER=$(DOCKERFILEPATH_COMMON)/db-cluster
 DOCKERFILENAME_DB=Dockerfile
 DOCKERFILE_CLARITY=$(MAKEPATH)/dev/nodeclarity/Dockerfile
 
@@ -186,6 +193,7 @@ DOCKERCOMPOSETPLFILENAME=docker-compose.tpl
 DOCKERCOMPOSEFILENAME=docker-compose.yml
 DOCKERCOMPOSENOTARYFILENAME=docker-compose.notary.yml
 DOCKERCOMPOSECLAIRFILENAME=docker-compose.clair.yml
+DOCKERCOMPOSECLUSTERTPLFILENAME=docker-compose-cluster.tpl
 
 # version prepare
 VERSIONFILEPATH=$(CURDIR)
@@ -313,7 +321,11 @@ prepare:
 
 build_common: version
 	@echo "buildging db container for photon..."
-	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
+	@if [ "$(CLUSTERFLAG)" = "true" ] ; then \
+		cd $(DOCKERFILEPATH_DB_CLUSTER) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .; \
+	else \
+		cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .; \
+	fi
 	@echo "Done."
 
 build_photon: build_common
@@ -326,8 +338,13 @@ build: build_$(BASEIMAGE)
 
 modify_composefile:
 	@echo "preparing docker-compose file..."
-	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@if [ "$(CLUSTERFLAG)" = "true" ] ; then \
+		$(MAKEPATH)/create_cluster.sh $(NODEIP) $(DBBACKENDIP) $(INITFLAG) >  $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME);\
+		$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME); \
+	else \
+		cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME); \
+		$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME); \
+	fi
 
 modify_sourcefiles:
 	@echo "change mode of source files."
@@ -453,6 +470,9 @@ down:
 	@echo "stoping harbor instance..."
 	@$(DOCKERCOMPOSECMD) $(DOCKERCOMPOSE_LIST) down -v
 	@echo "Done."
+
+distribute-table:
+	$(DOCKERFILEPATH_DB_CLUSTER)/distribute_table.sh
 
 cleanbinary:
 	@echo "cleaning binary..."
