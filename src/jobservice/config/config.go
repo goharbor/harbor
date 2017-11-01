@@ -107,7 +107,11 @@ func MaxJobWorkers() (int, error) {
 
 // LocalUIURL returns the local ui url, job service will use this URL to call API hosted on ui process
 func LocalUIURL() string {
-	return "http://ui"
+	uiURL := os.Getenv("UI_URL")
+        if len(uiURL) == 0 {
+                uiURL = "http://ui"
+        }
+	return uiURL
 }
 
 // LocalRegURL returns the local registry url, job service will use this URL to pull image from the registry
@@ -156,7 +160,11 @@ func ExtEndpoint() (string, error) {
 
 // InternalTokenServiceEndpoint ...
 func InternalTokenServiceEndpoint() string {
-	return "http://ui/service/token"
+	uiURL := os.Getenv("UI_URL")
+        if len(uiURL) == 0 {
+                uiURL = "http://ui"
+        }
+        return uiURL + "/service/token"
 }
 
 // ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
