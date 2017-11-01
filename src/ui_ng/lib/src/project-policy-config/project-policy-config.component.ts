@@ -107,7 +107,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
   }
 
   hasChanges() {
-    return compareValue(this.orgProjectPolicy, this.projectPolicy)
+    return !compareValue(this.orgProjectPolicy, this.projectPolicy);
   }
 
   save() {

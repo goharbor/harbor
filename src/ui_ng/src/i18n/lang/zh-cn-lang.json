@@ -348,6 +348,7 @@
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
         "SIZE": "大小",
+        "VULNERABILITY": "漏洞",
         "SIGNED": "已签名",
         "AUTHOR": "作者",
         "CREATED": "创建时间",
