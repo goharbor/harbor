@@ -92,7 +92,7 @@ REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
 
 #clair parameters
-CLAIRVERSION=v2.0.1-photon
+CLAIRVERSION=v2.0.1
 CLAIRFLAG=false
 CLAIRDBVERSION=9.6.5-photon
 
@@ -247,7 +247,7 @@ ifeq ($(NOTARYFLAG), true)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 endif
 ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= vmware/clair:$(CLAIRVERSION) vmware/postgresql:$(CLAIRDBVERSION)
+	DOCKERSAVE_PARA+= vmware/clair-photon:$(CLAIRVERSION) vmware/postgresql:$(CLAIRDBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
@@ -375,7 +375,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	fi
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		echo "pulling claiy and postgres..."; \
-		$(DOCKERPULL) vmware/clair:$(CLAIRVERSION); \
+		$(DOCKERPULL) vmware/clair-photon:$(CLAIRVERSION); \
 		$(DOCKERPULL) vmware/postgresql:$(CLAIRDBVERSION); \
 	fi
 	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
