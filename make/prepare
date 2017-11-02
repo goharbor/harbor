@@ -119,6 +119,7 @@ email_usr = rcp.get("configuration", "email_username")
 email_pwd = rcp.get("configuration", "email_password")
 email_from = rcp.get("configuration", "email_from")
 email_ssl = rcp.get("configuration", "email_ssl")
+email_insecure = rcp.get("configuration", "email_insecure")
 harbor_admin_password = rcp.get("configuration", "harbor_admin_password")
 auth_mode = rcp.get("configuration", "auth_mode")
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -234,6 +235,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         email_usr=email_usr,
         email_pwd=email_pwd,
         email_ssl=email_ssl,
+        email_insecure=email_insecure,
         email_from=email_from,
         email_identity=email_identity,
         harbor_admin_password=harbor_admin_password,

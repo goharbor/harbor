@@ -25,6 +25,7 @@ EMAIL_PWD=$email_pwd
 EMAIL_SSL=$email_ssl
 EMAIL_FROM=$email_from
 EMAIL_IDENTITY=$email_identity
+EMAIL_INSECURE=$email_insecure
 HARBOR_ADMIN_PASSWORD=$harbor_admin_password
 PROJECT_CREATION_RESTRICTION=$project_creation_restriction
 MAX_JOB_WORKERS=$max_job_workers
