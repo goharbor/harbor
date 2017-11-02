@@ -15,10 +15,13 @@
 package models
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/astaxie/beego/validation"
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/replication"
 )
 
 const (
@@ -38,21 +41,23 @@ const (
 
 // RepPolicy is the model for a replication policy, which associate to a project and a target (destination)
 type RepPolicy struct {
-	ID          int64  `orm:"pk;auto;column(id)" json:"id"`
-	ProjectID   int64  `orm:"column(project_id)" json:"project_id"`
-	ProjectName string `json:"project_name,omitempty"`
-	TargetID    int64  `orm:"column(target_id)" json:"target_id"`
-	TargetName  string `json:"target_name,omitempty"`
-	Name        string `orm:"column(name)" json:"name"`
-	//	Target       RepTarget `orm:"-" json:"target"`
-	Enabled       int       `orm:"column(enabled)" json:"enabled"`
-	Description   string    `orm:"column(description)" json:"description"`
-	CronStr       string    `orm:"column(cron_str)" json:"cron_str"`
-	StartTime     time.Time `orm:"column(start_time)" json:"start_time"`
-	CreationTime  time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime    time.Time `orm:"column(update_time);auto_now" json:"update_time"`
-	ErrorJobCount int       `json:"error_job_count"`
-	Deleted       int       `orm:"column(deleted)" json:"deleted"`
+	ID                int64        `orm:"pk;auto;column(id)" json:"id"`
+	ProjectID         int64        `orm:"column(project_id)" json:"project_id"`
+	ProjectName       string       `orm:"-" json:"project_name,omitempty"`
+	TargetID          int64        `orm:"column(target_id)" json:"target_id"`
+	TargetName        string       `orm:"-" json:"target_name,omitempty"`
+	Name              string       `orm:"column(name)" json:"name"`
+	Enabled           int          `orm:"column(enabled)" json:"enabled"`
+	Description       string       `orm:"column(description)" json:"description"`
+	Trigger           string       `orm:"column(cron_str)" json:"trigger"`
+	Filters           []*RepFilter `orm:"-" json:"filters"`
+	FiltersInDB       string       `orm:"column(filters)" json:"-"`
+	ReplicateDeletion bool         `orm:"column(replicate_deletion)" json:"replicate_deletion"`
+	StartTime         time.Time    `orm:"column(start_time)" json:"start_time"`
+	CreationTime      time.Time    `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime        time.Time    `orm:"column(update_time);auto_now" json:"update_time"`
+	ErrorJobCount     int          `orm:"-" json:"error_job_count"`
+	Deleted           int          `orm:"column(deleted)" json:"deleted"`
 }
 
 // Valid ...
@@ -77,8 +82,62 @@ func (r *RepPolicy) Valid(v *validation.Validation) {
 		v.SetError("enabled", "must be 0 or 1")
 	}
 
-	if len(r.CronStr) > 256 {
-		v.SetError("cron_str", "max length is 256")
+	if len(r.Trigger) > 256 {
+		v.SetError("trigger", "max length is 256")
+	}
+
+	for _, filter := range r.Filters {
+		filter.Valid(v)
+	}
+
+	if err := r.MarshalFilter(); err != nil {
+		v.SetError("filters", err.Error())
+	}
+	if len(r.Filters) > 1024 {
+		v.SetError("filters", "max length is 1024")
+	}
+}
+
+// MarshalFilter marshal RepFilter array to json string
+func (r *RepPolicy) MarshalFilter() error {
+	if r.Filters != nil {
+		b, err := json.Marshal(r.Filters)
+		if err != nil {
+			return err
+		}
+		r.FiltersInDB = string(b)
+	}
+	return nil
+}
+
+// UnmarshalFilter unmarshal json string to RepFilter array
+func (r *RepPolicy) UnmarshalFilter() error {
+	if len(r.FiltersInDB) > 0 {
+		filter := []*RepFilter{}
+		if err := json.Unmarshal([]byte(r.FiltersInDB), &filter); err != nil {
+			return err
+		}
+		r.Filters = filter
+	}
+	return nil
+}
+
+// RepFilter holds information for the replication policy filter
+type RepFilter struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+// Valid ...
+func (r *RepFilter) Valid(v *validation.Validation) {
+	if !(r.Type == replication.FilterItemKindProject ||
+		r.Type == replication.FilterItemKindRepository ||
+		r.Type == replication.FilterItemKindTag) {
+		v.SetError("filter.type", fmt.Sprintf("invalid filter type: %s", r.Type))
+	}
+
+	if len(r.Value) == 0 {
+		v.SetError("filter.value", "can not be empty")
 	}
 }
 

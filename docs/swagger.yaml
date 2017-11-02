@@ -2397,9 +2397,18 @@ definitions:
       description:
         type: string
         description: The description of the policy.
-      cron_str:
+      trigger:
         type: string
-        description: The cron string for schedule job.
+        description: The trigger for schedule job.
+      filters:
+        type: array
+        description: >-
+          The replication policy filter array.
+        items:
+          $ref: '#/definitions/RepFilter'
+      replicate_deletion:
+        type: string
+        description: Whether replication deletion operation.
       start_time:
         type: string
         description: The start time of the policy.
@@ -2428,6 +2437,18 @@ definitions:
       name:
         type: string
         description: The policy name.
+      trigger:
+        type: string
+        description: The trigger for schedule job.
+      filters:
+        type: array
+        description: >-
+          The replication policy filter array.
+        items:
+          $ref: '#/definitions/RepFilter'
+      replicate_deletion:
+        type: string
+        description: Whether replication deletion operation.
       enabled:
         type: integer
         format: int
@@ -2449,9 +2470,26 @@ definitions:
       description:
         type: string
         description: The description of the policy.
-      cron_str:
+      trigger:
         type: string
         description: The cron string for schedule job.
+      filters:
+        type: array
+        description: The replication policy filter array.
+        items:
+          $ref: '#/definitions/RepFilter'
+      replicate_deletion:
+        type: string
+        description: Whether replication deletion operation.
+  RepFilter:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The replication policy filter type.
+      value:
+        type: string
+        description: The replication policy filter value.
   RepPolicyEnablementReq:
     type: object
     properties:

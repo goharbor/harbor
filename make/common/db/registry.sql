@@ -145,6 +145,8 @@ create table replication_policy (
  description text,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  cron_str varchar(256),
+ filters varchar(1024),
+ replicate_deletion tinyint (1) DEFAULT 0 NOT NULL,
  start_time timestamp NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
