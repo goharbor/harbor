@@ -3,8 +3,8 @@ import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { Http } from '@angular/http';
-import { HTTP_JSON_OPTIONS } from '../utils';
-import { Configuration } from '../config/config'
+import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from '../utils';
+import { Configuration } from '../config/config';
 
 
 /**
@@ -51,7 +51,7 @@ export class ConfigurationDefaultService extends ConfigurationService {
     }
 
     getConfigurations(): Observable<Configuration> | Promise<Configuration> | Configuration {
-        return this.http.get(this._baseUrl, HTTP_JSON_OPTIONS).toPromise()
+        return this.http.get(this._baseUrl, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.json() as Configuration)
             .catch(error => Promise.reject(error));
     }

@@ -16,6 +16,7 @@ import { Headers, Http, RequestOptions, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { PasswordSetting } from './password-setting';
+import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 
 const passwordChangeEndpoint = "/api/users/:user_id/password";
 const sendEmailEndpoint = "/sendEmail";
@@ -23,13 +24,6 @@ const resetPasswordEndpoint = "/reset";
 
 @Injectable()
 export class PasswordSettingService {
-    headers: Headers = new Headers({
-        "Accept": 'application/json',
-        "Content-Type": 'application/json'
-    });
-    options: RequestOptions = new RequestOptions({
-        'headers': this.headers
-    });
 
     constructor(private http: Http) { }
 
@@ -39,7 +33,7 @@ export class PasswordSettingService {
         }
 
         let putUrl = passwordChangeEndpoint.replace(":user_id", userId + "");
-        return this.http.put(putUrl, JSON.stringify(setting), this.options)
+        return this.http.put(putUrl, JSON.stringify(setting), HTTP_JSON_OPTIONS)
             .toPromise()
             .then(() => null)
             .catch(error => {
@@ -53,7 +47,7 @@ export class PasswordSettingService {
         }
 
         let getUrl = sendEmailEndpoint + "?email=" + email;
-        return this.http.get(getUrl, this.options).toPromise()
+        return this.http.get(getUrl, HTTP_GET_OPTIONS).toPromise()
             .then(response => response)
             .catch(error => {
                 return Promise.reject(error);
@@ -65,18 +59,12 @@ export class PasswordSettingService {
             return Promise.reject("Invalid reset uuid or password");
         }
 
-        let formHeaders = new Headers({
-            "Content-Type": 'application/x-www-form-urlencoded'
-        });
-        let formOptions: RequestOptions = new RequestOptions({
-            headers: formHeaders
-        });
         
         let body: URLSearchParams = new URLSearchParams();
         body.set("reset_uuid", uuid);
         body.set("password", newPassword);
 
-        return this.http.post(resetPasswordEndpoint, body.toString(), formOptions)
+        return this.http.post(resetPasswordEndpoint, body.toString(), HTTP_FORM_OPTIONS)
             .toPromise()
             .then(response => response)
             .catch(error => {

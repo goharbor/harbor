@@ -7,7 +7,7 @@ import 'rxjs/add/observable/of';
 
 import { IServiceConfig, SERVICE_CONFIG } from '../service.config';
 
-import { buildHttpRequestOptions } from '../utils';
+import {buildHttpRequestOptions, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from '../utils';
 
 /**
  * Define the service methods to handle the endpoint related things.
@@ -136,7 +136,7 @@ export class EndpointDefaultService extends EndpointService {
         }
         let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
         return this.http 
-               .get(requestUrl)
+               .get(requestUrl, HTTP_GET_OPTIONS)
                .toPromise()
                .then(response=>response.json() as Endpoint)
                .catch(error=>Promise.reject(error));
@@ -148,7 +148,7 @@ export class EndpointDefaultService extends EndpointService {
         }
         let requestUrl: string = `${this._endpointUrl}`;
         return this.http
-               .post(requestUrl, JSON.stringify(endpoint))
+               .post(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
                .toPromise()
                .then(response=>response.status)
                .catch(error=>Promise.reject(error));
@@ -163,7 +163,7 @@ export class EndpointDefaultService extends EndpointService {
         }
         let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
         return this.http
-               .put(requestUrl, JSON.stringify(endpoint))
+               .put(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
                .toPromise()
                .then(response=>response.status)
                .catch(error=>Promise.reject(error));
@@ -189,14 +189,14 @@ export class EndpointDefaultService extends EndpointService {
         if(endpoint.id) {
             requestUrl = `${this._endpointUrl}/${endpoint.id}/ping`;
           return this.http
-                 .post(requestUrl, {})
+                 .post(requestUrl, HTTP_JSON_OPTIONS)
                  .toPromise()
                  .then(response=>response.status)
                  .catch(error=>Promise.reject(error));
         } else {
             requestUrl = `${this._endpointUrl}/ping`;
           return this.http
-                 .post(requestUrl, endpoint)
+                 .post(requestUrl, endpoint, HTTP_JSON_OPTIONS)
                  .toPromise()
                  .then(response=>response.status)
                  .catch(error=>Promise.reject(error));
@@ -209,7 +209,7 @@ export class EndpointDefaultService extends EndpointService {
         }
         let requestUrl: string = `${this._endpointUrl}/${endpointId}/policies`;
         return this.http
-               .get(requestUrl)
+               .get(requestUrl, HTTP_GET_OPTIONS)
                .toPromise()
                .then(response=>response.json() as ReplicationRule[])
                .catch(error=>Promise.reject(error));

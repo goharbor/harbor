@@ -16,6 +16,7 @@ import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { Configuration } from 'harbor-ui';
+import {HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS} from "../shared/shared.utils";
 
 const configEndpoint = "/api/configurations";
 const emailEndpoint = "/api/email/ping";
@@ -23,38 +24,31 @@ const ldapEndpoint = "/api/ldap/ping";
 
 @Injectable()
 export class ConfigurationService {
-    headers: Headers = new Headers({
-        "Accept": 'application/json',
-        "Content-Type": 'application/json'
-    });
-    options: RequestOptions = new RequestOptions({
-        'headers': this.headers
-    });
 
     constructor(private http: Http) { }
 
     public getConfiguration(): Promise<Configuration> {
-        return this.http.get(configEndpoint, this.options).toPromise()
+        return this.http.get(configEndpoint, HTTP_GET_OPTIONS).toPromise()
         .then(response => response.json() as Configuration)
         .catch(error => Promise.reject(error));
     }
 
     public saveConfiguration(values: any): Promise<any> {
-        return this.http.put(configEndpoint, JSON.stringify(values), this.options)
+        return this.http.put(configEndpoint, JSON.stringify(values), HTTP_JSON_OPTIONS)
         .toPromise()
         .then(response => response)
         .catch(error => Promise.reject(error));
     }
 
     public testMailServer(mailSettings: any): Promise<any> {
-        return this.http.post(emailEndpoint, JSON.stringify(mailSettings), this.options)
+        return this.http.post(emailEndpoint, JSON.stringify(mailSettings), HTTP_JSON_OPTIONS)
         .toPromise()
         .then(response => response)
         .catch(error => Promise.reject(error));
     }
 
     public testLDAPServer(ldapSettings: any): Promise<any> {
-         return this.http.post(ldapEndpoint, JSON.stringify(ldapSettings), this.options)
+         return this.http.post(ldapEndpoint, JSON.stringify(ldapSettings), HTTP_JSON_OPTIONS)
         .toPromise()
         .then(response => response)
         .catch(error => Promise.reject(error));
