@@ -9,7 +9,7 @@ services:
     volumes:
       - /var/log/harbor/:/var/log/docker/:z
     ports:
-      - 127.0.0.1:1514:514
+      - 127.0.0.1:1514:10514
     networks:
       - harbor
   registry:
