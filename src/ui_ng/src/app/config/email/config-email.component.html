@@ -70,7 +70,7 @@
         </div>
         <div class="form-group">
             <label for="insecure">{{'CONFIG.MAIL_INSECURE' | translate}}</label>
-            <clr-checkbox name="emaiInsecure" id="emailInsecure" [(ngModel)]="currentConfig.email_insecure.value" [disabled]="disabled(currentConfig.email_insecure)">
+            <clr-checkbox name="emaiInsecure" id="emailInsecure" [clrChecked]="!currentConfig.email_insecure.value" [clrDisabled]="disabled(currentConfig.email_insecure)" (clrCheckedChange)="setInsecureValue($event)">
                 <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">
                     <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                     <span class="tooltip-content">{{'CONFIG.INSECURE_TOOLTIP' | translate}}</span>

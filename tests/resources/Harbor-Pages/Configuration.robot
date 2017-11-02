@@ -159,7 +159,7 @@ Verify Email
     Textfield Value Should Be  xpath=//*[@id="emailUsername"]  example@vmware.com
     Textfield Value Should Be  xpath=//*[@id="emailFrom"]  example<example@vmware.com>
     Checkbox Should Be Selected  xpath=//*[@id="clr-checkbox-emailSSL"]
-    Checkbox Should Be Selected  xpath=//*[@id="clr-checkbox-emailInsecure"]
+    Checkbox Should Not Be Selected  xpath=//*[@id="clr-checkbox-emailInsecure"]
 
 Set Scan All To None
     click element  //vulnerability-config//select
