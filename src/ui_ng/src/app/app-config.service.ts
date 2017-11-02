@@ -18,7 +18,7 @@ import 'rxjs/add/operator/toPromise';
 import { AppConfig } from './app-config';
 import { CookieService } from 'ngx-cookie';
 import { CookieKeyOfAdmiral, HarborQueryParamKey } from './shared/shared.const';
-import { maintainUrlQueryParmas } from './shared/shared.utils';
+import {HTTP_JSON_OPTIONS, maintainUrlQueryParmas, HTTP_GET_OPTIONS} from './shared/shared.utils';
 
 export const systemInfoEndpoint = "/api/systeminfo";
 /**
@@ -30,12 +30,6 @@ export const systemInfoEndpoint = "/api/systeminfo";
  */
 @Injectable()
 export class AppConfigService {
-    headers = new Headers({
-        "Content-Type": 'application/json'
-    });
-    options = new RequestOptions({
-        headers: this.headers
-    });
 
     //Store the application configuration
     configurations: AppConfig = new AppConfig();
@@ -45,7 +39,7 @@ export class AppConfigService {
         private cookie: CookieService) { }
 
     public load(): Promise<AppConfig> {
-        return this.http.get(systemInfoEndpoint, this.options).toPromise()
+        return this.http.get(systemInfoEndpoint, HTTP_GET_OPTIONS).toPromise()
             .then(response => {
                 this.configurations = response.json() as AppConfig;
 
@@ -90,7 +84,7 @@ export class AppConfigService {
         }
 
         //Save back to cookie
-        this.cookie.put(CookieKeyOfAdmiral, endpoint);
+        this.cookie.put(CookieKeyOfAdmiral, endpoint, HTTP_JSON_OPTIONS);
         this.configurations.admiral_endpoint = endpoint;
     }
 }

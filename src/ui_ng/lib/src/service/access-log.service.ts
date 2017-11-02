@@ -5,7 +5,7 @@ import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { Http, URLSearchParams } from '@angular/http';
-import { HTTP_JSON_OPTIONS, buildHttpRequestOptions } from '../utils';
+import { buildHttpRequestOptions, HTTP_GET_OPTIONS } from '../utils';
 
 /**
  * Define service methods to handle the access log related things.
@@ -67,7 +67,7 @@ export class AccessLogDefaultService extends AccessLogService {
             url = '/api/logs';
         }
 
-        return this.http.get(url, queryParams ? buildHttpRequestOptions(queryParams) : HTTP_JSON_OPTIONS).toPromise()
+        return this.http.get(url, queryParams ? buildHttpRequestOptions(queryParams) : HTTP_GET_OPTIONS).toPromise()
             .then(response => {
                 let result: AccessLog = {
                     metadata: {

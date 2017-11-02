@@ -17,6 +17,7 @@ import 'rxjs/add/operator/toPromise';
 
 import { Statistics } from './statistics';
 import { Volumes } from './volumes';
+import {HTTP_GET_OPTIONS} from "../shared.utils";
 
 const statisticsEndpoint = "/api/statistics";
 const volumesEndpoint = "/api/systeminfo/volumes";
@@ -29,23 +30,17 @@ const volumesEndpoint = "/api/systeminfo/volumes";
  */
 @Injectable()
 export class StatisticsService {
-    headers = new Headers({
-        "Content-Type": 'application/json'
-    });
-    options = new RequestOptions({
-        headers: this.headers
-    });
 
     constructor(private http: Http) { }
 
     getStatistics(): Promise<Statistics> {
-        return this.http.get(statisticsEndpoint, this.options).toPromise()
+        return this.http.get(statisticsEndpoint, HTTP_GET_OPTIONS).toPromise()
         .then(response => response.json() as Statistics)
         .catch(error => Promise.reject(error));
     }
 
     getVolumes(): Promise<Volumes> {
-        return this.http.get(volumesEndpoint, this.options).toPromise()
+        return this.http.get(volumesEndpoint, HTTP_GET_OPTIONS).toPromise()
         .then(response => response.json() as Volumes)
         .catch(error => Promise.reject(error));
     }
