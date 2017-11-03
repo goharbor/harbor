@@ -21,6 +21,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -64,6 +65,46 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.CfgExpiration: 5,
 	//	config.JobLogDir:                  "/var/log/jobs",
 	common.AdminInitialPassword: "password",
+}
+
+var adminServerDefaultConfigWithVerifyCert = map[string]interface{}{
+	common.ExtEndpoint:                "https://host01.com",
+	common.AUTHMode:                   common.LDAPAuth,
+	common.DatabaseType:               "mysql",
+	common.MySQLHost:                  "127.0.0.1",
+	common.MySQLPort:                  3306,
+	common.MySQLUsername:              "user01",
+	common.MySQLPassword:              "password",
+	common.MySQLDatabase:              "registry",
+	common.SQLiteFile:                 "/tmp/registry.db",
+	common.SelfRegistration:           true,
+	common.LDAPURL:                    "ldap://127.0.0.1",
+	common.LDAPSearchDN:               "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:              "admin",
+	common.LDAPBaseDN:                 "dc=example,dc=com",
+	common.LDAPUID:                    "uid",
+	common.LDAPFilter:                 "",
+	common.LDAPScope:                  3,
+	common.LDAPTimeout:                30,
+	common.LDAPVerifyCert:             true,
+	common.TokenServiceURL:            "http://token_service",
+	common.RegistryURL:                "http://registry",
+	common.EmailHost:                  "127.0.0.1",
+	common.EmailPort:                  25,
+	common.EmailUsername:              "user01",
+	common.EmailPassword:              "password",
+	common.EmailFrom:                  "from",
+	common.EmailSSL:                   true,
+	common.EmailIdentity:              "",
+	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
+	common.VerifyRemoteCert:           false,
+	common.MaxJobWorkers:              3,
+	common.TokenExpiration:            30,
+	common.CfgExpiration:              5,
+	common.AdminInitialPassword:       "password",
+	common.AdmiralEndpoint:            "http://www.vmware.com",
+	common.WithNotary:                 false,
+	common.WithClair:                  false,
 }
 
 func TestMain(t *testing.T) {
@@ -256,6 +297,25 @@ func TestSearchUser(t *testing.T) {
 	}
 }
 
-func TestDialTLS(t *testing.T) {
-	fmt.Println("This is a sample test")
+func TestGetSystemLdapConfVerifyCert(t *testing.T) {
+
+	assert := assert.New(t)
+
+	server, err := test.NewAdminserver(adminServerDefaultConfigWithVerifyCert)
+	if err != nil {
+		t.Fatalf("failed to create a mock admin server: %v", err)
+	}
+	defer server.Close()
+
+	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
+		t.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	}
+
+	if err := uiConfig.Init(); err != nil {
+		t.Fatalf("failed to initialize configurations: %v", err)
+	}
+
+	ldapConfig, err := GetSystemLdapConf()
+	assert.True(ldapConfig.LdapVerifyCert)
+	fmt.Printf("LdapVerifyCert= %t", ldapConfig.LdapVerifyCert)
 }
