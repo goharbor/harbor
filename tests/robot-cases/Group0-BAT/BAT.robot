@@ -137,6 +137,37 @@ Test Case - Manage project publicity
     Project Should Display  project${d}
     Close Browser
 
+Test Case - Project Level Policy Public
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Go Into Project  project${d}
+    Goto Project Config
+    Click Project Public
+    Save Project Config
+    #verify
+    Public Should Be Selected 
+    Back To Projects
+    #project${d}  default should be private
+    Project Should Be Public  project${d}
+    Close Browser
+
+Test Case - Project Level Policy Content Trust
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Push Image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  hello-world:latest
+    Go Into Project  project${d}
+    Goto Project Config
+    Click Content Trust
+    Save Project Config
+    #verify
+    Content Trust Should Be Selected
+    Cannot Pull Unsigned Image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  hello-world:latest
+    Close Browser
+
 Test Case - Edit Project Creation
     # create normal user and login
     Init Chrome Driver
