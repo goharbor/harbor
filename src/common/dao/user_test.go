@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/models"
 )
 
@@ -70,6 +71,24 @@ func TestDeleteUser(t *testing.T) {
 		t.Errorf("unexpected email: %s != %s", user.Email,
 			expected)
 	}
+}
+
+func TestOnBoardUser(t *testing.T) {
+	assert := assert.New(t)
+	u := &models.User{
+		Username: "user1",
+		Password: "password1",
+		Email:    "dummy@placehodler.com",
+		Realname: "daniel",
+	}
+	err := OnBoardUser(u)
+	assert.Nil(err)
+	id := u.UserID
+	assert.True(id > 0)
+	err = OnBoardUser(u)
+	assert.Nil(err)
+	assert.True(u.UserID == id)
+	deleteUser(int64(id))
 }
 
 func deleteUser(id int64) error {

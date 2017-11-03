@@ -50,9 +50,9 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.EmailPassword:              "password",
 	common.EmailFrom:                  "from",
 	common.EmailSSL:                   true,
+	common.EmailInsecure:              false,
 	common.EmailIdentity:              "",
 	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
-	common.VerifyRemoteCert:           false,
 	common.MaxJobWorkers:              3,
 	common.TokenExpiration:            30,
 	common.CfgExpiration:              5,
@@ -60,6 +60,9 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.AdmiralEndpoint:            "http://www.vmware.com",
 	common.WithNotary:                 false,
 	common.WithClair:                  false,
+	common.UAAClientID:                "testid",
+	common.UAAClientSecret:            "testsecret",
+	common.UAAEndpoint:                "10.192.168.5",
 }
 
 // NewAdminserver returns a mock admin server

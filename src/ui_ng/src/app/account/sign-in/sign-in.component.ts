@@ -28,6 +28,7 @@ import { AppConfig } from '../../app-config';
 import { User } from '../../user/user';
 
 import { CookieService, CookieOptions } from 'ngx-cookie';
+import {SkinableConfig} from "../../skinable-config.service";
 
 //Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -48,6 +49,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     //Remeber me indicator
     rememberMe: boolean = false;
     rememberedName: string = "";
+
+    customLoginBgImg: string;
     //Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
@@ -68,10 +71,16 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         private session: SessionService,
         private route: ActivatedRoute,
         private appConfigService: AppConfigService,
-        private cookie: CookieService
-    ) { }
+        private cookie: CookieService,
+        private skinableConfig: SkinableConfig) { }
 
     ngOnInit(): void {
+        // custom skin
+        let customSkinObj = this.skinableConfig.getSkinConfig();
+        if (customSkinObj && customSkinObj.loginBgImg) {
+            this.customLoginBgImg = customSkinObj.loginBgImg;
+        }
+
         //Make sure the updated configuration can be loaded
         this.appConfigService.load()
             .then(updatedConfig => this.appConfig = updatedConfig);

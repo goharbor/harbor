@@ -3,11 +3,13 @@ services:
   log:
     image: vmware/harbor-log:__version__
     container_name: harbor-log 
+    env_file:
+      - ./common/config/log/env
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/:z
     ports:
-      - 127.0.0.1:1514:514
+      - 127.0.0.1:1514:10514
     networks:
       - harbor
   registry:
@@ -75,6 +77,7 @@ services:
     volumes:
       - ./common/config/ui/app.conf:/etc/ui/app.conf:z
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
+      - ./common/config/ui/certificates/:/etc/ui/certifates/
       - /data/secretkey:/etc/ui/key:z
       - /data/ca_download/:/etc/ui/ca/:z
       - /data/psc/:/etc/ui/token/:z

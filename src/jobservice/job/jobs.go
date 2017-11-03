@@ -120,17 +120,12 @@ func (rj *RepJob) Init() error {
 	if err != nil {
 		return err
 	}
-	verify, err := config.VerifyRemoteCert()
-	if err != nil {
-		return err
-	}
 	rj.parm = &RepJobParm{
 		LocalRegURL: regURL,
 		Repository:  job.Repository,
 		Tags:        job.TagList,
 		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
-		Insecure:    !verify,
 	}
 	if policy.Enabled == 0 {
 		//worker will cancel this job
@@ -159,6 +154,7 @@ func (rj *RepJob) Init() error {
 	}
 
 	rj.parm.TargetPassword = pwd
+	rj.parm.Insecure = target.Insecure
 	return nil
 }
 

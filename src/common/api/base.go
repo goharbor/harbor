@@ -75,6 +75,17 @@ func (b *BaseAPI) HandleBadRequest(text string) {
 	b.RenderError(http.StatusBadRequest, text)
 }
 
+// HandleConflict ...
+func (b *BaseAPI) HandleConflict(text ...string) {
+	msg := ""
+	if len(text) > 0 {
+		msg = text[0]
+	}
+	log.Infof("conflict: %s", msg)
+
+	b.RenderError(http.StatusConflict, msg)
+}
+
 // HandleInternalServerError ...
 func (b *BaseAPI) HandleInternalServerError(text string) {
 	log.Error(text)
@@ -195,9 +206,9 @@ func (b *BaseAPI) GetUserIDForRequest() (int, bool, bool) {
 // Redirect does redirection to resource URI with http header status code.
 func (b *BaseAPI) Redirect(statusCode int, resouceID string) {
 	requestURI := b.Ctx.Request.RequestURI
-	resoucreURI := requestURI + "/" + resouceID
+	resourceURI := requestURI + "/" + resouceID
 
-	b.Ctx.Redirect(statusCode, resoucreURI)
+	b.Ctx.Redirect(statusCode, resourceURI)
 }
 
 // GetIDFromURL checks the ID in request URL
@@ -221,7 +232,7 @@ func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 
 	link := ""
 
-	// SetPaginationHeader setprevious link
+	// SetPaginationHeader set previous link
 	if page > 1 && (page-1)*pageSize <= total {
 		u := *(b.Ctx.Request.URL)
 		q := u.Query()
@@ -233,7 +244,7 @@ func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 		link += fmt.Sprintf("<%s>; rel=\"prev\"", u.String())
 	}
 
-	// SetPaginationHeader setnext link
+	// SetPaginationHeader set next link
 	if pageSize*page < total {
 		u := *(b.Ctx.Request.URL)
 		q := u.Query()

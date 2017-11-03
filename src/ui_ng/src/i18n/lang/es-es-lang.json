@@ -86,7 +86,7 @@
         "LOGOUT": "Cerrar sesión"
     },
     "GLOBAL_SEARCH": {
-        "PLACEHOLDER": "Buscar en Harbor...",
+        "PLACEHOLDER": "Buscar en {{param}}...",
         "PLACEHOLDER_VIC": "Buscar en el registro..."
     },
     "SIDE_NAV": {
@@ -161,7 +161,22 @@
         "REPLICATION": "Replicación",
         "USERS": "Miembros",
         "LOGS": "Logs",
-        "PROJECTS": "Proyectos"
+        "PROJECTS": "Proyectos",
+        "CONFIG": "Configuración"
+    },
+    "PROJECT_CONFIG": {
+        "REGISTRY": "Registro de proyectos",
+        "PUBLIC_TOGGLE": "Público",
+        "PUBLIC_POLICY": "Hacer público un registro de proyecto hará que todos los repositorios sean accesibles para todos.",
+        "SECURITY": "Seguridad de despliegue",
+        "CONTENT_TRUST_TOGGLE": "Habilitar la confianza de contenido",
+        "CONTENT_TRUST_POLCIY": "Solo permita la implementación de imágenes verificadas.",
+        "PREVENT_VULNERABLE_TOGGLE": "Evitar que se ejecuten imágenes vulnerables.",
+        "PREVENT_VULNERABLE_1": "Impedir imágenes con la gravedad de la vulnerabilidad de",
+        "PREVENT_VULNERABLE_2": "y más arriba de ser desplegado.",
+        "SCAN": "Escaneo de vulnerabilidad",
+        "AUTOSCAN_TOGGLE": "Escanee automáticamente las imágenes al instante",
+        "AUTOSCAN_POLICY": "Escanee automáticamente las imágenes cuando son enviadas al registro del proyecto."
     },
     "MEMBER": {
         "NEW_MEMBER": "Nuevo miembro",
@@ -215,6 +230,8 @@
         "FILTER_JOBS_PLACEHOLDER": "Filtrar Trabajos",
         "DELETION_TITLE": "Confirmar Eliminación de Regla",
         "DELETION_SUMMARY": "¿Quiere eliminar la regla {{param}}?",
+        "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
+        "DELETION_SUMMARY_FAILURE": "{{param}} have pending/running/retrying status",
         "FILTER_TARGETS_PLACEHOLDER": "Filtrar Endpoints",
         "DELETION_TITLE_TARGET": "Confirmar Eliminación de Endpoint",
         "DELETION_SUMMARY_TARGET": "¿Quiere eliminar el endpoint {{param}}?",
@@ -331,6 +348,8 @@
         "DELETION_SUMMARY_TAG_DENIED": "La etiqueta debe ser eliminada de la Notaría antes de eliminarla.\nEliminarla de la Notaría con este comando:\n{{param}}",
         "FILTER_FOR_REPOSITORIES": "Filtrar Repositorios",
         "TAG": "Etiqueta",
+        "SIZE": "Size",
+        "VULNERABILITY": "Vulnerability",
         "SIGNED": "Firmada",
         "AUTHOR": "Autor",
         "CREATED": "Fecha de creación",
@@ -378,6 +397,8 @@
         "MAIL_PASSWORD": "Contraseña del servidor de email",
         "MAIL_FROM": "Email De",
         "MAIL_SSL": "Email SSL",
+        "MAIL_INSECURE": "Verify Certificate",
+        "INSECURE_TOOLTIP": "Determine whether to verify the certificate of the Email server. Uncheck this box when the Email server uses a self-signed or untrusted certificate.",
         "SSL_TOOLTIP": "Activar SSL en conexiones al servidor de correo",
         "VERIFY_REMOTE_CERT": "Verificar Certificado Remoto",
         "TOKEN_EXPIRATION": "Expiración del Token (Minutos)",
@@ -491,7 +512,8 @@
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_ZERO": "No se encontró ningún paquete de vulnerabilidad reconocible"
         },
         "SEVERITY": {
             "HIGH": "high",

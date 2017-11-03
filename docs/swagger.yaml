@@ -167,6 +167,38 @@ paths:
           description: User need to log in first.
         '500':
           description: Internal errors.
+    put:
+      summary: Update properties for a selected project.
+      description: |
+        This endpoint is aimed to update the properties of a project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Selected project ID.
+        - name: project
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Project'
+          description: Updates of project.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Updated project properties successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to the project.
+        '404':
+          description: Project ID does not exist.
+        '500':
+          description: Unexpected internal errors.
     delete:
       summary: Delete project by projectID
       description: |
@@ -193,39 +225,6 @@ paths:
           description: 'Project contains policies, can not be deleted.'
         '500':
           description: Internal errors.
-  '/projects/{project_id}/publicity':
-    put:
-      summary: Update properties for a selected project.
-      description: |
-        This endpoint is aimed to toggle a project publicity status.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Selected project ID.
-        - name: project
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/Project'
-          description: Updates of project.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Updated project publicity status successfully.
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission to the project.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
   '/projects/{project_id}/logs':
     get:
       summary: Get access logs accompany with a relevant project.
@@ -303,6 +302,149 @@ paths:
           description: User need to log in first.
         '500':
           description: Unexpected internal errors.
+  '/projects/{project_id}/metadatas':
+    get:
+      summary: Get project metadata.
+      description: |
+        This endpoint returns metadata of the project specified by project ID.
+      parameters:
+        - name: project_id
+          in: path
+          description: The ID of project.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get metadata successfully.
+          schema:
+            $ref: '#/definitions/ProjectMetadata'
+        '401':
+          description: User need to login first.
+        '500':
+          description: Internal server errors.
+    post:
+      summary: Add metadata for the project.
+      description: |
+        This endpoint is aimed to add metadata of a project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Selected project ID.
+        - name: metadata
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProjectMetadata'
+          description: The metadata of project.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Add metadata successfully.
+        '400':
+          description: Invalid request.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to the project.
+        '404':
+          description: Project ID does not exist.
+        '500':
+          description: Internal server errors.
+  '/projects/{project_id}/metadatas/{meta_name}':
+    get:
+      summary: Get project metadata
+      description: |
+        This endpoint returns specified metadata of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID for filtering results.
+          required: true
+          type: integer
+          format: int64
+        - name: meta_name
+          in: path
+          description: The name of metadat.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get metadata successfully.
+          schema:
+            $ref: '#/definitions/ProjectMetadata'
+        '401':
+          description: User need to log in first.
+        '500':
+          description: Internal server errors.
+    put:
+      summary: Update metadata of a project.
+      description: |
+        This endpoint is aimed to update the metadata of a project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The ID of project.
+        - name: meta_name
+          in: path
+          description: The name of metadat.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Updated metadata successfully.
+        '400':
+          description: Invalid request.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to the project.
+        '404':
+          description: Project or metadata does not exist.
+        '500':
+          description: Internal server errors.
+    delete:
+      summary: Delete metadata of a project
+      description: |
+        This endpoint is aimed to delete metadata of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: The ID of project.
+          required: true
+          type: integer
+          format: int64
+        - name: meta_name
+          in: path
+          description: The name of metadat.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Metadata is deleted successfully.
+        '400':
+          description: Invalid requst.
+        '403':
+          description: User need to log in first.
+        '404':
+          description: Project or metadata does not exist.
+        '500':
+          description: Internal server errors.
   '/projects/{project_id}/members/':
     get:
       summary: Return a project's relevant role members.
@@ -2016,10 +2158,6 @@ definitions:
       owner_name:
         type: string
         description: The owner name of the project.
-      public:
-        type: integer
-        format: int
-        description: The public status of the project.
       Togglable:
         type: boolean
         description: >-
@@ -2031,6 +2169,18 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
+      metadata:
+        type: object
+        description: The metadata of the project.
+        items:
+          $ref: '#/definitions/ProjectMetadata'
+  ProjectMetadata:
+    type: object
+    properties:
+      public:
+        type: integer
+        format: int
+        description: The public status of the project.
       enable_content_trust:
         type: boolean
         description: >-
@@ -2332,6 +2482,9 @@ definitions:
         type: integer
         format: int
         description: Reserved field.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
       creation_time:
         type: string
         description: The create time of the policy.
@@ -2353,6 +2506,9 @@ definitions:
       password:
         type: string
         description: The target server password.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
   PingTarget:
     type: object
     properties:
@@ -2365,6 +2521,9 @@ definitions:
       password:
         type: string
         description: The target server password.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
   PutTarget:
     type: object
     properties:
@@ -2380,6 +2539,9 @@ definitions:
       password:
         type: string
         description: The target server password.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
   HasAdminRole:
     type: object
     properties:
@@ -2586,6 +2748,9 @@ definitions:
       name:
         type: string
         description: The name of the tag.
+      size:
+        type: integer
+        description: The size of the image.
       architecture:
         type: string
         description: The architecture of the image.
@@ -2654,7 +2819,7 @@ definitions:
     type: object
     properties:
       id:
-        type: string
+        type: integer
         description: The ID of repository.
       name:
         type: string
@@ -2727,6 +2892,9 @@ definitions:
       email_ssl:
         type: boolean
         description: When it's set to true the system will access Email server via TLS by default.  If it's set to false, it still will handle "STARTTLS" from server side.
+      email_insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the email server.
       ldap_url:
         type: string
         description: The URL of LDAP server.

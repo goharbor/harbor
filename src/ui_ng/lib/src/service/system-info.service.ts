@@ -3,6 +3,7 @@ import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import { SystemInfo } from './interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
+import {HTTP_GET_OPTIONS} from "../utils";
 /**
  * Get System information about current backend server.
  * @abstract
@@ -26,7 +27,7 @@ export class SystemInfoDefaultService extends SystemInfoService {
   }
   getSystemInfo(): Observable<SystemInfo> | Promise<SystemInfo> | SystemInfo {
     let url = this.config.systemInfoEndpoint ? this.config.systemInfoEndpoint : '/api/systeminfo';
-    return this.http.get(url)
+    return this.http.get(url, HTTP_GET_OPTIONS)
       .toPromise()
       .then(systemInfo=>systemInfo.json() as SystemInfo)
       .catch(error=>Promise.reject(error));

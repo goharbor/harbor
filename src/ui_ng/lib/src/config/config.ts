@@ -71,6 +71,7 @@ export class Configuration {
     email_ssl: BoolValueItem;
     email_username?: StringValueItem;
     email_password?: StringValueItem;
+    email_insecure: BoolValueItem;
     verify_remote_cert: BoolValueItem;
     token_expiration: NumberValueItem;
     cfg_expiration: NumberValueItem;
@@ -95,6 +96,7 @@ export class Configuration {
         this.email_ssl = new BoolValueItem(false, true);
         this.email_username = new StringValueItem("", true);
         this.email_password = new StringValueItem("", true);
+        this.email_insecure = new BoolValueItem(false, true);
         this.token_expiration = new NumberValueItem(30, true);
         this.cfg_expiration = new NumberValueItem(30, true);
         this.verify_remote_cert = new BoolValueItem(false, true);

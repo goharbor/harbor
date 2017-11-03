@@ -46,6 +46,7 @@ var (
 		common.MySQLPassword,
 		common.AdminInitialPassword,
 		common.ClairDBPassword,
+		common.UAAClientSecret,
 	}
 
 	// all configurations need read from environment variables
@@ -95,6 +96,10 @@ var (
 			env:   "EMAIL_SSL",
 			parse: parseStringToBool,
 		},
+		common.EmailInsecure: &parser{
+			env:   "EMAIL_INSECURE",
+			parse: parseStringToBool,
+		},
 		common.EmailFrom:     "EMAIL_FROM",
 		common.EmailIdentity: "EMAIL_IDENTITY",
 		common.RegistryURL:   "REGISTRY_URL",
@@ -109,10 +114,6 @@ var (
 		common.MaxJobWorkers: &parser{
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
-		},
-		common.VerifyRemoteCert: &parser{
-			env:   "VERIFY_REMOTE_CERT",
-			parse: parseStringToBool,
 		},
 		common.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
 		common.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
@@ -151,6 +152,9 @@ var (
 			parse: parseStringToBool,
 		},
 		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
+		common.UAAEndpoint:     "UAA_ENDPOINT",
+		common.UAAClientID:     "UAA_CLIENTID",
+		common.UAAClientSecret: "UAA_CLIENTSECRET",
 	}
 )
 

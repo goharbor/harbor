@@ -32,6 +32,7 @@ import (
 	"github.com/vmware/harbor/src/ui/api"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
+	_ "github.com/vmware/harbor/src/ui/auth/uaa"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/filter"
 	"github.com/vmware/harbor/src/ui/proxy"
@@ -131,6 +132,7 @@ func main() {
 
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
+	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json"))
 
 	initRouters()
 	if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {

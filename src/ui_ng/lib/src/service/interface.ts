@@ -51,6 +51,7 @@ export interface Repository {
 export interface Tag extends Base {
     digest: string;
     name: string;
+    size: string;
     architecture: string;
     os: string;
     docker_version: string;
@@ -72,6 +73,7 @@ export interface Endpoint extends Base {
     name: string;
     username?: string;
     password?: string;
+    insecure: boolean;
     type: number;
 }
 

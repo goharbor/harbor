@@ -30,8 +30,8 @@ type SearchRepository struct {
 	// The name of the project that the repository belongs to
 	ProjectName string `json:"project_name,omitempty"`
 
-	// The flag to indicate the publicity of the project that the repository belongs to (1 is public, 0 is not)
-	ProjectPublic int32 `json:"project_public,omitempty"`
+	// The flag to indicate the publicity of the project that the repository belongs to
+	ProjectPublic bool `json:"project_public,omitempty"`
 
 	// The name of the repository
 	RepositoryName string `json:"repository_name,omitempty"`

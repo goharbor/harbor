@@ -22,20 +22,16 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
-
-
+import {HTTP_JSON_OPTIONS, buildHttpRequestOptions, HTTP_GET_OPTIONS} from "../shared/shared.utils";
 
 @Injectable()
 export class ProjectService {
-  
-  headers = new Headers({'Content-type': 'application/json'});
-  options = new RequestOptions({'headers': this.headers});
 
   constructor(private http: Http) {}
 
   getProject(projectId: number): Observable<any> {
     return this.http
-               .get(`/api/projects/${projectId}`)
+               .get(`/api/projects/${projectId}`, HTTP_GET_OPTIONS)
                .map(response=>response.json())
                .catch(error=>Observable.throw(error));
   }
@@ -52,26 +48,30 @@ export class ProjectService {
     if(isPublic !== undefined){
       params.set('public', ''+isPublic);
     }
+
+    //let options = new RequestOptions({ headers: this.getHeaders, search: params });
     return this.http
-               .get(`/api/projects`, {search: params})
+               .get(`/api/projects`, buildHttpRequestOptions(params))
                .map(response=>response)
                .catch(error=>Observable.throw(error));
   }
 
-  createProject(name: string, isPublic: number): Observable<any> {
+  createProject(name: string, metadata: any): Observable<any> {
     return this.http
                .post(`/api/projects`,
-                JSON.stringify({'project_name': name, 'public': isPublic})
-                , this.options)
+                JSON.stringify({'project_name': name, 'metadata': {
+                  public: metadata.public ? 'true' : 'false',
+                }})
+                , HTTP_JSON_OPTIONS)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
 
-  toggleProjectPublic(projectId: number, isPublic: number): Observable<any> {
-    return this.http 
-               .put(`/api/projects/${projectId}/publicity`, { 'public': isPublic }, this.options)
-               .map(response=>response.status)
-               .catch(error=>Observable.throw(error));
+  toggleProjectPublic(projectId: number, isPublic: string): Observable<any> {
+    return this.http
+               .put(`/api/projects/${projectId}`, { 'metadata': {'public': isPublic} }, HTTP_JSON_OPTIONS)
+               .map(response => response.status)
+               .catch(error => Observable.throw(error));
   }
 
   deleteProject(projectId: number): Observable<any> {
@@ -90,7 +90,7 @@ export class ProjectService {
    
   checkProjectMember(projectId: number): Observable<any> {
     return this.http
-               .get(`/api/projects/${projectId}/members`)
+               .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS)
                .map(response=>response.json())
                .catch(error=>Observable.throw(error));
   }

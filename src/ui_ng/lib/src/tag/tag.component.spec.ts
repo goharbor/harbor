@@ -18,6 +18,7 @@ import { Observable, Subscription } from 'rxjs/Rx';
 import { ChannelService } from '../channel/index';
 
 import { JobLogViewerComponent } from '../job-log-viewer/index';
+import {CopyInputComponent} from "../push-image/copy-input.component";
 
 describe('TagComponent (inline template)', () => {
 
@@ -29,6 +30,7 @@ describe('TagComponent (inline template)', () => {
     {
       "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
       "name": "1.11.5",
+      "size": "2049",
       "architecture": "amd64",
       "os": "linux",
       "docker_version": "1.12.3",
@@ -52,7 +54,8 @@ describe('TagComponent (inline template)', () => {
         ConfirmationDialogComponent,
         VULNERABILITY_DIRECTIVES,
         FILTER_DIRECTIVES,
-        JobLogViewerComponent
+        JobLogViewerComponent,
+          CopyInputComponent
       ],
       providers: [
         ErrorHandler,

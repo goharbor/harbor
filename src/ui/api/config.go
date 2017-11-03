@@ -48,8 +48,8 @@ var (
 		common.EmailFrom,
 		common.EmailSSL,
 		common.EmailIdentity,
+		common.EmailInsecure,
 		common.ProjectCreationRestriction,
-		common.VerifyRemoteCert,
 		common.TokenExpiration,
 		common.ScanAllPolicy,
 	}
@@ -79,8 +79,8 @@ var (
 
 	boolKeys = []string{
 		common.EmailSSL,
+		common.EmailInsecure,
 		common.SelfRegistration,
-		common.VerifyRemoteCert,
 		common.LDAPVerifyCert,
 	}
 

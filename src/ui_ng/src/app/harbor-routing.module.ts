@@ -31,6 +31,7 @@ import { TagRepositoryComponent } from './repository/tag-repository/tag-reposito
 import { ReplicationPageComponent } from './replication/replication-page.component';
 import { MemberComponent } from './project/member/member.component';
 import { AuditLogComponent } from './log/audit-log.component';
+import { ProjectConfigComponent } from './project/project-config/project-config.component'
 
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
@@ -133,6 +134,10 @@ const harborRoutes: Routes = [
           {
             path: 'logs',
             component: AuditLogComponent
+          },
+          {
+            path: 'configs',
+            component: ProjectConfigComponent
           }
         ]
       },

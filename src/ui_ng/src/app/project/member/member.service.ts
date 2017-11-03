@@ -20,6 +20,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 
 import { Member } from './member';
+import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 
 @Injectable()
 export class MemberService {
@@ -28,21 +29,21 @@ export class MemberService {
 
   listMembers(projectId: number, username: string): Observable<Member[]> {
     return this.http
-               .get(`/api/projects/${projectId}/members?username=${username}`)
+               .get(`/api/projects/${projectId}/members?username=${username}`, HTTP_GET_OPTIONS)
                .map(response=>response.json() as Member[])
                .catch(error=>Observable.throw(error));            
   }
 
   addMember(projectId: number, username: string, roleId: number): Observable<any> {
     return this.http
-               .post(`/api/projects/${projectId}/members`, { username: username, roles: [ roleId ] })
+               .post(`/api/projects/${projectId}/members`, { username: username, roles: [ roleId ] }, HTTP_JSON_OPTIONS)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }
 
   changeMemberRole(projectId: number, userId: number, roleId: number): Observable<any> {
     return this.http
-               .put(`/api/projects/${projectId}/members/${userId}`, { roles: [ roleId ]})
+               .put(`/api/projects/${projectId}/members/${userId}`, { roles: [ roleId ]}, HTTP_JSON_OPTIONS)
                .map(response=>response.status)
                .catch(error=>Observable.throw(error));
   }

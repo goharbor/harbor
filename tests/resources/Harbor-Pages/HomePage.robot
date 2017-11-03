@@ -22,32 +22,32 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Sign In Harbor
     [Arguments]  ${url}  ${user}  ${pw}
-	Go To    ${url}
+    Go To    ${url}
     Sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
-	Sleep  2
+    Sleep  2
     Input Text  login_username  ${user}
     Input Text  login_password  ${pw}
     Sleep  2
     Click button  css=.btn
     sleep  5
-	Log To Console  ${user}
+    Log To Console  ${user}
     Wait Until Page Contains  ${user}
 
 Sign Up Should Not Display
-	Page Should Not Contain Element  xpath=${sign_up_button_xpath}
+    Page Should Not Contain Element  xpath=${sign_up_button_xpath}
 
 Create An New User
     [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
-	Go To    ${url}
+    Go To    ${url}
     sleep  5
     ${title}=  Get Title
     Log To Console  ${title}
     Should Be Equal  ${title}  Harbor
-	${d}=    Get Current Date    result_format=%m%s
-	Sleep  5
+    ${d}=    Get Current Date    result_format=%m%s
+    Sleep  5
     Click Element  xpath=${sign_up_for_an_account_xpath}
     sleep  3
     Input Text  xpath=${username_xpath}  ${username}
@@ -70,4 +70,4 @@ Create An New User
     Click button  css=.btn
     sleep  5
     Wait Until Page Contains  ${username}
-	Sleep  3
+    Sleep  3

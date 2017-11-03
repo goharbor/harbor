@@ -5,6 +5,8 @@ services:
       context: ../../
       dockerfile: make/photon/log/Dockerfile
     container_name: harbor-log       
+    env_file:
+      - ../common/config/log/env
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/:z

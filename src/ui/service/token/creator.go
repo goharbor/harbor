@@ -26,7 +26,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/filter"
-	promgr "github.com/vmware/harbor/src/ui/projectmanager"
+	"github.com/vmware/harbor/src/ui/promgr"
 )
 
 var creatorMap map[string]Creator
@@ -161,7 +161,7 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 	project := img.namespace
 	permission := ""
 
-	exist, err := pm.Exist(project)
+	exist, err := pm.Exists(project)
 	if err != nil {
 		return err
 	}

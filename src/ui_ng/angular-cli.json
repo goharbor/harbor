@@ -8,7 +8,8 @@
         "outDir": "dist",
         "assets": [
             "images",
-            "favicon.ico"
+            "favicon.ico",
+            "setting.json"
         ],
         "index": "index.html",
         "main": "main.ts",

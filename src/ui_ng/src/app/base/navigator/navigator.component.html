@@ -1,8 +1,9 @@
-<clr-header class="header-5 header">
+<clr-header class="header-5 header"  [ngStyle]='{"background-color": customStyle?.headerBgColor?customStyle?.headerBgColor:"#004a70" }'>
     <div class="branding">
         <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
-            <clr-icon shape="vm-bug"></clr-icon>
-            <span class="title">{{ appTitle | translate}}</span>
+            <clr-icon shape="vm-bug"  *ngIf="!customStyle?.headerLogo"></clr-icon>
+            <img [attr.src]="customStyle?.headerLogo" *ngIf="customStyle?.headerLogo" style="width: 36px;height: 36px; object-fit: fill;">
+            <span class="title">{{customProjectName?.projectName? customProjectName?.projectName:(appTitle | translate)}}</span>
         </a>
     </div>
     <div class="header-nav">

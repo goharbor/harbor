@@ -24,7 +24,7 @@
     flex-direction: column;
     height: auto;
     position: relative;
-    margin-left: 1px;
+    border-left: 1px solid #eee;
 }
 
 .login-wrapper-override {

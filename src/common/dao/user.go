@@ -261,3 +261,27 @@ func ChangeUserProfile(user models.User) error {
 	}
 	return nil
 }
+
+// OnBoardUser will check if a user exists in user table, if not insert the user and
+// put the id in the pointer of user model, if it does exist, return the user's profile.
+// This is used for ldap and uaa authentication, such the user can have an ID in Harbor.
+func OnBoardUser(u *models.User) error {
+	o := GetOrmer()
+	created, id, err := o.ReadOrCreate(u, "Username")
+	if err != nil {
+		return err
+	}
+	if created {
+		u.UserID = int(id)
+	} else {
+		existing, err := GetUser(*u)
+		if err != nil {
+			return err
+		}
+		u.Email = existing.Email
+		u.HasAdminRole = existing.HasAdminRole
+		u.Realname = existing.Realname
+		u.UserID = existing.UserID
+	}
+	return nil
+}

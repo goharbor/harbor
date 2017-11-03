@@ -56,8 +56,8 @@ const (
 	EmailFrom                  = "email_from"
 	EmailSSL                   = "email_ssl"
 	EmailIdentity              = "email_identity"
+	EmailInsecure              = "email_insecure"
 	ProjectCreationRestriction = "project_creation_restriction"
-	VerifyRemoteCert           = "verify_remote_cert"
 	MaxJobWorkers              = "max_job_workers"
 	TokenExpiration            = "token_expiration"
 	CfgExpiration              = "cfg_expiration"
@@ -68,6 +68,9 @@ const (
 	WithClair                  = "with_clair"
 	ScanAllPolicy              = "scan_all_policy"
 	ClairDBPassword            = "clair_db_password"
+	UAAEndpoint                = "uaa_endpoint"
+	UAAClientID                = "uaa_client_id"
+	UAAClientSecret            = "uaa_client_secret"
 
 	DefaultClairEndpoint = "http://clair:6060"
 )

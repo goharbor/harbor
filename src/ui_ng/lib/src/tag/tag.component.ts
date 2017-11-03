@@ -50,6 +50,7 @@ import {
 import { TranslateService } from '@ngx-translate/core';
 
 import { State, Comparator } from 'clarity-angular';
+import {CopyInputComponent} from "../push-image/copy-input.component";
 
 @Component({
   selector: 'hbr-tag',
@@ -91,6 +92,8 @@ export class TagComponent implements OnInit {
   confirmationDialog: ConfirmationDialogComponent;
 
   @ViewChild('digestTarget') textInput: ElementRef;
+  @ViewChild('copyInput') copyInput: CopyInputComponent;
+
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -159,6 +162,9 @@ export class TagComponent implements OnInit {
       if (t.signature !== null) {
         signatures.push(t.name);
       }
+
+      //size
+          t.size = this.sizeTransform(t.size);
       });
       this.tags = items;
         let signedName: {[key: string]: string[]} = {};
@@ -175,6 +181,19 @@ export class TagComponent implements OnInit {
       });
     let hnd = setInterval(() => this.ref.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 5000);
+  }
+
+  sizeTransform(tagSize: string): string {
+    let size: number = Number.parseInt(tagSize);
+    if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
+      return (size / Math.pow(1024, 1)).toFixed(2) + 'KB';
+    } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
+      return  (size / Math.pow(1024, 2)).toFixed(2) + 'MB';
+    } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
+      return  (size / Math.pow(1024, 3)).toFixed(2) + 'MB';
+    } else {
+      return size + 'B';
+    }
   }
 
   deleteTag(tag: Tag) {
@@ -246,6 +265,13 @@ export class TagComponent implements OnInit {
     return VULNERABILITY_SCAN_STATUS.unknown;
   }
 
+  existObservablePackage(t: Tag): boolean {
+    return t.scan_overview &&
+      t.scan_overview.components &&
+      t.scan_overview.components.total &&
+      t.scan_overview.components.total > 0 ? true : false;
+  }
+
   //Whether show the 'scan now' menu
   canScanNow(t: Tag): boolean {
     if (!this.withClair) { return false; }
@@ -261,5 +287,10 @@ export class TagComponent implements OnInit {
     if (tagId) {
       this.channel.publishScanEvent(this.repoName + "/" + tagId);
     }
+  }
+
+  //pull command
+  onCpError($event: any): void {
+      this.copyInput.setPullCommendShow();
   }
 }

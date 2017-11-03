@@ -43,4 +43,9 @@ export const TAG_STYLE = `
   color: red;
   margin-right: 6px;
 }
+
+:host >>> .datagrid clr-dg-column {
+    min-width: 80px;
+}
+
 `;

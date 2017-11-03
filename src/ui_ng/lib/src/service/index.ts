@@ -9,3 +9,4 @@ export * from './RequestQueryParams';
 export * from './scanning.service';
 export * from './configuration.service';
 export * from './job-log.service';
+export * from './project.service';

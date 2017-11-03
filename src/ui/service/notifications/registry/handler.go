@@ -16,7 +16,6 @@ package registry
 
 import (
 	"encoding/json"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -170,10 +169,8 @@ func autoScanEnabled(project *models.Project) bool {
 		log.Debugf("Auto Scan disabled because Harbor is not deployed with Clair")
 		return false
 	}
-	if config.WithAdmiral() {
-		return project.AutomaticallyScanImagesOnPush
-	}
-	return os.Getenv("ENABLE_HARBOR_SCAN_ON_PUSH") == "1"
+
+	return project.AutoScan()
 }
 
 // Render returns nil as it won't render any template.
