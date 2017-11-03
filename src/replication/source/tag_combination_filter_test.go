@@ -24,15 +24,15 @@ import (
 
 var tcfilter = NewTagCombinationFilter()
 
-func TestTagCombinationFilteInit(t *testing.T) {
+func TestTagCombinationFilterInit(t *testing.T) {
 	assert.Nil(t, tcfilter.Init())
 }
 
-func TestTagCombinationFilteGetConvertor(t *testing.T) {
+func TestTagCombinationFilterGetConvertor(t *testing.T) {
 	assert.Nil(t, tcfilter.GetConvertor())
 }
 
-func TestTagCombinationFilteDoFilter(t *testing.T) {
+func TestTagCombinationFilterDoFilter(t *testing.T) {
 	items := []models.FilterItem{
 		models.FilterItem{
 			Kind: replication.FilterItemKindProject,
