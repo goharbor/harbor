@@ -85,9 +85,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
         response => {
           this.orgProjectPolicy.initByProject(response);
           this.projectPolicy.initByProject(response);
-        },
-        error => this.errorHandler.error(error)
-      );
+        })
+        .catch(error => this.errorHandler.error(error));
   }
 
   updateProjectPolicy(projectId: string|number, pp: ProjectPolicy) {
@@ -125,7 +124,6 @@ export class ProjectPolicyConfigComponent implements OnInit {
         this.refresh();
       })
       .catch(error => {
-        console.log(error);
         this.onGoing = false;
         this.errorHandler.error(error);
       });
