@@ -16,6 +16,7 @@ import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { SearchResults } from './search-results';
+import {HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 
 const searchEndpoint = "/api/search";
 /**
@@ -27,12 +28,6 @@ const searchEndpoint = "/api/search";
  */
 @Injectable()
 export class GlobalSearchService {
-    headers = new Headers({
-        "Content-Type": 'application/json'
-    });
-    options = new RequestOptions({
-        headers: this.headers
-    });
 
     constructor(private http: Http) { }
 
@@ -47,7 +42,7 @@ export class GlobalSearchService {
     doSearch(term: string): Promise<SearchResults> {
         let searchUrl = searchEndpoint + "?q=" + term;
 
-        return this.http.get(searchUrl, this.options).toPromise()
+        return this.http.get(searchUrl, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.json() as SearchResults)
             .catch(error => Promise.reject(error));
     }

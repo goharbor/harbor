@@ -5,7 +5,7 @@ import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { Http } from '@angular/http';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
-import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';
+import { buildHttpRequestOptions, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from '../utils';
 
 /**
  * For getting tag signatures.
@@ -103,7 +103,7 @@ export class TagDefaultService extends TagService {
 
     _getSignatures(repositoryName: string): Promise<VerifiedSignature[]> {
         let url: string = `${this._baseUrl}/${repositoryName}/signatures`;
-        return this.http.get(url, HTTP_JSON_OPTIONS).toPromise()
+        return this.http.get(url, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.json() as VerifiedSignature[])
             .catch(error => Promise.reject(error))
     }
@@ -132,7 +132,7 @@ export class TagDefaultService extends TagService {
         }
 
         let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}`;
-        return this.http.get(url, HTTP_JSON_OPTIONS).toPromise()
+        return this.http.get(url, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.json() as Tag)
             .catch(error => Promise.reject(error));
     }
