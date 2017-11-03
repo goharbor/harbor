@@ -313,7 +313,7 @@ prepare:
 
 build_common: version
 	@echo "buildging db container for photon..."
-	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
+	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) --pull -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
 
 build_photon: build_common

@@ -4,7 +4,7 @@ FROM vmware/photon:1.0
 
 RUN tdnf distro-sync -y || echo \
     && tdnf install -y sed shadow procps-ng gawk gzip sudo net-tools \
-    && groupadd -r -g 999 mysql && useradd --no-log-init -r -g 999 -u 999 mysql \
+    && groupadd -r -g 10000 mysql && useradd --no-log-init -r -g 10000 -u 10000 mysql \
     && tdnf install -y mariadb-server mariadb \
     && mkdir /docker-entrypoint-initdb.d /docker-entrypoint-updatedb.d \
     && rm -fr /var/lib/mysql \
@@ -18,7 +18,7 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 COPY my.cnf /etc/
 RUN ln -s usr/local/bin/docker-entrypoint.sh /
 
-VOLUME /var/lib/mysql
+VOLUME /var/lib/mysql /docker-entrypoint-initdb.d /docker-entrypoint-updatedb.d /tmp /var/run/mysqld
 EXPOSE 3306
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
