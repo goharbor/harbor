@@ -17,6 +17,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/utils/test"
 )
 
@@ -39,6 +40,7 @@ func TestConfig(t *testing.T) {
 		return
 	}
 	defer os.Remove(secretKeyPath)
+	assert := assert.New(t)
 
 	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
 		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
@@ -164,5 +166,7 @@ func TestConfig(t *testing.T) {
 	if us.ClientID != "testid" || us.ClientSecret != "testsecret" || us.Endpoint != "10.192.168.5" {
 		t.Errorf("Unexpected UAA setting: %+v", *us)
 	}
+	assert.Equal("http://myjob:8888", InternalJobServiceURL())
+	assert.Equal("http://myui:8888/service/token", InternalTokenServiceEndpoint())
 
 }

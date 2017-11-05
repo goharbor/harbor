@@ -42,3 +42,5 @@ RESET=false
 UAA_ENDPOINT=$uaa_endpoint
 UAA_CLIENTID=$uaa_clientid
 UAA_CLIENTSECRET=$uaa_clientsecret
+UI_URL=http://ui
+JOBSERVICE_URL=http://jobservice

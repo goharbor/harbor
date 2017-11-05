@@ -244,12 +244,26 @@ func RegistryURL() (string, error) {
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	return "http://jobservice"
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.")
+
+		return "http://jobservice"
+	}
+	return strings.TrimSuffix(cfg[common.JobServiceURL].(string), "/")
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
 func InternalTokenServiceEndpoint() string {
-	return "http://ui/service/token"
+	uiURL := "http://ui"
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Warningf("Failed to Get job service UI URL from backend, error: %v, will use default value.")
+
+	} else {
+		uiURL = cfg[common.UIURL].(string)
+	}
+	return strings.TrimSuffix(uiURL, "/") + "/service/token"
 }
 
 // InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers

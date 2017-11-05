@@ -38,6 +38,8 @@ const (
 	MySQLDatabase              = "mysql_database"
 	SQLiteFile                 = "sqlite_file"
 	SelfRegistration           = "self_registration"
+	UIURL                      = "ui_url"
+	JobServiceURL              = "jobservice_url"
 	LDAPURL                    = "ldap_url"
 	LDAPSearchDN               = "ldap_search_dn"
 	LDAPSearchPwd              = "ldap_search_password"
