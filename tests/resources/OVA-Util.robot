@@ -17,9 +17,9 @@ Documentation  This resource provides any keywords related to Unified OVA
 
 *** Variables ***
 ${ova_root_pwd}  ova-test-root-pwd
-${ova_appliance_options}  --prop:appliance.root_pwd=${ova_root_pwd} --prop:appliance.permit_root_login=True
+${ova_appliance_options}  --prop:root_pwd=${ova_root_pwd} --prop:permit_root_login=true
 
-${ova_target_vm_name}  vic-unified-ova-integration-test
+${ova_target_vm_name}  harbor-unified-ova-integration-test
 ${ovftool_options}  --noSSLVerify --acceptAllEulas --name=${ova_target_vm_name} --diskMode=thin --powerOn --X:waitForIp --X:injectOvfEnv --X:enableHiddenProperties
 
 ${ova_network_ip0}  10.17.109.207
@@ -32,7 +32,7 @@ ${ova_network_options}  --prop:network.ip0=${ova_network_ip0} --prop:network.net
 
 ${ova_harbor_admin_password}  harbor-admin-passwd
 ${ova_harbor_db_password}  harbor-db-passwd
-${ova_service_options}  --prop:registry.admin_password=${ova_harbor_admin_password} --prop:registry.db_password=${ova_harbor_db_password}
+${ova_service_options}  --prop:auth_mode="%{AUTH_MODE}" --prop:clair_db_password="%{CLAIR_DB_PASSWORD}" --prop:max_job_workers="%{MAX_JOB_WORKERS}" --prop:harbor_admin_password="%{HARBOR_ADMIN_PASSWORD}" --prop:db_password="%{DB_PASSWORD}"
 
 ${ova_options}  ${ovftool_options} ${ova_appliance_options} ${ova_service_options}
 ${ova_options_with_network}  ${ova_options} ${ova_network_options} 
@@ -41,11 +41,8 @@ ${tls_not_disabled}  False
 
 *** Keywords ***
 # Requires vc credential for govc
-Deploy VIC-OVA To Test Server
-    [Arguments]  ${dhcp}=False  ${build}=False  ${user}=%{TEST_USERNAME}  ${password}=%{TEST_PASSWORD}  ${host}=%{TEST_URL}  ${datastore}=%{TEST_DATASTORE}  ${cluster}=%{TEST_RESOURCE}  ${datacenter}=%{TEST_DATACENTER}
-    Run Keyword if  ${build}  Build Unified OVA
-    ${rev}=  Run  git rev-parse --short HEAD
-    Set Test Variable  ${ova_path}  bin/vic-1.1.0-${rev}.ova
+Deploy Harbor-OVA To Test Server
+    [Arguments]  ${dhcp}  ${protocol}  ${build}  ${user}  ${password}  ${ova_path}  ${host}  ${datastore}  ${cluster}  ${datacenter}   
 
     Log To Console  \nCleanup environment...
     Run Keyword And Ignore Error  Run  GOVC_URL=${host} GOVC_USERNAME=${user} GOVC_PASSWORD=${password} GOVC_INSECURE=1 govc vm.destroy ${ova_target_vm_name}
@@ -56,16 +53,31 @@ Deploy VIC-OVA To Test Server
     ...  ELSE  Log To Console  ovftool --datastore=${datastore} ${ova_options_with_network} ${ova_path} 'vi://${user}:${password}@${host}/${datacenter}/host/${cluster}'
     ${out}=  Run Keyword If  ${dhcp}  Run  ovftool --datastore=${datastore} ${ova_options} ${ova_path} 'vi://${user}:${password}@${host}/${datacenter}/host/${cluster}'
     ...  ELSE  Run  ovftool --datastore=${datastore} ${ova_options_with_network} ${ova_path} 'vi://${user}:${password}@${host}/${datacenter}/host/${cluster}'
-    Log  ${out}
+    
+    Should Contain  ${out}  Received IP address:
+    Should Not Contain  ${out}  None
 
-    Log To Console  \n${out}
-    @{out}=  Split To Lines  ${out}
-    Should Contain  @{out}[-1]  Completed successfully 
+    ${out}=  Run  GOVC_URL=${host} GOVC_USERNAME=${user} GOVC_PASSWORD=${password} GOVC_INSECURE=1 govc ls /ha-datacenter/host/cls/
+    ${out}=  Split To Lines  ${out}
+    ${idx}=  Set Variable  1
+    :FOR  ${line}  IN  @{out}
+    \   Continue For Loop If  '${line}' == '/ha-datacenter/host/cls/Resources'
+    \   ${ip}=  Fetch From Right  ${line}  /
+    \   Set Suite Variable  ${esx${idx}-ip}  ${ip}
+    \   ${idx}=  Evaluate  ${idx}+1
 
-    Log To Console  \nUnified OVA is deployed successfully
+    Run Keyword And Ignore Error  Run  GOVC_URL=${host} GOVC_USERNAME=${user} GOVC_PASSWORD=${password} GOVC_INSECURE=1 govc host.esxcli -host.ip=${esx1-ip} system settings advanced set -o /Net/GuestIPHack -i 1
+    ${ip}=  Run  GOVC_URL=${host} GOVC_USERNAME=${user} GOVC_PASSWORD=${password} GOVC_INSECURE=1 govc vm.ip -esxcli harbor-unified-ova-integration-test
+
+    Set Environment Variable  HARBOR_IP  ${ip}
+    
+    Log To Console  \nHarbor IP: %{HARBOR_IP}
+    
+    Wait for Harbor Ready  ${protocol}  %{HARBOR_IP}
+    [Return]  %{HARBOR_IP}
 
 # Requires vc credential for govc
-Cleanup VIC-OVA On Test Server  
+Cleanup Harbor-OVA On Test Server  
     [Arguments]  ${url}=%{GOVC_URL}  ${username}=%{GOVC_USERNAME}  ${password}=%{GOVC_PASSWORD}
     ${rc}  ${output}=  Run And Return Rc And Output  GOVC_URL=${url} GOVC_USERNAME=${username} GOVC_PASSWORD=${password} GOVC_INSECURE=1 govc vm.destroy ${ova_target_vm_name}
     Log  ${output}
@@ -83,7 +95,3 @@ Build Unified OVA
     @{out}=  Split To Lines  ${out}
     Should Not Contain  @{out}[-1]  Error
     Log To Console  \nUnified OVA is built successfully
-
-Remove OVA Artifacts Locally
-    ${rev}=  Run  git rev-parse --short HEAD
-    Remove Files  bin/vic-1.1.0-${rev}.ova bin/vic-1.1.0-${rev}.ovf bin/vic-1.1.0-${rev}.mk bin/vic-1.1.0-${rev}-disk*.vmdk
