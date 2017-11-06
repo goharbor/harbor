@@ -323,7 +323,6 @@ func TestConnectionWithoutVerify(t *testing.T) {
 
 	adminServerLdapTestConfig[common.LDAPVerifyCert] = false
 	adminServerLdapTestConfig[common.LDAPURL] = "ldaps://127.0.0.1:636"
-	adminServerLdapTestConfig[common.LDAPSearchDN] = "cn=admin,dc=example,dc=org"
 
 	server, err := test.NewAdminserver(adminServerLdapTestConfig)
 	if err != nil {
