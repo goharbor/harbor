@@ -63,6 +63,8 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.UAAClientID:                "testid",
 	common.UAAClientSecret:            "testsecret",
 	common.UAAEndpoint:                "10.192.168.5",
+	common.UIURL:                      "http://myui:8888/",
+	common.JobServiceURL:              "http://myjob:8888/",
 }
 
 // NewAdminserver returns a mock admin server
