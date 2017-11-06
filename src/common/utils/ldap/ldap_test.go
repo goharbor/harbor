@@ -318,3 +318,35 @@ func TestGetSystemLdapConfVerifyCert(t *testing.T) {
 	assert.True(ldapConfig.LdapVerifyCert)
 	fmt.Printf("LdapVerifyCert= %t", ldapConfig.LdapVerifyCert)
 }
+
+func TestConnectionWithoutVerify(t *testing.T) {
+
+	adminServerLdapTestConfig[common.LDAPVerifyCert] = false
+	adminServerLdapTestConfig[common.LDAPURL] = "ldaps://127.0.0.1:636"
+	adminServerLdapTestConfig[common.LDAPSearchDN] = "cn=admin,dc=example,dc=org"
+
+	server, err := test.NewAdminserver(adminServerLdapTestConfig)
+	if err != nil {
+		t.Fatalf("failed to create a mock admin server: %v", err)
+	}
+	defer server.Close()
+
+	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
+		t.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	}
+
+	if err := uiConfig.Init(); err != nil {
+		t.Fatalf("failed to initialize configurations: %v", err)
+	}
+
+	testLdapConfig, err := GetSystemLdapConf()
+
+	if err != nil {
+		t.Fatalf("failed to get system ldap config %v", err)
+	}
+
+	err = ConnectTest(testLdapConfig)
+	if err != nil {
+		t.Errorf("unexpected ldap connect fail: %v", err)
+	}
+}
