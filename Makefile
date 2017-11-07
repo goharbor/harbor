@@ -384,7 +384,8 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	fi	
 
 	@echo "saving harbor docker image"
-	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz
+	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
+	@gzip $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
 
 	@$(TARCMD) $(PACKAGE_OFFLINE_PARA)
 	@rm -rf $(HARBORPKG)
