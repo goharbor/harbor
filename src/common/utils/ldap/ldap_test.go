@@ -73,12 +73,12 @@ var adminServerDefaultConfigWithVerifyCert = map[string]interface{}{
 	common.DatabaseType:               "mysql",
 	common.MySQLHost:                  "127.0.0.1",
 	common.MySQLPort:                  3306,
-	common.MySQLUsername:              "user01",
-	common.MySQLPassword:              "password",
+	common.MySQLUsername:              "root",
+	common.MySQLPassword:              "root123",
 	common.MySQLDatabase:              "registry",
 	common.SQLiteFile:                 "/tmp/registry.db",
 	common.SelfRegistration:           true,
-	common.LDAPURL:                    "ldap://127.0.0.1",
+	common.LDAPURL:                    "ldap://127.0.0.1:389",
 	common.LDAPSearchDN:               "cn=admin,dc=example,dc=com",
 	common.LDAPSearchPwd:              "admin",
 	common.LDAPBaseDN:                 "dc=example,dc=com",
@@ -166,6 +166,7 @@ func TestGetSystemLdapConf(t *testing.T) {
 }
 
 func TestValidateLdapConf(t *testing.T) {
+
 	testLdapConfig, err := GetSystemLdapConf()
 	if err != nil {
 		t.Fatalf("failed to get system ldap config %v", err)
@@ -179,6 +180,7 @@ func TestValidateLdapConf(t *testing.T) {
 }
 
 func TestMakeFilter(t *testing.T) {
+
 	testLdapConfig, err := GetSystemLdapConf()
 
 	if err != nil {
@@ -300,21 +302,13 @@ func TestGetSystemLdapConfVerifyCert(t *testing.T) {
 
 	assert := assert.New(t)
 
-	server, err := test.NewAdminserver(adminServerDefaultConfigWithVerifyCert)
-	if err != nil {
-		t.Fatalf("failed to create a mock admin server: %v", err)
-	}
-	defer server.Close()
-
-	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
-		t.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
-	}
-
-	if err := uiConfig.Init(); err != nil {
-		t.Fatalf("failed to initialize configurations: %v", err)
-	}
+	adminServerLdapTestConfig[common.LDAPVerifyCert] = true
+	InitTest(adminServerLdapTestConfig, t)
 
 	ldapConfig, err := GetSystemLdapConf()
+	if err != nil {
+		t.Errorf("Failed to get system ldap config, err %v\n", err)
+	}
 	assert.True(ldapConfig.LdapVerifyCert)
 	fmt.Printf("LdapVerifyCert= %t", ldapConfig.LdapVerifyCert)
 }
@@ -324,7 +318,21 @@ func TestConnectionWithoutVerify(t *testing.T) {
 	adminServerLdapTestConfig[common.LDAPVerifyCert] = false
 	adminServerLdapTestConfig[common.LDAPURL] = "ldaps://127.0.0.1:636"
 
-	server, err := test.NewAdminserver(adminServerLdapTestConfig)
+	InitTest(adminServerLdapTestConfig, t)
+	testLdapConfig, err := GetSystemLdapConf()
+
+	if err != nil {
+		t.Fatalf("failed to get system ldap config %v", err)
+	}
+
+	err = ConnectTest(testLdapConfig)
+	if err != nil {
+		t.Errorf("unexpected ldap connect fail: %v", err)
+	}
+}
+
+func InitTest(ldapTestConfig map[string]interface{}, t *testing.T) {
+	server, err := test.NewAdminserver(ldapTestConfig)
 	if err != nil {
 		t.Fatalf("failed to create a mock admin server: %v", err)
 	}
@@ -337,15 +345,45 @@ func TestConnectionWithoutVerify(t *testing.T) {
 	if err := uiConfig.Init(); err != nil {
 		t.Fatalf("failed to initialize configurations: %v", err)
 	}
+}
 
-	testLdapConfig, err := GetSystemLdapConf()
-
+func TestSearchAndImportUser(t *testing.T) {
+	InitTest(adminServerDefaultConfigWithVerifyCert, t)
+	database, err := uiConfig.Database()
 	if err != nil {
-		t.Fatalf("failed to get system ldap config %v", err)
+		log.Fatalf("failed to get database configuration: %v", err)
 	}
 
-	err = ConnectTest(testLdapConfig)
+	if err := dao.InitDatabase(database); err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
+
+	userID, err := SearchAndImportUser("test")
+
 	if err != nil {
-		t.Errorf("unexpected ldap connect fail: %v", err)
+		t.Fatalf("Failed on error : %v ", err)
+	}
+
+	if userID <= 0 {
+		t.Fatalf("userID= %v", userID)
+	}
+}
+
+func TestSearchAndImportUserNotExist(t *testing.T) {
+	InitTest(adminServerDefaultConfigWithVerifyCert, t)
+	database, err := uiConfig.Database()
+	if err != nil {
+		log.Fatalf("failed to get database configuration: %v", err)
+	}
+
+	if err := dao.InitDatabase(database); err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
+
+	userID, err := SearchAndImportUser("notexist")
+
+	if userID > 0 {
+		t.Fatal("Can not import a non exist ldap user!")
+		t.Fail()
 	}
 }
