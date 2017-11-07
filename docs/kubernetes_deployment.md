@@ -166,5 +166,5 @@ After the pods are running, you can access Harbor's UI via the configured endpoi
 
 ####Limitation
 1. Current deployment is http only, to enable https you need to either add another layer of proxy or modify the nginx.cm.yaml to enable https and include a correct certificate
-2. Current deployment does not include Clair and Notary, which are supported in docker-compose deployment.  They will be supported in near futuer, stay tuned.
+2. Current deployment does not include Clair and Notary, which are supported in docker-compose deployment.  They will be supported in near future, stay tuned.
 
