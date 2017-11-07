@@ -71,6 +71,16 @@ func InitDatabase(database *models.Database) error {
 	if err := db.Register(); err != nil {
 		return err
 	}
+
+	version, err := GetSchemaVersion()
+	if err != nil {
+		return err
+	}
+	if version.Version != SchemaVersion {
+		return fmt.Errorf("unexpected database schema version, expected %s, got %s",
+			SchemaVersion, version.Version)
+	}
+
 	log.Info("initialize database completed")
 	return nil
 }
