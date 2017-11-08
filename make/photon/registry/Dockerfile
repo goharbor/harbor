@@ -21,6 +21,10 @@ RUN chmod u+x /usr/bin/registry
 HEALTHCHECK CMD curl 127.0.0.1:5000/
 
 VOLUME ["/var/lib/registry"]
+
+ENV PORT 5000
 EXPOSE 5000
+HEALTHCHECK CMD curl http://localhost:$PORT/v2 || exit 1
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/etc/registry/config.yml"]

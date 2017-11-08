@@ -11,7 +11,8 @@ COPY ./src/ui/static /harbor/static
 COPY ./src/favicon.ico /harbor/favicon.ico
 COPY ./VERSION /harbor/VERSION
 
-RUN chmod u+x /harbor/harbor_ui 
-	
+RUN chmod u+x /harbor/harbor_ui
 WORKDIR /harbor/
+
+HEALTHCHECK CMD curl localhost:80 || exit 1
 ENTRYPOINT ["/harbor/harbor_ui"]
