@@ -41,23 +41,25 @@ const (
 
 // RepPolicy is the model for a replication policy, which associate to a project and a target (destination)
 type RepPolicy struct {
-	ID                int64        `orm:"pk;auto;column(id)" json:"id"`
-	ProjectID         int64        `orm:"column(project_id)" json:"project_id"`
-	ProjectName       string       `orm:"-" json:"project_name,omitempty"`
-	TargetID          int64        `orm:"column(target_id)" json:"target_id"`
-	TargetName        string       `orm:"-" json:"target_name,omitempty"`
-	Name              string       `orm:"column(name)" json:"name"`
-	Enabled           int          `orm:"column(enabled)" json:"enabled"`
-	Description       string       `orm:"column(description)" json:"description"`
-	Trigger           string       `orm:"column(cron_str)" json:"trigger"`
-	Filters           []*RepFilter `orm:"-" json:"filters"`
-	FiltersInDB       string       `orm:"column(filters)" json:"-"`
-	ReplicateDeletion bool         `orm:"column(replicate_deletion)" json:"replicate_deletion"`
-	StartTime         time.Time    `orm:"column(start_time)" json:"start_time"`
-	CreationTime      time.Time    `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime        time.Time    `orm:"column(update_time);auto_now" json:"update_time"`
-	ErrorJobCount     int          `orm:"-" json:"error_job_count"`
-	Deleted           int          `orm:"column(deleted)" json:"deleted"`
+	ID                        int64        `orm:"pk;auto;column(id)" json:"id"`
+	ProjectID                 int64        `orm:"column(project_id)" json:"project_id"`
+	ProjectName               string       `orm:"-" json:"project_name,omitempty"`
+	TargetID                  int64        `orm:"column(target_id)" json:"target_id"`
+	TargetName                string       `orm:"-" json:"target_name,omitempty"`
+	Name                      string       `orm:"column(name)" json:"name"`
+	Enabled                   int          `orm:"column(enabled)" json:"enabled"`
+	Description               string       `orm:"column(description)" json:"description"`
+	Trigger                   *RepTrigger  `orm:"-" json:"trigger"`
+	TriggerInDB               string       `orm:"column(cron_str)" json:"-"`
+	Filters                   []*RepFilter `orm:"-" json:"filters"`
+	FiltersInDB               string       `orm:"column(filters)" json:"-"`
+	ReplicateExistingImageNow bool         `orm:"-" json:"replicate_existing_image_now"`
+	ReplicateDeletion         bool         `orm:"column(replicate_deletion)" json:"replicate_deletion"`
+	StartTime                 time.Time    `orm:"column(start_time)" json:"start_time"`
+	CreationTime              time.Time    `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime                time.Time    `orm:"column(update_time);auto_now" json:"update_time"`
+	ErrorJobCount             int          `orm:"-" json:"error_job_count"`
+	Deleted                   int          `orm:"column(deleted)" json:"deleted"`
 }
 
 // Valid ...
@@ -82,24 +84,37 @@ func (r *RepPolicy) Valid(v *validation.Validation) {
 		v.SetError("enabled", "must be 0 or 1")
 	}
 
-	if len(r.Trigger) > 256 {
-		v.SetError("trigger", "max length is 256")
+	if r.Trigger != nil {
+		r.Trigger.Valid(v)
 	}
 
 	for _, filter := range r.Filters {
 		filter.Valid(v)
 	}
 
-	if err := r.MarshalFilter(); err != nil {
-		v.SetError("filters", err.Error())
+	if err := r.Marshal(); err != nil {
+		v.SetError("trigger or filters", err.Error())
 	}
-	if len(r.Filters) > 1024 {
+
+	if len(r.TriggerInDB) > 256 {
+		v.SetError("trigger", "max length is 256")
+	}
+
+	if len(r.FiltersInDB) > 1024 {
 		v.SetError("filters", "max length is 1024")
 	}
 }
 
-// MarshalFilter marshal RepFilter array to json string
-func (r *RepPolicy) MarshalFilter() error {
+// Marshal marshal RepTrigger and RepFilter array to json string
+func (r *RepPolicy) Marshal() error {
+	if r.Trigger != nil {
+		b, err := json.Marshal(r.Trigger)
+		if err != nil {
+			return err
+		}
+		r.TriggerInDB = string(b)
+	}
+
 	if r.Filters != nil {
 		b, err := json.Marshal(r.Filters)
 		if err != nil {
@@ -110,8 +125,16 @@ func (r *RepPolicy) MarshalFilter() error {
 	return nil
 }
 
-// UnmarshalFilter unmarshal json string to RepFilter array
-func (r *RepPolicy) UnmarshalFilter() error {
+// Unmarshal unmarshal json string to RepTrigger and RepFilter array
+func (r *RepPolicy) Unmarshal() error {
+	if len(r.TriggerInDB) > 0 {
+		trigger := &RepTrigger{}
+		if err := json.Unmarshal([]byte(r.TriggerInDB), &trigger); err != nil {
+			return err
+		}
+		r.Trigger = trigger
+	}
+
 	if len(r.FiltersInDB) > 0 {
 		filter := []*RepFilter{}
 		if err := json.Unmarshal([]byte(r.FiltersInDB), &filter); err != nil {
@@ -138,6 +161,21 @@ func (r *RepFilter) Valid(v *validation.Validation) {
 
 	if len(r.Value) == 0 {
 		v.SetError("filter.value", "can not be empty")
+	}
+}
+
+// RepTrigger holds information for the replication policy trigger
+type RepTrigger struct {
+	Type   string                 `json:"type"`
+	Params map[string]interface{} `json:"params"`
+}
+
+// Valid ...
+func (r *RepTrigger) Valid(v *validation.Validation) {
+	if !(r.Type == replication.TriggerKindManually ||
+		r.Type == replication.TriggerKindSchedule ||
+		r.Type == replication.TriggerKindImmediately) {
+		v.SetError("trigger.type", fmt.Sprintf("invalid trigger type: %s", r.Type))
 	}
 }
 

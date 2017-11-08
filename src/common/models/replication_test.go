@@ -21,7 +21,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMarshalAndUnmarshalFilter(t *testing.T) {
+func TestMarshalAndUnmarshal(t *testing.T) {
+	trigger := &RepTrigger{
+		Type:   "schedule",
+		Params: map[string]interface{}{"date": "2:00"},
+	}
 	filters := []*RepFilter{
 		&RepFilter{
 			Type:  "repository",
@@ -29,15 +33,18 @@ func TestMarshalAndUnmarshalFilter(t *testing.T) {
 		},
 	}
 	policy := &RepPolicy{
+		Trigger: trigger,
 		Filters: filters,
 	}
 
-	err := policy.MarshalFilter()
+	err := policy.Marshal()
 	require.Nil(t, err)
 
+	policy.Trigger = nil
 	policy.Filters = nil
-	err = policy.UnmarshalFilter()
+	err = policy.Unmarshal()
 	require.Nil(t, err)
 
 	assert.EqualValues(t, filters, policy.Filters)
+	assert.EqualValues(t, trigger, policy.Trigger)
 }

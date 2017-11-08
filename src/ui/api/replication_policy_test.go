@@ -41,12 +41,19 @@ func TestPoliciesPost(t *testing.T) {
 	//add target
 	CommonAddTarget()
 	targetID := int64(CommonGetTarget())
-	repPolicy := &apilib.RepPolicyPost{int64(1), targetID, addPolicyName, []*models.RepFilter{
-		&models.RepFilter{
-			Type:  replication.FilterItemKindRepository,
-			Value: "library/ubuntu*",
+	repPolicy := &apilib.RepPolicyPost{int64(1), targetID, addPolicyName,
+		&models.RepTrigger{
+			Type: replication.TriggerKindSchedule,
+			Params: map[string]interface{}{
+				"date": "2:00",
+			},
 		},
-	}}
+		[]*models.RepFilter{
+			&models.RepFilter{
+				Type:  replication.FilterItemKindRepository,
+				Value: "library/ubuntu*",
+			},
+		}}
 
 	fmt.Println("Testing Policies Post API")
 
@@ -129,12 +136,16 @@ func TestPoliciesPost(t *testing.T) {
 	}
 
 	fmt.Println("case 8 : response code = 400: invalid filter")
-	repPolicy = &apilib.RepPolicyPost{int64(1), targetID, addPolicyName, []*models.RepFilter{
-		&models.RepFilter{
-			Type:  "replication",
-			Value: "",
+	repPolicy = &apilib.RepPolicyPost{int64(1), targetID, addPolicyName,
+		&models.RepTrigger{
+			Type: replication.TriggerKindManually,
 		},
-	}}
+		[]*models.RepFilter{
+			&models.RepFilter{
+				Type:  "replication",
+				Value: "",
+			},
+		}}
 	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
 	require.Nil(t, err)
 	assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")

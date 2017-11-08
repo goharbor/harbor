@@ -104,7 +104,7 @@ func FilterRepTargets(name string) ([]*models.RepTarget, error) {
 
 // AddRepPolicy ...
 func AddRepPolicy(policy models.RepPolicy) (int64, error) {
-	if err := policy.MarshalFilter(); err != nil {
+	if err := policy.Marshal(); err != nil {
 		return 0, err
 	}
 	now := time.Now()
@@ -132,7 +132,7 @@ func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 		return nil, err
 	}
 
-	if err := policy.UnmarshalFilter(); err != nil {
+	if err := policy.Unmarshal(); err != nil {
 		return nil, err
 	}
 
@@ -176,7 +176,7 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 	}
 
 	for _, policy := range policies {
-		if err := policy.UnmarshalFilter(); err != nil {
+		if err := policy.Unmarshal(); err != nil {
 			return nil, err
 		}
 	}
@@ -198,7 +198,7 @@ func GetRepPolicyByName(name string) (*models.RepPolicy, error) {
 		return nil, err
 	}
 
-	if err := policy.UnmarshalFilter(); err != nil {
+	if err := policy.Unmarshal(); err != nil {
 		return nil, err
 	}
 
@@ -217,7 +217,7 @@ func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 	}
 
 	for _, policy := range policies {
-		if err := policy.UnmarshalFilter(); err != nil {
+		if err := policy.Unmarshal(); err != nil {
 			return nil, err
 		}
 	}
@@ -237,7 +237,7 @@ func GetRepPolicyByTarget(targetID int64) ([]*models.RepPolicy, error) {
 	}
 
 	for _, policy := range policies {
-		if err := policy.UnmarshalFilter(); err != nil {
+		if err := policy.Unmarshal(); err != nil {
 			return nil, err
 		}
 	}
@@ -257,7 +257,7 @@ func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPol
 	}
 
 	for _, policy := range policies {
-		if err := policy.UnmarshalFilter(); err != nil {
+		if err := policy.Unmarshal(); err != nil {
 			return nil, err
 		}
 	}
@@ -267,13 +267,13 @@ func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPol
 
 // UpdateRepPolicy ...
 func UpdateRepPolicy(policy *models.RepPolicy) error {
-	if err := policy.MarshalFilter(); err != nil {
+	if err := policy.Marshal(); err != nil {
 		return err
 	}
 	o := GetOrmer()
 	policy.UpdateTime = time.Now()
 	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description",
-		"Trigger", "FiltersInDB", "ReplicateDeletion", "UpdateTime")
+		"TriggerInDB", "FiltersInDB", "ReplicateDeletion", "UpdateTime")
 	return err
 }
 

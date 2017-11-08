@@ -7,4 +7,10 @@ const (
 	FilterItemKindRepository = "repository"
 	//FilterItemKindTag : Kind of filter item is 'tag'
 	FilterItemKindTag = "tag"
+	//TriggerKindManually : kind of trigger is 'manully'
+	TriggerKindManually = "manually"
+	//TriggerKindSchedule : kind of trigger is 'schedule'
+	TriggerKindSchedule = "schedule"
+	//TriggerKindImmediately : kind of trigger is 'immediately'
+	TriggerKindImmediately = "immediately"
 )
