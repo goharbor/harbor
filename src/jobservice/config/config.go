@@ -45,7 +45,7 @@ func Init() error {
 	//init key provider
 	initKeyProvider()
 
-	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
+	adminServerURL := os.Getenv("ADMINSERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}
@@ -163,7 +163,7 @@ func ExtEndpoint() (string, error) {
 
 // InternalTokenServiceEndpoint ...
 func InternalTokenServiceEndpoint() string {
-	return "http://ui/service/token"
+	return LocalUIURL() + "/service/token"
 }
 
 // ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.

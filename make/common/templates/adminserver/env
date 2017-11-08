@@ -1,3 +1,4 @@
+PORT=8080
 LOG_LEVEL=debug
 EXT_ENDPOINT=$ui_url
 AUTH_MODE=$auth_mode
@@ -42,5 +43,5 @@ RESET=false
 UAA_ENDPOINT=$uaa_endpoint
 UAA_CLIENTID=$uaa_clientid
 UAA_CLIENTSECRET=$uaa_clientsecret
-UI_URL=http://ui
-JOBSERVICE_URL=http://jobservice
+UI_URL=http://ui:8080
+JOBSERVICE_URL=http://jobservice:8080

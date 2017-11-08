@@ -62,7 +62,7 @@ func Init() error {
 	//init key provider
 	initKeyProvider()
 
-	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
+	adminServerURL := os.Getenv("ADMINSERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}

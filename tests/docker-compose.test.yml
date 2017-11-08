@@ -33,4 +33,4 @@ services:
       - /data/secretkey:/etc/adminserver/key
       - /data/:/data/
     ports:
-      - 8888:80
+      - 8888:8080
