@@ -42,22 +42,30 @@
 
 **Procedure**
 1. In the vSphere Web Client, right-click an object in the vCenter Server inventory, select **Deploy OVF template**, and navigate to the OVA file or input the URL of the ova file in URL field.
+   ![Screenshot of Deploy OVF template](img/ovainstall/DeployOVFmenu.png)
+   ![Screenshot of Import ova](img/ovainstall/importova.png)
 2. Follow the installer prompts to perform basic configuration of the appliance and to select the vSphere resources for it to use. 
     
     - Accept or modify the appliance name
     - Select the destination datacenter or folder
-    - Select the destination host, cluster, or resource pool
-    - Accept the end user license agreements (EULA)
+    ![Screenshot of appliance name](img/ovainstall/namelocation.png)
+     - Select the destination host, cluster, or resource pool
+    ![Screenshot of resoure pool](img/ovainstall/resource.png)
     - Select the disk format and destination datastore
+    ![Screenshot of datastore](img/ovainstall/datastore.png)
     - Select the network that the appliance connects to
+    ![Screenshot of network](img/ovainstall/network.png)
 
 3. On the **Customize template** page, under Harbor Configure, select the authentication mode and Harbor admin password, if authentication mode is set to ldap_auth, the Harbor LDAP configure is required. 
+    ![Screenshot of customize harbor](img/ovainstall/customizeharbor.png)
+    ![Screenshot of customize ldap](img/ovainstall/customizeldap.png)
 
 4. On the **Customize template** page, under **System**, set the root password for the appliance VM and optionally uncheck the **Permit Root Login** checkbox. 
 
     Setting the root password for the appliance is mandatory. 
 
     **IMPORTANT**: You require SSH access to the vSphere Integrated Containers appliance to perform upgrades. You can also use SSH access in exceptional cases that you cannot handle through standard remote management or CLI tools. Only use SSH to access the appliance when instructed to do so in the documentation, or under the guidance of VMware GSS.
+    ![Screenshot of customize template system](img/ovainstall/system.png)
 
 5. Expand **Networking Properties** and optionally configure a static IP address for the appliance VM. 
 
@@ -84,3 +92,4 @@
 **Result**
 
 - You see the Harbor administration console
+  ![add memeber](img/add_member.png)
