@@ -45,7 +45,7 @@ type RepPolicy struct {
 	ProjectID                 int64        `orm:"column(project_id)" json:"project_id"`
 	ProjectName               string       `orm:"-" json:"project_name,omitempty"`
 	TargetID                  int64        `orm:"column(target_id)" json:"target_id"`
-	TargetName                string       `orm:"-" json:"target_name,omitempty"`
+	TargetName                string       `json:"target_name,omitempty"`
 	Name                      string       `orm:"column(name)" json:"name"`
 	Enabled                   int          `orm:"column(enabled)" json:"enabled"`
 	Description               string       `orm:"column(description)" json:"description"`

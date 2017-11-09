@@ -107,15 +107,26 @@ func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 	if err := policy.Marshal(); err != nil {
 		return 0, err
 	}
-	now := time.Now()
-	policy.CreationTime = now
-	policy.UpdateTime = now
-	if policy.Enabled == 1 {
-		policy.StartTime = now
-	}
-	policy.Deleted = 0
 
-	return GetOrmer().Insert(&policy)
+	o := GetOrmer()
+	sql := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, start_time, creation_time, update_time, filters, replicate_deletion) 
+				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	params := []interface{}{}
+	params = append(params, policy.Name, policy.ProjectID, policy.TargetID, policy.Enabled, policy.Description, policy.TriggerInDB)
+	now := time.Now()
+	if policy.Enabled == 1 {
+		params = append(params, now)
+	} else {
+		params = append(params, nil)
+	}
+	params = append(params, now, now, policy.FiltersInDB, policy.ReplicateDeletion)
+
+	result, err := o.Raw(sql, params...).Exec()
+	if err != nil {
+		return 0, err
+	}
+
+	return result.LastInsertId()
 }
 
 // GetRepPolicy ...
