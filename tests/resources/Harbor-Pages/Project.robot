@@ -119,6 +119,22 @@ Project Should Be Deleted
     Sleep  2
     Page Should Not Contain  ${projname}
 
+Delete Signed Tag
+    [arguments]  ${tag}
+    Click Element  //clr-dg-row-master[contains(.,'${tag}')]//clr-dg-action-overflow
+    Click Element  //clr-dg-row-master[contains(.,'${tag}')]//clr-dg-action-overflow//button[contains(.,'Delete')]
+    Sleep  1
+    Click Element  //confirmation-dialog//button[contains(.,'CLOSE')]
+    Sleep  1
+
+Delete Tag
+    [arguments]  ${tag}
+    Click Element  //clr-dg-row-master[contains(.,'${tag}')]//clr-dg-action-overflow
+    Click Element  //clr-dg-row-master[contains(.,'${tag}')]//clr-dg-action-overflow//button[contains(.,'Delete')]
+    Sleep  1
+    Click Element  //confirmation-dialog//button[contains(.,'DELETE')]
+    Sleep  1
+
 Advanced Search Should Display
     Page Should Contain Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
 

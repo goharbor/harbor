@@ -325,6 +325,21 @@ Test Case - Admin Push Signed Image
     Should Be Equal As Integers  ${rc}  0
     #Should Contain  ${output}  sha256
 
+Test Case Delete Signed Image
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Enable Notary Client
+    Go Into Project  library
+    Expand Repo  library
+    Delete Signed Tag  latest
+    Page Should Contain  latest
+    #remove notary signature  
+    ${rc}  run and return rc and output  ./tests/robot-cases/Group9-Content-trust/notaryremove.py ${ip}
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    Delete Tag  latest
+    Page Should Not Contain  latest
+
 Test Case - Admin Push Un-Signed Image	
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
     Log To Console  ${output}
