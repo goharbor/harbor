@@ -24,17 +24,18 @@ Init LDAP
     ${rc}  ${output}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
     Log  ${output}
     Sleep  2
-    Input Text  xpath=//*[@id="ldapUrl"]  ldap://${output}
+    Input Text  xpath=//*[@id="ldapUrl"]  ldaps://${output}
     Sleep  1
-    Input Text  xpath=//*[@id="ldapSearchDN"]  cn=admin,dc=example,dc=org
+    Input Text  xpath=//*[@id="ldapSearchDN"]  cn=admin,dc=example,dc=com
     Sleep  1
     Input Text  xpath=//*[@id="ldapSearchPwd"]  admin
     Sleep  1
-    Input Text  xpath=//*[@id="ldapBaseDN"]  dc=example,dc=org
+    Input Text  xpath=//*[@id="ldapBaseDN"]  dc=example,dc=com
     Sleep  1
     Input Text  xpath=//*[@id="ldapUid"]  cn
     Sleep  1
     Capture Page Screenshot
+    Disable Ldap Verify Cert Checkbox
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[1]
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[3]
@@ -44,6 +45,44 @@ Init LDAP
 Switch To Configure
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/section/ul/li[3]/a
     Sleep  2
+
+Test Ldap Connection
+    ${rc}  ${output}=  Run And Return Rc And Output  ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'
+    Log  ${output}
+    Sleep  2
+    Input Text  xpath=//*[@id="ldapUrl"]  ldaps://${output}
+    Sleep  1
+    Input Text  xpath=//*[@id="ldapSearchDN"]  cn=admin,dc=example,dc=com
+    Sleep  1
+    Input Text  xpath=//*[@id="ldapSearchPwd"]  admin
+    Sleep  1
+    Input Text  xpath=//*[@id="ldapBaseDN"]  dc=example,dc=com
+    Sleep  1
+    Input Text  xpath=//*[@id="ldapUid"]  cn
+    Sleep  1
+
+    # default is checked, click test connection to verify fail as no cert.
+    Click Element  xpath=${test_ldap_xpath}
+    Sleep  1
+    Wait Until Page Contains  Failed to verify LDAP server with error
+    Sleep  5
+
+    Disable Ldap Verify Cert Checkbox
+    # ldap checkbox unchecked, click test connection to verify success.
+    Sleep  1
+    Click Element  xpath=${test_ldap_xpath}
+    Capture Page Screenshot
+    Wait Until Page Contains  Connection to LDAP server is verified  timeout=15
+
+Disable Ldap Verify Cert Checkbox
+    Mouse Down  xpath=//*[@id="clr-checkbox-ldapVerifyCert"]
+    Mouse Up  xpath=//*[@id="clr-checkbox-ldapVerifyCert"]
+    Sleep  2
+    Capture Page Screenshot
+    Ldap Verify Cert Checkbox Should Be Disabled
+
+Ldap Verify Cert Checkbox Should Be Disabled
+    Checkbox Should Not Be Selected  xpath=//*[@id="clr-checkbox-ldapVerifyCert"]
 
 Set Pro Create Admin Only	
     #set limit to admin only
