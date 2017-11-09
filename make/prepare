@@ -162,7 +162,8 @@ uaa_clientid = rcp.get("configuration", "uaa_clientid")
 uaa_clientsecret = rcp.get("configuration", "uaa_clientsecret")
 uaa_ca_root = rcp.get("configuration", "uaa_ca_root")
 secret_key = get_secret_key(secretkey_path)
-log_rotate_days = rcp.get("configuration", "log_rotate_days")
+log_rotate_count = rcp.get("configuration", "log_rotate_count")
+log_rotate_size = rcp.get("configuration", "log_rotate_size")
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -190,7 +191,7 @@ db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
 cert_dir = os.path.join(config_dir, "nginx", "cert")
-log_conf_env = os.path.join(config_dir, "log", "env") 
+log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf") 
 
 if protocol == "https":
     target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
@@ -273,9 +274,10 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret)
 		
-render(os.path.join(templates_dir, "log", "env"),
-        log_conf_env,
-        log_rotate_days=log_rotate_days)
+render(os.path.join(templates_dir, "log", "logrotate.conf"),
+        log_rotate_config,
+        log_rotate_count=log_rotate_count,
+		log_rotate_size=log_rotate_size)
 
 print("Generated configuration file: %s" % jobservice_conf)
 shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)
