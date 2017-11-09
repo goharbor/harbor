@@ -12,9 +12,6 @@ type Sourcer struct {
 	adaptors map[string]registry.Adaptor
 }
 
-//ReplicationSourcer is default sourcer for replication service.
-var ReplicationSourcer = NewSourcer()
-
 //NewSourcer is the constructor of Sourcer
 func NewSourcer() *Sourcer {
 	return &Sourcer{
@@ -36,9 +33,4 @@ func (sc *Sourcer) GetAdaptor(kind string) registry.Adaptor {
 	}
 
 	return sc.adaptors[kind]
-}
-
-//Init the adaptors
-func Init() {
-	ReplicationSourcer.Init()
 }
