@@ -8,13 +8,24 @@ const (
 	//FilterItemKindTag : Kind of filter item is 'tag'
 	FilterItemKindTag = "tag"
 
+	//TODO: Refactor constants
+
 	//TriggerKindManually : kind of trigger is 'manully'
 	TriggerKindManually = "manually"
-	//TriggerKindSchedule : kind of trigger is 'schedule'
-	TriggerKindSchedule = "schedule"
 	//TriggerKindImmediately : kind of trigger is 'immediately'
 	TriggerKindImmediately = "immediately"
 
 	//AdaptorKindHarbor : Kind of adaptor of Harbor
 	AdaptorKindHarbor = "Harbor"
+
+	//TriggerKindImmediate : Kind of trigger is 'Immediate'
+	TriggerKindImmediate = "Immediate"
+	//TriggerKindSchedule : Kind of trigger is 'Schedule'
+	TriggerKindSchedule = "Schedule"
+	//TriggerKindManual : Kind of trigger is 'Manual'
+	TriggerKindManual = "Manual"
+	//TriggerScheduleDaily : type of scheduling is 'daily'
+	TriggerScheduleDaily = "daily"
+	//TriggerScheduleWeekly : type of scheduling is 'weekly'
+	TriggerScheduleWeekly = "weekly"
 )
