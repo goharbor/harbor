@@ -58,13 +58,14 @@
 
 3. On the **Customize template** page, under Harbor Configure, select the authentication mode and Harbor admin password, if authentication mode is set to ldap_auth, the Harbor LDAP configure is required. 
     ![Screenshot of customize harbor](img/ovainstall/customizeharbor.png)
+    Harbor LDAP configure settings:
     ![Screenshot of customize ldap](img/ovainstall/customizeldap.png)
 
-4. On the **Customize template** page, under **System**, set the root password for the appliance VM and optionally uncheck the **Permit Root Login** checkbox. 
+4. On the **Customize template** page, under **System**, set the root password for the appliance VM and the option for **Permit Root Login**. 
 
     Setting the root password for the appliance is mandatory. 
 
-    **IMPORTANT**: You require SSH access to the vSphere Integrated Containers appliance to perform upgrades. You can also use SSH access in exceptional cases that you cannot handle through standard remote management or CLI tools. Only use SSH to access the appliance when instructed to do so in the documentation, or under the guidance of VMware GSS.
+    **IMPORTANT**: You require SSH access to the vSphere Integrated Containers appliance to perform upgrades. You can also use SSH access in exceptional cases that you cannot handle through standard remote management or CLI tools. Only use SSH to access the appliance when instructed to do so in the documentation.
     ![Screenshot of customize template system](img/ovainstall/system.png)
 
 5. Expand **Networking Properties** and optionally configure a static IP address for the appliance VM. 
@@ -75,9 +76,14 @@
 
     - Leave the text boxes blank to use auto-generated certificates.
    
-6. When the deployment completes, power on the appliance VM.
+6. When the deployment completes, refresh the current page and power on the appliance VM.
+   ![Screenshot of power on](img/ovainstall/poweron.png)
+   Press Enter to login
+   ![Screenshot of login root](img/ovainstall/poweron2.png)
 
-    If you deployed the appliance so that it obtains its address via DHCP, go to the **Summary** tab for the appliance VM and note the address.
+   Login to the console with root username and password, and get the harbor appliance address.
+
+   If you deployed the appliance so that it obtains its address via DHCP, go to the **Summary** tab for the appliance VM and note the address.
 
 7. (Optional) If you provided a static network configuration, view the network status of the appliance.
 
@@ -87,9 +93,10 @@
     The network status shows whether the network settings that you provided during the deployment match the settings with which the appliance is running. If there are mismatches, power off the appliance and select **Edit Settings** > **vApp Options** to correct the network settings.
     
 8. In a browser, go to  https://<i>harbor_appliance_address</i> and when prompted, enter the username admin and the password of admin input in step 3
-
+   ![Screenshot of login harbor](img/ovainstall/login.png)
 
 **Result**
 
 - You see the Harbor administration console
-  ![add memeber](img/add_member.png)
+
+    ![Screenshot of after login](img/ovainstall/afterlogin.png)
