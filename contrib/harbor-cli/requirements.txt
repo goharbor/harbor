@@ -1,0 +1,10 @@
+# The order of packages is significant, because pip processes them in the order
+# of appearance. Changing the order has an impact on the overall integration
+# process, which may cause wedges in the gate later.
+pbr>=1.6 # Apache-2.0
+oslo.serialization>=1.10.0 # Apache-2.0
+oslo.utils>=3.11.0 # Apache-2.0
+PrettyTable<0.8,>=0.7 # BSD
+requests>=2.10.0 # Apache-2.0
+simplejson>=2.2.0 # MIT
+six>=1.9.0 # MIT
