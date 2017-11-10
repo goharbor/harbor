@@ -69,6 +69,14 @@ Cannot Pull image
     Log  ${output}
     Should Not Be Equal As Integers  ${rc}  0
 
+Cannot Pull Unsigned Image
+    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}  
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pass} ${ip}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/${proj}/${imagewithtag}
+    Should Contain  ${output}  The image is not signed in Notary
+    Should Not Be Equal As Integers  ${rc}  0
+
 Cannot Push image
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}
     Log To Console  \nRunning docker push ${image}...

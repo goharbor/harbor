@@ -35,14 +35,13 @@ services:
     networks:
       - harbor-clair
     container_name: clair
-    image: vmware/clair-photon:v2.0.1
+    image: vmware/clair:v2.0.1-photon
     restart: always
     cpu_quota: 150000
     depends_on:
       - postgres
     volumes:
       - ./common/config/clair:/config
-    command: [-config, /config/config.yaml]
     logging:
       driver: "syslog"
       options:  
