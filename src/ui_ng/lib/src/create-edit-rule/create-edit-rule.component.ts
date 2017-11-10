@@ -422,6 +422,7 @@ export class CreateEditRuleComponent implements AfterViewChecked {
       pingTarget.endpoint = this.createEditRule.endpointUrl || '';
       pingTarget.username = this.createEditRule.username;
       pingTarget.password = this.createEditRule.password;
+      pingTarget.insecure = this.createEditRule.insecure;
     } else {
       pingTarget.id = this.createEditRule.endpointId;
     }
