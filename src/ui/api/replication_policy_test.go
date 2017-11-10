@@ -15,10 +15,14 @@ package api
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/tests/apitests/apilib"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/replication"
+	"github.com/vmware/harbor/tests/apitests/apilib"
 )
 
 const (
@@ -37,7 +41,19 @@ func TestPoliciesPost(t *testing.T) {
 	//add target
 	CommonAddTarget()
 	targetID := int64(CommonGetTarget())
-	repPolicy := &apilib.RepPolicyPost{int64(1), targetID, addPolicyName}
+	repPolicy := &apilib.RepPolicyPost{int64(1), targetID, addPolicyName,
+		&models.RepTrigger{
+			Type: replication.TriggerKindSchedule,
+			Params: map[string]interface{}{
+				"date": "2:00",
+			},
+		},
+		[]*models.RepFilter{
+			&models.RepFilter{
+				Type:  replication.FilterItemKindRepository,
+				Value: "library/ubuntu*",
+			},
+		}}
 
 	fmt.Println("Testing Policies Post API")
 
@@ -52,7 +68,7 @@ func TestPoliciesPost(t *testing.T) {
 	}
 
 	//-------------------case 2 : response code = 409------------------------//
-	fmt.Println("case 1 : response code = 409:policy already exists")
+	fmt.Println("case 2 : response code = 409:policy already exists")
 	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
 	if err != nil {
 		t.Error("Error while add policy", err.Error())
@@ -108,7 +124,7 @@ func TestPoliciesPost(t *testing.T) {
 	}
 
 	//-------------------case 7 : response code = 400------------------------//
-	fmt.Println("case 6 : response code = 400:target_id does not exist.")
+	fmt.Println("case 7 : response code = 400:target_id does not exist.")
 
 	repPolicy.TargetId = int64(1111)
 	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
@@ -119,6 +135,20 @@ func TestPoliciesPost(t *testing.T) {
 		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
 	}
 
+	fmt.Println("case 8 : response code = 400: invalid filter")
+	repPolicy = &apilib.RepPolicyPost{int64(1), targetID, addPolicyName,
+		&models.RepTrigger{
+			Type: replication.TriggerKindManually,
+		},
+		[]*models.RepFilter{
+			&models.RepFilter{
+				Type:  "replication",
+				Value: "",
+			},
+		}}
+	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
+	require.Nil(t, err)
+	assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
 }
 
 func TestPoliciesList(t *testing.T) {

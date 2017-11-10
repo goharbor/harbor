@@ -711,7 +711,10 @@ func (a testapi) AddPolicy(authInfo usrInfo, repPolicy apilib.RepPolicyPost) (in
 	_sling = _sling.Path(path)
 	_sling = _sling.BodyJSON(repPolicy)
 
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if httpStatusCode != http.StatusCreated {
+		log.Println(string(body))
+	}
 	return httpStatusCode, err
 }
 
