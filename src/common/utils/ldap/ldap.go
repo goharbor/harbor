@@ -410,18 +410,23 @@ func SearchAndImportUser(username string) (int64, error) {
 	var err error
 	var userID int64
 
-	ldapConf, err := GetSystemLdapConf()
+	ldapConfs, err := GetSystemLdapConf()
 	if err != nil {
 		log.Errorf("Can not get ldap configuration, error %v", err)
 		return 0, err
 	}
-
-	ldapConf.LdapFilter = MakeFilter(username, ldapConf.LdapFilter, ldapConf.LdapUID)
-	log.Debugf("Search with LDAP with filter %s", ldapConf.LdapFilter)
-
-	ldapUsers, err := SearchUser(ldapConf)
+	ldapConfs, err = ValidateLdapConf(ldapConfs)
 	if err != nil {
-		log.Errorf("Can not search ldap, error %v, filter: %s", err, ldapConf.LdapFilter)
+		log.Errorf("Invalid ldap request, error: %v", err)
+		return 0, err
+	}
+
+	ldapConfs.LdapFilter = MakeFilter(username, ldapConfs.LdapFilter, ldapConfs.LdapUID)
+	log.Debugf("Search with LDAP with filter %s", ldapConfs.LdapFilter)
+
+	ldapUsers, err := SearchUser(ldapConfs)
+	if err != nil {
+		log.Errorf("Can not search ldap, error %v, filter: %s", err, ldapConfs.LdapFilter)
 		return 0, err
 	}
 
