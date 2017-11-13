@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/tests/apitests/apilib"
 )
 
@@ -38,7 +39,7 @@ func TestLogGet(t *testing.T) {
 	fmt.Println("add the project first.")
 	project := apilib.ProjectReq{
 		ProjectName: "project_for_test_log",
-		Public:      1,
+		Metadata:    map[string]string{models.ProMetaPublic: "true"},
 	}
 
 	reply, err := apiTest.ProjectsPost(*testUser, project)

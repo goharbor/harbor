@@ -75,6 +75,17 @@ func (b *BaseAPI) HandleBadRequest(text string) {
 	b.RenderError(http.StatusBadRequest, text)
 }
 
+// HandleConflict ...
+func (b *BaseAPI) HandleConflict(text ...string) {
+	msg := ""
+	if len(text) > 0 {
+		msg = text[0]
+	}
+	log.Infof("conflict: %s", msg)
+
+	b.RenderError(http.StatusConflict, msg)
+}
+
 // HandleInternalServerError ...
 func (b *BaseAPI) HandleInternalServerError(text string) {
 	log.Error(text)

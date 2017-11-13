@@ -23,6 +23,8 @@ import { AppConfigService } from '../../app-config.service';
 
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
+import {TranslateService} from "@ngx-translate/core";
+import {SkinableConfig} from "../../skinable-config.service";
 
 const deBounceTime = 500; //ms
 
@@ -43,16 +45,31 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     isResPanelOpened: boolean = false;
     searchTerm: string = "";
 
-    //Placeholder text
-    placeholderText: string = "GLOBAL_SEARCH.PLACEHOLDER";
+    placeholderText: string;
 
     constructor(
         private searchTrigger: SearchTriggerService,
         private router: Router,
-        private appConfigService: AppConfigService) { }
+        private appConfigService: AppConfigService,
+        private translate: TranslateService,
+        private skinableConfig: SkinableConfig) {
+    }
 
-    //Implement ngOnIni
     ngOnInit(): void {
+        //custom skin
+        let customSkinObj = this.skinableConfig.getProjects();
+        if (customSkinObj && customSkinObj.projectName) {
+            this.translate.get('GLOBAL_SEARCH.PLACEHOLDER', {'param': customSkinObj.projectName}).subscribe(res => {
+                //Placeholder text
+                this.placeholderText = res;
+            });
+        }else {
+            this.translate.get('GLOBAL_SEARCH.PLACEHOLDER', {'param': 'Harbor'}).subscribe(res => {
+                //Placeholder text
+                this.placeholderText = res;
+            });
+        }
+
         this.searchSub = this.searchTerms
             .debounceTime(deBounceTime)
             //.distinctUntilChanged()

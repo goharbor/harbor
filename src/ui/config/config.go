@@ -15,7 +15,7 @@
 package config
 
 import (
-	//"crypto/tls"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -62,7 +62,7 @@ func Init() error {
 	//init key provider
 	initKeyProvider()
 
-	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
+	adminServerURL := os.Getenv("ADMINSERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}
@@ -108,38 +108,32 @@ func initSecretStore() {
 func initProjectManager() {
 	var driver pmsdriver.PMSDriver
 	if WithAdmiral() {
-		// TODO add support for admiral
-		/*
-			// integration with admiral
-			log.Info("initializing the project manager based on PMS...")
-			// TODO read ca/cert file and pass it to the TLS config
-			AdmiralClient = &http.Client{
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{
-						InsecureSkipVerify: true,
-					},
+		// integration with admiral
+		log.Info("initializing the project manager based on PMS...")
+		// TODO read ca/cert file and pass it to the TLS config
+		AdmiralClient = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
 				},
-			}
+			},
+		}
 
-			path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
-			if len(path) == 0 {
-				path = defaultTokenFilePath
-			}
-			log.Infof("service token file path: %s", path)
-			TokenReader = &admiral.FileTokenReader{
-				Path: path,
-			}
-			GlobalProjectMgr = admiral.NewProjectManager(AdmiralClient,
-			AdmiralEndpoint(), TokenReader)
-		*/
-		GlobalProjectMgr = nil
+		path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
+		if len(path) == 0 {
+			path = defaultTokenFilePath
+		}
+		log.Infof("service token file path: %s", path)
+		TokenReader = &admiral.FileTokenReader{
+			Path: path,
+		}
+		driver = admiral.NewDriver(AdmiralClient, AdmiralEndpoint(), TokenReader)
 	} else {
 		// standalone
 		log.Info("initializing the project manager based on local database...")
 		driver = local.NewDriver()
-		// TODO move the statement out of the else block when admiral driver is completed
-		GlobalProjectMgr = promgr.NewDefaultProjectManager(driver, true)
 	}
+	GlobalProjectMgr = promgr.NewDefaultProjectManager(driver, true)
 
 }
 
@@ -250,12 +244,26 @@ func RegistryURL() (string, error) {
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	return "http://jobservice"
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.")
+
+		return "http://jobservice"
+	}
+	return strings.TrimSuffix(cfg[common.JobServiceURL].(string), "/")
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
 func InternalTokenServiceEndpoint() string {
-	return "http://ui/service/token"
+	uiURL := "http://ui"
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Warningf("Failed to Get job service UI URL from backend, error: %v, will use default value.")
+
+	} else {
+		uiURL = cfg[common.UIURL].(string)
+	}
+	return strings.TrimSuffix(uiURL, "/") + "/service/token"
 }
 
 // InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
@@ -280,15 +288,6 @@ func OnlyAdminCreateProject() (bool, error) {
 		return true, err
 	}
 	return cfg[common.ProjectCreationRestriction].(string) == common.ProCrtRestrAdmOnly, nil
-}
-
-// VerifyRemoteCert returns bool value.
-func VerifyRemoteCert() (bool, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return true, err
-	}
-	return cfg[common.VerifyRemoteCert].(bool), nil
 }
 
 // Email returns email server settings
@@ -433,6 +432,9 @@ func UAASettings() (*models.UAASettings, error) {
 		Endpoint:     cfg[common.UAAEndpoint].(string),
 		ClientID:     cfg[common.UAAClientID].(string),
 		ClientSecret: cfg[common.UAAClientSecret].(string),
+	}
+	if len(os.Getenv("UAA_CA_ROOT")) != 0 {
+		us.CARootPath = os.Getenv("UAA_CA_ROOT")
 	}
 	return us, nil
 }

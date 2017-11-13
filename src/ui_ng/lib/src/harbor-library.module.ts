@@ -24,6 +24,7 @@ import { VULNERABILITY_DIRECTIVES } from './vulnerability-scanning/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from './push-image/index';
 import { CONFIGURATION_DIRECTIVES } from './config/index';
 import { JOB_LOG_VIEWER_DIRECTIVES } from './job-log-viewer/index';
+import { PROJECT_POLICY_CONFIG_DIRECTIVES } from './project-policy-config/index';
 
 import {
   SystemInfoService,
@@ -43,7 +44,9 @@ import {
   ConfigurationService,
   ConfigurationDefaultService,
   JobLogService,
-  JobLogDefaultService
+  JobLogDefaultService,
+  ProjectService,
+  ProjectDefaultService,
 } from './service/index';
 import {
   ErrorHandler,
@@ -68,6 +71,7 @@ export const DefaultServiceConfig: IServiceConfig = {
   replicationRuleEndpoint: "/api/policies/replication",
   replicationJobEndpoint: "/api/jobs/replication",
   vulnerabilityScanningBaseEndpoint: "/api/repositories",
+  projectPolicyEndpoint: "/api/projects/configs",
   enablei18Support: false,
   defaultLang: DEFAULT_LANG,
   langCookieKey: DEFAULT_LANG_COOKIE_KEY,
@@ -118,7 +122,10 @@ export interface HarborModuleConfig {
   configService?: Provider,
 
   //Service implementation for job log
-  jobLogService?: Provider
+  jobLogService?: Provider,
+
+  //Service implementation for project policy
+  projectPolicyService?: Provider,
 }
 
 /**
@@ -162,7 +169,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     VULNERABILITY_DIRECTIVES,
     PUSH_IMAGE_BUTTON_DIRECTIVES,
     CONFIGURATION_DIRECTIVES,
-    JOB_LOG_VIEWER_DIRECTIVES
+    JOB_LOG_VIEWER_DIRECTIVES,
+    PROJECT_POLICY_CONFIG_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -183,7 +191,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     PUSH_IMAGE_BUTTON_DIRECTIVES,
     CONFIGURATION_DIRECTIVES,
     JOB_LOG_VIEWER_DIRECTIVES,
-    TranslateModule
+    TranslateModule,
+    PROJECT_POLICY_CONFIG_DIRECTIVES
   ],
   providers: []
 })
@@ -204,6 +213,7 @@ export class HarborLibraryModule {
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
+        config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         //Do initializing
         TranslateServiceInitializer,
         {
@@ -232,6 +242,7 @@ export class HarborLibraryModule {
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
+        config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         ChannelService
       ]
     };

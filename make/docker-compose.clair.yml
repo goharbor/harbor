@@ -17,7 +17,7 @@ services:
         aliases:
           - postgres
     container_name: clair-db
-    image: vmware/postgresql:9.6.4-photon
+    image: vmware/postgresql:9.6.5-photon
     restart: always
     depends_on:
       - log
@@ -42,7 +42,6 @@ services:
       - postgres
     volumes:
       - ./common/config/clair:/config
-    command: [-config, /config/config.yaml]
     logging:
       driver: "syslog"
       options:  

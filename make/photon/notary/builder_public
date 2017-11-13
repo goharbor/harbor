@@ -35,7 +35,7 @@ cur=$PWD
 
 # the temp folder to store notary source code...
 TEMP=`mktemp -d /$TMPDIR/notary.XXXXXX`
-git clone -b $VERSION https://github.com/docker/notary.git $TEMP
+git clone -b $VERSION https://github.com/theupdateframework/notary.git $TEMP
 
 echo 'build the notary binary bases on the golang:1.7.3...'
 cp binary.Dockerfile $TEMP 

@@ -17,9 +17,12 @@ package uaa
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
+	"github.com/vmware/harbor/src/common/utils/log"
 	"golang.org/x/oauth2"
 )
 
@@ -61,8 +64,18 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 	tc := &tls.Config{
 		InsecureSkipVerify: cfg.SkipTLSVerify,
 	}
-	if len(cfg.CARootPath) > 0 {
-		//TODO
+	if !cfg.SkipTLSVerify && len(cfg.CARootPath) > 0 {
+		content, err := ioutil.ReadFile(cfg.CARootPath)
+		if err != nil {
+			return nil, err
+		}
+		pool := x509.NewCertPool()
+		//Do not throw error if the certificate is malformed, so we can put a place holder.
+		if ok := pool.AppendCertsFromPEM(content); !ok {
+			log.Warningf("Failed to append certificate to cert pool, cert path: %s", cfg.CARootPath)
+		} else {
+			tc.RootCAs = pool
+		}
 	}
 	hc := &http.Client{
 		Transport: &http.Transport{

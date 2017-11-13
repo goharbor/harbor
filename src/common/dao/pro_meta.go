@@ -22,8 +22,6 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 )
 
-// Using raw sql instead of CRUD objects as beego does not support composite primary key
-
 // AddProjectMetadata adds metadata for a project
 func AddProjectMetadata(meta *models.ProjectMetadata) error {
 	now := time.Now()
@@ -90,4 +88,13 @@ func paramPlaceholder(n int) string {
 		placeholders = append(placeholders, "?")
 	}
 	return strings.Join(placeholders, ",")
+}
+
+// ListProjectMetadata ...
+func ListProjectMetadata(name, value string) ([]*models.ProjectMetadata, error) {
+	sql := `select * from project_metadata 
+				where name = ? and value = ? and deleted = 0`
+	metadatas := []*models.ProjectMetadata{}
+	_, err := GetOrmer().Raw(sql, name, value).QueryRows(&metadatas)
+	return metadatas, err
 }

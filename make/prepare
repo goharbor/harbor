@@ -119,6 +119,7 @@ email_usr = rcp.get("configuration", "email_username")
 email_pwd = rcp.get("configuration", "email_password")
 email_from = rcp.get("configuration", "email_from")
 email_ssl = rcp.get("configuration", "email_ssl")
+email_insecure = rcp.get("configuration", "email_insecure")
 harbor_admin_password = rcp.get("configuration", "harbor_admin_password")
 auth_mode = rcp.get("configuration", "auth_mode")
 ldap_url = rcp.get("configuration", "ldap_url")
@@ -149,7 +150,6 @@ if protocol == "https":
 customize_crt = rcp.get("configuration", "customize_crt")
 max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
-verify_remote_cert = rcp.get("configuration", "verify_remote_cert")
 proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
 secretkey_path = rcp.get("configuration", "secretkey_path")
 if rcp.has_option("configuration", "admiral_url"):
@@ -160,7 +160,10 @@ pg_password = rcp.get("configuration", "clair_db_password")
 uaa_endpoint = rcp.get("configuration", "uaa_endpoint")
 uaa_clientid = rcp.get("configuration", "uaa_clientid")
 uaa_clientsecret = rcp.get("configuration", "uaa_clientsecret")
+uaa_ca_root = rcp.get("configuration", "uaa_ca_root")
 secret_key = get_secret_key(secretkey_path)
+log_rotate_count = rcp.get("configuration", "log_rotate_count")
+log_rotate_size = rcp.get("configuration", "log_rotate_size")
 ########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -171,11 +174,13 @@ if not os.path.exists(adminserver_config_dir):
     os.makedirs(os.path.join(config_dir, "adminserver"))
 
 ui_config_dir = prep_conf_dir(config_dir,"ui")
+ui_certificates_dir =  prep_conf_dir(ui_config_dir,"certificates")
 db_config_dir = prep_conf_dir(config_dir, "db")
 job_config_dir = prep_conf_dir(config_dir, "jobservice")
 registry_config_dir = prep_conf_dir(config_dir, "registry")
 nginx_config_dir = prep_conf_dir (config_dir, "nginx")
 nginx_conf_d = prep_conf_dir(nginx_config_dir, "conf.d")
+log_config_dir = prep_conf_dir (config_dir, "log")
 
 adminserver_conf_env = os.path.join(config_dir, "adminserver", "env")
 ui_conf_env = os.path.join(config_dir, "ui", "env")
@@ -185,7 +190,8 @@ registry_conf = os.path.join(config_dir, "registry", "config.yml")
 db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
-cert_dir = os.path.join(config_dir, "nginx", "cert") 
+cert_dir = os.path.join(config_dir, "nginx", "cert")
+log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf") 
 
 if protocol == "https":
     target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
@@ -201,6 +207,12 @@ if protocol == "https":
 else:
     render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
         nginx_conf)
+
+if auth_mode == "uaa_auth":
+    if os.path.isfile(uaa_ca_root):
+        shutil.copy2(uaa_ca_root, os.path.join(ui_certificates_dir, "uaa_ca.pem"))
+    else:
+        raise Exception("Error: Invalid path for uaa ca root: %s" % uaa_ca_root)
 		
 render(os.path.join(templates_dir, "adminserver", "env"),
         adminserver_conf_env,
@@ -224,11 +236,11 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         email_usr=email_usr,
         email_pwd=email_pwd,
         email_ssl=email_ssl,
+        email_insecure=email_insecure,
         email_from=email_from,
         email_identity=email_identity,
         harbor_admin_password=harbor_admin_password,
         project_creation_restriction=proj_cre_restriction,
-        verify_remote_cert=verify_remote_cert,
         max_job_workers=max_job_workers,
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret,
@@ -261,6 +273,11 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         job_conf_env,
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret)
+		
+render(os.path.join(templates_dir, "log", "logrotate.conf"),
+        log_rotate_config,
+        log_rotate_count=log_rotate_count,
+		log_rotate_size=log_rotate_size)
 
 print("Generated configuration file: %s" % jobservice_conf)
 shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions, URLSearchParams } from '@angular/http';
+import { Http, URLSearchParams } from '@angular/http';
 
 import { AuditLog } from './audit-log';
 
@@ -20,45 +20,43 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
+import {buildHttpRequestOptions} from '../shared/shared.utils';
+import {RequestQueryParams} from 'harbor-ui';
 
-export const logEndpoint = "/api/logs";
+export const logEndpoint = '/api/logs';
 
 @Injectable()
 export class AuditLogService {
-  httpOptions = new RequestOptions({
-    headers: new Headers({
-      "Content-Type": 'application/json',
-      "Accept": 'application/json'
-    })
-  });
 
   constructor(private http: Http) {}
 
   listAuditLogs(queryParam: AuditLog): Observable<any> {
     let params: URLSearchParams = new URLSearchParams(queryParam.keywords);
-    if(queryParam.begin_timestamp) {
-      params.set('begin_timestamp', <string>queryParam.begin_timestamp);    
+    if (queryParam.begin_timestamp) {
+      params.set('begin_timestamp', <string>queryParam.begin_timestamp);
     }
-    if(queryParam.end_timestamp) {
+    if (queryParam.end_timestamp) {
       params.set('end_timestamp', <string>queryParam.end_timestamp);
     }
-    if(queryParam.username) {
+    if (queryParam.username) {
       params.set('username', queryParam.username);
     }
-    if(queryParam.page) {
+    if (queryParam.page) {
       params.set('page', <string>queryParam.page);
     }
-    if(queryParam.page_size) {
+    if (queryParam.page_size) {
       params.set('page_size', <string>queryParam.page_size);
     }
     return this.http
-      .get(`/api/projects/${queryParam.project_id}/logs`, {params: params})
+      .get(`/api/projects/${queryParam.project_id}/logs`, buildHttpRequestOptions(params))
       .map(response => response)
       .catch(error => Observable.throw(error));
   }
 
   getRecentLogs(lines: number): Observable<AuditLog[]> {
-    return this.http.get(logEndpoint + "?page_size=" + lines, this.httpOptions)
+    let params: RequestQueryParams = new RequestQueryParams();
+    params.set('page_size', '' + lines);
+    return this.http.get(logEndpoint,  buildHttpRequestOptions(params))
       .map(response => response.json() as AuditLog[])
       .catch(error => Observable.throw(error));
   }

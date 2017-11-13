@@ -15,31 +15,91 @@
 package models
 
 import (
+	"strings"
 	"time"
 )
 
 // Project holds the details of a project.
-// TODO remove useless attrs
 type Project struct {
-	ProjectID       int64             `orm:"pk;auto;column(project_id)" json:"project_id"`
-	OwnerID         int               `orm:"column(owner_id)" json:"owner_id"`
-	Name            string            `orm:"column(name)" json:"name"`
-	CreationTime    time.Time         `orm:"column(creation_time)" json:"creation_time"`
-	UpdateTime      time.Time         `orm:"update_time" json:"update_time"`
-	Deleted         int               `orm:"column(deleted)" json:"deleted"`
-	CreationTimeStr string            `orm:"-" json:"creation_time_str"`
-	OwnerName       string            `orm:"-" json:"owner_name"`
-	Togglable       bool              `orm:"-"`
-	Role            int               `orm:"-" json:"current_user_role_id"`
-	RepoCount       int               `orm:"-" json:"repo_count"`
-	Metadata        map[string]string `orm:"-" json:"metadata"`
+	ProjectID    int64             `orm:"pk;auto;column(project_id)" json:"project_id"`
+	OwnerID      int               `orm:"column(owner_id)" json:"owner_id"`
+	Name         string            `orm:"column(name)" json:"name"`
+	CreationTime time.Time         `orm:"column(creation_time)" json:"creation_time"`
+	UpdateTime   time.Time         `orm:"update_time" json:"update_time"`
+	Deleted      int               `orm:"column(deleted)" json:"deleted"`
+	OwnerName    string            `orm:"-" json:"owner_name"`
+	Togglable    bool              `orm:"-" json:"togglable"`
+	Role         int               `orm:"-" json:"current_user_role_id"`
+	RepoCount    int               `orm:"-" json:"repo_count"`
+	Metadata     map[string]string `orm:"-" json:"metadata"`
+}
 
-	// TODO remove
-	Public                                     int    `orm:"column(public)" json:"public"`
-	EnableContentTrust                         bool   `orm:"-" json:"enable_content_trust"`
-	PreventVulnerableImagesFromRunning         bool   `orm:"-" json:"prevent_vulnerable_images_from_running"`
-	PreventVulnerableImagesFromRunningSeverity string `orm:"-" json:"prevent_vulnerable_images_from_running_severity"`
-	AutomaticallyScanImagesOnPush              bool   `orm:"-" json:"automatically_scan_images_on_push"`
+// GetMetadata ...
+func (p *Project) GetMetadata(key string) (string, bool) {
+	if len(p.Metadata) == 0 {
+		return "", false
+	}
+	value, exist := p.Metadata[key]
+	return value, exist
+}
+
+// SetMetadata ...
+func (p *Project) SetMetadata(key, value string) {
+	if p.Metadata == nil {
+		p.Metadata = map[string]string{}
+	}
+	p.Metadata[key] = value
+}
+
+// IsPublic ...
+func (p *Project) IsPublic() bool {
+	public, exist := p.GetMetadata(ProMetaPublic)
+	if !exist {
+		return false
+	}
+
+	return isTrue(public)
+}
+
+// ContentTrustEnabled ...
+func (p *Project) ContentTrustEnabled() bool {
+	enabled, exist := p.GetMetadata(ProMetaEnableContentTrust)
+	if !exist {
+		return false
+	}
+	return isTrue(enabled)
+}
+
+// VulPrevented ...
+func (p *Project) VulPrevented() bool {
+	prevent, exist := p.GetMetadata(ProMetaPreventVul)
+	if !exist {
+		return false
+	}
+	return isTrue(prevent)
+}
+
+// Severity ...
+func (p *Project) Severity() string {
+	severity, exist := p.GetMetadata(ProMetaSeverity)
+	if !exist {
+		return ""
+	}
+	return severity
+}
+
+// AutoScan ...
+func (p *Project) AutoScan() bool {
+	auto, exist := p.GetMetadata(ProMetaAutoScan)
+	if !exist {
+		return false
+	}
+	return isTrue(auto)
+}
+
+func isTrue(value string) bool {
+	return strings.ToLower(value) == "true" ||
+		strings.ToLower(value) == "1"
 }
 
 // ProjectSorter holds an array of projects
@@ -79,6 +139,7 @@ type ProjectQueryParam struct {
 	Public     *bool        // the project is public or not, can be ture, false and nil
 	Member     *MemberQuery // the member of project
 	Pagination *Pagination  // pagination information
+	ProjectIDs []int64      // project ID list
 }
 
 // MemberQuery fitler by member's username and role
@@ -103,12 +164,9 @@ type BaseProjectCollection struct {
 
 // ProjectRequest holds informations that need for creating project API
 type ProjectRequest struct {
-	Name                                       string `json:"project_name"`
-	Public                                     int    `json:"public"`
-	EnableContentTrust                         bool   `json:"enable_content_trust"`
-	PreventVulnerableImagesFromRunning         bool   `json:"prevent_vulnerable_images_from_running"`
-	PreventVulnerableImagesFromRunningSeverity string `json:"prevent_vulnerable_images_from_running_severity"`
-	AutomaticallyScanImagesOnPush              bool   `json:"automatically_scan_images_on_push"`
+	Name     string            `json:"project_name"`
+	Public   *int              `json:"public"` //deprecated, reserved for project creation in replication
+	Metadata map[string]string `json:"metadata"`
 }
 
 // ProjectQueryResult ...

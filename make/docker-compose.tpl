@@ -6,8 +6,9 @@ services:
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/:z
+      - ./common/config/log/:/etc/logrotate.d/:z
     ports:
-      - 127.0.0.1:1514:514
+      - 127.0.0.1:1514:10514
     networks:
       - harbor
   registry:
@@ -75,6 +76,7 @@ services:
     volumes:
       - ./common/config/ui/app.conf:/etc/ui/app.conf:z
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
+      - ./common/config/ui/certificates/:/etc/ui/certifates/
       - /data/secretkey:/etc/ui/key:z
       - /data/ca_download/:/etc/ui/ca/:z
       - /data/psc/:/etc/ui/token/:z

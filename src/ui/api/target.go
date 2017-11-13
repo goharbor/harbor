@@ -58,13 +58,8 @@ func (t *TargetAPI) Prepare() {
 	}
 }
 
-func (t *TargetAPI) ping(endpoint, username, password string) {
-	verify, err := config.VerifyRemoteCert()
-	if err != nil {
-		log.Errorf("failed to check whether insecure or not: %v", err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-	registry, err := newRegistryClient(endpoint, !verify, username, password)
+func (t *TargetAPI) ping(endpoint, username, password string, insecure bool) {
+	registry, err := newRegistryClient(endpoint, insecure, username, password)
 	if err != nil {
 		// timeout, dns resolve error, connection refused, etc.
 		if urlErr, ok := err.(*url.Error); ok {
@@ -105,6 +100,7 @@ func (t *TargetAPI) PingByID() {
 	endpoint := target.URL
 	username := target.Username
 	password := target.Password
+	insecure := target.Insecure
 	if len(password) != 0 {
 		password, err = utils.ReversibleDecrypt(password, t.secretKey)
 		if err != nil {
@@ -112,7 +108,7 @@ func (t *TargetAPI) PingByID() {
 			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		}
 	}
-	t.ping(endpoint, username, password)
+	t.ping(endpoint, username, password, insecure)
 }
 
 // Ping validates whether the target is reachable and whether the credential is valid
@@ -121,6 +117,7 @@ func (t *TargetAPI) Ping() {
 		Endpoint string `json:"endpoint"`
 		Username string `json:"username"`
 		Password string `json:"password"`
+		Insecure bool   `json:"insecure"`
 	}{}
 	t.DecodeJSONReq(&req)
 
@@ -128,7 +125,7 @@ func (t *TargetAPI) Ping() {
 		t.CustomAbort(http.StatusBadRequest, "endpoint is required")
 	}
 
-	t.ping(req.Endpoint, req.Username, req.Password)
+	t.ping(req.Endpoint, req.Username, req.Password, req.Insecure)
 }
 
 // Get ...
@@ -255,6 +252,7 @@ func (t *TargetAPI) Put() {
 		Endpoint *string `json:"endpoint"`
 		Username *string `json:"username"`
 		Password *string `json:"password"`
+		Insecure *bool   `json:"insecure"`
 	}{}
 	t.DecodeJSONReq(&req)
 
@@ -272,6 +270,9 @@ func (t *TargetAPI) Put() {
 	}
 	if req.Password != nil {
 		target.Password = *req.Password
+	}
+	if req.Insecure != nil {
+		target.Insecure = *req.Insecure
 	}
 
 	t.Validate(target)

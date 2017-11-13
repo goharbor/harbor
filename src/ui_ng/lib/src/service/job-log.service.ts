@@ -5,7 +5,7 @@ import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { Http, RequestOptions } from '@angular/http';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
-import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';
+import { buildHttpRequestOptions, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from '../utils';
 
 /**
  * Define the service methods to handle the job log related things.
@@ -53,7 +53,7 @@ export class JobLogDefaultService extends JobLogService {
     }
 
     _getJobLog(logUrl: string): Observable<string> | Promise<string> | string {
-        return this.http.get(logUrl).toPromise()
+        return this.http.get(logUrl, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.text())
             .catch(error => Promise.reject(error));
     }

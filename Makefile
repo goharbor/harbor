@@ -84,9 +84,9 @@ NOTARYFLAG=false
 REGISTRYVERSION=2.6.2-photon
 NGINXVERSION=1.11.13
 PHOTONVERSION=1.0
-NOTARYVERSION=server-0.5.0
-NOTARYSIGNERVERSION=signer-0.5.0
-MARIADBVERSION=mariadb-10.1.10
+NOTARYVERSION=server-0.5.1
+NOTARYSIGNERVERSION=signer-0.5.1
+MARIADBVERSION=10.2.8
 HTTPPROXY=
 REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
@@ -94,7 +94,7 @@ NEWCLARITYVERSION=
 #clair parameters
 CLAIRVERSION=v2.0.1-photon
 CLAIRFLAG=false
-CLAIRDBVERSION=9.6.4-photon
+CLAIRDBVERSION=9.6.5-photon
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
@@ -214,7 +214,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 # migrator
-MIGRATORVERSION=1.2
+MIGRATORVERSION=1.3
 MIGRATORFLAG=false
 
 # cmds
@@ -224,7 +224,7 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		vmware/nginx-photon:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
-		photon:$(PHOTONVERSION)
+		vmware/photon:$(PHOTONVERSION)
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
@@ -241,7 +241,7 @@ DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
 	DOCKERSAVE_PARA+= vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) \
-				vmware/harbor-notary-db:$(MARIADBVERSION)
+				vmware/mariadb-photon:$(MARIADBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
@@ -313,7 +313,7 @@ prepare:
 
 build_common: version
 	@echo "buildging db container for photon..."
-	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
+	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) --pull -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
 
 build_photon: build_common
@@ -371,7 +371,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 		echo "pulling notary and harbor-notary-db..."; \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
 		$(DOCKERPULL) vmware/notary-photon:$(NOTARYSIGNERVERSION); \
-		$(DOCKERPULL) vmware/harbor-notary-db:$(MARIADBVERSION); \
+		$(DOCKERPULL) vmware/mariadb-photon:$(MARIADBVERSION); \
 	fi
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		echo "pulling claiy and postgres..."; \
@@ -384,7 +384,8 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	fi	
 
 	@echo "saving harbor docker image"
-	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz
+	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
+	@gzip $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
 
 	@$(TARCMD) $(PACKAGE_OFFLINE_PARA)
 	@rm -rf $(HARBORPKG)

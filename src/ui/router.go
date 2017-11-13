@@ -47,6 +47,7 @@ func initRouters() {
 	beego.Router("/harbor/projects/:id/replications", &controllers.IndexController{})
 	beego.Router("/harbor/projects/:id/members", &controllers.IndexController{})
 	beego.Router("/harbor/projects/:id/logs", &controllers.IndexController{})
+	beego.Router("/harbor/projects/:id/configs", &controllers.IndexController{})
 	beego.Router("/harbor/tags/:id/*", &controllers.IndexController{})
 
 	beego.Router("/harbor/users", &controllers.IndexController{})
@@ -70,7 +71,6 @@ func initRouters() {
 		beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
 		beego.Router("/api/projects/", &api.ProjectAPI{}, "head:Head")
 		beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
-		beego.Router("/api/projects/:id([0-9]+)/publicity", &api.ProjectAPI{}, "put:ToggleProjectPublic")
 
 		beego.Router("/api/users/:id", &api.UserAPI{}, "get:Get;delete:Delete;put:Put")
 		beego.Router("/api/users", &api.UserAPI{}, "get:List;post:Post")
@@ -87,6 +87,9 @@ func initRouters() {
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &api.ProjectAPI{}, "get:Deletable")
+	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
+	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
+	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &api.MetadataAPI{}, "put:Put;delete:Delete")
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/scanAll", &api.RepositoryAPI{}, "post:ScanAll")

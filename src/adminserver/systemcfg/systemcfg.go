@@ -111,10 +111,6 @@ var (
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
 		},
-		common.VerifyRemoteCert: &parser{
-			env:   "VERIFY_REMOTE_CERT",
-			parse: parseStringToBool,
-		},
 		common.ProjectCreationRestriction: "PROJECT_CREATION_RESTRICTION",
 		common.AdminInitialPassword:       "HARBOR_ADMIN_PASSWORD",
 		common.AdmiralEndpoint:            "ADMIRAL_URL",
@@ -127,6 +123,11 @@ var (
 			parse: parseStringToBool,
 		},
 		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
+		common.UAAEndpoint:     "UAA_ENDPOINT",
+		common.UAAClientID:     "UAA_CLIENTID",
+		common.UAAClientSecret: "UAA_CLIENTSECRET",
+		common.UIURL:           "UI_URL",
+		common.JobServiceURL:   "JOBSERVICE_URL",
 	}
 
 	// configurations need read from environment variables

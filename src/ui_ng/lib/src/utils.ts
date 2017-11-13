@@ -48,6 +48,15 @@ export const HTTP_JSON_OPTIONS: RequestOptions = new RequestOptions({
     })
 });
 
+export const HTTP_GET_OPTIONS: RequestOptions = new RequestOptions({
+    headers: new Headers({
+        "Content-Type": 'application/json',
+        "Accept": 'application/json',
+        "Cache-Control": 'no-cache',
+        "Pragma": 'no-cache'
+    })
+});
+
 /**
  * Build http request options
  * 
@@ -59,7 +68,9 @@ export function buildHttpRequestOptions(params: RequestQueryParams): RequestOpti
     let reqOptions: RequestOptions = new RequestOptions({
         headers: new Headers({
             "Content-Type": 'application/json',
-            "Accept": 'application/json'
+            "Accept": 'application/json',
+            "Cache-Control": 'no-cache',
+            "Pragma": 'no-cache'
         })
     });
 

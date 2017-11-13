@@ -18,17 +18,22 @@ import (
 	"time"
 )
 
-// keys of project metadata
+// keys of project metadata and severity values
 const (
 	ProMetaPublic             = "public"
 	ProMetaEnableContentTrust = "enable_content_trust"
-	ProMetaPreventVul         = "prevent_vul"
+	ProMetaPreventVul         = "prevent_vul" //prevent vulnerable images from being pulled
 	ProMetaSeverity           = "severity"
 	ProMetaAutoScan           = "auto_scan"
+	SeverityNone              = "negligible"
+	SeverityLow               = "low"
+	SeverityMedium            = "medium"
+	SeverityHigh              = "high"
 )
 
 // ProjectMetadata holds the metadata of a project.
 type ProjectMetadata struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	Name         string    `orm:"column(name)" json:"name"`
 	Value        string    `orm:"column(value)" json:"value"`

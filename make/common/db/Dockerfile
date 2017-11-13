@@ -1,8 +1,8 @@
-FROM mysql:5.6.35
+FROM vmware/mariadb-photon:10.2.8
 
-WORKDIR /tmp
+HEALTHCHECK CMD mysqladmin -uroot -p$MYSQL_ROOT_PASSWORD ping
 
-ADD registry.sql r.sql 
+COPY registry.sql /docker-entrypoint-initdb.d/
+COPY registry-flag.sh /docker-entrypoint-initdb.d/
+COPY upgrade.sh /docker-entrypoint-updatedb.d/
 
-ADD docker-entrypoint.sh /entrypoint.sh
-RUN chmod u+x /entrypoint.sh 

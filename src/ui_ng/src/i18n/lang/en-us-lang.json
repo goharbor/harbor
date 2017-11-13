@@ -86,7 +86,7 @@
         "LOGOUT": "Log Out"
     },
     "GLOBAL_SEARCH": {
-        "PLACEHOLDER": "Search Harbor...",
+        "PLACEHOLDER": "Search {{param}}...",
         "PLACEHOLDER_VIC": "Search Registry..."
     },
     "SIDE_NAV": {
@@ -161,7 +161,22 @@
         "REPLICATION": "Replication",
         "USERS": "Members",
         "LOGS": "Logs",
-        "PROJECTS": "Projects"
+        "PROJECTS": "Projects",
+        "CONFIG": "Configuration"
+    },
+    "PROJECT_CONFIG": {
+        "REGISTRY": "Project registry",
+        "PUBLIC_TOGGLE": "Public",
+        "PUBLIC_POLICY": "Making a project registry public will make all repositories accessible to everyone.",
+        "SECURITY": "Deployment security",
+        "CONTENT_TRUST_TOGGLE": "Enable content trust",
+        "CONTENT_TRUST_POLCIY": "Only allow verified images to be deployed.",
+        "PREVENT_VULNERABLE_TOGGLE": "Prevent vulnerable images from running.",
+        "PREVENT_VULNERABLE_1": "Prevent images with vulnerability serverity of",
+        "PREVENT_VULNERABLE_2": "and above from being deployed.",
+        "SCAN": "Vulnerability scanning",
+        "AUTOSCAN_TOGGLE": "Automatically scan images on push",
+        "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry."
     },
     "MEMBER": {
         "NEW_MEMBER": "New Member",
@@ -333,6 +348,7 @@
         "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
         "SIZE": "Size",
+        "VULNERABILITY": "Vulnerability",
         "SIGNED": "Signed",
         "AUTHOR": "Author",
         "CREATED": "Creation Time",
@@ -380,6 +396,8 @@
         "MAIL_PASSWORD": "Email Password",
         "MAIL_FROM": "Email From",
         "MAIL_SSL": "Email SSL",
+        "MAIL_INSECURE": "Verify Certificate",
+        "INSECURE_TOOLTIP": "Determine whether to verify the certificate of the Email server. Uncheck this box when the Email server uses a self-signed or untrusted certificate.",
         "SSL_TOOLTIP": "Enable SSL for email server connection",
         "VERIFY_REMOTE_CERT": "Verify Remote Cert",
         "TOKEN_EXPIRATION": "Token Expiration (Minutes)",
@@ -495,7 +513,8 @@
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability package found"
         },
         "SEVERITY": {
             "HIGH": "high",

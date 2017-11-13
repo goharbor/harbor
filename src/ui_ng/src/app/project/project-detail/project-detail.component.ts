@@ -23,14 +23,14 @@ import { RoleMapping } from '../../shared/shared.const';
 
 @Component({
     selector: 'project-detail',
-    templateUrl: "project-detail.component.html",
+    templateUrl: 'project-detail.component.html',
     styleUrls: [ 'project-detail.component.css' ]
 })
 export class ProjectDetailComponent {
 
   hasSignedIn: boolean;
   currentProject: Project;
-  
+
   isMember: boolean;
   roleName: string;
 
@@ -41,7 +41,7 @@ export class ProjectDetailComponent {
     private projectService: ProjectService) {
 
     this.hasSignedIn = this.sessionService.getCurrentUser() !== null;
-    this.route.data.subscribe(data=>{
+    this.route.data.subscribe(data => {
       this.currentProject = <Project>data['projectResolver'];
       this.isMember = this.currentProject.is_member;
       this.roleName = RoleMapping[this.currentProject.role_name];
