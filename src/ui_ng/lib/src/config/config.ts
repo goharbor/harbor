@@ -64,6 +64,7 @@ export class Configuration {
     ldap_timeout: NumberValueItem;
     ldap_uid: StringValueItem;
     ldap_url: StringValueItem;
+    ldap_verify_cert: BoolValueItem;
     email_host: StringValueItem;
     email_identity: StringValueItem;
     email_from: StringValueItem;
@@ -89,6 +90,7 @@ export class Configuration {
         this.ldap_timeout = new NumberValueItem(5, true);
         this.ldap_uid = new StringValueItem("", true);
         this.ldap_url = new StringValueItem("", true);
+        this.ldap_verify_cert = new BoolValueItem(true, true);
         this.email_host = new StringValueItem("", true);
         this.email_identity = new StringValueItem("", true);
         this.email_from = new StringValueItem("", true);
