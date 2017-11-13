@@ -161,12 +161,13 @@ Do Log Advanced Search
     #others
     Click Element  xpath=//audit-log//clr-dropdown/button
     Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Others")]
-   	Sleep  1
-    Click element  xpath=//audit-log//hbr-filter//clr-icon
-    Input Text  xpath = //audit-log//hbr-filter//input  harbor
     Sleep  1
-    ${c} =  Get Matching Xpath Count  //audit-log//clr-dg-row
-    Should be equal as integers  ${c}  0
+    Click Element  xpath=//audit-log//hbr-filter//clr-icon
+    Input Text  xpath=//audit-log//hbr-filter//input  harbor
+    Sleep  1
+    Capture Page Screenshot  LogAdvancedSearch2.png
+    ${rc} =  Get Matching Xpath Count  //audit-log//clr-dg-row
+    Should Be Equal As Integers  ${rc}  0
 
 Expand Repo
     [Arguments]  ${projectname}
