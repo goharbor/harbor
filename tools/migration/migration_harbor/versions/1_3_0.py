@@ -39,6 +39,11 @@ def upgrade():
     bind = op.get_bind()
     session = Session(bind=bind)
 
+    # This is to solve the legacy issue when upgrade from 1.2.0rc1 to 1.3.0 refered by #3077
+    username_coloumn = session.execute("show columns from user where field='username'").fetchone()
+    if username_coloumn[1] != 'varchar(255)':
+        op.alter_column('user', 'username', type_=sa.String(255))
+
     # create table project_metadata
     ProjectMetadata.__table__.create(bind)
 
