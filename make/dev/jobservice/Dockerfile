@@ -6,7 +6,15 @@ COPY . /go/src/github.com/vmware/harbor
 
 WORKDIR /go/src/github.com/vmware/harbor/src/jobservice
 
+RUN useradd -m -d /home/jobservice -s /bin/bash jobservice \
+    && chown jobservice.jobservice /go/bin/harbor_jobservice \
+    && chmod u+x /go/bin/harbor_jobservice
+
+USER jobservice
+
 RUN go build -v -a -o /go/bin/harbor_jobservice \
     && chmod u+x /go/bin/harbor_jobservice 
+
 WORKDIR /go/bin/
+
 ENTRYPOINT ["/go/bin/harbor_jobservice"]

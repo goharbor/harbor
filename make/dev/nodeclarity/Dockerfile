@@ -8,7 +8,14 @@ COPY make/dev/nodeclarity/entrypoint.sh /
 
 WORKDIR /harbor_resources
 
+RUN useradd -m -d /home/node -s /bin/bash node \
+    && chown node.node /harbor_resources \
+    && chmod u+x /harbor_resources
+
+USER node
+
 RUN npm __proxy__ install -g @angular/cli  && \
-	npm __proxy__ install && \
+    npm __proxy__ install && \
     chmod u+x /entrypoint.sh
+
 VOLUME ["/harbor_src"]

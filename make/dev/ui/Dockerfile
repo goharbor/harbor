@@ -14,7 +14,11 @@ COPY src/favicon.ico /go/bin/favicon.ico
 RUN mkdir /go/bin/harbor/
 COPY VERSION /go/bin/harbor/VERSION
 
-RUN chmod u+x /go/bin/harbor_ui
+RUN useradd -m -d /home/ui -s /bin/bash ui \
+    && chown ui.ui /go/bin/harbor_ui \
+    && chmod u+x /go/bin/harbor_ui
+
+USER ui
 
 WORKDIR /go/bin/
 ENTRYPOINT ["/go/bin/harbor_ui"]
