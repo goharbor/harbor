@@ -1,6 +1,6 @@
 {
     "name": "harbor-ui",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "description": "Harbor shared UI components based on Clarity and Angular4",
     "scripts": {
         "start": "ng serve --host 0.0.0.0 --port 4500 --proxy-config proxy.config.json",
