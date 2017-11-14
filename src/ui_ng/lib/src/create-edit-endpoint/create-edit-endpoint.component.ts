@@ -118,6 +118,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
 
     setInsecureValue($event: any) {
         this.target.insecure = !$event;
+        this.endpointHasChanged  = true;
     }
 
     ngOnDestroy(): void {
@@ -210,6 +211,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
             payload.endpoint = this.target.endpoint;
             payload.username = this.target.username;
             payload.password = this.target.password;
+            payload.insecure = this.target.insecure;
         } else {
             payload.id = this.target.id;
         }
