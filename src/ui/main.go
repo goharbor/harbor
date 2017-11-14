@@ -21,6 +21,7 @@ import (
 
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/common/utils/prometheus"
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
@@ -139,6 +140,7 @@ func main() {
 		log.Error(err)
 	}
 	log.Info("Init proxy")
+	prometheus.Monitoring()
 	proxy.Init()
 	//go proxy.StartProxy()
 	beego.Run()

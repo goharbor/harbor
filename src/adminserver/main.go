@@ -22,6 +22,7 @@ import (
 	syscfg "github.com/vmware/harbor/src/adminserver/systemcfg"
 	sysinfo "github.com/vmware/harbor/src/adminserver/systeminfo"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/common/utils/prometheus"
 )
 
 // Server for admin component
@@ -46,6 +47,8 @@ func main() {
 		log.Fatalf("failed to initialize the system: %v", err)
 	}
 	log.Info("system initialization completed")
+
+	prometheus.Monitoring()
 
 	sysinfo.Init()
 

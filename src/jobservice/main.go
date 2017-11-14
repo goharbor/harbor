@@ -21,6 +21,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/common/utils/prometheus"
 	"github.com/vmware/harbor/src/jobservice/config"
 	"github.com/vmware/harbor/src/jobservice/job"
 )
@@ -85,5 +86,6 @@ func init() {
 		if err := beego.LoadAppConfig("ini", configPath); err != nil {
 			log.Fatalf("Failed to load config file: %s, error: %v", configPath, err)
 		}
+		prometheus.Monitoring()
 	}
 }
