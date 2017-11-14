@@ -290,6 +290,7 @@ func (c *Checker) createProject(project *models.Project) error {
 	}
 
 	req.SetBasicAuth(c.dstUsr, c.dstPwd)
+	req.Header.Set(http.CanonicalHeaderKey("content-type"), "application/json")
 
 	client := &http.Client{
 		Transport: &http.Transport{

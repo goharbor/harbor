@@ -41,7 +41,7 @@ func TestMain(m *testing.M) {
 	}
 	defer server.Close()
 
-	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
+	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
 		panic(err)
 	}
 	if err := config.Init(); err != nil {

@@ -3,7 +3,7 @@ FROM vmware/photon:1.0
 ENV PGDATA /var/lib/postgresql/data
 
 RUN touch /etc/localtime.bak \
-    && tdnf distro-sync -y || echo \
+    && tdnf distro-sync -y \
     && tdnf install -y sed shadow gzip postgresql\
     && groupadd -r postgres --gid=999 \
     && useradd -r -g postgres --uid=999 postgres \

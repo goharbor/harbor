@@ -22,4 +22,4 @@ clair:
     attempts: 3
     renotifyinterval: 2h
     http:
-      endpoint: http://ui/service/notifications/clair
+      endpoint: http://ui:8080/service/notifications/clair

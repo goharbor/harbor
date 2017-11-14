@@ -16,8 +16,6 @@ services:
       - harbor-notary
     volumes:
       - ./common/config/notary:/config
-    entrypoint: /usr/bin/env sh
-    command: -c "/migrations/migrate.sh && notary-server -config=/config/server-config.json -logf=logfmt"
     depends_on:
       - notary-db
       - notary-signer
@@ -39,8 +37,6 @@ services:
       - ./common/config/notary:/config
     env_file:
       - ./common/config/notary/signer_env
-    entrypoint: /usr/bin/env sh
-    command: -c "/migrations/migrate.sh && notary-signer -config=/config/signer-config.json -logf=logfmt"
     depends_on:
       - notary-db
     logging:
