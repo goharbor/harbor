@@ -16,8 +16,6 @@ VOLUME /config
 
 EXPOSE 6060 6061
 
-RUN chmod u+x /clair2.0.1/clair
-
 RUN chown -R 10000:10000 /clair2.0.1 \
     && chmod u+x /clair2.0.1/clair \
     && chmod u+x /docker-entrypoint.sh
