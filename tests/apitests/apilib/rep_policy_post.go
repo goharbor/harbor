@@ -22,10 +22,6 @@
 
 package apilib
 
-import (
-	"github.com/vmware/harbor/src/common/models"
-)
-
 type RepPolicyPost struct {
 
 	// The project ID.
@@ -36,10 +32,4 @@ type RepPolicyPost struct {
 
 	// The policy name.
 	Name string `json:"name,omitempty"`
-
-	// Trigger
-	Trigger *models.RepTrigger `json:"trigger"`
-
-	// Filters
-	Filters []*models.RepFilter `json:"filters"`
 }

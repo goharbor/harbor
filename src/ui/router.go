@@ -108,7 +108,6 @@ func initRouters() {
 	beego.Router("/api/policies/replication/:id([0-9]+)", &api.RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "post:Post")
-	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &api.RepPolicyAPI{}, "put:UpdateEnablement")
 	beego.Router("/api/targets/", &api.TargetAPI{}, "get:List")
 	beego.Router("/api/targets/", &api.TargetAPI{}, "post:Post")
 	beego.Router("/api/targets/:id([0-9]+)", &api.TargetAPI{})

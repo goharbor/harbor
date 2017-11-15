@@ -24,12 +24,12 @@ func NewManager(capacity int) *Manager {
 }
 
 //GetTrigger returns the enabled trigger reference if existing in the cache.
-func (m *Manager) GetTrigger(policyID int) Interface {
+func (m *Manager) GetTrigger(policyID int64) Interface {
 	return m.cache.Get(policyID)
 }
 
 //RemoveTrigger will disable the trigger and remove it from the cache if existing.
-func (m *Manager) RemoveTrigger(policyID int) error {
+func (m *Manager) RemoveTrigger(policyID int64) error {
 	trigger := m.cache.Get(policyID)
 	if trigger == nil {
 		return errors.New("Trigger is not cached, please use UnsetTrigger to disable the trigger")
@@ -50,16 +50,16 @@ func (m *Manager) RemoveTrigger(policyID int) error {
 
 //SetupTrigger will create the new trigger based on the provided json parameters.
 //If failed, an error will be returned.
-func (m *Manager) SetupTrigger(policyID int, trigger models.Trigger) error {
+func (m *Manager) SetupTrigger(policyID int64, trigger models.Trigger) error {
 	if policyID <= 0 {
 		return errors.New("Invalid policy ID")
 	}
 
-	if len(trigger.Name) == 0 {
+	if len(trigger.Kind) == 0 {
 		return errors.New("Invalid replication trigger definition")
 	}
 
-	switch trigger.Name {
+	switch trigger.Kind {
 	case replication.TriggerKindSchedule:
 		param := ScheduleParam{}
 		if err := param.Parse(trigger.Param); err != nil {
@@ -93,16 +93,16 @@ func (m *Manager) SetupTrigger(policyID int, trigger models.Trigger) error {
 }
 
 //UnsetTrigger will disable the trigger which is not cached in the trigger cache.
-func (m *Manager) UnsetTrigger(policyID int, trigger models.Trigger) error {
+func (m *Manager) UnsetTrigger(policyID int64, trigger models.Trigger) error {
 	if policyID <= 0 {
 		return errors.New("Invalid policy ID")
 	}
 
-	if len(trigger.Name) == 0 {
+	if len(trigger.Kind) == 0 {
 		return errors.New("Invalid replication trigger definition")
 	}
 
-	switch trigger.Name {
+	switch trigger.Kind {
 	case replication.TriggerKindSchedule:
 		param := ScheduleParam{}
 		if err := param.Parse(trigger.Param); err != nil {

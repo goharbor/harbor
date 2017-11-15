@@ -15,296 +15,498 @@ package api
 
 import (
 	"fmt"
-	"strconv"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/replication"
-	"github.com/vmware/harbor/tests/apitests/apilib"
+	rep_models "github.com/vmware/harbor/src/replication/models"
+	api_models "github.com/vmware/harbor/src/ui/api/models"
 )
 
-const (
-	addPolicyName = "testPolicy"
+var (
+	repPolicyAPIBasePath       = "/api/policies/replication"
+	policyName                 = "testPolicy"
+	projectID            int64 = 1
+	targetID             int64
+	policyID             int64
 )
 
-var addPolicyID int
+func TestRepPolicyAPIPost(t *testing.T) {
+	postFunc := func(resp *httptest.ResponseRecorder) error {
+		id, err := parseResourceID(resp)
+		if err != nil {
+			return err
+		}
+		policyID = id
+		return nil
+	}
 
-func TestPoliciesPost(t *testing.T) {
-	var httpStatusCode int
-	var err error
-
-	assert := assert.New(t)
-	apiTest := newHarborAPI()
-
-	//add target
 	CommonAddTarget()
-	targetID := int64(CommonGetTarget())
-	repPolicy := &apilib.RepPolicyPost{int64(1), targetID, addPolicyName,
-		&models.RepTrigger{
-			Type: replication.TriggerKindSchedule,
-			Params: map[string]interface{}{
-				"date": "2:00",
+	targetID = int64(CommonGetTarget())
+
+	cases := []*codeCheckingCase{
+		// 401
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    repPolicyAPIBasePath,
 			},
+			code: http.StatusUnauthorized,
 		},
-		[]*models.RepFilter{
-			&models.RepFilter{
-				Type:  replication.FilterItemKindRepository,
-				Value: "library/ubuntu*",
+		// 403
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        repPolicyAPIBasePath,
+				credential: nonSysAdmin,
 			},
-		}}
-
-	fmt.Println("Testing Policies Post API")
-
-	//-------------------case 1 : response code = 201------------------------//
-	fmt.Println("case 1 : response code = 201")
-	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
-	if err != nil {
-		t.Error("Error while add policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(201), httpStatusCode, "httpStatusCode should be 201")
-	}
-
-	//-------------------case 2 : response code = 409------------------------//
-	fmt.Println("case 2 : response code = 409:policy already exists")
-	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
-	if err != nil {
-		t.Error("Error while add policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(409), httpStatusCode, "httpStatusCode should be 409")
-	}
-
-	//-------------------case 3 : response code = 401------------------------//
-	fmt.Println("case 3 : response code = 401: User need to log in first.")
-	httpStatusCode, err = apiTest.AddPolicy(*unknownUsr, *repPolicy)
-	if err != nil {
-		t.Error("Error while add policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 401")
-	}
-
-	//-------------------case 4 : response code = 400------------------------//
-	fmt.Println("case 4 : response code = 400:project_id invalid.")
-
-	repPolicy = &apilib.RepPolicyPost{TargetId: targetID, Name: addPolicyName}
-	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
-	if err != nil {
-		t.Error("Error while add policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-
-	//-------------------case 5 : response code = 400------------------------//
-	fmt.Println("case 5 : response code = 400:project_id does not exist.")
-
-	repPolicy.ProjectId = int64(1111)
-	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
-	if err != nil {
-		t.Error("Error while add policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-
-	//-------------------case 6 : response code = 400------------------------//
-	fmt.Println("case 6 : response code = 400:target_id invalid.")
-
-	repPolicy = &apilib.RepPolicyPost{ProjectId: int64(1), Name: addPolicyName}
-	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
-	if err != nil {
-		t.Error("Error while add policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-
-	//-------------------case 7 : response code = 400------------------------//
-	fmt.Println("case 7 : response code = 400:target_id does not exist.")
-
-	repPolicy.TargetId = int64(1111)
-	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
-	if err != nil {
-		t.Error("Error while add policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-
-	fmt.Println("case 8 : response code = 400: invalid filter")
-	repPolicy = &apilib.RepPolicyPost{int64(1), targetID, addPolicyName,
-		&models.RepTrigger{
-			Type: replication.TriggerKindManually,
+			code: http.StatusForbidden,
 		},
-		[]*models.RepFilter{
-			&models.RepFilter{
-				Type:  "replication",
-				Value: "",
+
+		// 400, invalid name
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        repPolicyAPIBasePath,
+				bodyJSON:   &api_models.ReplicationPolicy{},
+				credential: sysAdmin,
 			},
-		}}
-	httpStatusCode, err = apiTest.AddPolicy(*admin, *repPolicy)
+			code: http.StatusBadRequest,
+		},
+		// 400, invalid projects
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    repPolicyAPIBasePath,
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusBadRequest,
+		},
+		// 400, invalid targets
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    repPolicyAPIBasePath,
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+					Projects: []*models.Project{
+						&models.Project{
+							ProjectID: projectID,
+						},
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusBadRequest,
+		},
+		// 400, invalid filters
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    repPolicyAPIBasePath,
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+					Projects: []*models.Project{
+						&models.Project{
+							ProjectID: projectID,
+						},
+					},
+					Targets: []*models.RepTarget{
+						&models.RepTarget{
+							ID: targetID,
+						},
+					},
+					Filters: []rep_models.FilterItem{
+						rep_models.FilterItem{
+							Kind:  "invalid_filter_kind",
+							Value: "",
+						},
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusBadRequest,
+		},
+		// 400, invalid trigger
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    repPolicyAPIBasePath,
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+					Projects: []*models.Project{
+						&models.Project{
+							ProjectID: projectID,
+						},
+					},
+					Targets: []*models.RepTarget{
+						&models.RepTarget{
+							ID: targetID,
+						},
+					},
+					Filters: []rep_models.FilterItem{
+						rep_models.FilterItem{
+							Kind:  replication.FilterItemKindRepository,
+							Value: "*",
+						},
+					},
+					Trigger: &rep_models.Trigger{
+						Kind: "invalid_trigger_kind",
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusBadRequest,
+		},
+		// 404, project not found
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    repPolicyAPIBasePath,
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+					Projects: []*models.Project{
+						&models.Project{
+							ProjectID: 10000,
+						},
+					},
+					Targets: []*models.RepTarget{
+						&models.RepTarget{
+							ID: targetID,
+						},
+					},
+					Filters: []rep_models.FilterItem{
+						rep_models.FilterItem{
+							Kind:  replication.FilterItemKindRepository,
+							Value: "*",
+						},
+					},
+					Trigger: &rep_models.Trigger{
+						Kind: replication.TriggerKindManually,
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusNotFound,
+		},
+		// 404, target not found
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    repPolicyAPIBasePath,
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+					Projects: []*models.Project{
+						&models.Project{
+							ProjectID: projectID,
+						},
+					},
+					Targets: []*models.RepTarget{
+						&models.RepTarget{
+							ID: 10000,
+						},
+					},
+					Filters: []rep_models.FilterItem{
+						rep_models.FilterItem{
+							Kind:  replication.FilterItemKindRepository,
+							Value: "*",
+						},
+					},
+					Trigger: &rep_models.Trigger{
+						Kind: replication.TriggerKindManually,
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusNotFound,
+		},
+		// 201
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    repPolicyAPIBasePath,
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+					Projects: []*models.Project{
+						&models.Project{
+							ProjectID: projectID,
+						},
+					},
+					Targets: []*models.RepTarget{
+						&models.RepTarget{
+							ID: targetID,
+						},
+					},
+					Filters: []rep_models.FilterItem{
+						rep_models.FilterItem{
+							Kind:  replication.FilterItemKindRepository,
+							Value: "*",
+						},
+					},
+					Trigger: &rep_models.Trigger{
+						Kind: replication.TriggerKindManually,
+					},
+				},
+				credential: sysAdmin,
+			},
+			code:     http.StatusCreated,
+			postFunc: postFunc,
+		},
+	}
+
+	runCodeCheckingCases(t, cases...)
+}
+
+func TestRepPolicyAPIGet(t *testing.T) {
+	// 404
+	runCodeCheckingCases(t, &codeCheckingCase{
+		request: &testingRequest{
+			method:     http.MethodGet,
+			url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, 10000),
+			credential: sysAdmin,
+		},
+		code: http.StatusNotFound,
+	})
+
+	// 200
+	policy := &api_models.ReplicationPolicy{}
+	resp, err := handleAndParse(
+		&testingRequest{
+			method:     http.MethodGet,
+			url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
+			credential: sysAdmin,
+		}, policy)
 	require.Nil(t, err)
-	assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
+	assert.Equal(t, http.StatusOK, resp.Code)
+	assert.Equal(t, policyID, policy.ID)
+	assert.Equal(t, policyName, policy.Name)
 }
 
-func TestPoliciesList(t *testing.T) {
-	var httpStatusCode int
-	var err error
-	var reslut []apilib.RepPolicy
+func TestRepPolicyAPIList(t *testing.T) {
+	// 400: invalid project ID
+	runCodeCheckingCases(t, &codeCheckingCase{
+		request: &testingRequest{
+			method: http.MethodGet,
+			url:    repPolicyAPIBasePath,
+			queryStruct: struct {
+				ProjectID int64 `url:"project_id"`
+			}{
+				ProjectID: -1,
+			},
+			credential: sysAdmin,
+		},
+		code: http.StatusBadRequest,
+	})
 
-	assert := assert.New(t)
-	apiTest := newHarborAPI()
+	// 200
+	policies := []*api_models.ReplicationPolicy{}
+	resp, err := handleAndParse(
+		&testingRequest{
+			method: http.MethodGet,
+			url:    repPolicyAPIBasePath,
+			queryStruct: struct {
+				ProjectID int64  `url:"project_id"`
+				Name      string `url:"name"`
+			}{
+				ProjectID: projectID,
+				Name:      policyName,
+			},
+			credential: sysAdmin,
+		}, &policies)
+	require.Nil(t, err)
+	assert.Equal(t, http.StatusOK, resp.Code)
+	require.Equal(t, 1, len(policies))
+	assert.Equal(t, policyID, policies[0].ID)
+	assert.Equal(t, policyName, policies[0].Name)
 
-	fmt.Println("Testing Policies Get/List API")
-
-	//-------------------case 1 : response code = 200------------------------//
-	fmt.Println("case 1 : response code = 200")
-	projectID := "1"
-	httpStatusCode, reslut, err = apiTest.ListPolicies(*admin, addPolicyName, projectID)
-	if err != nil {
-		t.Error("Error while get policies", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-		addPolicyID = int(reslut[0].Id)
-	}
-
-	//-------------------case 2 : response code = 400------------------------//
-	fmt.Println("case 2 : response code = 400:invalid projectID")
-	projectID = "cc"
-	httpStatusCode, reslut, err = apiTest.ListPolicies(*admin, addPolicyName, projectID)
-	if err != nil {
-		t.Error("Error while get policies", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
-	}
-
+	// 200
+	policies = []*api_models.ReplicationPolicy{}
+	resp, err = handleAndParse(
+		&testingRequest{
+			method: http.MethodGet,
+			url:    repPolicyAPIBasePath,
+			queryStruct: struct {
+				ProjectID int64  `url:"project_id"`
+				Name      string `url:"name"`
+			}{
+				ProjectID: projectID,
+				Name:      "non_exist_policy",
+			},
+			credential: sysAdmin,
+		}, &policies)
+	require.Nil(t, err)
+	assert.Equal(t, http.StatusOK, resp.Code)
+	require.Equal(t, 0, len(policies))
 }
 
-func TestPolicyGet(t *testing.T) {
-	var httpStatusCode int
-	var err error
-
-	assert := assert.New(t)
-	apiTest := newHarborAPI()
-
-	fmt.Println("Testing Policy Get API by PolicyID")
-
-	//-------------------case 1 : response code = 200------------------------//
-	fmt.Println("case 1 : response code = 200")
-
-	policyID := strconv.Itoa(addPolicyID)
-	httpStatusCode, err = apiTest.GetPolicyByID(*admin, policyID)
-	if err != nil {
-		t.Error("Error while get policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+func TestRepPolicyAPIPut(t *testing.T) {
+	cases := []*codeCheckingCase{
+		// 404
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodPut,
+				url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, 10000),
+				credential: sysAdmin,
+			},
+			code: http.StatusNotFound,
+		},
+		// 400, invalid trigger
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+					Projects: []*models.Project{
+						&models.Project{
+							ProjectID: projectID,
+						},
+					},
+					Targets: []*models.RepTarget{
+						&models.RepTarget{
+							ID: targetID,
+						},
+					},
+					Filters: []rep_models.FilterItem{
+						rep_models.FilterItem{
+							Kind:  replication.FilterItemKindRepository,
+							Value: "*",
+						},
+					},
+					Trigger: &rep_models.Trigger{
+						Kind: "invalid_trigger_kind",
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusBadRequest,
+		},
+		// 200
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+					Projects: []*models.Project{
+						&models.Project{
+							ProjectID: projectID,
+						},
+					},
+					Targets: []*models.RepTarget{
+						&models.RepTarget{
+							ID: targetID,
+						},
+					},
+					Filters: []rep_models.FilterItem{
+						rep_models.FilterItem{
+							Kind:  replication.FilterItemKindRepository,
+							Value: "*",
+						},
+					},
+					Trigger: &rep_models.Trigger{
+						Kind: replication.TriggerKindImmediately,
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusOK,
+		},
 	}
+
+	runCodeCheckingCases(t, cases...)
 }
 
-func TestPolicyUpdateInfo(t *testing.T) {
-	var httpStatusCode int
-	var err error
-
-	targetID := int64(CommonGetTarget())
-	policyInfo := &apilib.RepPolicyUpdate{TargetId: targetID, Name: "testNewName"}
-
-	assert := assert.New(t)
-	apiTest := newHarborAPI()
-
-	fmt.Println("Testing Policy PUT API to update policyInfo")
-
-	//-------------------case 1 : response code = 200------------------------//
-	fmt.Println("case 1 : response code = 200")
-
-	policyID := strconv.Itoa(addPolicyID)
-	httpStatusCode, err = apiTest.PutPolicyInfoByID(*admin, policyID, *policyInfo)
-	if err != nil {
-		t.Error("Error while update policyInfo", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+func TestRepPolicyAPIDelete(t *testing.T) {
+	cases := []*codeCheckingCase{
+		// 404
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodDelete,
+				url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, 10000),
+				credential: sysAdmin,
+			},
+			code: http.StatusNotFound,
+		},
+		// 200
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodDelete,
+				url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
+				credential: sysAdmin,
+			},
+			code: http.StatusOK,
+		},
 	}
+
+	runCodeCheckingCases(t, cases...)
 }
 
-func TestPolicyUpdateEnablement(t *testing.T) {
-	var httpStatusCode int
-	var err error
-
-	enablement := &apilib.RepPolicyEnablementReq{int32(0)}
-
-	assert := assert.New(t)
-	apiTest := newHarborAPI()
-
-	fmt.Println("Testing Policy PUT API to update policy enablement")
-
-	//-------------------case 1 : response code = 200------------------------//
-	fmt.Println("case 1 : response code = 200")
-
-	policyID := strconv.Itoa(addPolicyID)
-	httpStatusCode, err = apiTest.PutPolicyEnableByID(*admin, policyID, *enablement)
-	if err != nil {
-		t.Error("Error while put policy enablement", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-	}
-	//-------------------case 2 : response code = 404------------------------//
-	fmt.Println("case 2 : response code = 404,Not Found")
-
-	policyID = "111"
-	httpStatusCode, err = apiTest.PutPolicyEnableByID(*admin, policyID, *enablement)
-	if err != nil {
-		t.Error("Error while put policy enablement", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
-	}
-
-}
-
-func TestPolicyDelete(t *testing.T) {
-	var httpStatusCode int
-	var err error
-
-	assert := assert.New(t)
-	apiTest := newHarborAPI()
-
-	fmt.Println("Testing Policy Delete API")
-
-	//-------------------case 1 : response code = 412------------------------//
-	fmt.Println("case 1 : response code = 412:policy is enabled, can not be deleted")
-
-	CommonPolicyEabled(addPolicyID, 1)
-	policyID := strconv.Itoa(addPolicyID)
-
-	httpStatusCode, err = apiTest.DeletePolicyByID(*admin, policyID)
-	if err != nil {
-		t.Error("Error while delete policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(412), httpStatusCode, "httpStatusCode should be 412")
+func TestConvertToRepPolicy(t *testing.T) {
+	cases := []struct {
+		input    *api_models.ReplicationPolicy
+		expected rep_models.ReplicationPolicy
+	}{
+		{
+			input:    nil,
+			expected: rep_models.ReplicationPolicy{},
+		},
+		{
+			input: &api_models.ReplicationPolicy{
+				ID:          1,
+				Name:        "policy",
+				Description: "description",
+				Filters: []rep_models.FilterItem{
+					rep_models.FilterItem{
+						Kind:  "filter_kind_01",
+						Value: "*",
+					},
+				},
+				ReplicateDeletion: true,
+				Trigger: &rep_models.Trigger{
+					Kind:  "trigger_kind_01",
+					Param: "{param}",
+				},
+				Projects: []*models.Project{
+					&models.Project{
+						ProjectID: 1,
+					},
+				},
+				Targets: []*models.RepTarget{
+					&models.RepTarget{
+						ID: 1,
+					},
+				},
+			},
+			expected: rep_models.ReplicationPolicy{
+				ID:          1,
+				Name:        "policy",
+				Description: "description",
+				Filters: []rep_models.FilterItem{
+					rep_models.FilterItem{
+						Kind:  "filter_kind_01",
+						Value: "*",
+					},
+				},
+				ReplicateDeletion: true,
+				Trigger: &rep_models.Trigger{
+					Kind:  "trigger_kind_01",
+					Param: "{param}",
+				},
+				ProjectIDs: []int64{1},
+				TargetIDs:  []int64{1},
+			},
+		},
 	}
 
-	//-------------------case 2 : response code = 200------------------------//
-	fmt.Println("case 2 : response code = 200")
-
-	CommonPolicyEabled(addPolicyID, 0)
-	policyID = strconv.Itoa(addPolicyID)
-
-	httpStatusCode, err = apiTest.DeletePolicyByID(*admin, policyID)
-	if err != nil {
-		t.Error("Error while delete policy", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+	for _, c := range cases {
+		assert.EqualValues(t, c.expected, convertToRepPolicy(c.input))
 	}
-
-	CommonDelTarget()
 }

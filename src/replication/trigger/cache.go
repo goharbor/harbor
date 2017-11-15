@@ -15,7 +15,7 @@ const (
 //Item keeps more metadata of the triggers which are stored in the heap.
 type Item struct {
 	//Which policy the trigger belong to
-	policyID int
+	policyID int64
 
 	//Frequency of cache querying
 	//First compration factor
@@ -124,7 +124,7 @@ func NewCache(capacity int) *Cache {
 }
 
 //Get the trigger interface with the specified policy ID
-func (c *Cache) Get(policyID int) Interface {
+func (c *Cache) Get(policyID int64) Interface {
 	if policyID <= 0 {
 		return nil
 	}
@@ -144,7 +144,7 @@ func (c *Cache) Get(policyID int) Interface {
 }
 
 //Put the item into cache with ID of ploicy as key
-func (c *Cache) Put(policyID int, trigger Interface) {
+func (c *Cache) Put(policyID int64, trigger Interface) {
 	if policyID <= 0 || trigger == nil {
 		return
 	}
@@ -179,7 +179,7 @@ func (c *Cache) Put(policyID int, trigger Interface) {
 }
 
 //Remove the trigger attached to the specified policy
-func (c *Cache) Remove(policyID int) Interface {
+func (c *Cache) Remove(policyID int64) Interface {
 	if policyID > 0 {
 		c.lock.Lock()
 		defer c.lock.Unlock()
@@ -207,6 +207,6 @@ func (c *Cache) Size() int {
 }
 
 //Generate a hash key with the policy ID
-func (c *Cache) key(policyID int) string {
+func (c *Cache) key(policyID int64) string {
 	return fmt.Sprintf("trigger-%d", policyID)
 }

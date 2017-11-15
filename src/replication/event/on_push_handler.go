@@ -36,7 +36,10 @@ func (oph *OnPushHandler) Handle(value interface{}) error {
 		ProjectID: 0,
 	}
 
-	policies := core.DefaultController.GetPolicies(query)
+	policies, err := core.DefaultController.GetPolicies(query)
+	if err != nil {
+		return err
+	}
 	if policies != nil && len(policies) > 0 {
 		for _, p := range policies {
 			if err := core.DefaultController.Replicate(p.ID); err != nil {
