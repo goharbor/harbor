@@ -20,7 +20,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	//"github.com/vmware/harbor/src/common/config"
+	"github.com/vmware/harbor/src/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
@@ -1630,4 +1630,104 @@ func TestGetScanJobsByStatus(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(1, len(r2))
 	assert.Equal(sj1.Repository, r2[0].Repository)
+}
+
+
+func TestSaveConfigEntries(t *testing.T)  {
+	configEntries :=[]models.ConfigEntry{
+		{
+			Key:"teststringkey",
+			Value:"192.168.111.211",
+		},
+		{
+			Key:"testboolkey",
+			Value:"true",
+		},
+		{
+			Key:"testnumberkey",
+			Value:"5",
+		},
+		{
+			Key:common.CfgDriverDB,
+			Value:"db",
+		},
+	}
+	err := SaveConfigEntries(configEntries)
+	if err != nil {
+		t.Fatalf("failed to save configuration to database %v", err)
+	}
+	readEntries, err:=GetConfigEntries()
+	if err !=nil {
+		t.Fatalf("Failed to get configuration from database %v", err)
+	}
+	findItem:=0
+	for _,entry:= range readEntries{
+		switch entry.Key {
+		case "teststringkey":
+			if "192.168.111.211" == entry.Value {
+				findItem++
+			}
+		case "testnumberkey":
+			if "5" == entry.Value {
+				findItem++
+			}
+		case "testboolkey":
+			if "true" == entry.Value {
+				findItem++
+			}
+		default:
+		}
+	}
+	if findItem !=3 {
+		t.Fatalf("Should update 3 configuration but only update %d", findItem)
+	}
+
+	configEntries =[]models.ConfigEntry{
+		{
+			Key:"teststringkey",
+			Value:"192.168.111.215",
+		},
+		{
+			Key:"testboolkey",
+			Value:"false",
+		},
+		{
+			Key:"testnumberkey",
+			Value:"7",
+		},
+		{
+			Key:common.CfgDriverDB,
+			Value:"db",
+		},
+	}
+	err = SaveConfigEntries(configEntries)
+	if err != nil {
+		t.Fatalf("failed to save configuration to database %v", err)
+	}
+	readEntries, err=GetConfigEntries()
+	if err !=nil {
+		t.Fatalf("Failed to get configuration from database %v", err)
+	}
+	findItem=0
+	for _,entry:= range readEntries{
+		switch entry.Key {
+		case "teststringkey":
+			if "192.168.111.215" == entry.Value {
+				findItem++
+			}
+		case "testnumberkey":
+			if "7" == entry.Value {
+				findItem++
+			}
+		case "testboolkey":
+			if "false" == entry.Value {
+				findItem++
+			}
+		default:
+		}
+	}
+	if findItem !=3 {
+		t.Fatalf("Should update 3 configuration but only update %d", findItem)
+	}
+
 }

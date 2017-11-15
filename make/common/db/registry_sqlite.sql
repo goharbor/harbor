@@ -212,9 +212,10 @@ UNIQUE(namespace)
 );
 
 create table properties (
+ id INTEGER PRIMARY KEY,
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
- primary key (k)
+ UNIQUE(k)
  );
 
 create table alembic_version (

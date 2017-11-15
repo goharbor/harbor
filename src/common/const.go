@@ -73,6 +73,7 @@ const (
 	UAAEndpoint                = "uaa_endpoint"
 	UAAClientID                = "uaa_client_id"
 	UAAClientSecret            = "uaa_client_secret"
-
 	DefaultClairEndpoint = "http://clair:6060"
+	CfgDriverDB                = "db"
+	CfgDriverJSON              = "json"
 )

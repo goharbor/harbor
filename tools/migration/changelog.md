@@ -56,3 +56,6 @@ Changelog for harbor database schema
   - insert data into table `project_metadata`
   - delete column `public` from table `project`
   - add column `insecure` to table `replication_target`
+## 1.3.x
+  - add pk `id` to table `properties`
+  - remove pk index from colum 'k' of table `properties` 
