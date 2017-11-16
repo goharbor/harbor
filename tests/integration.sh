@@ -100,7 +100,9 @@ fi
 if [ $upload_build == true ] && [ $rc -eq 0 ]; then
   harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
   gsutil cp $harbor_build_bundle gs://harbor-builds
+  gsutil cp $harbor_build_bundle gs://harbor-builds/harbor-offline-installer-latest.tgz
   gsutil -D setacl public-read gs://harbor-builds/$harbor_build_bundle &> /dev/null
+  gsutil -D setacl public-read gs://harbor-builds/harbor-offline-installer-latest.tgz &> /dev/null
 fi
 
 ## --------------------------------------------- Upload Harbor Latest Build File ---------------------------------------

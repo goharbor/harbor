@@ -47,6 +47,7 @@ pipeline:
       - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
       - mkdir -p bundle
       - cp harbor-offline-installer-*.tgz bundle
+      - cp harbor-offline-installer-*.tgz bundle/harbor-offline-installer-latest.tgz
       - ls -la bundle
     when:
       repo: vmware/harbor
