@@ -1,6 +1,6 @@
 <div class="login-wrapper login-wrapper-override" [ngStyle]="{'background-image': 'url(' + customLoginBgImg + ')'}">
     <form #signInForm="ngForm" class="login">
-        <label class="title">{{appTitle | translate}}<span class="trademark tm-font">&#8482;</span>
+        <label class="title"> {{customAppTitle? customAppTitle:(appTitle | translate)}}<span class="trademark tm-font">&#8482;</span>
     </label>
         <div class="login-group">
             <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left">
