@@ -10,7 +10,7 @@ RUN tdnf distro-sync -y \
     && useradd --no-log-init -m -r -g 10000 -u 10000 clair
 COPY clair /clair2.0.1/
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-COPY dumb-init /dumb-init \
+COPY dumb-init /dumb-init 
 
 VOLUME /config
 
@@ -18,7 +18,7 @@ EXPOSE 6060 6061
 
 RUN chown -R 10000:10000 /clair2.0.1 \
     && chmod u+x /clair2.0.1/clair \
-    && chmod u+x /docker-entrypoint.sh
+    && chmod u+x /docker-entrypoint.sh \
     && chmod +x /dumb-init
 
 
