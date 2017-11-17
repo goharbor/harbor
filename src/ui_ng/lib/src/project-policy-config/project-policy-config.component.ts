@@ -14,19 +14,20 @@ import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation
 import { TranslateService } from '@ngx-translate/core';
 
 import { Project } from './project';
+import {SystemInfo, SystemInfoService} from '../service/index';
 
 export class ProjectPolicy {
   Public: boolean;
   ContentTrust: boolean;
   PreventVulImg: boolean;
-  PreventVulImgServerity: string;
+  PreventVulImgSeverity: string;
   ScanImgOnPush: boolean;
 
   constructor() {
     this.Public = false;
     this.ContentTrust = false;
     this.PreventVulImg = false;
-    this.PreventVulImgServerity = 'low';
+    this.PreventVulImgSeverity = 'low';
     this.ScanImgOnPush = false;
   }
 
@@ -34,7 +35,7 @@ export class ProjectPolicy {
     this.Public = pro.metadata.public === 'true' ? true : false;
     this.ContentTrust = pro.metadata.enable_content_trust === 'true' ? true : false;
     this.PreventVulImg = pro.metadata.prevent_vul === 'true' ? true : false;
-    if (pro.metadata.severity) { this.PreventVulImgServerity = pro.metadata.severity; };
+    if (pro.metadata.severity) { this.PreventVulImgSeverity = pro.metadata.severity; };
     this.ScanImgOnPush = pro.metadata.auto_scan === 'true' ? true : false;
   };
 }
@@ -42,7 +43,7 @@ export class ProjectPolicy {
 @Component({
   selector: 'hbr-project-policy-config',
   template: PROJECT_POLICY_CONFIG_TEMPLATE,
-  styles: [PROJECT_POLICY_CONFIG_STYLE]
+  styles: [PROJECT_POLICY_CONFIG_STYLE],
 })
 export class ProjectPolicyConfigComponent implements OnInit {
   onGoing = false;
@@ -54,6 +55,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
 
   @ViewChild('cfgConfirmationDialog') confirmationDlg: ConfirmationDialogComponent;
 
+  systemInfo: SystemInfo;
   orgProjectPolicy = new ProjectPolicy();
   projectPolicy = new ProjectPolicy();
 
@@ -68,25 +70,41 @@ export class ProjectPolicyConfigComponent implements OnInit {
     private errorHandler: ErrorHandler,
     private translate: TranslateService,
     private projectService: ProjectService,
+    private systemInfoService: SystemInfoService,
   ) {}
 
   ngOnInit(): void {
+    // assert if project id exist
     if (!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
       return;
     }
+
+    // get system info
+    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
+    .then(systemInfo => this.systemInfo = systemInfo)
+    .catch(error => this.errorHandler.error(error));
+
+    // retrive project level policy data
     this.retrieve();
   }
 
+  public get withNotary(): boolean {
+    return this.systemInfo ? this.systemInfo.with_notary : false;
+  }
+
+  public get withClair(): boolean {
+    return this.systemInfo ? this.systemInfo.with_clair : false;
+  }
+
   retrieve(state?: State): any {
-    toPromise<Project>(this.projectService.
-      getProject(this.projectId))
-      .then(
-        response => {
-          this.orgProjectPolicy.initByProject(response);
-          this.projectPolicy.initByProject(response);
-        })
-        .catch(error => this.errorHandler.error(error));
+    toPromise<Project>(this.projectService.getProject(this.projectId))
+    .then(
+      response => {
+        this.orgProjectPolicy.initByProject(response);
+        this.projectPolicy.initByProject(response);
+      })
+    .catch(error => this.errorHandler.error(error));
   }
 
   updateProjectPolicy(projectId: string|number, pp: ProjectPolicy) {
@@ -99,7 +117,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
 
   isValid() {
     let flag = false;
-    if (!this.projectPolicy.PreventVulImg || this.severityOptions.some(x => x.severity === this.projectPolicy.PreventVulImgServerity)) {
+    if (!this.projectPolicy.PreventVulImg || this.severityOptions.some(x => x.severity === this.projectPolicy.PreventVulImgSeverity)) {
       flag = true;
     }
     return flag;
@@ -115,18 +133,18 @@ export class ProjectPolicyConfigComponent implements OnInit {
     }
     this.onGoing = true;
     toPromise<any>(this.projectService.updateProjectPolicy(this.projectId, this.projectPolicy))
-      .then(() => {
-        this.onGoing = false;
+    .then(() => {
+      this.onGoing = false;
 
-        this.translate.get('CONFIG.SAVE_SUCCESS').subscribe((res: string) => {
-          this.errorHandler.info(res);
-        });
-        this.refresh();
-      })
-      .catch(error => {
-        this.onGoing = false;
-        this.errorHandler.error(error);
+      this.translate.get('CONFIG.SAVE_SUCCESS').subscribe((res: string) => {
+        this.errorHandler.info(res);
       });
+      this.refresh();
+    })
+    .catch(error => {
+      this.onGoing = false;
+      this.errorHandler.error(error);
+    });
   }
 
   cancel(): void {
