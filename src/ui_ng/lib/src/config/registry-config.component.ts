@@ -11,7 +11,6 @@ import {
 } from '../utils';
 import { ErrorHandler } from '../error-handler';
 import {
-    ReplicationConfigComponent,
     SystemSettingsComponent,
     VulnerabilityConfigComponent
 } from './index';
@@ -35,7 +34,6 @@ export class RegistryConfigComponent implements OnInit {
 
     @Input() hasAdminRole: boolean = false;
 
-    @ViewChild("replicationConfig") replicationCfg: ReplicationConfigComponent;
     @ViewChild("systemSettings") systemSettings: SystemSettingsComponent;
     @ViewChild("vulnerabilityConfig") vulnerabilityCfg: VulnerabilityConfigComponent;
     @ViewChild("cfgConfirmationDialog") confirmationDlg: ConfirmationDialogComponent;
@@ -66,9 +64,7 @@ export class RegistryConfigComponent implements OnInit {
     }
 
     isValid(): boolean {
-        return this.replicationCfg &&
-            this.replicationCfg.isValid &&
-            this.systemSettings &&
+        return this.systemSettings &&
             this.systemSettings.isValid &&
             this.vulnerabilityCfg &&
             this.vulnerabilityCfg.isValid;
