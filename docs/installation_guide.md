@@ -67,9 +67,11 @@ The parameters are described below - note that at the very least, you will need 
 * **ssl_cert**: The path of SSL certificate, it's applied only when the protocol is set to https
 * **ssl_cert_key**: The path of SSL key, it's applied only when the protocol is set to https 
 * **secretkey_path**: The path of key for encrypt or decrypt the password of a remote registry in a replication policy.
+* **log_rotate_count**: Log files are rotated **log_rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
+* **log_rotate_size**: Log files are rotated only if they grow bigger than **log_rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
 
 ##### Optional parameters
-* **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**.  For a detailed description about "email_identity" please refer to [rfc2595](https://tools.ietf.org/rfc/rfc2595.txt)
+* **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**. Setting **email_insecure = true** if the email server uses a self-signed or untrusted certificate. For a detailed description about "email_identity" please refer to [rfc2595](https://tools.ietf.org/rfc/rfc2595.txt)
   * email_server = smtp.mydomain.com 
   * email_server_port = 25
   * email_identity = 
@@ -77,6 +79,7 @@ The parameters are described below - note that at the very least, you will need 
   * email_password = abc
   * email_from = admin <sample_admin@mydomain.com>  
   * email_ssl = false
+  * email_insecure = false
 
 * **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/Harbor12345** ._   
 * **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. 
@@ -94,7 +97,6 @@ may not be able to log in after the upgrade.
 * **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
 * **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
 * **project_creation_restriction**: The flag to control what users have permission to create projects.  By default everyone can create a project, set to "adminonly" such that only admin can create project.
-* **verify_remote_cert**: (**on** or **off**.  Default is **on**) This flag determines whether or not to verify SSL/TLS certificate when Harbor communicates with a remote registry instance. Setting this attribute to **off** bypasses the SSL/TLS verification, which is often used when the remote instance has a self-signed or untrusted certificate.
 
 #### Configuring storage backend (optional)
 
