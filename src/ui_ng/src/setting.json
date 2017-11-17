@@ -1,0 +1,15 @@
+{
+  "headerBgColor": "#004a70",
+  "headerLogo": "",
+  "loginBgImg": "",
+  "appTitle": "VMware Harbor",
+  "projects": {
+    "companyName": "vmware",
+    "projectName": "Harbor",
+    "introduction": {
+      "zh-cn": "",
+      "es-es": "",
+      "en-us": ""
+    }
+  }
+}

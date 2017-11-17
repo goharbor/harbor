@@ -74,7 +74,7 @@ export class ProjectDefaultService extends ProjectService {
                 'public': projectPolicy.Public ? 'true' : 'false',
                 'enable_content_trust': projectPolicy.ContentTrust ? 'true' : 'false',
                 'prevent_vul': projectPolicy.PreventVulImg ? 'true' : 'false',
-                'severity': projectPolicy.PreventVulImgServerity,
+                'severity': projectPolicy.PreventVulImgSeverity,
                 'auto_scan': projectPolicy.ScanImgOnPush ? 'true' : 'false'
               } }, HTTP_JSON_OPTIONS)
               .map(response => response.status)
