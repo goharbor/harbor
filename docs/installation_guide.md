@@ -101,7 +101,7 @@ may not be able to log in after the upgrade.
 #### Configuring storage backend (optional)
 
 By default, Harbor stores images on your local filesystem. In a production environment, you may consider 
-using other storage backend instead of the local filesystem, like S3, Openstack Swift, Ceph, etc. 
+using other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. 
 What you need to update is the section of `storage` in the file `common/templates/registry/config.yml`. 
 For example, if you use Openstack Swift as your storage backend, the section may look like this:
 
