@@ -22,7 +22,7 @@ spec:
         - containerPort: 5001
         volumeMounts:
         - name: config
-          mountPath: /etc/docker/registry
+          mountPath: /etc/registry
         - name: storage
           mountPath: /storage
       volumes:
