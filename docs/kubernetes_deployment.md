@@ -36,7 +36,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
   ```
 - `make/kubernetes/**/*.svc.yaml`: Specify the service of pods.  In particular, the externalIP should be set in `make/kubernetes/nginx/nginx.svc.yaml`:
 
-  ```
+  ```yaml
   ...
   metadata:
       name: nginx
@@ -54,7 +54,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
 - `make/kubernetes/pv/*.pvc.yaml`: Persistent Volume Claim.  
   You can set capacity of storage in these files. example:
 
-  ```
+  ```yaml
   resources:
     requests:
       # you can set another value to adapt to your needs
@@ -65,7 +65,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
   PVs and PVCs are one to one correspondence. If you changed capacity of PVC, you need to set capacity of PV together.
   example:
 
-  ```
+  ```yaml
   capacity:
     # same value with PVC
     storage: 100Gi
@@ -73,7 +73,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
 
   In PV, you should set another way to store data rather than `hostPath`:
 
-  ```
+  ```yaml
   # it's default value, you should use others like nfs.
   hostPath:
     path: /data/registry
@@ -83,7 +83,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
 
 Then you can generate ConfigMap files by :
 
-```
+```shell
 python make/kubernetes/k8s-prepare
 ```
 
@@ -112,7 +112,7 @@ You can find all configs of Harbor in `make/kubernetes/templates/`. There are sp
 - `registry.cm.yaml`: Token service certification and registry config
   Registry use filesystem to store data of images. You can find it like:
 
-  ```
+  ```yaml
   storage:
       filesystem:
         rootdirectory: /storage
@@ -128,7 +128,7 @@ You can find all configs of Harbor in `make/kubernetes/templates/`. There are sp
 ### Running
 When you finished your configuring and generated ConfigMap files, you can run Harbor on kubernetes with these commands:
 
-```
+```shell
 # create pv & pvc
 kubectl apply -f make/kubernetes/pv/log.pv.yaml
 kubectl apply -f make/kubernetes/pv/registry.pv.yaml
@@ -164,7 +164,7 @@ kubectl apply -f make/kubernetes/adminserver/adminserver.rc.yaml
 
 After the pods are running, you can access Harbor's UI via the configured endpoint `10.192.168.5` or issue docker commands such as `docker login 10.192.168.5` to interact with the registry.
 
-####Limitation
+#### Limitation
 1. Current deployment is http only, to enable https you need to either add another layer of proxy or modify the nginx.cm.yaml to enable https and include a correct certificate
 2. Current deployment does not include Clair and Notary, which are supported in docker-compose deployment.  They will be supported in near future, stay tuned.
 
