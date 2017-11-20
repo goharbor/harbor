@@ -49,8 +49,9 @@ pipeline:
       - mkdir -p latest
       - echo $(git describe --tags) > version 
       - cp harbor-offline-installer-*.tgz bundle
-      - cp harbor-offline-installer-*.tgz latest/harbor-offline-installer-latest.tgz
+      - if [ ${DRONE_BRANCH} == "master" ]; then cp harbor-offline-installer-*.tgz latest/harbor-offline-installer-latest-master.tgz; else cp harbor-offline-installer-*.tgz latest/harbor-offline-installer-latest-release.tgz; fi
       - ls -la bundle
+      - ls -la latest
     when:
       repo: vmware/harbor
       event: [ push, tag ]
