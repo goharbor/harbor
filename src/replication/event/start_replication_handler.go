@@ -14,7 +14,7 @@ type StartReplicationHandler struct{}
 //StartReplicationNotification contains data required by this handler
 type StartReplicationNotification struct {
 	//ID of the policy
-	PolicyID int
+	PolicyID int64
 }
 
 //Handle implements the same method of notification handler interface

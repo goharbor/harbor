@@ -3,7 +3,7 @@ package trigger
 //BasicParam contains the general parameters for all triggers
 type BasicParam struct {
 	//ID of the related policy
-	PolicyID int
+	PolicyID int64
 
 	//Whether delete remote replicated images if local ones are deleted
 	OnDeletion bool

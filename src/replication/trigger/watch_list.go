@@ -10,7 +10,7 @@ type WatchList struct{}
 //WatchItem keeps the related data for evaluation in WatchList.
 type WatchItem struct {
 	//ID of policy
-	PolicyID int
+	PolicyID int64
 
 	//Corresponding namespace
 	Namespace string

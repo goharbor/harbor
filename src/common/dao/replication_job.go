@@ -104,22 +104,18 @@ func FilterRepTargets(name string) ([]*models.RepTarget, error) {
 
 // AddRepPolicy ...
 func AddRepPolicy(policy models.RepPolicy) (int64, error) {
-	if err := policy.Marshal(); err != nil {
-		return 0, err
-	}
-
 	o := GetOrmer()
 	sql := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, start_time, creation_time, update_time, filters, replicate_deletion) 
 				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	params := []interface{}{}
-	params = append(params, policy.Name, policy.ProjectID, policy.TargetID, policy.Enabled, policy.Description, policy.TriggerInDB)
+	params = append(params, policy.Name, policy.ProjectID, policy.TargetID, policy.Enabled, policy.Description, policy.Trigger)
 	now := time.Now()
 	if policy.Enabled == 1 {
 		params = append(params, now)
 	} else {
 		params = append(params, nil)
 	}
-	params = append(params, now, now, policy.FiltersInDB, policy.ReplicateDeletion)
+	params = append(params, now, now, policy.Filters, policy.ReplicateDeletion)
 
 	result, err := o.Raw(sql, params...).Exec()
 	if err != nil {
@@ -132,7 +128,7 @@ func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 // GetRepPolicy ...
 func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	o := GetOrmer()
-	sql := `select * from replication_policy where id = ?`
+	sql := `select * from replication_policy where id = ? and deleted = 0`
 
 	var policy models.RepPolicy
 
@@ -140,10 +136,6 @@ func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 		if err == orm.ErrNoRows {
 			return nil, nil
 		}
-		return nil, err
-	}
-
-	if err := policy.Unmarshal(); err != nil {
 		return nil, err
 	}
 
@@ -186,12 +178,6 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 		return nil, err
 	}
 
-	for _, policy := range policies {
-		if err := policy.Unmarshal(); err != nil {
-			return nil, err
-		}
-	}
-
 	return policies, nil
 }
 
@@ -209,10 +195,6 @@ func GetRepPolicyByName(name string) (*models.RepPolicy, error) {
 		return nil, err
 	}
 
-	if err := policy.Unmarshal(); err != nil {
-		return nil, err
-	}
-
 	return &policy, nil
 }
 
@@ -225,12 +207,6 @@ func GetRepPolicyByProject(projectID int64) ([]*models.RepPolicy, error) {
 
 	if _, err := o.Raw(sql, projectID).QueryRows(&policies); err != nil {
 		return nil, err
-	}
-
-	for _, policy := range policies {
-		if err := policy.Unmarshal(); err != nil {
-			return nil, err
-		}
 	}
 
 	return policies, nil
@@ -247,12 +223,6 @@ func GetRepPolicyByTarget(targetID int64) ([]*models.RepPolicy, error) {
 		return nil, err
 	}
 
-	for _, policy := range policies {
-		if err := policy.Unmarshal(); err != nil {
-			return nil, err
-		}
-	}
-
 	return policies, nil
 }
 
@@ -267,24 +237,15 @@ func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPol
 		return nil, err
 	}
 
-	for _, policy := range policies {
-		if err := policy.Unmarshal(); err != nil {
-			return nil, err
-		}
-	}
-
 	return policies, nil
 }
 
 // UpdateRepPolicy ...
 func UpdateRepPolicy(policy *models.RepPolicy) error {
-	if err := policy.Marshal(); err != nil {
-		return err
-	}
 	o := GetOrmer()
 	policy.UpdateTime = time.Now()
 	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description",
-		"TriggerInDB", "FiltersInDB", "ReplicateDeletion", "UpdateTime")
+		"Trigger", "Filters", "ReplicateDeletion", "UpdateTime")
 	return err
 }
 
