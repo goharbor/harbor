@@ -38,6 +38,6 @@ func (wl *WatchList) Update(updatedItem WatchItem) error {
 }
 
 //Get the specified watch item
-func (wl *WatchList) Get(namespace string) WatchItem {
-	return WatchItem{}
+func (wl *WatchList) Get(namespace string) *WatchItem {
+	return nil
 }

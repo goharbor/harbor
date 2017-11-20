@@ -91,22 +91,61 @@ func (ctl *Controller) Init() error {
 
 //CreatePolicy is used to create a new policy and enable it if necessary
 func (ctl *Controller) CreatePolicy(newPolicy models.ReplicationPolicy) (int64, error) {
-	//Validate policy
-	// TODO
+	id, err := ctl.policyManager.CreatePolicy(newPolicy)
+	if err != nil {
+		return 0, err
+	}
 
-	return ctl.policyManager.CreatePolicy(newPolicy)
+	if err = ctl.triggerManager.SetupTrigger(id, *newPolicy.Trigger); err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
 
 //UpdatePolicy will update the policy with new content.
 //Parameter updatedPolicy must have the ID of the updated policy.
 func (ctl *Controller) UpdatePolicy(updatedPolicy models.ReplicationPolicy) error {
 	// TODO check pre-conditions
-	return ctl.policyManager.UpdatePolicy(updatedPolicy)
+
+	id := updatedPolicy.ID
+	originPolicy, err := ctl.policyManager.GetPolicy(id)
+	if err != nil {
+		return err
+	}
+
+	if originPolicy.ID == 0 {
+		return fmt.Errorf("policy %d not found", id)
+	}
+
+	if err = ctl.triggerManager.UnsetTrigger(id, *originPolicy.Trigger); err != nil {
+		return err
+	}
+
+	if err = ctl.policyManager.UpdatePolicy(updatedPolicy); err != nil {
+		return err
+	}
+
+	return ctl.triggerManager.SetupTrigger(id, *updatedPolicy.Trigger)
 }
 
 //RemovePolicy will remove the specified policy and clean the related settings
 func (ctl *Controller) RemovePolicy(policyID int64) error {
 	// TODO check pre-conditions
+
+	policy, err := ctl.policyManager.GetPolicy(policyID)
+	if err != nil {
+		return err
+	}
+
+	if policy.ID == 0 {
+		return fmt.Errorf("policy %d not found", policyID)
+	}
+
+	if err = ctl.triggerManager.UnsetTrigger(policyID, *policy.Trigger); err != nil {
+		return err
+	}
+
 	return ctl.policyManager.RemovePolicy(policyID)
 }
 
@@ -122,6 +161,9 @@ func (ctl *Controller) GetPolicies(query models.QueryParameter) ([]models.Replic
 
 //Replicate starts one replication defined in the specified policy;
 //Can be launched by the API layer and related triggers.
-func (ctl *Controller) Replicate(policyID int64) error {
+func (ctl *Controller) Replicate(policyID int64, item ...*models.FilterItem) error {
+
+	fmt.Printf("replicating %d ...\n", policyID)
+
 	return nil
 }

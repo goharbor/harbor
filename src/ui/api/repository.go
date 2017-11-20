@@ -255,7 +255,7 @@ func (ra *RepositoryAPI) Delete() {
 		}
 		log.Infof("delete tag: %s:%s", repoName, t)
 
-		go TriggerReplicationByRepository(project.ProjectID, repoName, []string{t}, models.RepOpDelete)
+		go CheckAndTriggerReplication(repoName+":"+t, "delete")
 
 		go func(tag string) {
 			if err := dao.AddAccessLog(models.AccessLog{
