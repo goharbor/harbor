@@ -104,7 +104,7 @@ func (n *NotificationHandler) Post() {
 				}
 			}()
 
-			go api.TriggerReplicationByRepository(pro.ProjectID, repository, []string{tag}, models.RepOpTransfer)
+			go api.CheckAndTriggerReplication(repository+":"+tag, "push")
 
 			if autoScanEnabled(pro) {
 				last, err := clairdao.GetLastUpdate()
