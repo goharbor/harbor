@@ -18,8 +18,8 @@ type Trigger struct {
 
 // Valid ...
 func (t *Trigger) Valid(v *validation.Validation) {
-	if !(t.Kind == replication.TriggerKindImmediately ||
-		t.Kind == replication.TriggerKindManually ||
+	if !(t.Kind == replication.TriggerKindImmediate ||
+		t.Kind == replication.TriggerKindManual ||
 		t.Kind == replication.TriggerKindSchedule) {
 		v.SetError("kind", fmt.Sprintf("invalid trigger kind: %s", t.Kind))
 	}

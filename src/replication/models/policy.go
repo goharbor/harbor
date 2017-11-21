@@ -14,6 +14,7 @@ type ReplicationPolicy struct {
 	Trigger           *Trigger //The trigger of the replication
 	ProjectIDs        []int64  //Projects attached to this policy
 	TargetIDs         []int64
+	Namespaces        []string // The namespaces are used to set immediate trigger
 	CreationTime      time.Time
 	UpdateTime        time.Time
 }

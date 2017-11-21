@@ -1,5 +1,10 @@
 package trigger
 
+import (
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
+)
+
 //DefaultWatchList is the default instance of WatchList
 var DefaultWatchList = &WatchList{}
 
@@ -24,15 +29,37 @@ type WatchItem struct {
 
 //Add item to the list and persist into DB
 func (wl *WatchList) Add(item WatchItem) error {
-	return nil
+	_, err := dao.DefaultDatabaseWatchItemDAO.Add(
+		&models.WatchItem{
+			PolicyID:   item.PolicyID,
+			Namespace:  item.Namespace,
+			OnPush:     item.OnPush,
+			OnDeletion: item.OnDeletion,
+		})
+	return err
 }
 
 //Remove the specified watch item from list
 func (wl *WatchList) Remove(policyID int64) error {
-	return nil
+	return dao.DefaultDatabaseWatchItemDAO.DeleteByPolicyID(policyID)
 }
 
 //Get the watch items according to the namespace and operation
 func (wl *WatchList) Get(namespace, operation string) ([]WatchItem, error) {
-	return []WatchItem{}, nil
+	items, err := dao.DefaultDatabaseWatchItemDAO.Get(namespace, operation)
+	if err != nil {
+		return nil, err
+	}
+
+	watchItems := []WatchItem{}
+	for _, item := range items {
+		watchItems = append(watchItems, WatchItem{
+			PolicyID:   item.PolicyID,
+			Namespace:  item.Namespace,
+			OnPush:     item.OnPush,
+			OnDeletion: item.OnDeletion,
+		})
+	}
+
+	return watchItems, nil
 }

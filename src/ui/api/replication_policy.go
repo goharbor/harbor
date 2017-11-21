@@ -113,15 +113,16 @@ func (pa *RepPolicyAPI) Post() {
 
 	// check the existence of projects
 	for _, project := range policy.Projects {
-		exist, err := pa.ProjectMgr.Exists(project.ProjectID)
+		pro, err := pa.ProjectMgr.Get(project.ProjectID)
 		if err != nil {
 			pa.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d", project.ProjectID), err)
 			return
 		}
-		if !exist {
+		if pro == nil {
 			pa.HandleNotFound(fmt.Sprintf("project %d not found", project.ProjectID))
 			return
 		}
+		project.Name = pro.Name
 	}
 
 	// check the existence of targets
@@ -167,6 +168,34 @@ func (pa *RepPolicyAPI) Put() {
 	pa.DecodeJSONReqAndValidate(policy)
 
 	policy.ID = id
+
+	// check the existence of projects
+	for _, project := range policy.Projects {
+		pro, err := pa.ProjectMgr.Get(project.ProjectID)
+		if err != nil {
+			pa.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d", project.ProjectID), err)
+			return
+		}
+		if pro == nil {
+			pa.HandleNotFound(fmt.Sprintf("project %d not found", project.ProjectID))
+			return
+		}
+		project.Name = pro.Name
+	}
+
+	// check the existence of targets
+	for _, target := range policy.Targets {
+		t, err := dao.GetRepTarget(target.ID)
+		if err != nil {
+			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", target.ID, err))
+			return
+		}
+
+		if t == nil {
+			pa.HandleNotFound(fmt.Sprintf("target %d not found", target.ID))
+			return
+		}
+	}
 
 	if err = core.DefaultController.UpdatePolicy(convertToRepPolicy(policy)); err != nil {
 		pa.HandleInternalServerError(fmt.Sprintf("failed to update policy %d: %v", id, err))
@@ -274,6 +303,7 @@ func convertToRepPolicy(policy *api_models.ReplicationPolicy) rep_models.Replica
 
 	for _, project := range policy.Projects {
 		ply.ProjectIDs = append(ply.ProjectIDs, project.ProjectID)
+		ply.Namespaces = append(ply.Namespaces, project.Name)
 	}
 
 	for _, target := range policy.Targets {

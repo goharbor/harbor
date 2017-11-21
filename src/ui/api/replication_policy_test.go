@@ -189,7 +189,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 						},
 					},
 					Trigger: &rep_models.Trigger{
-						Kind: replication.TriggerKindManually,
+						Kind: replication.TriggerKindManual,
 					},
 				},
 				credential: sysAdmin,
@@ -220,7 +220,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 						},
 					},
 					Trigger: &rep_models.Trigger{
-						Kind: replication.TriggerKindManually,
+						Kind: replication.TriggerKindManual,
 					},
 				},
 				credential: sysAdmin,
@@ -251,7 +251,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 						},
 					},
 					Trigger: &rep_models.Trigger{
-						Kind: replication.TriggerKindManually,
+						Kind: replication.TriggerKindManual,
 					},
 				},
 				credential: sysAdmin,
@@ -412,7 +412,7 @@ func TestRepPolicyAPIPut(t *testing.T) {
 						},
 					},
 					Trigger: &rep_models.Trigger{
-						Kind: replication.TriggerKindImmediately,
+						Kind: replication.TriggerKindImmediate,
 					},
 				},
 				credential: sysAdmin,
@@ -477,6 +477,7 @@ func TestConvertToRepPolicy(t *testing.T) {
 				Projects: []*models.Project{
 					&models.Project{
 						ProjectID: 1,
+						Name:      "library",
 					},
 				},
 				Targets: []*models.RepTarget{
@@ -501,6 +502,7 @@ func TestConvertToRepPolicy(t *testing.T) {
 					Param: "{param}",
 				},
 				ProjectIDs: []int64{1},
+				Namespaces: []string{"library"},
 				TargetIDs:  []int64{1},
 			},
 		},

@@ -61,3 +61,4 @@ Changelog for harbor database schema
 
   - add column `filters` to table `replication_policy`
   - add column `replicate_deletion` to table `replication_policy`
+  - create table `replication_immediate_trigger`
