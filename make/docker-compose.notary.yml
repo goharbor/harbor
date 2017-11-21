@@ -45,7 +45,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-signer"
   notary-db:
-    image: vmware/mariadb-photon:10.2.8
+    image: vmware/mariadb-photon:10.2.10
     container_name: notary-db
     restart: always
     networks:
