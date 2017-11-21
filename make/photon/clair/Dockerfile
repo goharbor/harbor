@@ -24,6 +24,4 @@ RUN chown -R 10000:10000 /clair2.0.1 \
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1:6061/health || exit 1
 
-USER clair
-
 ENTRYPOINT ["/docker-entrypoint.sh"]
