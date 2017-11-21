@@ -28,7 +28,7 @@ func NewLogger(j Job) (*log.Logger, error) {
 	logFile := j.LogPath()
 	d := filepath.Dir(logFile)
 	if _, err := os.Stat(d); os.IsNotExist(err) {
-		err := os.MkdirAll(d, 0660)
+		err := os.MkdirAll(d, 0755)
 		if err != nil {
 			log.Errorf("Failed to create directory for log file %s, the error: %v", logFile, err)
 		}
