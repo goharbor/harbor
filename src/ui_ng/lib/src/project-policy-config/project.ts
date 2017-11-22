@@ -2,12 +2,11 @@ export class Project {
     project_id: number;
     owner_id: number;
     name: string;
-    creation_time: Date;
-    creation_time_str: string;
+    creation_time: Date | string;
     deleted: number;
     owner_name: string;
     togglable: boolean;
-    update_time: Date;
+    update_time: Date | string;
     current_user_role_id: number;
     repo_count: number;
     has_project_admin_role: boolean;

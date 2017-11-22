@@ -36,7 +36,7 @@ import (
 )
 
 var (
-	notaryCachePath = "/root/notary"
+	notaryCachePath = "/etc/ui/notary-cache"
 	trustPin        trustpinning.TrustPinConfig
 	mockRetriever   notary.PassRetriever
 )

@@ -1,6 +1,6 @@
 FROM vmware/photon:1.0
 
-RUN tdnf distro-sync -y || echo \
+RUN tdnf distro-sync -y \
     && tdnf install -y cronie rsyslog logrotate shadow tar gzip sudo net-tools\
     && mkdir /etc/rsyslog.d/ \
     && mkdir /var/spool/rsyslog \
@@ -17,7 +17,7 @@ RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/logrotate
 
 COPY start.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start.sh && \
-    chown -R 10000:10000 /run 
+    chown -R 10000:10000 /etc/rsyslog.conf /etc/rsyslog.d/ /run 
 
 HEALTHCHECK CMD netstat -ltu|grep 10514
 
