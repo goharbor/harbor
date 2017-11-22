@@ -5,7 +5,6 @@ docker rm -f $NAME 2>/dev/null
 docker run --env LDAP_ORGANISATION="Harbor." \
 --env LDAP_DOMAIN="example.com" \
 --env LDAP_ADMIN_PASSWORD="admin" \
---env LDAP_TLS_VERIFY_CLIENT="never" \
 -p 389:389 \
 -p 636:636 \
 --detach --name $NAME osixia/openldap:1.1.7
