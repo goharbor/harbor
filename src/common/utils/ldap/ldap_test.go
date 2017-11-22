@@ -17,7 +17,6 @@ package ldap
 import (
 	//"fmt"
 	//"strings"
-	"fmt"
 	"os"
 	"testing"
 
@@ -254,8 +253,4 @@ func TestSearchUser(t *testing.T) {
 	if ldapUsers[0].Username != "test" {
 		t.Errorf("unexpected ldap user search result: %s = %s", "ldapUsers[0].Username", ldapUsers[0].Username)
 	}
-}
-
-func TestDialTLS(t *testing.T) {
-	fmt.Println("This is a sample test")
 }
