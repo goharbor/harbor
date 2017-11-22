@@ -24,6 +24,7 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/vmware/harbor/src/ui/auth"
 	uiConfig "github.com/vmware/harbor/src/ui/config"
 )
 
@@ -91,15 +92,6 @@ func TestMain(t *testing.T) {
 		t.Fatalf("failed to initialize configurations: %v", err)
 	}
 
-	//	if err := uiConfig.Load(); err != nil {
-	//		t.Fatalf("failed to load configurations: %v", err)
-	//	}
-
-	//	mode, err := uiConfig.AuthMode()
-	//	if err != nil {
-	//		t.Fatalf("failed to get auth mode: %v", err)
-	//	}
-
 	database, err := uiConfig.Database()
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
@@ -139,5 +131,73 @@ func TestAuthenticate(t *testing.T) {
 	}
 	if user != nil {
 		t.Errorf("Nil user for empty credentials")
+	}
+}
+
+func TestSearchUser(t *testing.T) {
+	var username = "test"
+	var auth *Auth
+	user, err := auth.SearchUser(username)
+	if err != nil {
+		t.Errorf("Search user failed %v", err)
+	}
+	if user == nil {
+		t.Errorf("Search user failed %v", user)
+	}
+}
+func TestSearchUser_02(t *testing.T) {
+	var username = "nonexist"
+	var auth *Auth
+	user, _ := auth.SearchUser(username)
+	if user != nil {
+		t.Errorf("Should failed to search nonexist user")
+	}
+
+}
+
+func TestOnboardUser(t *testing.T) {
+	user := &models.User{
+		Username: "sample",
+		Email:    "sample@example.com",
+		Realname: "Sample",
+	}
+
+	var auth *Auth
+	err := auth.OnBoardUser(user)
+	if err != nil {
+		t.Errorf("Failed to onboard user")
+	}
+	if user.UserID <= 0 {
+		t.Errorf("Failed to onboard user")
+	}
+}
+
+func TestAuthenticateHelperOnboardUser(t *testing.T) {
+	user := models.User{
+		Username: "test01",
+		Realname: "test01",
+		Email:    "test01@example.com",
+	}
+
+	err := auth.OnBoardUser(&user)
+	if err != nil {
+		t.Errorf("Failed to onboard user error: %v", err)
+	}
+
+	if user.UserID <= 0 {
+		t.Errorf("Failed to onboard user, userid: %v", user.UserID)
+	}
+
+}
+
+func TestAuthenticateHelperSearchUser(t *testing.T) {
+
+	user, err := auth.SearchUser("test")
+	if err != nil {
+		t.Error("Failed to search user, test")
+	}
+
+	if user == nil {
+		t.Error("Failed to search user test")
 	}
 }

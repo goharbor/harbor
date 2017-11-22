@@ -21,9 +21,8 @@ import (
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/auth"
 )
 
 // ProjectMemberAPI handles request to /api/projects/{}/members/{}
@@ -164,35 +163,35 @@ func (pma *ProjectMemberAPI) Post() {
 	username := strings.TrimSpace(req.Username)
 	userID := checkUserExists(username)
 	if userID <= 0 {
-		//check current authorization mode
-		authMode, err := config.AuthMode()
+
+		user, err := auth.SearchUser(username)
+
 		if err != nil {
-			log.Errorf("Failed the retrieve auth_mode, error: %s", err)
-			pma.RenderError(http.StatusInternalServerError, "Failed to retrieve auth_mode")
+			log.Errorf("Failed the search user, error: %v", err)
+			pma.RenderError(http.StatusInternalServerError, "Failed to search user")
 			return
 		}
 
-		if authMode != "ldap_auth" {
-			log.Errorf("User does not exist, user name: %s", username)
-			pma.RenderError(http.StatusNotFound, "User does not exist")
+		if user == nil {
+			log.Errorf("Current user doesn't exist: %v", username)
+			pma.RenderError(http.StatusNotFound, "Failed to search user: "+username)
 			return
 		}
 
-		//search and import user
-		newUserID, err := ldapUtils.SearchAndImportUser(username)
+		err = auth.OnBoardUser(user)
+
 		if err != nil {
-			log.Errorf("Search and import user failed, error: %v ", err)
-			pma.RenderError(http.StatusInternalServerError, "Failed to search and import user")
+			log.Errorf("Failed the onboard user, error: %s", err)
+			pma.RenderError(http.StatusInternalServerError, "Failed to onboard user")
 			return
 		}
-
-		if newUserID <= 0 {
-			log.Error("Failed to create user")
-			pma.RenderError(http.StatusNotFound, "Failed to create user")
+		if user.UserID <= 0 {
+			log.Error("Failed the onboard user, UserId <=0")
+			pma.RenderError(http.StatusInternalServerError, "Failed to onboard user")
 			return
 		}
+		userID = user.UserID
 
-		userID = int(newUserID)
 	}
 	rolelist, err := dao.GetUserProjectRoles(userID, projectID)
 	if err != nil {
