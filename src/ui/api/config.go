@@ -80,7 +80,6 @@ var (
 		common.EmailSSL,
 		common.EmailInsecure,
 		common.SelfRegistration,
-		common.VerifyRemoteCert,
 	}
 
 	passwordKeys = []string{
