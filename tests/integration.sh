@@ -31,6 +31,7 @@ upload_build=false
 nightly_run=false
 upload_latest_build=false
 latest_build_file='latest.build'
+publish_npm=true
 
 harbor_logs_bucket="harbor-ci-logs"
 harbor_builds_bucket="harbor-builds"
@@ -137,7 +138,13 @@ if [ $upload_latest_build == true ] && [ $rc -eq 0 ]; then
   fi    
 fi
 
-## --------------------------------------------- Tear Down -------------------------------------------------------
+## ------------------------------------- Build & Publish NPM Package for VIC ------------------------------------
+if [ $publish_npm == true ] && [ $rc -eq 0 ] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+    echo "build & publish package harbor-ui-vic to npm repo."
+    ./tools/ui_lib/build_ui_lib_4_vic.sh
+fi
+
+## ------------------------------------------------ Tear Down ---------------------------------------------------
 if [ -f "$keyfile" ]; then
   rm -f $keyfile
 fi
