@@ -15,7 +15,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -50,42 +49,22 @@ func (l *LdapAPI) Ping() {
 	var err error
 	var ldapConfs models.LdapConf
 
+	var ldapSession ldapUtils.LdapSession
+
 	l.Ctx.Input.CopyBody(1 << 32)
+
 	if string(l.Ctx.Input.RequestBody) == "" {
-		ldapConfs, err = ldapUtils.GetSystemLdapConf()
 		if err != nil {
 			log.Errorf("Can't load system configuration, error: %v", err)
 			l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
 			return
 		}
+		err = ldapSession.ConnectionTest()
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)
-		v := map[string]interface{}{}
-		if err := json.Unmarshal(l.Ctx.Input.RequestBody,
-			&v); err != nil {
-			log.Errorf("failed to unmarshal LDAP server settings: %v", err)
-			l.RenderError(http.StatusInternalServerError, "")
-			return
-		}
-		if _, ok := v["ldap_search_password"]; !ok {
-			settings, err := ldapUtils.GetSystemLdapConf()
-			if err != nil {
-				log.Errorf("Can't load system configuration, error: %v", err)
-				l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
-				return
-			}
-			ldapConfs.LdapSearchPassword = settings.LdapSearchPassword
-		}
+		err = ldapSession.ConnectionTestWithConfig(ldapConfs)
 	}
 
-	ldapConfs, err = ldapUtils.ValidateLdapConf(ldapConfs)
-	if err != nil {
-		log.Errorf("Invalid ldap request, error: %v", err)
-		l.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid ldap request: %v", err))
-		return
-	}
-
-	err = ldapUtils.ConnectTest(ldapConfs)
 	if err != nil {
 		log.Errorf("Ldap connect fail, error: %v", err)
 		l.RenderError(http.StatusBadRequest, fmt.Sprintf("ldap connect fail: %v", err))
@@ -98,10 +77,11 @@ func (l *LdapAPI) Search() {
 	var err error
 	var ldapUsers []models.LdapUser
 	var ldapConfs models.LdapConf
+	var ldapSession ldapUtils.LdapSession
 
 	l.Ctx.Input.CopyBody(1 << 32)
 	if string(l.Ctx.Input.RequestBody) == "" {
-		ldapConfs, err = ldapUtils.GetSystemLdapConf()
+		err = ldapSession.Create()
 		if err != nil {
 			log.Errorf("Can't load system configuration, error: %v", err)
 			l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
@@ -109,15 +89,9 @@ func (l *LdapAPI) Search() {
 		}
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)
+		ldapSession.CreateWithUIConfig(ldapConfs)
 	}
-
-	ldapConfs, err = ldapUtils.ValidateLdapConf(ldapConfs)
-
-	if err != nil {
-		log.Errorf("Invalid ldap request, error: %v", err)
-		l.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid ldap request: %v", err))
-		return
-	}
+	defer ldapSession.Close()
 
 	searchName := l.GetString("username")
 
@@ -131,9 +105,7 @@ func (l *LdapAPI) Search() {
 		}
 	}
 
-	ldapConfs.LdapFilter = ldapUtils.MakeFilter(searchName, ldapConfs.LdapFilter, ldapConfs.LdapUID)
-
-	ldapUsers, err = ldapUtils.SearchUser(ldapConfs)
+	ldapUsers, err = ldapSession.SearchUser(searchName)
 
 	if err != nil {
 		log.Errorf("Ldap search fail, error: %v", err)
@@ -152,23 +124,9 @@ func (l *LdapAPI) ImportUser() {
 	var ldapFailedImportUsers []models.LdapFailedImportUser
 	var ldapConfs models.LdapConf
 
-	ldapConfs, err := ldapUtils.GetSystemLdapConf()
-	if err != nil {
-		log.Errorf("Can't load system configuration, error: %v", err)
-		l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
-		return
-	}
-
 	l.DecodeJSONReqAndValidate(&ldapImportUsers)
 
-	ldapConfs, err = ldapUtils.ValidateLdapConf(ldapConfs)
-	if err != nil {
-		log.Errorf("Invalid ldap request, error: %v", err)
-		l.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid ldap request: %v", err))
-		return
-	}
-
-	ldapFailedImportUsers, err = importUsers(ldapConfs, ldapImportUsers.LdapUIDList)
+	ldapFailedImportUsers, err := importUsers(ldapConfs, ldapImportUsers.LdapUIDList)
 
 	if err != nil {
 		log.Errorf("Ldap import user fail, error: %v", err)
@@ -189,8 +147,14 @@ func (l *LdapAPI) ImportUser() {
 func importUsers(ldapConfs models.LdapConf, ldapImportUsers []string) ([]models.LdapFailedImportUser, error) {
 	var failedImportUser []models.LdapFailedImportUser
 	var u models.LdapFailedImportUser
+	var ldapSession ldapUtils.LdapSession
 
-	tempFilter := ldapConfs.LdapFilter
+	if err := ldapSession.Create(); err != nil {
+		log.Errorf("Can't connect to ldap, error: %v", err)
+
+	}
+
+	defer ldapSession.Close()
 
 	for _, tempUID := range ldapImportUsers {
 		u.UID = tempUID
@@ -214,9 +178,7 @@ func importUsers(ldapConfs models.LdapConf, ldapImportUsers []string) ([]models.
 			continue
 		}
 
-		ldapConfs.LdapFilter = ldapUtils.MakeFilter(u.UID, tempFilter, ldapConfs.LdapUID)
-
-		ldapUsers, err := ldapUtils.SearchUser(ldapConfs)
+		ldapUsers, err := ldapSession.SearchUser(u.UID)
 		if err != nil {
 			u.UID = tempUID
 			u.Error = "failed_search_user"
@@ -232,7 +194,7 @@ func importUsers(ldapConfs models.LdapConf, ldapImportUsers []string) ([]models.
 			continue
 		}
 
-		_, err = ldapUtils.ImportUser(ldapUsers[0])
+		_, err = ldapSession.ImportUser(ldapUsers[0])
 
 		if err != nil {
 			u.UID = tempUID

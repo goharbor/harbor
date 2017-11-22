@@ -46,21 +46,18 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	ldapConfs, err := ldapUtils.GetSystemLdapConf()
+	var ldapSession ldapUtils.LdapSession
+
+	err := ldapSession.Create()
+
+	defer ldapSession.Close()
 
 	if err != nil {
-		return nil, fmt.Errorf("can't load system configuration: %v", err)
+		log.Warningf("ldap connection fail: %v", err)
+		return nil, nil
 	}
 
-	ldapConfs, err = ldapUtils.ValidateLdapConf(ldapConfs)
-
-	if err != nil {
-		return nil, fmt.Errorf("invalid ldap request: %v", err)
-	}
-
-	ldapConfs.LdapFilter = ldapUtils.MakeFilter(p, ldapConfs.LdapFilter, ldapConfs.LdapUID)
-
-	ldapUsers, err := ldapUtils.SearchUser(ldapConfs)
+	ldapUsers, err := ldapSession.SearchUser(p)
 
 	if err != nil {
 		log.Warningf("ldap search fail: %v", err)
@@ -83,7 +80,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	dn := ldapUsers[0].DN
 
 	log.Debugf("username: %s, dn: %s", u.Username, dn)
-	if err := ldapUtils.Bind(ldapConfs, dn, m.Password); err != nil {
+	if err := ldapSession.Bind(dn, m.Password); err != nil {
 		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
 		return nil, nil
 	}
@@ -100,7 +97,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		u.UserID = currentUser.UserID
 		u.HasAdminRole = currentUser.HasAdminRole
 	} else {
-		userID, err := ldapUtils.ImportUser(ldapUsers[0])
+		userID, err := ldapSession.ImportUser(ldapUsers[0])
 		if err != nil {
 			log.Errorf("Can't import user %s, error: %v", ldapUsers[0].Username, err)
 			return nil, fmt.Errorf("can't import user %s, error: %v", ldapUsers[0].Username, err)
