@@ -48,7 +48,6 @@ const (
 	LDAPFilter                 = "ldap_filter"
 	LDAPScope                  = "ldap_scope"
 	LDAPTimeout                = "ldap_timeout"
-	LDAPVerifyCert             = "ldap_verify_cert"
 	TokenServiceURL            = "token_service_url"
 	RegistryURL                = "registry_url"
 	EmailHost                  = "email_host"

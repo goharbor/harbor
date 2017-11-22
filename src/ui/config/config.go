@@ -183,7 +183,6 @@ func LDAP() (*models.LDAP, error) {
 	ldap.Filter = cfg[common.LDAPFilter].(string)
 	ldap.Scope = int(cfg[common.LDAPScope].(float64))
 	ldap.Timeout = int(cfg[common.LDAPTimeout].(float64))
-	ldap.VerifyCert = cfg[common.LDAPVerifyCert].(bool)
 
 	return ldap, nil
 }

@@ -24,7 +24,6 @@ type LdapConf struct {
 	LdapUID               string `json:"ldap_uid"`
 	LdapScope             int    `json:"ldap_scope"`
 	LdapConnectionTimeout int    `json:"ldap_connection_timeout"`
-	LdapVerifyCert        bool   `json:"ldap_verify_cert"`
 }
 
 // LdapUser ...

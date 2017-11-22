@@ -81,10 +81,6 @@ var (
 			env:   "LDAP_TIMEOUT",
 			parse: parseStringToInt,
 		},
-		common.LDAPVerifyCert: &parser{
-			env:   "LDAP_VERIFY_CERT",
-			parse: parseStringToBool,
-		},
 		common.EmailHost: "EMAIL_HOST",
 		common.EmailPort: &parser{
 			env:   "EMAIL_PORT",

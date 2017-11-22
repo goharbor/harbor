@@ -11,7 +11,6 @@ LDAP_FILTER=$ldap_filter
 LDAP_UID=$ldap_uid
 LDAP_SCOPE=$ldap_scope
 LDAP_TIMEOUT=$ldap_timeout
-LDAP_VERIFY_CERT=true
 DATABASE_TYPE=mysql
 MYSQL_HOST=$db_host
 MYSQL_PORT=$db_port
