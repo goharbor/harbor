@@ -17,7 +17,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -161,7 +160,7 @@ func (pma *ProjectMemberAPI) Post() {
 
 	var req memberReq
 	pma.DecodeJSONReq(&req)
-	username := strings.TrimSpace(req.Username)
+	username := req.Username
 	userID := checkUserExists(username)
 	if userID <= 0 {
 		//check current authorization mode
