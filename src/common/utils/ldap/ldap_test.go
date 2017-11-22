@@ -348,6 +348,15 @@ func InitTest(ldapTestConfig map[string]interface{}, t *testing.T) {
 }
 
 func TestSearchAndImportUser(t *testing.T) {
+	InitTest(adminServerDefaultConfigWithVerifyCert, t)
+	database, err := uiConfig.Database()
+	if err != nil {
+		log.Fatalf("failed to get database configuration: %v", err)
+	}
+
+	if err := dao.InitDatabase(database); err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
 
 	userID, err := SearchAndImportUser("test")
 
@@ -361,8 +370,17 @@ func TestSearchAndImportUser(t *testing.T) {
 }
 
 func TestSearchAndImportUserNotExist(t *testing.T) {
+	InitTest(adminServerDefaultConfigWithVerifyCert, t)
+	database, err := uiConfig.Database()
+	if err != nil {
+		log.Fatalf("failed to get database configuration: %v", err)
+	}
 
-	userID, _ := SearchAndImportUser("notexist")
+	if err := dao.InitDatabase(database); err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
+
+	userID, err := SearchAndImportUser("notexist")
 
 	if userID > 0 {
 		t.Fatal("Can not import a non exist ldap user!")
