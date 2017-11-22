@@ -43,5 +43,5 @@ func (st *ImmediateTrigger) Setup() error {
 
 //Unset is the implementation of same method defined in Trigger interface
 func (st *ImmediateTrigger) Unset() error {
-	return errors.New("Not implemented")
+	return DefaultWatchList.Remove(st.params.PolicyID)
 }

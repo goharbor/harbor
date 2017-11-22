@@ -32,6 +32,10 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	"github.com/vmware/harbor/src/replication"
+	"github.com/vmware/harbor/src/replication/core"
+	rep_models "github.com/vmware/harbor/src/replication/models"
+	"github.com/vmware/harbor/src/replication/trigger"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/promgr"
 	"github.com/vmware/harbor/src/ui/service/token"
@@ -77,7 +81,41 @@ func checkUserExists(name string) int {
 	return 0
 }
 
+// CheckAndTriggerReplication checks whether replication policy is set
+// on the resource, if is, trigger the replication
+func CheckAndTriggerReplication(image, operation string) {
+	project, _ := utils.ParseRepository(image)
+	watchItems, err := trigger.DefaultWatchList.Get(project, operation)
+	if err != nil {
+		log.Errorf("failed to get watch list for resource %s, operation %s: %v", image, operation, err)
+		return
+	}
+	if len(watchItems) == 0 {
+		log.Debugf("no replication should be triggered for resource %s, operation %s, skip", image, operation)
+		return
+	}
+
+	for _, watchItem := range watchItems {
+		// TODO define a new type ReplicationItem to wrap FilterItem and operation.
+		// Maybe change the FilterItem to interface and define a type Resource to
+		// implement FilterItem is better?
+		item := &rep_models.FilterItem{
+			Kind:  replication.FilterItemKindTag,
+			Value: image,
+			Metadata: map[string]interface{}{
+				"operation": operation,
+			},
+		}
+		if err := core.DefaultController.Replicate(watchItem.PolicyID, item); err != nil {
+			log.Errorf("failed to trigger replication for resource: %s, operation: %s: %v", image, operation, err)
+			return
+		}
+		log.Infof("replication for resource: %s, operation: %s triggered", image, operation)
+	}
+}
+
 // TriggerReplication triggers the replication according to the policy
+// TODO remove
 func TriggerReplication(policyID int64, repository string,
 	tags []string, operation string) error {
 	data := struct {
@@ -101,26 +139,7 @@ func TriggerReplication(policyID int64, repository string,
 	return uiutils.RequestAsUI("POST", url, bytes.NewBuffer(b), uiutils.NewStatusRespHandler(http.StatusOK))
 }
 
-// TriggerReplicationByRepository triggers the replication according to the repository
-func TriggerReplicationByRepository(projectID int64, repository string, tags []string, operation string) {
-	policies, err := dao.GetRepPolicyByProject(projectID)
-	if err != nil {
-		log.Errorf("failed to get policies for repository %s: %v", repository, err)
-		return
-	}
-
-	for _, policy := range policies {
-		if policy.Enabled == 0 {
-			continue
-		}
-		if err := TriggerReplication(policy.ID, repository, tags, operation); err != nil {
-			log.Errorf("failed to trigger replication of policy %d for %s: %v", policy.ID, repository, err)
-		} else {
-			log.Infof("replication of policy %d for %s triggered", policy.ID, repository)
-		}
-	}
-}
-
+// TODO remove
 func postReplicationAction(policyID int64, acton string) error {
 	data := struct {
 		PolicyID int64  `json:"policy_id"`

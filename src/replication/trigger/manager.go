@@ -12,17 +12,18 @@ import (
 //with json format.
 type Manager struct {
 	//Cache for triggers
-	cache *Cache
+	//cache *Cache
 }
 
 //NewManager is the constructor of trigger manager.
 //capacity is the max number of trigger references manager can keep in memory
 func NewManager(capacity int) *Manager {
 	return &Manager{
-		cache: NewCache(capacity),
+	//cache: NewCache(capacity),
 	}
 }
 
+/*
 //GetTrigger returns the enabled trigger reference if existing in the cache.
 func (m *Manager) GetTrigger(policyID int64) Interface {
 	return m.cache.Get(policyID)
@@ -47,6 +48,7 @@ func (m *Manager) RemoveTrigger(policyID int64) error {
 
 	return nil
 }
+*/
 
 //SetupTrigger will create the new trigger based on the provided json parameters.
 //If failed, an error will be returned.

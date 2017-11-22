@@ -28,16 +28,11 @@ func (wl *WatchList) Add(item WatchItem) error {
 }
 
 //Remove the specified watch item from list
-func (wl *WatchList) Remove() WatchItem {
-	return WatchItem{}
-}
-
-//Update the watch item in the list
-func (wl *WatchList) Update(updatedItem WatchItem) error {
+func (wl *WatchList) Remove(policyID int64) error {
 	return nil
 }
 
-//Get the specified watch item
-func (wl *WatchList) Get(namespace string) WatchItem {
-	return WatchItem{}
+//Get the watch items according to the namespace and operation
+func (wl *WatchList) Get(namespace, operation string) ([]WatchItem, error) {
+	return []WatchItem{}, nil
 }
