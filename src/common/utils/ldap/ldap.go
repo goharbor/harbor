@@ -404,33 +404,3 @@ func searchLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.SearchRes
 
 	return result, nil
 }
-
-// SearchAndImportUser - Search user in LDAP, if this user exist, import it to database
-func SearchAndImportUser(username string) (int64, error) {
-	var err error
-	var userID int64
-
-	ldapConf, err := GetSystemLdapConf()
-	if err != nil {
-		log.Errorf("Can not get ldap configuration, error %v", err)
-		return 0, err
-	}
-
-	ldapConf.LdapFilter = MakeFilter(username, ldapConf.LdapFilter, ldapConf.LdapUID)
-	log.Debugf("Search with LDAP with filter %s", ldapConf.LdapFilter)
-
-	ldapUsers, err := SearchUser(ldapConf)
-	if err != nil {
-		log.Errorf("Can not search ldap, error %v, filter: %s", err, ldapConf.LdapFilter)
-		return 0, err
-	}
-
-	if len(ldapUsers) > 0 {
-		log.Debugf("Importing user %s to local database", ldapUsers[0].Username)
-		if userID, err = ImportUser(ldapUsers[0]); err != nil {
-			log.Errorf("Can not import ldap user to local db, error %v", err)
-			return 0, err
-		}
-	}
-	return userID, err
-}
