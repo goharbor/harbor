@@ -206,8 +206,7 @@ func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
 	for _, ldapEntry := range result.Entries {
 		var u models.LdapUser
 		for _, attr := range ldapEntry.Attributes {
-			//OpenLDAP sometimes contains leading space in username
-			val := strings.TrimSpace(attr.Values[0])
+			val := attr.Values[0]
 			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
 			switch strings.ToLower(attr.Name) {
 			case strings.ToLower(ldapConfs.LdapUID):
