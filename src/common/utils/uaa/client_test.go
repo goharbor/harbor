@@ -1,12 +1,15 @@
 package uaa
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/utils/uaa/test"
+	"io/ioutil"
 	"net/http/httptest"
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -41,6 +44,28 @@ func TestPasswordAuth(t *testing.T) {
 	assert.Nil(err)
 	_, err = client.PasswordAuth("wrong", "wrong")
 	assert.NotNil(err)
+}
+
+func TestUserInfo(t *testing.T) {
+	cfg := &ClientConfig{
+		ClientID:      "uaa",
+		ClientSecret:  "secret",
+		Endpoint:      mockUAAServer.URL,
+		SkipTLSVerify: true,
+	}
+	assert := assert.New(t)
+	client, err := NewDefaultClient(cfg)
+	assert.Nil(err)
+	token, err := ioutil.ReadFile(path.Join(currPath(), "test", "./good-access-token.txt"))
+	if err != nil {
+		panic(err)
+	}
+	userInfo, err := client.GetUserInfo(strings.TrimSpace(string(token)))
+	assert.Nil(err, fmt.Sprintf("%v", err))
+
+	assert.Equal("user01", userInfo.UserName)
+	_, err2 := client.GetUserInfo("bad")
+	assert.NotNil(err2)
 }
 
 func currPath() string {

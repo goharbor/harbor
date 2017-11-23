@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package test
+package uaa
 
 import (
 	"fmt"
@@ -31,4 +31,9 @@ func (fc *FakeClient) PasswordAuth(username, password string) (*oauth2.Token, er
 		return &oauth2.Token{}, nil
 	}
 	return nil, fmt.Errorf("Invalide username and password")
+}
+
+// GetUserInfo ...
+func (fc *FakeClient) GetUserInfo(token string) (*UserInfo, error) {
+	return nil, nil
 }
