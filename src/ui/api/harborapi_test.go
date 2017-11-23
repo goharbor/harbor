@@ -129,6 +129,7 @@ func init() {
 	beego.Router("/api/configurations", &ConfigAPI{})
 	beego.Router("/api/configurations/reset", &ConfigAPI{}, "post:Reset")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
+	beego.Router("/api/replications", &ReplicationAPI{})
 
 	_ = updateInitPassword(1, "Harbor12345")
 

@@ -1484,7 +1484,7 @@ paths:
           description: Create new policy.
           required: true
           schema:
-            $ref: '#/definitions/RepPolicyPost'
+            $ref: '#/definitions/RepPolicy'
       tags:
         - Products
       responses:
@@ -1539,10 +1539,10 @@ paths:
           description: policy ID
         - name: policyupdate
           in: body
-          description: 'Update policy name, description, target and enablement.'
+          description: 'Updated properties of the replication policy.'
           required: true
           schema:
-            $ref: '#/definitions/RepPolicyUpdate'
+            $ref: '#/definitions/RepPolicy'
       tags:
         - Products
       responses:
@@ -1560,35 +1560,27 @@ paths:
             project and target.
         '500':
           description: Unexpected internal errors.
-  /policies/replication/{id}/enablement:
-    put:
-      summary: Put modifies enablement of the policy.
+  /replications:
+    post:
+      summary: Trigger the replication according to the specified policy.
       description: |
-        This endpoint let user update policy enablement flag.
+        This endpoint is used to trigger a replication.
       parameters:
-        - name: id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: policy ID
-        - name: enabledflag
+        - name: policy ID
           in: body
-          description: The policy enablement flag.
+          description: The ID of replication policy.
           required: true
           schema:
-            $ref: '#/definitions/RepPolicyEnablementReq'
+            $ref: '#/definitions/Replication'
       tags:
         - Products
       responses:
         '200':
-          description: Update job policy enablement successfully.
-        '400':
-          description: Invalid enabled value.
+          description: Trigger the replication successfully.
         '401':
           description: User need to log in first.
         '404':
-          description: The specific repository ID's policy does not exist.
+          description: The policy does not exist.
         '500':
           description: Unexpected internal errors.
   /targets:
@@ -2376,27 +2368,22 @@ definitions:
         type: integer
         format: int64
         description: The policy ID.
-      project_id:
-        type: integer
-        format: int64
-        description: The project ID.
-      project_name:
-        type: string
-        description: The project name.
-      target_id:
-        type: integer
-        format: int64
-        description: The target ID.
       name:
         type: string
         description: The policy name.
-      enabled:
-        type: integer
-        format: int
-        description: The policy's enabled status.
       description:
         type: string
         description: The description of the policy.
+      projects:
+        type: object
+        description: The project list that the policy applys to.
+        items:
+          $ref: '#/definitions/Project'
+      targets:
+        type: object
+        description: The target list.
+        items:
+          $ref: '#/definitions/RepTarget'
       trigger:
         type: object
         description: The trigger for schedule job.
@@ -2408,14 +2395,11 @@ definitions:
         items:
           $ref: '#/definitions/RepFilter'
       replicate_existing_image_now:
-        type: string
+        type: boolean
         description: Whether to replicate the existing images now.
       replicate_deletion:
-        type: string
+        type: boolean
         description: Whether to replicate the deletion operation.
-      start_time:
-        type: string
-        description: The start time of the policy.
       creation_time:
         type: string
         description: The create time of the policy.
@@ -2425,100 +2409,27 @@ definitions:
       error_job_count:
         format: int
         description: The error job count number for the policy.
-      deleted:
-        type: integer
-  RepPolicyPost:
-    type: object
-    properties:
-      project_id:
-        type: integer
-        format: int64
-        description: The project ID.
-      target_id:
-        type: integer
-        format: int64
-        description: The target ID.
-      name:
-        type: string
-        description: The policy name.
-      trigger:
-        type: object
-        description: The trigger for schedule job.
-        items:
-          $ref: '#/definitions/RepTrigger'
-      filters:
-        type: array
-        description: The replication policy filter array.
-        items:
-          $ref: '#/definitions/RepFilter'
-      replicate_existing_image_now:
-        type: string
-        description: Whether to replicate the existing images now.
-      replicate_deletion:
-        type: string
-        description: Whether replication deletion operation.
-      enabled:
-        type: integer
-        format: int
-        description: '1-enable, 0-disable'
-  RepPolicyUpdate:
-    type: object
-    properties:
-      target_id:
-        type: integer
-        format: int64
-        description: The target ID.
-      name:
-        type: string
-        description: The policy name.
-      enabled:
-        type: integer
-        format: int
-        description: The policy's enabled status.
-      description:
-        type: string
-        description: The description of the policy.
-      trigger:
-        type: object
-        description: The trigger for schedule job.
-        items:
-          $ref: '#/definitions/RepTrigger'
-      filters:
-        type: array
-        description: The replication policy filter array.
-        items:
-          $ref: '#/definitions/RepFilter'
-      replicate_existing_image_now:
-        type: string
-        description: Whether to replicate the existing images now.
-      replicate_deletion:
-        type: string
-        description: Whether replication deletion operation.
   RepTrigger:
     type: object
     properties:
-      type:
+      kind:
         type: string
-        description: The replication policy trigger type.
-      params:
-        type: object
-        description: The map is the replication policy trigger parameters.
+        description: The replication policy trigger kind.
+      param:
+        type: string
+        description: The replication policy trigger parameters.
   RepFilter:
     type: object
     properties:
-      type:
+      kind:
         type: string
-        description: The replication policy filter type.
+        description: The replication policy filter kind.
       value:
         type: string
         description: The replication policy filter value.
-  RepPolicyEnablementReq:
-    type: object
-    properties:
-      enabled:
-        type: integer
-        format: int
-        description: The policy enablement flag.
+      metadata:
+        type: object
+        description: This map object is the replication policy filter metadata.
   RepTarget:
     type: object
     properties:
@@ -3001,6 +2912,12 @@ definitions:
                 type: integer
                 description: The offest in seconds of UTC 0 o'clock, only valid when the policy type is "daily"
             description: The parameters of the policy, the values are dependant on the type of the policy.
-          
+  Replication:
+    type: object
+    properties:
+      policy_id:
+        type: integer
+        description: The ID of replication policy
+
       
     
