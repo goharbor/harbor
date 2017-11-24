@@ -4,7 +4,7 @@ This Document decribes how to deploy Harbor on Kubernetes.  It has been verified
 
 ### Prerequisite
 
-* You should have domain knowledge about Kubernetes (Replication Controller, Service, Persistent Volume, Persistent Volume Claim, Config Map). 
+* You should have domain knowledge about Kubernetes (Deployment, Service, Persistent Volume, Persistent Volume Claim, Config Map).
 * **Optional**: Load the docker images onto woker nodes.  *If you skip this step, worker node will pull images from Docker Hub when starting the pods.*
 	* Download the offline installer of Harbor v1.2.0 from the [release](https://github.com/vmware/harbor/releases) page.
 	* Uncompress the offline installer and get the images tgz file harbor.*.tgz, transfer it to each of the worker nodes.
@@ -50,7 +50,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
         - 10.192.168.5
   ``` 
   
-- `make/kubernetes/**/*.rc.yaml`: Specify configs of containers.  
+- `make/kubernetes/**/*.deploy.yaml`: Specify configs of containers.
 - `make/kubernetes/pv/*.pvc.yaml`: Persistent Volume Claim.  
   You can set capacity of storage in these files. example:
 
@@ -153,13 +153,13 @@ kubectl apply -f make/kubernetes/registry/registry.svc.yaml
 kubectl apply -f make/kubernetes/ui/ui.svc.yaml
 kubectl apply -f make/kubernetes/adminserver/adminserver.svc.yaml
 
-# create k8s rc
-kubectl apply -f make/kubernetes/registry/registry.rc.yaml
-kubectl apply -f make/kubernetes/mysql/mysql.rc.yaml
-kubectl apply -f make/kubernetes/jobservice/jobservice.rc.yaml
-kubectl apply -f make/kubernetes/ui/ui.rc.yaml
-kubectl apply -f make/kubernetes/nginx/nginx.rc.yaml
-kubectl apply -f make/kubernetes/adminserver/adminserver.rc.yaml
+# create k8s deployment
+kubectl apply -f make/kubernetes/registry/registry.deploy.yaml
+kubectl apply -f make/kubernetes/mysql/mysql.deploy.yaml
+kubectl apply -f make/kubernetes/jobservice/jobservice.deploy.yaml
+kubectl apply -f make/kubernetes/ui/ui.deploy.yaml
+kubectl apply -f make/kubernetes/nginx/nginx.deploy.yaml
+kubectl apply -f make/kubernetes/adminserver/adminserver.deploy.yaml
 ```
 
 After the pods are running, you can access Harbor's UI via the configured endpoint `10.192.168.5` or issue docker commands such as `docker login 10.192.168.5` to interact with the registry.

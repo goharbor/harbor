@@ -1,13 +1,11 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: jobservice-rc
+  name: jobservice
   labels:
-    name: jobservice-rc
+    name: jobservice
 spec:
   replicas: 1
-  selector:
-    name: jobservice-apps
   template:
     metadata:
       labels:
