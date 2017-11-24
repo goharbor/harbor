@@ -166,21 +166,33 @@ func (pma *ProjectMemberAPI) Post() {
 	if userID <= 0 {
 		//check current authorization mode
 		authMode, err := config.AuthMode()
-		if err != nil || authMode != "ldap_auth" {
-			log.Warningf("User does not exist, user name: %s", username)
+		if err != nil {
+			log.Errorf("Failed the retrieve auth_mode, error: %s", err)
+			pma.RenderError(http.StatusInternalServerError, "Failed to retrieve auth_mode")
+			return
+		}
+
+		if authMode != "ldap_auth" {
+			log.Errorf("User does not exist, user name: %s", username)
 			pma.RenderError(http.StatusNotFound, "User does not exist")
 			return
 		}
 
 		//search and import user
 		newUserID, err := ldapUtils.SearchAndImportUser(username)
-		if err == nil || newUserID > 0 {
-			userID = int(newUserID)
-		} else {
-			log.Warningf("User does not exist, user name: %s", username)
-			pma.RenderError(http.StatusNotFound, "User does not exist")
+		if err != nil {
+			log.Errorf("Search and import user failed, error: %v ", err)
+			pma.RenderError(http.StatusInternalServerError, "Failed to search and import user")
 			return
 		}
+
+		if newUserID <= 0 {
+			log.Error("Failed to create user")
+			pma.RenderError(http.StatusNotFound, "Failed to create user")
+			return
+		}
+
+		userID = int(newUserID)
 	}
 	rolelist, err := dao.GetUserProjectRoles(userID, projectID)
 	if err != nil {

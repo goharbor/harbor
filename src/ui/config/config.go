@@ -185,7 +185,7 @@ func LDAP() (*models.LDAP, error) {
 	if cfg[common.LDAPVerifyCert] != nil {
 		ldap.VerifyCert = cfg[common.LDAPVerifyCert].(bool)
 	} else {
-		ldap.VerifyCert = false
+		ldap.VerifyCert = true
 	}
 
 	return ldap, nil
