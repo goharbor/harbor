@@ -425,7 +425,8 @@
             "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes.",
             "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
-            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
+            "VERIFY_CERT": "Verify Cert from LDAP Server"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -434,7 +435,8 @@
             "BASE_DN": "LDAP Base DN",
             "FILTER": "LDAP Filter",
             "UID": "LDAP UID",
-            "SCOPE": "LDAP Scope"
+            "SCOPE": "LDAP Scope",
+            "VERIFY_CERT": "LDAP Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
