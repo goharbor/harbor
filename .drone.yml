@@ -49,9 +49,9 @@ pipeline:
       - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
       - mkdir -p bundle
       - mkdir -p latest
-      - echo $(git describe --tags) > version 
+      - echo $(git describe --tags) > latest/version 
       - cp harbor-offline-installer-*.tgz bundle
-      - if [ ${DRONE_BRANCH} == "master" ]; then cp harbor-offline-installer-*.tgz latest/harbor-offline-installer-latest-master.tgz; else cp harbor-offline-installer-*.tgz latest/harbor-offline-installer-latest-release.tgz; fi
+      - if [ ${DRONE_BRANCH} = "master" ]; then cp harbor-offline-installer-*.tgz latest/harbor-offline-installer-latest-master.tgz; else cp harbor-offline-installer-*.tgz latest/harbor-offline-installer-latest-release.tgz; fi
       - ls -la bundle
       - ls -la latest
     when:
