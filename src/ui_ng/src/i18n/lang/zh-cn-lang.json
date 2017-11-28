@@ -167,7 +167,7 @@
     "PROJECT_CONFIG": {
         "REGISTRY": "项目仓库",
         "PUBLIC_TOGGLE": "公开",
-        "PUBLIC_POLICY": "此项目的仓库对所有访客公开。",
+        "PUBLIC_POLICY": "所有人都可访问公开的项目仓库。",
         "SECURITY": "部署安全",
         "CONTENT_TRUST_TOGGLE": "内容信任",
         "CONTENT_TRUST_POLCIY": "仅允许部署通过认证的镜像。",
