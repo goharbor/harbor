@@ -1,3 +1,17 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package event
 
 import (
@@ -5,18 +19,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/vmware/harbor/src/replication/core"
-	"github.com/vmware/harbor/src/replication/models"
+	"github.com/vmware/harbor/src/replication"
+	"github.com/vmware/harbor/src/replication/event/notification"
 )
 
 //OnDeletionHandler implements the notification handler interface to handle image on push event.
 type OnDeletionHandler struct{}
-
-//OnDeletionNotification contains the data required by this handler
-type OnDeletionNotification struct {
-	//The name of the project where the being pushed images are located
-	ProjectName string
-}
 
 //Handle implements the same method of notification handler interface
 func (oph *OnDeletionHandler) Handle(value interface{}) error {
@@ -25,32 +33,12 @@ func (oph *OnDeletionHandler) Handle(value interface{}) error {
 	}
 
 	vType := reflect.TypeOf(value)
-	if vType.Kind() != reflect.Struct || vType.String() != "event.OnDeletionNotification" {
-		return fmt.Errorf("Mismatch value type of OnDeletionHandler, expect %s but got %s", "event.OnDeletionNotification", vType.String())
+	if vType.Kind() != reflect.Struct || vType.String() != "notification.OnDeletionNotification" {
+		return fmt.Errorf("Mismatch value type of OnDeletionHandler, expect %s but got %s", "notification.OnDeletionNotification", vType.String())
 	}
 
-	notification := value.(OnDeletionNotification)
-	//TODO:Call projectManager to get the projectID
-	fmt.Println(notification.ProjectName)
-	query := models.QueryParameter{
-		ProjectID: 0,
-	}
-
-	policies, err := core.DefaultController.GetPolicies(query)
-	if err != nil {
-		return err
-	}
-	if policies != nil && len(policies) > 0 {
-		for _, p := range policies {
-			//Error accumulated and then return?
-			if err := core.DefaultController.Replicate(p.ID); err != nil {
-				//TODO:Log error
-				fmt.Println(err.Error())
-			}
-		}
-	}
-
-	return nil
+	notification := value.(notification.OnDeletionNotification)
+	return checkAndTriggerReplication(notification.Image, replication.OperationDelete)
 }
 
 //IsStateful implements the same method of notification handler interface

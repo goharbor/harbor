@@ -20,55 +20,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/test"
 )
 
-type fakeWatchItemDAO struct {
-	items []models.WatchItem
-}
-
-func (f *fakeWatchItemDAO) Add(item *models.WatchItem) (int64, error) {
-	f.items = append(f.items, *item)
-	return int64(len(f.items) + 1), nil
-}
-
-// Delete the WatchItem specified by policy ID
-func (f *fakeWatchItemDAO) DeleteByPolicyID(policyID int64) error {
-	for i, item := range f.items {
-		if item.PolicyID == policyID {
-			f.items = append(f.items[:i], f.items[i+1:]...)
-			break
-		}
-	}
-	return nil
-}
-
-// Get returns WatchItem list according to the namespace and operation
-func (f *fakeWatchItemDAO) Get(namespace, operation string) ([]models.WatchItem, error) {
-	items := []models.WatchItem{}
-	for _, item := range f.items {
-		if item.Namespace != namespace {
-			continue
-		}
-
-		if operation == "push" {
-			if item.OnPush {
-				items = append(items, item)
-			}
-		}
-
-		if operation == "delete" {
-			if item.OnDeletion {
-				items = append(items, item)
-			}
-		}
-	}
-
-	return items, nil
-}
-
 func TestMethodsOfWatchList(t *testing.T) {
-	dao.DefaultDatabaseWatchItemDAO = &fakeWatchItemDAO{}
+	dao.DefaultDatabaseWatchItemDAO = &test.FakeWatchItemDAO{}
 
 	var policyID int64 = 1
 

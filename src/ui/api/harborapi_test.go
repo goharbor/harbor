@@ -40,6 +40,7 @@ import (
 	"github.com/dghubble/sling"
 
 	//for test env prepare
+	_ "github.com/vmware/harbor/src/replication/event"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 )

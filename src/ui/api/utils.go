@@ -32,10 +32,6 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	"github.com/vmware/harbor/src/replication"
-	"github.com/vmware/harbor/src/replication/core"
-	rep_models "github.com/vmware/harbor/src/replication/models"
-	"github.com/vmware/harbor/src/replication/trigger"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/promgr"
 	"github.com/vmware/harbor/src/ui/service/token"
@@ -79,39 +75,6 @@ func checkUserExists(name string) int {
 		return u.UserID
 	}
 	return 0
-}
-
-// CheckAndTriggerReplication checks whether replication policy is set
-// on the resource, if is, trigger the replication
-func CheckAndTriggerReplication(image, operation string) {
-	project, _ := utils.ParseRepository(image)
-	watchItems, err := trigger.DefaultWatchList.Get(project, operation)
-	if err != nil {
-		log.Errorf("failed to get watch list for resource %s, operation %s: %v", image, operation, err)
-		return
-	}
-	if len(watchItems) == 0 {
-		log.Debugf("no replication should be triggered for resource %s, operation %s, skip", image, operation)
-		return
-	}
-
-	for _, watchItem := range watchItems {
-		// TODO define a new type ReplicationItem to wrap FilterItem and operation.
-		// Maybe change the FilterItem to interface and define a type Resource to
-		// implement FilterItem is better?
-		item := &rep_models.FilterItem{
-			Kind:  replication.FilterItemKindTag,
-			Value: image,
-			Metadata: map[string]interface{}{
-				"operation": operation,
-			},
-		}
-		if err := core.DefaultController.Replicate(watchItem.PolicyID, item); err != nil {
-			log.Errorf("failed to trigger replication for resource: %s, operation: %s: %v", image, operation, err)
-			return
-		}
-		log.Infof("replication for resource: %s, operation: %s triggered", image, operation)
-	}
 }
 
 // TriggerReplication triggers the replication according to the policy

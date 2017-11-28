@@ -29,6 +29,7 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/scheduler"
+	_ "github.com/vmware/harbor/src/replication/event"
 	"github.com/vmware/harbor/src/ui/api"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"

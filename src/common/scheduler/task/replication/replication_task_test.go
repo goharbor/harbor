@@ -1,9 +1,9 @@
-package task
+package replication
 
 import "testing"
 
-func TestReplicationTask(t *testing.T) {
-	tk := NewReplicationTask()
+func TestTask(t *testing.T) {
+	tk := NewTask(1)
 	if tk == nil {
 		t.Fail()
 	}
