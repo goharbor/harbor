@@ -1,8 +1,6 @@
 package trigger
 
 import (
-	"errors"
-
 	"github.com/vmware/harbor/src/replication"
 )
 
@@ -26,19 +24,20 @@ func (st *ImmediateTrigger) Kind() string {
 
 //Setup is the implementation of same method defined in Trigger interface
 func (st *ImmediateTrigger) Setup() error {
-	if st.params.PolicyID <= 0 || len(st.params.Namespace) == 0 {
-		return errors.New("Invalid parameters for Immediate trigger")
-	}
-
 	//TODO: Need more complicated logic here to handle partial updates
-	wt := WatchItem{
-		PolicyID:   st.params.PolicyID,
-		Namespace:  st.params.Namespace,
-		OnDeletion: st.params.OnDeletion,
-		OnPush:     true,
-	}
+	for _, namespace := range st.params.Namespaces {
+		wt := WatchItem{
+			PolicyID:   st.params.PolicyID,
+			Namespace:  namespace,
+			OnDeletion: st.params.OnDeletion,
+			OnPush:     true,
+		}
 
-	return DefaultWatchList.Add(wt)
+		if err := DefaultWatchList.Add(wt); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 //Unset is the implementation of same method defined in Trigger interface

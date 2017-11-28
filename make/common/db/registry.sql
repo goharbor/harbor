@@ -184,6 +184,17 @@ create table replication_job (
  INDEX policy (policy_id),
  INDEX poid_uptime (policy_id, update_time)
  );
+
+create table replication_immediate_trigger (
+ id int NOT NULL AUTO_INCREMENT,
+ policy_id int NOT NULL,
+ namespace varchar(256) NOT NULL,
+ on_push tinyint(1) NOT NULL DEFAULT 0,
+ on_deletion tinyint(1) NOT NULL DEFAULT 0,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY (id)
+ );
  
 create table img_scan_job (
  id int NOT NULL AUTO_INCREMENT,

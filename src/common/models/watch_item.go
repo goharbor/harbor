@@ -15,20 +15,21 @@
 package models
 
 import (
-	"github.com/astaxie/beego/orm"
+	"time"
 )
 
-func init() {
-	orm.RegisterModel(new(RepTarget),
-		new(RepPolicy),
-		new(RepJob),
-		new(User),
-		new(Project),
-		new(Role),
-		new(AccessLog),
-		new(ScanJob),
-		new(RepoRecord),
-		new(ImgScanOverview),
-		new(ClairVulnTimestamp),
-		new(WatchItem))
+// WatchItem ...
+type WatchItem struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	PolicyID     int64     `orm:"column(policy_id)" json:"policy_id"`
+	Namespace    string    `orm:"column(namespace)" json:"namespace"`
+	OnDeletion   bool      `orm:"column(on_deletion)" json:"on_deletion"`
+	OnPush       bool      `orm:"column(on_push)" json:"on_push"`
+	CreationTime time.Time `orm:"column(creation_time)" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time)" json:"update_time"`
+}
+
+//TableName ...
+func (w *WatchItem) TableName() string {
+	return "replication_immediate_trigger"
 }

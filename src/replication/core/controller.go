@@ -55,7 +55,6 @@ func (ctl *Controller) Init() error {
 
 	//Build query parameters
 	triggerNames := []string{
-		replication.TriggerKindImmediate,
 		replication.TriggerKindSchedule,
 	}
 	queryName := ""
@@ -73,7 +72,7 @@ func (ctl *Controller) Init() error {
 	}
 	if policies != nil && len(policies) > 0 {
 		for _, policy := range policies {
-			if err := ctl.triggerManager.SetupTrigger(policy.ID, *policy.Trigger); err != nil {
+			if err := ctl.triggerManager.SetupTrigger(&policy); err != nil {
 				//TODO: Log error
 				fmt.Printf("Error: %s", err)
 				//TODO:Update the status of policy
@@ -96,7 +95,8 @@ func (ctl *Controller) CreatePolicy(newPolicy models.ReplicationPolicy) (int64, 
 		return 0, err
 	}
 
-	if err = ctl.triggerManager.SetupTrigger(id, *newPolicy.Trigger); err != nil {
+	newPolicy.ID = id
+	if err = ctl.triggerManager.SetupTrigger(&newPolicy); err != nil {
 		return 0, err
 	}
 
@@ -118,15 +118,34 @@ func (ctl *Controller) UpdatePolicy(updatedPolicy models.ReplicationPolicy) erro
 		return fmt.Errorf("policy %d not found", id)
 	}
 
-	if err = ctl.triggerManager.UnsetTrigger(id, *originPolicy.Trigger); err != nil {
-		return err
+	reset := false
+	if updatedPolicy.Trigger.Kind != originPolicy.Trigger.Kind {
+		reset = true
+	} else {
+		switch updatedPolicy.Trigger.Kind {
+		case replication.TriggerKindSchedule:
+			if updatedPolicy.Trigger.Param != originPolicy.Trigger.Param {
+				reset = true
+			}
+		case replication.TriggerKindImmediate:
+			// Always reset immediate trigger as it is relevent with namespaces
+			reset = true
+		default:
+			// manual trigger, no need to reset
+		}
 	}
 
-	if err = ctl.policyManager.UpdatePolicy(updatedPolicy); err != nil {
-		return err
+	if reset {
+		if err = ctl.triggerManager.UnsetTrigger(id, *originPolicy.Trigger); err != nil {
+			return err
+		}
+		if err = ctl.policyManager.UpdatePolicy(updatedPolicy); err != nil {
+			return err
+		}
+		return ctl.triggerManager.SetupTrigger(&updatedPolicy)
 	}
 
-	return ctl.triggerManager.SetupTrigger(id, *updatedPolicy.Trigger)
+	return ctl.policyManager.UpdatePolicy(updatedPolicy)
 }
 
 //RemovePolicy will remove the specified policy and clean the related settings

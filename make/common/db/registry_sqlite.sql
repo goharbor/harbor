@@ -176,6 +176,16 @@ create table replication_job (
  update_time timestamp default CURRENT_TIMESTAMP
  );
 
+create table replication_immediate_trigger (
+ id INTEGER PRIMARY KEY, 
+ policy_id int NOT NULL,
+ namespace varchar(256) NOT NULL,
+ on_push tinyint(1) NOT NULL DEFAULT 0,
+ on_deletion tinyint(1) NOT NULL DEFAULT 0,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP
+ );
+
 
 create table img_scan_job (
  id INTEGER PRIMARY KEY,

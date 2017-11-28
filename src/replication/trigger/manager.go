@@ -2,7 +2,9 @@ package trigger
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 )
@@ -50,25 +52,24 @@ func (m *Manager) RemoveTrigger(policyID int64) error {
 }
 */
 
-//SetupTrigger will create the new trigger based on the provided json parameters.
+//SetupTrigger will create the new trigger based on the provided policy.
 //If failed, an error will be returned.
-func (m *Manager) SetupTrigger(policyID int64, trigger models.Trigger) error {
-	if policyID <= 0 {
-		return errors.New("Invalid policy ID")
+func (m *Manager) SetupTrigger(policy *models.ReplicationPolicy) error {
+	if policy == nil || policy.Trigger == nil {
+		log.Debug("empty policy or trigger, skip trigger setup")
+		return nil
 	}
 
-	if len(trigger.Kind) == 0 {
-		return errors.New("Invalid replication trigger definition")
-	}
-
+	trigger := policy.Trigger
 	switch trigger.Kind {
 	case replication.TriggerKindSchedule:
 		param := ScheduleParam{}
 		if err := param.Parse(trigger.Param); err != nil {
 			return err
 		}
-		//Append policy ID info
-		param.PolicyID = policyID
+		//Append policy ID and whether replicate deletion
+		param.PolicyID = policy.ID
+		param.OnDeletion = policy.ReplicateDeletion
 
 		newTrigger := NewScheduleTrigger(param)
 		if err := newTrigger.Setup(); err != nil {
@@ -79,16 +80,19 @@ func (m *Manager) SetupTrigger(policyID int64, trigger models.Trigger) error {
 		if err := param.Parse(trigger.Param); err != nil {
 			return err
 		}
-		//Append policy ID info
-		param.PolicyID = policyID
+		//Append policy ID and whether replicate deletion
+		param.PolicyID = policy.ID
+		param.OnDeletion = policy.ReplicateDeletion
+		param.Namespaces = policy.Namespaces
 
 		newTrigger := NewImmediateTrigger(param)
 		if err := newTrigger.Setup(); err != nil {
 			return err
 		}
+	case replication.TriggerKindManual:
+		// do nothing
 	default:
-		//Treat as manual trigger
-		break
+		return fmt.Errorf("invalid trigger type: %s", policy.Trigger.Kind)
 	}
 
 	return nil
