@@ -50,6 +50,10 @@ export class ConfigurationAuthComponent {
         }
     }
 
+    setVerifyCertValue($event: any) {
+        this.currentConfig.ldap_verify_cert.value = $event;
+    }
+
     disabled(prop: any): boolean {
         return !(prop && prop.editable);
     }

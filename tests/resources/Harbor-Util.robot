@@ -71,11 +71,12 @@ Switch To LDAP
     Config Harbor cfg  auth=ldap_auth  http_proxy=https
     Prepare
     Up Harbor
-    ${rc}=  Run And Return Rc  docker pull vmware/harbor-ldap-test:1.1.1
+    ${rc}=  Run And Return Rc  docker pull osixia/openldap:1.1.7
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc   docker run --name ldap-container -p 389:389 --detach vmware/harbor-ldap-test:1.1.1
+    ${rc}  ${output}=  Run And Return Rc And Output  cd tests && ./ldapprepare.sh
     Log  ${rc}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Log  ${output}

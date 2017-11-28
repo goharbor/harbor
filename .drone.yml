@@ -29,6 +29,8 @@ pipeline:
       GS_PRIVATE_KEY: ${GS_PRIVATE_KEY}
       DOMAIN: ${CI_DOMAIN}
       MAIL_PWD: ${MAIL_PWD}
+      NPM_USERNAME: ${NPM_USERNAME}
+      NPM_PASSWORD: ${NPM_PASSWORD}
     commands:
       - tests/integration.sh
     when:
