@@ -77,6 +77,50 @@ func checkUserExists(name string) int {
 	return 0
 }
 
+<<<<<<< HEAD
+=======
+// CheckAndTriggerReplication checks whether replication policy is set
+// on the resource, if is, trigger the replication
+func CheckAndTriggerReplication(image, operation string) {
+	project, _ := utils.ParseRepository(image)
+	watchItems, err := trigger.DefaultWatchList.Get(project, operation)
+	if err != nil {
+		log.Errorf("failed to get watch list for resource %s, operation %s: %v", image, operation, err)
+		return
+	}
+	if len(watchItems) == 0 {
+		log.Debugf("no replication should be triggered for resource %s, operation %s, skip", image, operation)
+		return
+	}
+
+	for _, watchItem := range watchItems {
+		// TODO define a new type ReplicationItem to wrap FilterItem and operation.
+		// Maybe change the FilterItem to interface and define a type Resource to
+		// implement FilterItem is better?
+		item := &rep_models.FilterItem{
+			Kind:  replication.FilterItemKindTag,
+			Value: image,
+			Metadata: map[string]interface{}{
+				"operation": operation,
+			},
+		}
+
+		if err := notifier.Publish(topic.StartReplicationTopic, notification.StartReplicationNotification{
+			PolicyID: watchItem.PolicyID,
+			Metadata: map[string]interface{}{
+				"": []*rep_models.FilterItem{item},
+			},
+		}); err != nil {
+			log.Errorf("failed to publish replication topic for resource %s, operation %s, policy %d: %v",
+				image, operation, watchItem.PolicyID, err)
+			return
+		}
+		log.Infof("replication topic for resource %s, operation %s, policy %d triggered",
+			image, operation, watchItem.PolicyID)
+	}
+}
+
+>>>>>>> 3409fa1... Publish replication notification for manual, scheduel and immediate trigger
 // TriggerReplication triggers the replication according to the policy
 // TODO remove
 func TriggerReplication(policyID int64, repository string,
