@@ -1,8 +1,11 @@
 package trigger
 
 import (
-	"errors"
+	"fmt"
 
+	"github.com/vmware/harbor/src/common/scheduler"
+	"github.com/vmware/harbor/src/common/scheduler/policy"
+	"github.com/vmware/harbor/src/common/scheduler/task"
 	"github.com/vmware/harbor/src/replication"
 )
 
@@ -25,10 +28,30 @@ func (st *ScheduleTrigger) Kind() string {
 
 //Setup is the implementation of same method defined in Trigger interface
 func (st *ScheduleTrigger) Setup() error {
-	return errors.New("Not implemented")
+	config := &policy.AlternatePolicyConfiguration{}
+	switch st.params.Type {
+	case replication.TriggerScheduleDaily:
+		config.Duration = 24 * 3600
+		config.OffsetTime = st.params.Offtime
+	case replication.TriggerScheduleWeekly:
+		config.Duration = 7 * 24 * 3600
+		config.OffsetTime = st.params.Offtime
+		config.Weekday = st.params.Weekday
+	default:
+		return fmt.Errorf("unsupported schedual trigger type: %s", st.params.Type)
+	}
+
+	schedulePolicy := policy.NewAlternatePolicy(assembleName(st.params.PolicyID), config)
+	attachTask := task.NewReplicationTask()
+	schedulePolicy.AttachTasks(attachTask)
+	return scheduler.DefaultScheduler.Schedule(schedulePolicy)
 }
 
 //Unset is the implementation of same method defined in Trigger interface
 func (st *ScheduleTrigger) Unset() error {
-	return errors.New("Not implemented")
+	return scheduler.DefaultScheduler.UnSchedule(assembleName(st.params.PolicyID))
+}
+
+func assembleName(policyID int64) string {
+	return fmt.Sprintf("replication_policy_%d", policyID)
 }
