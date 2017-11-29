@@ -7,6 +7,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	persist_models "github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/replication/models"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 //Manager provides replication policy CURD capabilities.
@@ -64,8 +65,14 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (models.Replicati
 		UpdateTime:        policy.UpdateTime,
 	}
 
+	project, err := config.GlobalProjectMgr.Get(policy.ProjectID)
+	if err != nil {
+		return models.ReplicationPolicy{}, err
+	}
+	ply.Namespaces = []string{project.Name}
+
 	if len(policy.Filters) > 0 {
-		filters := []models.FilterItem{}
+		filters := []models.Filter{}
 		if err := json.Unmarshal([]byte(policy.Filters), &filters); err != nil {
 			return models.ReplicationPolicy{}, err
 		}

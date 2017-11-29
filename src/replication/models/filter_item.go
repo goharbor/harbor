@@ -20,6 +20,8 @@ type FilterItem struct {
 	//kind == 'tag', value will be tag name.
 	Value string `json:"value"`
 
+	Operation string `json:"operation"`
+
 	//Extension placeholder.
 	//To append more additional information if required by the filter.
 	Metadata map[string]interface{} `json:"metadata"`
