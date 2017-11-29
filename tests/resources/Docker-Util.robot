@@ -132,3 +132,9 @@ Kill Local Docker Daemon
     Process Should Be Stopped  ${handle}
     ${rc}=  Run And Return Rc  kill -9 ${dockerd-pid}
     Should Be Equal As Integers  ${rc}  0
+
+Docker Login Fail
+    [Arguments]  ${ip}  ${user}  ${pwd}
+    Log To Console  \nRunning docker login ${ip} ...
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
+    Should Not Be Equal As Integers  ${rc}  0

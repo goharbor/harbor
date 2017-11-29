@@ -343,26 +343,31 @@ Test Case - Ldap Sign in and out
     Switch To Configure
     Init LDAP
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  test  123456
+    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
     Close Browser
 
 Test Case - Ldap User Create Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  test  123456
+    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
     Create An New Project  project${d}
     Close Browser
 
 Test Case - Ldap User Push An Image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  test  123456
+    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
     Create An New Project  project${d}
     
-    Push Image  ${ip}  test  123456  project${d}  hello-world:latest
+    Push Image  ${ip}  mike  zhu88jie  project${d}  hello-world:latest
     Go Into Project  project${d}
     Wait Until Page Contains  project${d}/hello-world
     Close Browser
 
+Test Case - Ldap User Can Not login
+    Docker Login Fail  ${ip}  test  123456
+
 Test Case - Clean Harbor Images	
     Down Harbor
+
+
