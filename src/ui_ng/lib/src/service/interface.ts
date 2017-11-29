@@ -75,6 +75,7 @@ export interface Endpoint extends Base {
     password?: string;
     insecure: boolean;
     type: number;
+    [key: string]: any;
 }
 
 /**
