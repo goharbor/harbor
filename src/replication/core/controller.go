@@ -3,6 +3,9 @@ package core
 import (
 	"fmt"
 
+	"github.com/vmware/harbor/src/common/dao"
+	common_models "github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 	"github.com/vmware/harbor/src/replication/policy"
@@ -182,9 +185,113 @@ func (ctl *Controller) GetPolicies(query models.QueryParameter) ([]models.Replic
 
 //Replicate starts one replication defined in the specified policy;
 //Can be launched by the API layer and related triggers.
-func (ctl *Controller) Replicate(policyID int64, metadate ...map[string]interface{}) error {
+func (ctl *Controller) Replicate(policyID int64, metadata ...map[string]interface{}) error {
+	policy, err := ctl.GetPolicy(policyID)
+	if err != nil {
+		return err
+	}
+	if policy.ID == 0 {
+		return fmt.Errorf("policy %d not found", policyID)
+	}
 
-	fmt.Printf("replicating %d, metadata: %v ...\n", policyID, metadate)
+	candidates := []models.FilterItem{}
+	if len(metadata) > 0 {
+		meta := metadata[0]["candidates"]
+		if meta != nil {
+			cands, ok := meta.([]models.FilterItem)
+			if ok {
+				candidates = append(candidates, cands...)
+			}
+		}
+	}
+
+	// prepare candidates for replication
+	candidates = getCandidates(&policy, ctl.sourcer, candidates...)
+
+	targets := []*common_models.RepTarget{}
+	for _, targetID := range policy.TargetIDs {
+		target, err := dao.GetRepTarget(targetID)
+		if err != nil {
+			return err
+		}
+		targets = append(targets, target)
+	}
+
+	// TODO merge tags whose repository is same into one struct
+
+	// call job service to do the replication
+	return replicate(candidates, targets)
+}
+
+func getCandidates(policy *models.ReplicationPolicy, sourcer *source.Sourcer, candidates ...models.FilterItem) []models.FilterItem {
+	if len(candidates) == 0 {
+		for _, namespace := range policy.Namespaces {
+			candidates = append(candidates, models.FilterItem{
+				Kind:      replication.FilterItemKindProject,
+				Value:     namespace,
+				Operation: replication.OperationPush,
+			})
+		}
+	}
+
+	filterChain := buildFilterChain(policy, sourcer)
+
+	return filterChain.DoFilter(candidates)
+}
+
+func buildFilterChain(policy *models.ReplicationPolicy, sourcer *source.Sourcer) source.FilterChain {
+	filters := []source.Filter{}
+
+	patternMap := map[string]string{}
+	for _, f := range policy.Filters {
+		patternMap[f.Kind] = f.Pattern
+	}
+
+	// TODO convert wildcard to regex expression
+	projectPattern, exist := patternMap[replication.FilterItemKindProject]
+	if !exist {
+		projectPattern = replication.PatternMatchAll
+	}
+
+	repositoryPattern, exist := patternMap[replication.FilterItemKindRepository]
+	if !exist {
+		repositoryPattern = replication.PatternMatchAll
+	}
+	repositoryPattern = fmt.Sprintf("%s/%s", projectPattern, repositoryPattern)
+
+	tagPattern, exist := patternMap[replication.FilterItemKindProject]
+	if !exist {
+		tagPattern = replication.PatternMatchAll
+	}
+	tagPattern = fmt.Sprintf("%s:%s", repositoryPattern, tagPattern)
+
+	if policy.Trigger.Kind == replication.TriggerKindImmediate {
+		// build filter chain for immediate trigger policy
+		filters = append(filters,
+			source.NewPatternFilter(replication.FilterItemKindTag, tagPattern))
+	} else {
+		// build filter chain for manual and schedule trigger policy
+
+		// append project filter
+		filters = append(filters,
+			source.NewPatternFilter(replication.FilterItemKindProject, projectPattern))
+		// append repository filter
+		filters = append(filters,
+			source.NewPatternFilter(replication.FilterItemKindRepository,
+				repositoryPattern, source.NewRepositoryConvertor(sourcer.GetAdaptor(replication.AdaptorKindHarbor))))
+		// append tag filter
+		filters = append(filters,
+			source.NewPatternFilter(replication.FilterItemKindTag,
+				tagPattern, source.NewTagConvertor(sourcer.GetAdaptor(replication.AdaptorKindHarbor))))
+	}
+
+	return source.NewDefaultFilterChain(filters)
+}
+
+func replicate(candidates []models.FilterItem, targets []*common_models.RepTarget) error {
+	// TODO
+
+	log.Infof("replicate candidates %v to targets %v", candidates, targets)
 
 	return nil
 }

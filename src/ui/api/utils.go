@@ -15,10 +15,7 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"sort"
 	"strings"
@@ -75,120 +72,6 @@ func checkUserExists(name string) int {
 		return u.UserID
 	}
 	return 0
-}
-
-<<<<<<< HEAD
-=======
-// CheckAndTriggerReplication checks whether replication policy is set
-// on the resource, if is, trigger the replication
-func CheckAndTriggerReplication(image, operation string) {
-	project, _ := utils.ParseRepository(image)
-	watchItems, err := trigger.DefaultWatchList.Get(project, operation)
-	if err != nil {
-		log.Errorf("failed to get watch list for resource %s, operation %s: %v", image, operation, err)
-		return
-	}
-	if len(watchItems) == 0 {
-		log.Debugf("no replication should be triggered for resource %s, operation %s, skip", image, operation)
-		return
-	}
-
-	for _, watchItem := range watchItems {
-		// TODO define a new type ReplicationItem to wrap FilterItem and operation.
-		// Maybe change the FilterItem to interface and define a type Resource to
-		// implement FilterItem is better?
-		item := &rep_models.FilterItem{
-			Kind:  replication.FilterItemKindTag,
-			Value: image,
-			Metadata: map[string]interface{}{
-				"operation": operation,
-			},
-		}
-
-		if err := notifier.Publish(topic.StartReplicationTopic, notification.StartReplicationNotification{
-			PolicyID: watchItem.PolicyID,
-			Metadata: map[string]interface{}{
-				"": []*rep_models.FilterItem{item},
-			},
-		}); err != nil {
-			log.Errorf("failed to publish replication topic for resource %s, operation %s, policy %d: %v",
-				image, operation, watchItem.PolicyID, err)
-			return
-		}
-		log.Infof("replication topic for resource %s, operation %s, policy %d triggered",
-			image, operation, watchItem.PolicyID)
-	}
-}
-
->>>>>>> 3409fa1... Publish replication notification for manual, scheduel and immediate trigger
-// TriggerReplication triggers the replication according to the policy
-// TODO remove
-func TriggerReplication(policyID int64, repository string,
-	tags []string, operation string) error {
-	data := struct {
-		PolicyID  int64    `json:"policy_id"`
-		Repo      string   `json:"repository"`
-		Operation string   `json:"operation"`
-		TagList   []string `json:"tags"`
-	}{
-		PolicyID:  policyID,
-		Repo:      repository,
-		TagList:   tags,
-		Operation: operation,
-	}
-
-	b, err := json.Marshal(&data)
-	if err != nil {
-		return err
-	}
-	url := buildReplicationURL()
-
-	return uiutils.RequestAsUI("POST", url, bytes.NewBuffer(b), uiutils.NewStatusRespHandler(http.StatusOK))
-}
-
-// TODO remove
-func postReplicationAction(policyID int64, acton string) error {
-	data := struct {
-		PolicyID int64  `json:"policy_id"`
-		Action   string `json:"action"`
-	}{
-		PolicyID: policyID,
-		Action:   acton,
-	}
-
-	b, err := json.Marshal(&data)
-	if err != nil {
-		return err
-	}
-
-	url := buildReplicationActionURL()
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
-	if err != nil {
-		return err
-	}
-
-	uiutils.AddUISecret(req)
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		return nil
-	}
-
-	b, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
 }
 
 // SyncRegistry syncs the repositories of registry with database.

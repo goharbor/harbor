@@ -46,12 +46,9 @@ func (t *TagConvertor) Convert(items []models.FilterItem) []models.FilterItem {
 		tags := t.registry.GetTags(item.Value, "")
 		for _, tag := range tags {
 			result = append(result, models.FilterItem{
-				Kind:  replication.FilterItemKindTag,
-				Value: tag.Name,
-				// public is used to create project if it does not exist when replicating
-				Metadata: map[string]interface{}{
-					"public": item.Metadata["public"],
-				},
+				Kind:      replication.FilterItemKindTag,
+				Value:     item.Value + ":" + tag.Name,
+				Operation: item.Operation,
 			})
 		}
 	}

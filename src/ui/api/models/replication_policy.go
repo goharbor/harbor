@@ -27,7 +27,7 @@ type ReplicationPolicy struct {
 	ID                        int64                      `json:"id"`
 	Name                      string                     `json:"name"`
 	Description               string                     `json:"description"`
-	Filters                   []rep_models.FilterItem    `json:"filters"`
+	Filters                   []rep_models.Filter        `json:"filters"`
 	ReplicateDeletion         bool                       `json:"replicate_deletion"`
 	Trigger                   *rep_models.Trigger        `json:"trigger"`
 	Projects                  []*common_models.Project   `json:"projects"`

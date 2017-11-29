@@ -35,6 +35,8 @@ func NewRepositoryConvertor(registry registry.Adaptor) *RepositoryConvertor {
 
 // Convert projects to repositories
 func (r *RepositoryConvertor) Convert(items []models.FilterItem) []models.FilterItem {
+	// TODO get repositories from database where the push/deletion operations are recorded
+	// if support replicate deletion
 	result := []models.FilterItem{}
 	for _, item := range items {
 		if item.Kind != replication.FilterItemKindProject {
@@ -46,12 +48,9 @@ func (r *RepositoryConvertor) Convert(items []models.FilterItem) []models.Filter
 		repositories := r.registry.GetRepositories(item.Value)
 		for _, repository := range repositories {
 			result = append(result, models.FilterItem{
-				Kind:  replication.FilterItemKindRepository,
-				Value: repository.Name,
-				// public is used to create project if it does not exist when replicating
-				Metadata: map[string]interface{}{
-					"public": item.Metadata["public"],
-				},
+				Kind:      replication.FilterItemKindRepository,
+				Value:     repository.Name,
+				Operation: item.Operation,
 			})
 		}
 	}
