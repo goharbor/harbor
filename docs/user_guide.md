@@ -2,20 +2,23 @@
 ## Overview  
 This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
-* Manage your projects.
-* Manage members of a project.
-* Replicate projects to a remote registry.
-* Search projects and repositories.
-* Manage Harbor system if you are the system administrator:
-  * Manage users.
-  * Manage destinations.
-  * Manage replication policies.
-  * Manage configuration.
-* Pull and push images using Docker client.
-* Delete repositories and images.
-* Content trust.  
-* Vulnerability scanning via Clair.
-* Pull image from Harbor in Kubernetes.
+* [Manage your projects.](#managing-projects)
+* [Manage members of a project.](#managing-members-of-a-project)
+* [Replicate projects to a remote registry.](#replicationg-images)
+* [Search projects and repositories.](#searching-projects-and-repositories)
+* [Manage Harbor system if you are the system administrator:](#administrator-options)
+  * [Manage users.](#managing-user)
+  * [Manage destinations.](#managing-endpoint)
+  * [Manage replication policies.](#managing-replication)
+  * [Manage authentication.](#managing-authentication)
+  * [Manage project creation.](#managing-project-creation)
+  * [Manage self-registration.](#managing-self-registration)
+  * [Manage email settings.](#managing-email-settings)
+* [Pull and push images using Docker client.](#pulling-and-pushing-images-using-docker-client)
+* [Delete repositories and images.](#deleting-repositories)
+* [Content trust.  ](#content-trust)
+* [Vulnerability scanning via Clair.](#vulnerability-scaning-via-clair)
+* [Pull image from Harbor in Kubernetes.](#pull-image-from-harbor-in-kubernetes)
 
 ## Role Based Access Control(RBAC)  
 
