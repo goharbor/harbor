@@ -50,7 +50,9 @@
         "NUMBER_REQUIRED": "此项为必填项且为数字。",
         "PORT_REQUIRED": "此项为必填项且为合法端口号。",
         "EMAIL_EXISTING": "邮件地址已经存在。",
-        "USER_EXISTING": "用户名已经存在。"
+        "USER_EXISTING": "用户名已经存在。",
+        "RULE_USER_EXISTING": "名称已经存在。",
+        "EMPTY": "名称为必填项"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",

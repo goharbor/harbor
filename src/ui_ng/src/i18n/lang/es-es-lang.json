@@ -50,7 +50,9 @@
         "NUMBER_REQUIRED": "El campo es obligatorio y debería ser un número.",
         "PORT_REQUIRED": "El campo es obligatorio y debería ser un número de puerto válido.",
         "EMAIL_EXISTING": "Esa dirección de email ya existe.",
-        "USER_EXISTING": "Ese nombre de usuario ya existe."
+        "USER_EXISTING": "Ese nombre de usuario ya existe.",
+        "RULE_USER_EXISTING": "Name is already in use.",
+        "EMPTY": "Name is required"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Introduzca la contraseña actual",

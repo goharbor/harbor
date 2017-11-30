@@ -50,6 +50,7 @@ import { LeavingConfigRouteDeactivate } from './shared/route/leaving-config-deac
 import { MemberGuard } from './shared/route/member-guard-activate.service';
 
 import { TagDetailPageComponent } from './repository/tag-detail/tag-detail-page.component';
+import { ReplicationRuleComponent} from "./replication/replication-rule/replication-rule.component";
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -80,23 +81,23 @@ const harborRoutes: Routes = [
       },
       {
         path: 'replications',
-        component: ReplicationManagementComponent,
+        component: TotalReplicationPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard],
-        children: [
-          {
-            path: 'rules',
-            component: TotalReplicationPageComponent
-          },
-          {
-            path: 'endpoints',
-            component: DestinationPageComponent
-          },
-          {
-            path: '**',
-            redirectTo: 'endpoints'
-          }
-        ]
+      },
+        {
+            path: 'replications/:id/rule',
+            component: ReplicationRuleComponent,
+            canActivate: [SystemAdminGuard],
+            canActivateChild: [SystemAdminGuard],
+
+        },
+      {
+        path: 'replications/new-rule',
+        component: ReplicationRuleComponent,
+        canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
+
       },
       {
         path: 'tags/:id/:repo',
@@ -146,6 +147,12 @@ const harborRoutes: Routes = [
         component: ConfigurationComponent,
         canActivate: [SystemAdminGuard],
         canDeactivate: [LeavingConfigRouteDeactivate]
+      },
+      {
+        path: 'registry',
+        component: DestinationPageComponent,
+        canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
       }
     ]
   },

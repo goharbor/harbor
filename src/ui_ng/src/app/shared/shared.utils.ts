@@ -15,6 +15,7 @@ import { NgForm } from '@angular/forms';
 import { httpStatusCode, AlertType } from './shared.const';
 import { MessageService } from '../global-message/message.service';
 import { Comparator, State } from 'clarity-angular';
+import {RequestOptions, Headers} from "@angular/http";
 
 /**
  * To handle the error message body
@@ -154,6 +155,27 @@ export class CustomComparator<T> implements Comparator<T> {
         return comp;
     }
 }
+
+export const HTTP_JSON_OPTIONS: RequestOptions = new RequestOptions({
+    headers: new Headers({
+        "Content-Type": 'application/json',
+        "Accept": 'application/json',
+    })
+});
+export const HTTP_GET_OPTIONS: RequestOptions = new RequestOptions({
+    headers: new Headers({
+        "Content-Type": 'application/json',
+        "Accept": 'application/json',
+        "Cache-Control": 'no-cache',
+        "Pragma": 'no-cache'
+    })
+});
+
+export const HTTP_FORM_OPTIONS: RequestOptions = new RequestOptions({
+    headers: new Headers({
+        "Content-Type": 'application/x-www-form-urlencoded'
+    })
+});
 
 /**
  * Filter columns via RegExp

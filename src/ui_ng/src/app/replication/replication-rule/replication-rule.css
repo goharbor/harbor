@@ -1,0 +1,30 @@
+/**
+ * Created by pengf on 9/28/2017.
+ */
+
+.select{
+    width: 186px;
+}
+.select .optionMore{
+    background-color: #bfbaba;
+    height: 1.6em;
+    font-size: 1.2em;
+    cursor: pointer;
+    text-align: center;
+}
+.hideFilter{ display: none;}
+h4{
+    color: #666;
+}
+label:first-child {
+    font-size: 15px;
+    left: -10px !important;
+}
+.endpointSelect{ width: 290px;}
+.filterSelect{width: 320px;}
+.filterSelect label{width: 160px;}
+.filterSelect label input{width: 100%;}
+.cursor{cursor: pointer;}
+.padLeft0{padding-left: 0;}
+.floatSet {display: inline-block; float: left; width: 120px;margin-right: 10px;}
+.form-group{ min-height: 36px;}

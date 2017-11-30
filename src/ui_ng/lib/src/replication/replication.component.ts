@@ -88,6 +88,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @Input() readonly: boolean;
 
   @Output() redirect = new EventEmitter<ReplicationRule>();
+  @Output() openCreateRule = new EventEmitter<any>();
+  @Output() openEdit = new EventEmitter<string | number>();
 
   search: SearchOption = new SearchOption();
 
@@ -111,8 +113,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @ViewChild(ListReplicationRuleComponent)
   listReplicationRule: ListReplicationRuleComponent;
 
-  @ViewChild(CreateEditRuleComponent)
-  createEditPolicyComponent: CreateEditRuleComponent;
+/*  @ViewChild(CreateEditRuleComponent)
+  createEditPolicyComponent: CreateEditRuleComponent;*/
 
   @ViewChild("replicationLogViewer")
   replicationLogViewer: JobLogViewerComponent;
@@ -134,9 +136,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     private translateService: TranslateService) {
   }
 
-  public get creationAvailable(): boolean {
+  /*public get creationAvailable(): boolean {
     return !this.readonly && this.projectId ? true : false;
-  }
+  }*/
 
   public get showPaginationIndex(): boolean {
     return this.totalCount > 0;
@@ -146,6 +148,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.currentRuleStatus = this.ruleStatus[0];
     this.currentJobStatus = this.jobStatus[0];
     this.currentJobSearchOption = 0;
+    console.log('readonly', this.readonly);
   }
 
   ngOnDestroy() {
@@ -155,7 +158,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   }
 
   openModal(): void {
-    this.createEditPolicyComponent.openCreateEditRule(true);
+    this.openCreateRule.emit();
+    // this.createEditPolicyComponent.openCreateEditRule(true);
   }
 
   openEditRule(rule: ReplicationRule) {
@@ -164,7 +168,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       if (rule.enabled === 1) {
         editable = false;
       }
-      this.createEditPolicyComponent.openCreateEditRule(editable, rule.id);
+      this.openEdit.emit(rule.id);
+      // this.createEditPolicyComponent.openCreateEditRule(editable, rule.id);
     }
   }
 

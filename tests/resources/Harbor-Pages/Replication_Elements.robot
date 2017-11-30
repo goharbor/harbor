@@ -16,11 +16,9 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${new_name_xpath}  	/html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/replicaton/div/hbr-replication/div/div[1]/div/div[1]/button/clr-icon
-${policy_name_xpath}  //*[@id="policy_name"]
-${policy_description_xpath}  //*[@id="policy_description"]
-${policy_enable_checkbox}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/replicaton/div/hbr-replication/div/div[1]/div/div[1]/create-edit-rule/clr-modal/div/div[1]/div/div[1]/div/div[2]/form/section/div[3]/div/label
-${policy_endpoint_checkbox}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/replicaton/div/hbr-replication/div/div[1]/div/div[1]/create-edit-rule/clr-modal/div/div[1]/div/div[1]/div/div[2]/form/section/div[4]/div[2]/label
+${new_rule_xpath}  	/html/body/harbor-app/harbor-shell/clr-main-container/div/div/total-replication/div/hbr-replication/div/div[1]/div/div[1]/button
+${policy_name_xpath}  //*[@id="ruleName"]
+${policy_description_xpath}  //*[@id="ruleDescription"]
 ${destination_name_xpath}  //*[@id='destination_name']
 ${destination_url_xpath}  //*[@id='destination_url']
 ${destination_username_xpath}  //*[@id='destination_username']

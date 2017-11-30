@@ -50,7 +50,12 @@ export class ProjectDetailComponent {
 
   public get isSystemAdmin(): boolean {
     let account = this.sessionService.getCurrentUser();
-    return account != null && account.has_admin_role > 0;
+    return account && account.has_admin_role > 0;
+  }
+
+  public get isSProjectAdmin(): boolean {
+    let account = this.sessionService.projectMembers;
+    return account && account[0].role_name === 'projectAdmin';
   }
 
   public get isSessionValid(): boolean {

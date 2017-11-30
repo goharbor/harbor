@@ -20,22 +20,29 @@ import { TotalReplicationPageComponent } from './total-replication/total-replica
 import { DestinationPageComponent } from './destination/destination-page.component';
 
 import { SharedModule } from '../shared/shared.module';
+import {ReplicationRuleComponent} from "./replication-rule/replication-rule.component";
+import {ReactiveFormsModule} from "@angular/forms";
+import {ReplicationRuleServie} from "./replication-rule/replication-rule.service";
 
 @NgModule({
   imports: [
     SharedModule,
-    RouterModule
+    RouterModule,
+      ReactiveFormsModule
   ],
   declarations: [
     ReplicationPageComponent,
     ReplicationManagementComponent,
     TotalReplicationPageComponent,
-    DestinationPageComponent
+    DestinationPageComponent,
+    ReplicationRuleComponent,
   ],
   exports: [
     ReplicationPageComponent,
     DestinationPageComponent,
-    TotalReplicationPageComponent
-  ]
+    TotalReplicationPageComponent,
+    ReplicationRuleComponent,
+  ],
+  providers: [ReplicationRuleServie]
 })
 export class ReplicationModule { }
