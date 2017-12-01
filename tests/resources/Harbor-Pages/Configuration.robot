@@ -32,6 +32,8 @@ Init LDAP
     Sleep  1
     Input Text  xpath=//*[@id="ldapBaseDN"]  dc=example,dc=com
     Sleep  1
+    Input Text  xpath=//*[@id="ldapFilter"]  (&(objectclass=inetorgperson)(memberof=cn=harbor_users,ou=groups,dc=example,dc=com))
+    Sleep  1
     Input Text  xpath=//*[@id="ldapUid"]  cn
     Sleep  1
     Capture Page Screenshot
