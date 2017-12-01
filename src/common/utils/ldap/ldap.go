@@ -30,14 +30,14 @@ import (
 	goldap "gopkg.in/ldap.v2"
 )
 
-//LdapSession - define a LDAP session
-type LdapSession struct {
+//Session - define a LDAP session
+type Session struct {
 	ldapConfig models.LdapConf
 	ldapConn   *goldap.Conn
 }
 
 //LoadSystemLdapConfig - load LDAP configure from adminserver
-func (session *LdapSession) LoadSystemLdapConfig() error {
+func (session *Session) LoadSystemLdapConfig() error {
 	var err error
 	var authMode string
 
@@ -137,7 +137,7 @@ func formatURL(ldapURL string) (string, error) {
 }
 
 //ConnectionTest - test ldap session connection with system default setting
-func (session *LdapSession) ConnectionTest() error {
+func (session *Session) ConnectionTest() error {
 	err := session.LoadSystemLdapConfig()
 	if err != nil {
 		return fmt.Errorf("Failed to load system ldap config")
@@ -147,7 +147,7 @@ func (session *LdapSession) ConnectionTest() error {
 }
 
 //ConnectionTestWithConfig - test ldap session connection, out of the scope of normal session create/close
-func (session *LdapSession) ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
+func (session *Session) ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
 
 	var err error
 
@@ -182,7 +182,7 @@ func (session *LdapSession) ConnectionTestWithConfig(ldapConfig models.LdapConf)
 }
 
 //SearchUser - search LDAP user by name
-func (session *LdapSession) SearchUser(username string) ([]models.LdapUser, error) {
+func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 	var ldapUsers []models.LdapUser
 	ldapFilter := session.CreateUserFilter(username)
 	result, err := session.SearchLdap(ldapFilter)
@@ -220,7 +220,7 @@ func (session *LdapSession) SearchUser(username string) ([]models.LdapUser, erro
 }
 
 //ImportUser - Import user to harbor database
-func (session *LdapSession) ImportUser(user models.LdapUser) (int64, error) {
+func (session *Session) ImportUser(user models.LdapUser) (int64, error) {
 	var u models.User
 	u.Username = user.Username
 	u.Email = user.Email
@@ -265,12 +265,12 @@ func (session *LdapSession) ImportUser(user models.LdapUser) (int64, error) {
 }
 
 // Bind with specified DN and password, used in authentication
-func (session *LdapSession) Bind(dn string, password string) error {
+func (session *Session) Bind(dn string, password string) error {
 	return session.ldapConn.Bind(dn, password)
 }
 
 // BindSearchDn - bind current search DN
-func (session *LdapSession) BindSearchDn() error {
+func (session *Session) BindSearchDn() error {
 
 	err := session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword)
 	if err != nil {
@@ -280,8 +280,8 @@ func (session *LdapSession) BindSearchDn() error {
 	return nil
 }
 
-//Create - create LdapSession
-func (session *LdapSession) Create() error {
+//Create - create Session
+func (session *Session) Create() error {
 
 	var err error
 	err = session.LoadSystemLdapConfig()
@@ -293,8 +293,8 @@ func (session *LdapSession) Create() error {
 
 }
 
-// CreateWithUIConfig - create a LdapSession with config from UI
-func (session *LdapSession) CreateWithUIConfig(ldapConfs models.LdapConf) error {
+// CreateWithUIConfig - create a Session with config from UI
+func (session *Session) CreateWithUIConfig(ldapConfs models.LdapConf) error {
 
 	switch ldapConfs.LdapScope {
 	case 1:
@@ -310,8 +310,8 @@ func (session *LdapSession) CreateWithUIConfig(ldapConfs models.LdapConf) error 
 	return session.CreateWithInternalConfig(ldapConfs)
 }
 
-// CreateWithInternalConfig - create a LdapSession with internal config
-func (session *LdapSession) CreateWithInternalConfig(ldapConfs models.LdapConf) error {
+// CreateWithInternalConfig - create a Session with internal config
+func (session *Session) CreateWithInternalConfig(ldapConfs models.LdapConf) error {
 
 	var err error
 	var ldap *goldap.Conn
@@ -357,7 +357,7 @@ func (session *LdapSession) CreateWithInternalConfig(ldapConfs models.LdapConf) 
 }
 
 // SearchLdap to search ldap with the provide filter
-func (session *LdapSession) SearchLdap(filter string) (*goldap.SearchResult, error) {
+func (session *Session) SearchLdap(filter string) (*goldap.SearchResult, error) {
 
 	var err error
 
@@ -401,7 +401,7 @@ func (session *LdapSession) SearchLdap(filter string) (*goldap.SearchResult, err
 }
 
 //SearchAndImport - Search this user in ldap and import if exist
-func (session *LdapSession) SearchAndImport(username string) (int64, error) {
+func (session *Session) SearchAndImport(username string) (int64, error) {
 	var err error
 	var userID int64
 
@@ -425,7 +425,7 @@ func (session *LdapSession) SearchAndImport(username string) (int64, error) {
 }
 
 //CreateUserFilter - create filter to search user with specified username
-func (session *LdapSession) CreateUserFilter(username string) string {
+func (session *Session) CreateUserFilter(username string) string {
 	var filterTag string
 
 	if username == "" {
@@ -449,7 +449,7 @@ func (session *LdapSession) CreateUserFilter(username string) string {
 }
 
 //Close - close current session
-func (session *LdapSession) Close() {
+func (session *Session) Close() {
 	if session.ldapConn != nil {
 		session.ldapConn.Close()
 	}

@@ -49,7 +49,7 @@ func (l *LdapAPI) Ping() {
 	var err error
 	var ldapConfs models.LdapConf
 
-	var ldapSession ldapUtils.LdapSession
+	var ldapSession ldapUtils.Session
 
 	l.Ctx.Input.CopyBody(1 << 32)
 
@@ -77,7 +77,7 @@ func (l *LdapAPI) Search() {
 	var err error
 	var ldapUsers []models.LdapUser
 	var ldapConfs models.LdapConf
-	var ldapSession ldapUtils.LdapSession
+	var ldapSession ldapUtils.Session
 
 	l.Ctx.Input.CopyBody(1 << 32)
 	if string(l.Ctx.Input.RequestBody) == "" {
@@ -147,7 +147,7 @@ func (l *LdapAPI) ImportUser() {
 func importUsers(ldapConfs models.LdapConf, ldapImportUsers []string) ([]models.LdapFailedImportUser, error) {
 	var failedImportUser []models.LdapFailedImportUser
 	var u models.LdapFailedImportUser
-	var ldapSession ldapUtils.LdapSession
+	var ldapSession ldapUtils.Session
 
 	if err := ldapSession.Create(); err != nil {
 		log.Errorf("Can't connect to ldap, error: %v", err)

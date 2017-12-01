@@ -46,7 +46,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	var ldapSession ldapUtils.LdapSession
+	var ldapSession ldapUtils.Session
 
 	err := ldapSession.Create()
 

@@ -179,7 +179,7 @@ func (pma *ProjectMemberAPI) Post() {
 		}
 
 		//search and import user
-		var ldapSession ldapUtils.LdapSession
+		var ldapSession ldapUtils.Session
 		err = ldapSession.Create()
 		defer ldapSession.Close()
 		if err != nil {

@@ -125,7 +125,7 @@ func TestMain(t *testing.T) {
 }
 
 func TestLoadSystemLdapConfig(t *testing.T) {
-	var session LdapSession
+	var session Session
 	err := session.LoadSystemLdapConfig()
 	if err != nil {
 		t.Fatalf("failed to get system ldap config %v", err)
@@ -142,7 +142,7 @@ func TestLoadSystemLdapConfig(t *testing.T) {
 }
 
 func TestConnectTest(t *testing.T) {
-	var session LdapSession
+	var session Session
 	err := session.ConnectionTest()
 	if err != nil {
 		t.Errorf("Unexpected ldap connect fail: %v", err)
@@ -151,7 +151,7 @@ func TestConnectTest(t *testing.T) {
 }
 
 func TestSearchUser(t *testing.T) {
-	var session LdapSession
+	var session Session
 
 	err := session.Create()
 	if err != nil {
@@ -189,7 +189,7 @@ func InitTest(ldapTestConfig map[string]interface{}, t *testing.T) {
 }
 
 func TestSearchAndImportUser(t *testing.T) {
-	var session LdapSession
+	var session Session
 
 	err := session.Create()
 
@@ -219,7 +219,7 @@ func TestImportUser(t *testing.T) {
 	u.Username = "ldapUser0001"
 	u.Realname = "ldapUser"
 
-	var session LdapSession
+	var session Session
 	err = session.Create()
 	if err != nil {
 		t.Fatalf("failed to create ldap session: %v", err)
@@ -265,7 +265,7 @@ func TestImportUserExit(t *testing.T) {
 	}
 	var err error
 
-	var session LdapSession
+	var session Session
 	err = session.Create()
 	if err != nil {
 		t.Fatalf("failed to create ldap session: %v", err)
@@ -285,7 +285,7 @@ func TestImportUserExit(t *testing.T) {
 }
 
 func TestSearchAndImportUserNotExist(t *testing.T) {
-	var session LdapSession
+	var session Session
 
 	err := session.Create()
 
