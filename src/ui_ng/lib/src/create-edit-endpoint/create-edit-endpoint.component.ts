@@ -35,7 +35,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { CREATE_EDIT_ENDPOINT_STYLE } from './create-edit-endpoint.component.css';
 import { CREATE_EDIT_ENDPOINT_TEMPLATE } from './create-edit-endpoint.component.html';
 
-import { toPromise, clone, compareValue } from '../utils';
+import { toPromise, clone, compareValue, isEmptyObject } from '../utils';
 
 import { Subscription } from 'rxjs/Subscription';
 
@@ -51,8 +51,6 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
     createEditDestinationOpened: boolean;
     staticBackdrop: boolean = true;
     closable: boolean = false;
-
-    actionType: ActionType;
     editable: boolean;
 
     target: Endpoint = this.initEndpoint();
@@ -62,11 +60,9 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
     @ViewChild('targetForm')
     currentForm: NgForm;
 
-    endpointHasChanged: boolean;
-    targetNameHasChanged: boolean;
-
     testOngoing: boolean;
     onGoing: boolean;
+    endpointId: number | string;
 
     @ViewChild(InlineAlertComponent)
     inlineAlert: InlineAlertComponent;
@@ -84,41 +80,21 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
         private ref: ChangeDetectorRef
     ) { }
 
-    public get hasChanged(): boolean {
-        if (this.actionType === ActionType.ADD_NEW) {
-            //Create new
-            return this.target && (
-                (this.target.endpoint && this.target.endpoint.trim() !== "") ||
-                (this.target.name && this.target.name.trim() !== "") ||
-                (this.target.username && this.target.username.trim() !== "") ||
-                (this.target.password && this.target.password.trim() !== "")) ||
-                this.target.insecure;
-        } else {
-            //Edit
-            return !compareValue(this.target, this.initVal);
-        }
-    }
-
     public get isValid(): boolean {
         return !this.testOngoing &&
             !this.onGoing &&
             this.targetForm &&
             this.targetForm.valid &&
             this.editable &&
-            (this.targetNameHasChanged || this.endpointHasChanged || this.checkboxHasChanged);
+            !compareValue(this.target, this.initVal);
     }
 
     public get inProgress(): boolean {
         return this.onGoing || this.testOngoing;
     }
 
-    public get checkboxHasChanged(): boolean {
-        return (this.target.insecure !== this.initVal.insecure) ? true : false;
-    }
-
     setInsecureValue($event: any) {
         this.target.insecure = !$event;
-        this.endpointHasChanged  = true;
     }
 
     ngOnDestroy(): void {
@@ -148,8 +124,6 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
 
     reset(): void {
         //Reset status variables
-        this.endpointHasChanged = false;
-        this.targetNameHasChanged = false;
         this.testOngoing = false;
         this.onGoing = false;
 
@@ -157,6 +131,9 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
         this.target = this.initEndpoint();
         this.initVal = this.initEndpoint();
         this.formValues = null;
+        this.endpointId = '';
+
+        this.inlineAlert.close();
     }
 
     //Forcely refresh the view
@@ -179,7 +156,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
         //reset
         this.reset();
         if (targetId) {
-            this.actionType = ActionType.EDIT;
+            this.endpointId = targetId;
             this.translateService.get('DESTINATION.TITLE_EDIT').subscribe(res => this.modalTitle = res);
             toPromise<Endpoint>(this.endpointService
                 .getEndpoint(targetId))
@@ -197,7 +174,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                 })
                 .catch(error => this.errorHandler.error(error));
         } else {
-            this.actionType = ActionType.ADD_NEW;
+            this.endpointId = '';
             this.translateService.get('DESTINATION.TITLE_ADD').subscribe(res => this.modalTitle = res);
             //Directly open the modal
             this.open();
@@ -206,14 +183,23 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
 
     testConnection() {
         let payload: Endpoint = this.initEndpoint();
-
-        if (this.endpointHasChanged) {
+        if (!this.endpointId) {
             payload.endpoint = this.target.endpoint;
             payload.username = this.target.username;
             payload.password = this.target.password;
             payload.insecure = this.target.insecure;
-        } else {
+        }else {
+            let changes: {[key: string]: any} = this.getChanges();
+            for (let prop in payload) {
+                delete payload[prop];
+            }
             payload.id = this.target.id;
+            if (!isEmptyObject(changes)) {
+                let changekeys: {[key: string]: any} = Object.keys(this.getChanges());
+                changekeys.forEach((key: string) => {
+                    payload[key] = changes[key];
+                });
+            }
         }
 
         this.testOngoing = true;
@@ -232,27 +218,11 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
             });
     }
 
-    changedTargetName($event: any) {
-        if (this.editable) {
-            this.targetNameHasChanged = true;
-        }
-    }
-
-    clearPassword($event: any) {
-        if (this.editable) {
-            this.target.password = '';
-            this.endpointHasChanged = true;
-        }
-    }
-
     onSubmit() {
-        switch (this.actionType) {
-            case ActionType.ADD_NEW:
-                this.addEndpoint();
-                break;
-            case ActionType.EDIT:
-                this.updateEndpoint();
-                break;
+        if (this.endpointId) {
+            this.updateEndpoint();
+        } else {
+            this.addEndpoint();
         }
     }
 
@@ -286,27 +256,19 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
         if (this.onGoing) {
             return;//Avoid duplicated submitting
         }
-        if (!(this.targetNameHasChanged || this.endpointHasChanged || this.checkboxHasChanged)) {
-            return;//Avoid invalid submitting
-        }
+
         let payload: Endpoint = this.initEndpoint();
-        if (this.targetNameHasChanged) {
-            payload.name = this.target.name;
-        }else {
-            delete payload.name;
+        for (let prop in payload) {
+            delete payload[prop];
         }
-        if (this.endpointHasChanged) {
-            payload.endpoint = this.target.endpoint;
-            payload.username = this.target.username;
-            payload.password = this.target.password;
-        }else {
-            delete payload.endpoint;
+        let changes: {[key: string]: any} = this.getChanges();
+        let changekeys: {[key: string]: any} = Object.keys(this.getChanges());
+        if (isEmptyObject(changes)) {
+            return;
         }
-        if (this.checkboxHasChanged) {
-            payload.insecure = this.target.insecure;
-        }else {
-            delete payload.insecure;
-        }
+        changekeys.forEach((key: string) => {
+            payload[key] = changes[key];
+        });
 
         if (!this.target.id) { return; }
 
@@ -346,9 +308,10 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
     }
 
     onCancel() {
-        if (this.hasChanged) {
+        let changes: {[key: string]: any} = this.getChanges();
+        if (!isEmptyObject(changes)) {
             this.inlineAlert.showInlineConfirmation({ message: 'ALERT.FORM_CHANGE_CONFIRMATION' });
-        } else {
+        }else {
             this.close();
             if (this.targetForm) {
                 this.targetForm.reset();
@@ -387,6 +350,29 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                 });
             }
         }
+    }
+    getChanges(): { [key: string]: any | any[] } {
+        let changes: { [key: string]: any | any[] } = {};
+        if (!this.target || !this.initVal) {
+            return changes;
+        }
+        for (let prop in this.target) {
+            let field: any = this.initVal[prop];
+                if (!compareValue(field, this.target[prop])) {
+                    changes[prop] = this.target[prop];
+                    //Number
+                    if (typeof field === "number") {
+                        changes[prop] = +changes[prop];
+                    }
+
+                    //Trim string value
+                    if (typeof field === "string") {
+                        changes[prop] = ('' + changes[prop]).trim();
+                    }
+            }
+        }
+
+        return changes;
     }
 
 }
