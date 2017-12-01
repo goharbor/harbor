@@ -351,6 +351,8 @@ Test Case - Ldap User Create Project
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
     Create An New Project  project${d}
+    Logout Harbor
+    Manage Project Member  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  mike02  Add
     Close Browser
 
 Test Case - Ldap User Push An Image
