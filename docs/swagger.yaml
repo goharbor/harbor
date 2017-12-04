@@ -961,6 +961,33 @@ paths:
           description: Forbidden.
         '404':
           description: Repository not found.
+    put:
+      summary: Update description of the repository.
+      description: |
+        This endpoint is used to update description of the repository.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository which will be deleted.
+        - name: description
+          in: body
+          description: The description of the repository.
+          required: true
+          schema:
+            $ref: '#/definitions/RepositoryDescription'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Update successfully.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Repository not found.
   '/repositories/{repo_name}/tags/{tag}':
     get:
       summary: Get the tag of the repository.
@@ -1158,7 +1185,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#definitions/VulnerabilityItem'
+              $ref: '#/definitions/VulnerabilityItem'
         '401':
           description: User needs to login or call the API with correct credentials.
         '403':
@@ -2920,6 +2947,12 @@ definitions:
                 type: integer
                 description: The offest in seconds of UTC 0 o'clock, only valid when the policy type is "daily"
             description: The parameters of the policy, the values are dependant on the type of the policy.
+  RepositoryDescription:
+    type: object
+    properties:
+      description:
+        type: string
+        description: The description of the repository.
           
       
     
