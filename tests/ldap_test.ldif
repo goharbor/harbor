@@ -1,3 +1,4 @@
+# User entry doesn't belong to harbor_users, it should fail to login
 dn: uid=test,dc=example,dc=com
 uid: test
 cn: test
@@ -12,3 +13,41 @@ gidNumber: 1001
 userPassword: 123456
 mail: test@example.com
 gecos: test
+
+# OU for People
+dn: ou=people,dc=example,dc=com
+objectClass: organizationalUnit
+ou: People
+
+# OU for Groups  
+dn: ou=groups,dc=example,dc=com
+objectClass: organizationalUnit
+ou: Groups
+
+# Group Entry harbor_users
+dn: cn=harbor_users,ou=groups,dc=example,dc=com
+cn: harbor_users
+description: All users
+member: cn=mike,ou=people,dc=example,dc=com
+objectclass: groupOfNames
+objectclass: top
+
+# User belongs to harbor_user
+dn: cn=mike,ou=people,dc=example,dc=com
+cn: mike
+gidnumber: 10000
+givenname: mike
+homedirectory: /home/mike
+loginshell: /bin/bash
+mail: mike@example.com
+objectclass: top
+objectclass: posixAccount
+objectclass: shadowAccount
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+objectclass: person
+sn: Joe
+uid: mike
+uidnumber: 5000
+userpassword: {MD5}wb68DeX0CyENafzUADNn9A==
+memberof: cn=harbor_users,ou=groups,dc=example,dc=com

@@ -179,20 +179,29 @@ func (pma *ProjectMemberAPI) Post() {
 		}
 
 		//search and import user
-		newUserID, err := ldapUtils.SearchAndImportUser(username)
+		ldapSession, err := ldapUtils.LoadSystemLdapConfig()
 		if err != nil {
-			log.Errorf("Search and import user failed, error: %v ", err)
-			pma.RenderError(http.StatusInternalServerError, "Failed to search and import user")
+			log.Errorf("Can not load ldap system configuration: %v", err)
+			pma.RenderError(http.StatusInternalServerError, "Can not load ldap system configuration")
+			return
+		}
+		if ldapSession.Create(); err != nil {
+			log.Warningf("can not connect to ldap, error: %v", err)
+			pma.RenderError(http.StatusNotFound, "Can not connect to ldap")
+			return
+		}
+		defer ldapSession.Close()
+
+		newUserID, err := ldapSession.SearchAndImport(username)
+
+		if err == nil || newUserID > 0 {
+			userID = int(newUserID)
+		} else {
+			log.Warningf("User does not exist, user name: %s", username)
+			pma.RenderError(http.StatusNotFound, "User does not exist")
 			return
 		}
 
-		if newUserID <= 0 {
-			log.Error("Failed to create user")
-			pma.RenderError(http.StatusNotFound, "Failed to create user")
-			return
-		}
-
-		userID = int(newUserID)
 	}
 	rolelist, err := dao.GetUserProjectRoles(userID, projectID)
 	if err != nil {
