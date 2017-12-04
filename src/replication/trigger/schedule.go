@@ -5,7 +5,7 @@ import (
 
 	"github.com/vmware/harbor/src/common/scheduler"
 	"github.com/vmware/harbor/src/common/scheduler/policy"
-	"github.com/vmware/harbor/src/common/scheduler/task"
+	replication_task "github.com/vmware/harbor/src/common/scheduler/task/replication"
 	"github.com/vmware/harbor/src/replication"
 )
 
@@ -42,7 +42,7 @@ func (st *ScheduleTrigger) Setup() error {
 	}
 
 	schedulePolicy := policy.NewAlternatePolicy(assembleName(st.params.PolicyID), config)
-	attachTask := task.NewReplicationTask()
+	attachTask := replication_task.NewTask(st.params.PolicyID)
 	schedulePolicy.AttachTasks(attachTask)
 	return scheduler.DefaultScheduler.Schedule(schedulePolicy)
 }

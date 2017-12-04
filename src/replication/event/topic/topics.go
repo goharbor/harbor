@@ -1,4 +1,4 @@
-package event
+package topic
 
 const (
 	//ReplicationEventTopicOnPush : OnPush event

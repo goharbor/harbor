@@ -17,7 +17,11 @@ package api
 import (
 	"fmt"
 
+	"github.com/vmware/harbor/src/common/notifier"
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/replication/core"
+	"github.com/vmware/harbor/src/replication/event/notification"
+	"github.com/vmware/harbor/src/replication/event/topic"
 	"github.com/vmware/harbor/src/ui/api/models"
 )
 
@@ -56,8 +60,11 @@ func (r *ReplicationAPI) Post() {
 		return
 	}
 
-	if err = core.DefaultController.Replicate(replication.PolicyID); err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to trigger the replication policy %d: %v", replication.PolicyID, err))
+	if err = notifier.Publish(topic.StartReplicationTopic, notification.StartReplicationNotification{
+		PolicyID: replication.PolicyID,
+	}); err != nil {
+		r.HandleInternalServerError(fmt.Sprintf("failed to publish replication topic for policy %d: %v", replication.PolicyID, err))
 		return
 	}
+	log.Infof("replication topic for policy %d triggered", replication.PolicyID)
 }

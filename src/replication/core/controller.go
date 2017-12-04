@@ -135,17 +135,19 @@ func (ctl *Controller) UpdatePolicy(updatedPolicy models.ReplicationPolicy) erro
 		}
 	}
 
+	if err = ctl.policyManager.UpdatePolicy(updatedPolicy); err != nil {
+		return err
+	}
+
 	if reset {
 		if err = ctl.triggerManager.UnsetTrigger(id, *originPolicy.Trigger); err != nil {
 			return err
 		}
-		if err = ctl.policyManager.UpdatePolicy(updatedPolicy); err != nil {
-			return err
-		}
+
 		return ctl.triggerManager.SetupTrigger(&updatedPolicy)
 	}
 
-	return ctl.policyManager.UpdatePolicy(updatedPolicy)
+	return nil
 }
 
 //RemovePolicy will remove the specified policy and clean the related settings
@@ -180,9 +182,9 @@ func (ctl *Controller) GetPolicies(query models.QueryParameter) ([]models.Replic
 
 //Replicate starts one replication defined in the specified policy;
 //Can be launched by the API layer and related triggers.
-func (ctl *Controller) Replicate(policyID int64, item ...*models.FilterItem) error {
+func (ctl *Controller) Replicate(policyID int64, metadate ...map[string]interface{}) error {
 
-	fmt.Printf("replicating %d ...\n", policyID)
+	fmt.Printf("replicating %d, metadata: %v ...\n", policyID, metadate)
 
 	return nil
 }

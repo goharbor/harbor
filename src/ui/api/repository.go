@@ -26,12 +26,15 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/clair"
 	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/common/utils/registry"
+	"github.com/vmware/harbor/src/replication/event/notification"
+	"github.com/vmware/harbor/src/replication/event/topic"
 	"github.com/vmware/harbor/src/ui/config"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
@@ -255,7 +258,17 @@ func (ra *RepositoryAPI) Delete() {
 		}
 		log.Infof("delete tag: %s:%s", repoName, t)
 
-		go CheckAndTriggerReplication(repoName+":"+t, "delete")
+		go func() {
+			image := repoName + ":" + t
+			err := notifier.Publish(topic.ReplicationEventTopicOnDeletion, notification.OnDeletionNotification{
+				Image: image,
+			})
+			if err != nil {
+				log.Errorf("failed to publish on deletion topic for resource %s: %v", image, err)
+				return
+			}
+			log.Debugf("the on deletion topic for resource %s published", image)
+		}()
 
 		go func(tag string) {
 			if err := dao.AddAccessLog(models.AccessLog{
