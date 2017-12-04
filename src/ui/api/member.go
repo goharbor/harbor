@@ -179,14 +179,18 @@ func (pma *ProjectMemberAPI) Post() {
 		}
 
 		//search and import user
-		var ldapSession ldapUtils.Session
-		err = ldapSession.Create()
-		defer ldapSession.Close()
+		ldapSession, err := ldapUtils.LoadSystemLdapConfig()
 		if err != nil {
+			log.Errorf("Can not load ldap system configuration: %v", err)
+			pma.RenderError(http.StatusInternalServerError, "Can not load ldap system configuration")
+			return
+		}
+		if ldapSession.Create(); err != nil {
 			log.Warningf("can not connect to ldap, error: %v", err)
 			pma.RenderError(http.StatusNotFound, "Can not connect to ldap")
 			return
 		}
+		defer ldapSession.Close()
 
 		newUserID, err := ldapSession.SearchAndImport(username)
 

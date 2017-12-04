@@ -125,8 +125,7 @@ func TestMain(t *testing.T) {
 }
 
 func TestLoadSystemLdapConfig(t *testing.T) {
-	var session Session
-	err := session.LoadSystemLdapConfig()
+	session, err := LoadSystemLdapConfig()
 	if err != nil {
 		t.Fatalf("failed to get system ldap config %v", err)
 	}
@@ -142,8 +141,11 @@ func TestLoadSystemLdapConfig(t *testing.T) {
 }
 
 func TestConnectTest(t *testing.T) {
-	var session Session
-	err := session.ConnectionTest()
+	session, err := LoadSystemLdapConfig()
+	if err != nil {
+		t.Errorf("failed to load system ldap config")
+	}
+	err = session.ConnectionTest()
 	if err != nil {
 		t.Errorf("Unexpected ldap connect fail: %v", err)
 	}
@@ -151,14 +153,17 @@ func TestConnectTest(t *testing.T) {
 }
 
 func TestSearchUser(t *testing.T) {
-	var session Session
 
-	err := session.Create()
+	session, err := LoadSystemLdapConfig()
+	if err != nil {
+		t.Fatalf("Can not load system ldap config")
+	}
+	err = session.Create()
 	if err != nil {
 		t.Fatalf("failed to create ldap session %v", err)
 	}
 
-	err = session.BindSearchDn()
+	err = session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword)
 	if err != nil {
 		t.Fatalf("failed to bind search dn")
 	}
@@ -189,14 +194,17 @@ func InitTest(ldapTestConfig map[string]interface{}, t *testing.T) {
 }
 
 func TestSearchAndImportUser(t *testing.T) {
-	var session Session
 
-	err := session.Create()
+	session, err := LoadSystemLdapConfig()
+	if err != nil {
+		t.Fatalf("failed to load ldap config: %v", err)
+	}
+	err = session.Create()
 
 	if err != nil {
 		t.Fatalf("failed to create ldap session: %v", err)
 	}
-	err = session.BindSearchDn()
+	err = session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword)
 	if err != nil {
 		t.Fatalf("failed to bind search dn")
 	}
@@ -219,12 +227,12 @@ func TestImportUser(t *testing.T) {
 	u.Username = "ldapUser0001"
 	u.Realname = "ldapUser"
 
-	var session Session
+	session, err := LoadSystemLdapConfig()
 	err = session.Create()
 	if err != nil {
 		t.Fatalf("failed to create ldap session: %v", err)
 	}
-	err = session.BindSearchDn()
+	err = session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword)
 	if err != nil {
 		t.Fatalf("failed to bind search dn")
 	}
@@ -263,14 +271,12 @@ func TestImportUserExit(t *testing.T) {
 			Realname: "admin",
 			Email:    "admin@example.com"},
 	}
-	var err error
-
-	var session Session
+	session, err := LoadSystemLdapConfig()
 	err = session.Create()
 	if err != nil {
 		t.Fatalf("failed to create ldap session: %v", err)
 	}
-	err = session.BindSearchDn()
+	err = session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword)
 	if err != nil {
 		t.Fatalf("failed to bind search dn")
 	}
@@ -285,14 +291,17 @@ func TestImportUserExit(t *testing.T) {
 }
 
 func TestSearchAndImportUserNotExist(t *testing.T) {
-	var session Session
 
-	err := session.Create()
+	session, err := LoadSystemLdapConfig()
+	if err != nil {
+		t.Fatalf("Failed to load ldap config")
+	}
+	err = session.Create()
 
 	if err != nil {
 		t.Fatalf("failed to create ldap session: %v", err)
 	}
-	err = session.BindSearchDn()
+	err = session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword)
 	if err != nil {
 		t.Fatalf("failed to bind search dn")
 	}

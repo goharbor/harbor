@@ -46,16 +46,17 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	var ldapSession ldapUtils.Session
-
-	err := ldapSession.Create()
-
-	defer ldapSession.Close()
+	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
 
 	if err != nil {
+		return nil, fmt.Errorf("can not load system ldap config: %v", err)
+	}
+
+	if err := ldapSession.Create(); err != nil {
 		log.Warningf("ldap connection fail: %v", err)
 		return nil, nil
 	}
+	defer ldapSession.Close()
 
 	ldapUsers, err := ldapSession.SearchUser(p)
 

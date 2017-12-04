@@ -49,16 +49,18 @@ func (l *LdapAPI) Ping() {
 	var err error
 	var ldapConfs models.LdapConf
 
-	var ldapSession ldapUtils.Session
+	var ldapSession *ldapUtils.Session
 
 	l.Ctx.Input.CopyBody(1 << 32)
 
+	ldapSession, err = ldapUtils.LoadSystemLdapConfig()
+	if err != nil {
+		log.Errorf("Can't load system configuration, error: %v", err)
+		l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
+		return
+	}
+
 	if string(l.Ctx.Input.RequestBody) == "" {
-		if err != nil {
-			log.Errorf("Can't load system configuration, error: %v", err)
-			l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
-			return
-		}
 		err = ldapSession.ConnectionTest()
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)
@@ -66,7 +68,7 @@ func (l *LdapAPI) Ping() {
 	}
 
 	if err != nil {
-		log.Errorf("Ldap connect fail, error: %v", err)
+		log.Errorf("ldap connect fail, error: %v", err)
 		l.RenderError(http.StatusBadRequest, fmt.Sprintf("ldap connect fail: %v", err))
 		return
 	}
@@ -77,19 +79,24 @@ func (l *LdapAPI) Search() {
 	var err error
 	var ldapUsers []models.LdapUser
 	var ldapConfs models.LdapConf
-	var ldapSession ldapUtils.Session
-
+	var ldapSession *ldapUtils.Session
 	l.Ctx.Input.CopyBody(1 << 32)
 	if string(l.Ctx.Input.RequestBody) == "" {
-		err = ldapSession.Create()
+		ldapSession, err = ldapUtils.LoadSystemLdapConfig()
 		if err != nil {
-			log.Errorf("Can't load system configuration, error: %v", err)
+			log.Errorf("can't load system configuration, error: %v", err)
 			l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
 			return
 		}
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)
-		ldapSession.CreateWithUIConfig(ldapConfs)
+		ldapSession, err = ldapUtils.CreateWithUIConfig(ldapConfs)
+	}
+
+	if err = ldapSession.Create(); err != nil {
+		log.Errorf("can't create ldap session, error: %v", err)
+		l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't create ldap session: %v", err))
+		return
 	}
 	defer ldapSession.Close()
 
@@ -147,13 +154,16 @@ func (l *LdapAPI) ImportUser() {
 func importUsers(ldapConfs models.LdapConf, ldapImportUsers []string) ([]models.LdapFailedImportUser, error) {
 	var failedImportUser []models.LdapFailedImportUser
 	var u models.LdapFailedImportUser
-	var ldapSession ldapUtils.Session
 
-	if err := ldapSession.Create(); err != nil {
-		log.Errorf("Can't connect to ldap, error: %v", err)
-
+	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
+	if err != nil {
+		log.Errorf("can't load system configuration, error: %v", err)
+		return nil, err
 	}
 
+	if err = ldapSession.Create(); err != nil {
+		log.Errorf("Can't connect to ldap, error: %v", err)
+	}
 	defer ldapSession.Close()
 
 	for _, tempUID := range ldapImportUsers {
