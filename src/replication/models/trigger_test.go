@@ -15,26 +15,27 @@
 package models
 
 import (
-	"fmt"
+	"testing"
 
 	"github.com/astaxie/beego/validation"
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/replication"
 )
 
-//Trigger is replication launching approach definition
-type Trigger struct {
-	//The name of the trigger
-	Kind string `json:"kind"`
+func TestValidOfTrigger(t *testing.T) {
+	cases := map[*Trigger]bool{
+		&Trigger{}: true,
+		&Trigger{
+			Kind: "invalid_kind",
+		}: true,
+		&Trigger{
+			Kind: replication.TriggerKindImmediate,
+		}: false,
+	}
 
-	//The parameters with json text format required by the trigger
-	Param string `json:"param"`
-}
-
-// Valid ...
-func (t *Trigger) Valid(v *validation.Validation) {
-	if !(t.Kind == replication.TriggerKindImmediate ||
-		t.Kind == replication.TriggerKindManual ||
-		t.Kind == replication.TriggerKindSchedule) {
-		v.SetError("kind", fmt.Sprintf("invalid trigger kind: %s", t.Kind))
+	for filter, hasError := range cases {
+		v := &validation.Validation{}
+		filter.Valid(v)
+		assert.Equal(t, hasError, v.HasErrors())
 	}
 }

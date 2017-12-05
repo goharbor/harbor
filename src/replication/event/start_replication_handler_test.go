@@ -18,10 +18,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/vmware/harbor/src/replication/core"
 	"github.com/vmware/harbor/src/replication/event/notification"
 )
 
 func TestHandle(t *testing.T) {
+	core.GlobalController = &test.FakeReplicatoinController{}
+
 	handler := &StartReplicationHandler{}
 
 	assert.NotNil(t, handler.Handle(nil))
