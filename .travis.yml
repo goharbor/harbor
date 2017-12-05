@@ -89,8 +89,8 @@ script:
   - sudo mkdir -p ./make/common/config/registry/
   - sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
   - sudo docker-compose -f ./make/docker-compose.test.yml up -d
-  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
-  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
+  - go list ./... | grep -v -E 'vendor|tests|test' | xargs -L1 fgt golint
+  - go list ./... | grep -v -E 'vendor|tests|test' | xargs -L1 go vet
   - export MYSQL_HOST=$IP
   - export REGISTRY_URL=$IP:5000
   - echo $REGISTRY_URL

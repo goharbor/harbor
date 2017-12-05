@@ -43,8 +43,7 @@ func (srh *StartReplicationHandler) Handle(value interface{}) error {
 	}
 
 	//Start replication
-
-	return core.DefaultController.Replicate(notification.PolicyID, notification.Metadata)
+	return core.GlobalController.Replicate(notification.PolicyID, notification.Metadata)
 }
 
 //IsStateful implements the same method of notification handler interface

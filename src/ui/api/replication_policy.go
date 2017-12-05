@@ -51,7 +51,7 @@ func (pa *RepPolicyAPI) Prepare() {
 // Get ...
 func (pa *RepPolicyAPI) Get() {
 	id := pa.GetIDFromURL()
-	policy, err := core.DefaultController.GetPolicy(id)
+	policy, err := core.GlobalController.GetPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -87,7 +87,7 @@ func (pa *RepPolicyAPI) List() {
 
 	result := []*api_models.ReplicationPolicy{}
 
-	policies, err := core.DefaultController.GetPolicies(queryParam)
+	policies, err := core.GlobalController.GetPolicies(queryParam)
 	if err != nil {
 		log.Errorf("failed to get policies: %v, query parameters: %v", err, queryParam)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -139,7 +139,7 @@ func (pa *RepPolicyAPI) Post() {
 		}
 	}
 
-	id, err := core.DefaultController.CreatePolicy(convertToRepPolicy(policy))
+	id, err := core.GlobalController.CreatePolicy(convertToRepPolicy(policy))
 	if err != nil {
 		pa.HandleInternalServerError(fmt.Sprintf("failed to create policy: %v", err))
 		return
@@ -154,7 +154,7 @@ func (pa *RepPolicyAPI) Post() {
 func (pa *RepPolicyAPI) Put() {
 	id := pa.GetIDFromURL()
 
-	originalPolicy, err := core.DefaultController.GetPolicy(id)
+	originalPolicy, err := core.GlobalController.GetPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -197,7 +197,7 @@ func (pa *RepPolicyAPI) Put() {
 		}
 	}
 
-	if err = core.DefaultController.UpdatePolicy(convertToRepPolicy(policy)); err != nil {
+	if err = core.GlobalController.UpdatePolicy(convertToRepPolicy(policy)); err != nil {
 		pa.HandleInternalServerError(fmt.Sprintf("failed to update policy %d: %v", id, err))
 		return
 	}
@@ -207,7 +207,7 @@ func (pa *RepPolicyAPI) Put() {
 func (pa *RepPolicyAPI) Delete() {
 	id := pa.GetIDFromURL()
 
-	policy, err := core.DefaultController.GetPolicy(id)
+	policy, err := core.GlobalController.GetPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -232,7 +232,7 @@ func (pa *RepPolicyAPI) Delete() {
 		}
 	}
 
-	if err = core.DefaultController.RemovePolicy(id); err != nil {
+	if err = core.GlobalController.RemovePolicy(id); err != nil {
 		log.Errorf("failed to delete policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, "")
 	}

@@ -132,8 +132,8 @@ func main() {
 		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)})
 	}
 
-	if err := core.DefaultController.Init(); err != nil {
-		log.Errorf("failed to initialize DefaultContorllter: %v", err)
+	if err := core.GlobalController.Init(); err != nil {
+		log.Errorf("failed to initialize the replication controller: %v", err)
 	}
 
 	filter.Init()
