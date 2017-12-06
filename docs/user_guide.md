@@ -2,20 +2,24 @@
 ## Overview  
 This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
-* Manage your projects.
-* Manage members of a project.
-* Replicate projects to a remote registry.
-* Search projects and repositories.
+* [Manage your projects](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-projects)
+* [Manage members of a project](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-projects)
+* [Replicate projects to a remote registry](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-projects)
+* [Search projects and repositorie](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-projects)
 * Manage Harbor system if you are the system administrator:
-  * Manage users.
-  * Manage destinations.
-  * Manage replication policies.
-  * Manage configuration.
-* Pull and push images using Docker client.
-* Delete repositories and images.
-* Content trust.  
-* Vulnerability scanning via Clair.
-* Pull image from Harbor in Kubernetes.
+  * [Manage users](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-users)
+  * [Manage endpoints](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-endpoint)
+  * [Manage replication policies](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-replication)
+  * [Manage authentication](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-authentication)
+  * [Manage project creation](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-project-creation)
+  * [Manage self-registration](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-self-registration)
+  * [Manage verification of remote certificate](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-verification-of-remote-certificate)
+  * [Manage email settings](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#managing-email-settings)
+* [Pull and push images using Docker client](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#pulling-and-pushing-images-using-docker-client)
+* [Delete repositories and images](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#deleting-repositories)
+* [Content trust](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#content-trust)
+* [Vulnerability scanning via Clair](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#vulnerability-scanning-via-clair)
+* [Pull image from Harbor in Kubernetes](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#pull-image-from-harbor-in-kubernetes)
 
 ## Role Based Access Control(RBAC)  
 
