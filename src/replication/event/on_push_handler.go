@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 
+	common_models "github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -45,7 +46,7 @@ func (oph *OnPushHandler) Handle(value interface{}) error {
 
 	notification := value.(notification.OnPushNotification)
 
-	return checkAndTriggerReplication(notification.Image, replication.OperationPush)
+	return checkAndTriggerReplication(notification.Image, common_models.RepOpTransfer)
 }
 
 //IsStateful implements the same method of notification handler interface
@@ -68,7 +69,7 @@ func checkAndTriggerReplication(image, operation string) error {
 	}
 
 	for _, watchItem := range watchItems {
-		item := &models.FilterItem{
+		item := models.FilterItem{
 			Kind:  replication.FilterItemKindTag,
 			Value: image,
 			Metadata: map[string]interface{}{
@@ -79,7 +80,7 @@ func checkAndTriggerReplication(image, operation string) error {
 		if err := notifier.Publish(topic.StartReplicationTopic, notification.StartReplicationNotification{
 			PolicyID: watchItem.PolicyID,
 			Metadata: map[string]interface{}{
-				"": []*models.FilterItem{item},
+				"candidates": []models.FilterItem{item},
 			},
 		}); err != nil {
 			return fmt.Errorf("failed to publish replication topic for resource %s, operation %s, policy %d: %v",

@@ -23,11 +23,6 @@ const (
 	//TriggerScheduleWeekly : type of scheduling is 'weekly'
 	TriggerScheduleWeekly = "weekly"
 
-	//OperationPush : push operation
-	OperationPush = "push"
-	//OperationDelete : delete operation
-	OperationDelete = "delete"
-
 	// PatternMatchAll : the pattern that match all
 	PatternMatchAll = ".*"
 )

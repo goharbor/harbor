@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/vmware/harbor/src/replication"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/replication/event/notification"
 )
 
@@ -38,7 +38,7 @@ func (oph *OnDeletionHandler) Handle(value interface{}) error {
 	}
 
 	notification := value.(notification.OnDeletionNotification)
-	return checkAndTriggerReplication(notification.Image, replication.OperationDelete)
+	return checkAndTriggerReplication(notification.Image, models.RepOpDelete)
 }
 
 //IsStateful implements the same method of notification handler interface

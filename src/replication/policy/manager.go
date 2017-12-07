@@ -55,6 +55,13 @@ func (m *DefaultManager) GetPolicies(query models.QueryParameter) ([]models.Repl
 		if err != nil {
 			return []models.ReplicationPolicy{}, err
 		}
+
+		if len(query.TriggerType) > 0 {
+			if ply.Trigger.Kind != query.TriggerType {
+				continue
+			}
+		}
+
 		result = append(result, ply)
 	}
 

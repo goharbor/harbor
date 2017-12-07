@@ -23,8 +23,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vmware/harbor/src/adminserver/client/auth"
 	"github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
+	httpclient "github.com/vmware/harbor/src/common/http/client"
 	"github.com/vmware/harbor/src/common/utils"
 )
 
@@ -43,22 +43,20 @@ type Client interface {
 }
 
 // NewClient return an instance of Adminserver client
-func NewClient(baseURL string, authorizer auth.Authorizer) Client {
+func NewClient(baseURL string, c httpclient.Client) Client {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.Contains(baseURL, "://") {
 		baseURL = "http://" + baseURL
 	}
 	return &client{
-		baseURL:    baseURL,
-		client:     &http.Client{},
-		authorizer: authorizer,
+		baseURL: baseURL,
+		client:  c,
 	}
 }
 
 type client struct {
-	baseURL    string
-	client     *http.Client
-	authorizer auth.Authorizer
+	baseURL string
+	client  httpclient.Client
 }
 
 // do creates request and authorizes it if authorizer is not nil
@@ -69,11 +67,6 @@ func (c *client) do(method, relativePath string, body io.Reader) (*http.Response
 		return nil, err
 	}
 
-	if c.authorizer != nil {
-		if err := c.authorizer.Authorize(req); err != nil {
-			return nil, err
-		}
-	}
 	return c.client.Do(req)
 }
 

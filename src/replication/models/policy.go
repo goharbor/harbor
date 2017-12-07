@@ -27,8 +27,8 @@ type QueryParameter struct {
 	//Size of each page, couple with page
 	PageSize int64
 
-	//Query by the name of trigger
-	TriggerName string
+	//Query by the type of trigger
+	TriggerType string
 
 	//Query by project ID
 	ProjectID int64

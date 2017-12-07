@@ -16,15 +16,21 @@ package core
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/vmware/harbor/src/common/http/client"
+	"github.com/vmware/harbor/src/common/http/client/auth"
 	common_models "github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice/api"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 	"github.com/vmware/harbor/src/replication/policy"
+	"github.com/vmware/harbor/src/replication/replicator"
 	"github.com/vmware/harbor/src/replication/source"
 	"github.com/vmware/harbor/src/replication/target"
 	"github.com/vmware/harbor/src/replication/trigger"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // Controller defines the methods that a replicatoin controllter should implement
@@ -51,6 +57,9 @@ type DefaultController struct {
 
 	//Manage the triggers of policies
 	triggerManager *trigger.Manager
+
+	//Handle the replication work
+	replicator replicator.Replicator
 }
 
 //Keep controller as singleton instance
@@ -65,14 +74,20 @@ type ControllerConfig struct {
 }
 
 //NewDefaultController is the constructor of DefaultController.
-func NewDefaultController(config ControllerConfig) *DefaultController {
+func NewDefaultController(cfg ControllerConfig) *DefaultController {
 	//Controller refer the default instances
-	return &DefaultController{
+	ctl := &DefaultController{
 		policyManager:  policy.NewDefaultManager(),
 		targetManager:  target.NewDefaultManager(),
 		sourcer:        source.NewSourcer(),
-		triggerManager: trigger.NewManager(config.CacheCapacity),
+		triggerManager: trigger.NewManager(cfg.CacheCapacity),
 	}
+
+	endpoint := config.InternalJobServiceURL()
+	client := client.NewAuthorizedClient(auth.NewSecretAuthorizer(config.UISecret()))
+	ctl.replicator = replicator.NewDefaultReplicator(endpoint, client)
+
+	return ctl
 }
 
 //Init will initialize the controller and the sub components
@@ -82,16 +97,8 @@ func (ctl *DefaultController) Init() error {
 	}
 
 	//Build query parameters
-	triggerNames := []string{
-		replication.TriggerKindSchedule,
-	}
-	queryName := ""
-	for _, name := range triggerNames {
-		queryName = fmt.Sprintf("%s,%s", queryName, name)
-	}
-	//Enable the triggers
 	query := models.QueryParameter{
-		TriggerName: queryName,
+		TriggerType: replication.TriggerKindSchedule,
 	}
 
 	policies, err := ctl.policyManager.GetPolicies(query)
@@ -233,19 +240,22 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 	// prepare candidates for replication
 	candidates = getCandidates(&policy, ctl.sourcer, candidates...)
 
-	targets := []*common_models.RepTarget{}
-	for _, targetID := range policy.TargetIDs {
-		target, err := ctl.targetManager.GetTarget(targetID)
-		if err != nil {
-			return err
+	// TODO
+	/*
+		targets := []*common_models.RepTarget{}
+		for _, targetID := range policy.TargetIDs {
+			target, err := ctl.targetManager.GetTarget(targetID)
+			if err != nil {
+				return err
+			}
+			targets = append(targets, target)
 		}
-		targets = append(targets, target)
-	}
+	*/
 
 	// TODO merge tags whose repository is same into one struct
 
-	// call job service to do the replication
-	return replicate(candidates, targets)
+	// submit the replication
+	return replicate(ctl.replicator, policyID, candidates)
 }
 
 func getCandidates(policy *models.ReplicationPolicy, sourcer *source.Sourcer, candidates ...models.FilterItem) []models.FilterItem {
@@ -254,7 +264,7 @@ func getCandidates(policy *models.ReplicationPolicy, sourcer *source.Sourcer, ca
 			candidates = append(candidates, models.FilterItem{
 				Kind:      replication.FilterItemKindProject,
 				Value:     namespace,
-				Operation: replication.OperationPush,
+				Operation: common_models.RepOpTransfer,
 			})
 		}
 	}
@@ -313,10 +323,28 @@ func buildFilterChain(policy *models.ReplicationPolicy, sourcer *source.Sourcer)
 	return source.NewDefaultFilterChain(filters)
 }
 
-func replicate(candidates []models.FilterItem, targets []*common_models.RepTarget) error {
-	// TODO
+func replicate(replicator replicator.Replicator, policyID int64, candidates []models.FilterItem) error {
+	repositories := map[string][]string{}
+	// TODO the operation of all candidates are same for now. Update it after supporting
+	// replicate deletion
+	operation := ""
+	for _, candidate := range candidates {
+		strs := strings.SplitN(candidate.Value, ":", 2)
+		repositories[strs[0]] = append(repositories[strs[0]], strs[1])
+		operation = candidate.Operation
+	}
 
-	log.Infof("replicate candidates %v to targets %v", candidates, targets)
-
+	for repository, tags := range repositories {
+		replication := &api.ReplicationReq{
+			PolicyID:  policyID,
+			Repo:      repository,
+			Operation: operation,
+			TagList:   tags,
+		}
+		log.Debugf("submiting replication job to jobservice: %v", replication)
+		if err := replicator.Replicate(replication); err != nil {
+			return err
+		}
+	}
 	return nil
 }

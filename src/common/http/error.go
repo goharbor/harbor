@@ -12,39 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package auth
+package http
 
 import (
-	"net/http"
+	"fmt"
 )
 
-// Authorizer authorizes request
-type Authorizer interface {
-	Authorize(*http.Request) error
+// Error wrap HTTP status code and message as an error
+type Error struct {
+	Code    int
+	Message string
 }
 
-// NewSecretAuthorizer returns an instance of secretAuthorizer
-func NewSecretAuthorizer(cookieName, secret string) Authorizer {
-	return &secretAuthorizer{
-		cookieName: cookieName,
-		secret:     secret,
-	}
-}
-
-type secretAuthorizer struct {
-	cookieName string
-	secret     string
-}
-
-func (s *secretAuthorizer) Authorize(req *http.Request) error {
-	if req == nil {
-		return nil
-	}
-
-	req.AddCookie(&http.Cookie{
-		Name:  s.cookieName,
-		Value: s.secret,
-	})
-
-	return nil
+// Error ...
+func (e *Error) Error() string {
+	return fmt.Sprintf("http error: code %d, message %s", e.Code, e.Message)
 }

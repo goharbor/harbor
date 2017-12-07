@@ -12,32 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package auth
+package replicator
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/jobservice/api"
 )
 
-func TestAuthorize(t *testing.T) {
-	cookieName := "secret"
-	secret := "secret"
-	authorizer := NewSecretAuthorizer(cookieName, secret)
-	req, err := http.NewRequest("", "", nil)
-	if !assert.Nil(t, err, "unexpected error") {
-		return
-	}
+type fakeJobserviceClient struct{}
 
-	err = authorizer.Authorize(req)
-	if !assert.Nil(t, err, "unexpected error") {
-		return
-	}
+func (f *fakeJobserviceClient) SubmitReplicationJob(replication *api.ReplicationReq) error {
+	return nil
+}
 
-	cookie, err := req.Cookie(cookieName)
-	if !assert.Nil(t, err, "unexpected error") {
-		return
-	}
-	assert.Equal(t, secret, cookie.Value, "unexpected cookie")
+func TestReplicate(t *testing.T) {
+	replicator := NewDefaultReplicator("http://jobservice")
+	replicator.client = &fakeJobserviceClient{}
+	assert.Nil(t, replicator.Replicate(&api.ReplicationReq{}))
 }
