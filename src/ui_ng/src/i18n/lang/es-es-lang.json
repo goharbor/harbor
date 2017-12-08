@@ -32,7 +32,8 @@
         "YES": "SI",
         "NO": "NO",
         "NEGATIVE": "NEGATIVO",
-        "COPY": "COPY"
+        "COPY": "COPY",
+        "EDIT": "EDITAR"
     },
     "TOOLTIP": {
         "EMAIL": "El email debe ser una dirección válida como nombre@ejemplo.com.",
@@ -365,7 +366,10 @@
         "DELETED_TAG_SUCCESS": "Etiqueta eliminada satisfactoriamente.",
         "COPY": "Copiar",
         "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
-        "PLACEHOLDER": "We couldn't find any repositories!"
+        "PLACEHOLDER": "We couldn't find any repositories!",
+        "INFO": "Información",
+        "NO_INFO": "Sin información de descripción para este repositorio",
+        "IMAGE": "Imágenes"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algunos cambios no se han guardado aún. ¿Quiere cancelar?"
@@ -553,7 +557,8 @@
         "SCAN_COMPLETION_TIME": "Scan Completed",
         "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
         "PLACEHOLDER": "We couldn't find any tags!",
-        "COPY_ERROR": "Copy failed, please try to manually copy."
+        "COPY_ERROR": "Copy failed, please try to manually copy.",
+        "FILTER_FOR_TAGS": "Etiquetas de filtro"
     },
     "UNKNOWN_ERROR": "Ha ocurrido un error desconocido. Por favor, inténtelo de nuevo más tarde.",
     "UNAUTHORIZED_ERROR": "La sesión no es válida o ha caducado. Necesita identificarse de nuevo para llevar a cabo esa acción.",

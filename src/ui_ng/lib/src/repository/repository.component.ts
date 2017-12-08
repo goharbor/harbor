@@ -11,20 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, Output, EventEmitter } from '@angular/core';
 
 import { RepositoryService } from '../service/repository.service';
-import { Repository, RepositoryItem } from '../service/interface';
+
+import { Repository, RepositoryItem, Tag, TagClickEvent,
+  SystemInfo, SystemInfoService, TagService } from '../service/index';
 
 import { TranslateService } from '@ngx-translate/core';
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
+import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
 
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
-import { Subscription } from 'rxjs/Subscription';
 
 import { State } from 'clarity-angular';
 
@@ -33,81 +34,172 @@ import { toPromise } from '../utils';
 import { REPOSITORY_TEMPLATE } from './repository.component.html';
 import { REPOSITORY_STYLE } from './repository.component.css';
 
+const TabLinkContentMap: {[index: string]: string} = {
+  'repo-info': 'info',
+  'repo-image': 'image'
+};
+
 @Component({
   selector: 'hbr-repository',
   template: REPOSITORY_TEMPLATE,
   styles: [REPOSITORY_STYLE]
 })
 export class RepositoryComponent implements OnInit {
-  changedRepositories: RepositoryItem[];
-
+  signedCon: {[key: string]: any | string[]} = {};
   @Input() projectId: number;
-  @Input() urlPrefix: string;
+  @Input() projectName: string;
+  @Input() repoName: string;
+  @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
 
-  lastFilteredRepoName: string;
+  @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
+  @Output() backEvt: EventEmitter<any> = new EventEmitter<any>();
+
+  onGoing = false;
+  withNotary = false;
+  withClair = true;
+  editing = false;
+  inProgress = true;
+  currentTabID = 'repo-image';
+  changedRepositories: RepositoryItem[];
+  systemInfo: SystemInfo;
+
+  imageInfo: string;
+  orgImageInfo: string;
+
+  timerHandler: any;
 
   @ViewChild('confirmationDialog')
-  confirmationDialog: ConfirmationDialogComponent;
+  confirmationDlg: ConfirmationDialogComponent;
 
   constructor(
     private errorHandler: ErrorHandler,
     private repositoryService: RepositoryService,
-    private translateService: TranslateService
-  ) {}
+    private systemInfoService: SystemInfoService,
+    private tagService: TagService,
+    private translate: TranslateService,
+  ) {  }
 
-  confirmDeletion(message: ConfirmationAcknowledgement) {
-    if (message &&
-      message.source === ConfirmationTargets.REPOSITORY &&
-      message.state === ConfirmationState.CONFIRMED) {
-      let repoName = message.data;
-      toPromise<number>(this.repositoryService
-        .deleteRepository(repoName))
-        .then(
-          response => {
-            this.refresh();
-            this.translateService.get('REPOSITORY.DELETED_REPO_SUCCESS')
-                .subscribe(res=>this.errorHandler.info(res));
-        }).catch(error => this.errorHandler.error(error));
-    }
+  public get registryUrl(): string {
+    return this.systemInfo ? this.systemInfo.registry_url : '';
   }
-  
+
   ngOnInit(): void {
-    if(!this.projectId) {
+    if (!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
       return;
     }
-    this.lastFilteredRepoName = '';
     this.retrieve();
+    this.inProgress = false;
   }
 
   retrieve(state?: State) {
-    toPromise<Repository>(this.repositoryService
-      .getRepositories(this.projectId, this.lastFilteredRepoName))
+    toPromise<Repository>(this.repositoryService.getRepositories(this.projectId, this.repoName))
       .then(
         response => {
-          this.changedRepositories = response.data;
-      },
-      error => this.errorHandler.error(error));
+          if (response.metadata.xTotalCount > 0) {
+            this.orgImageInfo = response.data[0].description;
+            this.imageInfo = response.data[0].description;
+          }
+        })
+        .catch(error => this.errorHandler.error(error));
   }
 
-  doSearchRepoNames(repoName: string) {
-    this.lastFilteredRepoName = repoName;
-    this.retrieve();
-  }
-
-  deleteRepo(repoName: string) {
-    let message = new ConfirmationMessage(
-      'REPOSITORY.DELETION_TITLE_REPO',
-      'REPOSITORY.DELETION_SUMMARY_REPO',
-      repoName,
-      repoName,
-      ConfirmationTargets.REPOSITORY,
-      ConfirmationButtons.DELETE_CANCEL);
-    this.confirmationDialog.open(message);
+  saveSignatures(event: {[key: string]: string[]}): void {
+    Object.assign(this.signedCon, event);
   }
 
   refresh() {
     this.retrieve();
+  }
+
+  watchTagClickEvt(tagClickEvt: TagClickEvent): void {
+    this.tagClickEvent.emit(tagClickEvt);
+  }
+
+  isCurrentTabLink(tabID: string): boolean {
+    return this.currentTabID === tabID;
+  }
+
+  isCurrentTabContent(ContentID: string): boolean {
+    return TabLinkContentMap[this.currentTabID] === ContentID;
+  }
+
+  tabLinkClick(tabID: string) {
+    this.currentTabID = tabID;
+  }
+
+  getTagInfo(repoName: string): Promise<void> {
+    // this.signedNameArr = [];
+   this.signedCon[repoName] = [];
+    return toPromise<Tag[]>(this.tagService
+           .getTags(repoName))
+           .then(items => {
+             items.forEach((t: Tag) => {
+               if (t.signature !== null) {
+                 this.signedCon[repoName].push(t.name);
+               }
+             });
+           })
+           .catch(error => this.errorHandler.error(error));
+ }
+
+  goBack() {
+    this.backEvt.emit(this.projectId);
+  }
+
+  hasChanges() {
+    return this.imageInfo !== this.orgImageInfo;
+  }
+
+  reset(): void {
+    this.imageInfo = this.orgImageInfo;
+  }
+
+  hasInfo() {
+    return this.imageInfo && this.imageInfo.length > 0;
+  }
+
+  editInfo() {
+    this.editing = true;
+  }
+
+  saveInfo() {
+    if (!this.hasChanges()) {
+      return;
+    }
+    this.onGoing = true;
+    toPromise<any>(this.repositoryService.updateRepositoryDescription(this.repoName, this.imageInfo))
+      .then(() => {
+        this.onGoing = false;
+        this.translate.get('CONFIG.SAVE_SUCCESS').subscribe((res: string) => {
+          this.errorHandler.info(res);
+        });
+        this.editing = false;
+        this.refresh();
+      })
+      .catch(error => {
+        this.onGoing = false;
+        this.errorHandler.error(error);
+      });
+  }
+
+  cancelInfo() {
+    let msg = new ConfirmationMessage(
+      'CONFIG.CONFIRM_TITLE',
+      'CONFIG.CONFIRM_SUMMARY',
+      '',
+      {},
+      ConfirmationTargets.CONFIG
+    );
+    this.confirmationDlg.open(msg);
+  }
+
+  confirmCancel(ack: ConfirmationAcknowledgement): void {
+    this.editing = false;
+    if (ack && ack.source === ConfirmationTargets.CONFIG &&
+        ack.state === ConfirmationState.CONFIRMED) {
+        this.reset();
+    }
   }
 }
