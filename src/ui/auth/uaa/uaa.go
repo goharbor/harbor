@@ -46,6 +46,7 @@ func CreateClient() (uaa.Client, error) {
 type Auth struct {
 	sync.Mutex
 	client uaa.Client
+	auth.DefaultAuthenticateHelper
 }
 
 //Authenticate ...

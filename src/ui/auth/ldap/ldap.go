@@ -16,6 +16,7 @@ package ldap
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/vmware/harbor/src/common/dao"
@@ -26,7 +27,9 @@ import (
 )
 
 // Auth implements AuthenticateHelper interface to authenticate against LDAP
-type Auth struct{}
+type Auth struct {
+	auth.DefaultAuthenticateHelper
+}
 
 // Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
 // if the check is successful a dummy record will be inserted into DB, such that this user can
@@ -68,7 +71,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	u := models.User{}
 	u.Username = ldapUsers[0].Username
-	u.Email = ldapUsers[0].Email
+	u.Email = strings.TrimSpace(ldapUsers[0].Email)
 	u.Realname = ldapUsers[0].Realname
 
 	dn := ldapUsers[0].DN
@@ -78,34 +81,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
 		return nil, nil
 	}
-	exist, err := dao.UserExists(u, "username")
-	if err != nil {
-		return nil, err
-	}
-
-	if exist {
-		currentUser, err := dao.GetUser(u)
-		if err != nil {
-			return nil, err
-		}
-		u.UserID = currentUser.UserID
-		u.HasAdminRole = currentUser.HasAdminRole
-	} else {
-		var user models.User
-		user.Username = ldapUsers[0].Username
-		user.Email = ldapUsers[0].Email
-		user.Realname = ldapUsers[0].Realname
-
-		err = auth.OnBoardUser(&user)
-		if err != nil || user.UserID <= 0 {
-			log.Errorf("Can't import user %s, error: %v", ldapUsers[0].Username, err)
-			return nil, fmt.Errorf("can't import user %s, error: %v", ldapUsers[0].Username, err)
-		}
-		u.UserID = user.UserID
-	}
-
 	return &u, nil
-
 }
 
 // OnBoardUser will check if a user exists in user table, if not insert the user and
@@ -151,6 +127,52 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 	}
 
 	return &user, nil
+}
+
+//PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
+func (l *Auth) PostAuthenticate(u *models.User) error {
+
+	exist, err := dao.UserExists(*u, "username")
+	if err != nil {
+		return err
+	}
+
+	if exist {
+		queryCondition := models.User{
+			Username: u.Username,
+		}
+		dbUser, err := dao.GetUser(queryCondition)
+		if err != nil {
+			return err
+		}
+		if dbUser == nil {
+			fmt.Printf("User not found in DB %+v", u)
+			return nil
+		}
+		u.UserID = dbUser.UserID
+		u.HasAdminRole = dbUser.HasAdminRole
+
+		if dbUser.Email != u.Email {
+			Re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+			if !Re.MatchString(u.Email) {
+				log.Debugf("Not a valid email address: %v, skip to sync", u.Email)
+			} else {
+				dao.ChangeUserProfile(*u, "Email")
+			}
+			u.Email = dbUser.Email
+		}
+
+		return nil
+	}
+
+	err = auth.OnBoardUser(u)
+	if err != nil {
+		return err
+	}
+	if u.UserID <= 0 {
+		return fmt.Errorf("Can not OnBoardUser %v", u)
+	}
+	return nil
 }
 
 func init() {
