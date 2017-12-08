@@ -83,7 +83,7 @@ func NewDefaultController(cfg ControllerConfig) *DefaultController {
 		triggerManager: trigger.NewManager(cfg.CacheCapacity),
 	}
 
-	endpoint := config.InternalJobServiceURL()
+	endpoint := "http://jobservice"
 	client := client.NewAuthorizedClient(auth.NewSecretAuthorizer(config.UISecret()))
 	ctl.replicator = replicator.NewDefaultReplicator(endpoint, client)
 
