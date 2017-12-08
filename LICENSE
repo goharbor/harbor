@@ -88,7 +88,7 @@ limitations under the License.
 
 =======================================================================
 
-Admiral version 1.3.0 includes a number of components with separate 
+Harbor version 1.3.0 includes a number of components with separate 
 copyright notices and license terms.  This product does not necessarily 
 use all the open source components referred to below. Your use of the 
 source code for these components is subject to the terms and conditions 
@@ -103,7 +103,7 @@ further if you wish to review the copyright notice(s) and the full text
 of the license associated with each component.
 
 
-PART 1. VIRTUAL APPLIANCE: OPERATING SYSTEM
+PART 1. VIRTUAL APPLIANCE: OPERATING SYSTEM LAYER
 
 
 SECTION 1: BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES
@@ -355,7 +355,7 @@ APPENDIX. Standard License Files
    
 
 
-====================PART 1. VIRTUAL APPLIANCE: OPERATING SYSTEM ====================
+====================PART 1. VIRTUAL APPLIANCE: OPERATING SYSTEM LAYER ====================
 
 
 --------------- SECTION 1:  BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES ----------
@@ -25884,7 +25884,6 @@ THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 
 ===========================================================================
 
-
 To the extent any open source components are licensed under the GPL
 and/or LGPL, or other similar licenses that require the source code
 and/or modifications to source code to be made available, you may obtain
@@ -25896,4 +25895,4 @@ All such requests should clearly specify: OPEN SOURCE FILES REQUEST, Attention G
 mail a copy of the Source Files to you on a CD or equivalent physical medium. This offer to obtain a copy of the Source
 Files is valid for three years from the date you acquired this software product.
 
-[HARBOR130GAVS112117]
+[HARBOR130GAVS120817]
