@@ -57,12 +57,12 @@ def _get_secret(folder, filename, length=16):
             print("loaded secret from file: %s" % key_file)
         return key
     if not os.path.isdir(folder):
-        os.makedirs(folder, mode=0600)
+        os.makedirs(folder, mode=0o600)
     key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(length))  
     with open(key_file, 'w') as f:
         f.write(key)
         print("Generated and saved secret to file: %s" % key_file)
-    os.chmod(key_file, 0600)
+    os.chmod(key_file, 0o600)
     return key
 
 def prep_conf_dir(root, name):
@@ -338,8 +338,8 @@ if customize_crt == 'on' and openssl_installed():
     private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
     root_crt = os.path.join(config_dir, "registry", "root.crt")
     create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)
-    os.chmod(private_key_pem, 0600)
-    os.chmod(root_crt, 0600)
+    os.chmod(private_key_pem, 0o600)
+    os.chmod(root_crt, 0o600)
 else:
     print("Copied configuration file: %s" % ui_config_dir + "private_key.pem")
     shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
@@ -367,9 +367,9 @@ if args.notary_mode:
             create_root_cert(ca_subj, key_path=signer_ca_key, cert_path=signer_ca_cert)
             create_cert(cert_subj, signer_ca_key, signer_ca_cert, key_path=signer_key_path, cert_path=signer_cert_path)
             print("Copying certs for notary signer")
-	    os.chmod(signer_cert_path, 0600)
-	    os.chmod(signer_key_path, 0600)
-	    os.chmod(signer_ca_cert, 0600)
+            os.chmod(signer_cert_path, 0o600)
+            os.chmod(signer_key_path, 0o600)
+            os.chmod(signer_ca_cert, 0o600)
             shutil.copy2(signer_cert_path, notary_config_dir)
             shutil.copy2(signer_key_path, notary_config_dir)
             shutil.copy2(signer_ca_cert, notary_config_dir)
