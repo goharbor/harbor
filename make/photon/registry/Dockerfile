@@ -13,7 +13,6 @@ COPY entrypoint.sh /
 RUN chmod u+x /entrypoint.sh
 
 RUN mkdir -p /etc/registry
-COPY config.yml /etc/registry/config.yml
 
 COPY binary/registry /usr/bin
 RUN chmod u+x /usr/bin/registry

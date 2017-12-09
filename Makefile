@@ -12,12 +12,8 @@
 #							golang:1.7.3
 # compile_adminserver, compile_ui, compile_jobservice: compile specific binary
 #
-# build: 		build Harbor docker images (default: build_photon)
-#			for example: make build -e BASEIMAGE=photon
-# build_photon:	build Harbor docker images from photon baseimage
+# build:	build Harbor docker images from photon baseimage
 #
-# build_postgresql: build postgresql images basaed on photon os
-#       make build -e BASEIMAGE=postgresql
 # install:		include compile binarys, build images, prepare specific \
 #				version composefile and startup Harbor instance
 #
@@ -75,26 +71,40 @@ UIPATH=$(BUILDPATH)/src/ui
 UINGPATH=$(BUILDPATH)/src/ui_ng
 GOBASEPATH=/go/src/github.com/vmware
 CHECKENVCMD=checkenv.sh
-BASEIMAGE=photon
-COMPILETAG=compile_normal
+
+# parameters
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
 DEVFLAG=true
 NOTARYFLAG=false
-REGISTRYVERSION=2.6.2-photon
-NGINXVERSION=1.11.13
-PHOTONVERSION=1.0
-NOTARYVERSION=server-0.5.1
-NOTARYSIGNERVERSION=signer-0.5.1
-MARIADBVERSION=10.2.10
+CLAIRFLAG=false
 HTTPPROXY=
 REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
+BUILDBIN=false
+MIGRATORFLAG=false
 
-#clair parameters
-CLAIRVERSION=v2.0.1-photon
-CLAIRFLAG=false
-CLAIRDBVERSION=9.6.5-photon
+# version prepare
+VERSIONFILEPATH=$(CURDIR)
+VERSIONFILENAME=VERSION
+GITCMD=$(shell which git)
+GITTAG=$(GITCMD) describe --tags
+GITTAGVERSION=$(shell git describe --tags || echo UNKNOWN)
+ifeq ($(DEVFLAG), true)
+	VERSIONTAG=dev
+else
+	VERSIONTAG=$(GITTAGVERSION)
+endif
+
+#versions
+REGISTRYVERSION=v2.6.2
+NGINXVERSION=$(VERSIONTAG)
+PHOTONVERSION=1.0
+NOTARYVERSION=v0.5.1
+MARIADBVERSION=$(VERSIONTAG)
+CLAIRVERSION=v2.0.1
+CLAIRDBVERSION=$(VERSIONTAG)
+MIGRATORVERSION=1.3
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
@@ -134,13 +144,10 @@ GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/dev/jobservice
 GOLANGDOCKERFILENAME=Dockerfile.golang
 
 # binary
-ADMINSERVERSOURCECODE=$(SRCPATH)/adminserver
 ADMINSERVERBINARYPATH=$(MAKEDEVPATH)/adminserver
 ADMINSERVERBINARYNAME=harbor_adminserver
-UISOURCECODE=$(SRCPATH)/ui
 UIBINARYPATH=$(MAKEDEVPATH)/ui
 UIBINARYNAME=harbor_ui
-JOBSERVICESOURCECODE=$(SRCPATH)/jobservice
 JOBSERVICEBINARYPATH=$(MAKEDEVPATH)/jobservice
 JOBSERVICEBINARYNAME=harbor_jobservice
 
@@ -164,13 +171,7 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 
 # common dockerfile
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
-DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
-DOCKERFILENAME_DB=Dockerfile
 DOCKERFILE_CLARITY=$(MAKEPATH)/dev/nodeclarity/Dockerfile
-
-DOCKERFILEPATH_POSTGRESQL=$(DOCKERFILEPATH_COMMON)/postgresql
-DOCKERFILENAME_POSTGRESQL=Dockerfile
-
 
 # docker image name
 DOCKERIMAGENAME_ADMINSERVER=vmware/harbor-adminserver
@@ -179,25 +180,15 @@ DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 DOCKERIMAGENAME_DB=vmware/harbor-db
 DOCKERIMAGENAME_CLARITY=vmware/harbor-clarity-ui-builder
-DOCKERIMAGENAME_POSTGRESQL=vmware/postgresql
+
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
 DOCKERCOMPOSETPLFILENAME=docker-compose.tpl
 DOCKERCOMPOSEFILENAME=docker-compose.yml
+DOCKERCOMPOSENOTARYTPLFILENAME=docker-compose.notary.tpl
 DOCKERCOMPOSENOTARYFILENAME=docker-compose.notary.yml
+DOCKERCOMPOSECLAIRTPLFILENAME=docker-compose.clair.tpl
 DOCKERCOMPOSECLAIRFILENAME=docker-compose.clair.yml
-
-# version prepare
-VERSIONFILEPATH=$(CURDIR)
-VERSIONFILENAME=VERSION
-GITCMD=$(shell which git)
-GITTAG=$(GITCMD) describe --tags
-GITTAGVERSION=$(shell git describe --tags || echo UNKNOWN)
-ifeq ($(DEVFLAG), true)
-	VERSIONTAG=dev
-else
-	VERSIONTAG=$(GITTAGVERSION)
-endif
 
 SEDCMD=$(shell which sed)
 
@@ -213,42 +204,36 @@ PUSHSCRIPTNAME=pushimage.sh
 REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
-# migrator
-MIGRATORVERSION=1.3
-MIGRATORFLAG=false
-
 # cmds
 DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		vmware/nginx-photon:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
+		vmware/nginx-photon:$(NGINXVERSION)-$(VERSIONTAG) vmware/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG) \
 		vmware/photon:$(PHOTONVERSION)
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
-				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/ha
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
-				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/ha
 DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
-	DOCKERSAVE_PARA+= vmware/notary-photon:$(NOTARYVERSION) vmware/notary-photon:$(NOTARYSIGNERVERSION) \
-				vmware/mariadb-photon:$(MARIADBVERSION)
+	DOCKERSAVE_PARA+= vmware/notary-server-photon:$(NOTARYVERSION)-$(VERSIONTAG) vmware/notary-signer-photon:$(NOTARYVERSION)-$(VERSIONTAG) \
+				vmware/mariadb-photon:$(MARIADBVERSION)-$(VERSIONTAG)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 endif
 ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= vmware/clair:$(CLAIRVERSION) vmware/postgresql:$(CLAIRDBVERSION)
+	DOCKERSAVE_PARA+= vmware/clair-photon:$(CLAIRVERSION)-$(VERSIONTAG) vmware/postgresql-photon:$(CLAIRDBVERSION)-$(VERSIONTAG)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
@@ -263,21 +248,6 @@ version:
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
 
-compile_adminserver:
-	@echo "compiling binary for adminserver..."
-	@$(GOBUILD) -o $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) $(ADMINSERVERSOURCECODE)
-	@echo "Done."
-
-compile_ui:
-	@echo "compiling binary for ui..."
-	@$(GOBUILD) -o $(UIBINARYPATH)/$(UIBINARYNAME) $(UISOURCECODE)
-	@echo "Done."
-
-compile_jobservice:
-	@echo "compiling binary for jobservice..."
-	@$(GOBUILD) -o $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) $(JOBSERVICESOURCECODE)
-	@echo "Done."
-
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
 	@if [ "$(HTTPPROXY)" != "" ] ; then \
@@ -286,8 +256,6 @@ compile_clarity:
 		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
 	fi
 	@echo "Done."
-
-compile_normal: compile_clarity compile_adminserver compile_ui compile_jobservice
 
 compile_golangimage: compile_clarity
 	@echo "compiling binary for adminserver (golang image)..."
@@ -306,31 +274,38 @@ compile_golangimage: compile_clarity
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
 	@echo "Done."
 
-compile:check_environment $(COMPILETAG)
+compile:check_environment compile_golangimage
 	
 prepare:
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
-build_common: version
-	@echo "buildging db container for photon..."
-	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) --pull -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
-	@echo "Done."
+build:
+	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG) -e MARIADBVERSION=$(MARIADBVERSION) \
+	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e NGINXVERSION=$(NGINXVERSION) -e NOTARYVERSION=$(NOTARYVERSION) \
+	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRDBVERSION=$(CLAIRDBVERSION) -e VERSIONTAG=$(VERSIONTAG) \
+	 -e BUILDBIN=$(BUILDBIN)
 
-build_photon: build_common
-	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG)
-build_postgresql:
-	@echo "buildging postgresql container for photon..."
-	@cd $(DOCKERFILEPATH_POSTGRESQL) && $(DOCKERBUILD) -f $(DOCKERFILENAME_POSTGRESQL) -t $(DOCKERIMAGENAME_POSTGRESQL):$(CLAIRDBVERSION) .
-	@echo "Done."
-build: build_$(BASEIMAGE)
-
-modify_composefile:
+modify_composefile: modify_composefile_notary modify_composefile_clair
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@cp $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i 's/__reg_version__/$(REGISTRYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+
+modify_composefile_notary:
+	@echo "preparing docker-compose notary file..."
+	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
+	@$(SEDCMD) -i 's/__notary_version__/$(NOTARYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
+	@$(SEDCMD) -i 's/__mariadb_version__/$(MARIADBVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
+
+modify_composefile_clair:
+	@echo "preparing docker-compose clair file..."
+	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
+	@$(SEDCMD) -i 's/__postgresql_version__/$(CLAIRDBVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
+	@$(SEDCMD) -i 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
 
 modify_sourcefiles:
 	@echo "change mode of source files."
@@ -340,7 +315,7 @@ modify_sourcefiles:
 	@chmod 600 $(MAKEPATH)/common/templates/ui/private_key.pem
 	@chmod 600 $(MAKEPATH)/common/templates/registry/root.crt
 
-install: compile build modify_sourcefiles prepare modify_composefile start
+install: compile version build modify_sourcefiles prepare modify_composefile start
 
 package_online: modify_composefile
 	@echo "packing online package ..."
@@ -353,41 +328,22 @@ package_online: modify_composefile
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
-	@cp tools/migration/migration_cfg/upgrade $(HARBORPKG)/upgrade
-	@cp tools/migration/migration_cfg/harbor_1_1_0_template $(HARBORPKG)/harbor_1_1_0_template
-
+	
 	@$(TARCMD) $(PACKAGE_ONLINE_PARA)
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 	
-package_offline: compile build modify_sourcefiles modify_composefile
+package_offline: compile version build modify_sourcefiles modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
-	@cp tools/migration/migration_cfg/upgrade $(HARBORPKG)/upgrade
-	@cp tools/migration/migration_cfg/harbor_1_1_0_template $(HARBORPKG)/harbor_1_1_0_template
 	@cp $(HARBORPKG)/common/db/registry.sql $(HARBORPKG)/ha/
-
-	@echo "pulling nginx and registry..."
-	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
-	@$(DOCKERPULL) vmware/nginx-photon:$(NGINXVERSION)
-	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
-		echo "pulling notary and harbor-notary-db..."; \
-		$(DOCKERPULL) vmware/notary-photon:$(NOTARYVERSION); \
-		$(DOCKERPULL) vmware/notary-photon:$(NOTARYSIGNERVERSION); \
-		$(DOCKERPULL) vmware/mariadb-photon:$(MARIADBVERSION); \
-	fi
-	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
-		echo "pulling claiy and postgres..."; \
-		$(DOCKERPULL) vmware/clair:$(CLAIRVERSION); \
-		$(DOCKERPULL) vmware/postgresql:$(CLAIRDBVERSION); \
-	fi
 	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
 		echo "pulling DB migrator..."; \
 		$(DOCKERPULL) vmware/harbor-db-migrator:$(MIGRATORVERSION); \
-	fi	
+	fi
 
 	@echo "saving harbor docker image"
 	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
@@ -474,8 +430,6 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
-#	- $(DOCKERRMIMAGE) -f registry:$(REGISTRYVERSION)
-#	- $(DOCKERRMIMAGE) -f nginx:1.11.5
 
 cleandockercomposefile:
 	@echo "cleaning $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml"
