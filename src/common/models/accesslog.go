@@ -27,6 +27,7 @@ type AccessLog struct {
 	RepoTag   string    `orm:"column(repo_tag)" json:"repo_tag"`
 	GUID      string    `orm:"column(GUID)"  json:"guid"`
 	Operation string    `orm:"column(operation)" json:"operation"`
+	Client    string    `orm:"column(client)" json:"client"`
 	OpTime    time.Time `orm:"column(op_time)" json:"op_time"`
 }
 
@@ -37,6 +38,7 @@ type LogQueryParam struct {
 	Username   string      // the operator's username of the log
 	Repository string      // repository name
 	Tag        string      // tag name
+	Client     string      // client
 	Operations []string    // operations
 	BeginTime  *time.Time  // the time after which the operation is done
 	EndTime    *time.Time  // the time before which the operation is doen

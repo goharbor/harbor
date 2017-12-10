@@ -208,6 +208,7 @@
         "TAGS": "Tags",
         "OPERATION": "Operation",
         "OPERATIONS": "Operations",
+        "CLIENT": "Client",
         "TIMESTAMP": "Timestamp",
         "ALL_OPERATIONS": "All Operations",
         "PULL": "Pull",

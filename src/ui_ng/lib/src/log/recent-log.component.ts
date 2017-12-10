@@ -146,6 +146,7 @@ export class RecentLogComponent implements OnInit {
         return reg.test(log.username) ||
             reg.test(log.repo_name) ||
             reg.test(log.operation) ||
+            reg.test(log.client) ||
             reg.test(log.repo_tag);
     }
 }

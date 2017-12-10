@@ -78,6 +78,9 @@ func logQueryConditions(query *models.LogQueryParam) orm.QuerySeter {
 	if len(query.Tag) != 0 {
 		qs = qs.Filter("repo_tag__contains", query.Tag)
 	}
+	if len(query.Client) != 0 {
+		qs = qs.Filter("client__contains", query.Client)
+	}
 	operations := []string{}
 	for _, operation := range query.Operations {
 		if len(operation) > 0 {

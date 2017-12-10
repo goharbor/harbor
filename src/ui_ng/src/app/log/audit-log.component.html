@@ -47,12 +47,14 @@
             <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.CLIENT' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
             <clr-dg-row *ngFor="let l of auditLogs">
                 <clr-dg-cell>{{l.username}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_tag}}</clr-dg-cell>
                 <clr-dg-cell>{{l.operation}}</clr-dg-cell>
+                <clr-dg-cell>{{l.client}}</clr-dg-cell>
                 <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>

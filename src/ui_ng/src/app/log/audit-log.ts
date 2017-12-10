@@ -21,6 +21,7 @@
     "guid": "",
     "operation": "push",
     "op_time": "2017-02-14T09:22:58Z",
+    "client": "127.0.0.1",
     "username": "admin",
     "keywords": "",
     "BeginTime": "0001-01-01T00:00:00Z",
@@ -36,6 +37,7 @@ export class AuditLog {
   repo_name: string;
   repo_tag: string;
   operation: string;
+  client: string;
   op_time: Date;
   begin_timestamp: number | string;
   end_timestamp: number | string;

@@ -120,6 +120,7 @@ create table access_log (
  repo_tag varchar (128),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
+ client varchar (64),
  op_time timestamp,
  primary key (log_id),
  INDEX pid_optime (project_id, op_time)

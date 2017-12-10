@@ -52,4 +52,5 @@ type Request struct {
 	ID        string `json:"Id"`
 	Method    string
 	UserAgent string
+	Addr      string
 }

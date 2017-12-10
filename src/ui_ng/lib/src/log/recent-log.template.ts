@@ -21,6 +21,7 @@ export const LOG_TEMPLATE: string = `
             <clr-dg-column [clrDgField]="'repo_name'">{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'repo_tag'">{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'operation'">{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgField]="'client'">{{'AUDIT_LOG.CLIENT' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="opTimeComparator">{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
             <clr-dg-placeholder>We couldn't find any logs!</clr-dg-placeholder>
             <clr-dg-row *ngFor="let l of recentLogs">
@@ -28,6 +29,7 @@ export const LOG_TEMPLATE: string = `
                 <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_tag}}</clr-dg-cell>
                 <clr-dg-cell>{{l.operation}}</clr-dg-cell>
+                <clr-dg-cell>{{l.client}}</clr-dg-cell>
                 <clr-dg-cell>{{l.op_time | date: 'short'}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
