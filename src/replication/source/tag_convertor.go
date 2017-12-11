@@ -15,7 +15,6 @@
 package source
 
 import (
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 	"github.com/vmware/harbor/src/replication/registry"
@@ -38,8 +37,8 @@ func (t *TagConvertor) Convert(items []models.FilterItem) []models.FilterItem {
 	result := []models.FilterItem{}
 	for _, item := range items {
 		if item.Kind != replication.FilterItemKindRepository {
-			log.Warningf("unexpected filter item kind for tag convertor, expected %s got %s, skip",
-				replication.FilterItemKindRepository, item.Kind)
+			// just put it to the result list if the item is not a repository
+			result = append(result, item)
 			continue
 		}
 

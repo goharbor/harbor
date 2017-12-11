@@ -22,7 +22,4 @@ const (
 	TriggerScheduleDaily = "daily"
 	//TriggerScheduleWeekly : type of scheduling is 'weekly'
 	TriggerScheduleWeekly = "weekly"
-
-	// PatternMatchAll : the pattern that match all
-	PatternMatchAll = ".*"
 )

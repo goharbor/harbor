@@ -79,7 +79,7 @@ func TestGetCandidates(t *testing.T) {
 		Filters: []models.Filter{
 			models.Filter{
 				Kind:    replication.FilterItemKindTag,
-				Pattern: ".*",
+				Pattern: "*",
 			},
 		},
 		Trigger: &models.Trigger{
@@ -99,16 +99,19 @@ func TestGetCandidates(t *testing.T) {
 			Value: "library/hello-world:latest",
 		},
 	}
-	result := getCandidates(policy, sourcer, candidates...)
+	metadata := map[string]interface{}{
+		"candidates": candidates,
+	}
+	result := getCandidates(policy, sourcer, metadata)
 	assert.Equal(t, 2, len(result))
 
 	policy.Filters = []models.Filter{
 		models.Filter{
 			Kind:    replication.FilterItemKindTag,
-			Pattern: "release-.*",
+			Pattern: "release-*",
 		},
 	}
-	result = getCandidates(policy, sourcer, candidates...)
+	result = getCandidates(policy, sourcer, metadata)
 	assert.Equal(t, 1, len(result))
 }
 
@@ -116,10 +119,6 @@ func TestBuildFilterChain(t *testing.T) {
 	policy := &models.ReplicationPolicy{
 		ID: 1,
 		Filters: []models.Filter{
-			models.Filter{
-				Kind:    replication.FilterItemKindProject,
-				Pattern: "*",
-			},
 			models.Filter{
 				Kind:    replication.FilterItemKindRepository,
 				Pattern: "*",
@@ -134,11 +133,5 @@ func TestBuildFilterChain(t *testing.T) {
 	sourcer := source.NewSourcer()
 
 	chain := buildFilterChain(policy, sourcer)
-	assert.Equal(t, 3, len(chain.Filters()))
-
-	policy.Trigger = &models.Trigger{
-		Kind: replication.TriggerKindImmediate,
-	}
-	chain = buildFilterChain(policy, sourcer)
-	assert.Equal(t, 1, len(chain.Filters()))
+	assert.Equal(t, 2, len(chain.Filters()))
 }

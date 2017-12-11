@@ -41,6 +41,9 @@ func TestRepositoryConvert(t *testing.T) {
 			Kind:  replication.FilterItemKindRepository,
 			Value: "library/centos",
 		},
+		models.FilterItem{
+			Kind: replication.FilterItemKindRepository,
+		},
 	}
 
 	convertor := NewRepositoryConvertor(&fakeRegistryAdaptor{})

@@ -15,7 +15,6 @@
 package source
 
 import (
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 	"github.com/vmware/harbor/src/replication/registry"
@@ -39,9 +38,9 @@ func (r *RepositoryConvertor) Convert(items []models.FilterItem) []models.Filter
 	// if support replicate deletion
 	result := []models.FilterItem{}
 	for _, item := range items {
+		// just put it to the result list if the item is not a project
 		if item.Kind != replication.FilterItemKindProject {
-			log.Warningf("unexpected filter item kind for repository convertor, expected %s got %s, skip",
-				replication.FilterItemKindProject, item.Kind)
+			result = append(result, item)
 			continue
 		}
 

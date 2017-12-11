@@ -83,7 +83,8 @@ func NewDefaultController(cfg ControllerConfig) *DefaultController {
 		triggerManager: trigger.NewManager(cfg.CacheCapacity),
 	}
 
-	endpoint := "http://jobservice"
+	// TODO read from configuration
+	endpoint := "http://jobservice:8080"
 	client := client.NewAuthorizedClient(auth.NewSecretAuthorizer(config.UISecret()))
 	ctl.replicator = replicator.NewDefaultReplicator(endpoint, client)
 
@@ -226,19 +227,8 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 		return fmt.Errorf("policy %d not found", policyID)
 	}
 
-	candidates := []models.FilterItem{}
-	if len(metadata) > 0 {
-		meta := metadata[0]["candidates"]
-		if meta != nil {
-			cands, ok := meta.([]models.FilterItem)
-			if ok {
-				candidates = append(candidates, cands...)
-			}
-		}
-	}
-
 	// prepare candidates for replication
-	candidates = getCandidates(&policy, ctl.sourcer, candidates...)
+	candidates := getCandidates(&policy, ctl.sourcer, metadata...)
 
 	// TODO
 	/*
@@ -252,13 +242,23 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 		}
 	*/
 
-	// TODO merge tags whose repository is same into one struct
-
 	// submit the replication
 	return replicate(ctl.replicator, policyID, candidates)
 }
 
-func getCandidates(policy *models.ReplicationPolicy, sourcer *source.Sourcer, candidates ...models.FilterItem) []models.FilterItem {
+func getCandidates(policy *models.ReplicationPolicy, sourcer *source.Sourcer,
+	metadata ...map[string]interface{}) []models.FilterItem {
+	candidates := []models.FilterItem{}
+	if len(metadata) > 0 {
+		meta := metadata[0]["candidates"]
+		if meta != nil {
+			cands, ok := meta.([]models.FilterItem)
+			if ok {
+				candidates = append(candidates, cands...)
+			}
+		}
+	}
+
 	if len(candidates) == 0 {
 		for _, namespace := range policy.Namespaces {
 			candidates = append(candidates, models.FilterItem{
@@ -277,53 +277,26 @@ func getCandidates(policy *models.ReplicationPolicy, sourcer *source.Sourcer, ca
 func buildFilterChain(policy *models.ReplicationPolicy, sourcer *source.Sourcer) source.FilterChain {
 	filters := []source.Filter{}
 
-	patternMap := map[string]string{}
+	patterns := map[string]string{}
 	for _, f := range policy.Filters {
-		patternMap[f.Kind] = f.Pattern
+		patterns[f.Kind] = f.Pattern
 	}
 
-	// TODO convert wildcard to regex expression
-	projectPattern, exist := patternMap[replication.FilterItemKindProject]
-	if !exist {
-		projectPattern = replication.PatternMatchAll
-	}
-
-	repositoryPattern, exist := patternMap[replication.FilterItemKindRepository]
-	if !exist {
-		repositoryPattern = replication.PatternMatchAll
-	}
-	repositoryPattern = fmt.Sprintf("%s/%s", projectPattern, repositoryPattern)
-
-	tagPattern, exist := patternMap[replication.FilterItemKindTag]
-	if !exist {
-		tagPattern = replication.PatternMatchAll
-	}
-	tagPattern = fmt.Sprintf("%s:%s", repositoryPattern, tagPattern)
-
-	if policy.Trigger != nil && policy.Trigger.Kind == replication.TriggerKindImmediate {
-		// build filter chain for immediate trigger policy
-		filters = append(filters,
-			source.NewPatternFilter(replication.FilterItemKindTag, tagPattern))
-	} else {
-		// build filter chain for manual and schedule trigger policy
-
-		// append project filter
-		filters = append(filters,
-			source.NewPatternFilter(replication.FilterItemKindProject, projectPattern))
-		// append repository filter
-		filters = append(filters,
-			source.NewPatternFilter(replication.FilterItemKindRepository,
-				repositoryPattern, source.NewRepositoryConvertor(sourcer.GetAdaptor(replication.AdaptorKindHarbor))))
-		// append tag filter
-		filters = append(filters,
-			source.NewPatternFilter(replication.FilterItemKindTag,
-				tagPattern, source.NewTagConvertor(sourcer.GetAdaptor(replication.AdaptorKindHarbor))))
-	}
+	registry := sourcer.GetAdaptor(replication.AdaptorKindHarbor)
+	// only support repository and tag filter for now
+	filters = append(filters,
+		source.NewRepositoryFilter(patterns[replication.FilterItemKindRepository], registry))
+	filters = append(filters,
+		source.NewTagFilter(patterns[replication.FilterItemKindTag], registry))
 
 	return source.NewDefaultFilterChain(filters)
 }
 
 func replicate(replicator replicator.Replicator, policyID int64, candidates []models.FilterItem) error {
+	if len(candidates) == 0 {
+		log.Debugf("replicaton candidates are null, no further action needed")
+	}
+
 	repositories := map[string][]string{}
 	// TODO the operation of all candidates are same for now. Update it after supporting
 	// replicate deletion

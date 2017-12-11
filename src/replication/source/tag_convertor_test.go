@@ -41,6 +41,9 @@ func TestTagConvert(t *testing.T) {
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:16.04",
 		},
+		models.FilterItem{
+			Kind: replication.FilterItemKindProject,
+		},
 	}
 
 	convertor := NewTagConvertor(&fakeRegistryAdaptor{})
