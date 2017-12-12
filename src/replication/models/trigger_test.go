@@ -31,11 +31,47 @@ func TestValidOfTrigger(t *testing.T) {
 		&Trigger{
 			Kind: replication.TriggerKindImmediate,
 		}: false,
+		&Trigger{
+			Kind: replication.TriggerKindSchedule,
+		}: true,
 	}
 
 	for filter, hasError := range cases {
 		v := &validation.Validation{}
 		filter.Valid(v)
+		assert.Equal(t, hasError, v.HasErrors())
+	}
+}
+
+func TestValidOfScheduleParam(t *testing.T) {
+	cases := map[*ScheduleParam]bool{
+		&ScheduleParam{}: true,
+		&ScheduleParam{
+			Type: "invalid_type",
+		}: true,
+		&ScheduleParam{
+			Type:    replication.TriggerScheduleDaily,
+			Offtime: 3600*24 + 1,
+		}: true,
+		&ScheduleParam{
+			Type:    replication.TriggerScheduleDaily,
+			Offtime: 3600 * 2,
+		}: false,
+		&ScheduleParam{
+			Type:    replication.TriggerScheduleWeekly,
+			Weekday: 0,
+			Offtime: 3600 * 2,
+		}: true,
+		&ScheduleParam{
+			Type:    replication.TriggerScheduleWeekly,
+			Weekday: 7,
+			Offtime: 3600 * 2,
+		}: false,
+	}
+
+	for param, hasError := range cases {
+		v := &validation.Validation{}
+		param.Valid(v)
 		assert.Equal(t, hasError, v.HasErrors())
 	}
 }

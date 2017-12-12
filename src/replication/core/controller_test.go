@@ -42,7 +42,11 @@ func TestInit(t *testing.T) {
 }
 
 func TestCreatePolicy(t *testing.T) {
-	_, err := GlobalController.CreatePolicy(models.ReplicationPolicy{})
+	_, err := GlobalController.CreatePolicy(models.ReplicationPolicy{
+		Trigger: &models.Trigger{
+			Kind: replication.TriggerKindManual,
+		},
+	})
 	assert.Nil(t, err)
 }
 

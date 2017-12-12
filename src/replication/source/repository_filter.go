@@ -49,6 +49,12 @@ func (r *RepositoryFilter) GetConvertor() Convertor {
 
 // DoFilter filters repository and image(according to the repository part) and drops any other resource types
 func (r *RepositoryFilter) DoFilter(items []models.FilterItem) []models.FilterItem {
+	candidates := []string{}
+	for _, item := range items {
+		candidates = append(candidates, item.Value)
+	}
+	log.Debugf("repository filter candidates: %v", candidates)
+
 	result := []models.FilterItem{}
 	for _, item := range items {
 		if item.Kind != replication.FilterItemKindRepository && item.Kind != replication.FilterItemKindTag {

@@ -471,8 +471,7 @@ func TestConvertToRepPolicy(t *testing.T) {
 				},
 				ReplicateDeletion: true,
 				Trigger: &rep_models.Trigger{
-					Kind:  "trigger_kind_01",
-					Param: "{param}",
+					Kind: "trigger_kind_01",
 				},
 				Projects: []*models.Project{
 					&models.Project{
@@ -498,8 +497,7 @@ func TestConvertToRepPolicy(t *testing.T) {
 				},
 				ReplicateDeletion: true,
 				Trigger: &rep_models.Trigger{
-					Kind:  "trigger_kind_01",
-					Param: "{param}",
+					Kind: "trigger_kind_01",
 				},
 				ProjectIDs: []int64{1},
 				Namespaces: []string{"library"},

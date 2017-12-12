@@ -49,6 +49,12 @@ func (t *TagFilter) GetConvertor() Convertor {
 
 // DoFilter filters tag of the image
 func (t *TagFilter) DoFilter(items []models.FilterItem) []models.FilterItem {
+	candidates := []string{}
+	for _, item := range items {
+		candidates = append(candidates, item.Value)
+	}
+	log.Debugf("tag filter candidates: %v", candidates)
+
 	result := []models.FilterItem{}
 	for _, item := range items {
 		if item.Kind != replication.FilterItemKindTag {

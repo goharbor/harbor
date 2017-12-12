@@ -160,7 +160,7 @@ func (ctl *DefaultController) UpdatePolicy(updatedPolicy models.ReplicationPolic
 	} else {
 		switch updatedPolicy.Trigger.Kind {
 		case replication.TriggerKindSchedule:
-			if updatedPolicy.Trigger.Param != originPolicy.Trigger.Param {
+			if !originPolicy.Trigger.ScheduleParam.Equal(updatedPolicy.Trigger.ScheduleParam) {
 				reset = true
 			}
 		case replication.TriggerKindImmediate:
@@ -176,7 +176,7 @@ func (ctl *DefaultController) UpdatePolicy(updatedPolicy models.ReplicationPolic
 	}
 
 	if reset {
-		if err = ctl.triggerManager.UnsetTrigger(id, *originPolicy.Trigger); err != nil {
+		if err = ctl.triggerManager.UnsetTrigger(&originPolicy); err != nil {
 			return err
 		}
 
@@ -199,7 +199,7 @@ func (ctl *DefaultController) RemovePolicy(policyID int64) error {
 		return fmt.Errorf("policy %d not found", policyID)
 	}
 
-	if err = ctl.triggerManager.UnsetTrigger(policyID, *policy.Trigger); err != nil {
+	if err = ctl.triggerManager.UnsetTrigger(&policy); err != nil {
 		return err
 	}
 
@@ -230,7 +230,6 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 	// prepare candidates for replication
 	candidates := getCandidates(&policy, ctl.sourcer, metadata...)
 
-	// TODO
 	/*
 		targets := []*common_models.RepTarget{}
 		for _, targetID := range policy.TargetIDs {
