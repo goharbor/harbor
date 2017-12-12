@@ -230,13 +230,14 @@ PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
-				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME)
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
+				  $(HARBORPKG)/ha
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/harbor.cfg
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/ha
 DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
@@ -327,7 +328,9 @@ build: build_$(BASEIMAGE)
 modify_composefile:
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@cp $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
 
 modify_sourcefiles:
 	@echo "change mode of source files."
@@ -345,6 +348,8 @@ package_online: modify_composefile
 	@if [ -n "$(REGISTRYSERVER)" ] ; then \
 		$(SEDCMD) -i 's/image\: vmware/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
 		$(HARBORPKG)/docker-compose.yml ; \
+		$(SEDCMD) -i 's/image\: vmware/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
+		$(HARBORPKG)/ha/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
@@ -363,6 +368,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 	@cp tools/migration/migration_cfg/upgrade $(HARBORPKG)/upgrade
 	@cp tools/migration/migration_cfg/harbor_1_1_0_template $(HARBORPKG)/harbor_1_1_0_template
+	@cp $(HARBORPKG)/common/db/registry.sql $(HARBORPKG)/ha/
 
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
