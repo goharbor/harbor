@@ -208,16 +208,6 @@ func (sm *SM) Reset(j Job) error {
 }
 
 func (sm *SM) kickOff() error {
-	if repJob, ok := sm.CurrentJob.(*RepJob); ok {
-		if repJob.parm.Enabled == 0 {
-			log.Debugf("The policy of job:%v is disabled, will cancel the job", repJob)
-			_, err := sm.EnterState(models.JobCanceled)
-			if err != nil {
-				log.Warningf("For job: %v, failed to update state to 'canceled', error: %v", repJob, err)
-			}
-			return err
-		}
-	}
 	log.Debugf("In kickOff: will start job: %v", sm.CurrentJob)
 	sm.Start(models.JobRunning)
 	return nil

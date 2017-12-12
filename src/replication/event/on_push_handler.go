@@ -70,11 +70,9 @@ func checkAndTriggerReplication(image, operation string) error {
 
 	for _, watchItem := range watchItems {
 		item := models.FilterItem{
-			Kind:  replication.FilterItemKindTag,
-			Value: image,
-			Metadata: map[string]interface{}{
-				"operation": operation,
-			},
+			Kind:      replication.FilterItemKindTag,
+			Value:     image,
+			Operation: operation,
 		}
 
 		if err := notifier.Publish(topic.StartReplicationTopic, notification.StartReplicationNotification{

@@ -42,12 +42,10 @@ type RepPolicy struct {
 	ProjectID         int64     `orm:"column(project_id)" `
 	TargetID          int64     `orm:"column(target_id)"`
 	Name              string    `orm:"column(name)"`
-	Enabled           int       `orm:"column(enabled)"`
 	Description       string    `orm:"column(description)"`
 	Trigger           string    `orm:"column(cron_str)"`
 	Filters           string    `orm:"column(filters)"`
 	ReplicateDeletion bool      `orm:"column(replicate_deletion)"`
-	StartTime         time.Time `orm:"column(start_time)"`
 	CreationTime      time.Time `orm:"column(creation_time);auto_now_add"`
 	UpdateTime        time.Time `orm:"column(update_time);auto_now"`
 	Deleted           int       `orm:"column(deleted)"`
