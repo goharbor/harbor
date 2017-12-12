@@ -2375,20 +2375,17 @@ definitions:
         type: string
         description: The description of the policy.
       projects:
-        type: object
+        type: array
         description: The project list that the policy applys to.
         items:
           $ref: '#/definitions/Project'
       targets:
-        type: object
+        type: array
         description: The target list.
         items:
           $ref: '#/definitions/RepTarget'
       trigger:
-        type: object
-        description: The trigger for schedule job.
-        items:
-          $ref: '#/definitions/RepTrigger'
+        $ref: '#/definitions/RepTrigger'
       filters:
         type: array
         description: The replication policy filter array.
@@ -2407,14 +2404,14 @@ definitions:
         type: string
         description: The update time of the policy.
       error_job_count:
-        format: int
+        type: integer
         description: The error job count number for the policy.
   RepTrigger:
     type: object
     properties:
       kind:
         type: string
-        description: The replication policy trigger kind.
+        description: The replication policy trigger kind. The valid values are manual, immediate and schedule. 
       param:
         type: string
         description: The replication policy trigger parameters.
@@ -2423,10 +2420,10 @@ definitions:
     properties:
       kind:
         type: string
-        description: The replication policy filter kind.
-      value:
+        description: The replication policy filter kind. The valid values are project, repository and tag.
+      pattern:
         type: string
-        description: The replication policy filter value.
+        description: The replication policy filter pattern.
       metadata:
         type: object
         description: This map object is the replication policy filter metadata.
