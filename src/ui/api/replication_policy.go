@@ -145,7 +145,15 @@ func (pa *RepPolicyAPI) Post() {
 		return
 	}
 
-	// TODO trigger a replication if ReplicateExistingImageNow is true
+	if policy.ReplicateExistingImageNow {
+		go func() {
+			if err = startReplication(id); err != nil {
+				log.Errorf("failed to send replication signal for policy %d: %v", id, err)
+				return
+			}
+			log.Infof("replication signal for policy %d sent", id)
+		}()
+	}
 
 	pa.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 }
@@ -200,6 +208,16 @@ func (pa *RepPolicyAPI) Put() {
 	if err = core.GlobalController.UpdatePolicy(convertToRepPolicy(policy)); err != nil {
 		pa.HandleInternalServerError(fmt.Sprintf("failed to update policy %d: %v", id, err))
 		return
+	}
+
+	if policy.ReplicateExistingImageNow {
+		go func() {
+			if err = startReplication(id); err != nil {
+				log.Errorf("failed to send replication signal for policy %d: %v", id, err)
+				return
+			}
+			log.Infof("replication signal for policy %d sent", id)
+		}()
 	}
 }
 

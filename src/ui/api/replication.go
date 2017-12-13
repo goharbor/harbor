@@ -60,11 +60,16 @@ func (r *ReplicationAPI) Post() {
 		return
 	}
 
-	if err = notifier.Publish(topic.StartReplicationTopic, notification.StartReplicationNotification{
-		PolicyID: replication.PolicyID,
-	}); err != nil {
+	if err = startReplication(replication.PolicyID); err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to publish replication topic for policy %d: %v", replication.PolicyID, err))
 		return
 	}
-	log.Infof("replication topic for policy %d triggered", replication.PolicyID)
+	log.Infof("replication signal for policy %d sent", replication.PolicyID)
+}
+
+func startReplication(policyID int64) error {
+	return notifier.Publish(topic.StartReplicationTopic,
+		notification.StartReplicationNotification{
+			PolicyID: policyID,
+		})
 }
