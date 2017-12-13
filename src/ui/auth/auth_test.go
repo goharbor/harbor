@@ -16,9 +16,33 @@ package auth
 import (
 	"testing"
 	"time"
+
+	"github.com/vmware/harbor/src/common"
 )
 
 var l = NewUserLock(2 * time.Second)
+
+var adminServerLdapTestConfig = map[string]interface{}{
+	common.ExtEndpoint:          "host01.com",
+	common.AUTHMode:             "ldap_auth",
+	common.DatabaseType:         "mysql",
+	common.MySQLHost:            "127.0.0.1",
+	common.MySQLPort:            3306,
+	common.MySQLUsername:        "root",
+	common.MySQLPassword:        "root123",
+	common.MySQLDatabase:        "registry",
+	common.SQLiteFile:           "/tmp/registry.db",
+	common.LDAPURL:              "ldap://127.0.0.1",
+	common.LDAPSearchDN:         "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:        "admin",
+	common.LDAPBaseDN:           "dc=example,dc=com",
+	common.LDAPUID:              "uid",
+	common.LDAPFilter:           "",
+	common.LDAPScope:            3,
+	common.LDAPTimeout:          30,
+	common.CfgExpiration:        5,
+	common.AdminInitialPassword: "password",
+}
 
 func TestLock(t *testing.T) {
 	t.Log("Locking john")

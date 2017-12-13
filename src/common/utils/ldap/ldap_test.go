@@ -11,19 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 package ldap
 
 import (
-	//"fmt"
-	//"strings"
-
 	"os"
 	"testing"
 
+	"github.com/vmware/harbor/src/common/models"
+
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/test"
 	uiConfig "github.com/vmware/harbor/src/ui/config"
@@ -40,29 +37,15 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.MySQLDatabase: "registry",
 	common.SQLiteFile:    "/tmp/registry.db",
 	//config.SelfRegistration: true,
-	common.LDAPURL:       "ldap://127.0.0.1",
-	common.LDAPSearchDN:  "cn=admin,dc=example,dc=com",
-	common.LDAPSearchPwd: "admin",
-	common.LDAPBaseDN:    "dc=example,dc=com",
-	common.LDAPUID:       "uid",
-	common.LDAPFilter:    "",
-	common.LDAPScope:     3,
-	common.LDAPTimeout:   30,
-	//	config.TokenServiceURL:            "",
-	//	config.RegistryURL:                "",
-	//	config.EmailHost:                  "",
-	//	config.EmailPort:                  25,
-	//	config.EmailUsername:              "",
-	//	config.EmailPassword:              "password",
-	//	config.EmailFrom:                  "from",
-	//	config.EmailSSL:                   true,
-	//	config.EmailIdentity:              "",
-	//	config.ProjectCreationRestriction: config.ProCrtRestrAdmOnly,
-	//	config.VerifyRemoteCert:           false,
-	//	config.MaxJobWorkers:              3,
-	//	config.TokenExpiration:            30,
-	common.CfgExpiration: 5,
-	//	config.JobLogDir:                  "/var/log/jobs",
+	common.LDAPURL:              "ldap://127.0.0.1",
+	common.LDAPSearchDN:         "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:        "admin",
+	common.LDAPBaseDN:           "dc=example,dc=com",
+	common.LDAPUID:              "uid",
+	common.LDAPFilter:           "",
+	common.LDAPScope:            3,
+	common.LDAPTimeout:          30,
+	common.CfgExpiration:        5,
 	common.AdminInitialPassword: "password",
 }
 
@@ -132,15 +115,6 @@ func TestMain(t *testing.T) {
 		t.Fatalf("failed to initialize configurations: %v", err)
 	}
 
-	//	if err := uiConfig.Load(); err != nil {
-	//		t.Fatalf("failed to load configurations: %v", err)
-	//	}
-
-	//	mode, err := uiConfig.AuthMode()
-	//	if err != nil {
-	//		t.Fatalf("failed to get auth mode: %v", err)
-	//	}
-
 	database, err := uiConfig.Database()
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
@@ -151,171 +125,134 @@ func TestMain(t *testing.T) {
 	}
 }
 
-func TestGetSystemLdapConf(t *testing.T) {
-
-	testLdapConfig, err := GetSystemLdapConf()
-
+func TestLoadSystemLdapConfig(t *testing.T) {
+	session, err := LoadSystemLdapConfig()
 	if err != nil {
 		t.Fatalf("failed to get system ldap config %v", err)
 	}
 
-	if testLdapConfig.LdapURL != "ldap://127.0.0.1" {
-		t.Errorf("unexpected LdapURL: %s != %s", testLdapConfig.LdapURL, "ldap://test.ldap.com")
-	}
-}
-
-func TestValidateLdapConf(t *testing.T) {
-
-	testLdapConfig, err := GetSystemLdapConf()
-	if err != nil {
-		t.Fatalf("failed to get system ldap config %v", err)
+	if session.ldapConfig.LdapURL != "ldap://127.0.0.1:389" {
+		t.Errorf("unexpected LdapURL: %s != %s", session.ldapConfig.LdapURL, "ldap://127.0.0.1:389")
 	}
 
-	testLdapConfig, err = ValidateLdapConf(testLdapConfig)
-
-	if testLdapConfig.LdapScope != 2 {
-		t.Errorf("unexpected LdapScope: %d != %d", testLdapConfig.LdapScope, 2)
-	}
-}
-
-func TestMakeFilter(t *testing.T) {
-
-	testLdapConfig, err := GetSystemLdapConf()
-
-	if err != nil {
-		t.Fatalf("failed to get system ldap config %v", err)
-	}
-
-	testLdapConfig.LdapFilter = "(ou=people)"
-	tempUsername := ""
-
-	tempFilter := MakeFilter(tempUsername, testLdapConfig.LdapFilter, testLdapConfig.LdapUID)
-	if tempFilter != "(&(ou=people)(uid=*))" {
-		t.Errorf("unexpected tempFilter: %s != %s", tempFilter, "(&(ou=people)(uid=*))")
-	}
-
-	tempUsername = "user0001"
-	tempFilter = MakeFilter(tempUsername, testLdapConfig.LdapFilter, testLdapConfig.LdapUID)
-	if tempFilter != "(&(ou=people)(uid=user0001))" {
-		t.Errorf("unexpected tempFilter: %s != %s", tempFilter, "(&(ou=people)(uid=user0001)")
-	}
-}
-
-func TestFormatLdapURL(t *testing.T) {
-	testLdapConfig, err := GetSystemLdapConf()
-
-	if err != nil {
-		t.Fatalf("failed to get system ldap config %v", err)
-	}
-
-	testLdapConfig.LdapURL = "test.ldap.com"
-	tempLdapURL, err := formatLdapURL(testLdapConfig.LdapURL)
-
-	if err != nil {
-		t.Errorf("failed to format Ldap URL %v", err)
-	}
-
-	if tempLdapURL != "ldap://test.ldap.com:389" {
-		t.Errorf("unexpected tempLdapURL: %s != %s", tempLdapURL, "ldap://test.ldap.com:389")
-	}
-
-	testLdapConfig.LdapURL = "ldaps://test.ldap.com"
-	tempLdapURL, err = formatLdapURL(testLdapConfig.LdapURL)
-
-	if err != nil {
-		t.Errorf("failed to format Ldap URL %v", err)
-	}
-
-	if tempLdapURL != "ldaps://test.ldap.com:636" {
-		t.Errorf("unexpected tempLdapURL: %s != %s", tempLdapURL, "ldap://test.ldap.com:636")
-	}
-}
-
-func TestImportUser(t *testing.T) {
-	var u models.LdapUser
-	var user models.User
-	u.Username = "ldapUser0001"
-	u.Realname = "ldapUser"
-	_, err := ImportUser(u)
-	if err != nil {
-		t.Fatalf("failed to add Ldap user: %v", err)
-	}
-
-	user.Username = "ldapUser0001"
-	user.Email = "ldapUser0001@placeholder.com"
-
-	exist, err := dao.UserExists(user, "username")
-	if !exist {
-		t.Errorf("failed to add Ldap username: %v", err)
-	}
-
-	exist, err = dao.UserExists(user, "email")
-	if !exist {
-		t.Errorf("failed to add Ldap user email: %v", err)
-	}
-
-	_, err = ImportUser(u)
-	if err.Error() != "duplicate_username" {
-		t.Fatalf("failed to checking duplicate user: %v", err)
+	if session.ldapConfig.LdapScope != 2 {
+		t.Errorf("unexpected LdapScope: %d != %d", session.ldapConfig.LdapScope, 2)
 	}
 
 }
 
 func TestConnectTest(t *testing.T) {
-
-	testLdapConfig, err := GetSystemLdapConf()
-
+	session, err := LoadSystemLdapConfig()
 	if err != nil {
-		t.Fatalf("failed to get system ldap config %v", err)
+		t.Errorf("failed to load system ldap config")
+	}
+	err = session.ConnectionTest()
+	if err != nil {
+		t.Errorf("Unexpected ldap connect fail: %v", err)
 	}
 
-	testLdapConfig.LdapURL = "ldap://localhost:389"
+}
 
-	err = ConnectTest(testLdapConfig)
-	if err != nil {
-		t.Errorf("unexpected ldap connect fail: %v", err)
+func TestCreateUIConfig(t *testing.T) {
+	var testConfigs = []struct {
+		config        models.LdapConf
+		internalValue int
+	}{
+		{
+			models.LdapConf{
+				LdapScope: 3,
+				LdapURL:   "ldaps://127.0.0.1",
+			}, 2},
+		{
+			models.LdapConf{
+				LdapScope: 2,
+				LdapURL:   "ldaps://127.0.0.1",
+			}, 1},
+		{
+			models.LdapConf{
+				LdapScope: 1,
+				LdapURL:   "ldaps://127.0.0.1",
+			}, 0},
 	}
+
+	for _, val := range testConfigs {
+		session, err := CreateWithUIConfig(val.config)
+		if err != nil {
+			t.Fatalf("Can not create with ui config, err:%v", err)
+		}
+		if session.ldapConfig.LdapScope != val.internalValue {
+			t.Fatalf("Test failed expected %v, actual %v", val.internalValue, session.ldapConfig.LdapScope)
+		}
+	}
+
 }
 
 func TestSearchUser(t *testing.T) {
 
-	testLdapConfig, err := GetSystemLdapConf()
-
+	session, err := LoadSystemLdapConfig()
 	if err != nil {
-		t.Fatalf("failed to get system ldap config %v", err)
+		t.Fatalf("Can not load system ldap config")
 	}
-	testLdapConfig.LdapURL = "ldap://localhost:389"
-	testLdapConfig.LdapFilter = MakeFilter("", testLdapConfig.LdapFilter, testLdapConfig.LdapUID)
-
-	ldapUsers, err := SearchUser(testLdapConfig)
+	err = session.Open()
 	if err != nil {
-		t.Errorf("unexpected ldap search fail: %v", err)
+		t.Fatalf("failed to create ldap session %v", err)
 	}
 
-	if ldapUsers[0].Username != "test" {
-		t.Errorf("unexpected ldap user search result: %s = %s", "ldapUsers[0].Username", ldapUsers[0].Username)
+	err = session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword)
+	if err != nil {
+		t.Fatalf("failed to bind search dn")
+	}
+
+	defer session.Close()
+
+	result, err := session.SearchUser("test")
+	if err != nil || len(result) == 0 {
+		t.Fatalf("failed to search user test!")
+	}
+
+}
+
+func InitTest(ldapTestConfig map[string]interface{}, t *testing.T) {
+	server, err := test.NewAdminserver(ldapTestConfig)
+	if err != nil {
+		t.Fatalf("failed to create a mock admin server: %v", err)
+	}
+	defer server.Close()
+
+	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
+		t.Fatalf("failed to set env %s:%v", "ADMIN_SERVER_URL", err)
+	}
+
+	if err := uiConfig.Init(); err != nil {
+		t.Fatalf("failed to initialize configurations: %v ", err)
 	}
 }
 
-func TestSearchAndImportUser(t *testing.T) {
+func TestFormatURL(t *testing.T) {
 
-	userID, err := SearchAndImportUser("test")
-
-	if err != nil {
-		t.Fatalf("Failed on error : %v ", err)
-	}
-
-	if userID <= 0 {
-		t.Fatalf("userID= %v", userID)
-	}
-}
-
-func TestSearchAndImportUserNotExist(t *testing.T) {
-
-	userID, _ := SearchAndImportUser("notexist")
-
-	if userID > 0 {
-		t.Fatal("Can not import a non exist ldap user!")
+	var invalidURL = "http://localhost:389"
+	_, err := formatURL(invalidURL)
+	if err == nil {
+		t.Fatalf("Should failed on invalid URL %v", invalidURL)
 		t.Fail()
 	}
+
+	var urls = []struct {
+		rawURL  string
+		goodURL string
+	}{
+		{"ldaps://127.0.0.1", "ldaps://127.0.0.1:636"},
+		{"ldap://9.123.102.33", "ldap://9.123.102.33:389"},
+		{"ldaps://127.0.0.1:389", "ldaps://127.0.0.1:389"},
+		{"ldap://127.0.0.1:636", "ldaps://127.0.0.1:636"},
+		{"112.122.122.122", "ldap://112.122.122.122:389"},
+	}
+
+	for _, u := range urls {
+		goodURL, err := formatURL(u.rawURL)
+		if err != nil || goodURL != u.goodURL {
+			t.Fatalf("Faild on URL: raw=%v, expected:%v, actual:%v", u.rawURL, u.goodURL, goodURL)
+		}
+	}
+
 }

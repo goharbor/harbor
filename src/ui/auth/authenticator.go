@@ -37,22 +37,27 @@ const (
 
 var lock = NewUserLock(frozenTime)
 
-// Authenticator provides interface to authenticate user credentials.
-type Authenticator interface {
+// AuthenticateHelper provides interface to authenticate user credentials.
+type AuthenticateHelper interface {
 
 	// Authenticate ...
 	Authenticate(m models.AuthModel) (*models.User, error)
+	// OnBoardUser will check if a user exists in user table, if not insert the user and
+	// put the id in the pointer of user model, if it does exist, return the user's profile.
+	OnBoardUser(u *models.User) error
+	// Get user information from account repository
+	SearchUser(username string) (*models.User, error)
 }
 
-var registry = make(map[string]Authenticator)
+var registry = make(map[string]AuthenticateHelper)
 
 // Register add different authenticators to registry map.
-func Register(name string, authenticator Authenticator) {
+func Register(name string, AuthenticateHelper AuthenticateHelper) {
 	if _, dup := registry[name]; dup {
 		log.Infof("authenticator: %s has been registered", name)
 		return
 	}
-	registry[name] = authenticator
+	registry[name] = AuthenticateHelper
 }
 
 // Login authenticates user credentials based on setting.
@@ -82,4 +87,43 @@ func Login(m models.AuthModel) (*models.User, error) {
 		time.Sleep(frozenTime)
 	}
 	return user, err
+}
+
+// getAuthenticatorByMode --
+func getAuthenticateHelperByMode(authMode string) (AuthenticateHelper, error) {
+	if authMode == "" {
+		authMode = "db_auth"
+	}
+	AuthenticateHelper, ok := registry[authMode]
+	if !ok {
+		return nil, fmt.Errorf("Can not get current authenticator")
+	}
+	return AuthenticateHelper, nil
+}
+
+// OnBoardUser will check if a user exists in user table, if not insert the user and
+// put the id in the pointer of user model, if it does exist, return the user's profile.
+func OnBoardUser(user *models.User) error {
+	authMode, err := config.AuthMode()
+	if err != nil {
+		return err
+	}
+	auth, err := getAuthenticateHelperByMode(authMode)
+	if err != nil {
+		return err
+	}
+	return auth.OnBoardUser(user)
+}
+
+// SearchUser --
+func SearchUser(username string) (*models.User, error) {
+	authMode, err := config.AuthMode()
+	if err != nil {
+		return nil, err
+	}
+	auth, err := getAuthenticateHelperByMode(authMode)
+	if err != nil {
+		return nil, err
+	}
+	return auth.SearchUser(username)
 }
