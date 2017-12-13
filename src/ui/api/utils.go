@@ -15,10 +15,7 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"sort"
 	"strings"
@@ -75,76 +72,6 @@ func checkUserExists(name string) int {
 		return u.UserID
 	}
 	return 0
-}
-
-// TriggerReplication triggers the replication according to the policy
-// TODO remove
-func TriggerReplication(policyID int64, repository string,
-	tags []string, operation string) error {
-	data := struct {
-		PolicyID  int64    `json:"policy_id"`
-		Repo      string   `json:"repository"`
-		Operation string   `json:"operation"`
-		TagList   []string `json:"tags"`
-	}{
-		PolicyID:  policyID,
-		Repo:      repository,
-		TagList:   tags,
-		Operation: operation,
-	}
-
-	b, err := json.Marshal(&data)
-	if err != nil {
-		return err
-	}
-	url := buildReplicationURL()
-
-	return uiutils.RequestAsUI("POST", url, bytes.NewBuffer(b), uiutils.NewStatusRespHandler(http.StatusOK))
-}
-
-// TODO remove
-func postReplicationAction(policyID int64, acton string) error {
-	data := struct {
-		PolicyID int64  `json:"policy_id"`
-		Action   string `json:"action"`
-	}{
-		PolicyID: policyID,
-		Action:   acton,
-	}
-
-	b, err := json.Marshal(&data)
-	if err != nil {
-		return err
-	}
-
-	url := buildReplicationActionURL()
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
-	if err != nil {
-		return err
-	}
-
-	uiutils.AddUISecret(req)
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		return nil
-	}
-
-	b, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
 }
 
 // SyncRegistry syncs the repositories of registry with database.

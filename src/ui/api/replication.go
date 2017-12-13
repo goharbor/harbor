@@ -49,7 +49,7 @@ func (r *ReplicationAPI) Post() {
 	replication := &models.Replication{}
 	r.DecodeJSONReqAndValidate(replication)
 
-	policy, err := core.DefaultController.GetPolicy(replication.PolicyID)
+	policy, err := core.GlobalController.GetPolicy(replication.PolicyID)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get replication policy %d: %v", replication.PolicyID, err))
 		return

@@ -9,7 +9,7 @@ type ReplicationPolicy struct {
 	ID                int64 //UUID of the policy
 	Name              string
 	Description       string
-	Filters           []FilterItem
+	Filters           []Filter
 	ReplicateDeletion bool
 	Trigger           *Trigger //The trigger of the replication
 	ProjectIDs        []int64  //Projects attached to this policy

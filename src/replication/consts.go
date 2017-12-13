@@ -23,8 +23,11 @@ const (
 	//TriggerScheduleWeekly : type of scheduling is 'weekly'
 	TriggerScheduleWeekly = "weekly"
 
-	//OperationPush : operation for pushing images
+	//OperationPush : push operation
 	OperationPush = "push"
-	//OperationDelete : operation for deleting images
+	//OperationDelete : delete operation
 	OperationDelete = "delete"
+
+	// PatternMatchAll : the pattern that match all
+	PatternMatchAll = ".*"
 )

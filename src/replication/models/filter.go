@@ -21,20 +21,21 @@ import (
 	"github.com/vmware/harbor/src/replication"
 )
 
-//Trigger is replication launching approach definition
-type Trigger struct {
-	//The name of the trigger
-	Kind string `json:"kind"`
-
-	//The parameters with json text format required by the trigger
-	Param string `json:"param"`
+// Filter is the data model represents the filter defined by user.
+type Filter struct {
+	Kind    string `json:"kind"`
+	Pattern string `json:"pattern"`
 }
 
 // Valid ...
-func (t *Trigger) Valid(v *validation.Validation) {
-	if !(t.Kind == replication.TriggerKindImmediate ||
-		t.Kind == replication.TriggerKindManual ||
-		t.Kind == replication.TriggerKindSchedule) {
-		v.SetError("kind", fmt.Sprintf("invalid trigger kind: %s", t.Kind))
+func (f *Filter) Valid(v *validation.Validation) {
+	if !(f.Kind == replication.FilterItemKindProject ||
+		f.Kind == replication.FilterItemKindRepository ||
+		f.Kind == replication.FilterItemKindTag) {
+		v.SetError("kind", fmt.Sprintf("invalid filter kind: %s", f.Kind))
+	}
+
+	if len(f.Pattern) == 0 {
+		v.SetError("pattern", "filter pattern can not be empty")
 	}
 }

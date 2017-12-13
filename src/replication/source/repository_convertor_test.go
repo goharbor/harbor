@@ -27,9 +27,6 @@ func TestRepositoryConvert(t *testing.T) {
 		models.FilterItem{
 			Kind:  replication.FilterItemKindProject,
 			Value: "library",
-			Metadata: map[string]interface{}{
-				"public": true,
-			},
 		},
 		models.FilterItem{
 			Kind: replication.FilterItemKindRepository,
@@ -39,16 +36,10 @@ func TestRepositoryConvert(t *testing.T) {
 		models.FilterItem{
 			Kind:  replication.FilterItemKindRepository,
 			Value: "library/ubuntu",
-			Metadata: map[string]interface{}{
-				"public": true,
-			},
 		},
 		models.FilterItem{
 			Kind:  replication.FilterItemKindRepository,
 			Value: "library/centos",
-			Metadata: map[string]interface{}{
-				"public": true,
-			},
 		},
 	}
 
@@ -88,10 +79,10 @@ func (f *fakeRegistryAdaptor) GetRepository(name string, namespace string) model
 func (f *fakeRegistryAdaptor) GetTags(repositoryName string, namespace string) []models.Tag {
 	return []models.Tag{
 		models.Tag{
-			Name: "library/ubuntu:14.04",
+			Name: "14.04",
 		},
 		models.Tag{
-			Name: "library/ubuntu:16.04",
+			Name: "16.04",
 		},
 	}
 }

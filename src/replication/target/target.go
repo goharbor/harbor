@@ -12,29 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package target
 
 import (
-	"fmt"
-
-	"github.com/astaxie/beego/validation"
-	"github.com/vmware/harbor/src/replication"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 )
 
-//Trigger is replication launching approach definition
-type Trigger struct {
-	//The name of the trigger
-	Kind string `json:"kind"`
-
-	//The parameters with json text format required by the trigger
-	Param string `json:"param"`
+// Manager defines the methods that a target manager should implement
+type Manager interface {
+	GetTarget(int64) (*models.RepTarget, error)
 }
 
-// Valid ...
-func (t *Trigger) Valid(v *validation.Validation) {
-	if !(t.Kind == replication.TriggerKindImmediate ||
-		t.Kind == replication.TriggerKindManual ||
-		t.Kind == replication.TriggerKindSchedule) {
-		v.SetError("kind", fmt.Sprintf("invalid trigger kind: %s", t.Kind))
-	}
+// DefaultManager implement the Manager interface
+type DefaultManager struct{}
+
+// NewDefaultManager returns an instance of DefaultManger
+func NewDefaultManager() *DefaultManager {
+	return &DefaultManager{}
+}
+
+// GetTarget ...
+func (d *DefaultManager) GetTarget(id int64) (*models.RepTarget, error) {
+	return dao.GetRepTarget(id)
 }

@@ -12,37 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package source
+package test
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 )
 
-func TestTagConvert(t *testing.T) {
-	items := []models.FilterItem{
-		models.FilterItem{
-			Kind:  replication.FilterItemKindRepository,
-			Value: "library/ubuntu",
-		},
-		models.FilterItem{
-			Kind: replication.FilterItemKindProject,
-		},
-	}
-	expected := []models.FilterItem{
-		models.FilterItem{
-			Kind:  replication.FilterItemKindTag,
-			Value: "library/ubuntu:14.04",
-		},
-		models.FilterItem{
-			Kind:  replication.FilterItemKindTag,
-			Value: "library/ubuntu:16.04",
-		},
-	}
+type FakePolicyManager struct {
+}
 
-	convertor := NewTagConvertor(&fakeRegistryAdaptor{})
-	assert.EqualValues(t, expected, convertor.Convert(items))
+func (f *FakePolicyManager) GetPolicies(query models.QueryParameter) ([]models.ReplicationPolicy, error) {
+	return []models.ReplicationPolicy{}, nil
+}
+
+func (f *FakePolicyManager) GetPolicy(id int64) (models.ReplicationPolicy, error) {
+	return models.ReplicationPolicy{
+		ID: 1,
+		Trigger: &models.Trigger{
+			Kind: replication.TriggerKindManual,
+		},
+	}, nil
+}
+func (f *FakePolicyManager) CreatePolicy(policy models.ReplicationPolicy) (int64, error) {
+	return 1, nil
+}
+func (f *FakePolicyManager) UpdatePolicy(models.ReplicationPolicy) error {
+	return nil
+}
+func (f *FakePolicyManager) RemovePolicy(int64) error {
+	return nil
 }
