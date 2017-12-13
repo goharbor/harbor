@@ -424,6 +424,9 @@ export class CreateEditRuleComponent implements AfterViewChecked {
       pingTarget.password = this.createEditRule.password;
       pingTarget.insecure = this.createEditRule.insecure;
     } else {
+      for (let prop in pingTarget) {
+        delete pingTarget[prop];
+      }
       pingTarget.id = this.createEditRule.endpointId;
     }
     toPromise<Endpoint>(this.endpointService

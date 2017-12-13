@@ -98,3 +98,14 @@ type SystemCfg struct {
 	CfgExpiration              int             `json:"cfg_expiration"`
 }
 */
+
+// ConfigEntry ...
+type ConfigEntry struct {
+	ID   int64    `orm:"pk;auto;column(id)" json:"-"`
+	Key string `orm:"column(k)" json:"k"`
+	Value string `orm:"column(v)" json:"v"`
+}
+// TableName ...
+func (ce *ConfigEntry)TableName() string {
+	return "properties"
+}

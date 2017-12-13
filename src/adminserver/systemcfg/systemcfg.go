@@ -23,10 +23,13 @@ import (
 	enpt "github.com/vmware/harbor/src/adminserver/systemcfg/encrypt"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store/encrypt"
-	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
 	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/adminserver/systemcfg/store/database"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
 )
 
 const (
@@ -215,17 +218,61 @@ func Init() (err error) {
 }
 
 func initCfgStore() (err error) {
+
+	drivertype := os.Getenv("CFG_DRIVER")
+	if len(drivertype) == 0 {
+		drivertype = common.CfgDriverDB
+	}
 	path := os.Getenv("JSON_CFG_STORE_PATH")
 	if len(path) == 0 {
 		path = defaultJSONCfgStorePath
 	}
 	log.Infof("the path of json configuration storage: %s", path)
 
-	CfgStore, err = json.NewCfgStore(path)
-	if err != nil {
-		return
+	if drivertype == common.CfgDriverDB {
+		//init database
+		cfgs := map[string]interface{}{}
+		if err = LoadFromEnv(cfgs, true); err != nil {
+			return err
+		}
+		cfgdb := GetDatabaseFromCfg(cfgs)
+		if err = dao.InitDatabase(cfgdb); err != nil {
+			return err
+		}
+		CfgStore, err = database.NewCfgStore()
+		if err != nil {
+			return err
+		}
+		//migration check: if no data in the db , then will try to load from path
+		m, err := CfgStore.Read()
+		if err != nil {
+			return err
+		}
+		if m == nil || len(m) == 0 {
+			if _, err := os.Stat(path); err == nil {
+				jsondriver, err := json.NewCfgStore(path)
+				if err != nil {
+					log.Errorf("Failed to migrate configuration from %s", path)
+					return err
+				}
+				jsonconfig, err := jsondriver.Read()
+				if err != nil {
+					log.Errorf("Failed to read old configuration from %s", path)
+					return err
+				}
+				err = CfgStore.Write(jsonconfig)
+				if err != nil {
+					log.Error("Failed to update old configuration to dattabase")
+					return err
+				}
+			}
+		}
+	} else {
+		CfgStore, err = json.NewCfgStore(path)
+		if err != nil {
+			return err
+		}
 	}
-
 	kp := os.Getenv("KEY_PATH")
 	if len(kp) == 0 {
 		kp = defaultKeyPath
@@ -277,4 +324,21 @@ func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
 	}
 
 	return nil
+}
+
+// GetDatabaseFromCfg Create database object from config
+func GetDatabaseFromCfg(cfg map[string]interface{}) (*models.Database){
+	database := &models.Database{}
+	database.Type = cfg[common.DatabaseType].(string)
+	mysql := &models.MySQL{}
+	mysql.Host = cfg[common.MySQLHost].(string)
+	mysql.Port = int(cfg[common.MySQLPort].(int))
+	mysql.Username = cfg[common.MySQLUsername].(string)
+	mysql.Password = cfg[common.MySQLPassword].(string)
+	mysql.Database = cfg[common.MySQLDatabase].(string)
+	database.MySQL = mysql
+	sqlite := &models.SQLite{}
+	sqlite.File = cfg[common.SQLiteFile].(string)
+	database.SQLite = sqlite
+	return database
 }

@@ -221,9 +221,11 @@ UNIQUE(namespace)
 );
 
 create table properties (
+ id int NOT NULL AUTO_INCREMENT,
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
- primary key (k)
+ PRIMARY KEY(id),
+ UNIQUE (k)
  );
 
 CREATE TABLE IF NOT EXISTS `alembic_version` (
