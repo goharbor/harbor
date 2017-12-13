@@ -12,23 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package test
+package dao
 
 import (
-	"fmt"
-	"golang.org/x/oauth2"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// FakeClient is for test only
-type FakeClient struct {
-	Username string
-	Password string
-}
-
-// PasswordAuth ...
-func (fc *FakeClient) PasswordAuth(username, password string) (*oauth2.Token, error) {
-	if username == fc.Username && password == fc.Password {
-		return &oauth2.Token{}, nil
-	}
-	return nil, fmt.Errorf("Invalide username and password")
+func TestGetSchemaVersion(t *testing.T) {
+	version, err := GetSchemaVersion()
+	require.Nil(t, err)
+	assert.Equal(t, SchemaVersion, version.Version)
 }

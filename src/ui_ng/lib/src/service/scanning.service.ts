@@ -101,13 +101,13 @@ export class ScanningResultDefaultService extends ScanningResultService {
             return Promise.reject('Bad argument');
         }
 
-        return this.http.post(`${this._baseUrl}/${repoName}/tags/${tagId}/scan`, null).toPromise()
+        return this.http.post(`${this._baseUrl}/${repoName}/tags/${tagId}/scan`, HTTP_JSON_OPTIONS).toPromise()
             .then(() => { return true })
             .catch(error => Promise.reject(error));
     }
 
     startScanningAll(): Observable<any> | Promise<any> | any {
-        return this.http.post(`${this._baseUrl}/scanAll`,{}).toPromise()
+        return this.http.post(`${this._baseUrl}/scanAll`, HTTP_JSON_OPTIONS).toPromise()
         .then(() => {return true})
         .catch(error => Promise.reject(error));
     }

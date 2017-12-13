@@ -6,6 +6,7 @@ import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 
 import { Project } from '../project-policy-config/project';
 import { ProjectPolicy } from '../project-policy-config/project-policy-config.component';
+import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../utils";
 
 /**
  * Define the service methods to handle the Prject related things.
@@ -49,9 +50,6 @@ export abstract class ProjectService {
 @Injectable()
 export class ProjectDefaultService extends ProjectService {
 
-  headers = new Headers({'Content-type': 'application/json'});
-  options = new RequestOptions({'headers': this.headers});
-
   constructor(
       private http: Http,
       @Inject(SERVICE_CONFIG) private config: IServiceConfig
@@ -65,7 +63,7 @@ export class ProjectDefaultService extends ProjectService {
     }
 
     return this.http
-                .get(`/api/projects/${projectId}`)
+                .get(`/api/projects/${projectId}`, HTTP_GET_OPTIONS)
                 .map(response => response.json())
                 .catch(error => Observable.throw(error));
   }
@@ -76,9 +74,9 @@ export class ProjectDefaultService extends ProjectService {
                 'public': projectPolicy.Public ? 'true' : 'false',
                 'enable_content_trust': projectPolicy.ContentTrust ? 'true' : 'false',
                 'prevent_vul': projectPolicy.PreventVulImg ? 'true' : 'false',
-                'severity': projectPolicy.PreventVulImgServerity,
+                'severity': projectPolicy.PreventVulImgSeverity,
                 'auto_scan': projectPolicy.ScanImgOnPush ? 'true' : 'false'
-              } }, this.options)
+              } }, HTTP_JSON_OPTIONS)
               .map(response => response.status)
               .catch(error => Observable.throw(error));
   }

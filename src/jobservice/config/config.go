@@ -17,6 +17,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/vmware/harbor/src/adminserver/client"
 	"github.com/vmware/harbor/src/adminserver/client/auth"
@@ -44,7 +45,7 @@ func Init() error {
 	//init key provider
 	initKeyProvider()
 
-	adminServerURL := os.Getenv("ADMIN_SERVER_URL")
+	adminServerURL := os.Getenv("ADMINSERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}
@@ -107,7 +108,13 @@ func MaxJobWorkers() (int, error) {
 
 // LocalUIURL returns the local ui url, job service will use this URL to call API hosted on ui process
 func LocalUIURL() string {
-	return "http://ui"
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Warningf("Failed to Get job service UI URL from backend, error: %v, will return default value.")
+		return "http://ui"
+	}
+	return strings.TrimSuffix(cfg[common.UIURL].(string), "/")
+
 }
 
 // LocalRegURL returns the local registry url, job service will use this URL to pull image from the registry
@@ -156,7 +163,7 @@ func ExtEndpoint() (string, error) {
 
 // InternalTokenServiceEndpoint ...
 func InternalTokenServiceEndpoint() string {
-	return "http://ui/service/token"
+	return LocalUIURL() + "/service/token"
 }
 
 // ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.

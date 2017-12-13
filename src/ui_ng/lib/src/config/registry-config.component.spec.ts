@@ -4,7 +4,6 @@ import { SharedModule } from '../shared/shared.module';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 
-import { ReplicationConfigComponent } from './replication/replication-config.component';
 import { SystemSettingsComponent } from './system/system-settings.component';
 import { VulnerabilityConfigComponent } from './vulnerability/vulnerability-config.component';
 import { RegistryConfigComponent } from './registry-config.component';
@@ -32,7 +31,6 @@ describe('RegistryConfigComponent (inline template)', () => {
   let spySystemInfo: jasmine.Spy;
   let mockConfig: Configuration = new Configuration();
   mockConfig.token_expiration.value = 90;
-  mockConfig.verify_remote_cert.value = true;
   mockConfig.scan_all_policy.value = {
     type: "daily",
     parameter: {
@@ -62,7 +60,6 @@ describe('RegistryConfigComponent (inline template)', () => {
         SharedModule
       ],
       declarations: [
-        ReplicationConfigComponent,
         SystemSettingsComponent,
         VulnerabilityConfigComponent,
         RegistryConfigComponent,
@@ -103,9 +100,6 @@ describe('RegistryConfigComponent (inline template)', () => {
       expect(el).not.toBeFalsy();
       expect(el.value).toEqual('30');
 
-      let el2: HTMLInputElement = fixture.nativeElement.querySelector('input[type="checkbox"]');
-      expect(el2).toBeTruthy();
-      expect(el2.value).toEqual('on');
 
       fixture.detectChanges();
       let el3: HTMLInputElement = fixture.nativeElement.querySelector('input[type="time"]');

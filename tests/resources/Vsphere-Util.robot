@@ -18,28 +18,23 @@ Documentation  This resource contains any keywords dealing with operations being
 *** Keywords ***
 Power On VM OOB
     [Arguments]  ${vm}
-    ${rc}  ${output}=  Run Keyword If  '%{HOST_TYPE}' == 'VC'  Run And Return Rc And Output  govc vm.power -on %{VCH-NAME}/"${vm}"
-    Run Keyword If  '%{HOST_TYPE}' == 'VC'  Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Run And Return Rc And Output  govc vm.power -on "${vm}"
-    Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  govc vm.power -on "${vm}"
+    Should Be Equal As Integers  ${rc}  0
     Log To Console  Waiting for VM to power on ...
     Wait Until VM Powers On  ${vm}
 
 Power Off VM OOB
     [Arguments]  ${vm}
-    ${rc}  ${output}=  Run Keyword If  '%{HOST_TYPE}' == 'VC'  Run And Return Rc And Output  govc vm.power -off %{VCH-NAME}/"${vm}"
-    Run Keyword If  '%{HOST_TYPE}' == 'VC'  Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Run And Return Rc And Output  govc vm.power -off "${vm}"
-    Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  govc vm.power -off "${vm}"
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
     Log To Console  Waiting for VM to power off ...
     Wait Until VM Powers Off  "${vm}"
 
 Destroy VM OOB
     [Arguments]  ${vm}
-    ${rc}  ${output}=  Run Keyword If  '%{HOST_TYPE}' == 'VC'  Run And Return Rc And Output  govc vm.destroy %{VCH-NAME}/"*-${vm}"
-    Run Keyword If  '%{HOST_TYPE}' == 'VC'  Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Run And Return Rc And Output  govc vm.destroy "*-${vm}"
-    Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  govc vm.destroy "*-${vm}"
+    Should Be Equal As Integers  ${rc}  0
 
 Put Host Into Maintenance Mode
     ${rc}  ${output}=  Run And Return Rc And Output  govc host.maintenance.enter -host.ip=%{TEST_URL}
@@ -56,13 +51,19 @@ Reboot VM
     Power On VM OOB  ${vm}
     Log To Console  ${vm} Powered On
 
+Reset VM
+    [Arguments]  ${vm}
+    ${rc}  ${output}=  Run And Return Rc And Output  govc vm.power -reset "${vm}"
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    Log To Console  Waiting for VM to reset ...
+    Wait Until VM Powers On  "${vm}"
+
 Wait Until VM Powers On
     [Arguments]  ${vm}
     :FOR  ${idx}  IN RANGE  0  30
-    \   ${ret}=  Run Keyword If  '%{HOST_TYPE}' == 'VC'  Run  govc vm.info %{VCH-NAME}/${vm}
-    \   Run Keyword If  '%{HOST_TYPE}' == 'VC'  Set Test Variable  ${out}  ${ret}
-    \   ${ret}=  Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Run  govc vm.info ${vm}
-    \   Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Set Test Variable  ${out}  ${ret}
+    \   ${ret}=  Run  govc vm.info ${vm}
+    \   Set Test Variable  ${out}  ${ret}
     \   ${status}=  Run Keyword And Return Status  Should Contain  ${out}  poweredOn
     \   Return From Keyword If  ${status}
     \   Sleep  1
@@ -71,10 +72,8 @@ Wait Until VM Powers On
 Wait Until VM Powers Off
     [Arguments]  ${vm}
     :FOR  ${idx}  IN RANGE  0  30
-    \   ${ret}=  Run Keyword If  '%{HOST_TYPE}' == 'VC'  Run  govc vm.info %{VCH-NAME}/${vm}
-    \   Run Keyword If  '%{HOST_TYPE}' == 'VC'  Set Test Variable  ${out}  ${ret}
-    \   ${ret}=  Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Run  govc vm.info ${vm}
-    \   Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Set Test Variable  ${out}  ${ret}
+    \   ${ret}=  Run  govc vm.info ${vm}
+    \   Set Test Variable  ${out}  ${ret}
     \   ${status}=  Run Keyword And Return Status  Should Contain  ${out}  poweredOff
     \   Return From Keyword If  ${status}
     \   Sleep  1
@@ -83,10 +82,8 @@ Wait Until VM Powers Off
 Wait Until VM Is Destroyed
     [Arguments]  ${vm}
     :FOR  ${idx}  IN RANGE  0  30
-    \   ${ret}=  Run Keyword If  '%{HOST_TYPE}' == 'VC'  Run  govc ls vm/%{VCH-NAME}/${vm}
-    \   Run Keyword If  '%{HOST_TYPE}' == 'VC'  Set Test Variable  ${out}  ${ret}
-    \   ${ret}=  Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Run  govc ls vm/${vm}
-    \   Run Keyword If  '%{HOST_TYPE}' == 'ESXi'  Set Test Variable  ${out}  ${ret}
+    \   ${ret}=  Run  govc ls vm/${vm}
+    \   Set Test Variable  ${out}  ${ret}
     \   ${status}=  Run Keyword And Return Status  Should Be Empty  ${out}
     \   Return From Keyword If  ${status}
     \   Sleep  1

@@ -2,20 +2,23 @@
 ## Overview  
 This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
-* Manage your projects.
-* Manage members of a project.
-* Replicate projects to a remote registry.
-* Search projects and repositories.
-* Manage Harbor system if you are the system administrator:
-  * Manage users.
-  * Manage destinations.
-  * Manage replication policies.
-  * Manage configuration.
-* Pull and push images using Docker client.
-* Delete repositories and images.
-* Content trust.  
-* Vulnerability scanning via Clair.
-* Pull image from Harbor in Kubernetes.
+* [Manage your projects.](#managing-projects)
+* [Manage members of a project.](#managing-members-of-a-project)
+* [Replicate projects to a remote registry.](#replicationg-images)
+* [Search projects and repositories.](#searching-projects-and-repositories)
+* [Manage Harbor system if you are the system administrator:](#administrator-options)
+  * [Manage users.](#managing-user)
+  * [Manage destinations.](#managing-endpoint)
+  * [Manage replication policies.](#managing-replication)
+  * [Manage authentication.](#managing-authentication)
+  * [Manage project creation.](#managing-project-creation)
+  * [Manage self-registration.](#managing-self-registration)
+  * [Manage email settings.](#managing-email-settings)
+* [Pull and push images using Docker client.](#pulling-and-pushing-images-using-docker-client)
+* [Delete repositories and images.](#deleting-repositories)
+* [Content trust.  ](#content-trust)
+* [Vulnerability scanning via Clair.](#vulnerability-scaning-via-clair)
+* [Pull image from Harbor in Kubernetes.](#pull-image-from-harbor-in-kubernetes)
 
 ## Role Based Access Control(RBAC)  
 
@@ -70,13 +73,27 @@ You can create a project after you signed in. Check on the "Access Level" checkb
 
 ![create project](img/new_create_project.png)  
 
-After the project is created, you can browse repositories, users and logs using the navigation tab.  
+After the project is created, you can browse repositories, members, logs, replication and configuration using the navigation tab.  
 
 ![browse project](img/new_browse_project.png)  
 
 All logs can be listed by clicking "Logs". You can apply a filter by username, or operations and dates under "Advanced Search".  
 
+![browse project](img/log_search_advanced.png)
+
 ![browse project](img/new_project_log.png)  
+
+Project properties can be changed by clicking "Configuration".
+
+* To make all repositories under the project accessible to everyone, select the `Public` checkbox.
+
+* To prevent un-signed images under the project from being pulled, select the `Enable content trust` checkbox.
+
+* To prevent vulnerable images under the project from being pulled, select the `Prevent vulnerable images from running` checkbox and change the severity level of vulnerabilities. Images cannot be pulled if their level equals to or higher than the currently selected level.
+
+* To activate an immediate vulnerability scan on new images that are pushed to the project, select the `Automatically scan images on push` checkbox.
+
+![browse project](img/project_configuration.png) 
 
 ## Managing members of a project  
 ### Adding members  
@@ -98,7 +115,7 @@ There may be a bit of delay during replication according to the situation of the
 
 **Note:** The replication feature is incompatible between Harbor instance before version 0.3.5(included) and after version 0.3.5.  	
 
-Start replication by creating a rule. Click "Add Replication Rule" on the "Replication" tab, fill in the necessary fields, if there is no endpoint in the list, you need to create one, and then click "OK", a rule for this project will be created. If  "Enable" is chosen, the project will be replicated to the remote immediately.  
+Replication can be configured by creating a rule. Click "Add Replication Rule" on the "Replication" tab and fill in the necessary fields. If there is no endpoint available in the list, you need to create one. Uncheck "Verify Remote Cert" if the remote registry uses a self-signed or an untrusted certificate. Click "OK" to create a replication rule for this project. If "Enable" is chosen, the project will be replicated to the remote registry immediately.  
 
 ![browse project](img/new_create_rule.png)
 
@@ -144,10 +161,6 @@ Use the **Project Creation** drop-down menu to set which users can create projec
 ### Managing self-registration
 You can manage whether a user can sign up for a new account. This option is not available if you use LDAP authentication.  
 ![browse project](img/new_self_reg.png)
-
-### Managing verification of remote certificate
-You  can choose whether to verify remote endpoint's certification. You may need to disable certificate verification if the remote registry uses a self-signed or an untrusted certificate.  
-![browse project](img/new_remote_cert.png)
 
 ### Managing email settings
 You can change Harbor's email settings, the mail server is used to send out responses to users who request to reset their password.  

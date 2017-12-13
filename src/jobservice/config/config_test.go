@@ -18,6 +18,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/utils/test"
 )
 
@@ -29,8 +30,8 @@ func TestConfig(t *testing.T) {
 	}
 	defer server.Close()
 
-	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
-		t.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
+		t.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
 	}
 
 	secretKeyPath := "/tmp/secretkey"
@@ -40,6 +41,7 @@ func TestConfig(t *testing.T) {
 		return
 	}
 	defer os.Remove(secretKeyPath)
+	assert := assert.New(t)
 
 	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
 		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
@@ -76,4 +78,5 @@ func TestConfig(t *testing.T) {
 	if _, err := ExtEndpoint(); err != nil {
 		t.Fatalf("failed to get ext endpoint: %v", err)
 	}
+	assert.Equal("http://myui:8888", LocalUIURL())
 }

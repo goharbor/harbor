@@ -75,7 +75,7 @@ build:
 	@echo "Done."
 	
 	@echo "building log container for photon..."
-	$(DOCKERBUILD) -f $(DOCKERFILEPATH_LOG)/$(DOCKERFILENAME_LOG) -t $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) .
+	$(DOCKERBUILD) -f $(DOCKERFILEPATH_LOG)/$(DOCKERFILENAME_LOG) -t $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) $(DOCKERFILEPATH_LOG)
 	@echo "Done."
 	
 cleanimage:

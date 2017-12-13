@@ -40,7 +40,7 @@ if [[ ( $1 = "up" || $1 = "upgrade" ) && ${SKIP_CONFIRM} != "y" ]]; then
 fi
 
 echo 'Trying to start mysql server...'
-DBRUN=0
+chown -R 10000:10000 /var/lib/mysql
 mysqld &
 for i in {60..0}; do
     mysqladmin -u$DB_USR -p$DB_PWD processlist >/dev/null 2>&1

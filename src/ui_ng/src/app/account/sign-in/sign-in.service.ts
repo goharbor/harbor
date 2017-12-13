@@ -16,6 +16,7 @@ import { Headers, Http, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { SignInCredential } from '../../shared/sign-in-credential';
+import {HTTP_FORM_OPTIONS} from "../../shared/shared.utils";
 
 const signInUrl = '/login';
 /**
@@ -27,9 +28,6 @@ const signInUrl = '/login';
  */
 @Injectable()
 export class SignInService {
-    headers = new Headers({
-        "Content-Type": 'application/x-www-form-urlencoded'
-    });
 
     constructor(private http: Http) {}
 
@@ -46,7 +44,7 @@ export class SignInService {
         body.set('password', signInCredential.password);
 
         //Trigger Http
-        return this.http.post(signInUrl, body.toString(), { headers: this.headers })
+        return this.http.post(signInUrl, body.toString(), HTTP_FORM_OPTIONS)
         .toPromise()
         .then(()=>null)
         .catch(this.handleError);

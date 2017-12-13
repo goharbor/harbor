@@ -42,7 +42,6 @@ services:
       - postgres
     volumes:
       - ./common/config/clair:/config
-    command: [-config, /config/config.yaml]
     logging:
       driver: "syslog"
       options:  

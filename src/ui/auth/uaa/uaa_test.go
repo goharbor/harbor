@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/dao"
 	utilstest "github.com/vmware/harbor/src/common/utils/test"
-	uaatest "github.com/vmware/harbor/src/common/utils/uaa/test"
+	"github.com/vmware/harbor/src/common/utils/uaa"
 	"github.com/vmware/harbor/src/ui/config"
 
 	"os"
@@ -33,8 +33,8 @@ func TestGetClient(t *testing.T) {
 	}
 	defer server.Close()
 
-	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
-		t.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
+		t.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
 	}
 	err = config.Init()
 	if err != nil {
@@ -47,7 +47,7 @@ func TestGetClient(t *testing.T) {
 
 func TestDoAuth(t *testing.T) {
 	assert := assert.New(t)
-	client := &uaatest.FakeClient{
+	client := &uaa.FakeClient{
 		Username: "user1",
 		Password: "password1",
 	}

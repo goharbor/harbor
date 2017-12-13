@@ -21,6 +21,7 @@ import (
 	"net/http/httptest"
 	"path"
 	"runtime"
+	"strings"
 )
 
 // MockServerConfig ...
@@ -72,6 +73,28 @@ func (t *tokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
+type userInfoHandler struct {
+	token string
+}
+
+func (u *userInfoHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	v := req.Header.Get("Authorization")
+	prefix := v[0:7]
+	reqToken := v[7:]
+	if strings.ToLower(prefix) != "bearer " || reqToken != u.token {
+		http.Error(rw, "invalid token", http.StatusUnauthorized)
+		return
+	}
+	userInfo, err := ioutil.ReadFile(path.Join(currPath(), "./user-info.json"))
+	if err != nil {
+		panic(err)
+	}
+	_, err2 := rw.Write(userInfo)
+	if err2 != nil {
+		panic(err2)
+	}
+}
+
 // NewMockServer ...
 func NewMockServer(cfg *MockServerConfig) *httptest.Server {
 	mux := http.NewServeMux()
@@ -81,5 +104,10 @@ func NewMockServer(cfg *MockServerConfig) *httptest.Server {
 		cfg.Username,
 		cfg.Password,
 	})
+	token, err := ioutil.ReadFile(path.Join(currPath(), "./good-access-token.txt"))
+	if err != nil {
+		panic(err)
+	}
+	mux.Handle("/uaa/userinfo", &userInfoHandler{strings.TrimSpace(string(token))})
 	return httptest.NewTLSServer(mux)
 }

@@ -64,6 +64,7 @@ export class Configuration {
     ldap_timeout: NumberValueItem;
     ldap_uid: StringValueItem;
     ldap_url: StringValueItem;
+    ldap_verify_cert: BoolValueItem;
     email_host: StringValueItem;
     email_identity: StringValueItem;
     email_from: StringValueItem;
@@ -71,6 +72,7 @@ export class Configuration {
     email_ssl: BoolValueItem;
     email_username?: StringValueItem;
     email_password?: StringValueItem;
+    email_insecure: BoolValueItem;
     verify_remote_cert: BoolValueItem;
     token_expiration: NumberValueItem;
     cfg_expiration: NumberValueItem;
@@ -88,6 +90,7 @@ export class Configuration {
         this.ldap_timeout = new NumberValueItem(5, true);
         this.ldap_uid = new StringValueItem("", true);
         this.ldap_url = new StringValueItem("", true);
+        this.ldap_verify_cert = new BoolValueItem(true, true);
         this.email_host = new StringValueItem("", true);
         this.email_identity = new StringValueItem("", true);
         this.email_from = new StringValueItem("", true);
@@ -95,6 +98,7 @@ export class Configuration {
         this.email_ssl = new BoolValueItem(false, true);
         this.email_username = new StringValueItem("", true);
         this.email_password = new StringValueItem("", true);
+        this.email_insecure = new BoolValueItem(false, true);
         this.token_expiration = new NumberValueItem(30, true);
         this.cfg_expiration = new NumberValueItem(30, true);
         this.verify_remote_cert = new BoolValueItem(false, true);

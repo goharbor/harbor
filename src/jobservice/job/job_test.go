@@ -55,8 +55,8 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to create a mock admin server: %v", err)
 	}
 	defer server.Close()
-	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
-		log.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
+		log.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
 	}
 	secretKeyPath := "/tmp/secretkey"
 	_, err = test.GenerateKey(secretKeyPath)
