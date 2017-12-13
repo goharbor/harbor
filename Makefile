@@ -84,9 +84,9 @@ NOTARYFLAG=false
 REGISTRYVERSION=2.6.2-photon
 NGINXVERSION=1.11.13
 PHOTONVERSION=1.0
-NOTARYVERSION=server-0.5.0
-NOTARYSIGNERVERSION=signer-0.5.0
-MARIADBVERSION=10.2.8
+NOTARYVERSION=server-0.5.1
+NOTARYSIGNERVERSION=signer-0.5.1
+MARIADBVERSION=10.2.10
 HTTPPROXY=
 REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
@@ -214,7 +214,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 # migrator
-MIGRATORVERSION=1.2
+MIGRATORVERSION=1.3
 MIGRATORFLAG=false
 
 # cmds
@@ -224,19 +224,20 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		vmware/nginx-photon:$(NGINXVERSION) vmware/registry:$(REGISTRYVERSION) \
-		photon:$(PHOTONVERSION)
+		vmware/photon:$(PHOTONVERSION)
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
-				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME)
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
+				  $(HARBORPKG)/ha
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/upgrade $(HARBORPKG)/harbor_1_1_0_template \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/harbor.cfg
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/ha
 DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
@@ -313,7 +314,7 @@ prepare:
 
 build_common: version
 	@echo "buildging db container for photon..."
-	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
+	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) --pull -f $(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
 
 build_photon: build_common
@@ -327,7 +328,9 @@ build: build_$(BASEIMAGE)
 modify_composefile:
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@cp $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
 
 modify_sourcefiles:
 	@echo "change mode of source files."
@@ -345,6 +348,8 @@ package_online: modify_composefile
 	@if [ -n "$(REGISTRYSERVER)" ] ; then \
 		$(SEDCMD) -i 's/image\: vmware/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
 		$(HARBORPKG)/docker-compose.yml ; \
+		$(SEDCMD) -i 's/image\: vmware/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
+		$(HARBORPKG)/ha/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
@@ -363,6 +368,7 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	@cp NOTICE $(HARBORPKG)/NOTICE
 	@cp tools/migration/migration_cfg/upgrade $(HARBORPKG)/upgrade
 	@cp tools/migration/migration_cfg/harbor_1_1_0_template $(HARBORPKG)/harbor_1_1_0_template
+	@cp $(HARBORPKG)/common/db/registry.sql $(HARBORPKG)/ha/
 
 	@echo "pulling nginx and registry..."
 	@$(DOCKERPULL) vmware/registry:$(REGISTRYVERSION)
@@ -384,7 +390,8 @@ package_offline: compile build modify_sourcefiles modify_composefile
 	fi	
 
 	@echo "saving harbor docker image"
-	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) | gzip > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz
+	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
+	@gzip $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
 
 	@$(TARCMD) $(PACKAGE_OFFLINE_PARA)
 	@rm -rf $(HARBORPKG)

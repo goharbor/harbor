@@ -11,7 +11,7 @@ pipeline:
     recursive: false
 
   integration-test-on-pr:
-    image: vmware/harbor-e2e-engine:1.37
+    image: vmware/harbor-e2e-engine:1.38
     pull: true
     privileged: true
     environment:
@@ -29,13 +29,15 @@ pipeline:
       GS_PRIVATE_KEY: ${GS_PRIVATE_KEY}
       DOMAIN: ${CI_DOMAIN}
       MAIL_PWD: ${MAIL_PWD}
+      NPM_USERNAME: ${NPM_USERNAME}
+      NPM_PASSWORD: ${NPM_PASSWORD}
     commands:
       - tests/integration.sh
     when:
       status: success
 
   bundle:
-    image: vmware/harbor-e2e-engine:1.37
+    image: vmware/harbor-e2e-engine:1.38
     pull: true
     privileged: true
     environment:
@@ -46,12 +48,17 @@ pipeline:
     commands:
       - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
       - mkdir -p bundle
+      - mkdir -p pks-bundle
+      - echo $(git describe --tags) > pks-bundle/version 
       - cp harbor-offline-installer-*.tgz bundle
+      - if [ ${DRONE_BRANCH} = "master" ]; then cp harbor-offline-installer-*.tgz pks-bundle/harbor-offline-installer-latest-master.tgz; fi
+      - if ( echo ${DRONE_BRANCH} | grep "pks*" ); then cp harbor-offline-installer-*.tgz pks-bundle/harbor-offline-installer-latest-pks.tgz; fi
       - ls -la bundle
+      - ls -la pks-bundle
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ master, release-*, refs/tags/* ]
+      branch: [ master, release-*, pks-*, refs/tags/* ]
       status: success
 
   notify-slack:
@@ -91,6 +98,20 @@ pipeline:
       repo: vmware/harbor
       event: [ push, tag ]
       branch: [ release-*, refs/tags/* ]
+      status: success
+
+  publish-gcs-pks-builds:
+    image: maplain/drone-gcs:latest
+    pull: true
+    source: pks-bundle
+    target: harbor-ci-pipeline-store/latest
+    acl:
+      - allUsers:READER
+    cache_control: public,max-age=3600
+    when:
+      repo: vmware/harbor
+      event: [ push, tag ]
+      branch: [ master, pks-*, refs/tags/* ]
       status: success
 
   trigger:

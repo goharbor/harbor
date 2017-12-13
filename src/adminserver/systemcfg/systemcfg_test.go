@@ -62,6 +62,9 @@ func TestParseStringToBool(t *testing.T) {
 func TestInitCfgStore(t *testing.T) {
 	os.Clearenv()
 	path := "/tmp/config.json"
+	if err := os.Setenv("CFG_DRIVER", "json"); err != nil {
+		t.Fatalf("failed to set env: %v", err)
+	}
 	if err := os.Setenv("JSON_CFG_STORE_PATH", path); err != nil {
 		t.Fatalf("failed to set env: %v", err)
 	}
@@ -90,17 +93,26 @@ func TestLoadFromEnv(t *testing.T) {
 		t.Fatalf("failed to set env: %v", err)
 	}
 
+	if err := os.Setenv("LDAP_VERIFY_CERT", "false"); err != nil {
+		t.Fatalf("failed to set env: %v", err)
+	}
+
 	cfgs = map[string]interface{}{}
 	err = LoadFromEnv(cfgs, false)
 	assert.Nil(t, err)
 	assert.Equal(t, extEndpoint, cfgs[common.ExtEndpoint])
 	assert.Equal(t, ldapURL, cfgs[common.LDAPURL])
+	assert.Equal(t, false, cfgs[common.LDAPVerifyCert])
 
 	os.Clearenv()
 	if err := os.Setenv("LDAP_URL", ldapURL); err != nil {
 		t.Fatalf("failed to set env: %v", err)
 	}
 	if err := os.Setenv("EXT_ENDPOINT", extEndpoint); err != nil {
+		t.Fatalf("failed to set env: %v", err)
+	}
+
+	if err := os.Setenv("LDAP_VERIFY_CERT", "true"); err != nil {
 		t.Fatalf("failed to set env: %v", err)
 	}
 
@@ -111,4 +123,21 @@ func TestLoadFromEnv(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, extEndpoint, cfgs[common.ExtEndpoint])
 	assert.Equal(t, "ldap_url", cfgs[common.LDAPURL])
+	assert.Equal(t, true, cfgs[common.LDAPVerifyCert])
+}
+
+func TestGetDatabaseFromCfg(t *testing.T) {
+	cfg  :=map[string]interface{} {
+		common.DatabaseType:"mysql",
+		common.MySQLDatabase:"registry",
+		common.MySQLHost:"127.0.0.1",
+		common.MySQLPort:3306,
+		common.MySQLPassword:"1234",
+		common.MySQLUsername:"root",
+		common.SQLiteFile:"/tmp/sqlite.db",
+	}
+
+	database := GetDatabaseFromCfg(cfg)
+
+	assert.Equal(t,"mysql",database.Type)
 }

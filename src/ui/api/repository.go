@@ -618,6 +618,43 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	ra.ServeJSON()
 }
 
+// Put updates description info for the repository
+func (ra *RepositoryAPI) Put() {
+	name := ra.GetString(":splat")
+	repository, err := dao.GetRepositoryByName(name)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get repository %s: %v", name, err))
+		return
+	}
+
+	if repository == nil {
+		ra.HandleNotFound(fmt.Sprintf("repository %s not found", name))
+		return
+	}
+
+	if !ra.SecurityCtx.IsAuthenticated() {
+		ra.HandleUnauthorized()
+		return
+	}
+
+	project, _ := utils.ParseRepository(name)
+	if !ra.SecurityCtx.HasAllPerm(project) {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+
+	desc := struct {
+		Description string `json:"description"`
+	}{}
+	ra.DecodeJSONReq(&desc)
+
+	repository.Description = desc.Description
+	if err = dao.UpdateRepository(*repository); err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to update repository %s: %v", name, err))
+		return
+	}
+}
+
 //GetSignatures returns signatures of a repository
 func (ra *RepositoryAPI) GetSignatures() {
 	repoName := ra.GetString(":splat")

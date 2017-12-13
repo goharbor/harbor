@@ -7,7 +7,7 @@ services:
     networks:
       - harbor-notary
   notary-server:
-    image: vmware/notary-photon:server-0.5.0
+    image: vmware/notary-photon:server-0.5.1
     container_name: notary-server
     restart: always
     networks:
@@ -16,8 +16,6 @@ services:
       - harbor-notary
     volumes:
       - ./common/config/notary:/config
-    entrypoint: /usr/bin/env sh
-    command: -c "/migrations/migrate.sh && notary-server -config=/config/server-config.json -logf=logfmt"
     depends_on:
       - notary-db
       - notary-signer
@@ -27,7 +25,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-server"
   notary-signer:
-    image: vmware/notary-photon:signer-0.5.0
+    image: vmware/notary-photon:signer-0.5.1
     container_name: notary-signer
     restart: always
     networks:
@@ -39,8 +37,6 @@ services:
       - ./common/config/notary:/config
     env_file:
       - ./common/config/notary/signer_env
-    entrypoint: /usr/bin/env sh
-    command: -c "/migrations/migrate.sh && notary-signer -config=/config/signer-config.json -logf=logfmt"
     depends_on:
       - notary-db
     logging:
@@ -49,7 +45,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-signer"
   notary-db:
-    image: vmware/mariadb-photon:10.2.8
+    image: vmware/mariadb-photon:10.2.10
     container_name: notary-db
     restart: always
     networks:

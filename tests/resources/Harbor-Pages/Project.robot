@@ -98,6 +98,27 @@ Delete Repo
     Click Element  xpath=//clr-modal//div[@class="modal-dialog"]//button[2]
     Sleep  2
 
+Delete Project
+    [Arguments]  ${projname}
+    Sleep  1
+    Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow
+    Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow//button[contains(.,'Delete')]
+    #click delete button to confirm
+    Sleep  1
+    Click Element  //confiramtion-dialog//button[contains(.,'DELETE')]
+
+Project Should Not Be Deleted
+    [Arguments]  ${projname}
+    Delete Project  ${projname}
+    Sleep  1
+    Page Should Contain  ${projname}
+
+Project Should Be Deleted
+    [Arguments]  ${projname}
+    Delete Project  ${projname}
+    Sleep  2
+    Page Should Not Contain  ${projname}
+
 Advanced Search Should Display
     Page Should Contain Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
 
@@ -140,12 +161,13 @@ Do Log Advanced Search
     #others
     Click Element  xpath=//audit-log//clr-dropdown/button
     Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Others")]
-   	Sleep  1
-    Click element  xpath=//audit-log//hbr-filter//clr-icon
-    Input Text  xpath = //audit-log//hbr-filter//input  harbor
     Sleep  1
-    ${c} =  Get Matching Xpath Count  //audit-log//clr-dg-row
-    Should be equal as integers  ${c}  0
+    Click Element  xpath=//audit-log//hbr-filter//clr-icon
+    Input Text  xpath=//audit-log//hbr-filter//input  harbor
+    Sleep  1
+    Capture Page Screenshot  LogAdvancedSearch2.png
+    ${rc} =  Get Matching Xpath Count  //audit-log//clr-dg-row
+    Should Be Equal As Integers  ${rc}  0
 
 Expand Repo
     [Arguments]  ${projectname}

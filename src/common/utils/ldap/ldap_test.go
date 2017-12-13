@@ -17,6 +17,7 @@ package ldap
 import (
 	//"fmt"
 	//"strings"
+
 	"os"
 	"testing"
 
@@ -65,6 +66,45 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.AdminInitialPassword: "password",
 }
 
+var adminServerDefaultConfigWithVerifyCert = map[string]interface{}{
+	common.ExtEndpoint:                "https://host01.com",
+	common.AUTHMode:                   common.LDAPAuth,
+	common.DatabaseType:               "mysql",
+	common.MySQLHost:                  "127.0.0.1",
+	common.MySQLPort:                  3306,
+	common.MySQLUsername:              "root",
+	common.MySQLPassword:              "root123",
+	common.MySQLDatabase:              "registry",
+	common.SQLiteFile:                 "/tmp/registry.db",
+	common.SelfRegistration:           true,
+	common.LDAPURL:                    "ldap://127.0.0.1:389",
+	common.LDAPSearchDN:               "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:              "admin",
+	common.LDAPBaseDN:                 "dc=example,dc=com",
+	common.LDAPUID:                    "uid",
+	common.LDAPFilter:                 "",
+	common.LDAPScope:                  3,
+	common.LDAPTimeout:                30,
+	common.LDAPVerifyCert:             true,
+	common.TokenServiceURL:            "http://token_service",
+	common.RegistryURL:                "http://registry",
+	common.EmailHost:                  "127.0.0.1",
+	common.EmailPort:                  25,
+	common.EmailUsername:              "user01",
+	common.EmailPassword:              "password",
+	common.EmailFrom:                  "from",
+	common.EmailSSL:                   true,
+	common.EmailIdentity:              "",
+	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
+	common.MaxJobWorkers:              3,
+	common.TokenExpiration:            30,
+	common.CfgExpiration:              5,
+	common.AdminInitialPassword:       "password",
+	common.AdmiralEndpoint:            "http://www.vmware.com",
+	common.WithNotary:                 false,
+	common.WithClair:                  false,
+}
+
 func TestMain(t *testing.T) {
 	server, err := test.NewAdminserver(adminServerLdapTestConfig)
 	if err != nil {
@@ -72,8 +112,8 @@ func TestMain(t *testing.T) {
 	}
 	defer server.Close()
 
-	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
-		t.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
+		t.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
 	}
 
 	secretKeyPath := "/tmp/secretkey"
@@ -125,6 +165,7 @@ func TestGetSystemLdapConf(t *testing.T) {
 }
 
 func TestValidateLdapConf(t *testing.T) {
+
 	testLdapConfig, err := GetSystemLdapConf()
 	if err != nil {
 		t.Fatalf("failed to get system ldap config %v", err)
@@ -138,6 +179,7 @@ func TestValidateLdapConf(t *testing.T) {
 }
 
 func TestMakeFilter(t *testing.T) {
+
 	testLdapConfig, err := GetSystemLdapConf()
 
 	if err != nil {
@@ -252,5 +294,28 @@ func TestSearchUser(t *testing.T) {
 
 	if ldapUsers[0].Username != "test" {
 		t.Errorf("unexpected ldap user search result: %s = %s", "ldapUsers[0].Username", ldapUsers[0].Username)
+	}
+}
+
+func TestSearchAndImportUser(t *testing.T) {
+
+	userID, err := SearchAndImportUser("test")
+
+	if err != nil {
+		t.Fatalf("Failed on error : %v ", err)
+	}
+
+	if userID <= 0 {
+		t.Fatalf("userID= %v", userID)
+	}
+}
+
+func TestSearchAndImportUserNotExist(t *testing.T) {
+
+	userID, _ := SearchAndImportUser("notexist")
+
+	if userID > 0 {
+		t.Fatal("Can not import a non exist ldap user!")
+		t.Fail()
 	}
 }

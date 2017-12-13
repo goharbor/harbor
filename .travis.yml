@@ -19,7 +19,7 @@ env:
   MYSQL_PWD: root123
   MYSQL_DATABASE: registry
   SQLITE_FILE: /tmp/registry.db
-  ADMIN_SERVER_URL: http://127.0.0.1:8888
+  ADMINSERVER_URL: http://127.0.0.1:8888
   DOCKER_COMPOSE_VERSION: 1.7.1
   HARBOR_ADMIN: admin
   HARBOR_ADMIN_PASSWD: Harbor12345 
@@ -97,7 +97,8 @@ script:
   - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
   - docker-compose -f make/docker-compose.test.yml down
-  - sudo rm -rf /data/config/*  
+  - sudo rm -rf /data/config/*
+  - sudo rm -rf /data/database/*
   - ls /data/cert
   - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true CLAIRFLAG=true
   - sleep 10  

@@ -57,7 +57,7 @@ ui:
 ```
 * Recreate Harbor containers
 ```docker
-    docker-compose down -v & docker-compose up -d
+    docker-compose down -v && docker-compose up -d
 ```
 
 * Because a session ID is usually required by Harbor API, **you should log in first from a browser.**

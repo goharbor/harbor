@@ -94,18 +94,19 @@ insert into project_member (project_id, user_id, role, creation_time, update_tim
 (1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 create table project_metadata (
+ id INTEGER PRIMARY KEY,
  project_id int NOT NULL,
  name varchar(255) NOT NULL,
  value varchar(255),
  creation_time timestamp,
  update_time timestamp,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
- PRIMARY KEY (project_id, name),
+ UNIQUE(project_id, name) ON CONFLICT REPLACE,
  FOREIGN KEY (project_id) REFERENCES project(project_id)
 );
 
-insert into project_metadata (project_id, name, value, creation_time, update_time, deleted) values
-(1, 'public', 'true', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0);
+insert into project_metadata (id, project_id, name, value, creation_time, update_time, deleted) values
+(1, 1, 'public', 'true', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0);
 
 create table access_log (
  log_id INTEGER PRIMARY KEY,
@@ -223,13 +224,14 @@ UNIQUE(namespace)
 );
 
 create table properties (
+ id INTEGER PRIMARY KEY,
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
- primary key (k)
+ UNIQUE(k)
  );
 
 create table alembic_version (
     version_num varchar(32) NOT NULL
 );
 
-insert into alembic_version values ('0.3.0');
+insert into alembic_version values ('1.3.0');

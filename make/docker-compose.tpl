@@ -3,13 +3,12 @@ services:
   log:
     image: vmware/harbor-log:__version__
     container_name: harbor-log 
-    env_file:
-      - ./common/config/log/env
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/:z
+      - ./common/config/log/:/etc/logrotate.d/:z
     ports:
-      - 127.0.0.1:1514:514
+      - 127.0.0.1:1514:10514
     networks:
       - harbor
   registry:

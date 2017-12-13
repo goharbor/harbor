@@ -1,16 +1,28 @@
-FROM vmware/rsyslog-photon:8.15.0
+FROM vmware/photon:1.0
 
-ADD make/common/log/rsyslog.conf /etc/rsyslog.conf
+RUN tdnf distro-sync -y \
+    && tdnf install -y cronie rsyslog logrotate shadow tar gzip sudo net-tools\
+    && mkdir /etc/rsyslog.d/ \
+    && mkdir /var/spool/rsyslog \
+    && groupadd -r -g 10000 syslog && useradd --no-log-init -r -g 10000 -u 10000 syslog \
+    && tdnf clean all
 
-# rotate logs weekly
-# notes: file name cannot contain dot, or the script will not run
-ADD make/common/log/rotate.sh /etc/cron.daily/rotate
+COPY rsyslog.conf /etc/rsyslog.conf
 
 # rsyslog configuration file for docker
-ADD make/common/log/rsyslog_docker.conf /etc/rsyslog.d/
+COPY rsyslog_docker.conf /etc/rsyslog.d/
 
-VOLUME /var/log/docker/
+# run logrotate hourly
+RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/logrotate
 
-EXPOSE 514
+COPY start.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/start.sh && \
+    chown -R 10000:10000 /etc/rsyslog.conf /etc/rsyslog.d/ /run 
 
-CMD crond && rm -f /var/run/rsyslogd.pid && rsyslogd -n
+HEALTHCHECK CMD netstat -ltu|grep 10514
+
+VOLUME /var/log/docker/ /run/ /etc/logrotate.d/
+
+EXPOSE 10514
+
+CMD /usr/local/bin/start.sh

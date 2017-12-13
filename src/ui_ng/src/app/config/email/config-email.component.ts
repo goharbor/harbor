@@ -23,13 +23,17 @@ import { Configuration } from 'harbor-ui';
 })
 export class ConfigurationEmailComponent {
     @Input("mailConfig") currentConfig: Configuration = new Configuration();
-    
+
     @ViewChild("mailConfigFrom") mailForm: NgForm;
 
     constructor() { }
 
     disabled(prop: any): boolean {
         return !(prop && prop.editable);
+    }
+
+    setInsecureValue($event: any) {
+        this.currentConfig.email_insecure.value = !$event;
     }
 
     public isValid(): boolean {

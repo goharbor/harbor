@@ -40,11 +40,11 @@ Push image
     Log To Console  \nRunning docker push ${image}...
     ${rc}=  Run And Return Rc  docker pull ${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker tag ${image} ${ip}/${project}/${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
 
@@ -53,11 +53,11 @@ Push Image With Tag
     Log To Console  \nRunning docker push ${image}...
     ${rc}=  Run And Return Rc  docker pull ${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker tag ${image} ${tag}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${tag}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
 
@@ -66,7 +66,15 @@ Cannot Pull image
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/${project}/${image}
-    Log To Console  ${output}
+    Log  ${output}
+    Should Not Be Equal As Integers  ${rc}  0
+
+Cannot Pull Unsigned Image
+    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}  
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pass} ${ip}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/${proj}/${imagewithtag}
+    Should Contain  ${output}  The image is not signed in Notary
     Should Not Be Equal As Integers  ${rc}  0
 
 Cannot Push image
@@ -74,11 +82,11 @@ Cannot Push image
     Log To Console  \nRunning docker push ${image}...
     ${rc}=  Run And Return Rc  docker pull ${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker tag ${image} ${ip}/${project}/${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}
-    Log To Console  ${output}
+    Log  ${output}
     Should Not Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
 
@@ -124,3 +132,9 @@ Kill Local Docker Daemon
     Process Should Be Stopped  ${handle}
     ${rc}=  Run And Return Rc  kill -9 ${dockerd-pid}
     Should Be Equal As Integers  ${rc}  0
+
+Docker Login Fail
+    [Arguments]  ${ip}  ${user}  ${pwd}
+    Log To Console  \nRunning docker login ${ip} ...
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
+    Should Not Be Equal As Integers  ${rc}  0

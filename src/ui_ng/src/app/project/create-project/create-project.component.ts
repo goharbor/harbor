@@ -71,10 +71,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   constructor(private projectService: ProjectService,
     private translateService: TranslateService,
     private messageHandlerService: MessageHandlerService) { }
-
-  public get accessLevelDisplayText(): string {
-    return this.project.metadata.public ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE';
-  }
+  
 
   ngOnInit(): void {
     this.proNameChecker

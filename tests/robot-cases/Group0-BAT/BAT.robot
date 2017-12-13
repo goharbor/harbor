@@ -19,7 +19,7 @@ Suite Setup  Install Harbor to Test Server
 Default Tags  BAT
 
 *** Variables ***
-${HARBOR_URL}  http://localhost
+${HARBOR_URL}  https://${ip}
 
 *** Test Cases ***
 Test Case - Create An New User
@@ -84,7 +84,7 @@ Test Case - User View Logs
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
 				
-   Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
+    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
 
     Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
@@ -135,6 +135,37 @@ Test Case - Manage project publicity
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  userb${d}  Test1@34
     Project Should Display  project${d}
+    Close Browser
+
+Test Case - Project Level Policy Public
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Go Into Project  project${d}
+    Goto Project Config
+    Click Project Public
+    Save Project Config
+    #verify
+    Public Should Be Selected 
+    Back To Projects
+    #project${d}  default should be private
+    Project Should Be Public  project${d}
+    Close Browser
+
+Test Case - Project Level Policy Content Trust
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Push Image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  hello-world:latest
+    Go Into Project  project${d}
+    Goto Project Config
+    Click Content Trust
+    Save Project Config
+    #verify
+    Content Trust Should Be Selected
+    Cannot Pull Unsigned Image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  hello-world:latest
     Close Browser
 
 Test Case - Edit Project Creation
@@ -227,7 +258,7 @@ Test Case - Scan A Tag
     Summary Chart Should Display  latest
     Close Browser
 
-Test Case-Manage Project Member
+Test Case - Manage Project Member
     Init Chrome Driver
     ${d}=    Get current Date  result_format=%m%s
 
@@ -253,6 +284,18 @@ Test Case-Manage Project Member
 
     Close Browser
 
+Test Case - Delete A Project
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New Project With New User  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  tester${d}  Test1@34  harobr  project${d}  false
+    Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world  
+    Project Should Not Be Deleted  project${d}
+    Go Into Project  project${d}
+    Delete Repo  project${d}
+    Back To projects
+    Project Should Be Deleted  project${d}
+    Close Browser
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -266,42 +309,15 @@ Test Case - Assign Sys Admin
     Administration Tag Should Display
     Close Browser
 
-Test Case - Ldap Sign in and out
-    Switch To LDAP
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-    Switch To Configure
-    Init LDAP
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  user001  user001
-    Close Browser
-
-Test Case - Ldap User Create Project
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  user001  user001
-    Create An New Project  project${d}
-    Close Browser
-
-Test Case - Ldap User Push An Image
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  user001  user001
-    Create An New Project  project${d}
-    Push Image  ${ip}  user001  user001  project${d}  hello-world:latest
-    Go Into Project  project${d}
-    Wait Until Page Contains  project${d}/hello-world
-    Close Browser
-
 Test Case - Admin Push Signed Image
-    Switch To Notary
+    Enabe Notary Client
 
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
-    Log To Console  ${output}
+    Log  ${output}
 		
     Push image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  library  hello-world:latest
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
     ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
@@ -313,5 +329,45 @@ Test Case - Admin Push Un-Signed Image
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
     Log To Console  ${output}
 
+Test Case - Ldap Verify Cert
+    Switch To LDAP
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Switch To Configure
+    Test Ldap Connection
+    Close Browser
+
+Test Case - Ldap Sign in and out
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Switch To Configure
+    Init LDAP
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
+    Close Browser
+
+Test Case - Ldap User Create Project
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
+    Create An New Project  project${d}
+    Close Browser
+
+Test Case - Ldap User Push An Image
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
+    Create An New Project  project${d}
+    
+    Push Image  ${ip}  mike  zhu88jie  project${d}  hello-world:latest
+    Go Into Project  project${d}
+    Wait Until Page Contains  project${d}/hello-world
+    Close Browser
+
+Test Case - Ldap User Can Not login
+    Docker Login Fail  ${ip}  test  123456
+
 Test Case - Clean Harbor Images	
-    Down Harbor  with_notary=true
+    Down Harbor
+
+
