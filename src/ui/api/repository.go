@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
@@ -63,6 +64,11 @@ type tagDetail struct {
 	DockerVersion string    `json:"docker_version"`
 	Author        string    `json:"author"`
 	Created       time.Time `json:"created"`
+	Config        *cfg      `json:"config"`
+}
+
+type cfg struct {
+	Labels map[string]string `json:"labels"`
 }
 
 type tagResp struct {
@@ -458,6 +464,14 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 
 	if err = json.Unmarshal(configData, detail); err != nil {
 		return detail, err
+	}
+
+	if len(detail.Author) == 0 && detail.Config != nil {
+		for k, v := range detail.Config.Labels {
+			if strings.ToLower(k) == "maintainer" {
+				detail.Author = v
+			}
+		}
 	}
 
 	return detail, nil
