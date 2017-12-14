@@ -72,7 +72,7 @@ func init() {
 }
 
 // TestMain is a sample to run an endpoint test
-func TestMain(t *testing.T) {
+func TestAll(t *testing.T) {
 	assert := assert.New(t)
 
 	//	v := url.Values{}

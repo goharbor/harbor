@@ -88,31 +88,31 @@ var adminServerDefaultConfigWithVerifyCert = map[string]interface{}{
 	common.WithClair:                  false,
 }
 
-func TestMain(t *testing.T) {
+func TestMain(m *testing.M) {
 	server, err := test.NewAdminserver(adminServerLdapTestConfig)
 	if err != nil {
-		t.Fatalf("failed to create a mock admin server: %v", err)
+		log.Fatalf("failed to create a mock admin server: %v", err)
 	}
 	defer server.Close()
 
 	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
-		t.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
+		log.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
 	}
 
 	secretKeyPath := "/tmp/secretkey"
 	_, err = test.GenerateKey(secretKeyPath)
 	if err != nil {
-		t.Errorf("failed to generate secret key: %v", err)
+		log.Errorf("failed to generate secret key: %v", err)
 		return
 	}
 	defer os.Remove(secretKeyPath)
 
 	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
-		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
+		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
 	if err := uiConfig.Init(); err != nil {
-		t.Fatalf("failed to initialize configurations: %v", err)
+		log.Fatalf("failed to initialize configurations: %v", err)
 	}
 
 	database, err := uiConfig.Database()
@@ -123,6 +123,9 @@ func TestMain(t *testing.T) {
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
+
+	os.Exit(m.Run())
+
 }
 
 func TestLoadSystemLdapConfig(t *testing.T) {
@@ -173,10 +176,21 @@ func TestCreateUIConfig(t *testing.T) {
 				LdapScope: 1,
 				LdapURL:   "ldaps://127.0.0.1",
 			}, 0},
+		{
+			models.LdapConf{
+				LdapScope: 1,
+				LdapURL:   "ldaps://127.0.0.1:abc",
+			}, -1},
 	}
 
 	for _, val := range testConfigs {
 		session, err := CreateWithUIConfig(val.config)
+		if val.internalValue < 0 {
+			if err == nil {
+				t.Fatalf("Should have error with url :%v", val.config)
+			}
+			continue
+		}
 		if err != nil {
 			t.Fatalf("Can not create with ui config, err:%v", err)
 		}
@@ -212,22 +226,6 @@ func TestSearchUser(t *testing.T) {
 
 }
 
-func InitTest(ldapTestConfig map[string]interface{}, t *testing.T) {
-	server, err := test.NewAdminserver(ldapTestConfig)
-	if err != nil {
-		t.Fatalf("failed to create a mock admin server: %v", err)
-	}
-	defer server.Close()
-
-	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
-		t.Fatalf("failed to set env %s:%v", "ADMIN_SERVER_URL", err)
-	}
-
-	if err := uiConfig.Init(); err != nil {
-		t.Fatalf("failed to initialize configurations: %v ", err)
-	}
-}
-
 func TestFormatURL(t *testing.T) {
 
 	var invalidURL = "http://localhost:389"
@@ -246,10 +244,17 @@ func TestFormatURL(t *testing.T) {
 		{"ldaps://127.0.0.1:389", "ldaps://127.0.0.1:389"},
 		{"ldap://127.0.0.1:636", "ldaps://127.0.0.1:636"},
 		{"112.122.122.122", "ldap://112.122.122.122:389"},
+		{"ldap:\\wrong url", ""},
 	}
 
 	for _, u := range urls {
 		goodURL, err := formatURL(u.rawURL)
+		if u.goodURL == "" {
+			if err == nil {
+				t.Fatalf("Should failed on wrong url, %v", u.rawURL)
+			}
+			continue
+		}
 		if err != nil || goodURL != u.goodURL {
 			t.Fatalf("Faild on URL: raw=%v, expected:%v, actual:%v", u.rawURL, u.goodURL, goodURL)
 		}
