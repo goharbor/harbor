@@ -48,16 +48,17 @@ pipeline:
     commands:
       - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
       - mkdir -p bundle
-      - mkdir -p latest
-      - echo $(git describe --tags) > latest/version 
+      - mkdir -p pks-bundle
+      - echo $(git describe --tags) > pks-bundle/version 
       - cp harbor-offline-installer-*.tgz bundle
-      - if [ ${DRONE_BRANCH} = "master" ]; then cp harbor-offline-installer-*.tgz latest/harbor-offline-installer-latest-master.tgz; else cp harbor-offline-installer-*.tgz latest/harbor-offline-installer-latest-release.tgz; fi
+      - if [ ${DRONE_BRANCH} = "master" ]; then cp harbor-offline-installer-*.tgz pks-bundle/harbor-offline-installer-latest-master.tgz; fi
+      - if ( echo ${DRONE_BRANCH} | grep "pks*" ); then cp harbor-offline-installer-*.tgz pks-bundle/harbor-offline-installer-latest-pks.tgz; fi
       - ls -la bundle
-      - ls -la latest
+      - ls -la pks-bundle
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ master, release-*, refs/tags/* ]
+      branch: [ master, release-*, pks-*, refs/tags/* ]
       status: success
 
   notify-slack:
@@ -99,10 +100,10 @@ pipeline:
       branch: [ release-*, refs/tags/* ]
       status: success
 
-  publish-gcs-latest:
+  publish-gcs-pks-builds:
     image: maplain/drone-gcs:latest
     pull: true
-    source: latest
+    source: pks-bundle
     target: harbor-ci-pipeline-store/latest
     acl:
       - allUsers:READER
@@ -110,7 +111,7 @@ pipeline:
     when:
       repo: vmware/harbor
       event: [ push, tag ]
-      branch: [ master, release-*, refs/tags/* ]
+      branch: [ master, pks-*, refs/tags/* ]
       status: success
 
   trigger:
