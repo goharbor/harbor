@@ -41,8 +41,6 @@ Regression Test With DB
     ${d}=    Get Current Date    result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
     Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
-    Go Into Project  project${d}
-    Wait Until Page Contains  project${d}/busybox
     Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Close Browser
 
