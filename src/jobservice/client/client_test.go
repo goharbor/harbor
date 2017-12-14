@@ -49,7 +49,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestSubmitReplicationJob(t *testing.T) {
-	client := NewDefaultClient(url)
+	client := NewDefaultClient(url, &Config{})
 	err := client.SubmitReplicationJob(&api.ReplicationReq{})
 	assert.Nil(t, err)
 }

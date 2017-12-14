@@ -24,7 +24,8 @@ import (
 	"strings"
 
 	"github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
-	httpclient "github.com/vmware/harbor/src/common/http/client"
+	common_http "github.com/vmware/harbor/src/common/http"
+	"github.com/vmware/harbor/src/common/http/modifier/auth"
 	"github.com/vmware/harbor/src/common/utils"
 )
 
@@ -43,21 +44,32 @@ type Client interface {
 }
 
 // NewClient return an instance of Adminserver client
-func NewClient(baseURL string, c httpclient.Client) Client {
+func NewClient(baseURL string, cfg *Config) Client {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.Contains(baseURL, "://") {
 		baseURL = "http://" + baseURL
 	}
-	return &client{
+	client := &client{
 		baseURL: baseURL,
-		client:  c,
 	}
+	if cfg != nil {
+		authorizer := auth.NewSecretAuthorizer(cfg.Secret)
+		client.client = common_http.NewClient(nil, authorizer)
+	}
+	return client
 }
 
 type client struct {
 	baseURL string
-	client  httpclient.Client
+	client  *common_http.Client
 }
+
+// Config contains configurations needed for client
+type Config struct {
+	Secret string
+}
+
+// TODO refactor the codes with methods of common_http.Client
 
 // do creates request and authorizes it if authorizer is not nil
 func (c *client) do(method, relativePath string, body io.Reader) (*http.Response, error) {

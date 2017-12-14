@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/jobservice/api"
+	"github.com/vmware/harbor/src/jobservice/client"
 )
 
 type fakeJobserviceClient struct{}
@@ -28,7 +29,7 @@ func (f *fakeJobserviceClient) SubmitReplicationJob(replication *api.Replication
 }
 
 func TestReplicate(t *testing.T) {
-	replicator := NewDefaultReplicator("http://jobservice")
+	replicator := NewDefaultReplicator("http://jobservice", &client.Config{})
 	replicator.client = &fakeJobserviceClient{}
 	assert.Nil(t, replicator.Replicate(&api.ReplicationReq{}))
 }

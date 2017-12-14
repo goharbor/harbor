@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	commonhttp "github.com/vmware/harbor/src/common/http"
-	"github.com/vmware/harbor/src/common/http/client"
+	"github.com/vmware/harbor/src/common/http/modifier/auth"
 	"github.com/vmware/harbor/src/jobservice/api"
 )
 
@@ -33,21 +33,22 @@ type Client interface {
 // DefaultClient provides a default implement for the interface Client
 type DefaultClient struct {
 	endpoint string
-	client   client.Client
+	client   *commonhttp.Client
+}
+
+// Config contains configuration items needed for DefaultClient
+type Config struct {
+	Secret string
 }
 
 // NewDefaultClient returns an instance of DefaultClient
-func NewDefaultClient(endpoint string, client ...client.Client) *DefaultClient {
+func NewDefaultClient(endpoint string, cfg *Config) *DefaultClient {
 	c := &DefaultClient{
 		endpoint: endpoint,
 	}
 
-	if len(client) > 0 {
-		c.client = client[0]
-	}
-
-	if c.client == nil {
-		c.client = &http.Client{}
+	if cfg != nil {
+		c.client = commonhttp.NewClient(nil, auth.NewSecretAuthorizer(cfg.Secret))
 	}
 
 	return c
@@ -62,12 +63,7 @@ func (d *DefaultClient) SubmitReplicationJob(replication *api.ReplicationReq) er
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, url, buffer)
-	if err != nil {
-		return err
-	}
-
-	resp, err := d.client.Do(req)
+	resp, err := d.client.Post(url, "application/json", buffer)
 	if err != nil {
 		return err
 	}

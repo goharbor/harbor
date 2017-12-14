@@ -25,8 +25,6 @@ import (
 	"github.com/vmware/harbor/src/adminserver/client"
 	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
-	httpclient "github.com/vmware/harbor/src/common/http/client"
-	"github.com/vmware/harbor/src/common/http/client/auth"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -74,8 +72,10 @@ func Init() error {
 // InitByURL Init configurations with given url
 func InitByURL(adminServerURL string) error {
 	log.Infof("initializing client for adminserver %s ...", adminServerURL)
-	authorizer := auth.NewSecretAuthorizer(UISecret())
-	AdminserverClient = client.NewClient(adminServerURL, httpclient.NewAuthorizedClient(authorizer))
+	cfg := &client.Config{
+		Secret: UISecret(),
+	}
+	AdminserverClient = client.NewClient(adminServerURL, cfg)
 	if err := AdminserverClient.Ping(); err != nil {
 		return fmt.Errorf("failed to ping adminserver: %v", err)
 	}

@@ -15,9 +15,8 @@
 package replicator
 
 import (
-	"github.com/vmware/harbor/src/common/http/client"
 	"github.com/vmware/harbor/src/jobservice/api"
-	jobserviceclient "github.com/vmware/harbor/src/jobservice/client"
+	"github.com/vmware/harbor/src/jobservice/client"
 )
 
 // Replicator submits the replication work to the jobservice
@@ -27,13 +26,13 @@ type Replicator interface {
 
 // DefaultReplicator provides a default implement for Replicator
 type DefaultReplicator struct {
-	client jobserviceclient.Client
+	client client.Client
 }
 
 // NewDefaultReplicator returns an instance of DefaultReplicator
-func NewDefaultReplicator(endpoint string, client ...client.Client) *DefaultReplicator {
+func NewDefaultReplicator(endpoint string, cfg *client.Config) *DefaultReplicator {
 	return &DefaultReplicator{
-		client: jobserviceclient.NewDefaultClient(endpoint, client...),
+		client: client.NewDefaultClient(endpoint, cfg),
 	}
 }
 

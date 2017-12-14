@@ -21,34 +21,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAuthorizeOfCookieAuthorizer(t *testing.T) {
-	name, value := "name", "value"
-	authorizer := NewCookieAuthorizer(name, value)
-
-	// nil request
-	require.NotNil(t, authorizer.Authorize(nil))
-
-	// valid request
-	req, err := http.NewRequest("", "", nil)
-	require.Nil(t, err)
-	require.Nil(t, authorizer.Authorize(req))
-	require.Equal(t, 1, len(req.Cookies()))
-	v, err := req.Cookie(name)
-	require.Nil(t, err)
-	assert.Equal(t, value, v.Value)
-}
-
 func TestAuthorizeOfSecretAuthorizer(t *testing.T) {
 	secret := "secret"
 	authorizer := NewSecretAuthorizer(secret)
 
 	// nil request
-	require.NotNil(t, authorizer.Authorize(nil))
+	require.NotNil(t, authorizer.Modify(nil))
 
 	// valid request
 	req, err := http.NewRequest("", "", nil)
 	require.Nil(t, err)
-	require.Nil(t, authorizer.Authorize(req))
+	require.Nil(t, authorizer.Modify(req))
 	require.Equal(t, 1, len(req.Cookies()))
 	v, err := req.Cookie(secretCookieName)
 	require.Nil(t, err)

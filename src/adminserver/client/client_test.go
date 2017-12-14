@@ -16,7 +16,6 @@ package client
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"testing"
 
@@ -35,7 +34,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	c = NewClient(server.URL, &http.Client{})
+	c = NewClient(server.URL, &Config{})
 
 	os.Exit(m.Run())
 }

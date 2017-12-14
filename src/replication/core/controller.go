@@ -18,11 +18,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/http/client"
-	"github.com/vmware/harbor/src/common/http/client/auth"
 	common_models "github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice/api"
+	"github.com/vmware/harbor/src/jobservice/client"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 	"github.com/vmware/harbor/src/replication/policy"
@@ -85,8 +84,10 @@ func NewDefaultController(cfg ControllerConfig) *DefaultController {
 
 	// TODO read from configuration
 	endpoint := "http://jobservice:8080"
-	client := client.NewAuthorizedClient(auth.NewSecretAuthorizer(config.UISecret()))
-	ctl.replicator = replicator.NewDefaultReplicator(endpoint, client)
+	ctl.replicator = replicator.NewDefaultReplicator(endpoint,
+		&client.Config{
+			Secret: config.UISecret(),
+		})
 
 	return ctl
 }
