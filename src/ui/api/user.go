@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -160,16 +161,9 @@ func (ua *UserAPI) List() {
 
 // Put ...
 func (ua *UserAPI) Put() {
-	ldapAdminUser := (ua.AuthMode == "ldap_auth" && ua.userID == 1 && ua.userID == ua.currentUserID)
-
-	if !(ua.AuthMode == "db_auth" || ldapAdminUser) {
-		ua.CustomAbort(http.StatusForbidden, "")
-	}
-	if !ua.IsAdmin {
-		if ua.userID != ua.currentUserID {
-			log.Warning("Guests can only change their own account.")
-			ua.CustomAbort(http.StatusForbidden, "Guests can only change their own account.")
-		}
+	if !ua.modifiable() {
+		ua.RenderError(http.StatusForbidden, fmt.Sprintf("User with ID %d cannot be modified", ua.userID))
+		return
 	}
 	user := models.User{UserID: ua.userID}
 	ua.DecodeJSONReq(&user)
@@ -210,7 +204,7 @@ func (ua *UserAPI) Put() {
 // Post ...
 func (ua *UserAPI) Post() {
 
-	if !(ua.AuthMode == "db_auth") {
+	if !(ua.AuthMode == common.DBAuth) {
 		ua.CustomAbort(http.StatusForbidden, "")
 	}
 
@@ -258,22 +252,8 @@ func (ua *UserAPI) Post() {
 
 // Delete ...
 func (ua *UserAPI) Delete() {
-	if !ua.IsAdmin {
-		log.Warningf("current user, id: %d does not have admin role, can not remove user", ua.currentUserID)
-		ua.RenderError(http.StatusForbidden, "User does not have admin role")
-		return
-	}
-
-	if ua.AuthMode == "ldap_auth" {
-		ua.CustomAbort(http.StatusForbidden, "user can not be deleted in LDAP authentication mode")
-	}
-
-	if ua.currentUserID == ua.userID {
-		ua.CustomAbort(http.StatusForbidden, "can not delete yourself")
-	}
-
-	if ua.userID == 1 {
-		ua.HandleForbidden(ua.SecurityCtx.GetUsername())
+	if !ua.IsAdmin || ua.AuthMode != common.DBAuth || ua.userID == 1 || ua.currentUserID == ua.userID {
+		ua.RenderError(http.StatusForbidden, fmt.Sprintf("User with ID: %d cannot be removed, auth mode: %s, current user ID: %d", ua.userID, ua.AuthMode, ua.currentUserID))
 		return
 	}
 
@@ -288,17 +268,9 @@ func (ua *UserAPI) Delete() {
 
 // ChangePassword handles PUT to /api/users/{}/password
 func (ua *UserAPI) ChangePassword() {
-	ldapAdminUser := (ua.AuthMode == "ldap_auth" && ua.userID == 1 && ua.userID == ua.currentUserID)
-
-	if !(ua.AuthMode == "db_auth" || ldapAdminUser) {
-		ua.CustomAbort(http.StatusForbidden, "")
-	}
-
-	if !ua.IsAdmin {
-		if ua.userID != ua.currentUserID {
-			log.Error("Guests can only change their own account.")
-			ua.CustomAbort(http.StatusForbidden, "Guests can only change their own account.")
-		}
+	if !ua.modifiable() {
+		ua.RenderError(http.StatusForbidden, fmt.Sprintf("User with ID: %d is not modifiable", ua.userID))
+		return
 	}
 
 	var req passwordReq
@@ -343,6 +315,18 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 		log.Errorf("Error occurred in ToggleUserAdminRole: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
+}
+
+// modifiable returns whether the modify is allowed based on current auth mode and context
+func (ua *UserAPI) modifiable() bool {
+	if ua.AuthMode == common.DBAuth {
+		//When the auth mode is local DB, admin can modify anyone, non-admin can modify himself.
+		return ua.IsAdmin || ua.userID == ua.currentUserID
+	}
+	//When the auth mode is external IDM backend, only the super user can modify himself,
+	//because he's the only one whose information is stored in local DB.
+	return ua.userID == 1 && ua.userID == ua.currentUserID
+
 }
 
 // validate only validate when user register

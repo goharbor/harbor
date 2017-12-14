@@ -52,6 +52,11 @@ func GetUser(query models.User) (*models.User, error) {
 		queryParam = append(queryParam, query.ResetUUID)
 	}
 
+	if query.Email != "" {
+		sql += ` and email = ? `
+		queryParam = append(queryParam, query.Email)
+	}
+
 	var u []models.User
 	n, err := o.Raw(sql, queryParam).QueryRows(&u)
 

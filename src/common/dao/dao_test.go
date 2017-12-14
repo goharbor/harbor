@@ -20,8 +20,8 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/vmware/harbor/src/common"
 	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -305,6 +305,7 @@ var currentUser *models.User
 func TestGetUser(t *testing.T) {
 	queryUser := models.User{
 		Username: username,
+		Email:    "tester01@vmware.com",
 	}
 	var err error
 	currentUser, err = GetUser(queryUser)
@@ -1632,36 +1633,35 @@ func TestGetScanJobsByStatus(t *testing.T) {
 	assert.Equal(sj1.Repository, r2[0].Repository)
 }
 
-
-func TestSaveConfigEntries(t *testing.T)  {
-	configEntries :=[]models.ConfigEntry{
+func TestSaveConfigEntries(t *testing.T) {
+	configEntries := []models.ConfigEntry{
 		{
-			Key:"teststringkey",
-			Value:"192.168.111.211",
+			Key:   "teststringkey",
+			Value: "192.168.111.211",
 		},
 		{
-			Key:"testboolkey",
-			Value:"true",
+			Key:   "testboolkey",
+			Value: "true",
 		},
 		{
-			Key:"testnumberkey",
-			Value:"5",
+			Key:   "testnumberkey",
+			Value: "5",
 		},
 		{
-			Key:common.CfgDriverDB,
-			Value:"db",
+			Key:   common.CfgDriverDB,
+			Value: "db",
 		},
 	}
 	err := SaveConfigEntries(configEntries)
 	if err != nil {
 		t.Fatalf("failed to save configuration to database %v", err)
 	}
-	readEntries, err:=GetConfigEntries()
-	if err !=nil {
+	readEntries, err := GetConfigEntries()
+	if err != nil {
 		t.Fatalf("Failed to get configuration from database %v", err)
 	}
-	findItem:=0
-	for _,entry:= range readEntries{
+	findItem := 0
+	for _, entry := range readEntries {
 		switch entry.Key {
 		case "teststringkey":
 			if "192.168.111.211" == entry.Value {
@@ -1678,38 +1678,38 @@ func TestSaveConfigEntries(t *testing.T)  {
 		default:
 		}
 	}
-	if findItem !=3 {
+	if findItem != 3 {
 		t.Fatalf("Should update 3 configuration but only update %d", findItem)
 	}
 
-	configEntries =[]models.ConfigEntry{
+	configEntries = []models.ConfigEntry{
 		{
-			Key:"teststringkey",
-			Value:"192.168.111.215",
+			Key:   "teststringkey",
+			Value: "192.168.111.215",
 		},
 		{
-			Key:"testboolkey",
-			Value:"false",
+			Key:   "testboolkey",
+			Value: "false",
 		},
 		{
-			Key:"testnumberkey",
-			Value:"7",
+			Key:   "testnumberkey",
+			Value: "7",
 		},
 		{
-			Key:common.CfgDriverDB,
-			Value:"db",
+			Key:   common.CfgDriverDB,
+			Value: "db",
 		},
 	}
 	err = SaveConfigEntries(configEntries)
 	if err != nil {
 		t.Fatalf("failed to save configuration to database %v", err)
 	}
-	readEntries, err=GetConfigEntries()
-	if err !=nil {
+	readEntries, err = GetConfigEntries()
+	if err != nil {
 		t.Fatalf("Failed to get configuration from database %v", err)
 	}
-	findItem=0
-	for _,entry:= range readEntries{
+	findItem = 0
+	for _, entry := range readEntries {
 		switch entry.Key {
 		case "teststringkey":
 			if "192.168.111.215" == entry.Value {
@@ -1726,7 +1726,7 @@ func TestSaveConfigEntries(t *testing.T)  {
 		default:
 		}
 	}
-	if findItem !=3 {
+	if findItem != 3 {
 		t.Fatalf("Should update 3 configuration but only update %d", findItem)
 	}
 

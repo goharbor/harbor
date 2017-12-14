@@ -16,8 +16,11 @@ package api
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/tests/apitests/apilib"
 	"testing"
+
+	"github.com/astaxie/beego"
 )
 
 var testUser0002ID, testUser0003ID int
@@ -429,4 +432,52 @@ func TestUsersDelete(t *testing.T) {
 	} else {
 		assert.Equal(200, code, "Delete test user status should be 200")
 	}
+}
+
+func TestModifiable(t *testing.T) {
+	assert := assert.New(t)
+	base := BaseController{
+		api.BaseAPI{
+			beego.Controller{},
+		},
+		nil,
+		nil,
+	}
+
+	ua1 := &UserAPI{
+		base,
+		3,
+		4,
+		false,
+		false,
+		"db_auth",
+	}
+	assert.False(ua1.modifiable())
+	ua2 := &UserAPI{
+		base,
+		3,
+		4,
+		false,
+		true,
+		"db_auth",
+	}
+	assert.True(ua2.modifiable())
+	ua3 := &UserAPI{
+		base,
+		3,
+		4,
+		false,
+		true,
+		"ldap_auth",
+	}
+	assert.False(ua3.modifiable())
+	ua4 := &UserAPI{
+		base,
+		1,
+		1,
+		false,
+		true,
+		"ldap_auth",
+	}
+	assert.True(ua4.modifiable())
 }
