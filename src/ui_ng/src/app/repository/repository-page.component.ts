@@ -48,7 +48,7 @@ export class RepositoryPageComponent implements OnInit {
   }
 
   watchTagClickEvent(tagEvt: TagClickEvent): void {
-    let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name, 'tags', tagEvt.tag_name];
+    let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name];
     this.router.navigate(linkUrl);
   }
-}
+};

@@ -1,1 +1,0 @@
-export const LIST_REPOSITORY_STYLE = ``;
