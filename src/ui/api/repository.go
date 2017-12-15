@@ -466,15 +466,26 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 		return detail, err
 	}
 
-	if len(detail.Author) == 0 && detail.Config != nil {
+	populateAuthor(detail)
+
+	return detail, nil
+}
+
+func populateAuthor(detail *tagDetail) {
+	// has author info already
+	if len(detail.Author) > 0 {
+		return
+	}
+
+	// try to set author with the value of label "maintainer"
+	if detail.Config != nil {
 		for k, v := range detail.Config.Labels {
 			if strings.ToLower(k) == "maintainer" {
 				detail.Author = v
+				return
 			}
 		}
 	}
-
-	return detail, nil
 }
 
 // GetManifests returns the manifest of a tag
