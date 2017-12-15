@@ -15,20 +15,25 @@
 package http
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/vmware/harbor/src/common/http/modifier"
 )
 
-// Client wraps net/http.Client with modifiers, modifiers the request before sending it
+// Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.
+// Use Do instead if  those methods can not meet your requirement
 type Client struct {
 	modifiers []modifier.Modifier
 	client    *http.Client
 }
 
-// NewClient creates an instance of Client. Use net/http.Client as the default value
-// if c is nil.
+// NewClient creates an instance of Client.
+// Use net/http.Client as the default value if c is nil.
+// Modifiers modify the request before sending it.
 func NewClient(c *http.Client, modifiers ...modifier.Modifier) *Client {
 	client := &Client{
 		client: c,
@@ -54,48 +59,104 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 }
 
 // Get ...
-func (c *Client) Get(url string) (*http.Response, error) {
+func (c *Client) Get(url string, v ...interface{}) error {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return c.Do(req)
+
+	data, err := c.do(req)
+	if err != nil {
+		return err
+	}
+
+	if len(v) == 0 {
+		return nil
+	}
+
+	return json.Unmarshal(data, v[0])
 }
 
 // Head ...
-func (c *Client) Head(url string) (*http.Response, error) {
+func (c *Client) Head(url string) error {
 	req, err := http.NewRequest(http.MethodHead, url, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return c.Do(req)
+	_, err = c.do(req)
+	return err
 }
 
 // Post ...
-func (c *Client) Post(url, bodyType string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPost, url, body)
-	if err != nil {
-		return nil, err
+func (c *Client) Post(url string, v ...interface{}) error {
+	var reader io.Reader
+	if len(v) > 0 {
+		data, err := json.Marshal(v[0])
+		if err != nil {
+			return err
+		}
+
+		reader = bytes.NewReader(data)
 	}
-	req.Header.Set("Content-Type", bodyType)
-	return c.Do(req)
+
+	req, err := http.NewRequest(http.MethodPost, url, reader)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	_, err = c.do(req)
+	return err
 }
 
 // Put ...
-func (c *Client) Put(url, bodyType string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPut, url, body)
-	if err != nil {
-		return nil, err
+func (c *Client) Put(url string, v ...interface{}) error {
+	var reader io.Reader
+	if len(v) > 0 {
+		data := []byte{}
+		data, err := json.Marshal(v[0])
+		if err != nil {
+			return err
+		}
+		reader = bytes.NewReader(data)
 	}
-	req.Header.Set("Content-Type", bodyType)
-	return c.Do(req)
+
+	req, err := http.NewRequest(http.MethodPut, url, reader)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	_, err = c.do(req)
+	return err
 }
 
 // Delete ...
-func (c *Client) Delete(url string) (*http.Response, error) {
+func (c *Client) Delete(url string) error {
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+	_, err = c.do(req)
+	return err
+}
+
+func (c *Client) do(req *http.Request) ([]byte, error) {
+	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	return c.Do(req)
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, &Error{
+			Code:    resp.StatusCode,
+			Message: string(data),
+		}
+	}
+
+	return data, nil
 }

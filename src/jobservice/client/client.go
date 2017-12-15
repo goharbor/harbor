@@ -15,12 +15,7 @@
 package client
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
-
-	commonhttp "github.com/vmware/harbor/src/common/http"
+	"github.com/vmware/harbor/src/common/http"
 	"github.com/vmware/harbor/src/common/http/modifier/auth"
 	"github.com/vmware/harbor/src/jobservice/api"
 )
@@ -33,7 +28,7 @@ type Client interface {
 // DefaultClient provides a default implement for the interface Client
 type DefaultClient struct {
 	endpoint string
-	client   *commonhttp.Client
+	client   *http.Client
 }
 
 // Config contains configuration items needed for DefaultClient
@@ -48,7 +43,7 @@ func NewDefaultClient(endpoint string, cfg *Config) *DefaultClient {
 	}
 
 	if cfg != nil {
-		c.client = commonhttp.NewClient(nil, auth.NewSecretAuthorizer(cfg.Secret))
+		c.client = http.NewClient(nil, auth.NewSecretAuthorizer(cfg.Secret))
 	}
 
 	return c
@@ -57,28 +52,5 @@ func NewDefaultClient(endpoint string, cfg *Config) *DefaultClient {
 // SubmitReplicationJob submits a replication job to the jobservice
 func (d *DefaultClient) SubmitReplicationJob(replication *api.ReplicationReq) error {
 	url := d.endpoint + "/api/jobs/replication"
-
-	buffer := &bytes.Buffer{}
-	if err := json.NewEncoder(buffer).Encode(replication); err != nil {
-		return err
-	}
-
-	resp, err := d.client.Post(url, "application/json", buffer)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		message, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		return &commonhttp.Error{
-			Code:    resp.StatusCode,
-			Message: string(message),
-		}
-	}
-
-	return nil
+	return d.client.Post(url, replication)
 }
