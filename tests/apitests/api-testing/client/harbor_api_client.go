@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -22,6 +23,7 @@ type APIClientConfig struct {
 	CaFile   string
 	CertFile string
 	KeyFile  string
+	Proxy    string
 }
 
 //APIClient provided the http client for trigger http requests
@@ -58,6 +60,13 @@ func NewAPIClient(config APIClientConfig) (*APIClient, error) {
 	tlsConfig.BuildNameToCertificate()
 	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,
+	}
+
+	//If proxy should be set
+	if len(strings.TrimSpace(config.Proxy)) > 0 {
+		if proxyURL, err := url.Parse(config.Proxy); err == nil {
+			transport.Proxy = http.ProxyURL(proxyURL)
+		}
 	}
 
 	client := &http.Client{
