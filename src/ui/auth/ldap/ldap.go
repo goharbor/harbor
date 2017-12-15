@@ -25,7 +25,7 @@ import (
 	"github.com/vmware/harbor/src/ui/auth"
 )
 
-// Auth implements Authenticator interface to authenticate against LDAP
+// Auth implements AuthenticateHelper interface to authenticate against LDAP
 type Auth struct{}
 
 const metaChars = "&|!=~*<>()"
@@ -46,21 +46,19 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 	}
 
-	ldapConfs, err := ldapUtils.GetSystemLdapConf()
+	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
 
 	if err != nil {
-		return nil, fmt.Errorf("can't load system configuration: %v", err)
+		return nil, fmt.Errorf("can not load system ldap config: %v", err)
 	}
 
-	ldapConfs, err = ldapUtils.ValidateLdapConf(ldapConfs)
-
-	if err != nil {
-		return nil, fmt.Errorf("invalid ldap request: %v", err)
+	if err = ldapSession.Open(); err != nil {
+		log.Warningf("ldap connection fail: %v", err)
+		return nil, nil
 	}
+	defer ldapSession.Close()
 
-	ldapConfs.LdapFilter = ldapUtils.MakeFilter(p, ldapConfs.LdapFilter, ldapConfs.LdapUID)
-
-	ldapUsers, err := ldapUtils.SearchUser(ldapConfs)
+	ldapUsers, err := ldapSession.SearchUser(p)
 
 	if err != nil {
 		log.Warningf("ldap search fail: %v", err)
@@ -83,7 +81,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	dn := ldapUsers[0].DN
 
 	log.Debugf("username: %s, dn: %s", u.Username, dn)
-	if err := ldapUtils.Bind(ldapConfs, dn, m.Password); err != nil {
+	if err = ldapSession.Bind(dn, m.Password); err != nil {
 		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
 		return nil, nil
 	}
@@ -100,16 +98,66 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		u.UserID = currentUser.UserID
 		u.HasAdminRole = currentUser.HasAdminRole
 	} else {
-		userID, err := ldapUtils.ImportUser(ldapUsers[0])
-		if err != nil {
+		var user models.User
+		user.Username = ldapUsers[0].Username
+		user.Email = ldapUsers[0].Email
+		user.Realname = ldapUsers[0].Realname
+
+		err = auth.OnBoardUser(&user)
+		if err != nil || user.UserID <= 0 {
 			log.Errorf("Can't import user %s, error: %v", ldapUsers[0].Username, err)
 			return nil, fmt.Errorf("can't import user %s, error: %v", ldapUsers[0].Username, err)
 		}
-		u.UserID = int(userID)
+		u.UserID = user.UserID
 	}
 
 	return &u, nil
 
+}
+
+// OnBoardUser will check if a user exists in user table, if not insert the user and
+// put the id in the pointer of user model, if it does exist, return the user's profile.
+func (l *Auth) OnBoardUser(u *models.User) error {
+	if u.Email == "" {
+		if strings.Contains(u.Username, "@") {
+			u.Email = u.Username
+		} else {
+			u.Email = u.Username + "@placeholder.com"
+		}
+	}
+	u.Password = "12345678AbC" //Password is not kept in local db
+	u.Comment = "from LDAP."   //Source is from LDAP
+
+	return dao.OnBoardUser(u)
+}
+
+//SearchUser -- Search user in ldap
+func (l *Auth) SearchUser(username string) (*models.User, error) {
+	var user models.User
+	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
+	if err = ldapSession.Open(); err != nil {
+		return nil, fmt.Errorf("Failed to load system ldap config, %v", err)
+	}
+
+	ldapUsers, err := ldapSession.SearchUser(username)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to search user in ldap")
+	}
+
+	if len(ldapUsers) > 1 {
+		log.Warningf("There are more than one user found, return the first user")
+	}
+	if len(ldapUsers) > 0 {
+
+		user.Username = strings.TrimSpace(ldapUsers[0].Username)
+		user.Realname = strings.TrimSpace(ldapUsers[0].Realname)
+
+		log.Debugf("Found ldap user %v", user)
+	} else {
+		return nil, fmt.Errorf("No user found, %v", username)
+	}
+
+	return &user, nil
 }
 
 func init() {

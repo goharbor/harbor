@@ -14,3 +14,15 @@ sleep 5
 docker cp ldap_test.ldif ldap_server:/
 docker exec ldap_server ldapadd -x -D "cn=admin,dc=example,dc=com" -w admin -f /ldap_test.ldif -ZZ
 
+# failed and retry
+for number in {1..10}
+do
+    if [ ! $? -eq 0 ]; then
+        sleep 6
+        echo "retry in $number "
+        docker exec ldap_server ldapadd -x -D "cn=admin,dc=example,dc=com" -w admin -f /ldap_test.ldif -ZZ
+    else 
+        exit 0
+    fi
+done
+exit 1

@@ -16,8 +16,8 @@ package dao
 
 import (
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 
-	"fmt"
 	"time"
 )
 
@@ -35,12 +35,10 @@ func SetClairVulnTimestamp(namespace string, timestamp time.Time) error {
 	if !created {
 		rec.LastUpdate = timestamp
 		n, err := o.Update(rec)
-		if err != nil {
-			return err
-		}
 		if n == 0 {
-			return fmt.Errorf("No record is updated, record: %v", *rec)
+			log.Warningf("no records are updated for %v", *rec)
 		}
+		return err
 	}
 	return nil
 }

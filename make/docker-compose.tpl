@@ -12,7 +12,7 @@ services:
     networks:
       - harbor
   registry:
-    image: vmware/registry:2.6.2-photon
+    image: vmware/registry-photon:__reg_version__
     container_name: registry
     restart: always
     volumes:
@@ -112,7 +112,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   proxy:
-    image: vmware/nginx-photon:1.11.13
+    image: vmware/nginx-photon:__nginx_version__
     container_name: nginx
     restart: always
     volumes:

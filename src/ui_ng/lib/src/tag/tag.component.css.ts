@@ -1,4 +1,17 @@
 export const TAG_STYLE = `
+.option-right {
+  padding-right: 18px;
+  padding-bottom: 6px;
+}
+
+.refresh-btn {
+  cursor: pointer;
+}
+
+.refresh-btn:hover {
+  color: #007CBB;
+}
+
 .sub-header-title {
   margin: 12px 0;
 }
@@ -18,18 +31,6 @@ export const TAG_STYLE = `
 
 :host >>> .datagrid-placeholder {
   display: none;
-}
-
-:host >>> .datagrid .datagrid-body {
-  background-color: #eee;
-}
-
-:host >>> .datagrid .datagrid-head .datagrid-row {
-  background-color: #eee;
-}
-
-:host >>> .datagrid .datagrid-body .datagrid-row-master {
-  background-color: #eee;
 }
 
 .truncated {

@@ -17,6 +17,7 @@ package dao
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 
 	"encoding/json"
 	"fmt"
@@ -78,7 +79,7 @@ func UpdateScanJobStatus(id int64, status string) error {
 	}
 	n, err := o.Update(&sj, "Status", "UpdateTime")
 	if n == 0 {
-		return fmt.Errorf("Failed to update scan job with id: %d, error: %v", id, err)
+		log.Warningf("no records are updated when updating scan job %d", id)
 	}
 	return err
 }
@@ -109,8 +110,9 @@ func SetScanJobForImg(digest string, jobID int64) error {
 		rec.UpdateTime = time.Now()
 		n, err := o.Update(rec, "JobID", "UpdateTime")
 		if n == 0 {
-			return fmt.Errorf("Failed to set scan job for image with digest: %s, error: %v", digest, err)
+			log.Warningf("no records are updated when setting scan job for image with digest %s", digest)
 		}
+		return err
 	}
 	return nil
 }

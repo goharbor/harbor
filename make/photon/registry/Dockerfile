@@ -3,7 +3,7 @@ FROM vmware/photon:1.0
 MAINTAINER wangyan@vmware.com
 
 # The original script in the docker offical registry image.
-RUN tdnf distro-sync -y \
+RUN tdnf distro-sync -y || echo \
     && tdnf erase vim -y \
     && tdnf install sudo -y \
     && tdnf clean all \
@@ -13,7 +13,6 @@ COPY entrypoint.sh /
 RUN chmod u+x /entrypoint.sh
 
 RUN mkdir -p /etc/registry
-COPY config.yml /etc/registry/config.yml
 
 COPY binary/registry /usr/bin
 RUN chmod u+x /usr/bin/registry

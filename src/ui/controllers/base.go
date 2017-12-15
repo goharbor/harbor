@@ -25,6 +25,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
@@ -101,8 +102,8 @@ func (cc *CommonController) UserExists() {
 	cc.ServeJSON()
 }
 
-// SendEmail verifies the Email address and contact SMTP server to send reset password Email.
-func (cc *CommonController) SendEmail() {
+// SendResetEmail verifies the Email address and contact SMTP server to send reset password Email.
+func (cc *CommonController) SendResetEmail() {
 
 	email := cc.GetString("email")
 
@@ -117,14 +118,19 @@ func (cc *CommonController) SendEmail() {
 	}
 
 	queryUser := models.User{Email: email}
-	exist, err := dao.UserExists(queryUser, "email")
+	u, err := dao.GetUser(queryUser)
 	if err != nil {
-		log.Errorf("Error occurred in UserExists: %v", err)
+		log.Errorf("Error occurred in GetUser: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
-	if !exist {
+	if u == nil {
 		log.Debugf("email %s not found", email)
 		cc.CustomAbort(http.StatusNotFound, "email_does_not_exist")
+	}
+
+	if !isUserResetable(u) {
+		log.Errorf("Resetting password for user with ID: %d is not allowed", u.UserID)
+		cc.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 
 	uuid := utils.GenerateRandomString()
@@ -192,6 +198,7 @@ func (cc *CommonController) ResetPassword() {
 
 	queryUser := models.User{ResetUUID: resetUUID}
 	user, err := dao.GetUser(queryUser)
+
 	if err != nil {
 		log.Errorf("Error occurred in GetUser: %v", err)
 		cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -199,6 +206,11 @@ func (cc *CommonController) ResetPassword() {
 	if user == nil {
 		log.Error("User does not exist")
 		cc.CustomAbort(http.StatusBadRequest, "User does not exist")
+	}
+
+	if !isUserResetable(user) {
+		log.Errorf("Resetting password for user with ID: %d is not allowed", user.UserID)
+		cc.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 
 	password := cc.GetString("password")
@@ -213,6 +225,21 @@ func (cc *CommonController) ResetPassword() {
 	} else {
 		cc.CustomAbort(http.StatusBadRequest, "password_is_required")
 	}
+}
+
+func isUserResetable(u *models.User) bool {
+	if u == nil {
+		return false
+	}
+	mode, err := config.AuthMode()
+	if err != nil {
+		log.Errorf("Failed to get the auth mode, error: %v", err)
+		return false
+	}
+	if mode == common.DBAuth {
+		return true
+	}
+	return u.UserID == 1
 }
 
 func init() {
