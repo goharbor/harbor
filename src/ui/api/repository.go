@@ -650,7 +650,7 @@ func (ra *RepositoryAPI) Put() {
 	}
 
 	project, _ := utils.ParseRepository(name)
-	if !ra.SecurityCtx.HasAllPerm(project) {
+	if !ra.SecurityCtx.HasWritePerm(project) {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
