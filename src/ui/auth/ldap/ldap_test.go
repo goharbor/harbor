@@ -65,31 +65,31 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.AdminInitialPassword: "password",
 }
 
-func TestMain(t *testing.T) {
+func TestMain(m *testing.M) {
 	server, err := test.NewAdminserver(adminServerLdapTestConfig)
 	if err != nil {
-		t.Fatalf("failed to create a mock admin server: %v", err)
+		log.Fatalf("failed to create a mock admin server: %v", err)
 	}
 	defer server.Close()
 
 	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
-		t.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
+		log.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
 	}
 
 	secretKeyPath := "/tmp/secretkey"
 	_, err = test.GenerateKey(secretKeyPath)
 	if err != nil {
-		t.Errorf("failed to generate secret key: %v", err)
+		log.Errorf("failed to generate secret key: %v", err)
 		return
 	}
 	defer os.Remove(secretKeyPath)
 
 	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
-		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
+		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
 	if err := uiConfig.Init(); err != nil {
-		t.Fatalf("failed to initialize configurations: %v", err)
+		log.Fatalf("failed to initialize configurations: %v", err)
 	}
 
 	database, err := uiConfig.Database()
@@ -100,6 +100,9 @@ func TestMain(t *testing.T) {
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
+
+	retCode := m.Run()
+	os.Exit(retCode)
 }
 
 func TestAuthenticate(t *testing.T) {

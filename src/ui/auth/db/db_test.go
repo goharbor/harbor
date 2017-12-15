@@ -23,6 +23,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/test"
 
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/ldap"
 	"github.com/vmware/harbor/src/ui/auth"
 	uiConfig "github.com/vmware/harbor/src/ui/config"
 )
@@ -64,31 +65,31 @@ var adminServerTestConfig = map[string]interface{}{
 	common.AdminInitialPassword: "password",
 }
 
-func TestMain(t *testing.T) {
+func TestMain(m *testing.M) {
 	server, err := test.NewAdminserver(adminServerTestConfig)
 	if err != nil {
-		t.Fatalf("failed to create a mock admin server: %v", err)
+		log.Fatalf("failed to create a mock admin server: %v", err)
 	}
 	defer server.Close()
 
 	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
-		t.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
+		log.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
 	}
 
 	secretKeyPath := "/tmp/secretkey"
 	_, err = test.GenerateKey(secretKeyPath)
 	if err != nil {
-		t.Errorf("failed to generate secret key: %v", err)
+		log.Fatalf("failed to generate secret key: %v", err)
 		return
 	}
 	defer os.Remove(secretKeyPath)
 
 	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
-		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
+		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
 	if err := uiConfig.Init(); err != nil {
-		t.Fatalf("failed to initialize configurations: %v", err)
+		log.Fatalf("failed to initialize configurations: %v", err)
 	}
 
 	database, err := uiConfig.Database()
@@ -148,5 +149,24 @@ func TestAuthenticateHelperSearchUser(t *testing.T) {
 
 	if user == nil {
 		t.Error("Failed to search user admin")
+	}
+}
+
+func TestLdapConnectionTest(t *testing.T) {
+	var ldapConfig = models.LdapConf{
+		LdapURL:               "ldap://127.0.0.1",
+		LdapSearchDn:          "cn=admin,dc=example,dc=com",
+		LdapSearchPassword:    "admin",
+		LdapBaseDn:            "dc=example,dc=com",
+		LdapFilter:            "",
+		LdapUID:               "cn",
+		LdapScope:             3,
+		LdapConnectionTimeout: 10,
+		LdapVerifyCert:        false,
+	}
+	//Test ldap connection under auth_mod is db_auth
+	err := ldap.ConnectionTestWithConfig(ldapConfig)
+	if err != nil {
+		t.Fatalf("Failed to test ldap server! error %v", err)
 	}
 }

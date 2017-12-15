@@ -48,19 +48,18 @@ func (l *LdapAPI) Prepare() {
 // Ping ...
 func (l *LdapAPI) Ping() {
 	var ldapConfs models.LdapConf
-
+	var err error
 	var ldapSession *ldapUtils.Session
 
 	l.Ctx.Input.CopyBody(1 << 32)
 
-	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
-	if err != nil {
-		log.Errorf("Can't load system configuration, error: %v", err)
-		l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
-		return
-	}
-
 	if string(l.Ctx.Input.RequestBody) == "" {
+		ldapSession, err = ldapUtils.LoadSystemLdapConfig()
+		if err != nil {
+			log.Errorf("Can't load system configuration, error: %v", err)
+			l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
+			return
+		}
 		err = ldapSession.ConnectionTest()
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)

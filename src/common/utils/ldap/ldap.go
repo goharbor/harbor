@@ -190,8 +190,14 @@ func (session *Session) ConnectionTest() error {
 //ConnectionTestWithConfig - test ldap session connection, out of the scope of normal session create/close
 func ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
 
+	authMode, err := config.AuthMode()
+	if err != nil {
+		log.Errorf("Connection test failed %v", err)
+		return err
+	}
+
 	//If no password present, use the system default password
-	if ldapConfig.LdapSearchPassword == "" {
+	if ldapConfig.LdapSearchPassword == "" && authMode == "ldap_auth" {
 
 		session, err := LoadSystemLdapConfig()
 
