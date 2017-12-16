@@ -167,6 +167,7 @@ DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 DOCKERFILEPATH_DB=$(DOCKERFILEPATH_COMMON)/db
 DOCKERFILENAME_DB=Dockerfile
 DOCKERFILE_CLARITY=$(MAKEPATH)/dev/nodeclarity/Dockerfile
+DOCKERFILE_BUILD_UI=$(MAKEPATH)/dev/npm-installer/Dockerfile
 
 DOCKERFILEPATH_POSTGRESQL=$(DOCKERFILEPATH_COMMON)/postgresql
 DOCKERFILENAME_POSTGRESQL=Dockerfile
@@ -287,7 +288,44 @@ compile_clarity:
 	fi
 	@echo "Done."
 
+compile_clarity_harborui:
+	@echo "compiling binary for clarity ui with local harbor ui library..."
+	@if [ ! -e $(UINGPATH)/package.json.org ] ; then \
+		cp $(UINGPATH)/package.json $(UINGPATH)/package.json.org; \
+		sed -i -e "s/\"harbor-ui\": \"\^[0-9].\+\"/\"harbor-ui\": \"file:.\/lib\/\"/g" $(UINGPATH)/package.json; \
+	fi
+	@if [ "$(HTTPPROXY)" != "" ] ; then \
+		$(SEDCMD) -i 's/__proxy__/--proxy $(HTTPPROXY)/g' $(DOCKERFILE_BUILD_UI) ; \
+		$(DOCKERBUILD) -f $(DOCKERFILE_BUILD_UI) -t $(DOCKERIMAGENAME_CLATIRY):$(VERSIONTAG) .; \
+		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(DOCKERIMAGENAME_CLATIRY):$(VERSIONTAG) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+	else \
+		$(SEDCMD) -i 's/__proxy__/ /g' $(DOCKERFILE_BUILD_UI) ; \
+		$(DOCKERBUILD) -f $(DOCKERFILE_BUILD_UI) -t $(DOCKERIMAGENAME_CLATIRY):$(VERSIONTAG) .; \
+		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(DOCKERIMAGENAME_CLATIRY):$(VERSIONTAG) $(SHELL) $(CLARITYBUILDSCRIPT); \
+	fi
+	@if [ -e $(UINGPATH)/package.json.org ] ; then \
+		mv $(UINGPATH)/package.json.org $(UINGPATH)/package.json; \
+	fi
+	@echo "Done."
+
 compile_normal: compile_clarity compile_adminserver compile_ui compile_jobservice
+
+compile_golangimage_with_local_library: compile_clarity_harborui
+	@echo "compiling binary for adminserver (golang image)..."
+	@echo $(GOBASEPATH)
+	@echo $(GOBUILDPATH)
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_ADMINSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_ADMINSERVER)/$(ADMINSERVERBINARYNAME)
+	@echo "Done."
+
+	@echo "compiling binary for ui (golang image)..."
+	@echo $(GOBASEPATH)
+	@echo $(GOBUILDPATH)
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_UI) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_UI)/$(UIBINARYNAME)
+	@echo "Done."
+
+	@echo "compiling binary for jobservice (golang image)..."
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -v -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
+	@echo "Done."
 
 compile_golangimage: compile_clarity
 	@echo "compiling binary for adminserver (golang image)..."
