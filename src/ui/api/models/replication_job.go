@@ -12,26 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package replicator
+package models
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/jobservice/client"
+	"github.com/astaxie/beego/validation"
 )
 
-type fakeJobserviceClient struct{}
-
-func (f *fakeJobserviceClient) SubmitReplicationJob(replication *client.Replication) error {
-	return nil
+// StopJobsReq holds information needed to stop the jobs for a replication rule
+type StopJobsReq struct {
+	PolicyID int64  `json:"policy_id"`
+	Status   string `json:"status"`
 }
 
-func (f *fakeJobserviceClient) StopReplicationJobs(policyID int64) error {
-	return nil
-}
-
-func TestReplicate(t *testing.T) {
-	replicator := NewDefaultReplicator(&fakeJobserviceClient{})
-	assert.Nil(t, replicator.Replicate(&client.Replication{}))
+// Valid ...
+func (s *StopJobsReq) Valid(v *validation.Validation) {
+	if s.PolicyID <= 0 {
+		v.SetError("policy_id", "invalid value")
+	}
+	if s.Status != "stop" {
+		v.SetError("status", "invalid status, valid values: [stop]")
+	}
 }

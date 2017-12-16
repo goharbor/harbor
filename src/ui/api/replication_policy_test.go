@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/replication"
 	rep_models "github.com/vmware/harbor/src/replication/models"
@@ -265,15 +266,28 @@ func TestRepPolicyAPIPost(t *testing.T) {
 }
 
 func TestRepPolicyAPIGet(t *testing.T) {
-	// 404
-	runCodeCheckingCases(t, &codeCheckingCase{
-		request: &testingRequest{
-			method:     http.MethodGet,
-			url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, 10000),
-			credential: sysAdmin,
+
+	cases := []*codeCheckingCase{
+		// 404
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, 10000),
+				credential: sysAdmin,
+			},
+			code: http.StatusNotFound,
 		},
-		code: http.StatusNotFound,
-	})
+		// 401
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodGet,
+				url:    fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
+			},
+			code: http.StatusUnauthorized,
+		},
+	}
+
+	runCodeCheckingCases(t, cases...)
 
 	// 200
 	policy := &api_models.ReplicationPolicy{}
@@ -290,6 +304,39 @@ func TestRepPolicyAPIGet(t *testing.T) {
 }
 
 func TestRepPolicyAPIList(t *testing.T) {
+	projectAdmin := models.User{
+		Username: "project_admin",
+		Password: "ProjectAdmin",
+		Email:    "project_admin@test.com",
+	}
+	projectDev := models.User{
+		Username: "project_dev",
+		Password: "ProjectDev",
+		Email:    "project_dev@test.com",
+	}
+
+	proAdminID, err := dao.Register(projectAdmin)
+	if err != nil {
+		panic(err)
+	}
+	defer dao.DeleteUser(int(proAdminID))
+
+	if err = dao.AddProjectMember(1, int(proAdminID), models.PROJECTADMIN); err != nil {
+		panic(err)
+	}
+	defer dao.DeleteProjectMember(1, int(proAdminID))
+
+	proDevID, err := dao.Register(projectDev)
+	if err != nil {
+		panic(err)
+	}
+	defer dao.DeleteUser(int(proDevID))
+
+	if err = dao.AddProjectMember(1, int(proDevID), models.DEVELOPER); err != nil {
+		panic(err)
+	}
+	defer dao.DeleteProjectMember(1, int(proDevID))
+
 	// 400: invalid project ID
 	runCodeCheckingCases(t, &codeCheckingCase{
 		request: &testingRequest{
@@ -305,7 +352,7 @@ func TestRepPolicyAPIList(t *testing.T) {
 		code: http.StatusBadRequest,
 	})
 
-	// 200
+	// 200 system admin
 	policies := []*api_models.ReplicationPolicy{}
 	resp, err := handleAndParse(
 		&testingRequest{
@@ -325,6 +372,52 @@ func TestRepPolicyAPIList(t *testing.T) {
 	require.Equal(t, 1, len(policies))
 	assert.Equal(t, policyID, policies[0].ID)
 	assert.Equal(t, policyName, policies[0].Name)
+
+	// 200 project admin
+	policies = []*api_models.ReplicationPolicy{}
+	resp, err = handleAndParse(
+		&testingRequest{
+			method: http.MethodGet,
+			url:    repPolicyAPIBasePath,
+			queryStruct: struct {
+				ProjectID int64  `url:"project_id"`
+				Name      string `url:"name"`
+			}{
+				ProjectID: projectID,
+				Name:      policyName,
+			},
+			credential: &usrInfo{
+				Name:   projectAdmin.Username,
+				Passwd: projectAdmin.Password,
+			},
+		}, &policies)
+	require.Nil(t, err)
+	assert.Equal(t, http.StatusOK, resp.Code)
+	require.Equal(t, 1, len(policies))
+	assert.Equal(t, policyID, policies[0].ID)
+	assert.Equal(t, policyName, policies[0].Name)
+
+	// 200 project developer
+	policies = []*api_models.ReplicationPolicy{}
+	resp, err = handleAndParse(
+		&testingRequest{
+			method: http.MethodGet,
+			url:    repPolicyAPIBasePath,
+			queryStruct: struct {
+				ProjectID int64  `url:"project_id"`
+				Name      string `url:"name"`
+			}{
+				ProjectID: projectID,
+				Name:      policyName,
+			},
+			credential: &usrInfo{
+				Name:   projectDev.Username,
+				Passwd: projectDev.Password,
+			},
+		}, &policies)
+	require.Nil(t, err)
+	assert.Equal(t, http.StatusOK, resp.Code)
+	require.Equal(t, 0, len(policies))
 
 	// 200
 	policies = []*api_models.ReplicationPolicy{}
