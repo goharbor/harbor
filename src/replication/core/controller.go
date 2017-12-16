@@ -20,7 +20,6 @@ import (
 
 	common_models "github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/jobservice/api"
 	"github.com/vmware/harbor/src/jobservice/client"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
@@ -63,7 +62,7 @@ type DefaultController struct {
 
 //Keep controller as singleton instance
 var (
-	GlobalController Controller = NewDefaultController(ControllerConfig{}) //Use default data
+	GlobalController Controller
 )
 
 //ControllerConfig includes related configurations required by the controller
@@ -82,14 +81,15 @@ func NewDefaultController(cfg ControllerConfig) *DefaultController {
 		triggerManager: trigger.NewManager(cfg.CacheCapacity),
 	}
 
-	// TODO read from configuration
-	endpoint := "http://jobservice:8080"
-	ctl.replicator = replicator.NewDefaultReplicator(endpoint,
-		&client.Config{
-			Secret: config.UISecret(),
-		})
+	ctl.replicator = replicator.NewDefaultReplicator(config.GlobalJobserviceClient)
 
 	return ctl
+}
+
+// Init creates the GlobalController and inits it
+func Init() error {
+	GlobalController = NewDefaultController(ControllerConfig{}) //Use default data
+	return GlobalController.Init()
 }
 
 //Init will initialize the controller and the sub components
@@ -308,11 +308,11 @@ func replicate(replicator replicator.Replicator, policyID int64, candidates []mo
 	}
 
 	for repository, tags := range repositories {
-		replication := &api.ReplicationReq{
-			PolicyID:  policyID,
-			Repo:      repository,
-			Operation: operation,
-			TagList:   tags,
+		replication := &client.Replication{
+			PolicyID:   policyID,
+			Repository: repository,
+			Operation:  operation,
+			Tags:       tags,
 		}
 		log.Debugf("submiting replication job to jobservice: %v", replication)
 		if err := replicator.Replicate(replication); err != nil {
