@@ -13,5 +13,5 @@ var ConcourseCILdapEnv = Environment{
 	Password:       "zhu88jie",
 	Admin:          "admin",
 	AdminPass:      "pksxgxmifc0cnwa5px9h",
-	Hostname:       "10.112.122.1",
+	Hostname:       "30.0.0.3",
 }
