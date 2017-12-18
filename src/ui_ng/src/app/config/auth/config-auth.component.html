@@ -6,6 +6,7 @@
                 <select id="authMode" name="authMode" (change)="handleOnChange($event)" [disabled]="disabled(currentConfig.auth_mode)" [(ngModel)]="currentConfig.auth_mode.value">
                     <option value="db_auth">{{'CONFIG.AUTH_MODE_DB' | translate }}</option>
                     <option value="ldap_auth">{{'CONFIG.AUTH_MODE_LDAP' | translate }}</option>
+                    <option value="uaa_auth">{{'CONFIG.AUTH_MODE_UAA' | translate }}</option>
                 </select>
             </div>
             <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top: -1px;">

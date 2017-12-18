@@ -410,6 +410,7 @@
         "SELF_REGISTRATION": "允许自注册",
         "AUTH_MODE_DB": "数据库",
         "AUTH_MODE_LDAP": "LDAP",
+        "AUTH_MODE_UAA": "UAA",
         "SCOPE_BASE": "本层",
         "SCOPE_ONE_LEVEL": "下一层",
         "SCOPE_SUBTREE": "子树",
