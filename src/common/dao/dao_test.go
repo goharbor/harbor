@@ -305,6 +305,7 @@ var currentUser *models.User
 func TestGetUser(t *testing.T) {
 	queryUser := models.User{
 		Username: username,
+		Email:    "tester01@vmware.com",
 	}
 	var err error
 	currentUser, err = GetUser(queryUser)
