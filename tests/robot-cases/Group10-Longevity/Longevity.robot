@@ -35,6 +35,10 @@ CA setup
 
 Regression Test With DB
     [Arguments]  ${HARBOR_URL}
+    Run Keyword And Continue On Failure  Exe Regression Test Cases  ${HARBOR_URL}
+
+Exe Regression Test Cases
+    [Arguments]  ${HARBOR_URL}
     
     # New user, new project, push image, pull image
     Init Chrome Driver
@@ -54,5 +58,3 @@ Longevity
     \   ${rand}=  Evaluate  random.randint(10, 50)  modules=random
     \   Log To Console  \nLoop: ${idx}
     \   Repeat Keyword  ${rand} times  Regression Test With DB  ${HARBOR_URL}
-
-    Post Message To Slack Channel  harbor-nightly-tests  Longevity has passed on 111
