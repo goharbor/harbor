@@ -339,7 +339,7 @@ package_offline: compile version build modify_sourcefiles modify_composefile
 
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
-	@cp $(HARBORPKG)/common/db/registry.sql $(HARBORPKG)/ha/
+	@cp $(HARBORPKG)/photon/db/registry.sql $(HARBORPKG)/ha/
 	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
 		echo "pulling DB migrator..."; \
 		$(DOCKERPULL) vmware/harbor-db-migrator:$(MIGRATORVERSION); \
