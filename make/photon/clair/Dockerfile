@@ -1,7 +1,7 @@
 FROM vmware/photon:1.0
 
 
-RUN tdnf distro-sync -y \
+RUN tdnf distro-sync -y || echo \
     && tdnf erase vim -y \
     && tdnf install -y git shadow sudo bzr rpm xz python-xml \
     && tdnf clean all \
