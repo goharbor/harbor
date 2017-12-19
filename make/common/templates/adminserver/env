@@ -39,7 +39,11 @@ GODEBUG=netdns=cgo
 ADMIRAL_URL=$admiral_url
 WITH_NOTARY=$with_notary
 WITH_CLAIR=$with_clair
-CLAIR_DB_PASSWORD=$pg_password
+CLAIR_DB_PASSWORD=$clair_db_password
+CLAIR_DB_HOST=$clair_db_host
+CLAIR_DB_PORT=$clair_db_port
+CLAIR_DB_USERNAME=$clair_db_username
+CLAIR_DB=$clair_db
 RESET=false
 UAA_ENDPOINT=$uaa_endpoint
 UAA_CLIENTID=$uaa_clientid

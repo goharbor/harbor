@@ -130,6 +130,10 @@ var (
 			parse: parseStringToBool,
 		},
 		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
+		common.ClairDB: "CLAIR_DB",
+		common.ClairDBUsername: "CLAIR_DB_USERNAME",
+		common.ClairDBHost: "CLAIR_DB_HOST",
+		common.ClairDBPort: "CLAIR_DB_PORT",
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
@@ -267,7 +271,7 @@ func initCfgStore() (err error) {
 				}
 				err = CfgStore.Write(jsonconfig)
 				if err != nil {
-					log.Error("Failed to update old configuration to dattabase")
+					log.Error("Failed to update old configuration to database")
 					return err
 				}
 			}

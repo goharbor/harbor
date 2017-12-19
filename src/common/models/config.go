@@ -57,6 +57,15 @@ type SQLite struct {
 	File string `json:"file"`
 }
 
+// PostGreSQL ...
+type PostGreSQL struct {
+	Host string `json:"host"`
+	Port int `json:"port"`
+	Username string `json:"username"`
+	Password string `json:"password,omitempty"`
+	Database string `json:"database"`
+}
+
 // Email ...
 type Email struct {
 	Host     string `json:"host"`
