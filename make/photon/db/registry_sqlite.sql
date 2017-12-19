@@ -260,7 +260,7 @@ create table harbor_label (
  project_id int,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP,
- UNIQUE(name, scope)
+ UNIQUE(name, scope, project_id)
  );
 
 create table harbor_resource_label (
