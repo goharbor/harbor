@@ -18,19 +18,22 @@ Resource  ../../resources/Util.robot
 
 *** Variables ***
 ${HARBOR_URL}  https://${ip}
-${ROOT_PWD}  root1234
+${SSH_USER}  root
+${SSH_PWD}  root1234
 ${HARBOR_PASSWORD}  Harbor12345
 
 *** Keywords ***
 Longevity setup
     Run Keyword  CA setup
+    Run Keyword  Prepare Docker Cert  ${ip}
     Run Keyword  Start Docker Daemon Locally
 
 CA setup
     Open Connection    ${ip}
-    Login    root    ${ROOT_PWD}
+    Login    ${SSH_USER}    ${SSH_PWD}
     SSHLibrary.Get File  /data/ca_download/ca.crt
     Close All Connections
+    Run  mv ca.crt harbor_ca.crt
     Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}	
 
 Regression Test With DB
