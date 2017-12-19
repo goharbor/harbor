@@ -2,26 +2,12 @@
 
 set +e
 
-echo "Usage: #./builder [notary version] [registry username] [registry password]"
 if [ -z $1 ]; then
   error "Please set the 'version' variable"
   exit 1
 fi
-if [ -z $2 ]; then
-  error "Please set the 'photonversion' variable"
-  exit 1
-fi
-if [ -z $3 ]; then
-  error "Please set the 'username' variable"
-  exit 1
-fi
-
 
 VERSION="$1"
-USERNAME="$2"
-PASSWORD="$3"
-SIGNER_PHOTONIMAGE=vmware/notary-photon:signer-$VERSION
-SERVER_PHOTONIMAGE=vmware/notary-photon:server-$VERSION
 
 set -e
 
@@ -41,19 +27,18 @@ echo 'build the notary binary bases on the golang:1.7.3...'
 cp binary.Dockerfile $TEMP 
 cd $TEMP
 docker build -f binary.Dockerfile -t notary-golang $TEMP
+cp -r $TEMP/migrations binary
 
 echo 'copy the notary binary to local...'
 ID=$(docker create notary-golang)
 echo $ID
 cd $cur
-docker cp $ID:/go/src/github.com/docker/notary/notary-server binary
-docker cp $ID:/go/src/github.com/docker/notary/notary-signer binary
+docker cp $ID:/go/src/github.com/theupdateframework/notary/notary-server binary
+docker cp $ID:/go/src/github.com/theupdateframework/notary/notary-signer binary
 
 docker rm -f $ID
 docker rmi -f notary-golang
 
-docker build -f server.Dockerfile -t $SERVER_PHOTONIMAGE .
-docker build -f signer.Dockerfile -t $SIGNER_PHOTONIMAGE .
+rm -rf $TEMP
 
-echo 'Push image to docker hub.'
-../../pushimage.sh $PHOTONIMAGE $USERNAME $PASSWORD
+

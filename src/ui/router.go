@@ -65,7 +65,7 @@ func initRouters() {
 		beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
 		beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
 		beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
-		beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
+		beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
 
 		//API:
 		beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})

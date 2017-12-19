@@ -7,8 +7,8 @@ RUN tdnf distro-sync -y \
     && groupadd -r -g 10000 notary \
     && useradd --no-log-init -r -g 10000 -u 10000 notary
 COPY ./binary/notary-signer /bin/notary-signer
-COPY ./migrate /bin/migrate
-COPY ./migrations/ /migrations/
+COPY ./binary/migrate /bin/migrate
+COPY ./binary/migrations/ /migrations/
 COPY ./signer-start.sh /bin/signer-start.sh
 
 RUN chmod u+x /bin/notary-signer /migrations/migrate.sh /bin/migrate /bin/signer-start.sh

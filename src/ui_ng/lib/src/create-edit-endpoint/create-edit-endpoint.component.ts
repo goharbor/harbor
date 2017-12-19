@@ -262,10 +262,11 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
             delete payload[prop];
         }
         let changes: {[key: string]: any} = this.getChanges();
-        let changekeys: {[key: string]: any} = Object.keys(this.getChanges());
         if (isEmptyObject(changes)) {
             return;
         }
+        let changekeys: {[key: string]: any} = Object.keys(changes);
+
         changekeys.forEach((key: string) => {
             payload[key] = changes[key];
         });

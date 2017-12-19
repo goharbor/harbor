@@ -1,0 +1,2 @@
+export const REPOSITORY_LISTVIEW_STYLE = `
+`;

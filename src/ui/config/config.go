@@ -61,12 +61,17 @@ var (
 func Init() error {
 	//init key provider
 	initKeyProvider()
-
 	adminServerURL := os.Getenv("ADMINSERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}
 
+	return InitByURL(adminServerURL)
+
+}
+
+// InitByURL Init configurations with given url
+func InitByURL(adminServerURL string) error {
 	log.Infof("initializing client for adminserver %s ...", adminServerURL)
 	authorizer := auth.NewSecretAuthorizer(secretCookieName, UISecret())
 	AdminserverClient = client.NewClient(adminServerURL, authorizer)

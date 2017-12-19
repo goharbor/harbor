@@ -2,29 +2,12 @@
 
 set +e
 
-echo "Usage: #./builder [registry version] [photon tag] [registry username] [registry password]"
 if [ -z $1 ]; then
   error "Please set the 'version' variable"
   exit 1
 fi
-if [ -z $2 ]; then
-  error "Please set the 'photonversion' variable"
-  exit 1
-fi
-if [ -z $3 ]; then
-  error "Please set the 'username' variable"
-  exit 1
-fi
-if [ -z $4 ]; then
-  error "Please set the 'password' variable"
-  exit 1
-fi
 
 VERSION="$1"
-PHOTONVERSION="$2"
-USERNAME="$3"
-PASSWORD="$4"
-PHOTONIMAGE=vmware/registry:$PHOTONVERSION
 
 set -e
 
@@ -52,13 +35,5 @@ docker rmi -f registry-golang
 
 echo "Build registry binary success, then to build photon image..."
 cd $cur
-echo $PHOTONIMAGE
 cp $TEMP/cmd/registry/config-example.yml config.yml
-docker build -f Dockerfile -t $PHOTONIMAGE .
-
 rm -rf $TEMP
-rm -rf binary
-rm -rf config.yml
-
-echo 'Push image to docker hub.'
-../../pushimage.sh $PHOTONIMAGE $USERNAME $PASSWORD

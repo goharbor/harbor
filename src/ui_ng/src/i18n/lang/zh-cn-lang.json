@@ -32,7 +32,8 @@
         "YES": "是",
         "NO": "否",
         "NEGATIVE": "否",
-        "COPY": "拷贝"
+        "COPY": "拷贝",
+        "EDIT": "编辑"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
@@ -364,7 +365,10 @@
         "DELETED_TAG_SUCCESS": "成功删除镜像标签。",
         "COPY": "复制",
         "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。",
-        "PLACEHOLDER": "未发现任何镜像库!"
+        "PLACEHOLDER": "未发现任何镜像库!",
+        "INFO": "描述信息",
+        "NO_INFO": "此镜像仓库没有描述信息",
+        "IMAGE": "镜像"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -425,7 +429,7 @@
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
-            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。".
+            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。",
             "VERIFY_CERT": "检查来自LDAP服务端的证书"
         },
         "LDAP": {
@@ -521,7 +525,7 @@
         "SEVERITY": {
             "HIGH": "严重",
             "MEDIUM": "中等",
-            "LOW": "一般",
+            "LOW": "较低",
             "NEGLIGIBLE": "可忽略",
             "UNKNOWN": "未知",
             "NONE": "无"
@@ -554,7 +558,8 @@
         "SCAN_COMPLETION_TIME": "扫描完成时间",
         "IMAGE_VULNERABILITIES": "镜像缺陷",
         "PLACEHOLDER": "未发现任何标签!",
-        "COPY_ERROR": "拷贝失败，请尝试手动拷贝。"
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝。",
+        "FILTER_FOR_TAGS": "过滤项目"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",

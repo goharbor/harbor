@@ -23,7 +23,7 @@ import {
   ElementRef
 } from '@angular/core';
 
-import { TagService, VulnerabilitySeverity } from '../service/index';
+import { TagService, VulnerabilitySeverity, RequestQueryParams } from '../service/index';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { ChannelService } from '../channel/index';
 import {
@@ -44,13 +44,17 @@ import { TAG_STYLE } from './tag.component.css';
 import {
   toPromise,
   CustomComparator,
-  VULNERABILITY_SCAN_STATUS
+  calculatePage,
+  doFiltering,
+  doSorting,
+  VULNERABILITY_SCAN_STATUS,
+  DEFAULT_PAGE_SIZE
 } from '../utils';
 
 import { TranslateService } from '@ngx-translate/core';
 
 import { State, Comparator } from 'clarity-angular';
-import {CopyInputComponent} from "../push-image/copy-input.component";
+import {CopyInputComponent} from '../push-image/copy-input.component';
 
 @Component({
   selector: 'hbr-tag',
@@ -60,6 +64,7 @@ import {CopyInputComponent} from "../push-image/copy-input.component";
 })
 export class TagComponent implements OnInit {
 
+  signedCon: {[key: string]: any | string[]} = {};
   @Input() projectId: number;
   @Input() repoName: string;
   @Input() isEmbedded: boolean;
@@ -82,6 +87,7 @@ export class TagComponent implements OnInit {
   digestId: string;
   staticBackdrop: boolean = true;
   closable: boolean = false;
+  lastFilteredTagName: string;
 
   createdComparator: Comparator<Tag> = new CustomComparator<Tag>('created', 'date');
 
@@ -94,6 +100,10 @@ export class TagComponent implements OnInit {
   @ViewChild('digestTarget') textInput: ElementRef;
   @ViewChild('copyInput') copyInput: CopyInputComponent;
 
+  pageSize: number = DEFAULT_PAGE_SIZE;
+  currentPage = 1;
+  totalCount = 0;
+  currentState: State;
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -136,6 +146,61 @@ export class TagComponent implements OnInit {
     }
 
     this.retrieve();
+    this.lastFilteredTagName = '';
+  }
+
+  doSearchTagNames(tagName: string) {
+    this.lastFilteredTagName = tagName;
+    this.currentPage = 1;
+
+    let st: State = this.currentState;
+    if (!st) {
+      st = { page: {} };
+    }
+    st.page.size = this.pageSize;
+    st.page.from = 0;
+    st.page.to = this.pageSize - 1;
+    st.filters = [{property: 'name', value: this.lastFilteredTagName}];
+    this.clrLoad(st);
+  }
+
+  clrLoad(state: State): void {
+    // Keep it for future filtering and sorting
+    this.currentState = state;
+
+    let pageNumber: number = calculatePage(state);
+    if (pageNumber <= 0) { pageNumber = 1; }
+
+    // Pagination
+    let params: RequestQueryParams = new RequestQueryParams();
+    params.set('page', '' + pageNumber);
+    params.set('page_size', '' + this.pageSize);
+
+    this.loading = true;
+
+    toPromise<Tag[]>(this.tagService.getTags(
+      this.repoName,
+      params))
+      .then((tags: Tag[]) => {
+        this.signedCon = {};
+        // Do filtering and sorting
+        this.tags = doFiltering<Tag>(tags, state);
+        this.tags = doSorting<Tag>(this.tags, state);
+
+        this.loading = false;
+      })
+      .catch(error => {
+        this.loading = false;
+        this.errorHandler.error(error);
+      });
+
+    // Force refresh view
+    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 5000);
+  }
+
+  refresh() {
+    this.doSearchTagNames('');
   }
 
   retrieve() {
@@ -146,7 +211,7 @@ export class TagComponent implements OnInit {
     toPromise<Tag[]>(this.tagService
       .getTags(this.repoName))
       .then(items => {
-        //To keep easy use for vulnerability bar
+        // To keep easy use for vulnerability bar
         items.forEach((t: Tag) => {
           if (!t.scan_overview) {
             t.scan_overview = {
@@ -163,7 +228,7 @@ export class TagComponent implements OnInit {
         signatures.push(t.name);
       }
 
-      //size
+      // size
           t.size = this.sizeTransform(t.size);
       });
       this.tags = items;
@@ -243,20 +308,20 @@ export class TagComponent implements OnInit {
 
   onSuccess($event: any): void {
     this.copyFailed = false;
-    //Directly close dialog
+    // Directly close dialog
     this.showTagManifestOpened = false;
   }
 
   onError($event: any): void {
-    //Show error
+    // Show error
     this.copyFailed = true;
-    //Select all text
+    // Select all text
     if (this.textInput) {
       this.textInput.nativeElement.select();
     }
   }
 
-  //Get vulnerability scanning status 
+  // Get vulnerability scanning status
   scanStatus(t: Tag): string {
     if (t && t.scan_overview && t.scan_overview.scan_status) {
       return t.scan_overview.scan_status;
@@ -272,7 +337,7 @@ export class TagComponent implements OnInit {
       t.scan_overview.components.total > 0 ? true : false;
   }
 
-  //Whether show the 'scan now' menu
+  // Whether show the 'scan now' menu
   canScanNow(t: Tag): boolean {
     if (!this.withClair) { return false; }
     if (!this.hasProjectAdminRole) { return false; }
@@ -282,14 +347,14 @@ export class TagComponent implements OnInit {
       st !== VULNERABILITY_SCAN_STATUS.running;
   }
 
-  //Trigger scan
+  // Trigger scan
   scanNow(tagId: string): void {
     if (tagId) {
-      this.channel.publishScanEvent(this.repoName + "/" + tagId);
+      this.channel.publishScanEvent(this.repoName + '/' + tagId);
     }
   }
 
-  //pull command
+  // pull command
   onCpError($event: any): void {
       this.copyInput.setPullCommendShow();
   }

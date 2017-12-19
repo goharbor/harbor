@@ -22,6 +22,7 @@ type Environment struct {
 	CAFile         string //env var: CA_FILE_PATH
 	CertFile       string //env var: CERT_FILE_PATH
 	KeyFile        string //env var: KEY_FILE_PATH
+	ProxyURL       string //env var: http_proxy, https_proxy, HTTP_PROXY, HTTPS_PROXY
 
 	//API client
 	HTTPClient *client.APIClient
@@ -95,6 +96,18 @@ func (env *Environment) Load() error {
 		env.CertFile = certFile
 	}
 
+	proxyEnvVar := "https_proxy"
+	if env.Protocol == "http" {
+		proxyEnvVar = "http_proxy"
+	}
+	proxyURL := os.Getenv(proxyEnvVar)
+	if !isNotEmpty(proxyURL) {
+		proxyURL = os.Getenv(strings.ToUpper(proxyEnvVar))
+	}
+	if isNotEmpty(proxyURL) {
+		env.ProxyURL = proxyURL
+	}
+
 	if !env.loaded {
 		cfg := client.APIClientConfig{
 			Username: env.Admin,
@@ -102,6 +115,7 @@ func (env *Environment) Load() error {
 			CaFile:   env.CAFile,
 			CertFile: env.CertFile,
 			KeyFile:  env.KeyFile,
+			Proxy:    env.ProxyURL,
 		}
 
 		httpClient, err := client.NewAPIClient(cfg)

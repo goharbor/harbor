@@ -6,7 +6,7 @@ import { ENDPOINT_DIRECTIVES } from './endpoint/index';
 import { REPOSITORY_DIRECTIVES } from './repository/index';
 import { REPOSITORY_STACKVIEW_DIRECTIVES } from './repository-stackview/index';
 
-import { LIST_REPOSITORY_DIRECTIVES } from './list-repository/index';
+import { REPOSITORY_LISTVIEW_DIRECTIVES } from './repository-listview/index';
 import { TAG_DIRECTIVES } from './tag/index';
 
 import { REPLICATION_DIRECTIVES } from './replication/index';
@@ -157,7 +157,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     ENDPOINT_DIRECTIVES,
     REPOSITORY_DIRECTIVES,
     REPOSITORY_STACKVIEW_DIRECTIVES,
-    LIST_REPOSITORY_DIRECTIVES,
+    REPOSITORY_LISTVIEW_DIRECTIVES,
     TAG_DIRECTIVES,
     CREATE_EDIT_ENDPOINT_DIRECTIVES,
     CONFIRMATION_DIALOG_DIRECTIVES,
@@ -178,7 +178,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     ENDPOINT_DIRECTIVES,
     REPOSITORY_DIRECTIVES,
     REPOSITORY_STACKVIEW_DIRECTIVES,
-    LIST_REPOSITORY_DIRECTIVES,
+    REPOSITORY_LISTVIEW_DIRECTIVES,
     TAG_DIRECTIVES,
     CREATE_EDIT_ENDPOINT_DIRECTIVES,
     CONFIRMATION_DIALOG_DIRECTIVES,
