@@ -238,7 +238,7 @@ pg_password = rcp.get("configuration", "clair_db_password")
 uaa_endpoint = rcp.get("configuration", "uaa_endpoint")
 uaa_clientid = rcp.get("configuration", "uaa_clientid")
 uaa_clientsecret = rcp.get("configuration", "uaa_clientsecret")
-uaa_ca_root = rcp.get("configuration", "uaa_ca_root")
+uaa_verify_cert = rcp.get("configuration", "uaa_verify_cert")
 
 secret_key = get_secret_key(secretkey_path)
 log_rotate_count = rcp.get("configuration", "log_rotate_count")
@@ -291,12 +291,6 @@ if protocol == "https":
 else:
     render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
         nginx_conf)
-
-if auth_mode == "uaa_auth":
-    if os.path.isfile(uaa_ca_root):
-        shutil.copy2(uaa_ca_root, os.path.join(ui_certificates_dir, "uaa_ca.pem"))
-    else:
-        raise Exception("Error: Invalid path for uaa ca root: %s" % uaa_ca_root)
 		
 render(os.path.join(templates_dir, "adminserver", "env"),
         adminserver_conf_env,
@@ -335,7 +329,8 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         pg_password=pg_password,
         uaa_endpoint=uaa_endpoint,
         uaa_clientid=uaa_clientid,
-        uaa_clientsecret=uaa_clientsecret
+        uaa_clientsecret=uaa_clientsecret,
+        uaa_verify_cert=uaa_verify_cert
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
