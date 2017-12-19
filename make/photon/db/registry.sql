@@ -278,7 +278,7 @@ create table harbor_label (
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY(id),
- CONSTRAINT unique_name_and_scope UNIQUE (name,scope)
+ CONSTRAINT unique_label UNIQUE (name,scope, project_id)
  );
 
 create table harbor_resource_label (

@@ -25,8 +25,9 @@ import (
 )
 
 func TestMethodsOfLabel(t *testing.T) {
+	labelName := "test"
 	label := &models.Label{
-		Name:      "test",
+		Name:      labelName,
 		Level:     common.LabelLevelUser,
 		Scope:     common.LabelScopeProject,
 		ProjectID: 1,
@@ -36,6 +37,24 @@ func TestMethodsOfLabel(t *testing.T) {
 	id, err := AddLabel(label)
 	require.Nil(t, err)
 	label.ID = id
+
+	// add a label which has the same name to another project
+	projectID, err := AddProject(models.Project{
+		OwnerID: 1,
+		Name:    "project_for_label_test",
+	})
+	require.Nil(t, err)
+	defer GetOrmer().QueryTable(&models.Project{}).
+		Filter("project_id", projectID).Delete()
+
+	id2, err := AddLabel(&models.Label{
+		Name:      labelName,
+		Level:     common.LabelLevelUser,
+		Scope:     common.LabelScopeProject,
+		ProjectID: projectID,
+	})
+	require.Nil(t, err)
+	defer DeleteLabel(id2)
 
 	// get
 	l, err := GetLabel(id)

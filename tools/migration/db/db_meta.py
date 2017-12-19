@@ -259,7 +259,7 @@ class HarborLabel(Base):
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
-    __table_args__ = (sa.UniqueConstraint('name', 'scope', name='unique_name_and_scope'),)
+    __table_args__ = (sa.UniqueConstraint('name', 'scope', 'project_id', name='unique_label'),)
 
 
 class HarborResourceLabel(Base):
