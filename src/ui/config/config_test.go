@@ -163,7 +163,7 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get UAA setting, error: %v", err)
 	}
 
-	if us.ClientID != "testid" || us.ClientSecret != "testsecret" || us.Endpoint != "10.192.168.5" {
+	if us.ClientID != "testid" || us.ClientSecret != "testsecret" || us.Endpoint != "10.192.168.5" || us.VerifyCert {
 		t.Errorf("Unexpected UAA setting: %+v", *us)
 	}
 	assert.Equal("http://myjob:8888", InternalJobServiceURL())

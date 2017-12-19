@@ -22,14 +22,14 @@ import (
 
 	enpt "github.com/vmware/harbor/src/adminserver/systemcfg/encrypt"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
+	"github.com/vmware/harbor/src/adminserver/systemcfg/store/database"
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store/encrypt"
+	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
 	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/adminserver/systemcfg/store/database"
-	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 const (
@@ -133,8 +133,12 @@ var (
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
-		common.UIURL:           "UI_URL",
-		common.JobServiceURL:   "JOBSERVICE_URL",
+		common.UAAVerifyCert: &parser{
+			env:   "UAA_VERIFY_CERT",
+			parse: parseStringToBool,
+		},
+		common.UIURL:         "UI_URL",
+		common.JobServiceURL: "JOBSERVICE_URL",
 	}
 
 	// configurations need read from environment variables
@@ -163,6 +167,7 @@ var (
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
+		common.UAAVerifyCert:   "UAA_VERIFY_CERT",
 	}
 )
 
@@ -327,7 +332,7 @@ func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
 }
 
 // GetDatabaseFromCfg Create database object from config
-func GetDatabaseFromCfg(cfg map[string]interface{}) (*models.Database){
+func GetDatabaseFromCfg(cfg map[string]interface{}) *models.Database {
 	database := &models.Database{}
 	database.Type = cfg[common.DatabaseType].(string)
 	mysql := &models.MySQL{}
