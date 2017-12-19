@@ -247,15 +247,15 @@ Test Case - Create An Replication Rule New Endpoint
     Create An New Rule With New Endpoint  policy_name=test_policy_${d}  policy_description=test_description  destination_name=test_destination_name_${d}  destination_url=test_destination_url_${d}  destination_username=test_destination_username  destination_password=test_destination_password
     Close Browser
 
-Test Case - Scan A Tag
+Test Case - Scan A Tag In The Repo
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
     Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
-    Go Into Project  project${d}
-    Expand Repo  project${d}
+    Go Into Repo  project${d}/hello-world
     Scan Repo  latest
     Summary Chart Should Display  latest
+    Edit Repo Info
     Close Browser
 
 Test Case - Manage Project Member

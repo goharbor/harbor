@@ -22,11 +22,14 @@ import (
 	"testing"
 
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/proxy"
 )
@@ -44,14 +47,6 @@ import (
 //var admin *usrInfo
 
 func init() {
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
-
-	if err := proxy.Init(); err != nil {
-		log.Fatalf("Failed to initialize the proxy: %v", err)
-	}
-
 	_, file, _, _ := runtime.Caller(1)
 	apppath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator))))
 	beego.BConfig.WebConfig.Session.SessionOn = true
@@ -64,15 +59,74 @@ func init() {
 	beego.Router("/log_out", &CommonController{}, "get:LogOut")
 	beego.Router("/reset", &CommonController{}, "post:ResetPassword")
 	beego.Router("/userExists", &CommonController{}, "post:UserExists")
-	beego.Router("/sendEmail", &CommonController{}, "get:SendEmail")
+	beego.Router("/sendEmail", &CommonController{}, "get:SendResetEmail")
 	beego.Router("/registryproxy/*", &RegistryProxy{}, "*:Handle")
+}
 
+func TestMain(m *testing.M) {
+
+	rc := m.Run()
+	if rc != 0 {
+		os.Exit(rc)
+	}
 	//Init user Info
 	//admin = &usrInfo{adminName, adminPwd}
 }
 
+// TestUserResettable
+func TestUserResettable(t *testing.T) {
+	assert := assert.New(t)
+	DBAuthConfig := map[string]interface{}{
+		common.AUTHMode:        common.DBAuth,
+		common.CfgExpiration:   5,
+		common.TokenExpiration: 30,
+	}
+
+	LDAPAuthConfig := map[string]interface{}{
+		common.AUTHMode:        common.LDAPAuth,
+		common.CfgExpiration:   5,
+		common.TokenExpiration: 30,
+	}
+	DBAuthAdminsvr, err := test.NewAdminserver(DBAuthConfig)
+	if err != nil {
+		panic(err)
+	}
+	LDAPAuthAdminsvr, err := test.NewAdminserver(LDAPAuthConfig)
+	if err != nil {
+		panic(err)
+	}
+	defer DBAuthAdminsvr.Close()
+	defer LDAPAuthAdminsvr.Close()
+	if err := config.InitByURL(LDAPAuthAdminsvr.URL); err != nil {
+		panic(err)
+	}
+	u1 := &models.User{
+		UserID:   3,
+		Username: "daniel",
+		Email:    "daniel@test.com",
+	}
+	u2 := &models.User{
+		UserID:   1,
+		Username: "jack",
+		Email:    "jack@test.com",
+	}
+	assert.False(isUserResetable(u1))
+	assert.True(isUserResetable(u2))
+	if err := config.InitByURL(DBAuthAdminsvr.URL); err != nil {
+		panic(err)
+	}
+	assert.True(isUserResetable(u1))
+}
+
 // TestMain is a sample to run an endpoint test
-func TestMain(t *testing.T) {
+func TestAll(t *testing.T) {
+	if err := config.Init(); err != nil {
+		panic(err)
+	}
+	if err := proxy.Init(); err != nil {
+		panic(err)
+	}
+
 	assert := assert.New(t)
 
 	//	v := url.Values{}

@@ -20,7 +20,6 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/uaa"
-	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
@@ -66,7 +65,7 @@ func doAuth(username, password string, client uaa.Client) (*models.User, error) 
 	return nil, err
 }
 
-// Auth is the implementation of Authenticator to access uaa for authentication.
+// Auth is the implementation of AuthenticateHelper to access uaa for authentication.
 type Auth struct{}
 
 //Authenticate ...
@@ -78,6 +77,17 @@ func (u *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	return doAuth(m.Principal, m.Password, client)
 }
 
-func init() {
-	auth.Register(auth.UAAAuth, &Auth{})
-}
+// OnBoardUser will check if a user exists in user table, if not insert the user and
+// put the id in the pointer of user model, if it does exist, return the user's profile.
+// func (u *Auth) OnBoardUser(user *models.User) error {
+// 	panic("not implemented")
+// }
+
+// // SearchUser -  search user on uaa server
+// func (u *Auth) SearchUser(username string) (*models.User, error) {
+// 	panic("not implemented")
+// }
+
+// func init() {
+// 	auth.Register(auth.UAAAuth, &Auth{})
+// }

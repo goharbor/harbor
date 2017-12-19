@@ -16,6 +16,7 @@ package job
 
 import (
 	"fmt"
+	"runtime/debug"
 	"sync"
 
 	"github.com/vmware/harbor/src/common/models"
@@ -80,7 +81,7 @@ func (sm *SM) Start(s string) {
 	defer func() {
 		if r := recover(); r != nil {
 			sm.Logger.Errorf("Panic: %v, entering error state", r)
-			log.Warningf("Panic when handling job: %v, panic: %v, entering error state", sm.CurrentJob, r)
+			log.Warningf("Panic when handling job: %v, panic: %v \n %s \n, entering error state", sm.CurrentJob, r, debug.Stack())
 			sm.EnterState(models.JobError)
 		}
 	}()

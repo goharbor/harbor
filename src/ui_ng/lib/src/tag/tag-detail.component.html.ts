@@ -7,7 +7,7 @@ export const TAG_DETAIL_HTML: string = `
             </div>
             <div class="title-block">
                 <div class="tag-name">
-                    {{tagDetails.name}}
+                    <h1>{{tagDetails.name}}</h1>
                 </div>
                 <div class="tag-timestamp">
                     {{'TAG.CREATION_TIME_PREFIX' | translate }} {{tagDetails.created | date }} {{'TAG.CREATOR_PREFIX' | translate }} {{author | translate}}

@@ -62,7 +62,8 @@ export const CommonRoutes = {
 
 export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
-}
+};
+
 export const enum ConfirmationButtons {
   CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE
-}
+};

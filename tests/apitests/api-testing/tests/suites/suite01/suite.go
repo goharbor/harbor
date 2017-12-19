@@ -5,6 +5,7 @@ import (
 
 	"github.com/vmware/harbor/tests/apitests/api-testing/envs"
 	"github.com/vmware/harbor/tests/apitests/api-testing/lib"
+	"github.com/vmware/harbor/tests/apitests/api-testing/tests/suites/base"
 )
 
 //Steps of suite01:
@@ -22,7 +23,9 @@ import (
 //  s11: delete user
 
 //ConcourseCiSuite01 : For harbor journey in concourse pipeline
-type ConcourseCiSuite01 struct{}
+type ConcourseCiSuite01 struct {
+	base.ConcourseCiSuite
+}
 
 //Run : Run a group of cases
 func (ccs *ConcourseCiSuite01) Run(onEnvironment *envs.Environment) *lib.Report {
@@ -60,7 +63,7 @@ func (ccs *ConcourseCiSuite01) Run(onEnvironment *envs.Environment) *lib.Report 
 	}
 
 	//s4
-	if err := ccs.pushImage(onEnvironment); err != nil {
+	if err := ccs.PushImage(onEnvironment); err != nil {
 		report.Failed("pushImage", err)
 	} else {
 		report.Passed("pushImage")
@@ -76,7 +79,7 @@ func (ccs *ConcourseCiSuite01) Run(onEnvironment *envs.Environment) *lib.Report 
 	}
 
 	//s6
-	if err := ccs.pullImage(onEnvironment); err != nil {
+	if err := ccs.PullImage(onEnvironment); err != nil {
 		report.Failed("pullImage[1]", err)
 	} else {
 		report.Passed("pullImage[1]")
@@ -91,7 +94,7 @@ func (ccs *ConcourseCiSuite01) Run(onEnvironment *envs.Environment) *lib.Report 
 	}
 
 	//s8
-	if err := ccs.pullImage(onEnvironment); err == nil {
+	if err := ccs.PullImage(onEnvironment); err == nil {
 		report.Failed("pullImage[2]", err)
 	} else {
 		report.Passed("pullImage[2]")
@@ -119,59 +122,4 @@ func (ccs *ConcourseCiSuite01) Run(onEnvironment *envs.Environment) *lib.Report 
 	}
 
 	return report
-}
-
-func (ccs *ConcourseCiSuite01) pushImage(onEnvironment *envs.Environment) error {
-	docker := onEnvironment.DockerClient
-	if err := docker.Status(); err != nil {
-		return err
-	}
-
-	imagePulling := fmt.Sprintf("%s:%s", onEnvironment.ImageName, onEnvironment.ImageTag)
-	if err := docker.Pull(imagePulling); err != nil {
-		return err
-	}
-
-	if err := docker.Login(onEnvironment.Account, onEnvironment.Password, onEnvironment.Hostname); err != nil {
-		return err
-	}
-
-	imagePushing := fmt.Sprintf("%s/%s/%s:%s",
-		onEnvironment.Hostname,
-		onEnvironment.TestingProject,
-		onEnvironment.ImageName,
-		onEnvironment.ImageTag)
-
-	if err := docker.Tag(imagePulling, imagePushing); err != nil {
-		return err
-	}
-
-	if err := docker.Push(imagePushing); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (ccs *ConcourseCiSuite01) pullImage(onEnvironment *envs.Environment) error {
-	docker := onEnvironment.DockerClient
-	if err := docker.Status(); err != nil {
-		return err
-	}
-
-	if err := docker.Login(onEnvironment.Account, onEnvironment.Password, onEnvironment.Hostname); err != nil {
-		return err
-	}
-
-	imagePulling := fmt.Sprintf("%s/%s/%s:%s",
-		onEnvironment.Hostname,
-		onEnvironment.TestingProject,
-		onEnvironment.ImageName,
-		onEnvironment.ImageTag)
-
-	if err := docker.Pull(imagePulling); err != nil {
-		return err
-	}
-
-	return nil
 }

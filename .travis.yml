@@ -70,7 +70,7 @@ install:
 before_script:
   # create tables and load data
   # - mysql < ./make/db/registry.sql -uroot --verbose
-  - sudo sqlite3 /tmp/registry.db < make/common/db/registry_sqlite.sql
+  - sudo sqlite3 /tmp/registry.db < make/photon/db/registry_sqlite.sql
   - sudo chmod 777 /tmp/registry.db
 
 script:
@@ -82,6 +82,12 @@ script:
   - sudo make run_clarity_ut CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7
   - cat ./src/ui_ng/lib/npm-ut-test-results
   - sudo ./tests/testprepare.sh 
+  - sudo make -f make/photon/Makefile -e MARIADBVERSION=10.2.10 -e VERSIONTAG=dev
+  - sudo make -f make/photon/Makefile _build_registry -e REGISTRYVERSION=v2.6.2 -e VERSIONTAG=dev
+  - sudo sed -i 's/__reg_version__/v2.6.2-dev/g' ./make/docker-compose.test.yml
+  - sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
+  - sudo mkdir -p ./make/common/config/registry/
+  - sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
   - sudo docker-compose -f ./make/docker-compose.test.yml up -d
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
   - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet

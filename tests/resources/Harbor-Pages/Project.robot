@@ -169,6 +169,18 @@ Do Log Advanced Search
     ${rc} =  Get Matching Xpath Count  //audit-log//clr-dg-row
     Should Be Equal As Integers  ${rc}  0
 
+Go Into Repo
+    [Arguments]  ${repoName}
+    Sleep  2
+    Click Element  xpath=//*[@id="search_input"]
+    Sleep  2
+    Input Text  xpath=//*[@id="search_input"]  ${repoName}
+    Sleep  8
+    Wait Until Page Contains  ${repoName}
+    Click Element  xpath=//*[@id="results"]/list-repository-ro/clr-datagrid/div/div/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[1]/a
+    Sleep  2
+    Capture Page Screenshot  gointo_${repoName}.png
+
 Expand Repo
     [Arguments]  ${projectname}
     Click Element  //repository//clr-dg-row-master[contains(.,'${projectname}')]//button/clr-icon
@@ -179,6 +191,26 @@ Scan Repo
     Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow
     Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
     Sleep  15
+
+Edit Repo Info
+    Click Element  //*[@id="repo-info"]
+    Sleep  1
+    Page Should Contain Element  //*[@id="info"]/form/div[2]/h3
+    # Cancel input
+    Click Element  xpath=//*[@id="info-edit-button"]/button
+    Input Text  xpath=//*[@id="info"]/form/div[2]/textarea  test_description_info
+    Click Element  xpath=//*[@id="info"]/form/div[3]/button[2]
+    Sleep  1
+    Click Element  xpath=//*[@id="info"]/form/confirmation-dialog/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+    Sleep  1
+    Page Should Contain Element  //*[@id="info"]/form/div[2]/h3
+    # Confirm input
+    Click Element  xpath=//*[@id="info-edit-button"]/button
+    Input Text  xpath=//*[@id="info"]/form/div[2]/textarea  test_description_info
+    Click Element  xpath=//*[@id="info"]/form/div[3]/button[1]
+    Sleep  1
+    Page Should Contain  test_description_info
+    Capture Page Screenshot  RepoInfo.png
 
 Summary Chart Should Display
     [Arguments]  ${tagname}
