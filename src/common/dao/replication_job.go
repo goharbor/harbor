@@ -22,6 +22,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 // AddRepTarget ...
@@ -397,9 +398,9 @@ func UpdateRepJobStatus(id int64, status string) error {
 		Status:     status,
 		UpdateTime: time.Now(),
 	}
-	num, err := o.Update(&j, "Status", "UpdateTime")
-	if num == 0 {
-		err = fmt.Errorf("Failed to update replication job with id: %d %s", id, err.Error())
+	n, err := o.Update(&j, "Status", "UpdateTime")
+	if n == 0 {
+		log.Warningf("no records are updated when updating replication job %d", id)
 	}
 	return err
 }

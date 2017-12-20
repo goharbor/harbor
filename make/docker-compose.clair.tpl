@@ -17,7 +17,7 @@ services:
         aliases:
           - postgres
     container_name: clair-db
-    image: vmware/postgresql:9.6.5-photon
+    image: vmware/postgresql-photon:__postgresql_version__
     restart: always
     depends_on:
       - log
@@ -35,7 +35,7 @@ services:
     networks:
       - harbor-clair
     container_name: clair
-    image: vmware/clair:v2.0.1-photon
+    image: vmware/clair-photon:__clair_version__
     restart: always
     cpu_quota: 150000
     depends_on:

@@ -73,8 +73,8 @@ if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRAN
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 elif (echo $buildinfo | grep -q "\[Specific CI="); then
     buildtype=$(echo $buildinfo | grep "\[Specific CI=")
-    testsuite=$(echo $buildtype | awk -v FS="(=|])" '{print $2}')
-    pybot -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite --suite Regression tests/robot-cases
+    testsuite=$(echo $buildtype | awk -F"\[Specific CI=" '{sub(/\].*/,"",$2);print $2}')
+    pybot -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite tests/robot-cases
 elif (echo $buildinfo | grep -q "\[Full CI\]"); then
     pybot -v ip:$container_ip --removekeywords TAG:secret --exclude skip tests/robot-cases
 elif (echo $buildinfo | grep -q "\[Skip CI\]"); then
