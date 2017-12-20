@@ -106,7 +106,7 @@ script:
   - sudo rm -rf /data/config/*
   - sudo rm -rf /data/database/*
   - ls /data/cert
-  - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true CLAIRFLAG=true
+  - sudo make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true CLAIRFLAG=true
   - sleep 10  
   - docker ps 
   - ./tests/validatecontainers.sh
