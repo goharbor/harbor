@@ -1,6 +1,6 @@
 FROM vmware/photon:1.0
 
-RUN tdnf distro-sync -y || echo \
+RUN tdnf distro-sync -y \
     && tdnf erase vim -y \
     && tdnf install -y shadow sudo \
     && tdnf clean all \
