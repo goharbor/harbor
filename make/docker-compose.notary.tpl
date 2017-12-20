@@ -7,7 +7,7 @@ services:
     networks:
       - harbor-notary
   notary-server:
-    image: vmware/notary-photon:server-0.5.1
+    image: vmware/notary-server-photon:__notary_version__
     container_name: notary-server
     restart: always
     networks:
@@ -25,7 +25,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-server"
   notary-signer:
-    image: vmware/notary-photon:signer-0.5.1
+    image: vmware/notary-signer-photon:__notary_version__
     container_name: notary-signer
     restart: always
     networks:
@@ -45,7 +45,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-signer"
   notary-db:
-    image: vmware/mariadb-photon:10.2.10
+    image: vmware/mariadb-photon:__mariadb_version__
     container_name: notary-db
     restart: always
     networks:

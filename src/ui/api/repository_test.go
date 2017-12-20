@@ -199,3 +199,27 @@ func TestGetReposTop(t *testing.T) {
 
 	fmt.Printf("\n")
 }
+
+func TestPopulateAuthor(t *testing.T) {
+	author := "author"
+	detail := &tagDetail{
+		Author: author,
+	}
+	populateAuthor(detail)
+	assert.Equal(t, author, detail.Author)
+
+	detail = &tagDetail{}
+	populateAuthor(detail)
+	assert.Equal(t, "", detail.Author)
+
+	maintainer := "maintainer"
+	detail = &tagDetail{
+		Config: &cfg{
+			Labels: map[string]string{
+				"Maintainer": maintainer,
+			},
+		},
+	}
+	populateAuthor(detail)
+	assert.Equal(t, maintainer, detail.Author)
+}

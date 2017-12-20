@@ -1,4 +1,4 @@
-FROM vmware/mariadb-photon:10.2.10
+FROM vmware/mariadb-photon:__version__
 
 HEALTHCHECK CMD mysqladmin -uroot -p$MYSQL_ROOT_PASSWORD ping
 
