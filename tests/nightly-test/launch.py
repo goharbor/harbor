@@ -46,9 +46,9 @@ if build_type == "ova" :
     print "image url:", image_url
 
     if image_url == "latest" :
-        buildwebutil = BuildWebUtil()
-        build_id=buildwebutil.get_latest_recommend_build('harbor_build', 'master')
-        image_url = buildwebutil.get_deliverable_by_build_id(build_id, '.*.ovf')
+        buildweb = buildweb_utils.BuildWebUtil()
+        build_id=buildweb.get_latest_recommend_build('harbor_build', 'master')
+        image_url = buildweb.get_deliverable_by_build_id(build_id, '.*.ovf')
         print "Get latest image url:" + image_url
 
     ova_utils.deploy_ova(vc_host, 
