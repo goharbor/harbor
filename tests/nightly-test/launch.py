@@ -7,7 +7,7 @@ import ova_utils
 import govc_utils
 from datetime import datetime 
 
-import buildweb_util
+import buildweb_utils
 
 if len(sys.argv)!=6 :
     print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
