@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Endpoint, ReplicationRule } from '../service/interface';
 import { EndpointService } from '../service/endpoint.service';
 
@@ -35,6 +35,8 @@ import { ENDPOINT_TEMPLATE } from './endpoint.component.html';
 import { toPromise, CustomComparator } from '../utils';
 
 import { State, Comparator } from 'clarity-angular';
+import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
+import {Observable} from "rxjs/Observable";
 
 @Component({
     selector: 'hbr-endpoint',
@@ -42,7 +44,7 @@ import { State, Comparator } from 'clarity-angular';
     styles: [ENDPOINT_STYLE],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EndpointComponent implements OnInit {
+export class EndpointComponent implements OnInit, OnDestroy {
 
     @ViewChild(CreateEditEndpointComponent)
     createEditEndpointComponent: CreateEditEndpointComponent;
@@ -62,6 +64,8 @@ export class EndpointComponent implements OnInit {
     creationTimeComparator: Comparator<Endpoint> = new CustomComparator<Endpoint>('creation_time', 'date');
 
     timerHandler: any;
+    selectedRow: Endpoint[] = [];
+    batchDelectionInfos: BatchInfo[] = [];
 
     get initEndpoint(): Endpoint {
         return {
@@ -82,31 +86,6 @@ export class EndpointComponent implements OnInit {
         this.forceRefreshView(1000);
     }
 
-    confirmDeletion(message: ConfirmationAcknowledgement) {
-        if (message &&
-            message.source === ConfirmationTargets.TARGET &&
-            message.state === ConfirmationState.CONFIRMED) {
-
-            let targetId = message.data;
-            toPromise<number>(this.endpointService
-                .deleteEndpoint(targetId))
-                .then(
-                response => {
-                    this.translateService.get('DESTINATION.DELETED_SUCCESS')
-                        .subscribe(res => this.errorHandler.info(res));
-                    this.reload(true);
-                }).catch(
-                error => {
-                    if (error && error.status === 412) {
-                        this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')
-                            .subscribe(res => this.errorHandler.error(res));
-                    } else {
-                        this.errorHandler.error(error);
-                    }
-                });
-        }
-    }
-
     ngOnInit(): void {
         this.targetName = '';
         this.retrieve();
@@ -116,6 +95,9 @@ export class EndpointComponent implements OnInit {
         if (this.subscription) {
             this.subscription.unsubscribe();
         }
+    }
+    selectedChange(): void {
+        this.forceRefreshView(5000);
     }
 
     retrieve(): void {
@@ -152,8 +134,9 @@ export class EndpointComponent implements OnInit {
         this.target = this.initEndpoint;
     }
 
-    editTarget(target: Endpoint) {
-        if (target) {
+    editTargets(targets: Endpoint[]) {
+        if (targets && targets.length === 1) {
+            let target= targets[0];
             let editable = true;
             if (!target.id) {
                 return;
@@ -173,20 +156,69 @@ export class EndpointComponent implements OnInit {
         }
     }
 
-    deleteTarget(target: Endpoint) {
-        if (target) {
-            let targetId = target.id;
+    deleteTargets(targets: Endpoint[]) {
+        if (targets && targets.length) {
+            let targetNames: string[] = [];
+            this.batchDelectionInfos = [];
+            targets.forEach(target => {
+                targetNames.push(target.name);
+                let initBatchMessage = new BatchInfo ();
+                initBatchMessage.name = target.name;
+                this.batchDelectionInfos.push(initBatchMessage);
+            });
             let deletionMessage = new ConfirmationMessage(
                 'REPLICATION.DELETION_TITLE_TARGET',
                 'REPLICATION.DELETION_SUMMARY_TARGET',
-                target.name || '',
-                target.id,
+                targetNames.join(', ') || '',
+                targets,
                 ConfirmationTargets.TARGET,
                 ConfirmationButtons.DELETE_CANCEL);
             this.confirmationDialogComponent.open(deletionMessage);
         }
     }
+    confirmDeletion(message: ConfirmationAcknowledgement) {
+        if (message &&
+            message.source === ConfirmationTargets.TARGET &&
+            message.state === ConfirmationState.CONFIRMED) {
+            let targetLists: Endpoint[] = message.data;
+            if (targetLists && targetLists.length) {
+                let promiseLists: any[] = [];
+                targetLists.forEach(target => {
+                    this.delOperate(target.id, target.name);
+                })
+                Promise.all(promiseLists).then((item) => {
+                    this.selectedRow = [];
+                    this.reload(true);
+                    this.forceRefreshView(2000);
+                });
+            }
+        }
+    }
 
+    delOperate(id: number | string, name:  string) {
+        let findedList = this.batchDelectionInfos.find(data => data.name === name);
+         return toPromise<number>(this.endpointService
+            .deleteEndpoint(id))
+            .then(
+                response => {
+                    this.translateService.get('BATCH.DELETED_SUCCESS')
+                        .subscribe(res => {
+                            findedList = BathInfoChanges(findedList, res);
+                        });
+                }).catch(
+            error => {
+                if (error && error.status === 412) {
+                    Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                        this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')).subscribe(res => {
+                        findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+                    });
+                } else {
+                    this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+                        findedList = BathInfoChanges(findedList, res, false, true);
+                    });
+                }
+            });
+    }
     //Forcely refresh the view
     forceRefreshView(duration: number): void {
         //Reset timer

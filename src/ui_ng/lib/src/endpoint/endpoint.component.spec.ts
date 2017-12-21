@@ -57,7 +57,7 @@ describe('EndpointComponent (inline template)', () => {
     }
   ];
 
-  let mockOne: Endpoint = {
+  let mockOne: Endpoint[] = [{
     "id": 1,
     "endpoint": "https://10.117.4.151",
     "name": "target_01",
@@ -65,7 +65,7 @@ describe('EndpointComponent (inline template)', () => {
     "password": "",
       "insecure": false,
     "type": 0
-  };
+  }];
 
   let comp: EndpointComponent;
   let fixture: ComponentFixture<EndpointComponent>;
@@ -105,7 +105,7 @@ describe('EndpointComponent (inline template)', () => {
 
     spy = spyOn(endpointService, 'getEndpoints').and.returnValues(Promise.resolve(mockData));
     spyOnRules = spyOn(endpointService, 'getEndpointWithReplicationRules').and.returnValue([]);
-    spyOne = spyOn(endpointService, 'getEndpoint').and.returnValue(Promise.resolve(mockOne));
+    spyOne = spyOn(endpointService, 'getEndpoint').and.returnValue(Promise.resolve(mockOne[0]));
     fixture.detectChanges();
   });  
 
@@ -123,7 +123,7 @@ describe('EndpointComponent (inline template)', () => {
     fixture.detectChanges();
     fixture.whenStable().then(()=>{      
       fixture.detectChanges();
-      comp.editTarget(mockOne);
+      comp.editTargets(mockOne);
       fixture.detectChanges();
       expect(comp.target.name).toEqual('target_01');
     });

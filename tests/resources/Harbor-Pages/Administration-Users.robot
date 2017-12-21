@@ -25,9 +25,10 @@ Assign User Admin
     Click Element  xpath=//harbor-user//hbr-filter//clr-icon
     Input Text  xpath=//harbor-user//hbr-filter//input  ${user}
     Sleep  2
-    Click Element  xpath=//harbor-user/div/div/h2
-    Click Element  xpath=//harbor-user//clr-datagrid//clr-dg-action-overflow
-    Click Element  xpath=//harbor-user//clr-dg-action-overflow//button[contains(.,'Admin')]
+    #select checkbox
+    Click Element  //clr-dg-row[contains(.,"${user}")]//label
+    #click assign admin
+    Click Element  //button[contains(.,'Set as')] 
     Sleep  1
 
 Switch to User Tag

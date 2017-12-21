@@ -17,3 +17,6 @@
 .refresh-btn:hover {
     color: #007CBB;
 }
+.rightPos {
+    position: absolute; right: 20px; margin-top: 16px; height:32px;
+}
