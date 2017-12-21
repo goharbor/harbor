@@ -67,7 +67,7 @@ if build_type == "ova" :
                 ova_password,
                 dry_run)
 
-    time.sleep(20)
+    time.sleep(100)
 
     harbor_ova_endpoint = govc_utils.getvmip(vc_host, vc_user, vc_password, ova_name)
     print "OVA install complete, start to test now, fqdn=" + harbor_ova_endpoint    
