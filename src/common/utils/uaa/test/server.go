@@ -71,10 +71,10 @@ func (t *tokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 func serveToken(rw http.ResponseWriter) {
-	serveJsonFile(rw, "uaa-token.json")
+	serveJSONFile(rw, "uaa-token.json")
 }
 
-func serveJsonFile(rw http.ResponseWriter, filename string) {
+func serveJSONFile(rw http.ResponseWriter, filename string) {
 	data, err := ioutil.ReadFile(path.Join(currPath(), filename))
 	if err != nil {
 		panic(err)
@@ -98,7 +98,7 @@ func (u *userInfoHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		http.Error(rw, "invalid token", http.StatusUnauthorized)
 		return
 	}
-	serveJsonFile(rw, "./user-info.json")
+	serveJSONFile(rw, "./user-info.json")
 }
 
 type searchUserHandler struct {
@@ -121,15 +121,14 @@ func (su *searchUserHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request
 	if len(elements) == 3 {
 		if elements[0] == "Username" && elements[1] == "eq" {
 			if elements[2] == "'one'" {
-				serveJsonFile(rw, "one-user.json")
-				return
-			} else {
-				serveJsonFile(rw, "no-user.json")
+				serveJSONFile(rw, "one-user.json")
 				return
 			}
-		} else {
-			http.Error(rw, "invalid request", http.StatusBadRequest)
+			serveJSONFile(rw, "no-user.json")
+			return
 		}
+		http.Error(rw, "invalid request", http.StatusBadRequest)
+		return
 	}
 	http.Error(rw, fmt.Sprintf("Invalid request, elements: %v", elements), http.StatusBadRequest)
 }
