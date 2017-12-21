@@ -1,6 +1,7 @@
 #!/usr/bin/python2
 
 import os, subprocess
+import time
 
 SHELL_SCRIPT_DIR = '/harbor/workspace/harbor_nightly_test/tests/nightly-test/shellscript/'
 
