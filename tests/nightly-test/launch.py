@@ -5,6 +5,7 @@ import os
 import ConfigParser
 from subprocess import call
 from datetime import datetime
+import time
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/utils')
@@ -65,7 +66,9 @@ if build_type == "ova" :
                 ova_name, 
                 ova_password,
                 dry_run)
-                
+
+    time.sleep(20)
+
     harbor_ova_endpoint = govc_utils.getvmip(vc_host, vc_user, vc_password, ova_name)
     print "OVA install complete, start to test now, fqdn=" + harbor_ova_endpoint    
     print "run test now"
