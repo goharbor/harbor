@@ -16,8 +16,9 @@ def getvmip(vc_url, vc_user, vc_password, vm_name, timeout=600) :
             result = subprocess.check_output(cmd,shell=True)
             print "######"
             print result
+            print result == ''
             print "######"            
-            if result is not None and result is not "photon-machine":
+            if result is not '' and result is not "photon-machine":
                 print result
                 return 0
         except Exception, e:
