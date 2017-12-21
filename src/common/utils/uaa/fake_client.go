@@ -39,8 +39,8 @@ func (fc *FakeClient) GetUserInfo(token string) (*UserInfo, error) {
 }
 
 // SearchUser ...
-func (fc *FakeClient) SearchUser(name string) ([]*SearchUserEntry, err) {
-	res := []*SearchUserEmailEntry{}
+func (fc *FakeClient) SearchUser(name string) ([]*SearchUserEntry, error) {
+	res := []*SearchUserEntry{}
 	entryOne := &SearchUserEntry{
 		ExtID:    "some-external-id-1",
 		ID:       "u-0001",
