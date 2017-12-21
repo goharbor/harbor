@@ -14,6 +14,9 @@ def getvmip(vc_url, vc_user, vc_password, vm_name, timeout=600) :
                 print "timeout to get ova ip"
                 return -1
             result = subprocess.check_output(cmd,shell=True)
+            print "######"
+            print result
+            print "######"            
             if result is not None and result is not "photon-machine":
                 print result
                 return 0
