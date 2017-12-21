@@ -67,7 +67,7 @@ if build_type == "ova" :
     print "run test now"
     print "test done"
     print "Destorying vm after test"
-    govc_utils.destroyvm(vcenterUrl, vc_user, vc_password, ova_name)
+    #govc_utils.destroyvm(vcenterUrl, vc_user, vc_password, ova_name)
 
     
 
