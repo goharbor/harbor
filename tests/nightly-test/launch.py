@@ -4,7 +4,10 @@ import sys
 import ConfigParser
 from subprocess import call
 import ova_utils
+import govc_utils
 from datetime import datetime 
+
+import buildweb_utils
 
 if len(sys.argv)!=6 :
     print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
@@ -42,6 +45,12 @@ if build_type == "ova" :
 
     print "image url:", image_url
 
+    if image_url == "latest" :
+        buildweb = buildweb_utils.BuildWebUtil()
+        build_id=buildweb.get_latest_recommend_build('harbor_build', 'master')
+        image_url = buildweb.get_deliverable_by_build_id(build_id, '.*.ovf')
+        print "Get latest image url:" + image_url
+
     ova_utils.deploy_ova(vc_host, 
                 vc_user,
                 vc_password, 
@@ -51,7 +60,16 @@ if build_type == "ova" :
                 ova_name, 
                 ova_password,
                 dry_run)
-    print "OVA install complete, start to test now...."    
+    vcenterUrl = "https://%s" % vc_host
+
+    fqdn = govc_utils.getvmip(vcenterUrl, vc_user, vc_password, ova_name)
+    print "OVA install complete, start to test now, fqdn=" + fqdn    
+    print "run test now"
+    print "test done"
+    print "Destorying vm after test"
+    #govc_utils.destroyvm(vcenterUrl, vc_user, vc_password, ova_name)
+
+    
 
 elif build_type == "installer" :
     print "Going to download installer image to install"
