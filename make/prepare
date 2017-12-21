@@ -234,7 +234,12 @@ if rcp.has_option("configuration", "admiral_url"):
     admiral_url = rcp.get("configuration", "admiral_url")
 else:
     admiral_url = ""
-pg_password = rcp.get("configuration", "clair_db_password")
+clair_db_password = rcp.get("configuration", "clair_db_password")
+clair_db_host = rcp.get("configuration", "clair_db_host")
+clair_db_port = rcp.get("configuration", "clair_db_port")
+clair_db_username = rcp.get("configuration", "clair_db_username")
+clair_db = rcp.get("configuration", "clair_db")
+
 uaa_endpoint = rcp.get("configuration", "uaa_endpoint")
 uaa_clientid = rcp.get("configuration", "uaa_clientid")
 uaa_clientsecret = rcp.get("configuration", "uaa_clientsecret")
@@ -326,7 +331,11 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         admiral_url=admiral_url,
         with_notary=args.notary_mode,
         with_clair=args.clair_mode,
-        pg_password=pg_password,
+        clair_db_password=clair_db_password,
+        clair_db_host=clair_db_host,
+        clair_db_port=clair_db_port,
+        clair_db_username=clair_db_username,
+        clair_db=clair_db,
         uaa_endpoint=uaa_endpoint,
         uaa_clientid=uaa_clientid,
         uaa_clientsecret=uaa_clientsecret,
@@ -495,9 +504,14 @@ if args.clair_mode:
         shutil.rmtree(os.path.join(clair_config_dir, "postgresql-init.d"))
     shutil.copytree(os.path.join(clair_temp_dir, "postgresql-init.d"), os.path.join(clair_config_dir, "postgresql-init.d"))
     postgres_env = os.path.join(clair_config_dir, "postgres_env") 
-    render(os.path.join(clair_temp_dir, "postgres_env"), postgres_env, password = pg_password)
+    render(os.path.join(clair_temp_dir, "postgres_env"), postgres_env, password = clair_db_password)
     clair_conf = os.path.join(clair_config_dir, "config.yaml")
-    render(os.path.join(clair_temp_dir, "config.yaml"), clair_conf, password = pg_password)
+    render(os.path.join(clair_temp_dir, "config.yaml"),
+            clair_conf,
+            password = clair_db_password,
+            username = clair_db_username,
+            host = clair_db_host,
+            port = clair_db_port)
 
 if args.ha_mode:
     prepare_ha(rcp, args)

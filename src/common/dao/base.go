@@ -43,20 +43,20 @@ type Database interface {
 }
 
 // InitClairDB ...
-func InitClairDB(password string) error {
+func InitClairDB(clairDB *models.PostGreSQL) error {
 	//Except for password other information will not be configurable, so keep it hard coded for 1.2.0.
 	p := &pgsql{
-		host:     "postgres",
-		port:     5432,
-		usr:      "postgres",
-		pwd:      password,
-		database: "postgres",
+		host:     clairDB.Host,
+		port:     clairDB.Port,
+		usr:      clairDB.Username,
+		pwd:      clairDB.Password,
+		database: clairDB.Database,
 		sslmode:  false,
 	}
 	if err := p.Register(ClairDBAlias); err != nil {
 		return err
 	}
-	log.Info("initialized clair databas")
+	log.Info("initialized clair database")
 	return nil
 }
 

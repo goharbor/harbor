@@ -35,6 +35,7 @@ var(
 		common.MySQLPort:true,
 		common.MaxJobWorkers:true,
 		common.CfgExpiration:true,
+		common.ClairDBPort:true,
 		}
 	boolKeys = map[string]bool{
 		common.WithClair:true,

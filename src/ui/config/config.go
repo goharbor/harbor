@@ -379,15 +379,21 @@ func ClairEndpoint() string {
 	return common.DefaultClairEndpoint
 }
 
-// ClairDBPassword returns the password for accessing Clair's DB.
-func ClairDBPassword() (string, error) {
+// ClairDB return Clair db info
+func ClairDB() (*models.PostGreSQL, error){
 	cfg, err := mg.Get()
 	if err != nil {
-		return "", err
+		log.Errorf("Failed to get configuration of Clair DB, Error detail %v", err)
+		return nil, err
 	}
-	return cfg[common.ClairDBPassword].(string), nil
+	clairDB := &models.PostGreSQL{}
+	clairDB.Host = cfg[common.ClairDBHost].(string)
+	clairDB.Port = int(cfg[common.ClairDBPort].(float64))
+	clairDB.Username = cfg[common.ClairDBUsername].(string)
+	clairDB.Password = cfg[common.ClairDBPassword].(string)
+	clairDB.Database = cfg[common.ClairDB].(string)
+	return clairDB, nil
 }
-
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()

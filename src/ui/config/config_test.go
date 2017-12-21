@@ -117,6 +117,10 @@ func TestConfig(t *testing.T) {
 	if _, err := Database(); err != nil {
 		t.Fatalf("failed to get database: %v", err)
 	}
+
+	if _, err := ClairDB(); err != nil {
+		t.Fatalf("failed to get clair DB %v", err)
+	}
 	if InternalNotaryEndpoint() != "http://notary-server:4443" {
 		t.Errorf("Unexpected notary endpoint: %s", InternalNotaryEndpoint())
 	}

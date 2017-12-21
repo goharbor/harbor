@@ -93,11 +93,11 @@ func main() {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 	if config.WithClair() {
-		clairDBPassword, err := config.ClairDBPassword()
+		clairDB, err := config.ClairDB()
 		if err != nil {
 			log.Fatalf("failed to load clair database information: %v", err)
 		}
-		if err := dao.InitClairDB(clairDBPassword); err != nil {
+		if err := dao.InitClairDB(clairDB); err != nil {
 			log.Fatalf("failed to initialize clair database: %v", err)
 		}
 	}
