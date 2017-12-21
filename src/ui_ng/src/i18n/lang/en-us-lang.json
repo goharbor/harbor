@@ -35,6 +35,10 @@
         "COPY": "COPY",
         "EDIT": "EDIT"
     },
+    "BATCH": {
+        "DELETED_SUCCESS": "Deleted successfully",
+        "DELETED_FAILURE": "Deleted failed"
+    },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com.",
         "USER_NAME": "Cannot contain special characters and maximum length should be 20 characters.",
@@ -102,7 +106,7 @@
         "LOGS": "Logs"
     },
     "USER": {
-        "ADD_ACTION": "USER",
+        "ADD_ACTION": "New User",
         "ENABLE_ADMIN_ACTION": "Set as Administrator",
         "DISABLE_ADMIN_ACTION": "Revoke Administrator",
         "DEL_ACTION": "Delete",
@@ -311,7 +315,7 @@
         "TEST_CONNECTION": "Test Connection",
         "TITLE_EDIT": "Edit Endpoint",
         "TITLE_ADD": "Create Endpoint",
-        "DELETE": "Delete Endpoint",
+        "DELETE": "Delete",
         "TESTING_CONNECTION": "Testing Connection...",
         "TEST_CONNECTION_SUCCESS": "Connection tested successfully.",
         "TEST_CONNECTION_FAILURE": "Failed to ping endpoint.",

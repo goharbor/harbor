@@ -1,5 +1,5 @@
 export const TAG_TEMPLATE = `
-<confirmation-dialog class="hidden-tag" #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+<confirmation-dialog class="hidden-tag" #confirmationDialog  [batchInfors]="batchDelectionInfos" (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
 <clr-modal class="hidden-tag" [(clrModalOpen)]="showTagManifestOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
   <div class="modal-body">
@@ -22,7 +22,14 @@ export const TAG_TEMPLATE = `
     </div>
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"> 
-    <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded">
+    <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
+        <clr-dg-action-bar style="margin-bottom: 0;">
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-secondary" *ngIf="canScanNow(selectedRow)" [disabled]="!(selectedRow.length==1)" (click)="scanNow(selectedRow)">{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)" >{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length">{{'REPOSITORY.DELETE' | translate}}</button>
+            </div>
+        </clr-dg-action-bar>
         <clr-dg-column style="min-width: 160px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 90px;" [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
         <clr-dg-column style="min-width: 120px; max-width:220px;">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
