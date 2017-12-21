@@ -19,12 +19,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
 	"github.com/vmware/harbor/src/common/utils/log"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
 )
 
 // Client provides funcs to interact with UAA.
@@ -33,6 +35,8 @@ type Client interface {
 	PasswordAuth(username, password string) (*oauth2.Token, error)
 	//GetUserInfoByToken send the token to OIDC endpoint to get user info, currently it's also used to validate the token.
 	GetUserInfo(token string) (*UserInfo, error)
+	//SearchUser searches a user based on user name.
+	SearchUser(name string) ([]*SearchUserEntry, error)
 }
 
 // ClientConfig values to initialize UAA Client
@@ -56,17 +60,39 @@ type UserInfo struct {
 	Email    string `json:"email"`
 }
 
+//SearchUserEmailEntry ...
+type SearchUserEmailEntry struct {
+	Value   string `json:"value"`
+	Primary bool   `json:"primary"`
+}
+
+//SearchUserEntry is the struct of an entry of user within search result.
+type SearchUserEntry struct {
+	ID       string                 `json:"id"`
+	ExtID    string                 `json:"externalId"`
+	UserName string                 `json:"userName"`
+	Emails   []SearchUserEmailEntry `json:"emails"`
+	Groups   []interface{}
+}
+
+//SearchUserRes is the struct to parse the result of search user API of UAA
+type SearchUserRes struct {
+	Resources    []*SearchUserEntry `json:"resources"`
+	TotalResults int                `json:"totalResults"`
+	Schemas      []string           `json:"schemas"`
+}
+
 // DefaultClient leverages oauth2 pacakge for oauth features
 type defaultClient struct {
 	httpClient *http.Client
 	oauth2Cfg  *oauth2.Config
+	twoLegCfg  *clientcredentials.Config
 	endpoint   string
 	//TODO: add public key, etc...
 }
 
 func (dc *defaultClient) PasswordAuth(username, password string) (*oauth2.Token, error) {
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, dc.httpClient)
-	return dc.oauth2Cfg.PasswordCredentialsToken(ctx, username, password)
+	return dc.oauth2Cfg.PasswordCredentialsToken(dc.prepareCtx(), username, password)
 }
 
 func (dc *defaultClient) GetUserInfo(token string) (*UserInfo, error) {
@@ -90,6 +116,45 @@ func (dc *defaultClient) GetUserInfo(token string) (*UserInfo, error) {
 		return nil, err
 	}
 	return info, nil
+}
+
+func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error) {
+	token, err := dc.twoLegCfg.Token(dc.prepareCtx())
+	if err != nil {
+		return nil, err
+	}
+	url := dc.endpoint + "/uaa/Users"
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	q := req.URL.Query()
+	q.Add("filter", fmt.Sprintf("Username eq '%s'", username))
+	req.URL.RawQuery = q.Encode()
+	token.SetAuthHeader(req)
+	log.Debugf("request URL: %s", req.URL)
+	resp, err := dc.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode > 299 {
+		return nil, fmt.Errorf("Unexpected status code for searching user in UAA: %d, response: %s", resp.StatusCode, string(bytes))
+	}
+	res := &SearchUserRes{}
+	if err := json.Unmarshal(bytes, res); err != nil {
+		return nil, err
+	}
+	return res.Resources, nil
+}
+
+func (dc *defaultClient) prepareCtx() context.Context {
+	return context.WithValue(context.Background(), oauth2.HTTPClient, dc.httpClient)
 }
 
 // NewDefaultClient creates an instance of defaultClient.
@@ -130,9 +195,16 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 		},
 	}
 
+	cc := &clientcredentials.Config{
+		ClientID:     cfg.ClientID,
+		ClientSecret: cfg.ClientSecret,
+		TokenURL:     url + "/uaa/oauth/token",
+	}
+
 	return &defaultClient{
 		httpClient: hc,
 		oauth2Cfg:  oc,
+		twoLegCfg:  cc,
 		endpoint:   url,
 	}, nil
 }
