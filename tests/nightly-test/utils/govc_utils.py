@@ -18,6 +18,7 @@ def getvmip(vc_url, vc_user, vc_password, vm_name, timeout=600) :
 
             result = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             for line in result.stdout.readlines():
+                print line
                 results.append(line)
 
             print "######"
