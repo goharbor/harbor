@@ -65,16 +65,12 @@ if build_type == "ova" :
                 ova_name, 
                 ova_password,
                 dry_run)
-    vcenterUrl = "https://%s" % vc_host
-
-    fqdn = govc_utils.getvmip(vcenterUrl, vc_user, vc_password, ova_name)
-    print "OVA install complete, start to test now, fqdn=" + fqdn    
+                
+    harbor_ova_endpoint = govc_utils.getvmip(vc_host, vc_user, vc_password, ova_name)
+    print "OVA install complete, start to test now, fqdn=" + harbor_ova_endpoint    
     print "run test now"
     print "test done"
     print "Destorying vm after test"
-    #govc_utils.destroyvm(vcenterUrl, vc_user, vc_password, ova_name)
-    harbor_ova_endpoint = govc_utils.getvmip(vcenterUrl, vc_user, vc_password, ova_name)
-    print "OVA IP: %s" % harbor_ova_endpoint
 
 elif build_type == "installer" :
     print "Going to download installer image to install"
