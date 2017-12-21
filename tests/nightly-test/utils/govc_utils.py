@@ -19,14 +19,14 @@ def getvmip(vc_url, vc_user, vc_password, vm_name, timeout=600) :
             result = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             for line in result.stdout.readlines():
                 results.append(line)
-                
+
             print "######"
-            print result[0]
-            print result[0] is not ''
-            print result[0] is not None                        
+            print results[0]
+            print results[0] is not ''
+            print results[0] is not None                        
             print "######"            
-            if result is not '' and result is not "photon-machine":
-                print result
+            if results[0] is not '' and results[0] is not "photon-machine":
+                print results[0]
                 return 0
         except Exception, e:
             timeout -= interval
