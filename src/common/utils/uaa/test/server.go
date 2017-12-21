@@ -53,23 +53,36 @@ func (t *tokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		http.Error(rw, "invalid client id/secret in header", http.StatusUnauthorized)
 		return
 	}
-	if gt := req.FormValue("grant_type"); gt != "password" {
+	gt := req.FormValue("grant_type")
+	if gt == "password" {
+		reqUsername := req.FormValue("username")
+		reqPasswd := req.FormValue("password")
+		if reqUsername == t.username && reqPasswd == t.password {
+			serveToken(rw)
+		} else {
+			http.Error(rw, fmt.Sprintf("invalid username/password %s/%s", reqUsername, reqPasswd), http.StatusUnauthorized)
+		}
+	} else if gt == "client_credentials" {
+		serveToken(rw)
+	} else {
 		http.Error(rw, fmt.Sprintf("invalid grant_type: %s", gt), http.StatusBadRequest)
 		return
 	}
-	reqUsername := req.FormValue("username")
-	reqPasswd := req.FormValue("password")
-	if reqUsername == t.username && reqPasswd == t.password {
-		token, err := ioutil.ReadFile(path.Join(currPath(), "./uaa-token.json"))
-		if err != nil {
-			panic(err)
-		}
-		_, err2 := rw.Write(token)
-		if err2 != nil {
-			panic(err2)
-		}
-	} else {
-		http.Error(rw, fmt.Sprintf("invalid username/password %s/%s", reqUsername, reqPasswd), http.StatusUnauthorized)
+}
+
+func serveToken(rw http.ResponseWriter) {
+	serveJSONFile(rw, "uaa-token.json")
+}
+
+func serveJSONFile(rw http.ResponseWriter, filename string) {
+	data, err := ioutil.ReadFile(path.Join(currPath(), filename))
+	if err != nil {
+		panic(err)
+	}
+	rw.Header().Add("Content-Type", "application/json")
+	_, err2 := rw.Write(data)
+	if err2 != nil {
+		panic(err2)
 	}
 }
 
@@ -78,27 +91,52 @@ type userInfoHandler struct {
 }
 
 func (u *userInfoHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	v := req.Header.Get("Authorization")
+	v := req.Header.Get("authorization")
 	prefix := v[0:7]
 	reqToken := v[7:]
 	if strings.ToLower(prefix) != "bearer " || reqToken != u.token {
 		http.Error(rw, "invalid token", http.StatusUnauthorized)
 		return
 	}
-	userInfo, err := ioutil.ReadFile(path.Join(currPath(), "./user-info.json"))
-	if err != nil {
-		panic(err)
+	serveJSONFile(rw, "./user-info.json")
+}
+
+type searchUserHandler struct {
+	token string
+}
+
+func (su *searchUserHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	v := req.Header.Get("authorization")
+	if v == "" {
+		v = req.Header.Get("Authorization")
 	}
-	_, err2 := rw.Write(userInfo)
-	if err2 != nil {
-		panic(err2)
+	prefix := v[0:7]
+	reqToken := v[7:]
+	if strings.ToLower(prefix) != "bearer " || reqToken != su.token {
+		http.Error(rw, "invalid token", http.StatusUnauthorized)
+		return
 	}
+	f := req.URL.Query().Get("filter")
+	elements := strings.Split(f, " ")
+	if len(elements) == 3 {
+		if elements[0] == "Username" && elements[1] == "eq" {
+			if elements[2] == "'one'" {
+				serveJSONFile(rw, "one-user.json")
+				return
+			}
+			serveJSONFile(rw, "no-user.json")
+			return
+		}
+		http.Error(rw, "invalid request", http.StatusBadRequest)
+		return
+	}
+	http.Error(rw, fmt.Sprintf("Invalid request, elements: %v", elements), http.StatusBadRequest)
 }
 
 // NewMockServer ...
 func NewMockServer(cfg *MockServerConfig) *httptest.Server {
 	mux := http.NewServeMux()
-	mux.Handle("/uaa/oauth/token", &tokenHandler{
+	mux.Handle("/oauth/token", &tokenHandler{
 		cfg.ClientID,
 		cfg.ClientSecret,
 		cfg.Username,
@@ -108,6 +146,7 @@ func NewMockServer(cfg *MockServerConfig) *httptest.Server {
 	if err != nil {
 		panic(err)
 	}
-	mux.Handle("/uaa/userinfo", &userInfoHandler{strings.TrimSpace(string(token))})
+	mux.Handle("/userinfo", &userInfoHandler{strings.TrimSpace(string(token))})
+	mux.Handle("/Users", &searchUserHandler{strings.TrimSpace(string(token))})
 	return httptest.NewTLSServer(mux)
 }
