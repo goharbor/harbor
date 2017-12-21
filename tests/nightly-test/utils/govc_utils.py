@@ -9,16 +9,21 @@ def getvmip(vc_url, vc_user, vc_password, vm_name, timeout=600) :
     cmd = (SHELL_SCRIPT_DIR+'getvmip.sh %s %s %s %s ' % (vc_url, vc_user, getPasswordInShell(vc_password), vm_name))
     print cmd
     interval = 10
+    results = []
     while True:
         try:
             if timeout <= 0:
                 print "timeout to get ova ip"
                 return -1
-            result = subprocess.check_output(cmd,shell=True).replace('\\n','')
+
+            result = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            for line in result.stdout.readlines():
+                results.append(line)
+                
             print "######"
-            print result
-            print result is not ''
-            print result is not None                        
+            print result[0]
+            print result[0] is not ''
+            print result[0] is not None                        
             print "######"            
             if result is not '' and result is not "photon-machine":
                 print result
