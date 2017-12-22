@@ -48,7 +48,6 @@ if build_type == "ova" :
     
     ova_name = ova_name +"-"+ datetime.now().isoformat().replace(":", "-").replace(".", "-")
     print "ova_name:", ova_name
-
     print "image url:", image_url
 
     if image_url == "latest" :
@@ -66,8 +65,6 @@ if build_type == "ova" :
                 ova_name, 
                 ova_password,
                 dry_run)
-
-    time.sleep(100)
 
     harbor_ova_endpoint = govc_utils.getvmip(vc_host, vc_user, vc_password, ova_name)
     print "OVA install complete, start to test now, fqdn=" + harbor_ova_endpoint    
