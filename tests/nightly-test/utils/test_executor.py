@@ -4,7 +4,7 @@ import os, subprocess
 import time
 
 # Needs have docker installed.
-def execute_test_ova(harbor_endpoint, harbor_pwd='Harbor12345', harbor_root_pwd, test_suite) :
+def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='Harbor12345') :
     cmd = "docker run -it --privileged -v /harbor/workspace/harbor_nightly_test:/drone -w /drone vmware/harbor-e2e-engine:1.38 pybot -v ip:%s -v HARBOR_PASSWORD:%s -v SSH_PWD:%s " % (harbor_endpoint, harbor_pwd, harbor_root_pwd)
     if test_suite == 'Nightly':
         cmd = cmd + "/drone/tests/robot-cases/Group10-Nightly/Nightly.robot"
