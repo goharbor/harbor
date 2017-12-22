@@ -12,18 +12,18 @@ def getvmip(vc_url, vc_user, vc_password, vm_name, timeout=600) :
         try:
             if timeout <= 0:
                 print "timeout to get ova ip"
-                return -1
-            result = subprocess.check_output(cmd,shell=True).strip()     
+                return ''
+            result = subprocess.check_output(cmd,shell=True).strip()
+            print result
             if result is not '' and result is not "photon-machine":
                 print result
-                return 0
+                return result
         except Exception, e:
             timeout -= interval
             time.sleep(interval)
             continue
         timeout -= interval
         time.sleep(interval)
-    return result
 
 def destroyvm(vc_url, vc_user, vc_password, vm_name) :
     cmd = (SHELL_SCRIPT_DIR+'destroyvm.sh %s %s %s %s ' % (vc_url, vc_user, getPasswordInShell(vc_password), vm_name))  

@@ -67,10 +67,11 @@ if build_type == "ova" :
                 dry_run)
 
     harbor_ova_endpoint = govc_utils.getvmip(vc_host, vc_user, vc_password, ova_name)
-    print "OVA install complete, start to test now, fqdn=" + harbor_ova_endpoint    
-    print "run test now"
-    print "test done"
-    print "Destorying vm after test"
+    if harbor_ova_endpoint is not '':
+        print "OVA install complete, start to test now, fqdn=" + harbor_ova_endpoint    
+        print "run test now"
+        print "test done"
+        print "Destorying vm after test"
 
 elif build_type == "installer" :
     print "Going to download installer image to install"
