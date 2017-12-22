@@ -17,7 +17,14 @@ def getvmip(vc_url, vc_user, vc_password, vm_name, timeout=600) :
             print result
             if result is not '' and result is not "photon-machine":
                 print result
-                return result
+                if result == 'photon-machine':
+                    print result
+                    timeout -= interval
+                    time.sleep(interval)
+                else:
+                    print "else...."
+                    print result               
+                    return result
         except Exception, e:
             timeout -= interval
             time.sleep(interval)
