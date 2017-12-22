@@ -18,6 +18,7 @@ package common
 const (
 	DBAuth              = "db_auth"
 	LDAPAuth            = "ldap_auth"
+	UAAAuth             = "uaa_auth"
 	ProCrtRestrEveryone = "everyone"
 	ProCrtRestrAdmOnly  = "adminonly"
 	LDAPScopeBase       = 1
