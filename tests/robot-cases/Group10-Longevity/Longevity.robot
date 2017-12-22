@@ -61,7 +61,7 @@ Exe Regression Test Cases
     ${rand}=  Evaluate  random.randint(0, 9)  modules=random
     Push image  ${ip}  tester${d}  Test1@34  project${d}  ${image${rand}}:latest
     Go Into Project  project${d}
-    Wait Until Page Contains  project${d}/busybox
+    Wait Until Page Contains  project${d}/${image${rand}}
     Pull image  ${ip}  tester${d}  Test1@34  project${d}  ${image${rand}}:latest
     Close Browser
 
