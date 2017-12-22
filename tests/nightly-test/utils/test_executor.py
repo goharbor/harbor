@@ -13,7 +13,7 @@ def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='H
         cmd = cmd + "/drone/tests/robot-cases/Group10-Longevity/Longevity.robot"
     
     print cmd
-    rc = subprocess.check_output(cmd,shell=True).strip()
+    rc = subprocess.Popen(cmd)
     collect_log()
     return rc
 
