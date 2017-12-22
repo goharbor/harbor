@@ -89,4 +89,6 @@ if harbor_ova_endpoint is not None:
         sys.exit(-1)
 
 print "All test done, then to execute TC"
-test_executor.execute_test_ova(harbor_ova_endpoint, ova_password, test_suite)
+
+execute_results = test_executor.execute_test_ova(harbor_ova_endpoint, ova_password, test_suite)
+print execute_results
