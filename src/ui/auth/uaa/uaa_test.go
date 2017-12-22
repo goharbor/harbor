@@ -17,13 +17,55 @@ package uaa
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 	utilstest "github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/common/utils/uaa"
 	"github.com/vmware/harbor/src/ui/config"
 
 	"os"
+	"strconv"
 	"testing"
 )
+
+func TestMain(m *testing.M) {
+	dbHost := os.Getenv("MYSQL_HOST")
+	if len(dbHost) == 0 {
+		log.Fatalf("environment variable MYSQL_HOST is not set")
+	}
+	dbUser := os.Getenv("MYSQL_USR")
+	if len(dbUser) == 0 {
+		log.Fatalf("environment variable MYSQL_USR is not set")
+	}
+	dbPortStr := os.Getenv("MYSQL_PORT")
+	if len(dbPortStr) == 0 {
+		log.Fatalf("environment variable MYSQL_PORT is not set")
+	}
+	dbPort, err := strconv.Atoi(dbPortStr)
+	if err != nil {
+		log.Fatalf("invalid MYSQL_PORT: %v", err)
+	}
+
+	dbPassword := os.Getenv("MYSQL_PWD")
+	dbDatabase := os.Getenv("MYSQL_DATABASE")
+	if len(dbDatabase) == 0 {
+		log.Fatalf("environment variable MYSQL_DATABASE is not set")
+	}
+
+	database := &models.Database{
+		Type: "mysql",
+		MySQL: &models.MySQL{
+			Host:     dbHost,
+			Port:     dbPort,
+			Username: dbUser,
+			Password: dbPassword,
+			Database: dbDatabase,
+		},
+	}
+	dao.InitDatabase(database)
+	rc := m.Run()
+	os.Exit(rc)
+}
 
 func TestGetClient(t *testing.T) {
 	assert := assert.New(t)
@@ -45,17 +87,41 @@ func TestGetClient(t *testing.T) {
 	assert.NotNil(c)
 }
 
-func TestDoAuth(t *testing.T) {
+func TestAuthenticate(t *testing.T) {
 	assert := assert.New(t)
 	client := &uaa.FakeClient{
 		Username: "user1",
 		Password: "password1",
 	}
-	dao.PrepareTestForMySQL()
-	u1, err1 := doAuth("user1", "password1", client)
+	auth := Auth{client: client}
+	m1 := models.AuthModel{
+		Principal: "user1",
+		Password:  "password1",
+	}
+	u1, err1 := auth.Authenticate(m1)
 	assert.Nil(err1)
-	assert.True(u1.UserID > 0)
-	u2, err2 := doAuth("wrong", "wrong", client)
+	assert.NotNil(u1)
+	m2 := models.AuthModel{
+		Principal: "wrong",
+		Password:  "wrong",
+	}
+	u2, err2 := auth.Authenticate(m2)
 	assert.NotNil(err2)
 	assert.Nil(u2)
+}
+
+func TestSearchUser(t *testing.T) {
+	assert := assert.New(t)
+	client := &uaa.FakeClient{
+		Username: "user1",
+		Password: "password1",
+	}
+	auth := Auth{client: client}
+	_, err0 := auth.SearchUser("error")
+	assert.NotNil(err0)
+	u1, err1 := auth.SearchUser("one")
+	assert.Nil(err1)
+	assert.Equal("one@email.com", u1.Email)
+	_, err2 := auth.SearchUser("two")
+	assert.NotNil(err2)
 }

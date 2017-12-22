@@ -15,11 +15,14 @@
 package uaa
 
 import (
+	"fmt"
 	"sync"
 
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/uaa"
+	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
@@ -57,37 +60,89 @@ func doAuth(username, password string, client uaa.Client) (*models.User, error) 
 			Email:    username + "@placeholder.com",
 			Realname: username,
 		}
-		err = dao.OnBoardUser(u)
-		if err == nil {
-			return u, nil
-		}
+		return u, nil
 	}
 	return nil, err
 }
 
 // Auth is the implementation of AuthenticateHelper to access uaa for authentication.
-type Auth struct{}
+type Auth struct {
+	sync.Mutex
+	client uaa.Client
+}
 
 //Authenticate ...
 func (u *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
-	client, err := GetClient()
-	if err != nil {
+	if err := u.ensureClient(); err != nil {
 		return nil, err
 	}
-	return doAuth(m.Principal, m.Password, client)
+	t, err := u.client.PasswordAuth(m.Principal, m.Password)
+	if t != nil && err == nil {
+		//TODO: See if it's possible to get more information from token.
+		user := &models.User{
+			Username: m.Principal,
+			Password: "1234567ab",
+			Email:    m.Principal + "@uaa.placeholder",
+			Realname: m.Principal,
+		}
+		err = u.OnBoardUser(user)
+		return user, err
+	}
+	return nil, err
 }
 
 // OnBoardUser will check if a user exists in user table, if not insert the user and
 // put the id in the pointer of user model, if it does exist, return the user's profile.
-// func (u *Auth) OnBoardUser(user *models.User) error {
-// 	panic("not implemented")
-// }
+func (u *Auth) OnBoardUser(user *models.User) error {
+	return dao.OnBoardUser(user)
+}
 
-// // SearchUser -  search user on uaa server
-// func (u *Auth) SearchUser(username string) (*models.User, error) {
-// 	panic("not implemented")
-// }
+// SearchUser -  search user on uaa server
+func (u *Auth) SearchUser(username string) (*models.User, error) {
+	if err := u.ensureClient(); err != nil {
+		return nil, err
+	}
+	l, err := u.client.SearchUser(username)
+	if err != nil {
 
-// func init() {
-// 	auth.Register(auth.UAAAuth, &Auth{})
-// }
+	}
+	if len(l) == 0 {
+		return nil, fmt.Errorf("No entry found for username: %s", username)
+	}
+	if len(l) > 1 {
+		return nil, fmt.Errorf("Multiple entries found for username: %s", username)
+	}
+	e := l[0]
+	email := username + "@uaa.placeholder"
+	if len(e.Emails) > 0 {
+		email = e.Emails[0].Value
+	}
+	return &models.User{
+		Username: username,
+		Password: "1234567ab",
+		Email:    email,
+		Realname: username,
+	}, nil
+
+}
+
+func (u *Auth) ensureClient() error {
+	if u.client != nil {
+		return nil
+	}
+	u.Lock()
+	defer u.Unlock()
+	if u.client == nil {
+		c, err := GetClient()
+		if err != nil {
+			return err
+		}
+		u.client = c
+	}
+	return nil
+}
+func init() {
+	auth.Register(common.UAAAuth, &Auth{
+		client: nil,
+	})
+}
