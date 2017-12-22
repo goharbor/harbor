@@ -81,9 +81,10 @@ elif build_type == "installer" :
 elif build_type == "all" :
     print "launch ova and installer"
 
-print "All test done!"
-
 if harbor_ova_endpoint is not None:
     result = harbor_util.wait_for_harbor_ready("https://"+harbor_ova_endpoint)
     if result != 0:
         print "Harbor is not ready after 10 minutes."
+
+print "All test done, then to execute TC"
+

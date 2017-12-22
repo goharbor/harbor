@@ -11,7 +11,7 @@ def getvmip(vc_url, vc_user, vc_password, vm_name, timeout=600) :
     while True:
         try:
             if timeout <= 0:
-                print "timeout to get ova ip"
+                print "timeout to get ova ip, return empty..."
                 return ''
             result = subprocess.check_output(cmd,shell=True).strip()
             if result is not '':
