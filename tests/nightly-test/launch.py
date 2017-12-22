@@ -14,6 +14,7 @@ import ova_utils
 import govc_utils
 import harbor_util
 import buildweb_utils
+import test_executor
 
 if len(sys.argv)!=6 :
     print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
@@ -85,6 +86,9 @@ if harbor_ova_endpoint is not None:
     result = harbor_util.wait_for_harbor_ready("https://"+harbor_ova_endpoint)
     if result != 0:
         print "Harbor is not ready after 10 minutes."
+        sys.exit(-1)
 
 print "All test done, then to execute TC"
 
+execute_results = test_executor.execute_test_ova(harbor_ova_endpoint, ova_password, test_suite)
+print execute_results
