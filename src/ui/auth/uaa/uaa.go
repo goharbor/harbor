@@ -97,7 +97,7 @@ func (u *Auth) OnBoardUser(user *models.User) error {
 	return dao.OnBoardUser(user)
 }
 
-// // SearchUser -  search user on uaa server
+// SearchUser -  search user on uaa server
 func (u *Auth) SearchUser(username string) (*models.User, error) {
 	if err := u.ensureClient(); err != nil {
 		return nil, err

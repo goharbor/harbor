@@ -130,10 +130,10 @@ var (
 			parse: parseStringToBool,
 		},
 		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
-		common.ClairDB: "CLAIR_DB",
+		common.ClairDB:         "CLAIR_DB",
 		common.ClairDBUsername: "CLAIR_DB_USERNAME",
-		common.ClairDBHost: "CLAIR_DB_HOST",
-		common.ClairDBPort: "CLAIR_DB_PORT",
+		common.ClairDBHost:     "CLAIR_DB_HOST",
+		common.ClairDBPort:     "CLAIR_DB_PORT",
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
@@ -171,7 +171,10 @@ var (
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
-		common.UAAVerifyCert:   "UAA_VERIFY_CERT",
+		common.UAAVerifyCert: &parser{
+			env:   "UAA_VERIFY_CERT",
+			parse: parseStringToBool,
+		},
 	}
 )
 
