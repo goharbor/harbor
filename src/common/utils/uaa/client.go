@@ -96,7 +96,7 @@ func (dc *defaultClient) PasswordAuth(username, password string) (*oauth2.Token,
 }
 
 func (dc *defaultClient) GetUserInfo(token string) (*UserInfo, error) {
-	userInfoURL := dc.endpoint + "/uaa/userinfo"
+	userInfoURL := dc.endpoint + "/userinfo"
 	req, err := http.NewRequest(http.MethodGet, userInfoURL, nil)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error)
 	if err != nil {
 		return nil, err
 	}
-	url := dc.endpoint + "/uaa/Users"
+	url := dc.endpoint + "/Users"
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -190,15 +190,15 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
 		Endpoint: oauth2.Endpoint{
-			TokenURL: url + "/uaa/oauth/token",
-			AuthURL:  url + "/uaa/oauth/authorize",
+			TokenURL: url + "/oauth/token",
+			AuthURL:  url + "/oauth/authorize",
 		},
 	}
 
 	cc := &clientcredentials.Config{
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
-		TokenURL:     url + "/uaa/oauth/token",
+		TokenURL:     url + "/oauth/token",
 	}
 
 	return &defaultClient{

@@ -136,7 +136,7 @@ func (su *searchUserHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request
 // NewMockServer ...
 func NewMockServer(cfg *MockServerConfig) *httptest.Server {
 	mux := http.NewServeMux()
-	mux.Handle("/uaa/oauth/token", &tokenHandler{
+	mux.Handle("/oauth/token", &tokenHandler{
 		cfg.ClientID,
 		cfg.ClientSecret,
 		cfg.Username,
@@ -146,7 +146,7 @@ func NewMockServer(cfg *MockServerConfig) *httptest.Server {
 	if err != nil {
 		panic(err)
 	}
-	mux.Handle("/uaa/userinfo", &userInfoHandler{strings.TrimSpace(string(token))})
-	mux.Handle("/uaa/Users", &searchUserHandler{strings.TrimSpace(string(token))})
+	mux.Handle("/userinfo", &userInfoHandler{strings.TrimSpace(string(token))})
+	mux.Handle("/Users", &searchUserHandler{strings.TrimSpace(string(token))})
 	return httptest.NewTLSServer(mux)
 }
