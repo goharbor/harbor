@@ -19,8 +19,19 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 ${HARBOR_URL}  https://${ip}
 ${SSH_USER}  root
-${SSH_PWD}  root1234
-${HARBOR_PASSWORD}  Harbor12345
+#${SSH_PWD}  root1234
+#${HARBOR_PASSWORD}  Harbor12345
+
+${image0}  consul
+${image1}  node
+${image2}  tomcat
+${image3}  redis
+${image4}  httpd
+${image5}  busybox
+${image6}  mysql
+${image7}  registry
+${image8}  mongo
+${image9}  memcached
 
 *** Keywords ***
 Longevity setup
@@ -47,10 +58,11 @@ Exe Regression Test Cases
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
-    Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
+    ${rand}=  Evaluate  random.randint(0, 9)  modules=random
+    Push image  ${ip}  tester${d}  Test1@34  project${d}  ${image${rand}}:latest
     Go Into Project  project${d}
-    Wait Until Page Contains  project${d}/busybox
-    Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
+    Wait Until Page Contains  project${d}/${image${rand}}
+    Pull image  ${ip}  tester${d}  Test1@34  project${d}  ${image${rand}}:latest
     Close Browser
 
 *** Test Cases ***

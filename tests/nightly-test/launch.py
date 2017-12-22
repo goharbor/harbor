@@ -1,12 +1,18 @@
 #!/usr/bin/python2
 
 import sys
+import os
 import ConfigParser
 from subprocess import call
+from datetime import datetime
+import time
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/utils')
+
 import ova_utils
 import govc_utils
-from datetime import datetime 
-
+import harbor_util
 import buildweb_utils
 
 if len(sys.argv)!=6 :
@@ -22,10 +28,10 @@ dry_run = sys.argv[5]
 config_file = "/harbor/workspace/harbor_nightly_test/harbor_nightly_test/testenv.ini"
 #  config_file = "/Users/daojunz/Documents/harbor_nightly_test/testenv.ini"
 
+harbor_ova_endpoint = ''
+
 config = ConfigParser.ConfigParser()
 config.read(config_file)
-
-
 
 if build_type == "ova" :
     print "Going to install ova on target machine!"
@@ -42,7 +48,6 @@ if build_type == "ova" :
     
     ova_name = ova_name +"-"+ datetime.now().isoformat().replace(":", "-").replace(".", "-")
     print "ova_name:", ova_name
-
     print "image url:", image_url
 
     if image_url == "latest" :
@@ -60,24 +65,26 @@ if build_type == "ova" :
                 ova_name, 
                 ova_password,
                 dry_run)
-    vcenterUrl = "https://%s" % vc_host
 
-    fqdn = govc_utils.getvmip(vcenterUrl, vc_user, vc_password, ova_name)
-    print "OVA install complete, start to test now, fqdn=" + fqdn    
-    print "run test now"
-    print "test done"
-    print "Destorying vm after test"
-    #govc_utils.destroyvm(vcenterUrl, vc_user, vc_password, ova_name)
-
-    
+    harbor_ova_endpoint = govc_utils.getvmip(vc_host, vc_user, vc_password, ova_name)
+    if harbor_ova_endpoint is not '':
+        print "OVA install complete, start to test now, fqdn=" + harbor_ova_endpoint    
+        print "run test now"
+        print "test done"
+        print "Destorying vm after test"
 
 elif build_type == "installer" :
     print "Going to download installer image to install"
     vm_host = config.get("vm", "vm_host")
     vm_user = config.get("vm", "vm_user")
     vm_password = config.get("vm", "vm_password")
-
 elif build_type == "all" :
     print "launch ova and installer"
 
-print "All test done!"
+if harbor_ova_endpoint is not None:
+    result = harbor_util.wait_for_harbor_ready("https://"+harbor_ova_endpoint)
+    if result != 0:
+        print "Harbor is not ready after 10 minutes."
+
+print "All test done, then to execute TC"
+
