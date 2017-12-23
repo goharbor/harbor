@@ -1112,7 +1112,7 @@ func TestAddRepJob(t *testing.T) {
 func TestUpdateRepJobStatus(t *testing.T) {
 	err := UpdateRepJobStatus(jobID, models.JobFinished)
 	if err != nil {
-		t.Errorf("Error occured in UpdateRepJobStatus, error: %v, id: %d", err, jobID)
+		t.Errorf("Error occurred in UpdateRepJobStatus, error: %v, id: %d", err, jobID)
 		return
 	}
 	j, err := GetRepJob(jobID)
@@ -1127,7 +1127,7 @@ func TestUpdateRepJobStatus(t *testing.T) {
 	}
 	err = UpdateRepJobStatus(jobID, models.JobPending)
 	if err != nil {
-		t.Errorf("Error occured in UpdateRepJobStatus when update it back to status pending, error: %v, id: %d", err, jobID)
+		t.Errorf("Error occurred in UpdateRepJobStatus when update it back to status pending, error: %v, id: %d", err, jobID)
 		return
 	}
 }
@@ -1135,7 +1135,7 @@ func TestUpdateRepJobStatus(t *testing.T) {
 func TestGetRepPolicyByProject(t *testing.T) {
 	p1, err := GetRepPolicyByProject(99)
 	if err != nil {
-		t.Errorf("Error occured in GetRepPolicyByProject:%v, project ID: %d", err, 99)
+		t.Errorf("Error occurred in GetRepPolicyByProject:%v, project ID: %d", err, 99)
 		return
 	}
 	if len(p1) > 0 {
@@ -1161,7 +1161,7 @@ func TestGetRepPolicyByProject(t *testing.T) {
 func TestGetRepJobByPolicy(t *testing.T) {
 	jobs, err := GetRepJobByPolicy(999)
 	if err != nil {
-		t.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, 999)
+		t.Errorf("Error occurred in GetRepJobByPolicy: %v, policy ID: %d", err, 999)
 		return
 	}
 	if len(jobs) > 0 {
@@ -1170,7 +1170,7 @@ func TestGetRepJobByPolicy(t *testing.T) {
 	}
 	jobs, err = GetRepJobByPolicy(policyID)
 	if err != nil {
-		t.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, policyID)
+		t.Errorf("Error occurred in GetRepJobByPolicy: %v, policy ID: %d", err, policyID)
 		return
 	}
 	if len(jobs) != 1 {
@@ -1186,7 +1186,7 @@ func TestGetRepJobByPolicy(t *testing.T) {
 func TestFilterRepJobs(t *testing.T) {
 	jobs, _, err := FilterRepJobs(policyID, "", "", nil, nil, 1000, 0)
 	if err != nil {
-		t.Errorf("Error occured in FilterRepJobs: %v, policy ID: %d", err, policyID)
+		t.Errorf("Error occurred in FilterRepJobs: %v, policy ID: %d", err, policyID)
 		return
 	}
 	if len(jobs) != 1 {
@@ -1202,13 +1202,13 @@ func TestFilterRepJobs(t *testing.T) {
 func TestDeleteRepJob(t *testing.T) {
 	err := DeleteRepJob(jobID)
 	if err != nil {
-		t.Errorf("Error occured in DeleteRepJob: %v, id: %d", err, jobID)
+		t.Errorf("Error occurred in DeleteRepJob: %v, id: %d", err, jobID)
 		return
 	}
 	t.Logf("deleted rep job, id: %d", jobID)
 	j, err := GetRepJob(jobID)
 	if err != nil {
-		t.Errorf("Error occured in GetRepJob:%v", err)
+		t.Errorf("Error occurred in GetRepJob:%v", err)
 		return
 	}
 	if j != nil {
@@ -1271,7 +1271,7 @@ func TestGetRepoJobToStop(t *testing.T) {
 func TestDeleteRepTarget(t *testing.T) {
 	err := DeleteRepTarget(targetID)
 	if err != nil {
-		t.Errorf("Error occured in DeleteRepTarget: %v, id: %d", err, targetID)
+		t.Errorf("Error occurred in DeleteRepTarget: %v, id: %d", err, targetID)
 		return
 	}
 	t.Logf("deleted target, id: %d", targetID)
@@ -1304,13 +1304,13 @@ func TestUpdateRepPolicy(t *testing.T) {
 func TestDeleteRepPolicy(t *testing.T) {
 	err := DeleteRepPolicy(policyID)
 	if err != nil {
-		t.Errorf("Error occured in DeleteRepPolicy: %v, id: %d", err, policyID)
+		t.Errorf("Error occurred in DeleteRepPolicy: %v, id: %d", err, policyID)
 		return
 	}
 	t.Logf("delete rep policy, id: %d", policyID)
 	p, err := GetRepPolicy(policyID)
 	if err != nil && err != orm.ErrNoRows {
-		t.Errorf("Error occured in GetRepPolicy:%v", err)
+		t.Errorf("Error occurred in GetRepPolicy:%v", err)
 	}
 	if p != nil && p.Deleted != 1 {
 		t.Errorf("Able to find rep policy after deletion, id: %d", policyID)
