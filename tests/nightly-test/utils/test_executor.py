@@ -2,6 +2,7 @@
 
 import os, subprocess
 import time
+import sys
 
 # Needs have docker installed.
 def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='Harbor12345') :
