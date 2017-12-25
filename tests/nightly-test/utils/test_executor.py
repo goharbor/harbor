@@ -13,10 +13,12 @@ def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='H
         cmd = cmd + "/drone/tests/robot-cases/Group10-Longevity/Longevity.robot"
     
     print cmd
-    rc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).stdout.read()
-    print rc
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in p.stdout.readlines():
+        print line,
+    retval = p.wait()
     collect_log()
-    return rc
+    return retval
 
 # Needs to move log.html to another path it will be overwrite by any pybot run.
 def collect_log():
