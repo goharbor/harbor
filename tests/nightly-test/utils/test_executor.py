@@ -4,6 +4,9 @@ import os, subprocess
 import time
 import sys
 
+from subprocess import call
+import json
+
 # Needs have docker installed.
 def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='Harbor12345') :
     cmd = "docker run -it --privileged -v /harbor/workspace/harbor_nightly_test_yan:/drone -w /drone vmware/harbor-e2e-engine:1.38 pybot -v ip:%s -v HARBOR_PASSWORD:%s -v SSH_PWD:%s " % (harbor_endpoint, harbor_pwd, harbor_root_pwd)
@@ -14,14 +17,8 @@ def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='H
         cmd = cmd + "/drone/tests/robot-cases/Group10-Longevity/Longevity.robot"
     
     print cmd
-    p = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
-    while True:
-        out = p.stderr.read(1)
-        if out == '' and p.poll() != None:
-            break
-        if out != '':
-            sys.stdout.write(out)
-            sys.stdout.flush()
+    with open("/tmp/output.log", "a") as output:
+        subprocess.call(cmd, shell=True, stdout=output, stderr=output)
     collect_log()
     return 0
 
