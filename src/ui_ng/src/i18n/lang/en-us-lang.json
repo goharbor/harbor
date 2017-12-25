@@ -410,6 +410,7 @@
         "SELF_REGISTRATION": "Allow Self-Registration",
         "AUTH_MODE_DB": "Database",
         "AUTH_MODE_LDAP": "LDAP",
+        "AUTH_MODE_UAA": "UAA",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
         "SCOPE_SUBTREE": "Subtree",

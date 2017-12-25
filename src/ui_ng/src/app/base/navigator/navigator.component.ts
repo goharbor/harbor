@@ -108,7 +108,7 @@ export class NavigatorComponent implements OnInit {
         let user = this.session.getCurrentUser();
         let config = this.appConfigService.getConfig();
         
-        return user && ((config && config.auth_mode != 'ldap_auth') || (user.user_id === 1 && user.username === 'admin'));
+        return user && ((config && !(config.auth_mode === 'ldap_auth' || config.auth_mode === 'uaa_auth')) || (user.user_id === 1 && user.username === 'admin'));
     }
 
     matchLang(lang: string): boolean {
