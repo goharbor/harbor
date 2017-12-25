@@ -12,39 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package auth
+package models
 
 import (
-	"net/http"
+	"testing"
+
+	"github.com/astaxie/beego/validation"
+	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/replication"
 )
 
-// Authorizer authorizes request
-type Authorizer interface {
-	Authorize(*http.Request) error
-}
-
-// NewSecretAuthorizer returns an instance of secretAuthorizer
-func NewSecretAuthorizer(cookieName, secret string) Authorizer {
-	return &secretAuthorizer{
-		cookieName: cookieName,
-		secret:     secret,
-	}
-}
-
-type secretAuthorizer struct {
-	cookieName string
-	secret     string
-}
-
-func (s *secretAuthorizer) Authorize(req *http.Request) error {
-	if req == nil {
-		return nil
+func TestValid(t *testing.T) {
+	cases := map[*Filter]bool{
+		&Filter{}: true,
+		&Filter{
+			Kind: "invalid_kind",
+		}: true,
+		&Filter{
+			Kind: replication.FilterItemKindRepository,
+		}: true,
+		&Filter{
+			Kind:    replication.FilterItemKindRepository,
+			Pattern: "*",
+		}: false,
 	}
 
-	req.AddCookie(&http.Cookie{
-		Name:  s.cookieName,
-		Value: s.secret,
-	})
-
-	return nil
+	for filter, hasError := range cases {
+		v := &validation.Validation{}
+		filter.Valid(v)
+		assert.Equal(t, hasError, v.HasErrors())
+	}
 }

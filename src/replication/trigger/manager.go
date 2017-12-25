@@ -1,7 +1,6 @@
 package trigger
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -55,88 +54,71 @@ func (m *Manager) RemoveTrigger(policyID int64) error {
 //SetupTrigger will create the new trigger based on the provided policy.
 //If failed, an error will be returned.
 func (m *Manager) SetupTrigger(policy *models.ReplicationPolicy) error {
-	if policy == nil || policy.Trigger == nil {
-		log.Debug("empty policy or trigger, skip trigger setup")
+	trigger, err := createTrigger(policy)
+	if err != nil {
+		return err
+	}
+
+	// manual trigger, do nothing
+	if trigger == nil {
 		return nil
+	}
+
+	tg := trigger.(Interface)
+	if err = tg.Setup(); err != nil {
+		return err
+	}
+
+	log.Debugf("%s trigger for policy %d is set", tg.Kind(), policy.ID)
+	return nil
+}
+
+//UnsetTrigger will disable the trigger which is not cached in the trigger cache.
+func (m *Manager) UnsetTrigger(policy *models.ReplicationPolicy) error {
+	trigger, err := createTrigger(policy)
+	if err != nil {
+		return err
+	}
+
+	// manual trigger, do nothing
+	if trigger == nil {
+		return nil
+	}
+
+	tg := trigger.(Interface)
+	if err = tg.Unset(); err != nil {
+		return err
+	}
+
+	log.Debugf("%s trigger for policy %d is unset", tg.Kind(), policy.ID)
+	return nil
+}
+
+func createTrigger(policy *models.ReplicationPolicy) (interface{}, error) {
+	if policy == nil || policy.Trigger == nil {
+		return nil, fmt.Errorf("empty policy or trigger")
 	}
 
 	trigger := policy.Trigger
 	switch trigger.Kind {
 	case replication.TriggerKindSchedule:
 		param := ScheduleParam{}
-		if err := param.Parse(trigger.Param); err != nil {
-			return err
-		}
-		//Append policy ID and whether replicate deletion
 		param.PolicyID = policy.ID
-		param.OnDeletion = policy.ReplicateDeletion
+		param.Type = trigger.ScheduleParam.Type
+		param.Weekday = trigger.ScheduleParam.Weekday
+		param.Offtime = trigger.ScheduleParam.Offtime
 
-		newTrigger := NewScheduleTrigger(param)
-		if err := newTrigger.Setup(); err != nil {
-			return err
-		}
+		return NewScheduleTrigger(param), nil
 	case replication.TriggerKindImmediate:
 		param := ImmediateParam{}
-		if err := param.Parse(trigger.Param); err != nil {
-			return err
-		}
-		//Append policy ID and whether replicate deletion
 		param.PolicyID = policy.ID
 		param.OnDeletion = policy.ReplicateDeletion
 		param.Namespaces = policy.Namespaces
 
-		newTrigger := NewImmediateTrigger(param)
-		if err := newTrigger.Setup(); err != nil {
-			return err
-		}
+		return NewImmediateTrigger(param), nil
 	case replication.TriggerKindManual:
-		// do nothing
+		return nil, nil
 	default:
-		return fmt.Errorf("invalid trigger type: %s", policy.Trigger.Kind)
+		return nil, fmt.Errorf("invalid trigger type: %s", trigger.Kind)
 	}
-
-	return nil
-}
-
-//UnsetTrigger will disable the trigger which is not cached in the trigger cache.
-func (m *Manager) UnsetTrigger(policyID int64, trigger models.Trigger) error {
-	if policyID <= 0 {
-		return errors.New("Invalid policy ID")
-	}
-
-	if len(trigger.Kind) == 0 {
-		return errors.New("Invalid replication trigger definition")
-	}
-
-	switch trigger.Kind {
-	case replication.TriggerKindSchedule:
-		param := ScheduleParam{}
-		if err := param.Parse(trigger.Param); err != nil {
-			return err
-		}
-		//Append policy ID info
-		param.PolicyID = policyID
-
-		newTrigger := NewScheduleTrigger(param)
-		if err := newTrigger.Unset(); err != nil {
-			return err
-		}
-	case replication.TriggerKindImmediate:
-		param := ImmediateParam{}
-		if err := param.Parse(trigger.Param); err != nil {
-			return err
-		}
-		//Append policy ID info
-		param.PolicyID = policyID
-
-		newTrigger := NewImmediateTrigger(param)
-		if err := newTrigger.Unset(); err != nil {
-			return err
-		}
-	default:
-		//Treat as manual trigger
-		break
-	}
-
-	return nil
 }

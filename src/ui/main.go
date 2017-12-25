@@ -29,6 +29,7 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/scheduler"
+	"github.com/vmware/harbor/src/replication/core"
 	_ "github.com/vmware/harbor/src/replication/event"
 	"github.com/vmware/harbor/src/ui/api"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
@@ -129,6 +130,10 @@ func main() {
 
 		//Send notification to handle first policy change.
 		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)})
+	}
+
+	if err := core.GlobalController.Init(); err != nil {
+		log.Errorf("failed to initialize the replication controller: %v", err)
 	}
 
 	filter.Init()

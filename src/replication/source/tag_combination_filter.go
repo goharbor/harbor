@@ -60,6 +60,7 @@ func (t *TagCombinationFilter) DoFilter(filterItems []models.FilterItem) []model
 		repos[strs[0]] = append(repos[strs[0]], strs[1])
 	}
 
+	// TODO append operation
 	items := []models.FilterItem{}
 	for repo, tags := range repos {
 		items = append(items, models.FilterItem{

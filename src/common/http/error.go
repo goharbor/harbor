@@ -12,13 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package registry
+package http
 
 import (
-	"net/http"
+	"fmt"
 )
 
-// Modifier modifies request
-type Modifier interface {
-	Modify(*http.Request) error
+// Error wrap HTTP status code and message as an error
+type Error struct {
+	Code    int
+	Message string
+}
+
+// Error ...
+func (e *Error) Error() string {
+	return fmt.Sprintf("http error: code %d, message %s", e.Code, e.Message)
 }

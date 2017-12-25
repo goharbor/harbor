@@ -22,9 +22,4 @@ const (
 	TriggerScheduleDaily = "daily"
 	//TriggerScheduleWeekly : type of scheduling is 'weekly'
 	TriggerScheduleWeekly = "weekly"
-
-	//OperationPush : operation for pushing images
-	OperationPush = "push"
-	//OperationDelete : operation for deleting images
-	OperationDelete = "delete"
 )

@@ -231,23 +231,6 @@ func (t *TargetAPI) Put() {
 		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
-	policies, err := dao.GetRepPolicyByTarget(id)
-	if err != nil {
-		log.Errorf("failed to get policies according target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	hasEnabledPolicy := false
-	for _, policy := range policies {
-		if policy.Enabled == 1 {
-			hasEnabledPolicy = true
-			break
-		}
-	}
-
-	if hasEnabledPolicy {
-		t.CustomAbort(http.StatusBadRequest, "the target is associated with policy which is enabled")
-	}
 	if len(target.Password) != 0 {
 		target.Password, err = utils.ReversibleDecrypt(target.Password, t.secretKey)
 		if err != nil {

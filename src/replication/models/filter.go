@@ -12,32 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package auth
+package models
 
 import (
-	"net/http"
-	"testing"
+	"fmt"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/astaxie/beego/validation"
+	"github.com/vmware/harbor/src/replication"
 )
 
-func TestAuthorize(t *testing.T) {
-	cookieName := "secret"
-	secret := "secret"
-	authorizer := NewSecretAuthorizer(cookieName, secret)
-	req, err := http.NewRequest("", "", nil)
-	if !assert.Nil(t, err, "unexpected error") {
-		return
+// Filter is the data model represents the filter defined by user.
+type Filter struct {
+	Kind    string `json:"kind"`
+	Pattern string `json:"pattern"`
+}
+
+// Valid ...
+func (f *Filter) Valid(v *validation.Validation) {
+	if !(f.Kind == replication.FilterItemKindProject ||
+		f.Kind == replication.FilterItemKindRepository ||
+		f.Kind == replication.FilterItemKindTag) {
+		v.SetError("kind", fmt.Sprintf("invalid filter kind: %s", f.Kind))
 	}
 
-	err = authorizer.Authorize(req)
-	if !assert.Nil(t, err, "unexpected error") {
-		return
+	if len(f.Pattern) == 0 {
+		v.SetError("pattern", "filter pattern can not be empty")
 	}
-
-	cookie, err := req.Cookie(cookieName)
-	if !assert.Nil(t, err, "unexpected error") {
-		return
-	}
-	assert.Equal(t, secret, cookie.Value, "unexpected cookie")
 }

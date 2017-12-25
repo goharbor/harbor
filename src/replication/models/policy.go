@@ -9,7 +9,7 @@ type ReplicationPolicy struct {
 	ID                int64 //UUID of the policy
 	Name              string
 	Description       string
-	Filters           []FilterItem
+	Filters           []Filter
 	ReplicateDeletion bool
 	Trigger           *Trigger //The trigger of the replication
 	ProjectIDs        []int64  //Projects attached to this policy
@@ -27,8 +27,8 @@ type QueryParameter struct {
 	//Size of each page, couple with page
 	PageSize int64
 
-	//Query by the name of trigger
-	TriggerName string
+	//Query by the type of trigger
+	TriggerType string
 
 	//Query by project ID
 	ProjectID int64

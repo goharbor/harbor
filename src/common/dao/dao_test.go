@@ -941,7 +941,6 @@ func TestFilterRepTargets(t *testing.T) {
 func TestAddRepPolicy(t *testing.T) {
 	policy := models.RepPolicy{
 		ProjectID:   1,
-		Enabled:     1,
 		TargetID:    targetID,
 		Description: "whatever",
 		Name:        "mypolicy",
@@ -961,15 +960,10 @@ func TestAddRepPolicy(t *testing.T) {
 		t.Errorf("Unable to find a policy with id: %d", id)
 	}
 
-	if p.Name != "mypolicy" || p.TargetID != targetID || p.Enabled != 1 || p.Description != "whatever" {
-		t.Errorf("The data does not match, expected: Name: mypolicy, TargetID: %d, Enabled: 1, Description: whatever;\n result: Name: %s, TargetID: %d, Enabled: %d, Description: %s",
-			targetID, p.Name, p.TargetID, p.Enabled, p.Description)
+	if p.Name != "mypolicy" || p.TargetID != targetID || p.Description != "whatever" {
+		t.Errorf("The data does not match, expected: Name: mypolicy, TargetID: %d, Description: whatever;\n result: Name: %s, TargetID: %d, Description: %s",
+			targetID, p.Name, p.TargetID, p.Description)
 	}
-	var tm = time.Now().AddDate(0, 0, -1)
-	if !p.StartTime.After(tm) {
-		t.Errorf("Unexpected start_time: %v", p.StartTime)
-	}
-
 }
 
 func TestGetRepPolicyByTarget(t *testing.T) {
@@ -1019,44 +1013,9 @@ func TestGetRepPolicyByName(t *testing.T) {
 
 }
 
-func TestDisableRepPolicy(t *testing.T) {
-	err := DisableRepPolicy(policyID)
-	if err != nil {
-		t.Errorf("Failed to disable policy, id: %d", policyID)
-	}
-	p, err := GetRepPolicy(policyID)
-	if err != nil {
-		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, policyID)
-	}
-	if p == nil {
-		t.Errorf("Unable to find a policy with id: %d", policyID)
-	}
-	if p.Enabled == 1 {
-		t.Errorf("The Enabled value of replication policy is still 1 after disabled, id: %d", policyID)
-	}
-}
-
-func TestEnableRepPolicy(t *testing.T) {
-	err := EnableRepPolicy(policyID)
-	if err != nil {
-		t.Errorf("Failed to disable policy, id: %d", policyID)
-	}
-	p, err := GetRepPolicy(policyID)
-	if err != nil {
-		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, policyID)
-	}
-	if p == nil {
-		t.Errorf("Unable to find a policy with id: %d", policyID)
-	}
-	if p.Enabled == 0 {
-		t.Errorf("The Enabled value of replication policy is still 0 after disabled, id: %d", policyID)
-	}
-}
-
 func TestAddRepPolicy2(t *testing.T) {
 	policy2 := models.RepPolicy{
 		ProjectID:   3,
-		Enabled:     0,
 		TargetID:    3,
 		Description: "whatever",
 		Name:        "mypolicy",
@@ -1072,10 +1031,6 @@ func TestAddRepPolicy2(t *testing.T) {
 	}
 	if p == nil {
 		t.Errorf("Unable to find a policy with id: %d", policyID2)
-	}
-	var tm time.Time
-	if p.StartTime.After(tm) {
-		t.Errorf("Unexpected start_time: %v", p.StartTime)
 	}
 }
 
