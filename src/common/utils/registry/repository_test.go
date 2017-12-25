@@ -60,7 +60,7 @@ func TestBlobExist(t *testing.T) {
 	server := test.NewServer(
 		&test.RequestHandlerMapping{
 			Method:  "HEAD",
-			Pattern: fmt.Sprintf("/v2/%s/blobs/", repository),
+			Pattern: fmt.Sprintf("/v2/%s/blobs/{digest}", repository),
 			Handler: handler,
 		})
 	defer server.Close()
@@ -331,7 +331,7 @@ func TestDeleteTag(t *testing.T) {
 	server := test.NewServer(
 		&test.RequestHandlerMapping{
 			Method:  "HEAD",
-			Pattern: fmt.Sprintf("/v2/%s/manifests/", repository),
+			Pattern: fmt.Sprintf("/v2/%s/manifests/%s", repository, tag),
 			Handler: manifestExistHandler,
 		},
 		&test.RequestHandlerMapping{
