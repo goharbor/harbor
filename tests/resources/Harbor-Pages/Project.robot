@@ -80,29 +80,29 @@ Search Private Projects
 Make Project Private
     [Arguments]  ${projectname}
     Sleep  1
-    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+    Click Element  xpath=//project//list-project//clr-dg-row[contains(.,'${projectname}')]//clr-dg-action-overflow/button
     Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
 
 Make Project Public
     [Arguments]  ${projectname}
     Sleep  1
-    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+    Click element  xpath=//project//list-project//clr-dg-row[contains(.,'${projectname}')]//clr-dg-action-overflow/button
     Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
 
 Delete Repo
     [Arguments]  ${projectname}
-    Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"${projectname}")]//clr-dg-action-overflow
+    Click Element  xpath=//project-detail//clr-dg-row[contains(.,"${projectname}")]//clr-dg-action-overflow
     Sleep  1
     Click Element  xpath=//clr-dg-action-overflow//button[contains(.,"Delete")]
     Sleep  1
-    Click Element  xpath=//clr-modal//div[@class="modal-dialog"]//button[2]
+    Click Element  xpath=//clr-modal//button[contains(.,"DELETE")]
     Sleep  2
 
 Delete Project
-    [Arguments]  ${projname}
+    [Arguments]  ${projectname}
     Sleep  1
-    Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow
-    Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow//button[contains(.,'Delete')]
+    Click Element  //list-project//clr-dg-row[contains(.,'${projectname}')]//clr-dg-action-overflow/button
+    Click Element  //list-project//clr-dg-action-overflow//button[contains(.,'Delete')]
     #click delete button to confirm
     Sleep  1
     Click Element  //confiramtion-dialog//button[contains(.,'DELETE')]
@@ -177,19 +177,19 @@ Go Into Repo
     Input Text  xpath=//*[@id="search_input"]  ${repoName}
     Sleep  8
     Wait Until Page Contains  ${repoName}
-    Click Element  xpath=//*[@id="results"]/list-repository-ro/clr-datagrid/div/div/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[1]/a
+    Click Element  xpath=//*[@id="results"]/list-repository-ro//clr-dg-cell[contains(.,${repoName})]/a
     Sleep  2
     Capture Page Screenshot  gointo_${repoName}.png
 
 Expand Repo
     [Arguments]  ${projectname}
-    Click Element  //repository//clr-dg-row-master[contains(.,'${projectname}')]//button/clr-icon
+    Click Element  //repository//clr-dg-row[contains(.,'${projectname}')]//button/clr-icon
     sleep  1
 
 Scan Repo
     [Arguments]  ${tagname}
-    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow
-    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+    Click Element  //hbr-tag//clr-dg-row[contains(.,'${tagname}')]//clr-dg-action-overflow
+    Click Element  //hbr-tag//clr-dg-action-overflow//button[contains(.,'Scan')]
     Sleep  15
 
 Edit Repo Info
@@ -214,4 +214,4 @@ Edit Repo Info
 
 Summary Chart Should Display
     [Arguments]  ${tagname}
-    Page Should Contain Element  //clr-dg-row-master[contains(.,'${tagname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
+    Page Should Contain Element  //clr-dg-row[contains(.,'${tagname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart

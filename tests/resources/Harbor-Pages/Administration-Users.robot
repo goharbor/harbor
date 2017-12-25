@@ -22,12 +22,12 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Assign User Admin
     [Arguments]  ${user}
-    Click Element  xpath=//clr-main-container//harbor-user//hbr-filter//clr-icon
-    Input Text  xpath=//harbor-shell/clr-main-container//harbor-user//hbr-filter//input  ${user}
+    Click Element  xpath=//harbor-user//hbr-filter//clr-icon
+    Input Text  xpath=//harbor-user//hbr-filter//input  ${user}
     Sleep  2
-    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/div/div/harbor-user/div/div/h2
-    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container//harbor-user//clr-datagrid//clr-dg-action-overflow
-    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container//harbor-user//clr-datagrid//clr-dg-row//clr-dg-action-overflow//button[1]
+    Click Element  xpath=//harbor-user/div/div/h2
+    Click Element  xpath=//harbor-user//clr-datagrid//clr-dg-action-overflow
+    Click Element  xpath=//harbor-user//clr-dg-action-overflow//button[contains(.,'Admin')]
     Sleep  1
 
 Switch to User Tag

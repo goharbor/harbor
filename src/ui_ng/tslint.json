@@ -18,14 +18,25 @@
     "label-position": true,
     "label-undefined": true,
     "max-line-length": [
-      true,
+      false,
       140
     ],
     "member-access": false,
     "member-ordering": [
       true,
-      "static-before-instance",
-      "variables-before-functions"
+      {
+        "order": [
+          "public-static-field",
+          "public-instance-field",
+          "public-constructor",
+          "private-static-field",
+          "private-instance-field",
+          "private-constructor",
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method"
+        ]
+      }
     ],
     "no-arg": true,
     "no-bitwise": true,
@@ -67,7 +78,7 @@
     ],
     "radix": true,
     "semicolon": [
-      "always"
+      true
     ],
     "triple-equals": [
       true,
