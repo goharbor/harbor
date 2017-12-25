@@ -23,7 +23,7 @@ def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='H
             sys.stdout.write(out)
             sys.stdout.flush()
     collect_log()
-    return retval
+    return 0
 
 # Needs to move log.html to another path it will be overwrite by any pybot run.
 def collect_log():
