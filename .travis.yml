@@ -79,7 +79,7 @@ script:
   - sudo mkdir -p /harbor
   - sudo mv ./VERSION /harbor/VERSION
   - sudo service mysql stop
-  - sudo make run_clarity_ut CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7
+  - sudo make run_clarity_ut CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0
   - cat ./src/ui_ng/lib/npm-ut-test-results
   - sudo ./tests/testprepare.sh 
   - sudo make -f make/photon/Makefile -e MARIADBVERSION=10.2.10 -e VERSIONTAG=dev
@@ -106,7 +106,7 @@ script:
   - sudo rm -rf /data/config/*
   - sudo rm -rf /data/database/*
   - ls /data/cert
-  - sudo make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true CLAIRFLAG=true
+  - sudo make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0 NOTARYFLAG=true CLAIRFLAG=true
   - sleep 10  
   - docker ps 
   - ./tests/validatecontainers.sh
