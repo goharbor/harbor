@@ -82,7 +82,7 @@ func NewServer(mappings ...*RequestHandlerMapping) *httptest.Server {
 	r := mux.NewRouter()
 
 	for _, mapping := range mappings {
-		r.PathPrefix(mapping.Pattern).Handler(mapping).Methods(mapping.Method)
+		r.Path(mapping.Pattern).Handler(mapping).Methods(mapping.Method)
 	}
 
 	return httptest.NewServer(r)

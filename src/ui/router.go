@@ -101,7 +101,7 @@ func initRouters() {
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &api.RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
-	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List")
+	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List;put:StopJobs")
 	beego.Router("/api/jobs/replication/:id([0-9]+)", &api.RepJobAPI{})
 	beego.Router("/api/jobs/replication/:id([0-9]+)/log", &api.RepJobAPI{}, "get:GetLog")
 	beego.Router("/api/jobs/scan/:id([0-9]+)/log", &api.ScanJobAPI{}, "get:GetLog")

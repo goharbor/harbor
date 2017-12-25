@@ -15,13 +15,12 @@
 package replicator
 
 import (
-	"github.com/vmware/harbor/src/jobservice/api"
 	"github.com/vmware/harbor/src/jobservice/client"
 )
 
 // Replicator submits the replication work to the jobservice
 type Replicator interface {
-	Replicate(*api.ReplicationReq) error
+	Replicate(*client.Replication) error
 }
 
 // DefaultReplicator provides a default implement for Replicator
@@ -30,13 +29,13 @@ type DefaultReplicator struct {
 }
 
 // NewDefaultReplicator returns an instance of DefaultReplicator
-func NewDefaultReplicator(endpoint string, cfg *client.Config) *DefaultReplicator {
+func NewDefaultReplicator(client client.Client) *DefaultReplicator {
 	return &DefaultReplicator{
-		client: client.NewDefaultClient(endpoint, cfg),
+		client: client,
 	}
 }
 
 // Replicate ...
-func (d *DefaultReplicator) Replicate(replication *api.ReplicationReq) error {
+func (d *DefaultReplicator) Replicate(replication *client.Replication) error {
 	return d.client.SubmitReplicationJob(replication)
 }
