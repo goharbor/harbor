@@ -1,13 +1,11 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: registry-rc
+  name: registry
   labels:
-    name: registry-rc
+    name: registry
 spec:
   replicas: 1
-  selector:
-    name: registry-apps
   template:
     metadata:
       labels:
@@ -22,7 +20,7 @@ spec:
         - containerPort: 5001
         volumeMounts:
         - name: config
-          mountPath: /etc/docker/registry
+          mountPath: /etc/registry
         - name: storage
           mountPath: /storage
       volumes:
