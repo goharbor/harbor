@@ -29,6 +29,8 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/scheduler"
+	"github.com/vmware/harbor/src/replication/core"
+	_ "github.com/vmware/harbor/src/replication/event"
 	"github.com/vmware/harbor/src/ui/api"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
@@ -130,8 +132,13 @@ func main() {
 		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)})
 	}
 
+	if err := core.GlobalController.Init(); err != nil {
+		log.Errorf("failed to initialize the replication controller: %v", err)
+	}
+
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
+	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json"))
 
 	initRouters()
 	if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {

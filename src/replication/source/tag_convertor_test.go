@@ -27,9 +27,6 @@ func TestTagConvert(t *testing.T) {
 		models.FilterItem{
 			Kind:  replication.FilterItemKindRepository,
 			Value: "library/ubuntu",
-			Metadata: map[string]interface{}{
-				"public": true,
-			},
 		},
 		models.FilterItem{
 			Kind: replication.FilterItemKindProject,
@@ -39,16 +36,13 @@ func TestTagConvert(t *testing.T) {
 		models.FilterItem{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:14.04",
-			Metadata: map[string]interface{}{
-				"public": true,
-			},
 		},
 		models.FilterItem{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:16.04",
-			Metadata: map[string]interface{}{
-				"public": true,
-			},
+		},
+		models.FilterItem{
+			Kind: replication.FilterItemKindProject,
 		},
 	}
 

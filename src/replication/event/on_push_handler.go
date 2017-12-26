@@ -1,3 +1,17 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package event
 
 import (
@@ -5,18 +19,19 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/vmware/harbor/src/replication/core"
+	common_models "github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/notifier"
+	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/replication"
+	"github.com/vmware/harbor/src/replication/event/notification"
+	"github.com/vmware/harbor/src/replication/event/topic"
 	"github.com/vmware/harbor/src/replication/models"
+	"github.com/vmware/harbor/src/replication/trigger"
 )
 
 //OnPushHandler implements the notification handler interface to handle image on push event.
 type OnPushHandler struct{}
-
-//OnPushNotification contains the data required by this handler
-type OnPushNotification struct {
-	//The ID of the project where the being pushed images are located
-	ProjectID int
-}
 
 //Handle implements the same method of notification handler interface
 func (oph *OnPushHandler) Handle(value interface{}) error {
@@ -25,35 +40,52 @@ func (oph *OnPushHandler) Handle(value interface{}) error {
 	}
 
 	vType := reflect.TypeOf(value)
-	if vType.Kind() != reflect.Struct || vType.String() != "event.OnPushNotification" {
-		return fmt.Errorf("Mismatch value type of OnPushHandler, expect %s but got %s", "event.OnPushNotification", vType.String())
+	if vType.Kind() != reflect.Struct || vType.String() != "notification.OnPushNotification" {
+		return fmt.Errorf("Mismatch value type of OnPushHandler, expect %s but got %s", "notification.OnPushNotification", vType.String())
 	}
 
-	notification := value.(OnDeletionNotification)
-	//TODO:Call projectManager to get the projectID
-	fmt.Println(notification.ProjectName)
-	query := models.QueryParameter{
-		ProjectID: 0,
-	}
+	notification := value.(notification.OnPushNotification)
 
-	policies, err := core.DefaultController.GetPolicies(query)
-	if err != nil {
-		return err
-	}
-	if policies != nil && len(policies) > 0 {
-		for _, p := range policies {
-			if err := core.DefaultController.Replicate(p.ID); err != nil {
-				//TODO:Log error
-				fmt.Println(err.Error())
-			}
-		}
-	}
-
-	return nil
+	return checkAndTriggerReplication(notification.Image, common_models.RepOpTransfer)
 }
 
 //IsStateful implements the same method of notification handler interface
 func (oph *OnPushHandler) IsStateful() bool {
 	//Statless
 	return false
+}
+
+// checks whether replication policy is set on the resource, if is, trigger the replication
+func checkAndTriggerReplication(image, operation string) error {
+	project, _ := utils.ParseRepository(image)
+	watchItems, err := trigger.DefaultWatchList.Get(project, operation)
+	if err != nil {
+		return fmt.Errorf("failed to get watch list for resource %s, operation %s: %v",
+			image, operation, err)
+	}
+	if len(watchItems) == 0 {
+		log.Debugf("no replication should be triggered for resource %s, operation %s, skip", image, operation)
+		return nil
+	}
+
+	for _, watchItem := range watchItems {
+		item := models.FilterItem{
+			Kind:      replication.FilterItemKindTag,
+			Value:     image,
+			Operation: operation,
+		}
+
+		if err := notifier.Publish(topic.StartReplicationTopic, notification.StartReplicationNotification{
+			PolicyID: watchItem.PolicyID,
+			Metadata: map[string]interface{}{
+				"candidates": []models.FilterItem{item},
+			},
+		}); err != nil {
+			return fmt.Errorf("failed to publish replication topic for resource %s, operation %s, policy %d: %v",
+				image, operation, watchItem.PolicyID, err)
+		}
+		log.Infof("replication topic for resource %s, operation %s, policy %d triggered",
+			image, operation, watchItem.PolicyID)
+	}
+	return nil
 }

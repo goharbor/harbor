@@ -1,3 +1,17 @@
+// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package policy
 
 import (
@@ -7,18 +21,28 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	persist_models "github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/replication/models"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
-//Manager provides replication policy CURD capabilities.
-type Manager struct{}
+// Manager defines the method a policy manger should implement
+type Manager interface {
+	GetPolicies(models.QueryParameter) ([]models.ReplicationPolicy, error)
+	GetPolicy(int64) (models.ReplicationPolicy, error)
+	CreatePolicy(models.ReplicationPolicy) (int64, error)
+	UpdatePolicy(models.ReplicationPolicy) error
+	RemovePolicy(int64) error
+}
 
-//NewManager is the constructor of Manager.
-func NewManager() *Manager {
-	return &Manager{}
+//DefaultManager provides replication policy CURD capabilities.
+type DefaultManager struct{}
+
+//NewDefaultManager is the constructor of DefaultManager.
+func NewDefaultManager() *DefaultManager {
+	return &DefaultManager{}
 }
 
 //GetPolicies returns all the policies
-func (m *Manager) GetPolicies(query models.QueryParameter) ([]models.ReplicationPolicy, error) {
+func (m *DefaultManager) GetPolicies(query models.QueryParameter) ([]models.ReplicationPolicy, error) {
 	result := []models.ReplicationPolicy{}
 	//TODO support more query conditions other than name and project ID
 	policies, err := dao.FilterRepPolicies(query.Name, query.ProjectID)
@@ -31,6 +55,13 @@ func (m *Manager) GetPolicies(query models.QueryParameter) ([]models.Replication
 		if err != nil {
 			return []models.ReplicationPolicy{}, err
 		}
+
+		if len(query.TriggerType) > 0 {
+			if ply.Trigger.Kind != query.TriggerType {
+				continue
+			}
+		}
+
 		result = append(result, ply)
 	}
 
@@ -38,7 +69,7 @@ func (m *Manager) GetPolicies(query models.QueryParameter) ([]models.Replication
 }
 
 //GetPolicy returns the policy with the specified ID
-func (m *Manager) GetPolicy(policyID int64) (models.ReplicationPolicy, error) {
+func (m *DefaultManager) GetPolicy(policyID int64) (models.ReplicationPolicy, error) {
 	policy, err := dao.GetRepPolicy(policyID)
 	if err != nil {
 		return models.ReplicationPolicy{}, err
@@ -47,7 +78,6 @@ func (m *Manager) GetPolicy(policyID int64) (models.ReplicationPolicy, error) {
 	return convertFromPersistModel(policy)
 }
 
-// TODO add UT
 func convertFromPersistModel(policy *persist_models.RepPolicy) (models.ReplicationPolicy, error) {
 	if policy == nil {
 		return models.ReplicationPolicy{}, nil
@@ -64,8 +94,14 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (models.Replicati
 		UpdateTime:        policy.UpdateTime,
 	}
 
+	project, err := config.GlobalProjectMgr.Get(policy.ProjectID)
+	if err != nil {
+		return models.ReplicationPolicy{}, err
+	}
+	ply.Namespaces = []string{project.Name}
+
 	if len(policy.Filters) > 0 {
-		filters := []models.FilterItem{}
+		filters := []models.Filter{}
 		if err := json.Unmarshal([]byte(policy.Filters), &filters); err != nil {
 			return models.ReplicationPolicy{}, err
 		}
@@ -83,7 +119,6 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (models.Replicati
 	return ply, nil
 }
 
-// TODO add ut
 func convertToPersistModel(policy models.ReplicationPolicy) (*persist_models.RepPolicy, error) {
 	ply := &persist_models.RepPolicy{
 		ID:                policy.ID,
@@ -124,7 +159,7 @@ func convertToPersistModel(policy models.ReplicationPolicy) (*persist_models.Rep
 //CreatePolicy creates a new policy with the provided data;
 //If creating failed, error will be returned;
 //If creating succeed, ID of the new created policy will be returned.
-func (m *Manager) CreatePolicy(policy models.ReplicationPolicy) (int64, error) {
+func (m *DefaultManager) CreatePolicy(policy models.ReplicationPolicy) (int64, error) {
 	now := time.Now()
 	policy.CreationTime = now
 	policy.UpdateTime = now
@@ -137,7 +172,7 @@ func (m *Manager) CreatePolicy(policy models.ReplicationPolicy) (int64, error) {
 
 //UpdatePolicy updates the policy;
 //If updating failed, error will be returned.
-func (m *Manager) UpdatePolicy(policy models.ReplicationPolicy) error {
+func (m *DefaultManager) UpdatePolicy(policy models.ReplicationPolicy) error {
 	policy.UpdateTime = time.Now()
 	ply, err := convertToPersistModel(policy)
 	if err != nil {
@@ -148,6 +183,6 @@ func (m *Manager) UpdatePolicy(policy models.ReplicationPolicy) error {
 
 //RemovePolicy removes the specified policy;
 //If removing failed, error will be returned.
-func (m *Manager) RemovePolicy(policyID int64) error {
+func (m *DefaultManager) RemovePolicy(policyID int64) error {
 	return dao.DeleteRepPolicy(policyID)
 }

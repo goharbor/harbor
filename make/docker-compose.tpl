@@ -3,17 +3,16 @@ services:
   log:
     image: vmware/harbor-log:__version__
     container_name: harbor-log 
-    env_file:
-      - ./common/config/log/env
     restart: always
     volumes:
       - /var/log/harbor/:/var/log/docker/:z
+      - ./common/config/log/:/etc/logrotate.d/:z
     ports:
-      - 127.0.0.1:1514:514
+      - 127.0.0.1:1514:10514
     networks:
       - harbor
   registry:
-    image: vmware/registry:2.6.2-photon
+    image: vmware/registry-photon:__reg_version__
     container_name: registry
     restart: always
     volumes:
@@ -113,7 +112,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   proxy:
-    image: vmware/nginx-photon:1.11.13
+    image: vmware/nginx-photon:__nginx_version__
     container_name: nginx
     restart: always
     volumes:

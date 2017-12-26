@@ -30,7 +30,7 @@ export const ENDPOINT_TEMPLATE: string = `
                     <clr-dg-cell>{{t.name}}</clr-dg-cell>
                     <clr-dg-cell>{{t.endpoint}}</clr-dg-cell>
                     <clr-dg-cell> 
-                     <clr-checkbox name="insecure" [clrChecked]="t.insecure"> </clr-checkbox>
+                     {{!t.insecure}}
                     </clr-dg-cell>
                     <clr-dg-cell>{{t.creation_time | date: 'short'}}</clr-dg-cell>
                 </clr-dg-row>

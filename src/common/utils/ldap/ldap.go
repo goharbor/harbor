@@ -15,15 +15,13 @@
 package ldap
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
-	"crypto/tls"
-
-	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -31,76 +29,68 @@ import (
 	goldap "gopkg.in/ldap.v2"
 )
 
-// GetSystemLdapConf ...
-func GetSystemLdapConf() (models.LdapConf, error) {
-	var err error
-	var ldapConfs models.LdapConf
-	var authMode string
+//Session - define a LDAP session
+type Session struct {
+	ldapConfig models.LdapConf
+	ldapConn   *goldap.Conn
+}
 
-	authMode, err = config.AuthMode()
+//LoadSystemLdapConfig - load LDAP configure from adminserver
+func LoadSystemLdapConfig() (*Session, error) {
+	var session Session
+
+	authMode, err := config.AuthMode()
 	if err != nil {
 		log.Errorf("can't load auth mode from system, error: %v", err)
-		return ldapConfs, err
+		return nil, err
 	}
 
 	if authMode != "ldap_auth" {
-		return ldapConfs, fmt.Errorf("system auth_mode isn't ldap_auth, please check configuration")
+		return nil, fmt.Errorf("system auth_mode isn't ldap_auth, please check configuration")
 	}
 
 	ldap, err := config.LDAP()
+
 	if err != nil {
-		return ldapConfs, err
+		return nil, err
+	}
+	if ldap.URL == "" {
+		return nil, fmt.Errorf("can not get any available LDAP_URL")
 	}
 
-	ldapConfs.LdapURL = ldap.URL
-	ldapConfs.LdapSearchDn = ldap.SearchDN
-	ldapConfs.LdapSearchPassword = ldap.SearchPassword
-	ldapConfs.LdapBaseDn = ldap.BaseDN
-	ldapConfs.LdapFilter = ldap.Filter
-	ldapConfs.LdapUID = ldap.UID
-	ldapConfs.LdapScope = ldap.Scope
-	ldapConfs.LdapConnectionTimeout = ldap.Timeout
+	ldapURL, err := formatURL(ldap.URL)
+	if err != nil {
+		return nil, err
+	}
 
-	//	ldapConfs = config.LDAP().URL
-	//	ldapConfs.LdapSearchDn = config.LDAP().SearchDn
-	//	ldapConfs.LdapSearchPassword = config.LDAP().SearchPwd
-	//	ldapConfs.LdapBaseDn = config.LDAP().BaseDn
-	//	ldapConfs.LdapFilter = config.LDAP().Filter
-	//	ldapConfs.LdapUID = config.LDAP().UID
-	//	ldapConfs.LdapScope, err = strconv.Atoi(config.LDAP().Scope)
-	//	if err != nil {
-	//		log.Errorf("invalid LdapScope format from system, error: %v", err)
-	//		return ldapConfs, err
-	//	}
+	session.ldapConfig.LdapURL = ldapURL
+	session.ldapConfig.LdapSearchDn = ldap.SearchDN
+	session.ldapConfig.LdapSearchPassword = ldap.SearchPassword
+	session.ldapConfig.LdapBaseDn = ldap.BaseDN
+	session.ldapConfig.LdapFilter = ldap.Filter
+	session.ldapConfig.LdapUID = ldap.UID
+	session.ldapConfig.LdapConnectionTimeout = ldap.Timeout
+	session.ldapConfig.LdapVerifyCert = ldap.VerifyCert
+	log.Debugf("Load system configuration: %v", ldap)
 
-	//	ldapConfs.LdapConnectionTimeout, err = strconv.Atoi(config.LDAP().ConnectTimeout)
-	//	if err != nil {
-	//		log.Errorf("invalid LdapConnectionTimeout format from system, error: %v", err)
-	//		return ldapConfs, err
-	//	}
+	switch ldap.Scope {
+	case 1:
+		session.ldapConfig.LdapScope = goldap.ScopeBaseObject
+	case 2:
+		session.ldapConfig.LdapScope = goldap.ScopeSingleLevel
+	case 3:
+		session.ldapConfig.LdapScope = goldap.ScopeWholeSubtree
+	default:
+		log.Errorf("invalid ldap search scope %v", ldap.Scope)
+		return nil, fmt.Errorf("invalid ldap search scope")
+	}
 
-	return ldapConfs, nil
-
+	return &session, nil
 }
 
-// ValidateLdapConf ...
-func ValidateLdapConf(ldapConfs models.LdapConf) (models.LdapConf, error) {
-	var err error
+// CreateWithUIConfig - create a Session with config from UI
+func CreateWithUIConfig(ldapConfs models.LdapConf) (*Session, error) {
 
-	if ldapConfs.LdapURL == "" {
-		return ldapConfs, fmt.Errorf("can not get any available LDAP_URL")
-	}
-
-	ldapConfs.LdapURL, err = formatLdapURL(ldapConfs.LdapURL)
-
-	if err != nil {
-		log.Errorf("invalid LdapURL format, error: %v", err)
-		return ldapConfs, err
-	}
-
-	// Compatible with legacy codes
-	// in previous harbor.cfg:
-	// the scope to search for users, 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE
 	switch ldapConfs.LdapScope {
 	case 1:
 		ldapConfs.LdapScope = goldap.ScopeBaseObject
@@ -109,130 +99,44 @@ func ValidateLdapConf(ldapConfs models.LdapConf) (models.LdapConf, error) {
 	case 3:
 		ldapConfs.LdapScope = goldap.ScopeWholeSubtree
 	default:
-		return ldapConfs, fmt.Errorf("invalid ldap search scope")
+		return nil, fmt.Errorf("invalid ldap search scope")
 	}
 
-	//	value := reflect.ValueOf(ldapConfs)
-	//	lType := reflect.TypeOf(ldapConfs)
-	//	for i := 0; i < value.NumField(); i++ {
-	//		fmt.Printf("Field %d: %v %v\n", i, value.Field(i), lType.Field(i).Name)
-	//	}
-
-	return ldapConfs, nil
-
+	return createWithInternalConfig(ldapConfs)
 }
 
-// MakeFilter ...
-func MakeFilter(username string, ldapFilter string, ldapUID string) string {
+// createWithInternalConfig - create a Session with internal config
+func createWithInternalConfig(ldapConfs models.LdapConf) (*Session, error) {
 
-	var filterTag string
+	var session Session
 
-	if username == "" {
-		filterTag = "*"
-	} else {
-		filterTag = username
+	if ldapConfs.LdapURL == "" {
+		return nil, fmt.Errorf("can not get any available LDAP_URL")
 	}
 
-	if ldapFilter == "" {
-		ldapFilter = "(" + ldapUID + "=" + filterTag + ")"
-	} else {
-		if !strings.Contains(ldapFilter, ldapUID+"=") {
-			ldapFilter = "(&" + ldapFilter + "(" + ldapUID + "=" + filterTag + "))"
-		} else {
-			ldapFilter = strings.Replace(ldapFilter, ldapUID+"=*", ldapUID+"="+filterTag, -1)
-		}
-	}
-
-	log.Debug("one or more ldapFilter: ", ldapFilter)
-
-	return ldapFilter
-}
-
-// ConnectTest ...
-func ConnectTest(ldapConfs models.LdapConf) error {
-
-	var ldapConn *goldap.Conn
-	var err error
-
-	ldapConn, err = dialLDAP(ldapConfs)
-
-	if err != nil {
-		return err
-	}
-	defer ldapConn.Close()
-
-	if ldapConfs.LdapSearchDn != "" {
-		err = bindLDAPSearchDN(ldapConfs, ldapConn)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-
-}
-
-// SearchUser ...
-func SearchUser(ldapConfs models.LdapConf) ([]models.LdapUser, error) {
-	var ldapUsers []models.LdapUser
-	var ldapConn *goldap.Conn
-	var err error
-
-	ldapConn, err = dialLDAP(ldapConfs)
-
-	if err != nil {
-		return nil, err
-	}
-	defer ldapConn.Close()
-
-	if ldapConfs.LdapSearchDn != "" {
-		err = bindLDAPSearchDN(ldapConfs, ldapConn)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if ldapConfs.LdapBaseDn == "" {
-		return nil, fmt.Errorf("can not get any available LDAP_BASE_DN")
-	}
-
-	result, err := searchLDAP(ldapConfs, ldapConn)
-
+	ldapURL, err := formatURL(ldapConfs.LdapURL)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, ldapEntry := range result.Entries {
-		var u models.LdapUser
-		for _, attr := range ldapEntry.Attributes {
-			val := attr.Values[0]
-			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
-			switch strings.ToLower(attr.Name) {
-			case strings.ToLower(ldapConfs.LdapUID):
-				u.Username = val
-			case "uid":
-				u.Realname = val
-			case "cn":
-				u.Realname = val
-			case "mail":
-				u.Email = val
-			case "email":
-				u.Email = val
-			}
-		}
-		u.DN = ldapEntry.DN
-		ldapUsers = append(ldapUsers, u)
-	}
+	session.ldapConfig.LdapURL = ldapURL
+	session.ldapConfig.LdapSearchDn = ldapConfs.LdapSearchDn
+	session.ldapConfig.LdapSearchPassword = ldapConfs.LdapSearchPassword
+	session.ldapConfig.LdapBaseDn = ldapConfs.LdapBaseDn
+	session.ldapConfig.LdapFilter = ldapConfs.LdapFilter
+	session.ldapConfig.LdapUID = ldapConfs.LdapUID
+	session.ldapConfig.LdapConnectionTimeout = ldapConfs.LdapConnectionTimeout
+	session.ldapConfig.LdapVerifyCert = ldapConfs.LdapVerifyCert
+	session.ldapConfig.LdapScope = ldapConfs.LdapScope
+	return &session, nil
 
-	return ldapUsers, nil
 }
 
-func formatLdapURL(ldapURL string) (string, error) {
+func formatURL(ldapURL string) (string, error) {
 
 	var protocol, hostport string
-	var err error
 
-	_, err = url.Parse(ldapURL)
+	_, err := url.Parse(ldapURL)
 	if err != nil {
 		return "", fmt.Errorf("parse Ldap Host ERR: %s", err)
 	}
@@ -241,7 +145,7 @@ func formatLdapURL(ldapURL string) (string, error) {
 		splitLdapURL := strings.Split(ldapURL, "://")
 		protocol, hostport = splitLdapURL[0], splitLdapURL[1]
 		if !((protocol == "ldap") || (protocol == "ldaps")) {
-			return "", fmt.Errorf("unknown ldap protocl")
+			return "", fmt.Errorf("unknown ldap protocol")
 		}
 	} else {
 		hostport = ldapURL
@@ -273,126 +177,165 @@ func formatLdapURL(ldapURL string) (string, error) {
 
 }
 
-// ImportUser ...
-func ImportUser(user models.LdapUser) (int64, error) {
-	var u models.User
-	u.Username = user.Username
-	u.Email = user.Email
-	u.Realname = user.Realname
-
-	log.Debug("username:", u.Username, ",email:", u.Email)
-	exist, err := dao.UserExists(u, "username")
+//ConnectionTest - test ldap session connection with system default setting
+func (session *Session) ConnectionTest() error {
+	session, err := LoadSystemLdapConfig()
 	if err != nil {
-		log.Errorf("system checking user %s failed, error: %v", user.Username, err)
-		return 0, fmt.Errorf("internal_error")
+		return fmt.Errorf("Failed to load system ldap config")
 	}
 
-	if exist {
-		return 0, fmt.Errorf("duplicate_username")
-	}
-
-	exist, err = dao.UserExists(u, "email")
-	if err != nil {
-		log.Errorf("system checking %s mailbox failed, error: %v", user.Username, err)
-		return 0, fmt.Errorf("internal_error")
-	}
-
-	if exist {
-		return 0, fmt.Errorf("duplicate_mailbox")
-	}
-
-	u.Password = "12345678AbC"
-	u.Comment = "from LDAP."
-	if u.Email == "" {
-		u.Email = u.Username + "@placeholder.com"
-	}
-
-	UserID, err := dao.Register(u)
-	if err != nil {
-		log.Errorf("system register user %s failed, error: %v", user.Username, err)
-		return 0, fmt.Errorf("registe_user_error")
-	}
-
-	return UserID, nil
+	return ConnectionTestWithConfig(session.ldapConfig)
 }
 
-// Bind establish a connection to ldap based on ldapConfs and bind the user with given parameters.
-func Bind(ldapConfs models.LdapConf, dn string, password string) error {
-	conn, err := dialLDAP(ldapConfs)
+//ConnectionTestWithConfig - test ldap session connection, out of the scope of normal session create/close
+func ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
+
+	authMode, err := config.AuthMode()
+	if err != nil {
+		log.Errorf("Connection test failed %v", err)
+		return err
+	}
+
+	//If no password present, use the system default password
+	if ldapConfig.LdapSearchPassword == "" && authMode == "ldap_auth" {
+
+		session, err := LoadSystemLdapConfig()
+
+		if err != nil {
+			return fmt.Errorf("Failed to load system ldap config")
+		}
+
+		ldapConfig.LdapSearchPassword = session.ldapConfig.LdapSearchPassword
+	}
+
+	testSession, err := createWithInternalConfig(ldapConfig)
+
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
-	if ldapConfs.LdapSearchDn != "" {
-		if err := bindLDAPSearchDN(ldapConfs, conn); err != nil {
+	err = testSession.Open()
+
+	if err != nil {
+		return err
+	}
+
+	defer testSession.Close()
+
+	if testSession.ldapConfig.LdapSearchDn != "" {
+		err = testSession.Bind(testSession.ldapConfig.LdapSearchDn, testSession.ldapConfig.LdapSearchPassword)
+		if err != nil {
 			return err
 		}
-	}
-	return conn.Bind(dn, password)
-}
-
-func dialLDAP(ldapConfs models.LdapConf) (*goldap.Conn, error) {
-
-	var err error
-	var ldap *goldap.Conn
-	splitLdapURL := strings.Split(ldapConfs.LdapURL, "://")
-	protocol, hostport := splitLdapURL[0], splitLdapURL[1]
-
-	// Sets a Dial Timeout for LDAP
-	connectionTimeout := ldapConfs.LdapConnectionTimeout
-	goldap.DefaultTimeout = time.Duration(connectionTimeout) * time.Second
-
-	switch protocol {
-	case "ldap":
-		ldap, err = goldap.Dial("tcp", hostport)
-	case "ldaps":
-		ldap, err = goldap.DialTLS("tcp", hostport, &tls.Config{InsecureSkipVerify: true})
-	}
-
-	return ldap, err
-}
-
-func bindLDAPSearchDN(ldapConfs models.LdapConf, ldap *goldap.Conn) error {
-
-	var err error
-
-	ldapSearchDn := ldapConfs.LdapSearchDn
-	ldapSearchPassword := ldapConfs.LdapSearchPassword
-
-	err = ldap.Bind(ldapSearchDn, ldapSearchPassword)
-	if err != nil {
-		log.Debug("Bind search dn error", err)
-		return err
 	}
 
 	return nil
 }
 
-func searchLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.SearchResult, error) {
+//SearchUser - search LDAP user by name
+func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
+	var ldapUsers []models.LdapUser
+	ldapFilter := session.createUserFilter(username)
+	result, err := session.SearchLdap(ldapFilter)
 
-	var err error
-	ldapBaseDn := ldapConfs.LdapBaseDn
-	ldapScope := ldapConfs.LdapScope
-	ldapFilter := ldapConfs.LdapFilter
+	if err != nil {
+		return nil, err
+	}
+
+	for _, ldapEntry := range result.Entries {
+		var u models.LdapUser
+		for _, attr := range ldapEntry.Attributes {
+			//OpenLdap sometimes contain leading space in useranme
+			val := strings.TrimSpace(attr.Values[0])
+			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
+			switch strings.ToLower(attr.Name) {
+			case strings.ToLower(session.ldapConfig.LdapUID):
+				u.Username = val
+			case "uid":
+				u.Realname = val
+			case "cn":
+				u.Realname = val
+			case "mail":
+				u.Email = val
+			case "email":
+				u.Email = val
+			}
+		}
+		u.DN = ldapEntry.DN
+		ldapUsers = append(ldapUsers, u)
+
+	}
+
+	return ldapUsers, nil
+
+}
+
+// Bind with specified DN and password, used in authentication
+func (session *Session) Bind(dn string, password string) error {
+	return session.ldapConn.Bind(dn, password)
+}
+
+//Open - open Session
+func (session *Session) Open() error {
+
+	splitLdapURL := strings.Split(session.ldapConfig.LdapURL, "://")
+	protocol, hostport := splitLdapURL[0], splitLdapURL[1]
+	host := strings.Split(hostport, ":")[0]
+
+	connectionTimeout := session.ldapConfig.LdapConnectionTimeout
+	goldap.DefaultTimeout = time.Duration(connectionTimeout) * time.Second
+
+	switch protocol {
+	case "ldap":
+		ldap, err := goldap.Dial("tcp", hostport)
+		if err != nil {
+			return err
+		}
+		session.ldapConn = ldap
+	case "ldaps":
+		log.Debug("Start to dial ldaps")
+		ldap, err := goldap.DialTLS("tcp", hostport, &tls.Config{ServerName: host, InsecureSkipVerify: !session.ldapConfig.LdapVerifyCert})
+		if err != nil {
+			return err
+		}
+		session.ldapConn = ldap
+	}
+
+	return nil
+
+}
+
+// SearchLdap to search ldap with the provide filter
+func (session *Session) SearchLdap(filter string) (*goldap.SearchResult, error) {
+
+	if err := session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword); err != nil {
+		return nil, fmt.Errorf("Can not bind search dn, error: %v", err)
+	}
 
 	attributes := []string{"uid", "cn", "mail", "email"}
-	lowerUID := strings.ToLower(ldapConfs.LdapUID)
+	lowerUID := strings.ToLower(session.ldapConfig.LdapUID)
+
 	if lowerUID != "uid" && lowerUID != "cn" && lowerUID != "mail" && lowerUID != "email" {
-		attributes = append(attributes, ldapConfs.LdapUID)
+		attributes = append(attributes, session.ldapConfig.LdapUID)
 	}
+	log.Debugf("Search ldap with filter:%v", filter)
 	searchRequest := goldap.NewSearchRequest(
-		ldapBaseDn,
-		ldapScope,
+		session.ldapConfig.LdapBaseDn,
+		session.ldapConfig.LdapScope,
 		goldap.NeverDerefAliases,
-		0,     // Unlimited results.
-		0,     // Search Timeout.
-		false, // Types Only
-		ldapFilter,
+		0,     //Unlimited results
+		0,     //Search Timeout
+		false, //Types only
+		filter,
 		attributes,
 		nil,
 	)
 
-	result, err := ldap.Search(searchRequest)
+	result, err := session.ldapConn.Search(searchRequest)
+	if result != nil {
+		log.Debugf("Found entries:%v\n", len(result.Entries))
+	} else {
+		log.Debugf("No entries")
+	}
 
 	if err != nil {
 		log.Debug("LDAP search error", err)
@@ -400,4 +343,36 @@ func searchLDAP(ldapConfs models.LdapConf, ldap *goldap.Conn) (*goldap.SearchRes
 	}
 
 	return result, nil
+
+}
+
+//CreateUserFilter - create filter to search user with specified username
+func (session *Session) createUserFilter(username string) string {
+	var filterTag string
+
+	if username == "" {
+		filterTag = "*"
+	} else {
+		filterTag = username
+	}
+
+	ldapFilter := session.ldapConfig.LdapFilter
+	ldapUID := session.ldapConfig.LdapUID
+
+	if ldapFilter == "" {
+		ldapFilter = "(" + ldapUID + "=" + filterTag + ")"
+	} else {
+		ldapFilter = "(&" + ldapFilter + "(" + ldapUID + "=" + filterTag + "))"
+	}
+
+	log.Debug("ldap filter :", ldapFilter)
+
+	return ldapFilter
+}
+
+//Close - close current session
+func (session *Session) Close() {
+	if session.ldapConn != nil {
+		session.ldapConn.Close()
+	}
 }

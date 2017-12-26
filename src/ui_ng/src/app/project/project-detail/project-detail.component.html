@@ -16,7 +16,7 @@
         <li class="nav-item" *ngIf="isSProjectAdmin || isSystemAdmin">
             <a class="nav-link" routerLink="replications" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
         </li>
-        <li class="nav-item" *ngIf="isSessionValid && isSystemAdmin">
+        <li class="nav-item" *ngIf="isSessionValid && (isSystemAdmin || isMember)">
             <a class="nav-link" routerLink="configs" routerLinkActive="active">{{'PROJECT_DETAIL.CONFIG' | translate}}</a>
         </li>
     </ul>

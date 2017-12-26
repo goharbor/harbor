@@ -55,8 +55,8 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to create a mock admin server: %v", err)
 	}
 	defer server.Close()
-	if err := os.Setenv("ADMIN_SERVER_URL", server.URL); err != nil {
-		log.Fatalf("failed to set env %s: %v", "ADMIN_SERVER_URL", err)
+	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
+		log.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
 	}
 	secretKeyPath := "/tmp/secretkey"
 	_, err = test.GenerateKey(secretKeyPath)
@@ -105,7 +105,6 @@ func TestRepJob(t *testing.T) {
 	assert.Nil(err)
 	j, err := dao.GetRepJob(repJobID)
 	assert.Equal(models.JobRetrying, j.Status)
-	assert.Equal(1, rj.parm.Enabled)
 	assert.False(rj.parm.Insecure)
 	rj2 := NewRepJob(99999)
 	err = rj2.Init()
@@ -163,7 +162,6 @@ func prepareRepJobData() error {
 	}
 	policy := models.RepPolicy{
 		ProjectID:   1,
-		Enabled:     1,
 		TargetID:    targetID,
 		Description: "whatever",
 		Name:        "mypolicy",

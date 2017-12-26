@@ -98,6 +98,27 @@ Delete Repo
     Click Element  xpath=//clr-modal//div[@class="modal-dialog"]//button[2]
     Sleep  2
 
+Delete Project
+    [Arguments]  ${projname}
+    Sleep  1
+    Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow
+    Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow//button[contains(.,'Delete')]
+    #click delete button to confirm
+    Sleep  1
+    Click Element  //confiramtion-dialog//button[contains(.,'DELETE')]
+
+Project Should Not Be Deleted
+    [Arguments]  ${projname}
+    Delete Project  ${projname}
+    Sleep  1
+    Page Should Contain  ${projname}
+
+Project Should Be Deleted
+    [Arguments]  ${projname}
+    Delete Project  ${projname}
+    Sleep  2
+    Page Should Not Contain  ${projname}
+
 Advanced Search Should Display
     Page Should Contain Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
 
@@ -140,12 +161,25 @@ Do Log Advanced Search
     #others
     Click Element  xpath=//audit-log//clr-dropdown/button
     Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Others")]
-   	Sleep  1
-    Click element  xpath=//audit-log//hbr-filter//clr-icon
-    Input Text  xpath = //audit-log//hbr-filter//input  harbor
     Sleep  1
-    ${c} =  Get Matching Xpath Count  //audit-log//clr-dg-row
-    Should be equal as integers  ${c}  0
+    Click Element  xpath=//audit-log//hbr-filter//clr-icon
+    Input Text  xpath=//audit-log//hbr-filter//input  harbor
+    Sleep  1
+    Capture Page Screenshot  LogAdvancedSearch2.png
+    ${rc} =  Get Matching Xpath Count  //audit-log//clr-dg-row
+    Should Be Equal As Integers  ${rc}  0
+
+Go Into Repo
+    [Arguments]  ${repoName}
+    Sleep  2
+    Click Element  xpath=//*[@id="search_input"]
+    Sleep  2
+    Input Text  xpath=//*[@id="search_input"]  ${repoName}
+    Sleep  8
+    Wait Until Page Contains  ${repoName}
+    Click Element  xpath=//*[@id="results"]/list-repository-ro/clr-datagrid/div/div/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[1]/a
+    Sleep  2
+    Capture Page Screenshot  gointo_${repoName}.png
 
 Expand Repo
     [Arguments]  ${projectname}
@@ -157,6 +191,26 @@ Scan Repo
     Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow
     Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
     Sleep  15
+
+Edit Repo Info
+    Click Element  //*[@id="repo-info"]
+    Sleep  1
+    Page Should Contain Element  //*[@id="info"]/form/div[2]/h3
+    # Cancel input
+    Click Element  xpath=//*[@id="info-edit-button"]/button
+    Input Text  xpath=//*[@id="info"]/form/div[2]/textarea  test_description_info
+    Click Element  xpath=//*[@id="info"]/form/div[3]/button[2]
+    Sleep  1
+    Click Element  xpath=//*[@id="info"]/form/confirmation-dialog/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+    Sleep  1
+    Page Should Contain Element  //*[@id="info"]/form/div[2]/h3
+    # Confirm input
+    Click Element  xpath=//*[@id="info-edit-button"]/button
+    Input Text  xpath=//*[@id="info"]/form/div[2]/textarea  test_description_info
+    Click Element  xpath=//*[@id="info"]/form/div[3]/button[1]
+    Sleep  1
+    Page Should Contain  test_description_info
+    Capture Page Screenshot  RepoInfo.png
 
 Summary Chart Should Display
     [Arguments]  ${tagname}

@@ -38,11 +38,16 @@ export class TagRepositoryComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.projectId = this.route.snapshot.params['id'];
+    if (!this.projectId) {
+      this.projectId = this.route.snapshot.parent.params['id'];
+    };
+    // let resolverData = this.route.snapshot.parent.data;
     let resolverData = this.route.snapshot.data;
+
     if (resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
     }
-    this.projectId = this.route.snapshot.params['id'];
     this.repoName = this.route.snapshot.params['repo'];
 
     this.registryUrl = this.appConfigService.getConfig().registry_url;
@@ -63,5 +68,9 @@ export class TagRepositoryComponent implements OnInit {
   watchTagClickEvt(tagEvt: TagClickEvent): void {
     let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name, 'tags', tagEvt.tag_name];
     this.router.navigate(linkUrl);
+  }
+
+  goBack(tag: string): void {
+    this.router.navigate(["harbor", "projects", this.projectId, "repositories"]);
   }
 }

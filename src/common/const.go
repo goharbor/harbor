@@ -38,6 +38,8 @@ const (
 	MySQLDatabase              = "mysql_database"
 	SQLiteFile                 = "sqlite_file"
 	SelfRegistration           = "self_registration"
+	UIURL                      = "ui_url"
+	JobServiceURL              = "jobservice_url"
 	LDAPURL                    = "ldap_url"
 	LDAPSearchDN               = "ldap_search_dn"
 	LDAPSearchPwd              = "ldap_search_password"
@@ -46,6 +48,7 @@ const (
 	LDAPFilter                 = "ldap_filter"
 	LDAPScope                  = "ldap_scope"
 	LDAPTimeout                = "ldap_timeout"
+	LDAPVerifyCert             = "ldap_verify_cert"
 	TokenServiceURL            = "token_service_url"
 	RegistryURL                = "registry_url"
 	EmailHost                  = "email_host"
@@ -70,6 +73,7 @@ const (
 	UAAEndpoint                = "uaa_endpoint"
 	UAAClientID                = "uaa_client_id"
 	UAAClientSecret            = "uaa_client_secret"
-
 	DefaultClairEndpoint = "http://clair:6060"
+	CfgDriverDB                = "db"
+	CfgDriverJSON              = "json"
 )

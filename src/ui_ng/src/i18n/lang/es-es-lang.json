@@ -32,7 +32,8 @@
         "YES": "SI",
         "NO": "NO",
         "NEGATIVE": "NEGATIVO",
-        "COPY": "COPY"
+        "COPY": "COPY",
+        "EDIT": "EDITAR"
     },
     "TOOLTIP": {
         "EMAIL": "El email debe ser una dirección válida como nombre@ejemplo.com.",
@@ -351,6 +352,7 @@
         "FILTER_FOR_REPOSITORIES": "Filtrar Repositorios",
         "TAG": "Etiqueta",
         "SIZE": "Size",
+        "VULNERABILITY": "Vulnerability",
         "SIGNED": "Firmada",
         "AUTHOR": "Autor",
         "CREATED": "Fecha de creación",
@@ -366,7 +368,10 @@
         "DELETED_TAG_SUCCESS": "Etiqueta eliminada satisfactoriamente.",
         "COPY": "Copiar",
         "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
-        "PLACEHOLDER": "We couldn't find any repositories!"
+        "PLACEHOLDER": "We couldn't find any repositories!",
+        "INFO": "Información",
+        "NO_INFO": "Sin información de descripción para este repositorio",
+        "IMAGE": "Imágenes"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algunos cambios no se han guardado aún. ¿Quiere cancelar?"
@@ -398,6 +403,8 @@
         "MAIL_PASSWORD": "Contraseña del servidor de email",
         "MAIL_FROM": "Email De",
         "MAIL_SSL": "Email SSL",
+        "MAIL_INSECURE": "Verify Certificate",
+        "INSECURE_TOOLTIP": "Determine whether to verify the certificate of the Email server. Uncheck this box when the Email server uses a self-signed or untrusted certificate.",
         "SSL_TOOLTIP": "Activar SSL en conexiones al servidor de correo",
         "VERIFY_REMOTE_CERT": "Verificar Certificado Remoto",
         "TOKEN_EXPIRATION": "Expiración del Token (Minutos)",
@@ -425,7 +432,8 @@
             "TOKEN_EXPIRATION": "El tiempo de expiración (en minutos) del token creado por el servicio de tokens. Por defecto son 30 minutos.",
             "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
-            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
+            "VERIFY_CERT": "Verify Cert from LDAP Server"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -434,7 +442,8 @@
             "BASE_DN": "LDAP Base DN",
             "FILTER": "LDAP Filtro",
             "UID": "LDAP UID",
-            "SCOPE": "LDAP Ámbito"
+            "SCOPE": "LDAP Ámbito",
+            "VERIFY_CERT": "LDAP Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
@@ -511,7 +520,8 @@
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_ZERO": "No se encontró ningún paquete de vulnerabilidad reconocible"
         },
         "SEVERITY": {
             "HIGH": "high",
@@ -549,7 +559,8 @@
         "SCAN_COMPLETION_TIME": "Scan Completed",
         "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
         "PLACEHOLDER": "We couldn't find any tags!",
-        "COPY_ERROR": "Copy failed, please try to manually copy."
+        "COPY_ERROR": "Copy failed, please try to manually copy.",
+        "FILTER_FOR_TAGS": "Etiquetas de filtro"
     },
     "UNKNOWN_ERROR": "Ha ocurrido un error desconocido. Por favor, inténtelo de nuevo más tarde.",
     "UNAUTHORIZED_ERROR": "La sesión no es válida o ha caducado. Necesita identificarse de nuevo para llevar a cabo esa acción.",

@@ -123,10 +123,10 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ID: targetID,
 						},
 					},
-					Filters: []rep_models.FilterItem{
-						rep_models.FilterItem{
-							Kind:  "invalid_filter_kind",
-							Value: "",
+					Filters: []rep_models.Filter{
+						rep_models.Filter{
+							Kind:    "invalid_filter_kind",
+							Pattern: "",
 						},
 					},
 				},
@@ -151,10 +151,10 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ID: targetID,
 						},
 					},
-					Filters: []rep_models.FilterItem{
-						rep_models.FilterItem{
-							Kind:  replication.FilterItemKindRepository,
-							Value: "*",
+					Filters: []rep_models.Filter{
+						rep_models.Filter{
+							Kind:    replication.FilterItemKindRepository,
+							Pattern: "*",
 						},
 					},
 					Trigger: &rep_models.Trigger{
@@ -182,10 +182,10 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ID: targetID,
 						},
 					},
-					Filters: []rep_models.FilterItem{
-						rep_models.FilterItem{
-							Kind:  replication.FilterItemKindRepository,
-							Value: "*",
+					Filters: []rep_models.Filter{
+						rep_models.Filter{
+							Kind:    replication.FilterItemKindRepository,
+							Pattern: "*",
 						},
 					},
 					Trigger: &rep_models.Trigger{
@@ -213,10 +213,10 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ID: 10000,
 						},
 					},
-					Filters: []rep_models.FilterItem{
-						rep_models.FilterItem{
-							Kind:  replication.FilterItemKindRepository,
-							Value: "*",
+					Filters: []rep_models.Filter{
+						rep_models.Filter{
+							Kind:    replication.FilterItemKindRepository,
+							Pattern: "*",
 						},
 					},
 					Trigger: &rep_models.Trigger{
@@ -244,10 +244,10 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ID: targetID,
 						},
 					},
-					Filters: []rep_models.FilterItem{
-						rep_models.FilterItem{
-							Kind:  replication.FilterItemKindRepository,
-							Value: "*",
+					Filters: []rep_models.Filter{
+						rep_models.Filter{
+							Kind:    replication.FilterItemKindRepository,
+							Pattern: "*",
 						},
 					},
 					Trigger: &rep_models.Trigger{
@@ -374,10 +374,10 @@ func TestRepPolicyAPIPut(t *testing.T) {
 							ID: targetID,
 						},
 					},
-					Filters: []rep_models.FilterItem{
-						rep_models.FilterItem{
-							Kind:  replication.FilterItemKindRepository,
-							Value: "*",
+					Filters: []rep_models.Filter{
+						rep_models.Filter{
+							Kind:    replication.FilterItemKindRepository,
+							Pattern: "*",
 						},
 					},
 					Trigger: &rep_models.Trigger{
@@ -405,10 +405,10 @@ func TestRepPolicyAPIPut(t *testing.T) {
 							ID: targetID,
 						},
 					},
-					Filters: []rep_models.FilterItem{
-						rep_models.FilterItem{
-							Kind:  replication.FilterItemKindRepository,
-							Value: "*",
+					Filters: []rep_models.Filter{
+						rep_models.Filter{
+							Kind:    replication.FilterItemKindRepository,
+							Pattern: "*",
 						},
 					},
 					Trigger: &rep_models.Trigger{
@@ -463,16 +463,15 @@ func TestConvertToRepPolicy(t *testing.T) {
 				ID:          1,
 				Name:        "policy",
 				Description: "description",
-				Filters: []rep_models.FilterItem{
-					rep_models.FilterItem{
-						Kind:  "filter_kind_01",
-						Value: "*",
+				Filters: []rep_models.Filter{
+					rep_models.Filter{
+						Kind:    "filter_kind_01",
+						Pattern: "*",
 					},
 				},
 				ReplicateDeletion: true,
 				Trigger: &rep_models.Trigger{
-					Kind:  "trigger_kind_01",
-					Param: "{param}",
+					Kind: "trigger_kind_01",
 				},
 				Projects: []*models.Project{
 					&models.Project{
@@ -490,16 +489,15 @@ func TestConvertToRepPolicy(t *testing.T) {
 				ID:          1,
 				Name:        "policy",
 				Description: "description",
-				Filters: []rep_models.FilterItem{
-					rep_models.FilterItem{
-						Kind:  "filter_kind_01",
-						Value: "*",
+				Filters: []rep_models.Filter{
+					rep_models.Filter{
+						Kind:    "filter_kind_01",
+						Pattern: "*",
 					},
 				},
 				ReplicateDeletion: true,
 				Trigger: &rep_models.Trigger{
-					Kind:  "trigger_kind_01",
-					Param: "{param}",
+					Kind: "trigger_kind_01",
 				},
 				ProjectIDs: []int64{1},
 				Namespaces: []string{"library"},

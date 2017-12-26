@@ -2,10 +2,11 @@ package trigger
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/vmware/harbor/src/common/scheduler"
 	"github.com/vmware/harbor/src/common/scheduler/policy"
-	"github.com/vmware/harbor/src/common/scheduler/task"
+	replication_task "github.com/vmware/harbor/src/common/scheduler/task/replication"
 	"github.com/vmware/harbor/src/replication"
 )
 
@@ -31,10 +32,10 @@ func (st *ScheduleTrigger) Setup() error {
 	config := &policy.AlternatePolicyConfiguration{}
 	switch st.params.Type {
 	case replication.TriggerScheduleDaily:
-		config.Duration = 24 * 3600
+		config.Duration = 24 * 3600 * time.Second
 		config.OffsetTime = st.params.Offtime
 	case replication.TriggerScheduleWeekly:
-		config.Duration = 7 * 24 * 3600
+		config.Duration = 7 * 24 * 3600 * time.Second
 		config.OffsetTime = st.params.Offtime
 		config.Weekday = st.params.Weekday
 	default:
@@ -42,7 +43,7 @@ func (st *ScheduleTrigger) Setup() error {
 	}
 
 	schedulePolicy := policy.NewAlternatePolicy(assembleName(st.params.PolicyID), config)
-	attachTask := task.NewReplicationTask()
+	attachTask := replication_task.NewTask(st.params.PolicyID)
 	schedulePolicy.AttachTasks(attachTask)
 	return scheduler.DefaultScheduler.Schedule(schedulePolicy)
 }

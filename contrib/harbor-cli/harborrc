@@ -1,0 +1,5 @@
+export HARBOR_USERNAME=admin
+export HARBOR_PASSWORD=Harbor12345
+export HARBOR_URL=https://localhost
+export HARBOR_PROJECT=2
+complete -W "$(harbor bash-completion)" harbor

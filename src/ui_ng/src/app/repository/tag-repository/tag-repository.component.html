@@ -1,5 +1,3 @@
 <div>
-    <a *ngIf="hasSignedIn" [routerLink]="['/harbor', 'projects', projectId, 'repositories']">&lt; {{'REPOSITORY.REPOSITORIES' | translate}}</a>
-    <a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']">&lt; {{'SEARCH.BACK' | translate}}</a>
-    <hbr-tag (tagClickEvent)="watchTagClickEvt($event)" [repoName]="repoName" [registryUrl]="registryUrl" [withNotary]="withNotary" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [projectId]="projectId" [isEmbedded]="false" [withClair]="withClair"></hbr-tag>
+    <hbr-repository (tagClickEvent)="watchTagClickEvt($event)" (backEvt)="goBack($event)" [repoName]="repoName" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [projectId]="projectId"></hbr-repository>
 </div>

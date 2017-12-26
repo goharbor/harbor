@@ -19,7 +19,7 @@ env:
   MYSQL_PWD: root123
   MYSQL_DATABASE: registry
   SQLITE_FILE: /tmp/registry.db
-  ADMIN_SERVER_URL: http://127.0.0.1:8888
+  ADMINSERVER_URL: http://127.0.0.1:8888
   DOCKER_COMPOSE_VERSION: 1.7.1
   HARBOR_ADMIN: admin
   HARBOR_ADMIN_PASSWD: Harbor12345 
@@ -70,7 +70,7 @@ install:
 before_script:
   # create tables and load data
   # - mysql < ./make/db/registry.sql -uroot --verbose
-  - sudo sqlite3 /tmp/registry.db < make/common/db/registry_sqlite.sql
+  - sudo sqlite3 /tmp/registry.db < make/photon/db/registry_sqlite.sql
   - sudo chmod 777 /tmp/registry.db
 
 script:
@@ -82,9 +82,15 @@ script:
   - sudo make run_clarity_ut CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7
   - cat ./src/ui_ng/lib/npm-ut-test-results
   - sudo ./tests/testprepare.sh 
+  - sudo make -f make/photon/Makefile -e MARIADBVERSION=10.2.10 -e VERSIONTAG=dev
+  - sudo make -f make/photon/Makefile _build_registry -e REGISTRYVERSION=v2.6.2 -e VERSIONTAG=dev
+  - sudo sed -i 's/__reg_version__/v2.6.2-dev/g' ./make/docker-compose.test.yml
+  - sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
+  - sudo mkdir -p ./make/common/config/registry/
+  - sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
   - sudo docker-compose -f ./make/docker-compose.test.yml up -d
-  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
-  - go list ./... | grep -v -E 'vendor|tests' | xargs -L1 go vet
+  - go list ./... | grep -v -E 'vendor|tests|test' | xargs -L1 fgt golint
+  - go list ./... | grep -v -E 'vendor|tests|test' | xargs -L1 go vet
   - export MYSQL_HOST=$IP
   - export REGISTRY_URL=$IP:5000
   - echo $REGISTRY_URL
@@ -97,7 +103,8 @@ script:
   - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
   - docker-compose -f make/docker-compose.test.yml down
-  - sudo rm -rf /data/config/*  
+  - sudo rm -rf /data/config/*
+  - sudo rm -rf /data/database/*
   - ls /data/cert
   - sudo make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true CLAIRFLAG=true
   - sleep 10  

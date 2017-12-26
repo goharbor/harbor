@@ -33,8 +33,11 @@ Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releas
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
 ### Community
+**Twitter:** @project_harbor  
+**User Group:** Join Harbor user email group: harbor-users@googlegroups.com to get update of Harbor's news, features, releases, or to provide suggestion and feedback. To subscribe, send an email to harbor-users+subscribe@googlegroups.com .  
+**Developer Group:** Join Harbor developer group: harbor-dev@googlegroups.com for discussion on Harbor development and contribution.To subscribe, send an email to harbor-dev+subscribe@googlegroups.com .  
 **Slack:** Join Harbor's community for discussion and ask questions: [VMware {code}](https://code.vmware.com/join/), Channel: #harbor.  
-**Email:** harbor@vmware.com .  
+
 More info on [partners and users](partners.md).
 
 ### Contribution
@@ -56,7 +59,7 @@ This project uses open source components which have additional licensing terms. 
 * MySQL 5.6: [docker image](https://hub.docker.com/_/mysql/), [license](https://github.com/docker-library/mysql/blob/master/LICENSE)
 
 ### Commercial Support
-If you need commercial support of Harbor, please contact us for more information: harbor@vmware.com .
+If you need commercial support of Harbor, please contact us for more information: harbor at vmware.com .
 
 
 

@@ -16,6 +16,7 @@ import { httpStatusCode, AlertType } from './shared.const';
 import { MessageService } from '../global-message/message.service';
 import { Comparator, State } from 'clarity-angular';
 import {RequestOptions, Headers} from "@angular/http";
+import {RequestQueryParams} from "harbor-ui";
 
 /**
  * To handle the error message body
@@ -176,6 +177,29 @@ export const HTTP_FORM_OPTIONS: RequestOptions = new RequestOptions({
         "Content-Type": 'application/x-www-form-urlencoded'
     })
 });
+/**
+ * Build http request options
+ *
+ * @export
+ * @param {RequestQueryParams} params
+ * @returns {RequestOptions}
+ */
+export function buildHttpRequestOptions(params: RequestQueryParams): RequestOptions {
+    let reqOptions: RequestOptions = new RequestOptions({
+        headers: new Headers({
+            "Content-Type": 'application/json',
+            "Accept": 'application/json',
+            "Cache-Control": 'no-cache',
+            "Pragma": 'no-cache'
+        })
+    });
+
+    if (params) {
+        reqOptions.search = params;
+    }
+
+    return reqOptions;
+}
 
 /**
  * Filter columns via RegExp

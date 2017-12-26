@@ -31,6 +31,12 @@ upload_build=false
 nightly_run=false
 upload_latest_build=false
 latest_build_file='latest.build'
+publish_npm=true
+
+harbor_logs_bucket="harbor-ci-logs"
+harbor_builds_bucket="harbor-builds"
+harbor_releases_bucket="harbor-releases"
+harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
 
 # GC credentials
 keyfile="/root/harbor-ci-logs.key"
@@ -45,6 +51,12 @@ echo "content_language = en" >> $botofile
 echo "default_project_id = $GS_PROJECT_ID" >> $botofile
 container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
 echo $container_ip
+
+# GS util
+function uploader {
+  gsutil cp $1 gs://$2
+  gsutil -D setacl public-read gs://$2/$1 &> /dev/null
+}
 
 ## --------------------------------------------- Run Test Case ---------------------------------------------
 if [ $DRONE_REPO != "vmware/harbor" ]; then
@@ -82,57 +94,57 @@ fi
 rc="$?"
 echo $rc
 
+## --------------------------------------------- Upload Harbor CI Logs -------------------------------------------
 timestamp=$(date +%s)
 outfile="integration_logs_"$DRONE_BUILD_NUMBER"_"$DRONE_COMMIT".tar.gz"
 tar -zcvf $outfile output.xml log.html *.png package.list *container-logs.zip *.log /var/log/harbor/* /data/config/* /data/job_logs/*
 if [ -f "$outfile" ]; then
-  gsutil cp $outfile gs://harbor-ci-logs
+  uploader $outfile $harbor_logs_bucket
   echo "----------------------------------------------"
   echo "Download test logs:"
   echo "https://storage.googleapis.com/harbor-ci-logs/$outfile"
   echo "----------------------------------------------"
-  gsutil -D setacl public-read gs://harbor-ci-logs/$outfile &> /dev/null
 else
   echo "No log output file to upload"
 fi
 
-## --------------------------------------------- Upload Harbor Build File ---------------------------------------
+## --------------------------------------------- Upload Harbor Bundle File ---------------------------------------
 if [ $upload_build == true ] && [ $rc -eq 0 ]; then
   harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
-  gsutil cp $harbor_build_bundle gs://harbor-builds
-  gsutil -D setacl public-read gs://harbor-builds/$harbor_build_bundle &> /dev/null
+  uploader $harbor_build_bundle $harbor_builds_bucket
+
+  if [ $DRONE_BRANCH == "master" ]; then
+    cp $harbor_build_bundle harbor-offline-installer-latest-master.tgz
+    uploader harbor-offline-installer-latest-master.tgz $harbor_ci_pipeline_store_bucket
+  fi 
+  if [[ $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]]; then
+    cp $harbor_build_bundle harbor-offline-installer-latest-release.tgz
+	uploader harbor-offline-installer-latest-release.tgz $harbor_ci_pipeline_store_bucket
+  fi 
 fi
 
-## --------------------------------------------- Upload Harbor Latest Build File ---------------------------------------
+## --------------------------------------------- Upload Harbor Latest Build File ---------------------------------
 if [ $upload_latest_build == true ] && [ $rc -eq 0 ]; then
   echo "update latest build file."
   harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
   echo $harbor_build_bundle 
-  if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+  if [[ $DRONE_BRANCH == "master" ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
       echo 'https://storage.googleapis.com/harbor-builds/'$harbor_build_bundle > $latest_build_file
-      gsutil cp $latest_build_file gs://harbor-builds
-      gsutil -D setacl public-read gs://harbor-builds/$latest_build_file &> /dev/null
+      uploader $latest_build_file $harbor_builds_bucket	
   fi
   if [[ $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
       echo 'https://storage.googleapis.com/harbor-releases/'$harbor_build_bundle > $latest_build_file
-      gsutil cp $latest_build_file gs://harbor-releases
-      gsutil -D setacl public-read gs://harbor-releases/$latest_build_file &> /dev/null
+	  uploader $latest_build_file $harbor_releases_bucket
   fi    
 fi
 
-## --------------------------------------------- Sendout Email ---------------------------------------------
-if [ $nightly_run == true ]; then
-    echo "Sendout Nightly Run Email."
-    if [ $rc -eq 0 ]; then
-        result=Pass
-    else
-        result=Fail
-    fi
-    python tests/nightly/sendreport.py --repo $DRONE_REPO --branch $DRONE_BRANCH --commit $DRONE_COMMIT --result $result --log $outfile --mailpwd $MAIL_PWD
-    echo "Sendout Nightly Run Email success."
+## ------------------------------------- Build & Publish NPM Package for VIC ------------------------------------
+if [ $publish_npm == true ] && [ $rc -eq 0 ] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+    echo "build & publish package harbor-ui-vic to npm repo."
+    ./tools/ui_lib/build_ui_lib_4_vic.sh
 fi
 
-## --------------------------------------------- Tear Down -------------------------------------------------
+## ------------------------------------------------ Tear Down ---------------------------------------------------
 if [ -f "$keyfile" ]; then
   rm -f $keyfile
 fi

@@ -32,7 +32,8 @@
         "YES": "YES",
         "NO": "NO",
         "NEGATIVE": "NEGATIVE",
-        "COPY": "COPY"
+        "COPY": "COPY",
+        "EDIT": "EDIT"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com.",
@@ -350,6 +351,7 @@
         "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
         "SIZE": "Size",
+        "VULNERABILITY": "Vulnerability",
         "SIGNED": "Signed",
         "AUTHOR": "Author",
         "CREATED": "Creation Time",
@@ -365,7 +367,10 @@
         "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
         "COPY": "Copy",
         "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
-        "PLACEHOLDER": "We couldn't find any repositories!"
+        "PLACEHOLDER": "We couldn't find any repositories!",
+        "INFO": "Info",
+        "NO_INFO": "No description info for this repository",
+        "IMAGE": "Images"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
@@ -397,6 +402,8 @@
         "MAIL_PASSWORD": "Email Password",
         "MAIL_FROM": "Email From",
         "MAIL_SSL": "Email SSL",
+        "MAIL_INSECURE": "Verify Certificate",
+        "INSECURE_TOOLTIP": "Determine whether to verify the certificate of the Email server. Uncheck this box when the Email server uses a self-signed or untrusted certificate.",
         "SSL_TOOLTIP": "Enable SSL for email server connection",
         "VERIFY_REMOTE_CERT": "Verify Remote Cert",
         "TOKEN_EXPIRATION": "Token Expiration (Minutes)",
@@ -424,7 +431,8 @@
             "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes.",
             "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
-            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
+            "VERIFY_CERT": "Verify Cert from LDAP Server"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -433,7 +441,8 @@
             "BASE_DN": "LDAP Base DN",
             "FILTER": "LDAP Filter",
             "UID": "LDAP UID",
-            "SCOPE": "LDAP Scope"
+            "SCOPE": "LDAP Scope",
+            "VERIFY_CERT": "LDAP Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
@@ -512,7 +521,8 @@
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability package found"
         },
         "SEVERITY": {
             "HIGH": "high",
@@ -550,7 +560,8 @@
         "SCAN_COMPLETION_TIME": "Scan Completed",
         "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
         "PLACEHOLDER": "We couldn't find any tags!",
-        "COPY_ERROR": "Copy failed, please try to manually copy."
+        "COPY_ERROR": "Copy failed, please try to manually copy.",
+        "FILTER_FOR_TAGS": "Filter Tags"
     },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
     "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action.",

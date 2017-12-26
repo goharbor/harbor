@@ -26,33 +26,30 @@ import (
 // 1.5 seconds
 const frozenTime time.Duration = 1500 * time.Millisecond
 
-const (
-	// DBAuth is the database auth mode.
-	DBAuth = "db_auth"
-	// LDAPAuth is the ldap auth mode.
-	LDAPAuth = "ldap_auth"
-	// UAAAuth is the uaa auth mode.
-	UAAAuth = "uaa_auth"
-)
-
 var lock = NewUserLock(frozenTime)
 
-// Authenticator provides interface to authenticate user credentials.
-type Authenticator interface {
+// AuthenticateHelper provides interface for user management in different auth modes.
+type AuthenticateHelper interface {
 
 	// Authenticate ...
 	Authenticate(m models.AuthModel) (*models.User, error)
+	// OnBoardUser will check if a user exists in user table, if not insert the user and
+	// put the id in the pointer of user model, if it does exist, fill in the user model based
+	// on the data record of the user
+	OnBoardUser(u *models.User) error
+	// Get user information from account repository
+	SearchUser(username string) (*models.User, error)
 }
 
-var registry = make(map[string]Authenticator)
+var registry = make(map[string]AuthenticateHelper)
 
 // Register add different authenticators to registry map.
-func Register(name string, authenticator Authenticator) {
+func Register(name string, h AuthenticateHelper) {
 	if _, dup := registry[name]; dup {
 		log.Infof("authenticator: %s has been registered", name)
 		return
 	}
-	registry[name] = authenticator
+	registry[name] = h
 }
 
 // Login authenticates user credentials based on setting.
@@ -82,4 +79,35 @@ func Login(m models.AuthModel) (*models.User, error) {
 		time.Sleep(frozenTime)
 	}
 	return user, err
+}
+
+func getHelper() (AuthenticateHelper, error) {
+	authMode, err := config.AuthMode()
+	if err != nil {
+		return nil, err
+	}
+	AuthenticateHelper, ok := registry[authMode]
+	if !ok {
+		return nil, fmt.Errorf("Can not get authenticator, authmode: %s", authMode)
+	}
+	return AuthenticateHelper, nil
+}
+
+// OnBoardUser will check if a user exists in user table, if not insert the user and
+// put the id in the pointer of user model, if it does exist, return the user's profile.
+func OnBoardUser(user *models.User) error {
+	helper, err := getHelper()
+	if err != nil {
+		return err
+	}
+	return helper.OnBoardUser(user)
+}
+
+// SearchUser --
+func SearchUser(username string) (*models.User, error) {
+	helper, err := getHelper()
+	if err != nil {
+		return nil, err
+	}
+	return helper.SearchUser(username)
 }

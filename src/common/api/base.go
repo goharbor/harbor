@@ -121,7 +121,8 @@ func (b *BaseAPI) RenderError(code int, text string) {
 func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)
 	if err != nil {
-		log.Errorf("Error while decoding the json request, error: %v", err)
+		log.Errorf("Error while decoding the json request, error: %v, %v",
+			err, string(b.Ctx.Input.CopyBody(1<<32)[:]))
 		b.CustomAbort(http.StatusBadRequest, "Invalid json request")
 	}
 }

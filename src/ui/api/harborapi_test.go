@@ -40,6 +40,8 @@ import (
 	"github.com/dghubble/sling"
 
 	//for test env prepare
+	"github.com/vmware/harbor/src/replication/core"
+	_ "github.com/vmware/harbor/src/replication/event"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 )
@@ -118,7 +120,6 @@ func init() {
 	beego.Router("/api/targets/:id([0-9]+)", &TargetAPI{})
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &TargetAPI{}, "post:Ping")
-	beego.Router("/api/targets/:id([0-9]+)/ping", &TargetAPI{}, "post:PingByID")
 	beego.Router("/api/policies/replication/:id([0-9]+)", &RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
@@ -132,6 +133,10 @@ func init() {
 	beego.Router("/api/replications", &ReplicationAPI{})
 
 	_ = updateInitPassword(1, "Harbor12345")
+
+	if err := core.GlobalController.Init(); err != nil {
+		log.Fatalf("failed to initialize GlobalController: %v", err)
+	}
 
 	//syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
@@ -631,18 +636,6 @@ func (a testapi) PingTarget(authInfo usrInfo, body interface{}) (int, error) {
 
 	_sling = _sling.Path(path)
 	_sling = _sling.BodyJSON(body)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
-
-//PingTargetByID ...
-func (a testapi) PingTargetByID(authInfo usrInfo, id int) (int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := fmt.Sprintf("/api/targets/%d/ping", id)
-
-	_sling = _sling.Path(path)
 
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
