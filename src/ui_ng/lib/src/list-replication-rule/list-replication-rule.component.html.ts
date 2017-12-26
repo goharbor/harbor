@@ -16,10 +16,10 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
         </clr-dg-action-overflow>
         <clr-dg-cell>{{p.name}}</clr-dg-cell>
         <clr-dg-cell *ngIf="!projectScope">
-            <a href="javascript:void(0)" (click)="redirectTo(p)">{{p.projects[0].name}}</a>
+            <a href="javascript:void(0)" (click)="redirectTo(p)">{{p.projects?.length>0  ? p.projects[0].name : ''}}</a>
         </clr-dg-cell>
         <clr-dg-cell>{{p.description ? p.description : '-'}}</clr-dg-cell>
-        <clr-dg-cell>{{p.targets[0].name}}</clr-dg-cell>
+        <clr-dg-cell>{{p.targets?.length>0 ? p.targets[0].name : ''}}</clr-dg-cell>
         <clr-dg-cell>
           <ng-template [ngIf]="p.start_time === nullTime">-</ng-template>
           <ng-template [ngIf]="p.start_time !== nullTime">{{p.start_time | date: 'short'}}</ng-template>
