@@ -42,7 +42,7 @@ func (pa *RepPolicyAPI) Prepare() {
 		return
 	}
 
-	if !pa.SecurityCtx.IsSysAdmin() {
+	if !(pa.Ctx.Request.Method == http.MethodGet || pa.SecurityCtx.IsSysAdmin()) {
 		pa.HandleForbidden(pa.SecurityCtx.GetUsername())
 		return
 	}
@@ -59,6 +59,11 @@ func (pa *RepPolicyAPI) Get() {
 
 	if policy.ID == 0 {
 		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+	}
+
+	if !pa.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+		pa.HandleForbidden(pa.SecurityCtx.GetUsername())
+		return
 	}
 
 	ply, err := convertFromRepPolicy(pa.ProjectMgr, policy)
@@ -94,6 +99,9 @@ func (pa *RepPolicyAPI) List() {
 	}
 
 	for _, policy := range policies {
+		if !pa.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+			continue
+		}
 		ply, err := convertFromRepPolicy(pa.ProjectMgr, policy)
 		if err != nil {
 			pa.ParseAndHandleError(fmt.Sprintf("failed to convert from replication policy"), err)

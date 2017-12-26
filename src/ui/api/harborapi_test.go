@@ -134,7 +134,7 @@ func init() {
 
 	_ = updateInitPassword(1, "Harbor12345")
 
-	if err := core.GlobalController.Init(); err != nil {
+	if err := core.Init(); err != nil {
 		log.Fatalf("failed to initialize GlobalController: %v", err)
 	}
 
