@@ -1,10 +1,11 @@
 # Installation and Configuration Guide
-Harbor can be installed by one of two approaches: 
+Harbor can be installed by one of three approaches: 
 
 - **Online installer:** The installer downloads Harbor's images from Docker hub. For this reason, the installer is very small in size.
 
 - **Offline installer:** Use this installer when the host does not have an Internet connection. The installer contains pre-built images so its size is larger.
 
+- **OVA installer:** Use this installer when user have a vCenter environment, Harbor is launched after OVA deployed. Detail information please refer **[Harbor OVA install guide](install_guide_ova.md)**
 
 All installers can be downloaded from the **[official release](https://github.com/vmware/harbor/releases)** page. 
 
