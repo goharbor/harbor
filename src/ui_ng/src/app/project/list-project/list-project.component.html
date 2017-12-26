@@ -2,7 +2,7 @@
         <clr-dg-action-bar>
             <div class="btn-group">
                 <button type="button" class="btn btn-sm btn-secondary" (click)="addNewProject()" *ngIf="projectCreationRestriction">{{'PROJECT.NEW_PROJECT' | translate}}</button>
-                <button type="button" class="btn btn-sm btn-secondary" [hidden]="!isSystemAdmin"  [disabled]="!selectedRow.length" (click)="deleteProjects(selectedRow)" >{{'PROJECT.DELETE' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary"  [disabled]="!(selectedRow.length && (isSystemAdmin || canDelete))" (click)="deleteProjects(selectedRow)" >{{'PROJECT.DELETE' | translate}}</button>
             </div>
         </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'PROJECT.NAME' | translate}}</clr-dg-column>

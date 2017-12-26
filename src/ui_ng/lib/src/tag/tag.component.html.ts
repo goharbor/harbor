@@ -40,11 +40,6 @@ export const TAG_TEMPLATE = `
         <clr-dg-column style="width: 80px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'TGA.PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
-          <clr-dg-action-overflow>
-            <button class="action-item" *ngIf="canScanNow(t)" (click)="scanNow(t.name)">{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
-            <button class="action-item" *ngIf="hasProjectAdminRole" (click)="deleteTag(t)">{{'REPOSITORY.DELETE' | translate}}</button>
-            <button class="action-item" (click)="showDigestId(t)">{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
-          </clr-dg-action-overflow>
           <clr-dg-cell  class="truncated"  style="min-width: 160px;" [ngSwitch]="withClair">
             <a *ngSwitchCase="true" href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
             <span *ngSwitchDefault>{{t.name}}</span>

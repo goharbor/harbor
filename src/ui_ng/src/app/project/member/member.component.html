@@ -16,11 +16,11 @@
             <clr-dg-action-bar>
                 <div class="btn-group">
                     <clr-button-group [clrMenuPosition]="'bottom-right'">
-                        <clr-button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()">{{'MEMBER.NEW_MEMBER' | translate }}</clr-button>
-                        <clr-button class="btn btn-sm btn-secondary" (click)="deleteMembers(selectedRow)" [disabled]="!selectedRow.length">{{'MEMBER.DELETE' | translate}}</clr-button>
-                        <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 1)" [disabled]="!selectedRow.length">{{'MEMBER.PROJECT_ADMIN' | translate}}</clr-button>
-                        <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 2)" [disabled]="!selectedRow.length">{{'MEMBER.DEVELOPER' | translate}}</clr-button>
-                        <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 3)" [disabled]="!selectedRow.length">{{'MEMBER.GUEST' | translate}}</clr-button>
+                        <clr-button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()" [disabled]="!hasProjectAdminRole">{{'MEMBER.NEW_MEMBER' | translate }}</clr-button>
+                        <clr-button class="btn btn-sm btn-secondary" (click)="deleteMembers(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.DELETE' | translate}}</clr-button>
+                        <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 1)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.PROJECT_ADMIN' | translate}}</clr-button>
+                        <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 2)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.DEVELOPER' | translate}}</clr-button>
+                        <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 3)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.GUEST' | translate}}</clr-button>
                     </clr-button-group>
                 </div>
             </clr-dg-action-bar>

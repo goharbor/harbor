@@ -111,6 +111,13 @@ export class ListProjectComponent implements OnDestroy {
         return account != null && account.has_admin_role > 0;
     }
 
+    public get canDelete(): boolean {
+        if (this.projects.length) {
+           return this.projects.some((pro: Project) => pro.current_user_role_id === 1);
+        }
+        return false;
+    }
+
     ngOnDestroy(): void {
         if (this.subscription) {
             this.subscription.unsubscribe();

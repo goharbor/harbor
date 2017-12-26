@@ -12,9 +12,9 @@ export const REPOSITORY_LISTVIEW_TEMPLATE = `
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
       <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
-        <clr-dg-action-bar  [hidden]="!hasProjectAdminRole">
+        <clr-dg-action-bar>
             <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-secondary" (click)="deleteRepos(selectedRow)" [disabled]="!selectedRow.length">{{'REPOSITORY.DELETE' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary" (click)="deleteRepos(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'REPOSITORY.DELETE' | translate}}</button>
             </div>
         </clr-dg-action-bar>
         <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.NAME' | translate}}</clr-dg-column>

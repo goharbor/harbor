@@ -130,7 +130,9 @@ export class MemberComponent implements OnInit, OnDestroy {
     if (m) {
       let promiseList: any[] = [];
       m.forEach(data => {
-        promiseList.push(this.memberService.changeMemberRole(this.projectId, data.user_id, roleId));
+        if (!(data.user_id === this.currentUser.user_id  || !this.hasProjectAdminRole)) {
+          promiseList.push(this.memberService.changeMemberRole(this.projectId, data.user_id, roleId));
+        }
       })
       Promise.all(promiseList).then(num => {
             if (num.length === promiseList.length) {
@@ -173,7 +175,15 @@ export class MemberComponent implements OnInit, OnDestroy {
     if (members && members.length) {
       let promiseLists: any[] = [];
       members.forEach(member => {
-        promiseLists.push(this.delOperate(this.projectId, member.user_id, member.username));
+        if (member.user_id === this.currentUser.user_id) {
+          let findedList = this.batchDelectionInfos.find(data => data.name === member.username);
+          this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+            findedList = BathInfoChanges(findedList, res, false, true);
+          });
+        }else {
+          promiseLists.push(this.delOperate(this.projectId, member.user_id, member.username));
+        }
+
       });
 
       Promise.all(promiseLists).then(item => {
