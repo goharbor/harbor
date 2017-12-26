@@ -54,7 +54,7 @@ func TestDoFilterOfRepositoryFilter(t *testing.T) {
 	assert.Equal(t, 1, len(items))
 
 	// non-empty pattern
-	filter = NewRepositoryFilter("library/*", &registry.HarborAdaptor{})
+	filter = NewRepositoryFilter("*", &registry.HarborAdaptor{})
 	items = filter.DoFilter([]models.FilterItem{
 		models.FilterItem{
 			Kind:  replication.FilterItemKindTag,
@@ -64,7 +64,7 @@ func TestDoFilterOfRepositoryFilter(t *testing.T) {
 	assert.Equal(t, 1, len(items))
 
 	// non-empty pattern
-	filter = NewRepositoryFilter("library/*", &registry.HarborAdaptor{})
+	filter = NewRepositoryFilter("*", &registry.HarborAdaptor{})
 	items = filter.DoFilter([]models.FilterItem{
 		models.FilterItem{
 			Kind:  replication.FilterItemKindTag,

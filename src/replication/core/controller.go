@@ -110,9 +110,7 @@ func (ctl *DefaultController) Init() error {
 	if policies != nil && len(policies) > 0 {
 		for _, policy := range policies {
 			if err := ctl.triggerManager.SetupTrigger(&policy); err != nil {
-				//TODO: Log error
-				fmt.Printf("Error: %s", err)
-				//TODO:Update the status of policy
+				log.Errorf("failed to setup trigger for policy %v: %v", policy, err)
 			}
 		}
 	}
@@ -143,8 +141,6 @@ func (ctl *DefaultController) CreatePolicy(newPolicy models.ReplicationPolicy) (
 //UpdatePolicy will update the policy with new content.
 //Parameter updatedPolicy must have the ID of the updated policy.
 func (ctl *DefaultController) UpdatePolicy(updatedPolicy models.ReplicationPolicy) error {
-	// TODO check pre-conditions
-
 	id := updatedPolicy.ID
 	originPolicy, err := ctl.policyManager.GetPolicy(id)
 	if err != nil {

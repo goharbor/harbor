@@ -17,6 +17,7 @@ package source
 import (
 	"strings"
 
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
@@ -71,6 +72,8 @@ func (r *RepositoryFilter) DoFilter(items []models.FilterItem) []models.FilterIt
 			log.Debugf("pattern is null, add %s to the repository filter result list", item.Value)
 			result = append(result, item)
 		} else {
+			// trim the project
+			_, repository = utils.ParseRepository(repository)
 			matched, err := match(r.pattern, repository)
 			if err != nil {
 				log.Errorf("failed to match pattern %s to value %s: %v", r.pattern, repository, err)
