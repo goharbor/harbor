@@ -116,6 +116,12 @@ func GetOrmer() orm.Ormer {
 func ClearTable(table string) error {
 	o := GetOrmer()
 	sql := fmt.Sprintf("delete from %s where 1=1", table)
+	if table == models.ProjectTable {
+		sql = fmt.Sprintf("delete from %s where project_id > 1", table)
+	}
+	if table == models.UserTable {
+		sql = fmt.Sprintf("delete from %s where user_id > 2", table)
+	}
 	_, err := o.Raw(sql).Exec()
 	return err
 }
