@@ -217,6 +217,7 @@ else:
 ldap_uid = rcp.get("configuration", "ldap_uid")
 ldap_scope = rcp.get("configuration", "ldap_scope")
 ldap_timeout = rcp.get("configuration", "ldap_timeout")
+ldap_verify_cert = rcp.get("configuration", "ldap_verify_cert")
 db_password = rcp.get("configuration", "db_password")
 db_host = rcp.get("configuration", "db_host")
 db_user = rcp.get("configuration", "db_user")
@@ -309,6 +310,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         ldap_filter=ldap_filter,
         ldap_uid=ldap_uid,
         ldap_scope=ldap_scope,
+        ldap_verify_cert=ldap_verify_cert,
         ldap_timeout=ldap_timeout,
         db_password=db_password,
         db_host=db_host,
