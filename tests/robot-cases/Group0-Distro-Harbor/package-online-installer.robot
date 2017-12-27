@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+*** Settings ***
+Documentation  Harbor BATs
+Resource  ../../resources/Util.robot
+Default Tags  Bundle
 
-//UAASettings wraps the configuraations to access UAA service
-type UAASettings struct {
-	Endpoint     string
-	ClientID     string
-	ClientSecret string
-	VerifyCert   bool
-}
+*** Test Cases ***
+Distro Harbor Online
+    Package Harbor Online

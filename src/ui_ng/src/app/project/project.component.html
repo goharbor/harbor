@@ -6,11 +6,7 @@
                 <statistics-panel></statistics-panel>
             </div>
         </div>
-        <div class="row flex-items-xs-between" style="height:32px;">
-            <div class="option-left">
-                <button *ngIf="projectCreationRestriction" class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'PROJECT.PROJECT' | translate}}</button>
-                <create-project (create)="createProject($event)"></create-project>
-            </div>
+        <div class="row flex-items-xs-between rightPos">
             <div class="option-right">
                 <div class="select" style="float: left; left:-6px; top:8px;">
                     <select (change)="doFilterProjects()" [(ngModel)]="selecteType">
@@ -25,6 +21,7 @@
                 </span>
             </div>
         </div>
-        <list-project></list-project>
+        <create-project (create)="createProject($event)"></create-project>
+        <list-project (addProject)="openModal()"></list-project>
     </div>
 </div>

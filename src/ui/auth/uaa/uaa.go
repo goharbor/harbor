@@ -38,10 +38,10 @@ func GetClient() (uaa.Client, error) {
 		return nil, err
 	}
 	cfg := &uaa.ClientConfig{
-		ClientID:     UAASettings.ClientID,
-		ClientSecret: UAASettings.ClientSecret,
-		Endpoint:     UAASettings.Endpoint,
-		CARootPath:   UAASettings.CARootPath,
+		ClientID:      UAASettings.ClientID,
+		ClientSecret:  UAASettings.ClientSecret,
+		Endpoint:      UAASettings.Endpoint,
+		SkipTLSVerify: !UAASettings.VerifyCert,
 	}
 	client, err = uaa.NewDefaultClient(cfg)
 	return client, err

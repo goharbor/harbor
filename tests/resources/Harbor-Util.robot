@@ -62,6 +62,15 @@ Package Harbor Offline
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
+Package Harbor Online
+    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true
+    Log To Console  \nStart Docker Daemon
+    Start Docker Daemon Locally
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_online DEVFLAG=false GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} HTTPPROXY=
+    Log  ${rc}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    
 Switch To LDAP
     Down Harbor
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data

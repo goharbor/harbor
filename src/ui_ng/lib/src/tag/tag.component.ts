@@ -55,6 +55,8 @@ import { TranslateService } from '@ngx-translate/core';
 
 import { State, Comparator } from 'clarity-angular';
 import {CopyInputComponent} from '../push-image/copy-input.component';
+import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
+import {Observable} from "rxjs/Observable";
 
 @Component({
   selector: 'hbr-tag',
@@ -88,11 +90,13 @@ export class TagComponent implements OnInit {
   staticBackdrop: boolean = true;
   closable: boolean = false;
   lastFilteredTagName: string;
+  batchDelectionInfos: BatchInfo[] = [];
 
   createdComparator: Comparator<Tag> = new CustomComparator<Tag>('created', 'date');
 
   loading: boolean = false;
   copyFailed: boolean = false;
+  selectedRow: Tag[] = [];
 
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
@@ -113,28 +117,6 @@ export class TagComponent implements OnInit {
     private channel: ChannelService
   ) { }
 
-  confirmDeletion(message: ConfirmationAcknowledgement) {
-    if (message &&
-      message.source === ConfirmationTargets.TAG
-      && message.state === ConfirmationState.CONFIRMED) {
-      let tag: Tag = message.data;
-      if (tag) {
-        if (tag.signature) {
-          return;
-        } else {
-          toPromise<number>(this.tagService
-            .deleteTag(this.repoName, tag.name))
-            .then(
-            response => {
-              this.retrieve();
-              this.translateService.get('REPOSITORY.DELETED_TAG_SUCCESS')
-                .subscribe(res => this.errorHandler.info(res));
-            }).catch(error => this.errorHandler.error(error));
-        }
-      }
-    }
-  }
-
   ngOnInit() {
     if (!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
@@ -147,6 +129,11 @@ export class TagComponent implements OnInit {
 
     this.retrieve();
     this.lastFilteredTagName = '';
+  }
+
+  selectedChange(): void {
+    let hnd = setInterval(() => this.ref.markForCheck(), 200);
+    setTimeout(() => clearInterval(hnd), 2000);
   }
 
   doSearchTagNames(tagName: string) {
@@ -202,6 +189,8 @@ export class TagComponent implements OnInit {
   refresh() {
     this.doSearchTagNames('');
   }
+
+
 
   retrieve() {
     this.tags = [];
@@ -261,35 +250,82 @@ export class TagComponent implements OnInit {
     }
   }
 
-  deleteTag(tag: Tag) {
-    if (tag) {
+  deleteTags(tags: Tag[]) {
+    if (tags && tags.length) {
+      let tagNames: string[] = [];
+      this.batchDelectionInfos = [];
+      tags.forEach(tag => {
+        tagNames.push(tag.name);
+        let initBatchMessage = new BatchInfo ();
+        initBatchMessage.name = tag.name;
+        this.batchDelectionInfos.push(initBatchMessage);
+      });
+
       let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
-      if (tag.signature) {
-        titleKey = 'REPOSITORY.DELETION_TITLE_TAG_DENIED';
-        summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG_DENIED';
-        buttons = ConfirmationButtons.CLOSE;
-        content = 'notary -s https://' + this.registryUrl + ':4443 -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ' ' + tag.name;
-      } else {
-        titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
-        summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';
-        buttons = ConfirmationButtons.DELETE_CANCEL;
-        content = tag.name;
-      }
+      titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
+      summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';
+      buttons = ConfirmationButtons.DELETE_CANCEL;
+      content = tagNames.join(' , ');
       let message = new ConfirmationMessage(
         titleKey,
         summaryKey,
         content,
-        tag,
+        tags,
         ConfirmationTargets.TAG,
         buttons);
       this.confirmationDialog.open(message);
     }
   }
 
-  showDigestId(tag: Tag) {
-    if (tag) {
+  confirmDeletion(message: ConfirmationAcknowledgement) {
+    if (message &&
+        message.source === ConfirmationTargets.TAG
+        && message.state === ConfirmationState.CONFIRMED) {
+      let tags: Tag[] = message.data;
+      if (tags && tags.length) {
+        let promiseLists: any[] = [];
+        tags.forEach(tag => {
+          this.delOperate(tag.signature, tag.name);
+
+        });
+
+        Promise.all(promiseLists).then((item) => {
+          this.selectedRow = [];
+          this.retrieve();
+        });
+      }
+    }
+  }
+
+  delOperate(signature: any, name:  string) {
+    let findedList = this.batchDelectionInfos.find(data => data.name === name);
+    if (signature) {
+      Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+        this.translateService.get('REPOSITORY.DELETION_SUMMARY_TAG_DENIED')).subscribe(res => {
+        let wrongInfo: string = res[1] + 'notary -s https://' + this.registryUrl + ':4443 -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ' ' + name;
+        findedList = BathInfoChanges(findedList, res[0], false, true, wrongInfo);
+      });
+    } else {
+      return toPromise<number>(this.tagService
+          .deleteTag(this.repoName, name))
+          .then(
+              response => {
+                this.translateService.get('BATCH.DELETED_SUCCESS')
+                    .subscribe(res =>  {
+                      findedList = BathInfoChanges(findedList, res);
+                    });
+              }).catch(error => {
+            this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+              findedList = BathInfoChanges(findedList, res, false, true);
+            });
+          });
+    }
+  }
+
+  showDigestId(tag: Tag[]) {
+    if (tag && (tag.length === 1)) {
       this.manifestInfoTitle = 'REPOSITORY.COPY_DIGEST_ID';
-      this.digestId = tag.digest;
+      this.digestId = tag[0].digest;
       this.showTagManifestOpened = true;
       this.copyFailed = false;
     }
@@ -338,19 +374,22 @@ export class TagComponent implements OnInit {
   }
 
   // Whether show the 'scan now' menu
-  canScanNow(t: Tag): boolean {
+  canScanNow(t: Tag[]): boolean {
     if (!this.withClair) { return false; }
     if (!this.hasProjectAdminRole) { return false; }
-    let st: string = this.scanStatus(t);
+      let st: string = this.scanStatus(t[0]);
 
     return st !== VULNERABILITY_SCAN_STATUS.pending &&
       st !== VULNERABILITY_SCAN_STATUS.running;
   }
 
   // Trigger scan
-  scanNow(tagId: string): void {
-    if (tagId) {
-      this.channel.publishScanEvent(this.repoName + '/' + tagId);
+  scanNow(t: Tag[]): void {
+    if (t && t.length) {
+      t.forEach((data: any) => {
+        let tagId = data.name;
+        this.channel.publishScanEvent(this.repoName + '/' + tagId);
+      });
     }
   }
 

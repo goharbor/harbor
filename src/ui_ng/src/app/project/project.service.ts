@@ -74,11 +74,11 @@ export class ProjectService {
                .catch(error => Observable.throw(error));
   }
 
-  deleteProject(projectId: number): Observable<any> {
+  deleteProject(projectId: number): Promise<any> {
     return this.http
-               .delete(`/api/projects/${projectId}`)
-               .map(response=>response.status)
-               .catch(error=>Observable.throw(error));
+               .delete(`/api/projects/${projectId}`).toPromise()
+               .then(response=>response.status)
+               .catch(error=>Promise.reject(error));
   }
 
   checkProjectExists(projectName: string): Observable<any> {
