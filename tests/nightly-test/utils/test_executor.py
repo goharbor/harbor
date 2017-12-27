@@ -21,7 +21,7 @@ def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='H
     with open(docker_run_shell, 'w+') as outfile:
         outfile.write(cmd)
     os.chmod(docker_run_shell, 0o777)
-    print os.system('/bin/bash %s' % docker_run_shell)
+    print subprocess.call([docker_run_shell])
     collect_log()
     return 0
 
