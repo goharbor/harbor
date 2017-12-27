@@ -17,8 +17,11 @@ def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='H
         cmd = cmd + "/drone/tests/robot-cases/Group10-Longevity/Longevity.robot"
     
     print cmd
-    with open("/tmp/output.log", "a") as output:
-        subprocess.call(cmd, shell=True, stdout=output, stderr=output)
+    docker_run_shell = "/tmp/docker_run.sh"
+    with open(docker_run_shell, 'w') as outfile:
+        outfile.write(cmd)
+    os.chmod(docker_run_shell, 0o644)
+    print os.system('//bin/bash %s' % docker_run_shell)
     collect_log()
     return 0
 
