@@ -16,12 +16,13 @@ def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='H
     if test_suite == 'Longevity':
         cmd = cmd + "/drone/tests/robot-cases/Group10-Longevity/Longevity.robot"
     
+    cmd = cmd + " 2>&1"
     print cmd
     docker_run_shell = "/tmp/docker_run.sh"
     with open(docker_run_shell, 'w+') as outfile:
         outfile.write(cmd)
     os.chmod(docker_run_shell, 0o777)
-    print subprocess.call([docker_run_shell])
+    print os.system('/bin/bash %s' % docker_run_shell)
     collect_log()
     return 0
 
