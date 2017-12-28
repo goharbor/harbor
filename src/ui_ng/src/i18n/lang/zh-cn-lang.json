@@ -443,6 +443,12 @@
             "SCOPE": "LDAP搜索范围",
             "VERIFY_CERT": "LDAP 检查证书"
         },
+        "UAA": {
+            "ENDPOINT": "UAA Endpoint",
+            "CLIENT_ID": "UAA Client ID",
+            "CLIENT_SECRET": "UAA Client Secret",
+            "VERIFY_CERT": "UAA 检查证书"
+        },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
             "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}",

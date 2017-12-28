@@ -17,7 +17,7 @@
             </li>
         </ul>
         <section id="authentication" role="tabpanel" aria-labelledby="config-auth" [hidden]='!isCurrentTabContent("authentication")'>
-            <config-auth [ldapConfig]="allConfig"></config-auth>
+            <config-auth [allConfig]="allConfig"></config-auth>
         </section>
         <section id="email" role="tabpanel" aria-labelledby="config-email" [hidden]='!isCurrentTabContent("email")'>
             <config-email [mailConfig]="allConfig"></config-email>
