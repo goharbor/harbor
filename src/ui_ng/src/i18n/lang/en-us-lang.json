@@ -443,6 +443,12 @@
             "SCOPE": "LDAP Scope",
             "VERIFY_CERT": "LDAP Verify Cert"
         },
+        "UAA": {
+            "ENDPOINT": "UAA Endpoint",
+            "CLIENT_ID": "UAA Client ID",
+            "CLIENT_SECRET": "UAA Client Secret",
+            "VERIFY_CERT": "UAA Verify Cert"
+        },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
             "TRIGGER_SCAN_ALL_FAIL": "Failed to trigger scan all with error: {{error}",

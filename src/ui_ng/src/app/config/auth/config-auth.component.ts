@@ -24,7 +24,7 @@ import { Configuration } from 'harbor-ui';
 })
 export class ConfigurationAuthComponent implements OnChanges {
     changeSub: Subscription;
-    @Input("ldapConfig") currentConfig: Configuration = new Configuration();
+    @Input("allConfig") currentConfig: Configuration = new Configuration();
 
     @ViewChild("authConfigFrom") authForm: NgForm;
 
@@ -48,6 +48,10 @@ export class ConfigurationAuthComponent implements OnChanges {
         return this.currentConfig &&
             this.currentConfig.auth_mode &&
             this.currentConfig.auth_mode.value === 'ldap_auth';
+    }
+
+    public get showUAA(): boolean {
+        return this.currentConfig && this.currentConfig.auth_mode && this.currentConfig.auth_mode.value === 'uaa_auth';
     }
 
     public get showSelfReg(): boolean {

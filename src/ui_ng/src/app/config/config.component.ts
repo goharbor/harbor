@@ -50,13 +50,13 @@ const TabLinkContentMap = {
     styleUrls: ['config.component.css']
 })
 export class ConfigurationComponent implements OnInit, OnDestroy {
-    onGoing: boolean = false;
+    onGoing = false;
     allConfig: Configuration = new Configuration();
-    currentTabId: string = "config-auth";//default tab
+    currentTabId = 'config-auth'; // default tab
     originalCopy: Configuration;
     confirmSub: Subscription;
-    testingMailOnGoing: boolean = false;
-    testingLDAPOnGoing: boolean = false;
+    testingMailOnGoing = false;
+    testingLDAPOnGoing = false;
 
     @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
     @ViewChild(VulnerabilityConfigComponent) vulnerabilityConfig: VulnerabilityConfigComponent;
@@ -405,7 +405,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 //Add two password fields
                 configurations.email_password = new StringValueItem(fakePass, true);
                 configurations.ldap_search_password = new StringValueItem(fakePass, true);
-
+                configurations.uaa_client_secret = new StringValueItem(fakePass, false);
                 this.allConfig = configurations;
                 //Keep the original copy of the data
                 this.originalCopy = this.clone(configurations);
