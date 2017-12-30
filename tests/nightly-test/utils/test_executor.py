@@ -16,7 +16,7 @@ def execute_test_ova(harbor_endpoint, harbor_root_pwd, test_suite, harbor_pwd='H
     if test_suite == 'Longevity':
         cmd = cmd + "/drone/tests/robot-cases/Group10-Longevity/Longevity.robot"
     
-    cmd = cmd + " 2>&1"
+    cmd = cmd + " &>/tmp/output_file"
     print cmd
     docker_run_shell = "/tmp/docker_run.sh"
     with open(docker_run_shell, 'w+') as outfile:
