@@ -3,7 +3,7 @@
 import os, subprocess
 import time
 
-SHELL_SCRIPT_DIR = '/harbor/workspace/harbor_nightly_test/tests/nightly-test/shellscript/'
+SHELL_SCRIPT_DIR = '/harbor/workspace/harbor_nightly_test_yan/tests/nightly-test/shellscript/'
 
 def getvmip(vc_url, vc_user, vc_password, vm_name, timeout=600) :
     cmd = (SHELL_SCRIPT_DIR+'getvmip.sh %s %s %s %s ' % (vc_url, vc_user, getPasswordInShell(vc_password), vm_name))
