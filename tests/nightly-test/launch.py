@@ -26,7 +26,7 @@ image_url = sys.argv[2]
 test_suite = sys.argv[3]
 config_file = sys.argv[4]
 dry_run = sys.argv[5]
-config_file = "/harbor/workspace/harbor_nightly_test/harbor_nightly_test/testenv.ini"
+config_file = "/harbor/workspace/harbor_nightly_test_yan/harbor_nightly_test/testenv.ini"
 #  config_file = "/Users/daojunz/Documents/harbor_nightly_test/testenv.ini"
 
 harbor_ova_endpoint = ''
