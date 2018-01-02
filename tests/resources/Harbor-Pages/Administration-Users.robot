@@ -37,3 +37,9 @@ Switch to User Tag
 
 Administration Tag Should Display
     Page Should Contain Element  xpath=${administration_tag_xpath}
+
+User Email Should Exist
+    [Arguments]  ${email}
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Switch to User Tag
+    Page Should Contain Element  xpath=//clr-dg-cell[contains(., '${email}')]

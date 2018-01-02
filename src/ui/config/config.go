@@ -172,28 +172,28 @@ func AuthMode() (string, error) {
 	return cfg[common.AUTHMode].(string), nil
 }
 
-// LDAP returns the setting of ldap server
-func LDAP() (*models.LDAP, error) {
+// LDAPConf returns the setting of ldap server
+func LDAPConf() (*models.LdapConf, error) {
 	cfg, err := mg.Get()
 	if err != nil {
 		return nil, err
 	}
-	ldap := &models.LDAP{}
-	ldap.URL = cfg[common.LDAPURL].(string)
-	ldap.SearchDN = cfg[common.LDAPSearchDN].(string)
-	ldap.SearchPassword = cfg[common.LDAPSearchPwd].(string)
-	ldap.BaseDN = cfg[common.LDAPBaseDN].(string)
-	ldap.UID = cfg[common.LDAPUID].(string)
-	ldap.Filter = cfg[common.LDAPFilter].(string)
-	ldap.Scope = int(cfg[common.LDAPScope].(float64))
-	ldap.Timeout = int(cfg[common.LDAPTimeout].(float64))
+	ldapConf := &models.LdapConf{}
+	ldapConf.LdapURL = cfg[common.LDAPURL].(string)
+	ldapConf.LdapSearchDn = cfg[common.LDAPSearchDN].(string)
+	ldapConf.LdapSearchPassword = cfg[common.LDAPSearchPwd].(string)
+	ldapConf.LdapBaseDn = cfg[common.LDAPBaseDN].(string)
+	ldapConf.LdapUID = cfg[common.LDAPUID].(string)
+	ldapConf.LdapFilter = cfg[common.LDAPFilter].(string)
+	ldapConf.LdapScope = int(cfg[common.LDAPScope].(float64))
+	ldapConf.LdapConnectionTimeout = int(cfg[common.LDAPTimeout].(float64))
 	if cfg[common.LDAPVerifyCert] != nil {
-		ldap.VerifyCert = cfg[common.LDAPVerifyCert].(bool)
+		ldapConf.LdapVerifyCert = cfg[common.LDAPVerifyCert].(bool)
 	} else {
-		ldap.VerifyCert = true
+		ldapConf.LdapVerifyCert = true
 	}
 
-	return ldap, nil
+	return ldapConf, nil
 }
 
 // TokenExpiration returns the token expiration time (in minute)
@@ -380,7 +380,7 @@ func ClairEndpoint() string {
 }
 
 // ClairDB return Clair db info
-func ClairDB() (*models.PostGreSQL, error){
+func ClairDB() (*models.PostGreSQL, error) {
 	cfg, err := mg.Get()
 	if err != nil {
 		log.Errorf("Failed to get configuration of Clair DB, Error detail %v", err)
@@ -394,6 +394,7 @@ func ClairDB() (*models.PostGreSQL, error){
 	clairDB.Database = cfg[common.ClairDB].(string)
 	return clairDB, nil
 }
+
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()

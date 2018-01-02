@@ -257,7 +257,9 @@ func DeleteUser(userID int) error {
 	return err
 }
 
-// ChangeUserProfile ...
+// ChangeUserProfile - Update user in local db,
+// cols to specify the columns need to update,
+// Email, and RealName, Comment are updated by default.
 func ChangeUserProfile(user models.User, cols ...string) error {
 	o := GetOrmer()
 	if len(cols) == 0 {

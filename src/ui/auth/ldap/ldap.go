@@ -76,11 +76,11 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	dn := ldapUsers[0].DN
 
-	log.Debugf("username: %s, dn: %s", u.Username, dn)
 	if err = ldapSession.Bind(dn, m.Password); err != nil {
 		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
 		return nil, nil
 	}
+
 	return &u, nil
 }
 
@@ -120,6 +120,7 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 
 		user.Username = strings.TrimSpace(ldapUsers[0].Username)
 		user.Realname = strings.TrimSpace(ldapUsers[0].Realname)
+		user.Email = strings.TrimSpace(ldapUsers[0].Email)
 
 		log.Debugf("Found ldap user %v", user)
 	} else {

@@ -14,12 +14,12 @@
 package ldap
 
 import (
+	"github.com/stretchr/testify/assert"
 	//"fmt"
 	//"strings"
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -136,6 +136,21 @@ func TestAuthenticate(t *testing.T) {
 	if user != nil {
 		t.Errorf("Nil user for empty credentials")
 	}
+
+	//authenticate the second time
+	person2 := models.AuthModel{
+		Principal: "test",
+		Password:  "123456",
+	}
+	user2, err := auth.Authenticate(person2)
+
+	if err != nil {
+		t.Errorf("unexpected ldap error: %v", err)
+	}
+
+	if user2 == nil {
+		t.Errorf("Can not login user with person2 %+v", person2)
+	}
 }
 
 func TestSearchUser(t *testing.T) {
@@ -174,6 +189,43 @@ func TestOnboardUser(t *testing.T) {
 	if user.UserID <= 0 {
 		t.Errorf("Failed to onboard user")
 	}
+	assert.Equal(t, "sample@example.com", user.Email)
+}
+
+func TestOnboardUser_02(t *testing.T) {
+	user := &models.User{
+		Username: "sample02",
+		Realname: "Sample02",
+	}
+	var auth *Auth
+	err := auth.OnBoardUser(user)
+	if err != nil {
+		t.Errorf("Failed to onboard user")
+	}
+	if user.UserID <= 0 {
+		t.Errorf("Failed to onboard user")
+	}
+
+	assert.Equal(t, "sample02@placeholder.com", user.Email)
+	dao.CleanUser(int64(user.UserID))
+}
+
+func TestOnboardUser_03(t *testing.T) {
+	user := &models.User{
+		Username: "sample03@example.com",
+		Realname: "Sample03",
+	}
+	var auth *Auth
+	err := auth.OnBoardUser(user)
+	if err != nil {
+		t.Errorf("Failed to onboard user")
+	}
+	if user.UserID <= 0 {
+		t.Errorf("Failed to onboard user")
+	}
+
+	assert.Equal(t, "sample03@example.com", user.Email)
+	dao.CleanUser(int64(user.UserID))
 }
 
 func TestAuthenticateHelperOnboardUser(t *testing.T) {

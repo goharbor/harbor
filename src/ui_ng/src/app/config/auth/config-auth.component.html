@@ -126,9 +126,9 @@
             <label for="ldapScope">{{'CONFIG.LDAP.SCOPE' | translate}}</label>
             <div class="select">
                 <select id="ldapScope" name="ldapScope" [(ngModel)]="currentConfig.ldap_scope.value" [disabled]="disabled(currentConfig.ldap_scope)">
-                    <option value="1">{{'CONFIG.SCOPE_BASE' | translate }}</option>
-                    <option value="2">{{'CONFIG.SCOPE_ONE_LEVEL' | translate }}</option>
-                    <option value="3">{{'CONFIG.SCOPE_SUBTREE' | translate }}</option>
+                    <option value="0">{{'CONFIG.SCOPE_BASE' | translate }}</option>
+                    <option value="1">{{'CONFIG.SCOPE_ONE_LEVEL' | translate }}</option>
+                    <option value="2">{{'CONFIG.SCOPE_SUBTREE' | translate }}</option>
                 </select>
             </div>
             <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-1px;">

@@ -180,3 +180,11 @@ User Should Be Admin
     Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Admin')]
     Logout Harbor
     Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  ${ip}/${project}/hello-world:v2
+
+Project Should Have Member
+    [Arguments]  ${project}  ${user}
+    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Go Into Project  ${project}
+    Switch To Member
+    Page Should Contain Element  xpath=//clr-dg-cell[contains(., '${user}')]
+    Logout Harbor

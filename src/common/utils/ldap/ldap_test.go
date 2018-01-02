@@ -138,10 +138,6 @@ func TestLoadSystemLdapConfig(t *testing.T) {
 		t.Errorf("unexpected LdapURL: %s != %s", session.ldapConfig.LdapURL, "ldap://127.0.0.1:389")
 	}
 
-	if session.ldapConfig.LdapScope != 2 {
-		t.Errorf("unexpected LdapScope: %d != %d", session.ldapConfig.LdapScope, 2)
-	}
-
 }
 
 func TestConnectTest(t *testing.T) {
@@ -156,7 +152,7 @@ func TestConnectTest(t *testing.T) {
 
 }
 
-func TestCreateUIConfig(t *testing.T) {
+func TestCreateWithConfig(t *testing.T) {
 	var testConfigs = []struct {
 		config        models.LdapConf
 		internalValue int
@@ -184,7 +180,7 @@ func TestCreateUIConfig(t *testing.T) {
 	}
 
 	for _, val := range testConfigs {
-		session, err := CreateWithUIConfig(val.config)
+		_, err := CreateWithConfig(val.config)
 		if val.internalValue < 0 {
 			if err == nil {
 				t.Fatalf("Should have error with url :%v", val.config)
@@ -193,9 +189,6 @@ func TestCreateUIConfig(t *testing.T) {
 		}
 		if err != nil {
 			t.Fatalf("Can not create with ui config, err:%v", err)
-		}
-		if session.ldapConfig.LdapScope != val.internalValue {
-			t.Fatalf("Test failed expected %v, actual %v", val.internalValue, session.ldapConfig.LdapScope)
 		}
 	}
 
