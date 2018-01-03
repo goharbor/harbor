@@ -70,9 +70,9 @@ class OVADeployer(Deployer):
 
             print cmd
             print 'Start to deploy harbor OVA.'
-            print dry_run
+            print self.dry_run
 
-            if dry_run == "true" :
+            if self.dry_run == "true" :
                 print "Dry run ..."
             else:
                 subprocess.check_output(cmd, shell=True)
