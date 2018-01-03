@@ -13,7 +13,7 @@ import harbor_util
 import test_executor
 import deployer
 
-if len(sys.argv)!=7 :
+if len(sys.argv)!=6 :
     print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
     print "Wrong parameters, quit test"
     quit()
