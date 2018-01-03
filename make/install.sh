@@ -165,7 +165,7 @@ if [ $with_notary ] && [ ! $harbor_ha ]
 then
 	prepare_para="${prepare_para} --with-notary"
 fi
-if [ $with_clair ] && [ ! $harbor_ha ]
+if [ $with_clair ]
 then
 	prepare_para="${prepare_para} --with-clair"
 fi
@@ -182,7 +182,7 @@ if [ $with_notary ] && [ ! $harbor_ha ]
 then
 	docker_compose_list="${docker_compose_list} -f docker-compose.notary.yml"
 fi
-if [ $with_clair ] && [ ! $harbor_ha ]
+if [ $with_clair ]
 then
 	docker_compose_list="${docker_compose_list} -f docker-compose.clair.yml"
 fi
@@ -199,6 +199,8 @@ if [ $harbor_ha ]
 then
     mv docker-compose.yml docker-compose.yml.bak 
     cp ha/docker-compose.yml docker-compose.yml
+    mv docker-compose.clair.yml docker-compose.clair.yml.bak
+    cp ha/docker-compose.clair.yml docker-compose.clair.yml
 fi
 docker-compose $docker_compose_list up -d
 

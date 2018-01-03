@@ -210,6 +210,7 @@ output_dir = base_dir
 generate_template(os.path.join(template_dir, 'ui.cm.yaml'), os.path.join(output_dir, 'ui/ui.cm.yaml'))
 generate_template(os.path.join(template_dir, 'jobservice.cm.yaml'), os.path.join(output_dir, 'jobservice/jobservice.cm.yaml'))
 generate_template(os.path.join(template_dir, 'mysql.cm.yaml'), os.path.join(output_dir, 'mysql/mysql.cm.yaml'))
-generate_template(os.path.join(template_dir, 'nginx.cm.yaml'), os.path.join(output_dir, 'nginx/nginx.cm.yaml'))
 generate_template(os.path.join(template_dir, 'registry.cm.yaml'), os.path.join(output_dir, 'registry/registry.cm.yaml'))
 generate_template(os.path.join(template_dir, 'adminserver.cm.yaml'), os.path.join(output_dir, 'adminserver/adminserver.cm.yaml'))
+generate_template(os.path.join(template_dir, 'ingress.yaml'), os.path.join(output_dir, 'ingress.yaml'))
+

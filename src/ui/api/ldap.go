@@ -15,9 +15,7 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/vmware/harbor/src/common/models"
 	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
@@ -30,7 +28,13 @@ type LdapAPI struct {
 	BaseController
 }
 
-const metaChars = "&|!=~*<>()"
+const (
+	pingErrorMessage       = "LDAP connection test failed!"
+	loadSystemErrorMessage = "Can't load system configuration!"
+	canNotOpenLdapSession  = "Can't open LDAP session!"
+	searchLdapFailMessage  = "LDAP search failed!"
+	importUserError        = "Found internal error when importing LDAP user!"
+)
 
 // Prepare ...
 func (l *LdapAPI) Prepare() {
@@ -57,7 +61,7 @@ func (l *LdapAPI) Ping() {
 		ldapSession, err = ldapUtils.LoadSystemLdapConfig()
 		if err != nil {
 			log.Errorf("Can't load system configuration, error: %v", err)
-			l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
+			l.RenderError(http.StatusInternalServerError, pingErrorMessage)
 			return
 		}
 		err = ldapSession.ConnectionTest()
@@ -68,7 +72,7 @@ func (l *LdapAPI) Ping() {
 
 	if err != nil {
 		log.Errorf("ldap connect fail, error: %v", err)
-		l.RenderError(http.StatusBadRequest, fmt.Sprintf("ldap connect fail: %v", err))
+		l.RenderError(http.StatusBadRequest, pingErrorMessage)
 		return
 	}
 }
@@ -84,7 +88,7 @@ func (l *LdapAPI) Search() {
 		ldapSession, err = ldapUtils.LoadSystemLdapConfig()
 		if err != nil {
 			log.Errorf("can't load system configuration, error: %v", err)
-			l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't load system configuration: %v", err))
+			l.RenderError(http.StatusInternalServerError, loadSystemErrorMessage)
 			return
 		}
 	} else {
@@ -94,28 +98,18 @@ func (l *LdapAPI) Search() {
 
 	if err = ldapSession.Open(); err != nil {
 		log.Errorf("can't Open ldap session, error: %v", err)
-		l.RenderError(http.StatusInternalServerError, fmt.Sprintf("can't open ldap session: %v", err))
+		l.RenderError(http.StatusInternalServerError, canNotOpenLdapSession)
 		return
 	}
 	defer ldapSession.Close()
 
 	searchName := l.GetString("username")
 
-	if searchName != "" {
-		for _, c := range metaChars {
-			if strings.ContainsRune(searchName, c) {
-				log.Errorf("the search username contains meta char: %q", c)
-				l.RenderError(http.StatusBadRequest, fmt.Sprintf("the search username contains meta char: %q", c))
-				return
-			}
-		}
-	}
-
 	ldapUsers, err = ldapSession.SearchUser(searchName)
 
 	if err != nil {
 		log.Errorf("Ldap search fail, error: %v", err)
-		l.RenderError(http.StatusBadRequest, fmt.Sprintf("ldap search fail: %v", err))
+		l.RenderError(http.StatusBadRequest, searchLdapFailMessage)
 		return
 	}
 
@@ -136,13 +130,13 @@ func (l *LdapAPI) ImportUser() {
 
 	if err != nil {
 		log.Errorf("Ldap import user fail, error: %v", err)
-		l.RenderError(http.StatusBadRequest, fmt.Sprintf("ldap import user fail: %v", err))
+		l.RenderError(http.StatusBadRequest, importUserError)
 		return
 	}
 
 	if len(ldapFailedImportUsers) > 0 {
 		log.Errorf("Import ldap user have internal error")
-		l.RenderError(http.StatusInternalServerError, fmt.Sprintf("import ldap user have internal error"))
+		l.RenderError(http.StatusInternalServerError, importUserError)
 		l.Data["json"] = ldapFailedImportUsers
 		l.ServeJSON()
 		return
@@ -173,13 +167,6 @@ func importUsers(ldapConfs models.LdapConf, ldapImportUsers []string) ([]models.
 			u.Error = "empty_uid"
 			failedImportUser = append(failedImportUser, u)
 			continue
-		}
-
-		for _, c := range metaChars {
-			if strings.ContainsRune(u.UID, c) {
-				u.Error = "invaild_username"
-				break
-			}
 		}
 
 		if u.Error != "" {

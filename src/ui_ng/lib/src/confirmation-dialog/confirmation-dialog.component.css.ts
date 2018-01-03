@@ -18,4 +18,12 @@ export const CONFIRMATION_DIALOG_STYLE: string = `
     width: 80%;
     white-space: pre-wrap;
 }
+.batchInfoUl{
+    padding: 20px; list-style-type: none;
+}
+.batchInfoUl li {line-height: 24px;border-bottom: 1px solid #e8e8e8;}
+.batchInfoUl li span:first-child {padding-right: 20px; width: 210px; display: inline-block; color:#666;}
+.batchInfoUl li span:last-child {width: 260px; display: inline-block;  color:#666;}
+.batchInfoUl li span i {display: inline-block; line-height: 1.2em; font-size: 0.8em; color: #999;}
+.batchInfoUl li span a{cursor: pointer; text-decoration: underline;}
 `;

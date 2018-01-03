@@ -30,15 +30,18 @@ func TestMain(m *testing.M) {
 	}
 }
 
-func TestPasswordAuth(t *testing.T) {
-	cfg := &ClientConfig{
+func getCfg() *ClientConfig {
+	return &ClientConfig{
 		ClientID:      "uaa",
 		ClientSecret:  "secret",
 		Endpoint:      mockUAAServer.URL,
 		SkipTLSVerify: true,
 	}
+}
+
+func TestPasswordAuth(t *testing.T) {
 	assert := assert.New(t)
-	client, err := NewDefaultClient(cfg)
+	client, err := NewDefaultClient(getCfg())
 	assert.Nil(err)
 	_, err = client.PasswordAuth("user1", "pass1")
 	assert.Nil(err)
@@ -47,14 +50,8 @@ func TestPasswordAuth(t *testing.T) {
 }
 
 func TestUserInfo(t *testing.T) {
-	cfg := &ClientConfig{
-		ClientID:      "uaa",
-		ClientSecret:  "secret",
-		Endpoint:      mockUAAServer.URL,
-		SkipTLSVerify: true,
-	}
 	assert := assert.New(t)
-	client, err := NewDefaultClient(cfg)
+	client, err := NewDefaultClient(getCfg())
 	assert.Nil(err)
 	token, err := ioutil.ReadFile(path.Join(currPath(), "test", "./good-access-token.txt"))
 	if err != nil {
@@ -66,6 +63,21 @@ func TestUserInfo(t *testing.T) {
 	assert.Equal("user01", userInfo.UserName)
 	_, err2 := client.GetUserInfo("bad")
 	assert.NotNil(err2)
+}
+
+func TestSearchUser(t *testing.T) {
+	assert := assert.New(t)
+	client, err := NewDefaultClient(getCfg())
+	assert.Nil(err)
+	res1, err := client.SearchUser("one")
+	assert.Nil(err)
+	assert.Equal(1, len(res1))
+	if len(res1) == 1 {
+		assert.Equal("one", res1[0].UserName)
+	}
+	res2, err := client.SearchUser("none")
+	assert.Nil(err)
+	assert.Equal(0, len(res2))
 }
 
 func currPath() string {

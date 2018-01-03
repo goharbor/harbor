@@ -1,0 +1,55 @@
+From d62108ab70036d21c6f30804f9b5e77602066f1d Mon Sep 17 00:00:00 2001
+From: Tonis Tiigi <tonistiigi@gmail.com>
+Date: Thu, 27 Aug 2015 10:08:51 -0700
+Subject: [PATCH 3/3] Encode non-fatal floats as integers in canonical mode
+
+Signed-off-by: Tonis Tiigi <tonistiigi@gmail.com>
+---
+ canonical/json/encode.go      |  8 +++++++-
+ canonical/json/encode_test.go | 14 ++++++++++++++
+ 2 files changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/canonical/json/encode.go b/canonical/json/encode.go
+index aaa79c2..655f1a6 100644
+--- a/canonical/json/encode.go
++++ b/canonical/json/encode.go
+@@ -526,7 +526,13 @@ func (bits floatEncoder) encode(e *encodeState, v reflect.Value, quoted bool) {
+ 	if math.IsInf(f, 0) || math.IsNaN(f) || (e.canonical && math.Floor(f) != f) {
+ 		e.error(&UnsupportedValueError{v, strconv.FormatFloat(f, 'g', -1, int(bits))})
+ 	}
+-	b := strconv.AppendFloat(e.scratch[:0], f, 'g', -1, int(bits))
++
++	var b []byte
++	if e.canonical {
++		b = strconv.AppendInt(e.scratch[:0], int64(f), 10)
++	} else {
++		b = strconv.AppendFloat(e.scratch[:0], f, 'g', -1, int(bits))
++	}
+ 	if quoted {
+ 		e.WriteByte('"')
+ 	}
+diff --git a/canonical/json/encode_test.go b/canonical/json/encode_test.go
+index cd41aff..2e42b4e 100644
+--- a/canonical/json/encode_test.go
++++ b/canonical/json/encode_test.go
+@@ -589,3 +589,17 @@ func TestCanonicalFloatError(t *testing.T) {
+ 		t.Errorf("want float error, got nil")
+ 	}
+ }
++
++func TestCanonicalFloatAsInt(t *testing.T) {
++	in := struct{ A float64 }{1234567}
++
++	b, err := MarshalCanonical(in)
++	if err != nil {
++		t.Fatalf("Marshal(%q): %v", in, err)
++	}
++	out := string(b)
++	expected := `{"A":1234567}`
++	if out != expected {
++		t.Errorf("Marshal(%q) = %#q, want %#q", in, out, expected)
++	}
++}
+-- 
+2.5.0
+

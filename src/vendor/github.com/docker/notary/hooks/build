@@ -1,0 +1,26 @@
+#!/bin/bash
+
+serverTag="server"
+signerTag="signer"
+
+# build server and signer images
+docker build -t $serverTag -f server.Dockerfile .
+docker build -t $signerTag -f signer.Dockerfile .
+
+mkdir ./bin
+
+# ensure the containers are removed if they already exist
+docker rm -f server signer
+
+# copy binaries out of images
+loc=$(docker run --name=server --entrypoint=which $serverTag notary-server)
+docker cp server:$loc ./bin/notary-server
+docker cp server:/go/bin/migrate ./bin/migrate
+docker cp server:/lib/ld-musl-x86_64.so.1 ./bin/ld-musl-x86_64.so.1
+
+loc=$(docker run --name=signer --entrypoint=which $signerTag notary-signer)
+docker cp signer:$loc ./bin/notary-signer
+
+# build minimal server and signer images
+docker build -t $DOCKER_REPO:${serverTag}-$DOCKER_TAG -f server.minimal.Dockerfile .
+docker build -t $DOCKER_REPO:${signerTag}-$DOCKER_TAG -f signer.minimal.Dockerfile .

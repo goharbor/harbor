@@ -34,6 +34,9 @@ Please submit a PR to contain changes bit by bit. A PR consisting of a lot featu
 You can propose new designs for existing Harbor features. You can also design
 entirely new features. Please do open an issue on Github for discussion first. This is necessary to ensure the overall architecture is consistent and to avoid duplicated work in the roadmap.
 
+### Dependency management
+Harbor uses [dep](https://github.com/golang/dep) for dependency management of go code.  The official maintainers will take the responsibility for managing the code in `vendor` directory.  Please don't try to submit PR to update the dependency code, open an issue instead.  If your PR requires a change in the vendor code please make sure you discuss it with maintainers in advance.
+
 ### Conventions
 
 Fork Harbor's repository and make changes on your own fork in a new branch. The branch should be named  XXX-description where XXX is the number of the issue. Please run the full test suite on your branch before creating a PR.

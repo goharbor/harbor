@@ -6,7 +6,10 @@ export const CREATE_EDIT_RULE_TEMPLATE: string = `
     <form #ruleForm="ngForm">
       <section class="form-block">
         <div class="alert alert-warning" *ngIf="!editable">
-          <div class="alert-item">
+          <div class="alert-item static">
+            <div class="alert-icon-wrapper">
+              <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+            </div>
             <span class="alert-text">
               {{'REPLICATION.CANNOT_EDIT' | translate}}
             </span>
