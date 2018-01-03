@@ -14,7 +14,7 @@ logger = nlogging.create_logger(__name__)
 class Deployer(object):
     __metaclass__ = abc.ABCMeta
 
-    @abc.abstractmethod__name__
+    @abc.abstractmethod
     def deploy(self):
         return
     
