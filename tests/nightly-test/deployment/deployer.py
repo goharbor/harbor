@@ -44,12 +44,14 @@ class OVADeployer(Deployer):
 
     def __generate_ova_names(self):
         for i in range(0, self.count):
+            ova_name_temp = ''
             ova_name_temp = self.ova_name +"-"+ datetime.now().isoformat().replace(":", "-").replace(".", "-")
             time.sleep(1)
             self.ova_names.append(ova_name_temp)
+        print self.ova_names
     
     def __set_ovf_tool(self):
-        if not self.ovf_tool_path:
+        if not self.ovf_tooself.ova_namesl_path:
             self.ovf_tool_path = self.DEFAULT_LOCAL_OVF_TOOL_PATH
         if not os.path.isfile(self.ovf_tool_path):
             LOG.error("ovftool not found.")

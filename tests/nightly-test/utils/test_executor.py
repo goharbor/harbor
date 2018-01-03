@@ -9,7 +9,16 @@ import json
 
 # Needs have docker installed.
 def execute(harbor_endpoints, harbor_root_pwd, test_suite, harbor_pwd='Harbor12345') :
-    cmd = "docker run -i --privileged -v /harbor/workspace/harbor_nightly_test_yan:/drone -w /drone vmware/harbor-e2e-engine:1.38 pybot -v ip:%s -v HARBOR_PASSWORD:%s -v SSH_PWD:%s " % (harbor_endpoint, harbor_pwd, harbor_root_pwd)
+    cmd = ''
+    cmd_base = "docker run -i --privileged -v /harbor/workspace/harbor_nightly_test_yan:/drone -w /drone vmware/harbor-e2e-engine:1.38 "
+
+    if len(harbor_endpoints) == 1:
+        cmd_pybot = "pybot -v ip:%s -v HARBOR_PASSWORD:%s -v SSH_PWD:%s " % (harbor_endpoint[0], harbor_pwd, harbor_root_pwd)
+    
+    if len(harbor_endpoints) == 2:
+        cmd_pybot = "pybot -v ip:%s ip1:%s -v HARBOR_PASSWORD:%s -v SSH_PWD:%s " % (harbor_endpoint[1], harbor_pwd, harbor_root_pwd)
+
+    cmd = cmd_base + cmd_pybot
     if test_suite == 'Nightly':
         cmd = cmd + "/drone/tests/robot-cases/Group11-Nightly/Nightly.robot"
 
