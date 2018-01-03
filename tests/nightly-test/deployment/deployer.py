@@ -5,6 +5,9 @@ import sys
 import time
 import subprocess
 from datetime import datetime
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '../utils')
+import govc_utils
 
 class Deployer(object):
     __metaclass__ = abc.ABCMeta
