@@ -12,7 +12,7 @@ sys.path.append(dir_path + '/deployment')
 import harbor_util
 import test_executor
 from deployer import *
-from logging import create_logger
+import logging
 logger = create_logger()
 
 if len(sys.argv)!=7 :
