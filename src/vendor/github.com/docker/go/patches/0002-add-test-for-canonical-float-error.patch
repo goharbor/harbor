@@ -1,0 +1,30 @@
+From d818992b918abae8c6a61a870cf21280d3fd7a98 Mon Sep 17 00:00:00 2001
+From: Jessica Frazelle <acidburn@docker.com>
+Date: Fri, 7 Aug 2015 12:51:13 -0700
+Subject: [PATCH 2/3] add test for canonical float error
+
+Signed-off-by: Jessica Frazelle <acidburn@docker.com>
+---
+ canonical/json/encode_test.go | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/canonical/json/encode_test.go b/canonical/json/encode_test.go
+index 87c697e..cd41aff 100644
+--- a/canonical/json/encode_test.go
++++ b/canonical/json/encode_test.go
+@@ -580,3 +580,12 @@ func TestEncodeCanonicalStruct(t *testing.T) {
+ 		}
+ 	}
+ }
++
++func TestCanonicalFloatError(t *testing.T) {
++	input := struct{ A float64 }{1.1}
++
++	_, err := MarshalCanonical(input)
++	if err == nil {
++		t.Errorf("want float error, got nil")
++	}
++}
+-- 
+2.5.0
+

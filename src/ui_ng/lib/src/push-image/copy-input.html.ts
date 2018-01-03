@@ -1,4 +1,4 @@
-export const COPY_INPUT_HTML: string = `
+export const COPY_INPUT_HTML = `
 <div>
     <div class="command-title" *ngIf="!iconMode">
         {{headerTitle}}
@@ -14,6 +14,5 @@ export const COPY_INPUT_HTML: string = `
             <clr-icon shape="copy" [class.is-success]="isCopied" [class.is-error]="hasCopyError" class="info-tips-icon" size="24" [ngxClipboard]="inputTarget1" (cbOnSuccess)="onSuccess($event)" (cbOnError)="onError($event)"></clr-icon>
         </span>
     </div>
-    
 </div>
 `;

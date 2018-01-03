@@ -17,12 +17,20 @@ package client
 import (
 	"github.com/vmware/harbor/src/common/http"
 	"github.com/vmware/harbor/src/common/http/modifier/auth"
-	"github.com/vmware/harbor/src/jobservice/api"
 )
+
+// Replication holds information for submiting a replication job
+type Replication struct {
+	PolicyID   int64    `json:"policy_id"`
+	Repository string   `json:"repository"`
+	Operation  string   `json:"operation"`
+	Tags       []string `json:"tags"`
+}
 
 // Client defines the methods that a jobservice client should implement
 type Client interface {
-	SubmitReplicationJob(*api.ReplicationReq) error
+	SubmitReplicationJob(*Replication) error
+	StopReplicationJobs(policyID int64) error
 }
 
 // DefaultClient provides a default implement for the interface Client
@@ -50,7 +58,19 @@ func NewDefaultClient(endpoint string, cfg *Config) *DefaultClient {
 }
 
 // SubmitReplicationJob submits a replication job to the jobservice
-func (d *DefaultClient) SubmitReplicationJob(replication *api.ReplicationReq) error {
+func (d *DefaultClient) SubmitReplicationJob(replication *Replication) error {
 	url := d.endpoint + "/api/jobs/replication"
 	return d.client.Post(url, replication)
+}
+
+// StopReplicationJobs stop replication jobs of the policy specified by the policy ID
+func (d *DefaultClient) StopReplicationJobs(policyID int64) error {
+	url := d.endpoint + "/api/jobs/replication/actions"
+	return d.client.Post(url, &struct {
+		PolicyID int64  `json:"policy_id"`
+		Action   string `json:"action"`
+	}{
+		PolicyID: policyID,
+		Action:   "stop",
+	})
 }

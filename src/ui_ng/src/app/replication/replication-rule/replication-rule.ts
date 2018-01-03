@@ -36,6 +36,7 @@ export class Trigger {
 }
 
 export interface ReplicationRule  {
+    id?: number;
     name: string;
     description: string;
     projects: Project[];

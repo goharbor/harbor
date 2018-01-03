@@ -274,13 +274,13 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.listReplicationRule.retrieveRules(ruleName);
   }
 
-  doFilterRuleStatus($event: any) {
+  /*doFilterRuleStatus($event: any) {
     if ($event && $event.target && $event.target["value"]) {
       let status = $event.target["value"];
       this.currentRuleStatus = this.ruleStatus.find((r: any) => r.key === status);
       this.listReplicationRule.filterRuleStatus(this.currentRuleStatus.key);
     }
-  }
+  }*/
 
   doFilterJobStatus($event: any) {
     if ($event && $event.target && $event.target["value"]) {

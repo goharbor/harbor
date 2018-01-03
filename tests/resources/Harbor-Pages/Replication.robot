@@ -22,32 +22,23 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Create An New Rule With New Endpoint
     [Arguments]  ${policy_name}  ${policy_description}  ${destination_name}  ${destination_url}  ${destination_username}  ${destination_password}
-    Click element  xpath=${new_rule_xpath}
+
+    Click element  ${new_name_xpath}
     Sleep  2
     	
     Input Text  xpath=${policy_name_xpath}  ${policy_name}
     Input Text  xpath=${policy_description_xpath}   ${policy_description}
 
-    Click Element  xpath=//select[@id="ruleProject"]
-    Click Element  xpath=//select[@id="ruleProject"]//option[1]
+    #Click element  xpath=${policy_enable_checkbox}
+    #enable attribute is droped in new ui
 
-    Click Element  xpath=//select[@id="ruleTarget"]
-    Click Element  xpath=//select[@id="ruleTarget"]//option[1]
-
-    Click Element  xpath=//select[@id="ruleTrigger"]
-    Click Element  xpath=//select[@id="ruleTrigger"]//option[@value='immediate']
-
-    Mouse down  xpath=//*[@id="clr-checkbox-ruleDeletion"]
-    Mouse up  xpath=//*[@id="clr-checkbox-ruleDeletion"]
-
-    Mouse down  xpath=//*[@id="clr-checkbox-ruleExit"]
-    Mouse up  xpath=//*[@id="clr-checkbox-ruleExit"]
-
-    Click element  xpath=${policy_enable_checkbox}
     Click element  xpath=${policy_endpoint_checkbox}
 
     Click element  xpath=//*[@id="ruleBtnOk"]
     Sleep  5
     Capture Page Screenshot  rule_${policy_name}.png
     Wait Until Page Contains  ${policy_name}
+
     Wait Until Page Contains  ${policy_description}
+    Wait Until Page Contains  ${destination_name}
+

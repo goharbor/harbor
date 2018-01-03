@@ -22,7 +22,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/utils/test"
-	"github.com/vmware/harbor/src/jobservice/api"
 )
 
 var url string
@@ -31,9 +30,29 @@ func TestMain(m *testing.M) {
 	requestMapping := []*test.RequestHandlerMapping{
 		&test.RequestHandlerMapping{
 			Method:  http.MethodPost,
+			Pattern: "/api/jobs/replication/actions",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				action := &struct {
+					PolicyID int64  `json:"policy_id"`
+					Action   string `json:"action"`
+				}{}
+				if err := json.NewDecoder(r.Body).Decode(action); err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+
+				if action.PolicyID != 1 {
+					w.WriteHeader(http.StatusNotFound)
+					return
+				}
+
+			},
+		},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodPost,
 			Pattern: "/api/jobs/replication",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
-				replication := &api.ReplicationReq{}
+				replication := &Replication{}
 				if err := json.NewDecoder(r.Body).Decode(replication); err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 				}
@@ -50,6 +69,18 @@ func TestMain(m *testing.M) {
 
 func TestSubmitReplicationJob(t *testing.T) {
 	client := NewDefaultClient(url, &Config{})
-	err := client.SubmitReplicationJob(&api.ReplicationReq{})
+	err := client.SubmitReplicationJob(&Replication{})
+	assert.Nil(t, err)
+}
+
+func TestStopReplicationJobs(t *testing.T) {
+	client := NewDefaultClient(url, &Config{})
+
+	// 404
+	err := client.StopReplicationJobs(2)
+	assert.NotNil(t, err)
+
+	// 200
+	err = client.StopReplicationJobs(1)
 	assert.Nil(t, err)
 }

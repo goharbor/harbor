@@ -28,3 +28,7 @@ label:first-child {
 .padLeft0{padding-left: 0;}
 .floatSet {display: inline-block; float: left; width: 120px;margin-right: 10px;}
 .form-group{ min-height: 36px;}
+
+.projectInput{float: left;}
+.projectInput input{width: 185px;background-color: white;}
+.switchIcon{width:20px;height:20px; margin-top: 5px;margin-left: 15px;}

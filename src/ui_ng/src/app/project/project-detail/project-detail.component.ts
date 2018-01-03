@@ -54,8 +54,7 @@ export class ProjectDetailComponent {
   }
 
   public get isSProjectAdmin(): boolean {
-    let account = this.sessionService.projectMembers;
-    return account && account[0].role_name === 'projectAdmin';
+    return this.currentProject.has_project_admin_role;
   }
 
   public get isSessionValid(): boolean {

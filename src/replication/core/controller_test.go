@@ -26,6 +26,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	GlobalController = NewDefaultController(ControllerConfig{})
 	// set the policy manager used by GlobalController with a fake policy manager
 	controller := GlobalController.(*DefaultController)
 	controller.policyManager = &test.FakePolicyManager{}

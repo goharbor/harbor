@@ -20,7 +20,7 @@ Library  OperatingSystem
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1
 ${CLAIR_BUILDER}  1.2.7
-
+${GOLANG_VERSION}  1.9.2
 
 *** Keywords ***
 Install Harbor to Test Server
@@ -54,7 +54,7 @@ Down Harbor
     Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
-    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true
+    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
     ${rc}  ${output}=  Run And Return Rc And Output  make package_offline DEVFLAG=false GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} HTTPPROXY=
@@ -62,6 +62,15 @@ Package Harbor Offline
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
+Package Harbor Online
+    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true
+    Log To Console  \nStart Docker Daemon
+    Start Docker Daemon Locally
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_online DEVFLAG=false GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} HTTPPROXY=
+    Log  ${rc}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    
 Switch To LDAP
     Down Harbor
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data
@@ -138,7 +147,7 @@ Prepare Cert
     Should Be Equal As Integers  ${rc}  0
 
 Compile and Up Harbor With Source Code
-    [Arguments]  ${golang_image}=golang:1.7.3  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true
+    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=vmware/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${clarity_image}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0

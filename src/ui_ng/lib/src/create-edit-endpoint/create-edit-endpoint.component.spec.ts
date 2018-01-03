@@ -71,21 +71,21 @@ describe('CreateEditEndpointComponent (inline template)', () => {
     expect(comp).toBeTruthy();
   });
 
-  it('should get endpoint be called', async(()=>{
+  it('should get endpoint be called', ()=>{
     fixture.detectChanges();
     fixture.whenStable().then(()=>{
       fixture.detectChanges(); 
       expect(spy.calls.any()).toBeTruthy();
     });
-  }));
+  });
 
-  it('should get endpoint and open modal', async(()=>{
+  it('should get endpoint and open modal', ()=>{
     fixture.detectChanges();    
     fixture.whenStable().then(()=>{
       fixture.detectChanges();  
       expect(comp.target.name).toEqual('target_01');
     });
-  }));
+  });
 
   it('should endpoint be initialized', () => {
     fixture.detectChanges();

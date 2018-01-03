@@ -1,7 +1,6 @@
 import {Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef, AfterViewInit} from '@angular/core';
 import {ProjectService} from '../../project/project.service';
 import {Project} from '../../project/project';
-import {compareValue, toPromise} from 'harbor-ui/src/utils';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormArray, FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {ReplicationRuleServie} from "./replication-rule.service";
@@ -12,6 +11,8 @@ import { ConfirmationTargets, ConfirmationState } from '../../shared/shared.cons
 import {Subscription} from "rxjs/Subscription";
 import {ConfirmationMessage} from "../../shared/confirmation-dialog/confirmation-message";
 import {Subject} from "rxjs/Subject";
+import {ListProjectModelComponent} from "./list-project-model/list-project-model.component";
+import {toPromise, isEmptyObject, compareValue} from "harbor-ui/src/utils";
 
 
 const ONE_HOUR_SECONDS: number = 3600;
@@ -24,31 +25,34 @@ const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
 
 })
 export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestroy {
-    timerHandler: any;
     _localTime: Date = new Date();
     policyId: number;
-    projectList: Project[] = [];
     targetList: Target[] = [];
     isFilterHide: boolean = false;
     weeklySchedule: boolean;
     isScheduleOpt: boolean;
+    isImmediate: boolean = true;
     filterCount: number = 0;
+    selectedprojectList: Project[] = [];
     triggerNames: string[] = ['immediate', 'schedule', 'manual'];
     scheduleNames: string[] = ['daily', 'weekly'];
     weekly: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     filterSelect: string[] = ['repository', 'tag'];
     ruleNameTooltip: string = 'TOOLTIP.EMPTY';
+    headerTitle: string = 'REPLICATION.ADD_POLICY';
 
     filterListData: {[key: string]: any}[] = [];
     inProgress: boolean = false;
     inNameChecking: boolean = false;
-    isBackReplication: boolean = false;
     isRuleNameExist: boolean = false;
     nameChecker: Subject<string> = new Subject<string>();
 
     confirmSub: Subscription;
     ruleForm: FormGroup;
     copyUpdateForm: ReplicationRule;
+
+    @ViewChild(ListProjectModelComponent)
+    projectListModel: ListProjectModelComponent;
 
     baseFilterData(name: string, option: string[], state: boolean) {
         return {
@@ -71,15 +75,19 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
 
         Promise.all([this.repService.getEndpoints(), this.repService.listProjects()])
             .then(res => {
-                if (!res[0].length || !res[1].length) {
-                    this.msgHandler.error('should have project and target first');
-                    this.router.navigate(['/harbor/replications']);
+                if (!res[0] || !res[1]) {
+                    this.msgHandler.error('REPLICATION.BACKINFO');
+                    setTimeout(() => {
+                        this.router.navigate(['/harbor/replications']);
+                    }, 2000);
                 };
-                if (res[0].length && res[1].length) {
-                    this.projectList = res[1];
-                    this.setProject([this.projectList[0]]);
+                if (res[0] && res[1]) {
                     this.targetList = res[0];
-                    this.setTarget([this.targetList[0]]);
+                    if (!this.policyId) {
+                        this.setTarget([res[0][0]]);
+                        this.setProject([res[1][0]]);
+                        this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
+                    }
                 }
             });
     }
@@ -87,9 +95,12 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
     ngOnInit(): void {
        this.policyId = +this.route.snapshot.params['id'];
        if (this.policyId) {
+           this.headerTitle = 'REPLICATION.EDIT_POLICY_TITLE';
            this.repService.getReplicationRule(this.policyId)
                .then((response) => {
                     this.copyUpdateForm = Object.assign({}, response);
+                    // set filter value is [] if callback fiter value is null.
+                   this.copyUpdateForm.filters = response.filters ? response.filters : [];
                     this.updateForm(response);
                }).catch(error => {
                this.msgHandler.handleError(error);
@@ -110,28 +121,14 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
                this.inNameChecking = false;
            });
        });
-        this.confirmSub = this.confirmService.confirmationConfirm$.subscribe(confirmation => {
+        /*this.confirmSub = this.confirmService.confirmationConfirm$.subscribe(confirmation => {
             if (confirmation &&
                 confirmation.state === ConfirmationState.CONFIRMED) {
                 if (confirmation.source === ConfirmationTargets.CONFIG) {
-                    if (this.policyId) {
-                        this.updateForm(this.copyUpdateForm);
-                    } else {
-                        this.initFom();
-                    }
-                    if (this.isBackReplication) {
-                        this.router.navigate(['/harbor/replications']);
-                    }
+                    this.router.navigate(['/harbor/replications']);
                 }
             }
-        });
-    }
-
-    get hasFormChange() {
-        if (this.copyUpdateForm) {
-          return  !compareValue(this.copyUpdateForm, this.ruleForm.value);
-        }
-        return this.ruleForm.touched && this.ruleForm.dirty;
+        });*/
     }
 
     ngAfterViewInit(): void {
@@ -162,8 +159,9 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
             }),
             filters: this.fb.array([]),
             replicate_existing_image_now: true,
-            replicate_deletion: true
+            replicate_deletion: false
         });
+
     }
 
     updateForm(rule: ReplicationRule): void {
@@ -181,9 +179,15 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
             this.setFilter(rule.filters);
             this.updateFilter(rule.filters);
         }
+
+
+
+        // Force refresh view
+        let hnd = setInterval(() => this.ref.markForCheck(), 100);
+        setTimeout(() => clearInterval(hnd), 2000);
     }
 
-    initFom(): void {
+ /*   initFom(): void {
         this.ruleForm.reset({
             name: '',
             description: '',
@@ -193,9 +197,9 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
                 offtime: '08:00'
             }},
             replicate_existing_image_now: true,
-            replicate_deletion: true
+            replicate_deletion: false
         });
-        this.setProject([this.projectList[0]]);
+        this.setProject([]);
         this.setTarget([this.targetList[0]]);
         this.setFilter([]);
 
@@ -205,7 +209,7 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
         this.weeklySchedule = false;
         this.isRuleNameExist = true;
         this.ruleNameTooltip = 'TOOLTIP.EMPTY';
-    }
+    }*/
 
 
     get projects(): FormArray {
@@ -261,18 +265,20 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
         }
     }
 
-    projectChange($event: any) {
-        if ($event && $event.target && event.target['value']) {
-            let selecedProject: Project = this.projectList.find(project => project.project_id === +$event.target['value']);
-            this.setProject([selecedProject]);
-        }
-    }
-
     targetChange($event: any) {
         if ($event && $event.target && event.target['value']) {
             let selecedTarget: Target = this.targetList.find(target => target.id === +$event.target['value']);
             this.setTarget([selecedTarget]);
         }
+    }
+
+    openProjectModel(): void {
+        this.projectListModel.openModel();
+    }
+
+    selectedProject(project: Project): void {
+        console.log('project', project)
+        this.setProject([project]);
     }
 
     addNewFilter(): void {
@@ -314,7 +320,6 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
                     }
                 });
             }
-
             const control = <FormArray>this.ruleForm.controls['filters'];
             control.removeAt(i);
         }
@@ -322,23 +327,37 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
 
     selectTrigger($event: any): void {
         if ($event && $event.target && $event.target['value']) {
-            if ($event.target['value'] === this.triggerNames[1]) {
+            let val: string = $event.target['value'];
+            if (val === this.triggerNames[1]) {
                 this.isScheduleOpt = true;
-            } else {
+                this.isImmediate = false;
+            }
+            if (val === this.triggerNames[0]) {
                 this.isScheduleOpt = false;
+                this.isImmediate = true;
+            }
+            if (val === this.triggerNames[2]) {
+                this.isScheduleOpt = false;
+                this.isImmediate = false;
             }
         }
     }
 
-    // Replication Schedule select exchange
+    // Replication Schedule select value exchange
     selectSchedule($event: any): void {
         if ($event && $event.target && $event.target['value']) {
             switch ($event.target['value']) {
                 case this.scheduleNames[1]:
                     this.weeklySchedule = true;
+                    this.ruleForm.patchValue({
+                        trigger: {
+                            schedule_param: {
+                                weekday: 1,
+                            }
+                        }
+                    })
                     break;
                 case this.scheduleNames[0]:
-/*                    this.dailySchedule = true;*/
                     this.weeklySchedule = false;
                     break;
             }
@@ -373,6 +392,7 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
     updateTrigger(trigger: any) {
         if (trigger['schedule_param']) {
             this.isScheduleOpt = true;
+            this.isImmediate = false;
             trigger['schedule_param']['offtime'] = this.getOfftime(trigger['schedule_param']['offtime']);
             if (trigger['schedule_param']['weekday']) {
                 this.weeklySchedule = true;
@@ -381,6 +401,9 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
                 trigger['schedule_param']['weekday'] = 1;
             }
         }else {
+            if (trigger['kind'] === this.triggerNames[2]) {
+                this.isImmediate = false;
+            }
             trigger['schedule_param'] = { type: this.scheduleNames[0],
                 weekday: this.weekly[0],
                 offtime: '08:00'};
@@ -403,6 +426,10 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
         }
     }
 
+    public hasFormChange(): boolean {
+        return !isEmptyObject(this.getChanges());
+    }
+
 
     onSubmit() {
         // add new Replication rule
@@ -414,6 +441,7 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
                 this.msgHandler.showSuccess('REPLICATION.CREATED_SUCCESS');
                 this.inProgress = false;
                 setTimeout(() => {
+                    this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
                     this.router.navigate(['/harbor/replications']);
                 }, 2000);
 
@@ -424,9 +452,10 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
         } else {
             this.repService.updateReplicationRule(this.policyId, this.ruleForm.value)
                 .then(() => {
-                this.msgHandler.showSuccess('REPLICATION.CREATED_SUCCESS');
+                this.msgHandler.showSuccess('REPLICATION.UPDATED_SUCCESS');
                 this.inProgress = false;
                 setTimeout(() => {
+                    this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
                     this.router.navigate(['/harbor/replications']);
                 }, 2000);
 
@@ -439,9 +468,9 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
     }
 
     onCancel(): void {
+        this.router.navigate(['/harbor/replications']);
 
-        console.log(this.ruleForm.valid, this.isRuleNameExist , !this.hasFormChange)
-        if (this.ruleForm.dirty) {
+        /*if (this.hasFormChange()) {
             let msg = new ConfirmationMessage(
                 'CONFIG.CONFIRM_TITLE',
                 'CONFIG.CONFIRM_SUMMARY',
@@ -451,8 +480,9 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
             );
 
             this.confirmService.openComfirmDialog(msg);
-        }
+        }*/
     }
+
     // UTC time
     public getOfftime(daily_time: any): string {
 
@@ -518,11 +548,32 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
     }
 
     backReplication(): void {
-        this.isBackReplication = true;
-        if (this.ruleForm.dirty) {
-            this.onCancel();
-        } else {
-            this.router.navigate(['/harbor/replications']);
-        }
+        this.router.navigate(['/harbor/replications']);
     }
+
+    getChanges(): { [key: string]: any | any[] } {
+        let changes: { [key: string]: any | any[] } = {};
+        let ruleValue: { [key: string]: any | any[] } = this.ruleForm.value;
+        if (!ruleValue || !this.copyUpdateForm) {
+            return changes;
+        }
+        for (let prop in ruleValue) {
+            let field = this.copyUpdateForm[prop];
+            if (!compareValue(field, ruleValue[prop])) {
+                changes[prop] = ruleValue[prop];
+                //Number
+                if (typeof field === "number") {
+                    changes[prop] = +changes[prop];
+                }
+
+                //Trim string value
+                if (typeof field === "string") {
+                    changes[prop] = ('' + changes[prop]).trim();
+                }
+            }
+        }
+
+        return changes;
+    }
+
 }

@@ -104,7 +104,7 @@
         "LOGS": "日志"
     },
     "USER": {
-        "ADD_ACTION": "用户",
+        "ADD_ACTION": "创建用户",
         "ENABLE_ADMIN_ACTION": "设置为管理员",
         "DISABLE_ADMIN_ACTION": "取消管理员",
         "DEL_ACTION": "删除",
@@ -313,7 +313,7 @@
         "TEST_CONNECTION": "测试连接",
         "TITLE_EDIT": "编辑目标",
         "TITLE_ADD": "新建目标",
-        "DELETE": "删除目标",
+        "DELETE": "删除",
         "TESTING_CONNECTION": "正在测试连接...",
         "TEST_CONNECTION_SUCCESS": "测试连接成功。",
         "TEST_CONNECTION_FAILURE": "测试连接失败。",
@@ -412,6 +412,7 @@
         "SELF_REGISTRATION": "允许自注册",
         "AUTH_MODE_DB": "数据库",
         "AUTH_MODE_LDAP": "LDAP",
+        "AUTH_MODE_UAA": "UAA",
         "SCOPE_BASE": "本层",
         "SCOPE_ONE_LEVEL": "下一层",
         "SCOPE_SUBTREE": "子树",
@@ -443,6 +444,12 @@
             "UID": "LDAP用户UID的属性",
             "SCOPE": "LDAP搜索范围",
             "VERIFY_CERT": "LDAP 检查证书"
+        },
+        "UAA": {
+            "ENDPOINT": "UAA Endpoint",
+            "CLIENT_ID": "UAA Client ID",
+            "CLIENT_SECRET": "UAA Client Secret",
+            "VERIFY_CERT": "UAA 检查证书"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",

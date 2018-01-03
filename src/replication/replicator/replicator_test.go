@@ -18,18 +18,20 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/jobservice/api"
 	"github.com/vmware/harbor/src/jobservice/client"
 )
 
 type fakeJobserviceClient struct{}
 
-func (f *fakeJobserviceClient) SubmitReplicationJob(replication *api.ReplicationReq) error {
+func (f *fakeJobserviceClient) SubmitReplicationJob(replication *client.Replication) error {
+	return nil
+}
+
+func (f *fakeJobserviceClient) StopReplicationJobs(policyID int64) error {
 	return nil
 }
 
 func TestReplicate(t *testing.T) {
-	replicator := NewDefaultReplicator("http://jobservice", &client.Config{})
-	replicator.client = &fakeJobserviceClient{}
-	assert.Nil(t, replicator.Replicate(&api.ReplicationReq{}))
+	replicator := NewDefaultReplicator(&fakeJobserviceClient{})
+	assert.Nil(t, replicator.Replicate(&client.Replication{}))
 }

@@ -18,6 +18,9 @@ import (
 	"time"
 )
 
+// UserTable is the name of table in DB that holds the user object
+const UserTable = "user"
+
 // User holds the details of a user.
 type User struct {
 	UserID   int    `orm:"pk;auto;column(user_id)" json:"user_id"`
@@ -44,4 +47,9 @@ type UserQuery struct {
 	Username   string
 	Email      string
 	Pagination *Pagination
+}
+
+// TableName ...
+func (u *User) TableName() string {
+	return UserTable
 }

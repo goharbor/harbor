@@ -104,7 +104,7 @@
         "LOGS": "Logs"
     },
     "USER": {
-        "ADD_ACTION": "USUARIO",
+        "ADD_ACTION": "New User",
         "ENABLE_ADMIN_ACTION": "Marcar como Administrador",
         "DISABLE_ADMIN_ACTION": "Desmarcar como Administrador",
         "DEL_ACTION": "Eliminar",
@@ -313,7 +313,7 @@
         "TEST_CONNECTION": "Comprobar conexión",
         "TITLE_EDIT": "Editar Endpoint",
         "TITLE_ADD": "Crear Endpoint",
-        "DELETE": "Eliminar Endpoint",
+        "DELETE": "Eliminar",
         "TESTING_CONNECTION": "Comprobar conexión...",
         "TEST_CONNECTION_SUCCESS": "Conexión comprobada satisfactoriamente.",
         "TEST_CONNECTION_FAILURE": "Fallo al comprobar el endpoint.",
@@ -413,6 +413,7 @@
         "SELF_REGISTRATION": "Permitir auto-registro",
         "AUTH_MODE_DB": "Base de datos",
         "AUTH_MODE_LDAP": "LDAP",
+        "AUTH_MODE_UAA": "UAA",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "UnNivel",
         "SCOPE_SUBTREE": "Subárbol",
@@ -444,6 +445,12 @@
             "UID": "LDAP UID",
             "SCOPE": "LDAP Ámbito",
             "VERIFY_CERT": "LDAP Verify Cert"
+        },
+        "UAA": {
+            "ENDPOINT": "UAA Endpoint",
+            "CLIENT_ID": "UAA Client ID",
+            "CLIENT_SECRET": "UAA Client Secret",
+            "VERIFY_CERT": "UAA Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",

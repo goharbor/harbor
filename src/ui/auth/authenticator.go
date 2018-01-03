@@ -46,10 +46,11 @@ var registry = make(map[string]AuthenticateHelper)
 // Register add different authenticators to registry map.
 func Register(name string, h AuthenticateHelper) {
 	if _, dup := registry[name]; dup {
-		log.Infof("authenticator: %s has been registered", name)
+		log.Infof("authenticator: %s has been registered,skip", name)
 		return
 	}
 	registry[name] = h
+	log.Debugf("Registered authencation helper for auth mode: %s", name)
 }
 
 // Login authenticates user credentials based on setting.

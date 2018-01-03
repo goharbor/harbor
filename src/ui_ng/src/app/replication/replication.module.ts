@@ -23,6 +23,7 @@ import { SharedModule } from '../shared/shared.module';
 import {ReplicationRuleComponent} from "./replication-rule/replication-rule.component";
 import {ReactiveFormsModule} from "@angular/forms";
 import {ReplicationRuleServie} from "./replication-rule/replication-rule.service";
+import {ListProjectModelComponent} from "./replication-rule/list-project-model/list-project-model.component";
 
 @NgModule({
   imports: [
@@ -36,6 +37,7 @@ import {ReplicationRuleServie} from "./replication-rule/replication-rule.service
     TotalReplicationPageComponent,
     DestinationPageComponent,
     ReplicationRuleComponent,
+    ListProjectModelComponent,
   ],
   exports: [
     ReplicationPageComponent,

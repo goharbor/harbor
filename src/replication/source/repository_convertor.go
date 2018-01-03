@@ -34,8 +34,6 @@ func NewRepositoryConvertor(registry registry.Adaptor) *RepositoryConvertor {
 
 // Convert projects to repositories
 func (r *RepositoryConvertor) Convert(items []models.FilterItem) []models.FilterItem {
-	// TODO get repositories from database where the push/deletion operations are recorded
-	// if support replicate deletion
 	result := []models.FilterItem{}
 	for _, item := range items {
 		// just put it to the result list if the item is not a project

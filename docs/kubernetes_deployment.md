@@ -4,7 +4,7 @@ This Document decribes how to deploy Harbor on Kubernetes.  It has been verified
 
 ### Prerequisite
 
-* You should have domain knowledge about Kubernetes (Replication Controller, Service, Persistent Volume, Persistent Volume Claim, Config Map). 
+* You should have domain knowledge about Kubernetes (Deployment, Service, Persistent Volume, Persistent Volume Claim, Config Map, Ingress).
 * **Optional**: Load the docker images onto woker nodes.  *If you skip this step, worker node will pull images from Docker Hub when starting the pods.*
 	* Download the offline installer of Harbor v1.2.0 from the [release](https://github.com/vmware/harbor/releases) page.
 	* Uncompress the offline installer and get the images tgz file harbor.*.tgz, transfer it to each of the worker nodes.
@@ -34,23 +34,8 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
   #To accept access from outside of Kubernetes cluster, it should be set to a worker node.
   hostname = 10.192.168.5
   ```
-- `make/kubernetes/**/*.svc.yaml`: Specify the service of pods.  In particular, the externalIP should be set in `make/kubernetes/nginx/nginx.svc.yaml`:
-
-  ```yaml
-  ...
-  metadata:
-      name: nginx
-  spec:
-      ports:
-      - name: http
-        port: 80
-      selector:
-        name: nginx-apps
-      externalIPs:
-        - 10.192.168.5
-  ``` 
-  
-- `make/kubernetes/**/*.rc.yaml`: Specify configs of containers.  
+- `make/kubernetes/**/*.svc.yaml`: Specify the service of pods.
+- `make/kubernetes/**/*.deploy.yaml`: Specify configs of containers.
 - `make/kubernetes/pv/*.pvc.yaml`: Persistent Volume Claim.  
   You can set capacity of storage in these files. example:
 
@@ -91,10 +76,10 @@ These files will be generated:
 
 - make/kubernetes/jobservice/jobservice.cm.yaml
 - make/kubernetes/mysql/mysql.cm.yaml
-- make/kubernetes/nginx/nginx.cm.yaml
 - make/kubernetes/registry/registry.cm.yaml
 - make/kubernetes/ui/ui.cm.yaml
 - make/kubernetes/adminserver/adminserver.cm.yaml
+- make/kubernetes/ingress.yaml
 
 #### Advanced Configuration
 If Basic Configuration was not covering your requirements, you can read this section for more details.
@@ -108,7 +93,7 @@ You can find all configs of Harbor in `make/kubernetes/templates/`. There are sp
 
 - `jobservice.cm.yaml`: ENV and web config of jobservice
 - `mysql.cm.yaml`: Root passowrd of MySQL
-- `nginx.cm.yaml`: Https certification and nginx config. If you are fimiliar with nginx, you can modify it. 
+- `ingress.yaml`: Https certification and ingress config. If you are fimiliar with ingress, you can modify it.
 - `registry.cm.yaml`: Token service certification and registry config
   Registry use filesystem to store data of images. You can find it like:
 
@@ -140,7 +125,6 @@ kubectl apply -f make/kubernetes/pv/storage.pvc.yaml
 # create config map
 kubectl apply -f make/kubernetes/jobservice/jobservice.cm.yaml
 kubectl apply -f make/kubernetes/mysql/mysql.cm.yaml
-kubectl apply -f make/kubernetes/nginx/nginx.cm.yaml
 kubectl apply -f make/kubernetes/registry/registry.cm.yaml
 kubectl apply -f make/kubernetes/ui/ui.cm.yaml
 kubectl apply -f make/kubernetes/adminserver/adminserver.cm.yaml
@@ -148,23 +132,24 @@ kubectl apply -f make/kubernetes/adminserver/adminserver.cm.yaml
 # create service
 kubectl apply -f make/kubernetes/jobservice/jobservice.svc.yaml
 kubectl apply -f make/kubernetes/mysql/mysql.svc.yaml
-kubectl apply -f make/kubernetes/nginx/nginx.svc.yaml
 kubectl apply -f make/kubernetes/registry/registry.svc.yaml
 kubectl apply -f make/kubernetes/ui/ui.svc.yaml
 kubectl apply -f make/kubernetes/adminserver/adminserver.svc.yaml
 
-# create k8s rc
-kubectl apply -f make/kubernetes/registry/registry.rc.yaml
-kubectl apply -f make/kubernetes/mysql/mysql.rc.yaml
-kubectl apply -f make/kubernetes/jobservice/jobservice.rc.yaml
-kubectl apply -f make/kubernetes/ui/ui.rc.yaml
-kubectl apply -f make/kubernetes/nginx/nginx.rc.yaml
-kubectl apply -f make/kubernetes/adminserver/adminserver.rc.yaml
+# create k8s deployment
+kubectl apply -f make/kubernetes/registry/registry.deploy.yaml
+kubectl apply -f make/kubernetes/mysql/mysql.deploy.yaml
+kubectl apply -f make/kubernetes/jobservice/jobservice.deploy.yaml
+kubectl apply -f make/kubernetes/ui/ui.deploy.yaml
+kubectl apply -f make/kubernetes/adminserver/adminserver.deploy.yaml
+
+# create k8s ingress
+kubectl apply -f make/kubernetes/ingress.yaml
 ```
 
 After the pods are running, you can access Harbor's UI via the configured endpoint `10.192.168.5` or issue docker commands such as `docker login 10.192.168.5` to interact with the registry.
 
 #### Limitation
-1. Current deployment is http only, to enable https you need to either add another layer of proxy or modify the nginx.cm.yaml to enable https and include a correct certificate
+1. Current deployment is http only, to enable https you need to either add another layer of proxy or modify the ingress.yaml to enable https and include a correct certificate
 2. Current deployment does not include Clair and Notary, which are supported in docker-compose deployment.  They will be supported in near future, stay tuned.
 

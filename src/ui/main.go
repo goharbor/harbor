@@ -95,11 +95,11 @@ func main() {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 	if config.WithClair() {
-		clairDBPassword, err := config.ClairDBPassword()
+		clairDB, err := config.ClairDB()
 		if err != nil {
 			log.Fatalf("failed to load clair database information: %v", err)
 		}
-		if err := dao.InitClairDB(clairDBPassword); err != nil {
+		if err := dao.InitClairDB(clairDB); err != nil {
 			log.Fatalf("failed to initialize clair database: %v", err)
 		}
 	}
@@ -132,7 +132,7 @@ func main() {
 		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)})
 	}
 
-	if err := core.GlobalController.Init(); err != nil {
+	if err := core.Init(); err != nil {
 		log.Errorf("failed to initialize the replication controller: %v", err)
 	}
 

@@ -10,18 +10,18 @@
             </div>
         </div>
         <div class="row flex-items-xs-right option-right" [hidden]="currentOption === 0">
-            <clr-dropdown [clrMenuPosition]="'bottom-left'">
+            <clr-dropdown>
                 <button class="btn btn-link" clrDropdownToggle>
-          {{'AUDIT_LOG.OPERATIONS' | translate}}
-          <clr-icon shape="caret down"></clr-icon>
-        </button>
-                <div class="dropdown-menu">
+                    {{'AUDIT_LOG.OPERATIONS' | translate}}
+                  <clr-icon shape="caret down"></clr-icon>
+                </button>
+                <clr-dropdown-menu [clrPosition]="'bottom-left'" *clrIfOpen>
                     <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)">
                         <clr-icon shape="check" [hidden]="!f.checked"></clr-icon>
                         <ng-template [ngIf]="!f.checked"><span style="display: inline-block;width: 16px;"></span></ng-template>
                         {{f.description | translate}}
                     </a>
-                </div>
+                </clr-dropdown-menu>
             </clr-dropdown>
             <div class="flex-xs-middle">
                 <clr-icon shape="date"></clr-icon>

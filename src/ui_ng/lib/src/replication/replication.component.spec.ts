@@ -260,19 +260,6 @@ describe('Replication Component (inline template)', ()=>{
     });
   }));
 
-  it('Should filter replication rules by status', async(()=>{
-    fixture.detectChanges();
-    fixture.whenStable().then(()=>{
-      fixture.detectChanges();
-      comp.doFilterRuleStatus('1' /*Enabled*/);
-      fixture.detectChanges();
-      let el: HTMLElement = deRules.nativeElement;
-      fixture.detectChanges();
-      expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual('sync_02');
-    });
-  }));
-
   it('Should filter replication jobs by keywords', async(()=>{
     fixture.detectChanges();
     fixture.whenStable().then(()=>{

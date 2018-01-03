@@ -28,28 +28,13 @@ Go Into Project
     Input Text  xpath=//*[@id="search_input"]  ${project}
     Sleep  8
     Wait Until Page Contains  ${project}
-    Click Element  xpath=//*[@id="results"]/list-project-ro/clr-datagrid/div/div/div/div/div[2]/clr-dg-row[1]/clr-dg-row-master/clr-dg-cell[1]/a
+    Click Element  xpath=//*[@id="results"]/list-project-ro//clr-dg-cell[contains(.,"${project}")]/a
     Sleep  2
     Capture Page Screenshot  gointo_${project}.png
 
-Go Into Project2
-    [Arguments]  ${project}
-    Sleep  2
-    Capture Page Screenshot  gointo1_${project}.png
-    # search icon
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/project/div/div/div[2]/div[2]/hbr-filter/span/clr-icon/svg
-    Sleep  2
-    # text search project
-    Input Text  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/project/div/div/div[2]/div[2]/hbr-filter/span/input  ${project}
-    Sleep  5
-    Wait Until Page Contains  ${project}
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/project/div/div/list-project/clr-datagrid/div/div/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[2]/a
-    Sleep  3
-    Capture Page Screenshot  gointo2_${project}.png
-    	
 Add User To Project Admin
     [Arguments]  ${project}  ${user}
-    Go Into Project2
+    Go Into Project
     Sleep  2  
     Click Element  xpath=${project_member_tag_xpath}
     Sleep  1
@@ -79,45 +64,54 @@ Change Project Member Role
     Sleep  2    
     Click Element  xpath=${project_member_tag_xpath}
     Sleep  1	
-    Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,'${user}')]//clr-dg-action-overflow
-    Sleep  1	
-    Click Element  xpath=//project-detail//clr-dg-action-overflow//button[contains(.,"${role}")]
+    Click Element  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//label
+    Sleep  1
+    #change role
+    Click Element  //button[@class='btn dropdown-toggle']
+    Click Element  //button[contains(.,'${role}')]
+    #Click Element  xpath=//project-detail//clr-dg-action-overflow//button[contains(.,"${role}")]
     Sleep  2
     Wait Until Page Contains  ${role}
 
 User Can Change Role
      [arguments]  ${username}
-     Page Should Contain Element  xpath=//project-detail//clr-dg-row-master[contains(.,'${username}')]//clr-dg-action-overflow
+     Click Element  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
+     Click Element  xpath=//button[@class='btn dropdown-toggle']
+     Page Should Not Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 User Can Not Change Role
      [arguments]  ${username}
-     Page Should Contain Element  xpath=//project-detail//clr-dg-row-master[contains(.,'${username}')]//clr-dg-action-overflow[@hidden=""]
+     Click Element  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
+     Click Element  xpath=//button[@class='btn dropdown-toggle']
+     Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
+#this keyworkd seems will not use any more, will delete in the future
 Non-admin View Member Account
     [arguments]  ${times}
-    Xpath Should Match X Times  //project-detail//clr-dg-action-overflow[@hidden=""]  ${times}
+    Xpath Should Match X Times  //clr-dg-row-master  ${times}
 
 User Can Not Add Member
-    Page Should Not Contain Element  xpath=${project_member_search_button_xpath2}
+    Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'New')]
 
 Add Guest Member To Project
     [arguments]  ${member}
-    Click Element  xpath=${project_member_search_button_xpath2}
+    Click Element  xpath=${project_member_add_button_xpath}
     Sleep  1
     Input Text  xpath=${project_member_add_username_xpath}  ${member}
     #select guest
     Mouse Down  xpath=${project_member_guest_radio_checkbox}
     Mouse Up  xpath=${project_member_guest_radio_checkbox}
-    Click Button  xpath=${project_member_add_button_xpath2}
+    Click Button  xpath=${project_member_add_confirmation_ok_xpath}
     Sleep  1
 
 Delete Project Member
     [arguments]  ${member}
-    Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,'${member}')]//clr-dg-action-overflow
+    Click Element  xpath=//clr-dg-row[contains(.,'${member}')]//input/../label
     Click Element  xpath=${project_member_delete_button_xpath}
     Sleep  1
     Click Element  xpath=${project_member_delete_confirmation_xpath}
     Sleep  1
+    Click Element  xpath=//button[contains(.,'CLOSE')]
 
 User Should Be Owner Of Project
     [Arguments]  ${user}  ${pwd}  ${project}
@@ -158,8 +152,8 @@ User Should Be Guest
     Project Should Display  ${project}
     Go Into Project  ${project}
     Switch To Member
-    Non-admin View Member Account  2
     User Can Not Add Member
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Guest')]
     Logout Harbor
     Pull image  ${ip}  ${user}  ${pwd}  ${project}  hello-world
     Cannot Push image  ${ip}  ${user}  ${pwd}  ${project}  hello-world
@@ -170,8 +164,8 @@ User Should Be Developer
     Project Should Display  ${project}
     Go Into Project  ${project}
     Switch To Member
-    Non-admin View Member Account  2
     User Can Not Add Member
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Developer')]
     Logout Harbor
     Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  ${ip}/${project}/hello-world:v1
 
@@ -183,5 +177,6 @@ User Should Be Admin
     Switch To Member
     Add Guest Member To Project  ${guest}
     User Can Change Role  ${guest}
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Admin')]
     Logout Harbor
     Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  ${ip}/${project}/hello-world:v2

@@ -51,6 +51,7 @@ import { MemberGuard } from './shared/route/member-guard-activate.service';
 
 import { TagDetailPageComponent } from './repository/tag-detail/tag-detail-page.component';
 import { ReplicationRuleComponent} from "./replication/replication-rule/replication-rule.component";
+import {LeavingNewRuleRouteDeactivate} from "./shared/route/leaving-new-rule-deactivate.service";
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -90,14 +91,14 @@ const harborRoutes: Routes = [
             component: ReplicationRuleComponent,
             canActivate: [SystemAdminGuard],
             canActivateChild: [SystemAdminGuard],
-
+            canDeactivate: [LeavingNewRuleRouteDeactivate]
         },
       {
         path: 'replications/new-rule',
         component: ReplicationRuleComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard],
-
+        canDeactivate: [LeavingNewRuleRouteDeactivate]
       },
       {
         path: 'tags/:id/:repo',

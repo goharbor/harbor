@@ -35,6 +35,10 @@
         "COPY": "COPY",
         "EDIT": "EDIT"
     },
+    "BATCH": {
+        "DELETED_SUCCESS": "Deleted successfully",
+        "DELETED_FAILURE": "Deleted failed"
+    },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com.",
         "USER_NAME": "Cannot contain special characters and maximum length should be 20 characters.",
@@ -104,7 +108,7 @@
         "LOGS": "Logs"
     },
     "USER": {
-        "ADD_ACTION": "USER",
+        "ADD_ACTION": "New User",
         "ENABLE_ADMIN_ACTION": "Set as Administrator",
         "DISABLE_ADMIN_ACTION": "Revoke Administrator",
         "DEL_ACTION": "Delete",
@@ -119,7 +123,7 @@
         "SAVE_SUCCESS": "New user created successfully.",
         "DELETION_TITLE": "Confirm user deletion",
         "DELETION_SUMMARY": "Do you want to delete user {{param}}?",
-        "DELETE_SUCCESS": "User deleted successfully.",
+        "DELETE_SUCCESS": "Users deleted successfully.",
         "ITEMS": "items",
         "OF": "of"
     },
@@ -153,7 +157,7 @@
         "FILTER_PLACEHOLDER": "Filter Projects",
         "REPLICATION_RULE": "Replication Rule",
         "CREATED_SUCCESS": "Created project successfully.",
-        "DELETED_SUCCESS": "Deleted project successfully.",
+        "DELETED_SUCCESS": "Deleted projects successfully.",
         "TOGGLED_SUCCESS": "Toggled project successfully.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules cannot be deleted.",
         "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project.",
@@ -201,8 +205,8 @@
         "DELETION_TITLE": "Confirm project member deletion",
         "DELETION_SUMMARY": "Do you want to delete project member {{param}}?",
         "ADDED_SUCCESS": "Added member successfully.",
-        "DELETED_SUCCESS": "Deleted member successfully.",
-        "SWITCHED_SUCCESS": "Switched member role successfully.",
+        "DELETED_SUCCESS": "Deleted members successfully.",
+        "SWITCHED_SUCCESS": "Switched members role successfully.",
         "OF": "of"
     },
     "AUDIT_LOG": {
@@ -289,8 +293,8 @@
         "CONFIRM_TOGGLE_DISABLE_POLICY": "After disabling the rule, all unfinished replication jobs of this rule will be stopped and canceled. \nPlease confirm to continue.",
         "CREATED_SUCCESS": "Created replication rule successfully.",
         "UPDATED_SUCCESS": "Updated replication rule successfully.",
-        "DELETED_SUCCESS": "Deleted replication rule successfully.",
-        "DELETED_FAILED": "Deleted replication rule failed.",
+        "DELETED_SUCCESS": "Deleted replications rule successfully.",
+        "DELETED_FAILED": "Deleted replications rule failed.",
         "TOGGLED_SUCCESS": "Toggled replication rule status successfully.",
         "CANNOT_EDIT": "Replication rule cannot be changed while it is enabled.",
         "POLICY_ALREADY_EXISTS": "Replication rule already exists.",
@@ -313,7 +317,7 @@
         "TEST_CONNECTION": "Test Connection",
         "TITLE_EDIT": "Edit Endpoint",
         "TITLE_ADD": "Create Endpoint",
-        "DELETE": "Delete Endpoint",
+        "DELETE": "Delete",
         "TESTING_CONNECTION": "Testing Connection...",
         "TEST_CONNECTION_SUCCESS": "Connection tested successfully.",
         "TEST_CONNECTION_FAILURE": "Failed to ping endpoint.",
@@ -325,8 +329,8 @@
         "ITEMS": "items",
         "CREATED_SUCCESS": "Created endpoint successfully.",
         "UPDATED_SUCCESS": "Updated endpoint successfully.",
-        "DELETED_SUCCESS": "Deleted endpoint successfully.",
-        "DELETED_FAILED": "Deleted endpoint failed.",
+        "DELETED_SUCCESS": "Deleted endpoints successfully.",
+        "DELETED_FAILED": "Deleted endpoints failed.",
         "CANNOT_EDIT": "Endpoint cannot be changed while the replication rule is enabled.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use.",
         "PLACEHOLDER": "We couldn't find any endpoints!"
@@ -363,8 +367,8 @@
         "OF": "of",
         "ITEMS": "items",
         "POP_REPOS": "Popular Repositories",
-        "DELETED_REPO_SUCCESS": "Deleted repository successfully.",
-        "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
+        "DELETED_REPO_SUCCESS": "Deleted repositories successfully.",
+        "DELETED_TAG_SUCCESS": "Deleted tags successfully.",
         "COPY": "Copy",
         "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
         "PLACEHOLDER": "We couldn't find any repositories!",
@@ -412,6 +416,7 @@
         "SELF_REGISTRATION": "Allow Self-Registration",
         "AUTH_MODE_DB": "Database",
         "AUTH_MODE_LDAP": "LDAP",
+        "AUTH_MODE_UAA": "UAA",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
         "SCOPE_SUBTREE": "Subtree",
@@ -443,6 +448,12 @@
             "UID": "LDAP UID",
             "SCOPE": "LDAP Scope",
             "VERIFY_CERT": "LDAP Verify Cert"
+        },
+        "UAA": {
+            "ENDPOINT": "UAA Endpoint",
+            "CLIENT_ID": "UAA Client ID",
+            "CLIENT_SECRET": "UAA Client Secret",
+            "VERIFY_CERT": "UAA Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",

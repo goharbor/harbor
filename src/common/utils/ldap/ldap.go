@@ -353,7 +353,7 @@ func (session *Session) createUserFilter(username string) string {
 	if username == "" {
 		filterTag = "*"
 	} else {
-		filterTag = username
+		filterTag = goldap.EscapeFilter(username)
 	}
 
 	ldapFilter := session.ldapConfig.LdapFilter

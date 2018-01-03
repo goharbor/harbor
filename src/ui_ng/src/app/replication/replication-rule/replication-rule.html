@@ -1,6 +1,6 @@
 <div>
  <a class="cursor" (click)="backReplication()">< {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a>
- <h1 class="sub-header-title">New Replication Rule</h1>
+ <h1 class="sub-header-title">{{headerTitle | translate}}</h1>
 <form [formGroup]="ruleForm" (ngSubmit)="onSubmit()"  novalidate>
  <section class="form-block">
   <div class="form-group">
@@ -17,26 +17,26 @@
    <textarea type="text" id="ruleDescription" style=" width: 355px;" row= 3; formControlName="description"></textarea>
   </div>
   <!--Projects-->
-  <h4>Source</h4>
+  <h4>{{'REPLICATION.SOURCE' | translate}}</h4>
   <div class="form-group">
    <label class="col-md-4 form-group-label-override">{{'PROJECT.PROJECTS' | translate}}<span style="color: red">*</span></label>
    <div formArrayName="projects">
-   <div class="select" *ngFor="let project of projects.controls; let i= index" [formGroupName]="i">
-    <select id="ruleProject" (change)="projectChange($event)" formControlName="project_id">
-     <option *ngFor="let pro of projectList" value="{{pro.project_id}}">{{pro.name}}</option>
-    </select>
+    <div class="projectInput" *ngFor="let project of projects.controls; let i= index" [formGroupName]="i">
+     <input formControlName="name" class="label" readonly  value="name">
+    </div>
    </div>
-   </div>
+   <clr-icon shape="switch" class="is-solid switchIcon" (click)="openProjectModel()"></clr-icon>
   </div>
+
 <!--images/Filter-->
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">Filter</label>
+   <label class="col-md-4 form-group-label-override">{{'REPLICATION.FILTER' | translate}}</label>
    <div formArrayName="filters">
     <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index"  [formGroupName]="i">
      <div>
       <div class="select floatSet">
-       <select formControlName="kind" (change)="filterChange($event)"  id="{{i}}" name="{{filterListData[i].name}}">
-        <option *ngFor="let filter of filterListData[i].options;" value="{{filter}}">{{filter}}</option>
+       <select formControlName="kind" (change)="filterChange($event)"  id="{{i}}" name="{{filterListData[i]?.name}}">
+        <option *ngFor="let filter of filterListData[i]?.options;" value="{{filter}}">{{filter}}</option>
        </select>
       </div>
       <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
@@ -48,12 +48,12 @@
      </div>
     </div>
    </div>
-    <clr-icon shape="plus-circle" class="is-solid" [hidden]="isFilterHide" (click)="addNewFilter()" style="margin-top: 9px;"></clr-icon>
+    <clr-icon shape="plus-circle" class="is-solid" [hidden]="isFilterHide" (click)="addNewFilter()" style="margin-top: 11px;"></clr-icon>
   </div>
   <!--Targets-->
-  <h4>Targets</h4>
+  <h4>{{'REPLICATION.TARGETS' | translate}}</h4>
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">Endpoint <span style="color: red">*</span></label>
+   <label class="col-md-4 form-group-label-override">{{'DESTINATION.ENDPOINT' | translate}} <span style="color: red">*</span></label>
    <div formArrayName="targets">
     <div class="select endpointSelect" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
       <select id="ruleTarget" (change)="targetChange($event)"  formControlName="id">
@@ -64,9 +64,9 @@
    </div>
 
   <!--Trigger-->
-  <h4>Trigger</h4>
+  <h4>{{'REPLICATION.TRIGGER' | translate}}</h4>
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">Replication schedule</label>
+   <label class="col-md-4 form-group-label-override">{{'REPLICATION.SCHEDULE' | translate}}</label>
    <div  formGroupName="trigger">
     <!--on trigger-->
     <div class="select floatSet">
@@ -92,21 +92,20 @@
       <span [hidden]="!isScheduleOpt">at &nbsp;&nbsp;</span>
       <input [hidden]="!isScheduleOpt" type="time" formControlName="offtime"  required value="08:00" />
     </div>
-
-    </div>
+   </div>
+   <div style="width: 100%;" [hidden]="!isImmediate">
+    <clr-checkbox [clrChecked]="false" id="ruleDeletion" formControlName="replicate_deletion">
+     {{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}
+    </clr-checkbox>
+   </div>
   </div>
    <!--Setting-->
-   <h4>Setting</h4>
+   <h4>{{'REPLICATION.SETTING' | translate}}</h4>
    <div class="form-group">
-    <label class="col-md-4 form-group-label-override">Setting</label>
-    <div class="col-lg-7 padLeft0">
-     <clr-checkbox [clrChecked]="true" id="ruleDeletion" formControlName="replicate_deletion">
-      Delete remote images when locally deleted
-     </clr-checkbox>
-    </div>
+    <label class="col-md-4 form-group-label-override">{{'REPLICATION.SETTING' | translate}}</label>
     <div class="col-lg-7 padLeft0">
      <clr-checkbox [clrChecked]="true" id="ruleExit" formControlName="replicate_existing_image_now">
-      exiting images immediately
+      {{'REPLICATION.REPLICATE_IMMEDIATE' | translate}}
      </clr-checkbox>
     </div>
    </div>
@@ -114,9 +113,10 @@
   <div class="offset-md-4">
    <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
    <br>
-   <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="!ruleForm.dirty" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
-   <button type="submit" id="ruleBtnOk" class="btn btn-primary" [disabled]="!ruleForm.valid || isRuleNameExist || !hasFormChange">{{ 'BUTTON.OK' | translate }}</button>
+   <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="!hasFormChange()" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
+   <button type="submit" id="ruleBtnOk" class="btn btn-primary" [disabled]="!ruleForm.valid || isRuleNameExist || !hasFormChange()">{{ 'BUTTON.OK' | translate }}</button>
   </div><!-- [disabled]="!ruleForm.valid"-->
  </section>
 </form>
+ <list-project-model (selectedPro)="selectedProject($event)"></list-project-model>
 </div>

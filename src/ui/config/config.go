@@ -28,6 +28,7 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
+	jobservice_client "github.com/vmware/harbor/src/jobservice/client"
 	"github.com/vmware/harbor/src/ui/promgr"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
@@ -54,6 +55,8 @@ var (
 	AdmiralClient *http.Client
 	// TokenReader is used in integration mode to read token
 	TokenReader admiral.TokenReader
+	// GlobalJobserviceClient is a global client for jobservice
+	GlobalJobserviceClient jobservice_client.Client
 )
 
 // Init configurations
@@ -91,6 +94,11 @@ func InitByURL(adminServerURL string) error {
 
 	// init project manager based on deploy mode
 	initProjectManager()
+
+	GlobalJobserviceClient = jobservice_client.NewDefaultClient(InternalJobServiceURL(),
+		&jobservice_client.Config{
+			Secret: UISecret(),
+		})
 
 	return nil
 }
@@ -260,6 +268,10 @@ func InternalJobServiceURL() string {
 
 		return "http://jobservice"
 	}
+
+	if cfg[common.JobServiceURL] == nil {
+		return "http://jobservice"
+	}
 	return strings.TrimSuffix(cfg[common.JobServiceURL].(string), "/")
 }
 
@@ -380,15 +392,21 @@ func ClairEndpoint() string {
 	return common.DefaultClairEndpoint
 }
 
-// ClairDBPassword returns the password for accessing Clair's DB.
-func ClairDBPassword() (string, error) {
+// ClairDB return Clair db info
+func ClairDB() (*models.PostGreSQL, error){
 	cfg, err := mg.Get()
 	if err != nil {
-		return "", err
+		log.Errorf("Failed to get configuration of Clair DB, Error detail %v", err)
+		return nil, err
 	}
-	return cfg[common.ClairDBPassword].(string), nil
+	clairDB := &models.PostGreSQL{}
+	clairDB.Host = cfg[common.ClairDBHost].(string)
+	clairDB.Port = int(cfg[common.ClairDBPort].(float64))
+	clairDB.Username = cfg[common.ClairDBUsername].(string)
+	clairDB.Password = cfg[common.ClairDBPassword].(string)
+	clairDB.Database = cfg[common.ClairDB].(string)
+	return clairDB, nil
 }
-
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	cfg, err := mg.Get()
@@ -442,9 +460,7 @@ func UAASettings() (*models.UAASettings, error) {
 		Endpoint:     cfg[common.UAAEndpoint].(string),
 		ClientID:     cfg[common.UAAClientID].(string),
 		ClientSecret: cfg[common.UAAClientSecret].(string),
-	}
-	if len(os.Getenv("UAA_CA_ROOT")) != 0 {
-		us.CARootPath = os.Getenv("UAA_CA_ROOT")
+		VerifyCert:   cfg[common.UAAVerifyCert].(bool),
 	}
 	return us, nil
 }

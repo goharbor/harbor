@@ -241,7 +241,7 @@ func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPol
 func UpdateRepPolicy(policy *models.RepPolicy) error {
 	o := GetOrmer()
 	policy.UpdateTime = time.Now()
-	_, err := o.Update(policy, "TargetID", "Name", "Description",
+	_, err := o.Update(policy, "ProjectID", "TargetID", "Name", "Description",
 		"Trigger", "Filters", "ReplicateDeletion", "UpdateTime")
 	return err
 }

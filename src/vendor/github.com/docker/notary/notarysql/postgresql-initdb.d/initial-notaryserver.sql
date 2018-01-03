@@ -1,0 +1,3 @@
+CREATE DATABASE notaryserver;
+CREATE USER server;
+GRANT ALL PRIVILEGES ON DATABASE notaryserver TO server;
