@@ -102,7 +102,7 @@
         "LOGS": "日志"
     },
     "USER": {
-        "ADD_ACTION": "用户",
+        "ADD_ACTION": "创建用户",
         "ENABLE_ADMIN_ACTION": "设置为管理员",
         "DISABLE_ADMIN_ACTION": "取消管理员",
         "DEL_ACTION": "删除",
@@ -311,7 +311,7 @@
         "TEST_CONNECTION": "测试连接",
         "TITLE_EDIT": "编辑目标",
         "TITLE_ADD": "新建目标",
-        "DELETE": "删除目标",
+        "DELETE": "删除",
         "TESTING_CONNECTION": "正在测试连接...",
         "TEST_CONNECTION_SUCCESS": "测试连接成功。",
         "TEST_CONNECTION_FAILURE": "测试连接失败。",

@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, EventEmitter, Output } from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
 import { ConfirmationMessage } from './confirmation-message';
@@ -20,6 +20,7 @@ import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../
 
 import { CONFIRMATION_DIALOG_TEMPLATE } from './confirmation-dialog.component.html';
 import { CONFIRMATION_DIALOG_STYLE } from './confirmation-dialog.component.css';
+import {BatchInfo} from "./confirmation-batch-message";
 
 @Component({
     selector: 'confirmation-dialog',
@@ -36,6 +37,9 @@ export class ConfirmationDialogComponent {
    
     @Output() confirmAction = new EventEmitter<ConfirmationAcknowledgement>();
     @Output() cancelAction = new EventEmitter<ConfirmationAcknowledgement>();
+    @Input() batchInfors: BatchInfo[]  = [];
+    isDelete: boolean = false;
+
 
     constructor(
         private translate: TranslateService) {}
@@ -51,7 +55,29 @@ export class ConfirmationDialogComponent {
         this.opened = true;
     }
 
+    get batchOverStatus(): boolean {
+        if (this.batchInfors.length) {
+            return this.batchInfors.every(item => item.loading === false);
+        }
+        return false;
+    }
+
+    colorChange(list: BatchInfo) {
+        if (!list.loading && !list.errorState) {
+            return 'green';
+        }else if (!list.loading && list.errorState) {
+            return 'red';
+        }else {
+            return '#666';
+        }
+    }
+
+    toggleErrorTitle(errorSpan: any) {
+        errorSpan.style.display = (errorSpan.style.display === 'none') ? 'block' : 'none';
+    }
+
     close(): void {
+        this.batchInfors = [];
         this.opened = false;
     }
 
@@ -68,6 +94,7 @@ export class ConfirmationDialogComponent {
             data,
             target
         ));
+        this.isDelete = false;
         this.close();
     }
 
@@ -75,6 +102,11 @@ export class ConfirmationDialogComponent {
         if(!this.message){//Inproper condition
             this.close();
             return;
+        }
+
+        if (this.batchInfors.length) {
+            this.batchInfors.every(item => item.loading = true);
+            this.isDelete = true;
         }
 
         let data: any = this.message.data ? this.message.data : {};
@@ -85,6 +117,5 @@ export class ConfirmationDialogComponent {
             target
         );
         this.confirmAction.emit(message);
-        this.close();
     }
 }

@@ -41,17 +41,17 @@ export class MemberService {
                .catch(error=>Observable.throw(error));
   }
 
-  changeMemberRole(projectId: number, userId: number, roleId: number): Observable<any> {
+  changeMemberRole(projectId: number, userId: number, roleId: number): Promise<any> {
     return this.http
-               .put(`/api/projects/${projectId}/members/${userId}`, { roles: [ roleId ]}, HTTP_JSON_OPTIONS)
-               .map(response=>response.status)
-               .catch(error=>Observable.throw(error));
+               .put(`/api/projects/${projectId}/members/${userId}`, { roles: [ roleId ]}, HTTP_JSON_OPTIONS).toPromise()
+               .then(response=>response.status)
+               .catch(error=>Promise.reject(error));
   }
 
-  deleteMember(projectId: number, userId: number): Observable<any> {
+  deleteMember(projectId: number, userId: number): Promise<any> {
     return this.http
-               .delete(`/api/projects/${projectId}/members/${userId}`)
-               .map(response=>response.status)
-               .catch(error=>Observable.throw(error));
+               .delete(`/api/projects/${projectId}/members/${userId}`).toPromise()
+               .then(response=>response.status)
+               .catch(error=>Promise.reject(error));
   }
 }

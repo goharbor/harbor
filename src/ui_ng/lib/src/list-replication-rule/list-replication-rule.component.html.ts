@@ -1,6 +1,13 @@
 export const LIST_REPLICATION_RULE_TEMPLATE: string = `
-<div>
-<clr-datagrid [clrDgLoading]="loading">
+<div style="margin-top: -24px;">
+<clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectedChange()">
+    <clr-dg-action-bar>
+        <div class="btn-group">
+            <button type="button" *ngIf="creationAvailable"  class="btn btn-sm btn-secondary" (click)="openModal()">{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
+            <button type="button" *ngIf="!creationAvailable"  class="btn btn-sm btn-secondary" [disabled]="!selectedRow" (click)="editRule(selectedRow)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
+            <button type="button"  *ngIf="!creationAvailable" class="btn btn-sm btn-secondary" [disabled]="!selectedRow" (click)="deleteRule(selectedRow)">{{'REPLICATION.DELETE_POLICY' | translate}}</button>
+        </div>
+    </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'project_name'" *ngIf="!projectScope">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
@@ -9,11 +16,7 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
     <clr-dg-column [clrDgSortBy]="enabledComparator">{{'REPLICATION.ACTIVATION' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p" (click)="selectRule(p)" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
-        <clr-dg-action-overflow *ngIf="!readonly">
-            <button class="action-item" (click)="editRule(p)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
-            <button class="action-item" (click)="toggleRule(p)">{{ (p.enabled === 0 ? 'REPLICATION.ENABLE' : 'REPLICATION.DISABLE') | translate}}</button>
-            <button class="action-item" (click)="deleteRule(p)">{{'REPLICATION.DELETE_POLICY' | translate}}</button>
-        </clr-dg-action-overflow>
+       
         <clr-dg-cell>
           <ng-template [ngIf]="!projectScope">
             <a href="javascript:void(0)" (click)="redirectTo(p)">{{p.name}}</a>
@@ -38,7 +41,7 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
       <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
     </clr-dg-footer>
 </clr-datagrid>
-<confirmation-dialog #toggleConfirmDialog (confirmAction)="toggleConfirm($event)"></confirmation-dialog>
-<confirmation-dialog #deletionConfirmDialog (confirmAction)="deletionConfirm($event)"></confirmation-dialog>
+<confirmation-dialog #toggleConfirmDialog  [batchInfors]="batchDelectionInfos"  (confirmAction)="toggleConfirm($event)"></confirmation-dialog>
+<confirmation-dialog #deletionConfirmDialog [batchInfors]="batchDelectionInfos" (confirmAction)="deletionConfirm($event)"></confirmation-dialog>
 </div>
 `;
