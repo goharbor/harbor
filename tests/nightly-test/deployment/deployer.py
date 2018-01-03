@@ -51,7 +51,7 @@ class OVADeployer(Deployer):
         print self.ova_names
     
     def __set_ovf_tool(self):
-        if not self.ovf_tooself.ova_namesl_path:
+        if not self.ova_endpoints:
             self.ovf_tool_path = self.DEFAULT_LOCAL_OVF_TOOL_PATH
         if not os.path.isfile(self.ovf_tool_path):
             LOG.error("ovftool not found.")
