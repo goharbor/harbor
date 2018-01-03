@@ -10,10 +10,10 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/utils')
 sys.path.append(dir_path + '/deployment')
 import harbor_util
+import nlogging
+logger = nlogging.create_logger()
 import test_executor
 from deployer import *
-import logging
-logger = create_logger()
 
 if len(sys.argv)!=7 :
     print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
@@ -58,20 +58,19 @@ if build_type == "ova" :
 
 elif build_type == "installer" :
     logger.info("Going to download installer image to install")
-    print "Going to download installer image to install"
 elif build_type == "all" :
-    print "launch ova and installer"
+    logger.info("launch ova and installer")
 
 # ----- wait for harbor ready -----
 for item in harbor_endpoints:
     is_harbor_ready = harbor_util.wait_for_harbor_ready("https://"+item)
     if not is_harbor_ready:
-        print "Harbor is not ready after 10 minutes."
+        logger.info("Harbor is not ready after 10 minutes.")
         sys.exit(-1)
-    print "%s is ready for test now..." % item
+    logger.info("%s is ready for test now..." % item)
 
 # ----- execute test cases -----
 execute_results = test_executor.execute(harbor_endpoints, ova_password, test_suite)
 if not execute_results:
-    print "execute test failure."
+    logger.info("execute test failure.")
     sys.exit(-1)

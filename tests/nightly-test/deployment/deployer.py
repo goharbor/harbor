@@ -8,6 +8,8 @@ from datetime import datetime
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '../utils')
 import govc_utils
+import nlogging
+logger = nlogging.create_logger()
 
 class Deployer(object):
     __metaclass__ = abc.ABCMeta
@@ -48,13 +50,13 @@ class OVADeployer(Deployer):
             ova_name_temp = self.ova_name +"-"+ datetime.now().isoformat().replace(":", "-").replace(".", "-")
             time.sleep(1)
             self.ova_names.append(ova_name_temp)
-        print self.ova_names
+        logger.info(self.ova_names)
     
     def __set_ovf_tool(self):
         if not self.ova_endpoints:
             self.ovf_tool_path = self.DEFAULT_LOCAL_OVF_TOOL_PATH
         if not os.path.isfile(self.ovf_tool_path):
-            LOG.error("ovftool not found.")
+            logger.error("ovftool not found.")
         return        
    
     def deploy(self):
@@ -74,15 +76,12 @@ class OVADeployer(Deployer):
                 )
             )
 
-            print cmd
-            print 'Start to deploy harbor OVA.'
-            print self.dry_run
-
+            logger.info(cmd)
             if self.dry_run == "true" :
-                print "Dry run ..."
+                logger.info("Dry run ...")
             else:
                 subprocess.check_output(cmd, shell=True)
-            print 'Successfully deployed harbor OVA.'
+            logger.info("Successfully deployed harbor OVA.")
 
             ova_endpoint = ''
             ova_endpoint = govc_utils.getvmip(self.vc_host, self.vc_user, self.vc_password, self.ova_names[i])

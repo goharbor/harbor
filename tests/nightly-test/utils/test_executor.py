@@ -7,6 +7,9 @@ import sys
 from subprocess import call
 import json
 
+import nlogging
+logger = nlogging.create_logger()
+
 # Needs have docker installed.
 def execute(harbor_endpoints, harbor_root_pwd, test_suite, harbor_pwd='Harbor12345') :
     cmd = ''
@@ -25,12 +28,9 @@ def execute(harbor_endpoints, harbor_root_pwd, test_suite, harbor_pwd='Harbor123
     if test_suite == 'Longevity':
         cmd = cmd + "/drone/tests/robot-cases/Group10-Longevity/Longevity.robot"
     
-    print cmd
-    docker_run_shell = "/tmp/docker_run.sh"
-    with open(docker_run_shell, 'w+') as outfile:
-        outfile.write(cmd)
-    os.chmod(docker_run_shell, 0o777)
-    print os.system('/bin/bash %s' % docker_run_shell)
+    logger.info(cmd)
+    result = os.system(cmd)
+
     collect_log()
     return results_flag()
 
