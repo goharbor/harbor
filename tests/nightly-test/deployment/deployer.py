@@ -9,12 +9,12 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '../utils')
 import govc_utils
 import nlogging
-logger = nlogging.create_logger()
+logger = nlogging.create_logger(__name__)
 
 class Deployer(object):
     __metaclass__ = abc.ABCMeta
 
-    @abc.abstractmethod
+    @abc.abstractmethod__name__
     def deploy(self):
         return
     

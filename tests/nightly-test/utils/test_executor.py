@@ -8,7 +8,7 @@ from subprocess import call
 import json
 
 import nlogging
-logger = nlogging.create_logger()
+logger = nlogging.create_logger(__name__)
 
 # Needs have docker installed.
 def execute(harbor_endpoints, harbor_root_pwd, test_suite, harbor_pwd='Harbor12345') :

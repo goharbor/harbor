@@ -11,7 +11,7 @@ sys.path.append(dir_path + '/utils')
 sys.path.append(dir_path + '/deployment')
 import harbor_util
 import nlogging
-logger = nlogging.create_logger()
+logger = nlogging.create_logger(__name__)
 import test_executor
 from deployer import *
 
