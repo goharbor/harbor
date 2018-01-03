@@ -26,8 +26,25 @@ export const REPOSITORY_STYLE = `.option-right {
   font-size: 32px;
 }
 
-pre {
-  white-space: pre-wrap;
+.no-info-div {
+  background: white;
+  border: 1px;
+  border-style: solid;
+  border-color: #CCCCCC;
+  padding: 12px 12px 12px 12px;
+}
+
+.info-div {
+  background: white;
+  border: 1px;
+  border-style: solid;
+  border-color: #CCCCCC;
+  padding: 0px 12px 24px 12px;
+}
+
+.info-pre {
+  border: 0px;
+  max-height: fit-content;
 }
 
 #info-edit-button {
