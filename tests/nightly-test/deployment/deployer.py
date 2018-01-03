@@ -1,6 +1,6 @@
 import abc
 
-class Deployer(abc.ABC):
+class Deployer(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
