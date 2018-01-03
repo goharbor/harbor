@@ -13,7 +13,6 @@ import harbor_util
 import test_executor
 import deployer
 
-print len(sys.argv)
 if len(sys.argv)!=7 :
     print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
     print "Wrong parameters, quit test"
@@ -23,8 +22,8 @@ build_type = sys.argv[1]
 image_url = sys.argv[2]
 test_suite = sys.argv[3]
 config_file = sys.argv[4]
-deploy_count = sys.argv[5]
-dry_run = int(sys.argv[6])
+deploy_count = int(sys.argv[5])
+dry_run = sys.argv[6]
 config_file = "/harbor/workspace/harbor_nightly_test_yan/harbor_nightly_test/testenv.ini"
 #  config_file = "/Users/daojunz/Documents/harbor_nightly_test/testenv.ini"
 config = ConfigParser.ConfigParser()
