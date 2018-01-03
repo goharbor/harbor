@@ -41,6 +41,12 @@ if build_type == "ova" :
     ova_password = config.get("vcenter", "ova_password")
     ova_name = config.get("vcenter", "ova_name")
 
+    if image_url == "latest" :
+        buildweb = buildweb_utils.BuildWebUtil()
+        build_id=buildweb.get_latest_recommend_build('harbor_build', 'master')
+        image_url = buildweb.get_deliverable_by_build_id(build_id, '.*.ovf')
+    print "Get latest image url:" + image_url
+
     logger.info("Going to deploy harbor ova..")
     ova_deployer = OVADeployer(vc_host, 
                 vc_user,
