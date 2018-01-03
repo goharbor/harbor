@@ -79,7 +79,7 @@ class OVADeployer(Deployer):
             print 'Successfully deployed harbor OVA.'
 
             ova_endpoint = ''
-            ova_endpoint = govc_utils.getvmip(self.vc_host, self.vc_user, self.vc_password, self.ova_names[i]])
+            ova_endpoint = govc_utils.getvmip(self.vc_host, self.vc_user, self.vc_password, self.ova_names[i])
             if ova_endpoint is not '':
                 self.ova_endpoints.append(ova_endpoint) 
 
