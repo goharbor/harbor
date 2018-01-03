@@ -12,6 +12,8 @@ sys.path.append(dir_path + '/deployment')
 import harbor_util
 import test_executor
 from deployer import *
+from logging import create_logger
+logger = create_logger()
 
 if len(sys.argv)!=7 :
     print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
@@ -25,7 +27,6 @@ config_file = sys.argv[4]
 deploy_count = int(sys.argv[5])
 dry_run = sys.argv[6]
 config_file = "/harbor/workspace/harbor_nightly_test_yan/harbor_nightly_test/testenv.ini"
-#  config_file = "/Users/daojunz/Documents/harbor_nightly_test/testenv.ini"
 config = ConfigParser.ConfigParser()
 config.read(config_file)
 harbor_endpoints = []
@@ -41,6 +42,7 @@ if build_type == "ova" :
     ova_name = config.get("vcenter", "ova_name")
     ova_name = ova_name +"-"+ datetime.now().isoformat().replace(":", "-").replace(".", "-")
 
+    logger.info("Going to deploy harbor ova..")
     ova_deployer = OVADeployer(vc_host, 
                 vc_user,
                 vc_password, 
@@ -55,6 +57,7 @@ if build_type == "ova" :
     harbor_endpoints = ova_deployer.deploy()
 
 elif build_type == "installer" :
+    logger.info("Going to download installer image to install")
     print "Going to download installer image to install"
 elif build_type == "all" :
     print "launch ova and installer"
