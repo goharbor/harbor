@@ -29,7 +29,7 @@ Create An New Project
     Input Text  xpath=${project_name_xpath}  ${projectname}
     Sleep  3
     Run Keyword If  '${public}' == 'true'  Click Element  xpath=${project_public_xpath}
-    Click Element  css=${project_save_css}
+    Click Element  xpath=//button[contains(.,'OK')]
     Sleep  4
     Wait Until Page Contains  ${projectname}
     Wait Until Page Contains  Project Admin
@@ -79,33 +79,50 @@ Search Private Projects
 
 Make Project Private
     [Arguments]  ${projectname}
+    Go Into Project  ${project name}    
     Sleep  1
-    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
+    Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
+    #Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+    #Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
+    Checkbox Should Be Selected  xpath=//input[@name='public']
+    Click Element  //clr-checkbox[@name='public']//label
+    Click Element  //button[contains(.,'SAVE')]
 
 Make Project Public
     [Arguments]  ${projectname}
+    Go Into Project  ${project name}    
     Sleep  1
-    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
+    Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
+    #Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
+    #Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
+    Checkbox Should Not Be Selected  xpath=//input[@name='public']
+    Click Element  //clr-checkbox[@name='public']//label
+    Click Element  //button[contains(.,'SAVE')]
 
 Delete Repo
     [Arguments]  ${projectname}
-    Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"${projectname}")]//clr-dg-action-overflow
+    #Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"${projectname}")]//clr-dg-action-overflow
+    Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox//label
     Sleep  1
-    Click Element  xpath=//clr-dg-action-overflow//button[contains(.,"Delete")]
+    Click Element  xpath=//button[contains(.,"Delete")]
     Sleep  1
-    Click Element  xpath=//clr-modal//div[@class="modal-dialog"]//button[2]
-    Sleep  2
+    Click Element  xpath=//clr-modal//button[2]
+    Sleep  1
+    Click Element  xpath=//button[contains(.,"CLOSE")]
 
 Delete Project
-    [Arguments]  ${projname}
+    [Arguments]  ${projectname}
     Sleep  1
-    Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow
-    Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow//button[contains(.,'Delete')]
+    #Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow
+    #Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow//button[contains(.,'Delete')]
     #click delete button to confirm
+    Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox//label
     Sleep  1
-    Click Element  //confiramtion-dialog//button[contains(.,'DELETE')]
+    Click Element  xpath=//button[contains(.,"Delete")]
+    Sleep  1
+    Click Element  xpath=//clr-modal//button[2]
+    Sleep  1
+    Click Element  xpath=//button[contains(.,"CLOSE")]
 
 Project Should Not Be Deleted
     [Arguments]  ${projname}
@@ -177,19 +194,22 @@ Go Into Repo
     Input Text  xpath=//*[@id="search_input"]  ${repoName}
     Sleep  8
     Wait Until Page Contains  ${repoName}
-    Click Element  xpath=//*[@id="results"]/list-repository-ro/clr-datagrid/div/div/div/div/div[2]/clr-dg-row/clr-dg-row-master/clr-dg-cell[1]/a
+    Click Element  xpath=//*[@id="results"]/list-repository-ro//clr-dg-cell[contains(.,${repoName})]/a
     Sleep  2
     Capture Page Screenshot  gointo_${repoName}.png
 
 Expand Repo
     [Arguments]  ${projectname}
-    Click Element  //repository//clr-dg-row-master[contains(.,'${projectname}')]//button/clr-icon
-    sleep  1
+    Click Element  //repository//clr-dg-row[contains(.,'${projectname}')]//button/clr-icon
+    Sleep  1
 
 Scan Repo
     [Arguments]  ${tagname}
-    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow
-    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+    #Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow
+    #Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
+    #select one tag
+    Click Element  //clr-dg-row[contains(.,"${tagname}")]//label
+    Click Element  //button[contains(.,'Scan')]
     Sleep  15
 
 Edit Repo Info
@@ -214,4 +234,4 @@ Edit Repo Info
 
 Summary Chart Should Display
     [Arguments]  ${tagname}
-    Page Should Contain Element  //clr-dg-row-master[contains(.,'${tagname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
+    Page Should Contain Element  //clr-dg-row[contains(.,'${tagname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart

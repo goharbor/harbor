@@ -29,6 +29,7 @@ dn: cn=harbor_users,ou=groups,dc=example,dc=com
 cn: harbor_users
 description: All users
 member: cn=mike,ou=people,dc=example,dc=com
+member: cn=mike02,ou=people,dc=example,dc=com
 objectclass: groupOfNames
 objectclass: top
 
@@ -49,5 +50,25 @@ objectclass: person
 sn: Joe
 uid: mike
 uidnumber: 5000
+userpassword: {MD5}wb68DeX0CyENafzUADNn9A==
+memberof: cn=harbor_users,ou=groups,dc=example,dc=com
+
+# User entry to add project member testcase
+dn: cn=mike02,ou=people,dc=example,dc=com
+cn: mike02
+gidnumber: 10000
+givenname: mike02
+homedirectory: /home/mike02
+loginshell: /bin/bash
+mail: mike02@example.com
+objectclass: top
+objectclass: posixAccount
+objectclass: shadowAccount
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+objectclass: person
+sn: Mike02
+uid: mike02
+uidnumber: 5001
 userpassword: {MD5}wb68DeX0CyENafzUADNn9A==
 memberof: cn=harbor_users,ou=groups,dc=example,dc=com

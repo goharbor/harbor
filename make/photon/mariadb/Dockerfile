@@ -2,7 +2,7 @@ FROM vmware/photon:1.0
 
 #The Docker Daemon has to be running with storage backend btrfs when building the image
 
-RUN tdnf distro-sync -y || echo \
+RUN tdnf distro-sync -y \
     && tdnf install -y sed shadow procps-ng gawk gzip sudo net-tools \
     && groupadd -r -g 10000 mysql && useradd --no-log-init -r -g 10000 -u 10000 mysql \
     && tdnf install -y mariadb-server mariadb \

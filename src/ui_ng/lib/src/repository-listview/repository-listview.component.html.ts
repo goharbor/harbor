@@ -11,15 +11,17 @@ export const REPOSITORY_LISTVIEW_TEMPLATE = `
       </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
-      <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading">    
+      <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
+        <clr-dg-action-bar>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-secondary" (click)="deleteRepos(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'REPOSITORY.DELETE' | translate}}</button>
+            </div>
+        </clr-dg-action-bar>
         <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="tagsCountComparator">{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="pullCountComparator">{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'REPOSITORY.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-        <clr-dg-row *ngFor="let r of repositories">
-          <clr-dg-action-overflow [hidden]="!hasProjectAdminRole">
-            <button class="action-item" (click)="deleteRepo(r.name)">{{'REPOSITORY.DELETE' | translate}}</button>
-          </clr-dg-action-overflow>
+        <clr-dg-row *clrDgItems="let r of repositories"  [clrDgItem]="r">
           <clr-dg-cell><a href="javascript:void(0)" (click)="gotoLink(projectId || r.project_id, r.name || r.repository_name)">{{r.name}}</a></clr-dg-cell>
           <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
           <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
@@ -36,6 +38,6 @@ export const REPOSITORY_LISTVIEW_TEMPLATE = `
       </clr-datagrid>
     </div>
   </div>
-  <confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>  
+  <confirmation-dialog #confirmationDialog [batchInfors]="batchDelectionInfos" (confirmAction)="confirmDeletion($event)"></confirmation-dialog>  
 </div>
 `;

@@ -210,7 +210,7 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		vmware/nginx-photon:$(NGINXVERSION)-$(VERSIONTAG) vmware/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG) \
+		vmware/nginx-photon:$(NGINXVERSION) vmware/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG) \
 		vmware/photon:$(PHOTONVERSION)
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
@@ -227,13 +227,13 @@ DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
 	DOCKERSAVE_PARA+= vmware/notary-server-photon:$(NOTARYVERSION)-$(VERSIONTAG) vmware/notary-signer-photon:$(NOTARYVERSION)-$(VERSIONTAG) \
-				vmware/mariadb-photon:$(MARIADBVERSION)-$(VERSIONTAG)
+				vmware/mariadb-photon:$(MARIADBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 endif
 ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= vmware/clair-photon:$(CLAIRVERSION)-$(VERSIONTAG) vmware/postgresql-photon:$(CLAIRDBVERSION)-$(VERSIONTAG)
+	DOCKERSAVE_PARA+= vmware/clair-photon:$(CLAIRVERSION)-$(VERSIONTAG) vmware/postgresql-photon:$(CLAIRDBVERSION)
 	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
@@ -336,10 +336,10 @@ package_online: modify_composefile
 package_offline: compile version build modify_sourcefiles modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
-
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp NOTICE $(HARBORPKG)/NOTICE
-	@cp $(HARBORPKG)/common/db/registry.sql $(HARBORPKG)/ha/
+	@cp $(HARBORPKG)/photon/db/registry.sql $(HARBORPKG)/ha/
+	
 	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
 		echo "pulling DB migrator..."; \
 		$(DOCKERPULL) vmware/harbor-db-migrator:$(MIGRATORVERSION); \

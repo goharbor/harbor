@@ -31,7 +31,7 @@ type HandlerChannel struct {
 	//To indicate how many handler instances bound with this chan.
 	boundCount uint32
 
-	//The chan for controling concurrent executions.
+	//The chan for controlling concurrent executions.
 	channel chan bool
 }
 
@@ -199,7 +199,7 @@ func (nw *NotificationWatcher) Notify(notification Notification) error {
 				}()
 				if err := hd.Handle(notification.Value); err != nil {
 					//Currently, we just log the error
-					log.Errorf("Error occurred when triggerring handler %s of topic %s: %s\n", reflect.TypeOf(hd).String(), notification.Topic, err.Error())
+					log.Errorf("Error occurred when triggering handler %s of topic %s: %s\n", reflect.TypeOf(hd).String(), notification.Topic, err.Error())
 				} else {
 					log.Infof("Handle notification with topic '%s': %#v\n", notification.Topic, notification.Value)
 				}

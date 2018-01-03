@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/vmware/harbor/src/common"
 )
 
 // test functions under package ui/config
@@ -117,6 +118,18 @@ func TestConfig(t *testing.T) {
 	if _, err := Database(); err != nil {
 		t.Fatalf("failed to get database: %v", err)
 	}
+
+	clairDB, err := ClairDB();
+	if err != nil {
+		t.Fatalf("failed to get clair DB %v", err)
+	}
+	adminServerDefaultConfig := test.GetDefaultConfigMap()
+	assert.Equal(adminServerDefaultConfig[common.ClairDB],clairDB.Database)
+	assert.Equal(adminServerDefaultConfig[common.ClairDBUsername],clairDB.Username)
+	assert.Equal(adminServerDefaultConfig[common.ClairDBPassword],clairDB.Password)
+	assert.Equal(adminServerDefaultConfig[common.ClairDBHost], clairDB.Host)
+	assert.Equal(adminServerDefaultConfig[common.ClairDBPort], clairDB.Port)
+	
 	if InternalNotaryEndpoint() != "http://notary-server:4443" {
 		t.Errorf("Unexpected notary endpoint: %s", InternalNotaryEndpoint())
 	}
@@ -163,7 +176,7 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get UAA setting, error: %v", err)
 	}
 
-	if us.ClientID != "testid" || us.ClientSecret != "testsecret" || us.Endpoint != "10.192.168.5" {
+	if us.ClientID != "testid" || us.ClientSecret != "testsecret" || us.Endpoint != "10.192.168.5" || us.VerifyCert {
 		t.Errorf("Unexpected UAA setting: %+v", *us)
 	}
 	assert.Equal("http://myjob:8888", InternalJobServiceURL())
