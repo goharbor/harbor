@@ -11,12 +11,10 @@ def wait_for_harbor_ready(harbor_endpoint, timeout=600):
     while True:
         try:
             if timeout <= 0:
-                print "ping harbor with url:%s error after timeout:%s" % (harbor_endpoint, timeout)
-                return -1
+                return False
             code = urlopen(harbor_endpoint, context=ctx).code
             if code == 200:
-                print "Harbor is online now!"
-                return 0
+                return True
         except Exception, e:
             timeout -= interval
             time.sleep(interval)
