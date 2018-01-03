@@ -15,7 +15,7 @@ class Deployer(object):
     
 class OVADeployer(Deployer):
 
-    def __init__(self, vc_host, vc_user, vc_password, ds, cluster, ova_path, ova_name, ova_root_password, dry_run, count):
+    def __init__(self, vc_host, vc_user, vc_password, ds, cluster, ova_path, ova_name, ova_root_password, count, dry_run):
         self.vc_host = vc_host 
         self.vc_user = vc_user 
         self.vc_password = vc_password 
