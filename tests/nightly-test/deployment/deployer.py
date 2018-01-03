@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 import time
+import subprocess
 from datetime import datetime
 
 class Deployer(object):
