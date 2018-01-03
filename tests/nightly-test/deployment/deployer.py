@@ -27,8 +27,8 @@ class OVADeployer(Deployer):
         self.dry_run = dry_run
         self.count = count 
         
-        self.auth_mode="db_auth", 
-        self.harbor_password="Harbor12345", 
+        self.auth_mode='db_auth'
+        self.harbor_password='Harbor12345'
         self.log_path=None 
         self.ip=None
         self.netmask=None
