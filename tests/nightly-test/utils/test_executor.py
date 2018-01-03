@@ -40,4 +40,4 @@ def collect_log():
 
 # True means test pass
 def results_flag():
-    return true
+    return True

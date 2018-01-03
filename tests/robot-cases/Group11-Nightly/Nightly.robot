@@ -16,6 +16,7 @@
 Documentation  Harbor BATs
 Resource  ../../resources/Util.robot
 Suite Setup  Nightly Test Setup  ${ip}  ${SSH_PWD}  ${HARBOR_PASSWORD}
+Suite Teardown  Collect Nightly Logs
 Default Tags  Nightly
 
 *** Variables ***
@@ -142,7 +143,7 @@ Test Case - Manage project publicity
 Test Case - Project Level Policy Public
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}
     Go Into Project  project${d}
     Goto Project Config
@@ -160,7 +161,7 @@ Test Case - Project Level Policy Content Trust
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}
-    Push Image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  hello-world:latest
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
     Go Into Project  project${d}
     Goto Project Config
     Click Content Trust
