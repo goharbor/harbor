@@ -11,7 +11,7 @@ sys.path.append(dir_path + '/utils')
 sys.path.append(dir_path + '/deployment')
 import harbor_util
 import test_executor
-import deployer
+from deployer import *
 
 if len(sys.argv)!=7 :
     print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
