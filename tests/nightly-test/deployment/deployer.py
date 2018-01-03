@@ -16,16 +16,16 @@ class Deployer(object):
 class OVADeployer(Deployer):
 
     def __init__(self, vc_host, vc_user, vc_password, ds, cluster, ova_path, ova_name, ova_root_password, dry_run, count):
-        self.vc_host = '' 
-        self.vc_user = '' 
-        self.vc_password = '' 
-        self.ds = '' 
-        self.cluster = ''  
-        self.ova_path = '' 
-        self.ova_name = '' 
-        self.ova_root_password = '' 
-        self.dry_run = ''
-        self.count = 1 
+        self.vc_host = vc_host 
+        self.vc_user = vc_user 
+        self.vc_password = vc_password 
+        self.ds = ds 
+        self.cluster = cluster  
+        self.ova_path = ova_path 
+        self.ova_name = ova_name 
+        self.ova_root_password = ova_root_password 
+        self.dry_run = dry_run
+        self.count = count 
         
         self.auth_mode="db_auth", 
         self.harbor_password="Harbor12345", 
