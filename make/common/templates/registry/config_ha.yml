@@ -4,14 +4,14 @@ log:
   fields:
     service: registry
 storage:
-    cache:
-        layerinfo: redis
-    Place_holder_for_Storage_configureation
-    maintenance:
-        uploadpurging:
-            enabled: false
-    delete:
-        enabled: true
+  cache:
+    layerinfo: redis
+  Place_holder_for_Storage_configureation
+  maintenance:
+    uploadpurging:
+      enabled: false
+  delete:
+    enabled: true
 redis:
   addr: $redis_url
   db: 0
@@ -24,10 +24,10 @@ redis:
     idletimeout: 300s
 
 http:
-    addr: :5000
-    secret: placeholder
-    debug:
-        addr: localhost:5001
+  addr: :5000
+  secret: placeholder
+  debug:
+    addr: localhost:5001
 auth:
   token:
     issuer: harbor-token-issuer
@@ -37,9 +37,9 @@ auth:
 
 notifications:
   endpoints:
-      - name: harbor
-        disabled: false
-        url: http://ui:8080/service/notifications
-        timeout: 3000ms
-        threshold: 5
-        backoff: 1s
+  - name: harbor
+    disabled: false
+    url: http://ui:8080/service/notifications
+    timeout: 3000ms
+    threshold: 5
+    backoff: 1s
