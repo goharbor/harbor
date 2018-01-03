@@ -6,17 +6,14 @@ import ConfigParser
 from subprocess import call
 from datetime import datetime
 import time
-
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/utils')
-
-import ova_utils
-import govc_utils
+sys.path.append(dir_path + '/deployment')
 import harbor_util
-import buildweb_utils
 import test_executor
+import deployer
 
-if len(sys.argv)!=6 :
+if len(sys.argv)!=7 :
     print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
     print "Wrong parameters, quit test"
     quit()
@@ -25,39 +22,26 @@ build_type = sys.argv[1]
 image_url = sys.argv[2]
 test_suite = sys.argv[3]
 config_file = sys.argv[4]
-dry_run = sys.argv[5]
+deploy_count = sys.argv[5]
+dry_run = int(sys.argv[6])
 config_file = "/harbor/workspace/harbor_nightly_test_yan/harbor_nightly_test/testenv.ini"
 #  config_file = "/Users/daojunz/Documents/harbor_nightly_test/testenv.ini"
-
-harbor_ova_endpoint = ''
-
 config = ConfigParser.ConfigParser()
 config.read(config_file)
+harbor_endpoints = []
 
+# ----- deploy harbor build -----
 if build_type == "ova" :
-    print "Going to install ova on target machine!"
     vc_host = config.get("vcenter", "vc_host")
-    print "vc_host:", vc_host
     vc_user = config.get("vcenter", "vc_user")
-    print "vc_user:", vc_user
     vc_password = config.get("vcenter", "vc_password")
-    print "vc_password:", vc_password
     datastore = config.get("vcenter", "datastore")
     cluster = config.get("vcenter", "cluster")
     ova_password = config.get("vcenter", "ova_password")
     ova_name = config.get("vcenter", "ova_name")
-    
     ova_name = ova_name +"-"+ datetime.now().isoformat().replace(":", "-").replace(".", "-")
-    print "ova_name:", ova_name
-    print "image url:", image_url
 
-    if image_url == "latest" :
-        buildweb = buildweb_utils.BuildWebUtil()
-        build_id=buildweb.get_latest_recommend_build('harbor_build', 'master')
-        image_url = buildweb.get_deliverable_by_build_id(build_id, '.*.ovf')
-        print "Get latest image url:" + image_url
-
-    ova_utils.deploy_ova(vc_host, 
+    ova_deployer = OVADeployer(vc_host, 
                 vc_user,
                 vc_password, 
                 datastore, 
@@ -65,30 +49,26 @@ if build_type == "ova" :
                 image_url, 
                 ova_name, 
                 ova_password,
+                deploy_count,
                 dry_run)
 
-    harbor_ova_endpoint = govc_utils.getvmip(vc_host, vc_user, vc_password, ova_name)
-    if harbor_ova_endpoint is not '':
-        print "OVA install complete, start to test now, fqdn=" + harbor_ova_endpoint    
-        print "run test now"
-        print "test done"
-        print "Destorying vm after test"
+    harbor_endpoints = ova_deployer.deploy()
 
 elif build_type == "installer" :
     print "Going to download installer image to install"
-    vm_host = config.get("vm", "vm_host")
-    vm_user = config.get("vm", "vm_user")
-    vm_password = config.get("vm", "vm_password")
 elif build_type == "all" :
     print "launch ova and installer"
 
-if harbor_ova_endpoint is not None:
-    result = harbor_util.wait_for_harbor_ready("https://"+harbor_ova_endpoint)
-    if result != 0:
+# ----- wait for harbor ready -----
+for item in harbor_endpoints:
+    is_harbor_ready = harbor_util.wait_for_harbor_ready("https://"+item)
+    if not is_harbor_ready:
         print "Harbor is not ready after 10 minutes."
         sys.exit(-1)
+    print "%s is ready for test now..." % item
 
-print "All test done, then to execute TC"
-
-execute_results = test_executor.execute_test_ova(harbor_ova_endpoint, ova_password, test_suite)
-print execute_results
+# ----- execute test cases -----
+execute_results = test_executor.execute(harbor_endpoints, ova_password, test_suite)
+if not execute_results:
+    print "execute test failure."
+    sys.exit(-1)
