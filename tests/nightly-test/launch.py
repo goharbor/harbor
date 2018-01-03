@@ -40,7 +40,6 @@ if build_type == "ova" :
     cluster = config.get("vcenter", "cluster")
     ova_password = config.get("vcenter", "ova_password")
     ova_name = config.get("vcenter", "ova_name")
-    ova_name = ova_name +"-"+ datetime.now().isoformat().replace(":", "-").replace(".", "-")
 
     logger.info("Going to deploy harbor ova..")
     ova_deployer = OVADeployer(vc_host, 

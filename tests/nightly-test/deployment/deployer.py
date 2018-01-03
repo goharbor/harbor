@@ -50,7 +50,6 @@ class OVADeployer(Deployer):
             ova_name_temp = self.ova_name +"-"+ datetime.now().isoformat().replace(":", "-").replace(".", "-")
             time.sleep(1)
             self.ova_names.append(ova_name_temp)
-        logger.info(self.ova_names)
     
     def __set_ovf_tool(self):
         if not self.ova_endpoints:
