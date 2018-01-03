@@ -148,7 +148,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.currentRuleStatus = this.ruleStatus[0];
     this.currentJobStatus = this.jobStatus[0];
     this.currentJobSearchOption = 0;
-    console.log('readonly', this.readonly);
   }
 
   ngOnDestroy() {
@@ -265,6 +264,14 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
   }
 
+  replicateManualRule(rule: ReplicationRule): void {
+    toPromise<any>(this.replicationService.replicateRule(rule.id))
+        .then(response => {
+          this.refreshJobs();
+        })
+        .catch(error => this.errorHandler.error(error));
+  }
+
   customRedirect(rule: ReplicationRule) {
     this.redirect.emit(rule);
   }
@@ -273,14 +280,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.search.ruleName = ruleName;
     this.listReplicationRule.retrieveRules(ruleName);
   }
-
-  /*doFilterRuleStatus($event: any) {
-    if ($event && $event.target && $event.target["value"]) {
-      let status = $event.target["value"];
-      this.currentRuleStatus = this.ruleStatus.find((r: any) => r.key === status);
-      this.listReplicationRule.filterRuleStatus(this.currentRuleStatus.key);
-    }
-  }*/
 
   doFilterJobStatus($event: any) {
     if ($event && $event.target && $event.target["value"]) {

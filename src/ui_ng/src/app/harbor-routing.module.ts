@@ -86,13 +86,13 @@ const harborRoutes: Routes = [
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard],
       },
-        {
-            path: 'replications/:id/rule',
-            component: ReplicationRuleComponent,
-            canActivate: [SystemAdminGuard],
-            canActivateChild: [SystemAdminGuard],
-            canDeactivate: [LeavingNewRuleRouteDeactivate]
-        },
+      {
+          path: 'replications/:id/rule',
+          component: ReplicationRuleComponent,
+          canActivate: [SystemAdminGuard],
+          canActivateChild: [SystemAdminGuard],
+          canDeactivate: [LeavingNewRuleRouteDeactivate]
+      },
       {
         path: 'replications/new-rule',
         component: ReplicationRuleComponent,

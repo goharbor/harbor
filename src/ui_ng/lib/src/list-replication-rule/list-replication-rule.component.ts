@@ -67,6 +67,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   @Output() toggleOne = new EventEmitter<ReplicationRule>();
   @Output() redirect = new EventEmitter<ReplicationRule>();
   @Output() openNewRule = new EventEmitter<any>();
+  @Output() replicateManual = new EventEmitter<ReplicationRule>();
 
   projectScope: boolean = false;
 
@@ -96,7 +97,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   }
 
   public get creationAvailable(): boolean {
-    return !this.readonly && this.projectId ? true : false;
+    return !this.readonly && !this.projectId ? true : false;
   }
 
 
@@ -219,6 +220,10 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
   editRule(rules: ReplicationRule) {
     this.editOne.emit(rules);
+  }
+
+  replicateRule(rule: ReplicationRule) {
+    this.replicateManual.emit(rule);
   }
 
   toggleRule(rule: ReplicationRule) {

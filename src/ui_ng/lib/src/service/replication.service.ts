@@ -226,8 +226,8 @@ export class ReplicationDefaultService extends ReplicationService {
             return Promise.reject("Bad argument");
         }
 
-        let url: string = `${this._replicateUrl}/${ruleId}`;
-        return this.http.post(url, HTTP_JSON_OPTIONS).toPromise()
+        let url: string = `${this._replicateUrl}`;
+        return this.http.post(url, {policy_id: ruleId}, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
             .catch(error => Promise.reject(error));
     }

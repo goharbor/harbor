@@ -36,9 +36,7 @@ export class LeavingNewRuleRouteDeactivate implements CanDeactivate<ReplicationR
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Promise<boolean> | boolean {
     //Confirmation before leaving config route
-    console.log('ccc');
     return new Promise((resolve, reject) => {
-      console.log("ddd", replicateRule.hasFormChange());
       if (replicateRule && replicateRule.hasFormChange()) {
         let msg: ConfirmationMessage = new ConfirmationMessage(
           "CONFIG.LEAVING_CONFIRMATION_TITLE",

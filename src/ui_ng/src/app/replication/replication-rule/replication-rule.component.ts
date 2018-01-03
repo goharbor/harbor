@@ -121,14 +121,6 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
                this.inNameChecking = false;
            });
        });
-        /*this.confirmSub = this.confirmService.confirmationConfirm$.subscribe(confirmation => {
-            if (confirmation &&
-                confirmation.state === ConfirmationState.CONFIRMED) {
-                if (confirmation.source === ConfirmationTargets.CONFIG) {
-                    this.router.navigate(['/harbor/replications']);
-                }
-            }
-        });*/
     }
 
     ngAfterViewInit(): void {
@@ -180,37 +172,10 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
             this.updateFilter(rule.filters);
         }
 
-
-
         // Force refresh view
         let hnd = setInterval(() => this.ref.markForCheck(), 100);
         setTimeout(() => clearInterval(hnd), 2000);
     }
-
- /*   initFom(): void {
-        this.ruleForm.reset({
-            name: '',
-            description: '',
-            trigger: {kind: this.triggerNames[0], schedule_param: {
-                type: this.scheduleNames[0],
-                weekday: 1,
-                offtime: '08:00'
-            }},
-            replicate_existing_image_now: true,
-            replicate_deletion: false
-        });
-        this.setProject([]);
-        this.setTarget([this.targetList[0]]);
-        this.setFilter([]);
-
-        this.isFilterHide = false;
-        this.filterListData = [];
-        this.isScheduleOpt = false;
-        this.weeklySchedule = false;
-        this.isRuleNameExist = true;
-        this.ruleNameTooltip = 'TOOLTIP.EMPTY';
-    }*/
-
 
     get projects(): FormArray {
         return this.ruleForm.get('projects') as FormArray;
@@ -277,7 +242,6 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
     }
 
     selectedProject(project: Project): void {
-        console.log('project', project)
         this.setProject([project]);
     }
 
@@ -469,18 +433,6 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
 
     onCancel(): void {
         this.router.navigate(['/harbor/replications']);
-
-        /*if (this.hasFormChange()) {
-            let msg = new ConfirmationMessage(
-                'CONFIG.CONFIRM_TITLE',
-                'CONFIG.CONFIRM_SUMMARY',
-                '',
-                null,
-                ConfirmationTargets.CONFIG
-            );
-
-            this.confirmService.openComfirmDialog(msg);
-        }*/
     }
 
     // UTC time
