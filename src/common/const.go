@@ -18,6 +18,7 @@ package common
 const (
 	DBAuth              = "db_auth"
 	LDAPAuth            = "ldap_auth"
+	UAAAuth             = "uaa_auth"
 	ProCrtRestrEveryone = "everyone"
 	ProCrtRestrAdmOnly  = "adminonly"
 	LDAPScopeBase       = 1
@@ -70,10 +71,15 @@ const (
 	WithClair                  = "with_clair"
 	ScanAllPolicy              = "scan_all_policy"
 	ClairDBPassword            = "clair_db_password"
+	ClairDBHost                = "clair_db_host"
+	ClairDBPort                = "clair_db_port"
+	ClairDB                    = "clair_db"
+	ClairDBUsername            = "clair_db_username"
 	UAAEndpoint                = "uaa_endpoint"
 	UAAClientID                = "uaa_client_id"
 	UAAClientSecret            = "uaa_client_secret"
-	DefaultClairEndpoint = "http://clair:6060"
+	UAAVerifyCert              = "uaa_verify_cert"
+	DefaultClairEndpoint       = "http://clair:6060"
 	CfgDriverDB                = "db"
 	CfgDriverJSON              = "json"
 )

@@ -21,16 +21,17 @@ import { NewUserModalComponent } from './new-user-modal.component';
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
-import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const'
+import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
 import { SessionService } from '../shared/session.service';
 import { AppConfigService } from '../app-config.service';
+import {BatchInfo, BathInfoChanges} from '../shared/confirmation-dialog/confirmation-batch-message';
 
 /**
  * NOTES:
  *   Pagination for this component is a temporary workaround solution. It will be replaced in future release.
- * 
+ *
  * @export
  * @class UserComponent
  * @implements {OnInit}
@@ -52,6 +53,9 @@ export class UserComponent implements OnInit, OnDestroy {
   private adminMenuText: string = "";
   private adminColumn: string = "";
   private deletionSubscription: Subscription;
+  selectedRow: User[] = [];
+  ISADMNISTRATOR: string = "USER.ENABLE_ADMIN_ACTION";
+  batchDelectionInfos: BatchInfo[] = [];
 
   currentTerm: string;
   totalCount: number = 0;
@@ -91,16 +95,35 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
-    return testedItem.toLowerCase().indexOf(terms.toLowerCase()) != -1;
+    return testedItem.toLowerCase().indexOf(terms.toLowerCase()) !== -1;
   }
 
   public get canCreateUser(): boolean {
     let appConfig = this.appConfigService.getConfig();
     if (appConfig) {
-      return appConfig.auth_mode != 'ldap_auth';
+      return !(appConfig.auth_mode === 'ldap_auth' || appConfig.auth_mode === 'uaa_auth');
     } else {
       return true;
     }
+  }
+
+  public get ifSameRole(): boolean {
+    let usersRole: number[] = [];
+    this.selectedRow.forEach(user => {
+      if (user.user_id === 0 || this.isMySelf(user.user_id)) {
+        return false;
+      }
+      usersRole.push(user.has_admin_role);
+    })
+    if (usersRole.length && usersRole.every(num => num === 0)) {
+      this.ISADMNISTRATOR = 'USER.ENABLE_ADMIN_ACTION';
+      return true;
+    }
+    if (usersRole.length && usersRole.every(num => num === 1)) {
+      this.ISADMNISTRATOR = 'USER.DISABLE_ADMIN_ACTION';
+      return true;
+    }
+    return false;
   }
 
   isSystemAdmin(u: User): string {
@@ -125,9 +148,7 @@ export class UserComponent implements OnInit, OnDestroy {
     return this.onGoing;
   }
 
-  ngOnInit(): void {
-    this.forceRefreshView(5000);
-  }
+  ngOnInit(): void {}
 
   ngOnDestroy(): void {
     if (this.deletionSubscription) {
@@ -155,73 +176,105 @@ export class UserComponent implements OnInit, OnDestroy {
     });
   }
 
-  //Disable the admin role for the specified user
-  changeAdminRole(user: User): void {
-    //Double confirm user is existing
-    if (!user || user.user_id === 0) {
-      return;
-    }
+  // Disable the admin role for the specified user
+  changeAdminRole(): void {
+    let promiseLists: any[] = [];
+    if (this.selectedRow.length) {
+      if (this.ISADMNISTRATOR === 'USER.ENABLE_ADMIN_ACTION') {
+        for (let i = 0; i < this.selectedRow.length; i++) {
+          // Double confirm user is existing
+          if (this.selectedRow[i].user_id === 0 || this.isMySelf(this.selectedRow[i].user_id)) {
+            continue;
+          }
+          let updatedUser: User = new User();
+          updatedUser.user_id = this.selectedRow[i].user_id;
 
-    if (this.isMySelf(user.user_id)) {
-      return;
-    }
+          updatedUser.has_admin_role = 1; //Set as admin
+          promiseLists.push(this.userService.updateUserRole(updatedUser));
+        }
+      }
+      if (this.ISADMNISTRATOR === 'USER.DISABLE_ADMIN_ACTION') {
+        for (let i = 0; i < this.selectedRow.length; i++) {
+          // Double confirm user is existing
+          if (this.selectedRow[i].user_id === 0 || this.isMySelf(this.selectedRow[i].user_id)) {
+            continue;
+          }
+          let updatedUser: User = new User();
+          updatedUser.user_id = this.selectedRow[i].user_id;
 
-    //Value copy
-    let updatedUser: User = new User();
-    updatedUser.user_id = user.user_id;
+          updatedUser.has_admin_role = 0; //Set as none admin
+          promiseLists.push(this.userService.updateUserRole(updatedUser));
+        }
+      }
 
-    if (user.has_admin_role === 0) {
-      updatedUser.has_admin_role = 1;//Set as admin
-    } else {
-      updatedUser.has_admin_role = 0;//Set as none admin
-    }
-
-    this.userService.updateUserRole(updatedUser)
-      .then(() => {
-        //Change view now
-        user.has_admin_role = updatedUser.has_admin_role;
-        this.forceRefreshView(5000);
-      })
-      .catch(error => {
-        this.msgHandler.handleError(error);
-      })
+        Promise.all(promiseLists).then(() => {
+            this.selectedRow = [];
+            this.refresh()
+        })
+        .catch(error => {
+             this.selectedRow = [];
+             this.msgHandler.handleError(error);
+         });
+      }
   }
 
   //Delete the specified user
-  deleteUser(user: User): void {
-    if (!user) {
-      return;
-    }
+  deleteUsers(users: User[]): void {
+    let userArr: string[] = [];
+    this.batchDelectionInfos = [];
+    if (users && users.length) {
+      for (let i = 0; i < users.length; i++) {
 
-    if (this.isMySelf(user.user_id)) {
-      return; //Double confirm
-    }
-
+        if (this.isMySelf(users[i].user_id)) {
+          continue; //Double confirm
+        }
+        let initBatchMessage = new BatchInfo ();
+        initBatchMessage.name = users[i].username;
+        this.batchDelectionInfos.push(initBatchMessage);
+        userArr.push(users[i].username);
+      }
+      this.deletionDialogService.addBatchInfoList(this.batchDelectionInfos);
     //Confirm deletion
     let msg: ConfirmationMessage = new ConfirmationMessage(
       "USER.DELETION_TITLE",
       "USER.DELETION_SUMMARY",
-      user.username,
-      user,
+      userArr.join(','),
+      users,
       ConfirmationTargets.USER,
       ConfirmationButtons.DELETE_CANCEL
     );
     this.deletionDialogService.openComfirmDialog(msg);
   }
+  }
 
-  delUser(user: User): void {
-    this.userService.deleteUser(user.user_id)
-      .then(() => {
-        //Remove it from current user list
-        //and then view refreshed
+  delUser(users: User[]): void {
+    //this.batchInfoDialog.open();
+    let promiseLists: any[] = [];
+    if (users && users.length) {
+      users.forEach(user => {
+        promiseLists.push(this.delOperate(user.user_id, user.username));
+      });
+
+      Promise.all(promiseLists).then((item) => {
+        this.selectedRow = [];
         this.currentTerm = '';
 
-        this.msgHandler.showSuccess("USER.DELETE_SUCCESS");
+        this.msgHandler.showSuccess('USER.DELETE_SUCCESS');
         this.refresh();
-      })
-      .catch(error => {
-        this.msgHandler.handleError(error);
       });
+    }
+  }
+  delOperate(id: number, name:  string) {
+    let findedList = this.batchDelectionInfos.find(data => data.name === name);
+    return this.userService.deleteUser(id).then(() => {
+      this.translate.get('BATCH.DELETE_SUCCESS').subscribe(res => {
+        findedList = BathInfoChanges(findedList, res);
+      });
+    }).catch(error => {
+      this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+        findedList = BathInfoChanges(findedList, res, false, true);
+      });
+     });
   }
 
   //Refresh the user list
@@ -282,6 +335,10 @@ export class UserComponent implements OnInit, OnDestroy {
   refresh(): void {
     this.currentPage = 1;//Refresh pagination
     this.refreshUser(0, 15);
+  }
+
+  SelectedChange(): void {
+    this.forceRefreshView(5000);
   }
 
   forceRefreshView(duration: number): void {

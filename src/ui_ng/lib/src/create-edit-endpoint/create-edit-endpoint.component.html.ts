@@ -4,7 +4,7 @@ export const CREATE_EDIT_ENDPOINT_TEMPLATE: string = `
   <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body">
     <div class="alert alert-warning" *ngIf="!editable">
-      <div class="alert-item">
+      <div class="alert-item static">
         <span class="alert-text">
           {{'DESTINATION.CANNOT_EDIT' | translate}}
         </span>

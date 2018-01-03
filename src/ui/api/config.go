@@ -52,6 +52,10 @@ var (
 		common.ProjectCreationRestriction,
 		common.TokenExpiration,
 		common.ScanAllPolicy,
+		common.UAAClientID,
+		common.UAAClientSecret,
+		common.UAAEndpoint,
+		common.UAAVerifyCert,
 	}
 
 	stringKeys = []string{
@@ -68,6 +72,8 @@ var (
 		common.EmailFrom,
 		common.EmailIdentity,
 		common.ProjectCreationRestriction,
+		common.UAAClientID,
+		common.UAAEndpoint,
 	}
 
 	numKeys = []string{
@@ -82,11 +88,13 @@ var (
 		common.EmailInsecure,
 		common.SelfRegistration,
 		common.LDAPVerifyCert,
+		common.UAAVerifyCert,
 	}
 
 	passwordKeys = []string{
 		common.EmailPassword,
 		common.LDAPSearchPwd,
+		common.UAAClientSecret,
 	}
 )
 
@@ -223,8 +231,8 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 	}
 
 	if value, ok := strMap[common.AUTHMode]; ok {
-		if value != common.DBAuth && value != common.LDAPAuth {
-			return false, fmt.Errorf("invalid %s, shoud be %s or %s", common.AUTHMode, common.DBAuth, common.LDAPAuth)
+		if value != common.DBAuth && value != common.LDAPAuth && value != common.UAAAuth {
+			return false, fmt.Errorf("invalid %s, shoud be one of %s, %s, %s", common.AUTHMode, common.DBAuth, common.LDAPAuth, common.UAAAuth)
 		}
 		flag, err := authModeCanBeModified()
 		if err != nil {
@@ -329,8 +337,12 @@ func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 	if err != nil {
 		return nil, err
 	}
-	result[common.AUTHMode].Editable = flag
-
+	//All configuration of UAA will be un-editable for PKS 1.0 (1.4)
+	result[common.AUTHMode].Editable = flag && result[common.AUTHMode].Value.(string) != common.UAAAuth
+	result[common.UAAEndpoint].Editable = false
+	//	result[common.UAAClientSecret].Editable = false
+	result[common.UAAVerifyCert].Editable = false
+	result[common.UAAClientID].Editable = false
 	return result, nil
 }
 

@@ -28,8 +28,6 @@ import (
 // Auth implements AuthenticateHelper interface to authenticate against LDAP
 type Auth struct{}
 
-const metaChars = "&|!=~*<>()"
-
 // Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
 // if the check is successful a dummy record will be inserted into DB, such that this user can
 // be associated to other entities in the system.
@@ -39,11 +37,6 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if len(strings.TrimSpace(p)) == 0 {
 		log.Debugf("LDAP authentication failed for empty user id.")
 		return nil, nil
-	}
-	for _, c := range metaChars {
-		if strings.ContainsRune(p, c) {
-			return nil, fmt.Errorf("the principal contains meta char: %q", c)
-		}
 	}
 
 	ldapSession, err := ldapUtils.LoadSystemLdapConfig()

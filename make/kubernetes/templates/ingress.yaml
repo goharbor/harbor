@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: harbor
+spec:
+  rules:
+  - host: {{hostname}}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: ui
+          servicePort: 80
+      - path: /v2
+        backend:
+          serviceName: registry
+          servicePort: repo
+      - path: /service
+        backend:
+          serviceName: ui
+          servicePort: 80
+

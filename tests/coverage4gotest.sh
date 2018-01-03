@@ -27,7 +27,7 @@ do
 	listDeps $package
 
     echo "DEBUG: testing package $package"
-	go test -v -race -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
+	go test -race -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
 	if [ -f profile.tmp ]	
 	then
 		cat profile.tmp | tail -n +2 >> profile.cov

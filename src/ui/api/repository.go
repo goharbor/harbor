@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
@@ -66,6 +67,11 @@ type tagDetail struct {
 	DockerVersion string    `json:"docker_version"`
 	Author        string    `json:"author"`
 	Created       time.Time `json:"created"`
+	Config        *cfg      `json:"config"`
+}
+
+type cfg struct {
+	Labels map[string]string `json:"labels"`
 }
 
 type tagResp struct {
@@ -473,7 +479,26 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 		return detail, err
 	}
 
+	populateAuthor(detail)
+
 	return detail, nil
+}
+
+func populateAuthor(detail *tagDetail) {
+	// has author info already
+	if len(detail.Author) > 0 {
+		return
+	}
+
+	// try to set author with the value of label "maintainer"
+	if detail.Config != nil {
+		for k, v := range detail.Config.Labels {
+			if strings.ToLower(k) == "maintainer" {
+				detail.Author = v
+				return
+			}
+		}
+	}
 }
 
 // GetManifests returns the manifest of a tag
@@ -638,7 +663,7 @@ func (ra *RepositoryAPI) Put() {
 	}
 
 	project, _ := utils.ParseRepository(name)
-	if !ra.SecurityCtx.HasAllPerm(project) {
+	if !ra.SecurityCtx.HasWritePerm(project) {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}

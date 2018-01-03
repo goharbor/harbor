@@ -167,7 +167,7 @@ func UpdateImgScanOverview(digest, detailsKey string, sev models.Severity, compO
 	return nil
 }
 
-// ListImgScanOverviews list all records in table img_scan_overview, it is called in notificaiton handler when it needs to refresh the severity of all images.
+// ListImgScanOverviews list all records in table img_scan_overview, it is called in notification handler when it needs to refresh the severity of all images.
 func ListImgScanOverviews() ([]*models.ImgScanOverview, error) {
 	var res []*models.ImgScanOverview
 	o := GetOrmer()

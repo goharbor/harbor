@@ -38,6 +38,8 @@ import 'rxjs/add/observable/throw';
 import { Subscription } from 'rxjs/Subscription';
 
 import { Project } from '../../project/project';
+import {TranslateService} from "@ngx-translate/core";
+import {BatchInfo, BathInfoChanges} from "../../shared/confirmation-dialog/confirmation-batch-message";
 
 @Component({
   templateUrl: 'member.component.html',
@@ -58,11 +60,14 @@ export class MemberComponent implements OnInit, OnDestroy {
   hasProjectAdminRole: boolean;
 
   searchMember: string;
+  selectedRow: Member[] = [];
+  batchDelectionInfos: BatchInfo[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private memberService: MemberService, 
+    private translate: TranslateService,
     private messageHandlerService: MessageHandlerService,
     private deletionDialogService: ConfirmationDialogService,
     private session: SessionService,
@@ -72,15 +77,7 @@ export class MemberComponent implements OnInit, OnDestroy {
       if (message &&
         message.state === ConfirmationState.CONFIRMED &&
         message.source === ConfirmationTargets.PROJECT_MEMBER) {
-        this.memberService
-          .deleteMember(this.projectId, message.data)
-          .subscribe(
-          response => {
-            this.messageHandlerService.showSuccess('MEMBER.DELETED_SUCCESS');
-            this.retrieve(this.projectId, '');
-          },
-          error => this.messageHandlerService.handleError(error)
-          );
+        this.deleteMem(message.data);
       }
     });
     let hnd = setInterval(()=>ref.markForCheck(), 100);
@@ -110,7 +107,7 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     //Get projectId from route params snapshot.          
-    this.projectId = +this.route.snapshot.parent.params['id'];   
+    this.projectId = +this.route.snapshot.parent.params['id'];
     //Get current user from registered resolver.
     this.currentUser = this.session.getCurrentUser();
     let resolverData = this.route.snapshot.parent.data;
@@ -129,30 +126,93 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.retrieve(this.projectId, '');
   }
 
-  changeRole(m: Member, roleId: number) {
-    if(m) {
-      this.memberService
-        .changeMemberRole(this.projectId, m.user_id, roleId)
-        .subscribe(
-        response => {
-          this.messageHandlerService.showSuccess('MEMBER.SWITCHED_SUCCESS');
-          this.retrieve(this.projectId, '');
-        },
-        error => this.messageHandlerService.handleError(error)
-        );
+  changeRole(m: Member[], roleId: number) {
+    if (m) {
+      let promiseList: any[] = [];
+      m.forEach(data => {
+        if (!(data.user_id === this.currentUser.user_id  || !this.hasProjectAdminRole)) {
+          promiseList.push(this.memberService.changeMemberRole(this.projectId, data.user_id, roleId));
+        }
+      })
+      Promise.all(promiseList).then(num => {
+            if (num.length === promiseList.length) {
+              this.messageHandlerService.showSuccess('MEMBER.SWITCHED_SUCCESS');
+              this.retrieve(this.projectId, '');
+            }
+          },
+          error => {
+            this.messageHandlerService.handleError(error);
+          }
+      );
       }
   }
 
-  deleteMember(m: Member) {
-    let deletionMessage: ConfirmationMessage = new ConfirmationMessage(
-      'MEMBER.DELETION_TITLE',
-      'MEMBER.DELETION_SUMMARY',
-      m.username,
-      m.user_id,
-      ConfirmationTargets.PROJECT_MEMBER,
-      ConfirmationButtons.DELETE_CANCEL
-    );
-    this.deletionDialogService.openComfirmDialog(deletionMessage);
+  deleteMembers(m: Member[]) {
+    let nameArr: string[] = [];
+    this.batchDelectionInfos = [];
+    if (m && m.length) {
+      m.forEach(data => {
+        nameArr.push(data.username);
+        let initBatchMessage = new BatchInfo ();
+        initBatchMessage.name = data.username;
+        this.batchDelectionInfos.push(initBatchMessage);
+      });
+      this.deletionDialogService.addBatchInfoList(this.batchDelectionInfos);
+
+      let deletionMessage = new ConfirmationMessage(
+          'PROJECT.DELETION_TITLE',
+          'PROJECT.DELETION_SUMMARY',
+          nameArr.join(','),
+          m,
+          ConfirmationTargets.PROJECT_MEMBER,
+          ConfirmationButtons.DELETE_CANCEL
+      );
+      this.deletionDialogService.openComfirmDialog(deletionMessage);
+    }
+  }
+
+  deleteMem(members: Member[]) {
+    if (members && members.length) {
+      let promiseLists: any[] = [];
+      members.forEach(member => {
+        if (member.user_id === this.currentUser.user_id) {
+          let findedList = this.batchDelectionInfos.find(data => data.name === member.username);
+          this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+            findedList = BathInfoChanges(findedList, res, false, true);
+          });
+        }else {
+          promiseLists.push(this.delOperate(this.projectId, member.user_id, member.username));
+        }
+
+      });
+
+      Promise.all(promiseLists).then(item => {
+        this.selectedRow = [];
+        this.retrieve(this.projectId, '');
+      });
+    }
+  }
+
+  delOperate(projectId: number, memberId: number, username: string) {
+    let findedList = this.batchDelectionInfos.find(data => data.name === username);
+    return this.memberService
+        .deleteMember(projectId, memberId)
+        .then(
+            response => {
+              this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
+                findedList = BathInfoChanges(findedList, res);
+              });
+            },
+            error => {
+              this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+                findedList = BathInfoChanges(findedList, res, false, true);
+              });
+            }
+        );
+  }
+
+  SelectedChange(): void {
+    //this.forceRefreshView(5000);
   }
 
   doSearch(searchMember: string) {

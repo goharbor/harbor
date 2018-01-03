@@ -3,7 +3,7 @@ FROM vmware/photon:1.0
 MAINTAINER wangyan@vmware.com
 
 # The original script in the docker offical registry image.
-RUN tdnf distro-sync -y || echo \
+RUN tdnf distro-sync -y \
     && tdnf erase vim -y \
     && tdnf install sudo -y \
     && tdnf clean all \

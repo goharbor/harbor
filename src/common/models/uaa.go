@@ -19,5 +19,5 @@ type UAASettings struct {
 	Endpoint     string
 	ClientID     string
 	ClientSecret string
-	CARootPath   string
+	VerifyCert   bool
 }

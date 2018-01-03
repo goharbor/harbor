@@ -6,6 +6,7 @@
                 <select id="authMode" name="authMode" (change)="handleOnChange($event)" [disabled]="disabled(currentConfig.auth_mode)" [(ngModel)]="currentConfig.auth_mode.value">
                     <option value="db_auth">{{'CONFIG.AUTH_MODE_DB' | translate }}</option>
                     <option value="ldap_auth">{{'CONFIG.AUTH_MODE_LDAP' | translate }}</option>
+                    <option value="uaa_auth">{{'CONFIG.AUTH_MODE_UAA' | translate }}</option>
                 </select>
             </div>
             <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top: -1px;">
@@ -14,6 +15,30 @@
             </a>
         </div>
     </section>
+
+    <section class="form-block" *ngIf="showUAA">
+        <div class="form-group">
+            <label for="uaa-endpoint" class="required">{{'CONFIG.UAA.ENDPOINT' | translate}}</label>
+            <input type="text" id="uaa-endpoint" name="uaa-endpoint" size="35"
+            [(ngModel)]="currentConfig.uaa_endpoint.value" [disabled]="!currentConfig.uaa_verify_cert.editable">
+        </div>
+        <div class="form-group">
+            <label for="uaa-id" class="required">{{'CONFIG.UAA.CLIENT_ID' | translate}}</label>
+            <input type="text" id="uaa-cid" name="uaa-client-id" size="35"
+            [(ngModel)]="currentConfig.uaa_client_id.value" [disabled]="!currentConfig.uaa_verify_cert.editable">
+        </div>
+        <div class="form-group">
+            <label for="uaa-id" class="required">{{'CONFIG.UAA.CLIENT_SECRET' | translate}}</label>
+            <input type="text" id="uaa-secret" name="uaa-client-secret" type="password" size="35"
+            [(ngModel)]="currentConfig.uaa_client_secret.value" [disabled]="!currentConfig.uaa_verify_cert.editable">
+        </div>
+        <div class="form-group">
+            <label for="uaa-cert" class="required">{{'CONFIG.UAA.VERIFY_CERT' | translate}}</label>
+            <clr-checkbox id="uaa-cert" name="uaa-cert" [(clrChecked)]="currentConfig.uaa_verify_cert.value"
+            [clrDisabled]="!currentConfig.uaa_verify_cert.editable"></clr-checkbox>
+        </div>
+    </section>
+
     <section class="form-block" *ngIf="showLdap">
         <div class="form-group">
             <label for="ldapUrl" class="required">{{'CONFIG.LDAP.URL' | translate}}</label>

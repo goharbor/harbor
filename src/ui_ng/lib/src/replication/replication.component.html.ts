@@ -1,11 +1,7 @@
 export const REPLICATION_TEMPLATE: string = `
 <div class="row">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-    <div class="row flex-items-xs-between" style="height:32px;">
-      <div class="flex-xs-middle option-left">
-        <button *ngIf="creationAvailable" class="btn btn-link" (click)="openModal()"><clr-icon shape="add"></clr-icon> {{'REPLICATION.REPLICATION_RULE' | translate}}</button>
-        <create-edit-rule [projectId]="projectId" (reload)="reloadRules($event)"></create-edit-rule>
-      </div>
+    <div class="row flex-items-xs-between" style="height:32px; float:right">
       <div class="flex-xs-middle option-right">
         <div class="select" style="float: left; top: 8px;">
           <select (change)="doFilterRuleStatus($event)">
@@ -20,7 +16,7 @@ export const REPLICATION_TEMPLATE: string = `
     </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <hbr-list-replication-rule #listReplicationRule [readonly]="readonly" [projectId]="projectId" (selectOne)="selectOneRule($event)" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
+      <hbr-list-replication-rule #listReplicationRule [readonly]="readonly" [projectId]="projectId" (selectOne)="selectOneRule($event)" (openNewRule)="openModal()" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
     </div>
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <div class="row flex-items-xs-between" style="height:60px;">
@@ -76,4 +72,5 @@ export const REPLICATION_TEMPLATE: string = `
       </clr-datagrid>
     </div>
     <job-log-viewer #replicationLogViewer></job-log-viewer>
+     <create-edit-rule [projectId]="projectId" (reload)="reloadRules($event)"></create-edit-rule>
 </div>`;

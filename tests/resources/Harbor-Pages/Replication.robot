@@ -22,13 +22,14 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Create An New Rule With New Endpoint
     [Arguments]  ${policy_name}  ${policy_description}  ${destination_name}  ${destination_url}  ${destination_username}  ${destination_password}
-    Click element  xpath=${new_name_xpath}
+    Click element  ${new_name_xpath}
     Sleep  2
     	
     Input Text  xpath=${policy_name_xpath}  ${policy_name}
     Input Text  xpath=${policy_description_xpath}   ${policy_description}
 
-    Click element  xpath=${policy_enable_checkbox}
+    #Click element  xpath=${policy_enable_checkbox}
+    #enable attribute is droped in new ui
     Click element  xpath=${policy_endpoint_checkbox}
 
     Input text  xpath=${destination_name_xpath}  ${destination_name}

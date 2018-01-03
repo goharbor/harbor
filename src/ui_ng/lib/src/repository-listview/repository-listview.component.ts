@@ -43,6 +43,8 @@ import {
   doFiltering,
   doSorting
 } from '../utils';
+import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
+import {Observable} from "rxjs/Observable";
 
 @Component({
   selector: 'hbr-repository-listview',
@@ -63,12 +65,14 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
   lastFilteredRepoName: string;
   repositories: RepositoryItem[];
   systemInfo: SystemInfo;
+  selectedRow: RepositoryItem[] = [];
 
-  loading = true;
+  loading: boolean = true;
 
   @ViewChild('confirmationDialog')
   confirmationDialog: ConfirmationDialogComponent;
 
+  batchDelectionInfos: BatchInfo[] = [];
   pullCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('pull_count', 'number');
 
   tagsCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('tags_count', 'number');
@@ -83,7 +87,6 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
     private translateService: TranslateService,
     private repositoryService: RepositoryService,
     private systemInfoService: SystemInfoService,
-    private translate: TranslateService,
     private tagService: TagService,
     private ref: ChangeDetectorRef,
     private router: Router) { }
@@ -110,35 +113,6 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
     return this.withClair && !this.isClairDBReady;
   }
 
-  confirmDeletion(message: ConfirmationAcknowledgement) {
-    if (message &&
-      message.source === ConfirmationTargets.REPOSITORY &&
-      message.state === ConfirmationState.CONFIRMED) {
-      let repoName = message.data;
-      toPromise<number>(this.repositoryService
-        .deleteRepository(repoName))
-        .then(
-        response => {
-          this.refresh();
-          let st: State = this.getStateAfterDeletion();
-          if (!st) {
-            this.refresh();
-          } else {
-            this.clrLoad(st);
-          }
-          this.translateService.get('REPOSITORY.DELETED_REPO_SUCCESS')
-            .subscribe(res => this.errorHandler.info(res));
-        }).catch(error => {
-          if (error.status === '412') {
-            this.translateService.get('REPOSITORY.TAGS_SIGNED')
-                .subscribe(res => this.errorHandler.info(res));
-            return;
-          }
-          this.errorHandler.error(error);
-        });
-    }
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['projectId'] && changes['projectId'].currentValue) {
       this.refresh();
@@ -152,6 +126,60 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
       .catch(error => this.errorHandler.error(error));
 
     this.lastFilteredRepoName = '';
+  }
+
+  confirmDeletion(message: ConfirmationAcknowledgement) {
+    if (message &&
+        message.source === ConfirmationTargets.REPOSITORY &&
+        message.state === ConfirmationState.CONFIRMED) {
+
+      let promiseLists: any[] = [];
+      let repoNames: string[] = message.data.split(',');
+
+      repoNames.forEach(repoName => {
+        promiseLists.push(this.delOperate(repoName));
+      });
+
+      Promise.all(promiseLists).then((item) => {
+        this.selectedRow = [];
+        this.refresh();
+        let st: State = this.getStateAfterDeletion();
+        if (!st) {
+          this.refresh();
+        } else {
+          this.clrLoad(st);
+        }
+      });
+    }
+  }
+
+  delOperate(repoName:  string) {
+    let findedList = this.batchDelectionInfos.find(data => data.name === repoName);
+    if (this.signedCon[repoName].length !== 0) {
+      this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED').subscribe(res => {
+        findedList.status = res;
+      });
+    } else {
+      return toPromise<number>(this.repositoryService
+          .deleteRepository(repoName))
+          .then(
+              response => {
+                this.translateService.get('BATCH.DELETED_SUCCESS').subscribe(res => {
+                  findedList = BathInfoChanges(findedList, res);
+                });
+              }).catch(error => {
+            if (error.status === "412") {
+              Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                  this.translateService.get('REPOSITORY.TAGS_SIGNED')).subscribe(res => {
+                findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+              });
+              return;
+            }
+            this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+              findedList = BathInfoChanges(findedList, res, false, true);
+            });
+          });
+    }
   }
 
   doSearchRepoNames(repoName: string) {
@@ -172,15 +200,29 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
     Object.assign(this.signedCon, event);
   }
 
-  deleteRepo(repoName: string) {
-    if (this.signedCon[repoName]) {
-      this.signedDataSet(repoName);
-      } else {
-      this.getTagInfo(repoName).then(() => {
-        this.signedDataSet(repoName);
+  deleteRepos(repoLists: RepositoryItem[]) {
+    if (repoLists && repoLists.length) {
+      let repoNames: string[] = [];
+      this.batchDelectionInfos = [];
+      let repArr: any[] = [];
+
+      repoLists.forEach(repo => {
+        repoNames.push(repo.name);
+        let initBatchMessage = new BatchInfo();
+        initBatchMessage.name = repo.name;
+        this.batchDelectionInfos.push(initBatchMessage);
+
+        if (!this.signedCon[repo.name]) {
+          repArr.push(this.getTagInfo(repo.name));
+        }
+      });
+
+      Promise.all(repArr).then(() => {
+          this.confirmationDialogSet('REPOSITORY.DELETION_TITLE_REPO',  '', repoNames.join(','), 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
       });
     }
   }
+
   getTagInfo(repoName: string): Promise<void> {
      // this.signedNameArr = [];
     this.signedCon[repoName] = [];
@@ -207,7 +249,7 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
   }
 
   confirmationDialogSet(summaryTitle: string, signature: string, repoName: string, summaryKey: string,  button: ConfirmationButtons): void {
-    this.translate.get(summaryKey,
+    this.translateService.get(summaryKey,
         {
           repoName: repoName,
           signedImages: signature,
@@ -228,6 +270,10 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
     });
   }
 
+  selectedChange(): void {
+    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 2000);
+  }
   refresh() {
     this.doSearchRepoNames('');
   }

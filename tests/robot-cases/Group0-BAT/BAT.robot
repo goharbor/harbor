@@ -252,10 +252,11 @@ Test Case - Scan A Tag In The Repo
     ${d}=  get current date  result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
     Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
+    Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
     Scan Repo  latest
     Summary Chart Should Display  latest
-    Edit Repo Info
+    #Edit Repo Info
     Close Browser
 
 Test Case - Manage Project Member
@@ -270,7 +271,6 @@ Test Case - Manage Project Member
     Create An New User  url=${HARBOR_URL}  username=carol${d}  email=carol${d}@vmware.com  realname=carol${d}  newPassword=Test1@34  comment=harbor
     Logout Harbor
 
-    User Should Be Owner Of Project  alice${d}  Test1@34  project${d}
     User Should Not Be A Member Of Project  bob${d}  Test1@34  project${d}
     Manage Project Member  alice${d}  Test1@34  project${d}  bob${d}  Add
     User Should Be Guest  bob${d}  Test1@34  project${d}
@@ -351,6 +351,8 @@ Test Case - Ldap User Create Project
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
     Create An New Project  project${d}
+    Logout Harbor
+    Manage Project Member  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  mike02  Add
     Close Browser
 
 Test Case - Ldap User Push An Image

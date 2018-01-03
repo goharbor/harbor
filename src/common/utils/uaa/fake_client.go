@@ -37,3 +37,40 @@ func (fc *FakeClient) PasswordAuth(username, password string) (*oauth2.Token, er
 func (fc *FakeClient) GetUserInfo(token string) (*UserInfo, error) {
 	return nil, nil
 }
+
+// SearchUser ...
+func (fc *FakeClient) SearchUser(name string) ([]*SearchUserEntry, error) {
+	res := []*SearchUserEntry{}
+	entryOne := &SearchUserEntry{
+		ExtID:    "some-external-id-1",
+		ID:       "u-0001",
+		UserName: "one",
+		Emails: []SearchUserEmailEntry{SearchUserEmailEntry{
+			Primary: false,
+			Value:   "one@email.com",
+		}},
+	}
+	entryTwoA := &SearchUserEntry{
+		ExtID:    "some-external-id-2-a",
+		ID:       "u-0002a",
+		UserName: "two",
+		Emails: []SearchUserEmailEntry{SearchUserEmailEntry{
+			Primary: false,
+			Value:   "two@email.com",
+		}},
+	}
+	entryTwoB := &SearchUserEntry{
+		ExtID:    "some-external-id-2-b",
+		ID:       "u-0002b",
+		UserName: "two",
+	}
+	if name == "one" {
+		res = append(res, entryOne)
+	} else if name == "two" {
+		res = append(res, entryTwoA)
+		res = append(res, entryTwoB)
+	} else if name == "error" {
+		return res, fmt.Errorf("some error")
+	}
+	return res, nil
+}

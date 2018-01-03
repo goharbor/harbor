@@ -1,0 +1,7 @@
+machine:
+  services:
+    - docker
+
+test:
+  override:
+    - make test
