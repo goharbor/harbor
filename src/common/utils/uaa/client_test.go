@@ -98,7 +98,7 @@ func TestNewClientWithCACert(t *testing.T) {
 		CARootPath:    "/notexist",
 	}
 	_, err := NewDefaultClient(cfg)
-	assert.NotNil(err)
+	assert.Nil(err)
 	//Skip if it's malformed.
 	cfg.CARootPath = path.Join(currPath(), "test", "non-ca.pem")
 	_, err = NewDefaultClient(cfg)

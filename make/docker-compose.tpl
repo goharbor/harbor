@@ -76,7 +76,7 @@ services:
     volumes:
       - ./common/config/ui/app.conf:/etc/ui/app.conf:z
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
-      - ./common/config/ui/certificates/:/etc/ui/certifates/
+      - ./common/config/ui/certificates/:/etc/ui/certificates/
       - /data/secretkey:/etc/ui/key:z
       - /data/ca_download/:/etc/ui/ca/:z
       - /data/psc/:/etc/ui/token/:z

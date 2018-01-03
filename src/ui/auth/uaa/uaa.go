@@ -16,6 +16,7 @@ package uaa
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 
@@ -38,6 +39,7 @@ func CreateClient() (uaa.Client, error) {
 		ClientSecret:  UAASettings.ClientSecret,
 		Endpoint:      UAASettings.Endpoint,
 		SkipTLSVerify: !UAASettings.VerifyCert,
+		CARootPath:    os.Getenv("UAA_CA_ROOT"),
 	}
 	return uaa.NewDefaultClient(cfg)
 }
