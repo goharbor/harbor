@@ -32,6 +32,10 @@ CA Setup
     Login    ${SSH_USER}    ${SSH_PWD}
     SSHLibrary.Get File  /data/ca_download/ca.crt
     Close All Connections
+    ${rc}  ${output}=  Run And Return Rc And Output  pwd
+    Log To Console  ${output}
+    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ./
+    Log To Console  ${output}
     Run  mv ca.crt harbor_ca.crt
     Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}	
 
