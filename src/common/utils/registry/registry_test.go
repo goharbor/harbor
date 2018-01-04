@@ -28,7 +28,7 @@ import (
 func TestPing(t *testing.T) {
 	server := test.NewServer(
 		&test.RequestHandlerMapping{
-			Method:  "GET",
+			Method:  http.MethodHead,
 			Pattern: "/v2/",
 			Handler: test.Handler(nil),
 		})

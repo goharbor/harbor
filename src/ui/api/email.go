@@ -106,7 +106,9 @@ func (e *EmailAPI) Ping() {
 	addr := net.JoinHostPort(host, strconv.Itoa(port))
 	if err := email.Ping(addr, identity, username,
 		password, pingEmailTimeout, ssl, insecure); err != nil {
-		log.Debugf("ping %s failed: %v", addr, err)
-		e.CustomAbort(http.StatusBadRequest, err.Error())
+		log.Errorf("failed to ping email server: %v", err)
+		// do not return any detail information of the error, or may cause SSRF security issue #3755
+		e.RenderError(http.StatusBadRequest, "failed to ping email server")
+		return
 	}
 }

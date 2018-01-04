@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -179,16 +180,20 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 		InsecureSkipVerify: cfg.SkipTLSVerify,
 	}
 	if !cfg.SkipTLSVerify && len(cfg.CARootPath) > 0 {
-		content, err := ioutil.ReadFile(cfg.CARootPath)
-		if err != nil {
-			return nil, err
-		}
-		pool := x509.NewCertPool()
-		//Do not throw error if the certificate is malformed, so we can put a place holder.
-		if ok := pool.AppendCertsFromPEM(content); !ok {
-			log.Warningf("Failed to append certificate to cert pool, cert path: %s", cfg.CARootPath)
+		if _, err := os.Stat(cfg.CARootPath); !os.IsNotExist(err) {
+			content, err := ioutil.ReadFile(cfg.CARootPath)
+			if err != nil {
+				return nil, err
+			}
+			pool := x509.NewCertPool()
+			//Do not throw error if the certificate is malformed, so we can put a place holder.
+			if ok := pool.AppendCertsFromPEM(content); !ok {
+				log.Warningf("Failed to append certificate to cert pool, cert path: %s", cfg.CARootPath)
+			} else {
+				tc.RootCAs = pool
+			}
 		} else {
-			tc.RootCAs = pool
+			log.Warningf("The root certificate file %s is not found, skip configuring root cert in UAA client.", cfg.CARootPath)
 		}
 	}
 	hc := &http.Client{

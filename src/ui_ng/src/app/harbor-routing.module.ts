@@ -79,24 +79,14 @@ const harborRoutes: Routes = [
         canActivate: [SystemAdminGuard]
       },
       {
+        path: 'registries',
+        component: DestinationPageComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
         path: 'replications',
-        component: ReplicationManagementComponent,
+        component: TotalReplicationPageComponent,
         canActivate: [SystemAdminGuard],
-        canActivateChild: [SystemAdminGuard],
-        children: [
-          {
-            path: 'rules',
-            component: TotalReplicationPageComponent
-          },
-          {
-            path: 'endpoints',
-            component: DestinationPageComponent
-          },
-          {
-            path: '**',
-            redirectTo: 'endpoints'
-          }
-        ]
       },
       {
         path: 'tags/:id/:repo',

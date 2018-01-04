@@ -120,14 +120,15 @@ func (r *RepTarget) Valid(v *validation.Validation) {
 		v.SetError("name", "max length is 64")
 	}
 
-	if len(r.URL) == 0 {
-		v.SetError("endpoint", "can not be empty")
-	}
-
-	r.URL = utils.FormatEndpoint(r.URL)
-
-	if len(r.URL) > 64 {
-		v.SetError("endpoint", "max length is 64")
+	url, err := utils.ParseEndpoint(r.URL)
+	if err != nil {
+		v.SetError("endpoint", err.Error())
+	} else {
+		// Prevent SSRF security issue #3755
+		r.URL = url.Scheme + "://" + url.Host + url.Path
+		if len(r.URL) > 64 {
+			v.SetError("endpoint", "max length is 64")
+		}
 	}
 
 	// password is encoded using base64, the length of this field
