@@ -110,7 +110,7 @@ Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
     Log  ${output}
     ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${ip}:4443/
-    Log ${output}
+    Log  ${output}
 
 Prepare
     [Arguments]  ${with_notary}=true  ${with_clair}=true
