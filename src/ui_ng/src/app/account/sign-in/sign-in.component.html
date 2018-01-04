@@ -1,4 +1,5 @@
-<div class="login-wrapper login-wrapper-override" [ngStyle]="{'background-image': 'url(' + customLoginBgImg + ')'}">
+<div class="login-wrapper login-wrapper-override">
+    <div class="bg" *ngIf="customLoginBgImg" [ngStyle]="{'background-image': 'url(static/images/' + customLoginBgImg + ')'}"></div>
     <form #signInForm="ngForm" class="login">
         <label class="title"> {{customAppTitle? customAppTitle:(appTitle | translate)}}<span class="trademark tm-font">&#8482;</span>
     </label>
