@@ -25,6 +25,22 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
+Test Case - Admin Push Signed Image
+    Enabe Notary Client
+
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
+    Log  ${output}
+		
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    #Should Contain  ${output}  sha256
+
 Test Case - Create An New User
     Init Chrome Driver    
     ${d}=    Get Current Date    result_format=%m%s
@@ -311,19 +327,3 @@ Test Case - Assign Sys Admin
     Sign In Harbor  ${HARBOR_URL}  tester${d}  Test1@34
     Administration Tag Should Display
     Close Browser
-
-Test Case - Admin Push Signed Image
-    Enabe Notary Client
-
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
-    Log  ${output}
-		
-    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
-
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    #Should Contain  ${output}  sha256

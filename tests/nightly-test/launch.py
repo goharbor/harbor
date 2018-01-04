@@ -17,8 +17,8 @@ import test_executor
 from deployer import *
 
 if len(sys.argv)!=7 :
-    print "python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>"
-    print "Wrong parameters, quit test"
+    logger.info("python launch.py <build_type> <image_url> <test suitename> <config_file> <dry_run>")
+    logger.info("Wrong parameters, quit test")
     quit()
 
 build_type = sys.argv[1]
@@ -43,10 +43,8 @@ if build_type == "ova" :
     ova_name = config.get("vcenter", "ova_name")
 
     if image_url == "latest" :
-        buildweb = buildweb_utils.BuildWebUtil()
-        build_id=buildweb.get_latest_recommend_build('harbor_build', 'master')
-        image_url = buildweb.get_deliverable_by_build_id(build_id, '.*.ovf')
-    print "Get latest image url:" + image_url
+        image_url = buildweb_utils.get_latest_build_url('master','beta')
+    logger.info("Get latest image url:" + image_url)
 
     logger.info("Going to deploy harbor ova..")
     ova_deployer = OVADeployer(vc_host, 

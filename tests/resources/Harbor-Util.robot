@@ -101,6 +101,11 @@ Enabe Notary Client
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${ip}:4443/
     Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  pwd
+    Log To Console  ${output}
+    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ./
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
