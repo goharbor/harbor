@@ -36,7 +36,7 @@ CA Setup
     Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}	
 
 Collect Nightly Logs
-    [Arguments]  ${ip}  ${SSH_PWD}  ${HARBOR_PASSWORD}
+    [Arguments]  ${ip}  ${SSH_PWD}
     Open Connection    ${ip}
     Login    ${SSH_USER}    ${SSH_PWD}
     SSHLibrary.Get File  /var/log/harbor/ui.log
