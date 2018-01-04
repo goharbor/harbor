@@ -29,7 +29,7 @@ type LdapAPI struct {
 }
 
 const (
-	pingErrorMessage       = "LDAP connection test failed!"
+	pingErrorMessage       = "LDAP connection test failed"
 	loadSystemErrorMessage = "Can't load system configuration!"
 	canNotOpenLdapSession  = "Can't open LDAP session!"
 	searchLdapFailMessage  = "LDAP search failed!"
@@ -72,6 +72,7 @@ func (l *LdapAPI) Ping() {
 
 	if err != nil {
 		log.Errorf("ldap connect fail, error: %v", err)
+		// do not return any detail information of the error, or may cause SSRF security issue #3755
 		l.RenderError(http.StatusBadRequest, pingErrorMessage)
 		return
 	}
