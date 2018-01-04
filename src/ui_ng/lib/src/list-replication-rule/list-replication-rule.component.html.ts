@@ -1,5 +1,5 @@
 export const LIST_REPLICATION_RULE_TEMPLATE: string = `
-<div style="margin-top: -24px;">
+<div>
 <clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectedChange()">
     <clr-dg-action-bar>
         <div class="btn-group">

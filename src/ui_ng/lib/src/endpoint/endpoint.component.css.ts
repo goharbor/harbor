@@ -12,4 +12,10 @@ export const ENDPOINT_STYLE: string = `
   .refresh-btn:hover {
     color: #007CBB;
   }
+  .rightPos{  
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
+    height: 24px;}
 `;

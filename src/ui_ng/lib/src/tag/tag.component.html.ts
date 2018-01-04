@@ -12,9 +12,9 @@ export const TAG_TEMPLATE = `
     <button type="button" class="btn btn-primary" [ngxClipboard]="digestTarget" (cbOnSuccess)="onSuccess($event)" (cbOnError)="onError($event)">{{'BUTTON.COPY' | translate}}</button>
   </div>
 </clr-modal>
-<div class="row">
-  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-    <div class="row flex-items-xs-right option-right">
+<div class="row" style="position:relative;">
+  <div>
+    <div class="row flex-items-xs-right rightPos">
       <div class="flex-xs-middle">
         <hbr-filter [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" [currentValue]="lastFilteredTagName"></hbr-filter>
         <span class="refresh-btn" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></span> 

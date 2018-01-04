@@ -1,8 +1,8 @@
 export const ENDPOINT_TEMPLATE: string = `
-<div  style="margin-top: -24px;">
-    <div class="row">
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <div class="row flex-items-xs-between" style="height: 24px; float:right;">
+<div>
+    <div class="row"  style="position:relative;">
+        <div>
+            <div class="row flex-items-xs-between rightPos">
                 <div class="flex-items-xs-middle option-right">
                     <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_TARGETS_PLACEHOLDER" | translate}}' (filter)="doSearchTargets($event)" [currentValue]="targetName"></hbr-filter>
                     <span class="refresh-btn" (click)="refreshTargets()">
