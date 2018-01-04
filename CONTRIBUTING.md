@@ -35,7 +35,7 @@ git fetch $USER
 ```
 **NOTES:** Note that GOPATH can be any directory, the example above uses $HOME/go. Change $USER above to your own GitHub username.
 
-To build the project, please refer the [development](docs/code_development_guide.md) guideline.
+To build the project, please refer the [build](docs/compile_guide.md) guideline.
 
 ### Repository Structure
 
@@ -47,15 +47,16 @@ Here are the basic structure of the harbor code base. Some of the key folders / 
 ├── contrib       #<TODO>
 ├── docs          #Keep documents here
 ├── make          #Resource for build and setup Harbor environment
-├── partners.md
+...
 ├── src           #Source code folder
 ├── tests         #Test cases for API / e2e testings
 └── tools         #<TODO>
 ...
 ```
 
-The folder graph below shows the structure of the source code folder `harbor/src`, which will be your primary work directory. The key folders are also commented.
+The folder graph below shows the structure of the source code folder `harbor/src`, which will be your primary working directory. The key folders are also commented.
 ```
+#[TODO]
 .
 ├── adminserver          # Source code for the admin server component
 │   ├── api
@@ -141,7 +142,7 @@ npm install
 ```
 
 
-To run the code, please refer the [development](docs/code_development_guide.md) guideline.
+To run the code, please refer the [build](docs/compile_guide.md) guideline.
 
 ## Contribute Workflow
 
@@ -201,7 +202,21 @@ go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
 
 ```
 
-To build code and run local tests, please refer [development](docs/code_development_guide.md) guideline.
+Unit test cases should be added to cover the new code. Unit test framework for backend services is using [go testing](https://golang.org/doc/code.html#Testing). The UI library test framework is built based on [Jasmine](http://jasmine.github.io/2.4/introduction.html) and [Karma](https://karma-runner.github.io/1.0/index.html), please refer [Angular Testing](https://angular.io/guide/testing) for more details.
+
+Run go test cases:
+```
+#cd #working_dir/src/[package]
+go test -v ./...
+```
+
+Run UI library test cases:
+```
+#cd #working_dir/src/ui_ng/lib
+npm run test
+```
+
+To build code, please refer [build](docs/compile_guide.md) guideline.
 
 ###  Keep sync with upstream
 
@@ -231,6 +246,12 @@ To help write conforming commit messages, it is recommended to set up the [git-g
 ```
 curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
 ```
+### Squash Commits
+
+Before you submitting any pull request, always squash your commits into logical units of change. A logical unit of change is defined as a set of codes and documents that should be treated as a whole. When possible, compact your commits into one. The commands to use are `git rebase -i` and/or `git push -f`. 
+
+### Automated Testing
+[TODO:]
 
 ### Push and Create PR
 When ready for review, push your branch to your fork repository on `github.com`:
@@ -244,10 +265,6 @@ Then visit your fork at https://github.com/$user/harbor and click the `Compare &
 Once your pull request has been opened it will be assigned to one or more reviewers. Those reviewers will do a thorough code review, looking for correctness, bugs, opportunities for improvement, documentation and comments, and style.
 
 Commit changes made in response to review comments to the same branch on your fork.
-
-### Squash Commits
-
-Before you submitting any pull request, always squash your commits into logical units of change. A logical unit of change is defined as a set of codes and documents that should be treated as a whole. When possible, compact your commits into one. The commands to use are `git rebase -i` and/or `git push -f`. 
 
 ## Reporting issues
 
