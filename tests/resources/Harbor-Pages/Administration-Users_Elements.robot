@@ -16,5 +16,5 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${administration_user_tag_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/section/ul/li[1]/a
-${administration_tag_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/section/label
+${administration_user_tag_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Users')]
+${administration_tag_xpath}  //clr-vertical-nav-group[contains(.,'Admin')]

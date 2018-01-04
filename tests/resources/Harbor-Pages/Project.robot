@@ -56,7 +56,7 @@ Switch To Log
     Sleep  1
 
 Switch To Replication
-    Click Element  xpath=${replication_xpath}
+    Click Element  xpath=${project_replication_xpath}
     Sleep  1
 
 Back To projects

@@ -31,7 +31,7 @@ Change Password
     Sleep  1
     Click Element  xpath=//password-setting/clr-modal//button[2]
     Sleep  2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
+    Click Element  xpath=${log_xpath}
     Sleep  1
 
 Update User Comment
