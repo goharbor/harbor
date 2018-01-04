@@ -39,6 +39,34 @@ type AuthenticateHelper interface {
 	OnBoardUser(u *models.User) error
 	// Get user information from account repository
 	SearchUser(username string) (*models.User, error)
+	// Update user information after authenticate, such as Onboard or sync info etc
+	PostAuthenticate(u *models.User) error
+}
+
+// DefaultAuthenticateHelper - default AuthenticateHelper implementation
+type DefaultAuthenticateHelper struct {
+}
+
+// Authenticate ...
+func (d *DefaultAuthenticateHelper) Authenticate(m models.AuthModel) (*models.User, error) {
+	return nil, nil
+}
+
+// OnBoardUser will check if a user exists in user table, if not insert the user and
+// put the id in the pointer of user model, if it does exist, fill in the user model based
+// on the data record of the user
+func (d *DefaultAuthenticateHelper) OnBoardUser(u *models.User) error {
+	return nil
+}
+
+//SearchUser - Get user information from account repository
+func (d *DefaultAuthenticateHelper) SearchUser(username string) (*models.User, error) {
+	return nil, nil
+}
+
+//PostAuthenticate - Update user information after authenticate, such as Onboard or sync info etc
+func (d *DefaultAuthenticateHelper) PostAuthenticate(u *models.User) error {
+	return nil
 }
 
 var registry = make(map[string]AuthenticateHelper)
@@ -79,6 +107,9 @@ func Login(m models.AuthModel) (*models.User, error) {
 		lock.Lock(m.Principal)
 		time.Sleep(frozenTime)
 	}
+
+	authenticator.PostAuthenticate(user)
+
 	return user, err
 }
 
@@ -111,4 +142,13 @@ func SearchUser(username string) (*models.User, error) {
 		return nil, err
 	}
 	return helper.SearchUser(username)
+}
+
+// PostAuthenticate -
+func PostAuthenticate(u *models.User) error {
+	helper, err := getHelper()
+	if err != nil {
+		return err
+	}
+	return helper.PostAuthenticate(u)
 }
