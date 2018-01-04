@@ -100,7 +100,8 @@
         "SYSTEM_MGMT": {
             "NAME": "Administration",
             "USER": "Users",
-            "REPLICATION": "Replication",
+            "REGISTRY": "Registries",
+            "REPLICATION": "Replications",
             "CONFIG": "Configuration"
         },
         "LOGS": "Logs"

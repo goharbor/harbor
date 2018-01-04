@@ -96,6 +96,7 @@
         "SYSTEM_MGMT": {
             "NAME": "系统管理",
             "USER": "用户管理",
+            "REGISTRY": "仓库管理",
             "REPLICATION": "复制管理",
             "CONFIG": "配置管理"
         },
