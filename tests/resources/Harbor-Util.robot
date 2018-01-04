@@ -92,7 +92,7 @@ Switch To LDAP
     Should Be Equal As Integers  ${rc}  0	
     Generate Certificate Authority For Chrome
 	
-Enabe Notary Client
+Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
@@ -100,11 +100,6 @@ Enabe Notary Client
     ${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${ip}:4443/
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  pwd
-    Log To Console  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ./
-    Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
     Log  ${output}
@@ -115,7 +110,7 @@ Enabe Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
     Log  ${output}
     ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${ip}:4443/
-    Log  ${output}
+    Log ${output}
 
 Prepare
     [Arguments]  ${with_notary}=true  ${with_clair}=true

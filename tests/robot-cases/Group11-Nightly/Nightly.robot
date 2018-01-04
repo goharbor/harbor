@@ -26,13 +26,13 @@ ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Admin Push Signed Image
-    Enabe Notary Client
+    Enable Notary Client
 
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
     Log  ${output}
 		
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh ${ip}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
