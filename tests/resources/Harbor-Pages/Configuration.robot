@@ -45,7 +45,7 @@ Init LDAP
     Capture Page Screenshot
 
 Switch To Configure
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/section/ul/li[3]/a
+    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/section/ul/li[4]/a
     Sleep  2
 
 Test Ldap Connection
@@ -89,7 +89,7 @@ Ldap Verify Cert Checkbox Should Be Disabled
 Set Pro Create Admin Only	
     #set limit to admin only
     Sleep  2
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//clr-main-container//nav//ul/li[4]
     Sleep  1
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="adminonly"]
@@ -99,7 +99,7 @@ Set Pro Create Admin Only
 
 Set Pro Create Every One	
     #set limit to Every One	
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//clr-main-container//nav//ul/li[4]
     Sleep  1
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="everyone"]
@@ -109,7 +109,7 @@ Set Pro Create Every One
     Capture Page Screenshot  EveryoneCreate.png
 
 Disable Self Reg	
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//clr-main-container//nav//ul/li[4]
     Mouse Down  xpath=${self_reg_xpath}
     Mouse Up  xpath=${self_reg_xpath}
     Sleep  1
@@ -142,7 +142,7 @@ Project Creation Should Not Display
 ## System settings	
 Switch To System Settings
     Sleep  1
-    Click Element  xpath=//clr-main-container//nav//ul/li[3]
+    Click Element  xpath=//clr-main-container//nav//ul/li[4]
     Click Element  xpath=//*[@id="config-system"]
 
 Modify Token Expiration
