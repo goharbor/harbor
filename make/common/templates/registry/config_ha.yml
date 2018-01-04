@@ -6,7 +6,7 @@ log:
 storage:
   cache:
     layerinfo: redis
-  Place_holder_for_Storage_configureation
+  $storage_provider_info
   maintenance:
     uploadpurging:
       enabled: false

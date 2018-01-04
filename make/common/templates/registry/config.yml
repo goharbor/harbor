@@ -6,8 +6,7 @@ log:
 storage:
   cache:
     layerinfo: inmemory
-  filesystem:
-    rootdirectory: /storage
+  $storage_provider_info
   maintenance:
     uploadpurging:
       enabled: false

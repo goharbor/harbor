@@ -23,13 +23,14 @@ def validate(conf, args):
     if args.ha_mode:
         db_host = rcp.get("configuration", "db_host")
         if db_host == "mysql":
-            raise Exception("Error: In HA mode, db_host in harbor.cfg needs to point to an external DB address")
-        registry_config_path = os.path.join(templates_dir,"registry","config_ha.yml")
-        if check_storage_config(registry_config_path):
-            raise Exception("Error: In HA model shared storage configuration is required registry, refer HA installation guide for detail.")
+            raise Exception("Error: In HA mode, db_host in harbor.cfg needs to point to an external DB address.")
+        registry_storage_provider = rcp.get("configuration",
+                                            "registry_storage_provider").strip()
+        if registry_storage_provider == 'filesystem':
+            raise Exception("Error: In HA mode, shared storage configuration in harbor.cfg is required. Refer to HA installation guide for details.")
         redis_url = rcp.get("configuration", "redis_url")
         if redis_url is None or len(redis_url) < 1:
-            raise Exception("Error: In HA mode redis is required redis_url need to point to an redis cluster")
+            raise Exception("Error: In HA mode, redis_url in harbor.cfg needs to point to a Redis cluster.")
         if args.notary_mode:
             raise Exception("Error: HA mode doesn't support Notary currently")
         if args.clair_mode:
@@ -116,11 +117,6 @@ def prepare_ha(conf, args):
     else:
         if os.path.isfile(secret_key):
             shutil.copy2(secret_key, shared_secret_key)
-
-def check_storage_config(path):
-    if 'Place_holder_for_Storage_configureation' in open(path).read():
-        return True
-    return False
 
 def get_secret_key(path):
     secret_key = _get_secret(path, "secretkey") 
@@ -260,7 +256,6 @@ if rcp.has_option("configuration", "redis_url"):
     redis_url = rcp.get("configuration", "redis_url")
 else:
     redis_url = ""
-########
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
@@ -357,17 +352,24 @@ render(os.path.join(templates_dir, "ui", "env"),
         jobservice_secret=jobservice_secret,
         redis_url = redis_url
         )
-if args.ha_mode:
-    render(os.path.join(templates_dir, "registry",
-		"config_ha.yml"),
-                registry_conf,
-                ui_url=ui_url,
-                redis_url=redis_url)
-else:
-    render(os.path.join(templates_dir, "registry",
-                "config.yml"),
-                registry_conf,
-                ui_url=ui_url)
+
+registry_config_file = "config_ha.yml" if args.ha_mode else "config.yml"
+storage_provider = rcp.get("configuration", "registry_storage_provider").strip()
+storage_provider_cfg = rcp.get("configuration", "registry_storage_provider_cfg").strip()
+if storage_provider == 'filesystem':
+    if not storage_provider_cfg:
+        storage_provider_cfg = 'rootdirectory: /storage'
+    else:
+        storage_provider_cfg = 'rootdirectory: /storage' + ',' + storage_provider_cfg
+print(storage_provider_cfg)
+# generate storage configuration section in yaml format
+storage_provider_info = ('\n' + ' ' * 4).join(
+    [storage_provider + ':'] + map(string.strip, storage_provider_cfg.split(",")))
+render(os.path.join(templates_dir, "registry", registry_config_file),
+    registry_conf,
+    storage_provider_info=storage_provider_info,
+    ui_url=ui_url,
+    redis_url=redis_url)
 
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
