@@ -361,7 +361,6 @@ if storage_provider == 'filesystem':
         storage_provider_cfg = 'rootdirectory: /storage'
     else:
         storage_provider_cfg = 'rootdirectory: /storage' + ',' + storage_provider_cfg
-print(storage_provider_cfg)
 # generate storage configuration section in yaml format
 storage_provider_info = ('\n' + ' ' * 4).join(
     [storage_provider + ':'] + map(string.strip, storage_provider_cfg.split(",")))
