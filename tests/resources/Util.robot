@@ -46,3 +46,4 @@ Resource  OVA-Util.robot
 Resource  Cert-Util.robot
 Resource  SeleniumUtil.robot
 Resource  Harbor-Pages/Project-Config.robot
+Resource  Nightly-Util.robot
