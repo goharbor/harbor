@@ -16,6 +16,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -28,17 +29,36 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common/dao"
+	common_http "github.com/vmware/harbor/src/common/http"
 	"github.com/vmware/harbor/src/common/models"
 )
 
 var (
-	nonSysAdminID int64
-	sysAdmin      = &usrInfo{
+	nonSysAdminID, projAdminID, projDeveloperID, projGuestID int
+
+	// The following users/credentials are registered and assigned roles at the beginning of
+	// running testing and cleaned up at the end.
+	// Do not try to change the system and project roles that the users have during
+	// the testing. Creating a new one in your own case if needed.
+	// The project roles that the users have are for project library.
+	sysAdmin = &usrInfo{
 		Name:   "admin",
 		Passwd: "Harbor12345",
 	}
 	nonSysAdmin = &usrInfo{
 		Name:   "non_admin",
+		Passwd: "Harbor12345",
+	}
+	projAdmin = &usrInfo{
+		Name:   "proj_admin",
+		Passwd: "Harbor12345",
+	}
+	projDeveloper = &usrInfo{
+		Name:   "proj_developer",
+		Passwd: "Harbor12345",
+	}
+	projGuest = &usrInfo{
+		Name:   "proj_guest",
 		Passwd: "Harbor12345",
 	}
 )
@@ -113,22 +133,25 @@ func handle(r *testingRequest) (*httptest.ResponseRecorder, error) {
 	return resp, nil
 }
 
-func handleAndParse(r *testingRequest, v interface{}) (*httptest.ResponseRecorder, error) {
-	req, err := newRequest(r)
+func handleAndParse(r *testingRequest, v interface{}) error {
+	resp, err := handle(r)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	resp := httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(resp, req)
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
 
 	if resp.Code >= 200 && resp.Code <= 299 {
-		if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
-			return nil, err
-		}
+		return json.Unmarshal(data, v)
 	}
 
-	return resp, nil
+	return &common_http.Error{
+		Code:    resp.Code,
+		Message: string(data),
+	}
 }
 
 func runCodeCheckingCases(t *testing.T, cases ...*codeCheckingCase) {
@@ -179,17 +202,73 @@ func TestMain(m *testing.M) {
 }
 
 func prepare() error {
+	// register nonSysAdmin
 	id, err := dao.Register(models.User{
 		Username: nonSysAdmin.Name,
 		Password: nonSysAdmin.Passwd,
+		Email:    nonSysAdmin.Name + "@test.com",
 	})
 	if err != nil {
 		return err
 	}
-	nonSysAdminID = id
-	return nil
+	nonSysAdminID = int(id)
+
+	// register projAdmin and assign project admin role
+	id, err = dao.Register(models.User{
+		Username: projAdmin.Name,
+		Password: projAdmin.Passwd,
+		Email:    projAdmin.Name + "@test.com",
+	})
+	if err != nil {
+		return err
+	}
+	projAdminID = int(id)
+
+	if err = dao.AddProjectMember(1, projAdminID, models.PROJECTADMIN); err != nil {
+		return err
+	}
+
+	// register projDeveloper and assign project developer role
+	id, err = dao.Register(models.User{
+		Username: projDeveloper.Name,
+		Password: projDeveloper.Passwd,
+		Email:    projDeveloper.Name + "@test.com",
+	})
+	if err != nil {
+		return err
+	}
+	projDeveloperID = int(id)
+
+	if err = dao.AddProjectMember(1, projDeveloperID, models.DEVELOPER); err != nil {
+		return err
+	}
+
+	// register projGuest and assign project guest role
+	id, err = dao.Register(models.User{
+		Username: projGuest.Name,
+		Password: projGuest.Passwd,
+		Email:    projGuest.Name + "@test.com",
+	})
+	if err != nil {
+		return err
+	}
+	projGuestID = int(id)
+
+	return dao.AddProjectMember(1, projGuestID, models.GUEST)
 }
 
-func clean() error {
-	return dao.DeleteUser(int(nonSysAdminID))
+func clean() {
+	ids := []int{projAdminID, projDeveloperID, projGuestID}
+	for _, id := range ids {
+		if err := dao.DeleteProjectMember(1, id); err != nil {
+			fmt.Printf("failed to clean up member %d from project library: %v", id, err)
+		}
+	}
+
+	ids = append(ids, nonSysAdminID)
+	for _, id := range ids {
+		if err := dao.DeleteUser(id); err != nil {
+			fmt.Printf("failed to clean up user %d: %v \n", id, err)
+		}
+	}
 }

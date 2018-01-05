@@ -110,6 +110,7 @@ func init() {
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/logs", &LogAPI{})
+	beego.Router("/api/repositories/*", &RepositoryAPI{}, "put:Put")
 	beego.Router("/api/repositories/*/tags/:tag", &RepositoryAPI{}, "delete:Delete;get:GetTag")
 	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
