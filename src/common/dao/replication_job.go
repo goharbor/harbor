@@ -291,7 +291,7 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 }
 
 // FilterRepJobs ...
-func FilterRepJobs(policyID int64, repository, status string, startTime,
+func FilterRepJobs(policyID int64, repository string, status []string, startTime,
 	endTime *time.Time, limit, offset int64) ([]*models.RepJob, int64, error) {
 
 	jobs := []*models.RepJob{}
@@ -305,7 +305,7 @@ func FilterRepJobs(policyID int64, repository, status string, startTime,
 		qs = qs.Filter("Repository__icontains", repository)
 	}
 	if len(status) != 0 {
-		qs = qs.Filter("Status__icontains", status)
+		qs = qs.Filter("Status__in", status)
 	}
 	if startTime != nil {
 		qs = qs.Filter("CreationTime__gte", startTime)
