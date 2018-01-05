@@ -96,7 +96,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     setInterval(() => ref.markForCheck(), 500);
   }
 
-  public get creationAvailable(): boolean {
+  public get opereateAvailable(): boolean {
     return !this.readonly && !this.projectId ? true : false;
   }
 

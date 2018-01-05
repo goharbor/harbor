@@ -89,6 +89,7 @@ const harborRoutes: Routes = [
         path: 'replications',
         component: TotalReplicationPageComponent,
         canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
       },
       {
           path: 'replications/:id/rule',
@@ -143,7 +144,6 @@ const harborRoutes: Routes = [
           {
             path: 'replications',
             component: ReplicationPageComponent,
-            canActivate: [SystemAdminGuard]
           },
           {
             path: 'members',

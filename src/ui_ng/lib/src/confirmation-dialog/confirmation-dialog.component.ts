@@ -98,8 +98,8 @@ export class ConfirmationDialogComponent {
         this.close();
     }
 
-    confirm(): void {
-        if(!this.message){//Inproper condition
+    delete(): void {
+        if (!this.message){//Inproper condition
             this.close();
             return;
         }
@@ -117,5 +117,22 @@ export class ConfirmationDialogComponent {
             target
         );
         this.confirmAction.emit(message);
+    }
+
+    confirm(): void {
+        if (!this.message){//Inproper condition
+            this.close();
+            return;
+        }
+
+        let data: any = this.message.data ? this.message.data : {};
+        let target = this.message.targetId ? this.message.targetId : ConfirmationTargets.EMPTY;
+        let message = new ConfirmationAcknowledgement(
+            ConfirmationState.CONFIRMED,
+            data,
+            target
+        );
+        this.confirmAction.emit(message);
+        this.close();
     }
 }

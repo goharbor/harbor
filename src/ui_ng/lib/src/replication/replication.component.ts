@@ -136,9 +136,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     private translateService: TranslateService) {
   }
 
-  /*public get creationAvailable(): boolean {
-    return !this.readonly && this.projectId ? true : false;
-  }*/
 
   public get showPaginationIndex(): boolean {
     return this.totalCount > 0;
@@ -158,7 +155,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   openModal(): void {
     this.openCreateRule.emit();
-    // this.createEditPolicyComponent.openCreateEditRule(true);
   }
 
   openEditRule(rule: ReplicationRule) {
@@ -168,7 +164,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         editable = false;
       }
       this.openEdit.emit(rule.id);
-      // this.createEditPolicyComponent.openCreateEditRule(editable, rule.id);
     }
   }
 

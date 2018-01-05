@@ -23,7 +23,6 @@ export const CONFIRMATION_DIALOG_TEMPLATE: string = `
        <ng-template [ngSwitchCase]="0">
         <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.CANCEL' | translate}}</button>
         <button type="button" class="btn btn-primary" (click)="confirm()">{{'BUTTON.CONFIRM' | translate}}</button>
-        <button type="button" class="btn btn-primary" (click)="cancel()">{{'BUTTON.CLOSE' | translate}}</button>
        </ng-template>
        <ng-template [ngSwitchCase]="1">
         <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.NO' | translate}}</button>
@@ -31,7 +30,7 @@ export const CONFIRMATION_DIALOG_TEMPLATE: string = `
        </ng-template>
        <ng-template [ngSwitchCase]="2">
         <button type="button" class="btn btn-outline" (click)="cancel()" [hidden]="isDelete">{{'BUTTON.CANCEL' | translate}}</button>
-         <button type="button" class="btn btn-danger" (click)="confirm()" [hidden]="isDelete">{{'BUTTON.DELETE' | translate}}</button>
+         <button type="button" class="btn btn-danger" (click)="delete()" [hidden]="isDelete">{{'BUTTON.DELETE' | translate}}</button>
         <button type="button" class="btn btn-primary" (click)="cancel()" [disabled]="!batchOverStatus"  [hidden]="!isDelete">{{'BUTTON.CLOSE' | translate}}</button>
        </ng-template>
        <ng-template [ngSwitchCase]="3">

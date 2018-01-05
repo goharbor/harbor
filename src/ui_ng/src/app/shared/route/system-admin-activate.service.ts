@@ -33,13 +33,12 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
     return new Promise((resolve, reject) => {
       let user = this.authService.getCurrentUser();
-      let projectMem = this.authService.projectMembers;
       if (!user) {
         this.authService.retrieveUser()
           .then(() => {
             //updated user
             user = this.authService.getCurrentUser();
-            if (user.has_admin_role > 0 || projectMem[0].role_name === 'projectAdmin') {
+            if (user.has_admin_role > 0) {
               return resolve(true);
             } else {
               this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
@@ -61,7 +60,7 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
             }
           });
       } else {
-        if (user.has_admin_role > 0  || projectMem[0].role_name === 'projectAdmin') {
+        if (user.has_admin_role > 0) {
           return resolve(true);
         } else {
           this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
