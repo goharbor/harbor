@@ -60,7 +60,10 @@ export class MemberComponent implements OnInit, OnDestroy {
   hasProjectAdminRole: boolean;
 
   searchMember: string;
-  selectedRow: Member[] = [];
+  selectedRow: Member[] = []
+  roleNum: number;
+  isDelete: boolean =false;
+  isChangeRole: boolean =false;
   batchDelectionInfos: BatchInfo[] = [];
 
   constructor(
@@ -69,15 +72,20 @@ export class MemberComponent implements OnInit, OnDestroy {
     private memberService: MemberService, 
     private translate: TranslateService,
     private messageHandlerService: MessageHandlerService,
-    private deletionDialogService: ConfirmationDialogService,
+    private OperateDialogService: ConfirmationDialogService,
     private session: SessionService,
     private ref: ChangeDetectorRef) {
     
-    this.delSub = deletionDialogService.confirmationConfirm$.subscribe(message => {
+    this.delSub = OperateDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
         message.state === ConfirmationState.CONFIRMED &&
         message.source === ConfirmationTargets.PROJECT_MEMBER) {
-        this.deleteMem(message.data);
+        if (this.isDelete) {
+          this.deleteMem(message.data);
+        }
+        if (this.isChangeRole) {
+          this.changeOpe(message.data);
+        }
       }
     });
     let hnd = setInterval(()=>ref.markForCheck(), 100);
@@ -127,27 +135,75 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   changeRole(m: Member[], roleId: number) {
-    if (m) {
-      let promiseList: any[] = [];
+    if (m && m.length) {
+      this.isDelete = false;
+      this.isChangeRole = true;
+      this.roleNum = roleId;
+      let nameArr: string[] = [];
+      this.batchDelectionInfos = [];
       m.forEach(data => {
-        if (!(data.user_id === this.currentUser.user_id  || !this.hasProjectAdminRole)) {
-          promiseList.push(this.memberService.changeMemberRole(this.projectId, data.user_id, roleId));
-        }
-      })
-      Promise.all(promiseList).then(num => {
-            if (num.length === promiseList.length) {
-              this.messageHandlerService.showSuccess('MEMBER.SWITCHED_SUCCESS');
-              this.retrieve(this.projectId, '');
-            }
-          },
-          error => {
-            this.messageHandlerService.handleError(error);
-          }
+        nameArr.push(data.username);
+        let initBatchMessage = new BatchInfo();
+        initBatchMessage.name = data.username;
+        this.batchDelectionInfos.push(initBatchMessage);
+      });
+      this.OperateDialogService.addBatchInfoList(this.batchDelectionInfos);
+
+      let switchMessage = new ConfirmationMessage(
+          'MEMBER.SWITCH_TITLE',
+          'MEMBER.SWITCH_SUMMARY',
+          nameArr.join(','),
+          m,
+          ConfirmationTargets.PROJECT_MEMBER,
+          ConfirmationButtons.DELETE_CANCEL
       );
-      }
+      this.OperateDialogService.openComfirmDialog(switchMessage);
+    }
+  }
+
+  changeOpe(members: Member[]) {
+    if (members && members.length) {
+      let promiseList: any[] = [];
+      members.forEach(member => {
+        if (member.user_id === this.currentUser.user_id || member.role_id >= this.roleNum) {
+          let findedList = this.batchDelectionInfos.find(data => data.name === member.username);
+          this.translate.get('BATCH.SWITCH_FAILURE').subscribe(res => {
+            findedList = BathInfoChanges(findedList, res, false, true);
+          });
+        }else {
+          promiseList.push(this.changeOperate(this.projectId, member.user_id, this.roleNum, member.username));
+        }
+
+      });
+
+      Promise.all(promiseList).then(num => {
+            this.retrieve(this.projectId, '');
+          },
+      );
+    }
+  }
+
+  changeOperate(projectId: number, memberId: number, roleId: number, username: string) {
+    let findedList = this.batchDelectionInfos.find(data => data.name === username);
+    return this.memberService
+        .changeMemberRole(projectId, memberId, roleId)
+        .then(
+            response => {
+              this.translate.get('BATCH.SWITCH_SUCCESS').subscribe(res => {
+                findedList = BathInfoChanges(findedList, res);
+              });
+            },
+            error => {
+              this.translate.get('BATCH.SWITCH_FAILURE').subscribe(res => {
+                findedList = BathInfoChanges(findedList, res, false, true);
+              });
+            }
+        );
   }
 
   deleteMembers(m: Member[]) {
+    this.isDelete = true;
+    this.isChangeRole = false;
     let nameArr: string[] = [];
     this.batchDelectionInfos = [];
     if (m && m.length) {
@@ -157,17 +213,17 @@ export class MemberComponent implements OnInit, OnDestroy {
         initBatchMessage.name = data.username;
         this.batchDelectionInfos.push(initBatchMessage);
       });
-      this.deletionDialogService.addBatchInfoList(this.batchDelectionInfos);
+      this.OperateDialogService.addBatchInfoList(this.batchDelectionInfos);
 
       let deletionMessage = new ConfirmationMessage(
-          'PROJECT.DELETION_TITLE',
-          'PROJECT.DELETION_SUMMARY',
+          'MEMBER.DELETION_TITLE',
+          'MEMBER.DELETION_SUMMARY',
           nameArr.join(','),
           m,
           ConfirmationTargets.PROJECT_MEMBER,
           ConfirmationButtons.DELETE_CANCEL
       );
-      this.deletionDialogService.openComfirmDialog(deletionMessage);
+      this.OperateDialogService.openComfirmDialog(deletionMessage);
     }
   }
 

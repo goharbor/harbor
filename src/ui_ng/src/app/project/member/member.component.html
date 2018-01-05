@@ -1,6 +1,6 @@
-<div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="top: 8px;">
-        <div class="row flex-items-xs-between">
+<div class="row" style="margin-top: 24px;position: relative;">
+    <div>
+        <div class="row flex-items-xs-between rightPos">
             <div class="flex-xs-middle option-left" style="position: relative; top: 10px;">
             </div>
             <div class="flex-xs-middle option-right">
@@ -15,7 +15,7 @@
         <clr-datagrid [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="SelectedChange()">
             <clr-dg-action-bar>
                 <div class="btn-group">
-                    <clr-button-group [clrMenuPosition]="'bottom-right'">
+                    <clr-button-group [clrMenuPosition]="'bottom-right'" >
                         <clr-button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()" [disabled]="!hasProjectAdminRole">{{'MEMBER.NEW_MEMBER' | translate }}</clr-button>
                         <clr-button class="btn btn-sm btn-secondary" (click)="deleteMembers(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.DELETE' | translate}}</clr-button>
                         <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 1)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.PROJECT_ADMIN' | translate}}</clr-button>

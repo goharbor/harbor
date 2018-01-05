@@ -1,8 +1,8 @@
 export const REPOSITORY_LISTVIEW_TEMPLATE = `
 <div>
-  <div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
-      <div class="row flex-items-xs-right option-right">
+  <div class="row" style="position:relative;">
+    <div>  
+      <div class="row flex-items-xs-right option-right rightPos">
         <div class="flex-xs-middle">
           <hbr-push-image-button style="display: inline-block;" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
           <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)" [currentValue]="lastFilteredRepoName"></hbr-filter>

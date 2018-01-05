@@ -21,4 +21,11 @@ export const REPLICATION_STYLE: string = `
 .option-right-down {
   padding-right: 16px;
   margin-top: 24px;
-}`;
+}
+.rightPos{
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
+}
+`;
