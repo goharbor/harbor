@@ -271,7 +271,7 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 
 // Bind with specified DN and password, used in authentication
 func (session *Session) Bind(dn string, password string) error {
-	return session.ldapConn.Bind(dn, password)
+	return session.ldapConn.Bind(EscapeDN(dn), password)
 }
 
 //Open - open Session
@@ -319,7 +319,7 @@ func (session *Session) SearchLdap(filter string) (*goldap.SearchResult, error) 
 	}
 	log.Debugf("Search ldap with filter:%v", filter)
 	searchRequest := goldap.NewSearchRequest(
-		session.ldapConfig.LdapBaseDn,
+		EscapeDN(session.ldapConfig.LdapBaseDn),
 		session.ldapConfig.LdapScope,
 		goldap.NeverDerefAliases,
 		0,     //Unlimited results
@@ -375,4 +375,105 @@ func (session *Session) Close() {
 	if session.ldapConn != nil {
 		session.ldapConn.Close()
 	}
+}
+
+var hex = "0123456789abcdef"
+
+func mustEscapeInDN(c byte) bool {
+	return c > 0x7f || c == ',' || c == '\\' || c == '#' || c == '+' || c == '<' || c == '>' || c == ';' || c == '"' || c == 0
+}
+
+// EscapeDN -- Replace special characters specified in RFC4514
+func EscapeDN(dn string) string {
+
+	escape := 0
+	isDNValue := make([]bool, len(dn))
+	isLeadingOrTailSpace := make([]bool, len(dn))
+	isDNValue[len(dn)-1] = true
+	valueState := true
+
+	for i := len(dn) - 1; i >= 0; i-- {
+		isDNValue[i] = valueState
+		if dn[i] == '=' {
+			valueState = !valueState
+			isDNValue[i] = valueState
+			continue
+		}
+		if dn[i] == ',' && !valueState {
+			valueState = true
+		}
+
+	}
+
+	for i := 0; i < len(dn); i++ {
+		if isDNValue[i] && mustEscapeInDN(dn[i]) {
+			escape++
+		}
+	}
+
+	//scan leading space
+	leadingSpaceStatus := false
+	for i := 0; i < len(dn); i++ {
+		if dn[i] == ' ' {
+			if i != 0 && !isDNValue[i-1] {
+				leadingSpaceStatus = true
+				isLeadingOrTailSpace[i] = true
+				escape++
+				continue
+			}
+
+			if leadingSpaceStatus {
+				isLeadingOrTailSpace[i] = true
+				escape++
+				continue
+			}
+		} else {
+			leadingSpaceStatus = false
+		}
+
+	}
+
+	//scan tail space
+	tailSpaceStatus := false
+
+	for i := len(dn) - 1; i >= 0; i-- {
+		if dn[i] == ' ' {
+			if i == len(dn)-1 || isDNValue[i+1] == false {
+				tailSpaceStatus = true
+				isLeadingOrTailSpace[i] = true
+				escape++
+				continue
+			}
+
+			if tailSpaceStatus {
+				isLeadingOrTailSpace[i] = true
+				escape++
+				continue
+			}
+		} else {
+			tailSpaceStatus = false
+		}
+
+	}
+
+	if escape == 0 {
+		return dn
+	}
+
+	buf := make([]byte, len(dn)+escape*2)
+
+	//escape special chars
+	for i, j := 0, 0; i < len(dn); i++ {
+		c := dn[i]
+		if isDNValue[i] && (mustEscapeInDN(c) || isLeadingOrTailSpace[i]) {
+			buf[j+0] = '\\'
+			buf[j+1] = hex[c>>4]
+			buf[j+2] = hex[c&0xf]
+			j += 3
+		} else {
+			buf[j] = c
+			j++
+		}
+	}
+	return string(buf)
 }
