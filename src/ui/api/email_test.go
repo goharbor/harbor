@@ -16,7 +16,6 @@ package api
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,7 +35,7 @@ func TestPingEmail(t *testing.T) {
 
 	assert.Equal(401, code, "the status code of ping email server with non-admin user should be 401")
 
-	//case 2: bad request
+	//case 2: empty email host
 	settings := `{
 		"email_host":     ""
 	}`
@@ -47,7 +46,7 @@ func TestPingEmail(t *testing.T) {
 		return
 	}
 
-	assert.Equal(400, code, "the status code of ping email server should be 400")
+	assert.Equal(400, code)
 
 	//case 3: secure connection with admin role
 	settings = `{
@@ -58,18 +57,13 @@ func TestPingEmail(t *testing.T) {
 		"email_ssl":      true
 	}`
 
-	code, body, err := apiTest.PingEmail(*admin, []byte(settings))
+	code, _, err = apiTest.PingEmail(*admin, []byte(settings))
 	if err != nil {
 		t.Errorf("failed to test ping email server: %v", err)
 		return
 	}
 
-	assert.Equal(400, code, "the status code of ping email server should be 400")
-
-	if !strings.Contains(body, "535") {
-		t.Errorf("unexpected error: %s does not contains 535", body)
-		return
-	}
+	assert.Equal(400, code)
 
 	//case 4: ping email server whose settings are read from config
 	code, _, err = apiTest.PingEmail(*admin, nil)
@@ -78,5 +72,5 @@ func TestPingEmail(t *testing.T) {
 		return
 	}
 
-	assert.Equal(400, code, "the status code of ping email server should be 400")
+	assert.Equal(400, code)
 }

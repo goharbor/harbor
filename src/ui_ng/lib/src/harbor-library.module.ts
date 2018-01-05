@@ -214,7 +214,7 @@ export class HarborLibraryModule {
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
-        //Do initializing
+        // Do initializing
         TranslateServiceInitializer,
         {
           provide: APP_INITIALIZER,

@@ -1,6 +1,6 @@
 {
     "name": "harbor",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": "Harbor UI with Clarity",
     "angular-cli": {},
     "scripts": {
@@ -31,7 +31,7 @@
         "clarity-icons": "^0.10.17",
         "clarity-ui": "^0.10.17",
         "core-js": "^2.4.1",
-        "harbor-ui": "^0.6.0-test-5",
+        "harbor-ui": "0.6.6",
         "intl": "^1.2.5",
         "mutationobserver-shim": "^0.3.2",
         "ngx-cookie": "^1.0.0",

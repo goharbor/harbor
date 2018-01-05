@@ -8,22 +8,47 @@
             <search-result></search-result>
             <router-outlet></router-outlet>
         </div>
-        <nav class="sidenav" style="padding: 12px 36px;" *ngIf="isUserExisting">
-            <section class="sidenav-content" style="padding-top: 20px;">
-                <a routerLink="/harbor/projects" routerLinkActive="active" class="nav-link nav-link-override">{{'SIDE_NAV.PROJECTS' | translate}}</a>
-                <a routerLink="/harbor/logs" routerLinkActive="active" class="nav-link nav-link-override" style="margin-top: 4px;">{{'SIDE_NAV.LOGS' | translate}}</a>
-                <section class="nav-group collapsible" *ngIf="isSystemAdmin" style="margin-top: 4px;">
-                    <input id="tabsystem" type="checkbox">
-                    <label for="tabsystem">{{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}</label>
-                    <ul class="nav-list">
-                        <li><a class="nav-link nav-link-override" routerLink="/harbor/users" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}</a></li>
-                        <li><a class="nav-link nav-link-override" routerLink="/harbor/replications" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a></li>
-                        <li><a class="nav-link nav-link-override" routerLink="/harbor/registry" routerLinkActive="active">{{'APP_TITLE.REG' | translate}}</a></li>
-                        <li><a class="nav-link nav-link-override" routerLink="/harbor/configs" routerLinkActive="active">{{'SIDE_NAV.SYSTEM_MGMT.CONFIG' | translate}}</a></li>
-                    </ul>
-                </section>
-            </section>
-        </nav>
+        <clr-vertical-nav [clrVerticalNavCollapsible]="true" *ngIf="isUserExisting">
+            <a clrVerticalNavLink routerLinkActive="active" routerLink="/harbor/projects">
+                <clr-icon shape="organization" clrVerticalNavIcon></clr-icon>
+                {{'SIDE_NAV.PROJECTS' | translate}}
+            </a>
+            <a clrVerticalNavLink routerLinkActive="active" routerLink="/harbor/logs">
+                <clr-icon shape="list" clrVerticalNavIcon></clr-icon>
+                {{'SIDE_NAV.LOGS' | translate}}
+            </a>
+            <clr-vertical-nav-group  *ngIf="isSystemAdmin" routerLinkActive="active">
+                <clr-icon shape="administrator" clrVerticalNavIcon></clr-icon>
+                {{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}
+                <a routerLink="#" hidden aria-hidden="true"></a>
+                <clr-vertical-nav-group-children *clrIfExpanded="true">
+                    <a clrVerticalNavLink
+                       routerLink="/harbor/users"
+                       routerLinkActive="active">
+                       <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
+                       {{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}
+                    </a>
+                    <a clrVerticalNavLink
+                       routerLink="/harbor/registries"
+                       routerLinkActive="active">
+                       <clr-icon shape="block" clrVerticalNavIcon></clr-icon>
+                       {{'SIDE_NAV.SYSTEM_MGMT.REGISTRY' | translate}}
+                    </a>
+                    <a clrVerticalNavLink
+                       routerLink="/harbor/replications"
+                       routerLinkActive="active">
+                       <clr-icon shape="cloud-traffic" clrVerticalNavIcon></clr-icon>
+                       {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}
+                    </a>
+                    <a clrVerticalNavLink
+                       routerLink="/harbor/configs"
+                       routerLinkActive="active">
+                       <clr-icon shape="cog" clrVerticalNavIcon></clr-icon>
+                       {{'SIDE_NAV.SYSTEM_MGMT.CONFIG' | translate}}
+                    </a>
+                </clr-vertical-nav-group-children>
+            </clr-vertical-nav-group>
+        </clr-vertical-nav>
     </div>
 </clr-main-container>
 <account-settings-modal></account-settings-modal>

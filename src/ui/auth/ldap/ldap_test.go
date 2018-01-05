@@ -19,6 +19,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
@@ -203,4 +204,60 @@ func TestAuthenticateHelperSearchUser(t *testing.T) {
 	if user == nil {
 		t.Error("Failed to search user test")
 	}
+}
+
+func TestPostAuthentication(t *testing.T) {
+
+	assert := assert.New(t)
+	user1 := &models.User{
+		Username: "test003",
+		Email:    "test003@vmware.com",
+		Realname: "test003",
+	}
+
+	queryCondition := models.User{
+		Username: "test003",
+		Realname: "test003",
+	}
+
+	err := auth.OnBoardUser(user1)
+	assert.Nil(err)
+
+	user2 := &models.User{
+		Username: "test003",
+		Email:    "234invalidmail@@@@@",
+	}
+
+	auth.PostAuthenticate(user2)
+
+	dbUser, err := dao.GetUser(queryCondition)
+	if err != nil {
+		t.Fatalf("Failed to get user, error %v", err)
+	}
+	assert.EqualValues("test003@vmware.com", dbUser.Email)
+
+	user3 := &models.User{
+		Username: "test003",
+	}
+
+	auth.PostAuthenticate(user3)
+	dbUser, err = dao.GetUser(queryCondition)
+	if err != nil {
+		t.Fatalf("Failed to get user, error %v", err)
+	}
+	assert.EqualValues("test003@vmware.com", dbUser.Email)
+
+	user4 := &models.User{
+		Username: "test003",
+		Email:    "test003@example.com",
+	}
+
+	auth.PostAuthenticate(user4)
+
+	dbUser, err = dao.GetUser(queryCondition)
+	if err != nil {
+		t.Fatalf("Failed to get user, error %v", err)
+	}
+	assert.EqualValues("test003@example.com", dbUser.Email)
+	dao.CleanUser(int64(dbUser.UserID))
 }

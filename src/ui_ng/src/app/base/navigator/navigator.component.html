@@ -2,7 +2,7 @@
     <div class="branding">
         <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
             <clr-icon shape="vm-bug"  *ngIf="!customStyle?.headerLogo"></clr-icon>
-            <img [attr.src]="customStyle?.headerLogo" *ngIf="customStyle?.headerLogo" style="width: 36px;height: 36px; object-fit: fill;">
+            <img [attr.src]="'static/images/'+customStyle?.headerLogo" *ngIf="customStyle?.headerLogo" style="width: 36px;height: 36px; object-fit: fill;">
             <span class="title">{{customProjectName?.projectName? customProjectName?.projectName:(appTitle | translate)}}</span>
         </a>
     </div>

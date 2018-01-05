@@ -81,10 +81,14 @@ const harborRoutes: Routes = [
         canActivate: [SystemAdminGuard]
       },
       {
+        path: 'registries',
+        component: DestinationPageComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
         path: 'replications',
         component: TotalReplicationPageComponent,
         canActivate: [SystemAdminGuard],
-        canActivateChild: [SystemAdminGuard],
       },
       {
           path: 'replications/:id/rule',

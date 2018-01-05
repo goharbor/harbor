@@ -24,12 +24,18 @@ export const REPOSITORY_TEMPLATE = `
     <section id="info" role="tabpanel" aria-labelledby="repo-info" [hidden]='!isCurrentTabContent("info")'>
       <form #repoInfoForm="ngForm">
         <div id="info-edit-button">
-          <button class="btn btn-sm" [disabled]="editing" (click)="editInfo()" >{{'BUTTON.EDIT' | translate}}</button>
+          <button class="btn btn-sm" [disabled]="editing || !hasProjectAdminRole " (click)="editInfo()" >{{'BUTTON.EDIT' | translate}}</button>
         </div>
-        <div>
-          <h3 *ngIf="!editing && !hasInfo()" >{{'REPOSITORY.NO_INFO' | translate }}</h3>
-          <pre *ngIf="!editing && hasInfo()" ><code>{{ imageInfo }}</code></pre>
-          <textarea *ngIf="editing" name="info-edit-textarea" [(ngModel)]="imageInfo"></textarea>
+        <div *ngIf="!editing">
+          <div *ngIf="!hasInfo()" class="no-info-div">
+            <p>{{'REPOSITORY.NO_INFO' | translate }}<p>
+          </div>
+          <div *ngIf="hasInfo()" class="info-div">
+            <pre class="info-pre">{{ imageInfo }}</pre>
+          </div>
+        </div>
+        <div *ngIf="editing">
+            <textarea rows="5"  name="info-edit-textarea" [(ngModel)]="imageInfo"></textarea>
         </div>
         <div class="btn-sm" *ngIf="editing">
           <button class="btn btn-primary" [disabled]="!hasChanges()" (click)="saveInfo()" >{{'BUTTON.SAVE' | translate}}</button>

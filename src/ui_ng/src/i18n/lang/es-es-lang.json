@@ -98,7 +98,8 @@
         "SYSTEM_MGMT": {
             "NAME": "Administración",
             "USER": "Usuarios",
-            "REPLICATION": "Replicación",
+            "REGISTRY": "Registries",
+            "REPLICATION": "Replicacións",
             "CONFIG": "Configuración"
         },
         "LOGS": "Logs"
