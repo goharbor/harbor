@@ -14,13 +14,13 @@
 package ldap
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
-	"github.com/vmware/harbor/src/common/models"
-
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/test"
 	uiConfig "github.com/vmware/harbor/src/ui/config"
@@ -257,6 +257,28 @@ func TestFormatURL(t *testing.T) {
 		}
 		if err != nil || goodURL != u.goodURL {
 			t.Fatalf("Faild on URL: raw=%v, expected:%v, actual:%v", u.rawURL, u.goodURL, goodURL)
+		}
+	}
+
+}
+
+func TestEscapeDN(t *testing.T) {
+	var input = []struct {
+		dn       string
+		expected string
+	}{
+		{"cn=Smith, James K.,ou=West,dc=MyDomain,dc=com", "cn=Smith\\2c James K.,ou=West,dc=MyDomain,dc=com"},
+		{"ou=Sales\\Engineering,dc=MyDomain,dc=com", "ou=Sales\\5cEngineering,dc=MyDomain,dc=com"},
+		{"cn=East#Test + Lab,ou=West,dc=MyDomain,dc=com", "cn=East\\23Test \\2b Lab,ou=West,dc=MyDomain,dc=com"},
+		{"cn=  Jim Smith  ,ou=West,dc=MyDomain,dc=com", "cn=\\20\\20Jim Smith\\20\\20,ou=West,dc=MyDomain,dc=com"},
+		{"cn=admin,ou=example,dc=com", "cn=admin,ou=example,dc=com"},
+		{"cn=admin<sample>,ou=example,dc=com", "cn=admin\\3csample\\3e,ou=example,dc=com"},
+	}
+	for _, val := range input {
+		result := EscapeDN(val.dn)
+		fmt.Println(result)
+		if result != val.expected {
+			t.Fatalf("Failed to escape dn, expected: %v, actual: %v", val.expected, result)
 		}
 	}
 
