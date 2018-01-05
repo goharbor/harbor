@@ -26,7 +26,7 @@ def execute(harbor_endpoints, harbor_root_pwd, test_suite, harbor_pwd='Harbor123
         cmd = cmd + "/drone/tests/robot-cases/Group11-Nightly/Nightly.robot"
 
     if test_suite == 'Longevity':
-        cmd = cmd + "/drone/tests/robot-cases/Group10-Longevity/Longevity.robot"
+        cmd = cmd + "/drone/tests/robot-cases/Group12-Longevity/Longevity.robot"
     
     logger.info(cmd)
     result = os.system(cmd)
