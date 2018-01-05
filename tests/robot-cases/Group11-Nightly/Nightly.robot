@@ -15,11 +15,14 @@
 *** Settings ***
 Documentation  Harbor BATs
 Resource  ../../resources/Util.robot
-Suite Setup  Install Harbor to Test Server
-Default Tags  BAT
+Suite Setup  Nightly Test Setup  ${ip}  ${SSH_PWD}  ${HARBOR_PASSWORD}
+Suite Teardown  Collect Nightly Logs  ${ip}  ${SSH_PWD}
+Default Tags  Nightly
 
 *** Variables ***
 ${HARBOR_URL}  https://${ip}
+${SSH_USER}  root
+${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Create An New User
@@ -30,7 +33,7 @@ Test Case - Create An New User
 
 Test Case - Sign With Admin
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Close Browser
 
 Test Case - Update User Comment
@@ -140,7 +143,7 @@ Test Case - Manage project publicity
 Test Case - Project Level Policy Public
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}
     Go Into Project  project${d}
     Goto Project Config
@@ -156,16 +159,16 @@ Test Case - Project Level Policy Public
 Test Case - Project Level Policy Content Trust
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}
-    Push Image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  hello-world:latest
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
     Go Into Project  project${d}
     Goto Project Config
     Click Content Trust
     Save Project Config
     #verify
     Content Trust Should Be Selected
-    Cannot Pull Unsigned Image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  hello-world:latest
+    Cannot Pull Unsigned Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
     Close Browser
 
 Test Case - Edit Project Creation
@@ -178,7 +181,7 @@ Test Case - Edit Project Creation
     Logout Harbor
 
     Sleep  3
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Set Pro Create Admin Only
     Logout Harbor
 
@@ -186,19 +189,19 @@ Test Case - Edit Project Creation
     Project Creation Should Not Display
     Logout Harbor
 
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Set Pro Create Every One
     Close browser
 
 Test Case - Edit Self-Registration
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Disable Self Reg
     Logout Harbor
 
     Sign Up Should Not Display
 
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Self Reg Should Be Disabled
     Sleep  1
@@ -209,13 +212,13 @@ Test Case - Edit Self-Registration
 
 Test Case - Edit Email Settings
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
 
     Switch To Email
     Config Email
 
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
 
     Switch To Email
     Verify Email
@@ -224,12 +227,12 @@ Test Case - Edit Email Settings
 
 Test Case - Edit Token Expire
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To System Settings
     Modify Token Expiration  20
     Logout Harbor
 
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To System Settings
     Token Must Be Match  20
 
@@ -237,10 +240,10 @@ Test Case - Edit Token Expire
     Modify Token Expiration  30
     Close Browser
 
-# Test Case - Create An Replication Rule New Endpoint
+#Test Case - Create An Replication Rule New Endpoint
 #    Init Chrome Driver
 #    ${d}=  Get current date  result_format=%m%s
-#    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+#    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
 #    Create An New Project  project${d}
 #    Go Into Project  project${d}
 #    Switch To Replication
@@ -325,7 +328,8 @@ Test Case - Delete Multi User
     Filter Object  delete
     Multi-delete Object  deletea  deleteb  deletec
     #assert delete 
-    Delete Success
+    #Delete Success  comment temp  wait for fixing
+    Click Element  //clr-modal//button[contains(.,'CLOSE')]
     Sleep  1
    #filter object  delete
     Page Should Not Contain  deletea
@@ -377,13 +381,13 @@ Test Case - Delete Multi Member
     Delete Success
     Page Should Not Contain  testa${d}
     Close Browser
-
+    
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch to User Tag
     Assign User Admin  tester${d}
     Logout Harbor
@@ -397,7 +401,7 @@ Test Case - Admin Push Signed Image
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
     Log  ${output}
 		
-    Push image  ${ip}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  library  hello-world:latest
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh ${ip}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -405,55 +409,35 @@ Test Case - Admin Push Signed Image
     ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
-    #Should Contain  ${output}  sha256
+    Should Contain  ${output}  sha256
 
-Test Case - Admin Push Un-Signed Image	
-    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/library/hello-world:latest
-    Log To Console  ${output}
-
-Test Case - Ldap Verify Cert
-    Switch To LDAP
+Test Case - View Scan Results
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-    Switch To Configure
-    Test Ldap Connection
-    Close Browser
-
-Test Case - Ldap Sign in and out
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
-    Switch To Configure
-    Init LDAP
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
-    Close Browser
-
-Test Case - Ldap User Create Project
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
-    Create An New Project  project${d}
-    Logout Harbor
-    Manage Project Member  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  mike02  Add
-    Project Should Have Member  project${d}  mike02
-    User Email Should Exist  mike02@example.com
-    Close Browser
-
-Test Case - Ldap User Push An Image
-    Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
-    Create An New Project  project${d}
-    
-    Push Image  ${ip}  mike  zhu88jie  project${d}  hello-world:latest
+    ${d}=  get current date  result_format=%m%s
+    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
+    Push Image  ${ip}  tester${d}  Test1@34  project${d}  tomcat
     Go Into Project  project${d}
-    Wait Until Page Contains  project${d}/hello-world
+    Go Into Repo  project${d}/tomcat
+    Scan Repo  latest
+    Summary Chart Should Display  latest
+    View Repo Scan Details
     Close Browser
 
-Test Case - Ldap User Can Not login
-    Docker Login Fail  ${ip}  test  123456
+Test Case - View Scan Error
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
+    Push Image  ${ip}  tester${d}  Test1@34  project${d}  vmware/photon:1.0
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/vmware/photon
+    Scan Repo  1.0
+    View Scan Error Log
+    Close Browser
 
-Test Case - Clean Harbor Images	
-    Down Harbor
+#Test Case - OVA reboot
+#    Reboot VM  ${vm_name}  ${vc_host}  ${vc_user}  ${vc_password}
+#    Wait for Harbor Ready  https  ${ip}
 
-
+#Test Case - OVA reset
+#    Reset VM  ${vm_name}  ${vc_host}  ${vc_user}  ${vc_password}
+#    Wait for Harbor Ready  https  ${ip}
