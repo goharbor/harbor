@@ -258,9 +258,12 @@ func DeleteUser(userID int) error {
 }
 
 // ChangeUserProfile ...
-func ChangeUserProfile(user models.User) error {
+func ChangeUserProfile(user models.User, cols ...string) error {
 	o := GetOrmer()
-	if _, err := o.Update(&user, "Email", "Realname", "Comment"); err != nil {
+	if len(cols) == 0 {
+		cols = []string{"Email", "Realname", "Comment"}
+	}
+	if _, err := o.Update(&user, cols...); err != nil {
 		log.Errorf("update user failed, error: %v", err)
 		return err
 	}
@@ -287,6 +290,15 @@ func OnBoardUser(u *models.User) error {
 		u.HasAdminRole = existing.HasAdminRole
 		u.Realname = existing.Realname
 		u.UserID = existing.UserID
+	}
+	return nil
+}
+
+//CleanUser - Clean this user information from DB
+func CleanUser(id int64) error {
+	if _, err := GetOrmer().QueryTable(&models.User{}).
+		Filter("UserID", id).Delete(); err != nil {
+		return err
 	}
 	return nil
 }

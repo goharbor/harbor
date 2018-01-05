@@ -16,15 +16,12 @@ package api
 
 import (
 	"fmt"
-	"net"
 	"net/http"
-	"net/url"
 	"strconv"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
-	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
@@ -60,27 +57,15 @@ func (t *TargetAPI) Prepare() {
 
 func (t *TargetAPI) ping(endpoint, username, password string, insecure bool) {
 	registry, err := newRegistryClient(endpoint, insecure, username, password)
-	if err != nil {
-		// timeout, dns resolve error, connection refused, etc.
-		if urlErr, ok := err.(*url.Error); ok {
-			if netErr, ok := urlErr.Err.(net.Error); ok {
-				t.CustomAbort(http.StatusBadRequest, netErr.Error())
-			}
-
-			t.CustomAbort(http.StatusBadRequest, urlErr.Error())
-		}
-
-		log.Errorf("failed to create registry client: %#v", err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	if err == nil {
+		err = registry.Ping()
 	}
 
-	if err = registry.Ping(); err != nil {
-		if regErr, ok := err.(*registry_error.HTTPError); ok {
-			t.CustomAbort(regErr.StatusCode, regErr.Detail)
-		}
-
-		log.Errorf("failed to ping registry %s: %v", registry.Endpoint.String(), err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	if err != nil {
+		log.Errorf("failed to ping target: %v", err)
+		// do not return any detail information of the error, or may cause SSRF security issue #3755
+		t.RenderError(http.StatusBadRequest, "failed to ping target")
+		return
 	}
 }
 
@@ -117,7 +102,14 @@ func (t *TargetAPI) Ping() {
 	}
 
 	if req.Endpoint != nil {
-		target.URL = *req.Endpoint
+		url, err := utils.ParseEndpoint(*req.Endpoint)
+		if err != nil {
+			t.HandleBadRequest(err.Error())
+			return
+		}
+
+		// Prevent SSRF security issue #3755
+		target.URL = url.Scheme + "://" + url.Host + url.Path
 	}
 	if req.Username != nil {
 		target.Username = *req.Username
@@ -127,11 +119,6 @@ func (t *TargetAPI) Ping() {
 	}
 	if req.Insecure != nil {
 		target.Insecure = *req.Insecure
-	}
-
-	if len(target.URL) == 0 {
-		t.HandleBadRequest("empty endpoint")
-		return
 	}
 
 	t.ping(target.URL, target.Username, target.Password, target.Insecure)

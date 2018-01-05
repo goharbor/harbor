@@ -129,7 +129,7 @@ func (r *Registry) Catalog() ([]string, error) {
 
 // Ping ...
 func (r *Registry) Ping() error {
-	req, err := http.NewRequest("GET", buildPingURL(r.Endpoint.String()), nil)
+	req, err := http.NewRequest(http.MethodHead, buildPingURL(r.Endpoint.String()), nil)
 	if err != nil {
 		return err
 	}

@@ -30,8 +30,13 @@ def validate(conf, args):
         redis_url = rcp.get("configuration", "redis_url")
         if redis_url is None or len(redis_url) < 1:
             raise Exception("Error: In HA mode redis is required redis_url need to point to an redis cluster")
-        if args.notary_mode or args.clair_mode:
-            raise Exception("Error: HA mode doesn't support clair and notary currently")
+        if args.notary_mode:
+            raise Exception("Error: HA mode doesn't support Notary currently")
+        if args.clair_mode:
+            clair_db_host = rcp.get("configuration", "clair_db_host")
+            if "postgres" == clair_db_host:
+                raise Exception("Error: In HA mode, clair_db_host in harbor.cfg needs to point to an external Postgres DB address.")
+
         cert_path = rcp.get("configuration", "ssl_cert")
         cert_key_path = rcp.get("configuration", "ssl_cert_key")
         shared_cert_key = os.path.join(base_dir, "ha", os.path.basename(cert_key_path))
@@ -245,6 +250,7 @@ uaa_endpoint = rcp.get("configuration", "uaa_endpoint")
 uaa_clientid = rcp.get("configuration", "uaa_clientid")
 uaa_clientsecret = rcp.get("configuration", "uaa_clientsecret")
 uaa_verify_cert = rcp.get("configuration", "uaa_verify_cert")
+uaa_ca_cert = rcp.get("configuration", "uaa_ca_cert")
 
 secret_key = get_secret_key(secretkey_path)
 log_rotate_count = rcp.get("configuration", "log_rotate_count")
@@ -275,6 +281,7 @@ log_config_dir = prep_conf_dir (config_dir, "log")
 adminserver_conf_env = os.path.join(config_dir, "adminserver", "env")
 ui_conf_env = os.path.join(config_dir, "ui", "env")
 ui_conf = os.path.join(config_dir, "ui", "app.conf")
+ui_cert_dir = os.path.join(config_dir, "ui", "certificates")
 jobservice_conf = os.path.join(config_dir, "jobservice", "app.conf")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
 db_conf_env = os.path.join(config_dir, "db", "env")
@@ -381,6 +388,16 @@ shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservic
 
 print("Generated configuration file: %s" % ui_conf)
 shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)
+
+if auth_mode == "uaa_auth":
+    if os.path.isfile(uaa_ca_cert):
+        if not os.path.isdir(ui_cert_dir):
+            os.makedirs(ui_cert_dir, mode=0o600)
+        ui_uaa_ca = os.path.join(ui_cert_dir, "uaa_ca.pem")
+        print("Copying UAA CA cert to %s" % ui_uaa_ca)
+        shutil.copyfile(uaa_ca_cert, ui_uaa_ca)
+    else:
+        print("Can not find UAA CA cert: %s, skip" % uaa_ca_cert)
 
 
 def validate_crt_subj(dirty_subj):

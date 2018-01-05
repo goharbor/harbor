@@ -21,7 +21,9 @@ import (
 )
 
 // Auth implements Authenticator interface to authenticate user against DB.
-type Auth struct{}
+type Auth struct {
+	auth.DefaultAuthenticateHelper
+}
 
 // Authenticate calls dao to authenticate user.
 func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
@@ -30,12 +32,6 @@ func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		return nil, err
 	}
 	return u, nil
-}
-
-// OnBoardUser - Dummy implementation when auth_mod is db_auth
-func (d *Auth) OnBoardUser(user *models.User) error {
-	//No need to create user in local database
-	return nil
 }
 
 // SearchUser - Check if user exist in local db
