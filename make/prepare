@@ -24,10 +24,12 @@ def validate(conf, args):
         db_host = rcp.get("configuration", "db_host")
         if db_host == "mysql":
             raise Exception("Error: In HA mode, db_host in harbor.cfg needs to point to an external DB address.")
-        registry_storage_provider = rcp.get("configuration",
-                                            "registry_storage_provider").strip()
-        if registry_storage_provider == 'filesystem':
-            raise Exception("Error: In HA mode, shared storage configuration in harbor.cfg is required. Refer to HA installation guide for details.")
+        registry_storage_provider_name = rcp.get("configuration",
+                                                 "registry_storage_provider_name").strip()
+        if registry_storage_provider_name == "filesystem" and not args.yes:
+            msg = 'Is the Harbor Docker Registry configured to use shared storage (e.g. NFS, S3, GCS, etc.)? [yes/no]:'
+            if raw_input(msg).lower() != "yes":
+                raise Exception("Error: In HA mode, shared storage configuration for Docker Registry in harbor.cfg is required. Refer to HA installation guide for details.")
         redis_url = rcp.get("configuration", "redis_url")
         if redis_url is None or len(redis_url) < 1:
             raise Exception("Error: In HA mode, redis_url in harbor.cfg needs to point to a Redis cluster.")
@@ -176,6 +178,7 @@ parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',typ
 parser.add_argument('--with-notary', dest='notary_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with notary")
 parser.add_argument('--with-clair', dest='clair_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with clair")
 parser.add_argument('--ha', dest='ha_mode', default=False, action='store_true', help="the Harbor instance is to be deployed in HA mode")
+parser.add_argument('--yes', dest='yes', default=False, action='store_true', help="Answer yes to all questions")
 args = parser.parse_args()
 
 delfile(config_dir)
@@ -354,16 +357,16 @@ render(os.path.join(templates_dir, "ui", "env"),
         )
 
 registry_config_file = "config_ha.yml" if args.ha_mode else "config.yml"
-storage_provider = rcp.get("configuration", "registry_storage_provider").strip()
-storage_provider_cfg = rcp.get("configuration", "registry_storage_provider_cfg").strip()
-if storage_provider == 'filesystem':
-    if not storage_provider_cfg:
-        storage_provider_cfg = 'rootdirectory: /storage'
-    else:
-        storage_provider_cfg = 'rootdirectory: /storage' + ',' + storage_provider_cfg
+storage_provider_name = rcp.get("configuration", "registry_storage_provider_name").strip()
+storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
+if storage_provider_name == "filesystem":
+    if not storage_provider_config:
+        storage_provider_config = "rootdirectory: /storage"
+    elif "rootdirectory:" not in storage_provider_config:
+        storage_provider_config = "rootdirectory: /storage" + "," + storage_provider_config
 # generate storage configuration section in yaml format
 storage_provider_info = ('\n' + ' ' * 4).join(
-    [storage_provider + ':'] + map(string.strip, storage_provider_cfg.split(",")))
+    [storage_provider_name + ':'] + map(string.strip, storage_provider_config.split(",")))
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
     storage_provider_info=storage_provider_info,
