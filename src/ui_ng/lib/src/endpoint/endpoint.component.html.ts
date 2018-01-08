@@ -25,7 +25,7 @@ export const ENDPOINT_TEMPLATE: string = `
                 <clr-dg-column [clrDgField]="'insecure'">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</clr-dg-column>
                 <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'DESTINATION.CREATION_TIME' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'DESTINATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-                <clr-dg-row *clrDgItems="let t of targets" [clrDgItem]='t'>
+                <clr-dg-row *ngFor="let t of targets" [clrDgItem]='t'>
                     <clr-dg-cell>{{t.name}}</clr-dg-cell>
                     <clr-dg-cell>{{t.endpoint}}</clr-dg-cell>
                     <clr-dg-cell> 

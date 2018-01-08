@@ -33,7 +33,8 @@
         "NO": "NO",
         "NEGATIVE": "NEGATIVO",
         "COPY": "COPY",
-        "EDIT": "EDITAR"
+        "EDIT": "EDITAR",
+        "SWITCH": "SWITCH"
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",

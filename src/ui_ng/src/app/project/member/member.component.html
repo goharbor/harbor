@@ -26,7 +26,7 @@
             </clr-dg-action-bar>
             <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
-            <clr-dg-row *clrDgItems="let m of members"  [clrDgItem]="m">
+            <clr-dg-row *ngFor="let m of members"  [clrDgItem]="m">
                 <clr-dg-cell>{{m.username}}</clr-dg-cell>
                 <clr-dg-cell>{{roleInfo[m.role_id] | translate}}</clr-dg-cell>
             </clr-dg-row>

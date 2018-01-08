@@ -10,7 +10,7 @@
     <clr-dg-column *ngIf="showRoleInfo" [clrDgSortBy]="roleComparator">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="repoCountComparator">{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="timeComparator">{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
-        <clr-dg-row *clrDgItems="let p of projects" [clrDgItem]="p">
+        <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
         <clr-dg-cell><a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a></clr-dg-cell>
         <clr-dg-cell>{{ (p.metadata.public === 'true' ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
         <clr-dg-cell *ngIf="showRoleInfo">{{roleInfo[p.current_user_role_id] | translate}}</clr-dg-cell>

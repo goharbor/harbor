@@ -87,6 +87,7 @@ export class ListProjectModelComponent {
 
 
     clrLoad(state: State) {
+        this.selectedProject = null;
         //Keep state for future filtering and sorting
         this.currentState = state;
 

@@ -70,9 +70,9 @@ Change Project Member Role
     Click Element  //button[@class='btn dropdown-toggle']
     Click Element  //button[contains(.,'${role}')]
     sleep  1
-    Click Element  xpath=//clr-modal//button[contains(.,'SWITCH')];
+    Click Element  xpath=//clr-modal//button[contains(.,'SWITCH')]
     sleep  1
-    Click Element  xpath=//clr-modal//button[contains(.,'CLOSE')];
+    Click Element  xpath=//clr-modal//button[contains(.,'CLOSE')]
 
     Sleep  2
     Wait Until Page Contains  ${role}

@@ -45,6 +45,13 @@ export class ConfirmationDialogComponent implements OnDestroy {
         return false;
     }
 
+    get isSwitch(): boolean {
+        if (this.dialogTitle && (this.dialogTitle.includes('SWITCH') || this.dialogTitle.includes('switch'))) {
+            return true;
+        }
+        return false;
+    }
+
     colorChange(list: BatchInfo) {
         if (!list.loading && !list.errorState) {
             return 'green';

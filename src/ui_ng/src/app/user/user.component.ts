@@ -317,6 +317,7 @@ export class UserComponent implements OnInit, OnDestroy {
 
   //Data loading
   load(state: any): void {
+    this.selectedRow = [];
     if (state && state.page) {
       if (this.originalUsers) {
         this.originalUsers.then(users => {

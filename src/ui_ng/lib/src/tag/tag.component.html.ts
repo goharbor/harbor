@@ -23,24 +23,24 @@ export const TAG_TEMPLATE = `
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"> 
     <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
-        <clr-dg-action-bar style="margin-bottom: 0;">
+        <clr-dg-action-bar>
             <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-secondary" *ngIf="canScanNow(selectedRow)" [disabled]="!(selectedRow.length==1)" (click)="scanNow(selectedRow)">{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary" [disabled]="!canScanNow(selectedRow)" [disabled]="!(selectedRow.length==1)" (click)="scanNow(selectedRow)">{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
                 <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)" >{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
                 <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length">{{'REPOSITORY.DELETE' | translate}}</button>
             </div>
         </clr-dg-action-bar>
-        <clr-dg-column style="min-width: 160px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
+        <clr-dg-column style="width: 160px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 90px;" [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
         <clr-dg-column style="min-width: 120px; max-width:220px;">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 140px;" *ngIf="withClair">{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 80px;" *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
-        <clr-dg-column style="width: 130px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
+        <clr-dg-column style="min-width: 130px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 160px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 80px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'TGA.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-        <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
-          <clr-dg-cell  class="truncated"  style="min-width: 160px;" [ngSwitch]="withClair">
+        <clr-dg-row *ngFor="let t of tags" [clrDgItem]='t'>
+          <clr-dg-cell  class="truncated"  style="width: 160px;" [ngSwitch]="withClair">
             <a *ngSwitchCase="true" href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
             <span *ngSwitchDefault>{{t.name}}</span>
           </clr-dg-cell>
@@ -59,7 +59,7 @@ export const TAG_TEMPLATE = `
               <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
             </a>
           </clr-dg-cell>
-          <clr-dg-cell  class="truncated"  style="width: 130px;" title="{{t.author}}">{{t.author}}</clr-dg-cell>
+          <clr-dg-cell  class="truncated"  style="min-width: 130px;" title="{{t.author}}">{{t.author}}</clr-dg-cell>
           <clr-dg-cell style="width: 160px;">{{t.created | date: 'short'}}</clr-dg-cell>
           <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
         </clr-dg-row>

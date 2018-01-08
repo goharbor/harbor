@@ -33,7 +33,8 @@
         "NO": "否",
         "NEGATIVE": "否",
         "COPY": "拷贝",
-        "EDIT": "编辑"
+        "EDIT": "编辑",
+        "SWITCH": "切换"
     },
     "BATCH": {
         "DELETED_SUCCESS": "删除成功",

@@ -17,7 +17,7 @@
     </div>
 
     <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedProject">
-        <clr-dg-row *clrDgItems="let project of projects; let i = index"  [clrDgItem]="project">
+        <clr-dg-row *ngFor="let project of projects; let i = index"  [clrDgItem]="project">
             <clr-dg-cell>{{project.name}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>

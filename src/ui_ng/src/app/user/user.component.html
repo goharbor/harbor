@@ -21,7 +21,7 @@
                 <clr-dg-column>{{'USER.COLUMN_ADMIN' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'USER.COLUMN_EMAIL' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'USER.COLUMN_REG_NAME' | translate}}</clr-dg-column>
-                <clr-dg-row *clrDgItems="let user of users" [clrDgItem]="user">
+                <clr-dg-row *ngFor="let user of users" [clrDgItem]="user">
                     <clr-dg-cell>{{user.username}}</clr-dg-cell>
                     <clr-dg-cell>{{isSystemAdmin(user)}}</clr-dg-cell>
                     <clr-dg-cell>{{user.email}}</clr-dg-cell>

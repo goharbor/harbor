@@ -102,6 +102,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
 
     retrieve(): void {
         this.loading = true;
+        this.selectedRow = [];
         toPromise<Endpoint[]>(this.endpointService
             .getEndpoints(this.targetName))
             .then(

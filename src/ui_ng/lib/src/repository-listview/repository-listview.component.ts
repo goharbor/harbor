@@ -283,6 +283,7 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
   }
 
   clrLoad(state: State): void {
+    this.selectedRow = [];
     //Keep it for future filtering and sorting
     this.currentState = state;
 

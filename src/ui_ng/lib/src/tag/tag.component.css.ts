@@ -25,10 +25,6 @@ export const TAG_STYLE = `
   display: block; height: 0;
 }
 
-:host >>> .datagrid {
-  margin: 0;
-}
-
 :host >>> .datagrid-placeholder {
   display: none;
 }

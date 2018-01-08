@@ -93,6 +93,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   retrieve(projectId: number, username: string) {
+    this.selectedRow = [];
     this.memberService
       .listMembers(projectId, username)
       .subscribe(
@@ -165,7 +166,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     if (members && members.length) {
       let promiseList: any[] = [];
       members.forEach(member => {
-        if (member.user_id === this.currentUser.user_id || member.role_id >= this.roleNum) {
+        if (member.user_id === this.currentUser.user_id) {
           let findedList = this.batchDelectionInfos.find(data => data.name === member.username);
           this.translate.get('BATCH.SWITCH_FAILURE').subscribe(res => {
             findedList = BathInfoChanges(findedList, res, false, true);
