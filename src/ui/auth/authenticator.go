@@ -128,6 +128,7 @@ func getHelper() (AuthenticateHelper, error) {
 // OnBoardUser will check if a user exists in user table, if not insert the user and
 // put the id in the pointer of user model, if it does exist, return the user's profile.
 func OnBoardUser(user *models.User) error {
+	log.Debugf("OnBoardUser, user %+v", user)
 	helper, err := getHelper()
 	if err != nil {
 		return err

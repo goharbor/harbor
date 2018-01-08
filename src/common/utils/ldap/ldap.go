@@ -37,7 +37,6 @@ type Session struct {
 
 //LoadSystemLdapConfig - load LDAP configure from adminserver
 func LoadSystemLdapConfig() (*Session, error) {
-	var session Session
 
 	authMode, err := config.AuthMode()
 	if err != nil {
@@ -49,87 +48,30 @@ func LoadSystemLdapConfig() (*Session, error) {
 		return nil, fmt.Errorf("system auth_mode isn't ldap_auth, please check configuration")
 	}
 
-	ldap, err := config.LDAP()
+	ldapConf, err := config.LDAPConf()
 
 	if err != nil {
 		return nil, err
 	}
-	if ldap.URL == "" {
-		return nil, fmt.Errorf("can not get any available LDAP_URL")
-	}
-
-	ldapURL, err := formatURL(ldap.URL)
-	if err != nil {
-		return nil, err
-	}
-
-	session.ldapConfig.LdapURL = ldapURL
-	session.ldapConfig.LdapSearchDn = ldap.SearchDN
-	session.ldapConfig.LdapSearchPassword = ldap.SearchPassword
-	session.ldapConfig.LdapBaseDn = ldap.BaseDN
-	session.ldapConfig.LdapFilter = ldap.Filter
-	session.ldapConfig.LdapUID = ldap.UID
-	session.ldapConfig.LdapConnectionTimeout = ldap.Timeout
-	session.ldapConfig.LdapVerifyCert = ldap.VerifyCert
-	log.Debugf("Load system configuration: %v", ldap)
-
-	switch ldap.Scope {
-	case 1:
-		session.ldapConfig.LdapScope = goldap.ScopeBaseObject
-	case 2:
-		session.ldapConfig.LdapScope = goldap.ScopeSingleLevel
-	case 3:
-		session.ldapConfig.LdapScope = goldap.ScopeWholeSubtree
-	default:
-		log.Errorf("invalid ldap search scope %v", ldap.Scope)
-		return nil, fmt.Errorf("invalid ldap search scope")
-	}
-
-	return &session, nil
+	return CreateWithConfig(*ldapConf)
 }
 
-// CreateWithUIConfig - create a Session with config from UI
-func CreateWithUIConfig(ldapConfs models.LdapConf) (*Session, error) {
-
-	switch ldapConfs.LdapScope {
-	case 1:
-		ldapConfs.LdapScope = goldap.ScopeBaseObject
-	case 2:
-		ldapConfs.LdapScope = goldap.ScopeSingleLevel
-	case 3:
-		ldapConfs.LdapScope = goldap.ScopeWholeSubtree
-	default:
-		return nil, fmt.Errorf("invalid ldap search scope")
-	}
-
-	return createWithInternalConfig(ldapConfs)
-}
-
-// createWithInternalConfig - create a Session with internal config
-func createWithInternalConfig(ldapConfs models.LdapConf) (*Session, error) {
-
+// CreateWithConfig - create a Session with internal config
+func CreateWithConfig(ldapConf models.LdapConf) (*Session, error) {
 	var session Session
 
-	if ldapConfs.LdapURL == "" {
+	if ldapConf.LdapURL == "" {
 		return nil, fmt.Errorf("can not get any available LDAP_URL")
 	}
 
-	ldapURL, err := formatURL(ldapConfs.LdapURL)
+	ldapURL, err := formatURL(ldapConf.LdapURL)
 	if err != nil {
 		return nil, err
 	}
 
-	session.ldapConfig.LdapURL = ldapURL
-	session.ldapConfig.LdapSearchDn = ldapConfs.LdapSearchDn
-	session.ldapConfig.LdapSearchPassword = ldapConfs.LdapSearchPassword
-	session.ldapConfig.LdapBaseDn = ldapConfs.LdapBaseDn
-	session.ldapConfig.LdapFilter = ldapConfs.LdapFilter
-	session.ldapConfig.LdapUID = ldapConfs.LdapUID
-	session.ldapConfig.LdapConnectionTimeout = ldapConfs.LdapConnectionTimeout
-	session.ldapConfig.LdapVerifyCert = ldapConfs.LdapVerifyCert
-	session.ldapConfig.LdapScope = ldapConfs.LdapScope
+	ldapConf.LdapURL = ldapURL
+	session.ldapConfig = ldapConf
 	return &session, nil
-
 }
 
 func formatURL(ldapURL string) (string, error) {
@@ -208,7 +150,7 @@ func ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
 		ldapConfig.LdapSearchPassword = session.ldapConfig.LdapSearchPassword
 	}
 
-	testSession, err := createWithInternalConfig(ldapConfig)
+	testSession, err := CreateWithConfig(ldapConfig)
 
 	if err != nil {
 		return err

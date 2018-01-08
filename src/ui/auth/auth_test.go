@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/models"
 )
 
 var l = NewUserLock(2 * time.Second)
@@ -59,5 +60,23 @@ func TestLock(t *testing.T) {
 	}
 	if l.IsLocked("daniel") {
 		t.Errorf("daniel has never been locked, he should not be locked")
+	}
+}
+
+func TestDefaultAuthenticate(t *testing.T) {
+	authHelper := DefaultAuthenticateHelper{}
+	m := models.AuthModel{}
+	user, err := authHelper.Authenticate(m)
+	if user != nil || err != nil {
+		t.Fatal("Default implementation should return nil")
+	}
+}
+
+func TestDefaultOnBoardUser(t *testing.T) {
+	user := &models.User{}
+	authHelper := DefaultAuthenticateHelper{}
+	err := authHelper.OnBoardUser(user)
+	if err != nil {
+		t.Fatal("Default implementation should return nil")
 	}
 }

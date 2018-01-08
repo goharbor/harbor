@@ -23,19 +23,6 @@ type Authentication struct {
 }
 */
 
-// LDAP ...
-type LDAP struct {
-	URL            string `json:"url"`
-	SearchDN       string `json:"search_dn"`
-	SearchPassword string `json:"search_password"`
-	BaseDN         string `json:"base_dn"`
-	Filter         string `json:"filter"`
-	UID            string `json:"uid"`
-	Scope          int    `json:"scope"`
-	Timeout        int    `json:"timeout"` // in second
-	VerifyCert     bool   `json:"verify_cert"`
-}
-
 // Database ...
 type Database struct {
 	Type   string  `json:"type"`
@@ -59,8 +46,8 @@ type SQLite struct {
 
 // PostGreSQL ...
 type PostGreSQL struct {
-	Host string `json:"host"`
-	Port int `json:"port"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
 	Username string `json:"username"`
 	Password string `json:"password,omitempty"`
 	Database string `json:"database"`
@@ -110,11 +97,12 @@ type SystemCfg struct {
 
 // ConfigEntry ...
 type ConfigEntry struct {
-	ID   int64    `orm:"pk;auto;column(id)" json:"-"`
-	Key string `orm:"column(k)" json:"k"`
+	ID    int64  `orm:"pk;auto;column(id)" json:"-"`
+	Key   string `orm:"column(k)" json:"k"`
 	Value string `orm:"column(v)" json:"v"`
 }
+
 // TableName ...
-func (ce *ConfigEntry)TableName() string {
+func (ce *ConfigEntry) TableName() string {
 	return "properties"
 }

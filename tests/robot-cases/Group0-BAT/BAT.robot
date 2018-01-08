@@ -353,6 +353,8 @@ Test Case - Ldap User Create Project
     Create An New Project  project${d}
     Logout Harbor
     Manage Project Member  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}  project${d}  mike02  Add
+    Project Should Have Member  project${d}  mike02
+    User Email Should Exist  mike02@example.com
     Close Browser
 
 Test Case - Ldap User Push An Image

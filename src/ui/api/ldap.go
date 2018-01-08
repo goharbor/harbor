@@ -94,7 +94,7 @@ func (l *LdapAPI) Search() {
 		}
 	} else {
 		l.DecodeJSONReqAndValidate(&ldapConfs)
-		ldapSession, err = ldapUtils.CreateWithUIConfig(ldapConfs)
+		ldapSession, err = ldapUtils.CreateWithConfig(ldapConfs)
 	}
 
 	if err = ldapSession.Open(); err != nil {

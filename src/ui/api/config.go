@@ -245,28 +245,28 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 	}
 
 	if mode == common.LDAPAuth {
-		ldap, err := config.LDAP()
+		ldapConf, err := config.LDAPConf()
 		if err != nil {
 			return true, err
 		}
 
-		if len(ldap.URL) == 0 {
+		if len(ldapConf.LdapURL) == 0 {
 			if _, ok := strMap[common.LDAPURL]; !ok {
 				return false, fmt.Errorf("%s is missing", common.LDAPURL)
 			}
 		}
 
-		if len(ldap.BaseDN) == 0 {
+		if len(ldapConf.LdapBaseDn) == 0 {
 			if _, ok := strMap[common.LDAPBaseDN]; !ok {
 				return false, fmt.Errorf("%s is missing", common.LDAPBaseDN)
 			}
 		}
-		if len(ldap.UID) == 0 {
+		if len(ldapConf.LdapUID) == 0 {
 			if _, ok := strMap[common.LDAPUID]; !ok {
 				return false, fmt.Errorf("%s is missing", common.LDAPUID)
 			}
 		}
-		if ldap.Scope == 0 {
+		if ldapConf.LdapScope == 0 {
 			if _, ok := numMap[common.LDAPScope]; !ok {
 				return false, fmt.Errorf("%s is missing", common.LDAPScope)
 			}
