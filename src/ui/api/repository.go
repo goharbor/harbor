@@ -264,8 +264,8 @@ func (ra *RepositoryAPI) Delete() {
 		}
 		log.Infof("delete tag: %s:%s", repoName, t)
 
-		go func() {
-			image := repoName + ":" + t
+		go func(tag string) {
+			image := repoName + ":" + tag
 			err := notifier.Publish(topic.ReplicationEventTopicOnDeletion, notification.OnDeletionNotification{
 				Image: image,
 			})
@@ -274,7 +274,7 @@ func (ra *RepositoryAPI) Delete() {
 				return
 			}
 			log.Debugf("the on deletion topic for resource %s published", image)
-		}()
+		}(t)
 
 		go func(tag string) {
 			if err := dao.AddAccessLog(models.AccessLog{
