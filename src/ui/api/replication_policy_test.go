@@ -291,14 +291,13 @@ func TestRepPolicyAPIGet(t *testing.T) {
 
 	// 200
 	policy := &api_models.ReplicationPolicy{}
-	resp, err := handleAndParse(
+	err := handleAndParse(
 		&testingRequest{
 			method:     http.MethodGet,
 			url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
 			credential: sysAdmin,
 		}, policy)
 	require.Nil(t, err)
-	assert.Equal(t, http.StatusOK, resp.Code)
 	assert.Equal(t, policyID, policy.ID)
 	assert.Equal(t, policyName, policy.Name)
 }
@@ -354,7 +353,7 @@ func TestRepPolicyAPIList(t *testing.T) {
 
 	// 200 system admin
 	policies := []*api_models.ReplicationPolicy{}
-	resp, err := handleAndParse(
+	err = handleAndParse(
 		&testingRequest{
 			method: http.MethodGet,
 			url:    repPolicyAPIBasePath,
@@ -368,14 +367,13 @@ func TestRepPolicyAPIList(t *testing.T) {
 			credential: sysAdmin,
 		}, &policies)
 	require.Nil(t, err)
-	assert.Equal(t, http.StatusOK, resp.Code)
 	require.Equal(t, 1, len(policies))
 	assert.Equal(t, policyID, policies[0].ID)
 	assert.Equal(t, policyName, policies[0].Name)
 
 	// 200 project admin
 	policies = []*api_models.ReplicationPolicy{}
-	resp, err = handleAndParse(
+	err = handleAndParse(
 		&testingRequest{
 			method: http.MethodGet,
 			url:    repPolicyAPIBasePath,
@@ -392,14 +390,13 @@ func TestRepPolicyAPIList(t *testing.T) {
 			},
 		}, &policies)
 	require.Nil(t, err)
-	assert.Equal(t, http.StatusOK, resp.Code)
 	require.Equal(t, 1, len(policies))
 	assert.Equal(t, policyID, policies[0].ID)
 	assert.Equal(t, policyName, policies[0].Name)
 
 	// 200 project developer
 	policies = []*api_models.ReplicationPolicy{}
-	resp, err = handleAndParse(
+	err = handleAndParse(
 		&testingRequest{
 			method: http.MethodGet,
 			url:    repPolicyAPIBasePath,
@@ -416,12 +413,11 @@ func TestRepPolicyAPIList(t *testing.T) {
 			},
 		}, &policies)
 	require.Nil(t, err)
-	assert.Equal(t, http.StatusOK, resp.Code)
 	require.Equal(t, 0, len(policies))
 
 	// 200
 	policies = []*api_models.ReplicationPolicy{}
-	resp, err = handleAndParse(
+	err = handleAndParse(
 		&testingRequest{
 			method: http.MethodGet,
 			url:    repPolicyAPIBasePath,
@@ -435,7 +431,6 @@ func TestRepPolicyAPIList(t *testing.T) {
 			credential: sysAdmin,
 		}, &policies)
 	require.Nil(t, err)
-	assert.Equal(t, http.StatusOK, resp.Code)
 	require.Equal(t, 0, len(policies))
 }
 

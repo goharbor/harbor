@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetRepos(t *testing.T) {
@@ -222,4 +223,107 @@ func TestPopulateAuthor(t *testing.T) {
 	}
 	populateAuthor(detail)
 	assert.Equal(t, maintainer, detail.Author)
+}
+
+func TestPutOfRepository(t *testing.T) {
+	base := "/api/repositories/"
+	desc := struct {
+		Description string `json:"description"`
+	}{
+		Description: "description_for_test",
+	}
+
+	cases := []*codeCheckingCase{
+		// 404
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:   http.MethodPut,
+				url:      base + "non_exist_repository",
+				bodyJSON: desc,
+			},
+			code: http.StatusNotFound,
+		},
+		// 401
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:   http.MethodPut,
+				url:      base + "library/hello-world",
+				bodyJSON: desc,
+			},
+			code: http.StatusUnauthorized,
+		},
+		// 403 non-member
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodPut,
+				url:        base + "library/hello-world",
+				bodyJSON:   desc,
+				credential: nonSysAdmin,
+			},
+			code: http.StatusForbidden,
+		},
+		// 403 project guest
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodPut,
+				url:        base + "library/hello-world",
+				bodyJSON:   desc,
+				credential: projGuest,
+			},
+			code: http.StatusForbidden,
+		},
+		// 200 project developer
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodPut,
+				url:        base + "library/hello-world",
+				bodyJSON:   desc,
+				credential: projDeveloper,
+			},
+			code: http.StatusOK,
+		},
+		// 200 project admin
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodPut,
+				url:        base + "library/hello-world",
+				bodyJSON:   desc,
+				credential: projAdmin,
+			},
+			code: http.StatusOK,
+		},
+		// 200 system admin
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodPut,
+				url:        base + "library/hello-world",
+				bodyJSON:   desc,
+				credential: sysAdmin,
+			},
+			code: http.StatusOK,
+		},
+	}
+	runCodeCheckingCases(t, cases...)
+
+	// verify that the description is changed
+	repositories := []*repoResp{}
+	err := handleAndParse(&testingRequest{
+		method: http.MethodGet,
+		url:    base,
+		queryStruct: struct {
+			ProjectID int64 `url:"project_id"`
+		}{
+			ProjectID: 1,
+		},
+	}, &repositories)
+	require.Nil(t, err)
+	var repository *repoResp
+	for _, repo := range repositories {
+		if repo.Name == "library/hello-world" {
+			repository = repo
+			break
+		}
+	}
+	require.NotNil(t, repository)
+	assert.Equal(t, desc.Description, repository.Description)
 }
