@@ -118,10 +118,6 @@ func CommonDelTarget() {
 	_ = dao.DeleteRepTarget(target.ID)
 }
 
-func CommonPolicyEabled(policyID int, enabled int) {
-	_ = dao.UpdateRepPolicyEnablement(int64(policyID), enabled)
-}
-
 func CommonAddRepository() {
 	commonRepository := &models.RepoRecord{
 		RepositoryID: 1,

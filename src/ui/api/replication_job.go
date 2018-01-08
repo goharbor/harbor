@@ -23,6 +23,9 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/replication/core"
+	api_models "github.com/vmware/harbor/src/ui/api/models"
+	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/utils"
 )
 
@@ -40,7 +43,7 @@ func (ra *RepJobAPI) Prepare() {
 		return
 	}
 
-	if !ra.SecurityCtx.IsSysAdmin() {
+	if !(ra.Ctx.Request.Method == http.MethodGet || ra.SecurityCtx.IsSysAdmin()) {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
@@ -63,14 +66,19 @@ func (ra *RepJobAPI) List() {
 		ra.CustomAbort(http.StatusBadRequest, "invalid policy_id")
 	}
 
-	policy, err := dao.GetRepPolicy(policyID)
+	policy, err := core.GlobalController.GetPolicy(policyID)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", policyID, err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 
-	if policy == nil {
+	if policy.ID == 0 {
 		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("policy %d not found", policyID))
+	}
+
+	if !ra.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
 	}
 
 	repository := ra.GetString("repository")
@@ -145,10 +153,54 @@ func (ra *RepJobAPI) GetLog() {
 	if ra.jobID == 0 {
 		ra.CustomAbort(http.StatusBadRequest, "id is nil")
 	}
+
+	job, err := dao.GetRepJob(ra.jobID)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get replication job %d: %v", ra.jobID, err))
+		return
+	}
+
+	if job == nil {
+		ra.HandleNotFound(fmt.Sprintf("replication job %d not found", ra.jobID))
+		return
+	}
+
+	policy, err := core.GlobalController.GetPolicy(job.PolicyID)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get policy %d: %v", job.PolicyID, err))
+		return
+	}
+
+	if !ra.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+
 	url := buildJobLogURL(strconv.FormatInt(ra.jobID, 10), ReplicationJobType)
-	err := utils.RequestAsUI(http.MethodGet, url, nil, utils.NewJobLogRespHandler(&ra.BaseAPI))
+	err = utils.RequestAsUI(http.MethodGet, url, nil, utils.NewJobLogRespHandler(&ra.BaseAPI))
 	if err != nil {
 		ra.RenderError(http.StatusInternalServerError, err.Error())
+		return
+	}
+}
+
+// StopJobs stop replication jobs for the policy
+func (ra *RepJobAPI) StopJobs() {
+	req := &api_models.StopJobsReq{}
+	ra.DecodeJSONReqAndValidate(req)
+
+	policy, err := core.GlobalController.GetPolicy(req.PolicyID)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get policy %d: %v", req.PolicyID, err))
+		return
+	}
+
+	if policy.ID == 0 {
+		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("policy %d not found", req.PolicyID))
+	}
+
+	if err = config.GlobalJobserviceClient.StopReplicationJobs(req.PolicyID); err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to stop replication jobs of policy %d: %v", req.PolicyID, err))
 		return
 	}
 }

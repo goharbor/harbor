@@ -97,6 +97,9 @@ export abstract class ReplicationService {
      */
     abstract disableReplicationRule(ruleId: number | string): Observable<any> | Promise<any> | any;
 
+
+    abstract replicateRule(ruleId: number | string): Observable<any> | Promise<any> | any;
+
     /**
      * Get the jobs for the specified replication rule.
      * Set query parameters through 'queryParams', support:
@@ -137,6 +140,7 @@ export abstract class ReplicationService {
 export class ReplicationDefaultService extends ReplicationService {
     _ruleBaseUrl: string;
     _jobBaseUrl: string;
+    _replicateUrl: string;
 
     constructor(
         private http: Http,
@@ -147,6 +151,7 @@ export class ReplicationDefaultService extends ReplicationService {
             config.replicationRuleEndpoint : '/api/policies/replication';
         this._jobBaseUrl = config.replicationJobEndpoint ?
             config.replicationJobEndpoint : '/api/jobs/replication';
+        this._replicateUrl = '/api/replications';
     }
 
     //Private methods
@@ -212,6 +217,17 @@ export class ReplicationDefaultService extends ReplicationService {
 
         let url: string = `${this._ruleBaseUrl}/${ruleId}`;
         return this.http.delete(url, HTTP_JSON_OPTIONS).toPromise()
+            .then(response => response)
+            .catch(error => Promise.reject(error));
+    }
+
+    public replicateRule(ruleId: number | string): Observable<any> | Promise<any> | any {
+        if (!ruleId) {
+            return Promise.reject("Bad argument");
+        }
+
+        let url: string = `${this._replicateUrl}`;
+        return this.http.post(url, {policy_id: ruleId}, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
             .catch(error => Promise.reject(error));
     }

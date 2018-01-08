@@ -98,7 +98,7 @@ Set Pro Create Admin Only
     Capture Page Screenshot  AdminCreateOnly.png
 
 Set Pro Create Every One	
-    #set limit to Every One	
+    #set limit to Every One
     Click Element  xpath=${configuration_xpath}
     Sleep  1
     Click Element  xpath=//select[@id="proCreation"]
@@ -108,7 +108,7 @@ Set Pro Create Every One
     Sleep  2
     Capture Page Screenshot  EveryoneCreate.png
 
-Disable Self Reg	
+Disable Self Reg
     Click Element  xpath=${configuration_xpath}
     Mouse Down  xpath=${self_reg_xpath}
     Mouse Up  xpath=${self_reg_xpath}

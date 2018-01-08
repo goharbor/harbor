@@ -62,7 +62,6 @@ type RepJobParm struct {
 	TargetPassword string
 	Repository     string
 	Tags           []string
-	Enabled        int
 	Operation      string
 	Insecure       bool
 }
@@ -124,12 +123,7 @@ func (rj *RepJob) Init() error {
 		LocalRegURL: regURL,
 		Repository:  job.Repository,
 		Tags:        job.TagList,
-		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
-	}
-	if policy.Enabled == 0 {
-		//worker will cancel this job
-		return nil
 	}
 	target, err := dao.GetRepTarget(policy.TargetID)
 	if err != nil {

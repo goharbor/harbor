@@ -23,12 +23,12 @@ import (
 	"strings"
 
 	"github.com/vmware/harbor/src/adminserver/client"
-	"github.com/vmware/harbor/src/adminserver/client/auth"
 	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
+	jobservice_client "github.com/vmware/harbor/src/jobservice/client"
 	"github.com/vmware/harbor/src/ui/promgr"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
@@ -55,6 +55,8 @@ var (
 	AdmiralClient *http.Client
 	// TokenReader is used in integration mode to read token
 	TokenReader admiral.TokenReader
+	// GlobalJobserviceClient is a global client for jobservice
+	GlobalJobserviceClient jobservice_client.Client
 )
 
 // Init configurations
@@ -73,8 +75,10 @@ func Init() error {
 // InitByURL Init configurations with given url
 func InitByURL(adminServerURL string) error {
 	log.Infof("initializing client for adminserver %s ...", adminServerURL)
-	authorizer := auth.NewSecretAuthorizer(secretCookieName, UISecret())
-	AdminserverClient = client.NewClient(adminServerURL, authorizer)
+	cfg := &client.Config{
+		Secret: UISecret(),
+	}
+	AdminserverClient = client.NewClient(adminServerURL, cfg)
 	if err := AdminserverClient.Ping(); err != nil {
 		return fmt.Errorf("failed to ping adminserver: %v", err)
 	}
@@ -90,6 +94,11 @@ func InitByURL(adminServerURL string) error {
 
 	// init project manager based on deploy mode
 	initProjectManager()
+
+	GlobalJobserviceClient = jobservice_client.NewDefaultClient(InternalJobServiceURL(),
+		&jobservice_client.Config{
+			Secret: UISecret(),
+		})
 
 	return nil
 }
@@ -257,6 +266,10 @@ func InternalJobServiceURL() string {
 	if err != nil {
 		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.")
 
+		return "http://jobservice"
+	}
+
+	if cfg[common.JobServiceURL] == nil {
 		return "http://jobservice"
 	}
 	return strings.TrimSuffix(cfg[common.JobServiceURL].(string), "/")

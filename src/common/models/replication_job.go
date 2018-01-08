@@ -38,48 +38,17 @@ const (
 
 // RepPolicy is the model for a replication policy, which associate to a project and a target (destination)
 type RepPolicy struct {
-	ID          int64  `orm:"pk;auto;column(id)" json:"id"`
-	ProjectID   int64  `orm:"column(project_id)" json:"project_id"`
-	ProjectName string `json:"project_name,omitempty"`
-	TargetID    int64  `orm:"column(target_id)" json:"target_id"`
-	TargetName  string `json:"target_name,omitempty"`
-	Name        string `orm:"column(name)" json:"name"`
-	//	Target       RepTarget `orm:"-" json:"target"`
-	Enabled       int       `orm:"column(enabled)" json:"enabled"`
-	Description   string    `orm:"column(description)" json:"description"`
-	CronStr       string    `orm:"column(cron_str)" json:"cron_str"`
-	StartTime     time.Time `orm:"column(start_time)" json:"start_time"`
-	CreationTime  time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime    time.Time `orm:"column(update_time);auto_now" json:"update_time"`
-	ErrorJobCount int       `json:"error_job_count"`
-	Deleted       int       `orm:"column(deleted)" json:"deleted"`
-}
-
-// Valid ...
-func (r *RepPolicy) Valid(v *validation.Validation) {
-	if len(r.Name) == 0 {
-		v.SetError("name", "can not be empty")
-	}
-
-	if len(r.Name) > 256 {
-		v.SetError("name", "max length is 256")
-	}
-
-	if r.ProjectID <= 0 {
-		v.SetError("project_id", "invalid")
-	}
-
-	if r.TargetID <= 0 {
-		v.SetError("target_id", "invalid")
-	}
-
-	if r.Enabled != 0 && r.Enabled != 1 {
-		v.SetError("enabled", "must be 0 or 1")
-	}
-
-	if len(r.CronStr) > 256 {
-		v.SetError("cron_str", "max length is 256")
-	}
+	ID                int64     `orm:"pk;auto;column(id)"`
+	ProjectID         int64     `orm:"column(project_id)" `
+	TargetID          int64     `orm:"column(target_id)"`
+	Name              string    `orm:"column(name)"`
+	Description       string    `orm:"column(description)"`
+	Trigger           string    `orm:"column(cron_str)"`
+	Filters           string    `orm:"column(filters)"`
+	ReplicateDeletion bool      `orm:"column(replicate_deletion)"`
+	CreationTime      time.Time `orm:"column(creation_time);auto_now_add"`
+	UpdateTime        time.Time `orm:"column(update_time);auto_now"`
+	Deleted           int       `orm:"column(deleted)"`
 }
 
 // RepJob is the model for a replication job, which is the execution unit on job service, currently it is used to transfer/remove

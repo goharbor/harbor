@@ -88,6 +88,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @Input() readonly: boolean;
 
   @Output() redirect = new EventEmitter<ReplicationRule>();
+  @Output() openCreateRule = new EventEmitter<any>();
+  @Output() openEdit = new EventEmitter<string | number>();
 
   search: SearchOption = new SearchOption();
 
@@ -111,8 +113,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @ViewChild(ListReplicationRuleComponent)
   listReplicationRule: ListReplicationRuleComponent;
 
-  @ViewChild(CreateEditRuleComponent)
-  createEditPolicyComponent: CreateEditRuleComponent;
+/*  @ViewChild(CreateEditRuleComponent)
+  createEditPolicyComponent: CreateEditRuleComponent;*/
 
   @ViewChild("replicationLogViewer")
   replicationLogViewer: JobLogViewerComponent;
@@ -134,9 +136,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     private translateService: TranslateService) {
   }
 
-  public get creationAvailable(): boolean {
-    return !this.readonly && this.projectId ? true : false;
-  }
 
   public get showPaginationIndex(): boolean {
     return this.totalCount > 0;
@@ -155,7 +154,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   }
 
   openModal(): void {
-    this.createEditPolicyComponent.openCreateEditRule(true);
+    this.openCreateRule.emit();
   }
 
   openEditRule(rule: ReplicationRule) {
@@ -164,7 +163,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       if (rule.enabled === 1) {
         editable = false;
       }
-      this.createEditPolicyComponent.openCreateEditRule(editable, rule.id);
+      this.openEdit.emit(rule.id);
     }
   }
 
@@ -260,6 +259,14 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
   }
 
+  replicateManualRule(rule: ReplicationRule): void {
+    toPromise<any>(this.replicationService.replicateRule(rule.id))
+        .then(response => {
+          this.refreshJobs();
+        })
+        .catch(error => this.errorHandler.error(error));
+  }
+
   customRedirect(rule: ReplicationRule) {
     this.redirect.emit(rule);
   }
@@ -267,14 +274,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   doSearchRules(ruleName: string) {
     this.search.ruleName = ruleName;
     this.listReplicationRule.retrieveRules(ruleName);
-  }
-
-  doFilterRuleStatus($event: any) {
-    if ($event && $event.target && $event.target["value"]) {
-      let status = $event.target["value"];
-      this.currentRuleStatus = this.ruleStatus.find((r: any) => r.key === status);
-      this.listReplicationRule.filterRuleStatus(this.currentRuleStatus.key);
-    }
   }
 
   doFilterJobStatus($event: any) {

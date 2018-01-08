@@ -22,10 +22,10 @@ export const REPLICATION_STYLE: string = `
   padding-right: 16px;
   margin-top: 24px;
 }
-.rightPos{
+ .rightPos{
     position: absolute;
-    z-index: 100;
     right: 35px;
-    margin-top: 4px;
-}
-`;
+    margin-top: 5px;
+    z-index: 100;
+    height: 32px;
+}`;

@@ -57,7 +57,9 @@
         "NUMBER_REQUIRED": "El campo es obligatorio y debería ser un número.",
         "PORT_REQUIRED": "El campo es obligatorio y debería ser un número de puerto válido.",
         "EMAIL_EXISTING": "Esa dirección de email ya existe.",
-        "USER_EXISTING": "Ese nombre de usuario ya existe."
+        "USER_EXISTING": "Ese nombre de usuario ya existe.",
+        "RULE_USER_EXISTING": "Name is already in use.",
+        "EMPTY": "Name is required"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Introduzca la contraseña actual",
@@ -306,7 +308,16 @@
         "INVALID_DATE": "Fecha invalida.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
-        "JOB_LOG_VIEWER": "View Replication Job Log"
+        "JOB_LOG_VIEWER": "View Replication Job Log",
+        "BACKINFO": "Please add project and endpoint first",
+        "FILTER": "Filter",
+        "SCHEDULE": "Schedule",
+        "SETTING":"Setting",
+        "TRIGGER":"Trigger",
+        "TARGETS":"Target",
+        "SOURCE": "Source",
+        "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
+        "REPLICATE_IMMEDIATE":"Replicate exiting images immediately"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -320,7 +331,7 @@
         "TEST_CONNECTION": "Comprobar conexión",
         "TITLE_EDIT": "Editar Endpoint",
         "TITLE_ADD": "Crear Endpoint",
-        "DELETE": "Eliminar",
+        "DELETE": "Eliminar Endpoint",
         "TESTING_CONNECTION": "Comprobar conexión...",
         "TEST_CONNECTION_SUCCESS": "Conexión comprobada satisfactoriamente.",
         "TEST_CONNECTION_FAILURE": "Fallo al comprobar el endpoint.",

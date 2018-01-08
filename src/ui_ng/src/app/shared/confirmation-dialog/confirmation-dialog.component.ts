@@ -112,7 +112,7 @@ export class ConfirmationDialogComponent implements OnDestroy {
         this.close();
     }
 
-    confirm(): void {
+    delete(): void {
         if(!this.message){//Inproper condition
             this.close();
             return;
@@ -130,6 +130,21 @@ export class ConfirmationDialogComponent implements OnDestroy {
             data,
             target
         ));
+    }
 
+    confirm(): void {
+        if(!this.message){//Inproper condition
+            this.close();
+            return;
+        }
+
+        let data: any = this.message.data ? this.message.data : {};
+        let target = this.message.targetId ? this.message.targetId : ConfirmationTargets.EMPTY;
+        this.confirmationService.confirm(new ConfirmationAcknowledgement(
+            ConfirmationState.CONFIRMED,
+            data,
+            target
+        ));
+        this.close();
     }
 }
