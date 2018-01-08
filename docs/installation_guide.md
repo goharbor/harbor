@@ -94,7 +94,7 @@ may not be able to log in after the upgrade.
 * **ldap_basedn**: The base DN to look up a user, e.g. `ou=people,dc=mydomain,dc=com`.  _Only used when **auth_mode** is set to *ldap_auth* ._ 
 * **ldap_filter**:The search filter for looking up a user, e.g. `(objectClass=person)`.
 * **ldap_uid**: The attribute used to match a user during a LDAP search, it could be uid, cn, email or other attributes.
-* **ldap_scope**: The scope to search for a user, 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE. Default is 3. 
+* **ldap_scope**: The scope to search for a user, 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE. Default is 2. 
 * **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
 * **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
 * **project_creation_restriction**: The flag to control what users have permission to create projects.  By default everyone can create a project, set to "adminonly" such that only admin can create project.

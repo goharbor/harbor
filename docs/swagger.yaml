@@ -2919,7 +2919,7 @@ definitions:
         description: The filter for LDAP binding.
       ldap_scope:
         type: integer
-        description: 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE
+        description: 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE
       ldap_uid:
         type: string
         description: The attribute which is used as identity for the LDAP binding, such as "CN" or "SAMAccountname"
