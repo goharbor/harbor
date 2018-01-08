@@ -55,7 +55,9 @@
         "NUMBER_REQUIRED": "Field is required and should be numbers.",
         "PORT_REQUIRED": "Field is required and should be valid port number.",
         "EMAIL_EXISTING": "Email address already exists.",
-        "USER_EXISTING": "Username is already in use."
+        "USER_EXISTING": "Username is already in use.",
+        "RULE_USER_EXISTING": "Name is already in use.",
+        "EMPTY": "Name is required"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -302,7 +304,17 @@
         "INVALID_DATE": "Invalid date.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
-        "JOB_LOG_VIEWER": "View Replication Job Log"
+        "JOB_LOG_VIEWER": "View Replication Job Log",
+        "BACKINFO": "Please add project and endpoint first",
+        "FILTER": "Filter",
+        "SCHEDULE": "Schedule",
+        "SETTING":"Setting",
+        "TRIGGER":"Trigger",
+        "TARGETS":"Target",
+        "SOURCE": "Source",
+        "REPLICATE": "Replicate",
+        "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
+        "REPLICATE_IMMEDIATE":"Replicate exiting images immediately"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -316,7 +328,7 @@
         "TEST_CONNECTION": "Test Connection",
         "TITLE_EDIT": "Edit Endpoint",
         "TITLE_ADD": "Create Endpoint",
-        "DELETE": "Delete",
+        "DELETE": "Delete Endpoint",
         "TESTING_CONNECTION": "Testing Connection...",
         "TEST_CONNECTION_SUCCESS": "Connection tested successfully.",
         "TEST_CONNECTION_FAILURE": "Failed to ping endpoint.",

@@ -23,9 +23,9 @@ import (
 	"time"
 
 	"github.com/docker/distribution/registry/auth/token"
+	"github.com/vmware/harbor/src/common/http/modifier"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/common/utils/registry"
 	token_util "github.com/vmware/harbor/src/ui/service/token"
 )
 
@@ -254,7 +254,7 @@ func ping(client *http.Client, endpoint string) (string, string, error) {
 // from token server and add it to the origin request
 // If customizedTokenService is set, the token request will be sent to it instead of the server get from authorizer
 func NewStandardTokenAuthorizer(client *http.Client, credential Credential,
-	customizedTokenService ...string) registry.Modifier {
+	customizedTokenService ...string) modifier.Modifier {
 	generator := &standardTokenGenerator{
 		credential: credential,
 		client:     client,
@@ -309,7 +309,7 @@ func (s *standardTokenGenerator) generate(scopes []*token.ResourceActions, endpo
 
 // NewRawTokenAuthorizer returns a token authorizer which calls method to create
 // token directly
-func NewRawTokenAuthorizer(username, service string) registry.Modifier {
+func NewRawTokenAuthorizer(username, service string) modifier.Modifier {
 	generator := &rawTokenGenerator{
 		service:  service,
 		username: username,

@@ -39,6 +39,7 @@ func (fsh *fakeStatelessHandler) Handle(v interface{}) error {
 }
 
 func TestSubscribeAndUnSubscribe(t *testing.T) {
+	count := len(notificationWatcher.handlers)
 	err := Subscribe("topic1", &fakeStatefulHandler{0})
 	if err != nil {
 		t.Fatal(err)
@@ -59,7 +60,7 @@ func TestSubscribeAndUnSubscribe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(notificationWatcher.handlers) != 2 {
+	if len(notificationWatcher.handlers) != (count + 2) {
 		t.Fail()
 	}
 
@@ -94,7 +95,7 @@ func TestSubscribeAndUnSubscribe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(notificationWatcher.handlers) != 1 {
+	if len(notificationWatcher.handlers) != (count + 1) {
 		t.Fail()
 	}
 
@@ -103,12 +104,13 @@ func TestSubscribeAndUnSubscribe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(notificationWatcher.handlers) != 0 {
+	if len(notificationWatcher.handlers) != count {
 		t.Fail()
 	}
 }
 
 func TestPublish(t *testing.T) {
+	count := len(notificationWatcher.handlers)
 	err := Subscribe("topic1", &fakeStatefulHandler{0})
 	if err != nil {
 		t.Fatal(err)
@@ -119,7 +121,7 @@ func TestPublish(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(notificationWatcher.handlers) != 2 {
+	if len(notificationWatcher.handlers) != (count + 2) {
 		t.Fail()
 	}
 
@@ -149,12 +151,13 @@ func TestPublish(t *testing.T) {
 }
 
 func TestConcurrentPublish(t *testing.T) {
+	count := len(notificationWatcher.handlers)
 	err := Subscribe("topic1", &fakeStatefulHandler{0})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if len(notificationWatcher.handlers) != 1 {
+	if len(notificationWatcher.handlers) != (count + 1) {
 		t.Fail()
 	}
 
@@ -186,11 +189,12 @@ func TestConcurrentPublishWithScanPolicyHandler(t *testing.T) {
 		t.Fatal("Policy scheduler is not started")
 	}
 
+	count := len(notificationWatcher.handlers)
 	if err := Subscribe("testing_topic", &ScanPolicyNotificationHandler{}); err != nil {
 		t.Fatal(err.Error())
 	}
-	if len(notificationWatcher.handlers) != 1 {
-		t.Fatal("Handler is not registered")
+	if len(notificationWatcher.handlers) != (count + 1) {
+		t.Fatalf("Handler is not registered")
 	}
 
 	utcTime := time.Now().UTC().Unix()
@@ -209,7 +213,7 @@ func TestConcurrentPublishWithScanPolicyHandler(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	if len(notificationWatcher.handlers) != 0 {
+	if len(notificationWatcher.handlers) != count {
 		t.Fatal("Handler is not unregistered")
 	}
 

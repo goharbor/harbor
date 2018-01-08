@@ -40,6 +40,8 @@ import (
 	"github.com/dghubble/sling"
 
 	//for test env prepare
+	"github.com/vmware/harbor/src/replication/core"
+	_ "github.com/vmware/harbor/src/replication/event"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 )
@@ -121,7 +123,6 @@ func init() {
 	beego.Router("/api/policies/replication/:id([0-9]+)", &RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
-	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &RepPolicyAPI{}, "put:UpdateEnablement")
 	beego.Router("/api/systeminfo", &SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
@@ -129,8 +130,13 @@ func init() {
 	beego.Router("/api/configurations", &ConfigAPI{})
 	beego.Router("/api/configurations/reset", &ConfigAPI{}, "post:Reset")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
+	beego.Router("/api/replications", &ReplicationAPI{})
 
 	_ = updateInitPassword(1, "Harbor12345")
+
+	if err := core.Init(); err != nil {
+		log.Fatalf("failed to initialize GlobalController: %v", err)
+	}
 
 	//syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
@@ -698,7 +704,10 @@ func (a testapi) AddPolicy(authInfo usrInfo, repPolicy apilib.RepPolicyPost) (in
 	_sling = _sling.Path(path)
 	_sling = _sling.BodyJSON(repPolicy)
 
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if httpStatusCode != http.StatusCreated {
+		log.Println(string(body))
+	}
 	return httpStatusCode, err
 }
 

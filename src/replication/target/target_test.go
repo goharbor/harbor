@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package registry
+package target
 
 import (
-	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// Modifier modifies request
-type Modifier interface {
-	Modify(*http.Request) error
+func TestNewDefaultManager(t *testing.T) {
+	mgr := NewDefaultManager()
+	assert.NotNil(t, mgr)
 }

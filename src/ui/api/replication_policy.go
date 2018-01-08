@@ -23,6 +23,10 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/replication/core"
+	rep_models "github.com/vmware/harbor/src/replication/models"
+	api_models "github.com/vmware/harbor/src/ui/api/models"
+	"github.com/vmware/harbor/src/ui/promgr"
 )
 
 // RepPolicyAPI handles /api/replicationPolicies /api/replicationPolicies/:id/enablement
@@ -38,7 +42,7 @@ func (pa *RepPolicyAPI) Prepare() {
 		return
 	}
 
-	if !pa.SecurityCtx.IsSysAdmin() {
+	if !(pa.Ctx.Request.Method == http.MethodGet || pa.SecurityCtx.IsSysAdmin()) {
 		pa.HandleForbidden(pa.SecurityCtx.GetUsername())
 		return
 	}
@@ -47,344 +51,199 @@ func (pa *RepPolicyAPI) Prepare() {
 // Get ...
 func (pa *RepPolicyAPI) Get() {
 	id := pa.GetIDFromURL()
-	policy, err := dao.GetRepPolicy(id)
+	policy, err := core.GlobalController.GetPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if policy == nil {
+	if policy.ID == 0 {
 		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
-	pa.Data["json"] = policy
+	if !pa.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+		pa.HandleForbidden(pa.SecurityCtx.GetUsername())
+		return
+	}
+
+	ply, err := convertFromRepPolicy(pa.ProjectMgr, policy)
+	if err != nil {
+		pa.ParseAndHandleError(fmt.Sprintf("failed to convert from replication policy"), err)
+		return
+	}
+
+	pa.Data["json"] = ply
 	pa.ServeJSON()
 }
 
-// List filters policies by name and project_id, if name and project_id
-// are nil, List returns all policies
+// List ...
 func (pa *RepPolicyAPI) List() {
-	name := pa.GetString("name")
+	queryParam := rep_models.QueryParameter{
+		Name: pa.GetString("name"),
+	}
 	projectIDStr := pa.GetString("project_id")
-
-	var projectID int64
-	var err error
-
-	if len(projectIDStr) != 0 {
-		projectID, err = strconv.ParseInt(projectIDStr, 10, 64)
+	if len(projectIDStr) > 0 {
+		projectID, err := strconv.ParseInt(projectIDStr, 10, 64)
 		if err != nil || projectID <= 0 {
 			pa.CustomAbort(http.StatusBadRequest, "invalid project ID")
 		}
+		queryParam.ProjectID = projectID
 	}
 
-	policies, err := dao.FilterRepPolicies(name, projectID)
+	result := []*api_models.ReplicationPolicy{}
+
+	policies, err := core.GlobalController.GetPolicies(queryParam)
 	if err != nil {
-		log.Errorf("failed to filter policies %s project ID %d: %v", name, projectID, err)
+		log.Errorf("failed to get policies: %v, query parameters: %v", err, queryParam)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
 	for _, policy := range policies {
-		project, err := pa.ProjectMgr.Get(policy.ProjectID)
+		if !pa.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+			continue
+		}
+		ply, err := convertFromRepPolicy(pa.ProjectMgr, policy)
 		if err != nil {
-			pa.ParseAndHandleError(fmt.Sprintf(
-				"failed to get project %d", policy.ProjectID), err)
+			pa.ParseAndHandleError(fmt.Sprintf("failed to convert from replication policy"), err)
 			return
 		}
-		if project != nil {
-			policy.ProjectName = project.Name
-		}
+		result = append(result, ply)
 	}
 
-	pa.Data["json"] = policies
+	pa.Data["json"] = result
 	pa.ServeJSON()
 }
 
-// Post creates a policy, and if it is enbled, the replication will be triggered right now.
+// Post creates a replicartion policy
 func (pa *RepPolicyAPI) Post() {
-	policy := &models.RepPolicy{}
+	policy := &api_models.ReplicationPolicy{}
 	pa.DecodeJSONReqAndValidate(policy)
 
-	/*
-		po, err := dao.GetRepPolicyByName(policy.Name)
+	// check the existence of projects
+	for _, project := range policy.Projects {
+		pro, err := pa.ProjectMgr.Get(project.ProjectID)
 		if err != nil {
-			log.Errorf("failed to get policy %s: %v", policy.Name, err)
-			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			pa.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d", project.ProjectID), err)
+			return
+		}
+		if pro == nil {
+			pa.HandleNotFound(fmt.Sprintf("project %d not found", project.ProjectID))
+			return
+		}
+		project.Name = pro.Name
+	}
+
+	// check the existence of targets
+	for _, target := range policy.Targets {
+		t, err := dao.GetRepTarget(target.ID)
+		if err != nil {
+			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", target.ID, err))
+			return
 		}
 
-		if po != nil {
-			pa.CustomAbort(http.StatusConflict, "name is already used")
+		if t == nil {
+			pa.HandleNotFound(fmt.Sprintf("target %d not found", target.ID))
+			return
 		}
-	*/
+	}
 
-	project, err := pa.ProjectMgr.Get(policy.ProjectID)
+	id, err := core.GlobalController.CreatePolicy(convertToRepPolicy(policy))
 	if err != nil {
-		pa.ParseAndHandleError(fmt.Sprintf("failed to get project %d", policy.ProjectID), err)
+		pa.HandleInternalServerError(fmt.Sprintf("failed to create policy: %v", err))
 		return
 	}
 
-	if project == nil {
-		pa.CustomAbort(http.StatusBadRequest, fmt.Sprintf("project %d does not exist", policy.ProjectID))
-	}
-
-	target, err := dao.GetRepTarget(policy.TargetID)
-	if err != nil {
-		log.Errorf("failed to get target %d: %v", policy.TargetID, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	if target == nil {
-		pa.CustomAbort(http.StatusBadRequest, fmt.Sprintf("target %d does not exist", policy.TargetID))
-	}
-
-	policies, err := dao.GetRepPolicyByProjectAndTarget(policy.ProjectID, policy.TargetID)
-	if err != nil {
-		log.Errorf("failed to get policy [project ID: %d,targetID: %d]: %v", policy.ProjectID, policy.TargetID, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	if len(policies) > 0 {
-		pa.CustomAbort(http.StatusConflict, "policy already exists with the same project and target")
-	}
-
-	pid, err := dao.AddRepPolicy(*policy)
-	if err != nil {
-		log.Errorf("Failed to add policy to DB, error: %v", err)
-		pa.RenderError(http.StatusInternalServerError, "Internal Error")
-		return
-	}
-
-	if policy.Enabled == 1 {
+	if policy.ReplicateExistingImageNow {
 		go func() {
-			if err := TriggerReplication(pid, "", nil, models.RepOpTransfer); err != nil {
-				log.Errorf("failed to trigger replication of %d: %v", pid, err)
-			} else {
-				log.Infof("replication of %d triggered", pid)
+			if err = startReplication(id); err != nil {
+				log.Errorf("failed to send replication signal for policy %d: %v", id, err)
+				return
 			}
+			log.Infof("replication signal for policy %d sent", id)
 		}()
 	}
 
-	pa.Redirect(http.StatusCreated, strconv.FormatInt(pid, 10))
+	pa.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 }
 
-// Put modifies name, description, target and enablement of policy
+// Put updates the replication policy
 func (pa *RepPolicyAPI) Put() {
 	id := pa.GetIDFromURL()
-	originalPolicy, err := dao.GetRepPolicy(id)
+
+	originalPolicy, err := core.GlobalController.GetPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if originalPolicy == nil {
+	if originalPolicy.ID == 0 {
 		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
-	policy := &models.RepPolicy{}
-	pa.DecodeJSONReq(policy)
-	policy.ProjectID = originalPolicy.ProjectID
-	pa.Validate(policy)
-
-	/*
-		// check duplicate name
-		if policy.Name != originalPolicy.Name {
-			po, err := dao.GetRepPolicyByName(policy.Name)
-			if err != nil {
-				log.Errorf("failed to get policy %s: %v", policy.Name, err)
-				pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-			}
-
-			if po != nil {
-				pa.CustomAbort(http.StatusConflict, "name is already used")
-			}
-		}
-	*/
-
-	if policy.TargetID != originalPolicy.TargetID {
-		//target of policy can not be modified when the policy is enabled
-		if originalPolicy.Enabled == 1 {
-			pa.CustomAbort(http.StatusBadRequest, "target of policy can not be modified when the policy is enabled")
-		}
-
-		// check the existance of target
-		target, err := dao.GetRepTarget(policy.TargetID)
-		if err != nil {
-			log.Errorf("failed to get target %d: %v", policy.TargetID, err)
-			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		if target == nil {
-			pa.CustomAbort(http.StatusBadRequest, fmt.Sprintf("target %d does not exist", policy.TargetID))
-		}
-
-		// check duplicate policy with the same project and target
-		policies, err := dao.GetRepPolicyByProjectAndTarget(policy.ProjectID, policy.TargetID)
-		if err != nil {
-			log.Errorf("failed to get policy [project ID: %d,targetID: %d]: %v", policy.ProjectID, policy.TargetID, err)
-			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		if len(policies) > 0 {
-			pa.CustomAbort(http.StatusConflict, "policy already exists with the same project and target")
-		}
-	}
+	policy := &api_models.ReplicationPolicy{}
+	pa.DecodeJSONReqAndValidate(policy)
 
 	policy.ID = id
 
-	/*
-		isTargetChanged := !(policy.TargetID == originalPolicy.TargetID)
-		isEnablementChanged := !(policy.Enabled == policy.Enabled)
-
-		var shouldStop, shouldTrigger bool
-
-		// if target and enablement are not changed, do nothing
-		if !isTargetChanged && !isEnablementChanged {
-			shouldStop = false
-			shouldTrigger = false
-		} else if !isTargetChanged && isEnablementChanged {
-			// target is not changed, but enablement is changed
-			if policy.Enabled == 0 {
-				shouldStop = true
-				shouldTrigger = false
-			} else {
-				shouldStop = false
-				shouldTrigger = true
-			}
-		} else if isTargetChanged && !isEnablementChanged {
-			// target is changed, but enablement is not changed
-			if policy.Enabled == 0 {
-				// enablement is 0, do nothing
-				shouldStop = false
-				shouldTrigger = false
-			} else {
-				// enablement is 1, so stop original target's jobs
-				// and trigger new target's jobs
-				shouldStop = true
-				shouldTrigger = true
-			}
-		} else {
-			// both target and enablement are changed
-
-			// enablement: 1 -> 0
-			if policy.Enabled == 0 {
-				shouldStop = true
-				shouldTrigger = false
-			} else {
-				shouldStop = false
-				shouldTrigger = true
-			}
+	// check the existence of projects
+	for _, project := range policy.Projects {
+		pro, err := pa.ProjectMgr.Get(project.ProjectID)
+		if err != nil {
+			pa.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d", project.ProjectID), err)
+			return
 		}
-
-		if shouldStop {
-			if err := postReplicationAction(id, "stop"); err != nil {
-				log.Errorf("failed to stop replication of %d: %v", id, err)
-				pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-			}
-			log.Infof("replication of %d has been stopped", id)
+		if pro == nil {
+			pa.HandleNotFound(fmt.Sprintf("project %d not found", project.ProjectID))
+			return
 		}
-
-		if err = dao.UpdateRepPolicy(policy); err != nil {
-			log.Errorf("failed to update policy %d: %v", id, err)
-			pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-		}
-
-		if shouldTrigger {
-			go func() {
-				if err := TriggerReplication(id, "", nil, models.RepOpTransfer); err != nil {
-					log.Errorf("failed to trigger replication of %d: %v", id, err)
-				} else {
-					log.Infof("replication of %d triggered", id)
-				}
-			}()
-		}
-	*/
-
-	if err = dao.UpdateRepPolicy(policy); err != nil {
-		log.Errorf("failed to update policy %d: %v", id, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		project.Name = pro.Name
 	}
 
-	if policy.Enabled != originalPolicy.Enabled && policy.Enabled == 1 {
+	// check the existence of targets
+	for _, target := range policy.Targets {
+		t, err := dao.GetRepTarget(target.ID)
+		if err != nil {
+			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", target.ID, err))
+			return
+		}
+
+		if t == nil {
+			pa.HandleNotFound(fmt.Sprintf("target %d not found", target.ID))
+			return
+		}
+	}
+
+	if err = core.GlobalController.UpdatePolicy(convertToRepPolicy(policy)); err != nil {
+		pa.HandleInternalServerError(fmt.Sprintf("failed to update policy %d: %v", id, err))
+		return
+	}
+
+	if policy.ReplicateExistingImageNow {
 		go func() {
-			if err := TriggerReplication(id, "", nil, models.RepOpTransfer); err != nil {
-				log.Errorf("failed to trigger replication of %d: %v", id, err)
-			} else {
-				log.Infof("replication of %d triggered", id)
+			if err = startReplication(id); err != nil {
+				log.Errorf("failed to send replication signal for policy %d: %v", id, err)
+				return
 			}
+			log.Infof("replication signal for policy %d sent", id)
 		}()
 	}
 }
 
-type enablementReq struct {
-	Enabled int `json:"enabled"`
-}
-
-// UpdateEnablement changes the enablement of the policy
-func (pa *RepPolicyAPI) UpdateEnablement() {
+// Delete the replication policy
+func (pa *RepPolicyAPI) Delete() {
 	id := pa.GetIDFromURL()
-	policy, err := dao.GetRepPolicy(id)
+
+	policy, err := core.GlobalController.GetPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	if policy == nil {
+	if policy.ID == 0 {
 		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
-	e := enablementReq{}
-	pa.DecodeJSONReq(&e)
-	if e.Enabled != 0 && e.Enabled != 1 {
-		pa.RenderError(http.StatusBadRequest, "invalid enabled value")
-		return
-	}
-
-	if policy.Enabled == e.Enabled {
-		return
-	}
-
-	if err := dao.UpdateRepPolicyEnablement(id, e.Enabled); err != nil {
-		log.Errorf("Failed to update policy enablement in DB, error: %v", err)
-		pa.RenderError(http.StatusInternalServerError, "Internal Error")
-		return
-	}
-
-	if e.Enabled == 1 {
-		go func() {
-			if err := TriggerReplication(id, "", nil, models.RepOpTransfer); err != nil {
-				log.Errorf("failed to trigger replication of %d: %v", id, err)
-			} else {
-				log.Infof("replication of %d triggered", id)
-			}
-		}()
-	} else {
-		go func() {
-			if err := postReplicationAction(id, "stop"); err != nil {
-				log.Errorf("failed to stop replication of %d: %v", id, err)
-			} else {
-				log.Infof("try to stop replication of %d", id)
-			}
-		}()
-	}
-}
-
-// Delete : policies which are disabled and have no running jobs
-// can be deleted
-func (pa *RepPolicyAPI) Delete() {
-	id := pa.GetIDFromURL()
-	policy, err := dao.GetRepPolicy(id)
-	if err != nil {
-		log.Errorf("failed to get policy %d: %v", id, err)
-		pa.CustomAbort(http.StatusInternalServerError, "")
-	}
-
-	if policy == nil || policy.Deleted == 1 {
-		pa.CustomAbort(http.StatusNotFound, "")
-	}
-
-	if policy.Enabled == 1 {
-		pa.CustomAbort(http.StatusPreconditionFailed, "plicy is enabled, can not be deleted")
-	}
-
+	// TODO
 	jobs, err := dao.GetRepJobByPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get jobs of policy %d: %v", id, err)
@@ -399,8 +258,83 @@ func (pa *RepPolicyAPI) Delete() {
 		}
 	}
 
-	if err = dao.DeleteRepPolicy(id); err != nil {
+	if err = core.GlobalController.RemovePolicy(id); err != nil {
 		log.Errorf("failed to delete policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, "")
 	}
+}
+
+func convertFromRepPolicy(projectMgr promgr.ProjectManager, policy rep_models.ReplicationPolicy) (*api_models.ReplicationPolicy, error) {
+	if policy.ID == 0 {
+		return nil, nil
+	}
+
+	// populate simple properties
+	ply := &api_models.ReplicationPolicy{
+		ID:                policy.ID,
+		Name:              policy.Name,
+		Description:       policy.Description,
+		Filters:           policy.Filters,
+		ReplicateDeletion: policy.ReplicateDeletion,
+		Trigger:           policy.Trigger,
+		CreationTime:      policy.CreationTime,
+		UpdateTime:        policy.UpdateTime,
+	}
+
+	// populate projects
+	for _, projectID := range policy.ProjectIDs {
+		project, err := projectMgr.Get(projectID)
+		if err != nil {
+			return nil, err
+		}
+
+		ply.Projects = append(ply.Projects, project)
+	}
+
+	// populate targets
+	for _, targetID := range policy.TargetIDs {
+		target, err := dao.GetRepTarget(targetID)
+		if err != nil {
+			return nil, err
+		}
+		target.Password = ""
+		ply.Targets = append(ply.Targets, target)
+	}
+
+	// TODO call the method from replication controller
+	_, errJobCount, err := dao.FilterRepJobs(policy.ID, "", "error", nil, nil, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+	ply.ErrorJobCount = errJobCount
+
+	return ply, nil
+}
+
+func convertToRepPolicy(policy *api_models.ReplicationPolicy) rep_models.ReplicationPolicy {
+	if policy == nil {
+		return rep_models.ReplicationPolicy{}
+	}
+
+	ply := rep_models.ReplicationPolicy{
+		ID:                policy.ID,
+		Name:              policy.Name,
+		Description:       policy.Description,
+		Filters:           policy.Filters,
+		ReplicateDeletion: policy.ReplicateDeletion,
+		Trigger:           policy.Trigger,
+		CreationTime:      policy.CreationTime,
+		UpdateTime:        policy.UpdateTime,
+	}
+
+	for _, project := range policy.Projects {
+		ply.ProjectIDs = append(ply.ProjectIDs, project.ProjectID)
+		ply.Namespaces = append(ply.Namespaces, project.Name)
+	}
+
+	for _, target := range policy.Targets {
+		ply.TargetIDs = append(ply.TargetIDs, target.ID)
+	}
+
+	return ply
 }

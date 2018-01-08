@@ -14,7 +14,7 @@
 import { Component } from '@angular/core';
 
 import {Router,ActivatedRoute} from "@angular/router";
-import {ReplicationRule} from "harbor-ui";
+import {ReplicationRule} from "../replication-rule/replication-rule";
 
 @Component({
   selector: 'total-replication',
@@ -26,7 +26,15 @@ export class TotalReplicationPageComponent {
               private activeRoute: ActivatedRoute){}
   customRedirect(rule: ReplicationRule): void {
     if (rule) {
-      this.router.navigate(['../../projects', rule.project_id, "replications"],  { relativeTo: this.activeRoute });
+      this.router.navigate(['../projects', rule.projects[0].project_id, 'replications'],  { relativeTo: this.activeRoute });
     }
+  }
+
+  openEditPage(id: number): void {
+      this.router.navigate([id, 'rule'],  { relativeTo: this.activeRoute });
+  }
+
+  openCreatePage(): void {
+    this.router.navigate(['new-rule'],  { relativeTo: this.activeRoute });
   }
 }

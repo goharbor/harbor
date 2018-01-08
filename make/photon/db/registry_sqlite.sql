@@ -142,6 +142,8 @@ create table replication_policy (
  description text,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
  cron_str varchar(256),
+ filters varchar(1024),
+ replicate_deletion tinyint (1) DEFAULT 0 NOT NULL,
  start_time timestamp NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP
@@ -171,6 +173,16 @@ create table replication_job (
  repository varchar(256) NOT NULL,
  operation  varchar(64) NOT NULL,
  tags   varchar(16384),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP
+ );
+
+create table replication_immediate_trigger (
+ id INTEGER PRIMARY KEY, 
+ policy_id int NOT NULL,
+ namespace varchar(256) NOT NULL,
+ on_push tinyint(1) NOT NULL DEFAULT 0,
+ on_deletion tinyint(1) NOT NULL DEFAULT 0,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP
  );
