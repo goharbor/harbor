@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |+
+    worker_processes auto;
+
+    events {
+      worker_connections 1024;
+      use epoll;
+      multi_accept on;
+    }
+
+    http {
+      tcp_nodelay on;
+      include /etc/nginx/conf.d/*.upstream.conf;
+
+      proxy_http_version 1.1;
+
+      upstream registry {
+        server registry:5000;
+      }
+
+      upstream ui {
+        server ui:80;
+      }
+
+      log_format timed_combined '$remote_addr - '
+        '"$request" $status $body_bytes_sent '
+        '"$http_referer" "$http_user_agent" '
+        '$request_time $upstream_response_time $pipe';
+
+      access_log /dev/stdout timed_combined;
+
+      include /etc/nginx/conf.d/*.server.conf;
+
+      server {
+        listen 443 ssl;
+
+        ssl_certificate /etc/nginx/certs/tls.crt;
+        ssl_certificate_key /etc/nginx/certs/tls.key;
+        ssl_protocols TLSv1.1 TLSv1.2;
+        ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
+        ssl_prefer_server_ciphers on;
+        ssl_session_cache shared:SSL:10m;
+
+        client_max_body_size 0;
+        chunked_transfer_encoding on;
+
+        location / {
+          proxy_pass http://ui/;
+          proxy_set_header Host $http_host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_cookie_path / "/; secure";
+
+          proxy_buffering off;
+          proxy_request_buffering off;
+        }
+
+        location /v1/ {
+          return 404;
+        }
+
+        location /v2/ {
+          proxy_pass http://ui/registryproxy/v2/;
+          proxy_set_header Host $http_host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+          proxy_set_header X-Forwarded-Proto $scheme;
+
+          proxy_buffer_size 4k;
+          proxy_buffers 4 32k;
+          proxy_busy_buffers_size 64k;
+          proxy_temp_file_write_size 64k;
+          client_body_temp_path /tmp/nginx_client_body_temp;
+          proxy_temp_path /tmp/nginx_proxy_temp;
+        }
+
+        location /service/ {
+          proxy_pass http://ui/service/;
+          proxy_set_header Host $http_host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+          proxy_set_header X-Forwarded-Proto $scheme;
+
+          proxy_buffering off;
+          proxy_request_buffering off;
+        }
+
+        location /service/notifications {
+          return 404;
+        }
+      }
+        server {
+          listen 80;
+          return 301 https://$host$request_uri;
+      }
+    }

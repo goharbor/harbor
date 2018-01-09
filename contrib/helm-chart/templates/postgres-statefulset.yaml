@@ -1,0 +1,63 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  labels:
+    app: postgres
+  name: clair-postgres
+spec:
+  serviceName: postgres
+  replicas: {{ .Values.postgres.replicas }}
+  template:
+    metadata:
+      name: clair-postgres
+      labels:
+        app: postgres
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - postgres
+              topologyKey: kubernetes.io/hostname
+      securityContext:
+        fsGroup: 1000
+      containers:
+      - name: postgres
+        image: postgres:9.6.4
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-config
+              key: POSTGRES_ROOT_PASSWORD
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql
+        ports:
+        - containerPort: 5432
+          name: postgres-port
+          protocol: TCP
+  volumeClaimTemplates:
+  - metadata:
+      name: pgdata
+      annotations:
+        {{- range $key, $value := .Values.postgres.annotations }}
+          {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 50Gi

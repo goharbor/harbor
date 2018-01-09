@@ -1,0 +1,34 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: {{ .Values.nginx.replicas }}
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        imagePullPolicy: {{ .Values.nginx.pullPolicy }}
+        ports:
+        {{- range $key, $value := .Values.nginx.ports }}
+        - containerPort: {{ $value }}
+        {{- end }}
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: nginx-certificates
+          mountPath: /etc/nginx/certs
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+      - name: nginx-certificates
+        secret:
+          secretName: {{ .Values.nginx.secretName }}

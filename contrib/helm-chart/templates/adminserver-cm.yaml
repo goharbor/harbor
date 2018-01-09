@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adminserver-config
+data:
+  key: {{ .Values.sharedKey }}
+  LOG_LEVEL: {{ .Values.adminserver.envVar.logLevel | quote }}
+  EXT_ENDPOINT: {{ .Values.adminserver.envVar.extEndpoint | quote }}
+  AUTH_MODE: {{ .Values.adminserver.envVar.authMode | quote }}
+  SELF_REGISTRATION: {{ .Values.adminserver.envVar.selfRegistration | quote }}
+  LDAP_URL: {{ .Values.adminserver.envVar.ldapUrl | quote }}
+  LDAP_SEARCH_DN: {{ .Values.adminserver.envVar.ldapSearchUrl | quote }}
+  LDAP_SEARCH_PWD: {{ .Values.adminserver.envVar.ldapSearchPwd | quote }}
+  LDAP_BASE_DN: {{ .Values.adminserver.envVar.ldapBaseDn | quote }}
+  LDAP_FILTER: {{ .Values.adminserver.envVar.ldapFilter | quote }}
+  LDAP_UID: {{ .Values.adminserver.envVar.ldapUid | quote }}
+  LDAP_SCOPE: {{ .Values.adminserver.envVar.ldapScope | quote }}
+  LDAP_TIMEOUT: {{ .Values.adminserver.envVar.ldapTimeout | quote }}
+  DATABASE_TYPE: {{ .Values.adminserver.envVar.databaseType | quote }}
+  MYSQL_HOST: {{ .Values.adminserver.envVar.mysqlHost | quote }}
+  MYSQL_PORT: {{ .Values.adminserver.envVar.mysqlPort | quote }}
+  MYSQL_USR: {{ .Values.adminserver.envVar.mysqlUsr | quote }}
+  MYSQL_DATABASE: {{ .Values.adminserver.envVar.mysqlDatabase | quote }}
+  REGISTRY_URL: {{ .Values.adminserver.envVar.registryUrl | quote }}
+  TOKEN_SERVICE_URL: {{ .Values.adminserver.envVar.tokenServiceUrl | quote }}
+  EMAIL_HOST: {{ .Values.adminserver.envVar.emailHost | quote }}
+  EMAIL_PORT: {{ .Values.adminserver.envVar.emailPort | quote }}
+  EMAIL_USR: {{ .Values.adminserver.envVar.emailUsr | quote }}
+  EMAIL_SSL: {{ .Values.adminserver.envVar.emailSsl | quote }}
+  EMAIL_FROM: {{ .Values.adminserver.envVar.emailFrom | quote }}
+  EMAIL_PWD: {{ .Values.adminserver.envVar.emailPwd | quote }}
+  EMAIL_IDENTITY: {{ .Values.adminserver.envVar.emailIdentity | quote }}
+  PROJECT_CREATION_RESTRICTION: {{ .Values.adminserver.envVar.projectCreationRestriction | quote }}
+  VERIFY_REMOTE_CERT: {{ .Values.adminserver.envVar.verifyRemoteCert | quote }}
+  MAX_JOB_WORKERS: {{ .Values.adminserver.envVar.maxJobWorkers | quote }}
+  TOKEN_EXPIRATION: {{ .Values.adminserver.envVar.tokenExpiration | quote }}
+  CFG_EXPIRATION: {{ .Values.adminserver.envVar.cfgExpiration | quote }}
+  GODEBUG: {{ .Values.adminserver.envVar.goDebug | quote }}
+  ADMIRAL_URL: {{ .Values.adminserver.envVar.admiralUrl | quote }}
+  WITH_NOTARY: {{ .Values.adminserver.envVar.withNotary | quote }}
+  WITH_CLAIR: {{ .Values.adminserver.envVar.withClair | quote }}
+  RESET: {{ .Values.adminserver.envVar.reset | quote }}
+  HARBOR_ADMIN_PASSWORD: {{ .Values.adminserver.harborAdminPassword | quote }}
+  CLAIR_DB_PASSWORD: {{ .Values.postgres.rootPassword | quote  }}

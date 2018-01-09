@@ -1,0 +1,237 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: adminserver
+  labels:
+    app: adminserver
+spec:
+  replicas: {{ .Values.adminserver.replicas }}
+  template:
+    metadata:
+      labels:
+        app: adminserver
+    spec:
+      containers:
+      - name: adminserver
+        image: {{ .Values.adminserver.image.repository }}:{{ .Values.adminserver.image.tag }}
+        imagePullPolicy: {{ .Values.adminserver.image.pullPolicy }}
+        env:
+          - name: LOG_LEVEL
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: LOG_LEVEL
+          - name: EXT_ENDPOINT
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: EXT_ENDPOINT
+          - name: AUTH_MODE
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: AUTH_MODE
+          - name: SELF_REGISTRATION
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: SELF_REGISTRATION
+          - name: LDAP_URL
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: LDAP_URL
+          - name: LDAP_SEARCH_DN
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: LDAP_SEARCH_DN
+          - name: LDAP_SEARCH_PWD
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: LDAP_SEARCH_PWD
+          - name: LDAP_BASE_DN
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: LDAP_BASE_DN
+          - name: LDAP_FILTER
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: LDAP_FILTER
+          - name: LDAP_UID
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: LDAP_UID
+          - name: LDAP_SCOPE
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: LDAP_SCOPE
+          - name: LDAP_TIMEOUT
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: LDAP_TIMEOUT
+          - name: DATABASE_TYPE
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: DATABASE_TYPE
+          - name: MYSQL_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: MYSQL_HOST
+          - name: MYSQL_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: MYSQL_PORT
+          - name: MYSQL_USR
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: MYSQL_USR
+          - name: MYSQL_PWD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-config
+                key: MYSQL_ROOT_PASSWORD
+          - name: MYSQL_DATABASE
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: MYSQL_DATABASE
+          - name: REGISTRY_URL
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: REGISTRY_URL
+          - name: TOKEN_SERVICE_URL
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: TOKEN_SERVICE_URL
+          - name: EMAIL_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: EMAIL_HOST
+          - name: EMAIL_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: EMAIL_PORT
+          - name: EMAIL_USR
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: EMAIL_USR
+          - name: EMAIL_PWD
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: EMAIL_PWD
+          - name: EMAIL_SSL
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: EMAIL_SSL
+          - name: EMAIL_FROM
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: EMAIL_FROM
+          - name: EMAIL_IDENTITY
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: EMAIL_IDENTITY
+          - name: HARBOR_ADMIN_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: HARBOR_ADMIN_PASSWORD
+          - name: PROJECT_CREATION_RESTRICTION
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: PROJECT_CREATION_RESTRICTION
+          - name: VERIFY_REMOTE_CERT
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: VERIFY_REMOTE_CERT
+          - name: MAX_JOB_WORKERS
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: MAX_JOB_WORKERS
+          - name: UI_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: ui-secrets
+                key: UI_SECRET
+          - name: JOBSERVICE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: jobservice-secrets
+                key: JOBSERVICE_SECRET
+          - name: TOKEN_EXPIRATION
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: TOKEN_EXPIRATION
+          - name: CFG_EXPIRATION
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: CFG_EXPIRATION
+          - name: GODEBUG
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: GODEBUG
+          - name: ADMIRAL_URL
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: ADMIRAL_URL
+          - name: WITH_NOTARY
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: WITH_NOTARY
+          - name: WITH_CLAIR
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: WITH_CLAIR
+          - name: CLAIR_DB_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: CLAIR_DB_PASSWORD
+          - name: RESET
+            valueFrom:
+              configMapKeyRef:
+                name: adminserver-config
+                key: RESET
+        ports:
+        - containerPort: {{ .Values.adminserver.containerPort }}
+        volumeMounts:
+        - name: adminserver-data
+          mountPath: /data
+        - name: adminserver-config
+          mountPath: /etc/adminserver/key
+          subPath: key
+      volumes:
+      - name: adminserver-data
+        emptyDir: {}
+      - name: adminserver-config
+        configMap:
+          name: adminserver-config

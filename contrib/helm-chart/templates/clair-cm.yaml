@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clair-config
+data:
+  config.yaml: |
+    clair:
+      database:
+        type: pgsql
+        options:
+          source: postgresql://postgres:{{ .Values.postgres.rootPassword }}@postgres:5432?sslmode=disable
+          cachesize: 16384
+      api:
+        port: {{ .Values.clair.containerPort }}
+        healthport: {{ .Values.clair.healthPort }}
+        timeout: 300s
+      updater:
+        interval: {{ .Values.clair.updateInterval }}
+      notifier:
+        attempts: 3
+        renotifyinterval: 2h
+        http:
+          endpoint: http://ui/service/notifications/clair

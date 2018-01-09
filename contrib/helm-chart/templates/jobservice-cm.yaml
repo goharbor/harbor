@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jobservice-config
+data:
+  app.conf: |+
+    appname = jobservice
+    runmode = dev
+
+    [dev]
+    httpport = 80
