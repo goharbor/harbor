@@ -11,6 +11,7 @@ HEALTHCHECK CMD curl -s -o /dev/null -w "%{http_code}" 127.0.0.1:8080/api/system
 COPY ./make/dev/ui/harbor_ui ./src/favicon.ico ./make/photon/ui/start.sh ./VERSION /harbor/
 COPY ./src/ui/views /harbor/views
 COPY ./src/ui/static /harbor/static
+RUN chmod a+r -R /harbor
 
 RUN chmod u+x /harbor/start.sh /harbor/harbor_ui
 WORKDIR /harbor/
