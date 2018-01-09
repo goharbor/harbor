@@ -21,9 +21,9 @@ const (
 	UAAAuth             = "uaa_auth"
 	ProCrtRestrEveryone = "everyone"
 	ProCrtRestrAdmOnly  = "adminonly"
-	LDAPScopeBase       = 1
-	LDAPScopeOnelevel   = 2
-	LDAPScopeSubtree    = 3
+	LDAPScopeBase       = 0
+	LDAPScopeOnelevel   = 1
+	LDAPScopeSubtree    = 2
 
 	RoleProjectAdmin = 1
 	RoleDeveloper    = 2
