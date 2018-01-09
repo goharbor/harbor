@@ -171,7 +171,7 @@ User Should Be Developer
     User Can Not Add Member
     Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Developer')]
     Logout Harbor
-    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  ${ip}/${project}/hello-world:v1
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  v1
 
 User Should Be Admin
     [Arguments]  ${user}  ${pwd}  ${project}  ${guest}
@@ -183,7 +183,7 @@ User Should Be Admin
     User Can Change Role  ${guest}
     Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Admin')]
     Logout Harbor
-    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  ${ip}/${project}/hello-world:v2
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  v2
 
 Project Should Have Member
     [Arguments]  ${project}  ${user}

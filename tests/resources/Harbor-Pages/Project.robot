@@ -189,12 +189,12 @@ Do Log Advanced Search
 Go Into Repo
     [Arguments]  ${repoName}
     Sleep  2
-    Click Element  xpath=//*[@id="search_input"]
+    Click Element  xpath=//hbr-filter//clr-icon
     Sleep  2
-    Input Text  xpath=//*[@id="search_input"]  ${repoName}
-    Sleep  8
+    Input Text  xpath=//hbr-filter//input  ${repoName}
+    Sleep  3
     Wait Until Page Contains  ${repoName}
-    Click Element  xpath=//*[@id="results"]/list-repository-ro//clr-dg-cell[contains(.,${repoName})]/a
+    Click Element  xpath=//clr-dg-cell[contains(.,${repoName})]/a
     Sleep  2
     Capture Page Screenshot  gointo_${repoName}.png
 
