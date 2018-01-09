@@ -14,7 +14,7 @@ RUN tdnf distro-sync -y \
     && tdnf clean all
 
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chmod 555 /usr/local/bin/docker-entrypoint.sh
 COPY my.cnf /etc/
 RUN ln -s usr/local/bin/docker-entrypoint.sh /
 
