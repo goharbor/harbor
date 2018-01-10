@@ -33,17 +33,29 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     docker pull vmware/harbor-db-migrator:[tag]
     ```
 
-5. Back up database to a directory such as `/path/to/backup`. You need to create the directory if it does not exist.  Also, note that the username and password to access the db are provided via environment variable "DB_USR" and "DB_PWD"
+5. Back up database to a directory such as `/path/to/backup`. You need to create the directory if it does not exist.  Also, note that the username and password to access the db are provided via environment variable "DB_USR" and "DB_PWD". 
+
+    **NOTE:** Upgrade from harbor 1.2 or older to harbor 1.3 must use `vmware/migratorharbor-db-migrator:1.2`. Because DB engine replaced by MariaDB in harbor 1.3
 
     ```
     docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator:[tag] backup
     ```
 
-6.  Upgrade database schema and migrate data:
+6.  Upgrade database schema and migrate data.
 
     ```
     docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator:[tag] up head
     ```
+
+     **NOTE:** Some errors like
+
+    ```
+    [ERROR] Missing system table mysql.roles_mapping; please run mysql_upgrade to create it
+    [ERROR] Incorrect definition of table mysql.event: expected column 'sql_mode' at position ... ...
+    [ERROR] mysqld: Event Scheduler: An error occurred when initializing system tables. Disabling the Event Scheduler.
+    [Warning] Failed to load slave replication state from table mysql.gtid_slave_pos: 1146: Table 'mysql.gtid_slave_pos' doesn't exist
+    ```
+    will be occurred during upgrading from harbor 1.2 to harbor 1.3, just ignore them if harbor can start successfully.
 
 7. Unzip the new Harbor package and change to `./harbor` as the working directory. Configure Harbor by modifying the file `harbor.cfg`,
 
@@ -63,7 +75,7 @@ you must make sure **auth_mode** is set to **ldap_auth** in `harbor.cfg` before 
     ```
 	**NOTE:** After running the script, make sure you go through `harbor.cfg` to verify all the settings are correct. You can make changes to `harbor.cfg` as needed.
 
-8. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance. If your choose to install Harbor with components like Notary and/or Clair, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.
+8. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance. If you choose to install Harbor with components like Notary and/or Clair, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.
 
 ### Roll back from an upgrade
 For any reason, if you want to roll back to the previous version of Harbor, follow the below steps:
@@ -74,11 +86,13 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
     cd harbor
     docker-compose down
     ```
-2. Restore database from backup file in `/path/to/backup` .
+2. Restore database from backup file in `/path/to/backup` . 
 
     ```
     docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator:[tag] restore
     ```
+    **NOTE:** Rollback from harbor 1.3 to harbor 1.2 must use `vmware/harbor-db-migrator:1.2`. Because of DB engine change.
+
 
 3. Remove current Harbor instance.
     ```
@@ -96,7 +110,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
     cd harbor
     ./install.sh
     ```
-   **Note:** If your choose to install Harbor with components like Notary and/or Clair, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.  
+   **Note:** If you choose to install Harbor with components like Notary and/or Clair, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.
 
    If your previous version of Harbor was installed from source code:
     ```sh
