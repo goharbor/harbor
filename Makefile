@@ -10,7 +10,8 @@
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
 #							golang:1.7.3
-# compile_adminserver, compile_ui, compile_jobservice: compile specific binary
+# compile_clarity:
+#               compile clarity builder image
 #
 # build:	build Harbor docker images from photon baseimage
 #
