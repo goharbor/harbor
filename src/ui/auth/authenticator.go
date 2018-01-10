@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -88,8 +90,8 @@ func Login(m models.AuthModel) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if authMode == "" || m.Principal == "admin" {
-		authMode = "db_auth"
+	if authMode == "" || dao.IsSuperUser(m.Principal) {
+		authMode = common.DBAuth
 	}
 	log.Debug("Current AUTH_MODE is ", authMode)
 
