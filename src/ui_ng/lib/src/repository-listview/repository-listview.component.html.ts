@@ -1,8 +1,8 @@
 export const REPOSITORY_LISTVIEW_TEMPLATE = `
 <div>
-  <div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
-      <div class="row flex-items-xs-right option-right">
+  <div class="row" style="position:relative;">
+    <div>  
+      <div class="row flex-items-xs-right option-right rightPos">
         <div class="flex-xs-middle">
           <hbr-push-image-button style="display: inline-block;" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
           <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)" [currentValue]="lastFilteredRepoName"></hbr-filter>
@@ -21,7 +21,7 @@ export const REPOSITORY_LISTVIEW_TEMPLATE = `
         <clr-dg-column [clrDgSortBy]="tagsCountComparator">{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="pullCountComparator">{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'REPOSITORY.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-        <clr-dg-row *clrDgItems="let r of repositories"  [clrDgItem]="r">
+        <clr-dg-row *ngFor="let r of repositories"  [clrDgItem]="r">
           <clr-dg-cell><a href="javascript:void(0)" (click)="gotoLink(projectId || r.project_id, r.name || r.repository_name)">{{r.name}}</a></clr-dg-cell>
           <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
           <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>

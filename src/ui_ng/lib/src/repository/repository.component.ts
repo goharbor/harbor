@@ -51,13 +51,12 @@ export class RepositoryComponent implements OnInit {
   @Input() repoName: string;
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
-
+  @Input() withNotary: boolean;
+  @Input() withClair: boolean;
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
   @Output() backEvt: EventEmitter<any> = new EventEmitter<any>();
 
   onGoing = false;
-  withNotary = false;
-  withClair = true;
   editing = false;
   inProgress = true;
   currentTabID = 'repo-image';

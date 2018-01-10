@@ -17,3 +17,9 @@
     line-height: 24px;
     height: 24px;
 }
+.rightPos{
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
+}

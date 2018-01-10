@@ -33,11 +33,14 @@
         "NO": "NO",
         "NEGATIVE": "NEGATIVE",
         "COPY": "COPY",
-        "EDIT": "EDIT"
+        "EDIT": "EDIT",
+        "SWITCH": "SWITCH"
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",
-        "DELETED_FAILURE": "Deleted failed"
+        "DELETED_FAILURE": "Deleted failed",
+        "SWITCH_SUCCESS": "Switch successfully",
+        "SWITCH_FAILURE": "Switch failed"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com.",
@@ -203,12 +206,15 @@
         "USERNAME_ALREADY_EXISTS": "Username already exists.",
         "UNKNOWN_ERROR": "Unknown error occurred while adding member.",
         "FILTER_PLACEHOLDER": "Filter Members",
-        "DELETION_TITLE": "Confirm project member deletion",
-        "DELETION_SUMMARY": "Do you want to delete project member {{param}}?",
+        "DELETION_TITLE": "Confirm project members deletion",
+        "DELETION_SUMMARY": "Do you want to delete project members {{param}}?",
         "ADDED_SUCCESS": "Added member successfully.",
-        "DELETED_SUCCESS": "Deleted members successfully.",
-        "SWITCHED_SUCCESS": "Switched members role successfully.",
-        "OF": "of"
+        "DELETED_SUCCESS": "Deleted member successfully.",
+        "SWITCHED_SUCCESS": "Switched member role successfully.",
+        "OF": "of",
+        "SWITCH_TITLE": "Confirm project members switch",
+        "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?"
+
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",

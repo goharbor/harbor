@@ -18,5 +18,5 @@
     color: #007CBB;
 }
 .rightPos {
-    position: absolute; right: 20px; margin-top: 16px; height:32px;
+    position: absolute; right: 20px; margin-top: 5px; height:32px; z-index: 100;
 }

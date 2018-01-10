@@ -25,10 +25,6 @@ export const TAG_STYLE = `
   display: block; height: 0;
 }
 
-:host >>> .datagrid {
-  margin: 0;
-}
-
 :host >>> .datagrid-placeholder {
   display: none;
 }
@@ -48,5 +44,10 @@ export const TAG_STYLE = `
 :host >>> .datagrid clr-dg-column {
     min-width: 80px;
 }
-
+.rightPos{
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
+}
 `;

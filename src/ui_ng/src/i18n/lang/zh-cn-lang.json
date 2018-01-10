@@ -33,7 +33,14 @@
         "NO": "否",
         "NEGATIVE": "否",
         "COPY": "拷贝",
-        "EDIT": "编辑"
+        "EDIT": "编辑",
+        "SWITCH": "切换"
+    },
+    "BATCH": {
+        "DELETED_SUCCESS": "删除成功",
+        "DELETED_FAILURE": "删除失败",
+        "SWITCH_SUCCESS": "切换成功",
+        "SWITCH_FAILURE": "切换失败"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
@@ -204,7 +211,9 @@
         "DELETION_SUMMARY": "你确认删除项目成员 {{param}}?",
         "ADDED_SUCCESS": "成功新增成员。",
         "DELETED_SUCCESS": "成功删除成员。",
-        "SWITCHED_SUCCESS": "切换角色成功。"
+        "SWITCHED_SUCCESS": "切换角色成功。",
+        "SWITCH_TITLE": "切换项目成员确认",
+        "SWITCH_SUMMARY": "你确认切换项目成员 {{param}}??"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",

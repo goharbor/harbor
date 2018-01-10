@@ -141,6 +141,8 @@ export class ListProjectComponent implements OnDestroy {
     }
 
     clrLoad(state: State) {
+        this.selectedRow = [];
+
         //Keep state for future filtering and sorting
         this.currentState = state;
 

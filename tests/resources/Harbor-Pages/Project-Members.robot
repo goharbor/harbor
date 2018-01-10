@@ -69,7 +69,11 @@ Change Project Member Role
     #change role
     Click Element  //button[@class='btn dropdown-toggle']
     Click Element  //button[contains(.,'${role}')]
-    #Click Element  xpath=//project-detail//clr-dg-action-overflow//button[contains(.,"${role}")]
+    sleep  1
+    Click Element  xpath=//clr-modal//button[contains(.,'SWITCH')]
+    sleep  1
+    Click Element  xpath=//clr-modal//button[contains(.,'CLOSE')]
+
     Sleep  2
     Wait Until Page Contains  ${role}
 

@@ -33,7 +33,14 @@
         "NO": "NO",
         "NEGATIVE": "NEGATIVO",
         "COPY": "COPY",
-        "EDIT": "EDITAR"
+        "EDIT": "EDITAR",
+        "SWITCH": "SWITCH"
+    },
+    "BATCH": {
+        "DELETED_SUCCESS": "Deleted successfully",
+        "DELETED_FAILURE": "Deleted failed",
+        "SWITCH_SUCCESS": "Switch successfully",
+        "SWITCH_FAILURE": "Switch failed"
     },
     "TOOLTIP": {
         "EMAIL": "El email debe ser una dirección válida como nombre@ejemplo.com.",
@@ -204,7 +211,9 @@
         "ADDED_SUCCESS": "Miembro añadido satisfactoriamente.",
         "DELETED_SUCCESS": "Miembro eliminado satisfactoriamente",
         "SWITCHED_SUCCESS": "Rol del miembro cambiado satisfactoriamente.",
-        "OF": "of"
+        "OF": "of",
+        "SWITCH_TITLE": "Confirm project members switch",
+        "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",
