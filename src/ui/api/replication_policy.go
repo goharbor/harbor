@@ -243,19 +243,14 @@ func (pa *RepPolicyAPI) Delete() {
 		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
 	}
 
-	// TODO
-	jobs, err := dao.GetRepJobByPolicy(id)
+	_, count, err := dao.FilterRepJobs(id, "",
+		[]string{models.JobRunning, models.JobRetrying, models.JobPending}, nil, nil, 1, 0)
 	if err != nil {
-		log.Errorf("failed to get jobs of policy %d: %v", id, err)
+		log.Errorf("failed to filter jobs of policy %d: %v", id, err)
 		pa.CustomAbort(http.StatusInternalServerError, "")
 	}
-
-	for _, job := range jobs {
-		if job.Status == models.JobRunning ||
-			job.Status == models.JobRetrying ||
-			job.Status == models.JobPending {
-			pa.CustomAbort(http.StatusPreconditionFailed, "policy has running/retrying/pending jobs, can not be deleted")
-		}
+	if count > 0 {
+		pa.CustomAbort(http.StatusPreconditionFailed, "policy has running/retrying/pending jobs, can not be deleted")
 	}
 
 	if err = core.GlobalController.RemovePolicy(id); err != nil {
@@ -302,7 +297,7 @@ func convertFromRepPolicy(projectMgr promgr.ProjectManager, policy rep_models.Re
 	}
 
 	// TODO call the method from replication controller
-	_, errJobCount, err := dao.FilterRepJobs(policy.ID, "", "error", nil, nil, 0, 0)
+	_, errJobCount, err := dao.FilterRepJobs(policy.ID, "", []string{"error"}, nil, nil, 0, 0)
 	if err != nil {
 		return nil, err
 	}

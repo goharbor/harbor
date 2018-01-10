@@ -1139,7 +1139,7 @@ func TestGetRepJobByPolicy(t *testing.T) {
 }
 
 func TestFilterRepJobs(t *testing.T) {
-	jobs, _, err := FilterRepJobs(policyID, "", "", nil, nil, 1000, 0)
+	jobs, _, err := FilterRepJobs(policyID, "", []string{}, nil, nil, 1000, 0)
 	if err != nil {
 		t.Errorf("Error occurred in FilterRepJobs: %v, policy ID: %d", err, policyID)
 		return

@@ -16,13 +16,16 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/replication/core"
 	"github.com/vmware/harbor/src/replication/event/notification"
 	"github.com/vmware/harbor/src/replication/event/topic"
-	"github.com/vmware/harbor/src/ui/api/models"
+	api_models "github.com/vmware/harbor/src/ui/api/models"
 )
 
 // ReplicationAPI handles API calls for replication
@@ -46,7 +49,7 @@ func (r *ReplicationAPI) Prepare() {
 
 // Post trigger a replication according to the specified policy
 func (r *ReplicationAPI) Post() {
-	replication := &models.Replication{}
+	replication := &api_models.Replication{}
 	r.DecodeJSONReqAndValidate(replication)
 
 	policy, err := core.GlobalController.GetPolicy(replication.PolicyID)
@@ -57,6 +60,18 @@ func (r *ReplicationAPI) Post() {
 
 	if policy.ID == 0 {
 		r.HandleNotFound(fmt.Sprintf("replication policy %d not found", replication.PolicyID))
+		return
+	}
+
+	_, count, err := dao.FilterRepJobs(replication.PolicyID, "",
+		[]string{models.JobRunning, models.JobPending}, nil, nil, 1, 0)
+	if err != nil {
+		r.HandleInternalServerError(fmt.Sprintf("failed to filter jobs of policy %d: %v",
+			replication.PolicyID, err))
+		return
+	}
+	if count > 0 {
+		r.RenderError(http.StatusPreconditionFailed, "policy has running/pending jobs, new replication can not be triggered")
 		return
 	}
 
