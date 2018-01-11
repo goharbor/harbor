@@ -50,6 +50,7 @@ type Job interface {
 	Type() Type
 	LogPath() string
 	UpdateStatus(status string) error
+	GetStatus() (string, error)
 	Init() error
 	//Parm() interface{}
 }
@@ -152,6 +153,18 @@ func (rj *RepJob) Init() error {
 	return nil
 }
 
+// GetStatus returns the status of the job
+func (rj *RepJob) GetStatus() (string, error) {
+	job, err := dao.GetRepJob(rj.id)
+	if err != nil {
+		return "", err
+	}
+	if job == nil {
+		return "", fmt.Errorf("replication job %v not found", rj.id)
+	}
+	return job.Status, nil
+}
+
 // NewRepJob returns a pointer to RepJob which implements the Job interface.
 // Given API only gets the id, it will call this func to get a instance that can be manuevered by state machine.
 func NewRepJob(id int64) *RepJob {
@@ -215,6 +228,18 @@ func (sj *ScanJob) Init() error {
 		return err
 	}
 	return nil
+}
+
+// GetStatus returns the status of the job
+func (sj *ScanJob) GetStatus() (string, error) {
+	job, err := dao.GetScanJob(sj.id)
+	if err != nil {
+		return "", err
+	}
+	if job == nil {
+		return "", fmt.Errorf("scan job %d not found", sj.id)
+	}
+	return job.Status, nil
 }
 
 //NewScanJob creates a instance of ScanJob by id.
