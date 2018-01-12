@@ -32,27 +32,8 @@ func initRouters() {
 
 	//Page Controllers:
 	beego.Router("/", &controllers.IndexController{})
+	beego.Router("/harbor/*", &controllers.IndexController{})
 	beego.Router("/reset_password", &controllers.IndexController{})
-
-	beego.Router("/harbor", &controllers.IndexController{})
-
-	beego.Router("/harbor/sign-in", &controllers.IndexController{})
-	beego.Router("/harbor/projects", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/repositories", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/repositories/*", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/replications", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/members", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/logs", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/configs", &controllers.IndexController{})
-	beego.Router("/harbor/tags/:id/*", &controllers.IndexController{})
-
-	beego.Router("/harbor/users", &controllers.IndexController{})
-	beego.Router("/harbor/logs", &controllers.IndexController{})
-	beego.Router("/harbor/replications", &controllers.IndexController{})
-	beego.Router("/harbor/replications/endpoints", &controllers.IndexController{})
-	beego.Router("/harbor/replications/rules", &controllers.IndexController{})
-	beego.Router("/harbor/tags", &controllers.IndexController{})
-	beego.Router("/harbor/configs", &controllers.IndexController{})
 
 	// standalone
 	if !config.WithAdmiral() {
