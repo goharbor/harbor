@@ -157,7 +157,21 @@ func TestMain(m *testing.M) {
 func testForAll(m *testing.M) int {
 	cleanByUser(username)
 
-	return m.Run()
+	rc := m.Run()
+	clearAll()
+	return rc
+}
+
+func clearAll() {
+	tables := []string{"project_member",
+		"project_metadata", "access_log", "repository", "replication_policy",
+		"replication_target", "replication_job", "replication_immediate_trigger", "img_scan_job",
+		"img_scan_overview", "clair_vuln_timestamp", "project", "user"}
+	for _, t := range tables {
+		if err := ClearTable(t); err != nil {
+			log.Errorf("Failed to clear table: %s,error: %v", t, err)
+		}
+	}
 }
 
 func TestRegister(t *testing.T) {
