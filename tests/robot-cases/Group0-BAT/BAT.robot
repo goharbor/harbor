@@ -296,6 +296,89 @@ Test Case - Delete A Project
     Project Should Be Deleted  project${d}
     Close Browser
 
+Test Case - Delete Multi Project
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s 
+    Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
+    Create An New Project  projecta${d}
+    Create An New Project  projectb${d}
+    Push Image  ${ip}  test${d}  Test1@34  projecta${d}  hello-world
+    Filter Object  project
+    Multi-delete Object  projecta  projectb
+    #verify delete project with image should not be deleted directly
+    Partly Success
+    Page Should Contain  projecta${d}
+    Page Should Not Contain  projectb${d}
+    Close Browser
+
+Test Case - Delete Multi User
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New User  ${HARBOR_URL}  deletea${d}  testa${d}@vmware.com  test${d}  Test1@34  harbor
+    Logout Harbor
+    Create An New User  ${HARBOR_URL}  deleteb${d}  testb${d}@vmware.com  test${d}  Test1@34  harbor
+    Logout Harbor
+    Create An New User  ${HARBOR_URL}  deletec${d}  testc${d}@vmware.com  test${d}  Test1@34  harbor
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
+    Switch To User Tag
+    Filter Object  delete
+    Multi-delete Object  deletea  deleteb  deletec
+    #assert delete 
+    #Delete Success  comment temp  wait for fixing
+    Click Element  //clr-modal//button[contains(.,'CLOSE')]
+    Sleep  1
+   #filter object  delete
+    Page Should Not Contain  deletea
+    Close Browser
+
+Test Case - Delete Multi Repo
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
+    Create An New Project  project${d}
+    Push Image  ${ip}  test${d}  Test1@34  project${d}  hello-world  
+    Push Image  ${ip}  test${d}  Test1@34  project${d}  busybox
+    Sleep  2
+    Go Into Project  project${d}
+    Multi-delete Object  hello-world  busybox
+    #verify
+    Delete Success
+    Close Browser
+
+Test Case - Delete Multi Tag
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
+    Create An New Project  project${d}
+    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  hello-world  latest
+    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  hello-world  v1
+    Sleep  2
+    Go Into Project  project${d}
+    Go Into Repo  hello-world
+    Multi-delete object  latest  v1
+    #verify
+    Delete Success
+    Close Browser
+
+Test Case - Delete Multi Member
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New User  ${HARBOR_URL}  testa${d}  testa${d}@vmware.com  test${d}  Test1@34  harbor
+    Logout Harbor
+    Create An New User  ${HARBOR_URL}  testb${d}  testb${d}@vmware.com  test${d}  Test1@34  harbor
+    Logout Harbor
+    Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
+    Create An New Project  project${d}
+    Go Into Project  project${d}
+    Switch To Member
+    Add Guest Member to project  testa${d}
+    Add Guest Member to project  testb${d}
+    Multi-delete Object  testa${d}  testb${d}
+    Delete Success
+    Page Should Not Contain  testa${d}
+    Close Browser
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s

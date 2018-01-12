@@ -55,8 +55,8 @@ Push Image With Tag
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  docker tag ${image} ${tag}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${tag}
+    ${rc}=  Run And Return Rc  docker tag ${image} ${ip}/${project}/${image}:${tag}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}:${tag}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
