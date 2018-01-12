@@ -28,6 +28,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/ui/config"
@@ -124,6 +125,13 @@ func TestAll(t *testing.T) {
 		panic(err)
 	}
 	if err := proxy.Init(); err != nil {
+		panic(err)
+	}
+	database, err := config.Database()
+	if err != nil {
+		panic(err)
+	}
+	if err := dao.InitDatabase(database); err != nil {
 		panic(err)
 	}
 

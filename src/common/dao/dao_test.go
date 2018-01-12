@@ -40,7 +40,7 @@ func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 	return nil
 }
 
-func clearUp(username string) {
+func cleanByUser(username string) {
 	var err error
 
 	o := GetOrmer()
@@ -155,7 +155,7 @@ func TestMain(m *testing.M) {
 }
 
 func testForAll(m *testing.M) int {
-	clearUp(username)
+	cleanByUser(username)
 
 	return m.Run()
 }
@@ -1584,6 +1584,12 @@ func TestGetScanJobsByStatus(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(1, len(r2))
 	assert.Equal(sj1.Repository, r2[0].Repository)
+}
+
+func TestIsSuperUser(t *testing.T) {
+	assert := assert.New(t)
+	assert.True(IsSuperUser("admin"))
+	assert.False(IsSuperUser("none"))
 }
 
 func TestSaveConfigEntries(t *testing.T) {

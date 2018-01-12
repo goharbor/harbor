@@ -86,7 +86,6 @@ func initRouters() {
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &api.MetadataAPI{}, "put:Put;delete:Delete")
-	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/scanAll", &api.RepositoryAPI{}, "post:ScanAll")
 	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete;put:Put")
@@ -118,6 +117,9 @@ func initRouters() {
 	beego.Router("/api/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &api.SystemInfoAPI{}, "get:GetCert")
+
+	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
+	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})

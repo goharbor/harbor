@@ -82,4 +82,5 @@ const (
 	DefaultClairEndpoint       = "http://clair:6060"
 	CfgDriverDB                = "db"
 	CfgDriverJSON              = "json"
+	NewHarborAdminName         = "admin@harbor.local"
 )

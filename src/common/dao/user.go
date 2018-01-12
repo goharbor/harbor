@@ -296,6 +296,19 @@ func OnBoardUser(u *models.User) error {
 	return nil
 }
 
+//IsSuperUser checks if the user is super user(conventionally id == 1) of Harbor
+func IsSuperUser(username string) bool {
+	u, err := GetUser(models.User{
+		Username: username,
+	})
+	log.Debugf("Check if user %s is super user", username)
+	if err != nil {
+		log.Errorf("Failed to get user from DB, username: %s, error: %v", username, err)
+		return false
+	}
+	return u != nil && u.UserID == 1
+}
+
 //CleanUser - Clean this user information from DB
 func CleanUser(id int64) error {
 	if _, err := GetOrmer().QueryTable(&models.User{}).
