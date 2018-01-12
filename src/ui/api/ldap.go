@@ -51,7 +51,9 @@ func (l *LdapAPI) Prepare() {
 
 // Ping ...
 func (l *LdapAPI) Ping() {
-	var ldapConfs models.LdapConf
+	var ldapConfs = models.LdapConf{
+		LdapConnectionTimeout: 5,
+	}
 	var err error
 	var ldapSession *ldapUtils.Session
 
