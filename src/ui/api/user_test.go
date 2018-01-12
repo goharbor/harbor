@@ -327,6 +327,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 	password := apilib.Password{OldPassword: "", NewPassword: ""}
+	t.Log("Update password-case 1")
 	//case 1: update user2 password with user3 auth
 	code, err := apiTest.UsersUpdatePassword(testUser0002ID, password, *testUser0003Auth)
 	if err != nil {
@@ -335,6 +336,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Update user password status should be 403")
 	}
+	t.Log("Update password-case 2")
 	//case 2: update user2 password with admin auth, but oldpassword is empty
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
 	if err != nil {
@@ -343,6 +345,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 	} else {
 		assert.Equal(400, code, "Update user password status should be 400")
 	}
+	t.Log("Update password-case 3")
 	//case 3: update user2 password with admin auth, but oldpassword is wrong
 	password.OldPassword = "000"
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
@@ -352,6 +355,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Update user password status should be 403")
 	}
+	t.Log("Update password-case 4")
 	//case 4: update user2 password with admin auth, but newpassword is empty
 	password.OldPassword = "testUser0002"
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
@@ -361,6 +365,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 	} else {
 		assert.Equal(400, code, "Update user password status should be 400")
 	}
+	t.Log("Update password-case 5")
 	//case 5: update user2 password with admin auth, right parameters
 	password.NewPassword = "TestUser0002"
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
@@ -383,6 +388,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 		}
 
 	}
+	t.Log("Update password-case 6")
 	//case 6: update user2 password setting the new password same as the old
 	password.OldPassword = password.NewPassword
 	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
@@ -400,6 +406,7 @@ func TestUsersDelete(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
+	t.Log("delete user-case 1")
 	//case 1:delete user without admin auth
 	code, err := apiTest.UsersDelete(testUser0002ID, *testUser0003Auth)
 	if err != nil {
@@ -409,6 +416,7 @@ func TestUsersDelete(t *testing.T) {
 		assert.Equal(403, code, "Delete test user status should be 403")
 	}
 	//case 2: delete user with admin auth, user2 has already been toggled to admin, but can not delete himself
+	t.Log("delete user-case 2")
 	code, err = apiTest.UsersDelete(testUser0002ID, *testUser0002Auth)
 	if err != nil {
 		t.Error("Error occured while delete test user", err.Error())
@@ -417,6 +425,7 @@ func TestUsersDelete(t *testing.T) {
 		assert.Equal(403, code, "Delete test user status should be 403")
 	}
 	//case 3: delete user with admin auth
+	t.Log("delete user-case 3")
 	code, err = apiTest.UsersDelete(testUser0002ID, *admin)
 	if err != nil {
 		t.Error("Error occured while delete test user", err.Error())
@@ -435,6 +444,7 @@ func TestUsersDelete(t *testing.T) {
 }
 
 func TestModifiable(t *testing.T) {
+	t.Log("Test modifiable.")
 	assert := assert.New(t)
 	base := BaseController{
 		api.BaseAPI{

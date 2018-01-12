@@ -122,6 +122,9 @@ func ClearTable(table string) error {
 	if table == models.UserTable {
 		sql = fmt.Sprintf("delete from %s where user_id > 2", table)
 	}
+	if table == "project_metadata" { //make sure library is public
+		sql = fmt.Sprintf("delete from %s where id > 1", table)
+	}
 	_, err := o.Raw(sql).Exec()
 	return err
 }
