@@ -30,13 +30,21 @@ echo $buildinfo
 upload_build=false
 nightly_run=false
 upload_latest_build=false
+upload_bundle_success=false
 latest_build_file='latest.build'
 publish_npm=true
 
+harbor_build_bundle=""
 harbor_logs_bucket="harbor-ci-logs"
 harbor_builds_bucket="harbor-builds"
 harbor_releases_bucket="harbor-releases"
 harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
+harbor_target_bucket=""
+if [ $DRONE_BRANCH == "master" ]; then
+  harbor_target_bucket=$harbor_builds_bucket
+else
+  harbor_target_bucket=$harbor_releases_bucket/$DRONE_BRANCH
+fi
 
 # GC credentials
 keyfile="/root/harbor-ci-logs.key"
@@ -54,24 +62,45 @@ echo $container_ip
 
 # GS util
 function uploader {
-  gsutil cp $1 gs://$2
-  gsutil -D setacl public-read gs://$2/$1 &> /dev/null
+    gsutil cp $1 gs://$2/$1
+    gsutil -D setacl public-read gs://$2/$1 &> /dev/null
+}
+
+function package_offline_installer {
+    echo "Package Harbor offline installer."
+    pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
+    harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
+    upload_build=true
+    echo "Package name is: $harbor_build_bundle"
+    du -ks $harbor_build_bundle | awk '{print $1 / 1024}' | { read x; echo $x MB; }
 }
 
 ## --------------------------------------------- Run Test Case ---------------------------------------------
 if [ $DRONE_REPO != "vmware/harbor" ]; then
-  echo "Only run tests again Harbor Repo."
-  exit 1
+    echo "Only run tests again Harbor Repo."
+    exit 1
 fi
 
-if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
-    ## -------------- Package installer with clean code -----------------
-    echo "Package Harbor build."
-    pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-    echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
-    upload_latest_build=true
-    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
-elif (echo $buildinfo | grep -q "\[Specific CI="); then
+echo "--------------------------------------------------"
+echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
+echo "--------------------------------------------------"
+
+##
+# Any merge code or tag on branch master, release-* or pks-* will trigger package offline installer.
+#
+# Put code here is because that it needs clean code to build installer.
+##
+if [ $DRONE_BRANCH == "master" ] || [ $DRONE_BRANCH == *"refs/tags"* ] || [ $DRONE_BRANCH == "release-"* ] || [ $DRONE_BRANCH == "pks-"* ]; then
+    if [ $DRONE_BUILD_EVENT == "push" ] || [ $DRONE_BUILD_EVENT == "tag" ]; then
+        package_offline_installer 
+        upload_latest_build=true     
+    fi
+fi
+
+##
+# Any Event(PR or merge code) on any branch will trigger test run.
+##
+if (echo $buildinfo | grep -q "\[Specific CI="); then
     buildtype=$(echo $buildinfo | grep "\[Specific CI=")
     testsuite=$(echo $buildtype | awk -F"\[Specific CI=" '{sub(/\].*/,"",$2);print $2}')
     pybot -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite tests/robot-cases
@@ -80,17 +109,14 @@ elif (echo $buildinfo | grep -q "\[Full CI\]"); then
 elif (echo $buildinfo | grep -q "\[Skip CI\]"); then
     echo "Skip CI."
 elif (echo $buildinfo | grep -q "\[Upload Build\]"); then
-    upload_latest_build=true
-    upload_build=true
-    echo "Package Harbor build."
-    pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-    echo "Running full CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
+    package_offline_installer
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 else
     # default mode is BAT.
     pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 fi
 
+# rc is used to identify test run pass or fail.
 rc="$?"
 echo $rc
 
@@ -99,43 +125,41 @@ timestamp=$(date +%s)
 outfile="integration_logs_"$DRONE_BUILD_NUMBER"_"$DRONE_COMMIT".tar.gz"
 tar -zcvf $outfile output.xml log.html *.png package.list *container-logs.zip *.log /var/log/harbor/* /data/config/* /data/job_logs/*
 if [ -f "$outfile" ]; then
-  uploader $outfile $harbor_logs_bucket
-  echo "----------------------------------------------"
-  echo "Download test logs:"
-  echo "https://storage.googleapis.com/harbor-ci-logs/$outfile"
-  echo "----------------------------------------------"
+    uploader $outfile $harbor_logs_bucket
+    echo "----------------------------------------------"
+    echo "Download test logs:"
+    echo "https://storage.googleapis.com/harbor-ci-logs/$outfile"
+    echo "----------------------------------------------"
 else
-  echo "No log output file to upload"
+    echo "No log output file to upload"
 fi
 
 ## --------------------------------------------- Upload Harbor Bundle File ---------------------------------------
-if [ $upload_build == true ] && [ $rc -eq 0 ]; then
-  harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
-  uploader $harbor_build_bundle $harbor_builds_bucket
+#
+# Build storage structure:
+#
+# 1(master), harbor-builds/harbor-offline-installer-*.tgz
+#                         latest.build
+#                         harbor-offline-installer-latest.tgz
 
-  if [ $DRONE_BRANCH == "master" ]; then
-    cp $harbor_build_bundle harbor-offline-installer-latest-master.tgz
-    uploader harbor-offline-installer-latest-master.tgz $harbor_ci_pipeline_store_bucket
-  fi 
-  if [[ $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]]; then
-    cp $harbor_build_bundle harbor-offline-installer-latest-release.tgz
-	uploader harbor-offline-installer-latest-release.tgz $harbor_ci_pipeline_store_bucket
-  fi 
+# 2(others), harbor-releases/${branch}/harbor-offline-installer-*.tgz
+#                                     latest.build
+#                                     harbor-offline-installer-latest.tgz
+#
+if [ $upload_build == true ] && [ $rc -eq 0 ]; then
+    cp $harbor_build_bundle harbor-offline-installer-latest.tgz
+    uploader $harbor_build_bundle $harbor_target_bucket
+    uploader harbor-offline-installer-latest.tgz $harbor_target_bucket 
+    upload_bundle_success=true 
 fi
 
-## --------------------------------------------- Upload Harbor Latest Build File ---------------------------------
-if [ $upload_latest_build == true ] && [ $rc -eq 0 ]; then
-  echo "update latest build file."
-  harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
-  echo $harbor_build_bundle 
-  if [[ $DRONE_BRANCH == "master" ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
-      echo 'https://storage.googleapis.com/harbor-builds/'$harbor_build_bundle > $latest_build_file
-      uploader $latest_build_file $harbor_builds_bucket	
-  fi
-  if [[ $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
-      echo 'https://storage.googleapis.com/harbor-releases/'$harbor_build_bundle > $latest_build_file
-	  uploader $latest_build_file $harbor_releases_bucket
-  fi    
+## --------------------------------------------- Upload Harbor Latest Build File ----------------------------------
+#
+# latest.build file holds the latest offline installer url, it must be sure that the installer has been uploaded successfull.
+#
+if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ] && [ $rc -eq 0 ]; then
+    echo 'https://storage.googleapis.com/'$harbor_target_bucket/$harbor_build_bundle > $latest_build_file
+    uploader $latest_build_file $harbor_target_bucket  
 fi
 
 ## ------------------------------------- Build & Publish NPM Package for VIC ------------------------------------

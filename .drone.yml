@@ -10,7 +10,7 @@ pipeline:
     tags: true
     recursive: false
 
-  integration-test-on-pr:
+  test-and-issue-build:
     image: vmware/harbor-e2e-engine:1.38
     pull: true
     privileged: true
@@ -36,27 +36,6 @@ pipeline:
     when:
       status: success
 
-  bundle:
-    image: vmware/harbor-e2e-engine:1.38
-    pull: true
-    privileged: true
-    environment:
-      BIN: bin
-      GOPATH: /drone
-      SHELL: /bin/bash
-      BUILD_NUMBER: ${DRONE_BUILD_NUMBER}
-    commands:
-      - du -ks harbor-offline-installer-*.tgz | awk '{print $1 / 1024}' | { read x; echo $x MB; }
-      - mkdir -p bundle
-      - cp harbor-offline-installer-*.tgz bundle
-      - cp harbor-offline-installer-*.tgz bundle/harbor-offline-installer-latest.tgz
-      - ls -la bundle
-    when:
-      repo: vmware/harbor
-      event: [ push, tag ]
-      branch: [ master, release-*, pks-*, refs/tags/* ]
-      status: success
-
   notify-slack:
     image: plugins/slack
     webhook: ${SLACK_URL}
@@ -67,34 +46,6 @@ pipeline:
       repo: vmware/harbor
       branch: [ master, release-*, refs/tags/* ]
       status: [ failure, success ]
-
-  publish-gcs-builds:
-    image: maplain/drone-gcs:latest
-    pull: true
-    source: bundle
-    target: harbor-builds
-    acl:
-      - allUsers:READER
-    cache_control: public,max-age=3600
-    when:
-      repo: vmware/harbor
-      event: [ push, tag ]
-      branch: [ master ]
-      status: success
-
-  publish-gcs-releases:
-    image: maplain/drone-gcs:latest
-    pull: true
-    source: bundle
-    target: harbor-releases
-    acl:
-      - allUsers:READER
-    cache_control: public,max-age=3600
-    when:
-      repo: vmware/harbor
-      event: [ push, tag ]
-      branch: [ release-*, refs/tags/* ]
-      status: success
 
   trigger:
     image: plugins/downstream
