@@ -51,6 +51,7 @@ export const ListMode = {
   FULL: "full"
 };
 
+
 export const CommonRoutes = {
   SIGN_IN: "/sign-in",
   EMBEDDED_SIGN_IN: "/harbor/sign-in",
@@ -68,7 +69,7 @@ export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
 }
 export const enum ConfirmationButtons {
-  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE
+  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, SWITCH_CANCEL
 }
 
 export const ProjectTypes = { 0: 'PROJECT.ALL_PROJECTS', 1: 'PROJECT.PRIVATE_PROJECTS', 2: 'PROJECT.PUBLIC_PROJECTS' };

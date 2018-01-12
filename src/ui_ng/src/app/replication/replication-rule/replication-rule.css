@@ -16,6 +16,9 @@
 h4{
     color: #666;
 }
+.colorRed{color: red;}
+.colorRed a{text-decoration: underline;color: #007CBB;}
+
 label:first-child {
     font-size: 15px;
     left: -10px !important;
@@ -31,4 +34,4 @@ label:first-child {
 
 .projectInput{float: left;}
 .projectInput input{width: 185px;background-color: white;}
-.switchIcon{width:20px;height:20px; margin-top: 5px;margin-left: 15px;}
+.switchIcon{width:20px;height:20px; margin-top: 2px;margin-left: 15px;}

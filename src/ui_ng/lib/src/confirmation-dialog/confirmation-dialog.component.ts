@@ -40,7 +40,6 @@ export class ConfirmationDialogComponent {
     @Input() batchInfors: BatchInfo[]  = [];
     isDelete: boolean = false;
 
-
     constructor(
         private translate: TranslateService) {}
 
@@ -98,7 +97,7 @@ export class ConfirmationDialogComponent {
         this.close();
     }
 
-    delete(): void {
+    operate(): void {
         if (!this.message){//Inproper condition
             this.close();
             return;

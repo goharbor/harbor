@@ -156,8 +156,9 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
   delOperate(repoName:  string) {
     let findedList = this.batchDelectionInfos.find(data => data.name === repoName);
     if (this.signedCon[repoName].length !== 0) {
-      this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED').subscribe(res => {
-        findedList.status = res;
+      Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+          this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).subscribe(res => {
+        findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
       });
     } else {
       return toPromise<number>(this.repositoryService

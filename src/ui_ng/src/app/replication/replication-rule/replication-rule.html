@@ -1,10 +1,11 @@
 <div>
- <a class="cursor" (click)="backReplication()">< {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a>
+ <a class="cursor" *ngIf="!projectId" (click)="backReplication()">< {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a>
+ <a class="cursor" *ngIf="projectId" (click)="backProjectReplication()"><{{'SIDE_NAV.PROJECTS' | translate}} &nbsp; {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a>
  <h1 class="sub-header-title">{{headerTitle | translate}}</h1>
 <form [formGroup]="ruleForm" (ngSubmit)="onSubmit()"  novalidate>
  <section class="form-block">
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">{{'REPLICATION.NAME' | translate}}<span style="color: red">*</span></label>
+   <label class="col-md-4 form-group-label-override">{{'REPLICATION.NAME' | translate}}<span class="colorRed">*</span></label>
    <label class="col-md-8"  aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
           [class.invalid]='(ruleForm.controls.name.touched && ruleForm.controls.name.invalid) || isRuleNameExist'>
     <input type="text" id="ruleName" required formControlName="name" #ruleName (keyup)='checkRuleName()' autocomplete="off">
@@ -19,13 +20,14 @@
   <!--Projects-->
   <h4>{{'REPLICATION.SOURCE' | translate}}</h4>
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">{{'PROJECT.PROJECTS' | translate}}<span style="color: red">*</span></label>
+   <label class="col-md-4 form-group-label-override">{{'PROJECT.PROJECTS' | translate}}<span class="colorRed">*</span></label>
    <div formArrayName="projects">
     <div class="projectInput" *ngFor="let project of projects.controls; let i= index" [formGroupName]="i">
      <input formControlName="name" class="label" readonly  value="name">
     </div>
    </div>
-   <clr-icon shape="switch" class="is-solid switchIcon" (click)="openProjectModel()"></clr-icon>
+   <clr-icon *ngIf="!(noProjectInfo || projectId)" shape="search" class="is-solid switchIcon" (click)="openProjectModel()"></clr-icon>
+   <label *ngIf="noProjectInfo" class="colorRed">{{noProjectInfo | translate}}</label>
   </div>
 
 <!--images/Filter-->
@@ -53,20 +55,21 @@
   <!--Targets-->
   <h4>{{'REPLICATION.TARGETS' | translate}}</h4>
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">{{'DESTINATION.ENDPOINT' | translate}} <span style="color: red">*</span></label>
+   <label class="col-md-4 form-group-label-override">{{'DESTINATION.ENDPOINT' | translate}} <span class="colorRed">*</span></label>
    <div formArrayName="targets">
     <div class="select endpointSelect" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
       <select id="ruleTarget" (change)="targetChange($event)"  formControlName="id">
        <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}: {{target.endpoint}}</option>
       </select>
      </div>
+    <label *ngIf="noEndpointInfo" class="colorRed">{{noEndpointInfo | translate}}</label>
     </div>
    </div>
 
   <!--Trigger-->
   <h4>{{'REPLICATION.TRIGGER' | translate}}</h4>
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">{{'REPLICATION.SCHEDULE' | translate}}</label>
+   <label class="col-md-4 form-group-label-override">{{'REPLICATION.MODE' | translate}}</label>
    <div  formGroupName="trigger">
     <!--on trigger-->
     <div class="select floatSet">
@@ -100,7 +103,6 @@
    </div>
   </div>
    <!--Setting-->
-   <h4>{{'REPLICATION.SETTING' | translate}}</h4>
    <div class="form-group">
     <label class="col-md-4 form-group-label-override">{{'REPLICATION.SETTING' | translate}}</label>
     <div class="col-lg-7 padLeft0">

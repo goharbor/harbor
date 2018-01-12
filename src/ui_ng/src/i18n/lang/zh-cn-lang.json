@@ -34,13 +34,16 @@
         "NEGATIVE": "否",
         "COPY": "拷贝",
         "EDIT": "编辑",
-        "SWITCH": "切换"
+        "SWITCH": "切换",
+        "REPLICATE": "复制"
     },
     "BATCH": {
         "DELETED_SUCCESS": "删除成功",
         "DELETED_FAILURE": "删除失败",
         "SWITCH_SUCCESS": "切换成功",
-        "SWITCH_FAILURE": "切换失败"
+        "SWITCH_FAILURE": "切换失败",
+        "REPLICATE_SUCCESS": "复成功",
+        "REPLICATE_FAILURE": "复制失败"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
@@ -244,6 +247,8 @@
         "DELETION_TITLE": "删除规则确认",
         "DELETION_SUMMARY": "确认删除规则 {{param}}?",
         "DELETION_TITLE_FAILURE": "规则确认删除失败",
+        "REPLICATION_TITLE": "复制规则确认",
+        "REPLICATION_SUMMARY": "确认复制规则 {{param}}?",
         "DELETION_SUMMARY_FAILURE": "{{param}} 有 pending/running/retrying 状态，不能删除",
         "FILTER_TARGETS_PLACEHOLDER": "过滤目标",
         "DELETION_TITLE_TARGET": "删除目标确认",
@@ -275,6 +280,7 @@
         "LAST_START_TIME": "上次起始时间",
         "ACTIVATION": "活动状态",
         "REPLICATION_JOBS": "复制任务",
+        "STOPJOB": "停止任务",
         "ALL": "全部",
         "PENDING": "挂起",
         "RUNNING": "运行中",
@@ -310,12 +316,16 @@
         "PLACEHOLDER": "未发现任何复制规则!",
         "JOB_PLACEHOLDER": "未发现任何复制任务!",
         "JOB_LOG_VIEWER": "查看复制任务日志",
-        "BACKINFO": "请先添加项目名称和目标",
+        "NO_ENDPOINT_INFO": "请先添加目标",
+        "NO_PROJECT_INFO": "请先添加项目",
         "FILTER": "过滤",
-        "SCHEDULE": "日程",
+        "SCHEDULE": "定时",
+        "MANUAL": "手动",
+        "IMMEDIATE": "即刻",
         "SETTING":"设置",
-        "TRIGGER":"触发器",
+        "TRIGGER":"触发条件",
         "TARGETS":"目标",
+        "MODE": "模式",
         "SOURCE": "资源",
         "DELETE_REMOTE_IMAGES":"删除本地镜像时同时也删除远程的镜像。",
         "REPLICATE_IMMEDIATE":"立即复制现有的镜像。"
@@ -498,7 +508,7 @@
     "ABOUT": {
         "VERSION": "版本",
         "BUILD": "构建",
-        "COPYRIGHT": "版权所有 © 1998-2017 VMware, Inc. 保留所有权利。此产品受美国及其他国家/地区的版权和知识产权以及国际条约保护。VMware产品受",
+        "COPYRIGHT": "版权所有 © 1998-2018 VMware, Inc. 保留所有权利。此产品受美国及其他国家/地区的版权和知识产权以及国际条约保护。VMware产品受",
         "COPYRIGHT_SUFIX": "上列出的一项或多项专利保护。",
         "TRADEMARK": "VMware徽标及设计都是VMware, Inc.在美国和/或其他法律辖区的注册商标或者商标。此处提到的其他所有商标和名称分别是其各自公司的商标。",
         "END_USER_LICENSE": "终端用户许可协议",

@@ -156,7 +156,7 @@ export class MemberComponent implements OnInit, OnDestroy {
           nameArr.join(','),
           m,
           ConfirmationTargets.PROJECT_MEMBER,
-          ConfirmationButtons.DELETE_CANCEL
+          ConfirmationButtons.SWITCH_CANCEL
       );
       this.OperateDialogService.openComfirmDialog(switchMessage);
     }

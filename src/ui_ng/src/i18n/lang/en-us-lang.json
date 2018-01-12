@@ -34,13 +34,16 @@
         "NEGATIVE": "NEGATIVE",
         "COPY": "COPY",
         "EDIT": "EDIT",
-        "SWITCH": "SWITCH"
+        "SWITCH": "SWITCH",
+        "REPLICATE": "REPLICATE"
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",
         "DELETED_FAILURE": "Deleted failed",
         "SWITCH_SUCCESS": "Switch successfully",
-        "SWITCH_FAILURE": "Switch failed"
+        "SWITCH_FAILURE": "Switch failed",
+        "REPLICATE_SUCCESS": "Replicate successfully",
+        "REPLICATE_FAILURE": "Replicate failed"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com.",
@@ -242,8 +245,10 @@
         "ENDPOINTS": "Endpoints",
         "FILTER_POLICIES_PLACEHOLDER": "Filter Rules",
         "FILTER_JOBS_PLACEHOLDER": "Filter Jobs",
-        "DELETION_TITLE": "Confirm Rule Deletion",
-        "DELETION_SUMMARY": "Do you want to delete rule {{param}}?",
+        "DELETION_TITLE": "Confirm Rules Deletion",
+        "DELETION_SUMMARY": "Do you want to delete rules {{param}}?",
+        "REPLICATION_TITLE": "Confirm Rules replication",
+        "REPLICATION_SUMMARY": "Do you want to replicate the Rules {{param}}?",
         "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
         "DELETION_SUMMARY_FAILURE": "{{param}} have pending/running/retrying status",
         "FILTER_TARGETS_PLACEHOLDER": "Filter Endpoints",
@@ -276,6 +281,7 @@
         "LAST_START_TIME": "Last Start Time",
         "ACTIVATION": "Activation",
         "REPLICATION_JOBS": "Replication Jobs",
+        "STOPJOB": "Stop Jobs",
         "ALL": "All",
         "PENDING": "Pending",
         "RUNNING": "Running",
@@ -311,16 +317,20 @@
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
         "JOB_LOG_VIEWER": "View Replication Job Log",
-        "BACKINFO": "Please add project and endpoint first",
+        "NO_ENDPOINT_INFO": "Please go to registries and add an endpoint first",
+        "NO_PROJECT_INFO": "Please go to projects and add a project first",
         "FILTER": "Filter",
-        "SCHEDULE": "Schedule",
-        "SETTING":"Setting",
-        "TRIGGER":"Trigger",
+        "SCHEDULE": "Scheduled",
+        "MANUAL": "Manual",
+        "IMMEDIATE": "Immediate",
+        "SETTING":"Options",
+        "TRIGGER":"Triggering Condition",
         "TARGETS":"Target",
+        "MODE": "Mode",
         "SOURCE": "Source",
         "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
-        "REPLICATE_IMMEDIATE":"Replicate exiting images immediately"
+        "REPLICATE_IMMEDIATE":"Replicate existing images immediately"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -500,7 +510,7 @@
     "ABOUT": {
         "VERSION": "Version",
         "BUILD": "Build",
-        "COPYRIGHT": "Copyright 1998-2017 VMware, Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
+        "COPYRIGHT": "Copyright 1998-2018 VMware, Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
         "COPYRIGHT_SUFIX": ".",
         "TRADEMARK": "VMware is a registered trademark or trademark of VMware, Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",

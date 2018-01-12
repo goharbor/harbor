@@ -127,6 +127,8 @@ export abstract class ReplicationService {
      * @memberof ReplicationService
      */
     abstract getJobLog(jobId: number | string): Observable<string> | Promise<string> | string;
+
+    abstract stopJobs(jobId: number | string): Observable<string> | Promise<string> | string;
 }
 
 /**
@@ -299,6 +301,12 @@ export class ReplicationDefaultService extends ReplicationService {
         let logUrl: string = `${this._jobBaseUrl}/${jobId}/log`;
         return this.http.get(logUrl, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.text())
+            .catch(error => Promise.reject(error));
+    }
+
+    public stopJobs(jobId: number | string): Observable<any> | Promise<any> | any {
+        return this.http.put(this._jobBaseUrl, JSON.stringify({'policy_id': jobId, 'status': 'stop' }), HTTP_JSON_OPTIONS).toPromise()
+            .then(response => response)
             .catch(error => Promise.reject(error));
     }
 }

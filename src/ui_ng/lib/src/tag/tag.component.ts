@@ -286,8 +286,7 @@ export class TagComponent implements OnInit {
       if (tags && tags.length) {
         let promiseLists: any[] = [];
         tags.forEach(tag => {
-          this.delOperate(tag.signature, tag.name);
-
+          promiseLists.push(this.delOperate(tag.signature, tag.name));
         });
 
         Promise.all(promiseLists).then((item) => {

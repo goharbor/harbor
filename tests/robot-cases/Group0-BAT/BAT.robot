@@ -325,8 +325,7 @@ Test Case - Delete Multi User
     Filter Object  delete
     Multi-delete Object  deletea  deleteb  deletec
     #assert delete 
-    #Delete Success  comment temp  wait for fixing
-    Click Element  //clr-modal//button[contains(.,'CLOSE')]
+    Delete Success
     Sleep  1
    #filter object  delete
     Page Should Not Contain  deletea

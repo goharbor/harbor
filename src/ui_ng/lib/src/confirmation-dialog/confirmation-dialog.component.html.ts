@@ -30,11 +30,16 @@ export const CONFIRMATION_DIALOG_TEMPLATE: string = `
        </ng-template>
        <ng-template [ngSwitchCase]="2">
         <button type="button" class="btn btn-outline" (click)="cancel()" [hidden]="isDelete">{{'BUTTON.CANCEL' | translate}}</button>
-         <button type="button" class="btn btn-danger" (click)="delete()" [hidden]="isDelete">{{'BUTTON.DELETE' | translate}}</button>
+         <button type="button" class="btn btn-danger" (click)="operate()" [hidden]="isDelete">{{'BUTTON.DELETE' | translate}}</button>
         <button type="button" class="btn btn-primary" (click)="cancel()" [disabled]="!batchOverStatus"  [hidden]="!isDelete">{{'BUTTON.CLOSE' | translate}}</button>
        </ng-template>
        <ng-template [ngSwitchCase]="3">
         <button type="button" class="btn btn-primary" (click)="cancel()">{{'BUTTON.CLOSE' | translate}}</button>
+       </ng-template>
+       <ng-template [ngSwitchCase]="4">
+        <button type="button" class="btn btn-outline" (click)="cancel()" [hidden]="isDelete">{{'BUTTON.CANCEL' | translate}}</button>
+         <button type="button" class="btn btn-danger" (click)="operate()" [hidden]="isDelete">{{'BUTTON.REPLICATE' | translate}}</button>
+        <button type="button" class="btn btn-primary" (click)="cancel()" [disabled]="!batchOverStatus"  [hidden]="!isDelete">{{'BUTTON.CLOSE' | translate}}</button>
        </ng-template>
     </div>
 </clr-modal>
