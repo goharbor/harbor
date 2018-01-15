@@ -334,7 +334,8 @@ func FilterRepJobs(policyID int64, repository string, status []string, startTime
 // GetRepJobToStop get jobs that are possibly being handled by workers of a certain policy.
 func GetRepJobToStop(policyID int64) ([]*models.RepJob, error) {
 	var res []*models.RepJob
-	_, err := repJobPolicyIDQs(policyID).Filter("status__in", models.JobPending, models.JobRunning).All(&res)
+	_, err := repJobPolicyIDQs(policyID).Filter("status__in",
+		models.JobPending, models.JobRunning, models.JobRetrying).All(&res)
 	genTagListForJob(res...)
 	return res, err
 }

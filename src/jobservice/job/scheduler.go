@@ -15,8 +15,9 @@
 package job
 
 import (
-	"github.com/vmware/harbor/src/common/utils/log"
 	"time"
+
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 var jobQueue = make(chan Job)
