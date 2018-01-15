@@ -337,12 +337,7 @@ func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 	if err != nil {
 		return nil, err
 	}
-	//All configuration of UAA will be un-editable for PKS 1.0 (1.4)
-	result[common.AUTHMode].Editable = flag && result[common.AUTHMode].Value.(string) != common.UAAAuth
-	result[common.UAAEndpoint].Editable = false
-	//	result[common.UAAClientSecret].Editable = false
-	result[common.UAAVerifyCert].Editable = false
-	result[common.UAAClientID].Editable = false
+	result[common.AUTHMode].Editable = flag
 	return result, nil
 }
 
