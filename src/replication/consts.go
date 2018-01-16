@@ -12,14 +12,14 @@ const (
 	AdaptorKindHarbor = "Harbor"
 
 	//TriggerKindImmediate : Kind of trigger is 'Immediate'
-	TriggerKindImmediate = "immediate"
-	//TriggerKindSchedule : Kind of trigger is 'Schedule'
-	TriggerKindSchedule = "schedule"
+	TriggerKindImmediate = "Immediate"
+	//TriggerKindSchedule : Kind of trigger is 'Scheduled'
+	TriggerKindSchedule = "Scheduled"
 	//TriggerKindManual : Kind of trigger is 'Manual'
-	TriggerKindManual = "manual"
+	TriggerKindManual = "Manual"
 
-	//TriggerScheduleDaily : type of scheduling is 'daily'
-	TriggerScheduleDaily = "daily"
-	//TriggerScheduleWeekly : type of scheduling is 'weekly'
-	TriggerScheduleWeekly = "weekly"
+	//TriggerScheduleDaily : type of scheduling is 'Daily'
+	TriggerScheduleDaily = "Daily"
+	//TriggerScheduleWeekly : type of scheduling is 'Weekly'
+	TriggerScheduleWeekly = "Weekly"
 )
