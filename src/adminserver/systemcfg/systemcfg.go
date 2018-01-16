@@ -141,8 +141,9 @@ var (
 			env:   "UAA_VERIFY_CERT",
 			parse: parseStringToBool,
 		},
-		common.UIURL:         "UI_URL",
-		common.JobServiceURL: "JOBSERVICE_URL",
+		common.UIURL:                       "UI_URL",
+		common.JobServiceURL:               "JOBSERVICE_URL",
+		common.RegistryStorageProviderName: "REGISTRY_STORAGE_PROVIDER_NAME",
 	}
 
 	// configurations need read from environment variables
@@ -175,6 +176,7 @@ var (
 			env:   "UAA_VERIFY_CERT",
 			parse: parseStringToBool,
 		},
+		common.RegistryStorageProviderName: "REGISTRY_STORAGE_PROVIDER_NAME",
 	}
 )
 
