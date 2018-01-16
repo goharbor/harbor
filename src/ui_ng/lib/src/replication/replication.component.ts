@@ -43,6 +43,11 @@ import { JobLogViewerComponent } from '../job-log-viewer/index';
 import { State } from "clarity-angular";
 import {Observable} from "rxjs/Observable";
 import {Subscription} from "rxjs/Subscription";
+import {ConfirmationTargets, ConfirmationButtons, ConfirmationState} from "../shared/shared.const";
+import {ConfirmationMessage} from "../confirmation-dialog/confirmation-message";
+import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
+import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
+import {ConfirmationAcknowledgement} from "../confirmation-dialog/confirmation-state-message";
 
 const ruleStatus: { [key: string]: any } = [
   { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS' },
@@ -84,6 +89,7 @@ export class SearchOption {
 export class ReplicationComponent implements OnInit, OnDestroy {
 
   @Input() projectId: number | string;
+  @Input() isSystemAdmin: boolean;
   @Input() withReplicationJob: boolean;
   @Input() readonly: boolean;
 
@@ -101,11 +107,13 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   changedRules: ReplicationRule[];
   initSelectedId: number | string;
+  hasJobs: boolean;
 
   rules: ReplicationRule[];
   loading: boolean;
 
   jobs: ReplicationJobItem[];
+  batchDelectionInfos: BatchInfo[] = [];
 
   toggleJobSearchOption = optionalSearch;
   currentJobSearchOption: number;
@@ -118,6 +126,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   @ViewChild("replicationLogViewer")
   replicationLogViewer: JobLogViewerComponent;
+
+  @ViewChild('replicationConfirmDialog')
+  replicationConfirmDialog: ConfirmationDialogComponent;
 
   creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('creation_time', 'date');
   updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('update_time', 'date');
@@ -259,13 +270,61 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
   }
 
-  replicateManualRule(rule: ReplicationRule): void {
-    toPromise<any>(this.replicationService.replicateRule(rule.id))
-        .then(response => {
-          this.refreshJobs();
-        })
-        .catch(error => this.errorHandler.error(error));
+  replicateManualRule(rules: ReplicationRule[]) {
+    if (rules && rules.length) {
+      let nameArr: string[] = [];
+      this.batchDelectionInfos = [];
+      rules.forEach(rule => {
+        nameArr.push(rule.name);
+        let initBatchMessage = new BatchInfo ();
+        initBatchMessage.name = rule.name;
+        this.batchDelectionInfos.push(initBatchMessage);
+      });
+      let replicationMessage = new ConfirmationMessage(
+          'REPLICATION.REPLICATION_TITLE',
+          'REPLICATION.REPLICATION_SUMMARY',
+          nameArr.join(', ') || '',
+          rules,
+          ConfirmationTargets.TARGET,
+          ConfirmationButtons.REPLICATE_CANCEL);
+      this.replicationConfirmDialog.open(replicationMessage);
+    }
   }
+
+  confirmReplication(message: ConfirmationAcknowledgement) {
+    if (message &&
+        message.source === ConfirmationTargets.TARGET &&
+        message.state === ConfirmationState.CONFIRMED) {
+      let rules: Endpoint[] = message.data;
+      if (rules && rules.length) {
+        let promiseLists: any[] = [];
+        rules.forEach(rule => {
+          this.replicationOperate(+rule.id, rule.name);
+        })
+        Promise.all(promiseLists).then((item) => {
+          this.listReplicationRule.retrieveRules();
+          this.refreshJobs();
+        });
+      }
+    }
+  }
+
+  replicationOperate(ruleId: number, name: string) {
+    let findedList = this.batchDelectionInfos.find(data => data.name === name);
+
+    return toPromise<any>(this.replicationService.replicateRule(ruleId))
+        .then(response => {
+          this.translateService.get('BATCH.REPLICATE_SUCCESS')
+              .subscribe(res => findedList = BathInfoChanges(findedList, res));
+        })
+        .catch(error => {
+          this.translateService.get('BATCH.REPLICATE_FAILURE').subscribe(res => {
+            findedList = BathInfoChanges(findedList, res, false, true);
+          });
+        });
+  }
+
+
 
   customRedirect(rule: ReplicationRule) {
     this.redirect.emit(rule);
@@ -295,6 +354,14 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.loadFirstPage();
   }
 
+  stopJobs() {
+    if (this.jobs && this.jobs.length) {
+      toPromise(this.replicationService.stopJobs(this.jobs[0].policy_id))
+          .then(res => {this.refreshJobs(); })
+          .catch(error =>  this.errorHandler.error(error));
+    }
+  }
+
   reloadRules(isReady: boolean) {
     if (isReady) {
       this.search.ruleName = '';
@@ -304,6 +371,13 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   refreshRules() {
     this.listReplicationRule.retrieveRules();
+  }
+
+  hasJobList(hasJob: boolean): void {
+    this.hasJobs = hasJob;
+    if (this.hasJobs) {
+      this.refreshJobs();
+    }
   }
 
   refreshJobs() {

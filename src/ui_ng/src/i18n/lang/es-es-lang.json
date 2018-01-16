@@ -34,13 +34,16 @@
         "NEGATIVE": "NEGATIVO",
         "COPY": "COPY",
         "EDIT": "EDITAR",
-        "SWITCH": "SWITCH"
+        "SWITCH": "SWITCH",
+        "REPLICATE": "REPLICATE"
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",
         "DELETED_FAILURE": "Deleted failed",
         "SWITCH_SUCCESS": "Switch successfully",
-        "SWITCH_FAILURE": "Switch failed"
+        "SWITCH_FAILURE": "Switch failed",
+        "REPLICATE_SUCCESS": "Replicate successfully",
+        "REPLICATE_FAILURE": "Replicate failed"
     },
     "TOOLTIP": {
         "EMAIL": "El email debe ser una dirección válida como nombre@ejemplo.com.",
@@ -245,6 +248,8 @@
         "DELETION_SUMMARY": "¿Quiere eliminar la regla {{param}}?",
         "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
         "DELETION_SUMMARY_FAILURE": "{{param}} have pending/running/retrying status",
+        "REPLICATION_TITLE": "Confirm Rules replication",
+        "REPLICATION_SUMMARY": "Do you want to replicate the Rules {{param}}?",
         "FILTER_TARGETS_PLACEHOLDER": "Filtrar Endpoints",
         "DELETION_TITLE_TARGET": "Confirmar Eliminación de Endpoint",
         "DELETION_SUMMARY_TARGET": "¿Quiere eliminar el endpoint {{param}}?",
@@ -275,6 +280,7 @@
         "LAST_START_TIME": "Última Fecha de Inicio",
         "ACTIVATION": "Activación",
         "REPLICATION_JOBS": "Trabajos de Replicación",
+        "STOPJOB": "Stop Jobs",
         "ALL": "Todos",
         "PENDING": "Pendiente",
         "RUNNING": "Ejecutando",
@@ -310,15 +316,19 @@
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
         "JOB_LOG_VIEWER": "View Replication Job Log",
-        "BACKINFO": "Please add project and endpoint first",
+        "NO_ENDPOINT_INFO": "Please go to registries and add an endpoint first",
+        "NO_PROJECT_INFO": "Please go to projects and add a project first",
         "FILTER": "Filter",
-        "SCHEDULE": "Schedule",
-        "SETTING":"Setting",
-        "TRIGGER":"Trigger",
+        "SCHEDULE": "Scheduled",
+        "MANUAL": "Manual",
+        "IMMEDIATE": "Immediate",
+        "SETTING":"Options",
+        "TRIGGER":"Triggering Condition",
         "TARGETS":"Target",
+        "MODE": "Mode",
         "SOURCE": "Source",
         "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
-        "REPLICATE_IMMEDIATE":"Replicate exiting images immediately"
+        "REPLICATE_IMMEDIATE":"Replicate existing images immediately"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -499,7 +509,7 @@
     "ABOUT": {
         "VERSION": "Versión",
         "BUILD": "Construir",
-        "COPYRIGHT": "Copyright 1998-2017 VMware, Inc. Todos los derechos reservados. Este producto está protegido por E.U. y las leyes de propiedad internacionales. Los productos de VMware estan cubiertos por una o más patentes listadas en",
+        "COPYRIGHT": "Copyright 1998-2018 VMware, Inc. Todos los derechos reservados. Este producto está protegido por E.U. y las leyes de propiedad internacionales. Los productos de VMware estan cubiertos por una o más patentes listadas en",
         "COPYRIGHT_SUFIX": ".",
         "TRADEMARK": "VMware es una marca registrada o marca de VMware, Inc. en los Estados Unidos y otras jurisdicciones. Todas las demás marcas y nombres mencionados son marcas de sus respectivas compañías.",
         "END_USER_LICENSE": "Contrato de Usuario Final (EULA)",

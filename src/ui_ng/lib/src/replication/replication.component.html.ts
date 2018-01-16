@@ -11,8 +11,9 @@ export const REPLICATION_TEMPLATE: string = `
     </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <hbr-list-replication-rule #listReplicationRule [readonly]="readonly" [projectId]="projectId"  (replicateManual)=replicateManualRule($event) (selectOne)="selectOneRule($event)" (openNewRule)="openModal()" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
+      <hbr-list-replication-rule #listReplicationRule [readonly]="readonly" [projectId]="projectId" [isSystemAdmin]="isSystemAdmin"  (replicateManual)=replicateManualRule($event) (hasJobs)="hasJobList($event)" (selectOne)="selectOneRule($event)" (openNewRule)="openModal()" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
     </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"  [hidden]="!hasJobs">
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <div class="row flex-items-xs-between" style="height:60px;">
         <h5 class="flex-items-xs-bottom option-left-down" style="margin-left: 14px;">{{'REPLICATION.REPLICATION_JOBS' | translate}}</h5>
@@ -37,7 +38,11 @@ export const REPLICATION_TEMPLATE: string = `
       </div>
     </div>
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <clr-datagrid [clrDgLoading]="jobsLoading" (clrDgRefresh)="clrLoadJobs($event)">
+      <clr-datagrid [clrDgLoading]="jobsLoading" (clrDgRefresh)="clrLoadJobs($event)"><clr-dg-action-bar>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(jobs && jobs.length>0)" (click)="stopJobs()">{{'REPLICATION.STOPJOB' | translate}}</button>
+            </div>
+        </clr-dg-action-bar>
         <clr-dg-column [clrDgField]="'repository'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgField]="'operation'">{{'REPLICATION.OPERATION' | translate}}</clr-dg-column>
@@ -66,5 +71,7 @@ export const REPLICATION_TEMPLATE: string = `
         </clr-dg-footer>
       </clr-datagrid>
     </div>
+    </div>
     <job-log-viewer #replicationLogViewer></job-log-viewer>
+    <confirmation-dialog #replicationConfirmDialog [batchInfors]="batchDelectionInfos" (confirmAction)="confirmReplication($event)"></confirmation-dialog>
 </div>`;
