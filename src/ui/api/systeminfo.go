@@ -86,18 +86,19 @@ var (
 
 //GeneralInfo wraps common systeminfo for anonymous request
 type GeneralInfo struct {
-	WithNotary              bool                             `json:"with_notary"`
-	WithClair               bool                             `json:"with_clair"`
-	WithAdmiral             bool                             `json:"with_admiral"`
-	AdmiralEndpoint         string                           `json:"admiral_endpoint"`
-	AuthMode                string                           `json:"auth_mode"`
-	RegistryURL             string                           `json:"registry_url"`
-	ProjectCreationRestrict string                           `json:"project_creation_restriction"`
-	SelfRegistration        bool                             `json:"self_registration"`
-	HasCARoot               bool                             `json:"has_ca_root"`
-	HarborVersion           string                           `json:"harbor_version"`
-	NextScanAll             int64                            `json:"next_scan_all"`
-	ClairVulnStatus         *models.ClairVulnerabilityStatus `json:"clair_vulnerability_status,omitempty"`
+	WithNotary                  bool                             `json:"with_notary"`
+	WithClair                   bool                             `json:"with_clair"`
+	WithAdmiral                 bool                             `json:"with_admiral"`
+	AdmiralEndpoint             string                           `json:"admiral_endpoint"`
+	AuthMode                    string                           `json:"auth_mode"`
+	RegistryURL                 string                           `json:"registry_url"`
+	ProjectCreationRestrict     string                           `json:"project_creation_restriction"`
+	SelfRegistration            bool                             `json:"self_registration"`
+	HasCARoot                   bool                             `json:"has_ca_root"`
+	HarborVersion               string                           `json:"harbor_version"`
+	NextScanAll                 int64                            `json:"next_scan_all"`
+	ClairVulnStatus             *models.ClairVulnerabilityStatus `json:"clair_vulnerability_status,omitempty"`
+	RegistryStorageProviderName string                           `json:"registry_storage_provider_name"`
 }
 
 // validate for validating user if an admin.
@@ -165,16 +166,17 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 	_, caStatErr := os.Stat(defaultRootCert)
 	harborVersion := sia.getVersion()
 	info := GeneralInfo{
-		AdmiralEndpoint:         cfg[common.AdmiralEndpoint].(string),
-		WithAdmiral:             config.WithAdmiral(),
-		WithNotary:              config.WithNotary(),
-		WithClair:               config.WithClair(),
-		AuthMode:                cfg[common.AUTHMode].(string),
-		ProjectCreationRestrict: cfg[common.ProjectCreationRestriction].(string),
-		SelfRegistration:        cfg[common.SelfRegistration].(bool),
-		RegistryURL:             registryURL,
-		HasCARoot:               caStatErr == nil,
-		HarborVersion:           harborVersion,
+		AdmiralEndpoint:             cfg[common.AdmiralEndpoint].(string),
+		WithAdmiral:                 config.WithAdmiral(),
+		WithNotary:                  config.WithNotary(),
+		WithClair:                   config.WithClair(),
+		AuthMode:                    cfg[common.AUTHMode].(string),
+		ProjectCreationRestrict:     cfg[common.ProjectCreationRestriction].(string),
+		SelfRegistration:            cfg[common.SelfRegistration].(bool),
+		RegistryURL:                 registryURL,
+		HasCARoot:                   caStatErr == nil,
+		HarborVersion:               harborVersion,
+		RegistryStorageProviderName: cfg[common.RegistryStorageProviderName].(string),
 	}
 	if info.WithClair {
 		info.ClairVulnStatus = getClairVulnStatus()

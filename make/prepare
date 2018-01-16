@@ -262,6 +262,9 @@ if rcp.has_option("configuration", "redis_url"):
 else:
     redis_url = ""
 
+storage_provider_name = rcp.get("configuration", "registry_storage_provider_name").strip()
+storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
+
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 
@@ -349,7 +352,8 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         uaa_endpoint=uaa_endpoint,
         uaa_clientid=uaa_clientid,
         uaa_clientsecret=uaa_clientsecret,
-        uaa_verify_cert=uaa_verify_cert
+        uaa_verify_cert=uaa_verify_cert,
+        storage_provider_name=storage_provider_name
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
@@ -360,8 +364,6 @@ render(os.path.join(templates_dir, "ui", "env"),
         )
 
 registry_config_file = "config_ha.yml" if args.ha_mode else "config.yml"
-storage_provider_name = rcp.get("configuration", "registry_storage_provider_name").strip()
-storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
 if storage_provider_name == "filesystem":
     if not storage_provider_config:
         storage_provider_config = "rootdirectory: /storage"
