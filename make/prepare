@@ -191,6 +191,8 @@ rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 validate(rcp, args)
 
+reload_config = rcp.get("configuration", "reload_config") if rcp.has_option(
+    "configuration", "reload_config") else "false"
 hostname = rcp.get("configuration", "hostname")
 protocol = rcp.get("configuration", "ui_url_protocol")
 ui_url = protocol + "://" + hostname
@@ -305,6 +307,7 @@ else:
 		
 render(os.path.join(templates_dir, "adminserver", "env"),
         adminserver_conf_env,
+        reload_config=reload_config,
         ui_url=ui_url,
         auth_mode=auth_mode,
         self_registration=self_registration,
