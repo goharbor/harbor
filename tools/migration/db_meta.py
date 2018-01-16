@@ -30,7 +30,8 @@ class User(Base):
 class Properties(Base):
     __tablename__ = 'properties'
 
-    k = sa.Column(sa.String(64), primary_key = True)
+    id = sa.Column(sa.Integer, primary_key=True)
+    k = sa.Column(sa.String(64), unique=True)
     v = sa.Column(sa.String(128), nullable = False)
 
 
@@ -88,7 +89,7 @@ class Project(Base):
 
     project_id = sa.Column(sa.Integer, primary_key=True)
     owner_id = sa.Column(sa.ForeignKey(u'user.user_id'), nullable=False, index=True)
-    name = sa.Column(sa.String(30), nullable=False, unique=True)
+    name = sa.Column(sa.String(255), nullable=False, unique=True)
     creation_time = sa.Column(mysql.TIMESTAMP)
     update_time = sa.Column(mysql.TIMESTAMP)
     deleted = sa.Column(sa.Integer, nullable=False, server_default=sa.text("'0'"))
@@ -119,6 +120,8 @@ class ReplicationPolicy(Base):
     enabled = sa.Column(mysql.TINYINT(1), nullable=False, server_default=sa.text("'1'"))
     description = sa.Column(sa.Text)
     cron_str = sa.Column(sa.String(256))
+    filters = sa.Column(sa.String(1024))
+    replicate_deletion = sa.Column(mysql.TINYINT(1), nullable=False, server_default='0')
     start_time = sa.Column(mysql.TIMESTAMP)
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
@@ -150,7 +153,19 @@ class ReplicationJob(Base):
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
-    __table_args__ = (sa.Index('policy', "policy_id"),)
+    __table_args__ = (sa.Index('policy', 'policy_id'),)
+
+
+class ReplicationImmediateTrigger(Base):
+    __tablename__ = 'replication_immediate_trigger'
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    policy_id = sa.Column(sa.Integer, nullable=False)
+    namespace = sa.Column(sa.String(256), nullable=False)
+    on_push = sa.Column(mysql.TINYINT(1), nullable=False, server_default='0')
+    on_deletion = sa.Column(mysql.TINYINT(1), nullable=False, server_default='0')
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default=sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default=sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
 
 class Repository(Base):

@@ -57,10 +57,11 @@ Changelog for harbor database schema
   - delete column `public` from table `project`
   - add column `insecure` to table `replication_target`
 
-## 1.3.1
+## 1.4.0
 
   - add column `filters` to table `replication_policy`
   - add column `replicate_deletion` to table `replication_policy`
   - create table `replication_immediate_trigger`
   - add pk `id` to table `properties`
-  - remove pk index from colum 'k' of table `properties` 
+  - remove pk index from column 'k' of table `properties` 
+  - alter `name` length from 41 to 256 of table `project`
