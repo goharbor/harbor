@@ -108,7 +108,11 @@ func (ra *RepJobAPI) List() {
 
 	page, pageSize := ra.GetPaginationParams()
 
-	jobs, total, err := dao.FilterRepJobs(policyID, repository, []string{status},
+	statuses := []string{}
+	if len(status) > 0 {
+		statuses = append(statuses, status)
+	}
+	jobs, total, err := dao.FilterRepJobs(policyID, repository, statuses,
 		startTime, endTime, pageSize, pageSize*(page-1))
 	if err != nil {
 		log.Errorf("failed to filter jobs according policy ID %d, repository %s, status %s, start time %v, end time %v: %v",
