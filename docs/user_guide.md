@@ -59,9 +59,9 @@ Harbor supports two authentication modes:
 
 	Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly.  
 	
-	When an LDAP/AD user logs in by *username* and *password*, Harbor binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Harbor looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server.  
+	When an LDAP/AD user logs in by *username* and *password*, Harbor binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Harbor looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server. Uncheck **"LDAP Verify Cert"** if the LDAP/AD server uses a self-signed or an untrusted certificate.
 	
-	Self-registration, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
+	Self-registration, deleting user, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
 
 ## Managing projects
 A project in Harbor contains all repositories of an application. No images can be pushed to Harbor before the project is created. RBAC is applied to a project. There are two types of projects in Harbor:  
@@ -97,7 +97,7 @@ Project properties can be changed by clicking "Configuration".
 
 ## Managing members of a project  
 ### Adding members  
-You can add members with different roles to an existing project.  
+You can add members with different roles to an existing project. You can add a LDAP/AD user to project members under LDAP/AD authentication mode. 
 
 ![browse project](img/new_add_member.png)
 
@@ -134,7 +134,7 @@ Entering a keyword in the search field at the top lists all matching projects an
 
 ## Administrator options  
 ### Managing user  
-Administrator can add "Administrator" role to an ordinary user by click button on the left and select "Set as Administrator". To delete a user, select "Delete". 
+Administrator can add "Administrator" role to an ordinary user by click button on the left and select "Set as Administrator". To delete a user, select "Delete". Deleting user is only supported under database authentication mode.
 
 ![browse project](img/new_set_admin_remove_user.png)
 
