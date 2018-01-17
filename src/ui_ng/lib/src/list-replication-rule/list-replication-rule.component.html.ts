@@ -13,9 +13,9 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
     <clr-dg-column [clrDgField]="'projects'" *ngIf="!projectScope">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'targets'">{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.SCHEDULE' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.MODE' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-    <clr-dg-row *ngFor="let p of changedRules" [clrDgItem]="p" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
+    <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-cell (click)="selectRule(p)">{{p.name}}</clr-dg-cell>
         <clr-dg-cell *ngIf="!projectScope" (click)="selectRule(p)">
             <a href="javascript:void(0)" (click)="redirectTo(p)">{{p.projects?.length>0  ? p.projects[0].name : ''}}</a>
