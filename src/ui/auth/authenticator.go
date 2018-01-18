@@ -110,7 +110,7 @@ func Login(m models.AuthModel) (*models.User, error) {
 		time.Sleep(frozenTime)
 	}
 
-	authenticator.PostAuthenticate(user)
+	err = authenticator.PostAuthenticate(user)
 
 	return user, err
 }
