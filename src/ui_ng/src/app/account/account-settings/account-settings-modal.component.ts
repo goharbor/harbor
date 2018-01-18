@@ -42,6 +42,8 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     formValueChanged: boolean = false;
     checkOnGoing: boolean = false;
 
+    RenameOnGoing: boolean = false;
+
     accountFormRef: NgForm;
     @ViewChild("accountSettingsFrom") accountForm: NgForm;
     @ViewChild(InlineAlertComponent)
@@ -133,6 +135,29 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         return this.checkOnGoing;
     }
 
+    public get renamable(): boolean {
+        return this.account && this.account.has_admin_role && this.account.username === 'admin' && this.account.user_id === 1;
+    }
+
+    openRenameAlert(): void {
+        this.RenameOnGoing = true;
+        this.inlineAlert.showInlineConfirmation({
+            message: 'PROFILE.RENAME_CONFIRM_INFO'
+        });
+    }
+
+    confirmRename(): void {
+        if (this.renamable) {
+            this.session.renameAdmin(this.account)
+            .then(() => {
+                this.msgHandler.showSuccess('PROFILE.RENAME_SUCCESS');
+            })
+            .catch(error => {
+                this.msgHandler.handleError(error);
+            });
+        }
+    }
+
     ngAfterViewChecked(): void {
         if (this.accountFormRef != this.accountForm) {
             this.accountFormRef = this.accountForm;
@@ -215,7 +240,11 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             });
     }
 
-    confirmCancel($event: any): void {
+    confirm($event: any): void {
+        if(this.RenameOnGoing) {
+            this.confirmRename();
+            this.RenameOnGoing = false;
+        }
         this.inlineAlert.close();
         this.opened = false;
     }

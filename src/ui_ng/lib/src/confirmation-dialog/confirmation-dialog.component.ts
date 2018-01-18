@@ -20,7 +20,7 @@ import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../
 
 import { CONFIRMATION_DIALOG_TEMPLATE } from './confirmation-dialog.component.html';
 import { CONFIRMATION_DIALOG_STYLE } from './confirmation-dialog.component.css';
-import {BatchInfo} from "./confirmation-batch-message";
+import {BatchInfo} from './confirmation-batch-message';
 
 @Component({
     selector: 'confirmation-dialog',
@@ -29,16 +29,16 @@ import {BatchInfo} from "./confirmation-batch-message";
 })
 
 export class ConfirmationDialogComponent {
-    opened: boolean = false;
-    dialogTitle: string = "";
-    dialogContent: string = "";
+    opened = false;
+    dialogTitle = '';
+    dialogContent = '';
     message: ConfirmationMessage;
     buttons: ConfirmationButtons;
-   
+
     @Output() confirmAction = new EventEmitter<ConfirmationAcknowledgement>();
     @Output() cancelAction = new EventEmitter<ConfirmationAcknowledgement>();
     @Input() batchInfors: BatchInfo[]  = [];
-    isDelete: boolean = false;
+    isDelete = false;
 
     constructor(
         private translate: TranslateService) {}
@@ -49,7 +49,7 @@ export class ConfirmationDialogComponent {
         this.message = msg;
         this.translate.get(this.dialogTitle).subscribe((res: string) => this.dialogTitle = res);
         this.translate.get(this.dialogContent, { 'param': msg.param }).subscribe((res: string) => this.dialogContent = res);
-        //Open dialog
+        // Open dialog
         this.buttons = msg.buttons;
         this.opened = true;
     }
@@ -81,7 +81,8 @@ export class ConfirmationDialogComponent {
     }
 
     cancel(): void {
-        if(!this.message){//Inproper condition
+        if (!this.message) {
+            // Inproper condition
             this.close();
             return;
         }

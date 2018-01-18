@@ -82,7 +82,10 @@
         "FULL_NAME": "Nombre y apellidos",
         "COMMENT": "Comentarios",
         "PASSWORD": "Contraseña",
-        "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente."
+        "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente.",
+        "ADMIN_RENAME_TIP": "Double click to change your username to \"admin@harbor.local\", but this action can NOT redo.",
+        "RENAME_SUCCESS": "Rename success!",
+        "RENAME_CONFIRM_INFO": "This action can not undo, Confirm To Rename?"
     },
     "CHANGE_PWD": {
         "TITLE": "Cambiar contraseña",
@@ -364,8 +367,7 @@
         "PLACEHOLDER": "We couldn't find any endpoints!"
     },
     "REPOSITORY": {
-        "COPY_ID": "Copiar ID",
-        "COPY_PARENT_ID": "Copiar ID padre",
+        "COPY_DIGEST_ID": "Copy Digest",
         "DELETE": "Eliminar",
         "NAME": "Nombre",
         "TAGS_COUNT": "Etiquetas",
@@ -426,6 +428,7 @@
         "REPLICATION": "Replicación",
         "EMAIL": "Email",
         "SYSTEM": "Opciones del Sistema",
+        "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirma cancelación",
         "CONFIRM_SUMMARY": "Algunos cambios no han sido guardados aún. ¿Quiere descartarlos?",
         "SAVE_SUCCESS": "La configuración ha sido guardada satisfactoriamente.",
@@ -528,6 +531,8 @@
         "PRO_ITEM": "PROYECTOS",
         "REPO_ITEM": "REPOSITORIOS",
         "INDEX_PRIVATE": "PRIVADO",
+        "INDEX_MY_PROJECTS": "MY PROJECTS",
+        "INDEX_MY_REPOSITORIES": "MY REPOSITORIES",
         "INDEX_PUB": "PÚBLICO",
         "INDEX_TOTAL": "TOTAL",
         "STORAGE": "ALMACENAMIENTO",

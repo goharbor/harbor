@@ -28,6 +28,7 @@ const signOffEndpoint = "/log_out";
 const accountEndpoint = "/api/users/:id";
 const langEndpoint = "/language";
 const userExistsEndpoint = "/userExists";
+const renameAdminEndpoint = 'api/internal/renameadmin';
 const langMap = {
     "zh": "zh-CN",
     "en": "en-US"
@@ -127,6 +128,25 @@ export class SessionService {
                 return this.retrieveUser();
             })
             .catch(error => this.handleError(error))
+    }
+
+    /**
+     *
+     * Update accpunt settings
+     *
+     * @param {SessionUser} account
+     * @returns {Promise<any>}
+     *
+     * @memberOf SessionService
+     */
+    renameAdmin(account: SessionUser): Promise<any> {
+        if (!account) {
+            return Promise.reject("Invalid account settings");
+        }
+        return this.http.post(renameAdminEndpoint, JSON.stringify({}), HTTP_JSON_OPTIONS)
+        .toPromise()
+        .then(() => null)
+        .catch(error => this.handleError(error));
     }
 
     /**

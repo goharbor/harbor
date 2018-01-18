@@ -13,7 +13,7 @@
                 <button id="config-system" class="btn btn-link nav-link" aria-controls="system_settings" [class.active]='isCurrentTabLink("config-system")' type="button" (click)='tabLinkClick("config-system")'>{{'CONFIG.SYSTEM' | translate }}</button>
             </li>
             <li role="presentation" class="nav-item" *ngIf="withClair">
-                <button id="config-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("config-vulnerability")' type="button" (click)='tabLinkClick("config-vulnerability")'>{{'VULNERABILITY.SINGULAR' | translate}}</button>
+                <button id="config-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("config-vulnerability")' type="button" (click)='tabLinkClick("config-vulnerability")'>{{'CONFIG.VULNERABILITY' | translate}}</button>
             </li>
         </ul>
         <section id="authentication" role="tabpanel" aria-labelledby="config-auth" [hidden]='!isCurrentTabContent("authentication")'>

@@ -82,7 +82,10 @@
         "FULL_NAME": "First and last name",
         "COMMENT": "Comments",
         "PASSWORD": "Password",
-        "SAVE_SUCCESS": "User profile saved successfully."
+        "SAVE_SUCCESS": "User profile saved successfully.",
+        "ADMIN_RENAME_TIP": "Double click to change your username to \"admin@harbor.local\", but this action can NOT redo.",
+        "RENAME_SUCCESS": "Rename success!",
+        "RENAME_CONFIRM_INFO": "This action can not undo, Confirm To Rename?"
     },
     "CHANGE_PWD": {
         "TITLE": "Change Password",
@@ -217,7 +220,6 @@
         "OF": "of",
         "SWITCH_TITLE": "Confirm project members switch",
         "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?"
-
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",
@@ -426,6 +428,7 @@
         "REPLICATION": "Replication",
         "EMAIL": "Email",
         "SYSTEM": "System Settings",
+        "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirm to cancel",
         "CONFIRM_SUMMARY": "Some changes have not been saved. Do you want to discard them?",
         "SAVE_SUCCESS": "Configuration has been successfully saved.",

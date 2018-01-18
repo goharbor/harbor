@@ -35,7 +35,7 @@ export class ProjectDetailComponent {
   roleName: string;
 
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private router: Router,
     private sessionService: SessionService,
     private projectService: ProjectService) {

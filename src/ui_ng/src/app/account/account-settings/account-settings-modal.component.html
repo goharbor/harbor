@@ -1,12 +1,20 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="false">
     <h3 class="modal-title">{{'PROFILE.TITLE' | translate}}</h3>
-    <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
+    <inline-alert class="modal-title" (confirmEvt)="confirm($event)"></inline-alert>
     <div class="modal-body" style="overflow-y: hidden;">
         <form #accountSettingsFrom="ngForm" class="form">
             <section class="form-block">
                 <div class="form-group form-group-override">
-                    <label for="account_settings_username" class="form-group-label-override">{{'PROFILE.USER_NAME' | translate}}</label>
+                    <label for="account_settings_username" aria-haspopup="true" class="form-group-label-override">{{'PROFILE.USER_NAME' | translate}}</label>
                     <input type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username" size="33">
+                    <clr-tooltip *ngIf="renamable">
+                        <button (dblclick)="openRenameAlert()" class="btn btn-link">
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        </button>
+                        <clr-tooltip-content clrPosition="bottom-left" clrSize="md" *clrIfOpen>
+                            <span (click)="openRenameAlert()"> {{'PROFILE.ADMIN_RENAME_TIP'}}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
                 </div>
                 <div class="form-group form-group-override">
                     <label for="account_settings_email" class="required form-group-label-override">{{'PROFILE.EMAIL' | translate}}</label>

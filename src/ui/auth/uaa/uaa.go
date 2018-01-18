@@ -23,26 +23,11 @@ import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/uaa"
 	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/ui/config"
 )
-
-//CreateClient create a UAA Client instance based on system configuration.
-func CreateClient() (uaa.Client, error) {
-	UAASettings, err := config.UAASettings()
-	if err != nil {
-		return nil, err
-	}
-	cfg := &uaa.ClientConfig{
-		ClientID:      UAASettings.ClientID,
-		ClientSecret:  UAASettings.ClientSecret,
-		Endpoint:      UAASettings.Endpoint,
-		SkipTLSVerify: !UAASettings.VerifyCert,
-		CARootPath:    os.Getenv("UAA_CA_ROOT"),
-	}
-	return uaa.NewDefaultClient(cfg)
-}
 
 // Auth is the implementation of AuthenticateHelper to access uaa for authentication.
 type Auth struct {
@@ -58,12 +43,17 @@ func (u *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	t, err := u.client.PasswordAuth(m.Principal, m.Password)
 	if t != nil && err == nil {
-		//TODO: See if it's possible to get more information from token.
 		user := &models.User{
 			Username: m.Principal,
 		}
-		err = u.OnBoardUser(user)
-		return user, err
+		info, err2 := u.client.GetUserInfo(t.AccessToken)
+		if err2 != nil {
+			log.Warningf("Failed to extract user info from UAA, error: %v", err2)
+		} else {
+			user.Email = info.Email
+			user.Realname = info.Name
+		}
+		return user, nil
 	}
 	return nil, err
 }
@@ -87,6 +77,28 @@ func (u *Auth) OnBoardUser(user *models.User) error {
 	}
 	user.Comment = "From UAA"
 	return dao.OnBoardUser(user)
+}
+
+// PostAuthenticate will check if user exists in DB, if not on Board user, if he does, update the profile.
+func (u *Auth) PostAuthenticate(user *models.User) error {
+	dbUser, err := dao.GetUser(models.User{Username: user.Username})
+	if err != nil {
+		return err
+	}
+	if dbUser == nil {
+		return u.OnBoardUser(user)
+	}
+	if user.Email != "" {
+		dbUser.Email = user.Email
+	}
+	if user.Realname != "" {
+		dbUser.Realname = user.Realname
+	}
+	if err2 := dao.ChangeUserProfile(*user, "Email", "Realname"); err2 != nil {
+		log.Warningf("Failed to update user profile, user: %s, error: %v", user.Username, err2)
+	}
+
+	return nil
 }
 
 // SearchUser search user on uaa server, transform it to Harbor's user model
@@ -116,13 +128,27 @@ func (u *Auth) SearchUser(username string) (*models.User, error) {
 }
 
 func (u *Auth) ensureClient() error {
-	if u.client != nil {
-		return nil
+	var cfg *uaa.ClientConfig
+	UAASettings, err := config.UAASettings()
+	//	log.Debugf("Uaa settings: %+v", UAASettings)
+	if err != nil {
+		log.Warningf("Failed to get UAA setting from Admin Server, error: %v", err)
+	} else {
+		cfg = &uaa.ClientConfig{
+			ClientID:      UAASettings.ClientID,
+			ClientSecret:  UAASettings.ClientSecret,
+			Endpoint:      UAASettings.Endpoint,
+			SkipTLSVerify: !UAASettings.VerifyCert,
+			CARootPath:    os.Getenv("UAA_CA_ROOT"),
+		}
+	}
+	if u.client != nil && cfg != nil {
+		return u.client.UpdateConfig(cfg)
 	}
 	u.Lock()
 	defer u.Unlock()
 	if u.client == nil {
-		c, err := CreateClient()
+		c, err := uaa.NewDefaultClient(cfg)
 		if err != nil {
 			return err
 		}
