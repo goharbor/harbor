@@ -26,7 +26,7 @@ import (
 
 // Manager defines the method a policy manger should implement
 type Manager interface {
-	GetPolicies(models.QueryParameter) ([]models.ReplicationPolicy, error)
+	GetPolicies(models.QueryParameter) (*models.ReplicationPolicyQueryResult, error)
 	GetPolicy(int64) (models.ReplicationPolicy, error)
 	CreatePolicy(models.ReplicationPolicy) (int64, error)
 	UpdatePolicy(models.ReplicationPolicy) error
@@ -42,27 +42,28 @@ func NewDefaultManager() *DefaultManager {
 }
 
 //GetPolicies returns all the policies
-func (m *DefaultManager) GetPolicies(query models.QueryParameter) ([]models.ReplicationPolicy, error) {
-	result := []models.ReplicationPolicy{}
-	//TODO support more query conditions other than name and project ID
-	policies, err := dao.FilterRepPolicies(query.Name, query.ProjectID)
+func (m *DefaultManager) GetPolicies(query models.QueryParameter) (*models.ReplicationPolicyQueryResult, error) {
+	result := &models.ReplicationPolicyQueryResult{
+		Policies: []*models.ReplicationPolicy{},
+	}
+	total, err := dao.GetTotalOfRepPolicies(query.Name, query.ProjectID)
 	if err != nil {
-		return result, err
+		return nil, err
+	}
+	result.Total = total
+
+	policies, err := dao.FilterRepPolicies(query.Name, query.ProjectID, query.Page, query.PageSize)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, policy := range policies {
 		ply, err := convertFromPersistModel(policy)
 		if err != nil {
-			return []models.ReplicationPolicy{}, err
+			return nil, err
 		}
 
-		if len(query.TriggerType) > 0 {
-			if ply.Trigger.Kind != query.TriggerType {
-				continue
-			}
-		}
-
-		result = append(result, ply)
+		result.Policies = append(result.Policies, &ply)
 	}
 
 	return result, nil

@@ -22,8 +22,8 @@ import (
 type FakePolicyManager struct {
 }
 
-func (f *FakePolicyManager) GetPolicies(query models.QueryParameter) ([]models.ReplicationPolicy, error) {
-	return []models.ReplicationPolicy{}, nil
+func (f *FakePolicyManager) GetPolicies(query models.QueryParameter) (*models.ReplicationPolicyQueryResult, error) {
+	return &models.ReplicationPolicyQueryResult{}, nil
 }
 
 func (f *FakePolicyManager) GetPolicy(id int64) (models.ReplicationPolicy, error) {
