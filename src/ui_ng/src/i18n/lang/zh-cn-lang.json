@@ -82,7 +82,10 @@
         "FULL_NAME": "全名",
         "COMMENT": "注释",
         "PASSWORD": "密码",
-        "SAVE_SUCCESS": "成功保存用户设置。"
+        "SAVE_SUCCESS": "成功保存用户设置。",
+        "ADMIN_RENAME_TIP": "双击将用户名改为 \"admin@harbor.local\", 注意这个操作是不可逆的",
+        "RENAME_SUCCESS": "用户名更改成功！",
+        "RENAME_CONFIRM_INFO": "更改用户名无法撤销, 你确定更改吗·?"
     },
     "CHANGE_PWD": {
         "TITLE": "修改密码",
