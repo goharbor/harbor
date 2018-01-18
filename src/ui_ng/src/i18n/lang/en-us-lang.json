@@ -217,7 +217,6 @@
         "OF": "of",
         "SWITCH_TITLE": "Confirm project members switch",
         "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?"
-
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",
@@ -424,6 +423,7 @@
         "REPLICATION": "Replication",
         "EMAIL": "Email",
         "SYSTEM": "System Settings",
+        "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirm to cancel",
         "CONFIRM_SUMMARY": "Some changes have not been saved. Do you want to discard them?",
         "SAVE_SUCCESS": "Configuration has been successfully saved.",

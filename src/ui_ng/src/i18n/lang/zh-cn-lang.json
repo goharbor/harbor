@@ -202,7 +202,6 @@
         "DEVELOPER": "开发人员",
         "GUEST": "访客",
         "DELETE": "删除",
-        "OF": "共计",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
         "USERNAME_IS_REQUIRED": "用户名为必填项。",
@@ -215,6 +214,7 @@
         "ADDED_SUCCESS": "成功新增成员。",
         "DELETED_SUCCESS": "成功删除成员。",
         "SWITCHED_SUCCESS": "切换角色成功。",
+        "OF": "共计",
         "SWITCH_TITLE": "切换项目成员确认",
         "SWITCH_SUMMARY": "你确认切换项目成员 {{param}}??"
     },
@@ -233,10 +233,10 @@
         "OTHERS": "其他",
         "ADVANCED": "高级检索",
         "SIMPLE": "简单检索",
-        "OF": "共计",
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志",
-        "INVALID_DATE": "无效日期。"
+        "INVALID_DATE": "无效日期。",
+        "OF": "共计"
     },
     "REPLICATION": {
         "REPLICATION_RULE": "复制规则",
@@ -327,6 +327,7 @@
         "TARGETS":"目标",
         "MODE": "模式",
         "SOURCE": "资源",
+        "REPLICATE": "复制",
         "DELETE_REMOTE_IMAGES":"删除本地镜像时同时也删除远程的镜像。",
         "REPLICATE_IMMEDIATE":"立即复制现有的镜像。"
     },
@@ -422,6 +423,7 @@
         "REPLICATION": "复制",
         "EMAIL": "邮箱",
         "SYSTEM": "系统设置",
+        "VULNERABILITY": "漏洞",
         "CONFIRM_TITLE": "确认取消",
         "CONFIRM_SUMMARY": "配置项有改动, 确定取消?",
         "SAVE_SUCCESS": "变更的配置项成功保存。",

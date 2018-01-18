@@ -327,6 +327,7 @@
         "TARGETS":"Target",
         "MODE": "Mode",
         "SOURCE": "Source",
+        "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
         "REPLICATE_IMMEDIATE":"Replicate existing images immediately"
     },
@@ -361,8 +362,7 @@
         "PLACEHOLDER": "We couldn't find any endpoints!"
     },
     "REPOSITORY": {
-        "COPY_ID": "Copiar ID",
-        "COPY_PARENT_ID": "Copiar ID padre",
+        "COPY_DIGEST_ID": "Copy Digest",
         "DELETE": "Eliminar",
         "NAME": "Nombre",
         "TAGS_COUNT": "Etiquetas",
@@ -423,6 +423,7 @@
         "REPLICATION": "Replicación",
         "EMAIL": "Email",
         "SYSTEM": "Opciones del Sistema",
+        "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirma cancelación",
         "CONFIRM_SUMMARY": "Algunos cambios no han sido guardados aún. ¿Quiere descartarlos?",
         "SAVE_SUCCESS": "La configuración ha sido guardada satisfactoriamente.",
@@ -525,6 +526,8 @@
         "PRO_ITEM": "PROYECTOS",
         "REPO_ITEM": "REPOSITORIOS",
         "INDEX_PRIVATE": "PRIVADO",
+        "INDEX_MY_PROJECTS": "MY PROJECTS",
+        "INDEX_MY_REPOSITORIES": "MY REPOSITORIES",
         "INDEX_PUB": "PÚBLICO",
         "INDEX_TOTAL": "TOTAL",
         "STORAGE": "ALMACENAMIENTO",
