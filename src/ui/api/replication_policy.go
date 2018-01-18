@@ -89,28 +89,34 @@ func (pa *RepPolicyAPI) List() {
 		}
 		queryParam.ProjectID = projectID
 	}
+	queryParam.Page, queryParam.PageSize = pa.GetPaginationParams()
 
-	result := []*api_models.ReplicationPolicy{}
-
-	policies, err := core.GlobalController.GetPolicies(queryParam)
+	result, err := core.GlobalController.GetPolicies(queryParam)
 	if err != nil {
 		log.Errorf("failed to get policies: %v, query parameters: %v", err, queryParam)
 		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 	}
 
-	for _, policy := range policies {
-		if !pa.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
-			continue
+	var total int64
+	policies := []*api_models.ReplicationPolicy{}
+	if result != nil {
+		total = result.Total
+		for _, policy := range result.Policies {
+			if !pa.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+				continue
+			}
+			ply, err := convertFromRepPolicy(pa.ProjectMgr, *policy)
+			if err != nil {
+				pa.ParseAndHandleError(fmt.Sprintf("failed to convert from replication policy"), err)
+				return
+			}
+			policies = append(policies, ply)
 		}
-		ply, err := convertFromRepPolicy(pa.ProjectMgr, policy)
-		if err != nil {
-			pa.ParseAndHandleError(fmt.Sprintf("failed to convert from replication policy"), err)
-			return
-		}
-		result = append(result, ply)
 	}
 
-	pa.Data["json"] = result
+	pa.SetPaginationHeader(total, queryParam.Page, queryParam.PageSize)
+
+	pa.Data["json"] = policies
 	pa.ServeJSON()
 }
 

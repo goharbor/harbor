@@ -98,18 +98,17 @@ func (ctl *DefaultController) Init() error {
 		return nil
 	}
 
-	//Build query parameters
-	query := models.QueryParameter{
-		TriggerType: replication.TriggerKindSchedule,
-	}
-
-	policies, err := ctl.policyManager.GetPolicies(query)
+	policies, err := ctl.policyManager.GetPolicies(models.QueryParameter{})
 	if err != nil {
 		return err
 	}
-	if policies != nil && len(policies) > 0 {
-		for _, policy := range policies {
-			if err := ctl.triggerManager.SetupTrigger(&policy); err != nil {
+	if policies != nil && len(policies.Policies) > 0 {
+		for _, policy := range policies.Policies {
+			if policy.Trigger == nil || policy.Trigger.Kind != replication.TriggerKindSchedule {
+				continue
+			}
+
+			if err := ctl.triggerManager.SetupTrigger(policy); err != nil {
 				log.Errorf("failed to setup trigger for policy %v: %v", policy, err)
 			}
 		}
@@ -209,7 +208,7 @@ func (ctl *DefaultController) GetPolicy(policyID int64) (models.ReplicationPolic
 }
 
 //GetPolicies is delegation of GetPoliciemodels.ReplicationPolicy{}s of Policy.Manager
-func (ctl *DefaultController) GetPolicies(query models.QueryParameter) ([]models.ReplicationPolicy, error) {
+func (ctl *DefaultController) GetPolicies(query models.QueryParameter) (*models.ReplicationPolicyQueryResult, error) {
 	return ctl.policyManager.GetPolicies(query)
 }
 
