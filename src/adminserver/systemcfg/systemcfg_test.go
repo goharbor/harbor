@@ -127,17 +127,54 @@ func TestLoadFromEnv(t *testing.T) {
 }
 
 func TestGetDatabaseFromCfg(t *testing.T) {
-	cfg  :=map[string]interface{} {
-		common.DatabaseType:"mysql",
-		common.MySQLDatabase:"registry",
-		common.MySQLHost:"127.0.0.1",
-		common.MySQLPort:3306,
-		common.MySQLPassword:"1234",
-		common.MySQLUsername:"root",
-		common.SQLiteFile:"/tmp/sqlite.db",
+	cfg := map[string]interface{}{
+		common.DatabaseType:  "mysql",
+		common.MySQLDatabase: "registry",
+		common.MySQLHost:     "127.0.0.1",
+		common.MySQLPort:     3306,
+		common.MySQLPassword: "1234",
+		common.MySQLUsername: "root",
+		common.SQLiteFile:    "/tmp/sqlite.db",
 	}
 
 	database := GetDatabaseFromCfg(cfg)
 
-	assert.Equal(t,"mysql",database.Type)
+	assert.Equal(t, "mysql", database.Type)
+}
+
+func TestValidLdapScope(t *testing.T) {
+	ldapScopeKey := "ldap_scope"
+	testCfgs := []struct {
+		config          map[string]interface{}
+		migrate         bool
+		ldapScopeResult int
+	}{
+		{map[string]interface{}{
+			ldapScopeKey: 1,
+		}, true, 0},
+		{map[string]interface{}{
+			ldapScopeKey: 2,
+		}, true, 1},
+		{map[string]interface{}{
+			ldapScopeKey: 3,
+		}, true, 2},
+		{map[string]interface{}{
+			ldapScopeKey: -1,
+		}, true, 0},
+		{map[string]interface{}{
+			ldapScopeKey: 100,
+		}, false, 2},
+		{map[string]interface{}{
+			ldapScopeKey: -100,
+		}, false, 0},
+	}
+
+	for i, item := range testCfgs {
+		validLdapScope(item.config, item.migrate)
+		if item.config[ldapScopeKey].(int) != item.ldapScopeResult {
+			t.Fatalf("Failed to update ldapScope expected %v, actual %v at index %v", item.ldapScopeResult, item.config[ldapScopeKey], i)
+		}
+
+	}
+
 }
