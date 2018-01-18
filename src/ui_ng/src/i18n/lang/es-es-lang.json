@@ -82,7 +82,10 @@
         "FULL_NAME": "Nombre y apellidos",
         "COMMENT": "Comentarios",
         "PASSWORD": "Contraseña",
-        "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente."
+        "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente.",
+        "ADMIN_RENAME_TIP": "Double click to change your username to \"admin@harbor.local\", but this action can NOT redo.",
+        "RENAME_SUCCESS": "Rename success!",
+        "RENAME_CONFIRM_INFO": "This action can not undo, Confirm To Rename?"
     },
     "CHANGE_PWD": {
         "TITLE": "Cambiar contraseña",

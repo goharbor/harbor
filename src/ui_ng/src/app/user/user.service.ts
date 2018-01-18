@@ -22,7 +22,7 @@ const userMgmtEndpoint = '/api/users';
 
 /**
  * Define related methods to handle account and session corresponding things
- * 
+ *
  * @export
  * @class SessionService
  */
@@ -31,26 +31,26 @@ export class UserService {
 
     constructor(private http: Http) { }
 
-    //Handle the related exceptions
+    // Handle the related exceptions
     handleError(error: any): Promise<any> {
         return Promise.reject(error.message || error);
     }
 
-    //Get the user list
+    // Get the user list
     getUsers(): Promise<User[]> {
         return this.http.get(userMgmtEndpoint, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.json() as User[])
             .catch(error => this.handleError(error));
     }
 
-    //Add new user
+    // Add new user
     addUser(user: User): Promise<any> {
         return this.http.post(userMgmtEndpoint, JSON.stringify(user), HTTP_JSON_OPTIONS).toPromise()
             .then(() => null)
             .catch(error => this.handleError(error));
     }
 
-    //Delete the specified user
+    // Delete the specified user
     deleteUser(userId: number): Promise<any> {
         return this.http.delete(userMgmtEndpoint + "/" + userId, HTTP_JSON_OPTIONS)
             .toPromise()
@@ -58,7 +58,7 @@ export class UserService {
             .catch(error => this.handleError(error));
     }
 
-    //Update user to enable/disable the admin role
+    // Update user to enable/disable the admin role
     updateUser(user: User): Promise<any> {
         return this.http.put(userMgmtEndpoint + "/" + user.user_id, JSON.stringify(user), HTTP_JSON_OPTIONS)
             .toPromise()
@@ -66,7 +66,7 @@ export class UserService {
             .catch(error => this.handleError(error));
     }
 
-    //Set user admin role
+    // Set user admin role
     updateUserRole(user: User): Promise<any> {
         return this.http.put(userMgmtEndpoint + "/" + user.user_id + "/sysadmin", JSON.stringify(user), HTTP_JSON_OPTIONS)
             .toPromise()
