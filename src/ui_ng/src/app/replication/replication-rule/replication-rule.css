@@ -28,10 +28,13 @@ label:first-child {
 .filterSelect label{width: 160px;}
 .filterSelect label input{width: 100%;}
 .cursor{cursor: pointer;}
+.pull-left{float: left;}
 .padLeft0{padding-left: 0;}
-.floatSet {display: inline-block; float: left; width: 120px;margin-right: 10px;}
+.floatSet {display: inline-block; width: 120px;margin-right: 10px;}
 .form-group{ min-height: 36px;}
 
 .projectInput{float: left;}
 .projectInput input{width: 185px;background-color: white;}
-.switchIcon{width:20px;height:20px; margin-top: 2px;margin-left: 15px;}
+.switchIcon{width:20px;height:20px; margin-top: 2px;margin-left: 5px;}
+.addEndpoint{  display: inline-block;    line-height: 20px;  margin-top: 8px;
+    vertical-align: bottom; padding-left:10px; cursor: pointer;}

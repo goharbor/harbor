@@ -1,6 +1,6 @@
 <div>
  <a class="cursor" *ngIf="!projectId" (click)="backReplication()">< {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a>
- <a class="cursor" *ngIf="projectId" (click)="backProjectReplication()"><{{'SIDE_NAV.PROJECTS' | translate}} &nbsp; {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a>
+ <a class="cursor" *ngIf="projectId" (click)="backProjectReplication()"><{{'SIDE_NAV.PROJECTS' | translate}} &nbsp; {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate | lowercase}}</a>
  <h1 class="sub-header-title">{{headerTitle | translate}}</h1>
 <form [formGroup]="ruleForm" (ngSubmit)="onSubmit()"  novalidate>
  <section class="form-block">
@@ -57,12 +57,12 @@
   <div class="form-group">
    <label class="col-md-4 form-group-label-override">{{'DESTINATION.ENDPOINT' | translate}} <span class="colorRed">*</span></label>
    <div formArrayName="targets">
-    <div class="select endpointSelect" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
+    <div class="select endpointSelect pull-left" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
       <select id="ruleTarget" (change)="targetChange($event)"  formControlName="id">
        <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}: {{target.endpoint}}</option>
       </select>
      </div>
-    <label *ngIf="noEndpointInfo" class="colorRed">{{noEndpointInfo | translate}}</label>
+    <a class="addEndpoint" (click)="openModal()"><clr-icon shape="plus" style="vertical-align: sub;"></clr-icon>{{'REPLICATION.NEW' | translate}}</a>
     </div>
    </div>
 
@@ -116,9 +116,10 @@
    <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
    <br>
    <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="!hasFormChange()" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
-   <button type="submit" id="ruleBtnOk" class="btn btn-primary" [disabled]="!ruleForm.valid || isRuleNameExist || !hasFormChange()">{{ 'BUTTON.OK' | translate }}</button>
+   <button type="submit" id="ruleBtnOk" class="btn btn-primary" [disabled]="!ruleForm.valid || !isVaild || !hasFormChange()">{{ 'BUTTON.OK' | translate }}</button>
   </div><!-- [disabled]="!ruleForm.valid"-->
  </section>
 </form>
  <list-project-model (selectedPro)="selectedProject($event)"></list-project-model>
+ <hbr-create-edit-endpoint  (reload)="reload($event)"></hbr-create-edit-endpoint>
 </div>

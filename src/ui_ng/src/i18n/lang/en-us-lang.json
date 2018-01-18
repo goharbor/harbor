@@ -42,8 +42,8 @@
         "DELETED_FAILURE": "Deleted failed",
         "SWITCH_SUCCESS": "Switch successfully",
         "SWITCH_FAILURE": "Switch failed",
-        "REPLICATE_SUCCESS": "Replicate successfully",
-        "REPLICATE_FAILURE": "Replicate failed"
+        "REPLICATE_SUCCESS": "Started successfully",
+        "REPLICATE_FAILURE": "Started failed"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com.",
@@ -252,7 +252,8 @@
         "REPLICATION_TITLE": "Confirm Rules replication",
         "REPLICATION_SUMMARY": "Do you want to replicate the Rules {{param}}?",
         "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
-        "DELETION_SUMMARY_FAILURE": "{{param}} have pending/running/retrying status",
+        "DELETION_SUMMARY_FAILURE": "have pending/running/retrying status",
+        "REPLICATE_SUMMARY_FAILURE": "have pending/running status",
         "FILTER_TARGETS_PLACEHOLDER": "Filter Endpoints",
         "DELETION_TITLE_TARGET": "Confirm Endpoint Deletion",
         "DELETION_SUMMARY_TARGET": "Do you want to delete the endpoint {{param}}?",
@@ -313,14 +314,14 @@
         "TOGGLED_SUCCESS": "Toggled replication rule status successfully.",
         "CANNOT_EDIT": "Replication rule cannot be changed while it is enabled.",
         "POLICY_ALREADY_EXISTS": "Replication rule already exists.",
-        "FAILED_TO_DELETE_POLICY_ENABLED": "Cannot delete rule: rule has unfinished job(s) or rule is enabled.",
+        "FAILED_TO_DELETE_POLICY_ENABLED": "Cannot delete rule: rule has unfinished job(s)",
         "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check.",
         "INVALID_DATE": "Invalid date.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
         "JOB_LOG_VIEWER": "View Replication Job Log",
         "NO_ENDPOINT_INFO": "Please go to registries and add an endpoint first",
-        "NO_PROJECT_INFO": "Please go to projects and add a project first",
+        "NO_PROJECT_INFO": "Please go to projects and add a project name first",
         "FILTER": "Filter",
         "SCHEDULE": "Scheduled",
         "MANUAL": "Manual",
@@ -332,7 +333,8 @@
         "SOURCE": "Source",
         "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
-        "REPLICATE_IMMEDIATE":"Replicate existing images immediately"
+        "REPLICATE_IMMEDIATE":"Replicate existing images immediately",
+        "NEW": "New"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",

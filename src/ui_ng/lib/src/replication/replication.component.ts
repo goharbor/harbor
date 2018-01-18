@@ -318,13 +318,19 @@ export class ReplicationComponent implements OnInit, OnDestroy {
               .subscribe(res => findedList = BathInfoChanges(findedList, res));
         })
         .catch(error => {
-          this.translateService.get('BATCH.REPLICATE_FAILURE').subscribe(res => {
-            findedList = BathInfoChanges(findedList, res, false, true);
-          });
+          if (error && error.status === 412) {
+            Observable.forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
+                this.translateService.get('REPLICATION.REPLICATE_SUMMARY_FAILURE'))
+                .subscribe(function (res) {
+              findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+            });
+          } else {
+            this.translateService.get('BATCH.REPLICATE_FAILURE').subscribe(res => {
+              findedList = BathInfoChanges(findedList, res, false, true);
+            });
+          }
         });
   }
-
-
 
   customRedirect(rule: ReplicationRule) {
     this.redirect.emit(rule);

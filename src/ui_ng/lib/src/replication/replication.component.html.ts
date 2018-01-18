@@ -13,7 +13,7 @@ export const REPLICATION_TEMPLATE: string = `
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <hbr-list-replication-rule #listReplicationRule [readonly]="readonly" [projectId]="projectId" [isSystemAdmin]="isSystemAdmin"  (replicateManual)=replicateManualRule($event) (hasJobs)="hasJobList($event)" (selectOne)="selectOneRule($event)" (openNewRule)="openModal()" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
     </div>
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"  [hidden]="!hasJobs">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"  [hidden]="!hasJobs" style="padding-left:0px;">
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <div class="row flex-items-xs-between" style="height:60px;">
         <h5 class="flex-items-xs-bottom option-left-down" style="margin-left: 14px;">{{'REPLICATION.REPLICATION_JOBS' | translate}}</h5>
@@ -40,7 +40,7 @@ export const REPLICATION_TEMPLATE: string = `
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <clr-datagrid [clrDgLoading]="jobsLoading" (clrDgRefresh)="clrLoadJobs($event)"><clr-dg-action-bar>
             <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(jobs && jobs.length>0)" (click)="stopJobs()">{{'REPLICATION.STOPJOB' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary" [hidden]="!(jobs && jobs.length>0 && isSystemAdmin)" (click)="stopJobs()">{{'REPLICATION.STOPJOB' | translate}}</button>
             </div>
         </clr-dg-action-bar>
         <clr-dg-column [clrDgField]="'repository'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>

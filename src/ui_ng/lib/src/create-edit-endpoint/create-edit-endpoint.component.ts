@@ -42,7 +42,7 @@ import { Subscription } from 'rxjs/Subscription';
 const FAKE_PASSWORD = 'rjGcfuRu';
 
 @Component({
-    selector: 'create-edit-endpoint',
+    selector: 'hbr-create-edit-endpoint',
     template: CREATE_EDIT_ENDPOINT_TEMPLATE,
     styles: [CREATE_EDIT_ENDPOINT_STYLE]
 })

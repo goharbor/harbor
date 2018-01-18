@@ -194,6 +194,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   }
 
   selectRule(rule: ReplicationRule): void {
+    this.selectedId = rule.id || '';
     this.selectedRow = [];
     this.selectOne.emit(rule);
     this.hasJobs.emit(true);
