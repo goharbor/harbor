@@ -82,7 +82,7 @@ func (ra *RepJobAPI) List() {
 	}
 
 	repository := ra.GetString("repository")
-	status := ra.GetString("status")
+	statuses := ra.GetStrings("status")
 
 	var startTime *time.Time
 	startTimeStr := ra.GetString("start_time")
@@ -108,15 +108,11 @@ func (ra *RepJobAPI) List() {
 
 	page, pageSize := ra.GetPaginationParams()
 
-	statuses := []string{}
-	if len(status) > 0 {
-		statuses = append(statuses, status)
-	}
 	jobs, total, err := dao.FilterRepJobs(policyID, repository, statuses,
 		startTime, endTime, pageSize, pageSize*(page-1))
 	if err != nil {
-		log.Errorf("failed to filter jobs according policy ID %d, repository %s, status %s, start time %v, end time %v: %v",
-			policyID, repository, status, startTime, endTime, err)
+		log.Errorf("failed to filter jobs according policy ID %d, repository %s, status %v, start time %v, end time %v: %v",
+			policyID, repository, statuses, startTime, endTime, err)
 		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 
