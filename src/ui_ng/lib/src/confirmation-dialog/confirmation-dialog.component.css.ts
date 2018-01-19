@@ -24,7 +24,7 @@ export const CONFIRMATION_DIALOG_STYLE: string = `
 .batchInfoUl li {line-height: 24px;border-bottom: 1px solid #e8e8e8;}
 .batchInfoUl li span:first-child {padding-right: 20px; width: 240px; display: inline-block; color:#666;  
   text-overflow: ellipsis; overflow: hidden; vertical-align: middle;}
-.batchInfoUl li span:last-child {width: 230px; display: inline-block;  color:#666;}
+.batchInfoUl li span:last-child {width: 220px; display: inline-block;  color:#666;}
 .batchInfoUl li span i {display: inline-block; line-height: 1.2em; font-size: 0.8em; color: #999;}
 .batchInfoUl li span a{cursor: pointer; text-decoration: underline;}
 `;

@@ -36,8 +36,8 @@ export const TAG_TEMPLATE = `
         <clr-dg-column style="width: 140px;" *ngIf="withClair">{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 80px;" *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
         <clr-dg-column style="min-width: 130px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
-        <clr-dg-column style="width: 160px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
-        <clr-dg-column style="width: 80px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
+        <clr-dg-column style="width: 150px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
+        <clr-dg-column style="width: 140px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *ngFor="let t of tags" [clrDgItem]='t'>
           <clr-dg-cell  class="truncated"  style="width: 160px;" [ngSwitch]="withClair">
@@ -60,8 +60,8 @@ export const TAG_TEMPLATE = `
             </a>
           </clr-dg-cell>
           <clr-dg-cell  class="truncated"  style="min-width: 130px;" title="{{t.author}}">{{t.author}}</clr-dg-cell>
-          <clr-dg-cell style="width: 160px;">{{t.created | date: 'short'}}</clr-dg-cell>
-          <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
+          <clr-dg-cell style="width: 150px;">{{t.created | date: 'short'}}</clr-dg-cell>
+          <clr-dg-cell style="width: 140px;" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer> 
           <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
