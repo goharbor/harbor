@@ -365,7 +365,13 @@ func GetDatabaseFromCfg(cfg map[string]interface{}) *models.Database {
 
 // Valid LDAP Scope
 func validLdapScope(cfg map[string]interface{}, isMigrate bool) {
-	ldapScope := cfg[ldapScopeKey].(int)
+	ldapScope, ok := cfg[ldapScopeKey].(int)
+	if !ok {
+		ldapScopeFloat, ok := cfg[ldapScopeKey].(float64)
+		if ok {
+			ldapScope = int(ldapScopeFloat)
+		}
+	}
 	if isMigrate && ldapScope > 0 && ldapScope < 3 {
 		ldapScope = ldapScope - 1
 	}
