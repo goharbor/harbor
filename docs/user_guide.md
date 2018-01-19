@@ -4,11 +4,11 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 
 * [Manage your projects.](#managing-projects)
 * [Manage members of a project.](#managing-members-of-a-project)
-* [Replicate projects to a remote registry.](#replicationg-images)
+* [Replicate projects to a remote registry.](#replicating-images)
 * [Search projects and repositories.](#searching-projects-and-repositories)
 * [Manage Harbor system if you are the system administrator:](#administrator-options)
   * [Manage users.](#managing-user)
-  * [Manage destinations.](#managing-endpoint)
+  * [Manage endpoints.](#managing-endpoint)
   * [Manage replication policies.](#managing-replication)
   * [Manage authentication.](#managing-authentication)
   * [Manage project creation.](#managing-project-creation)
@@ -109,23 +109,51 @@ You can update or remove a member by clicking the icon on the left.
 ## Replicating images  
 Images replication is used to replicate repositories from one Harbor instance to another.  
 
-The function is project-oriented, and once the system administrator set a rule to one project, all repositories under the project will be replicated to the remote registry. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. When a new repository is pushed to this project or an existing repository is deleted from this project, the same operation will also be replicated to the destination. The member information will not be replicated.  
+The function is project-oriented, and once the system administrator set a rule to one project, all repositories under the project that match the defined [filter](#replication-filter) patterns will be replicated to the remote registry when the [triggering condition](#replication-triggering-condition) is triggered. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
 
 There may be a bit of delay during replication according to the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later.  
 
-**Note:** The replication feature is incompatible between Harbor instance before version 0.3.5(included) and after version 0.3.5.  	
+**Note:** The replication feature is incompatible between Harbor instance before version 0.3.5(included) and after version 0.3.5. 
 
-Replication can be configured by creating a rule. Click "Add Replication Rule" on the "Replication" tab and fill in the necessary fields. If there is no endpoint available in the list, you need to create one. Uncheck "Verify Remote Cert" if the remote registry uses a self-signed or an untrusted certificate. Click "OK" to create a replication rule for this project. If "Enable" is chosen, the project will be replicated to the remote registry immediately.  
+### Creating a replication rule
+Replication can be configured by creating a rule. Click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication filters and triggering conditions according the different requirements. If there is no endpoint available in the list, you need to create one. Click `OK` to create a replication rule for the selected project. If `Replicate existing images immediately` is chosen, the existing images under the project will be replicated to the remote registry immediately.  
 
-![browse project](img/new_create_rule.png)
+#### Replication filter
+Two replication filters are supported:
+* **Repository**: Filter images according to the repository part of image name.
+* **Tag**: Filter images according to the tag part of image name.
 
-You can enable, disable or delete a rule in the rule list view. Only rules which are disabled can be edited and only rules which are disabled and have no running jobs can be deleted. If a rule is disabled, the running jobs under it will be stopped.  
+Two terms are supported in filter pattern:
+* **\***: Matches any sequence of non-separator characters `/`.
+* **?**: Matches any single non-separator character `/`.
 
-Click a rule, jobs which belong to this rule will be listed. A job represents the progress of replicating the repository to the remote instance.  
+#### Replication triggering condition
+* **Immediate**: When a new repository is pushed to the project, it is replicated to the remote registry immediately. Same to the deletion operation if the `Delete remote images when locally deleted` checkbox is selected.
+* **Scheduled**: Replicate the repositories daily or weekly. **Note**: The deletion operations are not replicated.
+* **Manual**: Replicate the repositories manually when needed. **Note**: The deletion operations are not replicated.  
 
-![browse project](img/new_rule_list.png)
+![browse project](img/create_rule.png)
 
-**Video demo:** ![Image replication](img/demos/image_replication.png) [youtube](https://www.youtube.com/watch?v=1NPlzrm5ozE) , [Tencent Video](https://v.qq.com/x/page/a0553wc7fs9.html)
+### Listing and stopping replication jobs
+Click a rule, jobs which belong to this rule will be listed. A job represents the progress of replicating the repository to the remote instance. Click `STOP JOBS`, the pending/running/retrying jobs will be stopped.  
+
+![browse project](img/list_stop_jobs.png)
+
+### Starting a replication manually
+Start a new replication by selecting the replication rule and clicking `REPLICATE`. If there is any pending/running job that belongs to the rule, new replication will not be started.
+
+![browse project](img/start_replicate.png)
+
+### Deleting the replication rule
+Select the replication rule and click `DELETE` to delete it. Only rules which have no pending/running/retrying jobs can be deleted.  
+
+![browse project](img/delete_rule.png)
+
+
+The system administrator can operate the replication rule defined for the specified project in `Replication` tab under `Projects` view. Project administrator has read-only privilege.
+
+![browse project](img/rule_under_project_view.png)
+
 
 ## Searching projects and repositories  
 Entering a keyword in the search field at the top lists all matching projects and repositories. The search result includes both public and private repositories you have access to.  
@@ -139,14 +167,14 @@ Administrator can add "Administrator" role to an ordinary user by click button o
 ![browse project](img/new_set_admin_remove_user.png)
 
 ### Managing endpoint  
-You can list, add, edit and delete endpoints in the "Endpoints" tab. Only endpoints which are not referenced by any enabled rules can be edited.  
+You can list, add, edit and delete endpoints under `Administration->Registries`. Only endpoints which are not referenced by any rules can be deleted.  
 
-![browse project](img/new_manage_endpoint.png)
+![browse project](img/manage_endpoint.png)
 
 ### Managing replication  
-You can list, edit, enable and disable rules in the "Replication" tab. Make sure the policy is disabled before you edit it.  
+You can list, add, edit and delete rules under `Administration->Replications`.   
 
-![browse project](img/new_manage_replication.png)
+![browse project](img/manage_replication.png)
 
 ### Managing authentication
 You can change authentication mode between **Database**(default) and **LDAP** before any user is added, when there is at least one user(besides admin) in Harbor, you cannot change the authentication mode.  
