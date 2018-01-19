@@ -27,12 +27,15 @@ type QueryParameter struct {
 	//Size of each page, couple with page
 	PageSize int64
 
-	//Query by the type of trigger
-	TriggerType string
-
 	//Query by project ID
 	ProjectID int64
 
 	//Query by name
 	Name string
+}
+
+// ReplicationPolicyQueryResult is the query result of replication policy
+type ReplicationPolicyQueryResult struct {
+	Total    int64
+	Policies []*ReplicationPolicy
 }

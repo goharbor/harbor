@@ -139,8 +139,23 @@ func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	return &policy, nil
 }
 
+// GetTotalOfRepPolicies returns the total count of replication policies
+func GetTotalOfRepPolicies(name string, projectID int64) (int64, error) {
+	qs := GetOrmer().QueryTable(&models.RepPolicy{}).Filter("deleted", 0)
+
+	if len(name) != 0 {
+		qs = qs.Filter("name__icontains", name)
+	}
+
+	if projectID != 0 {
+		qs = qs.Filter("project_id", projectID)
+	}
+
+	return qs.Count()
+}
+
 // FilterRepPolicies filters policies by name and project ID
-func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error) {
+func FilterRepPolicies(name string, projectID, page, pageSize int64) ([]*models.RepPolicy, error) {
 	o := GetOrmer()
 
 	var args []interface{}
@@ -169,6 +184,11 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 	}
 
 	sql += `group by rp.id order by rp.creation_time`
+
+	if page > 0 && pageSize > 0 {
+		sql += ` limit ? offset ?`
+		args = append(args, pageSize, (page-1)*pageSize)
+	}
 
 	var policies []*models.RepPolicy
 	if _, err := o.Raw(sql, args).QueryRows(&policies); err != nil {
