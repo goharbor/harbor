@@ -143,6 +143,8 @@ func TestGetDatabaseFromCfg(t *testing.T) {
 }
 
 func TestValidLdapScope(t *testing.T) {
+	var dbValue float64
+	dbValue = 2
 	ldapScopeKey := "ldap_scope"
 	testCfgs := []struct {
 		config          map[string]interface{}
@@ -167,6 +169,9 @@ func TestValidLdapScope(t *testing.T) {
 		{map[string]interface{}{
 			ldapScopeKey: -100,
 		}, false, 0},
+		{map[string]interface{}{
+			ldapScopeKey: dbValue,
+		}, false, 2},
 	}
 
 	for i, item := range testCfgs {

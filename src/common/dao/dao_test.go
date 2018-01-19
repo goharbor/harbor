@@ -21,6 +21,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
@@ -1253,8 +1254,13 @@ func TestDeleteRepTarget(t *testing.T) {
 	}
 }
 
+func TestGetTotalOfRepPolicies(t *testing.T) {
+	_, err := GetTotalOfRepPolicies("", 1)
+	require.Nil(t, err)
+}
+
 func TestFilterRepPolicies(t *testing.T) {
-	_, err := FilterRepPolicies("name", 0)
+	_, err := FilterRepPolicies("name", 0, 0, 0)
 	if err != nil {
 		t.Fatalf("failed to filter policy: %v", err)
 	}

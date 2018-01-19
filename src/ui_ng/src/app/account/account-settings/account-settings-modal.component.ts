@@ -240,8 +240,13 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             });
     }
 
-    confirm($event: any): void {
-        if(this.RenameOnGoing) {
+    confirmNo($event: any): void {
+        if (this.RenameOnGoing) {
+            this.RenameOnGoing = false;
+        }
+    }
+    confirmYes($event: any): void {
+        if (this.RenameOnGoing) {
             this.confirmRename();
             this.RenameOnGoing = false;
         }

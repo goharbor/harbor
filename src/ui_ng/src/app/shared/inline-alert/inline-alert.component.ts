@@ -35,6 +35,7 @@ export class InlineAlertComponent {
     blinking: boolean = false;
 
     @Output() confirmEvt = new EventEmitter<boolean>();
+    @Output() closeEvt = new EventEmitter<boolean>();
 
     constructor(private translate: TranslateService) { }
 
@@ -82,9 +83,10 @@ export class InlineAlertComponent {
         this.useAppLevelStyle = false;
     }
 
-    //Close alert
+    // Close alert
     public close(): void {
         this.alertClose = true;
+        this.closeEvt.emit(true);
     }
 
     public blink() {
