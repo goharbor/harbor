@@ -18,7 +18,6 @@ import "errors"
 
 // Subscription represents a subscribe or unsubscribe notification.
 type Subscription struct {
-
 	// Kind is "subscribe", "unsubscribe", "psubscribe" or "punsubscribe"
 	Kind string
 
@@ -31,7 +30,6 @@ type Subscription struct {
 
 // Message represents a message notification.
 type Message struct {
-
 	// The originating channel.
 	Channel string
 
@@ -41,7 +39,6 @@ type Message struct {
 
 // PMessage represents a pmessage notification.
 type PMessage struct {
-
 	// The matched pattern.
 	Pattern string
 
@@ -94,6 +91,9 @@ func (c PubSubConn) PUnsubscribe(channel ...interface{}) error {
 }
 
 // Ping sends a PING to the server with the specified data.
+//
+// The connection must be subscribed to at least one channel or pattern when
+// calling this method.
 func (c PubSubConn) Ping(data string) error {
 	c.Conn.Send("PING", data)
 	return c.Conn.Flush()
