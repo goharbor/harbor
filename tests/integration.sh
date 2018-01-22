@@ -27,6 +27,14 @@ export DRONE_SERVER=$DRONE_SERVER
 export DRONE_TOKEN=$DRONE_TOKEN
 buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
 echo $buildinfo
+git_commit=$(git rev-parse --short=8 HEAD)
+if [ $DRONE_BUILD_EVENT == "tag" ]; then
+    build_number=$(git describe --abbrev=0 --tags)
+else
+    build_number=$DRONE_BUILD_NUMBER-$git_commit
+fi
+echo build_number
+export HARBOR_BUILD_NUMBER=$build_number
 upload_build=false
 nightly_run=false
 upload_latest_build=false
