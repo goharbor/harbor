@@ -27,7 +27,7 @@ def validate(conf, args):
         registry_storage_provider_name = rcp.get("configuration",
                                                  "registry_storage_provider_name").strip()
         if registry_storage_provider_name == "filesystem" and not args.yes:
-            msg = 'Is the Harbor Docker Registry configured to use shared storage (e.g. NFS, S3, GCS, etc.)? [yes/no]:'
+            msg = 'Is the Harbor Docker Registry configured to use shared storage (e.g. NFS, Ceph etc.)? [yes/no]:'
             if raw_input(msg).lower() != "yes":
                 raise Exception("Error: In HA mode, shared storage configuration for Docker Registry in harbor.cfg is required. Refer to HA installation guide for details.")
         redis_url = rcp.get("configuration", "redis_url")
@@ -264,6 +264,8 @@ else:
 
 storage_provider_name = rcp.get("configuration", "registry_storage_provider_name").strip()
 storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
+# yaml requires 1 or more spaces between the key and value
+storage_provider_config = storage_provider_config.replace(":", ": ")
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
