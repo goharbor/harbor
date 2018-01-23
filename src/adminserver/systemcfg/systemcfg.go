@@ -35,6 +35,7 @@ import (
 const (
 	defaultJSONCfgStorePath string = "/etc/adminserver/config/config.json"
 	defaultKeyPath          string = "/etc/adminserver/key"
+	ldapScopeKey            string = "ldap_scope"
 )
 
 var (
@@ -141,8 +142,9 @@ var (
 			env:   "UAA_VERIFY_CERT",
 			parse: parseStringToBool,
 		},
-		common.UIURL:         "UI_URL",
-		common.JobServiceURL: "JOBSERVICE_URL",
+		common.UIURL:                       "UI_URL",
+		common.JobServiceURL:               "JOBSERVICE_URL",
+		common.RegistryStorageProviderName: "REGISTRY_STORAGE_PROVIDER_NAME",
 	}
 
 	// configurations need read from environment variables
@@ -175,6 +177,7 @@ var (
 			env:   "UAA_VERIFY_CERT",
 			parse: parseStringToBool,
 		},
+		common.RegistryStorageProviderName: "REGISTRY_STORAGE_PROVIDER_NAME",
 	}
 )
 
@@ -272,6 +275,11 @@ func initCfgStore() (err error) {
 					log.Errorf("Failed to read old configuration from %s", path)
 					return err
 				}
+				// Update LDAP Scope for migration
+				// only used when migrating harbor release before v1.3
+				// after v1.3 there is always a db configuration before migrate.
+				validLdapScope(jsonconfig, true)
+
 				err = CfgStore.Write(jsonconfig)
 				if err != nil {
 					log.Error("Failed to update old configuration to database")
@@ -334,7 +342,7 @@ func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
 
 		return fmt.Errorf("%v is not string or parse type", v)
 	}
-
+	validLdapScope(cfgs, false)
 	return nil
 }
 
@@ -353,4 +361,25 @@ func GetDatabaseFromCfg(cfg map[string]interface{}) *models.Database {
 	sqlite.File = cfg[common.SQLiteFile].(string)
 	database.SQLite = sqlite
 	return database
+}
+
+// Valid LDAP Scope
+func validLdapScope(cfg map[string]interface{}, isMigrate bool) {
+	ldapScope, ok := cfg[ldapScopeKey].(int)
+	if !ok {
+		ldapScopeFloat, ok := cfg[ldapScopeKey].(float64)
+		if ok {
+			ldapScope = int(ldapScopeFloat)
+		}
+	}
+	if isMigrate && ldapScope > 0 && ldapScope < 3 {
+		ldapScope = ldapScope - 1
+	}
+	if ldapScope >= 3 {
+		ldapScope = 2
+	}
+	if ldapScope < 0 {
+		ldapScope = 0
+	}
+	cfg[ldapScopeKey] = ldapScope
 }

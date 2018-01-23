@@ -1511,6 +1511,18 @@ paths:
           format: int64
           required: false
           description: Relevant project ID.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: 'The page nubmer.'
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: 'The size of per page.'
       tags:
         - Products
       responses:

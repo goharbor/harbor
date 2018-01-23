@@ -7,6 +7,7 @@ export * from './log/index';
 export * from './filter/index';
 export * from './endpoint/index';
 export * from './repository/index';
+export * from './create-edit-endpoint/index';
 export * from './repository-stackview/index';
 export * from './tag/index';
 export * from './list-replication-rule/index';

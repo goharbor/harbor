@@ -17,19 +17,19 @@ Documentation  This resource contains any keywords dealing with operations being
 
 *** Keywords ***
 Power On VM OOB
-    [Arguments]  ${vm}
-    ${rc}  ${output}=  Run And Return Rc And Output  govc vm.power -on "${vm}"
+    [Arguments]  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
+    ${rc}  ${output}=  Run And Return Rc And Output  GOVC_URL=${vc_host} GOVC_USERNAME=${vc_user} GOVC_PASSWORD=${vc_password} GOVC_INSECURE=1 govc vm.power -on "${vm}"
     Should Be Equal As Integers  ${rc}  0
     Log To Console  Waiting for VM to power on ...
-    Wait Until VM Powers On  ${vm}
+    Wait Until VM Powers On  "${vm}"  ${vc_host}  ${vc_user}  ${vc_password}
 
 Power Off VM OOB
-    [Arguments]  ${vm}
-    ${rc}  ${output}=  Run And Return Rc And Output  govc vm.power -off "${vm}"
+    [Arguments]  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
+    ${rc}  ${output}=  Run And Return Rc And Output  GOVC_URL=${vc_host} GOVC_USERNAME=${vc_user} GOVC_PASSWORD=${vc_password} GOVC_INSECURE=1 govc vm.power -off "${vm}"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     Log To Console  Waiting for VM to power off ...
-    Wait Until VM Powers Off  "${vm}"
+    Wait Until VM Powers Off  "${vm}"  ${vc_host}  ${vc_user}  ${vc_password}
 
 Destroy VM OOB
     [Arguments]  ${vm}
@@ -45,24 +45,24 @@ Remove Host From Maintenance Mode
     Should Contain  ${output}  exiting maintenance mode... OK
 
 Reboot VM
-    [Arguments]  ${vm}
+    [Arguments]  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
     Log To Console  Rebooting ${vm} ...
-    Power Off VM OOB  ${vm}
-    Power On VM OOB  ${vm}
+    Power Off VM OOB  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
+    Power On VM OOB  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
     Log To Console  ${vm} Powered On
 
 Reset VM
-    [Arguments]  ${vm}
-    ${rc}  ${output}=  Run And Return Rc And Output  govc vm.power -reset "${vm}"
+    [Arguments]  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
+    ${rc}  ${output}=  Run And Return Rc And Output  GOVC_URL=${vc_host} GOVC_USERNAME=${vc_user} GOVC_PASSWORD=${vc_password} GOVC_INSECURE=1 govc vm.power -reset "${vm}"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     Log To Console  Waiting for VM to reset ...
-    Wait Until VM Powers On  "${vm}"
+    Wait Until VM Powers On  "${vm}"  ${vc_host}  ${vc_user}  ${vc_password}
 
 Wait Until VM Powers On
-    [Arguments]  ${vm}
+    [Arguments]  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
     :FOR  ${idx}  IN RANGE  0  30
-    \   ${ret}=  Run  govc vm.info ${vm}
+    \   ${ret}=  Run  GOVC_URL=${vc_host} GOVC_USERNAME=${vc_user} GOVC_PASSWORD=${vc_password} GOVC_INSECURE=1 govc vm.info ${vm}
     \   Set Test Variable  ${out}  ${ret}
     \   ${status}=  Run Keyword And Return Status  Should Contain  ${out}  poweredOn
     \   Return From Keyword If  ${status}
@@ -70,9 +70,9 @@ Wait Until VM Powers On
     Fail  VM did not power on within 30 seconds
 
 Wait Until VM Powers Off
-    [Arguments]  ${vm}
+    [Arguments]  ${vm}  ${vc_host}  ${vc_user}  ${vc_password}
     :FOR  ${idx}  IN RANGE  0  30
-    \   ${ret}=  Run  govc vm.info ${vm}
+    \   ${ret}=  Run  GOVC_URL=${vc_host} GOVC_USERNAME=${vc_user} GOVC_PASSWORD=${vc_password} GOVC_INSECURE=1 govc vm.info ${vm}
     \   Set Test Variable  ${out}  ${ret}
     \   ${status}=  Run Keyword And Return Status  Should Contain  ${out}  poweredOff
     \   Return From Keyword If  ${status}

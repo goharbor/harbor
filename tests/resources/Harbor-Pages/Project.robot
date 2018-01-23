@@ -61,7 +61,7 @@ Switch To Replication
 
 Back To projects
     Click Element  xpath=${projects_xpath}
-    Sleep  1
+    Sleep  2
 
 Project Should Display
     [Arguments]  ${projectname}

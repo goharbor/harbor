@@ -67,7 +67,7 @@ create table project (
  The max length of name controlled by API is 30, 
  and 11 is reserved for marking the deleted project.
 */
- name varchar (41) NOT NULL,
+ name varchar (255) NOT NULL,
  creation_time timestamp,
  update_time timestamp,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
@@ -234,4 +234,4 @@ create table alembic_version (
     version_num varchar(32) NOT NULL
 );
 
-insert into alembic_version values ('1.3.0');
+insert into alembic_version values ('1.4.0');

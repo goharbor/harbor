@@ -19,6 +19,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const fakeToken = "The Fake Token"
+
 // FakeClient is for test only
 type FakeClient struct {
 	Username string
@@ -28,14 +30,26 @@ type FakeClient struct {
 // PasswordAuth ...
 func (fc *FakeClient) PasswordAuth(username, password string) (*oauth2.Token, error) {
 	if username == fc.Username && password == fc.Password {
-		return &oauth2.Token{}, nil
+		return &oauth2.Token{AccessToken: fakeToken}, nil
 	}
 	return nil, fmt.Errorf("Invalide username and password")
 }
 
 // GetUserInfo ...
 func (fc *FakeClient) GetUserInfo(token string) (*UserInfo, error) {
-	return nil, nil
+	if token != fakeToken {
+		return nil, fmt.Errorf("Unexpected token: %s, expected: %s", token, fakeToken)
+	}
+	info := &UserInfo{
+		Name:  "fakeName",
+		Email: "fake@fake.com",
+	}
+	return info, nil
+}
+
+// UpdateConfig ...
+func (fc *FakeClient) UpdateConfig(cfg *ClientConfig) error {
+	return nil
 }
 
 // SearchUser ...

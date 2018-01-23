@@ -25,7 +25,7 @@ export const ENDPOINT_TEMPLATE: string = `
                 <clr-dg-column [clrDgField]="'insecure'">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</clr-dg-column>
                 <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'DESTINATION.CREATION_TIME' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'DESTINATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-                <clr-dg-row *ngFor="let t of targets" [clrDgItem]='t'>
+                <clr-dg-row *clrDgItems="let t of targets" [clrDgItem]='t'>
                     <clr-dg-cell>{{t.name}}</clr-dg-cell>
                     <clr-dg-cell>{{t.endpoint}}</clr-dg-cell>
                     <clr-dg-cell> 
@@ -42,6 +42,6 @@ export const ENDPOINT_TEMPLATE: string = `
         </div>
     </div>
     <confirmation-dialog #confirmationDialog [batchInfors]="batchDelectionInfos" (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
-    <create-edit-endpoint (reload)="reload($event)"></create-edit-endpoint>
+    <hbr-create-edit-endpoint (reload)="reload($event)"></hbr-create-edit-endpoint>
 </div>
 `;

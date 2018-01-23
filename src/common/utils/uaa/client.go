@@ -41,6 +41,8 @@ const (
 	UsersURLSuffix = "/Users"
 )
 
+var uaaTransport = &http.Transport{}
+
 // Client provides funcs to interact with UAA.
 type Client interface {
 	//PasswordAuth accepts username and password, return a token if it's valid.
@@ -49,6 +51,8 @@ type Client interface {
 	GetUserInfo(token string) (*UserInfo, error)
 	//SearchUser searches a user based on user name.
 	SearchUser(name string) ([]*SearchUserEntry, error)
+	//UpdateConfig updates the config of the current client
+	UpdateConfig(cfg *ClientConfig) error
 }
 
 // ClientConfig values to initialize UAA Client
@@ -169,13 +173,13 @@ func (dc *defaultClient) prepareCtx() context.Context {
 	return context.WithValue(context.Background(), oauth2.HTTPClient, dc.httpClient)
 }
 
-// NewDefaultClient creates an instance of defaultClient.
-func NewDefaultClient(cfg *ClientConfig) (Client, error) {
+func (dc *defaultClient) UpdateConfig(cfg *ClientConfig) error {
 	url := cfg.Endpoint
 	if !strings.Contains(url, "://") {
 		url = "https://" + url
 	}
 	url = strings.TrimSuffix(url, "/")
+	dc.endpoint = url
 	tc := &tls.Config{
 		InsecureSkipVerify: cfg.SkipTLSVerify,
 	}
@@ -183,7 +187,7 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 		if _, err := os.Stat(cfg.CARootPath); !os.IsNotExist(err) {
 			content, err := ioutil.ReadFile(cfg.CARootPath)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			pool := x509.NewCertPool()
 			//Do not throw error if the certificate is malformed, so we can put a place holder.
@@ -196,11 +200,9 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 			log.Warningf("The root certificate file %s is not found, skip configuring root cert in UAA client.", cfg.CARootPath)
 		}
 	}
-	hc := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: tc,
-		},
-	}
+	uaaTransport.TLSClientConfig = tc
+	dc.httpClient.Transport = uaaTransport
+	//dc.httpClient.Transport = transport.
 
 	oc := &oauth2.Config{
 		ClientID:     cfg.ClientID,
@@ -216,11 +218,17 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 		ClientSecret: cfg.ClientSecret,
 		TokenURL:     url + TokenURLSuffix,
 	}
+	dc.oauth2Cfg = oc
+	dc.twoLegCfg = cc
+	return nil
+}
 
-	return &defaultClient{
-		httpClient: hc,
-		oauth2Cfg:  oc,
-		twoLegCfg:  cc,
-		endpoint:   url,
-	}, nil
+// NewDefaultClient creates an instance of defaultClient.
+func NewDefaultClient(cfg *ClientConfig) (Client, error) {
+	hc := &http.Client{}
+	c := &defaultClient{httpClient: hc}
+	if err := c.UpdateConfig(cfg); err != nil {
+		return nil, err
+	}
+	return c, nil
 }

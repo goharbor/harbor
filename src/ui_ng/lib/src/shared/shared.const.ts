@@ -65,5 +65,5 @@ export const enum ConfirmationState {
 };
 
 export const enum ConfirmationButtons {
-  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE
+  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL
 };

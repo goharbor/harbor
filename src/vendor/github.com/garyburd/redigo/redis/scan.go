@@ -110,6 +110,25 @@ func convertAssignInt(d reflect.Value, s int64) (err error) {
 }
 
 func convertAssignValue(d reflect.Value, s interface{}) (err error) {
+	if d.Kind() != reflect.Ptr {
+		if d.CanAddr() {
+			d2 := d.Addr()
+			if d2.CanInterface() {
+				if scanner, ok := d2.Interface().(Scanner); ok {
+					return scanner.RedisScan(s)
+				}
+			}
+		}
+	} else if d.CanInterface() {
+		// Already a reflect.Ptr
+		if d.IsNil() {
+			d.Set(reflect.New(d.Type().Elem()))
+		}
+		if scanner, ok := d.Interface().(Scanner); ok {
+			return scanner.RedisScan(s)
+		}
+	}
+
 	switch s := s.(type) {
 	case []byte:
 		err = convertAssignBulkString(d, s)
@@ -135,11 +154,15 @@ func convertAssignArray(d reflect.Value, s []interface{}) error {
 }
 
 func convertAssign(d interface{}, s interface{}) (err error) {
+	if scanner, ok := d.(Scanner); ok {
+		return scanner.RedisScan(s)
+	}
+
 	// Handle the most common destination types using type switches and
 	// fall back to reflection for all other types.
 	switch s := s.(type) {
 	case nil:
-		// ingore
+		// ignore
 	case []byte:
 		switch d := d.(type) {
 		case *string:
@@ -186,7 +209,11 @@ func convertAssign(d interface{}, s interface{}) (err error) {
 	case string:
 		switch d := d.(type) {
 		case *string:
-			*d = string(s)
+			*d = s
+		case *interface{}:
+			*d = s
+		case nil:
+			// skip value
 		default:
 			err = cannotConvert(reflect.ValueOf(d), s)
 		}
@@ -214,6 +241,8 @@ func convertAssign(d interface{}, s interface{}) (err error) {
 }
 
 // Scan copies from src to the values pointed at by dest.
+//
+// Scan uses RedisScan if available otherwise:
 //
 // The values pointed at by dest must be an integer, float, boolean, string,
 // []byte, interface{} or slices of these types. Scan uses the standard strconv
@@ -355,6 +384,7 @@ var errScanStructValue = errors.New("redigo.ScanStruct: value must be non-nil po
 //
 // Fields with the tag redis:"-" are ignored.
 //
+// Each field uses RedisScan if available otherwise:
 // Integer, float, boolean, string and []byte fields are supported. Scan uses the
 // standard strconv package to convert bulk string values to numeric and
 // boolean types.

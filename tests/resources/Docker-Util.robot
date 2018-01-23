@@ -126,6 +126,13 @@ Start Docker Daemon Locally
     Sleep  2s
     [Return]  ${handle}
 
+Prepare Docker Cert
+    [Arguments]  ${ip}
+    ${rc}  ${out}=  Run And Return Rc And Output  mkdir -p /etc/docker/certs.d/${ip}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${out}=  Run And Return Rc And Output  cp harbor_ca.crt /etc/docker/certs.d/${ip}
+    Should Be Equal As Integers  ${rc}  0   
+    
 Kill Local Docker Daemon
     [Arguments]  ${handle}  ${dockerd-pid}
     Terminate Process  ${handle}

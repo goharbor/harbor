@@ -15,12 +15,14 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"strconv"
 )
 
 const (
@@ -46,6 +48,9 @@ var (
 		common.EmailInsecure:    true,
 		common.LDAPVerifyCert:   true,
 		common.UAAVerifyCert:    true,
+	}
+	mapKeys = map[string]bool{
+		common.ScanAllPolicy: true,
 	}
 )
 
@@ -90,6 +95,12 @@ func WrapperConfig(configEntries []*models.ConfigEntry) (map[string]interface{},
 				return nil, err
 			}
 			config[entry.Key] = strvalue
+		} else if mapKeys[entry.Key] {
+			m := map[string]interface{}{}
+			if err := json.Unmarshal([]byte(entry.Value), &m); err != nil {
+				return nil, err
+			}
+			config[entry.Key] = m
 		} else {
 			config[entry.Key] = entry.Value
 		}
@@ -100,7 +111,10 @@ func WrapperConfig(configEntries []*models.ConfigEntry) (map[string]interface{},
 
 // Write save configuration to database
 func (c *cfgStore) Write(config map[string]interface{}) error {
-	configEntries, _ := TranslateConfig(config)
+	configEntries, err := TranslateConfig(config)
+	if err != nil {
+		return err
+	}
 	return dao.SaveConfigEntries(configEntries)
 }
 
@@ -119,6 +133,12 @@ func TranslateConfig(config map[string]interface{}) ([]models.ConfigEntry, error
 			entry.Value = strconv.FormatBool(v.(bool))
 		case float64:
 			entry.Value = strconv.Itoa(int(v.(float64)))
+		case map[string]interface{}:
+			data, err := json.Marshal(v)
+			if err != nil {
+				return nil, err
+			}
+			entry.Value = string(data)
 		default:
 			return nil, fmt.Errorf("unknown type %v", v)
 		}

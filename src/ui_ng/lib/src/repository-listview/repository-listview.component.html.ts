@@ -1,7 +1,7 @@
 export const REPOSITORY_LISTVIEW_TEMPLATE = `
 <div>
   <div class="row" style="position:relative;">
-    <div>  
+    <div>
       <div class="row flex-items-xs-right option-right rightPos">
         <div class="flex-xs-middle">
           <hbr-push-image-button style="display: inline-block;" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
@@ -10,7 +10,7 @@ export const REPOSITORY_LISTVIEW_TEMPLATE = `
         </div>
       </div>
     </div>
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">  
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
         <clr-dg-action-bar>
             <div class="btn-group">

@@ -34,13 +34,16 @@
         "NEGATIVE": "NEGATIVO",
         "COPY": "COPY",
         "EDIT": "EDITAR",
-        "SWITCH": "SWITCH"
+        "SWITCH": "SWITCH",
+        "REPLICATE": "REPLICATE"
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",
         "DELETED_FAILURE": "Deleted failed",
         "SWITCH_SUCCESS": "Switch successfully",
-        "SWITCH_FAILURE": "Switch failed"
+        "SWITCH_FAILURE": "Switch failed",
+        "REPLICATE_SUCCESS": "Started successfully",
+        "REPLICATE_FAILURE": "Started failed"
     },
     "TOOLTIP": {
         "EMAIL": "El email debe ser una dirección válida como nombre@ejemplo.com.",
@@ -79,7 +82,10 @@
         "FULL_NAME": "Nombre y apellidos",
         "COMMENT": "Comentarios",
         "PASSWORD": "Contraseña",
-        "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente."
+        "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente.",
+        "ADMIN_RENAME_TIP": "Double click to change your username to \"admin@harbor.local\", but this action can NOT redo.",
+        "RENAME_SUCCESS": "Rename success!",
+        "RENAME_CONFIRM_INFO": "This action can not undo, Confirm To Rename?"
     },
     "CHANGE_PWD": {
         "TITLE": "Cambiar contraseña",
@@ -244,7 +250,10 @@
         "DELETION_TITLE": "Confirmar Eliminación de Regla",
         "DELETION_SUMMARY": "¿Quiere eliminar la regla {{param}}?",
         "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
-        "DELETION_SUMMARY_FAILURE": "{{param}} have pending/running/retrying status",
+        "DELETION_SUMMARY_FAILURE": "have pending/running/retrying status",
+        "REPLICATE_SUMMARY_FAILURE": "have pending/running status",
+        "REPLICATION_TITLE": "Confirm Rules replication",
+        "REPLICATION_SUMMARY": "Do you want to replicate the Rules {{param}}?",
         "FILTER_TARGETS_PLACEHOLDER": "Filtrar Endpoints",
         "DELETION_TITLE_TARGET": "Confirmar Eliminación de Endpoint",
         "DELETION_SUMMARY_TARGET": "¿Quiere eliminar el endpoint {{param}}?",
@@ -275,6 +284,7 @@
         "LAST_START_TIME": "Última Fecha de Inicio",
         "ACTIVATION": "Activación",
         "REPLICATION_JOBS": "Trabajos de Replicación",
+        "STOPJOB": "Stop Jobs",
         "ALL": "Todos",
         "PENDING": "Pendiente",
         "RUNNING": "Ejecutando",
@@ -310,15 +320,21 @@
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
         "JOB_LOG_VIEWER": "View Replication Job Log",
-        "BACKINFO": "Please add project and endpoint first",
+        "NO_ENDPOINT_INFO": "Please go to registries and add an endpoint first",
+        "NO_PROJECT_INFO": "Please go to projects and add a project name first",
         "FILTER": "Filter",
-        "SCHEDULE": "Schedule",
-        "SETTING":"Setting",
-        "TRIGGER":"Trigger",
+        "SCHEDULE": "Scheduled",
+        "MANUAL": "Manual",
+        "IMMEDIATE": "Immediate",
+        "SETTING":"Options",
+        "TRIGGER":"Triggering Condition",
         "TARGETS":"Target",
+        "MODE": "Mode",
         "SOURCE": "Source",
+        "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
-        "REPLICATE_IMMEDIATE":"Replicate exiting images immediately"
+        "REPLICATE_IMMEDIATE":"Replicate existing images immediately",
+        "NEW": "New"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -351,8 +367,7 @@
         "PLACEHOLDER": "We couldn't find any endpoints!"
     },
     "REPOSITORY": {
-        "COPY_ID": "Copiar ID",
-        "COPY_PARENT_ID": "Copiar ID padre",
+        "COPY_DIGEST_ID": "Copy Digest",
         "DELETE": "Eliminar",
         "NAME": "Nombre",
         "TAGS_COUNT": "Etiquetas",
@@ -413,6 +428,7 @@
         "REPLICATION": "Replicación",
         "EMAIL": "Email",
         "SYSTEM": "Opciones del Sistema",
+        "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirma cancelación",
         "CONFIRM_SUMMARY": "Algunos cambios no han sido guardados aún. ¿Quiere descartarlos?",
         "SAVE_SUCCESS": "La configuración ha sido guardada satisfactoriamente.",
@@ -499,7 +515,7 @@
     "ABOUT": {
         "VERSION": "Versión",
         "BUILD": "Construir",
-        "COPYRIGHT": "Copyright 1998-2017 VMware, Inc. Todos los derechos reservados. Este producto está protegido por E.U. y las leyes de propiedad internacionales. Los productos de VMware estan cubiertos por una o más patentes listadas en",
+        "COPYRIGHT": "Copyright 1998-2018 VMware, Inc. Todos los derechos reservados. Este producto está protegido por E.U. y las leyes de propiedad internacionales. Los productos de VMware estan cubiertos por una o más patentes listadas en",
         "COPYRIGHT_SUFIX": ".",
         "TRADEMARK": "VMware es una marca registrada o marca de VMware, Inc. en los Estados Unidos y otras jurisdicciones. Todas las demás marcas y nombres mencionados son marcas de sus respectivas compañías.",
         "END_USER_LICENSE": "Contrato de Usuario Final (EULA)",
@@ -515,6 +531,8 @@
         "PRO_ITEM": "PROYECTOS",
         "REPO_ITEM": "REPOSITORIOS",
         "INDEX_PRIVATE": "PRIVADO",
+        "INDEX_MY_PROJECTS": "MY PROJECTS",
+        "INDEX_MY_REPOSITORIES": "MY REPOSITORIES",
         "INDEX_PUB": "PÚBLICO",
         "INDEX_TOTAL": "TOTAL",
         "STORAGE": "ALMACENAMIENTO",

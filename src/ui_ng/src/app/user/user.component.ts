@@ -258,8 +258,6 @@ export class UserComponent implements OnInit, OnDestroy {
       Promise.all(promiseLists).then((item) => {
         this.selectedRow = [];
         this.currentTerm = '';
-
-        this.msgHandler.showSuccess('USER.DELETE_SUCCESS');
         this.refresh();
       });
     }
@@ -267,7 +265,7 @@ export class UserComponent implements OnInit, OnDestroy {
   delOperate(id: number, name:  string) {
     let findedList = this.batchDelectionInfos.find(data => data.name === name);
     return this.userService.deleteUser(id).then(() => {
-      this.translate.get('BATCH.DELETE_SUCCESS').subscribe(res => {
+      this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
         findedList = BathInfoChanges(findedList, res);
       });
     }).catch(error => {

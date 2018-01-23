@@ -188,7 +188,19 @@
     "assert",
     "require"
   ]
-  revision = "4d4bfba8f1d1027c4fdbe371823030df51419987"
+  revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
+  version = "v1.2.0"
+
+[[projects]]
+  name = "github.com/vmware/harbor"
+  packages = [
+    "src/common/models",
+    "src/common/utils",
+    "src/common/utils/log",
+    "tests/apitests/apilib"
+  ]
+  revision = "76f8882f546fa8f3c6a12a337dded196893dcb3f"
+  version = "v1.3.0"
 
 [[projects]]
   name = "golang.org/x/crypto"
@@ -207,6 +219,7 @@
   name = "golang.org/x/oauth2"
   packages = [
     ".",
+    "clientcredentials",
     "internal"
   ]
   revision = "bb50c06baba3d0c76f9d125c0719093e315b5b44"
@@ -245,6 +258,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9c0f8cd26043afa12693fed0005998c7194c4ea77c8dae19c4363ebadfd600ef"
+  inputs-digest = "1b5bec4304c99684de7fddc82ce9c81788e945f82455125110f32441a6ffd4cc"
   solver-name = "gps-cdcl"
   solver-version = 1

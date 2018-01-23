@@ -94,14 +94,16 @@ export class RepositoryComponent implements OnInit {
 
   retrieve(state?: State) {
     toPromise<Repository>(this.repositoryService.getRepositories(this.projectId, this.repoName))
-      .then(
-        response => {
-          if (response.metadata.xTotalCount > 0) {
-            this.orgImageInfo = response.data[0].description;
-            this.imageInfo = response.data[0].description;
-          }
-        })
-        .catch(error => this.errorHandler.error(error));
+      .then( response => {
+        if (response.metadata.xTotalCount > 0) {
+          this.orgImageInfo = response.data[0].description;
+          this.imageInfo = response.data[0].description;
+        }
+      })
+      .catch(error => this.errorHandler.error(error));
+    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
+      .then(systemInfo => this.systemInfo = systemInfo)
+      .catch(error => this.errorHandler.error(error));
   }
 
   saveSignatures(event: {[key: string]: string[]}): void {

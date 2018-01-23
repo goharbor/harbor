@@ -109,3 +109,5 @@
     If everything worked properly, you should see the administration console. Refer to **[Harbor User Guide](user_guide.md)** for how to use Harbor.
 
     ![Screenshot of after login](img/ovainstall/afterlogin.png)
+
+Please run "tdnf distro-sync" command from time to time to keep the OS up to date.

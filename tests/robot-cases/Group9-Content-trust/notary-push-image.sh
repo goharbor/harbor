@@ -2,7 +2,7 @@
 
 docker pull tomcat:latest
 
-IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
+IP=$1
 PASSHRASE='Harbor12345'
 
 echo $IP

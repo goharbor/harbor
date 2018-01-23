@@ -13,7 +13,7 @@ import {ConfirmationMessage} from "../../shared/confirmation-dialog/confirmation
 import {Subject} from "rxjs/Subject";
 import {ListProjectModelComponent} from "./list-project-model/list-project-model.component";
 import {toPromise, isEmptyObject, compareValue} from "harbor-ui/src/utils";
-
+import {CreateEditEndpointComponent} from "harbor-ui/src/create-edit-endpoint/create-edit-endpoint.component";
 
 const ONE_HOUR_SECONDS: number = 3600;
 const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
@@ -24,18 +24,21 @@ const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
     styleUrls: ['replication-rule.css']
 
 })
-export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ReplicationRuleComponent implements OnInit, OnDestroy {
     _localTime: Date = new Date();
     policyId: number;
+    projectId: number;
     targetList: Target[] = [];
     isFilterHide: boolean = false;
     weeklySchedule: boolean;
     isScheduleOpt: boolean;
     isImmediate: boolean = true;
+    noProjectInfo: string;
+    noEndpointInfo: boolean;
     filterCount: number = 0;
     selectedprojectList: Project[] = [];
-    triggerNames: string[] = ['immediate', 'schedule', 'manual'];
-    scheduleNames: string[] = ['daily', 'weekly'];
+    triggerNames: string[] = ['Immediate', 'Scheduled', 'Manual'];
+    scheduleNames: string[] = ['Daily', 'Weekly'];
     weekly: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     filterSelect: string[] = ['repository', 'tag'];
     ruleNameTooltip: string = 'TOOLTIP.EMPTY';
@@ -53,6 +56,9 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
 
     @ViewChild(ListProjectModelComponent)
     projectListModel: ListProjectModelComponent;
+
+    @ViewChild(CreateEditEndpointComponent)
+    createEditEndpointComponent: CreateEditEndpointComponent;
 
     baseFilterData(name: string, option: string[], state: boolean) {
         return {
@@ -75,25 +81,33 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
 
         Promise.all([this.repService.getEndpoints(), this.repService.listProjects()])
             .then(res => {
-                if (!res[0] || !res[1]) {
-                    this.msgHandler.error('REPLICATION.BACKINFO');
-                    setTimeout(() => {
-                        this.router.navigate(['/harbor/replications']);
-                    }, 2000);
-                };
-                if (res[0] && res[1]) {
+                if (!res[0]) {
+                    this.noEndpointInfo = true;
+                }else {
                     this.targetList = res[0];
                     if (!this.policyId) {
                         this.setTarget([res[0][0]]);
-                        this.setProject([res[1][0]]);
-                        this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
                     }
+                }
+                if (!res[1]) {
+                    this.noProjectInfo = 'REPLICATION.NO_PROJECT_INFO';
+                }else {
+                    if (!this.policyId && !this.projectId) {
+                        this.setProject([res[1][0]]);
+                    }
+                    if (!this.policyId && this.projectId) {
+                        this.setProject( res[1].filter(rule => rule.project_id === this.projectId));
+                    }
+                }
+                if (!this.policyId) {
+                    this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
                 }
             });
     }
 
     ngOnInit(): void {
        this.policyId = +this.route.snapshot.params['id'];
+       this.projectId = +this.route.snapshot.params['projectId'];
        if (this.policyId) {
            this.headerTitle = 'REPLICATION.EDIT_POLICY_TITLE';
            this.repService.getReplicationRule(this.policyId)
@@ -123,9 +137,6 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
        });
     }
 
-    ngAfterViewInit(): void {
-    }
-
     ngOnDestroy(): void {
         if (this.confirmSub) {
             this.confirmSub.unsubscribe();
@@ -133,6 +144,10 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
         if (this.nameChecker) {
             this.nameChecker.unsubscribe();
         }
+    }
+
+    get isVaild() {
+        return !(this.isRuleNameExist || this.noProjectInfo || this.noEndpointInfo);
     }
 
     createForm() {
@@ -406,7 +421,12 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
                 this.inProgress = false;
                 setTimeout(() => {
                     this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
-                    this.router.navigate(['/harbor/replications']);
+                    if (this.projectId) {
+                        this.router.navigate(['harbor/projects', this.projectId, 'replications']);
+                    }else {
+                        this.router.navigate(['/harbor/replications']);
+                    }
+
                 }, 2000);
 
             }).catch((error: any) => {
@@ -420,7 +440,11 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
                 this.inProgress = false;
                 setTimeout(() => {
                     this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
-                    this.router.navigate(['/harbor/replications']);
+                    if (this.projectId) {
+                        this.router.navigate(['harbor/projects', this.projectId, 'replications']);
+                    }else {
+                        this.router.navigate(['/harbor/replications']);
+                    }
                 }, 2000);
 
             }).catch((error: any) => {
@@ -429,6 +453,20 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
             });
         }
         this.inProgress = true;
+    }
+
+    openModal() {
+        this.createEditEndpointComponent.openCreateEditTarget(true);
+    }
+
+    reload($event: boolean) {
+        if ($event) {
+            Promise.all([this.repService.getEndpoints()]).then(res => {
+                this.targetList = res[0];
+                this.setTarget([this.targetList[this.targetList.length - 1]]);
+            });
+            this.noEndpointInfo = false;
+        }
     }
 
     onCancel(): void {
@@ -502,6 +540,10 @@ export class ReplicationRuleComponent implements OnInit, AfterViewInit, OnDestro
     backReplication(): void {
         this.router.navigate(['/harbor/replications']);
     }
+    backProjectReplication(): void {
+        this.router.navigate(['harbor/projects', this.projectId, 'replications']);
+    }
+
 
     getChanges(): { [key: string]: any | any[] } {
         let changes: { [key: string]: any | any[] } = {};

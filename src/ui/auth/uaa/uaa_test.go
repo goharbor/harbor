@@ -102,11 +102,12 @@ func TestMain(m *testing.M) {
 	os.Exit(rc)
 }
 
-func TestCreateClient(t *testing.T) {
+func TestEnsureClient(t *testing.T) {
 	assert := assert.New(t)
-	c, err := CreateClient()
+	auth := Auth{client: nil}
+	err := auth.ensureClient()
 	assert.Nil(err)
-	assert.NotNil(c)
+	assert.NotNil(auth.client)
 }
 
 func TestAuthenticate(t *testing.T) {
@@ -123,6 +124,7 @@ func TestAuthenticate(t *testing.T) {
 	u1, err1 := auth.Authenticate(m1)
 	assert.Nil(err1)
 	assert.NotNil(u1)
+	assert.Equal("fake@fake.com", u1.Email)
 	m2 := models.AuthModel{
 		Principal: "wrong",
 		Password:  "wrong",
@@ -153,6 +155,30 @@ func TestOnBoardUser(t *testing.T) {
 	assert.Equal("test", user.Realname)
 	assert.Equal("test", user.Username)
 	assert.Equal("test@uaa.placeholder", user.Email)
+	err3 := dao.ClearTable(models.UserTable)
+	assert.Nil(err3)
+}
+
+func TestPostAuthenticate(t *testing.T) {
+	assert := assert.New(t)
+	auth := Auth{}
+	um := &models.User{
+		Username: "test",
+	}
+	err := auth.PostAuthenticate(um)
+	assert.Nil(err)
+	user, _ := dao.GetUser(models.User{Username: "test"})
+	assert.Equal("test@uaa.placeholder", user.Email)
+	um.Email = "newEmail@new.com"
+	um.Realname = "newName"
+	err2 := auth.PostAuthenticate(um)
+	assert.Nil(err2)
+	user2, _ := dao.GetUser(models.User{Username: "test"})
+	assert.Equal("newEmail@new.com", user2.Email)
+	assert.Equal("newName", user2.Realname)
+	err3 := dao.ClearTable(models.UserTable)
+	assert.Nil(err3)
+
 }
 
 func TestSearchUser(t *testing.T) {
