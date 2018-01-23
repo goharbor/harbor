@@ -1,4 +1,4 @@
-Test 7-08 Project replication jobs log view
+Test 7-09 Project replication jobs log view
 =======
 
 # Purpose:
@@ -16,7 +16,9 @@ User guide
 # Test Steps:
 
 1. Login source registry UI as admin user.
-2. In project replication page, select a replication job and view job log.
+2. In `Administration->Replications` page, select a replication job and view job log.
+
+Repeat steps 1-2 under `Projects->Project_Name->Replication` page.
 
 # Expected Outcome:
 

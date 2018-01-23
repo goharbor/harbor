@@ -1,4 +1,4 @@
-Test 7-14 Endpoints endpoints filter
+Test 7-15 Endpoints endpoints filter
 =======
 
 # Purpose:
@@ -15,7 +15,7 @@ User guide
 # Test Steps:
 
 1. Login UI as admin user.    
-2. In replication page,add some endpoints.    
+2. In `Administration->Registries`,add some endpoints.    
 3. Input some characters in endpoints filter and then clear the filter.  
 
 # Expected Outcome:
