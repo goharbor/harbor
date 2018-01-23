@@ -24,10 +24,7 @@ type Conn interface {
 	// Close closes the connection.
 	Close() error
 
-	// Err returns a non-nil value if the connection is broken. The returned
-	// value is either the first non-nil value returned from the underlying
-	// network connection or a protocol parsing error. Applications should
-	// close broken connections.
+	// Err returns a non-nil value when the connection is not usable.
 	Err() error
 
 	// Do sends a command to the server and returns the received reply.
@@ -41,4 +38,24 @@ type Conn interface {
 
 	// Receive receives a single reply from the Redis server
 	Receive() (reply interface{}, err error)
+}
+
+// Argument is the interface implemented by an object which wants to control how
+// the object is converted to Redis bulk strings.
+type Argument interface {
+	// RedisArg returns a value to be encoded as a bulk string per the
+	// conversions listed in the section 'Executing Commands'.
+	// Implementations should typically return a []byte or string.
+	RedisArg() interface{}
+}
+
+// Scanner is implemented by an object which wants to control its value is
+// interpreted when read from Redis.
+type Scanner interface {
+	// RedisScan assigns a value from a Redis value. The argument src is one of
+	// the reply types listed in the section `Executing Commands`.
+	//
+	// An error should be returned if the value cannot be stored without
+	// loss of information.
+	RedisScan(src interface{}) error
 }

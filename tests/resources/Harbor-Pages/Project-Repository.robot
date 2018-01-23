@@ -1,0 +1,36 @@
+# Copyright 2016-2017 VMware, Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#	http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License
+
+*** Settings ***
+Documentation  This resource provides any keywords related to the Harbor private registry appliance
+Resource  ../../resources/Util.robot
+
+*** Keywords ***
+View Repo Scan Details
+    Click Element  xpath=${first_repo_xpath}
+    Sleep  2
+    Capture Page Screenshot  viewcve1.png
+    Wait Until Page Contains  unknown
+    Wait Until Page Contains  high
+    Wait Until Page Contains  medium
+    Page Should Contain  CVE
+
+View Scan Error Log
+    Page Should Contain  View Log
+    Click Element  xpath=${view_log_xpath}
+    Sleep  1
+    Capture Page Screenshot  viewlog.png
+    Wait Until Page Contains  Entered scan initializer
+    Wait Until Page Contains  ERROR
+    Wait Until Page Contains  View Scanning Job Log

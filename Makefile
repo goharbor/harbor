@@ -85,16 +85,9 @@ BUILDBIN=false
 MIGRATORFLAG=false
 
 # version prepare
+VERSIONTAG=dev
 VERSIONFILEPATH=$(CURDIR)
 VERSIONFILENAME=VERSION
-GITCMD=$(shell which git)
-GITTAG=$(GITCMD) describe --tags
-GITTAGVERSION=$(shell git describe --tags || echo UNKNOWN)
-ifeq ($(DEVFLAG), true)
-	VERSIONTAG=dev
-else
-	VERSIONTAG=$(GITTAGVERSION)
-endif
 
 #versions
 REGISTRYVERSION=v2.6.2
@@ -212,13 +205,13 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		vmware/nginx-photon:$(NGINXVERSION) vmware/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG) \
 		vmware/photon:$(PHOTONVERSION)
-PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(GITTAGVERSION).tgz \
+PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/ha
-PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(GITTAGVERSION).tgz \
+PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(VERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
@@ -243,7 +236,7 @@ ifeq ($(MIGRATORFLAG), true)
 endif
 
 version:
-	@printf $(GITTAGVERSION) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
+	@printf $(VERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
 
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
@@ -444,10 +437,10 @@ cleanversiontag:
 cleanpackage:
 	@echo "cleaning harbor install package"
 	@if [ -d $(BUILDPATH)/harbor ] ; then rm -rf $(BUILDPATH)/harbor ; fi
-	@if [ -f $(BUILDPATH)/harbor-online-installer-$(GITTAGVERSION).tgz ] ; \
-	then rm $(BUILDPATH)/harbor-online-installer-$(GITTAGVERSION).tgz ; fi
-	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(GITTAGVERSION).tgz ] ; \
-	then rm $(BUILDPATH)/harbor-offline-installer-$(GITTAGVERSION).tgz ; fi
+	@if [ -f $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ] ; \
+	then rm $(BUILDPATH)/harbor-online-installer-$(VERSIONTAG).tgz ; fi
+	@if [ -f $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ] ; \
+	then rm $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ; fi
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage cleandockercomposefile cleanversiontag cleanpackage

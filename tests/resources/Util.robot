@@ -33,6 +33,8 @@ Resource  Harbor-Pages/Project.robot
 Resource  Harbor-Pages/Project_Elements.robot
 Resource  Harbor-Pages/Project-Members.robot
 Resource  Harbor-Pages/Project-Members_Elements.robot
+Resource  Harbor-Pages/Project-Repository.robot
+Resource  Harbor-Pages/Project-Repository_Elements.robot
 Resource  Harbor-Pages/Replication.robot
 Resource  Harbor-Pages/Replication_Elements.robot
 Resource  Harbor-Pages/UserProfile.robot
@@ -47,3 +49,4 @@ Resource  OVA-Util.robot
 Resource  Cert-Util.robot
 Resource  SeleniumUtil.robot
 Resource  Harbor-Pages/Project-Config.robot
+Resource  Nightly-Util.robot

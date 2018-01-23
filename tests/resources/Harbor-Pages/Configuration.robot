@@ -76,6 +76,10 @@ Test Ldap Connection
     Capture Page Screenshot
     Wait Until Page Contains  Connection to LDAP server is verified  timeout=15
 
+Test LDAP Server Success
+    Click Element  xpath=${test_ldap_xpath}
+    Wait Until Page Contains  Connection to LDAP server is verified  timeout=15
+
 Disable Ldap Verify Cert Checkbox
     Mouse Down  xpath=//*[@id="clr-checkbox-ldapVerifyCert"]
     Mouse Up  xpath=//*[@id="clr-checkbox-ldapVerifyCert"]

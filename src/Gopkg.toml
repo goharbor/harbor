@@ -51,3 +51,7 @@
 [[constraint]]
   name = "gopkg.in/ldap.v2"
   version = "2.5.0"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.2.0"
