@@ -92,7 +92,7 @@ Switch To LDAP
     Should Be Equal As Integers  ${rc}  0	
     Generate Certificate Authority For Chrome
 	
-Enabe Notary Client
+Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
