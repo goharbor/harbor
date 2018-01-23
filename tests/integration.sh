@@ -98,8 +98,8 @@ echo "--------------------------------------------------"
 #
 # Put code here is because that it needs clean code to build installer.
 ##
-if [ $DRONE_BRANCH == "master" ] || [ $DRONE_BRANCH == *"refs/tags"* ] || [ $DRONE_BRANCH == "release-"* ] || [ $DRONE_BRANCH == "pks-"* ]; then
-    if [ $DRONE_BUILD_EVENT == "push" ] || [ $DRONE_BUILD_EVENT == "tag" ]; then
+if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* || $DRONE_BRANCH == "pks-"* ]]; then
+    if [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
         package_offline_installer 
         upload_latest_build=true     
     fi
