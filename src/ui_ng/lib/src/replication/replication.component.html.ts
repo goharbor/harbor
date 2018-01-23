@@ -40,7 +40,7 @@ export const REPLICATION_TEMPLATE: string = `
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <clr-datagrid [clrDgLoading]="jobsLoading" (clrDgRefresh)="clrLoadJobs($event)"><clr-dg-action-bar>
             <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-secondary" [hidden]="!(jobs && jobs.length>0 && isSystemAdmin)" (click)="stopJobs()">{{'REPLICATION.STOPJOB' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!(jobs && jobs.length>0) || isStopOnGoing" (click)="stopJobs()">{{'REPLICATION.STOPJOB' | translate}}</button>
             </div>
         </clr-dg-action-bar>
         <clr-dg-column [clrDgField]="'repository'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>

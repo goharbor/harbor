@@ -48,6 +48,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     inProgress: boolean = false;
     inNameChecking: boolean = false;
     isRuleNameExist: boolean = false;
+    isSubmitOver: boolean = false;
     nameChecker: Subject<string> = new Subject<string>();
 
     confirmSub: Subscription;
@@ -147,7 +148,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     }
 
     get isVaild() {
-        return !(this.isRuleNameExist || this.noProjectInfo || this.noEndpointInfo);
+        return !(this.isRuleNameExist || this.noProjectInfo || this.noEndpointInfo || this.inProgress || this.isSubmitOver);
     }
 
     createForm() {
@@ -412,6 +413,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
 
     onSubmit() {
         // add new Replication rule
+        this.inProgress = true;
         let copyRuleForm: ReplicationRule = this.ruleForm.value;
         copyRuleForm.trigger = this.setTriggerVaule(copyRuleForm.trigger);
         if (!this.policyId) {
@@ -419,6 +421,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
                 .then(() => {
                 this.msgHandler.showSuccess('REPLICATION.CREATED_SUCCESS');
                 this.inProgress = false;
+                this.isSubmitOver = true;
                 setTimeout(() => {
                     this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
                     if (this.projectId) {
@@ -426,7 +429,6 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
                     }else {
                         this.router.navigate(['/harbor/replications']);
                     }
-
                 }, 2000);
 
             }).catch((error: any) => {
@@ -438,6 +440,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
                 .then(() => {
                 this.msgHandler.showSuccess('REPLICATION.UPDATED_SUCCESS');
                 this.inProgress = false;
+                this.isSubmitOver = true;
                 setTimeout(() => {
                     this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
                     if (this.projectId) {
@@ -452,7 +455,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
                 this.msgHandler.handleError(error);
             });
         }
-        this.inProgress = true;
+
     }
 
     openModal() {

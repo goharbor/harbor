@@ -72,23 +72,32 @@
    <label class="col-md-4 form-group-label-override">{{'REPLICATION.MODE' | translate}}</label>
    <div  formGroupName="trigger">
     <!--on trigger-->
-    <div class="select floatSet">
+    <div class="select floatSet pull-left">
      <select id="ruleTrigger" formControlName="kind"  (change)="selectTrigger($event)">
-      <option *ngFor="let triggerName of triggerNames" value="{{triggerName}}">{{triggerName}}</option>
+      <option value="Immediate">{{'REPLICATION.IMMEDIATE' | translate}}</option>
+      <option value="Scheduled">{{'REPLICATION.SCHEDULE' | translate}}</option>
+      <option value="Manual">{{'REPLICATION.MANUAL' | translate}}</option>
      </select>
     </div>
     <!--on push-->
     <div style="float: left;" formGroupName="schedule_param">
-      <div class="select floatSet" [hidden]="!isScheduleOpt">
+      <div class="select floatSet pull-left" [hidden]="!isScheduleOpt">
        <select name="scheduleType" formControlName="type" (change)="selectSchedule($event)">
-        <option *ngFor="let scheduleName of scheduleNames" value="{{scheduleName}}">{{scheduleName}}</option>
+        <option value="Daily">{{'REPLICATION.DAILY' | translate}}</option>
+        <option value="Weekly">{{'REPLICATION.WEEKLY' | translate}}</option>
        </select>
       </div>
       <!--weekly-->
       <span style="float: left;" [hidden]="!weeklySchedule || !isScheduleOpt">on &nbsp;&nbsp;</span>
-      <div  [hidden]="!weeklySchedule || !isScheduleOpt" class="select floatSet">
+      <div  [hidden]="!weeklySchedule || !isScheduleOpt" class="select floatSet pull-left">
        <select name="scheduleDay" formControlName="weekday">
-        <option *ngFor="let filter of weekly; let i = index" [value]="i+1">{{filter}}</option>
+        <option value="1">{{'WEEKLY.MONDAY' | translate}}</option>
+        <option value="2">{{'WEEKLY.TUESDAY' | translate}}</option>
+        <option value="3">{{'WEEKLY.WEDNESDAY' | translate}}</option>
+        <option value="4">{{'WEEKLY.THURSDAY' | translate}}</option>
+        <option value="5">{{'WEEKLY.FRIDAY' | translate}}</option>
+        <option value="6">{{'WEEKLY.SATURDAY' | translate}}</option>
+        <option value="7">{{'WEEKLY.SUNDAY' | translate}}</option>
        </select>
       </div>
       <!--daily/time-->

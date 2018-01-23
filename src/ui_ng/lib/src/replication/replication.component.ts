@@ -111,6 +111,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   rules: ReplicationRule[];
   loading: boolean;
+  isStopOnGoing: boolean;
 
   jobs: ReplicationJobItem[];
   batchDelectionInfos: BatchInfo[] = [];
@@ -362,8 +363,12 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   stopJobs() {
     if (this.jobs && this.jobs.length) {
+      this.isStopOnGoing = true;
       toPromise(this.replicationService.stopJobs(this.jobs[0].policy_id))
-          .then(res => {this.refreshJobs(); })
+          .then(res => {
+            this.refreshJobs();
+            this.isStopOnGoing = false;
+          })
           .catch(error =>  this.errorHandler.error(error));
     }
   }
