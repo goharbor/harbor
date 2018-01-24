@@ -108,6 +108,7 @@ func Login(m models.AuthModel) (*models.User, error) {
 		log.Debugf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
 		lock.Lock(m.Principal)
 		time.Sleep(frozenTime)
+		return user, err
 	}
 
 	err = authenticator.PostAuthenticate(user)
