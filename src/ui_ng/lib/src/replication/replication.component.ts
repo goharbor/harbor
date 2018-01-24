@@ -107,7 +107,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   changedRules: ReplicationRule[];
   initSelectedId: number | string;
-  hasJobs: boolean;
 
   rules: ReplicationRule[];
   loading: boolean;
@@ -271,21 +270,17 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
   }
 
-  replicateManualRule(rules: ReplicationRule[]) {
-    if (rules && rules.length) {
-      let nameArr: string[] = [];
+  replicateManualRule(rule: ReplicationRule) {
+    if (rule) {
       this.batchDelectionInfos = [];
-      rules.forEach(rule => {
-        nameArr.push(rule.name);
         let initBatchMessage = new BatchInfo ();
         initBatchMessage.name = rule.name;
         this.batchDelectionInfos.push(initBatchMessage);
-      });
       let replicationMessage = new ConfirmationMessage(
           'REPLICATION.REPLICATION_TITLE',
           'REPLICATION.REPLICATION_SUMMARY',
-          nameArr.join(', ') || '',
-          rules,
+          rule.name,
+          rule,
           ConfirmationTargets.TARGET,
           ConfirmationButtons.REPLICATE_CANCEL);
       this.replicationConfirmDialog.open(replicationMessage);
@@ -296,15 +291,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     if (message &&
         message.source === ConfirmationTargets.TARGET &&
         message.state === ConfirmationState.CONFIRMED) {
-      let rules: Endpoint[] = message.data;
-      if (rules && rules.length) {
-        let promiseLists: any[] = [];
-        rules.forEach(rule => {
-          this.replicationOperate(+rule.id, rule.name);
-        })
-        Promise.all(promiseLists).then((item) => {
-          this.listReplicationRule.retrieveRules();
-          this.refreshJobs();
+      let rule: ReplicationRule = message.data;
+
+      if (rule) {
+        Promise.all([this.replicationOperate(+rule.id, rule.name)]).then((item) => {
+          this.selectOneRule(rule);
         });
       }
     }
@@ -384,12 +375,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.listReplicationRule.retrieveRules();
   }
 
-  hasJobList(hasJob: boolean): void {
-    this.hasJobs = hasJob;
-    if (this.hasJobs) {
-      this.refreshJobs();
-    }
-  }
 
   refreshJobs() {
     this.search.repoName = "";

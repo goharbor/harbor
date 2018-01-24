@@ -1,12 +1,12 @@
 export const LIST_REPLICATION_RULE_TEMPLATE: string = `
 <div style="padding-bottom: 15px;">
-<clr-datagrid [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
+<clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" [clDgRowSelection]="true">
     <clr-dg-action-bar style="height:24px;">
         <div class="btn-group" *ngIf="opereateAvailable || isSystemAdmin">
             <button type="button" class="btn btn-sm btn-secondary" (click)="openModal()">{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
-            <button type="button" class="btn btn-sm btn-secondary" [disabled]="selectedRow.length !== 1" (click)="editRule(selectedRow)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
-            <button type="button" class="btn btn-sm btn-secondary" [disabled]="selectedRow.length == 0" (click)="deleteRule(selectedRow)">{{'REPLICATION.DELETE_POLICY' | translate}}</button>
-            <button type="button" class="btn btn-sm btn-secondary" [disabled]="selectedRow.length == 0" (click)="replicateRule(selectedRow)">{{'REPLICATION.REPLICATE' | translate}}</button>
+            <button type="button" class="btn btn-sm btn-secondary" [disabled]="!selectedRow" (click)="editRule(selectedRow)">{{'REPLICATION.EDIT_POLICY' | translate}}</button>
+            <button type="button" class="btn btn-sm btn-secondary" [disabled]="!selectedRow" (click)="deleteRule(selectedRow)">{{'REPLICATION.DELETE_POLICY' | translate}}</button>
+            <button type="button" class="btn btn-sm btn-secondary" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)">{{'REPLICATION.REPLICATE' | translate}}</button>
         </div>
     </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
