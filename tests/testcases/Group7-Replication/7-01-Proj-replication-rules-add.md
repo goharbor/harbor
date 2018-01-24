@@ -16,26 +16,19 @@ User guide
 # Test Steps:
 
 1. Login UI as admin user.
-2. In Project replication page, add a replication rule using an existing endpoint with enable checked.  
-3. In Project replication page, add a replication rule using an existing endpoint without enable checked.  
-4. In Project replication page, add a replication rule using a new endpoint.
-5. In Project replication page, add a replication rule using a new endpoint. Provide invalid values of input to see if validation works:
+2. In `Administration->Replications` page, create a new rule and fill in name and description.  
+3. Choose a project by clicking the icon on the right of `Projects`.  
+4. Add repository and tag filter.
+5. Choose an endpoint, create a new one if no endpoint exists.  
+6. Select a triggering condition: Immediate/Manaul/Scheduled, check/uncheck the `Delete remote images when locally deleted` if choosing `Immediate`.  
+7. Check/uncheck the option `Replicate existing images immediately`.  
+8. Save the rule.  
 
-* endpoint name or ip address duplicate with an existing endpoint.  
-* endpoint ip address incorrect.  
-* endpoint username or password incorrect.  
-
-6. Add another rule with different name using the same endpoint.  
-
+Repeat steps 1-8 under `Projects->Project_Name->Replication` page.
 
 # Expected Outcome:
 
-* In step2, a rule with given name will be added. And all images will be replicated to remote.   
-* In step3, a rule will be added and enabled,no image replication job is started.  
-* In step4, a rule using new endpoint will be added.  
-* In step5, rule can not be added if use duplicate name or ip, 
-* In step5, if input wrong username/password/ip,rule can be added,but will cause test connection fail.  
-* In step6, rule can not be added.  
+* In step8, a rule will be added.  
 
 # Possible Problems:
 None

@@ -1,4 +1,4 @@
-Test 7-13 Endpoints endpoint delete
+Test 7-14 Endpoints endpoint delete
 =======
 
 # Purpose
@@ -16,8 +16,8 @@ User guide
 # Test Steps:
 
 1. Login UI as admin user.  
-2. In replication page, delete an endpoint in use by a rule.  
-3. In replication page, delete an endpoint not in use by a rule.  
+2. In `Administration->Registries` page, delete an endpoint in use by a rule.  
+3. In `Administration->Registries` page, delete an endpoint not in use by a rule.  
 
 # Expected Outcome:
 

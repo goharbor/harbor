@@ -1,4 +1,4 @@
-Test 7-05 Project replication rules delete
+Test 7-03 Delete replication rules  
 =======
 
 # Purpose:
@@ -14,15 +14,15 @@ User guide
 # Test Steps:
 
 1. Login as admin user.  
-2. In project replication page,delete an enabled rule.
-3. Disable an enabled rule with running job, delete the rule while there is unfinished job.  
-4. In project replication page, delete a disabled rule.
+2. In `Administration->Replications` page,delete a rule which has no pending/running/retrying jobs.
+3. Delete a rule which has pending/running/retrying jobs.  
+
+Repeat steps 1-3 under `Projects->Project_Name->Replication` page.
 
 # Expected Outcome:
 
-* In step2 rule can not be deleted.
+* In step2 rule can be deleted.
 * In step3 rule can not be deleted.  
-* In step4 rule can be deleted.
 
 # Possible Problems:
 None
