@@ -121,6 +121,12 @@
   version = "v1.3.0"
 
 [[projects]]
+  name = "github.com/go-redsync/redsync"
+  packages = ["."]
+  revision = "98dabdf1c8574561bf976911c14ff652c47b1ddf"
+  version = "v1.0.1"
+
+[[projects]]
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
   revision = "a732e14c62dde3285440047bba97581bc472ae18"
@@ -258,6 +264,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1b5bec4304c99684de7fddc82ce9c81788e945f82455125110f32441a6ffd4cc"
+  inputs-digest = "49328284c14629d33811bc9d67012a48314bb52bbb4ad7282699afbd4506f287"
   solver-name = "gps-cdcl"
   solver-version = 1
