@@ -12,23 +12,31 @@
         </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <clr-dg-action-bar>
+            <button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()" [disabled]="!hasProjectAdminRole">
+                <span><clr-icon shape="plus"></clr-icon>{{'MEMBER.NEW_MEMBER' | translate }}</span>
+            </button>
+            <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-secondary" clrDropdownTrigger>
+                <span>{{'MEMBER.REMOVE' | translate}}<clr-icon shape="caret down"></clr-icon></span>
+                <clr-dropdown-menu *clrIfOpen>
+                    <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 1)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
+                    <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 2)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.DEVELOPER' | translate}}</button>
+                    <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 3)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.GUEST' | translate}}</button>
+                </clr-dropdown-menu>
+            </clr-dropdown>
+            <button class="btn btn-sm btn-secondary" (click)="deleteMembers(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">
+                <span>{{'MEMBER.REMOVE' | translate}}</span>
+            </button>
+        </clr-dg-action-bar>
         <clr-datagrid [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="SelectedChange()">
-            <clr-dg-action-bar>
-                <div class="btn-group">
-                    <clr-button-group [clrMenuPosition]="'bottom-right'" >
-                        <clr-button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()" [disabled]="!hasProjectAdminRole">{{'MEMBER.NEW_MEMBER' | translate }}</clr-button>
-                        <clr-button class="btn btn-sm btn-secondary" (click)="deleteMembers(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.DELETE' | translate}}</clr-button>
-                        <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 1)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.PROJECT_ADMIN' | translate}}</clr-button>
-                        <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 2)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.DEVELOPER' | translate}}</clr-button>
-                        <clr-button class="btn btn-sm btn-secondary" [clrInMenu]="true" (click)="changeRole(selectedRow, 3)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.GUEST' | translate}}</clr-button>
-                    </clr-button-group>
-                </div>
-            </clr-dg-action-bar>
             <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
             <clr-dg-row *ngFor="let m of members"  [clrDgItem]="m">
                 <clr-dg-cell>{{m.username}}</clr-dg-cell>
-                <clr-dg-cell>{{roleInfo[m.role_id] | translate}}</clr-dg-cell>
+                <clr-dg-cell>
+                    <span class="spinner spinner-inline"> Loading... </span>
+                    <span *ngIf="!ChangeRoleOngoing(m.username)">{{roleInfo[m.role_id] | translate}}</span>
+                </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
                 <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'MEMBER.OF' | translate}} </span>

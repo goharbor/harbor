@@ -113,7 +113,7 @@ export class ConfirmationDialogComponent implements OnDestroy {
     }
 
     operate(): void {
-        if(!this.message){//Inproper condition
+        if (!this.message) {// Improper condition
             this.close();
             return;
         }

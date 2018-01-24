@@ -14,42 +14,41 @@
 import {
     Component,
     Output,
-    Input,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     OnDestroy, EventEmitter
-} from '@angular/core';
-import { Router, NavigationExtras } from '@angular/router';
-import { Project } from '../project';
-import { ProjectService } from '../project.service';
+} from "@angular/core";
+import { Router } from "@angular/router";
+import { Project } from "../project";
+import { ProjectService } from "../project.service";
 
-import { SessionService } from '../../shared/session.service';
-import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import { ProjectTypes, RoleInfo } from '../../shared/shared.const';
-import { CustomComparator, doFiltering, doSorting, calculatePage } from '../../shared/shared.utils';
+import { SessionService } from "../../shared/session.service";
+import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
+import { RoleInfo } from "../../shared/shared.const";
+import { CustomComparator, doFiltering, doSorting, calculatePage } from "../../shared/shared.utils";
 
-import { Comparator, State } from 'clarity-angular';
-import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { StatisticHandler } from '../../shared/statictics/statistic-handler.service';
-import { Subscription } from 'rxjs/Subscription';
-import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
-import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
-import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../../shared/shared.const';
+import { Comparator, State } from "clarity-angular";
+import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
+import { StatisticHandler } from "../../shared/statictics/statistic-handler.service";
+import { Subscription } from "rxjs/Subscription";
+import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
+import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
+import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
 import {TranslateService} from "@ngx-translate/core";
 import {BatchInfo, BathInfoChanges} from "../../shared/confirmation-dialog/confirmation-batch-message";
 import {Observable} from "rxjs/Observable";
 import {AppConfigService} from "../../app-config.service";
 
 @Component({
-    selector: 'list-project',
-    templateUrl: 'list-project.component.html',
+    selector: "list-project",
+    templateUrl: "list-project.component.html",
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListProjectComponent implements OnDestroy {
-    loading: boolean = true;
+    loading = true;
     projects: Project[] = [];
-    filteredType: number = 0;//All projects
-    searchKeyword: string = "";
+    filteredType = 0; // All projects
+    searchKeyword = "";
     selectedRow: Project[]  = [];
     batchDelectionInfos: BatchInfo[] = [];
 
@@ -60,9 +59,9 @@ export class ListProjectComponent implements OnDestroy {
     timeComparator: Comparator<Project> = new CustomComparator<Project>("creation_time", "date");
     accessLevelComparator: Comparator<Project> = new CustomComparator<Project>("public", "number");
     roleComparator: Comparator<Project> = new CustomComparator<Project>("current_user_role_id", "number");
-    currentPage: number = 1;
-    totalCount: number = 0;
-    pageSize: number = 15;
+    currentPage = 1;
+    totalCount = 0;
+    pageSize = 15;
     currentState: State;
     subscription: Subscription;
 
@@ -97,9 +96,9 @@ export class ListProjectComponent implements OnDestroy {
         let account = this.session.getCurrentUser();
         if (account) {
             switch (this.appConfigService.getConfig().project_creation_restriction) {
-                case 'adminonly':
+                case "adminonly":
                     return (account.has_admin_role === 1);
-                case 'everyone':
+                case "everyone":
                     return true;
             }
         }
@@ -131,7 +130,7 @@ export class ListProjectComponent implements OnDestroy {
     goToLink(proId: number): void {
         this.searchTrigger.closeSearch(true);
 
-        let linkUrl = ['harbor', 'projects', proId, 'repositories'];
+        let linkUrl = ["harbor", "projects", proId, "repositories"];
         this.router.navigate(linkUrl);
     }
 
@@ -143,7 +142,7 @@ export class ListProjectComponent implements OnDestroy {
     clrLoad(state: State) {
         this.selectedRow = [];
 
-        //Keep state for future filtering and sorting
+        // Keep state for future filtering and sorting
         this.currentState = state;
 
         let pageNumber: number = calculatePage(state);
@@ -157,7 +156,7 @@ export class ListProjectComponent implements OnDestroy {
         }
         this.proService.listProjects(this.searchKeyword, passInFilteredType, pageNumber, this.pageSize).toPromise()
             .then(response => {
-                //Get total count
+                // Get total count
                 if (response.headers) {
                     let xHeader: string = response.headers.get("X-Total-Count");
                     if (xHeader) {
@@ -166,7 +165,7 @@ export class ListProjectComponent implements OnDestroy {
                 }
 
                 this.projects = response.json() as Project[];
-                //Do customising filtering and sorting
+                // Do customising filtering and sorting
                 this.projects = doFiltering<Project>(this.projects, state);
                 this.projects = doSorting<Project>(this.projects, state);
 
@@ -177,7 +176,7 @@ export class ListProjectComponent implements OnDestroy {
                 this.msgHandler.handleError(error);
             });
 
-        //Force refresh view
+        // Force refresh view
         let hnd = setInterval(() => this.ref.markForCheck(), 100);
         setTimeout(() => clearInterval(hnd), 5000);
     }
@@ -190,12 +189,12 @@ export class ListProjectComponent implements OnDestroy {
 
     toggleProject(p: Project) {
         if (p) {
-            p.metadata.public === 'true' ? p.metadata.public = 'false' : p.metadata.public = 'true';
+            p.metadata.public === "true" ? p.metadata.public = "false" : p.metadata.public = "true";
             this.proService
                 .toggleProjectPublic(p.project_id, p.metadata.public)
                 .subscribe(
                 response => {
-                    this.msgHandler.showSuccess('PROJECT.TOGGLED_SUCCESS');
+                    this.msgHandler.showSuccess("PROJECT.TOGGLED_SUCCESS");
                     let pp: Project = this.projects.find((item: Project) => item.project_id === p.project_id);
                     if (pp) {
                         pp.metadata.public = p.metadata.public;
@@ -205,7 +204,7 @@ export class ListProjectComponent implements OnDestroy {
                 error => this.msgHandler.handleError(error)
                 );
 
-            //Force refresh view
+            // Force refresh view
             let hnd = setInterval(() => this.ref.markForCheck(), 100);
             setTimeout(() => clearInterval(hnd), 2000);
         }
@@ -222,21 +221,13 @@ export class ListProjectComponent implements OnDestroy {
                 this.batchDelectionInfos.push(initBatchMessage);
             });
             this.deletionDialogService.addBatchInfoList(this.batchDelectionInfos);
-            let deletionMessage = new ConfirmationMessage(
-                'PROJECT.DELETION_TITLE',
-                'PROJECT.DELETION_SUMMARY',
-                nameArr.join(','),
-                p,
-                ConfirmationTargets.PROJECT,
-                ConfirmationButtons.DELETE_CANCEL
-            );
-            this.deletionDialogService.openComfirmDialog(deletionMessage);
+            this.delProjects(p);
         }
     }
-    delProjects(datas: Project[]) {
+    delProjects(projects: Project[]) {
         let observableLists: any[] = [];
-        if (datas && datas.length) {
-            datas.forEach(data => {
+        if (projects && projects.length) {
+            projects.forEach(data => {
                 observableLists.push(this.delOperate(data.project_id, data.name));
             });
             Promise.all(observableLists).then(item => {
@@ -252,23 +243,23 @@ export class ListProjectComponent implements OnDestroy {
         }
     }
 
-    delOperate(id: number, name:  string) {
+    delOperate(id: number, name: string) {
         let findedList = this.batchDelectionInfos.find(list => list.name === name);
         return this.proService.deleteProject(id)
             .then(
                 () => {
-                    this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
+                    this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
                         findedList = BathInfoChanges(findedList, res);
                     });
                 },
                 error => {
                     if (error && error.status === 412) {
-                        Observable.forkJoin(this.translate.get('BATCH.DELETED_FAILURE'),
-                            this.translate.get('PROJECT.FAILED_TO_DELETE_PROJECT')).subscribe(res => {
+                        Observable.forkJoin(this.translate.get("BATCH.DELETED_FAILURE"),
+                            this.translate.get("PROJECT.FAILED_TO_DELETE_PROJECT")).subscribe(res => {
                             findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
                         });
                     } else {
-                        this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+                        this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
                             findedList = BathInfoChanges(findedList, res, false, true);
                         });
                     }
@@ -318,7 +309,7 @@ export class ListProjectComponent implements OnDestroy {
         let targetPageNumber: number = this.currentPage;
 
         if (this.currentPage > totalPages) {
-            targetPageNumber = totalPages;//Should == currentPage -1
+            targetPageNumber = totalPages; // Should == currentPage -1
         }
 
         let st: State = this.currentState;

@@ -11,39 +11,37 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-import { Response } from '@angular/http';
+import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
 
-import { SessionUser } from '../../shared/session-user';
-import { Member } from './member';
-import { MemberService } from './member.service';
+import { SessionUser } from "../../shared/session-user";
+import { Member } from "./member";
+import { MemberService } from "./member.service";
 
-import { AddMemberComponent } from './add-member/add-member.component';
+import { AddMemberComponent } from "./add-member/add-member.component";
 
-import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from '../../shared/shared.const';
+import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
+import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
 
-import { ConfirmationDialogService } from '../../shared/confirmation-dialog/confirmation-dialog.service';
-import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
-import { SessionService } from '../../shared/session.service';
+import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
+import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
+import { SessionService } from "../../shared/session.service";
 
-import { RoleInfo } from '../../shared/shared.const';
+import { RoleInfo } from "../../shared/shared.const";
 
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/switchMap';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/observable/throw';
-import { Subscription } from 'rxjs/Subscription';
+import "rxjs/add/operator/switchMap";
+import "rxjs/add/operator/catch";
+import "rxjs/add/operator/map";
+import "rxjs/add/observable/throw";
+import { Subscription } from "rxjs/Subscription";
 
-import { Project } from '../../project/project';
+import { Project } from "../../project/project";
 import {TranslateService} from "@ngx-translate/core";
 import {BatchInfo, BathInfoChanges} from "../../shared/confirmation-dialog/confirmation-batch-message";
 
 @Component({
-  templateUrl: 'member.component.html',
-  styleUrls: ['./member.component.css'],
+  templateUrl: "member.component.html",
+  styleUrls: ["./member.component.css"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MemberComponent implements OnInit, OnDestroy {
@@ -60,22 +58,22 @@ export class MemberComponent implements OnInit, OnDestroy {
   hasProjectAdminRole: boolean;
 
   searchMember: string;
-  selectedRow: Member[] = []
+  selectedRow: Member[] = [];
   roleNum: number;
-  isDelete: boolean =false;
-  isChangeRole: boolean =false;
-  batchDelectionInfos: BatchInfo[] = [];
+  isDelete = false;
+  isChangeRole = false;
+  batchActionInfos: BatchInfo[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private memberService: MemberService, 
+    private memberService: MemberService,
     private translate: TranslateService,
     private messageHandlerService: MessageHandlerService,
     private OperateDialogService: ConfirmationDialogService,
     private session: SessionService,
     private ref: ChangeDetectorRef) {
-    
+
     this.delSub = OperateDialogService.confirmationConfirm$.subscribe(message => {
       if (message &&
         message.state === ConfirmationState.CONFIRMED &&
@@ -88,8 +86,8 @@ export class MemberComponent implements OnInit, OnDestroy {
         }
       }
     });
-    let hnd = setInterval(()=>ref.markForCheck(), 100);
-    setTimeout(()=>clearInterval(hnd), 1000);
+    let hnd = setInterval(() => ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   retrieve(projectId: number, username: string) {
@@ -99,11 +97,11 @@ export class MemberComponent implements OnInit, OnDestroy {
       .subscribe(
       response => {
         this.members = response;
-        let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-        setTimeout(()=>clearInterval(hnd), 1000);
+        let hnd = setInterval(() => this.ref.markForCheck(), 100);
+        setTimeout(() => clearInterval(hnd), 1000);
       },
       error => {
-        this.router.navigate(['/harbor', 'projects']);
+        this.router.navigate(["/harbor", "projects"]);
         this.messageHandlerService.handleError(error);
       });
   }
@@ -115,15 +113,15 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    //Get projectId from route params snapshot.          
-    this.projectId = +this.route.snapshot.parent.params['id'];
-    //Get current user from registered resolver.
+    // Get projectId from route params snapshot.
+    this.projectId = +this.route.snapshot.parent.params["id"];
+    // Get current user from registered resolver.
     this.currentUser = this.session.getCurrentUser();
     let resolverData = this.route.snapshot.parent.data;
-    if(resolverData) {
-      this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+    if (resolverData) {
+      this.hasProjectAdminRole = (<Project>resolverData["projectResolver"]).has_project_admin_role;
     }
-    this.retrieve(this.projectId, '');
+    this.retrieve(this.projectId, "");
   }
 
   openAddMemberModal() {
@@ -131,8 +129,8 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   addedMember($event: any) {
-    this.searchMember = '';
-    this.retrieve(this.projectId, '');
+    this.searchMember = "";
+    this.retrieve(this.projectId, "");
   }
 
   changeRole(m: Member[], roleId: number) {
@@ -141,24 +139,16 @@ export class MemberComponent implements OnInit, OnDestroy {
       this.isChangeRole = true;
       this.roleNum = roleId;
       let nameArr: string[] = [];
-      this.batchDelectionInfos = [];
+      this.batchActionInfos = [];
       m.forEach(data => {
         nameArr.push(data.username);
         let initBatchMessage = new BatchInfo();
         initBatchMessage.name = data.username;
-        this.batchDelectionInfos.push(initBatchMessage);
+        this.batchActionInfos.push(initBatchMessage);
       });
-      this.OperateDialogService.addBatchInfoList(this.batchDelectionInfos);
+      this.OperateDialogService.addBatchInfoList(this.batchActionInfos);
 
-      let switchMessage = new ConfirmationMessage(
-          'MEMBER.SWITCH_TITLE',
-          'MEMBER.SWITCH_SUMMARY',
-          nameArr.join(','),
-          m,
-          ConfirmationTargets.PROJECT_MEMBER,
-          ConfirmationButtons.SWITCH_CANCEL
-      );
-      this.OperateDialogService.openComfirmDialog(switchMessage);
+      this.changeOpe(m);
     }
   }
 
@@ -167,64 +157,64 @@ export class MemberComponent implements OnInit, OnDestroy {
       let promiseList: any[] = [];
       members.forEach(member => {
         if (member.user_id === this.currentUser.user_id) {
-          let findedList = this.batchDelectionInfos.find(data => data.name === member.username);
-          this.translate.get('BATCH.SWITCH_FAILURE').subscribe(res => {
-            findedList = BathInfoChanges(findedList, res, false, true);
+          let foundMember = this.batchActionInfos.find(batchInfo => batchInfo.name === member.username);
+          this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
+            foundMember = BathInfoChanges(foundMember, res, false, true);
           });
-        }else {
+        } else {
           promiseList.push(this.changeOperate(this.projectId, member.user_id, this.roleNum, member.username));
         }
-
       });
 
       Promise.all(promiseList).then(num => {
-            this.retrieve(this.projectId, '');
+            this.retrieve(this.projectId, "");
           },
       );
     }
   }
 
   changeOperate(projectId: number, memberId: number, roleId: number, username: string) {
-    let findedList = this.batchDelectionInfos.find(data => data.name === username);
+    let foundMember = this.batchActionInfos.find(batchInfo => batchInfo.name === username);
     return this.memberService
         .changeMemberRole(projectId, memberId, roleId)
         .then(
             response => {
-              this.translate.get('BATCH.SWITCH_SUCCESS').subscribe(res => {
-                findedList = BathInfoChanges(findedList, res);
+              this.translate.get("BATCH.SWITCH_SUCCESS").subscribe(res => {
+                foundMember = BathInfoChanges(foundMember, res);
               });
             },
             error => {
-              this.translate.get('BATCH.SWITCH_FAILURE').subscribe(res => {
-                findedList = BathInfoChanges(findedList, res, false, true);
+              this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
+                foundMember = BathInfoChanges(foundMember, res, false, true);
               });
             }
         );
+  }
+
+  ChangeRoleOngoing(username: string) {
+    if (this.batchActionInfos) {
+      let memberActionInfo = this.batchActionInfos.find(batchInfo => batchInfo.name === username);
+      return memberActionInfo && memberActionInfo.status === "pending";
+    } else {
+      return false;
+    }
   }
 
   deleteMembers(m: Member[]) {
     this.isDelete = true;
     this.isChangeRole = false;
     let nameArr: string[] = [];
-    this.batchDelectionInfos = [];
+    this.batchActionInfos = [];
     if (m && m.length) {
       m.forEach(data => {
         nameArr.push(data.username);
         let initBatchMessage = new BatchInfo ();
         initBatchMessage.name = data.username;
-        this.batchDelectionInfos.push(initBatchMessage);
+        this.batchActionInfos.push(initBatchMessage);
       });
-      this.OperateDialogService.addBatchInfoList(this.batchDelectionInfos);
+      this.OperateDialogService.addBatchInfoList(this.batchActionInfos);
 
-      let deletionMessage = new ConfirmationMessage(
-          'MEMBER.DELETION_TITLE',
-          'MEMBER.DELETION_SUMMARY',
-          nameArr.join(','),
-          m,
-          ConfirmationTargets.PROJECT_MEMBER,
-          ConfirmationButtons.DELETE_CANCEL
-      );
-      this.OperateDialogService.openComfirmDialog(deletionMessage);
+      this.deleteMem(m);
     }
   }
 
@@ -233,8 +223,8 @@ export class MemberComponent implements OnInit, OnDestroy {
       let promiseLists: any[] = [];
       members.forEach(member => {
         if (member.user_id === this.currentUser.user_id) {
-          let findedList = this.batchDelectionInfos.find(data => data.name === member.username);
-          this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+          let findedList = this.batchActionInfos.find(data => data.name === member.username);
+          this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
             findedList = BathInfoChanges(findedList, res, false, true);
           });
         }else {
@@ -245,23 +235,23 @@ export class MemberComponent implements OnInit, OnDestroy {
 
       Promise.all(promiseLists).then(item => {
         this.selectedRow = [];
-        this.retrieve(this.projectId, '');
+        this.retrieve(this.projectId, "");
       });
     }
   }
 
   delOperate(projectId: number, memberId: number, username: string) {
-    let findedList = this.batchDelectionInfos.find(data => data.name === username);
+    let findedList = this.batchActionInfos.find(data => data.name === username);
     return this.memberService
         .deleteMember(projectId, memberId)
         .then(
             response => {
-              this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
+              this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
                 findedList = BathInfoChanges(findedList, res);
               });
             },
             error => {
-              this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+              this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
                 findedList = BathInfoChanges(findedList, res, false, true);
               });
             }
@@ -269,7 +259,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   SelectedChange(): void {
-    //this.forceRefreshView(5000);
+    // this.forceRefreshView(5000);
   }
 
   doSearch(searchMember: string) {
@@ -278,6 +268,6 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   refresh() {
-    this.retrieve(this.projectId, '');
+    this.retrieve(this.projectId, "");
   }
 }

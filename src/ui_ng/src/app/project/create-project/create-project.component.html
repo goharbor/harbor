@@ -1,6 +1,6 @@
 <clr-modal [(clrModalOpen)]="createProjectOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
     <h3 class="modal-title">{{'PROJECT.NEW_PROJECT' | translate}}</h3>
-    <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
+    <inline-alert class="modal-title"></inline-alert>
     <div class="modal-body" style="height: 16.8em; overflow-y: hidden;">
         <form #projectForm="ngForm">
             <section class="form-block">
