@@ -21,25 +21,25 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   ElementRef
-} from '@angular/core';
+} from "@angular/core";
 
-import { TagService, VulnerabilitySeverity, RequestQueryParams } from '../service/index';
-import { ErrorHandler } from '../error-handler/error-handler';
-import { ChannelService } from '../channel/index';
+import { TagService, VulnerabilitySeverity, RequestQueryParams } from "../service/index";
+import { ErrorHandler } from "../error-handler/error-handler";
+import { ChannelService } from "../channel/index";
 import {
   ConfirmationTargets,
   ConfirmationState,
   ConfirmationButtons
-} from '../shared/shared.const';
+} from "../shared/shared.const";
 
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
-import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
-import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
+import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
+import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
 
-import { Tag, TagClickEvent } from '../service/interface';
+import { Tag, TagClickEvent } from "../service/interface";
 
-import { TAG_TEMPLATE } from './tag.component.html';
-import { TAG_STYLE } from './tag.component.css';
+import { TAG_TEMPLATE } from "./tag.component.html";
+import { TAG_STYLE } from "./tag.component.css";
 
 import {
   toPromise,
@@ -49,17 +49,17 @@ import {
   doSorting,
   VULNERABILITY_SCAN_STATUS,
   DEFAULT_PAGE_SIZE
-} from '../utils';
+} from "../utils";
 
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService } from "@ngx-translate/core";
 
-import { State, Comparator } from 'clarity-angular';
-import {CopyInputComponent} from '../push-image/copy-input.component';
+import { State, Comparator } from "clarity-angular";
+import {CopyInputComponent} from "../push-image/copy-input.component";
 import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
 import {Observable} from "rxjs/Observable";
 
 @Component({
-  selector: 'hbr-tag',
+  selector: "hbr-tag",
   template: TAG_TEMPLATE,
   styles: [TAG_STYLE],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -87,22 +87,22 @@ export class TagComponent implements OnInit {
   showTagManifestOpened: boolean;
   manifestInfoTitle: string;
   digestId: string;
-  staticBackdrop: boolean = true;
-  closable: boolean = false;
+  staticBackdrop = true;
+  closable = false;
   lastFilteredTagName: string;
   batchDelectionInfos: BatchInfo[] = [];
 
-  createdComparator: Comparator<Tag> = new CustomComparator<Tag>('created', 'date');
+  createdComparator: Comparator<Tag> = new CustomComparator<Tag>("created", "date");
 
-  loading: boolean = false;
-  copyFailed: boolean = false;
+  loading = false;
+  copyFailed = false;
   selectedRow: Tag[] = [];
 
-  @ViewChild('confirmationDialog')
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild('digestTarget') textInput: ElementRef;
-  @ViewChild('copyInput') copyInput: CopyInputComponent;
+  @ViewChild("digestTarget") textInput: ElementRef;
+  @ViewChild("copyInput") copyInput: CopyInputComponent;
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
@@ -119,16 +119,16 @@ export class TagComponent implements OnInit {
 
   ngOnInit() {
     if (!this.projectId) {
-      this.errorHandler.error('Project ID cannot be unset.');
+      this.errorHandler.error("Project ID cannot be unset.");
       return;
     }
     if (!this.repoName) {
-      this.errorHandler.error('Repo name cannot be unset.');
+      this.errorHandler.error("Repo name cannot be unset.");
       return;
     }
 
     this.retrieve();
-    this.lastFilteredTagName = '';
+    this.lastFilteredTagName = "";
   }
 
   selectedChange(): void {
@@ -147,7 +147,7 @@ export class TagComponent implements OnInit {
     st.page.size = this.pageSize;
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
-    st.filters = [{property: 'name', value: this.lastFilteredTagName}];
+    st.filters = [{property: "name", value: this.lastFilteredTagName}];
     this.clrLoad(st);
   }
 
@@ -161,8 +161,8 @@ export class TagComponent implements OnInit {
 
     // Pagination
     let params: RequestQueryParams = new RequestQueryParams();
-    params.set('page', '' + pageNumber);
-    params.set('page_size', '' + this.pageSize);
+    params.set("page", "" + pageNumber);
+    params.set("page_size", "" + this.pageSize);
 
     this.loading = true;
 
@@ -188,7 +188,7 @@ export class TagComponent implements OnInit {
   }
 
   refresh() {
-    this.doSearchTagNames('');
+    this.doSearchTagNames("");
   }
 
 
@@ -217,9 +217,6 @@ export class TagComponent implements OnInit {
       if (t.signature !== null) {
         signatures.push(t.name);
       }
-
-      // size
-          t.size = this.sizeTransform(t.size);
       });
       this.tags = items;
         let signedName: {[key: string]: string[]} = {};
@@ -241,13 +238,13 @@ export class TagComponent implements OnInit {
   sizeTransform(tagSize: string): string {
     let size: number = Number.parseInt(tagSize);
     if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
-      return (size / Math.pow(1024, 1)).toFixed(2) + 'KB';
+      return (size / Math.pow(1024, 1)).toFixed(2) + "KB";
     } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
-      return  (size / Math.pow(1024, 2)).toFixed(2) + 'MB';
+      return  (size / Math.pow(1024, 2)).toFixed(2) + "MB";
     } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
-      return  (size / Math.pow(1024, 3)).toFixed(2) + 'MB';
+      return  (size / Math.pow(1024, 3)).toFixed(2) + "MB";
     } else {
-      return size + 'B';
+      return size + "B";
     }
   }
 
@@ -263,10 +260,10 @@ export class TagComponent implements OnInit {
       });
 
       let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
-      titleKey = 'REPOSITORY.DELETION_TITLE_TAG';
-      summaryKey = 'REPOSITORY.DELETION_SUMMARY_TAG';
+      titleKey = "REPOSITORY.DELETION_TITLE_TAG";
+      summaryKey = "REPOSITORY.DELETION_SUMMARY_TAG";
       buttons = ConfirmationButtons.DELETE_CANCEL;
-      content = tagNames.join(' , ');
+      content = tagNames.join(" , ");
       let message = new ConfirmationMessage(
         titleKey,
         summaryKey,
@@ -300,9 +297,9 @@ export class TagComponent implements OnInit {
   delOperate(signature: any, name:  string) {
     let findedList = this.batchDelectionInfos.find(data => data.name === name);
     if (signature) {
-      Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-        this.translateService.get('REPOSITORY.DELETION_SUMMARY_TAG_DENIED')).subscribe(res => {
-        let wrongInfo: string = res[1] + 'notary -s https://' + this.registryUrl + ':4443 -d ~/.docker/trust remove -p ' + this.registryUrl + '/' + this.repoName + ' ' + name;
+      Observable.forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
+        this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
+        let wrongInfo: string = res[1] + "notary -s https://" + this.registryUrl + ":4443 -d ~/.docker/trust remove -p " + this.registryUrl + "/" + this.repoName + " " + name;
         findedList = BathInfoChanges(findedList, res[0], false, true, wrongInfo);
       });
     } else {
@@ -310,12 +307,12 @@ export class TagComponent implements OnInit {
           .deleteTag(this.repoName, name))
           .then(
               response => {
-                this.translateService.get('BATCH.DELETED_SUCCESS')
+                this.translateService.get("BATCH.DELETED_SUCCESS")
                     .subscribe(res =>  {
                       findedList = BathInfoChanges(findedList, res);
                     });
               }).catch(error => {
-            this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+            this.translateService.get("BATCH.DELETED_FAILURE").subscribe(res => {
               findedList = BathInfoChanges(findedList, res, false, true);
             });
           });
@@ -324,7 +321,7 @@ export class TagComponent implements OnInit {
 
   showDigestId(tag: Tag[]) {
     if (tag && (tag.length === 1)) {
-      this.manifestInfoTitle = 'REPOSITORY.COPY_DIGEST_ID';
+      this.manifestInfoTitle = "REPOSITORY.COPY_DIGEST_ID";
       this.digestId = tag[0].digest;
       this.showTagManifestOpened = true;
       this.copyFailed = false;
@@ -388,7 +385,7 @@ export class TagComponent implements OnInit {
     if (t && t.length) {
       t.forEach((data: any) => {
         let tagId = data.name;
-        this.channel.publishScanEvent(this.repoName + '/' + tagId);
+        this.channel.publishScanEvent(this.repoName + "/" + tagId);
       });
     }
   }
