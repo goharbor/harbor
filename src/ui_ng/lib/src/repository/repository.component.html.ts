@@ -24,7 +24,7 @@ export const REPOSITORY_TEMPLATE = `
     <section id="info" role="tabpanel" aria-labelledby="repo-info" [hidden]='!isCurrentTabContent("info")'>
       <form #repoInfoForm="ngForm">
         <div id="info-edit-button">
-          <button class="btn btn-sm" [disabled]="editing || !hasProjectAdminRole " (click)="editInfo()" >{{'BUTTON.EDIT' | translate}}</button>
+          <button class="btn btn-sm" [disabled]="editing || !hasProjectAdminRole " (click)="editInfo()" ><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'BUTTON.EDIT' | translate}}</button>
         </div>
         <div *ngIf="!editing">
           <div *ngIf="!hasInfo()" class="no-info-div">

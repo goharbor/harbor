@@ -134,12 +134,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
             default:
               this.translateService.get("PROJECT.UNKNOWN_ERROR").subscribe(res => errorMessage = res);
           }
-          if (this.messageHandlerService.isAppLevel(error)) {
-            this.messageHandlerService.handleError(error);
-            this.createProjectOpened = false;
-          } else {
-            this.inlineAlert.showInlineError(errorMessage);
-          }
+        this.messageHandlerService.handleError(error);
         }
       });
   }

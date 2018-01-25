@@ -159,6 +159,7 @@ export class MemberComponent implements OnInit, OnDestroy {
         if (member.user_id === this.currentUser.user_id) {
           let foundMember = this.batchActionInfos.find(batchInfo => batchInfo.name === member.username);
           this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
+            this.messageHandlerService.handleError(res + ": " + foundMember.name);
             foundMember = BathInfoChanges(foundMember, res, false, true);
           });
         } else {
@@ -185,6 +186,7 @@ export class MemberComponent implements OnInit, OnDestroy {
             },
             error => {
               this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
+                this.messageHandlerService.handleError(res + ": " + username);
                 foundMember = BathInfoChanges(foundMember, res, false, true);
               });
             }
