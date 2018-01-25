@@ -119,8 +119,8 @@
     },
     "USER": {
         "ADD_ACTION": "New User",
-        "ENABLE_ADMIN_ACTION": "Set as Administrator",
-        "DISABLE_ADMIN_ACTION": "Revoke Administrator",
+        "ENABLE_ADMIN_ACTION": "SET AS ADMIN",
+        "DISABLE_ADMIN_ACTION": "REVOKE ADMIN",
         "DEL_ACTION": "Delete",
         "FILTER_PLACEHOLDER": "Filter users",
         "COLUMN_NAME": "Name",
