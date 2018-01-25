@@ -149,10 +149,10 @@ Test Case - Project Level Policy Public
     Goto Project Config
     Click Project Public
     Save Project Config
-    #verify
+    # Verify
     Public Should Be Selected 
     Back To Projects
-    #project${d}  default should be private
+    # Project${d}  default should be private
     Project Should Be Public  project${d}
     Close Browser
 
@@ -166,13 +166,13 @@ Test Case - Project Level Policy Content Trust
     Goto Project Config
     Click Content Trust
     Save Project Config
-    #verify
+    # Verify
     Content Trust Should Be Selected
     Cannot Pull Unsigned Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
     Close Browser
 
 Test Case - Edit Project Creation
-    # create normal user and login
+    # Create normal user and login
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
@@ -206,7 +206,7 @@ Test Case - Edit Self-Registration
     Self Reg Should Be Disabled
     Sleep  1
 
-    #restore setting
+    # Restore setting
     Enable Self Reg
     Close Browser
 
@@ -259,7 +259,7 @@ Test Case - Scan A Tag In The Repo
     Go Into Repo  project${d}/hello-world
     Scan Repo  latest
     Summary Chart Should Display  latest
-    #Edit Repo Info
+    # Edit Repo Info
     Close Browser
 
 Test Case - Manage Project Member
@@ -307,9 +307,8 @@ Test Case - Delete Multi Project
     Create An New Project  projectb${d}
     Push Image  ${ip}  test${d}  Test1@34  projecta${d}  hello-world
     Filter Object  project
-    Multi-delete Object  projecta  projectb
-    #verify delete project with image should not be deleted directly
-    Partly Success
+    Multi-delete Object Without Confirmation  projecta  projectb
+    # Verify delete project with image should not be deleted directly
     Page Should Contain  projecta${d}
     Page Should Not Contain  projectb${d}
     Close Browser
@@ -327,11 +326,11 @@ Test Case - Delete Multi User
     Switch To User Tag
     Filter Object  delete
     Multi-delete Object  deletea  deleteb  deletec
-    #assert delete 
-    #Delete Success  comment temp  wait for fixing
+    # Assert delete 
+    # Delete Success  comment temp  wait for fixing
     Click Element  //clr-modal//button[contains(.,'CLOSE')]
     Sleep  1
-   #filter object  delete
+    # Filter object  delete
     Page Should Not Contain  deletea
     Close Browser
 
@@ -345,7 +344,7 @@ Test Case - Delete Multi Repo
     Sleep  2
     Go Into Project  project${d}
     Multi-delete Object  hello-world  busybox
-    #verify
+    # Verify
     Delete Success
     Close Browser
 
@@ -360,7 +359,7 @@ Test Case - Delete Multi Tag
     Go Into Project  project${d}
     Go Into Repo  hello-world
     Multi-delete object  latest  v1
-    #verify
+    # Verify
     Delete Success
     Close Browser
 
@@ -377,8 +376,7 @@ Test Case - Delete Multi Member
     Switch To Member
     Add Guest Member to project  testa${d}
     Add Guest Member to project  testb${d}
-    Multi-delete Object  testa${d}  testb${d}
-    Delete Success
+    Multi-delete Object Without Confirmation  testa${d}  testb${d}
     Page Should Not Contain  testa${d}
     Close Browser
     

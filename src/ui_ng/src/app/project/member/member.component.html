@@ -16,7 +16,7 @@
             <button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()" [disabled]="!hasProjectAdminRole">
                 <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'MEMBER.NEW_MEMBER' | translate }}</span>
             </button>
-            <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-secondary" clrDropdownTrigger>
+            <clr-dropdown id='member-action' [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-secondary" clrDropdownTrigger>
                 <span>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret down"></clr-icon></span>
                 <clr-dropdown-menu *clrIfOpen>
                     <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 1)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>

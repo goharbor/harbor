@@ -67,13 +67,8 @@ Change Project Member Role
     Click Element  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//label
     Sleep  1
     #change role
-    Click Element  //button[@class='btn dropdown-toggle']
+    Click Element  //*[@id="member-action"]
     Click Element  //button[contains(.,'${role}')]
-    sleep  1
-    Click Element  xpath=//clr-modal//button[contains(.,'SWITCH')]
-    sleep  1
-    Click Element  xpath=//clr-modal//button[contains(.,'CLOSE')]
-
     Sleep  2
     Wait Until Page Contains  ${role}
 
@@ -112,10 +107,7 @@ Delete Project Member
     [arguments]  ${member}
     Click Element  xpath=//clr-dg-row[contains(.,'${member}')]//input/../label
     Click Element  xpath=${project_member_delete_button_xpath}
-    Sleep  1
-    Click Element  xpath=${project_member_delete_confirmation_xpath}
-    Sleep  1
-    Click Element  xpath=//button[contains(.,'CLOSE')]
+    Sleep  2
 
 User Should Be Owner Of Project
     [Arguments]  ${user}  ${pwd}  ${project}

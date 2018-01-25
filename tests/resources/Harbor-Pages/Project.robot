@@ -82,8 +82,6 @@ Make Project Private
     Go Into Project  ${project name}    
     Sleep  1
     Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
-    #Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-    #Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
     Checkbox Should Be Selected  xpath=//input[@name='public']
     Click Element  //clr-checkbox[@name='public']//label
     Click Element  //button[contains(.,'SAVE')]
@@ -93,15 +91,12 @@ Make Project Public
     Go Into Project  ${project name}    
     Sleep  1
     Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
-    #Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-    #Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
     Checkbox Should Not Be Selected  xpath=//input[@name='public']
     Click Element  //clr-checkbox[@name='public']//label
     Click Element  //button[contains(.,'SAVE')]
 
 Delete Repo
     [Arguments]  ${projectname}
-    #Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"${projectname}")]//clr-dg-action-overflow
     Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox//label
     Sleep  1
     Click Element  xpath=//button[contains(.,"Delete")]
@@ -113,16 +108,10 @@ Delete Repo
 Delete Project
     [Arguments]  ${projectname}
     Sleep  1
-    #Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow
-    #Click Element  //list-project//clr-dg-row-master[contains(.,'${projname}')]//clr-dg-action-overflow//button[contains(.,'Delete')]
-    #click delete button to confirm
     Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox//label
     Sleep  1
     Click Element  xpath=//button[contains(.,"Delete")]
-    Sleep  1
-    Click Element  xpath=//clr-modal//button[2]
-    Sleep  1
-    Click Element  xpath=//button[contains(.,"CLOSE")]
+    Sleep  2
 
 Project Should Not Be Deleted
     [Arguments]  ${projname}
@@ -205,8 +194,6 @@ Expand Repo
 
 Scan Repo
     [Arguments]  ${tagname}
-    #Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow
-    #Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
     #select one tag
     Click Element  //clr-dg-row[contains(.,"${tagname}")]//label
     Click Element  //button[contains(.,'Scan')]

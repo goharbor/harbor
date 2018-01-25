@@ -28,7 +28,7 @@ Assign User Admin
     #select checkbox
     Click Element  //clr-dg-row[contains(.,"${user}")]//label
     #click assign admin
-    Click Element  //button[contains(.,'Set as')] 
+    Click Element  //*[@id="set-admin"]
     Sleep  1
 
 Switch to User Tag
