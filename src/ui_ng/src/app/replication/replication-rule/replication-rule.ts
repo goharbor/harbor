@@ -4,15 +4,26 @@ import {Project} from "../../project/project";
  */
 
 export class Target {
-    id: 0;
-    endpoint: 'string';
-    name: 'string';
-    username: 'string';
-    password: 'string';
-    type: 0;
+    id: number;
+    endpoint: string;
+    name: string;
+    username: string;
+    password: string;
+    type: number;
     insecure: true;
-    creation_time: 'string';
-    update_time: 'string';
+    creation_time: string;
+    update_time: string;
+    constructor() {
+        this.id = -1;
+        this.endpoint = "";
+        this.name = "";
+        this.username = "";
+        this.password = "";
+        this.type = 0;
+        this.insecure = true;
+        this.creation_time = "";
+        this.update_time = "";
+    }
 }
 
 export class Filter {

@@ -241,15 +241,16 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                 this.onGoing = false;
                 this.close();
             }).catch(error => {
+                this.onGoing = false;
                 let errorMessageKey = this.handleErrorMessageKey(error.status);
                 this.translateService
                     .get(errorMessageKey)
                     .subscribe(res => {
                         this.inlineAlert.showInlineError(res);
-                        this.onGoing = false;
                     });
             }
             );
+        this.forceRefreshView(1000);
     }
 
     updateEndpoint() {
@@ -295,6 +296,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                 this.onGoing = false;
             }
             );
+        this.forceRefreshView(100);
     }
 
     handleErrorMessageKey(status: number): string {
