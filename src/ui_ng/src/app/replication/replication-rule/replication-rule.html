@@ -118,11 +118,11 @@
    </div>
   </div>
 
-  <div class="offset-md-4">
+  <div>
    <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
    <br>
-   <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="!hasFormChange() || this.inProgress || this.isSubmitOver" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
-   <button type="submit" id="ruleBtnOk" class="btn btn-primary"  (click)="onSubmit()" [disabled]="!ruleForm.valid || !isVaild || !hasFormChange()">{{ 'BUTTON.OK' | translate }}</button>
+   <button type="submit" id="ruleBtnOk" class="btn btn-primary"  (click)="onSubmit()" [disabled]="!ruleForm.valid || !isVaild || !hasFormChange()">{{ 'BUTTON.SAVE' | translate }}</button>
+   <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="this.inProgress || this.isSubmitOver" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
   </div><!-- [disabled]="!ruleForm.valid"-->
  </section>
 </form>
