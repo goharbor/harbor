@@ -277,6 +277,7 @@ export class UserComponent implements OnInit, OnDestroy {
 
   //Refresh the user list
   refreshUser(from: number, to: number): void {
+    this.selectedRow = [];
     //Start to get
     this.currentTerm = '';
     this.onGoing = true;

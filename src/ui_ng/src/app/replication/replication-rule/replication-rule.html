@@ -2,37 +2,37 @@
  <a class="cursor" *ngIf="!projectId" (click)="backReplication()">< {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}</a>
  <a class="cursor" *ngIf="projectId" (click)="backProjectReplication()"><{{'SIDE_NAV.PROJECTS' | translate}} &nbsp; {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate | lowercase}}</a>
  <h1 class="sub-header-title">{{headerTitle | translate}}</h1>
-<form [formGroup]="ruleForm" (ngSubmit)="onSubmit()"  novalidate>
+<form [formGroup]="ruleForm"  novalidate>
  <section class="form-block">
   <div class="form-group">
    <label class="col-md-4 form-group-label-override">{{'REPLICATION.NAME' | translate}}<span class="colorRed">*</span></label>
    <label class="col-md-8"  aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
           [class.invalid]='(ruleForm.controls.name.touched && ruleForm.controls.name.invalid) || isRuleNameExist'>
-    <input type="text" id="ruleName" required formControlName="name" #ruleName (keyup)='checkRuleName()' autocomplete="off">
+    <input type="text" id="ruleName" class="inputWidth" required maxlength="255" formControlName="name" #ruleName (keyup)='checkRuleName()' autocomplete="off">
     <span class="tooltip-content">{{ruleNameTooltip | translate}}</span>
    </label><span class="spinner spinner-inline spinner-pos" [hidden]="!inNameChecking"></span>
   </div>
   <!--Description-->
   <div class="form-group">
    <label class="col-md-4 form-group-label-override">{{'REPLICATION.DESCRIPTION' | translate}}</label>
-   <textarea type="text" id="ruleDescription" style=" width: 355px;" row= 3; formControlName="description"></textarea>
+   <textarea type="text" id="ruleDescription" class="inputWidth" row= 3; formControlName="description"></textarea>
   </div>
   <!--Projects-->
-  <h4>{{'REPLICATION.SOURCE' | translate}}</h4>
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">{{'PROJECT.PROJECTS' | translate}}<span class="colorRed">*</span></label>
-   <div formArrayName="projects">
+   <label class="col-md-4 form-group-label-override">{{'REPLICATION.SOURCE' | translate}}&nbsp;{{'PROJECT.PROJECTS' | translate | lowercase}}<span class="colorRed">*</span></label>
+   <div formArrayName="projects" [style.visibility]="noSelectedProject?'hidden':'visible'">
     <div class="projectInput" *ngFor="let project of projects.controls; let i= index" [formGroupName]="i">
-     <input formControlName="name" class="label" readonly  value="name">
+     <input formControlName="name" type="text" class="inputWidth" disabled  value="name">
     </div>
    </div>
-   <clr-icon *ngIf="!(noProjectInfo || projectId)" shape="search" class="is-solid switchIcon" (click)="openProjectModel()"></clr-icon>
-   <label *ngIf="noProjectInfo" class="colorRed">{{noProjectInfo | translate}}</label>
+   <clr-icon *ngIf="!(noProjectInfo.length !=0 || projectId)" shape="search" class="is-solid switchIcon" (click)="openProjectModel()"></clr-icon>
+   <label *ngIf="noProjectInfo.length != 0" class="colorRed">{{noProjectInfo | translate}}</label>
+   <div class="shadow" [hidden]="!noSelectedProject || noProjectInfo.length != 0"><input  type="text" class="inputWidth" disabled ></div>
   </div>
 
 <!--images/Filter-->
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">{{'REPLICATION.FILTER' | translate}}</label>
+   <label class="col-md-4 form-group-label-override">{{'REPLICATION.SOURCE_IMAGES_FILTER' | translate}}</label>
    <div formArrayName="filters">
     <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index"  [formGroupName]="i">
      <div>
@@ -53,43 +53,44 @@
     <clr-icon shape="plus-circle" class="is-solid" [hidden]="isFilterHide" (click)="addNewFilter()" style="margin-top: 11px;"></clr-icon>
   </div>
   <!--Targets-->
-  <h4>{{'REPLICATION.TARGETS' | translate}}</h4>
   <div class="form-group">
    <label class="col-md-4 form-group-label-override">{{'DESTINATION.ENDPOINT' | translate}} <span class="colorRed">*</span></label>
    <div formArrayName="targets">
     <div class="select endpointSelect pull-left" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
-      <select id="ruleTarget" (change)="targetChange($event)"  formControlName="id">
+      <select id="ruleTarget " class="inputWidth"  (mouseenter)="noSelectedEndpoint= false" (change)="targetChange($event)"  formControlName="id">
        <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}: {{target.endpoint}}</option>
       </select>
      </div>
-    <a class="addEndpoint" (click)="openModal()"><clr-icon shape="plus" style="vertical-align: sub;"></clr-icon>{{'REPLICATION.NEW' | translate}}</a>
-    </div>
+    <button class="btn btn-info btn-sm addEndpoint" (click)="openModal()"><clr-icon shape="plus"></clr-icon>&nbsp;{{'REPLICATION.NEW' | translate}}</button>
+    <div  [hidden]="noSelectedEndpoint">userName: &nbsp;&nbsp;<input type="text" [(ngModel)]="realEndpointData.userName" [ngModelOptions]="{standalone:true}"></div>
+    <div  [hidden]="noSelectedEndpoint">password: &nbsp;&nbsp;<input type="password" [(ngModel)]="realEndpointData.password" [ngModelOptions]="{standalone:true}"></div>
+   </div>
+   <div class="shadow shadow1 hoverBg" #shadowDiv [hidden]="!noSelectedEndpoint || !targetList.length"></div>
    </div>
 
   <!--Trigger-->
-  <h4>{{'REPLICATION.TRIGGER' | translate}}</h4>
   <div class="form-group">
-   <label class="col-md-4 form-group-label-override">{{'REPLICATION.MODE' | translate}}</label>
+   <label class="col-md-4 form-group-label-override">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
    <div  formGroupName="trigger">
     <!--on trigger-->
-    <div class="select floatSet pull-left">
+    <div class="select floatSet">
      <select id="ruleTrigger" formControlName="kind"  (change)="selectTrigger($event)">
+      <option value="Manual">{{'REPLICATION.MANUAL' | translate}}</option>
       <option value="Immediate">{{'REPLICATION.IMMEDIATE' | translate}}</option>
       <option value="Scheduled">{{'REPLICATION.SCHEDULE' | translate}}</option>
-      <option value="Manual">{{'REPLICATION.MANUAL' | translate}}</option>
      </select>
     </div>
     <!--on push-->
-    <div style="float: left;" formGroupName="schedule_param">
-      <div class="select floatSet pull-left" [hidden]="!isScheduleOpt">
+    <div formGroupName="schedule_param">
+      <div class="select floatSet" [hidden]="!isScheduleOpt">
        <select name="scheduleType" formControlName="type" (change)="selectSchedule($event)">
         <option value="Daily">{{'REPLICATION.DAILY' | translate}}</option>
         <option value="Weekly">{{'REPLICATION.WEEKLY' | translate}}</option>
        </select>
       </div>
       <!--weekly-->
-      <span style="float: left;" [hidden]="!weeklySchedule || !isScheduleOpt">on &nbsp;&nbsp;</span>
-      <div  [hidden]="!weeklySchedule || !isScheduleOpt" class="select floatSet pull-left">
+      <span [hidden]="!weeklySchedule || !isScheduleOpt">on &nbsp;&nbsp;</span>
+      <div  [hidden]="!weeklySchedule || !isScheduleOpt" class="select floatSet">
        <select name="scheduleDay" formControlName="weekday">
         <option value="1">{{'WEEKLY.MONDAY' | translate}}</option>
         <option value="2">{{'WEEKLY.TUESDAY' | translate}}</option>
@@ -110,22 +111,18 @@
      {{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}
     </clr-checkbox>
    </div>
-  </div>
-   <!--Setting-->
-   <div class="form-group">
-    <label class="col-md-4 form-group-label-override">{{'REPLICATION.SETTING' | translate}}</label>
-    <div class="col-lg-7 padLeft0">
-     <clr-checkbox [clrChecked]="true" id="ruleExit" formControlName="replicate_existing_image_now">
-      {{'REPLICATION.REPLICATE_IMMEDIATE' | translate}}
-     </clr-checkbox>
-    </div>
+   <div  style="width: 100%;" >
+    <clr-checkbox [clrChecked]="true" id="ruleExit" formControlName="replicate_existing_image_now">
+     {{'REPLICATION.REPLICATE_IMMEDIATE' | translate}}
+    </clr-checkbox>
    </div>
+  </div>
 
   <div class="offset-md-4">
    <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
    <br>
-   <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="!hasFormChange()" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
-   <button type="submit" id="ruleBtnOk" class="btn btn-primary" [disabled]="!ruleForm.valid || !isVaild || !hasFormChange()">{{ 'BUTTON.OK' | translate }}</button>
+   <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="!hasFormChange() || this.inProgress || this.isSubmitOver" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
+   <button type="submit" id="ruleBtnOk" class="btn btn-primary"  (click)="onSubmit()" [disabled]="!ruleForm.valid || !isVaild || !hasFormChange()">{{ 'BUTTON.OK' | translate }}</button>
   </div><!-- [disabled]="!ruleForm.valid"-->
  </section>
 </form>

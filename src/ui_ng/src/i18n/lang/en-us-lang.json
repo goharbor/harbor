@@ -324,7 +324,7 @@
         "JOB_LOG_VIEWER": "View Replication Job Log",
         "NO_ENDPOINT_INFO": "Please go to registries and add an endpoint first",
         "NO_PROJECT_INFO": "Please go to projects and add a project name first",
-        "FILTER": "Filter",
+        "SOURCE_IMAGES_FILTER": "Source images filter",
         "SCHEDULE": "Scheduled",
         "MANUAL": "Manual",
         "IMMEDIATE": "Immediate",

@@ -17,6 +17,7 @@ import {CreateEditEndpointComponent} from "harbor-ui/src/create-edit-endpoint/cr
 
 const ONE_HOUR_SECONDS: number = 3600;
 const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
+const FAKE_PASSWORD = 'rjGcfuRu';
 
 @Component ({
     selector: 'repliction-rule',
@@ -33,11 +34,12 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     weeklySchedule: boolean;
     isScheduleOpt: boolean;
     isImmediate: boolean = true;
-    noProjectInfo: string;
-    noEndpointInfo: boolean;
+    noProjectInfo: string = "";
+    noSelectedProject: boolean = true;
+    noSelectedEndpoint: boolean = true;
     filterCount: number = 0;
     selectedprojectList: Project[] = [];
-    triggerNames: string[] = ['Immediate', 'Scheduled', 'Manual'];
+    triggerNames: string[] = ['Manual', 'Immediate', 'Scheduled'];
     scheduleNames: string[] = ['Daily', 'Weekly'];
     weekly: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     filterSelect: string[] = ['repository', 'tag'];
@@ -50,6 +52,8 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     isRuleNameExist: boolean = false;
     isSubmitOver: boolean = false;
     nameChecker: Subject<string> = new Subject<string>();
+    firstEndpointData: { [key: string]: string };
+    realEndpointData: { [key: string]: string } = this.initEndpointData();
 
     confirmSub: Subscription;
     ruleForm: FormGroup;
@@ -61,6 +65,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     @ViewChild(CreateEditEndpointComponent)
     createEditEndpointComponent: CreateEditEndpointComponent;
 
+
     baseFilterData(name: string, option: string[], state: boolean) {
         return {
             name: name,
@@ -68,6 +73,13 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
             state: state,
             isValid: true
         };
+    }
+
+    initEndpointData(): { [key: string]: string } {
+       return{
+           userName: "",
+           password: ""
+       };
     }
 
     constructor(public projectService: ProjectService,
@@ -83,11 +95,14 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
         Promise.all([this.repService.getEndpoints(), this.repService.listProjects()])
             .then(res => {
                 if (!res[0]) {
-                    this.noEndpointInfo = true;
+                    this.noSelectedEndpoint = true;
                 }else {
                     this.targetList = res[0];
                     if (!this.policyId) {
                         this.setTarget([res[0][0]]);
+                        this.realEndpointData.userName = res[0][0].username;
+                        this.realEndpointData.password = FAKE_PASSWORD;
+                        this.firstEndpointData = Object.assign({}, this.realEndpointData);
                     }
                 }
                 if (!res[1]) {
@@ -98,6 +113,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
                     }
                     if (!this.policyId && this.projectId) {
                         this.setProject( res[1].filter(rule => rule.project_id === this.projectId));
+                        this.noSelectedProject = false;
                     }
                 }
                 if (!this.policyId) {
@@ -148,7 +164,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     }
 
     get isVaild() {
-        return !(this.isRuleNameExist || this.noProjectInfo || this.noEndpointInfo || this.inProgress || this.isSubmitOver);
+        return !(this.isRuleNameExist || this.noSelectedProject || this.noSelectedEndpoint || this.inProgress || this.isSubmitOver);
     }
 
     createForm() {
@@ -169,7 +185,6 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
             replicate_existing_image_now: true,
             replicate_deletion: false
         });
-
     }
 
     updateForm(rule: ReplicationRule): void {
@@ -182,7 +197,14 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
             replicate_deletion: rule.replicate_deletion
         });
         this.setProject(rule.projects);
+        this.noSelectedProject = false;
         this.setTarget(rule.targets);
+        this.noSelectedEndpoint = false;
+
+        this.realEndpointData.userName = rule.targets[0].username;
+        this.realEndpointData.password = FAKE_PASSWORD;
+        this.firstEndpointData = Object.assign({}, this.realEndpointData);
+
         if (rule.filters) {
             this.setFilter(rule.filters);
             this.updateFilter(rule.filters);
@@ -250,6 +272,9 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
         if ($event && $event.target && event.target['value']) {
             let selecedTarget: Target = this.targetList.find(target => target.id === +$event.target['value']);
             this.setTarget([selecedTarget]);
+            this.noSelectedEndpoint = false;
+            this.realEndpointData.userName = selecedTarget.username;
+            this.firstEndpointData = Object.assign({}, this.realEndpointData);
         }
     }
 
@@ -258,7 +283,12 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     }
 
     selectedProject(project: Project): void {
-        this.setProject([project]);
+        if (!project) {
+            this.noSelectedProject = true;
+        }else {
+            this.noSelectedProject = false;
+            this.setProject([project]);
+        }
     }
 
     addNewFilter(): void {
@@ -308,15 +338,15 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     selectTrigger($event: any): void {
         if ($event && $event.target && $event.target['value']) {
             let val: string = $event.target['value'];
-            if (val === this.triggerNames[1]) {
+            if (val === this.triggerNames[2]) {
                 this.isScheduleOpt = true;
                 this.isImmediate = false;
             }
-            if (val === this.triggerNames[0]) {
+            if (val === this.triggerNames[1]) {
                 this.isScheduleOpt = false;
                 this.isImmediate = true;
             }
-            if (val === this.triggerNames[2]) {
+            if (val === this.triggerNames[0]) {
                 this.isScheduleOpt = false;
                 this.isImmediate = false;
             }
@@ -381,7 +411,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
                 trigger['schedule_param']['weekday'] = 1;
             }
         }else {
-            if (trigger['kind'] === this.triggerNames[2]) {
+            if (trigger['kind'] === this.triggerNames[0]) {
                 this.isImmediate = false;
             }
             trigger['schedule_param'] = { type: this.scheduleNames[0],
@@ -412,50 +442,86 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
 
 
     onSubmit() {
-        // add new Replication rule
         this.inProgress = true;
+        let endpointId: string | number = this.ruleForm.value.targets[0].id;
+        let pullData: { [key: string]: string | number } = this.initEndpointData();
+        if (compareValue(this.firstEndpointData, this.realEndpointData)) {
+            this.saveRuleOpe();
+        }else {
+            if (this.realEndpointData.userName !== this.firstEndpointData.userName) {
+                pullData.userName = this.realEndpointData.userName;
+            }else {
+                delete pullData.userName;
+            }
+            if (this.realEndpointData.password !== this.firstEndpointData.password) {
+                pullData.password = this.realEndpointData.password;
+            }else {
+                delete  pullData.password;
+            }
+            pullData.id = endpointId;
+            this.repService.pingEndpoint(pullData)
+                .then((res: any) => {
+                    delete pullData.id;
+                    this.repService.updateEndpoint(endpointId, pullData)
+                        .then((res: any) => {
+                            this.saveRuleOpe();
+                        })
+                        .catch((error: any) => {
+                            this.inProgress = false;
+                            this.msgHandler.handleError(error);
+                        });
+                })
+                .catch((error: any) => {
+                    this.inProgress = false;
+                    this.msgHandler.handleError('DESTINATION.TEST_CONNECTION_FAILURE');
+                    return false;
+                });
+        }
+    }
+
+    saveRuleOpe(): void {
+        // add new Replication rule
         let copyRuleForm: ReplicationRule = this.ruleForm.value;
         copyRuleForm.trigger = this.setTriggerVaule(copyRuleForm.trigger);
         if (!this.policyId) {
             this.repService.createReplicationRule(copyRuleForm)
                 .then(() => {
-                this.msgHandler.showSuccess('REPLICATION.CREATED_SUCCESS');
-                this.inProgress = false;
-                this.isSubmitOver = true;
-                setTimeout(() => {
-                    this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
-                    if (this.projectId) {
-                        this.router.navigate(['harbor/projects', this.projectId, 'replications']);
-                    }else {
-                        this.router.navigate(['/harbor/replications']);
-                    }
-                }, 2000);
+                    this.msgHandler.showSuccess('REPLICATION.CREATED_SUCCESS');
+                    this.inProgress = false;
+                    this.isSubmitOver = true;
+                    setTimeout(() => {
+                        this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
+                        if (this.projectId) {
+                            this.router.navigate(['harbor/projects', this.projectId, 'replications']);
+                        }else {
+                            this.router.navigate(['/harbor/replications']);
+                        }
+                    }, 2000);
 
-            }).catch((error: any) => {
+                }).catch((error: any) => {
                 this.inProgress = false;
                 this.msgHandler.handleError(error);
             });
         } else {
             this.repService.updateReplicationRule(this.policyId, this.ruleForm.value)
                 .then(() => {
-                this.msgHandler.showSuccess('REPLICATION.UPDATED_SUCCESS');
-                this.inProgress = false;
-                this.isSubmitOver = true;
-                setTimeout(() => {
-                    this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
-                    if (this.projectId) {
-                        this.router.navigate(['harbor/projects', this.projectId, 'replications']);
-                    }else {
-                        this.router.navigate(['/harbor/replications']);
-                    }
-                }, 2000);
+                    this.msgHandler.showSuccess('REPLICATION.UPDATED_SUCCESS');
+                    this.inProgress = false;
+                    this.isSubmitOver = true;
+                    setTimeout(() => {
+                        this.copyUpdateForm = Object.assign({}, this.ruleForm.value);
+                        if (this.projectId) {
+                            this.router.navigate(['harbor/projects', this.projectId, 'replications']);
+                        }else {
+                            this.router.navigate(['/harbor/replications']);
+                        }
+                    }, 2000);
 
-            }).catch((error: any) => {
+                }).catch((error: any) => {
                 this.inProgress = false;
                 this.msgHandler.handleError(error);
             });
         }
-
     }
 
     openModal() {
@@ -467,8 +533,10 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
             Promise.all([this.repService.getEndpoints()]).then(res => {
                 this.targetList = res[0];
                 this.setTarget([this.targetList[this.targetList.length - 1]]);
+                this.noSelectedEndpoint = false;
+                this.realEndpointData.userName = this.targetList[this.targetList.length - 1].username;
+                this.firstEndpointData = Object.assign({}, this.realEndpointData);
             });
-            this.noEndpointInfo = false;
         }
     }
 
