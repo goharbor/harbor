@@ -265,7 +265,7 @@ else:
 storage_provider_name = rcp.get("configuration", "registry_storage_provider_name").strip()
 storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
 # yaml requires 1 or more spaces between the key and value
-storage_provider_config = storage_provider_config.replace(":", ": ")
+storage_provider_config = storage_provider_config.replace(":", ": ", 1)
 
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
