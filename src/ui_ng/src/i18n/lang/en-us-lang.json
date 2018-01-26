@@ -119,8 +119,8 @@
     },
     "USER": {
         "ADD_ACTION": "New User",
-        "ENABLE_ADMIN_ACTION": "Set as Administrator",
-        "DISABLE_ADMIN_ACTION": "Revoke Administrator",
+        "ENABLE_ADMIN_ACTION": "SET AS ADMIN",
+        "DISABLE_ADMIN_ACTION": "REVOKE ADMIN",
         "DEL_ACTION": "Delete",
         "FILTER_PLACEHOLDER": "Filter users",
         "COLUMN_NAME": "Name",
@@ -219,7 +219,9 @@
         "SWITCHED_SUCCESS": "Switched member role successfully.",
         "OF": "of",
         "SWITCH_TITLE": "Confirm project members switch",
-        "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?"
+        "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?",
+        "ACTION": "SET ROLE",
+        "REMOVE": "REMOVE"
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",

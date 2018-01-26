@@ -219,7 +219,9 @@
         "SWITCHED_SUCCESS": "切换角色成功。",
         "OF": "共计",
         "SWITCH_TITLE": "切换项目成员确认",
-        "SWITCH_SUMMARY": "你确认切换项目成员 {{param}}??"
+        "SWITCH_SUMMARY": "你确认切换项目成员 {{param}}??",
+        "ACTION": "设置角色",
+        "REMOVE": "移除成员"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",

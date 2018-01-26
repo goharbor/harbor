@@ -11,38 +11,35 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, AfterViewChecked } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { Component, OnInit, ViewChild, AfterViewChecked } from "@angular/core";
+import { NgForm } from "@angular/forms";
+import { Router, NavigationExtras } from "@angular/router";
 
-import { SessionUser } from '../../shared/session-user';
-import { SessionService } from '../../shared/session.service';
-import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
-import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import { SessionUser } from "../../shared/session-user";
+import { SessionService } from "../../shared/session.service";
+import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
+import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
+import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
+import { CommonRoutes } from "../../shared/shared.const";
 
 @Component({
     selector: "account-settings-modal",
     templateUrl: "account-settings-modal.component.html",
-    styleUrls: ['../../common.css']
+    styleUrls: ["../../common.css"]
 })
 
 export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
-    opened: boolean = false;
-    staticBackdrop: boolean = true;
+    opened = false;
+    staticBackdrop = true;
     account: SessionUser;
     error: any = null;
     originalStaticData: SessionUser;
-    emailTooltip: string = 'TOOLTIP.EMAIL';
-    private validationStateMap: any = {
-        "account_settings_email": true,
-        "account_settings_full_name": true
-    };
+    emailTooltip = "TOOLTIP.EMAIL";
     mailAlreadyChecked = {};
-
-    isOnCalling: boolean = false;
-    formValueChanged: boolean = false;
-    checkOnGoing: boolean = false;
-
-    RenameOnGoing: boolean = false;
+    isOnCalling = false;
+    formValueChanged = false;
+    checkOnGoing = false;
+    RenameOnGoing = false;
 
     accountFormRef: NgForm;
     @ViewChild("accountSettingsFrom") accountForm: NgForm;
@@ -51,10 +48,18 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
 
     constructor(
         private session: SessionService,
-        private msgHandler: MessageHandlerService) { }
+        private msgHandler: MessageHandlerService,
+        private router: Router,
+        private searchTrigger: SearchTriggerService
+    ) { }
 
+
+    private validationStateMap: any = {
+        "account_settings_email": true,
+        "account_settings_full_name": true
+    };
     ngOnInit(): void {
-        //Value copy
+        // Value copy
         this.account = Object.assign({}, this.session.getCurrentUser());
     }
 
@@ -64,11 +69,11 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
 
     handleValidation(key: string, flag: boolean): void {
         if (flag) {
-            //Checking
+            // Checking
             let cont = this.accountForm.controls[key];
             if (cont) {
                 this.validationStateMap[key] = cont.valid;
-                //Check email existing from backend
+                // Check email existing from backend
                 if (cont.valid && key === "account_settings_email") {
                     if (this.formValueChanged && this.account.email != this.originalStaticData.email) {
                         if (this.mailAlreadyChecked[this.account.email]) {
@@ -79,7 +84,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                             return;
                         }
 
-                        //Mail changed
+                        // Mail changed
                         this.checkOnGoing = true;
                         this.session.checkUserExisting("email", this.account.email)
                             .then((res: boolean) => {
@@ -90,17 +95,17 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                                 }
                                 this.mailAlreadyChecked[this.account.email] = {
                                     result: res
-                                }; //Tag it checked
+                                }; // Tag it checked
                             })
                             .catch(error => {
                                 this.checkOnGoing = false;
-                                this.validationStateMap[key] = false;//Not valid @ backend
+                                this.validationStateMap[key] = false; // Not valid @ backend
                             });
                     }
                 }
             }
         } else {
-            //Reset
+            // Reset
             this.validationStateMap[key] = true;
             this.emailTooltip = "TOOLTIP.EMAIL";
         }
@@ -124,7 +129,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         return this.accountForm &&
             this.accountForm.valid &&
             this.error === null &&
-            this.validationStateMap["account_settings_email"]; //backend check is valid as well
+            this.validationStateMap["account_settings_email"]; // backend check is valid as well
     }
 
     public get showProgress(): boolean {
@@ -136,13 +141,13 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     public get renamable(): boolean {
-        return this.account && this.account.has_admin_role && this.account.username === 'admin' && this.account.user_id === 1;
+        return this.account && this.account.has_admin_role && this.account.username === "admin" && this.account.user_id === 1;
     }
 
     openRenameAlert(): void {
         this.RenameOnGoing = true;
         this.inlineAlert.showInlineConfirmation({
-            message: 'PROFILE.RENAME_CONFIRM_INFO'
+            message: "PROFILE.RENAME_CONFIRM_INFO"
         });
     }
 
@@ -150,7 +155,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         if (this.renamable) {
             this.session.renameAdmin(this.account)
             .then(() => {
-                this.msgHandler.showSuccess('PROFILE.RENAME_SUCCESS');
+                this.msgHandler.showSuccess("PROFILE.RENAME_SUCCESS");
             })
             .catch(error => {
                 this.msgHandler.handleError(error);
@@ -173,19 +178,31 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         }
     }
 
+     // Log out system
+     logOut(): void {
+        // Naviagte to the sign in route
+        // Appending 'signout' means destroy session cache
+        let navigatorExtra: NavigationExtras = {
+            queryParams: { "signout": true }
+        };
+        this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
+        // Confirm search result panel is close
+        this.searchTrigger.closeSearch(true);
+    }
+
     open() {
-        //Keep the initial data for future diff
+        // Keep the initial data for future diff
         this.originalStaticData = Object.assign({}, this.session.getCurrentUser());
         this.account = Object.assign({}, this.session.getCurrentUser());
         this.formValueChanged = false;
 
-        //Confirm inline alert is closed
+        // Confirm inline alert is closed
         this.inlineAlert.close();
 
-        //Clear check history
+        // Clear check history
         this.mailAlreadyChecked = {};
 
-        //Reset validation status
+        // Reset validation status
         this.validationStateMap = {
             "account_settings_email": true,
             "account_settings_full_name": true
@@ -195,11 +212,14 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     close() {
+        if (this.RenameOnGoing) {
+            this.RenameOnGoing = false;
+        }
         if (this.formValueChanged) {
             if (!this.isUserDataChange()) {
                 this.opened = false;
             } else {
-                //Need user confirmation
+                // Need user confirmation
                 this.inlineAlert.showInlineConfirmation({
                     message: "ALERT.FORM_CHANGE_CONFIRMATION"
                 });
@@ -214,7 +234,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             return;
         }
 
-        //Double confirm session is valid
+        // Double confirm session is valid
         let cUser = this.session.getCurrentUser();
         if (!cUser) {
             return;
@@ -249,9 +269,9 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         if (this.RenameOnGoing) {
             this.confirmRename();
             this.RenameOnGoing = false;
+            this.logOut();
         }
         this.inlineAlert.close();
         this.opened = false;
     }
-
 }

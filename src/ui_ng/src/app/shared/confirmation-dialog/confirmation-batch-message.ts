@@ -10,10 +10,10 @@ export class BatchInfo {
     errorState: boolean;
     errorInfo: string;
     constructor() {
-        this.status = 'pending';
+        this.status = "pending";
         this.loading = false;
         this.errorState = false;
-        this.errorInfo = '';
+        this.errorInfo = "";
     }
 }
 

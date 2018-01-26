@@ -219,7 +219,9 @@
         "SWITCHED_SUCCESS": "Rol del miembro cambiado satisfactoriamente.",
         "OF": "of",
         "SWITCH_TITLE": "Confirm project members switch",
-        "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?"
+        "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?",
+        "ACTION": "SET ROLE",
+        "REMOVE": "REMOVE"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",

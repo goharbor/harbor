@@ -17,35 +17,34 @@ import {
   Output,
   ViewChild,
   AfterViewChecked,
-  HostBinding,
   OnInit,
   OnDestroy
-} from '@angular/core';
-import { Response } from '@angular/http';
-import { NgForm } from '@angular/forms';
+} from "@angular/core";
+import { Response } from "@angular/http";
+import { NgForm } from "@angular/forms";
 
-import { Project } from '../project';
-import { ProjectService } from '../project.service';
+import { Project } from "../project";
+import { ProjectService } from "../project.service";
 
-import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
+import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
+import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService } from "@ngx-translate/core";
 
-import { Subject } from 'rxjs/Subject';
-import 'rxjs/add/operator/debounceTime';
-import 'rxjs/add/operator/distinctUntilChanged';
+import { Subject } from "rxjs/Subject";
+import "rxjs/add/operator/debounceTime";
+import "rxjs/add/operator/distinctUntilChanged";
 
 @Component({
-  selector: 'create-project',
-  templateUrl: 'create-project.component.html',
-  styleUrls: ['create-project.css']
+  selector: "create-project",
+  templateUrl: "create-project.component.html",
+  styleUrls: ["create-project.css"]
 })
 export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestroy {
 
   projectForm: NgForm;
 
-  @ViewChild('projectForm')
+  @ViewChild("projectForm")
   currentForm: NgForm;
 
   project: Project = new Project();
@@ -54,14 +53,14 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   createProjectOpened: boolean;
 
   hasChanged: boolean;
-  isSubmitOnGoing:boolean=false;
+  isSubmitOnGoing = false;
 
-  staticBackdrop: boolean = true;
-  closable: boolean = false;
+  staticBackdrop = true;
+  closable = false;
 
-  isNameValid: boolean = true;
-  nameTooltipText: string = 'PROJECT.NAME_TOOLTIP';
-  checkOnGoing: boolean = false;
+  isNameValid = true;
+  nameTooltipText = "PROJECT.NAME_TOOLTIP";
+  checkOnGoing = false;
   proNameChecker: Subject<string> = new Subject<string>();
 
   @Output() create = new EventEmitter<boolean>();
@@ -71,7 +70,6 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   constructor(private projectService: ProjectService,
     private translateService: TranslateService,
     private messageHandlerService: MessageHandlerService) { }
-  
 
   ngOnInit(): void {
     this.proNameChecker
@@ -82,20 +80,20 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
         if (cont && this.hasChanged) {
           this.isNameValid = cont.valid;
           if (this.isNameValid) {
-            //Check exiting from backend
+            // Check exiting from backend
             this.projectService
               .checkProjectExists(cont.value).toPromise()
               .then(() => {
-                //Project existing
+                // Project existing
                 this.isNameValid = false;
-                this.nameTooltipText = 'PROJECT.NAME_ALREADY_EXISTS';
+                this.nameTooltipText = "PROJECT.NAME_ALREADY_EXISTS";
                 this.checkOnGoing = false;
               })
               .catch(error => {
                 this.checkOnGoing = false;
               });
           } else {
-            this.nameTooltipText = 'PROJECT.NAME_TOOLTIP';
+            this.nameTooltipText = "PROJECT.NAME_TOOLTIP";
           }
         }
       });
@@ -106,54 +104,44 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   }
 
   onSubmit() {
-    if (this.isSubmitOnGoing){
+    if (this.isSubmitOnGoing) {
       return ;
     }
 
-    this.isSubmitOnGoing=true;
+    this.isSubmitOnGoing = true;
     this.projectService
       .createProject(this.project.name, this.project.metadata)
       .subscribe(
       status => {
-        this.isSubmitOnGoing=false;
+        this.isSubmitOnGoing = false;
 
         this.create.emit(true);
-        this.messageHandlerService.showSuccess('PROJECT.CREATED_SUCCESS');
+        this.messageHandlerService.showSuccess("PROJECT.CREATED_SUCCESS");
         this.createProjectOpened = false;
       },
       error => {
-        this.isSubmitOnGoing=false;
+        this.isSubmitOnGoing = false;
 
         let errorMessage: string;
         if (error instanceof Response) {
           switch (error.status) {
             case 409:
-              this.translateService.get('PROJECT.NAME_ALREADY_EXISTS').subscribe(res => errorMessage = res);
+              this.translateService.get("PROJECT.NAME_ALREADY_EXISTS").subscribe(res => errorMessage = res);
               break;
             case 400:
-              this.translateService.get('PROJECT.NAME_IS_ILLEGAL').subscribe(res => errorMessage = res);
+              this.translateService.get("PROJECT.NAME_IS_ILLEGAL").subscribe(res => errorMessage = res);
               break;
             default:
-              this.translateService.get('PROJECT.UNKNOWN_ERROR').subscribe(res => errorMessage = res);
+              this.translateService.get("PROJECT.UNKNOWN_ERROR").subscribe(res => errorMessage = res);
           }
-          if (this.messageHandlerService.isAppLevel(error)) {
-            this.messageHandlerService.handleError(error);
-            this.createProjectOpened = false;
-          } else {
-            this.inlineAlert.showInlineError(errorMessage);
-          }
+        this.messageHandlerService.handleError(error);
         }
       });
   }
 
   onCancel() {
-    if (this.hasChanged) {
-      this.inlineAlert.showInlineConfirmation({ message: 'ALERT.FORM_CHANGE_CONFIRMATION' });
-    } else {
       this.createProjectOpened = false;
       this.projectForm.reset();
-    }
-
   }
 
   ngAfterViewChecked(): void {
@@ -181,21 +169,15 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
     this.createProjectOpened = true;
   }
 
-  confirmCancel(event: boolean): void {
-    this.createProjectOpened = false;
-    this.inlineAlert.close();
-    this.projectForm.reset();
-  }
-
   public get isValid(): boolean {
     return this.currentForm &&
     this.currentForm.valid &&
-    !this.isSubmitOnGoing&&
+    !this.isSubmitOnGoing &&
     this.isNameValid &&
     !this.checkOnGoing;
   }
 
-  //Handle the form validation
+  // Handle the form validation
   handleValidation(): void {
     let cont = this.currentForm.controls["create_project_name"];
     if (cont) {

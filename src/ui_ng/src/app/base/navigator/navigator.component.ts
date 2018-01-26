@@ -107,15 +107,15 @@ export class NavigatorComponent implements OnInit {
     public get canChangePassword(): boolean {
         let user = this.session.getCurrentUser();
         let config = this.appConfigService.getConfig();
-        
-        return user && ((config && !(config.auth_mode === 'ldap_auth' || config.auth_mode === 'uaa_auth')) || (user.user_id === 1 && user.username === 'admin'));
+
+        return user && ((config && !(config.auth_mode === "ldap_auth" || config.auth_mode === "uaa_auth")) || (user.user_id === 1 && user.username === "admin"));
     }
 
     matchLang(lang: string): boolean {
         return lang.trim() === this.selectedLang;
     }
 
-    //Open the account setting dialog
+    // Open the account setting dialog
     openAccountSettingsModal(): void {
         this.showAccountSettingsModal.emit({
             modalName: modalEvents.USER_PROFILE,
@@ -123,7 +123,7 @@ export class NavigatorComponent implements OnInit {
         });
     }
 
-    //Open change password dialog
+    // Open change password dialog
     openChangePwdModal(): void {
         this.showPwdChangeModal.emit({
             modalName: modalEvents.CHANGE_PWD,

@@ -44,7 +44,7 @@ export const TAG_TEMPLATE = `
             <a *ngSwitchCase="true" href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
             <span *ngSwitchDefault>{{t.name}}</span>
           </clr-dg-cell>
-          <clr-dg-cell style="width: 90px;">{{t.size}}</clr-dg-cell>
+          <clr-dg-cell style="width: 90px;">{{sizeTransform(t.size)}}</clr-dg-cell>
           <clr-dg-cell style="min-width: 120px; max-width:220px;" class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">
               <hbr-copy-input #copyInput  (onCopyError)="onCpError($event)"  iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
           </clr-dg-cell>

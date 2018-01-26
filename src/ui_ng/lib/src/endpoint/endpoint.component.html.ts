@@ -1,4 +1,4 @@
-export const ENDPOINT_TEMPLATE: string = `
+export const ENDPOINT_TEMPLATE = `
 <div>
     <div class="row"  style="position:relative;">
         <div>
@@ -13,12 +13,10 @@ export const ENDPOINT_TEMPLATE: string = `
         </div>
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <clr-datagrid [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
-             <clr-dg-action-bar>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-secondary" (click)="openModal()">{{'DESTINATION.NEW_ENDPOINT' | translate}}</button>
-                        <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length ===1)"  (click)="editTargets(selectedRow)" >{{'DESTINATION.TITLE_EDIT' | translate}}</button>
-                        <button type="button" class="btn btn-sm btn-secondary" [disabled]="!selectedRow.length" (click)="deleteTargets(selectedRow)">{{'DESTINATION.DELETE' | translate}}</button>
-                    </div>
+                <clr-dg-action-bar>
+                    <button type="button" class="btn btn-sm btn-secondary" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'DESTINATION.NEW_ENDPOINT' | translate}}</button>
+                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length ===1)"  (click)="editTargets(selectedRow)" ><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'DESTINATION.TITLE_EDIT' | translate}}</button>
+                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!selectedRow.length" (click)="deleteTargets(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'DESTINATION.DELETE' | translate}}</button>
                 </clr-dg-action-bar>
                 <clr-dg-column [clrDgField]="'name'">{{'DESTINATION.NAME' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'endpoint'">{{'DESTINATION.URL' | translate}}</clr-dg-column>
@@ -28,15 +26,15 @@ export const ENDPOINT_TEMPLATE: string = `
                 <clr-dg-row *clrDgItems="let t of targets" [clrDgItem]='t'>
                     <clr-dg-cell>{{t.name}}</clr-dg-cell>
                     <clr-dg-cell>{{t.endpoint}}</clr-dg-cell>
-                    <clr-dg-cell> 
-                     {{!t.insecure}}
+                    <clr-dg-cell>
+                        {{!t.insecure}}
                     </clr-dg-cell>
                     <clr-dg-cell>{{t.creation_time | date: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
-                  <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'DESTINATION.OF' | translate}}</span>
-                  {{pagination.totalItems}} {{'DESTINATION.ITEMS' | translate}}
-                  <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
+                    <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'DESTINATION.OF' | translate}}</span>
+                    {{pagination.totalItems}} {{'DESTINATION.ITEMS' | translate}}
+                    <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>
         </div>

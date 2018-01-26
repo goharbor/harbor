@@ -1,9 +1,7 @@
     <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
         <clr-dg-action-bar>
-            <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-secondary" (click)="addNewProject()" *ngIf="projectCreationRestriction">{{'PROJECT.NEW_PROJECT' | translate}}</button>
-                <button type="button" class="btn btn-sm btn-secondary"  [disabled]="!(selectedRow.length && (isSystemAdmin || canDelete))" (click)="deleteProjects(selectedRow)" >{{'PROJECT.DELETE' | translate}}</button>
-            </div>
+            <button type="button" class="btn btn-sm btn-secondary" (click)="addNewProject()" *ngIf="projectCreationRestriction"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'PROJECT.NEW_PROJECT' | translate}}</button>
+            <button type="button" class="btn btn-sm btn-secondary"  [disabled]="!(selectedRow.length && (isSystemAdmin || canDelete))" (click)="deleteProjects(selectedRow)" ><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'PROJECT.DELETE' | translate}}</button>
         </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'PROJECT.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="accessLevelComparator">{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>

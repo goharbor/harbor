@@ -52,5 +52,13 @@ Multi-delete Object
     Click Element  //clr-modal//button[contains(.,'DELETE')]
     Sleep  3
 
+Multi-delete Object Without Confirmation
+    [Arguments]    @{obj}
+    :For  ${obj}  in  @{obj}
+    \    Click Element  //clr-dg-row[contains(.,'${obj}')]//label
+    Sleep  1
+    Click Element  //button[contains(.,'Delete')]
+    Sleep  3
+
 Select All On Current Page Object
     Click Element  //div[@class='datagrid-head']//label
