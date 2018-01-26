@@ -248,6 +248,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                     .subscribe(res => {
                         this.inlineAlert.showInlineError(res);
                     });
+                this.forceRefreshView(1000);
             }
             );
         this.forceRefreshView(1000);
@@ -294,9 +295,10 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                         this.inlineAlert.showInlineError(res);
                     });
                 this.onGoing = false;
+                this.forceRefreshView(1000);
             }
             );
-        this.forceRefreshView(100);
+        this.forceRefreshView(1000);
     }
 
     handleErrorMessageKey(status: number): string {
