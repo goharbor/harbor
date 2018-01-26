@@ -89,6 +89,11 @@ if build_type == "ova" :
             logger.info("Harbor is not ready after 10 minutes.")
             sys.exit(-1)
         logger.info("%s is ready for test now..." % item)
+        # ----- log harbor version -----
+        harbor_version = harbor_util.get_harbor_version(item, 'admin', 'Harbor12345')
+        logger.info("Harbor version: %s ..." % harbor_version)
+        with open(os.getcwd() + '/build.properties', 'w') as the_file:
+            the_file.write('harbor_version=%s' % harbor_version)
 
     # ----- execute test cases -----
     try:
