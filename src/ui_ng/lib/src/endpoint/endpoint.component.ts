@@ -185,7 +185,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
             if (targetLists && targetLists.length) {
                 let promiseLists: any[] = [];
                 targetLists.forEach(target => {
-                    this.delOperate(target.id, target.name);
+                    promiseLists.push(this.delOperate(target.id, target.name));
                 })
                 Promise.all(promiseLists).then((item) => {
                     this.selectedRow = [];

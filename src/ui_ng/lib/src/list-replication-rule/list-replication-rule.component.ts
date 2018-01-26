@@ -77,7 +77,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   ruleName: string;
   canDeleteRule: boolean;
 
-  selectedRow: ReplicationRule[] = [];
+  selectedRow: ReplicationRule;
   batchDelectionInfos: BatchInfo[] = [];
 
   @ViewChild('toggleConfirmDialog')
@@ -134,6 +134,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
           this.selectOne.emit(this.rules[0]);
         }
         this.changedRules = this.rules;
+        this.selectedRow = this.changedRules[0];
         this.loading = false;
       }
       ).catch(error => {
