@@ -100,7 +100,9 @@ func TestTCPConn(addr string, timeout, interval int) error {
 					time.Sleep(time.Duration(interval) * time.Second)
 					continue
 				}
-				conn.Close()
+				if err = conn.Close(); err != nil {
+					log.Errorf("failed to close the connection: %v", err)
+				}
 				success <- 1
 				break
 			}
