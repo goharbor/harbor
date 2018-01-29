@@ -158,9 +158,11 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 			if !Re.MatchString(u.Email) {
 				log.Debugf("Not a valid email address: %v, skip to sync", u.Email)
 			} else {
-				dao.ChangeUserProfile(*u, "Email")
+				if err = dao.ChangeUserProfile(*u, "Email"); err != nil {
+					u.Email = dbUser.Email
+					log.Errorf("failed to sync user email: %v", err)
+				}
 			}
-			u.Email = dbUser.Email
 		}
 
 		return nil
