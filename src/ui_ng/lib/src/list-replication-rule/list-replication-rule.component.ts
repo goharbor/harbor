@@ -66,6 +66,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   @Output() selectOne = new EventEmitter<ReplicationRule>();
   @Output() editOne = new EventEmitter<ReplicationRule>();
   @Output() toggleOne = new EventEmitter<ReplicationRule>();
+  @Output() hideJobs = new EventEmitter<any>();
   @Output() redirect = new EventEmitter<ReplicationRule>();
   @Output() openNewRule = new EventEmitter<any>();
   @Output() replicateManual = new EventEmitter<ReplicationRule[]>();
@@ -132,6 +133,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         if (this.rules && this.rules.length > 0) {
           this.selectedId = this.rules[0].id || '';
           this.selectOne.emit(this.rules[0]);
+        } else {
+          this.hideJobs.emit();
         }
         this.changedRules = this.rules;
         this.selectedRow = this.changedRules[0];

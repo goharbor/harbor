@@ -37,8 +37,7 @@ label:first-child {
 
 .projectInput{float: left;}
 .projectInput input{background-color: white;}
-.switchIcon{width:20px;height:20px; margin-top: 16px;margin-left: 10px;}
+.switchIcon{width:20px;height:20px; margin-top: 10px;margin-left: 10px; cursor: pointer;}
 .addEndpoint{  margin-top: .25em !important;}
 .shadow{position: absolute;top: 8px;}
-.shadow1{width:270px; height: 24px;background-color: #fafafa; z-index: 10; top:5px;}
-.hoverBg:hover{display: none;}
+.is-solid{cursor: pointer;}

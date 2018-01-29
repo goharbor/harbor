@@ -31,7 +31,7 @@
         <clr-datagrid [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="SelectedChange()">
             <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
-            <clr-dg-row *ngFor="let m of members"  [clrDgItem]="m">
+            <clr-dg-row *clrDgItems="let m of members"  [clrDgItem]="m">
                 <clr-dg-cell>{{m.username}}</clr-dg-cell>
                 <clr-dg-cell>
                     <span *ngIf="ChangeRoleOngoing(m.username)" class="spinner spinner-inline"> Loading... </span>

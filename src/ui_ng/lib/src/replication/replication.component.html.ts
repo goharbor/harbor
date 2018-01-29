@@ -11,7 +11,7 @@ export const REPLICATION_TEMPLATE: string = `
     </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <hbr-list-replication-rule #listReplicationRule [readonly]="readonly" [projectId]="projectId" [isSystemAdmin]="isSystemAdmin"  (replicateManual)=replicateManualRule($event) (selectOne)="selectOneRule($event)" (openNewRule)="openModal()" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
+      <hbr-list-replication-rule #listReplicationRule [readonly]="readonly" [projectId]="projectId" [isSystemAdmin]="isSystemAdmin"  (replicateManual)=replicateManualRule($event) (selectOne)="selectOneRule($event)" (hideJobs)="hideJobs()"  (openNewRule)="openModal()" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding-left:0px;">
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">

@@ -352,6 +352,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.loadFirstPage();
   }
 
+  hideJobs() {
+    this.search.ruleId = 0;
+  }
+
   stopJobs() {
     if (this.jobs && this.jobs.length) {
       this.isStopOnGoing = true;
