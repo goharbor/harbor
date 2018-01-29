@@ -25,6 +25,7 @@ const FAKE_PASSWORD = 'rjGcfuRu';
     styleUrls: ['replication-rule.css']
 
 })
+
 export class ReplicationRuleComponent implements OnInit, OnDestroy {
     _localTime: Date = new Date();
     policyId: number;
@@ -33,7 +34,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     isFilterHide: boolean = false;
     weeklySchedule: boolean;
     isScheduleOpt: boolean;
-    isImmediate: boolean = true;
+    isImmediate: boolean = false;
     noProjectInfo: string = "";
     noSelectedProject: boolean = true;
     noSelectedEndpoint: boolean = true;
@@ -58,6 +59,8 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     confirmSub: Subscription;
     ruleForm: FormGroup;
     copyUpdateForm: ReplicationRule;
+
+    emptyEndpoint = new Target();
 
     @ViewChild(ListProjectModelComponent)
     projectListModel: ListProjectModelComponent;
@@ -91,7 +94,6 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
                 private confirmService: ConfirmationDialogService,
                 public ref: ChangeDetectorRef) {
         this.createForm();
-
         Promise.all([this.repService.getEndpoints(), this.repService.listProjects()])
             .then(res => {
                 if (!res[0]) {
@@ -99,6 +101,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
                 }else {
                     this.targetList = res[0];
                     if (!this.policyId) {
+                        res[0].unshift(this.emptyEndpoint);
                         this.setTarget([res[0][0]]);
                         this.realEndpointData.userName = res[0][0].username;
                         this.realEndpointData.password = FAKE_PASSWORD;
@@ -270,6 +273,10 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
 
     targetChange($event: any) {
         if ($event && $event.target && event.target['value']) {
+            if ($event.target['value'] === '-1') {
+                this.noSelectedEndpoint = true;
+                return;
+            }
             let selecedTarget: Target = this.targetList.find(target => target.id === +$event.target['value']);
             this.setTarget([selecedTarget]);
             this.noSelectedEndpoint = false;
@@ -437,9 +444,8 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
     }
 
     public hasFormChange(): boolean {
-        return !isEmptyObject(this.getChanges());
+        return !isEmptyObject(this.getChanges()) || !compareValue(this.firstEndpointData, this.realEndpointData);
     }
-
 
     onSubmit() {
         this.inProgress = true;

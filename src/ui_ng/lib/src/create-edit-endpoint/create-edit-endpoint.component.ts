@@ -170,7 +170,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
 
                     //Open the modal now
                     this.open();
-                    this.forceRefreshView(1000);
+                    this.forceRefreshView(2000);
                 })
                 .catch(error => this.errorHandler.error(error));
         } else {
@@ -208,12 +208,12 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
             .then(
             response => {
                 this.inlineAlert.showInlineSuccess({ message: "DESTINATION.TEST_CONNECTION_SUCCESS" });
-                this.forceRefreshView(1000);
+                this.forceRefreshView(2000);
                 this.testOngoing = false;
             }).catch(
             error => {
                 this.inlineAlert.showInlineError('DESTINATION.TEST_CONNECTION_FAILURE');
-                this.forceRefreshView(1000);
+                this.forceRefreshView(2000);
                 this.testOngoing = false;
             });
     }
@@ -240,6 +240,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                 this.reload.emit(true);
                 this.onGoing = false;
                 this.close();
+                this.forceRefreshView(2000);
             }).catch(error => {
                 this.onGoing = false;
                 let errorMessageKey = this.handleErrorMessageKey(error.status);
@@ -248,10 +249,10 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                     .subscribe(res => {
                         this.inlineAlert.showInlineError(res);
                     });
-                this.forceRefreshView(1000);
+                this.forceRefreshView(2000);
             }
             );
-        this.forceRefreshView(1000);
+
     }
 
     updateEndpoint() {
@@ -285,6 +286,7 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                 this.reload.emit(true);
                 this.close();
                 this.onGoing = false;
+                this.forceRefreshView(2000);
             })
             .catch(
             error => {
@@ -295,10 +297,10 @@ export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy 
                         this.inlineAlert.showInlineError(res);
                     });
                 this.onGoing = false;
-                this.forceRefreshView(1000);
+                this.forceRefreshView(2000);
             }
             );
-        this.forceRefreshView(1000);
+
     }
 
     handleErrorMessageKey(status: number): string {

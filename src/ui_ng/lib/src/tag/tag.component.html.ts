@@ -39,7 +39,7 @@ export const TAG_TEMPLATE = `
         <clr-dg-column style="width: 150px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 140px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-        <clr-dg-row *ngFor="let t of tags" [clrDgItem]='t'>
+        <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
           <clr-dg-cell  class="truncated"  style="width: 160px;" [ngSwitch]="withClair">
             <a *ngSwitchCase="true" href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
             <span *ngSwitchDefault>{{t.name}}</span>

@@ -102,12 +102,12 @@ You can add members with different roles to an existing project. You can add a L
 ![browse project](img/new_add_member.png)
 
 ### Updating and removing members
-You can update or remove a member by clicking the icon on the left.  
+You can check one or more members, then click `MEMBER ACTION`, choose one role to batch switch checked members's roles. You can also click `MEMBER.REMOVE` to batch remove checked members.
 
 ![browse project](img/new_remove_update_member.png)
 
 ## Replicating images  
-Images replication is used to replicate repositories from one Harbor instance to another.  
+Images replication is used to replicate repositories from one Harbor instance to another.
 
 The function is project-oriented, and once the system administrator set a rule to one project, all repositories under the project that match the defined [filter](#replication-filter) patterns will be replicated to the remote registry when the [triggering condition](#replication-triggering-condition) is triggered. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
 
@@ -162,7 +162,7 @@ Entering a keyword in the search field at the top lists all matching projects an
 
 ## Administrator options  
 ### Managing user  
-Administrator can add "Administrator" role to an ordinary user by click button on the left and select "Set as Administrator". To delete a user, select "Delete". Deleting user is only supported under database authentication mode.
+Administrator can add "Administrator" role to one or more ordinary users by checking checkboxes and clicking `SET AS ADMINISTRATOR`. To delete users, checked checkboxes and select `DELETE`. Deleting user is only supported under database authentication mode.
 
 ![browse project](img/new_set_admin_remove_user.png)
 
