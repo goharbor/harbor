@@ -9,6 +9,8 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 
 - You must back up your data before any data migration.
 
+- To migrate harbor OVA, please refer [migrate OVA guide](migrate_ova_guide.md)
+
 ### Upgrading Harbor and migrating data
 
 1. Log in to the host that Harbor runs on, stop and remove existing Harbor instance if it is still running:
