@@ -58,7 +58,7 @@
    <div formArrayName="targets">
     <div class="select endpointSelect pull-left" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
       <select id="ruleTarget " class="inputWidth" (change)="targetChange($event)"  formControlName="id">
-       <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}<span [hidden]="!target.name">:</span> {{target.endpoint}}</option>
+       <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}-{{target.endpoint}}</option>
       </select>
      </div>
     <button class="btn btn-info btn-sm addEndpoint" (click)="openModal()"><clr-icon shape="plus"></clr-icon>&nbsp;{{'REPLICATION.NEW' | translate}}</button>

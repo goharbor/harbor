@@ -471,6 +471,7 @@ export class ReplicationRuleComponent implements OnInit, OnDestroy {
                     this.repService.updateEndpoint(endpointId, pullData)
                         .then((res: any) => {
                             this.saveRuleOpe();
+                            this.firstEndpointData = Object.assign({}, this.realEndpointData);
                         })
                         .catch((error: any) => {
                             this.inProgress = false;
