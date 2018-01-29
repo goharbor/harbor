@@ -221,7 +221,15 @@ export class ListProjectComponent implements OnDestroy {
                 this.batchDelectionInfos.push(initBatchMessage);
             });
             this.deletionDialogService.addBatchInfoList(this.batchDelectionInfos);
-            this.delProjects(p);
+            let deletionMessage = new ConfirmationMessage(
+                "PROJECT.DELETION_TITLE",
+                "PROJECT.DELETION_SUMMARY",
+                nameArr.join(","),
+                p,
+                ConfirmationTargets.PROJECT,
+                ConfirmationButtons.DELETE_CANCEL
+                );
+                this.deletionDialogService.openComfirmDialog(deletionMessage);
         }
     }
     delProjects(projects: Project[]) {

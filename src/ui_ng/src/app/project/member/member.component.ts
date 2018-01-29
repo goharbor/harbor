@@ -63,6 +63,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   isDelete = false;
   isChangeRole = false;
   batchActionInfos: BatchInfo[] = [];
+  batchDeletionInfos: BatchInfo[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -206,17 +207,25 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.isDelete = true;
     this.isChangeRole = false;
     let nameArr: string[] = [];
-    this.batchActionInfos = [];
+    this.batchDeletionInfos = [];
     if (m && m.length) {
       m.forEach(data => {
         nameArr.push(data.username);
         let initBatchMessage = new BatchInfo ();
         initBatchMessage.name = data.username;
-        this.batchActionInfos.push(initBatchMessage);
+        this.batchDeletionInfos.push(initBatchMessage);
       });
-      this.OperateDialogService.addBatchInfoList(this.batchActionInfos);
+      this.OperateDialogService.addBatchInfoList(this.batchDeletionInfos);
 
-      this.deleteMem(m);
+      let deletionMessage = new ConfirmationMessage(
+        "MEMBER.DELETION_TITLE",
+        "MEMBER.DELETION_SUMMARY",
+        nameArr.join(","),
+        m,
+        ConfirmationTargets.PROJECT_MEMBER,
+        ConfirmationButtons.DELETE_CANCEL
+      );
+       this.OperateDialogService.openComfirmDialog(deletionMessage);
     }
   }
 
@@ -225,7 +234,7 @@ export class MemberComponent implements OnInit, OnDestroy {
       let promiseLists: any[] = [];
       members.forEach(member => {
         if (member.user_id === this.currentUser.user_id) {
-          let findedList = this.batchActionInfos.find(data => data.name === member.username);
+          let findedList = this.batchDeletionInfos.find(data => data.name === member.username);
           this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
             findedList = BathInfoChanges(findedList, res, false, true);
           });
@@ -243,7 +252,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   delOperate(projectId: number, memberId: number, username: string) {
-    let findedList = this.batchActionInfos.find(data => data.name === username);
+    let findedList = this.batchDeletionInfos.find(data => data.name === username);
     return this.memberService
         .deleteMember(projectId, memberId)
         .then(
