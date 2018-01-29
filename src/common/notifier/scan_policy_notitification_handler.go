@@ -100,7 +100,9 @@ func schedulePolicy(notification ScanPolicyNotification) error {
 		OffsetTime: notification.DailyTime,
 	})
 	attachTask := task.NewScanAllTask()
-	schedulePolicy.AttachTasks(attachTask)
+	if err := schedulePolicy.AttachTasks(attachTask); err != nil {
+		return err
+	}
 
 	return scheduler.DefaultScheduler.Schedule(schedulePolicy)
 }

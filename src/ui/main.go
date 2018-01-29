@@ -116,7 +116,9 @@ func main() {
 	scheduler.DefaultScheduler.Start()
 
 	//Subscribe the policy change topic.
-	notifier.Subscribe(notifier.ScanAllPolicyTopic, &notifier.ScanPolicyNotificationHandler{})
+	if err = notifier.Subscribe(notifier.ScanAllPolicyTopic, &notifier.ScanPolicyNotificationHandler{}); err != nil {
+		log.Errorf("failed to subscribe scan all policy change topic: %v", err)
+	}
 
 	//Get policy configuration.
 	scanAllPolicy := config.ScanAllPolicy()
@@ -129,7 +131,10 @@ func main() {
 		}
 
 		//Send notification to handle first policy change.
-		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)})
+		if err = notifier.Publish(notifier.ScanAllPolicyTopic,
+			notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)}); err != nil {
+			log.Errorf("failed to publish scan all policy topic: %v", err)
+		}
 	}
 
 	if err := core.Init(); err != nil {

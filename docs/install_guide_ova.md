@@ -110,4 +110,8 @@
 
     ![Screenshot of after login](img/ovainstall/afterlogin.png)
 
-Please run "tdnf distro-sync" command from time to time to keep the OS up to date.
+    To migrate Harbor OVA, please refer [migrate OVA guide](migrate_ova_guide.md)
+  
+    To extend the data disk in Harbor OVA, please refer [Expand the Hard Disk of Virtual Appliance](expand_hard_disk.md)
+
+    Please run "tdnf distro-sync" command from time to time to keep the OS up to date.

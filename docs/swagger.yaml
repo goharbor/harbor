@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Harbor API
   description: These APIs provide services for manipulating Harbor project.
-  version: 0.3.0
+  version: 1.4.0
 host: localhost
 schemes:
   - http
@@ -11,7 +11,6 @@ produces:
   - application/json
   - text/plain
 consumes:
-  - text/plain
   - application/json
 paths:
   /search:
@@ -142,6 +141,8 @@ paths:
           description: User need to log in first.
         '409':
           description: Project name already exists.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   '/projects/{project_id}':
@@ -355,6 +356,8 @@ paths:
           description: User does not have permission to the project.
         '404':
           description: Project ID does not exist.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Internal server errors.
   '/projects/{project_id}/metadatas/{meta_name}':
@@ -511,6 +514,8 @@ paths:
           description: Project ID or username does not exist.
         '409':
           description: User has already added as a project role member.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   '/projects/{project_id}/members/{user_id}':
@@ -712,6 +717,8 @@ paths:
           description: >-
             User registration can only be used by admin role user when
             self-registration is off.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   /users/current:
@@ -1131,6 +1138,8 @@ paths:
           description: User doesn't have permission to perform the action.
         '404':
           description: The image does not exist in Harbor.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '503':
           description: Harbor is not deployed with Clair.
   /repositories/scanAll:
@@ -1146,7 +1155,9 @@ paths:
         - name: project_id
           in: query
           type: integer
-          description: When this parm is set only the images under the project identified by the project_id will be scanned.
+          description: >-
+            When this parm is set only the images under the project identified
+            by the project_id will be scanned.
       responses:
         '202':
           description: >-
@@ -1156,6 +1167,8 @@ paths:
           description: User needs to login or call the API with correct credentials.
         '403':
           description: User doesn't have permission to perform the action.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Failed to initiate the action.
         '503':
@@ -1393,7 +1406,7 @@ paths:
           description: Unexpected internal errors.
     put:
       summary: Update status of jobs. Only stop is supported for now.
-      description: >
+      description: |
         The endpoint is used to stop the replication jobs of a policy.
       tags:
         - Products
@@ -1417,7 +1430,7 @@ paths:
           description: Resource requested does not exist.
         '500':
           description: Unexpected internal errors.
-  /jobs/replication/{id}:
+  '/jobs/replication/{id}':
     delete:
       summary: Delete specific ID job.
       description: |
@@ -1442,7 +1455,7 @@ paths:
           description: Project ID does not exist.
         '500':
           description: Unexpected internal errors.
-  /jobs/replication/{id}/log:
+  '/jobs/replication/{id}/log':
     get:
       summary: Get job logs.
       description: |
@@ -1467,7 +1480,7 @@ paths:
           description: The specific repository ID's log does not exist.
         '500':
           description: Unexpected internal errors.
-  /jobs/scan/{id}/log:
+  '/jobs/scan/{id}/log':
     get:
       summary: Get job logs.
       description: |
@@ -1492,7 +1505,6 @@ paths:
           description: The specific repository ID's log does not exist.
         '500':
           description: Unexpected internal errors.
-      
   /policies/replication:
     get:
       summary: List filters policies by name and project_id
@@ -1516,13 +1528,13 @@ paths:
           type: integer
           format: int32
           required: false
-          description: 'The page nubmer.'
+          description: The page nubmer.
         - name: page_size
           in: query
           type: integer
           format: int32
           required: false
-          description: 'The size of per page.'
+          description: The size of per page.
       tags:
         - Products
       responses:
@@ -1563,9 +1575,11 @@ paths:
           description: >-
             Policy name already used or policy already exists with the same
             project and target.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
-  /policies/replication/{id}:
+  '/policies/replication/{id}':
     get:
       summary: Get replication policy.
       description: |
@@ -1604,7 +1618,7 @@ paths:
           description: policy ID
         - name: policyupdate
           in: body
-          description: 'Updated properties of the replication policy.'
+          description: Updated properties of the replication policy.
           required: true
           schema:
             $ref: '#/definitions/RepPolicy'
@@ -1646,6 +1660,8 @@ paths:
           description: User need to log in first.
         '404':
           description: The policy does not exist.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   /targets:
@@ -1695,6 +1711,8 @@ paths:
           description: User need to log in first.
         '409':
           description: Replication target name already exists.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   /targets/ping:
@@ -1725,6 +1743,8 @@ paths:
             target.
         '404':
           description: Target not found.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   '/targets/{id}':
@@ -1852,6 +1872,8 @@ paths:
           description: User need to log in first.
         '403':
           description: User does not have permission of admin role.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   /systeminfo:
@@ -1938,6 +1960,8 @@ paths:
           description: User need to login first.
         '403':
           description: Only admin has this authority.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   /ldap/users/search:
@@ -1977,6 +2001,8 @@ paths:
           description: User need to login first.
         '403':
           description: Only admin has this authority.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   /ldap/users/import:
@@ -2008,6 +2034,8 @@ paths:
           description: User need to login first.
         '403':
           description: Only admin has this authority.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Failed import some users.
           schema:
@@ -2046,7 +2074,9 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Configurations'
-          description: The configuration map can contain a subset of the attributes of the schema, which are to be updated.
+          description: >-
+            The configuration map can contain a subset of the attributes of the
+            schema, which are to be updated.
       responses:
         '200':
           description: Modify system configurations successfully.
@@ -2071,6 +2101,8 @@ paths:
           description: User need to log in first.
         '403':
           description: User does not have permission of admin role.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   /email/ping:
@@ -2098,8 +2130,14 @@ paths:
           description: User need to login first.
         '403':
           description: Only admin has this authority.
+        '415':
+          $ref: '#responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
+responses:
+  UnsupportedMediaType: 
+    description: The Media Type of the request is not supported, it has to be "application/json"
+
 definitions:
   Search:
     type: object
@@ -2451,7 +2489,9 @@ definitions:
     properties:
       kind:
         type: string
-        description: The replication policy trigger kind. The valid values are manual, immediate and schedule. 
+        description: >-
+          The replication policy trigger kind. The valid values are manual,
+          immediate and schedule.
       schedule_param:
         $ref: '#/definitions/ScheduleParam'
   ScheduleParam:
@@ -2459,21 +2499,23 @@ definitions:
     properties:
       type:
         type: string
-        description: The schedule type. The valid values are daily and weekly. 
+        description: The schedule type. The valid values are daily and weekly.
       weekday:
         type: integer
         format: int8
-        description: Optional, only used when the type is weedly. The valid values are 1-7.
+        description: 'Optional, only used when the type is weedly. The valid values are 1-7.'
       offtime:
         type: integer
         format: int64
-        description: The time offset with the UTC 00:00 in seconds.
+        description: 'The time offset with the UTC 00:00 in seconds.'
   RepFilter:
     type: object
     properties:
       kind:
         type: string
-        description: The replication policy filter kind. The valid values are project, repository and tag.
+        description: >-
+          The replication policy filter kind. The valid values are project,
+          repository and tag.
       pattern:
         type: string
         description: The replication policy filter pattern.
@@ -2505,7 +2547,9 @@ definitions:
         description: Reserved field.
       insecure:
         type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        description: >-
+          Whether or not the certificate will be verified when Harbor tries to
+          access the server.
       creation_time:
         type: string
         description: The create time of the policy.
@@ -2529,7 +2573,9 @@ definitions:
         description: The target server password.
       insecure:
         type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        description: >-
+          Whether or not the certificate will be verified when Harbor tries to
+          access the server.
   PingTarget:
     type: object
     properties:
@@ -2548,7 +2594,9 @@ definitions:
         description: The target server password.
       insecure:
         type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        description: >-
+          Whether or not the certificate will be verified when Harbor tries to
+          access the server.
   PutTarget:
     type: object
     properties:
@@ -2566,7 +2614,9 @@ definitions:
         description: The target server password.
       insecure:
         type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the server.
+        description: >-
+          Whether or not the certificate will be verified when Harbor tries to
+          access the server.
   HasAdminRole:
     type: object
     properties:
@@ -2898,7 +2948,7 @@ definitions:
     properties:
       auth_mode:
         type: string
-        description: The auth mode of current system, such as "db_auth", "ldap_auth"
+        description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
       email_from:
         type: string
         description: The sender name for Email notification.
@@ -2916,10 +2966,15 @@ definitions:
         description: The username for authenticate against SMTP server.
       email_ssl:
         type: boolean
-        description: When it's set to true the system will access Email server via TLS by default.  If it's set to false, it still will handle "STARTTLS" from server side.
+        description: >-
+          When it's set to true the system will access Email server via TLS by
+          default.  If it's set to false, it still will handle "STARTTLS" from
+          server side.
       email_insecure:
         type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the email server.
+        description: >-
+          Whether or not the certificate will be verified when Harbor tries to
+          access the email server.
       ldap_url:
         type: string
         description: The URL of LDAP server.
@@ -2931,10 +2986,12 @@ definitions:
         description: The filter for LDAP binding.
       ldap_scope:
         type: integer
-        description: 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE
+        description: '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
       ldap_uid:
         type: string
-        description: The attribute which is used as identity for the LDAP binding, such as "CN" or "SAMAccountname"
+        description: >-
+          The attribute which is used as identity for the LDAP binding, such as
+          "CN" or "SAMAccountname"
       ldap_search_dn:
         type: string
         description: The DN of the user to do the search.
@@ -2943,29 +3000,41 @@ definitions:
         description: timeout in seconds for connection to LDAP server.
       project_creation_restriction:
         type: string
-        description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
+        description: >-
+          This attribute restricts what users have the permission to create
+          project.  It can be "everyone" or "adminonly".
       self_registration:
         type: boolean
-        description: Whether the Harbor instance supports self-registration.  If it's set to false, admin need to add user to the instance.
+        description: >-
+          Whether the Harbor instance supports self-registration.  If it's set
+          to false, admin need to add user to the instance.
       token_expiration:
         type: integer
-        description: The expiration time of the token for internal Registry, in minutes.
+        description: 'The expiration time of the token for internal Registry, in minutes.'
       verify_remote_cert:
         type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access a remote Harbor instance for replication.
+        description: >-
+          Whether or not the certificate will be verified when Harbor tries to
+          access a remote Harbor instance for replication.
       scan_all_policy:
         type: object
         properties:
           type:
             type: string
-            description: The type of scan all policy, currently the valid values are "none" and "daily"
+            description: >-
+              The type of scan all policy, currently the valid values are "none"
+              and "daily"
           parameter:
             type: object
             properties:
               daily_time:
                 type: integer
-                description: The offest in seconds of UTC 0 o'clock, only valid when the policy type is "daily"
-            description: The parameters of the policy, the values are dependant on the type of the policy.
+                description: >-
+                  The offest in seconds of UTC 0 o'clock, only valid when the
+                  policy type is "daily"
+            description: >-
+              The parameters of the policy, the values are dependant on the type
+              of the policy.
   Replication:
     type: object
     properties:
@@ -2983,7 +3052,7 @@ definitions:
     properties:
       policy_id:
         type: integer
-        description: The ID of replication policy  
+        description: The ID of replication policy
       status:
         type: string
         description: The status of jobs. The only valid value is stop for now.
