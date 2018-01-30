@@ -24,11 +24,9 @@ export const TAG_TEMPLATE = `
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"> 
     <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
         <clr-dg-action-bar>
-            <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(canScanNow(selectedRow) && selectedRow.length==1)" (click)="scanNow(selectedRow)">{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
-                <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)" >{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
-                <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length">{{'REPOSITORY.DELETE' | translate}}</button>
-            </div>
+          <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(canScanNow(selectedRow) && selectedRow.length==1)" (click)="scanNow(selectedRow)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
+          <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)" ><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
+          <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-bar>
         <clr-dg-column style="width: 160px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 90px;" [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
