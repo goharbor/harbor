@@ -307,7 +307,7 @@ Test Case - Delete Multi Project
     Create An New Project  projectb${d}
     Push Image  ${ip}  test${d}  Test1@34  projecta${d}  hello-world
     Filter Object  project
-    Multi-delete Object Without Confirmation  projecta  projectb
+    Multi-delete Object  projecta  projectb
     # Verify delete project with image should not be deleted directly
     Page Should Contain  projecta${d}
     Page Should Not Contain  projectb${d}
@@ -376,7 +376,7 @@ Test Case - Delete Multi Member
     Switch To Member
     Add Guest Member to project  testa${d}
     Add Guest Member to project  testb${d}
-    Multi-delete Object Without Confirmation  testa${d}  testb${d}
+    Multi-delete Member  testa${d}  testb${d}
     Page Should Not Contain  testa${d}
     Close Browser
     
