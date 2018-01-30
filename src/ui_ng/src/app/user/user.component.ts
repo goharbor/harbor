@@ -94,6 +94,10 @@ export class UserComponent implements OnInit, OnDestroy {
     return false;
   }
 
+  get onlySelf(): boolean {
+    return this.selectedRow.length === 1 && this.isMySelf(this.selectedRow[0].user_id);
+  }
+
   private isMatchFilterTerm(terms: string, testedItem: string): boolean {
     return testedItem.toLowerCase().indexOf(terms.toLowerCase()) !== -1;
   }
@@ -222,17 +226,17 @@ export class UserComponent implements OnInit, OnDestroy {
   deleteUsers(users: User[]): void {
     let userArr: string[] = [];
     this.batchDelectionInfos = [];
-    if (users && users.length) {
-      for (let i = 0; i < users.length; i++) {
+    if (this.onlySelf) {
+      return;
+    }
 
-        if (this.isMySelf(users[i].user_id)) {
-          continue; //Double confirm
-        }
-        let initBatchMessage = new BatchInfo ();
-        initBatchMessage.name = users[i].username;
-        this.batchDelectionInfos.push(initBatchMessage);
-        userArr.push(users[i].username);
-      }
+    if (users && users.length) {
+        users.forEach(user => {
+          let initBatchMessage = new BatchInfo ();
+          initBatchMessage.name = user.username;
+          this.batchDelectionInfos.push(initBatchMessage);
+          userArr.push(user.username);
+        })
       this.deletionDialogService.addBatchInfoList(this.batchDelectionInfos);
     //Confirm deletion
     let msg: ConfirmationMessage = new ConfirmationMessage(
@@ -252,7 +256,14 @@ export class UserComponent implements OnInit, OnDestroy {
     let promiseLists: any[] = [];
     if (users && users.length) {
       users.forEach(user => {
-        promiseLists.push(this.delOperate(user.user_id, user.username));
+        let findedList = this.batchDelectionInfos.find(data => data.name === user.username);
+        if (this.isMySelf(user.user_id)) {
+          this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+            findedList = BathInfoChanges(findedList, res, false, true);
+          });
+        } else {
+          promiseLists.push(this.delOperate(user.user_id, user.username));
+        }
       });
 
       Promise.all(promiseLists).then((item) => {
