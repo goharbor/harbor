@@ -62,8 +62,6 @@
       </select>
      </div>
     <button class="btn btn-info btn-sm addEndpoint" (click)="openModal()"><clr-icon shape="plus"></clr-icon>&nbsp;{{'REPLICATION.NEW' | translate}}</button>
-    <div  [hidden]="noSelectedEndpoint">userName: &nbsp;&nbsp;<input type="text" [(ngModel)]="realEndpointData.userName" [ngModelOptions]="{standalone:true}"></div>
-    <div  [hidden]="noSelectedEndpoint">password: &nbsp;&nbsp;<input type="password" [(ngModel)]="realEndpointData.password" [ngModelOptions]="{standalone:true}"></div>
    </div>
    </div>
 

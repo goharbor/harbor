@@ -72,31 +72,4 @@ export class ReplicationRuleServie {
             .catch(error => Promise.reject(error));
     }
 
-    public updateEndpoint(endpointId: number | string, endpoint: any): Promise<any> | any {
-        if (!endpointId || endpointId <= 0) {
-            return Promise.reject('Bad request argument.');
-        }
-        if (!endpoint) {
-            return Promise.reject('Invalid endpoint.');
-        }
-        let requestUrl: string = `/api/targets/${endpointId}`;
-        return this.http
-            .put(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
-            .toPromise()
-            .then(response=>response.status)
-            .catch(error=>Promise.reject(error));
-    }
-
-    public pingEndpoint(endpoint: any): Promise<any> | any {
-        if (!endpoint) {
-            return Promise.reject('Invalid endpoint.');
-        }
-        let requestUrl: string = `/api/targets/ping`;
-        return this.http
-            .post(requestUrl, endpoint, HTTP_JSON_OPTIONS)
-            .toPromise()
-            .then(response=>response.status)
-            .catch(error=>Promise.reject(error));
-    }
-
 }

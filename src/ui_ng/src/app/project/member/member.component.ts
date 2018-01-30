@@ -134,6 +134,13 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.retrieve(this.projectId, "");
   }
 
+  get onlySelf(): boolean {
+    if (this.selectedRow.length === 1 && this.selectedRow[0].user_id === this.currentUser.user_id) {
+      return true;
+    }
+    return false;
+  }
+
   changeRole(m: Member[], roleId: number) {
     if (m && m.length) {
       this.isDelete = false;
