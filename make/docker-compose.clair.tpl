@@ -24,8 +24,8 @@ services:
     env_file:
       ./common/config/clair/postgres_env
     volumes:
-      - ./common/config/clair/postgresql-init.d/:/docker-entrypoint-initdb.d
-      - /data/clair-db:/var/lib/postgresql/data
+      - ./common/config/clair/postgresql-init.d/:/docker-entrypoint-initdb.d:z
+      - /data/clair-db:/var/lib/postgresql/data:z
     logging:
       driver: "syslog"
       options:  
@@ -41,7 +41,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./common/config/clair:/config
+      - ./common/config/clair:/config:z
     logging:
       driver: "syslog"
       options:  
