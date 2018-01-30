@@ -19,12 +19,12 @@
             <clr-dropdown id='member-action' [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-secondary" clrDropdownTrigger>
                 <span>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret down"></clr-icon></span>
                 <clr-dropdown-menu *clrIfOpen>
-                    <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 1)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
-                    <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 2)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.DEVELOPER' | translate}}</button>
-                    <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 3)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">{{'MEMBER.GUEST' | translate}}</button>
+                    <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 1)" [disabled]="!(selectedRow.length && hasProjectAdminRole) || onlySelf">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
+                    <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 2)" [disabled]="!(selectedRow.length && hasProjectAdminRole) || onlySelf">{{'MEMBER.DEVELOPER' | translate}}</button>
+                    <button class="btn btn-sm btn-secondary" (click)="changeRole(selectedRow, 3)" [disabled]="!(selectedRow.length && hasProjectAdminRole) || onlySelf">{{'MEMBER.GUEST' | translate}}</button>
                 </clr-dropdown-menu>
             </clr-dropdown>
-            <button class="btn btn-sm btn-secondary" (click)="deleteMembers(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)">
+            <button class="btn btn-sm btn-secondary" (click)="deleteMembers(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole) || onlySelf">
                 <span><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'MEMBER.REMOVE' | translate}}</span>
             </button>
         </clr-dg-action-bar>

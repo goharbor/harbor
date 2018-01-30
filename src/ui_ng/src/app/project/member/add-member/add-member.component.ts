@@ -225,7 +225,6 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   }
 
   openAddMemberModal(): void {
-    this.memberForm.reset();
     this.member = new Member();
     this.addMemberOpened = true;
     this.hasChanged = false;
@@ -234,6 +233,9 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     this.isMemberNameValid = true;
     this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
     this.selectUserName = [];
+    setTimeout(() => {
+      setInterval(() => this.ref.markForCheck(), 200);
+    }, 2000);
   }
 
   handleValidation(): void {
