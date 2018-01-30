@@ -75,13 +75,13 @@ Change Project Member Role
 User Can Change Role
      [arguments]  ${username}
      Click Element  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
-     Click Element  xpath=//button[@class='btn dropdown-toggle']
+     Click Element  xpath=//clr-dropdown[@id='member-action']
      Page Should Not Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 User Can Not Change Role
      [arguments]  ${username}
      Click Element  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
-     Click Element  xpath=//button[@class='btn dropdown-toggle']
+     Click Element  xpath=//clr-dropdown[@id='member-action']
      Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 #this keyworkd seems will not use any more, will delete in the future

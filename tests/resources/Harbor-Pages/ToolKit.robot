@@ -52,6 +52,16 @@ Multi-delete Object
     Click Element  //clr-modal//button[contains(.,'DELETE')]
     Sleep  3
 
+Multi-delete Member 
+    [Arguments]    @{obj}
+    :For  ${obj}  in  @{obj}
+    \    Click Element  //clr-dg-row[contains(.,'${obj}')]//label
+    Sleep  1
+    Click Element  //button[contains(.,'REMOVE')]
+    Sleep  2
+    Click Element  //clr-modal//button[contains(.,'DELETE')]
+    Sleep  3
+
 Multi-delete Object Without Confirmation
     [Arguments]    @{obj}
     :For  ${obj}  in  @{obj}
