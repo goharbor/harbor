@@ -15,7 +15,7 @@ services:
       - notary-sig
       - harbor-notary
     volumes:
-      - ./common/config/notary:/config
+      - ./common/config/notary:/config:z
     depends_on:
       - notary-db
       - notary-signer
@@ -34,7 +34,7 @@ services:
         aliases:
           - notarysigner
     volumes:
-      - ./common/config/notary:/config
+      - ./common/config/notary:/config:z
     env_file:
       - ./common/config/notary/signer_env
     depends_on:
@@ -53,8 +53,8 @@ services:
         aliases:
           - mysql
     volumes:
-      - ./common/config/notary/mysql-initdb.d:/docker-entrypoint-initdb.d
-      - /data/notary-db:/var/lib/mysql
+      - ./common/config/notary/mysql-initdb.d:/docker-entrypoint-initdb.d:z
+      - /data/notary-db:/var/lib/mysql:z
     environment:
       - TERM=dumb
       - MYSQL_ALLOW_EMPTY_PASSWORD="true"
