@@ -17,9 +17,25 @@ In addition, the deployment instructions on Kubernetes has been created by the c
 
 ## Prerequisites for the target host
 Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.  
-* Python should be version 2.7 or higher.  Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default  
-* Docker engine should be version 1.10 or higher.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/
-* Docker Compose needs to be version 1.6.0 or higher.  For installation instructions, please refer to: https://docs.docker.com/compose/install/
+### Hardware
+|Resource|Capacity|Description|
+|---|---|---|
+|CPU|minimal 2 CPU|4 CPU is prefered|
+|Mem|minimal 4GB|8GB is prefered|
+|Disk|minimal 40GB|160GB is prefered|
+### Software
+|Software|Version|Description|
+|---|---|---|
+|Python|version 2.7 or higher|Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default|
+|Docker engine|version 1.10 or higher|For installation instructions, please refer to: https://docs.docker.com/engine/installation/|
+|Docker Compose|version 1.6.0 or higher|For installation instructions, please refer to: https://docs.docker.com/compose/install/|
+|Openssl|latest is prefered|Generate certificate and keys for Harbor|
+### Network ports 
+|Port|Protocol|Description|
+|---|---|---|
+|443|HTTPS|Harbor UI and API will accept requests on this port for https protocol|
+|4443|HTTS|Connections to the Docker Content Trust service for Harbor, only needed when Notary is enabled|
+|80|HTTP|Harbor UI and API will accept requests on this port for http protocol|
 
 ## Installation Steps
 

@@ -42,12 +42,14 @@ import { toPromise, CustomComparator } from '../utils';
 import { State, Comparator } from 'clarity-angular';
 
 import { LIST_REPLICATION_RULE_TEMPLATE } from './list-replication-rule.component.html';
+import { LIST_REPLICATION_RULE_CSS } from './list-replication-rule.component.css';
 import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
 import {Observable} from "rxjs/Observable";
 
 @Component({
   selector: 'hbr-list-replication-rule',
   template: LIST_REPLICATION_RULE_TEMPLATE,
+  styles: [LIST_REPLICATION_RULE_CSS],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListReplicationRuleComponent implements OnInit, OnChanges {
@@ -100,6 +102,14 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
   public get opereateAvailable(): boolean {
     return !this.readonly && !this.projectId ? true : false;
+  }
+
+  trancatedDescription(desc: string): string {
+    if (desc.length > 35 ) {
+      return desc.substr(0, 35);
+    } else {
+      return desc;
+    }
   }
 
   ngOnInit(): void {

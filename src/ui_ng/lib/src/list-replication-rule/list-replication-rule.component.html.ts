@@ -18,7 +18,15 @@ export const LIST_REPLICATION_RULE_TEMPLATE: string = `
         <clr-dg-cell *ngIf="!projectScope">
             <a href="javascript:void(0)" (click)="redirectTo(p)">{{p.projects?.length>0  ? p.projects[0].name : ''}}</a>
         </clr-dg-cell>
-        <clr-dg-cell>{{p.description ? p.description : '-'}}</clr-dg-cell>
+        <clr-dg-cell>
+            {{p.description ? trancatedDescription(p.description) : '-'}}
+            <clr-tooltip>
+                <clr-icon *ngIf="p.description && p.description.length > 35" clrTooltipTrigger shape="ellipsis-horizontal" size="18"></clr-icon>
+                <clr-tooltip-content clrPosition="bottom-right" clrSize="md" *clrIfOpen>
+                    <span>{{p.description}}</span>
+                </clr-tooltip-content>
+            </clr-tooltip>
+        </clr-dg-cell>
         <clr-dg-cell>{{p.targets?.length>0 ? p.targets[0].name : ''}}</clr-dg-cell>
         <clr-dg-cell>{{p.trigger ? p.trigger.kind : ''}}</clr-dg-cell>
     </clr-dg-row>
