@@ -154,7 +154,6 @@ export class MemberComponent implements OnInit, OnDestroy {
         initBatchMessage.name = data.username;
         this.batchActionInfos.push(initBatchMessage);
       });
-      this.OperateDialogService.addBatchInfoList(this.batchActionInfos);
 
       this.changeOpe(m);
     }

@@ -11,12 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+// import { RepositoryComponent} from 'harbor-ui';
 import { AppConfigService } from '../../app-config.service';
 import { SessionService } from '../../shared/session.service';
 import { TagClickEvent } from 'harbor-ui';
 import { Project } from '../../project/project';
+import { RepositoryComponent } from 'harbor-ui/src/repository/repository.component';
 
 @Component({
   selector: 'tag-repository',
@@ -29,6 +31,9 @@ export class TagRepositoryComponent implements OnInit {
   repoName: string;
   hasProjectAdminRole: boolean = false;
   registryUrl: string;
+
+  @ViewChild(RepositoryComponent)
+  repositoryComponent: RepositoryComponent;
 
   constructor(
     private route: ActivatedRoute,
@@ -65,6 +70,9 @@ export class TagRepositoryComponent implements OnInit {
     return this.session.getCurrentUser() !== null;
   }
 
+  hasChanges(): boolean {
+    return this.repositoryComponent.hasChanges();
+  }
   watchTagClickEvt(tagEvt: TagClickEvent): void {
     let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name, 'tags', tagEvt.tag_name];
     this.router.navigate(linkUrl);
