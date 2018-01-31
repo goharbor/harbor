@@ -354,6 +354,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   hideJobs() {
     this.search.ruleId = 0;
+    this.jobs = [];
   }
 
   stopJobs() {
