@@ -112,6 +112,9 @@ Delete Project
     Sleep  1
     Click Element  xpath=//button[contains(.,"Delete")]
     Sleep  2
+    Click Element  xpath=//clr-modal//button[2]
+    Sleep  1
+    Click Element  xpath=//button[contains(.,"CLOSE")]
 
 Project Should Not Be Deleted
     [Arguments]  ${projname}

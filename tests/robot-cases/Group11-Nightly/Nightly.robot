@@ -308,6 +308,7 @@ Test Case - Delete Multi Project
     Push Image  ${ip}  test${d}  Test1@34  projecta${d}  hello-world
     Filter Object  project
     Multi-delete Object  projecta  projectb
+    Partly Success
     # Verify delete project with image should not be deleted directly
     Page Should Contain  projecta${d}
     Page Should Not Contain  projectb${d}
@@ -327,8 +328,7 @@ Test Case - Delete Multi User
     Filter Object  delete
     Multi-delete Object  deletea  deleteb  deletec
     # Assert delete 
-    # Delete Success  comment temp  wait for fixing
-    Click Element  //clr-modal//button[contains(.,'CLOSE')]
+    Delete Success  
     Sleep  1
     # Filter object  delete
     Page Should Not Contain  deletea
@@ -377,6 +377,7 @@ Test Case - Delete Multi Member
     Add Guest Member to project  testa${d}
     Add Guest Member to project  testb${d}
     Multi-delete Member  testa${d}  testb${d}
+    Delete Success
     Page Should Not Contain  testa${d}
     Close Browser
     

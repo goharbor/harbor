@@ -108,6 +108,10 @@ Delete Project Member
     Click Element  xpath=//clr-dg-row[contains(.,'${member}')]//input/../label
     Click Element  xpath=${project_member_delete_button_xpath}
     Sleep  2
+    Click Element  xpath=//button[contains(.,'DELETE')]
+    Sleep  2
+    Click Element  xpath=//button[contains(.,'CLOSE')]
+    Sleep  1
 
 User Should Be Owner Of Project
     [Arguments]  ${user}  ${pwd}  ${project}
