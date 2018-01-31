@@ -15,7 +15,7 @@ export const ENDPOINT_TEMPLATE = `
             <clr-datagrid [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
                 <clr-dg-action-bar>
                     <button type="button" class="btn btn-sm btn-secondary" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'DESTINATION.NEW_ENDPOINT' | translate}}</button>
-                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length ===1)"  (click)="editTargets(selectedRow)" ><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'DESTINATION.TITLE_EDIT' | translate}}</button>
+                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length ===1)"  (click)="editTargets(selectedRow)" ><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'DESTINATION.EDIT' | translate}}</button>
                     <button type="button" class="btn btn-sm btn-secondary" [disabled]="!selectedRow.length" (click)="deleteTargets(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'DESTINATION.DELETE' | translate}}</button>
                 </clr-dg-action-bar>
                 <clr-dg-column [clrDgField]="'name'">{{'DESTINATION.NAME' | translate}}</clr-dg-column>
