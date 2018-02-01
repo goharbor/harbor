@@ -121,12 +121,6 @@
   version = "v1.3.0"
 
 [[projects]]
-  name = "github.com/go-redsync/redsync"
-  packages = ["."]
-  revision = "98dabdf1c8574561bf976911c14ff652c47b1ddf"
-  version = "v1.0.1"
-
-[[projects]]
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
   revision = "a732e14c62dde3285440047bba97581bc472ae18"
@@ -198,17 +192,6 @@
   version = "v1.2.0"
 
 [[projects]]
-  name = "github.com/vmware/harbor"
-  packages = [
-    "src/common/models",
-    "src/common/utils",
-    "src/common/utils/log",
-    "tests/apitests/apilib"
-  ]
-  revision = "76f8882f546fa8f3c6a12a337dded196893dcb3f"
-  version = "v1.3.0"
-
-[[projects]]
   name = "golang.org/x/crypto"
   packages = ["pbkdf2"]
   revision = "5f961cd492ac9d43fc33a8ef646bae79d113fd97"
@@ -264,6 +247,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "49328284c14629d33811bc9d67012a48314bb52bbb4ad7282699afbd4506f287"
+  inputs-digest = "4e59ab14b46d61b63505abcec474b7130e34e212bdecd3a36b41d5f016ba6bf2"
   solver-name = "gps-cdcl"
   solver-version = 1
