@@ -93,8 +93,7 @@ For any reason, if you want to roll back to the previous version of Harbor, foll
     ```
     docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql -v /path/to/backup:/harbor-migration/backup vmware/harbor-db-migrator:[tag] restore
     ```
-    **NOTE:** Rollback from harbor 1.3 to harbor 1.2 must use `vmware/harbor-db-migrator:1.2`. Because of DB engine change.
-
+    **NOTE:** Rollback from harbor 1.3 to harbor 1.2 should delete `/data/database` directory first, then create new database directory `docker-compose up -d && docker-compose stop`. And must use `vmware/harbor-db-migrator:1.2` to restore. Because of DB engine change.
 
 3. Remove current Harbor instance.
     ```

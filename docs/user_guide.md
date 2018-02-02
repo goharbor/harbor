@@ -15,6 +15,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
   * [Manage self-registration.](#managing-self-registration)
   * [Manage email settings.](#managing-email-settings)
 * [Pull and push images using Docker client.](#pulling-and-pushing-images-using-docker-client)
+* [Add description to repositories](#add-description-to-repositories)
 * [Delete repositories and images.](#deleting-repositories)
 * [Content trust.  ](#content-trust)
 * [Vulnerability scanning via Clair.](#vulnerability-scaning-via-clair)
@@ -247,6 +248,19 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 ```  
 
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node.**
+
+###  Add description to repositories
+
+After pushing an image, an Information can be added by project admin to describe this repository.
+
+First, go into the repository and select the "Info" tab.
+
+![select info tab](img/select_info_tab.png)
+
+Next, click the "EDIT" button, an textarea will appear and enter description here. Click "SAVE" button to save this information.
+
+![edit info](img/edit_description.png)
+
 
 ###  Deleting repositories  
 
