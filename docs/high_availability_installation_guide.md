@@ -190,19 +190,16 @@ In ```Harbor.cfg```
 Change the value to your Harbor DB's
 
 ```
-#The password for the root user of mysql db, change this before any production use.
+#The address of the Harbor database. Only need to change when using external db.
+db_host = 192.168.1.215 
+
+#The password for the root user of Harbor database. Change this before any production use.
 db_password = root123
 
-...
-
-#####################################################
-#the address of the mysql database.
-db_host = 192.168.1.215
-
-#The port of mysql database host
+#The port of Harbor database host
 db_port = 3306
 
-#The user name of mysql database
+#The user name of Harbor database
 db_user = root
 
 ```
@@ -221,20 +218,15 @@ If you have multiple Redis servers then separate them with ";"
 In harbor.cfg
 
 ```
-clair_db_password = password
 
-...
-
-#Clair DB host address
 clair_db_host = 192.168.1.50
 
-#Clair DB connect port
+clair_db_password = password
+
 clair_db_port = 5432
 
-#Clair DB username
 clair_db_username = postgres
 
-#Clair default database
 clair_db = postgres
 
 ```
