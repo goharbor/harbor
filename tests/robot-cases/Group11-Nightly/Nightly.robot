@@ -353,12 +353,12 @@ Test Case - Delete Multi Tag
     ${d}=   Get Current Date    result_format=%m%s
     Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
     Create An New Project  project${d}
-    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  hello-world  latest
-    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  hello-world  v1
+    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  redis  3.2.10-alpine
+    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  redis  4.0.7-alpine
     Sleep  2
     Go Into Project  project${d}
-    Go Into Repo  hello-world
-    Multi-delete object  latest  v1
+    Go Into Repo  redis
+    Multi-delete object  3.2.10-alpine  4.0.7-alpine
     # Verify
     Delete Success
     Close Browser
