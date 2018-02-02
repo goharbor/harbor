@@ -5,8 +5,8 @@ cp tests/docker-compose.test.yml make/.
 mkdir -p /etc/ui
 cp make/common/config/ui/private_key.pem /etc/ui/.
 
-mkdir conf
-cp make/common/config/ui/app.conf conf/.
+mkdir src/ui/conf
+cp make/common/config/ui/app.conf src/ui/conf/.
 IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
 echo "server ip is "$IP
 sed -i -r "s/MYSQL_HOST=mysql/MYSQL_HOST=$IP/" make/common/config/adminserver/env

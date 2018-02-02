@@ -28,7 +28,7 @@ type Project struct {
 	OwnerID      int               `orm:"column(owner_id)" json:"owner_id"`
 	Name         string            `orm:"column(name)" json:"name"`
 	CreationTime time.Time         `orm:"column(creation_time)" json:"creation_time"`
-	UpdateTime   time.Time         `orm:"update_time" json:"update_time"`
+	UpdateTime   time.Time         `orm:"column(update_time)" json:"update_time"`
 	Deleted      int               `orm:"column(deleted)" json:"deleted"`
 	OwnerName    string            `orm:"-" json:"owner_name"`
 	Togglable    bool              `orm:"-" json:"togglable"`

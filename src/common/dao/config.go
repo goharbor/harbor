@@ -34,8 +34,8 @@ func AuthModeCanBeModified() (bool, error) {
 func GetConfigEntries() ([]*models.ConfigEntry, error) {
 	o := GetOrmer()
 	var p []*models.ConfigEntry
-	sql:="select * from properties"
-	n,err := o.Raw(sql,[]interface{}{}).QueryRows(&p)
+	sql := "select * from properties"
+	n, err := o.Raw(sql, []interface{}{}).QueryRows(&p)
 
 	if err != nil {
 		return nil, err
@@ -44,23 +44,23 @@ func GetConfigEntries() ([]*models.ConfigEntry, error) {
 	if n == 0 {
 		return nil, nil
 	}
-	return p,nil
+	return p, nil
 }
 
 // SaveConfigEntries Save configuration to database.
-func SaveConfigEntries(entries []models.ConfigEntry) error{
+func SaveConfigEntries(entries []models.ConfigEntry) error {
 	o := GetOrmer()
-	tempEntry:=models.ConfigEntry{}
-	for _, entry := range entries{
+	for _, entry := range entries {
+		tempEntry := models.ConfigEntry{}
 		tempEntry.Key = entry.Key
 		tempEntry.Value = entry.Value
-		created, _, error := o.ReadOrCreate(&tempEntry,"k")
+		created, _, error := o.ReadOrCreate(&tempEntry, "k")
 		if error != nil {
 			return error
 		}
 		if !created {
 			entry.ID = tempEntry.ID
-			_ ,err := o.Update(&entry,"v")
+			_, err := o.Update(&entry, "v")
 			if err != nil {
 				return err
 			}
