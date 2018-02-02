@@ -110,17 +110,17 @@ You can check one or more members, then click `MEMBER ACTION`, choose one role t
 ## Replicating images  
 Images replication is used to replicate repositories from one Harbor instance to another.
 
-The function is project-oriented, and once the system administrator set a rule to one project, all repositories under the project that match the defined [filter](#replication-filter) patterns will be replicated to the remote registry when the [triggering condition](#replication-triggering-condition) is triggered. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
+The function is project-oriented, and once the system administrator set a rule to one project, all repositories under the project that match the defined [filter](#image-filter) patterns will be replicated to the remote registry when the [triggering condition](#trigger-mode) is triggered. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
 
-There may be a bit of delay during replication according to the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later.  
+There may be a bit of delay during replication according to the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later and the schedule will keep trying until the network issue resolved.  
 
 **Note:** The replication feature is incompatible between Harbor instance before version 0.3.5(included) and after version 0.3.5. 
 
 ### Creating a replication rule
-Replication can be configured by creating a rule. Click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication filters and triggering conditions according the different requirements. If there is no endpoint available in the list, you need to create one. Click `OK` to create a replication rule for the selected project. If `Replicate existing images immediately` is chosen, the existing images under the project will be replicated to the remote registry immediately.  
+Replication can be configured by creating a rule. Click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different image filters and trigger modes according to the different requirements. If there is no endpoint available in the list, you need to create one. Click `SAVE` to create a replication rule for the selected project. If `Replicate existing images immediately` is chosen, the existing images under the project will be replicated to the remote registry immediately.  
 
-#### Replication filter
-Two replication filters are supported:
+#### Image filter
+Two image filters are supported:
 * **Repository**: Filter images according to the repository part of image name.
 * **Tag**: Filter images according to the tag part of image name.
 
@@ -128,20 +128,20 @@ Two terms are supported in filter pattern:
 * **\***: Matches any sequence of non-separator characters `/`.
 * **?**: Matches any single non-separator character `/`.
 
-#### Replication triggering condition
+#### Trigger mode
+* **Manual**: Replicate the repositories manually when needed. **Note**: The deletion operations are not replicated. 
 * **Immediate**: When a new repository is pushed to the project, it is replicated to the remote registry immediately. Same to the deletion operation if the `Delete remote images when locally deleted` checkbox is selected.
-* **Scheduled**: Replicate the repositories daily or weekly. **Note**: The deletion operations are not replicated.
-* **Manual**: Replicate the repositories manually when needed. **Note**: The deletion operations are not replicated.  
+* **Scheduled**: Replicate the repositories daily or weekly. **Note**: The deletion operations are not replicated. 
 
 ![browse project](img/create_rule.png)
 
 ### Listing and stopping replication jobs
-Click a rule, jobs which belong to this rule will be listed. A job represents the progress of replicating the repository to the remote instance. Click `STOP JOBS`, the pending/running/retrying jobs will be stopped.  
+Click a rule, jobs which belong to this rule will be listed. A job represents the progress of replicating the repository to the remote instance. Click `STOP JOBS`, the pending and retrying jobs will be stopped immediately and the running jobs will be canceled at the next checkpoint.  
 
 ![browse project](img/list_stop_jobs.png)
 
 ### Starting a replication manually
-Start a new replication by selecting the replication rule and clicking `REPLICATE`. If there is any pending/running job that belongs to the rule, new replication will not be started.
+Select a replication rule and click `REPLICATE`, the images under the project which the rule is applied to will be replicated to the remote registry immediately. If there is any pending/running job that belongs to the rule, the new replication will not be started.
 
 ![browse project](img/start_replicate.png)
 
@@ -151,7 +151,7 @@ Select the replication rule and click `DELETE` to delete it. Only rules which ha
 ![browse project](img/delete_rule.png)
 
 
-The system administrator can operate the replication rule defined for the specified project in `Replication` tab under `Projects` view. Project administrator has read-only privilege.
+The system administrator can also operate the replication rules defined for the specified project in `Replication` tab under `Projects` view. Project administrator has read-only privilege.
 
 ![browse project](img/rule_under_project_view.png)
 
