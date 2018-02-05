@@ -91,6 +91,9 @@ fi
 
 echo "--------------------------------------------------"
 echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
+echo "Running CI for DRONE_COMMIT_BRANCH on $DRONE_COMMIT_BRANCH"
+echo "Running CI for DRONE_BRANCH on $DRONE_BRANCH"
+echo "Running CI for DRONE_REPO_BRANCH on $DRONE_REPO_BRANCH"
 echo "--------------------------------------------------"
 
 ##
