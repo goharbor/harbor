@@ -38,8 +38,8 @@ type User struct {
 	HasAdminRole int       `orm:"column(sysadmin_flag)" json:"has_admin_role"`
 	ResetUUID    string    `orm:"column(reset_uuid)" json:"reset_uuid"`
 	Salt         string    `orm:"column(salt)" json:"-"`
-	CreationTime time.Time `orm:"creation_time" json:"creation_time"`
-	UpdateTime   time.Time `orm:"update_time" json:"update_time"`
+	CreationTime time.Time `orm:"column(creation_time)" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time)" json:"update_time"`
 }
 
 // UserQuery ...

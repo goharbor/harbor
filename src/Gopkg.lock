@@ -27,6 +27,7 @@
     "cache",
     "config",
     "context",
+    "context/param",
     "grace",
     "logs",
     "orm",
@@ -36,8 +37,8 @@
     "utils",
     "validation"
   ]
-  revision = "1aeb3d90512734def678c7aa9f612fe6f659e6b5"
-  version = "v1.6.1"
+  revision = "d96289a81bf67728cff7a19b067aaecc65a62ec6"
+  version = "v1.9.0"
 
 [[projects]]
   name = "github.com/beego/i18n"
@@ -247,6 +248,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4e59ab14b46d61b63505abcec474b7130e34e212bdecd3a36b41d5f016ba6bf2"
+  inputs-digest = "4375660bb0d5d8993171781c253b8ba8ac6d20ee8950c357b642dc0f6f841e09"
   solver-name = "gps-cdcl"
   solver-version = 1

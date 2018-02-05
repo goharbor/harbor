@@ -24,13 +24,11 @@ package context
 
 import (
 	"bufio"
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"strconv"
@@ -67,18 +65,18 @@ func (ctx *Context) Reset(rw http.ResponseWriter, r *http.Request) {
 	ctx.ResponseWriter.reset(rw)
 	ctx.Input.Reset(ctx)
 	ctx.Output.Reset(ctx)
+	ctx._xsrfToken = ""
 }
 
 // Redirect does redirection to localurl with http header status code.
-// It sends http response header directly.
 func (ctx *Context) Redirect(status int, localurl string) {
-	ctx.Output.Header("Location", localurl)
-	ctx.ResponseWriter.WriteHeader(status)
+	http.Redirect(ctx.ResponseWriter, ctx.Request, localurl, status)
 }
 
 // Abort stops this request.
 // if beego.ErrorMaps exists, panic body.
 func (ctx *Context) Abort(status int, body string) {
+	ctx.Output.SetStatus(status)
 	panic(body)
 }
 
@@ -173,6 +171,22 @@ func (ctx *Context) CheckXSRFCookie() bool {
 	return true
 }
 
+// RenderMethodResult renders the return value of a controller method to the output
+func (ctx *Context) RenderMethodResult(result interface{}) {
+	if result != nil {
+		renderer, ok := result.(Renderer)
+		if !ok {
+			err, ok := result.(error)
+			if ok {
+				renderer = errorRenderer(err)
+			} else {
+				renderer = jsonRenderer(result)
+			}
+		}
+		renderer.Render(ctx)
+	}
+}
+
 //Response is a wrapper for the http.ResponseWriter
 //started set to true if response was written to then don't execute other handler
 type Response struct {
@@ -193,14 +207,6 @@ func (r *Response) reset(rw http.ResponseWriter) {
 func (r *Response) Write(p []byte) (int, error) {
 	r.Started = true
 	return r.ResponseWriter.Write(p)
-}
-
-// Copy writes the data to the connection as part of an HTTP reply,
-// and sets `started` to true.
-// started means the response has sent out.
-func (r *Response) Copy(buf *bytes.Buffer) (int64, error) {
-	r.Started = true
-	return io.Copy(r.ResponseWriter, buf)
 }
 
 // WriteHeader sends an HTTP response header with status code,
