@@ -80,8 +80,6 @@ services:
       - /data/secretkey:/etc/ui/key:z
       - /data/ca_download/:/etc/ui/ca/:z
       - /data/psc/:/etc/ui/token/:z
-    extra_hosts:
-      - "PKS_UAA_HOST:127.0.0.1"
     networks:
       - harbor
     depends_on:
