@@ -104,10 +104,12 @@ func Login(m models.AuthModel) (*models.User, error) {
 		return nil, nil
 	}
 	user, err := authenticator.Authenticate(m)
-	if user == nil && err == nil {
-		log.Debugf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
-		lock.Lock(m.Principal)
-		time.Sleep(frozenTime)
+	if user == nil {
+		if err == nil {
+			log.Debugf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
+			lock.Lock(m.Principal)
+			time.Sleep(frozenTime)
+		}
 		return user, err
 	}
 
