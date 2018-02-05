@@ -48,10 +48,10 @@ harbor_builds_bucket="harbor-builds"
 harbor_releases_bucket="harbor-releases"
 harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
 harbor_target_bucket=""
-if [ $DRONE_BRANCH == "master" ]; then
+if [ $DRONE_REPO_BRANCH == "master" ]; then
   harbor_target_bucket=$harbor_builds_bucket
 else
-  harbor_target_bucket=$harbor_releases_bucket/$DRONE_BRANCH
+  harbor_target_bucket=$harbor_releases_bucket/$DRONE_REPO_BRANCH
 fi
 
 # GC credentials
@@ -90,7 +90,9 @@ if [ $DRONE_REPO != "vmware/harbor" ]; then
 fi
 
 echo "--------------------------------------------------"
-echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
+echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_REPO_BRANCH"
+echo "DRONE_REPO_BRANCH $DRONE_REPO_BRANCH"
+echo "DRONE_COMMIT_BRANCH $DRONE_COMMIT_BRANCH"
 echo "--------------------------------------------------"
 
 ##
