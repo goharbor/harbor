@@ -11,7 +11,7 @@ pipeline:
     recursive: false
 
   test-and-issue-build:
-    image: vmware/harbor-e2e-engine:1.38
+    image: vmware/harbor-e2e-engine:1.39
     pull: true
     privileged: true
     environment:

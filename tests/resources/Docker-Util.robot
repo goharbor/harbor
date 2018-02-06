@@ -145,3 +145,5 @@ Docker Login Fail
     Log To Console  \nRunning docker login ${ip} ...
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
     Should Not Be Equal As Integers  ${rc}  0
+    Should Contain  ${output}  unauthorized: authentication required
+    Should Not Contain  ${output}  500 Internal Server Error
