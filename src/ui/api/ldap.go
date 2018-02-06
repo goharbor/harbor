@@ -84,21 +84,7 @@ func (l *LdapAPI) Ping() {
 func (l *LdapAPI) Search() {
 	var err error
 	var ldapUsers []models.LdapUser
-	var ldapConfs models.LdapConf
 	var ldapSession *ldapUtils.Session
-	l.Ctx.Input.CopyBody(1 << 32)
-	if string(l.Ctx.Input.RequestBody) == "" {
-		ldapSession, err = ldapUtils.LoadSystemLdapConfig()
-		if err != nil {
-			log.Errorf("can't load system configuration, error: %v", err)
-			l.RenderError(http.StatusInternalServerError, loadSystemErrorMessage)
-			return
-		}
-	} else {
-		l.DecodeJSONReqAndValidate(&ldapConfs)
-		ldapSession, err = ldapUtils.CreateWithConfig(ldapConfs)
-	}
-
 	if err = ldapSession.Open(); err != nil {
 		log.Errorf("can't Open ldap session, error: %v", err)
 		l.RenderError(http.StatusInternalServerError, canNotOpenLdapSession)
@@ -210,4 +196,25 @@ func importUsers(ldapConfs models.LdapConf, ldapImportUsers []string) ([]models.
 	}
 
 	return failedImportUser, nil
+}
+
+// SearchGroup ...
+func (l *LdapAPI) SearchGroup() {
+	searchName := l.GetString("groupname")
+	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
+	if err != nil {
+		log.Errorf("can't get ldap system config, error: %v", err)
+		l.RenderError(http.StatusInternalServerError, loadSystemErrorMessage)
+		return
+	}
+	ldapSession.Open()
+	defer ldapSession.Close()
+	ldapGroups, err := ldapSession.SearchGroupByName(searchName)
+	if err != nil {
+		log.Errorf("can't search ldap group by name, error: %v", err)
+		l.RenderError(http.StatusInternalServerError, loadSystemErrorMessage)
+		return
+	}
+	l.Data["json"] = ldapGroups
+	l.ServeJSON()
 }

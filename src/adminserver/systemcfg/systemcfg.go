@@ -89,6 +89,13 @@ var (
 			env:   "LDAP_VERIFY_CERT",
 			parse: parseStringToBool,
 		},
+		common.LDAPGroupBaseDN:        "LDAP_GROUP_BASEDN",
+		common.LDAPGroupSearchFilter:  "LDAP_GROUP_FILTER",
+		common.LDAPGroupAttributeName: "LDAP_GROUP_GID",
+		common.LDAPGroupSearchScope: &parser{
+			env:   "LDAP_GROUP_SCOPE",
+			parse: parseStringToInt,
+		},
 		common.EmailHost: "EMAIL_HOST",
 		common.EmailPort: &parser{
 			env:   "EMAIL_PORT",

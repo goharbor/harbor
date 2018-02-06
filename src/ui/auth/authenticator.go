@@ -166,6 +166,21 @@ func SearchUser(username string) (*models.User, error) {
 	return helper.SearchUser(username)
 }
 
+// SearchAndOnboardUser ...
+func SearchAndOnboardUser(username string) (int, error) {
+	user, err := SearchUser(username)
+	if err != nil {
+		return 0, err
+	}
+	if user != nil {
+		err = OnBoardUser(user)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return user.UserID, nil
+}
+
 // PostAuthenticate -
 func PostAuthenticate(u *models.User) error {
 	helper, err := getHelper()

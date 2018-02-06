@@ -22,6 +22,7 @@ import (
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/dao/project"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/test"
@@ -46,7 +47,7 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.LDAPBaseDN:    "dc=example,dc=com",
 	common.LDAPUID:       "uid",
 	common.LDAPFilter:    "",
-	common.LDAPScope:     3,
+	common.LDAPScope:     2,
 	common.LDAPTimeout:   30,
 	//	config.TokenServiceURL:            "",
 	//	config.RegistryURL:                "",
@@ -63,7 +64,11 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	//	config.TokenExpiration:            30,
 	common.CfgExpiration: 5,
 	//	config.JobLogDir:                  "/var/log/jobs",
-	common.AdminInitialPassword: "password",
+	common.AdminInitialPassword:   "password",
+	common.LDAPGroupSearchFilter:  "objectclass=groupOfNames",
+	common.LDAPGroupBaseDN:        "dc=example,dc=com",
+	common.LDAPGroupAttributeName: "cn",
+	common.LDAPGroupSearchScope:   2,
 }
 
 func TestMain(m *testing.M) {
@@ -101,6 +106,24 @@ func TestMain(m *testing.M) {
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
+
+	//Extract to test utils
+	initSqls := []string{
+		"insert into user (username, email, password, realname)  values ('member_test_01', 'member_test_01@example.com', '123456', 'member_test_01')",
+		"insert into project (name, owner_id) values ('member_test_01', 1)",
+		"insert into user_group (group_name, group_type, group_property) values ('test_group_01', 1, 'CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com')",
+		"update project set owner_id = (select user_id from user where username = 'member_test_01') where name = 'member_test_01'",
+		"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select user_id from user where username = 'member_test_01'), 'u', 1)",
+		"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_group_01'), 'g', 1)",
+	}
+
+	clearSqls := []string{
+		"delete from project where name='member_test_01'",
+		"delete from user where username='member_test_01' or username='pm_sample'",
+		"delete from user_group",
+		"delete from project_member",
+	}
+	dao.PrepareTestData(clearSqls, initSqls)
 
 	retCode := m.Run()
 	os.Exit(retCode)
@@ -306,4 +329,86 @@ func TestPostAuthentication(t *testing.T) {
 	}
 	assert.EqualValues("test003@example.com", dbUser.Email)
 	dao.CleanUser(int64(dbUser.UserID))
+}
+
+func TestSearchAndOnboardUser(t *testing.T) {
+	userID, err := auth.SearchAndOnboardUser("mike02")
+	defer dao.CleanUser(int64(userID))
+	if err != nil {
+		t.Errorf("Error occurred when SearchAndOnboardUser: %v", err)
+	}
+	if userID == 0 {
+		t.Errorf("Can not search and onboard user %v", "mike")
+	}
+}
+func TestAddProjectMemberWithLdapUser(t *testing.T) {
+
+	currentProject, err := dao.GetProjectByName("member_test_01")
+	if err != nil {
+		t.Errorf("Error occurred when GetProjectByName: %v", err)
+	}
+	member := models.MemberReq{
+		ProjectID:    currentProject.ProjectID,
+		EntityType:   common.UserMember,
+		Role:         models.PROJECTADMIN,
+		LdapUserName: "mike",
+	}
+
+	pmid, err := project.AddProjectMember(member)
+	if err != nil {
+		t.Errorf("Error occurred in AddProjectMember: %v", err)
+	}
+	if pmid == 0 {
+		t.Errorf("Error add project member, pmid=0")
+	}
+
+	queryMember := models.Member{
+		ProjectID: currentProject.ProjectID,
+		ID:        pmid,
+	}
+
+	memberList, err := project.GetProjectMember(queryMember)
+	if err != nil {
+		t.Errorf("Failed to query project member, %v, error: %v", queryMember, err)
+	}
+
+	if len(memberList) == 0 {
+		t.Errorf("Failed to query project member, %v", queryMember)
+	}
+
+}
+func TestAddProjectMemberWithLdapGroup(t *testing.T) {
+
+	currentProject, err := dao.GetProjectByName("member_test_01")
+	if err != nil {
+		t.Errorf("Error occurred when GetProjectByName: %v", err)
+	}
+	member := models.MemberReq{
+		ProjectID:   currentProject.ProjectID,
+		EntityType:  common.GroupMember,
+		Role:        models.PROJECTADMIN,
+		LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
+	}
+
+	pmid, err := project.AddProjectMember(member)
+	if err != nil {
+		t.Errorf("Error occurred in AddProjectMember: %v", err)
+	}
+	if pmid == 0 {
+		t.Errorf("Error add project member, pmid=0")
+	}
+
+	queryMember := models.Member{
+		ProjectID: currentProject.ProjectID,
+		ID:        pmid,
+	}
+
+	memberList, err := project.GetProjectMember(queryMember)
+	if err != nil {
+		t.Errorf("Failed to query project member, %v, error: %v", queryMember, err)
+	}
+
+	if len(memberList) == 0 {
+		t.Errorf("Failed to query project member, %v", queryMember)
+	}
 }
