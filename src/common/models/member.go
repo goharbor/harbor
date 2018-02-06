@@ -16,6 +16,17 @@ package models
 
 // Member holds the details of a member.
 type Member struct {
+	ID         int    `orm:"pk;column(id)" json:"id"`
+	ProjectID  int64  `orm:"column(project_id)" json:"project_id"`
+	Entityname string `orm:"column(entity_name)" json:"entity_name"`
+	Rolename   string `json:"role_name"`
+	Role       int    `json:"role_id"`
+	EntityID   int    `orm:"column(entity_id)" json:"entity_id"`
+	EntityType string `orm:"column(entity_type)" json:"entity_type"`
+}
+
+// UserMember ...
+type UserMember struct {
 	ID       int    `orm:"pk;column(user_id)" json:"user_id"`
 	Username string `json:"username"`
 	Rolename string `json:"role_name"`

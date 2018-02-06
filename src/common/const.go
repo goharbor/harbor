@@ -84,4 +84,6 @@ const (
 	CfgDriverJSON               = "json"
 	NewHarborAdminName          = "admin@harbor.local"
 	RegistryStorageProviderName = "registry_storage_provider_name"
+	UserMember                  = "u"
+	GroupMember                 = "g"
 )

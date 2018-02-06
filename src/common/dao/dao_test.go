@@ -49,7 +49,7 @@ func cleanByUser(username string) {
 
 	err = execUpdate(o, `delete 
 		from project_member 
-		where user_id = (
+		where entity_id = (
 			select user_id
 			from user
 			where username = ?
@@ -661,7 +661,7 @@ func TestGetUserByProject(t *testing.T) {
 }
 
 func TestGetUserProjectRoles(t *testing.T) {
-	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
+	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID, common.UserMember)
 	if err != nil {
 		t.Errorf("Error happened in GetUserProjectRole: %v, userID: %+v, project Id: %d", err, currentUser.UserID, currentProject.ProjectID)
 	}
@@ -701,12 +701,19 @@ func TestGetProjects(t *testing.T) {
 }
 
 func TestAddProjectMember(t *testing.T) {
-	err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER)
+	pmid, err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER, common.UserMember)
 	if err != nil {
 		t.Errorf("Error occurred in AddProjectMember: %v", err)
 	}
+	if pmid == 0 {
+		t.Errorf("Error add project member, pmid=0")
+	}
+	pmid, err = AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER, "randomstring")
+	if err == nil {
+		t.Errorf("Should failed on adding project member when adding duplicated items")
+	}
 
-	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID, common.UserMember)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}
@@ -725,11 +732,11 @@ func TestAddProjectMember(t *testing.T) {
 }
 
 func TestUpdateProjectMember(t *testing.T) {
-	err := UpdateProjectMember(currentProject.ProjectID, 1, models.GUEST)
+	err := UpdateProjectMember(currentProject.ProjectID, 1, models.GUEST, "randomstring")
 	if err != nil {
 		t.Errorf("Error occurred in UpdateProjectMember: %v", err)
 	}
-	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID, common.UserMember)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}
@@ -740,12 +747,12 @@ func TestUpdateProjectMember(t *testing.T) {
 }
 
 func TestDeleteProjectMember(t *testing.T) {
-	err := DeleteProjectMember(currentProject.ProjectID, 1)
+	err := DeleteProjectMember(currentProject.ProjectID, 1, "randomstring")
 	if err != nil {
 		t.Errorf("Error occurred in DeleteProjectMember: %v", err)
 	}
 
-	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID, common.UserMember)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}

@@ -59,7 +59,16 @@ create table user (
 insert into user (username, email, password, realname, comment, deleted, sysadmin_flag, creation_time, update_time) values 
 ('admin', 'admin@example.com', '', 'system admin', 'admin user',0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('anonymous', 'anonymous@example.com', '', 'anonymous user', 'anonymous user', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-                                                                          
+
+create table user_group (
+id INTEGER PRIMARY KEY,
+group_name varchar(255) NOT NULL,
+group_type int default 0,
+group_property varchar(512) NOT NULL,
+creation_time timestamp default CURRENT_TIMESTAMP,
+update_time timestamp default CURRENT_TIMESTAMP
+);
+
 create table project (
  project_id INTEGER PRIMARY KEY,
  owner_id int NOT NULL,
@@ -78,20 +87,21 @@ create table project (
 insert into project (owner_id, name, creation_time, update_time) values 
 (1, 'library', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
+
+
 create table project_member (
+ id INTEGER PRIMARY KEY,
  project_id int NOT NULL,
- user_id int NOT NULL,
+ entity_id int NOT NULL,
+ entity_type char NOT NULL,
  role int NOT NULL,
- creation_time timestamp,
- update_time timestamp,
- PRIMARY KEY (project_id, user_id),
- FOREIGN KEY (role) REFERENCES role(role_id),
- FOREIGN KEY (project_id) REFERENCES project(project_id),
- FOREIGN KEY (user_id) REFERENCES user(user_id)
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP,
+ UNIQUE (project_id, entity_id, entity_type)
  );
 
-insert into project_member (project_id, user_id, role, creation_time, update_time) values
-(1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+insert into project_member (project_id, entity_id, role, entity_type) values
+(1, 1, 1, 'u');
 
 create table project_metadata (
  id INTEGER PRIMARY KEY,
@@ -235,3 +245,4 @@ create table alembic_version (
 );
 
 insert into alembic_version values ('1.4.0');
+

@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/replication"
@@ -320,10 +321,10 @@ func TestRepPolicyAPIList(t *testing.T) {
 	}
 	defer dao.DeleteUser(int(proAdminID))
 
-	if err = dao.AddProjectMember(1, int(proAdminID), models.PROJECTADMIN); err != nil {
+	if _, err = dao.AddProjectMember(1, int(proAdminID), models.PROJECTADMIN, common.UserMember); err != nil {
 		panic(err)
 	}
-	defer dao.DeleteProjectMember(1, int(proAdminID))
+	defer dao.DeleteProjectMember(1, int(proAdminID), common.UserMember)
 
 	proDevID, err := dao.Register(projectDev)
 	if err != nil {
@@ -331,10 +332,10 @@ func TestRepPolicyAPIList(t *testing.T) {
 	}
 	defer dao.DeleteUser(int(proDevID))
 
-	if err = dao.AddProjectMember(1, int(proDevID), models.DEVELOPER); err != nil {
+	if _, err = dao.AddProjectMember(1, int(proDevID), models.DEVELOPER, common.UserMember); err != nil {
 		panic(err)
 	}
-	defer dao.DeleteProjectMember(1, int(proDevID))
+	defer dao.DeleteProjectMember(1, int(proDevID), common.UserMember)
 
 	// 400: invalid project ID
 	runCodeCheckingCases(t, &codeCheckingCase{

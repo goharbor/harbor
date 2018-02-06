@@ -36,7 +36,7 @@ import (
 )
 
 //sysadmin has all privileges to all projects
-func listRoles(userID int, projectID int64) ([]models.Role, error) {
+func listRoles(userID int, projectID int64, entityType string) ([]models.Role, error) {
 	roles := make([]models.Role, 0, 1)
 	isSysAdmin, err := dao.IsAdminRole(userID)
 	if err != nil {
@@ -53,7 +53,7 @@ func listRoles(userID int, projectID int64) ([]models.Role, error) {
 		return roles, nil
 	}
 
-	rs, err := dao.GetUserProjectRoles(userID, projectID)
+	rs, err := dao.GetUserProjectRoles(userID, projectID, entityType)
 	if err != nil {
 		log.Errorf("failed to get user %d 's roles for project %d: %v", userID, projectID, err)
 		return roles, err
