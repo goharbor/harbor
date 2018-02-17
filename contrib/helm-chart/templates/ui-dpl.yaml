@@ -1,0 +1,72 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: ui
+  labels:
+    app: ui
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ui
+    spec:
+      containers:
+      - name: ui
+        image: {{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag }}
+        env:
+          - name: UI_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: ui-secrets
+                key: UI_SECRET
+          - name: JOBSERVICE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: jobservice-secrets
+                key: JOBSERVICE_SECRET
+          - name: GODEBUG
+            value: netdns=cgo
+          - name: LOG_LEVEL
+            value: debug
+          - name: CONFIG_PATH
+            value: /etc/ui/app.conf
+          - name: ENABLE_HARBOR_SCAN_ON_PUSH
+            value: "1"
+        imagePullPolicy: {{ .Values.ui.pullPolicy }}
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: ui-config
+          mountPath: /etc/ui/app.conf
+          subPath: app.conf
+        - name: ui-secrets-key
+          mountPath: /etc/ui/key
+          subPath: key
+        - name: ui-secrets-private-key
+          mountPath: /etc/ui/private_key.pem
+          subPath: private_key.pem
+        - name: ca-download
+          mountPath: /etc/ui/ca
+        - name: psc
+          mountPath: /etc/ui/token
+      volumes:
+      - name: ui-config
+        configMap:
+          name: ui-config
+      - name: ui-secrets-key
+        secret:
+          secretName: ui-secrets
+          items:
+            - key: key
+              path: key
+      - name: ui-secrets-private-key
+        secret:
+          secretName: ui-secrets
+          items:
+            - key: private_key.pem
+              path: private_key.pem
+      - name: ca-download
+        emptyDir: {}
+      - name: psc
+        emptyDir: {}

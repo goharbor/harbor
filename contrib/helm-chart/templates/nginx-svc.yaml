@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  annotations:
+    {{- range $key, $value := .Values.nginx.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  type: LoadBalancer
+  loadBalancerSourceRanges:
+  {{- range .Values.nginx.loadBalancerSourceRanges }}
+  - {{ . | quote }}
+  {{- end }}
+  ports:
+    - port: 80
+      name: http
+    - port: 443
+      name: https
+  selector:
+    app: nginx

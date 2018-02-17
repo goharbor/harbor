@@ -1,0 +1,34 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: clair
+  labels:
+    app: clair
+spec:
+  replicas: {{ .Values.clair.replicas }}
+  template:
+    metadata:
+      labels:
+        app: clair
+    spec:
+      containers:
+      - name: clair
+        image: {{ .Values.clair.image.repository }}:{{ .Values.clair.image.tag }}
+        args:
+        {{- range .Values.clair.args }}
+        - {{ . | quote }}
+        {{- end }}
+        imagePullPolicy: {{ .Values.clair.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.clair.containerPort }}
+        volumeMounts:
+        - name: clair-config
+          mountPath: /config/config.yaml
+          subPath: config.yaml
+      volumes:
+      - name: clair-config
+        configMap:
+          name: clair-config
+          items:
+            - key: config.yaml
+              path: config.yaml

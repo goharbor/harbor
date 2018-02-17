@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: clair
+  name: clair
+spec:
+  ports:
+    - port: {{ .Values.clair.containerPort }}
+  selector:
+    app: clair

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-config
+data:
+  config.yml: |+
+    version: 0.1
+    log:
+      level: info
+      fields:
+        service: registry
+    storage:
+      delete:
+        enabled: true
+      {{- if eq .Values.provider "gcp" }}
+      gcs:
+      {{- range $key, $value := .Values.registry.storage.gcs }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if eq .Values.provider "aws" }}
+      s3:
+      {{- range $key, $value := .Values.registry.storage.s3 }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+      {{- if eq .Values.provider "azure" }}
+      azure:
+      {{- range $key, $value := .Values.registry.storage.azure }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+    http:
+      addr: :5000
+      secret: placeholder
+      debug:
+        addr: localhost:5001
+    auth:
+      token:
+        issuer: harbor-token-issuer
+        realm: {{ .Values.registry.auth.token.realm }}
+        rootcertbundle: /etc/registry/root.crt
+        service: harbor-registry
+    notifications:
+      endpoints:
+        - name: harbor
+          disabled: false
+          url: http://ui/service/notifications
+          timeout: 3000ms
+          threshold: 5
+          backoff: 1s

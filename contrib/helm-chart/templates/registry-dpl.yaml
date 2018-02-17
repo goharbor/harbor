@@ -1,0 +1,44 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: registry
+  labels:
+    app: registry
+spec:
+  replicas: {{ .Values.registry.replicas }}
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+      - name: registry
+        image: {{ .Values.registry.image.repository }}:{{ .Values.registry.image.tag }}
+        imagePullPolicy: {{ .Values.registry.pullPolicy }}
+        args: ["serve", "/etc/registry/config.yml"]
+        env:
+          - name: REGISTRY_HTTP_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: registry-secrets
+                key: http-secret
+        ports:
+        - containerPort: 5000
+        - containerPort: 5001
+        volumeMounts:
+        - name: registry-root-certificate
+          mountPath: /etc/registry/root.crt
+          subPath: root.crt
+        - name: registry-root-certificate
+          mountPath: /etc/registry/gcs_keyfile.json
+          subPath: gcs_keyfile.json
+        - name: registry-config
+          mountPath: /etc/registry/config.yml
+          subPath: config.yml
+      volumes:
+      - name: registry-root-certificate
+        secret:
+          secretName: registry-secrets
+      - name: registry-config
+        configMap:
+          name: registry-config

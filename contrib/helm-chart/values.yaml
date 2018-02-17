@@ -1,0 +1,153 @@
+# "placeholder" values are typically overloaded by the secrets created by create.sh
+adminserver:
+    image:
+        repository: vmware/harbor-adminserver
+        tag: v1.3.0
+        pullPolicy: IfNotPresent
+    replicas: 1
+    service:
+        labels:
+            app: harbor
+            component: adminserver
+        annotations: {}
+    volumes:
+        name: adminserver-data
+    envVar:
+        logLevel: info
+        extEndpoint: "placeholder"
+        authMode: db_auth
+        selfRegistration: off
+        ldapUrl: ldaps://ldapserver
+        ldapSearchDn: ""
+        ldapBaseDn: ""
+        ldapFilter: (objectClass=person)
+        ldapUid: uid
+        ldapScope: 3
+        ldapTimeout: 5
+        ldapSearchPwd: ""
+        databaseType: mysql
+        mysqlHost: mysql
+        mysqlPort: 3306
+        mysqlUsr: root
+        mysqlDatabase: registry
+        registryUrl: http://registry:5000
+        tokenServiceUrl: http://ui/service/token
+        emailHost: smtp.example.com
+        emailPort: 25
+        emailUsr: sample_admin@example.com
+        emailSsl: False
+        emailFrom: admin <sample_admin@example.com>
+        emailIdentity: ""
+        emailPwd: ""
+        projectCreationRestriction: everyone
+        verifyRemoteCert: on
+        maxJobWorkers: 3
+        tokenExpiration: 30
+        cfgExpiration: 5
+        goDebug: netdns=cgo
+        admiralUrl: NA
+        withNotary: False
+        withClair: True
+        reset: False
+    containerPort: 80
+    emailPassword: "placeholder"
+    harborAdminPassword: "placeholder"
+
+mysql:
+    annotations:
+        volume.beta.kubernetes.io/storage-class: default
+    containerPort: 3306
+    image:
+        repository: vmware/harbor-db
+        tag: v1.3.0
+    pullPolicy: IfNotPresent
+    replicas: 1
+    rootPassword: "placeholder"
+
+clair:
+    args:
+        - "-insecure-tls"
+        - "-config"
+        - "/config/config.yaml"
+    containerPort: 6060
+    image:
+        repository: vmware/clair
+        tag: v2.0.1-photon
+    healthPort: 6061
+    pullPolicy: IfNotPresent
+    replicas: 1
+    updateInterval: 12h
+
+postgres:
+    annotations:
+        volume.beta.kubernetes.io/storage-class: default
+    replicas: 1
+    rootPassword: "placeholder"
+
+jobservice:
+    containerPort: 80
+    image:
+        repository: vmware/harbor-jobservice
+        tag: v1.3.0
+    logLevel: debug
+    pullPolicy: IfNotPresent
+    replicas: 1
+    secret: "placeholder"
+
+nginx:
+    annotations:
+        external-dns.alpha.kubernetes.io/hostname: "placeholder"
+    # use this to restrict range of IP addresses that can reach the registry
+    # ex:
+    #   You're running a bunch of Harbor instances across multiple providers
+    #   and regions but only want them accessible to users/services on a vpn.
+    #   This would allow you to have anonymous usage but only if you're on a vpn
+    # loadBalancerSourceRanges:
+    #     - 10.0.0.0/8
+    ports:
+        - 80
+        - 443
+    pullPolicy: IfNotPresent
+    replicas: 1
+    secretName: "placeholder"
+
+registry:
+    auth:
+        token:
+            realm: "placeholder"
+    httpSecret: "placeholder"
+    gcsKeyFile: "placeholder"
+    image:
+        repository: registry
+        tag: 2.6.2
+    replicas: 1
+    pullPolicy: IfNotPresent
+    # you need to manually create your storage and provide the values here
+    storage:
+        gcs:
+            keyfile: ""
+            bucket: ""
+            chunksize: "5242880"
+        s3:
+            region: ""
+            accesskey: ""
+            secretkey: ""
+            bucket: ""
+            encrypt: "true"
+        azure:
+            accountname: ""
+            accountkey: ""
+            container: ""
+
+ui:
+    image:
+        repository: vmware/harbor-ui
+        tag: v1.3.0
+    pullPolicy: IfNotPresent
+    secret: "placeholder"
+
+sharedKey: "placeholder"
+privateKey: "placeholder"
+rootCert: "placeholder"
+provider: "placeholder"
+region: "placeholder"
