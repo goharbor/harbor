@@ -1,0 +1,31 @@
+{{ if .Values.clair.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "harbor.fullname" . }}-clair"
+  labels:
+{{ include "helm.labels" . | indent 4 }}
+spec:
+  ports:
+    - port: 6060
+  selector:
+    app: "{{ template "harbor.fullname" . }}"
+    component: adminserver
+    release: {{ .Release.Name }}
+---
+---
+# clair host isn't configurable yet.  this creates a service
+# to get it working for now.
+# see https://github.com/vmware/harbor/issues/3250
+apiVersion: v1
+kind: Service
+metadata:
+  name: clair
+spec:
+  ports:
+    - port: 6060
+  selector:
+    app: "{{ template "harbor.fullname" . }}"
+    component: adminserver
+    release: {{ .Release.Name }}
+{{ end }}
