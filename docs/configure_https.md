@@ -11,7 +11,7 @@ In a test or development environment, you may choose to use a self-signed certif
 ```
 ```
   openssl req -x509 -new -nodes -sha512 -days 3650 \
-    -subj "/C=TW/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=a02test12" \
+    -subj "/C=TW/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=yourdomain.com" \
     -key ca.key \
     -out ca.crt
 ```
@@ -25,7 +25,7 @@ Assuming that your registry's **hostname** is **reg.yourdomain.com**, and that i
 **1) Create your own Private Key:**
 
 ```
-  openssl genrsa -out a02test12.key 4096
+  openssl genrsa -out yourdomain.com.key 4096
 ```
 
 **2) Generate a Certificate Signing Request:**
@@ -34,9 +34,9 @@ If you use FQDN like **reg.yourdomain.com** to connect your registry host, then 
 
 ```
   openssl req -sha512 -new \
-    -subj "/C=TW/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=a02test12" \
-    -key a02test12.key \
-    -out a02test12.csr 
+    -subj "/C=TW/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=yourdomain.com" \
+    -key yourdomain.com.key \
+    -out yourdomain.com.csr 
 ```
 
 **3) Generate the certificate of your registry host:**
@@ -54,7 +54,8 @@ extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1 = a02test12
+DNS.1 = yourdomain.com
+DNS.2 = reg.yourdomain.com
 EOF
 ```
 
@@ -63,8 +64,8 @@ EOF
   openssl x509 -req -sha512 -days 3650 \
     -extfile v3.ext \
     -CA ca.crt -CAkey ca.key -CAcreateserial \
-    -in a02test12.csr \
-    -out a02test12.crt
+    -in yourdomain.com.csr \
+    -out yourdomain.com.crt
 ```
 
 ## Getting Client Certificate
@@ -77,7 +78,7 @@ Use OpenSSL’s genrsa and req commands to first generate an RSA key ```client.k
 
 ```
   openssl req -sha512 -new \
-    -subj "/C=TW/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=a02test12" \
+    -subj "/C=TW/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=yourdomain.com" \
     -key client.key \
     -out client.csr
 ```
@@ -100,8 +101,8 @@ After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files,
 you can put them into directory such as ```/root/cert/```:
 
 ```
-  cp a02test12.crt /data/cert/
-  cp a02test12.key /data/cert/ 
+  cp yourdomain.com.crt /data/cert/
+  cp yourdomain.com.key /data/cert/ 
 ```
 
 **2) Configure Client Certificate and CA**
@@ -109,11 +110,11 @@ you can put them into directory such as ```/root/cert/```:
 The Docker daemon interprets ```.crt``` files as CA certificates and ```.cert``` files as client certificates. 
 
 ```
-  cp client.cert /etc/docker/certs.d/a02test12/
-  cp client.key /etc/docker/certs.d/a02test12/
-  cp ca.crt /etc/docker/certs.d/a02test12/
+  cp client.cert /etc/docker/certs.d/yourdomain.com/
+  cp client.key /etc/docker/certs.d/yourdomain.com/
+  cp ca.crt /etc/docker/certs.d/yourdomain.com/
 ```
-Notice that you may need to trust the certificate at OS level. Please refer to the [Troubleshooting](#troubleshooting) section below.
+Notice that you may need to trust the certificate at OS level. Please refer to the [Troubleshooting](#Troubleshooting) section below.
 
 The following illustrates a configuration with custom certificates:
 
@@ -178,7 +179,7 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
 ```
 
 
-## Troubleshooting
+##Troubleshooting
 1. You may get an intermediate certificate from a certificate issuer. In this case, you should merge the intermediate certificate with your own certificate to create a certificate bundle. You can achieve this by the below command:  
 
     ```
@@ -198,4 +199,4 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
     cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/reg.yourdomain.com.crt
     update-ca-trust
     ```
-    
+ 
