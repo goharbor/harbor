@@ -41,7 +41,7 @@ If you use FQDN like **reg.yourdomain.com** to connect your registry host, then 
 
 **3) Generate the certificate of your registry host:**
 
-Whether you're using FQDN like **reg.yourdomain.com** or IP to connect your registry host, run this command to generate the certificate of your registry host which supports x509 v3 extenstions:
+Whether you're using FQDN like **reg.yourdomain.com** or IP to connect your registry host, run this command to generate the certificate of your registry host which complies with Subject Alternative Name (SAN) and x509 v3 extension requirement:
 
 **v3.ext**
 
