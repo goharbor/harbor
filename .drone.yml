@@ -1,5 +1,3 @@
-# Harbor drone.
----
 workspace:
   base: /drone
   path: src/github.com/vmware/harbor
@@ -19,19 +17,20 @@ pipeline:
       GOPATH: /drone
       SHELL: /bin/bash
       LOG_TEMP_DIR: install-logs
-      GITHUB_AUTOMATION_API_KEY:  ${GITHUB_AUTOMATION_API_KEY}
-      DRONE_SERVER:  ${DRONE_SERVER}
-      DRONE_TOKEN:  ${DRONE_TOKEN_INTE}
-      HARBOR_ADMIN: ${HARBOR_ADMIN}
-      HARBOR_PASSWORD: ${HARBOR_PASSWORD}
-      GS_PROJECT_ID: ${GS_PROJECT_ID}
-      GS_CLIENT_EMAIL: ${GS_CLIENT_EMAIL}
-      GS_PRIVATE_KEY: ${GS_PRIVATE_KEY}
-      DOMAIN: ${CI_DOMAIN}
-      MAIL_PWD: ${MAIL_PWD}
-      NPM_USERNAME: ${NPM_USERNAME}
-      NPM_PASSWORD: ${NPM_PASSWORD}
+    secrets:
+      - drone_server
+      - drone_token_inte
+      - github_automation_api_key
+      - gs_client_email
+      - gs_private_key
+      - gs_project_id
+      - harbor_admin
+      - harbor_password
+      - mail_pwd
+      - npm_password
+      - npm_username
     commands:
+      - export DOMAIN=${CI_DOMAIN}
       - tests/integration.sh
     when:
       status: success
