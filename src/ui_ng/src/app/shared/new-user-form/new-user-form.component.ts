@@ -18,7 +18,8 @@ import {
     Output,
     EventEmitter,
     Input,
-    OnInit
+    OnInit,
+    ChangeDetectorRef,
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
@@ -33,33 +34,29 @@ import { SessionService } from '../../shared/session.service';
 })
 
 export class NewUserFormComponent implements AfterViewChecked, OnInit {
-    newUser: User = new User();
-    @Input() isSelfRegistration: boolean = false;
 
-    newUserFormRef: NgForm;
-    @ViewChild("newUserFrom") newUserForm: NgForm;
-
-    //Notify the form value changes
+    @Input() isSelfRegistration = false;
+    // Notify the form value changes
     @Output() valueChange = new EventEmitter<boolean>();
-
+    @ViewChild("newUserFrom") newUserForm: NgForm;
+    newUser: User = new User();
+    newUserFormRef: NgForm;
     confirmedPwd: string;
+    timerHandler: any;
+    validationStateMap: any = {};
+    mailAlreadyChecked: any = {};
+    userNameAlreadyChecked: any = {};
+    emailTooltip = 'TOOLTIP.EMAIL';
+    usernameTooltip = 'TOOLTIP.USER_NAME';
+    formValueChanged = false;
 
-    constructor(private session: SessionService) { }
+    checkOnGoing: any = {};
+    constructor(private session: SessionService,
+        private ref: ChangeDetectorRef) { }
 
     ngOnInit() {
         this.resetState();
     }
-
-    validationStateMap: any = {};
-
-    mailAlreadyChecked: any = {};
-    userNameAlreadyChecked: any = {};
-    emailTooltip: string = 'TOOLTIP.EMAIL';
-    usernameTooltip: string = 'TOOLTIP.USER_NAME';
-    formValueChanged: boolean = false;
-
-    checkOnGoing: any = {};
-
     resetState(): void {
         this.mailAlreadyChecked = {};
         this.userNameAlreadyChecked = {};
@@ -84,19 +81,33 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
         return !this.checkOnGoing[key];
     }
 
+    forceRefreshView(duration: number): void {
+        // Reset timer
+        if (this.timerHandler) {
+          clearInterval(this.timerHandler);
+        }
+        this.timerHandler = setInterval(() => this.ref.markForCheck(), 100);
+        setTimeout(() => {
+          if (this.timerHandler) {
+            clearInterval(this.timerHandler);
+            this.timerHandler = null;
+          }
+        }, duration);
+      }
+
     getValidationState(key: string): boolean {
         return !this.validationStateMap[key];
     }
 
     handleValidation(key: string, flag: boolean): void {
         if (flag) {
-            //Checking
+            // Checking
             let cont = this.newUserForm.controls[key];
             if (cont) {
                 this.validationStateMap[key] = cont.valid;
-                //Check email existing from backend
+                // Check email existing from backend
                 if (cont.valid && this.formValueChanged) {
-                    //Check username from backend
+                    // Check username from backend
                     if (key === "username" && this.newUser.username.trim() != "") {
                         if (this.userNameAlreadyChecked[this.newUser.username.trim()]) {
                             this.validationStateMap[key] = !this.userNameAlreadyChecked[this.newUser.username.trim()].result;
@@ -116,17 +127,19 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
                                 }
                                 this.userNameAlreadyChecked[this.newUser.username.trim()] = {
                                     result: res
-                                }; //Tag it checked
+                                }; // Tag it checked
+                                this.forceRefreshView(2000);
                             })
                             .catch(error => {
                                 this.checkOnGoing[key] = false;
-                                this.validationStateMap[key] = false;//Not valid @ backend
+                                this.validationStateMap[key] = false;// Not valid @ backend
+                                this.forceRefreshView(2000);
                             });
                         return;
 
                     }
 
-                    //Check email from backend
+                    // Check email from backend
                     if (key === "email" && this.newUser.email.trim() != "") {
                         if (this.mailAlreadyChecked[this.newUser.email.trim()]) {
                             this.validationStateMap[key] = !this.mailAlreadyChecked[this.newUser.email.trim()].result;
@@ -136,7 +149,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
                             return;
                         }
 
-                        //Mail changed
+                        // Mail changed
                         this.checkOnGoing[key] = true;
                         this.session.checkUserExisting("email", this.newUser.email)
                             .then((res: boolean) => {
@@ -147,16 +160,18 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
                                 }
                                 this.mailAlreadyChecked[this.newUser.email.trim()] = {
                                     result: res
-                                }; //Tag it checked
+                                }; // Tag it checked
+                                this.forceRefreshView(2000);
                             })
                             .catch(error => {
                                 this.checkOnGoing[key] = false;
-                                this.validationStateMap[key] = false;//Not valid @ backend
+                                this.validationStateMap[key] = false;// Not valid @ backend
+                                this.forceRefreshView(2000);
                             });
                         return;
                     }
 
-                    //Check password confirmation
+                    // Check password confirmation
                     if (key === "confirmPassword" || key === "newPassword") {
                         let cpKey = key === "confirmPassword" ? "newPassword" : "confirmPassword";
                         let peerCont = this.newUserForm.controls[cpKey];
@@ -167,7 +182,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
                 }
             }
         } else {
-            //Reset
+            // Reset
             this.validationStateMap[key] = true;
             if (key === "email") {
                 this.emailTooltip = "TOOLTIP.EMAIL";
@@ -189,7 +204,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
             this.newUserForm.valid &&
             pwdEqualStatus &&
             this.validationStateMap["username"] &&
-            this.validationStateMap["email"];//Backend check should be valid as well
+            this.validationStateMap["email"];// Backend check should be valid as well
     }
 
     ngAfterViewChecked(): void {
@@ -204,12 +219,12 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
         }
     }
 
-    //Return the current user data
+    // Return the current user data
     getData(): User {
         return this.newUser;
     }
 
-    //Reset form
+    // Reset form
     reset(): void {
         this.resetState();
         if (this.newUserForm) {
@@ -217,7 +232,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
         }
     }
 
-    //To check if form is empty
+    // To check if form is empty
     isEmpty(): boolean {
         return isEmptyForm(this.newUserForm);
     }

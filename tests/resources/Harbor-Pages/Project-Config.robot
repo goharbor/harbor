@@ -39,8 +39,8 @@ Save Project Config
 Public Should Be Selected
     Checkbox Should Be Selected  //hbr-project-policy-config//input[@name='public']
 Project Should Be Public
-    [Arguments]  ${projid}
-    Page Should Contain Element  //clr-dg-row-master[contains(.,'${projid}')]//clr-dg-cell[contains(.,'Public')]
+    [Arguments]  ${projectName}
+    Page Should Contain Element  //clr-dg-row[contains(.,'${projectName}')]//clr-dg-cell[contains(.,'Public')]
 Content Trust Should Be Selected
     Checkbox Should Be Selected  //hbr-project-policy-config//input[@name='content-trust']
 Prevent Running Should Be Selected

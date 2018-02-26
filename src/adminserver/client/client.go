@@ -15,16 +15,11 @@
 package client
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"strings"
 
-	"github.com/vmware/harbor/src/adminserver/client/auth"
 	"github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
+	"github.com/vmware/harbor/src/common/http"
+	"github.com/vmware/harbor/src/common/http/modifier/auth"
 	"github.com/vmware/harbor/src/common/utils"
 )
 
@@ -43,38 +38,29 @@ type Client interface {
 }
 
 // NewClient return an instance of Adminserver client
-func NewClient(baseURL string, authorizer auth.Authorizer) Client {
+func NewClient(baseURL string, cfg *Config) Client {
 	baseURL = strings.TrimRight(baseURL, "/")
 	if !strings.Contains(baseURL, "://") {
 		baseURL = "http://" + baseURL
 	}
-	return &client{
-		baseURL:    baseURL,
-		client:     &http.Client{},
-		authorizer: authorizer,
+	client := &client{
+		baseURL: baseURL,
 	}
+	if cfg != nil {
+		authorizer := auth.NewSecretAuthorizer(cfg.Secret)
+		client.client = http.NewClient(nil, authorizer)
+	}
+	return client
 }
 
 type client struct {
-	baseURL    string
-	client     *http.Client
-	authorizer auth.Authorizer
+	baseURL string
+	client  *http.Client
 }
 
-// do creates request and authorizes it if authorizer is not nil
-func (c *client) do(method, relativePath string, body io.Reader) (*http.Response, error) {
-	url := c.baseURL + relativePath
-	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return nil, err
-	}
-
-	if c.authorizer != nil {
-		if err := c.authorizer.Authorize(req); err != nil {
-			return nil, err
-		}
-	}
-	return c.client.Do(req)
+// Config contains configurations needed for client
+type Config struct {
+	Secret string
 }
 
 func (c *client) Ping() error {
@@ -88,96 +74,32 @@ func (c *client) Ping() error {
 
 // GetCfgs ...
 func (c *client) GetCfgs() (map[string]interface{}, error) {
-	resp, err := c.do(http.MethodGet, "/api/configurations", nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get configurations: %d %s",
-			resp.StatusCode, b)
-	}
-
+	url := c.baseURL + "/api/configurations"
 	cfgs := map[string]interface{}{}
-	if err = json.Unmarshal(b, &cfgs); err != nil {
+	if err := c.client.Get(url, &cfgs); err != nil {
 		return nil, err
 	}
-
 	return cfgs, nil
 }
 
 // UpdateCfgs ...
 func (c *client) UpdateCfgs(cfgs map[string]interface{}) error {
-	data, err := json.Marshal(cfgs)
-	if err != nil {
-		return err
-	}
-
-	resp, err := c.do(http.MethodPut, "/api/configurations", bytes.NewReader(data))
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("failed to update configurations: %d %s",
-			resp.StatusCode, b)
-	}
-
-	return nil
+	url := c.baseURL + "/api/configurations"
+	return c.client.Put(url, cfgs)
 }
 
 // ResetCfgs ...
 func (c *client) ResetCfgs() error {
-	resp, err := c.do(http.MethodPost, "/api/configurations/reset", nil)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("failed to reset configurations: %d %s",
-			resp.StatusCode, b)
-	}
-
-	return nil
+	url := c.baseURL + "/api/configurations/reset"
+	return c.client.Post(url)
 }
 
 // Capacity ...
 func (c *client) Capacity() (*imagestorage.Capacity, error) {
-	resp, err := c.do(http.MethodGet, "/api/systeminfo/capacity", nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get capacity: %d %s",
-			resp.StatusCode, b)
-	}
-
+	url := c.baseURL + "/api/systeminfo/capacity"
 	capacity := &imagestorage.Capacity{}
-	if err = json.Unmarshal(b, capacity); err != nil {
+	if err := c.client.Get(url, capacity); err != nil {
 		return nil, err
 	}
-
 	return capacity, nil
 }

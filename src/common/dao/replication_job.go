@@ -22,6 +22,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 // AddRepTarget ...
@@ -105,34 +106,26 @@ func FilterRepTargets(name string) ([]*models.RepTarget, error) {
 // AddRepPolicy ...
 func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 	o := GetOrmer()
-	sql := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, start_time, creation_time, update_time ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	p, err := o.Raw(sql).Prepare()
-	if err != nil {
-		return 0, err
-	}
-
+	sql := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, creation_time, update_time, filters, replicate_deletion) 
+				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	params := []interface{}{}
-	params = append(params, policy.Name, policy.ProjectID, policy.TargetID, policy.Enabled, policy.Description, policy.CronStr)
 	now := time.Now()
-	if policy.Enabled == 1 {
-		params = append(params, now)
-	} else {
-		params = append(params, nil)
-	}
-	params = append(params, now, now)
+	params = append(params, policy.Name, policy.ProjectID, policy.TargetID, 1,
+		policy.Description, policy.Trigger, now, now, policy.Filters,
+		policy.ReplicateDeletion)
 
-	r, err := p.Exec(params...)
+	result, err := o.Raw(sql, params...).Exec()
 	if err != nil {
 		return 0, err
 	}
-	id, err := r.LastInsertId()
-	return id, err
+
+	return result.LastInsertId()
 }
 
 // GetRepPolicy ...
 func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	o := GetOrmer()
-	sql := `select * from replication_policy where id = ?`
+	sql := `select * from replication_policy where id = ? and deleted = 0`
 
 	var policy models.RepPolicy
 
@@ -146,15 +139,31 @@ func GetRepPolicy(id int64) (*models.RepPolicy, error) {
 	return &policy, nil
 }
 
+// GetTotalOfRepPolicies returns the total count of replication policies
+func GetTotalOfRepPolicies(name string, projectID int64) (int64, error) {
+	qs := GetOrmer().QueryTable(&models.RepPolicy{}).Filter("deleted", 0)
+
+	if len(name) != 0 {
+		qs = qs.Filter("name__icontains", name)
+	}
+
+	if projectID != 0 {
+		qs = qs.Filter("project_id", projectID)
+	}
+
+	return qs.Count()
+}
+
 // FilterRepPolicies filters policies by name and project ID
-func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error) {
+func FilterRepPolicies(name string, projectID, page, pageSize int64) ([]*models.RepPolicy, error) {
 	o := GetOrmer()
 
 	var args []interface{}
 
 	sql := `select rp.id, rp.project_id, rp.target_id, 
-				rt.name as target_name, rp.name, rp.enabled, rp.description,
-				rp.cron_str, rp.start_time, rp.creation_time, rp.update_time, 
+				rt.name as target_name, rp.name, rp.description,
+				rp.cron_str, rp.filters, rp.replicate_deletion, 
+				rp.creation_time, rp.update_time, 
 				count(rj.status) as error_job_count 
 			from replication_policy rp 
 			left join replication_target rt on rp.target_id=rt.id 
@@ -176,10 +185,16 @@ func FilterRepPolicies(name string, projectID int64) ([]*models.RepPolicy, error
 
 	sql += `group by rp.id order by rp.creation_time`
 
+	if page > 0 && pageSize > 0 {
+		sql += ` limit ? offset ?`
+		args = append(args, pageSize, (page-1)*pageSize)
+	}
+
 	var policies []*models.RepPolicy
 	if _, err := o.Raw(sql, args).QueryRows(&policies); err != nil {
 		return nil, err
 	}
+
 	return policies, nil
 }
 
@@ -246,7 +261,8 @@ func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPol
 func UpdateRepPolicy(policy *models.RepPolicy) error {
 	o := GetOrmer()
 	policy.UpdateTime = time.Now()
-	_, err := o.Update(policy, "TargetID", "Name", "Enabled", "Description", "CronStr", "UpdateTime")
+	_, err := o.Update(policy, "ProjectID", "TargetID", "Name", "Description",
+		"Trigger", "Filters", "ReplicateDeletion", "UpdateTime")
 	return err
 }
 
@@ -260,36 +276,6 @@ func DeleteRepPolicy(id int64) error {
 	}
 	_, err := o.Update(policy, "Deleted")
 	return err
-}
-
-// UpdateRepPolicyEnablement ...
-func UpdateRepPolicyEnablement(id int64, enabled int) error {
-	o := GetOrmer()
-	p := models.RepPolicy{
-		ID:         id,
-		Enabled:    enabled,
-		UpdateTime: time.Now(),
-	}
-
-	var err error
-	if enabled == 1 {
-		p.StartTime = time.Now()
-		_, err = o.Update(&p, "Enabled", "StartTime")
-	} else {
-		_, err = o.Update(&p, "Enabled")
-	}
-
-	return err
-}
-
-// EnableRepPolicy ...
-func EnableRepPolicy(id int64) error {
-	return UpdateRepPolicyEnablement(id, 1)
-}
-
-// DisableRepPolicy ...
-func DisableRepPolicy(id int64) error {
-	return UpdateRepPolicyEnablement(id, 0)
 }
 
 // AddRepJob ...
@@ -325,7 +311,7 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 }
 
 // FilterRepJobs ...
-func FilterRepJobs(policyID int64, repository, status string, startTime,
+func FilterRepJobs(policyID int64, repository string, status []string, startTime,
 	endTime *time.Time, limit, offset int64) ([]*models.RepJob, int64, error) {
 
 	jobs := []*models.RepJob{}
@@ -339,7 +325,7 @@ func FilterRepJobs(policyID int64, repository, status string, startTime,
 		qs = qs.Filter("Repository__icontains", repository)
 	}
 	if len(status) != 0 {
-		qs = qs.Filter("Status__icontains", status)
+		qs = qs.Filter("Status__in", status)
 	}
 	if startTime != nil {
 		qs = qs.Filter("CreationTime__gte", startTime)
@@ -368,7 +354,8 @@ func FilterRepJobs(policyID int64, repository, status string, startTime,
 // GetRepJobToStop get jobs that are possibly being handled by workers of a certain policy.
 func GetRepJobToStop(policyID int64) ([]*models.RepJob, error) {
 	var res []*models.RepJob
-	_, err := repJobPolicyIDQs(policyID).Filter("status__in", models.JobPending, models.JobRunning).All(&res)
+	_, err := repJobPolicyIDQs(policyID).Filter("status__in",
+		models.JobPending, models.JobRunning, models.JobRetrying).All(&res)
 	genTagListForJob(res...)
 	return res, err
 }
@@ -397,9 +384,9 @@ func UpdateRepJobStatus(id int64, status string) error {
 		Status:     status,
 		UpdateTime: time.Now(),
 	}
-	num, err := o.Update(&j, "Status", "UpdateTime")
-	if num == 0 {
-		err = fmt.Errorf("Failed to update replication job with id: %d %s", id, err.Error())
+	n, err := o.Update(&j, "Status", "UpdateTime")
+	if n == 0 {
+		log.Warningf("no records are updated when updating replication job %d", id)
 	}
 	return err
 }

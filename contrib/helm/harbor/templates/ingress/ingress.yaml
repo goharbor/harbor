@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "{{ template "harbor.fullname" . }}-ingress"
+  labels:
+{{ include "helm.labels" . | indent 4 }}
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.kubernetes.io/body-size: "0"
+    ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  tls:
+  - hosts:
+    - "{{ .Values.externalDomain }}"
+    secretName: "{{ template "harbor.fullname" . }}-ingress"
+  rules:
+  - host: "{{ .Values.externalDomain }}"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ template "harbor.fullname" . }}-ui
+          servicePort: 80
+      - path: /v2
+        backend:
+          serviceName: {{ template "harbor.fullname" . }}-registry
+          servicePort: 5000
+      - path: /v1
+        backend:
+          serviceName: {{ template "harbor.fullname" . }}-fake-service
+          servicePort: 5000

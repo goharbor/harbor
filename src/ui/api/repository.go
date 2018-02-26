@@ -20,18 +20,22 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/clair"
 	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/notary"
 	"github.com/vmware/harbor/src/common/utils/registry"
+	"github.com/vmware/harbor/src/replication/event/notification"
+	"github.com/vmware/harbor/src/replication/event/topic"
 	"github.com/vmware/harbor/src/ui/config"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
@@ -63,6 +67,11 @@ type tagDetail struct {
 	DockerVersion string    `json:"docker_version"`
 	Author        string    `json:"author"`
 	Created       time.Time `json:"created"`
+	Config        *cfg      `json:"config"`
+}
+
+type cfg struct {
+	Labels map[string]string `json:"labels"`
 }
 
 type tagResp struct {
@@ -255,7 +264,17 @@ func (ra *RepositoryAPI) Delete() {
 		}
 		log.Infof("delete tag: %s:%s", repoName, t)
 
-		go TriggerReplicationByRepository(project.ProjectID, repoName, []string{t}, models.RepOpDelete)
+		go func(tag string) {
+			image := repoName + ":" + tag
+			err := notifier.Publish(topic.ReplicationEventTopicOnDeletion, notification.OnDeletionNotification{
+				Image: image,
+			})
+			if err != nil {
+				log.Errorf("failed to publish on deletion topic for resource %s: %v", image, err)
+				return
+			}
+			log.Debugf("the on deletion topic for resource %s published", image)
+		}(t)
 
 		go func(tag string) {
 			if err := dao.AddAccessLog(models.AccessLog{
@@ -460,7 +479,26 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 		return detail, err
 	}
 
+	populateAuthor(detail)
+
 	return detail, nil
+}
+
+func populateAuthor(detail *tagDetail) {
+	// has author info already
+	if len(detail.Author) > 0 {
+		return
+	}
+
+	// try to set author with the value of label "maintainer"
+	if detail.Config != nil {
+		for k, v := range detail.Config.Labels {
+			if strings.ToLower(k) == "maintainer" {
+				detail.Author = v
+				return
+			}
+		}
+	}
 }
 
 // GetManifests returns the manifest of a tag
@@ -603,6 +641,43 @@ func (ra *RepositoryAPI) GetTopRepos() {
 
 	ra.Data["json"] = result
 	ra.ServeJSON()
+}
+
+// Put updates description info for the repository
+func (ra *RepositoryAPI) Put() {
+	name := ra.GetString(":splat")
+	repository, err := dao.GetRepositoryByName(name)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get repository %s: %v", name, err))
+		return
+	}
+
+	if repository == nil {
+		ra.HandleNotFound(fmt.Sprintf("repository %s not found", name))
+		return
+	}
+
+	if !ra.SecurityCtx.IsAuthenticated() {
+		ra.HandleUnauthorized()
+		return
+	}
+
+	project, _ := utils.ParseRepository(name)
+	if !ra.SecurityCtx.HasWritePerm(project) {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+
+	desc := struct {
+		Description string `json:"description"`
+	}{}
+	ra.DecodeJSONReq(&desc)
+
+	repository.Description = desc.Description
+	if err = dao.UpdateRepository(*repository); err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to update repository %s: %v", name, err))
+		return
+	}
 }
 
 //GetSignatures returns signatures of a repository

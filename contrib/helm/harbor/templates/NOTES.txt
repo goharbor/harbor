@@ -1,0 +1,15 @@
+To add the CA certificate to docker copy the contents of the following command into /etc/docker/certs.d/{{ .Values.externalDomain }}:
+
+$ kubectl get secret \
+    --namespace {{ .Release.Namespace }} {{ template "harbor.fullname" . }}-ingress \
+    -o jsonpath="{.data.ca\.crt}" | base64 --decode
+
+Access Harbor via: https://{{ .Values.externalDomain }}
+
+login to harbor with docker cli:
+
+docker login {{ .Values.externalDomain }}
+
+To get your admin password run the following (not yet ready):
+
+$ kubectl get secret --namespace {{ .Release.Namespace }} {{ template "harbor.fullname" . }} -o jsonpath="{.data.}" | base64 --decode; echo

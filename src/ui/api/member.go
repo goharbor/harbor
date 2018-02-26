@@ -17,10 +17,12 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/auth"
 )
 
 // ProjectMemberAPI handles request to /api/projects/{}/members/{}
@@ -158,12 +160,38 @@ func (pma *ProjectMemberAPI) Post() {
 
 	var req memberReq
 	pma.DecodeJSONReq(&req)
-	username := req.Username
+	username := strings.TrimSpace(req.Username)
 	userID := checkUserExists(username)
 	if userID <= 0 {
-		log.Warningf("User does not exist, user name: %s", username)
-		pma.RenderError(http.StatusNotFound, "User does not exist")
-		return
+
+		user, err := auth.SearchUser(username)
+
+		if err != nil {
+			log.Errorf("Failed the search user, error: %v", err)
+			pma.RenderError(http.StatusInternalServerError, "Failed to search user")
+			return
+		}
+
+		if user == nil {
+			log.Errorf("Current user doesn't exist: %v", username)
+			pma.RenderError(http.StatusNotFound, "Failed to search user: "+username)
+			return
+		}
+
+		err = auth.OnBoardUser(user)
+
+		if err != nil {
+			log.Errorf("Failed the onboard user, error: %s", err)
+			pma.RenderError(http.StatusInternalServerError, "Failed to onboard user")
+			return
+		}
+		if user.UserID <= 0 {
+			log.Error("Failed the onboard user, UserId <=0")
+			pma.RenderError(http.StatusInternalServerError, "Failed to onboard user")
+			return
+		}
+		userID = user.UserID
+
 	}
 	rolelist, err := dao.GetUserProjectRoles(userID, projectID)
 	if err != nil {

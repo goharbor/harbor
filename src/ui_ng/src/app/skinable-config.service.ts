@@ -12,7 +12,7 @@ export class SkinableConfig {
     constructor(private http: Http) {}
 
     public getCustomFile(): Promise<any> {
-       return this.http.get('../setting.json')
+       return this.http.get('../static/setting.json')
            .toPromise()
            .then(response => { this.customSkinData = response.json(); return this.customSkinData; })
            .catch(error => {
@@ -24,9 +24,9 @@ export class SkinableConfig {
         return this.customSkinData;
     }
 
-    public getProjects() {
+    public getProject() {
         if (this.customSkinData) {
-            return this.customSkinData.projects;
+            return this.customSkinData.project;
         }else {
             return null;
         }

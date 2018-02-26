@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
@@ -26,33 +28,59 @@ import (
 // 1.5 seconds
 const frozenTime time.Duration = 1500 * time.Millisecond
 
-const (
-	// DBAuth is the database auth mode.
-	DBAuth = "db_auth"
-	// LDAPAuth is the ldap auth mode.
-	LDAPAuth = "ldap_auth"
-	// UAAAuth is the uaa auth mode.
-	UAAAuth = "uaa_auth"
-)
-
 var lock = NewUserLock(frozenTime)
 
-// Authenticator provides interface to authenticate user credentials.
-type Authenticator interface {
+// AuthenticateHelper provides interface for user management in different auth modes.
+type AuthenticateHelper interface {
 
 	// Authenticate ...
 	Authenticate(m models.AuthModel) (*models.User, error)
+	// OnBoardUser will check if a user exists in user table, if not insert the user and
+	// put the id in the pointer of user model, if it does exist, fill in the user model based
+	// on the data record of the user
+	OnBoardUser(u *models.User) error
+	// Get user information from account repository
+	SearchUser(username string) (*models.User, error)
+	// Update user information after authenticate, such as Onboard or sync info etc
+	PostAuthenticate(u *models.User) error
 }
 
-var registry = make(map[string]Authenticator)
+// DefaultAuthenticateHelper - default AuthenticateHelper implementation
+type DefaultAuthenticateHelper struct {
+}
+
+// Authenticate ...
+func (d *DefaultAuthenticateHelper) Authenticate(m models.AuthModel) (*models.User, error) {
+	return nil, nil
+}
+
+// OnBoardUser will check if a user exists in user table, if not insert the user and
+// put the id in the pointer of user model, if it does exist, fill in the user model based
+// on the data record of the user
+func (d *DefaultAuthenticateHelper) OnBoardUser(u *models.User) error {
+	return nil
+}
+
+//SearchUser - Get user information from account repository
+func (d *DefaultAuthenticateHelper) SearchUser(username string) (*models.User, error) {
+	return nil, nil
+}
+
+//PostAuthenticate - Update user information after authenticate, such as Onboard or sync info etc
+func (d *DefaultAuthenticateHelper) PostAuthenticate(u *models.User) error {
+	return nil
+}
+
+var registry = make(map[string]AuthenticateHelper)
 
 // Register add different authenticators to registry map.
-func Register(name string, authenticator Authenticator) {
+func Register(name string, h AuthenticateHelper) {
 	if _, dup := registry[name]; dup {
-		log.Infof("authenticator: %s has been registered", name)
+		log.Infof("authenticator: %s has been registered,skip", name)
 		return
 	}
-	registry[name] = authenticator
+	registry[name] = h
+	log.Debugf("Registered authencation helper for auth mode: %s", name)
 }
 
 // Login authenticates user credentials based on setting.
@@ -62,8 +90,8 @@ func Login(m models.AuthModel) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if authMode == "" || m.Principal == "admin" {
-		authMode = "db_auth"
+	if authMode == "" || dao.IsSuperUser(m.Principal) {
+		authMode = common.DBAuth
 	}
 	log.Debug("Current AUTH_MODE is ", authMode)
 
@@ -76,10 +104,57 @@ func Login(m models.AuthModel) (*models.User, error) {
 		return nil, nil
 	}
 	user, err := authenticator.Authenticate(m)
-	if user == nil && err == nil {
-		log.Debugf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
-		lock.Lock(m.Principal)
-		time.Sleep(frozenTime)
+	if user == nil {
+		if err == nil {
+			log.Debugf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
+			lock.Lock(m.Principal)
+			time.Sleep(frozenTime)
+		}
+		return user, err
 	}
+
+	err = authenticator.PostAuthenticate(user)
+
 	return user, err
+}
+
+func getHelper() (AuthenticateHelper, error) {
+	authMode, err := config.AuthMode()
+	if err != nil {
+		return nil, err
+	}
+	AuthenticateHelper, ok := registry[authMode]
+	if !ok {
+		return nil, fmt.Errorf("Can not get authenticator, authmode: %s", authMode)
+	}
+	return AuthenticateHelper, nil
+}
+
+// OnBoardUser will check if a user exists in user table, if not insert the user and
+// put the id in the pointer of user model, if it does exist, return the user's profile.
+func OnBoardUser(user *models.User) error {
+	log.Debugf("OnBoardUser, user %+v", user)
+	helper, err := getHelper()
+	if err != nil {
+		return err
+	}
+	return helper.OnBoardUser(user)
+}
+
+// SearchUser --
+func SearchUser(username string) (*models.User, error) {
+	helper, err := getHelper()
+	if err != nil {
+		return nil, err
+	}
+	return helper.SearchUser(username)
+}
+
+// PostAuthenticate -
+func PostAuthenticate(u *models.User) error {
+	helper, err := getHelper()
+	if err != nil {
+		return err
+	}
+	return helper.PostAuthenticate(u)
 }

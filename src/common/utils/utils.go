@@ -29,27 +29,24 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
-// FormatEndpoint formats endpoint
-func FormatEndpoint(endpoint string) string {
-	endpoint = strings.TrimSpace(endpoint)
+// ParseEndpoint parses endpoint to a URL
+func ParseEndpoint(endpoint string) (*url.URL, error) {
+	endpoint = strings.Trim(endpoint, " ")
 	endpoint = strings.TrimRight(endpoint, "/")
-	if !strings.HasPrefix(endpoint, "http://") &&
-		!strings.HasPrefix(endpoint, "https://") {
+	if len(endpoint) == 0 {
+		return nil, fmt.Errorf("empty URL")
+	}
+	i := strings.Index(endpoint, "://")
+	if i >= 0 {
+		scheme := endpoint[:i]
+		if scheme != "http" && scheme != "https" {
+			return nil, fmt.Errorf("invalid scheme: %s", scheme)
+		}
+	} else {
 		endpoint = "http://" + endpoint
 	}
 
-	return endpoint
-}
-
-// ParseEndpoint parses endpoint to a URL
-func ParseEndpoint(endpoint string) (*url.URL, error) {
-	endpoint = FormatEndpoint(endpoint)
-
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return nil, err
-	}
-	return u, nil
+	return url.ParseRequestURI(endpoint)
 }
 
 // ParseRepository splits a repository into two parts: project and rest
@@ -103,7 +100,9 @@ func TestTCPConn(addr string, timeout, interval int) error {
 					time.Sleep(time.Duration(interval) * time.Second)
 					continue
 				}
-				conn.Close()
+				if err = conn.Close(); err != nil {
+					log.Errorf("failed to close the connection: %v", err)
+				}
 				success <- 1
 				break
 			}

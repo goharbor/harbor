@@ -14,7 +14,8 @@
 import { Component } from '@angular/core';
 
 import {Router,ActivatedRoute} from "@angular/router";
-import {ReplicationRule} from "harbor-ui";
+import {ReplicationRule} from "../replication-rule/replication-rule";
+import {SessionService} from "../../shared/session.service";
 
 @Component({
   selector: 'total-replication',
@@ -23,10 +24,24 @@ import {ReplicationRule} from "harbor-ui";
 export class TotalReplicationPageComponent {
 
   constructor(private router: Router,
+              private session: SessionService,
               private activeRoute: ActivatedRoute){}
   customRedirect(rule: ReplicationRule): void {
     if (rule) {
-      this.router.navigate(['../../projects', rule.project_id, "replications"],  { relativeTo: this.activeRoute });
+      this.router.navigate(['../projects', rule.projects[0].project_id, 'replications'],  { relativeTo: this.activeRoute });
     }
+  }
+
+  public get isSystemAdmin(): boolean {
+    let account = this.session.getCurrentUser();
+    return account != null && account.has_admin_role > 0;
+  }
+
+  openEditPage(id: number): void {
+      this.router.navigate([id, 'rule'],  { relativeTo: this.activeRoute });
+  }
+
+  openCreatePage(): void {
+    this.router.navigate(['new-rule'],  { relativeTo: this.activeRoute });
   }
 }

@@ -32,31 +32,8 @@ func initRouters() {
 
 	//Page Controllers:
 	beego.Router("/", &controllers.IndexController{})
-	beego.Router("/sign-in", &controllers.IndexController{})
-	beego.Router("/sign-up", &controllers.IndexController{})
+	beego.Router("/harbor/*", &controllers.IndexController{})
 	beego.Router("/reset_password", &controllers.IndexController{})
-
-	beego.Router("/harbor", &controllers.IndexController{})
-
-	beego.Router("/harbor/sign-in", &controllers.IndexController{})
-	beego.Router("/harbor/sign-up", &controllers.IndexController{})
-	beego.Router("/harbor/dashboard", &controllers.IndexController{})
-	beego.Router("/harbor/projects", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/repositories", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/repositories/*", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/replications", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/members", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/logs", &controllers.IndexController{})
-	beego.Router("/harbor/projects/:id/configs", &controllers.IndexController{})
-	beego.Router("/harbor/tags/:id/*", &controllers.IndexController{})
-
-	beego.Router("/harbor/users", &controllers.IndexController{})
-	beego.Router("/harbor/logs", &controllers.IndexController{})
-	beego.Router("/harbor/replications", &controllers.IndexController{})
-	beego.Router("/harbor/replications/endpoints", &controllers.IndexController{})
-	beego.Router("/harbor/replications/rules", &controllers.IndexController{})
-	beego.Router("/harbor/tags", &controllers.IndexController{})
-	beego.Router("/harbor/configs", &controllers.IndexController{})
 
 	// standalone
 	if !config.WithAdmiral() {
@@ -65,7 +42,7 @@ func initRouters() {
 		beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
 		beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
 		beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
-		beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendEmail")
+		beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
 
 		//API:
 		beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectMemberAPI{})
@@ -90,10 +67,9 @@ func initRouters() {
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &api.MetadataAPI{}, "put:Put;delete:Delete")
-	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/scanAll", &api.RepositoryAPI{}, "post:ScanAll")
-	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete")
+	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete;put:Put")
 	beego.Router("/api/repositories/*/tags/:tag", &api.RepositoryAPI{}, "delete:Delete;get:GetTag")
 	beego.Router("/api/repositories/*/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/scan", &api.RepositoryAPI{}, "post:ScanImage")
@@ -101,28 +77,30 @@ func initRouters() {
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &api.RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
-	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List")
+	beego.Router("/api/jobs/replication/", &api.RepJobAPI{}, "get:List;put:StopJobs")
 	beego.Router("/api/jobs/replication/:id([0-9]+)", &api.RepJobAPI{})
 	beego.Router("/api/jobs/replication/:id([0-9]+)/log", &api.RepJobAPI{}, "get:GetLog")
 	beego.Router("/api/jobs/scan/:id([0-9]+)/log", &api.ScanJobAPI{}, "get:GetLog")
 	beego.Router("/api/policies/replication/:id([0-9]+)", &api.RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "post:Post")
-	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &api.RepPolicyAPI{}, "put:UpdateEnablement")
 	beego.Router("/api/targets/", &api.TargetAPI{}, "get:List")
 	beego.Router("/api/targets/", &api.TargetAPI{}, "post:Post")
 	beego.Router("/api/targets/:id([0-9]+)", &api.TargetAPI{})
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &api.TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
-	beego.Router("/api/targets/:id([0-9]+)/ping", &api.TargetAPI{}, "post:PingByID")
 	beego.Router("/api/logs", &api.LogAPI{})
 	beego.Router("/api/configurations", &api.ConfigAPI{})
 	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
+	beego.Router("/api/replications", &api.ReplicationAPI{})
 
 	beego.Router("/api/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &api.SystemInfoAPI{}, "get:GetCert")
+
+	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
+	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})

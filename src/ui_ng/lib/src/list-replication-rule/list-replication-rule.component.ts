@@ -42,10 +42,14 @@ import { toPromise, CustomComparator } from '../utils';
 import { State, Comparator } from 'clarity-angular';
 
 import { LIST_REPLICATION_RULE_TEMPLATE } from './list-replication-rule.component.html';
+import { LIST_REPLICATION_RULE_CSS } from './list-replication-rule.component.css';
+import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
+import {Observable} from "rxjs/Observable";
 
 @Component({
   selector: 'hbr-list-replication-rule',
   template: LIST_REPLICATION_RULE_TEMPLATE,
+  styles: [LIST_REPLICATION_RULE_CSS],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListReplicationRuleComponent implements OnInit, OnChanges {
@@ -53,6 +57,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   nullTime: string = '0001-01-01T00:00:00Z';
 
   @Input() projectId: number;
+  @Input() isSystemAdmin: boolean;
   @Input() selectedId: number | string;
   @Input() withReplicationJob: boolean;
   @Input() readonly: boolean;
@@ -63,7 +68,10 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   @Output() selectOne = new EventEmitter<ReplicationRule>();
   @Output() editOne = new EventEmitter<ReplicationRule>();
   @Output() toggleOne = new EventEmitter<ReplicationRule>();
+  @Output() hideJobs = new EventEmitter<any>();
   @Output() redirect = new EventEmitter<ReplicationRule>();
+  @Output() openNewRule = new EventEmitter<any>();
+  @Output() replicateManual = new EventEmitter<ReplicationRule[]>();
 
   projectScope: boolean = false;
 
@@ -71,6 +79,9 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   changedRules: ReplicationRule[];
   ruleName: string;
   canDeleteRule: boolean;
+
+  selectedRow: ReplicationRule;
+  batchDelectionInfos: BatchInfo[] = [];
 
   @ViewChild('toggleConfirmDialog')
   toggleConfirmDialog: ConfirmationDialogComponent;
@@ -87,6 +98,18 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     private errorHandler: ErrorHandler,
     private ref: ChangeDetectorRef) {
     setInterval(() => ref.markForCheck(), 500);
+  }
+
+  public get opereateAvailable(): boolean {
+    return !this.readonly && !this.projectId ? true : false;
+  }
+
+  trancatedDescription(desc: string): string {
+    if (desc.length > 35 ) {
+      return desc.substr(0, 35);
+    } else {
+      return desc;
+    }
   }
 
   ngOnInit(): void {
@@ -112,6 +135,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
   retrieveRules(ruleName: string = ''): void {
     this.loading = true;
+    this.selectedRow = null;
     toPromise<ReplicationRule[]>(this.replicationService
       .getReplicationRules(this.projectId, ruleName))
       .then(rules => {
@@ -119,8 +143,11 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         if (this.rules && this.rules.length > 0) {
           this.selectedId = this.rules[0].id || '';
           this.selectOne.emit(this.rules[0]);
+        } else {
+          this.hideJobs.emit();
         }
         this.changedRules = this.rules;
+        this.selectedRow = this.changedRules[0];
         this.loading = false;
       }
       ).catch(error => {
@@ -139,42 +166,38 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
   toggleConfirm(message: ConfirmationAcknowledgement) {
     if (message &&
-      message.source === ConfirmationTargets.TOGGLE_CONFIRM &&
-      message.state === ConfirmationState.CONFIRMED) {
+        message.source === ConfirmationTargets.TOGGLE_CONFIRM &&
+        message.state === ConfirmationState.CONFIRMED) {
+      this.batchDelectionInfos = [];
       let rule: ReplicationRule = message.data;
+      let initBatchMessage = new BatchInfo ();
+      initBatchMessage.name = rule.name;
+      this.batchDelectionInfos.push(initBatchMessage);
+
       if (rule) {
         rule.enabled = rule.enabled === 0 ? 1 : 0;
         toPromise<any>(this.replicationService
-          .enableReplicationRule(rule.id || '', rule.enabled))
-          .then(() =>
-            this.translateService.get('REPLICATION.TOGGLED_SUCCESS')
-              .subscribe(res => this.errorHandler.info(res)))
-          .catch(error => this.errorHandler.error(error));
+            .enableReplicationRule(rule.id || '', rule.enabled))
+            .then(() =>
+                this.translateService.get('REPLICATION.TOGGLED_SUCCESS')
+                    .subscribe(res => this.batchDelectionInfos[0].status = res))
+            .catch(error => this.batchDelectionInfos[0].status = error);
       }
     }
+  }
+
+  replicateRule(rules: ReplicationRule[]): void {
+    this.replicateManual.emit(rules);
   }
 
   deletionConfirm(message: ConfirmationAcknowledgement) {
     if (message &&
       message.source === ConfirmationTargets.POLICY &&
       message.state === ConfirmationState.CONFIRMED) {
-      toPromise<any>(this.replicationService
-        .deleteReplicationRule(message.data))
-        .then(() => {
-          this.translateService.get('REPLICATION.DELETED_SUCCESS')
-            .subscribe(res => this.errorHandler.info(res));
-          this.reload.emit(true);
-        })
-        .catch(error => {
-          if (error && error.status === 412) {
-            this.translateService.get('REPLICATION.FAILED_TO_DELETE_POLICY_ENABLED')
-              .subscribe(res => this.errorHandler.error(res));
-          } else {
-            this.errorHandler.error(error);
-          }
-        });
+      this.deleteOpe(message.data);
     }
   }
+
 
   selectRule(rule: ReplicationRule): void {
     this.selectedId = rule.id || '';
@@ -183,6 +206,10 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
   redirectTo(rule: ReplicationRule): void {
     this.redirect.emit(rule);
+  }
+
+  openModal(): void {
+    this.openNewRule.emit();
   }
 
   editRule(rule: ReplicationRule) {
@@ -200,12 +227,12 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     this.toggleConfirmDialog.open(toggleConfirmMessage);
   }
 
-  jobList(): Promise<void> {
+  jobList(id: string | number): Promise<void> {
     let ruleData: ReplicationJobItem[];
     this.canDeleteRule = true;
     let count: number = 0;
     return toPromise<ReplicationJob>(this.replicationService
-        .getJobs(this.selectedId))
+        .getJobs(id))
         .then(response => {
           ruleData = response.data;
           if (ruleData.length) {
@@ -221,27 +248,64 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   }
 
   deleteRule(rule: ReplicationRule) {
-    this.jobList().then(() => {
-      let deletionMessage: ConfirmationMessage;
-      if (!this.canDeleteRule) {
-        deletionMessage = new ConfirmationMessage(
-            'REPLICATION.DELETION_TITLE_FAILURE',
-            'REPLICATION.DELETION_SUMMARY_FAILURE',
-            rule.name || '',
-            rule.id,
-            ConfirmationTargets.POLICY,
-            ConfirmationButtons.CLOSE);
-      } else {
-        deletionMessage = new ConfirmationMessage(
-            'REPLICATION.DELETION_TITLE',
-            'REPLICATION.DELETION_SUMMARY',
-            rule.name || '',
-            rule.id,
-            ConfirmationTargets.POLICY,
-            ConfirmationButtons.DELETE_CANCEL);
-      }
+    if (rule) {
+      this.batchDelectionInfos = [];
+      let initBatchMessage = new BatchInfo();
+      initBatchMessage.name = rule.name;
+      this.batchDelectionInfos.push(initBatchMessage);
+      let deletionMessage = new ConfirmationMessage(
+          'REPLICATION.DELETION_TITLE',
+          'REPLICATION.DELETION_SUMMARY',
+          rule.name,
+          rule,
+          ConfirmationTargets.POLICY,
+          ConfirmationButtons.DELETE_CANCEL);
       this.deletionConfirmDialog.open(deletionMessage);
-    });
+    }
+  }
+  deleteOpe(rule: ReplicationRule) {
+    if (rule) {
+      let promiseLists: any[] = [];
+      Promise.all([this.jobList(rule.id)]).then(items => {
+        if (!this.canDeleteRule) {
+          let findedList = this.batchDelectionInfos.find(data => data.name === rule.name);
+          Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+              this.translateService.get('REPLICATION.DELETION_SUMMARY_FAILURE')).subscribe(res => {
+            findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+          });
+        } else {
+          promiseLists.push(this.delOperate(+rule.id, rule.name));
+        }
+
+        Promise.all(promiseLists).then(item => {
+          this.selectedRow = null;
+          this.reload.emit(true);
+          let hnd = setInterval(() => this.ref.markForCheck(), 200);
+          setTimeout(() => clearInterval(hnd), 2000);
+        });
+      });
+    }
   }
 
+    delOperate(ruleId: number, name: string) {
+      let findedList = this.batchDelectionInfos.find(data => data.name === name);
+      return toPromise<any>(this.replicationService
+          .deleteReplicationRule(ruleId))
+          .then(() => {
+            this.translateService.get('BATCH.DELETED_SUCCESS')
+                .subscribe(res => findedList = BathInfoChanges(findedList, res));
+          })
+          .catch(error => {
+            if (error && error.status === 412) {
+              Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                  this.translateService.get('REPLICATION.FAILED_TO_DELETE_POLICY_ENABLED')).subscribe(res => {
+                findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+              });
+            } else {
+              this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+                findedList = BathInfoChanges(findedList, res, false, true);
+              });
+            }
+          });
+    }
 }

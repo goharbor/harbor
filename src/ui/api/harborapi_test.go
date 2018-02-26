@@ -40,6 +40,8 @@ import (
 	"github.com/dghubble/sling"
 
 	//for test env prepare
+	"github.com/vmware/harbor/src/replication/core"
+	_ "github.com/vmware/harbor/src/replication/event"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
 )
@@ -108,6 +110,7 @@ func init() {
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/logs", &LogAPI{})
+	beego.Router("/api/repositories/*", &RepositoryAPI{}, "put:Put")
 	beego.Router("/api/repositories/*/tags/:tag", &RepositoryAPI{}, "delete:Delete;get:GetTag")
 	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
@@ -118,11 +121,9 @@ func init() {
 	beego.Router("/api/targets/:id([0-9]+)", &TargetAPI{})
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &TargetAPI{}, "post:Ping")
-	beego.Router("/api/targets/:id([0-9]+)/ping", &TargetAPI{}, "post:PingByID")
 	beego.Router("/api/policies/replication/:id([0-9]+)", &RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
-	beego.Router("/api/policies/replication/:id([0-9]+)/enablement", &RepPolicyAPI{}, "put:UpdateEnablement")
 	beego.Router("/api/systeminfo", &SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
@@ -130,8 +131,13 @@ func init() {
 	beego.Router("/api/configurations", &ConfigAPI{})
 	beego.Router("/api/configurations/reset", &ConfigAPI{}, "post:Reset")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
+	beego.Router("/api/replications", &ReplicationAPI{})
 
 	_ = updateInitPassword(1, "Harbor12345")
+
+	if err := core.Init(); err != nil {
+		log.Fatalf("failed to initialize GlobalController: %v", err)
+	}
 
 	//syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
@@ -636,18 +642,6 @@ func (a testapi) PingTarget(authInfo usrInfo, body interface{}) (int, error) {
 	return httpStatusCode, err
 }
 
-//PingTargetByID ...
-func (a testapi) PingTargetByID(authInfo usrInfo, id int) (int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := fmt.Sprintf("/api/targets/%d/ping", id)
-
-	_sling = _sling.Path(path)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
-
 //Get target by targetID
 func (a testapi) GetTargetByID(authInfo usrInfo, targetID string) (int, error) {
 	_sling := sling.New().Get(a.basePath)
@@ -711,7 +705,10 @@ func (a testapi) AddPolicy(authInfo usrInfo, repPolicy apilib.RepPolicyPost) (in
 	_sling = _sling.Path(path)
 	_sling = _sling.BodyJSON(repPolicy)
 
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if httpStatusCode != http.StatusCreated {
+		log.Println(string(body))
+	}
 	return httpStatusCode, err
 }
 

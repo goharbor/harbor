@@ -52,6 +52,11 @@ func GetUser(query models.User) (*models.User, error) {
 		queryParam = append(queryParam, query.ResetUUID)
 	}
 
+	if query.Email != "" {
+		sql += ` and email = ? `
+		queryParam = append(queryParam, query.Email)
+	}
+
 	var u []models.User
 	n, err := o.Raw(sql, queryParam).QueryRows(&u)
 
@@ -252,10 +257,15 @@ func DeleteUser(userID int) error {
 	return err
 }
 
-// ChangeUserProfile ...
-func ChangeUserProfile(user models.User) error {
+// ChangeUserProfile - Update user in local db,
+// cols to specify the columns need to update,
+// Email, and RealName, Comment are updated by default.
+func ChangeUserProfile(user models.User, cols ...string) error {
 	o := GetOrmer()
-	if _, err := o.Update(&user, "Email", "Realname", "Comment"); err != nil {
+	if len(cols) == 0 {
+		cols = []string{"Email", "Realname", "Comment"}
+	}
+	if _, err := o.Update(&user, cols...); err != nil {
 		log.Errorf("update user failed, error: %v", err)
 		return err
 	}
@@ -282,6 +292,28 @@ func OnBoardUser(u *models.User) error {
 		u.HasAdminRole = existing.HasAdminRole
 		u.Realname = existing.Realname
 		u.UserID = existing.UserID
+	}
+	return nil
+}
+
+//IsSuperUser checks if the user is super user(conventionally id == 1) of Harbor
+func IsSuperUser(username string) bool {
+	u, err := GetUser(models.User{
+		Username: username,
+	})
+	log.Debugf("Check if user %s is super user", username)
+	if err != nil {
+		log.Errorf("Failed to get user from DB, username: %s, error: %v", username, err)
+		return false
+	}
+	return u != nil && u.UserID == 1
+}
+
+//CleanUser - Clean this user information from DB
+func CleanUser(id int64) error {
+	if _, err := GetOrmer().QueryTable(&models.User{}).
+		Filter("UserID", id).Delete(); err != nil {
+		return err
 	}
 	return nil
 }

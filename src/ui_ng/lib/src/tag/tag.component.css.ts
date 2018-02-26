@@ -1,4 +1,17 @@
 export const TAG_STYLE = `
+.option-right {
+  padding-right: 18px;
+  padding-bottom: 6px;
+}
+
+.refresh-btn {
+  cursor: pointer;
+}
+
+.refresh-btn:hover {
+  color: #007CBB;
+}
+
 .sub-header-title {
   margin: 12px 0;
 }
@@ -12,24 +25,8 @@ export const TAG_STYLE = `
   display: block; height: 0;
 }
 
-:host >>> .datagrid {
-  margin: 0;
-}
-
 :host >>> .datagrid-placeholder {
   display: none;
-}
-
-:host >>> .datagrid .datagrid-body {
-  background-color: #eee;
-}
-
-:host >>> .datagrid .datagrid-head .datagrid-row {
-  background-color: #eee;
-}
-
-:host >>> .datagrid .datagrid-body .datagrid-row-master {
-  background-color: #eee;
 }
 
 .truncated {
@@ -47,5 +44,10 @@ export const TAG_STYLE = `
 :host >>> .datagrid clr-dg-column {
     min-width: 80px;
 }
-
+.rightPos{
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
+}
 `;

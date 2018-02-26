@@ -28,7 +28,7 @@ data:
       token:
         issuer: harbor-token-issuer
         realm: {{ui_url}}/service/token
-        rootcertbundle: /etc/docker/registry/root.crt
+        rootcertbundle: /etc/registry/root.crt
         service: harbor-registry
     notifications:
       endpoints:

@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	c = NewClient(server.URL, nil)
+	c = NewClient(server.URL, &Config{})
 
 	os.Exit(m.Run())
 }

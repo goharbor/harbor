@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestTask(t *testing.T) {
+func TestScanAllTask(t *testing.T) {
 	tk := NewScanAllTask()
 	if tk == nil {
 		t.Fail()

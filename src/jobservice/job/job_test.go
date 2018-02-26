@@ -105,7 +105,6 @@ func TestRepJob(t *testing.T) {
 	assert.Nil(err)
 	j, err := dao.GetRepJob(repJobID)
 	assert.Equal(models.JobRetrying, j.Status)
-	assert.Equal(1, rj.parm.Enabled)
 	assert.False(rj.parm.Insecure)
 	rj2 := NewRepJob(99999)
 	err = rj2.Init()
@@ -163,7 +162,6 @@ func prepareRepJobData() error {
 	}
 	policy := models.RepPolicy{
 		ProjectID:   1,
-		Enabled:     1,
 		TargetID:    targetID,
 		Description: "whatever",
 		Name:        "mypolicy",

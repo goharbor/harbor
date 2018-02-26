@@ -23,8 +23,11 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	clairdao "github.com/vmware/harbor/src/common/dao/clair"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
+	rep_notification "github.com/vmware/harbor/src/replication/event/notification"
+	"github.com/vmware/harbor/src/replication/event/topic"
 	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/config"
 	uiutils "github.com/vmware/harbor/src/ui/utils"
@@ -104,7 +107,17 @@ func (n *NotificationHandler) Post() {
 				}
 			}()
 
-			go api.TriggerReplicationByRepository(pro.ProjectID, repository, []string{tag}, models.RepOpTransfer)
+			go func() {
+				image := repository + ":" + tag
+				err := notifier.Publish(topic.ReplicationEventTopicOnPush, rep_notification.OnPushNotification{
+					Image: image,
+				})
+				if err != nil {
+					log.Errorf("failed to publish on push topic for resource %s: %v", image, err)
+					return
+				}
+				log.Debugf("the on push topic for resource %s published", image)
+			}()
 
 			if autoScanEnabled(pro) {
 				last, err := clairdao.GetLastUpdate()

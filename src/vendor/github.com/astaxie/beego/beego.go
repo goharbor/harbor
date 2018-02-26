@@ -23,7 +23,7 @@ import (
 
 const (
 	// VERSION represent beego web framework version.
-	VERSION = "1.6.1"
+	VERSION = "1.9.0"
 
 	// DEV is for develop
 	DEV = "dev"
@@ -40,9 +40,9 @@ var (
 
 // AddAPPStartHook is used to register the hookfunc
 // The hookfuncs will run in beego.Run()
-// such as sessionInit, middlerware start, buildtemplate, admin start
-func AddAPPStartHook(hf hookfunc) {
-	hooks = append(hooks, hf)
+// such as initiating session , starting middleware , building template, starting admin control and so on.
+func AddAPPStartHook(hf ...hookfunc) {
+	hooks = append(hooks, hf...)
 }
 
 // Run beego application.
@@ -51,6 +51,7 @@ func AddAPPStartHook(hf hookfunc) {
 // beego.Run(":8089")
 // beego.Run("127.0.0.1:8089")
 func Run(params ...string) {
+
 	initBeforeHTTPRun()
 
 	if len(params) > 0 && params[0] != "" {
@@ -68,12 +69,14 @@ func Run(params ...string) {
 
 func initBeforeHTTPRun() {
 	//init hooks
-	AddAPPStartHook(registerMime)
-	AddAPPStartHook(registerDefaultErrorHandler)
-	AddAPPStartHook(registerSession)
-	AddAPPStartHook(registerDocs)
-	AddAPPStartHook(registerTemplate)
-	AddAPPStartHook(registerAdmin)
+	AddAPPStartHook(
+		registerMime,
+		registerDefaultErrorHandler,
+		registerSession,
+		registerTemplate,
+		registerAdmin,
+		registerGzip,
+	)
 
 	for _, hk := range hooks {
 		if err := hk(); err != nil {
@@ -84,8 +87,16 @@ func initBeforeHTTPRun() {
 
 // TestBeegoInit is for test package init
 func TestBeegoInit(ap string) {
-	os.Setenv("BEEGO_RUNMODE", "test")
-	appConfigPath = filepath.Join(ap, "conf", "app.conf")
+	path := filepath.Join(ap, "conf", "app.conf")
 	os.Chdir(ap)
+	InitBeegoBeforeTest(path)
+}
+
+// InitBeegoBeforeTest is for test package init
+func InitBeegoBeforeTest(appConfigPath string) {
+	if err := LoadAppConfig(appConfigProvider, appConfigPath); err != nil {
+		panic(err)
+	}
+	BConfig.RunMode = "test"
 	initBeforeHTTPRun()
 }

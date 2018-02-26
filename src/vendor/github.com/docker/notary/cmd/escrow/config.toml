@@ -1,0 +1,9 @@
+[storage]
+backend = "file"
+path = "/tmp/keys"
+
+[server]
+addr = "0.0.0.0:4450"
+tls_key_file = "../../fixtures/notary-escrow.key"
+tls_cert_file = "../../fixtures/notary-escrow.crt"
+client_ca_file = ""

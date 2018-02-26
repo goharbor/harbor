@@ -63,7 +63,7 @@ func (s *ScanPolicyNotificationHandler) Handle(value interface{}) error {
 
 		//To check and compare if the related parameter is changed.
 		if pl := scheduler.DefaultScheduler.GetPolicy(alternatePolicy); pl != nil {
-			policyCandidate := policy.NewAlternatePolicy(&policy.AlternatePolicyConfiguration{
+			policyCandidate := policy.NewAlternatePolicy(alternatePolicy, &policy.AlternatePolicyConfiguration{
 				Duration:   24 * time.Hour,
 				OffsetTime: notification.DailyTime,
 			})
@@ -95,12 +95,14 @@ func (s *ScanPolicyNotificationHandler) Handle(value interface{}) error {
 
 //Schedule policy.
 func schedulePolicy(notification ScanPolicyNotification) error {
-	schedulePolicy := policy.NewAlternatePolicy(&policy.AlternatePolicyConfiguration{
+	schedulePolicy := policy.NewAlternatePolicy(alternatePolicy, &policy.AlternatePolicyConfiguration{
 		Duration:   24 * time.Hour,
 		OffsetTime: notification.DailyTime,
 	})
 	attachTask := task.NewScanAllTask()
-	schedulePolicy.AttachTasks(attachTask)
+	if err := schedulePolicy.AttachTasks(attachTask); err != nil {
+		return err
+	}
 
 	return scheduler.DefaultScheduler.Schedule(schedulePolicy)
 }

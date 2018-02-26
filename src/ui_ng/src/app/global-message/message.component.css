@@ -5,3 +5,10 @@
     width: 100%;
     z-index: 999;
 }
+.alert-item {
+    display: inline-block;
+    text-align: center;
+}
+:host >>> .alert-icon-wrapper{
+    display: inline;
+}

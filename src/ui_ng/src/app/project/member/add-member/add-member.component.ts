@@ -38,13 +38,15 @@ import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
 import {User} from "../../../user/user";
+import {ActivatedRoute, Router} from "@angular/router";
+import {Project} from "../../project";
 
 @Component({
   selector: 'add-member',
   templateUrl: 'add-member.component.html',
   styleUrls: ['add-member.component.css'],
   providers: [UserService],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
 
@@ -79,54 +81,63 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     private userService: UserService,
     private messageHandlerService: MessageHandlerService,
     private translateService: TranslateService,
+    private route: ActivatedRoute,
     private ref: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+  let resolverData = this.route.snapshot.parent.data;
+  let hasProjectAdminRole: boolean;
+  if (resolverData) {
+    hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+  }
+  if (hasProjectAdminRole) {
     this.userService.getUsers()
         .then(users => {
           this.userLists = users;
         });
 
     this.nameChecker
-      .debounceTime(500)
-      .distinctUntilChanged()
-      .subscribe((name: string) => {
-        let cont = this.currentForm.controls['member_name'];
-        if (cont) {
-          this.isMemberNameValid = cont.valid;
-          if (cont.valid) {
-            this.checkOnGoing = true;
-            this.memberService
-              .listMembers(this.projectId, cont.value).toPromise()
-              .then((members: Member[]) => {
-                if (members.filter(m => { return m.username === cont.value }).length > 0) {
-                  this.isMemberNameValid = false;
-                  this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
-                }
-                this.checkOnGoing = false;
-              })
-              .catch(error => {
-                this.checkOnGoing = false;
-              });
-            //username autocomplete
-            if (this.userLists.length) {
-              this.selectUserName = [];
-              this.userLists.filter(data => {
-                if (data.username.startsWith(cont.value)) {
-                  if (this.selectUserName.length < 10) {
-                    this.selectUserName.push(data.username);
+        .debounceTime(500)
+        .distinctUntilChanged()
+        .subscribe((name: string) => {
+          let cont = this.currentForm.controls['member_name'];
+          if (cont) {
+            this.isMemberNameValid = cont.valid;
+            if (cont.valid) {
+              this.checkOnGoing = true;
+              this.memberService
+                  .listMembers(this.projectId, cont.value).toPromise()
+                  .then((members: Member[]) => {
+                    if (members.filter(m => { return m.username === cont.value }).length > 0) {
+                      this.isMemberNameValid = false;
+                      this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
+                    }
+                    this.checkOnGoing = false;
+                  })
+                  .catch(error => {
+                    this.checkOnGoing = false;
+                  });
+              //username autocomplete
+              if (this.userLists && this.userLists.length) {
+                this.selectUserName = [];
+                this.userLists.filter(data => {
+                  if (data.username.startsWith(cont.value)) {
+                    if (this.selectUserName.length < 10) {
+                      this.selectUserName.push(data.username);
+                    }
                   }
-                }
-              });
-              setTimeout(() => {
-                setInterval(() => this.ref.markForCheck(), 100);
-              }, 1000);
+                });
+                setTimeout(() => {
+                  setInterval(() => this.ref.markForCheck(), 100);
+                }, 1000);
+              }
+            } else {
+              this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
             }
-          } else {
-            this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
           }
-        }
-      });
+        });
+  }
+
   }
 
   ngOnDestroy(): void {
@@ -214,7 +225,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   }
 
   openAddMemberModal(): void {
-    this.memberForm.reset();
+    this.currentForm.reset();
     this.member = new Member();
     this.addMemberOpened = true;
     this.hasChanged = false;

@@ -1,10 +1,11 @@
 # Installation and Configuration Guide
-Harbor can be installed by one of two approaches: 
+Harbor can be installed by one of three approaches: 
 
 - **Online installer:** The installer downloads Harbor's images from Docker hub. For this reason, the installer is very small in size.
 
 - **Offline installer:** Use this installer when the host does not have an Internet connection. The installer contains pre-built images so its size is larger.
 
+- **OVA installer:** Use this installer when user have a vCenter environment, Harbor is launched after OVA deployed. Detail information please refer **[Harbor OVA install guide](install_guide_ova.md)**
 
 All installers can be downloaded from the **[official release](https://github.com/vmware/harbor/releases)** page. 
 
@@ -16,9 +17,25 @@ In addition, the deployment instructions on Kubernetes has been created by the c
 
 ## Prerequisites for the target host
 Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.  
-* Python should be version 2.7 or higher.  Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default  
-* Docker engine should be version 1.10 or higher.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/
-* Docker Compose needs to be version 1.6.0 or higher.  For installation instructions, please refer to: https://docs.docker.com/compose/install/
+### Hardware
+|Resource|Capacity|Description|
+|---|---|---|
+|CPU|minimal 2 CPU|4 CPU is prefered|
+|Mem|minimal 4GB|8GB is prefered|
+|Disk|minimal 40GB|160GB is prefered|
+### Software
+|Software|Version|Description|
+|---|---|---|
+|Python|version 2.7 or higher|Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default|
+|Docker engine|version 1.10 or higher|For installation instructions, please refer to: https://docs.docker.com/engine/installation/|
+|Docker Compose|version 1.6.0 or higher|For installation instructions, please refer to: https://docs.docker.com/compose/install/|
+|Openssl|latest is prefered|Generate certificate and keys for Harbor|
+### Network ports 
+|Port|Protocol|Description|
+|---|---|---|
+|443|HTTPS|Harbor UI and API will accept requests on this port for https protocol|
+|4443|HTTS|Connections to the Docker Content Trust service for Harbor, only needed when Notary is enabled|
+|80|HTTP|Harbor UI and API will accept requests on this port for http protocol|
 
 ## Installation Steps
 
@@ -93,7 +110,7 @@ may not be able to log in after the upgrade.
 * **ldap_basedn**: The base DN to look up a user, e.g. `ou=people,dc=mydomain,dc=com`.  _Only used when **auth_mode** is set to *ldap_auth* ._ 
 * **ldap_filter**:The search filter for looking up a user, e.g. `(objectClass=person)`.
 * **ldap_uid**: The attribute used to match a user during a LDAP search, it could be uid, cn, email or other attributes.
-* **ldap_scope**: The scope to search for a user, 1-LDAP_SCOPE_BASE, 2-LDAP_SCOPE_ONELEVEL, 3-LDAP_SCOPE_SUBTREE. Default is 3. 
+* **ldap_scope**: The scope to search for a user, 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE. Default is 2. 
 * **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
 * **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
 * **project_creation_restriction**: The flag to control what users have permission to create projects.  By default everyone can create a project, set to "adminonly" such that only admin can create project.

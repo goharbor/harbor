@@ -18,15 +18,14 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
+	"os/user"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 var (
@@ -51,24 +50,26 @@ func (ini *IniConfig) Parse(name string) (Configer, error) {
 }
 
 func (ini *IniConfig) parseFile(name string) (*IniConfigContainer, error) {
-	file, err := os.Open(name)
+	data, err := ioutil.ReadFile(name)
 	if err != nil {
 		return nil, err
 	}
 
+	return ini.parseData(filepath.Dir(name), data)
+}
+
+func (ini *IniConfig) parseData(dir string, data []byte) (*IniConfigContainer, error) {
 	cfg := &IniConfigContainer{
-		file.Name(),
-		make(map[string]map[string]string),
-		make(map[string]string),
-		make(map[string]string),
-		sync.RWMutex{},
+		data:           make(map[string]map[string]string),
+		sectionComment: make(map[string]string),
+		keyComment:     make(map[string]string),
+		RWMutex:        sync.RWMutex{},
 	}
 	cfg.Lock()
 	defer cfg.Unlock()
-	defer file.Close()
 
 	var comment bytes.Buffer
-	buf := bufio.NewReader(file)
+	buf := bufio.NewReader(bytes.NewBuffer(data))
 	// check the BOM
 	head, err := buf.Peek(3)
 	if err == nil && head[0] == 239 && head[1] == 187 && head[2] == 191 {
@@ -82,11 +83,14 @@ func (ini *IniConfig) parseFile(name string) (*IniConfigContainer, error) {
 		if err == io.EOF {
 			break
 		}
+		//It might be a good idea to throw a error on all unknonw errors?
+		if _, ok := err.(*os.PathError); ok {
+			return nil, err
+		}
+		line = bytes.TrimSpace(line)
 		if bytes.Equal(line, bEmpty) {
 			continue
 		}
-		line = bytes.TrimSpace(line)
-
 		var bComment []byte
 		switch {
 		case bytes.HasPrefix(line, bNumComment):
@@ -126,16 +130,20 @@ func (ini *IniConfig) parseFile(name string) (*IniConfigContainer, error) {
 
 		// handle include "other.conf"
 		if len(keyValue) == 1 && strings.HasPrefix(key, "include") {
+
 			includefiles := strings.Fields(key)
 			if includefiles[0] == "include" && len(includefiles) == 2 {
+
 				otherfile := strings.Trim(includefiles[1], "\"")
-				if !path.IsAbs(otherfile) {
-					otherfile = path.Join(path.Dir(name), otherfile)
+				if !filepath.IsAbs(otherfile) {
+					otherfile = filepath.Join(dir, otherfile)
 				}
+
 				i, err := ini.parseFile(otherfile)
 				if err != nil {
 					return nil, err
 				}
+
 				for sec, dt := range i.data {
 					if _, ok := cfg.data[sec]; !ok {
 						cfg.data[sec] = make(map[string]string)
@@ -144,12 +152,15 @@ func (ini *IniConfig) parseFile(name string) (*IniConfigContainer, error) {
 						cfg.data[sec][k] = v
 					}
 				}
+
 				for sec, comm := range i.sectionComment {
 					cfg.sectionComment[sec] = comm
 				}
+
 				for k, comm := range i.keyComment {
 					cfg.keyComment[k] = comm
 				}
+
 				continue
 			}
 		}
@@ -162,7 +173,7 @@ func (ini *IniConfig) parseFile(name string) (*IniConfigContainer, error) {
 			val = bytes.Trim(val, `"`)
 		}
 
-		cfg.data[section][key] = string(val)
+		cfg.data[section][key] = ExpandValueEnv(string(val))
 		if comment.Len() > 0 {
 			cfg.keyComment[section+"."+key] = comment.String()
 			comment.Reset()
@@ -173,20 +184,25 @@ func (ini *IniConfig) parseFile(name string) (*IniConfigContainer, error) {
 }
 
 // ParseData parse ini the data
+// When include other.conf,other.conf is either absolute directory
+// or under beego in default temporary directory(/tmp/beego[-username]).
 func (ini *IniConfig) ParseData(data []byte) (Configer, error) {
-	// Save memory data to temporary file
-	tmpName := path.Join(os.TempDir(), "beego", fmt.Sprintf("%d", time.Now().Nanosecond()))
-	os.MkdirAll(path.Dir(tmpName), os.ModePerm)
-	if err := ioutil.WriteFile(tmpName, data, 0655); err != nil {
+	dir := "beego"
+	currentUser, err := user.Current()
+	if err == nil {
+		dir = "beego-" + currentUser.Username
+	}
+	dir = filepath.Join(os.TempDir(), dir)
+	if err = os.MkdirAll(dir, os.ModePerm); err != nil {
 		return nil, err
 	}
-	return ini.Parse(tmpName)
+
+	return ini.parseData(dir, data)
 }
 
 // IniConfigContainer A Config represents the ini configuration.
 // When set and get value, support key as section:name type.
 type IniConfigContainer struct {
-	filename       string
 	data           map[string]map[string]string // section=> key:val
 	sectionComment map[string]string            // section : comment
 	keyComment     map[string]string            // id: []{comment, key...}; id 1 is for main comment.
@@ -293,10 +309,12 @@ func (c *IniConfigContainer) GetSection(section string) (map[string]string, erro
 	if v, ok := c.data[section]; ok {
 		return v, nil
 	}
-	return nil, errors.New("not exist setction")
+	return nil, errors.New("not exist section")
 }
 
-// SaveConfigFile save the config into file
+// SaveConfigFile save the config into file.
+//
+// BUG(env): The environment variable config item will be saved with real value in SaveConfigFile Funcation.
 func (c *IniConfigContainer) SaveConfigFile(filename string) (err error) {
 	// Write configuration file by filename.
 	f, err := os.Create(filename)
@@ -307,7 +325,10 @@ func (c *IniConfigContainer) SaveConfigFile(filename string) (err error) {
 
 	// Get section or key comments. Fixed #1607
 	getCommentStr := func(section, key string) string {
-		comment, ok := "", false
+		var (
+			comment string
+			ok      bool
+		)
 		if len(key) == 0 {
 			comment, ok = c.sectionComment[section]
 		} else {
@@ -387,11 +408,8 @@ func (c *IniConfigContainer) SaveConfigFile(filename string) (err error) {
 			}
 		}
 	}
-
-	if _, err = buf.WriteTo(f); err != nil {
-		return err
-	}
-	return nil
+	_, err = buf.WriteTo(f)
+	return err
 }
 
 // Set writes a new value for key.
@@ -406,7 +424,7 @@ func (c *IniConfigContainer) Set(key, value string) error {
 
 	var (
 		section, k string
-		sectionKey = strings.Split(key, "::")
+		sectionKey = strings.Split(strings.ToLower(key), "::")
 	)
 
 	if len(sectionKey) >= 2 {

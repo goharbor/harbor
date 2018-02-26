@@ -1,0 +1,45 @@
+version: 0.1
+log:
+  level: debug
+  fields:
+    service: registry
+storage:
+  cache:
+    layerinfo: redis
+  $storage_provider_info
+  maintenance:
+    uploadpurging:
+      enabled: false
+  delete:
+    enabled: true
+redis:
+  addr: $redis_url
+  db: 0
+  dialtimeout: 10ms
+  readtimeout: 10ms
+  writetimeout: 10ms
+  pool:
+    maxidle: 16
+    maxactive: 64
+    idletimeout: 300s
+
+http:
+  addr: :5000
+  secret: placeholder
+  debug:
+    addr: localhost:5001
+auth:
+  token:
+    issuer: harbor-token-issuer
+    realm: $ui_url/service/token
+    rootcertbundle: /etc/registry/root.crt
+    service: harbor-registry
+
+notifications:
+  endpoints:
+  - name: harbor
+    disabled: false
+    url: http://ui:8080/service/notifications
+    timeout: 3000ms
+    threshold: 5
+    backoff: 1s

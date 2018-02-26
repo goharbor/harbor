@@ -23,12 +23,12 @@ import (
 	"strings"
 
 	"github.com/vmware/harbor/src/adminserver/client"
-	"github.com/vmware/harbor/src/adminserver/client/auth"
 	"github.com/vmware/harbor/src/common"
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
+	jobservice_client "github.com/vmware/harbor/src/jobservice/client"
 	"github.com/vmware/harbor/src/ui/promgr"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
@@ -55,21 +55,30 @@ var (
 	AdmiralClient *http.Client
 	// TokenReader is used in integration mode to read token
 	TokenReader admiral.TokenReader
+	// GlobalJobserviceClient is a global client for jobservice
+	GlobalJobserviceClient jobservice_client.Client
 )
 
 // Init configurations
 func Init() error {
 	//init key provider
 	initKeyProvider()
-
 	adminServerURL := os.Getenv("ADMINSERVER_URL")
 	if len(adminServerURL) == 0 {
 		adminServerURL = "http://adminserver"
 	}
 
+	return InitByURL(adminServerURL)
+
+}
+
+// InitByURL Init configurations with given url
+func InitByURL(adminServerURL string) error {
 	log.Infof("initializing client for adminserver %s ...", adminServerURL)
-	authorizer := auth.NewSecretAuthorizer(secretCookieName, UISecret())
-	AdminserverClient = client.NewClient(adminServerURL, authorizer)
+	cfg := &client.Config{
+		Secret: UISecret(),
+	}
+	AdminserverClient = client.NewClient(adminServerURL, cfg)
 	if err := AdminserverClient.Ping(); err != nil {
 		return fmt.Errorf("failed to ping adminserver: %v", err)
 	}
@@ -85,6 +94,11 @@ func Init() error {
 
 	// init project manager based on deploy mode
 	initProjectManager()
+
+	GlobalJobserviceClient = jobservice_client.NewDefaultClient(InternalJobServiceURL(),
+		&jobservice_client.Config{
+			Secret: UISecret(),
+		})
 
 	return nil
 }
@@ -167,24 +181,28 @@ func AuthMode() (string, error) {
 	return cfg[common.AUTHMode].(string), nil
 }
 
-// LDAP returns the setting of ldap server
-func LDAP() (*models.LDAP, error) {
+// LDAPConf returns the setting of ldap server
+func LDAPConf() (*models.LdapConf, error) {
 	cfg, err := mg.Get()
 	if err != nil {
 		return nil, err
 	}
+	ldapConf := &models.LdapConf{}
+	ldapConf.LdapURL = cfg[common.LDAPURL].(string)
+	ldapConf.LdapSearchDn = cfg[common.LDAPSearchDN].(string)
+	ldapConf.LdapSearchPassword = cfg[common.LDAPSearchPwd].(string)
+	ldapConf.LdapBaseDn = cfg[common.LDAPBaseDN].(string)
+	ldapConf.LdapUID = cfg[common.LDAPUID].(string)
+	ldapConf.LdapFilter = cfg[common.LDAPFilter].(string)
+	ldapConf.LdapScope = int(cfg[common.LDAPScope].(float64))
+	ldapConf.LdapConnectionTimeout = int(cfg[common.LDAPTimeout].(float64))
+	if cfg[common.LDAPVerifyCert] != nil {
+		ldapConf.LdapVerifyCert = cfg[common.LDAPVerifyCert].(bool)
+	} else {
+		ldapConf.LdapVerifyCert = true
+	}
 
-	ldap := &models.LDAP{}
-	ldap.URL = cfg[common.LDAPURL].(string)
-	ldap.SearchDN = cfg[common.LDAPSearchDN].(string)
-	ldap.SearchPassword = cfg[common.LDAPSearchPwd].(string)
-	ldap.BaseDN = cfg[common.LDAPBaseDN].(string)
-	ldap.UID = cfg[common.LDAPUID].(string)
-	ldap.Filter = cfg[common.LDAPFilter].(string)
-	ldap.Scope = int(cfg[common.LDAPScope].(float64))
-	ldap.Timeout = int(cfg[common.LDAPTimeout].(float64))
-
-	return ldap, nil
+	return ldapConf, nil
 }
 
 // TokenExpiration returns the token expiration time (in minute)
@@ -248,6 +266,10 @@ func InternalJobServiceURL() string {
 	if err != nil {
 		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.")
 
+		return "http://jobservice"
+	}
+
+	if cfg[common.JobServiceURL] == nil {
 		return "http://jobservice"
 	}
 	return strings.TrimSuffix(cfg[common.JobServiceURL].(string), "/")
@@ -370,13 +392,20 @@ func ClairEndpoint() string {
 	return common.DefaultClairEndpoint
 }
 
-// ClairDBPassword returns the password for accessing Clair's DB.
-func ClairDBPassword() (string, error) {
+// ClairDB return Clair db info
+func ClairDB() (*models.PostGreSQL, error) {
 	cfg, err := mg.Get()
 	if err != nil {
-		return "", err
+		log.Errorf("Failed to get configuration of Clair DB, Error detail %v", err)
+		return nil, err
 	}
-	return cfg[common.ClairDBPassword].(string), nil
+	clairDB := &models.PostGreSQL{}
+	clairDB.Host = cfg[common.ClairDBHost].(string)
+	clairDB.Port = int(cfg[common.ClairDBPort].(float64))
+	clairDB.Username = cfg[common.ClairDBUsername].(string)
+	clairDB.Password = cfg[common.ClairDBPassword].(string)
+	clairDB.Database = cfg[common.ClairDB].(string)
+	return clairDB, nil
 }
 
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
@@ -432,9 +461,7 @@ func UAASettings() (*models.UAASettings, error) {
 		Endpoint:     cfg[common.UAAEndpoint].(string),
 		ClientID:     cfg[common.UAAClientID].(string),
 		ClientSecret: cfg[common.UAAClientSecret].(string),
-	}
-	if len(os.Getenv("UAA_CA_ROOT")) != 0 {
-		us.CARootPath = os.Getenv("UAA_CA_ROOT")
+		VerifyCert:   cfg[common.UAAVerifyCert].(bool),
 	}
 	return us, nil
 }

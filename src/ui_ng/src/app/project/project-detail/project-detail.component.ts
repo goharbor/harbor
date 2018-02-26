@@ -35,7 +35,7 @@ export class ProjectDetailComponent {
   roleName: string;
 
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private router: Router,
     private sessionService: SessionService,
     private projectService: ProjectService) {
@@ -50,7 +50,11 @@ export class ProjectDetailComponent {
 
   public get isSystemAdmin(): boolean {
     let account = this.sessionService.getCurrentUser();
-    return account != null && account.has_admin_role > 0;
+    return account && account.has_admin_role > 0;
+  }
+
+  public get isSProjectAdmin(): boolean {
+    return this.currentProject.has_project_admin_role;
   }
 
   public get isSessionValid(): boolean {

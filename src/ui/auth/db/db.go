@@ -15,13 +15,15 @@
 package db
 
 import (
-	"github.com/vmware/harbor/src/ui/auth"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/ui/auth"
 )
 
 // Auth implements Authenticator interface to authenticate user against DB.
-type Auth struct{}
+type Auth struct {
+	auth.DefaultAuthenticateHelper
+}
 
 // Authenticate calls dao to authenticate user.
 func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
@@ -30,6 +32,15 @@ func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		return nil, err
 	}
 	return u, nil
+}
+
+// SearchUser - Check if user exist in local db
+func (d *Auth) SearchUser(username string) (*models.User, error) {
+	var queryCondition = models.User{
+		Username: username,
+	}
+
+	return dao.GetUser(queryCondition)
 }
 
 func init() {

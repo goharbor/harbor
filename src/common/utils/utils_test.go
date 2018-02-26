@@ -23,37 +23,30 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseEndpoint(t *testing.T) {
-	endpoint := "example.com"
-	u, err := ParseEndpoint(endpoint)
-	if err != nil {
-		t.Fatalf("failed to parse endpoint %s: %v", endpoint, err)
+	cases := []struct {
+		input    string
+		err      bool
+		expected string
+	}{
+		{" example.com/ ", false, "http://example.com"},
+		{"ftp://example.com", true, ""},
+		{"http://example.com", false, "http://example.com"},
+		{"https://example.com", false, "https://example.com"},
+		{"http://example!@#!?//#", true, ""},
 	}
 
-	if u.String() != "http://example.com" {
-		t.Errorf("unexpected endpoint: %s != %s", endpoint, "http://example.com")
-	}
-
-	endpoint = "https://example.com"
-	u, err = ParseEndpoint(endpoint)
-	if err != nil {
-		t.Fatalf("failed to parse endpoint %s: %v", endpoint, err)
-	}
-
-	if u.String() != "https://example.com" {
-		t.Errorf("unexpected endpoint: %s != %s", endpoint, "https://example.com")
-	}
-
-	endpoint = "  example.com/ "
-	u, err = ParseEndpoint(endpoint)
-	if err != nil {
-		t.Fatalf("failed to parse endpoint %s: %v", endpoint, err)
-	}
-
-	if u.String() != "http://example.com" {
-		t.Errorf("unexpected endpoint: %s != %s", endpoint, "http://example.com")
+	for _, c := range cases {
+		u, err := ParseEndpoint(c.input)
+		if c.err {
+			require.NotNil(t, err)
+			continue
+		}
+		require.Nil(t, err)
+		assert.Equal(t, c.expected, u.String())
 	}
 }
 

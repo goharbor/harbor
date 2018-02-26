@@ -137,8 +137,31 @@ func (rj *ReplicationJob) HandleAction() {
 		rj.RenderError(http.StatusInternalServerError, "Faild to get jobs to stop")
 		return
 	}
+
+	runningJobs := []*models.RepJob{}
+	pendingAndRetryingJobs := []*models.RepJob{}
+	for _, job := range jobs {
+		if job.Status == models.JobRunning {
+			runningJobs = append(runningJobs, job)
+			continue
+		}
+		pendingAndRetryingJobs = append(pendingAndRetryingJobs, job)
+	}
+
+	// stop pending and retrying jobs by updating job status in database
+	// when the jobs are dispatched, the status will be checked first
+	for _, job := range pendingAndRetryingJobs {
+		id := job.ID
+		if err := dao.UpdateRepJobStatus(id, models.JobStopped); err != nil {
+			log.Errorf("failed to update the status of job %d: %v", id, err)
+			continue
+		}
+		log.Debugf("the status of job %d is updated to %s", id, models.JobStopped)
+	}
+
+	// stop running jobs in statemachine
 	var repJobs []job.Job
-	for _, j := range jobs {
+	for _, j := range runningJobs {
 		//transform the data record to job struct that can be handled by state machine.
 		repJob := job.NewRepJob(j.ID)
 		repJobs = append(repJobs, repJob)

@@ -6,7 +6,10 @@ export const CREATE_EDIT_RULE_TEMPLATE: string = `
     <form #ruleForm="ngForm">
       <section class="form-block">
         <div class="alert alert-warning" *ngIf="!editable">
-          <div class="alert-item">
+          <div class="alert-item static">
+            <div class="alert-icon-wrapper">
+              <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
+            </div>
             <span class="alert-text">
               {{'REPLICATION.CANNOT_EDIT' | translate}}
             </span>
@@ -74,7 +77,7 @@ export const CREATE_EDIT_RULE_TEMPLATE: string = `
         </div>
         <div class="form-group">
           <label for="destination_insecure" class="col-md-4 form-group-label-override">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</label>
-          <clr-checkbox #insecure  class="col-md-8" name="insecure" id="destination_insecure" [clrDisabled]="testOngoing"  [clrChecked]="!createEditRule.insecure"  [clrDisabled]="readonly || !isCreateEndpoint" (clrCheckedChange)="setInsecureValue($event)">
+          <clr-checkbox #insecure  class="col-md-8" name="insecure" id="destination_insecure" [clrChecked]="!createEditRule.insecure"  [clrDisabled]="readonly || !isCreateEndpoint || testOngoing" (clrCheckedChange)="setInsecureValue($event)">
              <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">
                     <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                     <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate}}</span>

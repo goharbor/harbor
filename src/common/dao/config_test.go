@@ -46,7 +46,7 @@ func TestAuthModeCanBeModified(t *testing.T) {
 			t.Fatalf("failed to register user: %v", err)
 		}
 		defer func(id int64) {
-			if err := deleteUser(id); err != nil {
+			if err := CleanUser(id); err != nil {
 				t.Fatalf("failed to delete user %d: %v", id, err)
 			}
 		}(id)

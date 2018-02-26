@@ -4,7 +4,7 @@
             <span class="alert-text">
           {{message}}
         </span>
-            <div class="alert-actions" *ngIf="needAuth">
+            <div class="alert-actions" *ngIf="needAuth" style="display: inline;">
                 <button class="btn alert-action" (click)="signIn()">{{ 'BUTTON.LOG_IN' | translate }}</button>
             </div>
         </div>
