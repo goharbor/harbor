@@ -42,7 +42,7 @@ pipeline:
         target: slack_webhook
     username: drone
     template: >
-      build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.tar.gz
+      build https://ci-vic.vmware.com/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.tar.gz
     when:
       repo: vmware/harbor
       branch: [ master, release-*, refs/tags/* ]
@@ -50,7 +50,7 @@ pipeline:
 
   trigger:
     image: plugins/downstream
-    server: https://ci.vcna.io
+    server: https://ci-vic.vmware.com
     secrets:
       - downstream_token
     fork: true
