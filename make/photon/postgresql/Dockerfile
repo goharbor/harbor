@@ -4,7 +4,7 @@ ENV PGDATA /var/lib/postgresql/data
 
 RUN touch /etc/localtime.bak \
     && tdnf distro-sync -y \
-    && tdnf install -y sed shadow gzip postgresql\
+    && tdnf install -y sed shadow gzip postgresql >> /dev/null\
     && groupadd -r postgres --gid=999 \
     && useradd -r -g postgres --uid=999 postgres \
     && mkdir -p /docker-entrypoint-initdb.d \

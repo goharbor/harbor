@@ -2,7 +2,7 @@ FROM vmware/photon:1.0
 
 RUN tdnf distro-sync -y || echo \
     && tdnf erase vim -y \
-    && tdnf install sudo -y \
+    && tdnf install sudo -y >> /dev/null\
     && tdnf clean all \
     && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor \
     && mkdir /harbor/
