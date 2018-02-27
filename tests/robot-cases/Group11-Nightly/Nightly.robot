@@ -153,6 +153,10 @@ Test Case - Project Level Policy Public
     Public Should Be Selected 
     Back To Projects
     # Project${d}  default should be private
+    # Here logout and login to try avoid a bug only in autotest
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD} 
+    Filter Object  project${d}
     Project Should Be Public  project${d}
     Close Browser
 
