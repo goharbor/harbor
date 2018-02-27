@@ -82,19 +82,19 @@ insert into project (owner_id, name, creation_time, update_time) values
 (1, 'library', NOW(), NOW());
 
 create table project_member (
+ id int not null AUTO_INCREMENT,
  project_id int NOT NULL,
- user_id int NOT NULL,
+ entity_id int NOT NULL,
+ entity_type char NOT NULL, ## u for user, g for user group
  role int NOT NULL,
- creation_time timestamp,
- update_time timestamp,
- PRIMARY KEY (project_id, user_id),
- FOREIGN KEY (role) REFERENCES role(role_id),
- FOREIGN KEY (project_id) REFERENCES project(project_id),
- FOREIGN KEY (user_id) REFERENCES user(user_id)
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY (id),
+ CONSTRAINT unique_project_entity_type UNIQUE (project_id, entity_id, entity_type)
  );
 
-insert into project_member (project_id, user_id, role, creation_time, update_time) values
-(1, 1, 1, NOW(), NOW());
+insert into project_member (project_id, entity_id, role, entity_type) values
+(1, 1, 1, 'u');
 
 create table project_metadata (
  id int NOT NULL AUTO_INCREMENT,
@@ -111,6 +111,19 @@ create table project_metadata (
 
 insert into project_metadata (id, project_id, name, value, creation_time, update_time, deleted) values
 (1, 1, 'public', 'true', NOW(), NOW(), 0);
+
+
+
+create table user_group
+(
+id int NOT NULL AUTO_INCREMENT,
+group_name varchar(255) NOT NULL,
+group_type int default 0,
+group_property varchar(512) NOT NULL,
+creation_time timestamp default CURRENT_TIMESTAMP,
+update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+PRIMARY KEY (id)
+);
 
 create table access_log (
  log_id int NOT NULL AUTO_INCREMENT,

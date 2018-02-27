@@ -16,6 +16,7 @@ package dao
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/vmware/harbor/src/common/models"
@@ -77,4 +78,42 @@ func delProjPermanent(id int64) error {
 		Filter("ProjectID", id).
 		Delete()
 	return err
+}
+
+func Test_projectQueryConditions(t *testing.T) {
+	type args struct {
+		query *models.ProjectQueryParam
+	}
+	tests := []struct {
+		name  string
+		args  args
+		want  string
+		want1 []interface{}
+	}{
+		{"Query invalid projectID",
+			args{query: &models.ProjectQueryParam{ProjectIDs: []int64{}, Owner: "admin"}},
+			"from project as p where 1 = 0",
+			[]interface{}{}},
+		{"Query with valid projectID",
+			args{query: &models.ProjectQueryParam{ProjectIDs: []int64{2, 3}, Owner: "admin"}},
+			` from project as p join user u1
+					on p.owner_id = u1.user_id where p.deleted=0 and u1.username=? and p.project_id in ( ?,? ) order by p.name`,
+			[]interface{}{2, 3}},
+		{"Query with valid page and member",
+			args{query: &models.ProjectQueryParam{ProjectIDs: []int64{2, 3}, Owner: "admin", Name: "sample", Member: &models.MemberQuery{Name: "name", Role: 1}, Pagination: &models.Pagination{Page: 1, Size: 20}}},
+			` from project as p join user u1
+					on p.owner_id = u1.user_id join project_member pm
+					on p.project_id = pm.project_id
+					join user u2
+					on pm.entity_id=u2.user_id where p.deleted=0 and u1.username=? and p.name like ? and u2.username=? and pm.role = ? and p.project_id in ( ?,? ) order by p.name limit ? offset ?`,
+			[]interface{}{1, []int64{2, 3}, 20, 0}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _ := projectQueryConditions(tt.args.query)
+			if strings.TrimSpace(got) != strings.TrimSpace(tt.want) {
+				t.Errorf("projectQueryConditions() got = %v\n, want %v", got, tt.want)
+			}
+		})
+	}
 }

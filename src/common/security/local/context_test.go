@@ -123,23 +123,23 @@ func TestMain(m *testing.M) {
 	defer dao.DeleteProject(id)
 
 	// add project members
-	err = dao.AddProjectMember(private.ProjectID, projectAdminUser.UserID, common.RoleProjectAdmin)
+	_, err = dao.AddProjectMember(private.ProjectID, projectAdminUser.UserID, common.RoleProjectAdmin, common.UserMember)
 	if err != nil {
 		log.Fatalf("failed to add member: %v", err)
 	}
-	defer dao.DeleteProjectMember(private.ProjectID, projectAdminUser.UserID)
+	defer dao.DeleteProjectMember(private.ProjectID, projectAdminUser.UserID, common.UserMember)
 
-	err = dao.AddProjectMember(private.ProjectID, developerUser.UserID, common.RoleDeveloper)
+	_, err = dao.AddProjectMember(private.ProjectID, developerUser.UserID, common.RoleDeveloper, common.UserMember)
 	if err != nil {
 		log.Fatalf("failed to add member: %v", err)
 	}
-	defer dao.DeleteProjectMember(private.ProjectID, developerUser.UserID)
+	defer dao.DeleteProjectMember(private.ProjectID, developerUser.UserID, common.UserMember)
 
-	err = dao.AddProjectMember(private.ProjectID, guestUser.UserID, common.RoleGuest)
+	_, err = dao.AddProjectMember(private.ProjectID, guestUser.UserID, common.RoleGuest, common.UserMember)
 	if err != nil {
 		log.Fatalf("failed to add member: %v", err)
 	}
-	defer dao.DeleteProjectMember(private.ProjectID, guestUser.UserID)
+	defer dao.DeleteProjectMember(private.ProjectID, guestUser.UserID, common.UserMember)
 
 	os.Exit(m.Run())
 }

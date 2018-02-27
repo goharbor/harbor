@@ -22,7 +22,7 @@ import (
 )
 
 // GetUserProjectRoles returns roles that the user has according to the project.
-func GetUserProjectRoles(userID int, projectID int64) ([]models.Role, error) {
+func GetUserProjectRoles(userID int, projectID int64, entityType string) ([]models.Role, error) {
 
 	o := GetOrmer()
 
@@ -32,7 +32,7 @@ func GetUserProjectRoles(userID int, projectID int64) ([]models.Role, error) {
 			(
 				select role
 				from project_member
-				where project_id = ? and user_id = ?
+				where project_id = ? and entity_id = ? and entity_type = 'u'
 			)`
 
 	var roleList []models.Role

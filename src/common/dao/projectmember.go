@@ -15,25 +15,39 @@
 package dao
 
 import (
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 )
 
 // AddProjectMember inserts a record to table project_member
-func AddProjectMember(projectID int64, userID int, role int) error {
+func AddProjectMember(projectID int64, userID int, role int, entityType string) (int, error) {
 	o := GetOrmer()
+	if !(entityType == common.UserMember || entityType == common.GroupMember) {
+		entityType = common.UserMember
+	}
+	sql := `insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?)`
+	_, err := o.Raw(sql, projectID, userID, role, entityType).Exec()
+	if err != nil {
+		return 0, err
+	}
+	var pmid int
+	querySQL := `select id from project_member where project_id = ? and entity_id = ? and entity_type = ? limit 1`
 
-	sql := "insert into project_member (project_id, user_id , role) values (?, ?, ?)"
-
-	_, err := o.Raw(sql, projectID, userID, role).Exec()
-
-	return err
+	err = o.Raw(querySQL, projectID, userID, entityType).QueryRow(&pmid)
+	if err != nil {
+		return 0, err
+	}
+	return pmid, err
 }
 
 // UpdateProjectMember updates the record in table project_member
-func UpdateProjectMember(projectID int64, userID int, role int) error {
+func UpdateProjectMember(projectID int64, userID int, role int, entityType string) error {
 	o := GetOrmer()
+	if !(entityType == common.UserMember || entityType == common.GroupMember) {
+		entityType = common.UserMember
+	}
 
-	sql := "update project_member set role = ? where project_id = ? and user_id = ?"
+	sql := `update project_member set role = ? where project_id = ? and entity_id = ?`
 
 	_, err := o.Raw(sql, role, projectID, userID).Exec()
 
@@ -41,12 +55,16 @@ func UpdateProjectMember(projectID int64, userID int, role int) error {
 }
 
 // DeleteProjectMember delete the record from table project_member
-func DeleteProjectMember(projectID int64, userID int) error {
+func DeleteProjectMember(projectID int64, userID int, entityType string) error {
 	o := GetOrmer()
 
-	sql := "delete from project_member where project_id = ? and user_id = ?"
+	if !(entityType == common.UserMember || entityType == common.GroupMember) {
+		entityType = common.UserMember
+	}
 
-	if _, err := o.Raw(sql, projectID, userID).Exec(); err != nil {
+	sql := `delete from project_member where project_id = ? and entity_id = ? and entity_type = ?`
+
+	if _, err := o.Raw(sql, projectID, userID, entityType).Exec(); err != nil {
 		return err
 	}
 
@@ -54,27 +72,23 @@ func DeleteProjectMember(projectID int64, userID int) error {
 }
 
 // GetUserByProject gets all members of the project.
-func GetUserByProject(projectID int64, queryUser models.User) ([]*models.Member, error) {
+func GetUserByProject(projectID int64, queryUser models.User) ([]*models.UserMember, error) {
 	o := GetOrmer()
-	sql := `select u.user_id, u.username, u.creation_time, u.update_time, r.name as rolename, 
-			r.role_id as role
-		from user u 
-		join project_member pm 
-		on pm.project_id = ? and u.user_id = pm.user_id 
-		join role r
-		on pm.role = r.role_id
-		where u.deleted = 0`
+	sql := `select pm.id as id, u.user_id, u.username, u.creation_time, u.update_time, r.name as rolename, 
+		r.role_id as role, pm.entity_type as entity_type from user u join project_member pm 
+		on pm.project_id = ? and u.user_id = pm.entity_id 
+		join role r on pm.role = r.role_id where u.deleted = 0 and pm.entity_type = 'u' `
 
 	queryParam := make([]interface{}, 1)
 	queryParam = append(queryParam, projectID)
 
-	if queryUser.Username != "" {
-		sql += " and u.username like ? "
-		queryParam = append(queryParam, "%"+escape(queryUser.Username)+"%")
+	if len(queryUser.Username) != 0 {
+		sql += ` and u.username like ? `
+		queryParam = append(queryParam, `%`+Escape(queryUser.Username)+`%`)
 	}
 	sql += ` order by u.username `
 
-	members := []*models.Member{}
+	members := []*models.UserMember{}
 	_, err := o.Raw(sql, queryParam).QueryRows(&members)
 
 	return members, err

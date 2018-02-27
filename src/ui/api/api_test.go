@@ -24,6 +24,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/vmware/harbor/src/common"
+
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
 	"github.com/stretchr/testify/assert"
@@ -224,7 +226,7 @@ func prepare() error {
 	}
 	projAdminID = int(id)
 
-	if err = dao.AddProjectMember(1, projAdminID, models.PROJECTADMIN); err != nil {
+	if _, err = dao.AddProjectMember(1, projAdminID, models.PROJECTADMIN, common.UserMember); err != nil {
 		return err
 	}
 
@@ -239,7 +241,7 @@ func prepare() error {
 	}
 	projDeveloperID = int(id)
 
-	if err = dao.AddProjectMember(1, projDeveloperID, models.DEVELOPER); err != nil {
+	if _, err = dao.AddProjectMember(1, projDeveloperID, models.DEVELOPER, common.UserMember); err != nil {
 		return err
 	}
 
@@ -254,13 +256,14 @@ func prepare() error {
 	}
 	projGuestID = int(id)
 
-	return dao.AddProjectMember(1, projGuestID, models.GUEST)
+	_, err = dao.AddProjectMember(1, projGuestID, models.GUEST, common.UserMember)
+	return err
 }
 
 func clean() {
 	ids := []int{projAdminID, projDeveloperID, projGuestID}
 	for _, id := range ids {
-		if err := dao.DeleteProjectMember(1, id); err != nil {
+		if err := dao.DeleteProjectMember(1, id, common.UserMember); err != nil {
 			fmt.Printf("failed to clean up member %d from project library: %v", id, err)
 		}
 	}
