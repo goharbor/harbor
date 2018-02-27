@@ -17,8 +17,10 @@ pipeline:
       GOPATH: /drone
       SHELL: /bin/bash
       LOG_TEMP_DIR: install-logs
+    dns: 10.117.0.1
     secrets:
       - drone_server
+      - drone_token
       - drone_token_inte
       - github_automation_api_key
       - gs_client_email
