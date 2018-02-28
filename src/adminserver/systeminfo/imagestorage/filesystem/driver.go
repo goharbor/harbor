@@ -15,9 +15,11 @@
 package filesystem
 
 import (
+	"os"
 	"syscall"
 
 	storage "github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 const (
@@ -43,6 +45,12 @@ func (d *driver) Name() string {
 // Cap returns the capacity of the filesystem storage
 func (d *driver) Cap() (*storage.Capacity, error) {
 	var stat syscall.Statfs_t
+	if _, err := os.Stat(d.path); os.IsNotExist(err) {
+		// Return zero value if the path does not exist.
+		log.Warningf("The path %s is not found, will return zero value of capacity", d.path)
+		return &storage.Capacity{Total: 0, Free: 0}, nil
+	}
+
 	err := syscall.Statfs(d.path, &stat)
 	if err != nil {
 		return nil, err

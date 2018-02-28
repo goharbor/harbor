@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	storage "github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
 )
 
 func TestName(t *testing.T) {
@@ -31,4 +32,12 @@ func TestCap(t *testing.T) {
 	driver := NewDriver(path)
 	_, err := driver.Cap()
 	assert.Nil(t, err, "unexpected error")
+}
+
+func TestCapNonExistPath(t *testing.T) {
+	path := "/not/exist"
+	driver := NewDriver(path)
+	c, err := driver.Cap()
+	assert.Nil(t, err, "unexpected error")
+	assert.Equal(t, storage.Capacity{0, 0}, *c)
 }
