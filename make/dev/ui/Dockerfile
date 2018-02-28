@@ -1,11 +1,11 @@
-FROM golang:1.7.3
+FROM golang:1.9.2
 
 MAINTAINER jiangd@vmware.com
 
 COPY src/. /go/src/github.com/vmware/harbor/src
 WORKDIR /go/src/github.com/vmware/harbor/src/ui
 
-RUN go build -v -a -o /go/bin/harbor_ui
+RUN go build -a -o /go/bin/harbor_ui
 
 COPY src/ui/views /go/bin/views
 COPY src/ui/static /go/bin/static

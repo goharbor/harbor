@@ -1,7 +1,7 @@
 FROM vmware/photon:1.0
 
 RUN tdnf distro-sync -y \
-    && tdnf install -y nginx \
+    && tdnf install -y nginx >> /dev/null\
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
     && tdnf clean all

@@ -1,7 +1,7 @@
 FROM vmware/photon:1.0
 
 RUN tdnf distro-sync -y \
-    && tdnf install -y cronie rsyslog logrotate shadow tar gzip sudo net-tools\
+    && tdnf install -y cronie rsyslog logrotate shadow tar gzip sudo net-tools >> /dev/null\
     && mkdir /etc/rsyslog.d/ \
     && mkdir /var/spool/rsyslog \
     && groupadd -r -g 10000 syslog && useradd --no-log-init -r -g 10000 -u 10000 syslog \

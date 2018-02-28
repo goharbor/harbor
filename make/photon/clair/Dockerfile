@@ -3,7 +3,7 @@ FROM vmware/photon:1.0
 
 RUN tdnf distro-sync -y \
     && tdnf erase vim -y \
-    && tdnf install -y git shadow sudo bzr rpm xz python-xml \
+    && tdnf install -y git shadow sudo bzr rpm xz python-xml >>/dev/null\
     && tdnf clean all \
     && mkdir /clair2.0.1/ \
     && groupadd -r -g 10000 clair \
