@@ -31,6 +31,9 @@ func (d *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	if u == nil {
+		return nil, auth.NewErrAuth("Invalid credentials")
+	}
 	return u, nil
 }
 

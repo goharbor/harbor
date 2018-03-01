@@ -17,6 +17,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 )
@@ -79,4 +80,11 @@ func TestDefaultOnBoardUser(t *testing.T) {
 	if err != nil {
 		t.Fatal("Default implementation should return nil")
 	}
+}
+
+func TestErrAuth(t *testing.T) {
+	assert := assert.New(t)
+	e := NewErrAuth("test")
+	expectedStr := "Failed to authenticate user, due to error 'test'"
+	assert.Equal(expectedStr, e.Error())
 }

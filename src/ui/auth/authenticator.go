@@ -30,10 +30,26 @@ const frozenTime time.Duration = 1500 * time.Millisecond
 
 var lock = NewUserLock(frozenTime)
 
+//ErrAuth is the type of error to indicate a failed authentication due to user's error.
+type ErrAuth struct {
+	details string
+}
+
+//Error ...
+func (ea ErrAuth) Error() string {
+	return fmt.Sprintf("Failed to authenticate user, due to error '%s'", ea.details)
+}
+
+//NewErrAuth ...
+func NewErrAuth(msg string) ErrAuth {
+	return ErrAuth{details: msg}
+}
+
 // AuthenticateHelper provides interface for user management in different auth modes.
 type AuthenticateHelper interface {
 
-	// Authenticate ...
+	// Authenticate authenticate the user based on data in m.  Only when the error returned is an instance
+	// of ErrAuth, it will be considered a bad credentials, other errors will be treated as server side error.
 	Authenticate(m models.AuthModel) (*models.User, error)
 	// OnBoardUser will check if a user exists in user table, if not insert the user and
 	// put the id in the pointer of user model, if it does exist, fill in the user model based
@@ -104,13 +120,13 @@ func Login(m models.AuthModel) (*models.User, error) {
 		return nil, nil
 	}
 	user, err := authenticator.Authenticate(m)
-	if user == nil {
-		if err == nil {
+	if err != nil {
+		if _, ok = err.(ErrAuth); ok {
 			log.Debugf("Login failed, locking %s, and sleep for %v", m.Principal, frozenTime)
 			lock.Lock(m.Principal)
 			time.Sleep(frozenTime)
 		}
-		return user, err
+		return nil, err
 	}
 
 	err = authenticator.PostAuthenticate(user)
