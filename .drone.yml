@@ -31,6 +31,7 @@ pipeline:
       BIN: bin
       GOPATH: /drone
       SHELL: /bin/bash
+      TERM: xterm
       LOG_TEMP_DIR: install-logs
     secrets:
       - drone_server
