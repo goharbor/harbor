@@ -39,7 +39,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	p := m.Principal
 	if len(strings.TrimSpace(p)) == 0 {
 		log.Debugf("LDAP authentication failed for empty user id.")
-		return nil, nil
+		return nil, auth.NewErrAuth("Empty user id")
 	}
 
 	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
@@ -50,7 +50,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	if err = ldapSession.Open(); err != nil {
 		log.Warningf("ldap connection fail: %v", err)
-		return nil, nil
+		return nil, err
 	}
 	defer ldapSession.Close()
 
@@ -58,15 +58,15 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	if err != nil {
 		log.Warningf("ldap search fail: %v", err)
-		return nil, nil
+		return nil, err
 	}
 
 	if len(ldapUsers) == 0 {
 		log.Warningf("Not found an entry.")
-		return nil, nil
+		return nil, auth.NewErrAuth("Not found an entry")
 	} else if len(ldapUsers) != 1 {
 		log.Warningf("Found more than one entry.")
-		return nil, nil
+		return nil, auth.NewErrAuth("Multiple entries found")
 	}
 
 	u := models.User{}
@@ -78,7 +78,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	if err = ldapSession.Bind(dn, m.Password); err != nil {
 		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
-		return nil, nil
+		return nil, auth.NewErrAuth(err.Error())
 	}
 
 	return &u, nil

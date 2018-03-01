@@ -42,20 +42,20 @@ func (u *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		return nil, err
 	}
 	t, err := u.client.PasswordAuth(m.Principal, m.Password)
-	if t != nil && err == nil {
-		user := &models.User{
-			Username: m.Principal,
-		}
-		info, err2 := u.client.GetUserInfo(t.AccessToken)
-		if err2 != nil {
-			log.Warningf("Failed to extract user info from UAA, error: %v", err2)
-		} else {
-			user.Email = info.Email
-			user.Realname = info.Name
-		}
-		return user, nil
+	if err != nil {
+		return nil, auth.NewErrAuth(err.Error())
 	}
-	return nil, err
+	user := &models.User{
+		Username: m.Principal,
+	}
+	info, err2 := u.client.GetUserInfo(t.AccessToken)
+	if err2 != nil {
+		log.Warningf("Failed to extract user info from UAA, error: %v", err2)
+	} else {
+		user.Email = info.Email
+		user.Realname = info.Name
+	}
+	return user, nil
 }
 
 // OnBoardUser will check if a user exists in user table, if not insert the user and

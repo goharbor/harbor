@@ -108,10 +108,10 @@ func TestMain(m *testing.M) {
 
 func TestAuthenticate(t *testing.T) {
 	var person models.AuthModel
-	var auth *Auth
+	var authHelper *Auth
 	person.Principal = "test"
 	person.Password = "123456"
-	user, err := auth.Authenticate(person)
+	user, err := authHelper.Authenticate(person)
 	if err != nil {
 		t.Errorf("unexpected ldap authenticate fail: %v", err)
 	}
@@ -120,29 +120,23 @@ func TestAuthenticate(t *testing.T) {
 	}
 	person.Principal = "test"
 	person.Password = "1"
-	user, err = auth.Authenticate(person)
-	if err != nil {
-		t.Errorf("unexpected ldap error: %v", err)
-	}
-	if user != nil {
-		t.Errorf("Nil user expected for wrong password")
+	user, err = authHelper.Authenticate(person)
+
+	if _, ok := err.(auth.ErrAuth); !ok {
+		t.Errorf("Expected an ErrAuth on wrong password, but got: %v", err)
 	}
 	person.Principal = ""
 	person.Password = ""
-	user, err = auth.Authenticate(person)
-	if err != nil {
-		t.Errorf("unexpected ldap error: %v", err)
+	user, err = authHelper.Authenticate(person)
+	if _, ok := err.(auth.ErrAuth); !ok {
+		t.Errorf("Expected an ErrAuth on empty credentials, but got: %v", err)
 	}
-	if user != nil {
-		t.Errorf("Nil user for empty credentials")
-	}
-
 	//authenticate the second time
 	person2 := models.AuthModel{
 		Principal: "test",
 		Password:  "123456",
 	}
-	user2, err := auth.Authenticate(person2)
+	user2, err := authHelper.Authenticate(person2)
 
 	if err != nil {
 		t.Errorf("unexpected ldap error: %v", err)
