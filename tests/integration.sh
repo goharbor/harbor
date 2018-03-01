@@ -28,7 +28,7 @@ export DRONE_TOKEN=$DRONE_TOKEN
 buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
 echo $buildinfo
 git_commit=$(git rev-parse --short=8 HEAD)
-if [ $DRONE_BUILD_EVENT == "tag" ]; then
+if [[ $DRONE_BUILD_EVENT == "tag" ]]; then
     build_number=$(git describe --abbrev=0 --tags)
 else
     build_number=$DRONE_BUILD_NUMBER-$git_commit
@@ -48,7 +48,7 @@ harbor_builds_bucket="harbor-builds"
 harbor_releases_bucket="harbor-releases"
 harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
 harbor_target_bucket=""
-if [ $DRONE_REPO_BRANCH == "master" ]; then
+if [[ $DRONE_REPO_BRANCH == "master" ]]; then
   harbor_target_bucket=$harbor_builds_bucket
 else
   harbor_target_bucket=$harbor_releases_bucket/$DRONE_REPO_BRANCH
@@ -84,7 +84,7 @@ function package_offline_installer {
 }
 
 ## --------------------------------------------- Run Test Case ---------------------------------------------
-if [ $DRONE_REPO != "vmware/harbor" ]; then
+if [[ $DRONE_REPO != "vmware/harbor" ]]; then
     echo "Only run tests again Harbor Repo."
     exit 1
 fi
