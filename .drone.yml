@@ -34,6 +34,7 @@ pipeline:
       TERM: xterm
       LOG_TEMP_DIR: install-logs
     secrets:
+      - ci_domain
       - drone_server
       - drone_token
       - drone_token_inte
