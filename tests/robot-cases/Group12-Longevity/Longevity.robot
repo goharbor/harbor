@@ -36,7 +36,6 @@ ${image9}  memcached
 Longevity setup
     Run Keyword  CA setup
     Run Keyword  Prepare Docker Cert  ${ip}
-    Run Keyword  Start Docker Daemon Locally
 
 CA setup
     Open Connection    ${ip}

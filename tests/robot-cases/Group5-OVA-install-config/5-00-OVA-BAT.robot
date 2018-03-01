@@ -33,7 +33,6 @@ Test Case - Sign With Admin Modified Pwd
 	
 Test Case - Push Image
     Init Chrome Driver
-    Start Docker Daemon Locally
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=https://%{HARBOR_IP}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Create An New Project  test${d}

@@ -32,7 +32,6 @@ pipeline:
       GOPATH: /drone
       SHELL: /bin/bash
       LOG_TEMP_DIR: install-logs
-    dns: 10.117.0.1
     secrets:
       - drone_server
       - drone_token
@@ -46,6 +45,9 @@ pipeline:
       - mail_pwd
       - npm_password
       - npm_username
+    volumes:
+      - '/dev:/dev'
+      - '/var/run/docker.sock:/var/run/docker.sock'
     commands:
       - export DOMAIN=${CI_DOMAIN}
       - tests/integration.sh

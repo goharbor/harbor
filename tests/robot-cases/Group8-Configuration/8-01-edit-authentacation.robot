@@ -14,7 +14,6 @@
 
 *** Settings ***
 Resource ../../resources/Uitl.robot
-suite setup Start Docker Daemon Locally
 default tags regression
 
 *** Test Cases ***
