@@ -73,10 +73,12 @@ GOBASEPATH=/go/src/github.com/vmware
 CHECKENVCMD=checkenv.sh
 
 # drone
+@echo "setting docker volume..."
 DOCKER_VOLUME=
 ifeq ($(DRONE), true)
 	DOCKER_VOLUME=--volumes-from $(HOST_CONTAINER_ID)
 endif
+@echo $(DOCKER_VOLUME)
 
 # parameters
 REGISTRYSERVER=
