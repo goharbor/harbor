@@ -28,7 +28,7 @@ export DRONE_TOKEN=$DRONE_TOKEN
 buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
 echo $buildinfo
 git_commit=$(git rev-parse --short=8 HEAD)
-if [ $DRONE_BUILD_EVENT == "tag" ]; then
+if [[ $DRONE_BUILD_EVENT == "tag" ]]; then
     build_number=$(git describe --abbrev=0 --tags)
 else
     build_number=$DRONE_BUILD_NUMBER-$git_commit
@@ -48,10 +48,10 @@ harbor_builds_bucket="harbor-builds"
 harbor_releases_bucket="harbor-releases"
 harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
 harbor_target_bucket=""
-if [ $DRONE_BRANCH == "master" ]; then
+if [[ $DRONE_REPO_BRANCH == "master" ]]; then
   harbor_target_bucket=$harbor_builds_bucket
 else
-  harbor_target_bucket=$harbor_releases_bucket/$DRONE_BRANCH
+  harbor_target_bucket=$harbor_releases_bucket/$DRONE_REPO_BRANCH
 fi
 
 # GC credentials
@@ -84,13 +84,13 @@ function package_offline_installer {
 }
 
 ## --------------------------------------------- Run Test Case ---------------------------------------------
-if [ $DRONE_REPO != "vmware/harbor" ]; then
+if [[ $DRONE_REPO != "vmware/harbor" ]]; then
     echo "Only run tests again Harbor Repo."
     exit 1
 fi
 
 echo "--------------------------------------------------"
-echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
+echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_REPO_BRANCH"
 echo "--------------------------------------------------"
 
 ##
@@ -98,7 +98,7 @@ echo "--------------------------------------------------"
 #
 # Put code here is because that it needs clean code to build installer.
 ##
-if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* || $DRONE_BRANCH == "pks-"* ]]; then
+if [[ $DRONE_REPO_BRANCH == "master" || $DRONE_REPO_BRANCH == *"refs/tags"* || $DRONE_REPO_BRANCH == "release-"* || $DRONE_REPO_BRANCH == "pks-"* ]]; then
     if [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
         package_offline_installer 
         upload_latest_build=true     

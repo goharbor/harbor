@@ -18,7 +18,6 @@ Resource  ../../resources/Util.robot
 Default Tags  regression
 
 Test Case - Manage project publicity
-    #Start Docker Daemon Locally
     Init Chrome Driver
     ${d}=    Get Current Date  result_format=%m%s
     ${rc}  ${ip}=    run and return rc and output  ip a s eth0|grep "inet "|awk '{print $2}'|awk -F "/" '{print $1}'

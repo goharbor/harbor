@@ -14,7 +14,6 @@
 
 *** Settings ***
 Resource ../../resources/Util.robot
-Suite Setup Start Docker Daemon Locally
 Default Tags regression
 
 *** Test Cases ***

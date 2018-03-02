@@ -27,7 +27,6 @@ Nightly Test Setup
     Run Keyword And Ignore Error  Run  rm harbor_ca.crt 
     Run Keyword If  '${ip1}' != '${EMPTY}'  CA setup  ${ip1}  ${SSH_PWD}  ${HARBOR_PASSWORD}
     Run Keyword If  '${ip1}' != '${EMPTY}'  Prepare Docker Cert  ${ip1}
-    Run Keyword  Start Docker Daemon Locally
 
 CA Setup
     [Arguments]  ${ip}  ${SSH_PWD}  ${HARBOR_PASSWORD}

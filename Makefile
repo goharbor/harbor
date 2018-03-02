@@ -72,6 +72,12 @@ UINGPATH=$(BUILDPATH)/src/ui_ng
 GOBASEPATH=/go/src/github.com/vmware
 CHECKENVCMD=checkenv.sh
 
+# drone
+DOCKER_VOLUME=
+ifeq ($(DRONE), true)
+	DOCKER_VOLUME=--volumes-from $(HOST_CONTAINER_ID)
+endif
+
 # parameters
 REGISTRYSERVER=
 REGISTRYPROJECTNAME=vmware
@@ -243,10 +249,11 @@ check_environment:
 
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
+	@echo $(DOCKER_VOLUME)
 	@if [ "$(HTTPPROXY)" != "" ] ; then \
-		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
+		$(DOCKERCMD) run $(DOCKER_VOLUME) --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
 	else \
-		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
+		$(DOCKERCMD) run $(DOCKER_VOLUME) --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
 	fi
 	@echo "Done."
 
@@ -254,17 +261,17 @@ compile_golangimage: compile_clarity
 	@echo "compiling binary for adminserver (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_ADMINSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_ADMINSERVER)/$(ADMINSERVERBINARYNAME)
+	@$(DOCKERCMD) run $(DOCKER_VOLUME) --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_ADMINSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_ADMINSERVER)/$(ADMINSERVERBINARYNAME)
 	@echo "Done."
 
 	@echo "compiling binary for ui (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_UI) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_UI)/$(UIBINARYNAME)
+	@$(DOCKERCMD) run $(DOCKER_VOLUME) --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_UI) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_UI)/$(UIBINARYNAME)
 	@echo "Done."
 
 	@echo "compiling binary for jobservice (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
+	@$(DOCKERCMD) run $(DOCKER_VOLUME) --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
 	@echo "Done."
 
 compile:check_environment compile_golangimage
@@ -370,7 +377,7 @@ refresh_clarity_builder:
 
 run_clarity_ut:
 	@echo "run clarity ut ..."
-	@$(DOCKERCMD) run --rm -v $(UINGPATH)/lib:$(CLARITYSEEDPATH) -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
+	@$(DOCKERCMD) run $(DOCKER_VOLUME) --rm -v $(UINGPATH)/lib:$(CLARITYSEEDPATH) -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
 
 pushimage:
 	@echo "pushing harbor images ..."
