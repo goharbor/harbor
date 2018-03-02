@@ -48,10 +48,11 @@ pipeline:
       - npm_password
       - npm_username
     volumes:
-      - '/dev:/dev'
+      - '/drone:/host_drone'
       - '/var/run/docker.sock:/var/run/docker.sock'
     commands:
       - export DOMAIN=${CI_DOMAIN}
+      - cp -a /drone/. /host_drone/
       - tests/integration.sh
     when:
       status: success
