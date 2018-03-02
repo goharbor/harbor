@@ -73,12 +73,10 @@ GOBASEPATH=/go/src/github.com/vmware
 CHECKENVCMD=checkenv.sh
 
 # drone
-@echo "setting docker volume..."
 DOCKER_VOLUME=
 ifeq ($(DRONE), true)
 	DOCKER_VOLUME=--volumes-from $(HOST_CONTAINER_ID)
 endif
-@echo $(DOCKER_VOLUME)
 
 # parameters
 REGISTRYSERVER=
@@ -251,6 +249,7 @@ check_environment:
 
 compile_clarity:
 	@echo "compiling binary for clarity ui..."
+	@echo $(DOCKER_VOLUME)
 	@if [ "$(HTTPPROXY)" != "" ] ; then \
 		$(DOCKERCMD) run $(DOCKER_VOLUME) --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
 	else \
