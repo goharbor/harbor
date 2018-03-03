@@ -1,5 +1,3 @@
-# Harbor drone.
----
 workspace:
   base: /drone
   path: src/github.com/vmware/harbor
@@ -10,47 +8,72 @@ pipeline:
     tags: true
     recursive: false
 
+  check-org-membership:
+    image: 'wdc-harbor-ci.eng.vmware.com/default-project/vic-integration-test:1.44'
+    pull: true
+    environment:
+      BIN: bin
+      GOPATH: /go
+      SHELL: /bin/bash
+    secrets:
+      - github_automation_api_key
+    commands:
+      - echo ${DRONE_COMMIT_AUTHOR}
+      - /bin/bash -c '[[ ! $(curl --silent "https://api.github.com/orgs/vmware/members/${DRONE_COMMIT_AUTHOR}?access_token=$GITHUB_AUTOMATION_API_KEY") ]]'
+    when:
+      status: success
+
   test-and-issue-build:
-    image: vmware/harbor-e2e-engine:1.39
+    image: vmware/harbor-e2e-engine:1.40
     pull: true
     privileged: true
     environment:
       BIN: bin
       GOPATH: /drone
       SHELL: /bin/bash
+      TERM: xterm
       LOG_TEMP_DIR: install-logs
-      GITHUB_AUTOMATION_API_KEY:  ${GITHUB_AUTOMATION_API_KEY}
-      DRONE_SERVER:  ${DRONE_SERVER}
-      DRONE_TOKEN:  ${DRONE_TOKEN_INTE}
-      HARBOR_ADMIN: ${HARBOR_ADMIN}
-      HARBOR_PASSWORD: ${HARBOR_PASSWORD}
-      GS_PROJECT_ID: ${GS_PROJECT_ID}
-      GS_CLIENT_EMAIL: ${GS_CLIENT_EMAIL}
-      GS_PRIVATE_KEY: ${GS_PRIVATE_KEY}
-      DOMAIN: ${CI_DOMAIN}
-      MAIL_PWD: ${MAIL_PWD}
-      NPM_USERNAME: ${NPM_USERNAME}
-      NPM_PASSWORD: ${NPM_PASSWORD}
+    secrets:
+      - ci_domain
+      - drone_server
+      - drone_token
+      - drone_token_inte
+      - github_automation_api_key
+      - gs_client_email
+      - gs_private_key
+      - gs_project_id
+      - harbor_admin
+      - harbor_password
+      - mail_pwd
+      - npm_password
+      - npm_username
     commands:
+      - export DOMAIN=${CI_DOMAIN}
+      - export HOST_CONTAINER_ID=$(hostname)
+      - echo $HOST_CONTAINER_ID
       - tests/integration.sh
     when:
       status: success
 
   notify-slack:
     image: plugins/slack
-    webhook: ${SLACK_URL}
+    secrets:
+      - source: slack_url
+        target: slack_webhook
     username: drone
     template: >
-      build https://ci.vcna.io/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.tar.gz
+      build https://ci-vic.vmware.com/vmware/harbor/{{ build.number }} finished with a {{ build.status }} status. Please find logs at https://storage.googleapis.com/harbor-ci-logs/integration_logs_{{ build.number }}_{{ build.commit }}.tar.gz
     when:
       repo: vmware/harbor
+      event: [push, tag, deployment]
       branch: [ master, release-*, refs/tags/* ]
       status: [ failure, success ]
 
   trigger:
     image: plugins/downstream
-    server: https://ci.vcna.io
-    token: ${DOWNSTREAM_TOKEN}
+    server: https://ci-vic.vmware.com
+    secrets:
+      - downstream_token
     fork: true
     repositories:
        - vmware/vic-product
