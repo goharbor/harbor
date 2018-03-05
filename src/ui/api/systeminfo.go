@@ -247,3 +247,9 @@ func getClairVulnStatus() *models.ClairVulnerabilityStatus {
 	res.Details = details
 	return res
 }
+
+// Ping ping the harbor UI service.
+func (sia *SystemInfoAPI) Ping() {
+	sia.Data["json"] = "Pong"
+	sia.ServeJSON()
+}

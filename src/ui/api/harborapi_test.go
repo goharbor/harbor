@@ -134,7 +134,7 @@ func init() {
 	beego.Router("/api/replications", &ReplicationAPI{})
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
-
+    beego.Router("/api/ping", &SystemInfoAPI{}, "get:Ping")
 	_ = updateInitPassword(1, "Harbor12345")
 
 	if err := core.Init(); err != nil {
@@ -984,6 +984,11 @@ func (a testapi) VolumeInfoGet(authInfo usrInfo) (int, apilib.SystemInfo, error)
 
 func (a testapi) GetGeneralInfo() (int, []byte, error) {
 	_sling := sling.New().Get(a.basePath).Path("/api/systeminfo")
+	return request(_sling, jsonAcceptHeader)
+}
+
+func (a testapi) Ping() (int, []byte, error) {
+	_sling := sling.New().Get(a.basePath).Path("/api/ping")
 	return request(_sling, jsonAcceptHeader)
 }
 

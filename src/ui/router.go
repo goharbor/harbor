@@ -60,6 +60,7 @@ func initRouters() {
 	}
 
 	// API
+	beego.Router("/api/ping", &api.SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
@@ -110,6 +111,7 @@ func initRouters() {
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")
+	
 	//Error pages
 	beego.ErrorController(&controllers.ErrorController{})
 
