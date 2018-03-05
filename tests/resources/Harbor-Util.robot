@@ -19,7 +19,7 @@ Library  OperatingSystem
 
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1
-${CLAIR_BUILDER}  1.2.7
+${CLAIR_BUILDER}  1.3.0
 ${GOLANG_VERSION}  1.9.2
 
 *** Keywords ***
