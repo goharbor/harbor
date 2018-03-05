@@ -4,12 +4,12 @@ kind: Service
 metadata:
   name: {{ template "harbor.fullname" . }}-clair-pg
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
 spec:
   ports:
     - port: 5432
   selector:
-{{ include "helm.matchLabels" . | indent 4 }}
+{{ include "harbor.matchLabels" . | indent 4 }}
     component: clair-pg
 ---
 # clairdb host isn't configurable yet.  this creates a service
@@ -20,11 +20,11 @@ kind: Service
 metadata:
   name: postgres
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
 spec:
   ports:
     - port: 5432
   selector:
-{{ include "helm.matchLabels" . | indent 4 }}
+{{ include "harbor.matchLabels" . | indent 4 }}
     component: clair-pg
 {{ end }}

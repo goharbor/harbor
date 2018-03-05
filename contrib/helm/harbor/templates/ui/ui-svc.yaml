@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: "{{ template "harbor.fullname" . }}-ui"
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
 spec:
   ports:
     - port: 80
       targetPort: 8080
   selector:
-{{ include "helm.matchLabels" . | indent 4 }}
+{{ include "harbor.matchLabels" . | indent 4 }}
     component: ui

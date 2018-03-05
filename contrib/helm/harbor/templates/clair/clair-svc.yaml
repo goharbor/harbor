@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: "{{ template "harbor.fullname" . }}-clair"
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
 spec:
   ports:
     - port: 6060

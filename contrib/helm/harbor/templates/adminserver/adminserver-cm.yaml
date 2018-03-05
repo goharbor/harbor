@@ -3,7 +3,8 @@ kind: ConfigMap
 metadata:
   name: "{{ template "harbor.fullname" . }}-adminserver"
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
+    component: adminserver
 data:
   {{ if .Values.mysql.host -}}
   MYSQL_HOST: "{{ .Values.mysql.host }}"
@@ -19,6 +20,7 @@ data:
   EMAIL_SSL: "{{ .Values.adminserver.emailSsl }}"
   EMAIL_FROM: "{{ .Values.adminserver.emailFrom }}"
   EMAIL_IDENTITY: "{{ .Values.adminserver.emailIdentity }}"
+  EMAIL_INSECURE: "{{ .Values.adminserver.emailInsecure }}"
   EXT_ENDPOINT: "https://{{ .Values.externalDomain }}"
   REGISTRY_URL: "http://{{ template "harbor.fullname" . }}-registry:5000"
   TOKEN_SERVICE_URL: "http://{{ template "harbor.fullname" . }}-ui/service/token"
@@ -32,8 +34,10 @@ data:
   LDAP_BASE_DN: ""
   LDAP_FILTER: "(objectClass=person)"
   LDAP_UID: "uid"
-  LDAP_SCOPE: "3"
+  LDAP_SCOPE: "2"
   LDAP_TIMEOUT: "5"
+  LDAP_TIMEOUT: "5"
+  LDAP_VERIFY_CERT: "True"
   DATABASE_TYPE: "mysql"
   PROJECT_CREATION_RESTRICTION: "everyone"
   VERIFY_REMOTE_CERT: "off"
@@ -45,3 +49,12 @@ data:
   RESET: "false"
   WITH_CLAIR: "{{ .Values.clair.enabled }}"
   CLAIR_DB_HOST: "{{ template "harbor.fullname" . }}-clair-pg"
+  CLAIR_DB_PORT: "5432"
+  CLAIR_DB: "postgres"
+  CLAIR_DB_USERNAME: "postgres"
+  CLAIR_DB_PASSWORD: "{{ .Values.clair.postgresPassword }}"
+  UAA_ENDPOINT: ""
+  UAA_CLIENTID: ""
+  UAA_CLIENTSECRET: ""
+  UAA_VERIFY_CERT: "True"
+  REGISTRY_STORAGE_PROVIDER_NAME: "filesystem"
