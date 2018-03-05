@@ -50,19 +50,19 @@ You can compile the code by one of the three approaches:
 *  Build, install and bring up Harbor without Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7
+      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0
    ```
 
 *  Build, install and bring up Harbor with Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0 NOTARYFLAG=true
    ```
 
 *  Build, install and bring up Harbor with Clair:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 CLAIRFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0 CLAIRFLAG=true
    ```
 
 #### II. Compile code with your own Golang environment, then build Harbor
@@ -79,14 +79,14 @@ You can compile the code by one of the three approaches:
 
    ```sh
       $ cd $GOPATH/src/github.com/vmware/harbor
-      $ make install
+      $ make install GOBUILDIMAGE=golang:1.7.3 CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0
    ```
 
 *  Build, install and run Harbor with Notary and Clair:
 
    ```sh
       $ cd $GOPATH/src/github.com/vmware/harbor
-      $ make install -e NOTARYFLAG=true CLAIRFLAG=true
+      $ make install -e NOTARYFLAG=true CLAIRFLAG=true GOBUILDIMAGE=golang:1.7.3 CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0
    ```   
  
 ### Verify your installation
@@ -126,8 +126,7 @@ Target              | Description
 all                 | prepare env, compile binaries, build images and install images
 prepare             | prepare env
 compile             | compile ui and jobservice code
-compile_ui          | compile ui binary
-compile_jobservice  | compile jobservice binary
+compile_golangimage | compile from golang image
 compile_clarity     | compile Clarity binary
 build               | build Harbor docker images (default: using build_photon)
 build_photon        | build Harbor docker images from Photon OS base image
