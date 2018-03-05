@@ -42,7 +42,7 @@ type ProjectAPI struct {
 	project *models.Project
 }
 
-const projectNameMaxLen int = 30
+const projectNameMaxLen int = 255
 const projectNameMinLen int = 2
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
 
