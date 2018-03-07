@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: "{{ template "harbor.fullname" . }}-registry"
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
 data:
   config.yml: |+
     version: 0.1
