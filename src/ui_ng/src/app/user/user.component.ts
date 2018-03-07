@@ -167,6 +167,7 @@ export class UserComponent implements OnInit, OnDestroy {
 
   //Filter items by keywords
   doFilter(terms: string): void {
+    this.selectedRow = [];
     this.currentTerm = terms;
     this.originalUsers.then(users => {
       if (terms.trim() === "") {
