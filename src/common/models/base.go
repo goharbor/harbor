@@ -32,5 +32,6 @@ func init() {
 		new(ClairVulnTimestamp),
 		new(WatchItem),
 		new(ProjectMetadata),
-		new(ConfigEntry))
+		new(ConfigEntry),
+		new(Label))
 }

@@ -29,6 +29,15 @@ const (
 	RoleDeveloper    = 2
 	RoleGuest        = 3
 
+	LabelLevelSystem  = "s"
+	LabelLevelUser    = "u"
+	LabelScopeGlobal  = "g"
+	LabelScopeProject = "p"
+
+	ResourceTypeProject    = "p"
+	ResourceTypeRepository = "r"
+	ResourceTypeImage      = "i"
+
 	ExtEndpoint                 = "ext_endpoint"
 	AUTHMode                    = "auth_mode"
 	DatabaseType                = "database_type"
