@@ -254,6 +254,19 @@ create table properties (
  UNIQUE (k)
  );
 
+create table label (
+ id int NOT NULL AUTO_INCREMENT,
+ name varchar(128) NOT NULL,
+ description text,
+ color varchar(16),
+ level char(1) NOT NULL,
+ scope char(1) NOT NULL,
+ project_id int,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY(id)
+ );
+
 CREATE TABLE IF NOT EXISTS `alembic_version` (
     `version_num` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

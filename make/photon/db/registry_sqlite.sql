@@ -240,6 +240,18 @@ create table properties (
  UNIQUE(k)
  );
 
+create table label (
+ id INTEGER PRIMARY KEY,
+ name varchar(128) NOT NULL,
+ description text,
+ color varchar(16),
+ level char(1) NOT NULL,
+ scope char(1) NOT NULL,
+ project_id int,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP
+ );
+
 create table alembic_version (
     version_num varchar(32) NOT NULL
 );
