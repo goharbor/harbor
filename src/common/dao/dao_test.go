@@ -51,7 +51,7 @@ func cleanByUser(username string) {
 		from project_member 
 		where entity_id = (
 			select user_id
-			from user
+			from harbor_user
 			where username = ?
 		) `, username)
 	if err != nil {
@@ -98,7 +98,7 @@ func cleanByUser(username string) {
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete from user where username = ?`, username)
+	err = execUpdate(o, `delete from harbor_user where username = ?`, username)
 	if err != nil {
 		o.Rollback()
 		log.Error(err)
@@ -134,16 +134,13 @@ const publicityOn = 1
 const publicityOff = 0
 
 func TestMain(m *testing.M) {
-	databases := []string{"mysql", "sqlite"}
+	databases := []string{"postgresql"}
 	for _, database := range databases {
 		log.Infof("run test cases for database: %s", database)
-
 		result := 1
 		switch database {
-		case "mysql":
-			PrepareTestForMySQL()
-		case "sqlite":
-			PrepareTestForSQLite()
+		case "postgresql":
+			PrepareTestForPostgresSQL()
 		default:
 			log.Fatalf("invalid database: %s", database)
 		}
@@ -167,7 +164,7 @@ func clearAll() {
 	tables := []string{"project_member",
 		"project_metadata", "access_log", "repository", "replication_policy",
 		"replication_target", "replication_job", "replication_immediate_trigger", "img_scan_job",
-		"img_scan_overview", "clair_vuln_timestamp", "project", "user"}
+		"img_scan_overview", "clair_vuln_timestamp", "project", "harbor_user"}
 	for _, t := range tables {
 		if err := ClearTable(t); err != nil {
 			log.Errorf("Failed to clear table: %s,error: %v", t, err)

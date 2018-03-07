@@ -28,7 +28,22 @@ import (
 // AddRepTarget ...
 func AddRepTarget(target models.RepTarget) (int64, error) {
 	o := GetOrmer()
-	return o.Insert(&target)
+
+	var secureBool int
+	sql := "insert into replication_target (name, url, username, password, insecure, target_type) values (?, ?, ?, ?, ?, ?) RETURNING id"
+
+	if target.Insecure == false {
+		secureBool = 0
+	} else {
+		secureBool = 1
+	}
+
+	var targetID int64
+	err := o.Raw(sql, target.Name, target.URL, target.Username, target.Password, secureBool, target.Type).QueryRow(&targetID)
+	if err != nil {
+		return 0, err
+	}
+	return targetID, nil
 }
 
 // GetRepTarget ...
@@ -76,8 +91,20 @@ func DeleteRepTarget(id int64) error {
 // UpdateRepTarget ...
 func UpdateRepTarget(target models.RepTarget) error {
 	o := GetOrmer()
-	target.UpdateTime = time.Now()
-	_, err := o.Update(&target, "URL", "Name", "Username", "Password", "Insecure", "UpdateTime")
+
+	sql := `update replication_target 
+	set url = ?, name = ?, username = ?, password = ?, insecure = ?, update_time = ?
+	where id = ?`
+
+	var secureBool int
+	if target.Insecure == false {
+		secureBool = 0
+	} else {
+		secureBool = 1
+	}
+
+	_, err := o.Raw(sql, target.URL, target.Name, target.Username, target.Password, secureBool, time.Now(), target.ID).Exec()
+
 	return err
 }
 
@@ -90,7 +117,7 @@ func FilterRepTargets(name string) ([]*models.RepTarget, error) {
 	sql := `select * from replication_target `
 	if len(name) != 0 {
 		sql += `where name like ? `
-		args = append(args, `%`+Escape(name)+`%`)
+		args = append(args, "%"+Escape(name)+"%")
 	}
 	sql += `order by creation_time`
 
@@ -107,19 +134,28 @@ func FilterRepTargets(name string) ([]*models.RepTarget, error) {
 func AddRepPolicy(policy models.RepPolicy) (int64, error) {
 	o := GetOrmer()
 	sql := `insert into replication_policy (name, project_id, target_id, enabled, description, cron_str, creation_time, update_time, filters, replicate_deletion) 
-				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`
 	params := []interface{}{}
 	now := time.Now()
+
+	var replicationDeletionBool int
+	if policy.ReplicateDeletion == false {
+		replicationDeletionBool = 0
+	} else {
+		replicationDeletionBool = 1
+	}
+
 	params = append(params, policy.Name, policy.ProjectID, policy.TargetID, 1,
 		policy.Description, policy.Trigger, now, now, policy.Filters,
-		policy.ReplicateDeletion)
+		replicationDeletionBool)
 
-	result, err := o.Raw(sql, params...).Exec()
+	var policyID int64
+	err := o.Raw(sql, params...).QueryRow(&policyID)
 	if err != nil {
 		return 0, err
 	}
 
-	return result.LastInsertId()
+	return policyID, nil
 }
 
 // GetRepPolicy ...
@@ -167,23 +203,23 @@ func FilterRepPolicies(name string, projectID, page, pageSize int64) ([]*models.
 				count(rj.status) as error_job_count 
 			from replication_policy rp 
 			left join replication_target rt on rp.target_id=rt.id 
-			left join replication_job rj on rp.id=rj.policy_id and (rj.status="error" 
-				or rj.status="retrying") 
+			left join replication_job rj on rp.id=rj.policy_id and (rj.status='error' 
+				or rj.status='retrying') 
 			where rp.deleted = 0 `
 
 	if len(name) != 0 && projectID != 0 {
 		sql += `and rp.name like ? and rp.project_id = ? `
-		args = append(args, `%`+Escape(name)+`%`)
+		args = append(args, "%"+Escape(name)+"%")
 		args = append(args, projectID)
 	} else if len(name) != 0 {
 		sql += `and rp.name like ? `
-		args = append(args, `%`+Escape(name)+`%`)
+		args = append(args, "%"+Escape(name)+"%")
 	} else if projectID != 0 {
 		sql += `and rp.project_id = ? `
 		args = append(args, projectID)
 	}
 
-	sql += `group by rp.id order by rp.creation_time`
+	sql += `group by rt.name, rp.id order by rp.creation_time`
 
 	if page > 0 && pageSize > 0 {
 		sql += ` limit ? offset ?`
@@ -260,9 +296,20 @@ func GetRepPolicyByProjectAndTarget(projectID, targetID int64) ([]*models.RepPol
 // UpdateRepPolicy ...
 func UpdateRepPolicy(policy *models.RepPolicy) error {
 	o := GetOrmer()
-	policy.UpdateTime = time.Now()
-	_, err := o.Update(policy, "ProjectID", "TargetID", "Name", "Description",
-		"Trigger", "Filters", "ReplicateDeletion", "UpdateTime")
+
+	sql := `update replication_policy 
+		set project_id = ?, target_id = ?, name = ?, description = ?, cron_str = ?, filters = ?, replicate_deletion = ?, update_time = ? 
+		where id = ?`
+
+	var replicationDeletionBool int
+	if policy.ReplicateDeletion == false {
+		replicationDeletionBool = 0
+	} else {
+		replicationDeletionBool = 1
+	}
+
+	_, err := o.Raw(sql, policy.ProjectID, policy.TargetID, policy.Name, policy.Description, policy.Trigger, policy.Filters, replicationDeletionBool, time.Now(), policy.ID).Exec()
+
 	return err
 }
 

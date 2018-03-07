@@ -128,18 +128,17 @@ func TestLoadFromEnv(t *testing.T) {
 
 func TestGetDatabaseFromCfg(t *testing.T) {
 	cfg := map[string]interface{}{
-		common.DatabaseType:  "mysql",
-		common.MySQLDatabase: "registry",
-		common.MySQLHost:     "127.0.0.1",
-		common.MySQLPort:     3306,
-		common.MySQLPassword: "1234",
-		common.MySQLUsername: "root",
-		common.SQLiteFile:    "/tmp/sqlite.db",
+		common.DatabaseType:       "postgresql",
+		common.PostGreSQLDatabase: "registry",
+		common.PostGreSQLHOST:     "127.0.0.1",
+		common.PostGreSQLPort:     5432,
+		common.PostGreSQLPassword: "root123",
+		common.PostGreSQLUsername: "postgres",
 	}
 
 	database := GetDatabaseFromCfg(cfg)
 
-	assert.Equal(t, "mysql", database.Type)
+	assert.Equal(t, "postgresql", database.Type)
 }
 
 func TestValidLdapScope(t *testing.T) {
