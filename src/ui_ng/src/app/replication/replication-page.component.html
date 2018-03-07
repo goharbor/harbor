@@ -1,3 +1,3 @@
 <div style="margin-top: 24px;">
-    <hbr-replication  [readonly]="true" #replicationView [projectId]="projectIdentify" [isSystemAdmin]="isSystemAdmin" [withReplicationJob]='true'  (openCreateRule)="openCreatePage()"  (openEdit)="openEditPage($event)"></hbr-replication>
+    <hbr-replication #replicationView [projectId]="projectIdentify" [projectName]="projectName" [isSystemAdmin]="isSystemAdmin" [withReplicationJob]='true' ></hbr-replication>
 </div>

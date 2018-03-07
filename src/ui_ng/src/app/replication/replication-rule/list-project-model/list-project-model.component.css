@@ -1,5 +1,0 @@
-.datagrid .datagrid-head{border: 0;}
-.option-right{ position: absolute; right: 30px; top: 55px;}
-:host >>> .datagrid-head{height: 0;border-width: 0;}
-:host >>> .datagrid-scroll-wrapper .datagrid{margin-top: 0;}
-.modal-body{height: 30em; overflow-y: auto; margin-top: 20px;}

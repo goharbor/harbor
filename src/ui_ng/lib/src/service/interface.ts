@@ -1,3 +1,4 @@
+import {Project} from "../project-policy-config/project";
 /**
  * The base interface contains the general properties
  * 
@@ -83,18 +84,40 @@ export interface Endpoint extends Base {
  * 
  * @export
  * @interface ReplicationRule
+ * @interface Filter
+ * @interface Trigger
  */
 export interface ReplicationRule extends Base {
-    project_id: number | string;
-    project_name: string;
-    target_id: number | string;
-    target_name: string;
-    enabled: number;
-    description?: string;
-    cron_str?: string;
-    start_time?: Date;
-    error_job_count?: number;
-    deleted: number;
+    [key: string]: any;
+    id?: number;
+    name: string;
+    description: string;
+    projects: Project[];
+    targets: Endpoint[] ;
+    trigger: Trigger ;
+    filters: Filter[] ;
+    replicate_existing_image_now?: boolean;
+    replicate_deletion?: boolean;
+}
+
+export class Filter {
+    kind: string;
+    pattern: string;
+    constructor(kind: string, pattern: string) {
+        this.kind = kind;
+        this.pattern = pattern;
+    }
+}
+
+export class Trigger {
+    kind: string;
+    schedule_param: any | {
+        [key: string]: any | any[];
+    };
+    constructor(kind: string, param: any | { [key: string]: any | any[]; }) {
+        this.kind = kind;
+        this.schedule_param = param;
+    }
 }
 
 /**
@@ -115,7 +138,7 @@ export interface ReplicationJob {
  * @interface ReplicationJob
  */
 export interface ReplicationJobItem extends Base {
-    [key: string]: any | any[]
+    [key: string]: any | any[];
     status: string;
     repository: string;
     policy_id: number;
@@ -151,7 +174,7 @@ export interface AccessLog {
  * @interface AccessLogItem
  */
 export interface AccessLogItem {
-    [key: string]: any | any[]
+    [key: string]: any | any[];
     log_id: number;
     project_id: number;
     repo_name: string;

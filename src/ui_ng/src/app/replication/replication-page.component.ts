@@ -15,6 +15,8 @@ import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import { ReplicationComponent } from 'harbor-ui';
 import {SessionService} from "../shared/session.service";
+import {Project} from "../project/project";
+import {ProjectService} from "../project/project.service";
 
 @Component({
   selector: 'replicaton',
@@ -23,26 +25,30 @@ import {SessionService} from "../shared/session.service";
 export class ReplicationPageComponent implements OnInit, AfterViewInit {
   projectIdentify: string | number;
   @ViewChild("replicationView") replicationView: ReplicationComponent;
+  projectName: string;
 
   constructor(private route: ActivatedRoute,
-              private router: Router,
+              private proService: ProjectService,
               private session: SessionService) { }
 
   ngOnInit(): void {
     this.projectIdentify = +this.route.snapshot.parent.params['id'];
+
+    this.proService.listProjects("", undefined).toPromise()
+        .then(response => {
+          let projects = response.json() as Project[];
+          if (projects.length) {
+            let project = projects.find(data => data.project_id === this.projectIdentify);
+            if (project) {
+              this.projectName = project.name;
+            }
+          }
+        });
   }
 
   public get isSystemAdmin(): boolean {
     let account = this.session.getCurrentUser();
     return account != null && account.has_admin_role > 0;
-  }
-
-  openEditPage(id: number): void {
-    this.router.navigate(['harbor', 'replications', id, 'rule', { projectId: this.projectIdentify}]);
-  }
-
-  openCreatePage(): void {
-    this.router.navigate(['harbor', 'replications', 'new-rule', { projectId: this.projectIdentify}] );
   }
 
   ngAfterViewInit(): void {

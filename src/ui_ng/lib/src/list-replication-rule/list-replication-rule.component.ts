@@ -60,9 +60,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   @Input() isSystemAdmin: boolean;
   @Input() selectedId: number | string;
   @Input() withReplicationJob: boolean;
-  @Input() readonly: boolean;
 
-  @Input() loading: boolean = false;
+  @Input() loading = false;
 
   @Output() reload = new EventEmitter<boolean>();
   @Output() selectOne = new EventEmitter<ReplicationRule>();
@@ -100,10 +99,6 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     setInterval(() => ref.markForCheck(), 500);
   }
 
-  public get opereateAvailable(): boolean {
-    return !this.readonly && !this.projectId ? true : false;
-  }
-
   trancatedDescription(desc: string): string {
     if (desc.length > 35 ) {
       return desc.substr(0, 35);
@@ -135,7 +130,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
   retrieveRules(ruleName: string = ''): void {
     this.loading = true;
-    this.selectedRow = null;
+    /*this.selectedRow = null;*/
     toPromise<ReplicationRule[]>(this.replicationService
       .getReplicationRules(this.projectId, ruleName))
       .then(rules => {
@@ -154,36 +149,6 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         this.errorHandler.error(error);
         this.loading = false;
       });
-  }
-
-  filterRuleStatus(status: string) {
-    if (status === 'all') {
-      this.changedRules = this.rules;
-    } else {
-      this.changedRules = this.rules.filter(policy => policy.enabled === +status);
-    }
-  }
-
-  toggleConfirm(message: ConfirmationAcknowledgement) {
-    if (message &&
-        message.source === ConfirmationTargets.TOGGLE_CONFIRM &&
-        message.state === ConfirmationState.CONFIRMED) {
-      this.batchDelectionInfos = [];
-      let rule: ReplicationRule = message.data;
-      let initBatchMessage = new BatchInfo ();
-      initBatchMessage.name = rule.name;
-      this.batchDelectionInfos.push(initBatchMessage);
-
-      if (rule) {
-        rule.enabled = rule.enabled === 0 ? 1 : 0;
-        toPromise<any>(this.replicationService
-            .enableReplicationRule(rule.id || '', rule.enabled))
-            .then(() =>
-                this.translateService.get('REPLICATION.TOGGLED_SUCCESS')
-                    .subscribe(res => this.batchDelectionInfos[0].status = res))
-            .catch(error => this.batchDelectionInfos[0].status = error);
-      }
-    }
   }
 
   replicateRule(rules: ReplicationRule[]): void {
@@ -214,17 +179,6 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
   editRule(rule: ReplicationRule) {
     this.editOne.emit(rule);
-  }
-
-  toggleRule(rule: ReplicationRule) {
-    let toggleConfirmMessage: ConfirmationMessage = new ConfirmationMessage(
-      rule.enabled === 1 ? 'REPLICATION.TOGGLE_DISABLE_TITLE' : 'REPLICATION.TOGGLE_ENABLE_TITLE',
-      rule.enabled === 1 ? 'REPLICATION.CONFIRM_TOGGLE_DISABLE_POLICY' : 'REPLICATION.CONFIRM_TOGGLE_ENABLE_POLICY',
-      rule.name || '',
-      rule,
-      ConfirmationTargets.TOGGLE_CONFIRM
-    );
-    this.toggleConfirmDialog.open(toggleConfirmMessage);
   }
 
   jobList(id: string | number): Promise<void> {

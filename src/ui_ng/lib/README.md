@@ -74,13 +74,14 @@ Use **withTitle** to set whether self-contained a header with title or not. Defa
 Support two different display scope mode: under specific project or whole system. 
 
 If **projectId** is set to the id of specified project, then only show the replication rules bound with the project. Otherwise, show all the rules of the whole system.
+On specific project mode, without need projectId, but also need to provide projectName for display.
 
 **withReplicationJob** is used to determine whether or not show the replication jobs which are relevant with the selected replication rule.
 
-**readonly** is to disable all the create/edit/delete actions.
+**isSystemAdmin** is for judgment if user has administrator privilege, if true, user can do the create/edit/delete/replicate actions.
 
 ```
-<hbr-replication [projectId]="..." [withReplicationJob]='...' [readonly]="..."></hbr-replication>
+<hbr-replication [projectId]="..." [projectName]="..." [withReplicationJob]='...' [isSystemAdmin]="..."></hbr-replication>
 ```
 
 * **Endpoint Management View**
