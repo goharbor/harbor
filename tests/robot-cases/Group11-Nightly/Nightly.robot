@@ -25,6 +25,16 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
+Test Case - Vulnerability Data Not Ready
+#This case must run before vulnerability db ready
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Vulnerability Not Ready Project Hint
+    Switch To Configure
+    Go To Vulnerability Config
+    Vulnerability Not Ready Config Hint
+
 Test Case - Create An New User
     Init Chrome Driver    
     ${d}=    Get Current Date    result_format=%m%s
@@ -261,9 +271,84 @@ Test Case - Scan A Tag In The Repo
     Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
-    Scan Repo  latest
+    Scan Repo  latest  Succeed
     Summary Chart Should Display  latest
+    Pull Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
     # Edit Repo Info
+    Close Browser
+
+Test Case - Scan As An Unprivileged User
+    Init Chrome Driver
+    ${d}=    get current date    result_format=%m%s
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
+    Create An New User  ${HARBOR_URL}  user${d}  user${d}@vmware.com  user${d}  Test1@34  harbor
+    Go Into Project  library
+    Go Into Repo  hello-world
+    Select Object  latest
+    Scan Is Disabled
+    Close Browser
+##
+Test Case - Scan Image With Empty Vul
+    Init Chrome Driver
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Go Into Repo  hello-world
+    Scan Repo  latest  Succeed
+    Move To Summary Chart
+    Wait Until Page Contains  Unknow
+    Close Browser
+###
+Test Case - Disable Scan Schedule
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Configure
+    Go To Vulnerability Config
+    Disable Scan Schedule
+    Logout Harbor
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Configure
+    Go To Vulnerability Config
+    Page Should Contain  None
+    Close Browser
+###
+Test Case - Manual Scan All
+    Init Chrome Driver
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Configure
+    Go To Vulnerability Config
+    Trigger Scan Now
+    Back To Projects
+    Go Into Project  library
+    Go Into Repo  redis
+    Summary Chart Should Display  latest
+    Close Browser
+#
+Test Case - Project Level Image Serverity Policy 
+    Init Chrome Driver
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  haproxy
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Go Into Repo  haproxy
+    Scan Repo  latest  Succeed
+    Back To Projects
+    Go Into Project  library
+    Set Vulnerabilty Serverity  0
+    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  haproxy
+    Close Browser
+
+Test Case - Scan Image On Push
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Goto Project Config
+    Enable Scan On Push
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached 
+    Back To Projects
+    Go Into Project  library
+    Go Into Repo  memcached
+    Summary Chart Should Display  latest
     Close Browser
 
 Test Case - Manage Project Member
@@ -421,7 +506,7 @@ Test Case - View Scan Results
     Push Image  ${ip}  tester${d}  Test1@34  project${d}  tomcat
     Go Into Project  project${d}
     Go Into Repo  project${d}/tomcat
-    Scan Repo  latest
+    Scan Repo  latest  Succeed
     Summary Chart Should Display  latest
     View Repo Scan Details
     Close Browser
@@ -433,7 +518,7 @@ Test Case - View Scan Error
     Push Image  ${ip}  tester${d}  Test1@34  project${d}  vmware/photon:1.0
     Go Into Project  project${d}
     Go Into Repo  project${d}/vmware/photon
-    Scan Repo  1.0
+    Scan Repo  1.0  Fail
     View Scan Error Log
     Close Browser
 
