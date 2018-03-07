@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, Input, Output, OnDestroy, EventEmitter } from '@angular/core';
-import { ResponseOptions, RequestOptions } from '@angular/http';
-import { NgModel } from '@angular/forms';
 
 import { TranslateService } from '@ngx-translate/core';
 
@@ -23,7 +21,7 @@ import { ErrorHandler } from '../error-handler/error-handler';
 
 import { ReplicationService } from '../service/replication.service';
 import { RequestQueryParams } from '../service/RequestQueryParams';
-import { ReplicationRule, ReplicationJob, Endpoint, ReplicationJobItem } from '../service/interface';
+import { ReplicationRule, ReplicationJob, ReplicationJobItem } from '../service/interface';
 
 import {
   toPromise,
@@ -89,13 +87,14 @@ export class SearchOption {
 export class ReplicationComponent implements OnInit, OnDestroy {
 
   @Input() projectId: number | string;
+  @Input() projectName: string;
   @Input() isSystemAdmin: boolean;
   @Input() withReplicationJob: boolean;
-  @Input() readonly: boolean;
 
   @Output() redirect = new EventEmitter<ReplicationRule>();
   @Output() openCreateRule = new EventEmitter<any>();
   @Output() openEdit = new EventEmitter<string | number>();
+  @Output() goToRegistry = new EventEmitter<any>();
 
   search: SearchOption = new SearchOption();
 
@@ -106,7 +105,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   currentJobStatus: { key: string, description: string };
 
   changedRules: ReplicationRule[];
-  initSelectedId: number | string;
 
   rules: ReplicationRule[];
   loading: boolean;
@@ -121,8 +119,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @ViewChild(ListReplicationRuleComponent)
   listReplicationRule: ListReplicationRuleComponent;
 
-/*  @ViewChild(CreateEditRuleComponent)
-  createEditPolicyComponent: CreateEditRuleComponent;*/
+  @ViewChild(CreateEditRuleComponent)
+  createEditPolicyComponent: CreateEditRuleComponent;
 
   @ViewChild("replicationLogViewer")
   replicationLogViewer: JobLogViewerComponent;
@@ -164,18 +162,20 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
   }
 
+  // open replication rule
   openModal(): void {
-    this.openCreateRule.emit();
+    this.createEditPolicyComponent.openCreateEditRule();
   }
 
+  // edit replication rule
   openEditRule(rule: ReplicationRule) {
     if (rule) {
-      let editable = true;
-      if (rule.enabled === 1) {
-        editable = false;
-      }
-      this.openEdit.emit(rule.id);
+      this.createEditPolicyComponent.openCreateEditRule(rule.id);
     }
+  }
+
+  goRegistry(): void {
+    this.goToRegistry.emit();
   }
 
   //Server driven data loading
@@ -209,6 +209,12 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
 
     this.jobsLoading = true;
+
+    //Do filtering and sorting
+    this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
+    this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
+
+    this.jobsLoading = false;
     toPromise<ReplicationJob>(this.replicationService
       .getJobs(this.search.ruleId, params))
       .then(

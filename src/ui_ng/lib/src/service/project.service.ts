@@ -6,7 +6,8 @@ import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 
 import { Project } from '../project-policy-config/project';
 import { ProjectPolicy } from '../project-policy-config/project-policy-config.component';
-import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../utils";
+import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS, buildHttpRequestOptions} from "../utils";
+import {RequestQueryParams} from "./RequestQueryParams";
 
 /**
  * Define the service methods to handle the Prject related things.
@@ -38,6 +39,8 @@ export abstract class ProjectService {
      * @memberOf EndpointService
      */
     abstract updateProjectPolicy(projectId: number | string,  projectPolicy: ProjectPolicy): Observable<any> | Promise<any> | any;
+
+    abstract listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<Project[]> | Promise<Project[]> | Project[];
 }
 
 /**
@@ -67,6 +70,27 @@ export class ProjectDefaultService extends ProjectService {
                 .map(response => response.json())
                 .catch(error => Observable.throw(error));
   }
+
+    listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<Project[]> | Promise<Project[]> | Project[]  {
+        let params = new RequestQueryParams();
+        if (page && pageSize) {
+            params.set('page', page + '');
+            params.set('page_size', pageSize + '');
+        }
+        if (name && name.trim() !== "") {
+            params.set('name', name);
+
+        }
+        if (isPublic !== undefined) {
+            params.set('public', '' + isPublic);
+        }
+
+        // let options = new RequestOptions({ headers: this.getHeaders, search: params });
+        return this.http
+            .get(`/api/projects`, buildHttpRequestOptions(params))
+            .map(response => response.json())
+            .catch(error => Observable.throw(error));
+    }
 
   public updateProjectPolicy(projectId: number | string, projectPolicy: ProjectPolicy): any {
     return this.http

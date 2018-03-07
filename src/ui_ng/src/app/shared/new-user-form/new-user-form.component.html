@@ -32,7 +32,7 @@
             <div class="form-group form-group-override">
                 <label for="realname" class="required form-group-label-override">{{'PROFILE.FULL_NAME' | translate}}</label>
                 <label for="realname" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("realname")'>
-                      <input type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="20" id="realname" size="30"
+                      <input type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="80" id="realname" size="30"
                       (input)='handleValidation("realname", false)' 
                 (blur)='handleValidation("realname", true)'>
                       <span class="tooltip-content">
