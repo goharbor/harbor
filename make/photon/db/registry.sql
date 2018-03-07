@@ -254,6 +254,24 @@ create table properties (
  UNIQUE (k)
  );
 
+create table harbor_label (
+ id int NOT NULL AUTO_INCREMENT,
+ name varchar(128) NOT NULL,
+ description text,
+ color varchar(16),
+# 's' for system level labels
+# 'u' for user level labels
+ level char(1) NOT NULL,
+# 'g' for global labels
+# 'p' for project labels
+ scope char(1) NOT NULL,
+ project_id int,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+ PRIMARY KEY(id),
+ CONSTRAINT unique_name_and_scope UNIQUE (name,scope)
+ );
+
 CREATE TABLE IF NOT EXISTS `alembic_version` (
     `version_num` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
