@@ -94,9 +94,9 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | -----------------------    | ---------------------------------- | ----------------------- |
 | **Harbor** |
 | `harborImageTag`     | The tag for Harbor docker images | `v1.4.0` |
-| `externalDomain`       | Harbor will run on (https://*externalDomain*/). Make sure this FQDN resolves to the K8s Ingress Controller IP. | `harbor.my.domain` |
-| `insecureRegistry`     | Set to true if setting Harbor Registry as insecure-registries for docker | `false` |
-| `tlsCrt`               | TLS certificate to use for Harbor's https endpoint | auto-generated |
+| `externalDomain`       | Harbor will run on (https://`externalDomain`/). Recommend using K8s Ingress Controller FQDN as `externalDomain`, or make sure this FQDN resolves to the K8s Ingress Controller IP. | `harbor.my.domain` |
+| `insecureRegistry`     | If set to true, you don't need to set tlsCrt/tlsKey/caCrt, but must add Harbor FQDN as insecure-registries for your docker client. | `false` |
+| `tlsCrt`               | TLS certificate to use for Harbor's https endpoint. Its CN must match `externalDomain`. | auto-generated |
 | `tlsKey`               | TLS key to use for Harbor's https endpoint | auto-generated |
 | `caCrt`                | CA Cert for self signed TLS cert | auto-generated |
 | `persistence.enabled` | enable persistent data storage | `false` |
@@ -145,7 +145,7 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | **Registry** |
 | `registry.image.repository` | Repository for registry image | `vmware/registry-photon` |
 | `registry.image.tag` | Tag for registry image | `v2.6.2-v1.4.0` |
-| `registry.image.pullPolicy` | Pull Policy for admregistryinserver image | `IfNotPresent` |
+| `registry.image.pullPolicy` | Pull Policy for registry image | `IfNotPresent` |
 | `registry.rootCrt` | registry root cert | see values.yaml |
 | `registry.httpSecret` | registry secret | `not-a-secure-secret` |
 | `registry.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |

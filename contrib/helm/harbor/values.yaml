@@ -28,14 +28,15 @@
 persistence:
   enabled: false
 
-# The tag for Harbor docker images
+# The tag for Harbor docker images.
 harborImageTag: &harbor_image_tag v1.4.0
 
-# Set to true if setting Harbor Registry as insecure-registries for docker
-insecureRegistry: false
-# Need to specify your own FQDN for Harbor
+# The FQDN for Harbor service.
 externalDomain: harbor.my.domain
-# The common name of tlsCrt, tlsKey, caCrt must match the externalDomain above
+# If set to true, you don't need to set tlsCrt/tlsKey/caCrt, but must add
+# Harbor FQDN as insecure-registries for your docker client.
+insecureRegistry: false
+# The TLS certificate for Harbor. The common name of tlsCrt must match the externalDomain above.
 tlsCrt:
 tlsKey:
 caCrt:
