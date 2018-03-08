@@ -69,7 +69,7 @@ export const CREATE_EDIT_RULE_TEMPLATE: string = `
          </div>
        </div>
        <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
-       <span class="goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'SIDE_NAV.SYSTEM_MGMT.REGISTRY' | translate}}</span>
+       <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'SIDE_NAV.SYSTEM_MGMT.REGISTRY' | translate}}</span>
        </div>
     
       <!--Trigger-->

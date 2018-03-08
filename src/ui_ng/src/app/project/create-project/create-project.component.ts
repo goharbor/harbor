@@ -74,7 +74,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   ngOnInit(): void {
     this.proNameChecker
       .debounceTime(500)
-      .distinctUntilChanged()
+      //.distinctUntilChanged()
       .subscribe((name: string) => {
         let cont = this.currentForm.controls["create_project_name"];
         if (cont && this.hasChanged) {
@@ -166,6 +166,8 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   newProject() {
     this.project = new Project();
     this.hasChanged = false;
+    this.isNameValid = true;
+
     this.createProjectOpened = true;
   }
 
