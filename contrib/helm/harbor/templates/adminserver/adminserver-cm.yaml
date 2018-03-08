@@ -28,8 +28,8 @@ data:
   TOKEN_SERVICE_URL: "http://{{ template "harbor.fullname" . }}-ui/service/token"
   WITH_NOTARY: "{{ .Values.notary.enabled }}"
   LOG_LEVEL: "info"
-  IMAGE_STORE_PATH: "/"
-  AUTH_MODE: "database"
+  IMAGE_STORE_PATH: "/" # This is a temporary hack.
+  AUTH_MODE: "db_auth"
   SELF_REGISTRATION: "on"
   LDAP_URL: "ldaps://ldapserver"
   LDAP_SEARCH_DN: ""
