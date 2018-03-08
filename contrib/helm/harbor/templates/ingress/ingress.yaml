@@ -3,16 +3,16 @@ kind: Ingress
 metadata:
   name: "{{ template "harbor.fullname" . }}-ingress"
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
   annotations:
-    ingress.kubernetes.io/ssl-redirect: "true"
-    ingress.kubernetes.io/body-size: "0"
-    ingress.kubernetes.io/proxy-body-size: "0"
+{{ toYaml .Values.ingress.annotations | indent 4 }}
 spec:
   tls:
   - hosts:
     - "{{ .Values.externalDomain }}"
+{{ if not .Values.insecureRegistry }}
     secretName: "{{ template "harbor.fullname" . }}-ingress"
+{{ end }}
   rules:
   - host: "{{ .Values.externalDomain }}"
     http:

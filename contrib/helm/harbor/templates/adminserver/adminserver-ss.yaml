@@ -3,19 +3,19 @@ kind: StatefulSet
 metadata:
   name: "{{ template "harbor.fullname" . }}-adminserver"
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
     component: adminserver
 spec:
   replicas: 1
   serviceName: "{{ template "harbor.fullname" . }}"
   selector:
     matchLabels:
-{{ include "helm.matchLabels" . | indent 6 }}
+{{ include "harbor.matchLabels" . | indent 6 }}
       component: adminserver
   template:
     metadata:
       labels:
-{{ include "helm.labels" . | indent 8 }}
+{{ include "harbor.labels" . | indent 8 }}
         component: adminserver
     spec:
       containers:

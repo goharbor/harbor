@@ -28,9 +28,13 @@
 persistence:
   enabled: false
 
-externalDomain: harbor.192.168.99.100.xip.io
-## tls_crt, tls_key, ca_crt should match the domain above
+# Set to true if setting Harbor Registry as insecure-registries for docker
+insecureRegistry: false
 
+# Need to specify your own FQDN for Harbor
+externalDomain: harbor.192.168.99.100.xip.io
+
+# tls_crt, tls_key, ca_crt must match the externalDomain above
 tlsCrt: |
   -----BEGIN CERTIFICATE-----
   MIIDJDCCAgygAwIBAgIJAKNSg1jp3l2oMA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNV
@@ -99,10 +103,18 @@ caCrt: |
   J0oP9V+2FMfDFvIhX5tNrEuIIFMyO+HR0wxV7huTUeus4knyXBZur3If+g==
   -----END CERTIFICATE-----
 
+ingress:
+# These annotations allow the registry to work behind the nginx
+# ingress controller.
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.kubernetes.io/body-size: "0"
+    ingress.kubernetes.io/proxy-body-size: "0"
+
 adminserver:
   image:
     repository: vmware/harbor-adminserver
-    tag: v1.3.0
+    tag: v1.4.0
     pullPolicy: IfNotPresent
   emailHost: "smtp.mydomain.com"
   emailPort: "25"
@@ -110,6 +122,7 @@ adminserver:
   emailSsl: "false"
   emailFrom: "admin <sample_admin@mydomain.com>"
   emailIdentity: ""
+  emailInsecure: "False"
   key: not-a-secure-key
   emailPwd: not-a-secure-password
   harborAdminPassword: Harbor12345
@@ -129,7 +142,7 @@ adminserver:
 jobservice:
   image:
     repository: vmware/harbor-jobservice
-    tag: v1.3.0
+    tag: v1.4.0
     pullPolicy: IfNotPresent
   key: not-a-secure-key
   secret: not-a-secure-secret
@@ -143,7 +156,7 @@ jobservice:
 ui:
   image:
     repository: vmware/harbor-ui
-    tag: v1.3.0
+    tag: v1.4.0
     pullPolicy: IfNotPresent
   secret: not-a-secure-secret
   key: not-a-secure-key
@@ -211,7 +224,7 @@ ui:
 mysql:
   image:
     repository: vmware/harbor-db
-    tag: v1.3.0
+    tag: v1.4.0
     pullPolicy: IfNotPresent
   # If left blank will use the included mysql service name.
   host: ~
@@ -231,8 +244,8 @@ mysql:
 
 registry:
   image:
-    repository: registry
-    tag: "2.6.2"
+    repository: vmware/registry-photon
+    tag: v2.6.2-v1.4.0
     pullPolicy: IfNotPresent
   httpSecret: not-a-secure-secret
   logLevel:
@@ -296,11 +309,11 @@ registry:
 ## Enabling it will just break things.
 #
 clair:
-  enabled: false
+  enabled: true
   postgresPassword: not-a-secure-password
   image:
-    repository: vmware/clair
-    tag: v2.0.1-photon
+    repository: vmware/clair-photon
+    tag: v2.0.1-v1.4.0
     pullPolicy: IfNotPresent
   pgImage:
     repository: postgres
