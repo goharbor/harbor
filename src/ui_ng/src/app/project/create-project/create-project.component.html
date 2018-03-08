@@ -12,7 +12,8 @@
             required
             pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
             minlength="2" 
-            #projectName="ngModel" 
+            #projectName="ngModel"
+                   autocomplete="off"
             (keyup)='handleValidation()'>
             <span class="tooltip-content">
               {{ nameTooltipText | translate }}

@@ -388,6 +388,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
 
   refreshJobs() {
+    this.currentJobStatus = this.jobStatus[0];
+    this.search.startTime = ' ';
+    this.search.endTime = ' ';
     this.search.repoName = "";
     this.search.startTimestamp = "";
     this.search.endTimestamp = "";

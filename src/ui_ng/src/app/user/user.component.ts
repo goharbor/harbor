@@ -49,10 +49,6 @@ import {BatchInfo, BathInfoChanges} from '../shared/confirmation-dialog/confirma
 export class UserComponent implements OnInit, OnDestroy {
   users: User[] = [];
   originalUsers: Promise<User[]>;
-  private onGoing: boolean = true;
-  private adminMenuText: string = "";
-  private adminColumn: string = "";
-  private deletionSubscription: Subscription;
   selectedRow: User[] = [];
   ISADMNISTRATOR: string = "USER.ENABLE_ADMIN_ACTION";
   batchDelectionInfos: BatchInfo[] = [];
@@ -60,11 +56,14 @@ export class UserComponent implements OnInit, OnDestroy {
   currentTerm: string;
   totalCount: number = 0;
   currentPage: number = 1;
+  timerHandler: any;
 
+  private onGoing: boolean = true;
+  private adminMenuText: string = "";
+  private adminColumn: string = "";
+  private deletionSubscription: Subscription;
   @ViewChild(NewUserModalComponent)
   newUserDialog: NewUserModalComponent;
-
-  timerHandler: any;
 
   constructor(
     private userService: UserService,
@@ -96,10 +95,6 @@ export class UserComponent implements OnInit, OnDestroy {
 
   get onlySelf(): boolean {
     return this.selectedRow.length === 1 && this.isMySelf(this.selectedRow[0].user_id);
-  }
-
-  private isMatchFilterTerm(terms: string, testedItem: string): boolean {
-    return testedItem.toLowerCase().indexOf(terms.toLowerCase()) !== -1;
   }
 
   public get canCreateUser(): boolean {
@@ -173,9 +168,12 @@ export class UserComponent implements OnInit, OnDestroy {
       if (terms.trim() === "") {
         this.refreshUser((this.currentPage - 1) * 15, this.currentPage * 15);
       } else {
-        this.users = users.filter(user => {
+        let selectUsers = users.filter(user => {
           return this.isMatchFilterTerm(terms, user.username);
         });
+        this.totalCount = selectUsers.length;
+        this.users = selectUsers.slice((this.currentPage - 1) * 15, this.currentPage * 15);//First page
+
         this.forceRefreshView(5000);
       }
     });
@@ -365,6 +363,10 @@ export class UserComponent implements OnInit, OnDestroy {
         this.timerHandler = null;
       }
     }, duration);
+  }
+
+  private isMatchFilterTerm(terms: string, testedItem: string): boolean {
+    return testedItem.toLowerCase().indexOf(terms.toLowerCase()) !== -1;
   }
 
 }

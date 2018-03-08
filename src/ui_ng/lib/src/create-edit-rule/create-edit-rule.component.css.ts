@@ -27,7 +27,6 @@ h4{
 .filterSelect clr-icon{margin-left: 15px;}
 .filterSelect label{width: 136px;}
 .filterSelect label input{width: 100%;}
-.cursor{cursor: pointer;}
 .pull-left{float: left;}
 .padLeft0{padding-left: 0;}
 .floatSetPar{display: inline-block; width: 120px;margin-right: 10px;}
@@ -56,6 +55,7 @@ h4{
 .selectBox ul li{
     list-style: none;
     padding: 3px 20px
+    cursor: pointer;
 }
 .selectBox ul li:hover{
     color: #262626;
