@@ -35,8 +35,8 @@ helm init --canary-image
 Download Harbor helm chart code.
 
 ```bash
-git clone https://github.com/vmware/harbor/tree/master/contrib/helm/harbor helm-harbor
-cd helm-harbor
+git clone https://github.com/vmware/harbor
+cd harbor/contrib/helm/harbor
 ```
 
 ### Insecure Registry Mode
