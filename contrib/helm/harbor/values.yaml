@@ -243,9 +243,6 @@ registry:
   #    memory: 256Mi
   #    cpu: 100m
 
-## Clair support is not yet fully implemented in the Helm Charts
-## Enabling it will just break things.
-#
 clair:
   enabled: true
   image:
@@ -253,10 +250,8 @@ clair:
     tag: v2.0.1-v1.4.0
     pullPolicy: IfNotPresent
   postgresPassword: not-a-secure-password
-  pgImage:
-    repository: postgres
-    tag: "9.6.4"
-    pullPolicy: IfNotPresent
+  postgresUser: clair
+  postgresDatabase: clair
 # resources:
 #  requests:
 #    memory: 256Mi
@@ -280,3 +275,13 @@ clair:
 #
 notary:
   enabled: false
+
+## Settings for postgresql dependency.
+## see https://github.com/kubernetes/charts/tree/master/stable/postgresql
+## for further configurables.
+postgresql:
+  postgresUser: clair
+  postgresPassword: not-a-secure-password
+  postgresDatabase: clair
+  persistence:
+    enabled: false

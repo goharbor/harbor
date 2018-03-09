@@ -154,8 +154,8 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `clair.enabled` | Enable clair? | `true` |
 | `clair.image.repository` | Repository for clair image | `vmware/clair-photon` |
 | `clair.image.tag` | Tag for clair image | `v2.0.1-v1.4.0`
-| `clair.postgresPassword` | password for clair postgres | see values.yaml |
-| `clair.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined | `clair.pgResources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
+| `clair.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined
+| `postgresql` | Overrides for postgresql chart [values.yaml](https://github.com/kubernetes/charts/blob/f2938a46e3ae8e2512ede1142465004094c3c333/stable/postgresql/values.yaml) | see values.yaml
 | | | |
 
 

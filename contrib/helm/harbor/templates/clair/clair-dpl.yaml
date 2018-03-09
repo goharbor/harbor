@@ -34,7 +34,7 @@ spec:
       volumes:
       - name: clair-config
         configMap:
-          name: "{{ template "harbor.fullname" . }}"
+          name: "{{ template "harbor.fullname" . }}-clair"
           items:
             - key: config.yaml
               path: config.yaml
