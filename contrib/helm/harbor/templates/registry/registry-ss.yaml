@@ -3,19 +3,19 @@ kind: StatefulSet
 metadata:
   name: "{{ template "harbor.fullname" . }}-registry"
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
     component: registry
 spec:
   replicas: 1
   serviceName: "{{ template "harbor.fullname" . }}-registry"
   selector:
     matchLabels:
-{{ include "helm.matchLabels" . | indent 6 }}
+{{ include "harbor.matchLabels" . | indent 6 }}
       component: registry
   template:
     metadata:
       labels:
-{{ include "helm.labels" . | indent 8 }}
+{{ include "harbor.labels" . | indent 8 }}
         component: registry
     spec:
       containers:
@@ -61,8 +61,8 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: "registry-data"
-      labels:
-        {{ include "helm.labels" . | indent 8 }}
+       labels:
+{{ include "harbor.labels" . | indent 8 }}
     spec:
       accessModes: [{{ .Values.registry.volumes.data.accessMode | quote }}]
       {{- if .Values.registry.volumes.data.storageClass }}
