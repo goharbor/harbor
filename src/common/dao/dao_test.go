@@ -121,11 +121,13 @@ func cleanByUser(username string) {
 
 const username string = "Tester01"
 const password string = "Abc12345"
+const email string = "tester01@vmware.com"
 const projectName string = "test_project"
 const repositoryName string = "test_repository"
 const repoTag string = "test1.1"
 const repoTag2 string = "test1.2"
-const SysAdmin int = 1
+const hasAdminRole int = 1
+const sysAdmin int = 1
 const projectAdmin int = 2
 const developer int = 3
 const guest int = 4
@@ -179,8 +181,9 @@ func TestRegister(t *testing.T) {
 
 	user := models.User{
 		Username: username,
-		Email:    "tester01@vmware.com",
+		Email:    email,
 		Password: password,
+		HasAdminRole: hasAdminRole,
 		Realname: "tester01",
 		Comment:  "register",
 	}
@@ -202,8 +205,8 @@ func TestRegister(t *testing.T) {
 	if newUser.Username != username {
 		t.Errorf("Username does not match, expected: %s, actual: %s", username, newUser.Username)
 	}
-	if newUser.Email != "tester01@vmware.com" {
-		t.Errorf("Email does not match, expected: %s, actual: %s", "tester01@vmware.com", newUser.Email)
+	if newUser.Email != email {
+		t.Errorf("Email does not match, expected: %s, actual: %s", email, newUser.Email)
 	}
 }
 
@@ -345,14 +348,37 @@ func TestListUsers(t *testing.T) {
 		t.Errorf("Error occurred in ListUsers: %v", err)
 	}
 	if len(users) != 1 {
-		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
+		t.Errorf("Expect one user in list, but the actual length is %d, the list: %+v", len(users), users)
 	}
 	users2, err := ListUsers(&models.UserQuery{Username: username})
 	if len(users2) != 1 {
-		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
+		t.Errorf("Expect one user in list, but the actual length is %d, the list: %+v", len(users), users)
 	}
 	if users2[0].Username != username {
 		t.Errorf("The username in result list does not match, expected: %s, actual: %s", username, users2[0].Username)
+	}
+
+	users3, err := ListUsers(&models.UserQuery{Email: email})
+	if len(users3) != 1 {
+		t.Errorf("Expect one user in list, but the actual length is %d, the list: %+v", len(users3), users3)
+	}
+	if users3[0].Email != email {
+		t.Errorf("The email in result list does not match, expected: %s, actual: %s", email, users3[0].Email)
+	}
+
+	hasAdminRole1 := hasAdminRole
+	users4, err := ListUsers(&models.UserQuery{HasAdminRole: &hasAdminRole1})
+	if len(users4) != 1 {
+		t.Errorf("Expect one user in list, but the actual length is %d, the list: %+v", len(users4), users4)
+	}
+	if users4[0].HasAdminRole != hasAdminRole1 {
+		t.Errorf("The has_admin_role in result list does not match, expected: %d, actual: %d", hasAdminRole1, users4[0].HasAdminRole)
+	}
+
+	hasAdminRole2 := 0
+	users5, err := ListUsers(&models.UserQuery{HasAdminRole: &hasAdminRole2})
+	if len(users5) != 0 {
+		t.Errorf("Expect empty user in list, but the actual length is %d, the list: %+v", len(users5), users5)
 	}
 }
 
@@ -375,7 +401,7 @@ func TestResetUserPassword(t *testing.T) {
 	}
 
 	if loginedUser.Username != username {
-		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
+		t.Errorf("The username returned by Login does not match, expected: %s, actual: %s", username, loginedUser.Username)
 	}
 }
 
@@ -397,7 +423,7 @@ func TestChangeUserPassword(t *testing.T) {
 	}
 
 	if loginedUser.Username != username {
-		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
+		t.Errorf("The username returned by Login does not match, expected: %s, actual: %s", username, loginedUser.Username)
 	}
 }
 
@@ -418,7 +444,7 @@ func TestChangeUserPasswordWithOldPassword(t *testing.T) {
 		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
 	if loginedUser.Username != username {
-		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
+		t.Errorf("The username returned by Login does not match, expected: %s, actual: %s", username, loginedUser.Username)
 	}
 }
 
@@ -432,7 +458,7 @@ func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
 		t.Errorf("Error occurred in LoginByDb: %v", err)
 	}
 	if loginedUser != nil {
-		t.Errorf("The login user is not nil, acutal: %+v", loginedUser)
+		t.Errorf("The login user is not nil, actual: %+v", loginedUser)
 	}
 }
 
@@ -741,7 +767,7 @@ func TestUpdateProjectMember(t *testing.T) {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}
 	if roles[0].Name != "guest" {
-		t.Errorf("The user with ID 1 is not guest role after update, the acutal role: %s", roles[0].Name)
+		t.Errorf("The user with ID 1 is not guest role after update, the actual role: %s", roles[0].Name)
 	}
 
 }
@@ -816,13 +842,13 @@ func TestChangeUserProfile(t *testing.T) {
 	}
 	if loginedUser != nil {
 		if loginedUser.Email != username+"@163.com" {
-			t.Errorf("user email does not update, expected: %s, acutal: %s", username+"@163.com", loginedUser.Email)
+			t.Errorf("user email does not update, expected: %s, actual: %s", username+"@163.com", loginedUser.Email)
 		}
 		if loginedUser.Realname != "test" {
-			t.Errorf("user realname does not update, expected: %s, acutal: %s", "test", loginedUser.Realname)
+			t.Errorf("user realname does not update, expected: %s, actual: %s", "test", loginedUser.Realname)
 		}
 		if loginedUser.Comment != "Unit Test" {
-			t.Errorf("user email does not update, expected: %s, acutal: %s", "Unit Test", loginedUser.Comment)
+			t.Errorf("user email does not update, expected: %s, actual: %s", "Unit Test", loginedUser.Comment)
 		}
 	}
 }

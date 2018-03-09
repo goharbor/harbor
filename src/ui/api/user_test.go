@@ -15,10 +15,11 @@ package api
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/tests/apitests/apilib"
-	"testing"
 
 	"github.com/astaxie/beego"
 )
@@ -196,6 +197,36 @@ func TestUsersGet(t *testing.T) {
 		assert.Equal(1, len(users), "Get users record should be 1 ")
 		testUser0002ID = users[0].UserId
 	}
+}
+
+func TestUsersGetByAdminRole(t *testing.T) {
+
+	fmt.Println("Testing User GetByAdminRole")
+	assert := assert.New(t)
+	apiTest := newHarborAPI()
+
+	testUser0002.Username = "testUser0002"
+	//case 1: Get user2 with common auth, but no userid in path, expect 403
+
+	testUser0002Auth = &usrInfo{"testUser0002", "testUser0002"}
+	code, users, err := apiTest.UsersGetByAdminRole(testUser0002.Username, *testUser0002Auth, 0)
+	if err != nil {
+		t.Error("Error occured while get users", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(403, code, "Get users status should be 403")
+	}
+	//case 2: Get user2 with admin auth, expect 200
+	code, users, err = apiTest.UsersGetByAdminRole(testUser0002.Username, *admin, 0)
+	if err != nil {
+		t.Error("Error occured while get users", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(200, code, "Get users status should be 200")
+		assert.Equal(1, len(users), "Get users record should be 1 ")
+		testUser0002ID = users[0].UserId
+	}
+
 }
 
 func TestUsersGetByID(t *testing.T) {
