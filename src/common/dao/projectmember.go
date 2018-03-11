@@ -71,6 +71,16 @@ func DeleteProjectMember(projectID int64, userID int, entityType string) error {
 	return nil
 }
 
+// DeleteProjectMemberByID - Delete Project Member by ID
+func DeleteProjectMemberByID(pmid int) error {
+	o := GetOrmer()
+	sql := "delete from project_member where id = ?"
+	if _, err := o.Raw(sql, pmid).Exec(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetUserByProject gets all members of the project.
 func GetUserByProject(projectID int64, queryUser models.User) ([]*models.UserMember, error) {
 	o := GetOrmer()

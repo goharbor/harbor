@@ -27,12 +27,21 @@ type LdapConf struct {
 	LdapVerifyCert        bool   `json:"ldap_verify_cert"`
 }
 
+// LdapGroupConf holds information about ldap group
+type LdapGroupConf struct {
+	LdapGroupBaseDN        string `json:"ldap_group_base_dn,omitempty"`
+	LdapGroupFilter        string `json:"ldap_group_filter,omitempty"`
+	LdapGroupNameAttribute string `json:"ldap_group_name_attribute,omitempty"`
+	LdapGroupSearchScope   int    `json:"ldap_group_search_scope"`
+}
+
 // LdapUser ...
 type LdapUser struct {
-	Username string `json:"ldap_username"`
-	Email    string `json:"ldap_email"`
-	Realname string `json:"ldap_realname"`
-	DN       string `json:"-"`
+	Username    string   `json:"ldap_username"`
+	Email       string   `json:"ldap_email"`
+	Realname    string   `json:"ldap_realname"`
+	DN          string   `json:"-"`
+	GroupDNList []string `json:"ldap_groupdn"`
 }
 
 //LdapImportUser ...
@@ -44,4 +53,10 @@ type LdapImportUser struct {
 type LdapFailedImportUser struct {
 	UID   string `json:"uid"`
 	Error string `json:"err_msg"`
+}
+
+// LdapGroup ...
+type LdapGroup struct {
+	GroupName string `json:"group_name,omitempty"`
+	GroupDN   string `json:"group_dn,omitempty"`
 }

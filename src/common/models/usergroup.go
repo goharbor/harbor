@@ -14,25 +14,18 @@
 
 package models
 
-import (
-	"github.com/astaxie/beego/orm"
-)
+// UserGroupTable is the name of table in DB that holds the user object
+const UserGroupTable = "user_group"
 
-func init() {
-	orm.RegisterModel(new(RepTarget),
-		new(RepPolicy),
-		new(RepJob),
-		new(User),
-		new(Project),
-		new(Role),
-		new(AccessLog),
-		new(ScanJob),
-		new(RepoRecord),
-		new(ImgScanOverview),
-		new(ClairVulnTimestamp),
-		new(WatchItem),
-		new(ProjectMetadata),
-		new(ConfigEntry),
-		new(Label),
-		new(UserGroup))
+// UserGroup ...
+type UserGroup struct {
+	ID            int    `orm:"pk;auto;column(id)" json:"id,omitempty"`
+	GroupName     string `orm:"column(group_name)" json:"group_name,omitempty"`
+	GroupType     int    `orm:"column(group_type)" json:"group_type,omitempty"`
+	GroupProperty string `orm:"column(group_property)" json:"group_property,omitempty"`
+}
+
+// TableName ...
+func (u *UserGroup) TableName() string {
+	return UserGroupTable
 }
