@@ -152,6 +152,13 @@ var (
 	repeatLoadEnvs = map[string]interface{}{
 		common.ExtEndpoint:   "EXT_ENDPOINT",
 		common.MySQLPassword: "MYSQL_PWD",
+        common.MySQLHost:     "MYSQL_HOST",
+		common.MySQLUsername: "MYSQL_USR",
+		common.MySQLDatabase: "MYSQL_DATABASE",
+		common.MySQLPort: &parser{
+			env:   "MYSQL_PORT",
+			parse: parseStringToInt,
+		},
 		common.MaxJobWorkers: &parser{
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
@@ -170,6 +177,12 @@ var (
 			parse: parseStringToBool,
 		},
 		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
+		common.ClairDBHost:     "CLAIR_DB_HOST",
+		common.ClairDBUsername: "CLAIR_DB_USERNAME",
+		common.ClairDBPort:  &parser{
+			env: "CLAIR_DB_PORT",
+			parse: parseStringToInt,
+		},
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
