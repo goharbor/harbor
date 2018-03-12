@@ -17,9 +17,11 @@ pipeline:
       SHELL: /bin/bash
     secrets:
       - github_automation_api_key
+      - skip_check_membership
     commands:
       - echo ${DRONE_COMMIT_AUTHOR}
-      - /bin/bash -c '[[ ! $(curl --silent "https://api.github.com/orgs/vmware/members/${DRONE_COMMIT_AUTHOR}?access_token=$GITHUB_AUTOMATION_API_KEY") ]]'
+      - echo $SKIP_CHECK_MEMBERSHIP
+      - if $SKIP_CHECK_MEMBERSHIP == true; then echo 'check-org-membership step skipped'; else /bin/bash -c '[[ ! $(curl --silent "https://api.github.com/orgs/vmware/members/${DRONE_COMMIT_AUTHOR}?access_token=$GITHUB_AUTOMATION_API_KEY") ]]'; fi
     when:
       status: success
 
