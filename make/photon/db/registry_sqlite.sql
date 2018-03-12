@@ -261,6 +261,21 @@ create table harbor_label (
  UNIQUE(name, scope)
  );
 
+create table harbor_resource_label (
+ id INTEGER PRIMARY KEY,
+ label_id int NOT NULL,
+ resource_id varchar(256) NOT NULL,
+/*
+ 'p' for project
+ 'r' for repository
+ 'i' for image
+*/
+ resource_type char(1) NOT NULL,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP,
+ UNIQUE (label_id,resource_id, resource_type)
+ );
+
 create table alembic_version (
     version_num varchar(32) NOT NULL
 );

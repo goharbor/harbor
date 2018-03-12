@@ -35,7 +35,7 @@ type Label struct {
 	UpdateTime   time.Time `orm:"column(update_time)" json:"update_time"`
 }
 
-//TableName ...
+// TableName ...
 func (l *Label) TableName() string {
 	return "harbor_label"
 }
@@ -65,30 +65,17 @@ func (l *Label) Valid(v *validation.Validation) {
 	}
 }
 
-/*
+// ResourceLabel records the relationship between resource and label
 type ResourceLabel struct {
-	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
-	LabelID      int64     `orm:"column(label_id)" json:"label_id"`
-	ResourceID   string    `orm:"column(resource_id)" json:"resource_id"`
-	ResourceType rune      `orm:"column(resource_type)" json:"resource_type"`
-	CreationTime time.Time `orm:"column(creation_time)" json:"creation_time"`
-	UpdateTime   time.Time `orm:"column(update_time)" json:"update_time"`
+	ID           int64     `orm:"pk;auto;column(id)"`
+	LabelID      int64     `orm:"column(label_id)"`
+	ResourceID   string    `orm:"column(resource_id)"`
+	ResourceType string    `orm:"column(resource_type)"`
+	CreationTime time.Time `orm:"column(creation_time)"`
+	UpdateTime   time.Time `orm:"column(update_time)"`
 }
 
-
-// Valid ...
-func (r *ResourceLabel) Valid(v *validation.Validation) {
-	if r.LabelID <= 0 {
-		v.SetError("label_id", fmt.Sprintf("invalid: %d", r.LabelID))
-	}
-	// TODO
-	//if r.ResourceID <= 0 {
-	//	v.SetError("resource_id", fmt.Sprintf("invalid: %v", r.ResourceID))
-	//}
-	if r.ResourceType != common.ResourceTypeProject &&
-		r.ResourceType != common.ResourceTypeRepository &&
-		r.ResourceType != common.ResourceTypeImage {
-		v.SetError("resource_type", fmt.Sprintf("invalid: %d", r.ResourceType))
-	}
+// TableName ...
+func (r *ResourceLabel) TableName() string {
+	return "harbor_resource_label"
 }
-*/

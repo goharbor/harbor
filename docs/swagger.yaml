@@ -995,6 +995,82 @@ paths:
           description: Forbidden.
         '404':
           description: Repository not found.
+  '/repositories/{repo_name}/labels':
+    get:
+      summary: Get labels of a repository.
+      description: |
+        Get labels of a repository specified by the repo_name.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Successfully.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Repository not found.
+    post:
+      summary: Add a label to the repository.
+      description: |
+        Add a label to the repository.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository.
+        - name: label
+          in: body
+          description: Only the ID property is required.
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Successfully.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Resource not found.
+  '/repositories/{repo_name}/labels/{label_id}':
+    delete:
+      summary: Delete label from the repository.
+      description: |
+        Delete the label from the repository specified by the repo_name.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository.
+        - name: label_id
+          in: path
+          type: integer
+          required: true
+          description: The ID of label.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Successfully.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Resource not found.
   '/repositories/{repo_name}/tags/{tag}':
     get:
       summary: Get the tag of the repository.
@@ -1075,6 +1151,97 @@ paths:
               $ref: '#/definitions/DetailedTag'
         '500':
           description: Unexpected internal errors.
+  '/repositories/{repo_name}/tags/{tag}/labels':
+    get:
+      summary: Get labels of an image.
+      description: |
+        Get labels of an image specified by the repo_name and tag.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository.
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: The tag of the image.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Successfully.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Resource not found.
+    post:
+      summary: Add a label to image.
+      description: |
+        Add a label to the image.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository.
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: The tag of the image.
+        - name: label
+          in: body
+          description: Only the ID property is required.
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Successfully.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Resource not found.
+  '/repositories/{repo_name}/tags/{tag}/labels/{label_id}':
+    delete:
+      summary: Delete label from the image.
+      description: |
+        Delete the label from the image specified by the repo_name and tag.
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: The name of repository.
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: The tag of the image.
+        - name: label_id
+          in: path
+          type: integer
+          required: true
+          description: The ID of label.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Successfully.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Resource not found.
   '/repositories/{repo_name}/tags/{tag}/manifest':
     get:
       summary: Get manifests of a relevant repository.
@@ -3039,6 +3206,11 @@ definitions:
                 type: array
                 items:
                   $ref: '#/definitions/ComponentOverviewEntry'
+      labels:
+        type: array
+        description: The label list.
+        items:
+          $ref: '#/definitions/Label'
   ComponentOverviewEntry:
     type: object
     properties:
@@ -3072,6 +3244,11 @@ definitions:
       tags_count:
         type: integer
         description: The tags count of repository.
+      labels:
+        type: array
+        description: The label list.
+        items:
+          $ref: '#/definitions/Label'
       creation_time:
         type: string
         description: The creation time of repository.
