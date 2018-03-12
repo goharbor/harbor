@@ -19,7 +19,7 @@ import (
 )
 
 // UserTable is the name of table in DB that holds the user object
-const UserTable = "user"
+const UserTable = "harbor_user"
 
 // User holds the details of a user.
 type User struct {

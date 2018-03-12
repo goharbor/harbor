@@ -33,21 +33,21 @@ var repJobID, scanJobID int64
 func TestMain(m *testing.M) {
 	//Init config...
 	conf := test.GetDefaultConfigMap()
-	if len(os.Getenv("MYSQL_HOST")) > 0 {
-		conf[common.MySQLHost] = os.Getenv("MYSQL_HOST")
+	if len(os.Getenv("POSTGRESQL_HOST")) > 0 {
+		conf[common.PostGreSQLHOST] = os.Getenv("POSTGRESQL_HOST")
 	}
-	if len(os.Getenv("MYSQL_PORT")) > 0 {
-		p, err := strconv.Atoi(os.Getenv("MYSQL_PORT"))
+	if len(os.Getenv("POSTGRESQL_PORT")) > 0 {
+		p, err := strconv.Atoi(os.Getenv("POSTGRESQL_PORT"))
 		if err != nil {
 			panic(err)
 		}
-		conf[common.MySQLPort] = p
+		conf[common.PostGreSQLPort] = p
 	}
-	if len(os.Getenv("MYSQL_USR")) > 0 {
-		conf[common.MySQLUsername] = os.Getenv("MYSQL_USR")
+	if len(os.Getenv("POSTGRESQL_USR")) > 0 {
+		conf[common.PostGreSQLUsername] = os.Getenv("POSTGRESQL_USR")
 	}
-	if len(os.Getenv("MYSQL_PWD")) > 0 {
-		conf[common.MySQLPassword] = os.Getenv("MYSQL_PWD")
+	if len(os.Getenv("POSTGRESQL_PWD")) > 0 {
+		conf[common.PostGreSQLPassword] = os.Getenv("POSTGRESQL_PWD")
 	}
 
 	server, err := test.NewAdminserver(conf)

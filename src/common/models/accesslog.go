@@ -25,7 +25,7 @@ type AccessLog struct {
 	ProjectID int64     `orm:"column(project_id)"  json:"project_id"`
 	RepoName  string    `orm:"column(repo_name)" json:"repo_name"`
 	RepoTag   string    `orm:"column(repo_tag)" json:"repo_tag"`
-	GUID      string    `orm:"column(GUID)"  json:"guid"`
+	GUID      string    `orm:"column(guid)"  json:"guid"`
 	Operation string    `orm:"column(operation)" json:"operation"`
 	OpTime    time.Time `orm:"column(op_time)" json:"op_time"`
 }

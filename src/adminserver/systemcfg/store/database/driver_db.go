@@ -35,10 +35,10 @@ var (
 		common.LDAPScope:       true,
 		common.LDAPTimeout:     true,
 		common.TokenExpiration: true,
-		common.MySQLPort:       true,
 		common.MaxJobWorkers:   true,
 		common.CfgExpiration:   true,
 		common.ClairDBPort:     true,
+		common.PostGreSQLPort:  true,
 	}
 	boolKeys = map[string]bool{
 		common.WithClair:        true,

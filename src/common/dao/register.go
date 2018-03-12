@@ -24,27 +24,21 @@ import (
 
 // Register is used for user to register, the password is encrypted before the record is inserted into database.
 func Register(user models.User) (int64, error) {
+
 	o := GetOrmer()
-	p, err := o.Raw("insert into user (username, password, realname, email, comment, salt, sysadmin_flag, creation_time, update_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?)").Prepare()
-	if err != nil {
-		return 0, err
-	}
-	defer p.Close()
-
-	salt := utils.GenerateRandomString()
-
 	now := time.Now()
-	r, err := p.Exec(user.Username, utils.Encrypt(user.Password, salt), user.Realname, user.Email, user.Comment, salt, user.HasAdminRole, now, now)
-
+	salt := utils.GenerateRandomString()
+	sql := `insert into harbor_user
+				(username, password, realname, email, comment, salt, sysadmin_flag, creation_time, update_time)
+				 values (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING user_id`
+	var userID int64
+	err := o.Raw(sql, user.Username, utils.Encrypt(user.Password, salt), user.Realname, user.Email,
+		user.Comment, salt, user.HasAdminRole, now, now).QueryRow(&userID)
 	if err != nil {
 		return 0, err
 	}
-	userID, err := r.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
 	return userID, nil
+
 }
 
 // UserExists returns whether a user exists according username or Email.
@@ -56,7 +50,7 @@ func UserExists(user models.User, target string) (bool, error) {
 
 	o := GetOrmer()
 
-	sql := `select user_id from user where 1=1 `
+	sql := `select user_id from harbor_user where 1=1 `
 	queryParam := make([]interface{}, 1)
 
 	switch target {

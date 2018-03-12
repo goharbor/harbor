@@ -50,7 +50,7 @@ func TestDeleteUser(t *testing.T) {
 	}
 
 	user := &models.User{}
-	sql := "select * from user where user_id = ?"
+	sql := "select * from harbor_user where user_id = ?"
 	if err = GetOrmer().Raw(sql, id).
 		QueryRow(user); err != nil {
 		t.Fatalf("failed to query user: %v", err)

@@ -20,23 +20,19 @@ import (
 )
 
 // AddProjectMember inserts a record to table project_member
-func AddProjectMember(projectID int64, userID int, role int, entityType string) (int, error) {
+func AddProjectMember(projectID int64, userID int, role int, entityType string) (int64, error) {
 	o := GetOrmer()
 	if !(entityType == common.UserMember || entityType == common.GroupMember) {
 		entityType = common.UserMember
 	}
-	sql := `insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?)`
-	_, err := o.Raw(sql, projectID, userID, role, entityType).Exec()
-	if err != nil {
-		return 0, err
-	}
-	var pmid int
-	querySQL := `select id from project_member where project_id = ? and entity_id = ? and entity_type = ? limit 1`
 
-	err = o.Raw(querySQL, projectID, userID, entityType).QueryRow(&pmid)
+	var pmid int64
+	sql := `insert into project_member (project_id, entity_id, role, entity_type) values (?, ?, ?, ?) RETURNING id`
+	err := o.Raw(sql, projectID, userID, role, entityType).QueryRow(&pmid)
 	if err != nil {
 		return 0, err
 	}
+
 	return pmid, err
 }
 
@@ -75,7 +71,7 @@ func DeleteProjectMember(projectID int64, userID int, entityType string) error {
 func GetUserByProject(projectID int64, queryUser models.User) ([]*models.UserMember, error) {
 	o := GetOrmer()
 	sql := `select pm.id as id, u.user_id, u.username, u.creation_time, u.update_time, r.name as rolename, 
-		r.role_id as role, pm.entity_type as entity_type from user u join project_member pm 
+		r.role_id as role, pm.entity_type as entity_type from harbor_user u join project_member pm 
 		on pm.project_id = ? and u.user_id = pm.entity_id 
 		join role r on pm.role = r.role_id where u.deleted = 0 and pm.entity_type = 'u' `
 

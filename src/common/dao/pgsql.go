@@ -24,7 +24,7 @@ import (
 
 type pgsql struct {
 	host     string
-	port     int
+	port     string
 	usr      string
 	pwd      string
 	database string
@@ -47,13 +47,25 @@ func (p *pgsql) Name() string {
 
 // String ...
 func (p *pgsql) String() string {
-	return fmt.Sprintf("type-%s host-%s port-%d databse-%s sslmode-%q",
+	return fmt.Sprintf("type-%s host-%s port-%s databse-%s sslmode-%q",
 		p.Name(), p.host, p.port, p.database, pgsqlSSLMode(p.sslmode))
+}
+
+// NewPQSQL returns an instance of postgres
+func NewPQSQL(host string, port string, usr string, pwd string, database string, sslmode bool) Database {
+	return &pgsql{
+		host:     host,
+		port:     port,
+		usr:      usr,
+		pwd:      pwd,
+		database: database,
+		sslmode:  sslmode,
+	}
 }
 
 //Register registers pgSQL to orm with the info wrapped by the instance.
 func (p *pgsql) Register(alias ...string) error {
-	if err := utils.TestTCPConn(fmt.Sprintf("%s:%d", p.host, p.port), 60, 2); err != nil {
+	if err := utils.TestTCPConn(fmt.Sprintf("%s:%s", p.host, p.port), 60, 2); err != nil {
 		return err
 	}
 
@@ -65,7 +77,7 @@ func (p *pgsql) Register(alias ...string) error {
 	if len(alias) != 0 {
 		an = alias[0]
 	}
-	info := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		p.host, p.port, p.usr, p.pwd, p.database, pgsqlSSLMode(p.sslmode))
 
 	return orm.RegisterDataBase(an, "postgres", info)

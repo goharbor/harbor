@@ -29,15 +29,14 @@ import (
 )
 
 var adminServerTestConfig = map[string]interface{}{
-	common.ExtEndpoint:   "host01.com",
-	common.AUTHMode:      "db_auth",
-	common.DatabaseType:  "mysql",
-	common.MySQLHost:     "127.0.0.1",
-	common.MySQLPort:     3306,
-	common.MySQLUsername: "root",
-	common.MySQLPassword: "root123",
-	common.MySQLDatabase: "registry",
-	common.SQLiteFile:    "/tmp/registry.db",
+	common.ExtEndpoint:        "host01.com",
+	common.AUTHMode:           "db_auth",
+	common.DatabaseType:       "postgresql",
+	common.PostGreSQLHOST:     "127.0.0.1",
+	common.PostGreSQLPort:     5432,
+	common.PostGreSQLUsername: "postgres",
+	common.PostGreSQLPassword: "root123",
+	common.PostGreSQLDatabase: "registry",
 	//config.SelfRegistration: true,
 	common.LDAPURL:       "ldap://127.0.0.1",
 	common.LDAPSearchDN:  "cn=admin,dc=example,dc=com",

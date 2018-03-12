@@ -13,11 +13,11 @@ services:
 dist: trusty
 
 env:
-  MYSQL_HOST: localhost
-  MYSQL_PORT: 3306 
-  MYSQL_USR: root 
-  MYSQL_PWD: root123
-  MYSQL_DATABASE: registry
+  POSTGRESQL_HOST: localhost
+  POSTGRESQL_PORT: 5432 
+  POSTGRESQL_USR: postgres 
+  POSTGRESQL_PWD: root123
+  POSTGRESQL_DATABASE: registry
   SQLITE_FILE: /tmp/registry.db
   ADMINSERVER_URL: http://127.0.0.1:8888
   DOCKER_COMPOSE_VERSION: 1.7.1
@@ -51,7 +51,7 @@ install:
 #  - mysql --version
   - go get -d github.com/docker/distribution
   - go get -d github.com/docker/libtrust
-  - go get -d github.com/go-sql-driver/mysql
+  - go get -d github.com/lib/pq
   - go get github.com/golang/lint/golint
   - go get github.com/GeertJohan/fgt
 
@@ -78,12 +78,11 @@ script:
   - sudo mv ./tests/ca.crt /etc/ui/ca/
   - sudo mkdir -p /harbor
   - sudo mv ./VERSION /harbor/VERSION
-  - sudo service mysql stop
+  - sudo service postgresql stop
   - sudo make run_clarity_ut CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0
   - cat ./src/ui_ng/lib/npm-ut-test-results
   - sudo ./tests/testprepare.sh 
-  - sudo make -f make/photon/Makefile -e MARIADBVERSION=10.2.10 -e VERSIONTAG=dev
-  - sudo make -f make/photon/Makefile _build_registry -e REGISTRYVERSION=v2.6.2 -e VERSIONTAG=dev
+  - sudo make -f make/photon/Makefile _build_postgresql _build_db _build_registry -e VERSIONTAG=dev -e CLAIRDBVERSION=dev -e REGISTRYVERSION=v2.6.2
   - sudo sed -i 's/__reg_version__/v2.6.2-dev/g' ./make/docker-compose.test.yml
   - sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
   - sudo mkdir -p ./make/common/config/registry/
@@ -91,7 +90,7 @@ script:
   - sudo docker-compose -f ./make/docker-compose.test.yml up -d
   - go list ./... | grep -v -E 'vendor|tests|test' | xargs -L1 fgt golint
   - go list ./... | grep -v -E 'vendor|tests|test' | xargs -L1 go vet
-  - export MYSQL_HOST=$IP
+  - export POSTGRESQL_HOST=$IP
   - export REGISTRY_URL=$IP:5000
   - echo $REGISTRY_URL
   - ./tests/pushimage.sh
@@ -103,9 +102,8 @@ script:
   - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
   - docker-compose -f make/docker-compose.test.yml down
-  - sudo rm -rf /data/config/*
-  - sudo rm -rf /data/database/*
-  - ls /data/cert
+  - sudo rm -rf /data
+  - sudo ./tests/generateCerts.sh
   - sudo make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0 NOTARYFLAG=true CLAIRFLAG=true
   - sleep 10  
   - docker ps 
