@@ -195,13 +195,6 @@ Expand Repo
     Click Element  //repository//clr-dg-row[contains(.,'${projectname}')]//button/clr-icon
     Sleep  1
 
-Scan Repo
-    [Arguments]  ${tagname}
-    #select one tag
-    Click Element  //clr-dg-row[contains(.,"${tagname}")]//label
-    Click Element  //button[contains(.,'Scan')]
-    Sleep  15
-
 Edit Repo Info
     Click Element  //*[@id="repo-info"]
     Sleep  1
@@ -222,6 +215,4 @@ Edit Repo Info
     Page Should Contain  test_description_info
     Capture Page Screenshot  RepoInfo.png
 
-Summary Chart Should Display
-    [Arguments]  ${tagname}
-    Page Should Contain Element  //clr-dg-row[contains(.,'${tagname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
+
