@@ -102,9 +102,8 @@ script:
   - sudo -E env "PATH=$PATH" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
   - docker-compose -f make/docker-compose.test.yml down
-  - sudo rm -rf /data/config/*
-  - sudo rm -rf /data/database/*
-  - ls /data/cert
+  - sudo rm -rf /data
+  - sudo ./tests/generateCerts.sh
   - sudo make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0 NOTARYFLAG=true CLAIRFLAG=true
   - sleep 10  
   - docker ps 
