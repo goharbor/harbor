@@ -249,6 +249,9 @@ clair:
     repository: vmware/clair-photon
     tag: v2.0.1-v1.4.0
     pullPolicy: IfNotPresent
+## The following needs to match the credentials
+## in the `postgresql` configuration under the
+## `postgresql` namespace below.
   postgresPassword: not-a-secure-password
   postgresUser: clair
   postgresDatabase: clair
