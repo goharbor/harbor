@@ -133,8 +133,6 @@ watchRepoClickEvent(repo: RepositoryItem): void {
 
 **hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
 
-**withVIC** is integrated with VIC
-
 **repoClickEvent** is an @output event emitter for you to catch the repository click events.
 
 **repoProvisionEvent** is an @output event emitter for you to catch the deploy button click event.
@@ -145,6 +143,35 @@ watchRepoClickEvent(repo: RepositoryItem): void {
   @Output() addInfoEvent = new EventEmitter<RepositoryItem>();
 
 
+**hbr-repository Directive**
+
+**projectId** is used to specify which projects the repositories are from.
+
+**repoName** is used to generate the related commands for pushing images.
+
+**hasSignedIn** is a user session related property to determined whether a valid user signed in session existing. This component supports anonymous user.
+
+**hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
+
+**withClair** is Clair installed
+
+**withNotary** is Notary installed
+
+**tagClickEvent** is an @output event emitter for you to catch the tag click events.
+
+**goBackClickEvent** is an @output event emitter for you to catch the go back events.
+
+```
+<hbr-repository [projectId]="" [repoName]="" [hasSignedIn]="" [hasProjectAdminRole]=""  [withClair]="" [withNotary]=""
+(tagClickEvent)="watchTagClickEvt($event)" (backEvt)="watchGoBackEvt($event)" ></hbr-repository>
+
+watchTagClickEvt(tagEvt: TagClickEvent): void {
+    ...
+}
+
+watchGoBackEvt(projectId: string): void {
+    ...
+}
 ```
 <hbr-repository-gridview [projectId]="" [projectName]="" [hasSignedIn]="" [hasProjectAdminRole]="" 
 (repoClickEvent)="watchRepoClickEvent($event)"
