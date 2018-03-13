@@ -32,3 +32,13 @@ type UserMember struct {
 	Rolename string `json:"role_name"`
 	Role     int    `json:"role_id"`
 }
+
+// MemberReq -  Create Project Member Request
+type MemberReq struct {
+	ProjectID    int64  `orm:"column(project_id)" json:"project_id"`
+	Role         int    `json:"role_id,omitempty"`
+	EntityID     int    `json:"entity_id,omitempty"`
+	EntityType   string `json:"entity_type,omitempty"`
+	LdapUserName string `json:"ldap_user_name,omitempty"`
+	LdapGroupDN  string `json:"ldap_group_dn,omitempty"`
+}
