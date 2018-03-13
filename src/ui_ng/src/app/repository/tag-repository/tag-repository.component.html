@@ -1,3 +1,6 @@
 <div>
-    <hbr-repository (tagClickEvent)="watchTagClickEvt($event)" (backEvt)="goBack($event)" [repoName]="repoName" [withClair]="withClair" [withNotary]="withNotary" [withAdmiral]="withAdmiral" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [isGuest]="isGuest" [projectId]="projectId"></hbr-repository>
+    <hbr-repository [repoName]="repoName"
+    [withClair]="withClair" [withNotary]="withNotary" [withAdmiral]="withAdmiral"
+    [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [projectId]="projectId" [isGuest]="isGuest"
+    (tagClickEvent)="watchTagClickEvt($event)" (backEvt)="watchGoBackEvt($event)" ></hbr-repository>
 </div>
