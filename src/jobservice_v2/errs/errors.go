@@ -69,3 +69,8 @@ func LaunchJobError(err error) error {
 type jobStoppedError struct {
 	baseError
 }
+
+//jobCancelledError is designed for the case of cancelling job.
+type jobCancelledError struct {
+	baseError
+}

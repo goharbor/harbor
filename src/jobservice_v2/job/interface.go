@@ -14,15 +14,28 @@ type Interface interface {
 	//ctx	Context: Job execution context.
 	SetContext(ctx Context)
 
-	//Pass arguments via this method if have.
+	//Pass parameters via this method if have.
 	//
-	//args	map[string]interface{}: arguments with key-pair style for the job execution.
-	SetArgs(args map[string]interface{})
+	//params	map[string]interface{}: parameters with key-pair style for the job execution.
+	SetParams(params map[string]interface{})
 
 	//Inject the func into the job for OP command check.
 	//
 	//f	CheckOPCmdFunc: check function reference.
 	SetCheckOPCmdFunc(f CheckOPCmdFunc)
+
+	//Declare how many times the job can be retried if failed.
+	//
+	//Return:
+	// uint: the failure count allowed
+	MaxFails() uint
+
+	//Indicate whether the job needs parameters or not
+	//
+	//Return:
+	// true if required (parameter will be pre-validated and 'SetParams' will be called)
+	// false if no parameters needed (no check and 'SetParams' will not be called)
+	ParamsRequired() bool
 
 	//Run the business logic here.
 	Run() error

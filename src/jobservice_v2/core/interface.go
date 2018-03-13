@@ -11,13 +11,12 @@ import (
 type Interface interface {
 	//LaunchJob is used to handle the job submission request.
 	//
-	//ctx	BaseContext: The context info for job execution
 	//req	JobRequest    : Job request contains related required information of queuing job.
 	//
 	//Returns:
 	//	JobStats: Job status info with ID and self link returned if job is successfully launched.
 	//  error   : Error returned if failed to launch the specified job.
-	LaunchJob(ctx BaseContext, req models.JobRequest) (models.JobStats, error)
+	LaunchJob(req models.JobRequest) (models.JobStats, error)
 
 	//GetJob is used to handle the job stats query request.
 	//
@@ -38,13 +37,12 @@ type Interface interface {
 
 	//RetryJob is used to handle the job retrying request.
 	//
-	//ctx	BaseContext: The context info for job execution
 	//jobID	string        : ID of job.
 	//
 	//Return:
 	//  error   : Error returned if failed to retry the specified job.
-	RetryJob(ctx BaseContext, jonID string) error
+	RetryJob(jonID string) error
 
 	//CheckStatus is used to handle the job service healthy status checking request.
-	CheckStatus() (models.JobServiceStats, error)
+	CheckStatus() (models.JobPoolStats, error)
 }

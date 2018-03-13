@@ -11,7 +11,7 @@ import (
 
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/config"
-	"github.com/vmware/harbor/src/jobservice_v2/core"
+	"github.com/vmware/harbor/src/jobservice_v2/env"
 )
 
 //Server serves the http requests.
@@ -26,7 +26,7 @@ type Server struct {
 	config ServerConfig
 
 	//The context
-	context core.BaseContext
+	context *env.Context
 }
 
 //ServerConfig contains the configurations of Server.
@@ -45,7 +45,7 @@ type ServerConfig struct {
 }
 
 //NewServer is constructor of Server.
-func NewServer(ctx core.BaseContext, router Router, cfg ServerConfig) *Server {
+func NewServer(ctx *env.Context, router Router, cfg ServerConfig) *Server {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Port),
 		Handler:      http.HandlerFunc(router.ServeHTTP),
@@ -82,6 +82,8 @@ func NewServer(ctx core.BaseContext, router Router, cfg ServerConfig) *Server {
 
 //Start the server to serve requests.
 func (s *Server) Start() {
+	s.context.WG.Add(1)
+
 	go func() {
 		var err error
 
@@ -97,7 +99,7 @@ func (s *Server) Start() {
 		}
 
 		if err != nil {
-			log.Errorf("API server error: %s\n", err)
+			s.context.ErrorChan <- err
 		}
 	}()
 }

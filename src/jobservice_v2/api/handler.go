@@ -30,14 +30,12 @@ type Handler interface {
 
 //DefaultHandler is the default request handler which implements the Handler interface.
 type DefaultHandler struct {
-	context    core.BaseContext
 	controller *core.Controller
 }
 
 //NewDefaultHandler is constructor of DefaultHandler.
-func NewDefaultHandler(ctx core.BaseContext, ctl *core.Controller) *DefaultHandler {
+func NewDefaultHandler(ctl *core.Controller) *DefaultHandler {
 	return &DefaultHandler{
-		context:    ctx,
 		controller: ctl,
 	}
 }
@@ -62,7 +60,7 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 	}
 
 	//Pass request to the controller for the follow-up.
-	jobStats, err := dh.controller.LaunchJob(dh.context, jobReq)
+	jobStats, err := dh.controller.LaunchJob(jobReq)
 	if err != nil {
 		dh.handleError(w, http.StatusInternalServerError, errs.LaunchJobError(err))
 		return

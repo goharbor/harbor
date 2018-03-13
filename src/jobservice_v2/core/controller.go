@@ -1,23 +1,68 @@
 package core
 
 import (
+	"errors"
+	"fmt"
+
+	"github.com/robfig/cron"
+	"github.com/vmware/harbor/src/jobservice_v2/job"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
+	"github.com/vmware/harbor/src/jobservice_v2/pool"
+	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
 
 //Controller implement the core interface and provides related job handle methods.
 //Controller will coordinate the lower components to complete the process as a commander role.
-type Controller struct{}
+type Controller struct {
+	//Refer the backend pool
+	backendPool pool.Interface
+}
 
 //NewController is constructor of Controller.
-func NewController() *Controller {
-	return &Controller{}
+func NewController(backendPool pool.Interface) *Controller {
+	return &Controller{
+		backendPool: backendPool,
+	}
 }
 
 //LaunchJob is implementation of same method in core interface.
-func (c *Controller) LaunchJob(ctx BaseContext, req models.JobRequest) (models.JobStats, error) {
-	return models.JobStats{
-		JobID: "111112222xxx",
-	}, nil
+func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
+	if err := validJobReq(req); err != nil {
+		return models.JobStats{}, err
+	}
+
+	paramsRequired, isKnownJob := c.backendPool.IsKnownJob(req.Job.Name)
+	if !isKnownJob {
+		return models.JobStats{}, fmt.Errorf("job with name '%s' is unknown", req.Job.Name)
+	}
+	if paramsRequired {
+		if req.Job.Parameters == nil || len(req.Job.Parameters) == 0 {
+			return models.JobStats{}, fmt.Errorf("'parameters' is required by job '%s'", req.Job.Name)
+		}
+	}
+
+	//Enqueue job regarding of the kind
+	var (
+		res models.JobStats
+		err error
+	)
+	switch req.Job.Metadata.JobKind {
+	case job.JobKindScheduled:
+		res, err = c.backendPool.Schedule(
+			req.Job.Name,
+			req.Job.Parameters,
+			req.Job.Metadata.ScheduleDelay,
+			req.Job.Metadata.IsUnique)
+	case job.JobKindPeriodic:
+		res, err = c.backendPool.PeriodicallyEnqueue(
+			req.Job.Name,
+			req.Job.Parameters,
+			req.Job.Metadata.Cron)
+	default:
+		res, err = c.backendPool.Enqueue(req.Job.Name, req.Job.Parameters, req.Job.Metadata.IsUnique)
+	}
+
+	return res, err
 }
 
 //GetJob is implementation of same method in core interface.
@@ -31,11 +76,53 @@ func (c *Controller) StopJob(jobID string) error {
 }
 
 //RetryJob is implementation of same method in core interface.
-func (c *Controller) RetryJob(ctx BaseContext, jonID string) error {
+func (c *Controller) RetryJob(jonID string) error {
 	return nil
 }
 
 //CheckStatus is implementation of same method in core interface.
-func (c *Controller) CheckStatus() (models.JobServiceStats, error) {
-	return models.JobServiceStats{}, nil
+func (c *Controller) CheckStatus() (models.JobPoolStats, error) {
+	return models.JobPoolStats{}, nil
+}
+
+func validJobReq(req models.JobRequest) error {
+	if req.Job == nil {
+		return errors.New("empty job request is not allowed")
+	}
+
+	if utils.IsEmptyStr(req.Job.Name) {
+		return errors.New("name of job must be specified")
+	}
+
+	if req.Job.Metadata == nil {
+		return errors.New("metadata of job is missing")
+	}
+
+	if req.Job.Metadata.JobKind != job.JobKindGeneric &&
+		req.Job.Metadata.JobKind != job.JobKindPeriodic &&
+		req.Job.Metadata.JobKind != job.JobKindScheduled {
+		return fmt.Errorf(
+			"job kind '%s' is not supported, only support '%s','%s','%s'",
+			req.Job.Metadata.JobKind,
+			job.JobKindGeneric,
+			job.JobKindScheduled,
+			job.JobKindPeriodic)
+	}
+
+	if req.Job.Metadata.JobKind == job.JobKindScheduled &&
+		req.Job.Metadata.ScheduleDelay == 0 {
+		return fmt.Errorf("'schedule_delay' must be specified if the job kind is '%s'", job.JobKindScheduled)
+	}
+
+	if req.Job.Metadata.JobKind == job.JobKindPeriodic {
+		if utils.IsEmptyStr(req.Job.Metadata.Cron) {
+			return fmt.Errorf("'cron_spec' must be specified if the job kind is '%s'", job.JobKindPeriodic)
+		}
+
+		if _, err := cron.Parse(req.Job.Metadata.Cron); err != nil {
+			return fmt.Errorf("'cron_spec' is not correctly set: %s", err)
+		}
+	}
+
+	return nil
 }
