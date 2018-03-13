@@ -15,11 +15,14 @@
 package api
 
 import (
+	"net/http"
+	"os"
+
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"net/http"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -64,4 +67,12 @@ func (ia *InternalAPI) RenameAdmin() {
 	}
 	log.Debugf("The super user has been renamed to: %s", newName)
 	ia.DestroySession()
+}
+
+// ToggleReadOnly is to enable read only mode
+func (ia *InternalAPI) ToggleReadOnly() {
+	if config.IsReadOnly() {
+		return
+	}
+	os.Setenv("READ_ONLY", "true")
 }

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/vmware/harbor/src/adminserver/client"
@@ -365,6 +366,17 @@ func UISecret() string {
 // TODO replace it with method of SecretStore
 func JobserviceSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
+}
+
+// IsReadOnly returns a bool value to indicate whether Harbor is under read only mode.
+func IsReadOnly() bool {
+	readOnlyStr := os.Getenv("READ_ONLY")
+	isReadOnly, err := strconv.ParseBool(readOnlyStr)
+	if err != nil {
+		log.Errorf("Failed to parse read only in env, error: %v", err)
+		return false
+	}
+	return isReadOnly
 }
 
 // WithNotary returns a bool value to indicate if Harbor's deployed with Notary
