@@ -76,3 +76,8 @@ func KeyPeriodicPolicy(namespace string) string {
 func KeyPeriodicNotification(namespace string) string {
 	return fmt.Sprintf("%s:%s", KeyPeriodicPolicy(namespace), "notifications")
 }
+
+//KeyPeriodicLock returns the key of locker under period
+func KeyPeriodicLock(namespace string) string {
+	return fmt.Sprintf("%s:%s", KeyPeriod(namespace), "lock")
+}

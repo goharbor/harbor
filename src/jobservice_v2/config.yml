@@ -8,7 +8,7 @@ https_config:
   key: "server.key"
 
 #Server listening port
-port: 8443
+port: 9443
 
 #Worker pool
 worker_pool:

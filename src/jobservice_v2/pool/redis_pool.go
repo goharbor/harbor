@@ -29,6 +29,7 @@ type GoCraftWorkPool struct {
 	redisPool *redis.Pool
 	pool      *work.WorkerPool
 	enqueuer  *work.Enqueuer
+	sweeper   *period.Sweeper
 	client    *work.Client
 	context   *env.Context
 	scheduler period.Interface
@@ -71,11 +72,13 @@ func NewGoCraftWorkPool(ctx *env.Context, cfg RedisPoolConfig) *GoCraftWorkPool 
 	enqueuer := work.NewEnqueuer(cfg.Namespace, redisPool)
 	client := work.NewClient(cfg.Namespace, redisPool)
 	scheduler := period.NewRedisPeriodicScheduler(ctx.SystemContext, cfg.Namespace, redisPool)
+	sweeper := period.NewSweeper(cfg.Namespace, redisPool, client)
 	return &GoCraftWorkPool{
 		redisPool: redisPool,
 		pool:      pool,
 		enqueuer:  enqueuer,
 		scheduler: scheduler,
+		sweeper:   sweeper,
 		client:    client,
 		context:   ctx,
 		knownJobs: make(map[string]bool),
@@ -114,6 +117,12 @@ func (gcwp *GoCraftWorkPool) Start() {
 		defer func() {
 			gcwp.context.WG.Done()
 		}()
+
+		//Clear dirty data before pool starting
+		if err := gcwp.sweeper.ClearOutdatedScheduledJobs(); err != nil {
+			//Only logged
+			log.Errorf("Clear outdated data before pool starting failed with error:%s\n", err)
+		}
 
 		//Append middlewares
 		gcwp.pool.Middleware((*RedisPoolContext).logJob)
@@ -250,6 +259,11 @@ func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
 func (gcwp *GoCraftWorkPool) IsKnownJob(name string) (bool, bool) {
 	v, ok := gcwp.knownJobs[name]
 	return ok, v
+}
+
+//Clear the invalid data on redis db, such as outdated scheduled jobs etc.
+func (gcwp *GoCraftWorkPool) clearDirtyData() {
+
 }
 
 //log the job

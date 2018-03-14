@@ -3,8 +3,6 @@
 package period
 
 import (
-	"encoding/json"
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -12,6 +10,7 @@ import (
 	"github.com/gocraft/work"
 	"github.com/robfig/cron"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
 
 const (
@@ -93,7 +92,7 @@ func (pe *periodicEnqueuer) loop() {
 }
 
 func (pe *periodicEnqueuer) enqueue() error {
-	now := nowEpochSeconds()
+	now := utils.NowEpochSeconds()
 	nowTime := time.Unix(now, 0)
 	horizon := nowTime.Add(periodicEnqueuerHorizon)
 
@@ -114,7 +113,7 @@ func (pe *periodicEnqueuer) enqueue() error {
 		}
 		for t := pj.schedule.Next(nowTime); t.Before(horizon); t = pj.schedule.Next(t) {
 			epoch := t.Unix()
-			id := makeUniquePeriodicID(pj.jobName, pl.PolicyID, epoch) //Use policy ID to track the jobs related with it
+			id := utils.MakeUniquePeriodicID(pj.jobName, pl.PolicyID, epoch) //Use policy ID to track the jobs related with it
 
 			job := &work.Job{
 				Name: pj.jobName,
@@ -125,12 +124,12 @@ func (pe *periodicEnqueuer) enqueue() error {
 				Args:       pl.JobParameters, //Pass parameters to scheduled job here
 			}
 
-			rawJSON, err := serializeJob(job)
+			rawJSON, err := utils.SerializeJob(job)
 			if err != nil {
 				return err
 			}
 
-			_, err = conn.Do("ZADD", redisKeyScheduled(pe.namespace), epoch, rawJSON)
+			_, err = conn.Do("ZADD", utils.RedisKeyScheduled(pe.namespace), epoch, rawJSON)
 			if err != nil {
 				return err
 			}
@@ -139,7 +138,7 @@ func (pe *periodicEnqueuer) enqueue() error {
 		}
 	}
 
-	_, err := conn.Do("SET", redisKeyLastPeriodicEnqueue(pe.namespace), now)
+	_, err := conn.Do("SET", utils.RedisKeyLastPeriodicEnqueue(pe.namespace), now)
 
 	return err
 }
@@ -148,7 +147,7 @@ func (pe *periodicEnqueuer) shouldEnqueue() bool {
 	conn := pe.pool.Get()
 	defer conn.Close()
 
-	lastEnqueue, err := redis.Int64(conn.Do("GET", redisKeyLastPeriodicEnqueue(pe.namespace)))
+	lastEnqueue, err := redis.Int64(conn.Do("GET", utils.RedisKeyLastPeriodicEnqueue(pe.namespace)))
 	if err == redis.ErrNil {
 		return true
 	} else if err != nil {
@@ -156,38 +155,5 @@ func (pe *periodicEnqueuer) shouldEnqueue() bool {
 		return true
 	}
 
-	return lastEnqueue < (nowEpochSeconds() - int64(periodicEnqueuerSleep/time.Minute))
-}
-
-var nowMock int64
-
-func nowEpochSeconds() int64 {
-	if nowMock != 0 {
-		return nowMock
-	}
-	return time.Now().Unix()
-}
-
-func makeUniquePeriodicID(name, spec string, epoch int64) string {
-	return fmt.Sprintf("periodic:job:%s:%s:%d", name, spec, epoch)
-}
-
-func serializeJob(job *work.Job) ([]byte, error) {
-	return json.Marshal(job)
-}
-
-func redisNamespacePrefix(namespace string) string {
-	l := len(namespace)
-	if (l > 0) && (namespace[l-1] != ':') {
-		namespace = namespace + ":"
-	}
-	return namespace
-}
-
-func redisKeyScheduled(namespace string) string {
-	return redisNamespacePrefix(namespace) + "scheduled"
-}
-
-func redisKeyLastPeriodicEnqueue(namespace string) string {
-	return redisNamespacePrefix(namespace) + "last_periodic_enqueue"
+	return lastEnqueue < (utils.NowEpochSeconds() - int64(periodicEnqueuerSleep/time.Minute))
 }
