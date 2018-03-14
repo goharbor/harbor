@@ -1,32 +1,35 @@
 // Copyright 2018 The Harbor Authors. All rights reserved.
-
-package job
+package impl
 
 import (
 	"fmt"
+
+	"github.com/vmware/harbor/src/jobservice_v2/env"
+	"github.com/vmware/harbor/src/jobservice_v2/job"
 )
 
 //ReplicationJob is the job for replicating repositories.
 type ReplicationJob struct {
-	ctx       Context
+	ctx       env.JobContext
 	params    map[string]interface{}
-	opCmdFunc CheckOPCmdFunc
+	opCmdFunc job.CheckOPCmdFunc
 }
 
 //SetContext is implementation of same method in Interface.
-func (rj *ReplicationJob) SetContext(ctx Context) {
+func (rj *ReplicationJob) SetContext(ctx env.JobContext) {
 	rj.ctx = ctx
 	fmt.Printf("ReplicationJob context=%#v\n", rj.ctx)
 }
 
 //SetParams is implementation of same method in Interface.
-func (rj *ReplicationJob) SetParams(params map[string]interface{}) {
+func (rj *ReplicationJob) SetParams(params map[string]interface{}) error {
 	rj.params = params
 	fmt.Printf("ReplicationJob args: %v\n", rj.params)
+	return nil
 }
 
 //SetCheckOPCmdFunc is implementation of same method in Interface.
-func (rj *ReplicationJob) SetCheckOPCmdFunc(f CheckOPCmdFunc) {}
+func (rj *ReplicationJob) SetCheckOPCmdFunc(f job.CheckOPCmdFunc) {}
 
 //MaxFails is implementation of same method in Interface.
 func (rj *ReplicationJob) MaxFails() uint {

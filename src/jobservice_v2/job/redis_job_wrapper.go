@@ -23,14 +23,12 @@ func NewRedisJob(j interface{}, ctx *env.Context) *RedisJob {
 //Run the job
 func (rj *RedisJob) Run(j *work.Job) error {
 	//Inject data
-	jobContext := Context{
-		SystemContext: rj.context.SystemContext,
-	}
-
 	runningJob := rj.Wrap()
-	runningJob.SetContext(jobContext)
+	runningJob.SetContext(rj.context.JobContext)
 	if runningJob.ParamsRequired() {
-		runningJob.SetParams(j.Args)
+		if err := runningJob.SetParams(j.Args); err != nil {
+			return err
+		}
 	}
 
 	//TODO: Update job status to 'Running'

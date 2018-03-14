@@ -17,4 +17,7 @@ type Context struct {
 	//Report errors to bootstrap component
 	//Once error is reported by lower components, the whole system should exit
 	ErrorChan chan error
+
+	//The job context reference
+	JobContext JobContext
 }

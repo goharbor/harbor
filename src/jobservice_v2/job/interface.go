@@ -2,6 +2,8 @@
 
 package job
 
+import "github.com/vmware/harbor/src/jobservice_v2/env"
+
 //CheckOPCmdFunc is the function to check if the related operation commands
 //like STOP or CANCEL is fired for the specified job. If yes, return the
 //command code for job to determin if take corresponding action.
@@ -11,13 +13,16 @@ type CheckOPCmdFunc func(string) (uint, bool)
 type Interface interface {
 	//SetContext used to inject the job context if needed.
 	//
-	//ctx	Context: Job execution context.
-	SetContext(ctx Context)
+	//ctx env.JobContext: Job execution context.
+	SetContext(ctx env.JobContext)
 
 	//Pass parameters via this method if have.
 	//
 	//params	map[string]interface{}: parameters with key-pair style for the job execution.
-	SetParams(params map[string]interface{})
+	//
+	//Returns:
+	//  return error if the parameters are not valid or nil
+	SetParams(params map[string]interface{}) error
 
 	//Inject the func into the job for OP command check.
 	//

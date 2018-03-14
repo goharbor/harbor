@@ -14,7 +14,7 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/config"
 	"github.com/vmware/harbor/src/jobservice_v2/core"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/job"
+	"github.com/vmware/harbor/src/jobservice_v2/job/impl"
 	"github.com/vmware/harbor/src/jobservice_v2/pool"
 )
 
@@ -43,6 +43,14 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 		WG:            &sync.WaitGroup{},
 		ErrorChan:     make(chan error, 1), //with 1 buffer
 	}
+
+	//Build specified job context
+	jobCtx := impl.NewContext(ctx)
+	if err := jobCtx.Build(); err != nil {
+		log.Errorf("Failed to build job conetxt with error: %s\n", err)
+		return
+	}
+	rootContext.JobContext = jobCtx
 
 	//Start the pool
 	var backendPool pool.Interface
@@ -108,7 +116,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg config.Conf
 
 	redisWorkerPool := pool.NewGoCraftWorkPool(ctx, redisPoolCfg)
 	//Register jobs here
-	if err := redisWorkerPool.RegisterJob(job.KnownJobReplication, (*job.ReplicationJob)(nil)); err != nil {
+	if err := redisWorkerPool.RegisterJob(impl.KnownJobReplication, (*impl.ReplicationJob)(nil)); err != nil {
 		//exit
 		ctx.ErrorChan <- err
 		return redisWorkerPool //avoid nil pointer issue
