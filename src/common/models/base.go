@@ -33,5 +33,6 @@ func init() {
 		new(WatchItem),
 		new(ProjectMetadata),
 		new(ConfigEntry),
-		new(Label))
+		new(Label),
+		new(ResourceLabel))
 }

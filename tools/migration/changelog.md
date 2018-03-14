@@ -69,3 +69,4 @@ Changelog for harbor database schema
 ## 1.5.0
 
   - create table `harbor_label`
+  - create table `harbor_resource_label`
