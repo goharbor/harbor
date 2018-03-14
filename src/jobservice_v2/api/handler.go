@@ -65,11 +65,12 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 		dh.handleError(w, http.StatusInternalServerError, errs.LaunchJobError(err))
 		return
 	}
-	data, err = json.Marshal(jobStats)
-	if err != nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.HandleJSONDataError(err))
+
+	data, ok := dh.handleJSONData(w, jobStats)
+	if !ok {
 		return
 	}
+
 	w.WriteHeader(http.StatusAccepted)
 	w.Write(data)
 }
@@ -89,7 +90,29 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 
 //HandleCheckStatusReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.Request) {
+	stats, err := dh.controller.CheckStatus()
+	if err != nil {
+		dh.handleError(w, http.StatusInternalServerError, errs.CheckStatsError(err))
+		return
+	}
+
+	data, ok := dh.handleJSONData(w, stats)
+	if !ok {
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
+	w.Write(data)
+}
+
+func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, object interface{}) ([]byte, bool) {
+	data, err := json.Marshal(object)
+	if err != nil {
+		dh.handleError(w, http.StatusInternalServerError, errs.HandleJSONDataError(err))
+		return nil, false
+	}
+
+	return data, true
 }
 
 func (dh *DefaultHandler) handleError(w http.ResponseWriter, code int, err error) {

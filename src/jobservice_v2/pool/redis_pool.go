@@ -5,6 +5,7 @@ package pool
 import (
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -22,6 +23,12 @@ var (
 	healthCheckPeriod     = time.Minute
 	dialReadTimeout       = healthCheckPeriod + 10*time.Second
 	dialWriteTimeout      = 10 * time.Second
+	workerPoolDeadTime    = 10 * time.Second
+)
+
+const (
+	workerPoolStatusHealthy = "Healthy"
+	workerPoolStatusDead    = "Dead"
 )
 
 //GoCraftWorkPool is the pool implementation based on gocraft/work powered by redis.
@@ -252,7 +259,34 @@ func (gcwp *GoCraftWorkPool) PeriodicallyEnqueue(jobName string, params models.P
 
 //Stats of pool
 func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
-	return models.JobPoolStats{}, nil
+	//Get the status of workerpool via client
+	hbs, err := gcwp.client.WorkerPoolHeartbeats()
+	if err != nil {
+		return models.JobPoolStats{}, err
+	}
+
+	//Find the heartbeat of this pool via pid
+	pid := os.Getpid()
+	for _, hb := range hbs {
+		if hb.Pid == pid {
+			wPoolStatus := workerPoolStatusHealthy
+			if time.Unix(hb.HeartbeatAt, 0).Add(workerPoolDeadTime).Before(time.Now()) {
+				wPoolStatus = workerPoolStatusDead
+			}
+			stats := models.JobPoolStats{
+				WorkerPoolID: hb.WorkerPoolID,
+				StartedAt:    hb.StartedAt,
+				HeartbeatAt:  hb.HeartbeatAt,
+				JobNames:     hb.JobNames,
+				Concurrency:  hb.Concurrency,
+				Status:       wPoolStatus,
+			}
+
+			return stats, nil
+		}
+	}
+
+	return models.JobPoolStats{}, errors.New("Failed to get stats of worker pool")
 }
 
 //IsKnownJob ...

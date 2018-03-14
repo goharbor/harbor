@@ -18,6 +18,8 @@ const (
 	MissingBackendHandlerErrorCode
 	//LaunchJobErrorCode is code for the error of launching job
 	LaunchJobErrorCode
+	//CheckStatsErrorCode is code for the error of checking stats of worker pool
+	CheckStatsErrorCode
 )
 
 //baseError ...
@@ -63,6 +65,11 @@ func MissingBackendHandlerError(err error) error {
 //LaunchJobError is error wrapper for the error of launching job failed.
 func LaunchJobError(err error) error {
 	return New(LaunchJobErrorCode, "Launch job failed with error", err.Error())
+}
+
+//CheckStatsError is error wrapper for the error of checking stats failed
+func CheckStatsError(err error) error {
+	return New(CheckStatsErrorCode, "Check stats of server failed with error", err.Error())
 }
 
 //jobStoppedError is designed for the case of stopping job.

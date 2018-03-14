@@ -82,7 +82,7 @@ func (c *Controller) RetryJob(jonID string) error {
 
 //CheckStatus is implementation of same method in core interface.
 func (c *Controller) CheckStatus() (models.JobPoolStats, error) {
-	return models.JobPoolStats{}, nil
+	return c.backendPool.Stats()
 }
 
 func validJobReq(req models.JobRequest) error {
