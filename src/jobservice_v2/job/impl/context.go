@@ -4,6 +4,7 @@ import (
 	"context"
 
 	hlog "github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice_v2/env"
 )
 
 //Context ...
@@ -22,8 +23,14 @@ func NewContext(sysCtx context.Context) *Context {
 	}
 }
 
+//InitDao ...
+func (c *Context) InitDao() error {
+	return nil
+}
+
 //Build implements the same method in env.JobContext interface
-func (c *Context) Build() error {
+//This func will build the job execution context before running
+func (c *Context) Build(dep env.JobData) error {
 	return nil
 }
 

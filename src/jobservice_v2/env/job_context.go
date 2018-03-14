@@ -9,9 +9,12 @@ import "context"
 type JobContext interface {
 	//Build the context
 	//
+	//dep JobData : Dependencies for building the context, just in case that the build
+	//function need some external info
+	//
 	//Returns:
 	// error if meet any problems
-	Build() error
+	Build(dep JobData) error
 
 	//Get property from the context
 	//
@@ -26,4 +29,11 @@ type JobContext interface {
 	//Returns:
 	//  context.Context
 	SystemContext() context.Context
+}
+
+//JobData defines job context dependencies.
+type JobData struct {
+	ID   string
+	Name string
+	Args map[string]interface{}
 }

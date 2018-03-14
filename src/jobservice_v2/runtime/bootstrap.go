@@ -46,7 +46,7 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 
 	//Build specified job context
 	jobCtx := impl.NewContext(ctx)
-	if err := jobCtx.Build(); err != nil {
+	if err := jobCtx.InitDao(); err != nil {
 		log.Errorf("Failed to build job conetxt with error: %s\n", err)
 		return
 	}

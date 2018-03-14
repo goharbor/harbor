@@ -22,6 +22,16 @@ func NewRedisJob(j interface{}, ctx *env.Context) *RedisJob {
 
 //Run the job
 func (rj *RedisJob) Run(j *work.Job) error {
+	//Build job execution context
+	jData := env.JobData{
+		ID:   j.ID,
+		Name: j.Name,
+		Args: j.Args,
+	}
+	if err := rj.context.JobContext.Build(jData); err != nil {
+		return err
+	}
+
 	//Inject data
 	runningJob := rj.Wrap()
 	runningJob.SetContext(rj.context.JobContext)
@@ -37,6 +47,7 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	//TODO:
 	//If error is stopped error, update status to 'Stopped' and return nil
 	//If error is cancelled error, update status to 'Cancelled' and return err
+	//Need to consider how to rm the retry option
 
 	return err
 }
