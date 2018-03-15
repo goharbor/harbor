@@ -495,3 +495,13 @@ func UAASettings() (*models.UAASettings, error) {
 	}
 	return us, nil
 }
+
+// ReadOnly returns a bool to indicates if Harbor is in read only mode.
+func ReadOnly() bool {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, will return false as read only, error: %v", err)
+		return false
+	}
+	return cfg[common.ReadOnly].(bool)
+}

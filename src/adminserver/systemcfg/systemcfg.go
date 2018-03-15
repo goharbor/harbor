@@ -152,6 +152,10 @@ var (
 		common.UIURL:                       "UI_URL",
 		common.JobServiceURL:               "JOBSERVICE_URL",
 		common.RegistryStorageProviderName: "REGISTRY_STORAGE_PROVIDER_NAME",
+		common.ReadOnly: &parser{
+			env:   "READ_ONLY",
+			parse: parseStringToBool,
+		},
 	}
 
 	// configurations need read from environment variables

@@ -3356,6 +3356,10 @@ definitions:
         description: >-
           This attribute restricts what users have the permission to create
           project.  It can be "everyone" or "adminonly".
+      read_only:
+        type: boolean
+        description: >-
+          'docker push' is prohibited by Harbor if you set it to true.   
       self_registration:
         type: boolean
         description: >-
