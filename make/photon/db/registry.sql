@@ -119,7 +119,7 @@ create table user_group
 id int NOT NULL AUTO_INCREMENT,
 group_name varchar(255) NOT NULL,
 group_type int default 0,
-group_property varchar(512) NOT NULL,
+ldap_group_dn varchar(512) NOT NULL,
 creation_time timestamp default CURRENT_TIMESTAMP,
 update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
 PRIMARY KEY (id)
