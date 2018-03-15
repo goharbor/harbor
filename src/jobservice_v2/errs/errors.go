@@ -20,6 +20,8 @@ const (
 	LaunchJobErrorCode
 	//CheckStatsErrorCode is code for the error of checking stats of worker pool
 	CheckStatsErrorCode
+	//GetJobStatsErrorCode is code for the error of getting stats of enqueued job
+	GetJobStatsErrorCode
 )
 
 //baseError ...
@@ -70,6 +72,11 @@ func LaunchJobError(err error) error {
 //CheckStatsError is error wrapper for the error of checking stats failed
 func CheckStatsError(err error) error {
 	return New(CheckStatsErrorCode, "Check stats of server failed with error", err.Error())
+}
+
+//GetJobStatsError is error wrapper for the error of getting job stats
+func GetJobStatsError(err error) error {
+	return New(GetJobStatsErrorCode, "Get job stats failed with error", err.Error())
 }
 
 //jobStoppedError is designed for the case of stopping job.

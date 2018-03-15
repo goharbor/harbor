@@ -94,6 +94,7 @@ func (rps *RedisPeriodicScheduler) Start() error {
 				switch res.Kind {
 				case "subscribe":
 					log.Infof("Subscribe redis channel %s\n", res.Channel)
+					break
 				case "unsubscribe":
 					//Unsubscribe all, means main goroutine is exiting
 					log.Infof("Unsubscribe redis channel %s\n", res.Channel)

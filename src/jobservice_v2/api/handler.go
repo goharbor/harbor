@@ -79,8 +79,20 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
+
+	jobStats, err := dh.controller.GetJob(jobID)
+	if err != nil {
+		dh.handleError(w, http.StatusInternalServerError, errs.GetJobStatsError(err))
+		return
+	}
+
+	data, ok := dh.handleJSONData(w, jobStats)
+	if !ok {
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("job is coming " + jobID))
+	w.Write(data)
 }
 
 //HandleJobActionReq is implementation of method defined in interface 'Handler'

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -213,7 +214,7 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 	}
 
 	res := generateResult(j, job.JobKindGeneric, isUnique)
-	if err := gcwp.saveStats(res); err != nil {
+	if err := gcwp.saveJobStats(res); err != nil {
 		//Once running job, let it fly away
 		//The client method may help if the job is still in progress when get stats of this job
 		log.Errorf("Failed to save stats of job %s with error: %s\n", res.Stats.JobID, err)
@@ -242,7 +243,7 @@ func (gcwp *GoCraftWorkPool) Schedule(jobName string, params models.Parameters, 
 	res := generateResult(j.Job, job.JobKindScheduled, isUnique)
 	res.Stats.RunAt = j.RunAt
 
-	if err := gcwp.saveStats(res); err != nil {
+	if err := gcwp.saveJobStats(res); err != nil {
 		//As job is already scheduled, we should not block this call
 		//Use client method to help get the status of this fly-away job
 		log.Errorf("Failed to save stats of job %s with error: %s\n", res.Stats.JobID, err)
@@ -270,6 +271,15 @@ func (gcwp *GoCraftWorkPool) PeriodicallyEnqueue(jobName string, params models.P
 			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", id),
 		},
 	}, nil
+}
+
+//GetJobStats return the job stats of the specified enqueued job.
+func (gcwp *GoCraftWorkPool) GetJobStats(jobID string) (models.JobStats, error) {
+	if utils.IsEmptyStr(jobID) {
+		return models.JobStats{}, errors.New("empty job ID")
+	}
+
+	return gcwp.getJobStats(jobID)
 }
 
 //Stats of pool
@@ -320,7 +330,70 @@ func (gcwp *GoCraftWorkPool) ValidateJobParameters(jobType interface{}, params m
 	return theJ.Validate(params)
 }
 
-func (gcwp *GoCraftWorkPool) saveStats(stats models.JobStats) error {
+func (gcwp *GoCraftWorkPool) getJobStats(ID string) (models.JobStats, error) {
+	conn := gcwp.redisPool.Get()
+	defer conn.Close()
+
+	key := utils.KeyJobStats(gcwp.namespace, ID)
+	vals, err := redis.Strings(conn.Do("HGETALL", key))
+	if err != nil {
+		return models.JobStats{}, err
+	}
+
+	res := models.JobStats{
+		Stats: &models.JobStatData{},
+	}
+	for i, l := 0, len(vals); i < l; i = i + 2 {
+		prop := vals[i]
+		value := vals[i+1]
+		switch prop {
+		case "id":
+			res.Stats.JobID = value
+			break
+		case "name":
+			res.Stats.JobName = value
+			break
+		case "kind":
+			res.Stats.JobKind = value
+		case "unique":
+			v, err := strconv.ParseBool(value)
+			if err != nil {
+				v = false
+			}
+			res.Stats.IsUnique = v
+		case "status":
+			res.Stats.Status = value
+			break
+		case "ref_link":
+			res.Stats.RefLink = value
+			break
+		case "enqueue_time":
+			v, _ := strconv.ParseInt(value, 10, 64)
+			res.Stats.EnqueueTime = v
+			break
+		case "update_time":
+			v, _ := strconv.ParseInt(value, 10, 64)
+			res.Stats.UpdateTime = v
+			break
+		case "run_at":
+			v, _ := strconv.ParseInt(value, 10, 64)
+			res.Stats.RunAt = v
+			break
+		case "check_in_at":
+			v, _ := strconv.ParseInt(value, 10, 64)
+			res.Stats.CheckInAt = v
+			break
+		case "check_in":
+			res.Stats.CheckIn = value
+			break
+		default:
+		}
+	}
+
+	return res, nil
+}
+
+func (gcwp *GoCraftWorkPool) saveJobStats(stats models.JobStats) error {
 	conn := gcwp.redisPool.Get()
 	defer conn.Close()
 
@@ -346,7 +419,7 @@ func (gcwp *GoCraftWorkPool) saveStats(stats models.JobStats) error {
 	}
 
 	conn.Send("HMSET", args...)
-	//If job kind is periodic job, expire time should be set
+	//If job kind is periodic job, expire time should not be set
 	//If job kind is scheduled job, expire time should be runAt+1day
 	if stats.Stats.JobKind != job.JobKindPeriodic {
 		var expireTime int64 = 60 * 60 * 24

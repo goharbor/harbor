@@ -82,4 +82,13 @@ type Interface interface {
 	//  error if parameters are not valid
 
 	ValidateJobParameters(jobType interface{}, params map[string]interface{}) error
+
+	//Get the stats of the specified job
+	//
+	//jobID string : ID of the enqueued job
+	//
+	//Returns:
+	//  models.JobStats : job stats data
+	//  error           : error returned if meet any problems
+	GetJobStats(jobID string) (models.JobStats, error)
 }

@@ -68,7 +68,11 @@ func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
 
 //GetJob is implementation of same method in core interface.
 func (c *Controller) GetJob(jobID string) (models.JobStats, error) {
-	return models.JobStats{}, nil
+	if utils.IsEmptyStr(jobID) {
+		return models.JobStats{}, errors.New("empty job ID")
+	}
+
+	return c.backendPool.GetJobStats(jobID)
 }
 
 //StopJob is implementation of same method in core interface.
