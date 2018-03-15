@@ -76,6 +76,7 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.UIURL:                      "http://myui:8888/",
 	common.JobServiceURL:              "http://myjob:8888/",
 	common.ReadOnly:                   false,
+	common.NotaryURL:                  "http://notary-server:4443",
 }
 
 // NewAdminserver returns a mock admin server
