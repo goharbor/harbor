@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -15,6 +14,7 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
+	"github.com/vmware/harbor/src/jobservice_v2/opm"
 	"github.com/vmware/harbor/src/jobservice_v2/period"
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
@@ -34,14 +34,15 @@ const (
 
 //GoCraftWorkPool is the pool implementation based on gocraft/work powered by redis.
 type GoCraftWorkPool struct {
-	namespace string
-	redisPool *redis.Pool
-	pool      *work.WorkerPool
-	enqueuer  *work.Enqueuer
-	sweeper   *period.Sweeper
-	client    *work.Client
-	context   *env.Context
-	scheduler period.Interface
+	namespace    string
+	redisPool    *redis.Pool
+	pool         *work.WorkerPool
+	enqueuer     *work.Enqueuer
+	sweeper      *period.Sweeper
+	client       *work.Client
+	context      *env.Context
+	scheduler    period.Interface
+	statsManager opm.JobStatsManager
 
 	//no need to sync as write once and then only read
 	//key is name of known job
@@ -82,16 +83,18 @@ func NewGoCraftWorkPool(ctx *env.Context, cfg RedisPoolConfig) *GoCraftWorkPool 
 	client := work.NewClient(cfg.Namespace, redisPool)
 	scheduler := period.NewRedisPeriodicScheduler(ctx.SystemContext, cfg.Namespace, redisPool)
 	sweeper := period.NewSweeper(cfg.Namespace, redisPool, client)
+	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, cfg.Namespace, redisPool)
 	return &GoCraftWorkPool{
-		namespace: cfg.Namespace,
-		redisPool: redisPool,
-		pool:      pool,
-		enqueuer:  enqueuer,
-		scheduler: scheduler,
-		sweeper:   sweeper,
-		client:    client,
-		context:   ctx,
-		knownJobs: make(map[string]interface{}),
+		namespace:    cfg.Namespace,
+		redisPool:    redisPool,
+		pool:         pool,
+		enqueuer:     enqueuer,
+		scheduler:    scheduler,
+		sweeper:      sweeper,
+		client:       client,
+		context:      ctx,
+		statsManager: statsMgr,
+		knownJobs:    make(map[string]interface{}),
 	}
 }
 
@@ -112,7 +115,13 @@ func (gcwp *GoCraftWorkPool) Start() {
 	go func() {
 		defer func() {
 			gcwp.context.WG.Done()
+			gcwp.statsManager.Stop()
 		}()
+		//Start stats manager
+		//None-blocking
+		gcwp.statsManager.Start()
+		log.Info("Redis job stats manager is started")
+
 		//blocking call
 		if err := gcwp.scheduler.Start(); err != nil {
 			//Scheduler exits with error
@@ -164,7 +173,10 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	}
 
 	//Use redis job wrapper pointer to keep the data required by the job.Interface.
-	redisJob := job.NewRedisJob(j, gcwp.context)
+	statusChangeCallback := func(jobID string, status string) {
+		gcwp.statsManager.SetJobStatus(jobID, status)
+	}
+	redisJob := job.NewRedisJob(j, gcwp.context, statusChangeCallback)
 
 	//Get more info from j
 	theJ := job.Wrap(j)
@@ -214,11 +226,10 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 	}
 
 	res := generateResult(j, job.JobKindGeneric, isUnique)
-	if err := gcwp.saveJobStats(res); err != nil {
-		//Once running job, let it fly away
-		//The client method may help if the job is still in progress when get stats of this job
-		log.Errorf("Failed to save stats of job %s with error: %s\n", res.Stats.JobID, err)
-	}
+	//Save data with async way. Once it fails to do, let it escape
+	//The client method may help if the job is still in progress when get stats of this job
+	gcwp.statsManager.Save(res)
+
 	return res, nil
 }
 
@@ -243,34 +254,36 @@ func (gcwp *GoCraftWorkPool) Schedule(jobName string, params models.Parameters, 
 	res := generateResult(j.Job, job.JobKindScheduled, isUnique)
 	res.Stats.RunAt = j.RunAt
 
-	if err := gcwp.saveJobStats(res); err != nil {
-		//As job is already scheduled, we should not block this call
-		//Use client method to help get the status of this fly-away job
-		log.Errorf("Failed to save stats of job %s with error: %s\n", res.Stats.JobID, err)
-	}
+	//As job is already scheduled, we should not block this call
+	//Once it fails to do, use client method to help get the status of the escape job
+	gcwp.statsManager.Save(res)
 
 	return res, nil
 }
 
 //PeriodicallyEnqueue job
 func (gcwp *GoCraftWorkPool) PeriodicallyEnqueue(jobName string, params models.Parameters, cronSetting string) (models.JobStats, error) {
-	id, err := gcwp.scheduler.Schedule(jobName, params, cronSetting)
+	id, nextRun, err := gcwp.scheduler.Schedule(jobName, params, cronSetting)
 	if err != nil {
 		return models.JobStats{}, err
 	}
 
-	//TODO: Need more data
-	//TODO: EnqueueTime should be got from cron spec
-	return models.JobStats{
+	res := models.JobStats{
 		Stats: &models.JobStatData{
 			JobID:       id,
 			JobName:     jobName,
 			Status:      job.JobStatusPending,
+			JobKind:     job.JobKindPeriodic,
 			EnqueueTime: time.Now().Unix(),
 			UpdateTime:  time.Now().Unix(),
 			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", id),
+			RunAt:       nextRun,
 		},
-	}, nil
+	}
+
+	gcwp.statsManager.Save(res)
+
+	return res, nil
 }
 
 //GetJobStats return the job stats of the specified enqueued job.
@@ -279,7 +292,7 @@ func (gcwp *GoCraftWorkPool) GetJobStats(jobID string) (models.JobStats, error) 
 		return models.JobStats{}, errors.New("empty job ID")
 	}
 
-	return gcwp.getJobStats(jobID)
+	return gcwp.statsManager.Retrieve(jobID)
 }
 
 //Stats of pool
@@ -330,115 +343,8 @@ func (gcwp *GoCraftWorkPool) ValidateJobParameters(jobType interface{}, params m
 	return theJ.Validate(params)
 }
 
-func (gcwp *GoCraftWorkPool) getJobStats(ID string) (models.JobStats, error) {
-	conn := gcwp.redisPool.Get()
-	defer conn.Close()
-
-	key := utils.KeyJobStats(gcwp.namespace, ID)
-	vals, err := redis.Strings(conn.Do("HGETALL", key))
-	if err != nil {
-		return models.JobStats{}, err
-	}
-
-	res := models.JobStats{
-		Stats: &models.JobStatData{},
-	}
-	for i, l := 0, len(vals); i < l; i = i + 2 {
-		prop := vals[i]
-		value := vals[i+1]
-		switch prop {
-		case "id":
-			res.Stats.JobID = value
-			break
-		case "name":
-			res.Stats.JobName = value
-			break
-		case "kind":
-			res.Stats.JobKind = value
-		case "unique":
-			v, err := strconv.ParseBool(value)
-			if err != nil {
-				v = false
-			}
-			res.Stats.IsUnique = v
-		case "status":
-			res.Stats.Status = value
-			break
-		case "ref_link":
-			res.Stats.RefLink = value
-			break
-		case "enqueue_time":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Stats.EnqueueTime = v
-			break
-		case "update_time":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Stats.UpdateTime = v
-			break
-		case "run_at":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Stats.RunAt = v
-			break
-		case "check_in_at":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Stats.CheckInAt = v
-			break
-		case "check_in":
-			res.Stats.CheckIn = value
-			break
-		default:
-		}
-	}
-
-	return res, nil
-}
-
-func (gcwp *GoCraftWorkPool) saveJobStats(stats models.JobStats) error {
-	conn := gcwp.redisPool.Get()
-	defer conn.Close()
-
-	key := utils.KeyJobStats(gcwp.namespace, stats.Stats.JobID)
-	args := make([]interface{}, 0)
-	args = append(args, key)
-	args = append(args,
-		"id", stats.Stats.JobID,
-		"name", stats.Stats.JobName,
-		"kind", stats.Stats.JobKind,
-		"unique", stats.Stats.IsUnique,
-		"status", stats.Stats.Status,
-		"ref_link", stats.Stats.RefLink,
-		"enqueue_time", stats.Stats.EnqueueTime,
-		"update_time", stats.Stats.UpdateTime,
-		"run_at", stats.Stats.RunAt,
-	)
-	if stats.Stats.CheckInAt > 0 && !utils.IsEmptyStr(stats.Stats.CheckIn) {
-		args = append(args,
-			"check_in", stats.Stats.CheckIn,
-			"check_in_at", stats.Stats.CheckInAt,
-		)
-	}
-
-	conn.Send("HMSET", args...)
-	//If job kind is periodic job, expire time should not be set
-	//If job kind is scheduled job, expire time should be runAt+1day
-	if stats.Stats.JobKind != job.JobKindPeriodic {
-		var expireTime int64 = 60 * 60 * 24
-		if stats.Stats.JobKind == job.JobKindScheduled {
-			nowTime := time.Now().Unix()
-			future := stats.Stats.RunAt - nowTime
-			if future > 0 {
-				expireTime += future
-			}
-		}
-		conn.Send("EXPIRE", key, expireTime)
-	}
-
-	return conn.Flush()
-}
-
 //log the job
 func (rpc *RedisPoolContext) logJob(job *work.Job, next work.NextMiddlewareFunc) error {
-	//TODO: Also update the job status to 'pending'
 	log.Infof("Job incoming: %s:%s", job.ID, job.Name)
 	return next()
 }

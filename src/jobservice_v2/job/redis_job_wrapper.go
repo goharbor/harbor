@@ -7,15 +7,19 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 )
 
+//StatusChangeCallback is the func called when job status changed
+type StatusChangeCallback func(jobID string, status string)
+
 //RedisJob is a job wrapper to wrap the job.Interface to the style which can be recognized by the redis pool.
 type RedisJob struct {
-	job     interface{}
-	context *env.Context
+	job      interface{}
+	context  *env.Context
+	callback StatusChangeCallback
 }
 
 //NewRedisJob is constructor of RedisJob
-func NewRedisJob(j interface{}, ctx *env.Context) *RedisJob {
-	return &RedisJob{j, ctx}
+func NewRedisJob(j interface{}, ctx *env.Context, statusChangeCallback StatusChangeCallback) *RedisJob {
+	return &RedisJob{j, ctx, statusChangeCallback}
 }
 
 //Run the job
@@ -33,9 +37,17 @@ func (rj *RedisJob) Run(j *work.Job) error {
 
 	//Inject data
 	runningJob := Wrap(rj.job)
-	//TODO: Update job status to 'Running'
+	//Start to run
+	rj.callback(j.ID, JobStatusRunning)
+
 	//TODO: Check function should be defined
 	err = runningJob.Run(execContext, j.Args, nil)
+
+	if err == nil {
+		rj.callback(j.ID, JobStatusSuccess)
+	} else {
+		rj.callback(j.ID, JobStatusError)
+	}
 
 	//TODO:
 	//If error is stopped error, update status to 'Stopped' and return nil

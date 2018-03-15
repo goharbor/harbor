@@ -14,8 +14,9 @@ type Interface interface {
 	//
 	//Returns:
 	//  The uuid of the cron job policy
+	//  The latest next trigger time
 	//  error if failed to schedule
-	Schedule(jobName string, params models.Parameters, cronSpec string) (string, error)
+	Schedule(jobName string, params models.Parameters, cronSpec string) (string, int64, error)
 
 	//Unschedule the specified cron job policy.
 	//

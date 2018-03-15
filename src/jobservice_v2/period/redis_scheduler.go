@@ -6,10 +6,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/robfig/cron"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -131,12 +132,18 @@ func (rps *RedisPeriodicScheduler) Start() error {
 }
 
 //Schedule is implementation of the same method in period.Interface
-func (rps *RedisPeriodicScheduler) Schedule(jobName string, params models.Parameters, cronSpec string) (string, error) {
+func (rps *RedisPeriodicScheduler) Schedule(jobName string, params models.Parameters, cronSpec string) (string, int64, error) {
 	if utils.IsEmptyStr(jobName) {
-		return "", errors.New("empty job name is not allowed")
+		return "", 0, errors.New("empty job name is not allowed")
 	}
 	if utils.IsEmptyStr(cronSpec) {
-		return "", errors.New("cron spec is not set")
+		return "", 0, errors.New("cron spec is not set")
+	}
+
+	//Get next run time
+	schedule, err := cron.Parse(cronSpec)
+	if err != nil {
+		return "", 0, err
 	}
 
 	//Although the ZSET can guarantee no duplicated items, we still need to check the existing
@@ -150,13 +157,14 @@ func (rps *RedisPeriodicScheduler) Schedule(jobName string, params models.Parame
 	//Serialize data
 	rawJSON, err := jobPolicy.serialize()
 	if err != nil {
-		return "", nil
+		return "", 0, nil
 	}
 
 	//Check existing
 	//If existing, treat as a succeed submitting and return the exitsing id
 	if score, ok := rps.exists(string(rawJSON)); ok {
-		return utils.MakePeriodicPolicyUUIDWithScore(score), nil
+		id, err := rps.getIDByScore(score)
+		return id, 0, err
 	}
 
 	uuid, score := utils.MakePeriodicPolicyUUID()
@@ -168,21 +176,35 @@ func (rps *RedisPeriodicScheduler) Schedule(jobName string, params models.Parame
 	}
 	rawJSON2, err := notification.serialize()
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
 	//Save to redis db and publish notification via redis transaction
 	conn := rps.redisPool.Get()
 	defer conn.Close()
 
-	conn.Send("MULTI")
-	conn.Send("ZADD", utils.KeyPeriodicPolicy(rps.namespace), score, rawJSON)
-	conn.Send("PUBLISH", utils.KeyPeriodicNotification(rps.namespace), rawJSON2)
-	if _, err := conn.Do("EXEC"); err != nil {
-		return "", err
+	err = conn.Send("MULTI")
+	if err != nil {
+		return "", 0, err
+	}
+	err = conn.Send("ZADD", utils.KeyPeriodicPolicy(rps.namespace), score, rawJSON)
+	if err != nil {
+		return "", 0, err
+	}
+	err = conn.Send("ZADD", utils.KeyPeriodicPolicyScore(rps.namespace), score, uuid)
+	if err != nil {
+		return "", 0, err
+	}
+	err = conn.Send("PUBLISH", utils.KeyPeriodicNotification(rps.namespace), rawJSON2)
+	if err != nil {
+		return "", 0, err
 	}
 
-	return uuid, nil
+	if _, err := conn.Do("EXEC"); err != nil {
+		return "", 0, err
+	}
+
+	return uuid, schedule.Next(time.Now()).Unix(), nil
 }
 
 //UnSchedule is implementation of the same method in period.Interface
@@ -191,9 +213,9 @@ func (rps *RedisPeriodicScheduler) UnSchedule(cronJobPolicyID string) error {
 		return errors.New("cron job policy ID is empty")
 	}
 
-	score := utils.ExtractScoreFromUUID(cronJobPolicyID)
-	if score == 0 {
-		return fmt.Errorf("The ID '%s' is not valid", cronJobPolicyID)
+	score, err := rps.getScoreByID(cronJobPolicyID)
+	if err != nil {
+		return err
 	}
 
 	notification := &periodicJobPolicyEvent{
@@ -212,9 +234,23 @@ func (rps *RedisPeriodicScheduler) UnSchedule(cronJobPolicyID string) error {
 	conn := rps.redisPool.Get()
 	defer conn.Close()
 
-	conn.Send("MULTI")
-	conn.Send("ZREMRANGEBYSCORE", utils.KeyPeriodicPolicy(rps.namespace), score, score) //Accurately remove the item with the specified score
-	conn.Send("PUBLISH", utils.KeyPeriodicNotification(rps.namespace), rawJSON)
+	err = conn.Send("MULTI")
+	if err != nil {
+		return err
+	}
+	err = conn.Send("ZREMRANGEBYSCORE", utils.KeyPeriodicPolicy(rps.namespace), score, score) //Accurately remove the item with the specified score
+	if err != nil {
+		return err
+	}
+	err = conn.Send("ZREMRANGEBYSCORE", utils.KeyPeriodicPolicyScore(rps.namespace), score, score) //Remove key score mapping
+	if err != nil {
+		return err
+	}
+	err = conn.Send("PUBLISH", utils.KeyPeriodicNotification(rps.namespace), rawJSON)
+	if err != nil {
+		return err
+	}
+
 	_, err = conn.Do("EXEC")
 
 	return err
@@ -225,12 +261,29 @@ func (rps *RedisPeriodicScheduler) Load() error {
 	conn := rps.redisPool.Get()
 	defer conn.Close()
 
-	bytes, err := redis.MultiBulk(conn.Do("ZRANGE", utils.KeyPeriodicPolicy(rps.namespace), 0, -1, "WITHSCORES"))
+	//Let's build key score mapping locally first
+	bytes, err := redis.MultiBulk(conn.Do("ZRANGE", utils.KeyPeriodicPolicyScore(rps.namespace), 0, -1, "WITHSCORES"))
+	if err != nil {
+		return err
+	}
+	keyScoreMap := make(map[int64]string)
+	for i, l := 0, len(bytes); i < l; i = i + 2 {
+		pid := string(bytes[i].([]byte))
+		rawScore := bytes[i+1].([]byte)
+		score, err := strconv.ParseInt(string(rawScore), 10, 64)
+		if err != nil {
+			//Ignore
+			continue
+		}
+		keyScoreMap[score] = pid
+	}
+
+	bytes, err = redis.MultiBulk(conn.Do("ZRANGE", utils.KeyPeriodicPolicy(rps.namespace), 0, -1, "WITHSCORES"))
 	if err != nil {
 		return err
 	}
 
-	allPeriodicPolicies := make([]*periodicJobPolicy, 0)
+	allPeriodicPolicies := make([]*periodicJobPolicy, 0, len(bytes)/2)
 	for i, l := 0, len(bytes); i < l; i = i + 2 {
 		rawPolicy := bytes[i].([]byte)
 		rawScore := bytes[i+1].([]byte)
@@ -251,7 +304,13 @@ func (rps *RedisPeriodicScheduler) Load() error {
 		}
 
 		//Set back the policy ID
-		policy.PolicyID = utils.MakePeriodicPolicyUUIDWithScore(score)
+		if pid, ok := keyScoreMap[score]; ok {
+			policy.PolicyID = pid
+		} else {
+			//Something wrong, should not be happended
+			//ignore here
+			continue
+		}
 
 		allPeriodicPolicies = append(allPeriodicPolicies, policy)
 	}
@@ -284,6 +343,25 @@ func (rps *RedisPeriodicScheduler) exists(rawPolicy string) (int64, bool) {
 
 	count, err := redis.Int64(conn.Do("ZSCORE", utils.KeyPeriodicPolicy(rps.namespace), rawPolicy))
 	return count, err == nil
+}
+
+func (rps *RedisPeriodicScheduler) getScoreByID(id string) (int64, error) {
+	conn := rps.redisPool.Get()
+	defer conn.Close()
+
+	return redis.Int64(conn.Do("ZSCORE", utils.KeyPeriodicPolicyScore(rps.namespace), id))
+}
+
+func (rps *RedisPeriodicScheduler) getIDByScore(score int64) (string, error) {
+	conn := rps.redisPool.Get()
+	defer conn.Close()
+
+	ids, err := redis.Strings(conn.Do("ZRANGEBYSCORE", utils.KeyPeriodicPolicyScore(rps.namespace), score, score))
+	if err != nil {
+		return "", err
+	}
+
+	return ids[0], nil
 }
 
 func readMessage(data []byte) *periodicJobPolicyEvent {

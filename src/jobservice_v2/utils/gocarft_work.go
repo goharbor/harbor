@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/gocraft/work"
@@ -10,6 +12,16 @@ import (
 
 //Functions defined here are mainly from dep lib "github.com/gocraft/work".
 //Only for compatible
+
+//MakeIdentifier creates uuid for job.
+func MakeIdentifier() string {
+	b := make([]byte, 12)
+	_, err := io.ReadFull(rand.Reader, b)
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%x", b)
+}
 
 //MakeUniquePeriodicID creates id for the periodic job.
 func MakeUniquePeriodicID(name, spec string, epoch int64) string {

@@ -5,6 +5,8 @@ package impl
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
@@ -28,7 +30,7 @@ func (rj *ReplicationJob) Validate(params map[string]interface{}) error {
 		return errors.New("missing parameter 'image'")
 	}
 
-	if name != "demo steven" {
+	if !strings.HasPrefix(name.(string), "demo") {
 		return fmt.Errorf("expected '%s' but got '%s'", "demo steven", name)
 	}
 
@@ -41,5 +43,8 @@ func (rj *ReplicationJob) Run(ctx env.JobContext, params map[string]interface{},
 	fmt.Printf("params: %#v\n", params)
 	fmt.Printf("context: %#v\n", ctx)
 
+	//HOLD ON FOR A WHILE
+	fmt.Println("Holding for 10 sec")
+	<-time.After(10 * time.Second)
 	return nil
 }
