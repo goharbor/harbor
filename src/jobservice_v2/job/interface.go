@@ -11,37 +11,27 @@ type CheckOPCmdFunc func(string) (uint, bool)
 
 //Interface defines the related injection and run entry methods.
 type Interface interface {
-	//SetContext used to inject the job context if needed.
-	//
-	//ctx env.JobContext: Job execution context.
-	SetContext(ctx env.JobContext)
-
-	//Pass parameters via this method if have.
-	//
-	//params	map[string]interface{}: parameters with key-pair style for the job execution.
-	//
-	//Returns:
-	//  return error if the parameters are not valid or nil
-	SetParams(params map[string]interface{}) error
-
-	//Inject the func into the job for OP command check.
-	//
-	//f	CheckOPCmdFunc: check function reference.
-	SetCheckOPCmdFunc(f CheckOPCmdFunc)
-
 	//Declare how many times the job can be retried if failed.
 	//
 	//Return:
 	// uint: the failure count allowed
 	MaxFails() uint
 
-	//Indicate whether the job needs parameters or not
+	//Indicate whether the parameters of job are valid.
 	//
 	//Return:
-	// true if required (parameter will be pre-validated and 'SetParams' will be called)
-	// false if no parameters needed (no check and 'SetParams' will not be called)
-	ParamsRequired() bool
+	// error if parameters are not valid. NOTES: If no parameters needed, directly return nil.
+	Validate(params map[string]interface{}) error
 
 	//Run the business logic here.
-	Run() error
+	//The related arguments will be injected by the workerpool.
+	//
+	//ctx env.JobContext            : Job execution context.
+	//params map[string]interface{} : parameters with key-pair style for the job execution.
+	//f	CheckOPCmdFunc: check function reference.
+	//
+	//Returns:
+	//  error if failed to run. NOTES: If job is stopped or cancelled, a specified error should be returned
+	//
+	Run(ctx env.JobContext, params map[string]interface{}, f CheckOPCmdFunc) error
 }

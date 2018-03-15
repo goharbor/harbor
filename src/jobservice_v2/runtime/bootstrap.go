@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/api"
@@ -45,6 +46,7 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 	}
 
 	//Build specified job context
+	//TODO:
 	jobCtx := impl.NewContext(ctx)
 	if err := jobCtx.InitDao(); err != nil {
 		log.Errorf("Failed to build job conetxt with error: %s\n", err)
@@ -80,7 +82,25 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 	//Gracefully shutdown
 	apiServer.Stop()
 
+	//In case stop is called before the server is ready
+	close := make(chan bool, 1)
+	go func() {
+		timer := time.NewTimer(10 * time.Second)
+		defer timer.Stop()
+
+		select {
+		case <-timer.C:
+			//Try again
+			apiServer.Stop()
+		case <-close:
+			return
+		}
+
+	}()
+
 	rootContext.WG.Wait()
+	close <- true
+
 	log.Infof("Server gracefully exit")
 }
 

@@ -69,7 +69,17 @@ type Interface interface {
 	//name string : name of job
 	//
 	//Returns:
-	// bool : true if it is otherwise return false
-	// bool : if the known job requires parameters
-	IsKnownJob(name string) (bool, bool)
+	// interface{} : the job type of the known job if it's existing
+	// bool        : if the known job requires parameters
+	IsKnownJob(name string) (interface{}, bool)
+
+	//Validate the parameters of the known job
+	//
+	//jobType interface{}            : type of known job
+	// params map[string]interface{} : parameters of known job
+	//
+	//Returns:
+	//  error if parameters are not valid
+
+	ValidateJobParameters(jobType interface{}, params map[string]interface{}) error
 }

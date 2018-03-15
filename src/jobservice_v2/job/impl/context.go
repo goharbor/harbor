@@ -30,8 +30,10 @@ func (c *Context) InitDao() error {
 
 //Build implements the same method in env.JobContext interface
 //This func will build the job execution context before running
-func (c *Context) Build(dep env.JobData) error {
-	return nil
+func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
+	return &Context{
+		sysContext: c.sysContext,
+	}, nil
 }
 
 //Get implements the same method in env.JobContext interface

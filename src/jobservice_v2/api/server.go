@@ -46,6 +46,12 @@ type ServerConfig struct {
 
 //NewServer is constructor of Server.
 func NewServer(ctx *env.Context, router Router, cfg ServerConfig) *Server {
+	apiServer := &Server{
+		router:  router,
+		config:  cfg,
+		context: ctx,
+	}
+
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Port),
 		Handler:      http.HandlerFunc(router.ServeHTTP),
@@ -72,12 +78,9 @@ func NewServer(ctx *env.Context, router Router, cfg ServerConfig) *Server {
 		srv.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
 	}
 
-	return &Server{
-		httpServer: srv,
-		router:     router,
-		config:     cfg,
-		context:    ctx,
-	}
+	apiServer.httpServer = srv
+
+	return apiServer
 }
 
 //Start the server to serve requests.
@@ -86,12 +89,11 @@ func (s *Server) Start() {
 
 	go func() {
 		var err error
-
 		defer func() {
-			if s.context.WG != nil {
-				s.context.WG.Done()
-			}
+			s.context.WG.Done()
+			log.Infof("API server is gracefully shutdown")
 		}()
+
 		if s.config.Protocol == config.JobServiceProtocolHTTPS {
 			err = s.httpServer.ListenAndServeTLS(s.config.Cert, s.config.Key)
 		} else {
@@ -107,13 +109,14 @@ func (s *Server) Start() {
 //Stop server gracefully.
 func (s *Server) Stop() {
 	go func() {
+		defer func() {
+			log.Info("Stop API server done!")
+		}()
 		shutDownCtx, cancel := context.WithTimeout(s.context.SystemContext, 10*time.Second)
 		defer cancel()
 
 		if err := s.httpServer.Shutdown(shutDownCtx); err != nil {
 			log.Errorf("Shutdown API server failed with error: %s\n", err)
-		} else {
-			log.Infof("API server is gracefully shutdown")
 		}
 	}()
 }

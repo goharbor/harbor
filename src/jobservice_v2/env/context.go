@@ -18,6 +18,7 @@ type Context struct {
 	//Once error is reported by lower components, the whole system should exit
 	ErrorChan chan error
 
-	//The job context reference
+	//The base job context reference
+	//It will be the parent conetext of job execution context
 	JobContext JobContext
 }

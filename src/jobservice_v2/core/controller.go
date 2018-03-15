@@ -31,14 +31,15 @@ func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
 		return models.JobStats{}, err
 	}
 
-	paramsRequired, isKnownJob := c.backendPool.IsKnownJob(req.Job.Name)
+	//Validate job name
+	jobType, isKnownJob := c.backendPool.IsKnownJob(req.Job.Name)
 	if !isKnownJob {
 		return models.JobStats{}, fmt.Errorf("job with name '%s' is unknown", req.Job.Name)
 	}
-	if paramsRequired {
-		if req.Job.Parameters == nil || len(req.Job.Parameters) == 0 {
-			return models.JobStats{}, fmt.Errorf("'parameters' is required by job '%s'", req.Job.Name)
-		}
+
+	//Validate parameters
+	if err := c.backendPool.ValidateJobParameters(jobType, req.Job.Parameters); err != nil {
+		return models.JobStats{}, err
 	}
 
 	//Enqueue job regarding of the kind

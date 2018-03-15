@@ -44,8 +44,8 @@ type GoCraftWorkPool struct {
 
 	//no need to sync as write once and then only read
 	//key is name of known job
-	//value is the flag indicating if the job requires parameters
-	knownJobs map[string]bool
+	//value is the type of known job
+	knownJobs map[string]interface{}
 }
 
 //RedisPoolConfig defines configurations for GoCraftWorkPool.
@@ -90,7 +90,7 @@ func NewGoCraftWorkPool(ctx *env.Context, cfg RedisPoolConfig) *GoCraftWorkPool 
 		sweeper:   sweeper,
 		client:    client,
 		context:   ctx,
-		knownJobs: make(map[string]bool),
+		knownJobs: make(map[string]interface{}),
 	}
 }
 
@@ -166,7 +166,7 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	redisJob := job.NewRedisJob(j, gcwp.context)
 
 	//Get more info from j
-	theJ := redisJob.Wrap()
+	theJ := job.Wrap(j)
 
 	gcwp.pool.JobWithOptions(name,
 		work.JobOptions{MaxFails: theJ.MaxFails()},
@@ -174,7 +174,7 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 			return redisJob.Run(job)
 		}, //Use generic handler to handle as we do not accept context with this way.
 	)
-	gcwp.knownJobs[name] = theJ.ParamsRequired() //keep the name of registered jobs as known jobs for future validation
+	gcwp.knownJobs[name] = j //keep the name of registered jobs as known jobs for future validation
 
 	return nil
 }
@@ -305,9 +305,19 @@ func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
 }
 
 //IsKnownJob ...
-func (gcwp *GoCraftWorkPool) IsKnownJob(name string) (bool, bool) {
+func (gcwp *GoCraftWorkPool) IsKnownJob(name string) (interface{}, bool) {
 	v, ok := gcwp.knownJobs[name]
-	return ok, v
+	return v, ok
+}
+
+//ValidateJobParameters ...
+func (gcwp *GoCraftWorkPool) ValidateJobParameters(jobType interface{}, params map[string]interface{}) error {
+	if jobType == nil {
+		return errors.New("nil job type")
+	}
+
+	theJ := job.Wrap(jobType)
+	return theJ.Validate(params)
 }
 
 func (gcwp *GoCraftWorkPool) saveStats(stats models.JobStats) error {

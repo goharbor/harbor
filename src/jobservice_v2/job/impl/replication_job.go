@@ -2,6 +2,7 @@
 package impl
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/vmware/harbor/src/jobservice_v2/env"
@@ -9,40 +10,35 @@ import (
 )
 
 //ReplicationJob is the job for replicating repositories.
-type ReplicationJob struct {
-	ctx       env.JobContext
-	params    map[string]interface{}
-	opCmdFunc job.CheckOPCmdFunc
-}
-
-//SetContext is implementation of same method in Interface.
-func (rj *ReplicationJob) SetContext(ctx env.JobContext) {
-	rj.ctx = ctx
-	fmt.Printf("ReplicationJob context=%#v\n", rj.ctx)
-}
-
-//SetParams is implementation of same method in Interface.
-func (rj *ReplicationJob) SetParams(params map[string]interface{}) error {
-	rj.params = params
-	fmt.Printf("ReplicationJob args: %v\n", rj.params)
-	return nil
-}
-
-//SetCheckOPCmdFunc is implementation of same method in Interface.
-func (rj *ReplicationJob) SetCheckOPCmdFunc(f job.CheckOPCmdFunc) {}
+type ReplicationJob struct{}
 
 //MaxFails is implementation of same method in Interface.
 func (rj *ReplicationJob) MaxFails() uint {
 	return 2
 }
 
-//ParamsRequired is implementation of same method in Interface.
-func (rj *ReplicationJob) ParamsRequired() bool {
-	return true
+//Validate is implementation of same method in Interface.
+func (rj *ReplicationJob) Validate(params map[string]interface{}) error {
+	if params == nil || len(params) == 0 {
+		return errors.New("parameters required for replication job")
+	}
+	name, ok := params["image"]
+	if !ok {
+		return errors.New("missing parameter 'image'")
+	}
+
+	if name != "demo steven" {
+		return fmt.Errorf("expected '%s' but got '%s'", "demo steven", name)
+	}
+
+	return nil
 }
 
 //Run the replication logic here.
-func (rj *ReplicationJob) Run() error {
+func (rj *ReplicationJob) Run(ctx env.JobContext, params map[string]interface{}, f job.CheckOPCmdFunc) error {
 	fmt.Println("=======Replication job running=======")
+	fmt.Printf("params: %#v\n", params)
+	fmt.Printf("context: %#v\n", ctx)
+
 	return nil
 }

@@ -3,8 +3,6 @@
 package job
 
 import (
-	"reflect"
-
 	"github.com/gocraft/work"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 )
@@ -28,21 +26,16 @@ func (rj *RedisJob) Run(j *work.Job) error {
 		Name: j.Name,
 		Args: j.Args,
 	}
-	if err := rj.context.JobContext.Build(jData); err != nil {
+	execContext, err := rj.context.JobContext.Build(jData)
+	if err != nil {
 		return err
 	}
 
 	//Inject data
-	runningJob := rj.Wrap()
-	runningJob.SetContext(rj.context.JobContext)
-	if runningJob.ParamsRequired() {
-		if err := runningJob.SetParams(j.Args); err != nil {
-			return err
-		}
-	}
-
+	runningJob := Wrap(rj.job)
 	//TODO: Update job status to 'Running'
-	err := runningJob.Run()
+	//TODO: Check function should be defined
+	err = runningJob.Run(execContext, j.Args, nil)
 
 	//TODO:
 	//If error is stopped error, update status to 'Stopped' and return nil
@@ -50,17 +43,4 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	//Need to consider how to rm the retry option
 
 	return err
-}
-
-//Wrap returns a new (job.)Interface based on the wrapped job handler reference.
-func (rj *RedisJob) Wrap() Interface {
-	theType := reflect.TypeOf(rj.job)
-
-	if theType.Kind() == reflect.Ptr {
-		theType = theType.Elem()
-	}
-
-	//Crate new
-	v := reflect.New(theType).Elem()
-	return v.Addr().Interface().(Interface)
 }
