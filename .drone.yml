@@ -2,12 +2,13 @@ workspace:
   base: /drone
   path: src/github.com/vmware/harbor
 
-pipeline:
-  clone:
+clone:
+  git:
     image: plugins/git
     tags: true
     recursive: false
 
+pipeline:
   check-org-membership:
     image: 'wdc-harbor-ci.eng.vmware.com/default-project/vic-integration-test:1.44'
     pull: true
