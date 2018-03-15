@@ -32,7 +32,7 @@ func TestMethodsOfResourceLabel(t *testing.T) {
 	require.Nil(t, err)
 	defer DeleteLabel(labelID)
 
-	resourceID := "1"
+	var resourceID int64 = 1
 	resourceType := common.ResourceTypeRepository
 
 	// add
@@ -55,6 +55,16 @@ func TestMethodsOfResourceLabel(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, 1, len(labels))
 	assert.Equal(t, id, r.ID)
+
+	// list
+	rls, err := ListResourceLabels(&models.ResourceLabelQuery{
+		LabelID:      labelID,
+		ResourceType: resourceType,
+		ResourceID:   resourceID,
+	})
+	require.Nil(t, err)
+	require.Equal(t, 1, len(rls))
+	assert.Equal(t, id, rls[0].ID)
 
 	// delete
 	err = DeleteResourceLabel(id)
