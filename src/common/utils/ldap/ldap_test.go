@@ -15,15 +15,16 @@ package ldap
 
 import (
 	"os"
+	"reflect"
 	"testing"
-
-	"github.com/vmware/harbor/src/common/models"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/test"
 	uiConfig "github.com/vmware/harbor/src/ui/config"
+	goldap "gopkg.in/ldap.v2"
 )
 
 var adminServerLdapTestConfig = map[string]interface{}{
@@ -217,6 +218,14 @@ func TestSearchUser(t *testing.T) {
 		t.Fatalf("failed to search user test!")
 	}
 
+	result2, err := session.SearchUser("mike")
+	if err != nil || len(result2) == 0 {
+		t.Fatalf("failed to search user mike!")
+	}
+	if len(result2[0].GroupDNList) < 1 && result2[0].GroupDNList[0] != "cn=harbor_users,ou=groups,dc=example,dc=com" {
+		t.Fatalf("failed to search user mike's memberof")
+	}
+
 }
 
 func TestFormatURL(t *testing.T) {
@@ -253,4 +262,81 @@ func TestFormatURL(t *testing.T) {
 		}
 	}
 
+}
+
+func Test_createGroupSearchFilter(t *testing.T) {
+	type args struct {
+		oldFilter          string
+		groupName          string
+		groupNameAttribute string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"Normal Filter", args{oldFilter: "objectclass=groupOfNames", groupName: "harbor_users", groupNameAttribute: "cn"}, "(&(objectclass=groupOfNames)(cn=*harbor_users*))"},
+		{"Empty Old", args{groupName: "harbor_users", groupNameAttribute: "cn"}, "cn=*harbor_users*"},
+		{"Empty Both", args{groupNameAttribute: "cn"}, "cn=*"},
+		{"Empty name", args{oldFilter: "objectclass=groupOfNames", groupNameAttribute: "cn"}, "objectclass=groupOfNames"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := createGroupSearchFilter(tt.args.oldFilter, tt.args.groupName, tt.args.groupNameAttribute); got != tt.want {
+				t.Errorf("createGroupSearchFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSession_SearchGroup(t *testing.T) {
+	type fields struct {
+		ldapConfig models.LdapConf
+		ldapConn   *goldap.Conn
+	}
+	type args struct {
+		baseDN             string
+		filter             string
+		groupName          string
+		groupNameAttribute string
+	}
+
+	ldapConfig := models.LdapConf{
+		LdapURL:            adminServerLdapTestConfig[common.LDAPURL].(string) + ":389",
+		LdapSearchDn:       adminServerLdapTestConfig[common.LDAPSearchDN].(string),
+		LdapScope:          2,
+		LdapSearchPassword: adminServerLdapTestConfig[common.LDAPSearchPwd].(string),
+		LdapBaseDn:         adminServerLdapTestConfig[common.LDAPBaseDN].(string),
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []models.LdapGroup
+		wantErr bool
+	}{
+		{"normal search",
+			fields{ldapConfig: ldapConfig},
+			args{baseDN: "dc=example,dc=com", filter: "objectClass=groupOfNames", groupName: "harbor_users", groupNameAttribute: "cn"},
+			[]models.LdapGroup{models.LdapGroup{GroupName: "harbor_users", GroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"}}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			session := &Session{
+				ldapConfig: tt.fields.ldapConfig,
+				ldapConn:   tt.fields.ldapConn,
+			}
+			session.Open()
+			defer session.Close()
+			got, err := session.searchGroup(tt.args.baseDN, tt.args.filter, tt.args.groupName, tt.args.groupNameAttribute)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Session.SearchGroup() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Session.SearchGroup() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/vmware/harbor/src/adminserver/client"
@@ -203,6 +204,35 @@ func LDAPConf() (*models.LdapConf, error) {
 	}
 
 	return ldapConf, nil
+}
+
+// LDAPGroupConf returns the setting of ldap group search
+func LDAPGroupConf() (*models.LdapGroupConf, error) {
+
+	cfg, err := mg.Get()
+	if err != nil {
+		return nil, err
+	}
+
+	ldapGroupConf := &models.LdapGroupConf{LdapGroupSearchScope: 2}
+	if _, ok := cfg[common.LDAPGroupBaseDN]; ok {
+		ldapGroupConf.LdapGroupBaseDN = cfg[common.LDAPGroupBaseDN].(string)
+	}
+	if _, ok := cfg[common.LDAPGroupSearchFilter]; ok {
+		ldapGroupConf.LdapGroupFilter = cfg[common.LDAPGroupSearchFilter].(string)
+	}
+	if _, ok := cfg[common.LDAPGroupAttributeName]; ok {
+		ldapGroupConf.LdapGroupNameAttribute = cfg[common.LDAPGroupAttributeName].(string)
+	}
+	if _, ok := cfg[common.LDAPGroupSearchScope]; ok {
+		if scopeStr, ok := cfg[common.LDAPGroupSearchScope].(string); ok {
+			ldapGroupConf.LdapGroupSearchScope, err = strconv.Atoi(scopeStr)
+		}
+		if scopeFloat, ok := cfg[common.LDAPGroupSearchScope].(float64); ok {
+			ldapGroupConf.LdapGroupSearchScope = int(scopeFloat)
+		}
+	}
+	return ldapGroupConf, nil
 }
 
 // TokenExpiration returns the token expiration time (in minute)
