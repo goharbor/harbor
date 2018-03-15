@@ -34,6 +34,7 @@ func NewSweeper(namespace string, pool *redis.Pool, client *work.Client) *Sweepe
 func (s *Sweeper) ClearOutdatedScheduledJobs() error {
 	//Check if other workpool has done the action
 	conn := s.redisPool.Get()
+	defer conn.Close()
 
 	//Lock
 	r, err := conn.Do("SET", utils.KeyPeriodicLock(s.namespace), time.Now().Unix(), "EX", 30, "NX")

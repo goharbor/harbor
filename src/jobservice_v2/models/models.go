@@ -2,10 +2,6 @@
 
 package models
 
-import (
-	"time"
-)
-
 //Parameters for job execution.
 type Parameters map[string]interface{}
 
@@ -36,13 +32,17 @@ type JobStats struct {
 
 //JobStatData keeps the stats of job
 type JobStatData struct {
-	JobID       string    `json:"id"`
-	Status      string    `json:"status"`
-	JobName     string    `json:"name"`
-	RefLink     string    `json:"ref_link,omitempty"`
-	EnqueueTime time.Time `json:"enqueue_time"`
-	UpdateTime  time.Time `json:"update_time"`
-	RunAt       time.Time `json:"run_at,omitempty"`
+	JobID       string `json:"id"`
+	Status      string `json:"status"`
+	JobName     string `json:"name"`
+	JobKind     string `json:"kind"`
+	IsUnique    bool   `json:"unique"`
+	RefLink     string `json:"ref_link,omitempty"`
+	EnqueueTime int64  `json:"enqueue_time"`
+	UpdateTime  int64  `json:"update_time"`
+	RunAt       int64  `json:"run_at,omitempty"`
+	CheckIn     string `json:"check_in,omitempty"`
+	CheckInAt   int64  `json:"check_in_at,omitempty"`
 }
 
 //JobPoolStats represent the healthy and status of the job service.

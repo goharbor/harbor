@@ -57,6 +57,8 @@ func (rps *RedisPeriodicScheduler) Start() error {
 
 	//As we get one connection from the pool, don't try to close it.
 	conn := rps.redisPool.Get()
+	defer conn.Close()
+
 	psc := redis.PubSubConn{
 		Conn: conn,
 	}
@@ -170,6 +172,8 @@ func (rps *RedisPeriodicScheduler) Schedule(jobName string, params models.Parame
 
 	//Save to redis db and publish notification via redis transaction
 	conn := rps.redisPool.Get()
+	defer conn.Close()
+
 	conn.Send("MULTI")
 	conn.Send("ZADD", utils.KeyPeriodicPolicy(rps.namespace), score, rawJSON)
 	conn.Send("PUBLISH", utils.KeyPeriodicNotification(rps.namespace), rawJSON2)
@@ -205,6 +209,8 @@ func (rps *RedisPeriodicScheduler) UnSchedule(cronJobPolicyID string) error {
 
 	//REM from redis db
 	conn := rps.redisPool.Get()
+	defer conn.Close()
+
 	conn.Send("MULTI")
 	conn.Send("ZREMRANGEBYSCORE", utils.KeyPeriodicPolicy(rps.namespace), score, score) //Accurately remove the item with the specified score
 	conn.Send("PUBLISH", utils.KeyPeriodicNotification(rps.namespace), rawJSON)
@@ -216,6 +222,8 @@ func (rps *RedisPeriodicScheduler) UnSchedule(cronJobPolicyID string) error {
 //Load data from zset
 func (rps *RedisPeriodicScheduler) Load() error {
 	conn := rps.redisPool.Get()
+	defer conn.Close()
+
 	bytes, err := redis.MultiBulk(conn.Do("ZRANGE", utils.KeyPeriodicPolicy(rps.namespace), 0, -1, "WITHSCORES"))
 	if err != nil {
 		return err
@@ -258,6 +266,8 @@ func (rps *RedisPeriodicScheduler) Load() error {
 //Clear is implementation of the same method in period.Interface
 func (rps *RedisPeriodicScheduler) Clear() error {
 	conn := rps.redisPool.Get()
+	defer conn.Close()
+
 	_, err := conn.Do("ZREMRANGEBYRANK", utils.KeyPeriodicPolicy(rps.namespace), 0, -1)
 
 	return err
@@ -269,6 +279,8 @@ func (rps *RedisPeriodicScheduler) exists(rawPolicy string) (int64, bool) {
 	}
 
 	conn := rps.redisPool.Get()
+	defer conn.Close()
+
 	count, err := redis.Int64(conn.Do("ZSCORE", utils.KeyPeriodicPolicy(rps.namespace), rawPolicy))
 	return count, err == nil
 }

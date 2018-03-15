@@ -81,3 +81,8 @@ func KeyPeriodicNotification(namespace string) string {
 func KeyPeriodicLock(namespace string) string {
 	return fmt.Sprintf("%s:%s", KeyPeriod(namespace), "lock")
 }
+
+//KeyJobStats returns the key of job stats
+func KeyJobStats(namespace string, jobID string) string {
+	return fmt.Sprintf("%s%s:%s", KeyNamespacePrefix(namespace), "job_stats", jobID)
+}

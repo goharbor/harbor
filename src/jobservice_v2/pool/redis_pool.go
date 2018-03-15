@@ -33,6 +33,7 @@ const (
 
 //GoCraftWorkPool is the pool implementation based on gocraft/work powered by redis.
 type GoCraftWorkPool struct {
+	namespace string
 	redisPool *redis.Pool
 	pool      *work.WorkerPool
 	enqueuer  *work.Enqueuer
@@ -81,6 +82,7 @@ func NewGoCraftWorkPool(ctx *env.Context, cfg RedisPoolConfig) *GoCraftWorkPool 
 	scheduler := period.NewRedisPeriodicScheduler(ctx.SystemContext, cfg.Namespace, redisPool)
 	sweeper := period.NewSweeper(cfg.Namespace, redisPool, client)
 	return &GoCraftWorkPool{
+		namespace: cfg.Namespace,
 		redisPool: redisPool,
 		pool:      pool,
 		enqueuer:  enqueuer,
@@ -210,7 +212,13 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 		return models.JobStats{}, err
 	}
 
-	return generateResult(j), nil
+	res := generateResult(j, job.JobKindGeneric, isUnique)
+	if err := gcwp.saveStats(res); err != nil {
+		//Once running job, let it fly away
+		//The client method may help if the job is still in progress when get stats of this job
+		log.Errorf("Failed to save stats of job %s with error: %s\n", res.Stats.JobID, err)
+	}
+	return res, nil
 }
 
 //Schedule job
@@ -231,8 +239,14 @@ func (gcwp *GoCraftWorkPool) Schedule(jobName string, params models.Parameters, 
 		return models.JobStats{}, err
 	}
 
-	res := generateResult(j.Job)
-	res.Stats.RunAt = time.Unix(j.RunAt, 0)
+	res := generateResult(j.Job, job.JobKindScheduled, isUnique)
+	res.Stats.RunAt = j.RunAt
+
+	if err := gcwp.saveStats(res); err != nil {
+		//As job is already scheduled, we should not block this call
+		//Use client method to help get the status of this fly-away job
+		log.Errorf("Failed to save stats of job %s with error: %s\n", res.Stats.JobID, err)
+	}
 
 	return res, nil
 }
@@ -245,13 +259,14 @@ func (gcwp *GoCraftWorkPool) PeriodicallyEnqueue(jobName string, params models.P
 	}
 
 	//TODO: Need more data
+	//TODO: EnqueueTime should be got from cron spec
 	return models.JobStats{
 		Stats: &models.JobStatData{
 			JobID:       id,
 			JobName:     jobName,
 			Status:      job.JobStatusPending,
-			EnqueueTime: time.Unix(time.Now().Unix(), 0),
-			UpdateTime:  time.Unix(time.Now().Unix(), 0),
+			EnqueueTime: time.Now().Unix(),
+			UpdateTime:  time.Now().Unix(),
 			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", id),
 		},
 	}, nil
@@ -295,9 +310,47 @@ func (gcwp *GoCraftWorkPool) IsKnownJob(name string) (bool, bool) {
 	return ok, v
 }
 
-//Clear the invalid data on redis db, such as outdated scheduled jobs etc.
-func (gcwp *GoCraftWorkPool) clearDirtyData() {
+func (gcwp *GoCraftWorkPool) saveStats(stats models.JobStats) error {
+	conn := gcwp.redisPool.Get()
+	defer conn.Close()
 
+	key := utils.KeyJobStats(gcwp.namespace, stats.Stats.JobID)
+	args := make([]interface{}, 0)
+	args = append(args, key)
+	args = append(args,
+		"id", stats.Stats.JobID,
+		"name", stats.Stats.JobName,
+		"kind", stats.Stats.JobKind,
+		"unique", stats.Stats.IsUnique,
+		"status", stats.Stats.Status,
+		"ref_link", stats.Stats.RefLink,
+		"enqueue_time", stats.Stats.EnqueueTime,
+		"update_time", stats.Stats.UpdateTime,
+		"run_at", stats.Stats.RunAt,
+	)
+	if stats.Stats.CheckInAt > 0 && !utils.IsEmptyStr(stats.Stats.CheckIn) {
+		args = append(args,
+			"check_in", stats.Stats.CheckIn,
+			"check_in_at", stats.Stats.CheckInAt,
+		)
+	}
+
+	conn.Send("HMSET", args...)
+	//If job kind is periodic job, expire time should be set
+	//If job kind is scheduled job, expire time should be runAt+1day
+	if stats.Stats.JobKind != job.JobKindPeriodic {
+		var expireTime int64 = 60 * 60 * 24
+		if stats.Stats.JobKind == job.JobKindScheduled {
+			nowTime := time.Now().Unix()
+			future := stats.Stats.RunAt - nowTime
+			if future > 0 {
+				expireTime += future
+			}
+		}
+		conn.Send("EXPIRE", key, expireTime)
+	}
+
+	return conn.Flush()
 }
 
 //log the job
@@ -308,7 +361,7 @@ func (rpc *RedisPoolContext) logJob(job *work.Job, next work.NextMiddlewareFunc)
 }
 
 //generate the job stats data
-func generateResult(j *work.Job) models.JobStats {
+func generateResult(j *work.Job, jobKind string, isUnique bool) models.JobStats {
 	if j == nil {
 		return models.JobStats{}
 	}
@@ -317,9 +370,11 @@ func generateResult(j *work.Job) models.JobStats {
 		Stats: &models.JobStatData{
 			JobID:       j.ID,
 			JobName:     j.Name,
+			JobKind:     jobKind,
+			IsUnique:    isUnique,
 			Status:      job.JobStatusPending,
-			EnqueueTime: time.Unix(j.EnqueuedAt, 0),
-			UpdateTime:  time.Unix(time.Now().Unix(), 0),
+			EnqueueTime: j.EnqueuedAt,
+			UpdateTime:  time.Now().Unix(),
 			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", j.ID),
 		},
 	}
