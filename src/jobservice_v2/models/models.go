@@ -38,6 +38,7 @@ type JobStatData struct {
 	JobKind     string `json:"kind"`
 	IsUnique    bool   `json:"unique"`
 	RefLink     string `json:"ref_link,omitempty"`
+	CronSpec    string `json:"cron_spec,omitempty"`
 	EnqueueTime int64  `json:"enqueue_time"`
 	UpdateTime  int64  `json:"update_time"`
 	RunAt       int64  `json:"run_at,omitempty"`
@@ -53,4 +54,9 @@ type JobPoolStats struct {
 	JobNames     []string `json:"job_names"`
 	Concurrency  uint     `json:"concurrency"`
 	Status       string   `json:"status"`
+}
+
+//JobActionRequest defines for triggering job action like stop/cancel.
+type JobActionRequest struct {
+	Action string `json:"action"`
 }

@@ -43,6 +43,14 @@ type Interface interface {
 	//  error   : Error returned if failed to retry the specified job.
 	RetryJob(jonID string) error
 
+	//Cancel the job
+	//
+	//jobID string : ID of the enqueued job
+	//
+	//Returns:
+	//  error           : error returned if meet any problems
+	CancelJob(jobID string) error
+
 	//CheckStatus is used to handle the job service healthy status checking request.
 	CheckStatus() (models.JobPoolStats, error)
 }

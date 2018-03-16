@@ -30,11 +30,27 @@ type JobContext interface {
 	//Returns:
 	//  context.Context
 	SystemContext() context.Context
+
+	//Checkin is bridge func for reporting detailed status
+	//
+	//status string : detailed status
+	//
+	//Returns:
+	//  error if meet any problems
+	Checkin(status string) error
+
+	//OPCommand return the control operational command like stop/cancel if have
+	//
+	//Returns:
+	//  op command if have
+	//  flag to indicate if have command
+	OPCommand() (string, bool)
 }
 
 //JobData defines job context dependencies.
 type JobData struct {
-	ID   string
-	Name string
-	Args map[string]interface{}
+	ID        string
+	Name      string
+	Args      map[string]interface{}
+	ExtraData map[string]interface{}
 }

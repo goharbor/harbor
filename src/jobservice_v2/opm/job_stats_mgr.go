@@ -9,8 +9,8 @@ type JobStatsManager interface {
 	//Start to serve
 	Start()
 
-	//Stop to serve
-	Stop()
+	//Shutdown the manager
+	Shutdown()
 
 	//Save the job stats
 	//Async method to retry and improve performance
@@ -29,4 +29,37 @@ type JobStatsManager interface {
 	//SetJobStatus will mark the status of job to the specified one
 	//Async method to retry
 	SetJobStatus(jobID string, status string)
+
+	//Stop the job
+	//
+	//jobID string : ID of the being stopped job
+	//
+	//Returns:
+	// error if meet any problems
+	Stop(jobID string) error
+
+	//Cancel the job
+	//
+	//jobID string : ID of the being cancelled job
+	//
+	//Returns:
+	// error if meet any problems
+	Cancel(jobID string) error
+
+	//Retry the job
+	//
+	//jobID string : ID of the being retried job
+	//
+	//Returns:
+	// error if meet any problems
+	Retry(jobID string) error
+
+	//CtlCommand check if control command is fired for the specified job.
+	//
+	//jobID string : ID of the job
+	//
+	//Returns:
+	//  the command if it was fired
+	//  error if it was not fired yet to meet some other problems
+	CtlCommand(jobID string) (string, error)
 }

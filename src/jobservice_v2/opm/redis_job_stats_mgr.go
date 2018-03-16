@@ -4,9 +4,16 @@ package opm
 
 import (
 	"context"
+	"errors"
 	"math/rand"
 	"strconv"
 	"time"
+
+	"github.com/vmware/harbor/src/jobservice_v2/period"
+
+	"github.com/robfig/cron"
+
+	"github.com/gocraft/work"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -20,6 +27,14 @@ const (
 	opSaveStats       = "save_job_stats"
 	opUpdateStatus    = "update_job_status"
 	maxFails          = 3
+
+	//CtlCommandStop : command stop
+	CtlCommandStop = "stop"
+	//CtlCommandCancel : command cancel
+	CtlCommandCancel = "cancel"
+
+	//Copy from period.enqueuer
+	periodicEnqueuerHorizon = 4 * time.Minute
 )
 
 type queueItem struct {
@@ -33,6 +48,8 @@ type RedisJobStatsManager struct {
 	namespace string
 	redisPool *redis.Pool
 	context   context.Context
+	client    *work.Client
+	scheduler period.Interface
 
 	stopChan    chan struct{}
 	doneChan    chan struct{}
@@ -41,11 +58,13 @@ type RedisJobStatsManager struct {
 }
 
 //NewRedisJobStatsManager is constructor of RedisJobStatsManager
-func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *redis.Pool) *RedisJobStatsManager {
+func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *redis.Pool, client *work.Client, scheduler period.Interface) *RedisJobStatsManager {
 	return &RedisJobStatsManager{
 		namespace:   namespace,
 		context:     ctx,
 		redisPool:   redisPool,
+		client:      client,
+		scheduler:   scheduler,
 		stopChan:    make(chan struct{}, 1),
 		doneChan:    make(chan struct{}, 1),
 		processChan: make(chan *queueItem, processBufferSize),
@@ -61,8 +80,8 @@ func (rjs *RedisJobStatsManager) Start() {
 	rjs.isRunning = true
 }
 
-//Stop is implementation of same method in JobStatsManager interface.
-func (rjs *RedisJobStatsManager) Stop() {
+//Shutdown is implementation of same method in JobStatsManager interface.
+func (rjs *RedisJobStatsManager) Shutdown() {
 	if !rjs.isRunning {
 		return
 	}
@@ -82,6 +101,212 @@ func (rjs *RedisJobStatsManager) Save(jobStats models.JobStats) {
 
 //Retrieve is implementation of same method in JobStatsManager interface.
 func (rjs *RedisJobStatsManager) Retrieve(jobID string) (models.JobStats, error) {
+	if utils.IsEmptyStr(jobID) {
+		return models.JobStats{}, errors.New("empty job ID")
+	}
+
+	return rjs.getJobStats(jobID)
+}
+
+//SetJobStatus is implementation of same method in JobStatsManager interface.
+func (rjs *RedisJobStatsManager) SetJobStatus(jobID string, status string) {
+	if utils.IsEmptyStr(jobID) || utils.IsEmptyStr(status) {
+		return
+	}
+
+	item := &queueItem{
+		op:   opUpdateStatus,
+		data: []string{jobID, status},
+	}
+
+	rjs.processChan <- item
+}
+
+func (rjs *RedisJobStatsManager) loop() {
+	controlChan := make(chan struct{})
+
+	defer func() {
+		rjs.isRunning = false
+		//Notify other sub goroutines
+		close(controlChan)
+		log.Info("Redis job stats manager is stopped")
+	}()
+
+	for {
+		select {
+		case item := <-rjs.processChan:
+			if err := rjs.process(item); err != nil {
+				item.fails++
+				if item.fails < maxFails {
+					//Retry after a random interval
+					go func() {
+						timer := time.NewTimer(time.Duration(rand.Intn(5)) * time.Second)
+						defer timer.Stop()
+
+						select {
+						case <-timer.C:
+							rjs.processChan <- item
+							return
+						case <-controlChan:
+						}
+					}()
+				} else {
+					log.Warningf("Failed to process '%s' request with error: %s (%d times tried)\n", item.op, err, maxFails)
+				}
+			}
+			break
+		case <-rjs.stopChan:
+			rjs.doneChan <- struct{}{}
+			return
+		case <-rjs.context.Done():
+			return
+		}
+	}
+}
+
+//Stop the specified job.
+//Async method, not blocking
+func (rjs *RedisJobStatsManager) Stop(jobID string) error {
+	if utils.IsEmptyStr(jobID) {
+		return errors.New("empty job ID")
+	}
+
+	theJob, err := rjs.getJobStats(jobID)
+	if err != nil {
+		return err
+	}
+
+	switch theJob.Stats.JobKind {
+	case job.JobKindGeneric:
+		//nothing need to do
+	case job.JobKindScheduled:
+		//we need to delete the scheduled job in the queue if it is not running yet
+		//otherwise, nothing need to do
+		if theJob.Stats.Status == job.JobStatusScheduled {
+			if err := rjs.client.DeleteScheduledJob(theJob.Stats.RunAt, jobID); err != nil {
+				return err
+			}
+		}
+	case job.JobKindPeriodic:
+		//firstly we need try to delete the job instances scheduled for this periodic job, a try best action
+		rjs.deleteScheduledJobsOfPeriodicPolicy(theJob.Stats.JobID, theJob.Stats.CronSpec) //ignore error as we have logged
+		//secondly delete the periodic job policy
+		if err := rjs.scheduler.UnSchedule(jobID); err != nil {
+			return err
+		}
+	default:
+		break
+	}
+
+	//Check if the job has 'running' instance
+	if theJob.Stats.Status == job.JobStatusRunning {
+		//Send 'stop' ctl command to the running instance
+		if err := rjs.writeCtlCommand(jobID, CtlCommandStop); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+//Cancel the specified job.
+//Async method, not blocking
+func (rjs *RedisJobStatsManager) Cancel(jobID string) error {
+	return nil
+}
+
+//Retry the specified job.
+//Async method, not blocking
+func (rjs *RedisJobStatsManager) Retry(jobID string) error {
+	return nil
+}
+
+//CtlCommand checks if control command is fired for the specified job.
+func (rjs *RedisJobStatsManager) CtlCommand(jobID string) (string, error) {
+	if utils.IsEmptyStr(jobID) {
+		return "", errors.New("empty job ID")
+	}
+
+	return rjs.getCrlCommand(jobID)
+}
+
+func (rjs *RedisJobStatsManager) deleteScheduledJobsOfPeriodicPolicy(policyID string, cronSpec string) error {
+	schedule, err := cron.Parse(cronSpec)
+	if err != nil {
+		log.Errorf("cron spec '%s' is not valid", cronSpec)
+		return err
+	}
+
+	now := utils.NowEpochSeconds()
+	nowTime := time.Unix(now, 0)
+	horizon := nowTime.Add(periodicEnqueuerHorizon)
+
+	//try to delete more
+	//return the last error if occurred
+	for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
+		epoch := t.Unix()
+		log.Infof("epoch=%d\n", epoch)
+		if err = rjs.client.DeleteScheduledJob(epoch, policyID); err != nil {
+			//only logged
+			log.Errorf("delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
+		}
+	}
+
+	return err
+}
+
+func (rjs *RedisJobStatsManager) getCrlCommand(jobID string) (string, error) {
+	conn := rjs.redisPool.Get()
+	defer conn.Close()
+
+	key := utils.KeyJobCtlCommands(rjs.namespace, jobID)
+	cmd, err := redis.String(conn.Do("HGET", key, "command"))
+	if err != nil {
+		return "", err
+	}
+	//try to DEL it after getting the command
+	//Ignore the error,leave it as dirty data
+	_, err = conn.Do("DEL", key)
+	if err != nil {
+		//only logged
+		log.Errorf("del key %s failed with error: %s\n", key, err)
+	}
+
+	return cmd, nil
+}
+
+func (rjs *RedisJobStatsManager) writeCtlCommand(jobID string, command string) error {
+	conn := rjs.redisPool.Get()
+	defer conn.Close()
+
+	key := utils.KeyJobCtlCommands(rjs.namespace, jobID)
+	args := make([]interface{}, 0, 5)
+	args = append(args, key, "command", command, "fire_time", time.Now().Unix())
+	if err := conn.Send("HMSET", args...); err != nil {
+		return err
+	}
+
+	expireTime := 24*60*60 + rand.Int63n(10)
+	if err := conn.Send("EXPIRE", key, expireTime); err != nil {
+		return err
+	}
+
+	return conn.Flush()
+}
+
+func (rjs *RedisJobStatsManager) updateJobStatus(jobID string, status string) error {
+	conn := rjs.redisPool.Get()
+	defer conn.Close()
+
+	key := utils.KeyJobStats(rjs.namespace, jobID)
+	args := make([]interface{}, 0, 5)
+	args = append(args, key, "status", status, "update_time", time.Now().Unix())
+	_, err := conn.Do("HMSET", args...)
+
+	return err
+}
+
+func (rjs *RedisJobStatsManager) getJobStats(jobID string) (models.JobStats, error) {
 	conn := rjs.redisPool.Get()
 	defer conn.Close()
 
@@ -137,75 +362,14 @@ func (rjs *RedisJobStatsManager) Retrieve(jobID string) (models.JobStats, error)
 		case "check_in":
 			res.Stats.CheckIn = value
 			break
+		case "cron_spec":
+			res.Stats.CronSpec = value
+			break
 		default:
 		}
 	}
 
 	return res, nil
-}
-
-//SetJobStatus is implementation of same method in JobStatsManager interface.
-func (rjs *RedisJobStatsManager) SetJobStatus(jobID string, status string) {
-	item := &queueItem{
-		op:   opUpdateStatus,
-		data: []string{jobID, status},
-	}
-
-	rjs.processChan <- item
-}
-
-func (rjs *RedisJobStatsManager) loop() {
-	controlChan := make(chan struct{})
-
-	defer func() {
-		rjs.isRunning = false
-		//Notify other sub goroutines
-		close(controlChan)
-		log.Info("Redis job stats manager is stopped")
-	}()
-
-	for {
-		select {
-		case item := <-rjs.processChan:
-			if err := rjs.process(item); err != nil {
-				item.fails++
-				if item.fails < maxFails {
-					//Retry after a random interval
-					go func() {
-						timer := time.NewTimer(time.Duration(rand.Intn(5)) * time.Second)
-						defer timer.Stop()
-
-						select {
-						case <-timer.C:
-							rjs.processChan <- item
-							return
-						case <-controlChan:
-						}
-					}()
-				} else {
-					log.Warningf("Failed to process '%s' request with error: %s (%d times tried)\n", item.op, err, maxFails)
-				}
-			}
-			break
-		case <-rjs.stopChan:
-			rjs.doneChan <- struct{}{}
-			return
-		case <-rjs.context.Done():
-			return
-		}
-	}
-}
-
-func (rjs *RedisJobStatsManager) updateJobStatus(jobID string, status string) error {
-	conn := rjs.redisPool.Get()
-	defer conn.Close()
-
-	key := utils.KeyJobStats(rjs.namespace, jobID)
-	args := make([]interface{}, 0, 3)
-	args = append(args, key, "status", status, "update_time", time.Now().Unix())
-	_, err := conn.Do("HMSET", args...)
-
-	return err
 }
 
 func (rjs *RedisJobStatsManager) saveJobStats(jobStats models.JobStats) error {
@@ -225,6 +389,7 @@ func (rjs *RedisJobStatsManager) saveJobStats(jobStats models.JobStats) error {
 		"enqueue_time", jobStats.Stats.EnqueueTime,
 		"update_time", jobStats.Stats.UpdateTime,
 		"run_at", jobStats.Stats.RunAt,
+		"cron_spec", jobStats.Stats.CronSpec,
 	)
 	if jobStats.Stats.CheckInAt > 0 && !utils.IsEmptyStr(jobStats.Stats.CheckIn) {
 		args = append(args,
@@ -245,6 +410,7 @@ func (rjs *RedisJobStatsManager) saveJobStats(jobStats models.JobStats) error {
 				expireTime += future
 			}
 		}
+		expireTime += rand.Int63n(30) //Avoid lots of keys being expired at the same time
 		conn.Send("EXPIRE", key, expireTime)
 	}
 

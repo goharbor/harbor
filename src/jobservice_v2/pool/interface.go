@@ -91,4 +91,28 @@ type Interface interface {
 	//  models.JobStats : job stats data
 	//  error           : error returned if meet any problems
 	GetJobStats(jobID string) (models.JobStats, error)
+
+	//Stop the job
+	//
+	//jobID string : ID of the enqueued job
+	//
+	//Returns:
+	//  error           : error returned if meet any problems
+	StopJob(jobID string) error
+
+	//Cancel the job
+	//
+	//jobID string : ID of the enqueued job
+	//
+	//Returns:
+	//  error           : error returned if meet any problems
+	CancelJob(jobID string) error
+
+	//Retry the job
+	//
+	//jobID string : ID of the enqueued job
+	//
+	//Returns:
+	//  error           : error returned if meet any problems
+	RetryJob(jobID string) error
 }

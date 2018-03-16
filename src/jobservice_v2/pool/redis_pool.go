@@ -83,7 +83,7 @@ func NewGoCraftWorkPool(ctx *env.Context, cfg RedisPoolConfig) *GoCraftWorkPool 
 	client := work.NewClient(cfg.Namespace, redisPool)
 	scheduler := period.NewRedisPeriodicScheduler(ctx.SystemContext, cfg.Namespace, redisPool)
 	sweeper := period.NewSweeper(cfg.Namespace, redisPool, client)
-	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, cfg.Namespace, redisPool)
+	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, cfg.Namespace, redisPool, client, scheduler)
 	return &GoCraftWorkPool{
 		namespace:    cfg.Namespace,
 		redisPool:    redisPool,
@@ -115,7 +115,7 @@ func (gcwp *GoCraftWorkPool) Start() {
 	go func() {
 		defer func() {
 			gcwp.context.WG.Done()
-			gcwp.statsManager.Stop()
+			gcwp.statsManager.Shutdown()
 		}()
 		//Start stats manager
 		//None-blocking
@@ -176,7 +176,17 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	statusChangeCallback := func(jobID string, status string) {
 		gcwp.statsManager.SetJobStatus(jobID, status)
 	}
-	redisJob := job.NewRedisJob(j, gcwp.context, statusChangeCallback)
+	//Define the concrete factory method for creating 'job.CheckOPCmdFunc'.
+	checkOPCmdFuncFactory := func(jobID string) job.CheckOPCmdFunc {
+		return func() (string, bool) {
+			cmd, err := gcwp.statsManager.CtlCommand(jobID)
+			if err != nil {
+				return "", false
+			}
+			return cmd, true
+		}
+	}
+	redisJob := job.NewRedisJob(j, gcwp.context, statusChangeCallback, checkOPCmdFuncFactory)
 
 	//Get more info from j
 	theJ := job.Wrap(j)
@@ -274,6 +284,7 @@ func (gcwp *GoCraftWorkPool) PeriodicallyEnqueue(jobName string, params models.P
 			JobName:     jobName,
 			Status:      job.JobStatusPending,
 			JobKind:     job.JobKindPeriodic,
+			CronSpec:    cronSetting,
 			EnqueueTime: time.Now().Unix(),
 			UpdateTime:  time.Now().Unix(),
 			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", id),
@@ -325,6 +336,21 @@ func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
 	}
 
 	return models.JobPoolStats{}, errors.New("Failed to get stats of worker pool")
+}
+
+//StopJob will stop the job
+func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
+	return gcwp.statsManager.Stop(jobID)
+}
+
+//CancelJob will cancel the job
+func (gcwp *GoCraftWorkPool) CancelJob(jobID string) error {
+	return gcwp.statsManager.Cancel(jobID)
+}
+
+//RetryJob retry the job
+func (gcwp *GoCraftWorkPool) RetryJob(jobID string) error {
+	return nil
 }
 
 //IsKnownJob ...
