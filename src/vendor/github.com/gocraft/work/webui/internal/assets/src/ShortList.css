@@ -1,0 +1,21 @@
+.ul {
+  display: inline;
+  list-style: none;
+  padding: 0;
+}
+
+.li {
+  display: inline;
+}
+
+.li:after {
+  content: ", ";
+}
+
+.li:last-child:before {
+  content: "and "
+}
+
+.li:last-child:after {
+  content: "";
+}

@@ -128,6 +128,12 @@
   version = "v1.2"
 
 [[projects]]
+  name = "github.com/gocraft/work"
+  packages = ["."]
+  revision = "67c8dc210ce647e8d8a4206c7f5856ea2390f290"
+  version = "v0.5.0"
+
+[[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
@@ -182,6 +188,12 @@
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/robfig/cron"
+  packages = ["."]
+  revision = "b024fc5ea0e34bc3f83d9941c8d60b0622bfaca4"
+  version = "v1"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -245,9 +257,15 @@
   revision = "8168ee085ee43257585e50c6441aadf54ecb2c9f"
   version = "v2.5.0"
 
+[[projects]]
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
+  version = "v2.1.1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dfabde73f55980de4821e1a908d68e43097c9b1ce34e2fe9381b3a7b443b2d8b"
+  inputs-digest = "ce26a28bd76c7bcfc4ed4dcd95a1522968cbe752a45cf7759b9e13734a31afc2"
   solver-name = "gps-cdcl"
   solver-version = 1
