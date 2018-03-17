@@ -46,6 +46,7 @@ func initRouters() {
 
 		//API:
 		beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectUserMemberAPI{})
+		beego.Router("/api/projects/:pid([0-9]+)/projectmembers/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
 		beego.Router("/api/projects/", &api.ProjectAPI{}, "head:Head")
 		beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
 
@@ -53,8 +54,10 @@ func initRouters() {
 		beego.Router("/api/users", &api.UserAPI{}, "get:List;post:Post")
 		beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 		beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
+		beego.Router("/api/usergroups/?:ugid([0-9]+)", &api.UserGroupAPI{})
 		beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
 		beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "post:Search")
+		beego.Router("/api/ldap/groups/search", &api.LdapAPI{}, "get:SearchGroup")
 		beego.Router("/api/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
 		beego.Router("/api/email/ping", &api.EmailAPI{}, "post:Ping")
 	}

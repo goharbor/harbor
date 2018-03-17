@@ -55,8 +55,14 @@ type AuthenticateHelper interface {
 	// put the id in the pointer of user model, if it does exist, fill in the user model based
 	// on the data record of the user
 	OnBoardUser(u *models.User) error
+	// Create a group in harbor DB
+	OnBoardGroup(g *models.UserGroup) error
+
 	// Get user information from account repository
 	SearchUser(username string) (*models.User, error)
+	// Search a group based on specific authentication
+	SearchGroup(groupDN string) (*models.UserGroup, error)
+
 	// Update user information after authenticate, such as Onboard or sync info etc
 	PostAuthenticate(u *models.User) error
 }
@@ -79,6 +85,16 @@ func (d *DefaultAuthenticateHelper) OnBoardUser(u *models.User) error {
 
 //SearchUser - Get user information from account repository
 func (d *DefaultAuthenticateHelper) SearchUser(username string) (*models.User, error) {
+	return nil, nil
+}
+
+// OnBoardGroup - OnBoardGroup, it will set the ID of the user group
+func (d *DefaultAuthenticateHelper) OnBoardGroup(u *models.UserGroup) error {
+	return nil
+}
+
+// SearchGroup - Search ldap group by group filter
+func (d *DefaultAuthenticateHelper) SearchGroup(groupFilter string) (*models.UserGroup, error) {
 	return nil, nil
 }
 
@@ -157,6 +173,15 @@ func OnBoardUser(user *models.User) error {
 	return helper.OnBoardUser(user)
 }
 
+// OnBoardGroup - Create a user group in harbor db
+func OnBoardGroup(userGroup *models.UserGroup) error {
+	helper, err := getHelper()
+	if err != nil {
+		return err
+	}
+	return helper.OnBoardGroup(userGroup)
+}
+
 // SearchUser --
 func SearchUser(username string) (*models.User, error) {
 	helper, err := getHelper()
@@ -164,6 +189,42 @@ func SearchUser(username string) (*models.User, error) {
 		return nil, err
 	}
 	return helper.SearchUser(username)
+}
+
+// SearchGroup --
+func SearchGroup(groupFilter string) (*models.UserGroup, error) {
+	helper, err := getHelper()
+	if err != nil {
+		return nil, err
+	}
+	return helper.SearchGroup(groupFilter)
+}
+
+// SearchAndOnboardUser ...
+func SearchAndOnboardUser(username string) (int, error) {
+	user, err := SearchUser(username)
+	if err != nil {
+		return 0, err
+	}
+	if user != nil {
+		err = OnBoardUser(user)
+		if err != nil {
+			return 0, err
+		}
+	}
+	return user.UserID, nil
+}
+
+// SearchAndOnboardGroup ...
+func SearchAndOnboardGroup(groupFilter string) (int, error) {
+	userGroup, err := SearchGroup(groupFilter)
+	if err != nil {
+		return 0, err
+	}
+	if userGroup != nil {
+		err = OnBoardGroup(userGroup)
+	}
+	return userGroup.ID, err
 }
 
 // PostAuthenticate -

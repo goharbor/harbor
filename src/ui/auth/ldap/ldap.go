@@ -19,6 +19,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/vmware/harbor/src/common/dao/group"
+
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
@@ -29,6 +31,10 @@ import (
 // Auth implements AuthenticateHelper interface to authenticate against LDAP
 type Auth struct {
 	auth.DefaultAuthenticateHelper
+}
+
+func init() {
+	auth.Register("ldap_auth", &Auth{})
 }
 
 // Authenticate checks user's credential against LDAP based on basedn template and LDAP URL,
@@ -130,6 +136,48 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 	return &user, nil
 }
 
+//SearchGroup -- Search group in ldap
+func (l *Auth) SearchGroup(groupFilter string) (*models.UserGroup, error) {
+	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
+
+	if err != nil {
+		return nil, fmt.Errorf("can not load system ldap config: %v", err)
+	}
+
+	if err = ldapSession.Open(); err != nil {
+		log.Warningf("ldap connection fail: %v", err)
+		return nil, err
+	}
+	defer ldapSession.Close()
+	userGroupList, err := ldapSession.SearchGroupByDN(groupFilter)
+
+	if err != nil {
+		log.Warningf("ldap search group fail: %v", err)
+		return nil, err
+	}
+
+	if len(userGroupList) == 0 {
+		return nil, fmt.Errorf("Failed to searh ldap group with groupDN:%v", groupFilter)
+	}
+	userGroup := models.UserGroup{
+		GroupName:   userGroupList[0].GroupName,
+		LdapGroupDN: userGroupList[0].GroupDN,
+	}
+	return &userGroup, nil
+}
+
+// OnBoardGroup -- Create Group in harbor DB
+func (l *Auth) OnBoardGroup(u *models.UserGroup) error {
+	groupID, err := group.AddUserGroup(models.UserGroup{
+		GroupName:   u.GroupName,
+		GroupType:   1,
+		LdapGroupDN: u.LdapGroupDN,
+	})
+
+	u.ID = groupID
+	return err
+}
+
 //PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
 func (l *Auth) PostAuthenticate(u *models.User) error {
 
@@ -176,8 +224,4 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 		return fmt.Errorf("Can not OnBoardUser %v", u)
 	}
 	return nil
-}
-
-func init() {
-	auth.Register("ldap_auth", &Auth{})
 }
