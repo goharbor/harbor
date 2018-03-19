@@ -46,17 +46,27 @@ func (iz *Initializer) Enter() (string, error) {
 		return "", err
 	}
 
-	_, _, payload, err := repoClient.PullManifest(iz.Context.Digest, []string{schema2.MediaTypeManifest})
+	_, mediaType, payload, err := repoClient.PullManifest(iz.Context.Digest, []string{schema1.MediaTypeManifest,schema2.MediaTypeManifest})
 	if err != nil {
 		logger.Errorf("Error pulling manifest for image %s:%s :%v", iz.Context.Repository, iz.Context.Tag, err)
 		return "", err
 	}
-	manifest, _, err := distribution.UnmarshalManifest(schema2.MediaTypeManifest, payload)
+	manifest, _, err := distribution.UnmarshalManifest(mediaType, payload)
 	if err != nil {
 		logger.Error("Failed to unMarshal manifest from response")
 		return "", err
 	}
-
+	switch manifest.(type) {
+	case *schema1.SignedManifest:
+		_, err := schema1.Verify(manifest.(*schema1.SignedManifest))
+		if err != nil {
+			logger.Error("Failed to verify manifest from response")
+			return "", err
+		}
+	case *schema2.DeserializedManifest:
+		logger.Debugf("retrieved schema2 manifest, no verification")
+	}
+	
 	tk, err := utils.GetTokenForRepo(iz.Context.Repository)
 	if err != nil {
 		return "", err
