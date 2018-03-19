@@ -404,6 +404,7 @@
         "REPOSITORIES": "Repositorios",
         "OF": "of",
         "ITEMS": "elementos",
+        "NO_ITEMS": "NO ITEMS",
         "POP_REPOS": "Repositorios Populares",
         "DELETED_REPO_SUCCESS": "Repositorio eliminado satisfactoriamente.",
         "DELETED_TAG_SUCCESS": "Etiqueta eliminada satisfactoriamente.",
@@ -415,7 +416,11 @@
         "IMAGE": "Imágenes",
         "LABELS": "Labels",
         "ADD_TO_IMAGE": "Add labels to this image",
-        "ADD_LABELS": "Add labels"
+        "ADD_LABELS": "Add labels",
+        "FILTER_BY_LABEL": "Filter projects by label",
+        "ACTION": "ACTION",
+        "DEPLOY": "DEPLOY",
+        "ADDITIONAL_INFO": "Add Additional Info"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algunos cambios no se han guardado aún. ¿Quiere cancelar?"

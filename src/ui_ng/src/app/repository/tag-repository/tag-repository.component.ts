@@ -79,6 +79,7 @@ export class TagRepositoryComponent implements OnInit {
   hasChanges(): boolean {
     return this.repositoryComponent.hasChanges();
   }
+
   watchTagClickEvt(tagEvt: TagClickEvent): void {
     let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name, 'tags', tagEvt.tag_name];
     this.router.navigate(linkUrl);

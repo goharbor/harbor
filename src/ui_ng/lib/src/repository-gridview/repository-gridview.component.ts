@@ -1,86 +1,67 @@
-import {
-  Component,
-  Input,
-  Output,
-  OnInit,
-  ViewChild,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  EventEmitter, OnChanges, SimpleChanges
-} from '@angular/core';
+import { Component, Input, Output, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs/Subscription';
+import {Observable} from "rxjs/Observable";
 import { TranslateService } from '@ngx-translate/core';
-import { Comparator } from 'clarity-angular';
+import { Comparator, State } from 'clarity-angular';
 
-import { REPOSITORY_LISTVIEW_TEMPLATE } from './repository-listview.component.html';
-import { REPOSITORY_LISTVIEW_STYLE } from './repository-listview.component.css';
-
-import {
-  Repository,
-  SystemInfo,
-  SystemInfoService,
-  RepositoryService,
-  RequestQueryParams,
-  RepositoryItem,
-  TagService
-} from '../service/index';
+import { REPOSITORY_GRIDVIEW_TEMPLATE } from './repository-gridview.component.html';
+import { REPOSITORY_GRIDVIEW_STYLE } from './repository-gridview.component.css';
+import { Repository, SystemInfo, SystemInfoService, RepositoryService, RequestQueryParams, RepositoryItem, TagService } from '../service/index';
 import { ErrorHandler } from '../error-handler/error-handler';
-
-import { toPromise, CustomComparator } from '../utils';
-
+import { toPromise, CustomComparator , DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting} from '../utils';
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
-
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
-import { Subscription } from 'rxjs/Subscription';
-import { Tag } from '../service/interface';
-
-import { State } from "clarity-angular";
-import {
-  DEFAULT_PAGE_SIZE,
-  calculatePage,
-  doFiltering,
-  doSorting
-} from '../utils';
+import { Tag, CardItemEvent } from '../service/interface';
 import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
-import {Observable} from "rxjs/Observable";
+import { GridViewComponent } from '../gridview/grid-view.component'
+
 
 @Component({
-  selector: 'hbr-repository-listview',
-  template: REPOSITORY_LISTVIEW_TEMPLATE,
-  styles: [REPOSITORY_LISTVIEW_STYLE],
+  selector: 'hbr-repository-gridview',
+  template: REPOSITORY_GRIDVIEW_TEMPLATE,
+  styles: [REPOSITORY_GRIDVIEW_STYLE],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RepositoryListviewComponent implements OnChanges, OnInit {
+export class RepositoryGridviewComponent implements OnChanges, OnInit {
   signedCon: {[key: string]: any | string[]} = {};
   @Input() projectId: number;
   @Input() projectName = 'unknown';
   @Input() urlPrefix: string;
-
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
   @Output() repoClickEvent = new EventEmitter<RepositoryItem>();
+  @Output() repoProvisionEvent = new EventEmitter<RepositoryItem>();
+  @Output() addInfoEvent = new EventEmitter<RepositoryItem>();
 
   lastFilteredRepoName: string;
-  repositories: RepositoryItem[];
+  repositories: RepositoryItem[] = [];
+  repositoriesCopy: RepositoryItem[] = [];
   systemInfo: SystemInfo;
   selectedRow: RepositoryItem[] = [];
-
   loading = true;
 
-  @ViewChild('confirmationDialog')
-  confirmationDialog: ConfirmationDialogComponent;
+  isCardView: boolean;
+  cardHover = false;
+  listHover = false;
 
   batchDelectionInfos: BatchInfo[] = [];
   pullCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('pull_count', 'number');
-
   tagsCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('tags_count', 'number');
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
   totalCount = 0;
   currentState: State;
+
+  @ViewChild('confirmationDialog')
+  confirmationDialog: ConfirmationDialogComponent;
+
+  @ViewChild('gridView')
+  gridView: GridViewComponent;
+
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -95,22 +76,8 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
     return this.systemInfo ? this.systemInfo.registry_url : '';
   }
 
-  public get withNotary(): boolean {
-    return this.systemInfo ? this.systemInfo.with_notary : false;
-  }
-
-  public get withClair(): boolean {
-    return this.systemInfo ? this.systemInfo.with_clair : false;
-  }
-
-  public get isClairDBReady(): boolean {
-    return this.systemInfo &&
-      this.systemInfo.clair_vulnerability_status &&
-      this.systemInfo.clair_vulnerability_status.overall_last_update > 0;
-  }
-
-  public get showDBStatusWarning(): boolean {
-    return this.withClair && !this.isClairDBReady;
+  public get withAdmiral(): boolean {
+    return this.systemInfo ? this.systemInfo.with_admiral : false;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -120,6 +87,11 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
   }
 
   ngOnInit(): void {
+    if (this.withAdmiral) {
+      this.isCardView = true;
+    } else {
+      this.isCardView = false;
+    }
     // Get system info for tag views
     toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
       .then(systemInfo => this.systemInfo = systemInfo)
@@ -186,7 +158,6 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
   doSearchRepoNames(repoName: string) {
     this.lastFilteredRepoName = repoName;
     this.currentPage = 1;
-
     let st: State = this.currentState;
     if (!st) {
       st = { page: {} };
@@ -225,9 +196,8 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
   }
 
   getTagInfo(repoName: string): Promise<void> {
-     // this.signedNameArr = [];
     this.signedCon[repoName] = [];
-     return toPromise<Tag[]>(this.tagService
+      return toPromise<Tag[]>(this.tagService
             .getTags(repoName))
             .then(items => {
               items.forEach((t: Tag) => {
@@ -271,12 +241,57 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
     });
   }
 
+  provisionItemEvent(evt: any, repo: RepositoryItem): void {
+    evt.stopPropagation();
+    this.repoProvisionEvent.emit(repo);
+  }
+  deleteItemEvent(evt: any, item: RepositoryItem): void {
+    evt.stopPropagation();
+    this.deleteRepos([item]);
+  }
+  itemAddInfoEvent(evt: any, repo: RepositoryItem): void {
+    evt.stopPropagation();
+    this.addInfoEvent.emit(repo);
+  }
   selectedChange(): void {
     let hnd = setInterval(() => this.ref.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 2000);
   }
   refresh() {
     this.doSearchRepoNames('');
+  }
+
+  loadNextPage() {
+    if (this.currentPage * this.pageSize >= this.totalCount) {
+      return
+    }
+    this.currentPage = this.currentPage + 1;
+
+    // Pagination
+    let params: RequestQueryParams = new RequestQueryParams();
+    params.set("page", '' + this.currentPage);
+    params.set("page_size", '' + this.pageSize);
+
+    this.loading = true;
+
+    toPromise<Repository>(this.repositoryService.getRepositories(
+      this.projectId,
+      this.lastFilteredRepoName,
+      params))
+      .then((repo: Repository) => {
+        this.totalCount = repo.metadata.xTotalCount;
+        this.repositoriesCopy = repo.data;
+        this.signedCon = {};
+        // Do filtering and sorting
+        this.repositoriesCopy = doFiltering<RepositoryItem>(this.repositoriesCopy, this.currentState);
+        this.repositoriesCopy = doSorting<RepositoryItem>(this.repositoriesCopy, this.currentState);
+        this.repositories = this.repositories.concat(this.repositoriesCopy);
+        this.loading = false;
+      })
+      .catch(error => {
+        this.loading = false;
+        this.errorHandler.error(error);
+      });
   }
 
   clrLoad(state: State): void {
@@ -343,5 +358,47 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
 
   watchRepoClickEvt(repo: RepositoryItem) {
     this.repoClickEvent.emit(repo);
+  }
+
+  getImgLink(repo: RepositoryItem): string {
+    return '/container-image-icons?container-image=' + repo.name
+  }
+
+  getRepoDescrition(repo: RepositoryItem): string {
+    if (repo && repo.description) {
+      return repo.description;
+    }
+    return "No description for this repo. You can add it to this repository."
+  }
+  showCard(cardView: boolean) {
+    if (this.isCardView === cardView) {
+      return
+    }
+    this.isCardView = cardView;
+    this.refresh();
+  }
+
+  mouseEnter(itemName: string) {
+    if (itemName === 'card') {
+      this.cardHover = true;
+    } else {
+      this.listHover = true;
+    }
+  }
+
+  mouseLeave(itemName: string) {
+    if (itemName === 'card') {
+      this.cardHover = false;
+    } else {
+      this.listHover = false;
+    }
+  }
+
+  isHovering(itemName: string) {
+    if (itemName === 'card') {
+      return this.cardHover;
+    } else {
+      return this.listHover;
+    }
   }
 }

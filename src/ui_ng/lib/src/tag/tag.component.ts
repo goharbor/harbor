@@ -196,7 +196,9 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.getAllLabels();
+    if (!this.withAdmiral) {
+      this.getAllLabels();
+    }
   }
 
   public get filterLabelPieceWidth() {

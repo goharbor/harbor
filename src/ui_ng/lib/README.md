@@ -116,8 +116,55 @@ page contains `hbr-repository`.
 
 ...
 
+watchRepoClickEvent(repo: RepositoryItem): void {
+    //Process repo
+    ...
+}
+```
+
+
+**hbr-repository-gridview Directive**
+
+**projectId** is used to specify which projects the repositories are from.
+
+**projectName** is used to generate the related commands for pushing images.
+
+**hasSignedIn** is a user session related property to determined whether a valid user signed in session existing. This component supports anonymous user.
+
+**hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
+
+**withVIC** is integrated with VIC
+
+**repoClickEvent** is an @output event emitter for you to catch the repository click events.
+
+**repoProvisionEvent** is an @output event emitter for you to catch the deploy button click event.
+
+**addInfoEvent** is an @output event emitter for you to catch the add additional info button event.
+
+  @Output() repoProvisionEvent = new EventEmitter<RepositoryItem>();
+  @Output() addInfoEvent = new EventEmitter<RepositoryItem>();
+
+
+```
+<hbr-repository-gridview [projectId]="" [projectName]="" [hasSignedIn]="" [hasProjectAdminRole]="" 
+(repoClickEvent)="watchRepoClickEvent($event)"
+(repoProvisionEvent)="watchRepoProvisionEvent($event)"
+(addInfoEvent)="watchAddInfoEvent($event)"></hbr-repository-gridview>
+
+...
+
 
 watchRepoClickEvent(repo: RepositoryItem): void {
+    //Process repo
+    ...
+}
+
+watchRepoProvisionEvent(repo: RepositoryItem): void {
+    //Process repo
+    ...
+}
+
+watchAddInfoEvent(repo: RepositoryItem): void {
     //Process repo
     ...
 }
