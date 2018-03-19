@@ -2464,7 +2464,7 @@ paths:
         '403':
           description: Only admin has this authority.
         '415':
-          $ref: '#responses/UnsupportedMediaType'
+          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
 responses:
