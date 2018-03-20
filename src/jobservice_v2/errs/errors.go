@@ -10,6 +10,8 @@ import (
 const (
 	//JobStoppedErrorCode is code for jobStoppedError
 	JobStoppedErrorCode = 10000 + iota
+	//JobCancelledErrorCode is code for jobCancelledError
+	JobCancelledErrorCode
 	//ReadRequestBodyErrorCode is code for the error of reading http request body error
 	ReadRequestBodyErrorCode
 	//HandleJSONDataErrorCode is code for the error of handling json data error
@@ -22,13 +24,19 @@ const (
 	CheckStatsErrorCode
 	//GetJobStatsErrorCode is code for the error of getting stats of enqueued job
 	GetJobStatsErrorCode
+	//StopJobErrorCode is code for the error of stopping job
+	StopJobErrorCode
+	//CancelJobErrorCode is code for the error of cancelling job
+	CancelJobErrorCode
+	//UnknownActionNameErrorCode is code for the case of unknown action name
+	UnknownActionNameErrorCode
 )
 
 //baseError ...
 type baseError struct {
 	Code        uint16 `json:"code"`
 	Err         string `json:"message"`
-	Description string `json:"details"`
+	Description string `json:"details,omitempty"`
 }
 
 //Error is implementation of error interface.
@@ -79,12 +87,59 @@ func GetJobStatsError(err error) error {
 	return New(GetJobStatsErrorCode, "Get job stats failed with error", err.Error())
 }
 
+//StopJobError is error for the case of stopping job failed
+func StopJobError(err error) error {
+	return New(StopJobErrorCode, "Stop job failed with error", err.Error())
+}
+
+//CancelJobError is error for the case of cancelling job failed
+func CancelJobError(err error) error {
+	return New(CancelJobErrorCode, "Cancel job failed with error", err.Error())
+}
+
+//UnknownActionNameError is error for the case of getting unknown job action
+func UnknownActionNameError(err error) error {
+	return New(UnknownActionNameErrorCode, "Unknown job action name", err.Error())
+}
+
 //jobStoppedError is designed for the case of stopping job.
 type jobStoppedError struct {
 	baseError
 }
 
+//JobStoppedError is error wrapper for the case of stopping job.
+func JobStoppedError() error {
+	return jobStoppedError{
+		baseError{
+			Code: JobStoppedErrorCode,
+			Err:  "Job is stopped",
+		},
+	}
+}
+
 //jobCancelledError is designed for the case of cancelling job.
 type jobCancelledError struct {
 	baseError
+}
+
+//JobCancelledError is error wrapper for the case of cancelling job.
+func JobCancelledError() error {
+	return jobStoppedError{
+		baseError{
+			Code: JobStoppedErrorCode,
+			Err:  "Job is cancelled",
+		},
+	}
+}
+
+//IsJobStoppedError return true if the error is jobStoppedError
+func IsJobStoppedError(err error) bool {
+	_, ok := err.(jobStoppedError)
+	return ok
+}
+
+//IsJobCancelledError return true if the error is jobCancelledError
+func IsJobCancelledError(err error) bool {
+	_, ok := err.(jobCancelledError)
+	return ok
 }

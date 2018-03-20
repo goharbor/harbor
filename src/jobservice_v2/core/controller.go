@@ -77,12 +77,29 @@ func (c *Controller) GetJob(jobID string) (models.JobStats, error) {
 
 //StopJob is implementation of same method in core interface.
 func (c *Controller) StopJob(jobID string) error {
-	return nil
+	if utils.IsEmptyStr(jobID) {
+		return errors.New("empty job ID")
+	}
+
+	return c.backendPool.StopJob(jobID)
+}
+
+//CancelJob is implementation of same method in core interface.
+func (c *Controller) CancelJob(jobID string) error {
+	if utils.IsEmptyStr(jobID) {
+		return errors.New("empty job ID")
+	}
+
+	return c.backendPool.CancelJob(jobID)
 }
 
 //RetryJob is implementation of same method in core interface.
-func (c *Controller) RetryJob(jonID string) error {
-	return nil
+func (c *Controller) RetryJob(jobID string) error {
+	if utils.IsEmptyStr(jobID) {
+		return errors.New("empty job ID")
+	}
+
+	return c.backendPool.RetryJob(jobID)
 }
 
 //CheckStatus is implementation of same method in core interface.

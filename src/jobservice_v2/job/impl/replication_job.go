@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vmware/harbor/src/jobservice_v2/errs"
+
 	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/job"
 )
 
 //ReplicationJob is the job for replicating repositories.
@@ -38,13 +39,23 @@ func (rj *ReplicationJob) Validate(params map[string]interface{}) error {
 }
 
 //Run the replication logic here.
-func (rj *ReplicationJob) Run(ctx env.JobContext, params map[string]interface{}, f job.CheckOPCmdFunc) error {
+func (rj *ReplicationJob) Run(ctx env.JobContext, params map[string]interface{}) error {
+	defer func() {
+		fmt.Println("I'm finished, exit!")
+	}()
 	fmt.Println("=======Replication job running=======")
 	fmt.Printf("params: %#v\n", params)
 	fmt.Printf("context: %#v\n", ctx)
 
 	//HOLD ON FOR A WHILE
-	fmt.Println("Holding for 10 sec")
-	<-time.After(10 * time.Second)
+	fmt.Println("Holding for 20 sec")
+	<-time.After(20 * time.Second)
+	fmt.Println("I'm back, check if I'm stopped")
+
+	if cmd, ok := ctx.OPCommand(); ok {
+		fmt.Printf("cmd=%s\n", cmd)
+		return errs.JobStoppedError()
+	}
+
 	return nil
 }

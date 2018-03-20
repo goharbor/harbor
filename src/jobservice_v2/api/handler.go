@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/vmware/harbor/src/jobservice_v2/opm"
+
 	"github.com/gorilla/mux"
 
 	"github.com/vmware/harbor/src/jobservice_v2/core"
@@ -77,6 +79,10 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 
 //HandleGetJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Request) {
+	if !dh.preCheck(w) {
+		return
+	}
+
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
 
@@ -97,11 +103,50 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 
 //HandleJobActionReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Request) {
+	if !dh.preCheck(w) {
+		return
+	}
+
+	vars := mux.Vars(req)
+	jobID := vars["job_id"]
+
+	data, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		dh.handleError(w, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
+		return
+	}
+
+	//unmarshal data
+	jobActionReq := models.JobActionRequest{}
+	if err = json.Unmarshal(data, &jobActionReq); err != nil {
+		dh.handleError(w, http.StatusInternalServerError, errs.HandleJSONDataError(err))
+		return
+	}
+
+	if jobActionReq.Action == opm.CtlCommandStop {
+		if err := dh.controller.StopJob(jobID); err != nil {
+			dh.handleError(w, http.StatusInternalServerError, errs.StopJobError(err))
+			return
+		}
+	} else if jobActionReq.Action == opm.CtlCommandCancel {
+		if err := dh.controller.StopJob(jobID); err != nil {
+			dh.handleError(w, http.StatusInternalServerError, errs.StopJobError(err))
+			return
+		}
+	} else {
+		dh.handleError(w, http.StatusNotImplemented, errs.UnknownActionNameError(fmt.Errorf("%s", jobID)))
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
 //HandleCheckStatusReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.Request) {
+	if !dh.preCheck(w) {
+		return
+	}
+
 	stats, err := dh.controller.CheckStatus()
 	if err != nil {
 		dh.handleError(w, http.StatusInternalServerError, errs.CheckStatsError(err))
