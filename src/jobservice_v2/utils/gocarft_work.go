@@ -43,6 +43,11 @@ func RedisKeyLastPeriodicEnqueue(namespace string) string {
 	return RedisNamespacePrefix(namespace) + "last_periodic_enqueue"
 }
 
+//RedisKeyDead returns key of the dead jobs.
+func RedisKeyDead(namespace string) string {
+	return RedisNamespacePrefix(namespace) + "dead"
+}
+
 var nowMock int64
 
 //NowEpochSeconds ...

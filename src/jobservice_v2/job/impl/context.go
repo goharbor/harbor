@@ -4,6 +4,7 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"reflect"
 
 	hlog "github.com/vmware/harbor/src/common/utils/log"
@@ -21,6 +22,9 @@ type Context struct {
 
 	//op command func
 	opCommandFunc job.CheckOPCmdFunc
+
+	//checkin func
+	checkInFunc job.CheckInFunc
 }
 
 //NewContext ...
@@ -51,6 +55,14 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 		}
 	}
 
+	if checkInFunc, ok := dep.ExtraData["checkInFunc"]; ok {
+		if reflect.TypeOf(checkInFunc).Kind() == reflect.Func {
+			if funcRef, ok := checkInFunc.(job.CheckInFunc); ok {
+				jContext.checkInFunc = funcRef
+			}
+		}
+	}
+
 	return jContext, nil
 }
 
@@ -66,6 +78,12 @@ func (c *Context) SystemContext() context.Context {
 
 //Checkin is bridge func for reporting detailed status
 func (c *Context) Checkin(status string) error {
+	if c.checkInFunc != nil {
+		c.checkInFunc(status)
+	} else {
+		return errors.New("nil check in function")
+	}
+
 	return nil
 }
 

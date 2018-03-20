@@ -9,13 +9,23 @@ import "github.com/vmware/harbor/src/jobservice_v2/env"
 //command code for job to determine if take corresponding action.
 type CheckOPCmdFunc func() (string, bool)
 
+//CheckInFunc is designed for job to report more detailed progress info
+type CheckInFunc func(message string)
+
 //Interface defines the related injection and run entry methods.
 type Interface interface {
 	//Declare how many times the job can be retried if failed.
 	//
 	//Return:
-	// uint: the failure count allowed
+	// uint: the failure count allowed. If it is set to 0, then default value 4 is used.
 	MaxFails() uint
+
+	//Tell the worker pool if retry the failed job when the fails is
+	//still less that the number declared by the method 'MaxFails'.
+	//
+	//Returns:
+	//  true for retry and false for none-retry
+	ShouldRetry() bool
 
 	//Indicate whether the parameters of job are valid.
 	//

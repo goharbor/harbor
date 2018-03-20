@@ -54,7 +54,7 @@ type JobStatsManager interface {
 	// error if meet any problems
 	Retry(jobID string) error
 
-	//CtlCommand check if control command is fired for the specified job.
+	//CtlCommand checks if control command is fired for the specified job.
 	//
 	//jobID string : ID of the job
 	//
@@ -62,4 +62,18 @@ type JobStatsManager interface {
 	//  the command if it was fired
 	//  error if it was not fired yet to meet some other problems
 	CtlCommand(jobID string) (string, error)
+
+	//CheckIn message for the specified job like detailed progress info.
+	//
+	//jobID string   : ID of the job
+	//message string : The message being checked in
+	//
+	CheckIn(jobID string, message string)
+
+	//DieAt marks the failed jobs with the time they put into dead queue.
+	//
+	//jobID string   : ID of the job
+	//message string : The message being checked in
+	//
+	DieAt(jobID string, dieAt int64)
 }

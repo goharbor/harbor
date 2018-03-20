@@ -172,24 +172,10 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 		return errors.New("job must implement the job.Interface")
 	}
 
-	//Use redis job wrapper pointer to keep the data required by the job.Interface.
-	statusChangeCallback := func(jobID string, status string) {
-		gcwp.statsManager.SetJobStatus(jobID, status)
-	}
-	//Define the concrete factory method for creating 'job.CheckOPCmdFunc'.
-	checkOPCmdFuncFactory := func(jobID string) job.CheckOPCmdFunc {
-		return func() (string, bool) {
-			cmd, err := gcwp.statsManager.CtlCommand(jobID)
-			if err != nil {
-				return "", false
-			}
-			return cmd, true
-		}
-	}
-	redisJob := job.NewRedisJob(j, gcwp.context, statusChangeCallback, checkOPCmdFuncFactory)
+	redisJob := NewRedisJob(j, gcwp.context, gcwp.statsManager)
 
 	//Get more info from j
-	theJ := job.Wrap(j)
+	theJ := Wrap(j)
 
 	gcwp.pool.JobWithOptions(name,
 		work.JobOptions{MaxFails: theJ.MaxFails()},
@@ -350,7 +336,7 @@ func (gcwp *GoCraftWorkPool) CancelJob(jobID string) error {
 
 //RetryJob retry the job
 func (gcwp *GoCraftWorkPool) RetryJob(jobID string) error {
-	return nil
+	return gcwp.statsManager.Retry(jobID)
 }
 
 //IsKnownJob ...
@@ -365,13 +351,13 @@ func (gcwp *GoCraftWorkPool) ValidateJobParameters(jobType interface{}, params m
 		return errors.New("nil job type")
 	}
 
-	theJ := job.Wrap(jobType)
+	theJ := Wrap(jobType)
 	return theJ.Validate(params)
 }
 
 //log the job
 func (rpc *RedisPoolContext) logJob(job *work.Job, next work.NextMiddlewareFunc) error {
-	log.Infof("Job incoming: %s:%s", job.ID, job.Name)
+	log.Infof("Job incoming: %s:%s", job.Name, job.ID)
 	return next()
 }
 
