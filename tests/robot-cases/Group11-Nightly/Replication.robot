@@ -144,8 +144,10 @@ Test Case - Proj Replication Jobs Log View
     Create A New Endpoint  edp${d}  aaa  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Replication Manage
     Create A Rule With Existing Endpoint  rule${d}  project${d}  edp${d}  Immediate
+    Filter Rule  rule${d}
+    Select Rule  rule${d}
     Wait Until Page Contains  transfer 
-#    Stop Jobs    #temp disable
-#    Wait Until Page Contains  stopped
+    Stop Jobs    #temp disable
+    Wait Until Page Contains  stopped
     View Job Log  busybox
     Close Browser
