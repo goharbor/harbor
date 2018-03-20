@@ -12,7 +12,7 @@ COPY src/ui/static /go/bin/static
 COPY src/favicon.ico /go/bin/favicon.ico
 
 RUN mkdir /go/bin/harbor/
-COPY VERSION /go/bin/harbor/VERSION
+COPY VERSION /go/bin/harbor/UIVERSION
 
 RUN chmod u+x /go/bin/harbor_ui
 
