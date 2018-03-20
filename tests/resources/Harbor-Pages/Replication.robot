@@ -141,6 +141,17 @@ Delete Rule
     Wait Until Page Contains Element  ${dialog_close}
     Click Element  ${dialog_close}
 
+Filter Rule
+    [Arguments]  ${rule} 
+    Click Element  ${rule_filter_search}
+    Input Text   ${rule_filter_input}  ${rule}
+    Sleep  1
+
+Select Rule
+    [Arguments]  ${rule}
+    Sleep  1
+    Click Element  //clr-dg-row[contains(.,'${rule}')]//label
+
 Stop Jobs
     Click Element  ${stop_jobs_button}
 
