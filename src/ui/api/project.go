@@ -199,6 +199,8 @@ func (p *ProjectAPI) Get() {
 		}
 	}
 
+	p.populateProperties(p.project)
+
 	p.Data["json"] = p.project
 	p.ServeJSON()
 }
@@ -372,30 +374,34 @@ func (p *ProjectAPI) List() {
 	}
 
 	for _, project := range result.Projects {
-		if p.SecurityCtx.IsAuthenticated() {
-			roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
-			if len(roles) != 0 {
-				project.Role = roles[0]
-			}
-
-			if project.Role == common.RoleProjectAdmin ||
-				p.SecurityCtx.IsSysAdmin() {
-				project.Togglable = true
-			}
-		}
-
-		repos, err := dao.GetRepositoryByProjectName(project.Name)
-		if err != nil {
-			log.Errorf("failed to get repositories of project %s: %v", project.Name, err)
-			p.CustomAbort(http.StatusInternalServerError, "")
-		}
-
-		project.RepoCount = len(repos)
+		p.populateProperties(project)
 	}
 
 	p.SetPaginationHeader(result.Total, page, size)
 	p.Data["json"] = result.Projects
 	p.ServeJSON()
+}
+
+func (p *ProjectAPI) populateProperties(project *models.Project) {
+	if p.SecurityCtx.IsAuthenticated() {
+		roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
+		if len(roles) != 0 {
+			project.Role = roles[0]
+		}
+
+		if project.Role == common.RoleProjectAdmin ||
+			p.SecurityCtx.IsSysAdmin() {
+			project.Togglable = true
+		}
+	}
+
+	repos, err := dao.GetRepositoryByProjectName(project.Name)
+	if err != nil {
+		log.Errorf("failed to get repositories of project %s: %v", project.Name, err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	project.RepoCount = len(repos)
 }
 
 // Put ...
