@@ -287,7 +287,7 @@ create table harbor_resource_label (
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY(id),
- CONSTRAINT unique_label_resource UNIQUE (label_id,resource_id, resource_type)
+ CONSTRAINT unique_label_resource UNIQUE (label_id,resource_id, resource_name, resource_type)
  );
 
 CREATE TABLE IF NOT EXISTS `alembic_version` (
