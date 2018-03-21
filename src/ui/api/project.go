@@ -270,7 +270,9 @@ func (p *ProjectAPI) Deletable() {
 }
 
 func deletable(projectID int64) (*deletableResp, error) {
-	count, err := dao.GetTotalOfRepositoriesByProject([]int64{projectID}, "")
+	count, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
+		ProjectIDs: []int64{projectID},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -395,13 +397,15 @@ func (p *ProjectAPI) populateProperties(project *models.Project) {
 		}
 	}
 
-	repos, err := dao.GetRepositoryByProjectName(project.Name)
+	total, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
+		ProjectIDs: []int64{project.ProjectID},
+	})
 	if err != nil {
-		log.Errorf("failed to get repositories of project %s: %v", project.Name, err)
+		log.Errorf("failed to get total of repositories of project %d: %v", project.ProjectID, err)
 		p.CustomAbort(http.StatusInternalServerError, "")
 	}
 
-	project.RepoCount = len(repos)
+	project.RepoCount = total
 }
 
 // Put ...

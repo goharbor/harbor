@@ -906,6 +906,11 @@ paths:
           type: string
           required: false
           description: Repo name for filtering results.
+        - name: label_id
+          in: query
+          type: integer
+          required: false
+          description: The ID of label used to filter the result.
         - name: page
           in: query
           type: integer
@@ -1144,6 +1149,11 @@ paths:
           type: string
           required: true
           description: Relevant repository name.
+        - name: label_ids
+          in: query
+          type: string
+          required: false
+          description: A list of comma separated label IDs.
       tags:
         - Products
       responses:

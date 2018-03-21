@@ -29,14 +29,26 @@ func AddResourceLabel(rl *models.ResourceLabel) (int64, error) {
 	return GetOrmer().Insert(rl)
 }
 
-// GetResourceLabel specified by ID
-func GetResourceLabel(rType, rID string, labelID int64) (*models.ResourceLabel, error) {
+// GetResourceLabel specified by resource ID or name
+// Get the ResourceLabel by ResourceID if rIDOrName is int
+// Get the ResourceLabel by ResourceName if rIDOrName is string
+func GetResourceLabel(rType string, rIDOrName interface{}, labelID int64) (*models.ResourceLabel, error) {
 	rl := &models.ResourceLabel{
 		ResourceType: rType,
-		ResourceID:   rID,
 		LabelID:      labelID,
 	}
-	if err := GetOrmer().Read(rl, "ResourceType", "ResourceID", "LabelID"); err != nil {
+
+	var err error
+	id, ok := rIDOrName.(int64)
+	if ok {
+		rl.ResourceID = id
+		err = GetOrmer().Read(rl, "ResourceType", "ResourceID", "LabelID")
+	} else {
+		rl.ResourceName = rIDOrName.(string)
+		err = GetOrmer().Read(rl, "ResourceType", "ResourceName", "LabelID")
+	}
+
+	if err != nil {
 		if err == orm.ErrNoRows {
 			return nil, nil
 		}
@@ -47,13 +59,20 @@ func GetResourceLabel(rType, rID string, labelID int64) (*models.ResourceLabel, 
 }
 
 // GetLabelsOfResource returns the label list of the resource
-func GetLabelsOfResource(rType, rID string) ([]*models.Label, error) {
+// Get the labels by ResourceID if rIDOrName is int, or get the labels by ResourceName
+func GetLabelsOfResource(rType string, rIDOrName interface{}) ([]*models.Label, error) {
 	sql := `select l.id, l.name, l.description, l.color, l.scope, l.project_id, l.creation_time, l.update_time
 				from harbor_resource_label rl
 				join harbor_label l on rl.label_id=l.id
-				where rl.resource_type = ? and rl.resource_id = ?`
+				where rl.resource_type = ? and`
+	if _, ok := rIDOrName.(int64); ok {
+		sql += ` rl.resource_id = ?`
+	} else {
+		sql += ` rl.resource_name = ?`
+	}
+
 	labels := []*models.Label{}
-	_, err := GetOrmer().Raw(sql, rType, rID).QueryRows(&labels)
+	_, err := GetOrmer().Raw(sql, rType, rIDOrName).QueryRows(&labels)
 	return labels, err
 }
 
@@ -65,10 +84,39 @@ func DeleteResourceLabel(id int64) error {
 	return err
 }
 
-// DeleteLabelsOfResource removes all labels of resource specified by rType and rID
-func DeleteLabelsOfResource(rType, rID string) error {
-	_, err := GetOrmer().QueryTable(&models.ResourceLabel{}).
-		Filter("ResourceType", rType).
-		Filter("ResourceID", rID).Delete()
+// DeleteLabelsOfResource removes all labels of the resource
+func DeleteLabelsOfResource(rType string, rIDOrName interface{}) error {
+	qs := GetOrmer().QueryTable(&models.ResourceLabel{}).
+		Filter("ResourceType", rType)
+	if _, ok := rIDOrName.(int64); ok {
+		qs = qs.Filter("ResourceID", rIDOrName)
+	} else {
+		qs = qs.Filter("ResourceName", rIDOrName)
+	}
+	_, err := qs.Delete()
 	return err
+}
+
+// ListResourceLabels lists ResourceLabel according to the query conditions
+func ListResourceLabels(query ...*models.ResourceLabelQuery) ([]*models.ResourceLabel, error) {
+	qs := GetOrmer().QueryTable(&models.ResourceLabel{})
+	if len(query) > 0 {
+		q := query[0]
+		if q.LabelID > 0 {
+			qs = qs.Filter("LabelID", q.LabelID)
+		}
+		if len(q.ResourceType) > 0 {
+			qs = qs.Filter("ResourceType", q.ResourceType)
+		}
+		if q.ResourceID > 0 {
+			qs = qs.Filter("ResourceID", q.ResourceID)
+		}
+		if len(q.ResourceName) > 0 {
+			qs = qs.Filter("ResourceName", q.ResourceName)
+		}
+	}
+
+	rls := []*models.ResourceLabel{}
+	_, err := qs.All(&rls)
+	return rls, err
 }
