@@ -123,22 +123,28 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 		return
 	}
 
-	if jobActionReq.Action == opm.CtlCommandStop {
+	switch jobActionReq.Action {
+	case opm.CtlCommandStop:
 		if err := dh.controller.StopJob(jobID); err != nil {
 			dh.handleError(w, http.StatusInternalServerError, errs.StopJobError(err))
 			return
 		}
-	} else if jobActionReq.Action == opm.CtlCommandCancel {
-		if err := dh.controller.StopJob(jobID); err != nil {
-			dh.handleError(w, http.StatusInternalServerError, errs.StopJobError(err))
+	case opm.CtlCommandCancel:
+		if err := dh.controller.CancelJob(jobID); err != nil {
+			dh.handleError(w, http.StatusInternalServerError, errs.CancelJobError(err))
 			return
 		}
-	} else {
+	case opm.CtlCommandRetry:
+		if err := dh.controller.RetryJob(jobID); err != nil {
+			dh.handleError(w, http.StatusInternalServerError, errs.RetryJobError(err))
+			return
+		}
+	default:
 		dh.handleError(w, http.StatusNotImplemented, errs.UnknownActionNameError(fmt.Errorf("%s", jobID)))
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent) //only header, no content returned
 }
 
 //HandleCheckStatusReq is implementation of method defined in interface 'Handler'

@@ -44,6 +44,7 @@ type JobStatData struct {
 	RunAt       int64  `json:"run_at,omitempty"`
 	CheckIn     string `json:"check_in,omitempty"`
 	CheckInAt   int64  `json:"check_in_at,omitempty"`
+	DieAt       int64  `json:"die_at,omitempty"`
 }
 
 //JobPoolStats represent the healthy and status of the job service.

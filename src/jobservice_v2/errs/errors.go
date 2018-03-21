@@ -28,6 +28,8 @@ const (
 	StopJobErrorCode
 	//CancelJobErrorCode is code for the error of cancelling job
 	CancelJobErrorCode
+	//RetryJobErrorCode is code for the error of retry job
+	RetryJobErrorCode
 	//UnknownActionNameErrorCode is code for the case of unknown action name
 	UnknownActionNameErrorCode
 )
@@ -97,6 +99,11 @@ func CancelJobError(err error) error {
 	return New(CancelJobErrorCode, "Cancel job failed with error", err.Error())
 }
 
+//RetryJobError is error for the case of retrying job failed
+func RetryJobError(err error) error {
+	return New(RetryJobErrorCode, "Retry job failed with error", err.Error())
+}
+
 //UnknownActionNameError is error for the case of getting unknown job action
 func UnknownActionNameError(err error) error {
 	return New(UnknownActionNameErrorCode, "Unknown job action name", err.Error())
@@ -124,7 +131,7 @@ type jobCancelledError struct {
 
 //JobCancelledError is error wrapper for the case of cancelling job.
 func JobCancelledError() error {
-	return jobStoppedError{
+	return jobCancelledError{
 		baseError{
 			Code: JobStoppedErrorCode,
 			Err:  "Job is cancelled",

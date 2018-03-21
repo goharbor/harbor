@@ -3,7 +3,6 @@
 package period
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -55,7 +54,7 @@ func (s *Sweeper) ClearOutdatedScheduledJobs() error {
 	}
 
 	nowEpoch := time.Now().Unix()
-	jobScores, err := GetZsetByScore(s.redisPool, utils.RedisKeyScheduled(s.namespace), []int64{0, nowEpoch})
+	jobScores, err := utils.GetZsetByScore(s.redisPool, utils.RedisKeyScheduled(s.namespace), []int64{0, nowEpoch})
 	if err != nil {
 		return err
 	}
@@ -93,33 +92,4 @@ func (s *Sweeper) ClearOutdatedScheduledJobs() error {
 		errorSummary = fmt.Sprintf("%s, %s", errorSummary, e)
 	}
 	return fmt.Errorf("%s", errorSummary)
-}
-
-//JobScore represents the data item with score in the redis db.
-type JobScore struct {
-	JobBytes []byte
-	Score    int64
-}
-
-//GetZsetByScore get the items from the zset filtered by the specified score scope.
-func GetZsetByScore(pool *redis.Pool, key string, scores []int64) ([]JobScore, error) {
-	if pool == nil || utils.IsEmptyStr(key) || len(scores) < 2 {
-		return nil, errors.New("bad arguments")
-	}
-
-	conn := pool.Get()
-	defer conn.Close()
-
-	values, err := redis.Values(conn.Do("ZRANGEBYSCORE", key, scores[0], scores[1], "WITHSCORES"))
-	if err != nil {
-		return nil, err
-	}
-
-	var jobsWithScores []JobScore
-
-	if err := redis.ScanSlice(values, &jobsWithScores); err != nil {
-		return nil, err
-	}
-
-	return jobsWithScores, nil
 }
