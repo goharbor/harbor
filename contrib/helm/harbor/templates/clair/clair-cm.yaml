@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "harbor.fullname" . }}
+  name: {{ template "harbor.fullname" . }}-clair
   labels:
 {{ include "harbor.labels" . | indent 4 }}
     component: clair
@@ -12,8 +12,7 @@ data:
       database:
         type: pgsql
         options:
-          source: "postgresql://postgres:{{ .Values.clair.postgresPassword }}@{{ template "harbor.fullname" . }}-clair-pg:5432?sslmode=disable"
-
+          source: "postgresql://{{ .Values.clair.postgresUser }}:{{ .Values.clair.postgresPassword }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.clair.postgresDatabase }}?sslmode=disable"
           # Number of elements kept in the cache
           # Values unlikely to change (e.g. namespaces) are cached in order to save prevent needless roundtrips to the database.
           cachesize: 16384
