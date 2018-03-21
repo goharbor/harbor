@@ -281,7 +281,7 @@ create table harbor_resource_label (
  resource_type char(1) NOT NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP,
- UNIQUE (label_id,resource_id, resource_type)
+ UNIQUE (label_id,resource_id,resource_name,resource_type)
  );
 
 create table alembic_version (
