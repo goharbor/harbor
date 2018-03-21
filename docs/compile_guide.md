@@ -44,25 +44,25 @@ You can compile the code by one of the three approaches:
 * Get offcial Golang image from docker hub:
 
    ```sh
-      $ docker pull golang:1.7.3
+      $ docker pull golang:1.9.2
    ```
 
 *  Build, install and bring up Harbor without Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0
    ```
 
 *  Build, install and bring up Harbor with Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 NOTARYFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0 NOTARYFLAG=true
    ```
 
 *  Build, install and bring up Harbor with Clair:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.2.7 CLAIRFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0 CLAIRFLAG=true
    ```
 
 #### II. Compile code with your own Golang environment, then build Harbor
@@ -118,6 +118,8 @@ REGISTRYSERVER     | Remote registry server IP address
 REGISTRYUSER       | Remote registry server user name
 REGISTRYPASSWORD   | Remote registry server user password
 REGISTRYPROJECTNAME| Project name on remote registry server
+VERSIONTAG         | Harbor images tag, default: dev
+PKGVERSIONTAG      | Harbor online and offline version tag, default:dev
 
 * Predefined targets:
 
