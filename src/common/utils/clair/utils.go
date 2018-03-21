@@ -95,3 +95,8 @@ func transformVuln(clairVuln *models.ClairLayerEnvelope) (*models.ComponentsOver
 		Summary: compSummary,
 	}, overallSev
 }
+
+//TransformVuln is for running scanning job in both job service V1 and V2.
+func TransformVuln(clairVuln *models.ClairLayerEnvelope) (*models.ComponentsOverview, models.Severity) {
+	return transformVuln(clairVuln)
+}

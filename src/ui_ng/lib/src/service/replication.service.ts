@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/Observable';
 import { RequestQueryParams } from './RequestQueryParams';
-import { ReplicationJob, ReplicationRule, ReplicationJobItem } from './interface';
+import {ReplicationJob, ReplicationRule, ReplicationJobItem} from './interface';
 import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { Http, RequestOptions } from '@angular/http';
@@ -62,7 +62,7 @@ export abstract class ReplicationService {
      * 
      * @memberOf ReplicationService
      */
-    abstract updateReplicationRule(replicationRule: ReplicationRule): Observable<any> | Promise<any> | any;
+    abstract updateReplicationRule(id: number, rep: ReplicationRule): Observable<any> | Promise<any> | any;
 
     /**
      * Delete the specified replication rule.
@@ -159,7 +159,7 @@ export class ReplicationDefaultService extends ReplicationService {
     //Private methods
     //Check if the rule object is valid
     _isValidRule(rule: ReplicationRule): boolean {
-        return rule !== undefined && rule != null && rule.name !== undefined && rule.name.trim() !== '' && rule.target_id !== 0;
+        return rule !== undefined && rule != null && rule.name !== undefined && rule.name.trim() !== '' && rule.targets.length !== 0;
     }
 
     public getReplicationRules(projectId?: number | string, ruleName?: string, queryParams?: RequestQueryParams): Observable<ReplicationRule[]> | Promise<ReplicationRule[]> | ReplicationRule[] {
@@ -177,7 +177,7 @@ export class ReplicationDefaultService extends ReplicationService {
 
         return this.http.get(this._ruleBaseUrl, buildHttpRequestOptions(queryParams)).toPromise()
             .then(response => response.json() as ReplicationRule[])
-            .catch(error => Promise.reject(error))
+            .catch(error => Promise.reject(error));
     }
 
     public getReplicationRule(ruleId: number | string): Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule {
@@ -201,13 +201,13 @@ export class ReplicationDefaultService extends ReplicationService {
             .catch(error => Promise.reject(error));
     }
 
-    public updateReplicationRule(replicationRule: ReplicationRule): Observable<any> | Promise<any> | any {
-        if (!this._isValidRule(replicationRule) || !replicationRule.id) {
+    public updateReplicationRule(id: number, rep: ReplicationRule): Observable<any> | Promise<any> | any {
+        if (!this._isValidRule(rep)) {
             return Promise.reject('Bad argument');
         }
 
-        let url: string = `${this._ruleBaseUrl}/${replicationRule.id}`;
-        return this.http.put(url, JSON.stringify(replicationRule), HTTP_JSON_OPTIONS).toPromise()
+        let url = `${this._ruleBaseUrl}/${id}`;
+        return this.http.put(url, JSON.stringify(rep), HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
             .catch(error => Promise.reject(error));
     }
@@ -298,7 +298,7 @@ export class ReplicationDefaultService extends ReplicationService {
             return Promise.reject('Bad argument');
         }
 
-        let logUrl: string = `${this._jobBaseUrl}/${jobId}/log`;
+        let logUrl = `${this._jobBaseUrl}/${jobId}/log`;
         return this.http.get(logUrl, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.text())
             .catch(error => Promise.reject(error));

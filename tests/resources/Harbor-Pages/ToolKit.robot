@@ -33,14 +33,16 @@ Partly Success
     Sleep  1
 
 Filter Object
+#Filter project repo user tag.
     [Arguments]    ${kw}
     Click Element  xpath=//hbr-filter//clr-icon
     Input Text   xpath=//hbr-filter//input  ${kw}
     Sleep  1
 
 Select Object
+#select single element such as user project repo tag
     [Arguments]    ${obj}
-    Click Element  //clr-dg-cell[contains(.,'${obj}')]//label
+    Click Element  //clr-dg-row[contains(.,'${obj}')]//label
 
 Multi-delete Object
     [Arguments]    @{obj}

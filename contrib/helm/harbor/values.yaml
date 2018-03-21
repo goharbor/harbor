@@ -1,5 +1,5 @@
 # Configure persisten Volumes per application
-## Applications that require storage have a `volumes` defintion which will be used
+## Applications that require storage have a `volumes` definition which will be used
 ## when `persistence.enabled` is set to true.
 ## example
 # mysql:
@@ -28,81 +28,34 @@
 persistence:
   enabled: false
 
-externalDomain: harbor.192.168.99.100.xip.io
-## tls_crt, tls_key, ca_crt should match the domain above
+# The tag for Harbor docker images.
+harborImageTag: &harbor_image_tag v1.4.0
 
-tlsCrt: |
-  -----BEGIN CERTIFICATE-----
-  MIIDJDCCAgygAwIBAgIJAKNSg1jp3l2oMA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNV
-  BAMMB3Rlc3QtY2EwHhcNMTgwMTEzMTg1NTIwWhcNMTgwMzE0MTg1NTIwWjAnMSUw
-  IwYDVQQDDBxoYXJib3IuMTkyLjE2OC45OS4xMDAueGlwLmlvMIIBIjANBgkqhkiG
-  9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxlAD8tlryoGsweXCwDgfyPGkaM9hXsVLW2PH
-  /vGWBVMXOdxpFhuvH7tXmqN3Ek39YQjcsb+nHAGx7ynx6KFtvzcXCjGfeI1yuoN0
-  8H2sfV7yxtkVLu/uJGb8mSfsw9ubOR/zMbrsD1oH0tzi3cnW0kcbY0u0Xp/5g0PP
-  +tig0X+PDfumK/W6KnTOAmnfNTJwhhlljako+lveT5EjVtQMdJmV16PZJwCDA4b9
-  2U8EkLOjXcSg2ad03XxASGUuG8oMLHNXF0zcJ9421DviaRQGJUSjR571t/YCc2KK
-  AQVZ/zSI5duQVysfMZrjiuvSQfKSWRVY6z0JAWH7+Dx+1u8ilwIDAQABo2gwZjAJ
-  BgNVHRMEAjAAMAsGA1UdDwQEAwIF4DAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYB
-  BQUHAwEwLQYDVR0RBCYwJIIcaGFyYm9yLjE5Mi4xNjguOTkuMTAwLnhpcC5pb4cE
-  wKhjZDANBgkqhkiG9w0BAQsFAAOCAQEATgS0Y2wQiCQrVfiDFSIxtIBK2af0qtoA
-  J4DZ/1Jo01uGycFCyt9KOKbmFubrJu9NHuACL9od3RI37k6L73lV2zB3sS4NEcH2
-  SvF+rOE7gmtgJULHCDFEWSMxHdUFwcdG1trRVe+9Gyp/LGdC4yyycmwquz7YXf+r
-  7b5r26rFAYmO8rWYtDt4clC3JSR3O1BmF5ktRNzUtRvrzr3UuwYz0Wy72S/Sa+Iu
-  RnassP8mg6PCppeGccYFcFihL9kDl4g4Xu/PaMiKdxjdeAV6xAd7VbKBZSi/ljnF
-  OUUUi7MDJuUWbHEb0XrEXNzihBzf7bu4I2MftQidIg6LwWjiYZRHmw==
-  -----END CERTIFICATE-----
-tlsKey: |
-  -----BEGIN RSA PRIVATE KEY-----
-  MIIEpAIBAAKCAQEAxlAD8tlryoGsweXCwDgfyPGkaM9hXsVLW2PH/vGWBVMXOdxp
-  FhuvH7tXmqN3Ek39YQjcsb+nHAGx7ynx6KFtvzcXCjGfeI1yuoN08H2sfV7yxtkV
-  Lu/uJGb8mSfsw9ubOR/zMbrsD1oH0tzi3cnW0kcbY0u0Xp/5g0PP+tig0X+PDfum
-  K/W6KnTOAmnfNTJwhhlljako+lveT5EjVtQMdJmV16PZJwCDA4b92U8EkLOjXcSg
-  2ad03XxASGUuG8oMLHNXF0zcJ9421DviaRQGJUSjR571t/YCc2KKAQVZ/zSI5duQ
-  VysfMZrjiuvSQfKSWRVY6z0JAWH7+Dx+1u8ilwIDAQABAoIBAQC2QDDwzRm/2N6w
-  r3wEdU/YtyJWZEfi9cRkb9YMGW+64vrUZRh6heSyb9R5vEKgouX6eE+CV1S3a2Ng
-  HZdBKKIYegOFjcc13iCTAl7E6WpNKaZKUpSiN0QPVkpMYqG3+am0nQU+Lb/l9+J6
-  yh8Anw763vhvj9Jqp/CBzx9jNBTPkh6u02Ayhegn7BBIpxk3LmdWSFn4IBXSxnMs
-  6B9h8motQFXRJDFm37YFl3834jNWilJT2Z/MCumoAGwNhOFFd5wZM5St1jvfFQlw
-  A44+AbnOf9sArukXa2NA/HHs6hZHt9GN10kbMBj9wbQRN960OKK4P6+8vVrJ+gUu
-  iodHLiaxAoGBAP+hlsJvqatgLJmqrODpWrhRqXxWNYs3VJXR5XEEtygVMe2FT7a6
-  pu5GWgjpQUHFqgqSNpRiJnxdI+AELH6AkeTMg4EyCoaJJKaitMslnCvQHL5oQjIb
-  IjJrxk/EObxh/7NuSf/nzUBfmhJhZ/pz6LbBLqiy35Cpq106XVC/XSMJAoGBAMaZ
-  Qd2nUQPhR7+wxDT38duKRIendYd4BiGqc7z9M91+HLjNg9W7cRPx6bUCaN5E4uwx
-  PzixsHmWc5H1bDgf9ymAMvexfB3BTXfO9tRn6nZu+XbcN6eJejKYj2iVMjDZrVHu
-  FZzrusRwPXI1I+b8rnKvNF+wf9DQcIVl7VW1G2CfAoGBAMLPSizzG8JWkKaqwwTD
-  0TcWRKtUp4loqTVjuA7hIROS03HHXnBK3lxHkOWpnOma0XMs6hs6kUnFUUmu5Jmj
-  MYvDr5QNpqfQa/XxmQYXq2RYPQ9+NLQqqWzzZTX0vGsr48nCCvLSnECqmqfXQ35C
-  Rt6/aed2KZn9M3Lgv6yBqWDBAoGAIEXjeDuqZLEFUddN6zWnrf+IJ2tFJCCTDoF+
-  kWWsOgA2dqmfFOqC87TKP8oGdKhJIAzYs0Pc48VZPozdazl2lt3oamwDOWqiRifx
-  4I6KgXiDPZeHy8gBfZthIqOsJlgZXEkOZhPApA+BTL/p9610Q9rI7gvmmW5l+qeX
-  q+fkbQ0CgYBYwF4lcMrON5k8cwZMTyPMwOsY+TsxpsoqUqPPHm9JW2DZDQ1f7oEm
-  1b6zTkwtqbnQX7vKosEivCbeQLN0XOZms+BM/KIwcuZjKxy/rkMNaFcqWlOvktug
-  hk8Jkkt1dANV5rNPYEkt7G+PiL7ApOV6fGvJRA4f8+RFrfPFtku4Sw==
-  -----END RSA PRIVATE KEY-----
-caCrt: |
-  -----BEGIN CERTIFICATE-----
-  MIIC9zCCAd+gAwIBAgIJAPRSQQK2Q7dsMA0GCSqGSIb3DQEBCwUAMBIxEDAOBgNV
-  BAMMB3Rlc3QtY2EwHhcNMTgwMTEzMTg1NTIwWhcNMjgwMTExMTg1NTIwWjASMRAw
-  DgYDVQQDDAd0ZXN0LWNhMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA
-  znp0w37dGXlUgAXx5p4cwQ/XEiZGA1NorbcV3RTox3wX4b0bFJwKij8hLFMRZrEd
-  f40AxvQnyTcoX80c0w1M+3fG/pq5PhsfjrphX/EZ/rYJDZkO4vz60H8uc2g9AgVR
-  IvYbMobX7KcRruyi2dnt22q6O6Xy0pCkTE/+UAgcbwUCNDA9H/+8RhmXkAEaIyc8
-  y5vIpwfjiSdX6Kqv5zg0ZRESE+s9g6+U4NfwHbeUqfl6/ZuP8xXy2az3tdTqN8l0
-  dCMjv/dpLzPAOaZhzj+BYN1iVMTFhm6FzszkdTuvJliCIUJeyIqvzqz+k+ai8xR9
-  s0hrZrTzmN2id5J5cWSWawIDAQABo1AwTjAdBgNVHQ4EFgQU1L/db3zQjJW8ycmd
-  3D3jh4/HtJEwHwYDVR0jBBgwFoAU1L/db3zQjJW8ycmd3D3jh4/HtJEwDAYDVR0T
-  BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAJrNwGShGJhmVSoBsSi+4tEa98UC8
-  7ULKyvaK+RPYKb4K2igMFHZD3KhaayShEG3rw/Y53hdmU+3I82tQ+txGmQoqicxg
-  BwAODdvixH5gP4idh7G1Q6tDvgJGGl2HvcE8fzbVIO3qDKefPlif20eX2gUc/Ut5
-  gyiyJutOQKVjEUb5bmUaeRyTXo8Vf2TIhIRfdXHg2ueWj2lDWbtVxQbn/m7aSqON
-  9YN5xfXY36tpVp40RV1J36FUskkhgc/DZcgEMYdAr2XrjDS1A0TnEaDatQUgYgpd
-  J0oP9V+2FMfDFvIhX5tNrEuIIFMyO+HR0wxV7huTUeus4knyXBZur3If+g==
-  -----END CERTIFICATE-----
+# The FQDN for Harbor service.
+externalDomain: harbor.my.domain
+# If set to true, you don't need to set tlsCrt/tlsKey/caCrt, but must add
+# Harbor FQDN as insecure-registries for your docker client.
+insecureRegistry: false
+# The TLS certificate for Harbor. The common name of tlsCrt must match the externalDomain above.
+tlsCrt:
+tlsKey:
+caCrt:
+
+# The secret key used for encryption. Must be a string of 16 chars.
+secretKey: not-a-secure-key
+
+# These annotations allow the registry to work behind the nginx
+# ingress controller.
+ingress:
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.kubernetes.io/body-size: "0"
+    ingress.kubernetes.io/proxy-body-size: "0"
 
 adminserver:
   image:
     repository: vmware/harbor-adminserver
-    tag: v1.3.0
+    tag: *harbor_image_tag
     pullPolicy: IfNotPresent
   emailHost: "smtp.mydomain.com"
   emailPort: "25"
@@ -110,7 +63,7 @@ adminserver:
   emailSsl: "false"
   emailFrom: "admin <sample_admin@mydomain.com>"
   emailIdentity: ""
-  key: not-a-secure-key
+  emailInsecure: "False"
   emailPwd: not-a-secure-password
   harborAdminPassword: Harbor12345
   ## Persist data to a persistent volume
@@ -129,9 +82,8 @@ adminserver:
 jobservice:
   image:
     repository: vmware/harbor-jobservice
-    tag: v1.3.0
+    tag: *harbor_image_tag
     pullPolicy: IfNotPresent
-  key: not-a-secure-key
   secret: not-a-secure-secret
 # resources:
 #   requests:
@@ -143,10 +95,9 @@ jobservice:
 ui:
   image:
     repository: vmware/harbor-ui
-    tag: v1.3.0
+    tag: *harbor_image_tag
     pullPolicy: IfNotPresent
   secret: not-a-secure-secret
-  key: not-a-secure-key
   privateKeyPem: |
     -----BEGIN RSA PRIVATE KEY-----
     MIIJKAIBAAKCAgEA4WYbxdrFGG6RnfyYKlHYML3lEqtA9cYWWOynE9BeaEr/cMnM
@@ -211,7 +162,7 @@ ui:
 mysql:
   image:
     repository: vmware/harbor-db
-    tag: v1.3.0
+    tag: *harbor_image_tag
     pullPolicy: IfNotPresent
   # If left blank will use the included mysql service name.
   host: ~
@@ -231,8 +182,8 @@ mysql:
 
 registry:
   image:
-    repository: registry
-    tag: "2.6.2"
+    repository: vmware/registry-photon
+    tag: v2.6.2-v1.4.0
     pullPolicy: IfNotPresent
   httpSecret: not-a-secure-secret
   logLevel:
@@ -296,12 +247,12 @@ registry:
 ## Enabling it will just break things.
 #
 clair:
-  enabled: false
-  postgresPassword: not-a-secure-password
+  enabled: true
   image:
-    repository: vmware/clair
-    tag: v2.0.1-photon
+    repository: vmware/clair-photon
+    tag: v2.0.1-v1.4.0
     pullPolicy: IfNotPresent
+  postgresPassword: not-a-secure-password
   pgImage:
     repository: postgres
     tag: "9.6.4"

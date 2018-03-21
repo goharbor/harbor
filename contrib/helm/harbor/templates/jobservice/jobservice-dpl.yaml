@@ -3,14 +3,18 @@ kind: Deployment
 metadata:
   name: "{{ template "harbor.fullname" . }}-jobservice"
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
     component: jobservice
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: jobservice
   template:
     metadata:
       labels:
-{{ include "helm.labels" . | indent 8 }}
+{{ include "harbor.labels" . | indent 8 }}
         component: jobservice
     spec:
       containers:
@@ -50,7 +54,7 @@ spec:
         secret:
           secretName: "{{ template "harbor.fullname" . }}-jobservice"
           items:
-            - key: key
+            - key: secretKey
               path: key
       - name: job-logs
         emptyDir: {}

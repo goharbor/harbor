@@ -111,7 +111,7 @@ create table project_metadata (
  creation_time timestamp,
  update_time timestamp,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
- UNIQUE(project_id, name) ON CONFLICT REPLACE,
+ UNIQUE(project_id, name),
  FOREIGN KEY (project_id) REFERENCES project(project_id)
 );
 
@@ -238,6 +238,47 @@ create table properties (
  k varchar(64) NOT NULL,
  v varchar(128) NOT NULL,
  UNIQUE(k)
+ );
+
+create table harbor_label (
+ id INTEGER PRIMARY KEY,
+ name varchar(128) NOT NULL,
+ description text,
+ color varchar(16),
+/*
+ 's' for system level labels
+ 'u' for user level labels
+*/
+ level char(1) NOT NULL,
+/*
+ 'g' for global labels
+ 'p' for project labels
+*/
+ scope char(1) NOT NULL,
+ project_id int,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP,
+ UNIQUE(name, scope)
+ );
+
+create table harbor_resource_label (
+ id INTEGER PRIMARY KEY,
+ label_id int NOT NULL,
+/*
+ the resource_id is the ID of project when the resource_type is p
+ the resource_id is the ID of repository when the resource_type is r
+ the resource_id is the name of image when the resource_type is i
+*/
+ resource_id varchar(256) NOT NULL,
+/*
+ 'p' for project
+ 'r' for repository
+ 'i' for image
+*/
+ resource_type char(1) NOT NULL,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP,
+ UNIQUE (label_id,resource_id, resource_type)
  );
 
 create table alembic_version (

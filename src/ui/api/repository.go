@@ -25,6 +25,7 @@ import (
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/notifier"
@@ -47,15 +48,16 @@ type RepositoryAPI struct {
 }
 
 type repoResp struct {
-	ID           int64     `json:"id"`
-	Name         string    `json:"name"`
-	ProjectID    int64     `json:"project_id"`
-	Description  string    `json:"description"`
-	PullCount    int64     `json:"pull_count"`
-	StarCount    int64     `json:"star_count"`
-	TagsCount    int64     `json:"tags_count"`
-	CreationTime time.Time `json:"creation_time"`
-	UpdateTime   time.Time `json:"update_time"`
+	ID           int64           `json:"id"`
+	Name         string          `json:"name"`
+	ProjectID    int64           `json:"project_id"`
+	Description  string          `json:"description"`
+	PullCount    int64           `json:"pull_count"`
+	StarCount    int64           `json:"star_count"`
+	TagsCount    int64           `json:"tags_count"`
+	Labels       []*models.Label `json:"labels"`
+	CreationTime time.Time       `json:"creation_time"`
+	UpdateTime   time.Time       `json:"update_time"`
 }
 
 type tagDetail struct {
@@ -78,6 +80,7 @@ type tagResp struct {
 	tagDetail
 	Signature    *notary.Target          `json:"signature"`
 	ScanOverview *models.ImgScanOverview `json:"scan_overview,omitempty"`
+	Labels       []*models.Label         `json:"labels"`
 }
 
 type manifestResp struct {
@@ -145,10 +148,10 @@ func getRepositories(projectID int64, keyword string,
 		return nil, err
 	}
 
-	return populateTagsCount(repositories)
+	return assembleRepos(repositories)
 }
 
-func populateTagsCount(repositories []*models.RepoRecord) ([]*repoResp, error) {
+func assembleRepos(repositories []*models.RepoRecord) ([]*repoResp, error) {
 	result := []*repoResp{}
 	for _, repository := range repositories {
 		repo := &repoResp{
@@ -167,6 +170,15 @@ func populateTagsCount(repositories []*models.RepoRecord) ([]*repoResp, error) {
 			return nil, err
 		}
 		repo.TagsCount = int64(len(tags))
+
+		labels, err := dao.GetLabelsOfResource(common.ResourceTypeRepository,
+			strconv.FormatInt(repository.RepositoryID, 10))
+		if err != nil {
+			log.Errorf("failed to get labels of repository %s: %v", repository.Name, err)
+		} else {
+			repo.Labels = labels
+		}
+
 		result = append(result, repo)
 	}
 	return result, nil
@@ -252,6 +264,11 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	for _, t := range tags {
+		image := fmt.Sprintf("%s:%s", repoName, t)
+		if err = dao.DeleteLabelsOfResource(common.ResourceTypeImage, image); err != nil {
+			ra.HandleInternalServerError(fmt.Sprintf("failed to delete labels of image %s: %v", image, err))
+			return
+		}
 		if err = rc.DeleteTag(t); err != nil {
 			if regErr, ok := err.(*registry_error.HTTPError); ok {
 				if regErr.StatusCode == http.StatusNotFound {
@@ -296,6 +313,22 @@ func (ra *RepositoryAPI) Delete() {
 		ra.CustomAbort(http.StatusInternalServerError, "")
 	}
 	if !exist {
+		repository, err := dao.GetRepositoryByName(repoName)
+		if err != nil {
+			ra.HandleInternalServerError(fmt.Sprintf("failed to get repository %s: %v", repoName, err))
+			return
+		}
+		if repository == nil {
+			ra.HandleNotFound(fmt.Sprintf("repository %s not found", repoName))
+			return
+		}
+
+		if err = dao.DeleteLabelsOfResource(common.ResourceTypeRepository,
+			strconv.FormatInt(repository.RepositoryID, 10)); err != nil {
+			ra.HandleInternalServerError(fmt.Sprintf("failed to delete labels of repository %s: %v",
+				repoName, err))
+			return
+		}
 		if err = dao.DeleteRepository(repoName); err != nil {
 			log.Errorf("failed to delete repository %s: %v", repoName, err)
 			ra.CustomAbort(http.StatusInternalServerError, "")
@@ -343,7 +376,7 @@ func (ra *RepositoryAPI) GetTag() {
 		return
 	}
 
-	result := assemble(client, repository, []string{tag},
+	result := assembleTags(client, repository, []string{tag},
 		ra.SecurityCtx.GetUsername())
 	ra.Data["json"] = result[0]
 	ra.ServeJSON()
@@ -387,13 +420,13 @@ func (ra *RepositoryAPI) GetTags() {
 		return
 	}
 
-	ra.Data["json"] = assemble(client, repoName, tags, ra.SecurityCtx.GetUsername())
+	ra.Data["json"] = assembleTags(client, repoName, tags, ra.SecurityCtx.GetUsername())
 	ra.ServeJSON()
 }
 
 // get config, signature and scan overview and assemble them into one
 // struct for each tag in tags
-func assemble(client *registry.Repository, repository string,
+func assembleTags(client *registry.Repository, repository string,
 	tags []string, username string) []*tagResp {
 
 	var err error
@@ -433,6 +466,15 @@ func assemble(client *registry.Repository, repository string,
 					}
 				}
 			}
+		}
+
+		// labels
+		image := fmt.Sprintf("%s:%s", repository, t)
+		labels, err := dao.GetLabelsOfResource(common.ResourceTypeImage, image)
+		if err != nil {
+			log.Errorf("failed to get labels of image %s: %v", image, err)
+		} else {
+			item.Labels = labels
 		}
 
 		result = append(result, item)
@@ -633,7 +675,7 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
 	}
 
-	result, err := populateTagsCount(repos)
+	result, err := assembleRepos(repos)
 	if err != nil {
 		log.Errorf("failed to popultate tags count to repositories: %v", err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")

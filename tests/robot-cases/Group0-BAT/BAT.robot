@@ -42,7 +42,7 @@ Test Case - Clair Basic Verfication
     Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
-    Scan Repo  latest
+    Scan Repo  latest  Succeed
     Summary Chart Should Display  latest
     #Edit Repo Info
     Close Browser

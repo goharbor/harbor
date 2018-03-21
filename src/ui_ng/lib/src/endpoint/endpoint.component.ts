@@ -137,23 +137,13 @@ export class EndpointComponent implements OnInit, OnDestroy {
 
     editTargets(targets: Endpoint[]) {
         if (targets && targets.length === 1) {
-            let target= targets[0];
+            let target = targets[0];
             let editable = true;
             if (!target.id) {
                 return;
             }
             let id: number | string = target.id;
-            toPromise<ReplicationRule[]>(this.endpointService
-                .getEndpointWithReplicationRules(id))
-                .then(
-                rules => {
-                    if (rules && rules.length > 0) {
-                        rules.forEach((rule) => editable = (rule && rule.enabled !== 1));
-                    }
-                    this.createEditEndpointComponent.openCreateEditTarget(editable, id);
-                    this.forceRefreshView(1000);
-                })
-                .catch(error => this.errorHandler.error(error));
+            this.createEditEndpointComponent.openCreateEditTarget(editable, id);
         }
     }
 

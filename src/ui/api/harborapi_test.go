@@ -111,6 +111,10 @@ func init() {
 	beego.Router("/api/users/?:id", &UserAPI{})
 	beego.Router("/api/logs", &LogAPI{})
 	beego.Router("/api/repositories/*", &RepositoryAPI{}, "put:Put")
+	beego.Router("/api/repositories/*/labels", &RepositoryLabelAPI{}, "get:GetOfRepository;post:AddToRepository")
+	beego.Router("/api/repositories/*/labels/:id([0-9]+", &RepositoryLabelAPI{}, "delete:RemoveFromRepository")
+	beego.Router("/api/repositories/*/tags/:tag/labels", &RepositoryLabelAPI{}, "get:GetOfImage;post:AddToImage")
+	beego.Router("/api/repositories/*/tags/:tag/labels/:id([0-9]+", &RepositoryLabelAPI{}, "delete:RemoveFromImage")
 	beego.Router("/api/repositories/*/tags/:tag", &RepositoryAPI{}, "delete:Delete;get:GetTag")
 	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
@@ -132,7 +136,9 @@ func init() {
 	beego.Router("/api/configurations/reset", &ConfigAPI{}, "post:Reset")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 	beego.Router("/api/replications", &ReplicationAPI{})
-
+	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
+	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
+    beego.Router("/api/ping", &SystemInfoAPI{}, "get:Ping")
 	_ = updateInitPassword(1, "Harbor12345")
 
 	if err := core.Init(); err != nil {
@@ -982,6 +988,11 @@ func (a testapi) VolumeInfoGet(authInfo usrInfo) (int, apilib.SystemInfo, error)
 
 func (a testapi) GetGeneralInfo() (int, []byte, error) {
 	_sling := sling.New().Get(a.basePath).Path("/api/systeminfo")
+	return request(_sling, jsonAcceptHeader)
+}
+
+func (a testapi) Ping() (int, []byte, error) {
+	_sling := sling.New().Get(a.basePath).Path("/api/ping")
 	return request(_sling, jsonAcceptHeader)
 }
 

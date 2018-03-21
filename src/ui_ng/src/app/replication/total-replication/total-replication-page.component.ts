@@ -13,9 +13,10 @@
 // limitations under the License.
 import { Component } from '@angular/core';
 
-import {Router,ActivatedRoute} from "@angular/router";
-import {ReplicationRule} from "../replication-rule/replication-rule";
+import {Router, ActivatedRoute} from "@angular/router";
+
 import {SessionService} from "../../shared/session.service";
+import {ReplicationRule} from "harbor-ui";
 
 @Component({
   selector: 'total-replication',
@@ -31,17 +32,12 @@ export class TotalReplicationPageComponent {
       this.router.navigate(['../projects', rule.projects[0].project_id, 'replications'],  { relativeTo: this.activeRoute });
     }
   }
+  goRegistry(): void {
+    this.router.navigate(['../registries'],  { relativeTo: this.activeRoute });
+  }
 
   public get isSystemAdmin(): boolean {
     let account = this.session.getCurrentUser();
     return account != null && account.has_admin_role > 0;
-  }
-
-  openEditPage(id: number): void {
-      this.router.navigate([id, 'rule'],  { relativeTo: this.activeRoute });
-  }
-
-  openCreatePage(): void {
-    this.router.navigate(['new-rule'],  { relativeTo: this.activeRoute });
   }
 }

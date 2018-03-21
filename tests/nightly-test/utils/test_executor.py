@@ -40,6 +40,20 @@ def execute(harbor_endpoints, vm_names, harbor_root_pwd, test_suite, auth_mode ,
                 sys.stdout.flush()
         exe_result = p.returncode
 
+    if test_suite == 'Replication':
+        cmd = cmd + "/drone/tests/robot-cases/Group11-Nightly/Replication.robot"
+
+        logger.info(cmd)
+        p = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
+        while True:
+            out = p.stderr.read(1)
+            if out == '' and p.poll() != None:
+                break
+            if out != '':
+                sys.stdout.write(out)
+                sys.stdout.flush()
+        exe_result = p.returncode
+
     if test_suite == 'Longevity':
         cmd = cmd + "/drone/tests/robot-cases/Group12-Longevity/Longevity.robot > /dev/null 2>&1"
         logger.info(cmd)

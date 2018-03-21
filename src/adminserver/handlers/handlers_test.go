@@ -45,28 +45,40 @@ func TestNewAuthHandler(t *testing.T) {
 	cases := []struct {
 		authenticator auth.Authenticator
 		handler       http.Handler
+		insecureAPIs  map[string]bool
 		responseCode  int
+		requestURL    string
 	}{
 
-		{nil, nil, http.StatusOK},
+		{nil, nil, nil, http.StatusOK,"http://localhost/good"},
 		{&fakeAuthenticator{
 			authenticated: false,
 			err:           nil,
-		}, nil, http.StatusUnauthorized},
+		}, nil, nil, http.StatusUnauthorized,"http://localhost/hello"},
 		{&fakeAuthenticator{
 			authenticated: false,
 			err:           errors.New("error"),
-		}, nil, http.StatusInternalServerError},
+		}, nil, nil, http.StatusInternalServerError,"http://localhost/hello"},
 		{&fakeAuthenticator{
 			authenticated: true,
 			err:           nil,
-		}, &fakeHandler{http.StatusNotFound}, http.StatusNotFound},
+		}, &fakeHandler{http.StatusNotFound}, nil, http.StatusNotFound,"http://localhost/notexsit"},
+		{&fakeAuthenticator{
+			authenticated: false,
+			err:           nil,
+		}, &fakeHandler{http.StatusOK},map[string]bool{"/api/ping":true,},http.StatusOK,"http://localhost/api/ping"},
 	}
 
 	for _, c := range cases {
-		handler := newAuthHandler(c.authenticator, c.handler)
+		handler := newAuthHandler(c.authenticator, c.handler, c.insecureAPIs)
 		w := httptest.NewRecorder()
-		handler.ServeHTTP(w, nil)
+		r := httptest.NewRequest("GET",c.requestURL,nil)
+		handler.ServeHTTP(w, r)
 		assert.Equal(t, c.responseCode, w.Code, "unexpected response code")
 	}
+	handler := NewHandler()
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET","http://localhost/api/ping",nil)
+	handler.ServeHTTP(w,r)
+	
 }

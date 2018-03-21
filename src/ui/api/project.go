@@ -42,7 +42,7 @@ type ProjectAPI struct {
 	project *models.Project
 }
 
-const projectNameMaxLen int = 30
+const projectNameMaxLen int = 255
 const projectNameMinLen int = 2
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
 
@@ -491,7 +491,7 @@ func (p *ProjectAPI) Logs() {
 func validateProjectReq(req *models.ProjectRequest) error {
 	pn := req.Name
 	if isIllegalLength(req.Name, projectNameMinLen, projectNameMaxLen) {
-		return fmt.Errorf("Project name is illegal in length. (greater than 2 or less than 30)")
+		return fmt.Errorf("Project name is illegal in length. (greater than %d or less than %d)", projectNameMaxLen, projectNameMinLen)
 	}
 	validProjectName := regexp.MustCompile(`^` + restrictedNameChars + `$`)
 	legal := validProjectName.MatchString(pn)

@@ -60,6 +60,7 @@ func initRouters() {
 	}
 
 	// API
+	beego.Router("/api/ping", &api.SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
@@ -70,7 +71,11 @@ func initRouters() {
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/scanAll", &api.RepositoryAPI{}, "post:ScanAll")
 	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete;put:Put")
+	beego.Router("/api/repositories/*/labels", &api.RepositoryLabelAPI{}, "get:GetOfRepository;post:AddToRepository")
+	beego.Router("/api/repositories/*/labels/:id([0-9]+)", &api.RepositoryLabelAPI{}, "delete:RemoveFromRepository")
 	beego.Router("/api/repositories/*/tags/:tag", &api.RepositoryAPI{}, "delete:Delete;get:GetTag")
+	beego.Router("/api/repositories/*/tags/:tag/labels", &api.RepositoryLabelAPI{}, "get:GetOfImage;post:AddToImage")
+	beego.Router("/api/repositories/*/tags/:tag/labels/:id([0-9]+)", &api.RepositoryLabelAPI{}, "delete:RemoveFromImage")
 	beego.Router("/api/repositories/*/tags", &api.RepositoryAPI{}, "get:GetTags")
 	beego.Router("/api/repositories/*/tags/:tag/scan", &api.RepositoryAPI{}, "post:ScanImage")
 	beego.Router("/api/repositories/*/tags/:tag/vulnerability/details", &api.RepositoryAPI{}, "Get:VulnerabilityDetails")
@@ -94,6 +99,8 @@ func initRouters() {
 	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
 	beego.Router("/api/replications", &api.ReplicationAPI{})
+	beego.Router("/api/labels", &api.LabelAPI{}, "post:Post;get:List")
+	beego.Router("/api/labels/:id([0-9]+)", &api.LabelAPI{}, "get:Get;put:Put;delete:Delete")
 
 	beego.Router("/api/systeminfo", &api.SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
@@ -108,6 +115,7 @@ func initRouters() {
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")
+	
 	//Error pages
 	beego.ErrorController(&controllers.ErrorController{})
 

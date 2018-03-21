@@ -31,7 +31,10 @@ func NewHandler() http.Handler {
 		"uiSecret":         os.Getenv("UI_SECRET"),
 		"jobserviceSecret": os.Getenv("JOBSERVICE_SECRET"),
 	}
-	h = newAuthHandler(auth.NewSecretAuthenticator(secrets), h)
+	insecureAPIs := map[string]bool{
+		"/api/ping":true,
+	}
+	h = newAuthHandler(auth.NewSecretAuthenticator(secrets), h, insecureAPIs)
 	h = gorilla_handlers.LoggingHandler(os.Stdout, h)
 	return h
 }
@@ -39,12 +42,14 @@ func NewHandler() http.Handler {
 type authHandler struct {
 	authenticator auth.Authenticator
 	handler       http.Handler
+	insecureAPIs  map[string]bool
 }
 
-func newAuthHandler(authenticator auth.Authenticator, handler http.Handler) http.Handler {
+func newAuthHandler(authenticator auth.Authenticator, handler http.Handler, insecureAPIs map[string]bool) http.Handler {
 	return &authHandler{
 		authenticator: authenticator,
 		handler:       handler,
+		insecureAPIs:   insecureAPIs,
 	}
 }
 
@@ -56,6 +61,12 @@ func (a *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if a.insecureAPIs !=nil && a.insecureAPIs[r.URL.Path] {
+		if a.handler != nil {
+			a.handler.ServeHTTP(w, r)
+		}
+		return
+	}
 	valid, err := a.authenticator.Authenticate(r)
 	if err != nil {
 		log.Errorf("failed to authenticate request: %v", err)

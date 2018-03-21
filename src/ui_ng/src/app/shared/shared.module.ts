@@ -58,7 +58,6 @@ import {
   ErrorHandler,
   HarborLibraryModule
 } from 'harbor-ui';
-import {LeavingNewRuleRouteDeactivate} from "./route/leaving-new-rule-deactivate.service";
 import { LeavingRepositoryRouteDeactivate } from './route/leaving-repository-deactivate.service';
 
 const uiLibConfig: IServiceConfig = {
@@ -125,7 +124,6 @@ const uiLibConfig: IServiceConfig = {
     AuthCheckGuard,
     SignInGuard,
     LeavingConfigRouteDeactivate,
-    LeavingNewRuleRouteDeactivate,
     LeavingRepositoryRouteDeactivate,
     MemberGuard,
     MessageHandlerService,

@@ -4,14 +4,18 @@ kind: Deployment
 metadata:
   name: {{ template "harbor.fullname" . }}-clair
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
     component: clair
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: clair
   template:
     metadata:
       labels:
-{{ include "helm.labels" . | indent 8 }}
+{{ include "harbor.labels" . | indent 8 }}
         component: clair
     spec:
       containers:

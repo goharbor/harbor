@@ -75,6 +75,10 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get ldap settings: %v", err)
 	}
 
+	if _, err := LDAPGroupConf(); err != nil {
+		t.Fatalf("failed to get ldap group settings: %v", err)
+	}
+
 	if _, err := TokenExpiration(); err != nil {
 		t.Fatalf("failed to get token expiration: %v", err)
 	}
