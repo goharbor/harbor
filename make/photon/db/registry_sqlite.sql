@@ -267,9 +267,12 @@ create table harbor_resource_label (
 /*
  the resource_id is the ID of project when the resource_type is p
  the resource_id is the ID of repository when the resource_type is r
- the resource_id is the name of image when the resource_type is i
 */
- resource_id varchar(256) NOT NULL,
+ resource_id int,
+/*
+ the resource_name is the name of image when the resource_type is i
+*/
+ resource_name varchar(256),
 /*
  'p' for project
  'r' for repository

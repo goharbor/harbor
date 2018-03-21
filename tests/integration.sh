@@ -13,10 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 set -x
 gsutil version -l
 set +x
+
+## -------------------------------------------- Pre-condition --------------------------------------------
+if [[ $DRONE_REPO != "vmware/harbor" ]]; then
+    echo "Only run tests again Harbor Repo."
+    exit 1
+fi
+# It won't package an new harbor build against tag, just pick up a build which passed CI and push to release.
+if [[ $DRONE_BUILD_EVENT == "tag" ]]; then
+    echo "We do nothing against 'tag'."
+    exit 0
+fi
 
 ## --------------------------------------------- Init Env -------------------------------------------------
 dpkg -l > package.list
@@ -25,16 +35,7 @@ Xvfb -ac :99 -screen 0 1280x1024x16 & export DISPLAY=:99
 
 export DRONE_SERVER=$DRONE_SERVER
 export DRONE_TOKEN=$DRONE_TOKEN
-buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
-echo $buildinfo
-git_commit=$(git rev-parse --short=8 HEAD)
-if [[ $DRONE_BUILD_EVENT == "tag" ]]; then
-    build_number=$(git describe --abbrev=0 --tags)
-else
-    build_number=$DRONE_BUILD_NUMBER-$git_commit
-fi
-echo build_number
-export HARBOR_BUILD_NUMBER=$build_number
+
 upload_build=false
 nightly_run=false
 upload_latest_build=false
@@ -68,6 +69,35 @@ echo "default_project_id = $GS_PROJECT_ID" >> $botofile
 container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
 echo $container_ip
 
+## --------------------------------------------- Init Version -----------------------------------------------
+buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
+echo $buildinfo
+git_commit=$(git rev-parse --short=8 HEAD)
+
+#  the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
+target_release_version=$(cat ./VERSION)
+#  the harbor ui version will be shown in the about dialog.
+Harbor_UI_Version=$target_release_version-$git_commit
+#  the harbor package version is for both online and offline installer.
+Harbor_Package_Version=$target_release_version-$DRONE_BUILD_NUMBER
+#  the harbor assets version is for tag of harbor images:
+# 1, On master branch, it's same as package version.
+# 2, On release branch(others), it would set to the target realese version so that we can rename the latest passed CI build to publish.
+if [[ $DRONE_REPO_BRANCH == "master" ]]; then
+  Harbor_Assets_Version=$target_release_version-$DRONE_BUILD_NUMBER
+else
+  Harbor_Assets_Version=$target_release_version
+fi
+export Harbor_Assets_Version=$Harbor_Assets_Version
+#  the env is for online and offline package.
+export Harbor_Package_Version=$Harbor_Package_Version
+
+echo "--------------------------------------------------"
+echo "Harbor UI version: $Harbor_UI_Version"
+echo "Harbor Package version: $Harbor_Package_Version"
+echo "Harbor Assets version: $Harbor_Assets_Version"
+echo "--------------------------------------------------" 
+
 # GS util
 function uploader {
     gsutil cp $1 gs://$2/$1
@@ -84,29 +114,24 @@ function package_offline_installer {
 }
 
 ## --------------------------------------------- Run Test Case ---------------------------------------------
-if [[ $DRONE_REPO != "vmware/harbor" ]]; then
-    echo "Only run tests again Harbor Repo."
-    exit 1
-fi
-
 echo "--------------------------------------------------"
 echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_REPO_BRANCH"
 echo "--------------------------------------------------"
 
 ##
-# Any merge code or tag on branch master, release-* or pks-* will trigger package offline installer.
+# Any merge code(PUSH) on branch master, release-* will trigger package offline installer.
 #
 # Put code here is because that it needs clean code to build installer.
 ##
-if [[ $DRONE_REPO_BRANCH == "master" || $DRONE_REPO_BRANCH == *"refs/tags"* || $DRONE_REPO_BRANCH == "release-"* || $DRONE_REPO_BRANCH == "pks-"* ]]; then
-    if [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+if [[ $DRONE_REPO_BRANCH == "master" || $DRONE_REPO_BRANCH == *"refs/tags"* || $DRONE_REPO_BRANCH == "release-"* ]]; then
+    if [[ $DRONE_BUILD_EVENT == "push" ]]; then
         package_offline_installer 
         upload_latest_build=true     
     fi
 fi
 
 ##
-# Any Event(PR or merge code) on any branch will trigger test run.
+# Any Event(pull_request or push) on any branch will trigger test run.
 ##
 if (echo $buildinfo | grep -q "\[Specific CI="); then
     buildtype=$(echo $buildinfo | grep "\[Specific CI=")
@@ -171,7 +196,7 @@ if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ] && [ $
 fi
 
 ## ------------------------------------- Build & Publish NPM Package for VIC ------------------------------------
-if [ $publish_npm == true ] && [ $rc -eq 0 ] && [[ $DRONE_BUILD_EVENT == "push" || $DRONE_BUILD_EVENT == "tag" ]]; then
+if [ $publish_npm == true ] && [ $rc -eq 0 ] && [[ $DRONE_BUILD_EVENT == "push" ]]; then
     echo "build & publish package harbor-ui-vic to npm repo."
     ./tools/ui_lib/build_ui_lib_4_vic.sh
 fi

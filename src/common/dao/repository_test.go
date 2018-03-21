@@ -16,10 +16,11 @@ package dao
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 )
 
@@ -32,61 +33,93 @@ var (
 	}
 )
 
-func TestGetRepositoryByProjectName(t *testing.T) {
-	if err := addRepository(repository); err != nil {
-		t.Fatalf("failed to add repository %s: %v", name, err)
-	}
-	defer func() {
-		if err := deleteRepository(name); err != nil {
-			t.Fatalf("failed to delete repository %s: %v", name, err)
-		}
-	}()
+func TestGetTotalOfRepositories(t *testing.T) {
+	total, err := GetTotalOfRepositories()
+	require.Nil(t, err)
 
-	repositories, err := GetRepositoryByProjectName(project)
-	if err != nil {
-		t.Fatalf("failed to get repositories of project %s: %v",
-			project, err)
-	}
+	err = addRepository(repository)
+	require.Nil(t, err)
+	defer deleteRepository(name)
 
-	if len(repositories) == 0 {
-		t.Fatal("unexpected length of repositories: 0, at least 1")
-	}
+	n, err := GetTotalOfRepositories()
+	require.Nil(t, err)
+	assert.Equal(t, total+1, n)
+}
 
-	exist := false
-	for _, repo := range repositories {
-		if repo.Name == name {
-			exist = true
+func TestGetRepositories(t *testing.T) {
+	// no query
+	repositories, err := GetRepositories()
+	require.Nil(t, err)
+	n := len(repositories)
+
+	err = addRepository(repository)
+	require.Nil(t, err)
+	defer deleteRepository(name)
+
+	repositories, err = GetRepositories()
+	require.Nil(t, err)
+	assert.Equal(t, n+1, len(repositories))
+
+	// query by name
+	repositories, err = GetRepositories(&models.RepositoryQuery{
+		Name: name,
+	})
+	require.Nil(t, err)
+	require.Equal(t, 1, len(repositories))
+	assert.Equal(t, name, repositories[0].Name)
+
+	// query by project name
+	repositories, err = GetRepositories(&models.RepositoryQuery{
+		ProjectName: project,
+	})
+	require.Nil(t, err)
+	found := false
+	for _, repository := range repositories {
+		if repository.Name == name {
+			found = true
 			break
 		}
 	}
-	if !exist {
-		t.Errorf("there is no repository whose name is %s", name)
-	}
-}
+	assert.True(t, found)
 
-func TestGetTotalOfRepositories(t *testing.T) {
-	total, err := GetTotalOfRepositories("")
-	if err != nil {
-		t.Fatalf("failed to get total of repositoreis: %v", err)
-	}
-
-	if err := addRepository(repository); err != nil {
-		t.Fatalf("failed to add repository %s: %v", name, err)
-	}
-	defer func() {
-		if err := deleteRepository(name); err != nil {
-			t.Fatalf("failed to delete repository %s: %v", name, err)
+	// query by project ID
+	repositories, err = GetRepositories(&models.RepositoryQuery{
+		ProjectIDs: []int64{1},
+	})
+	require.Nil(t, err)
+	found = false
+	for _, repository := range repositories {
+		if repository.Name == name {
+			found = true
+			break
 		}
-	}()
-
-	n, err := GetTotalOfRepositories("")
-	if err != nil {
-		t.Fatalf("failed to get total of repositoreis: %v", err)
 	}
+	assert.True(t, found)
 
-	if n != total+1 {
-		t.Errorf("unexpected total: %d != %d", n, total+1)
-	}
+	// query by label ID
+	labelID, err := AddLabel(&models.Label{
+		Name: "label_for_test",
+	})
+	require.Nil(t, err)
+	defer DeleteLabel(labelID)
+
+	r, err := GetRepositoryByName(name)
+	require.Nil(t, err)
+
+	rlID, err := AddResourceLabel(&models.ResourceLabel{
+		LabelID:      labelID,
+		ResourceID:   r.RepositoryID,
+		ResourceType: common.ResourceTypeRepository,
+	})
+	require.Nil(t, err)
+	defer DeleteResourceLabel(rlID)
+
+	repositories, err = GetRepositories(&models.RepositoryQuery{
+		LabelID: labelID,
+	})
+	require.Nil(t, err)
+	require.Equal(t, 1, len(repositories))
+	assert.Equal(t, name, repositories[0].Name)
 }
 
 func TestGetTopRepos(t *testing.T) {
@@ -147,112 +180,6 @@ func TestGetTopRepos(t *testing.T) {
 	require.NoError(err)
 	require.Len(topRepos, 3)
 	require.Equal(topRepos[0].Name, repository3.Name)
-}
-
-func TestGetTotalOfRepositoriesByProject(t *testing.T) {
-	var projectID int64 = 1
-	repoName := "library/total_count"
-
-	total, err := GetTotalOfRepositoriesByProject([]int64{projectID}, repoName)
-	if err != nil {
-		t.Errorf("failed to get total of repositoreis of project %d: %v", projectID, err)
-		return
-	}
-
-	if err := addRepository(&models.RepoRecord{
-		Name:      repoName,
-		ProjectID: projectID,
-	}); err != nil {
-		t.Errorf("failed to add repository %s: %v", repoName, err)
-		return
-	}
-	defer func() {
-		if err := deleteRepository(repoName); err != nil {
-			t.Errorf("failed to delete repository %s: %v", name, err)
-			return
-		}
-	}()
-
-	n, err := GetTotalOfRepositoriesByProject([]int64{projectID}, repoName)
-	if err != nil {
-		t.Errorf("failed to get total of repositoreis of project %d: %v", projectID, err)
-		return
-	}
-
-	if n != total+1 {
-		t.Errorf("unexpected total: %d != %d", n, total+1)
-	}
-}
-
-func TestGetRepositoriesByProject(t *testing.T) {
-	var projectID int64 = 1
-	repoName := "library/repository"
-
-	if err := addRepository(&models.RepoRecord{
-		Name:      repoName,
-		ProjectID: projectID,
-	}); err != nil {
-		t.Errorf("failed to add repository %s: %v", repoName, err)
-		return
-	}
-	defer func() {
-		if err := deleteRepository(repoName); err != nil {
-			t.Errorf("failed to delete repository %s: %v", name, err)
-			return
-		}
-	}()
-
-	repositories, err := GetRepositoriesByProject(projectID, repoName, 10, 0)
-	if err != nil {
-		t.Errorf("failed to get repositoreis of project %d: %v", projectID, err)
-		return
-	}
-
-	t.Log(repositories)
-
-	for _, repository := range repositories {
-		if repository.Name == repoName {
-			return
-		}
-	}
-
-	t.Errorf("repository %s not found", repoName)
-}
-
-func TestGetAllRepositories(t *testing.T) {
-	require := require.New(t)
-
-	var repos []*models.RepoRecord
-	repos, err := GetAllRepositories()
-	require.NoError(err)
-	allBefore := len(repos)
-
-	project1 := models.Project{
-		OwnerID: 1,
-		Name:    "projectRepo",
-	}
-	var err2 error
-	project1.ProjectID, err2 = AddProject(project1)
-	require.NoError(err2)
-
-	for i := 0; i < 1200; i++ {
-		end := strconv.Itoa(i)
-		repoRecord := models.RepoRecord{
-			Name:      "test" + end,
-			ProjectID: project1.ProjectID,
-		}
-		err := AddRepository(repoRecord)
-		require.NoError(err)
-	}
-
-	repos, err = GetAllRepositories()
-	require.NoError(err)
-	allAfter := len(repos)
-
-	require.Equal(allAfter, allBefore+1200)
-
-	err = clearRepositoryData()
-	require.NoError(err)
 }
 
 func addRepository(repository *models.RepoRecord) error {

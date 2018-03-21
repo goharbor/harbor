@@ -27,7 +27,7 @@ func TestGetRepos(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 	projectID := "1"
-	keyword := "hello-world"
+	keyword := "library/hello-world"
 
 	fmt.Println("Testing Repos Get API")
 	//-------------------case 1 : response code = 200------------------------//
