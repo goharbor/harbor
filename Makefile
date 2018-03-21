@@ -85,9 +85,12 @@ BUILDBIN=false
 MIGRATORFLAG=false
 
 # version prepare
+# for docker image tag
 VERSIONTAG=dev
+# for harbor package name
+PKGVERSIONTAG=dev
 VERSIONFILEPATH=$(CURDIR)
-VERSIONFILENAME=VERSION
+VERSIONFILENAME=UIVERSION
 
 #versions
 REGISTRYVERSION=v2.6.2
@@ -205,13 +208,13 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		vmware/nginx-photon:$(NGINXVERSION) vmware/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG) \
 		vmware/photon:$(PHOTONVERSION)
-PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(VERSIONTAG).tgz \
+PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/ha
-PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(VERSIONTAG).tgz \
+PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
