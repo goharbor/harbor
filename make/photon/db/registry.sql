@@ -85,7 +85,7 @@ create table project_member (
  id int not null AUTO_INCREMENT,
  project_id int NOT NULL,
  entity_id int NOT NULL,
- entity_type char NOT NULL, ## u for user, g for user group
+ entity_type char(1) NOT NULL, ## u for user, g for user group
  role int NOT NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
@@ -218,7 +218,7 @@ create table img_scan_job (
  id int NOT NULL AUTO_INCREMENT,
  status varchar(64) NOT NULL,
  repository varchar(256) NOT NULL,
- tag   varchar(128) NOT NULL,
+ tag varchar(128) NOT NULL,
  digest varchar(128),
  #New job service only records uuid, for compatibility in this table both IDs are stored.
  job_uuid varchar(64),
