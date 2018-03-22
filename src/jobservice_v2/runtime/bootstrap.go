@@ -18,6 +18,7 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job/impl"
 	"github.com/vmware/harbor/src/jobservice_v2/job/impl/scan"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/pool"
 )
 
@@ -67,6 +68,10 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 	//Start the API server
 	apiServer := bs.loadAndRunAPIServer(rootContext, config.DefaultConfig, ctl)
 	log.Infof("Server is started at %s:%d with %s", "", config.DefaultConfig.Port, config.DefaultConfig.Protocol)
+
+	//Start outdated log files sweeper
+	logSweeper := logger.NewSweeper(ctx, config.GetLogBasePath(), config.GetLogArchivePeriod())
+	logSweeper.Start()
 
 	//Block here
 	sig := make(chan os.Signal, 1)

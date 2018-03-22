@@ -15,17 +15,18 @@ import (
 )
 
 const (
-	jobServiceProtocol          = "JOB_SERVICE_PROTOCOL"
-	jobServicePort              = "JOB_SERVICE_PORT"
-	jobServiceHTTPCert          = "JOB_SERVICE_HTTPS_CERT"
-	jobServiceHTTPKey           = "JOB_SERVICE_HTTPS_KEY"
-	jobServiceWorkerPoolBackend = "JOB_SERVICE_POOL_BACKEND"
-	jobServiceWorkers           = "JOB_SERVICE_POOL_WORKERS"
-	jobServiceRedisHost         = "JOB_SERVICE_POOL_REDIS_HOST"
-	jobServiceRedisPort         = "JOB_SERVICE_POOL_REDIS_PORT"
-	jobServiceRedisNamespace    = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
-	jobServiceLoggerBasePath    = "JOB_SERVICE_LOGGER_BASE_PATH"
-	jobServiceLoggerLevel       = "JOB_SERVICE_LOGGER_LEVEL"
+	jobServiceProtocol            = "JOB_SERVICE_PROTOCOL"
+	jobServicePort                = "JOB_SERVICE_PORT"
+	jobServiceHTTPCert            = "JOB_SERVICE_HTTPS_CERT"
+	jobServiceHTTPKey             = "JOB_SERVICE_HTTPS_KEY"
+	jobServiceWorkerPoolBackend   = "JOB_SERVICE_POOL_BACKEND"
+	jobServiceWorkers             = "JOB_SERVICE_POOL_WORKERS"
+	jobServiceRedisHost           = "JOB_SERVICE_POOL_REDIS_HOST"
+	jobServiceRedisPort           = "JOB_SERVICE_POOL_REDIS_PORT"
+	jobServiceRedisNamespace      = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
+	jobServiceLoggerBasePath      = "JOB_SERVICE_LOGGER_BASE_PATH"
+	jobServiceLoggerLevel         = "JOB_SERVICE_LOGGER_LEVEL"
+	jobServiceLoggerArchivePeriod = "JOB_SERVICE_LOGGER_ARCHIVE_PERIOD"
 
 	//JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -80,8 +81,9 @@ type PoolConfig struct {
 
 //LoggerConfig keeps logger configurations.
 type LoggerConfig struct {
-	BasePath string `yaml:"path"`
-	LogLevel string `yaml:"level"`
+	BasePath      string `yaml:"path"`
+	LogLevel      string `yaml:"level"`
+	ArchivePeriod uint   `yaml:"archive_period"`
 }
 
 //Load the configuration options from the specified yaml file.
@@ -128,6 +130,15 @@ func GetLogLevel() string {
 	}
 
 	return ""
+}
+
+//GetLogArchivePeriod returns the archive period
+func GetLogArchivePeriod() uint {
+	if DefaultConfig.LoggerConfig != nil {
+		return DefaultConfig.LoggerConfig.ArchivePeriod
+	}
+
+	return 1 //return default
 }
 
 //Load env variables
@@ -218,11 +229,26 @@ func (c *Configuration) loadEnvs() {
 	//logger
 	loggerPath := utils.ReadEnv(jobServiceLoggerBasePath)
 	if !utils.IsEmptyStr(loggerPath) {
+		if c.LoggerConfig == nil {
+			c.LoggerConfig = &LoggerConfig{}
+		}
 		c.LoggerConfig.BasePath = loggerPath
 	}
 	loggerLevel := utils.ReadEnv(jobServiceLoggerLevel)
 	if !utils.IsEmptyStr(loggerLevel) {
+		if c.LoggerConfig == nil {
+			c.LoggerConfig = &LoggerConfig{}
+		}
 		c.LoggerConfig.LogLevel = loggerLevel
+	}
+	archivePeriod := utils.ReadEnv(jobServiceLoggerArchivePeriod)
+	if !utils.IsEmptyStr(archivePeriod) {
+		if period, err := strconv.Atoi(archivePeriod); err == nil {
+			if c.LoggerConfig == nil {
+				c.LoggerConfig = &LoggerConfig{}
+			}
+			c.LoggerConfig.ArchivePeriod = uint(period)
+		}
 	}
 
 }
@@ -289,6 +315,10 @@ func (c *Configuration) validate() error {
 	validLevels := "DEBUG,INFO,WARNING,ERROR,FATAL"
 	if !strings.Contains(validLevels, c.LoggerConfig.LogLevel) {
 		return fmt.Errorf("logger level can only be one of: %s", validLevels)
+	}
+
+	if c.LoggerConfig.ArchivePeriod == 0 {
+		return fmt.Errorf("logger archive period should be greater than 0")
 	}
 
 	return nil //valid

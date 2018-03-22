@@ -367,15 +367,15 @@ func (rjs *RedisJobStatsManager) submitStatusReportingItem(jobID string, status,
 	//Let it run in a separate goroutine to avoid waiting more time
 	go func() {
 		var (
-			hookUrl string
+			hookURL string
 			ok      bool
 			err     error
 		)
 
-		hookUrl, ok = rjs.hookStore.Get(jobID)
+		hookURL, ok = rjs.hookStore.Get(jobID)
 		if !ok {
 			//Retrieve from backend
-			hookUrl, err = rjs.getHook(jobID)
+			hookURL, err = rjs.getHook(jobID)
 			if err != nil {
 				//logged and exit
 				log.Warningf("no status hook found for job %s\n, abandon status reporting", jobID)
@@ -385,7 +385,7 @@ func (rjs *RedisJobStatsManager) submitStatusReportingItem(jobID string, status,
 
 		item := &queueItem{
 			op:   opReportStatus,
-			data: []string{jobID, hookUrl, status, checkIn},
+			data: []string{jobID, hookURL, status, checkIn},
 		}
 
 		rjs.processChan <- item
@@ -609,6 +609,10 @@ func (rjs *RedisJobStatsManager) getJobStats(jobID string) (models.JobStats, err
 }
 
 func (rjs *RedisJobStatsManager) saveJobStats(jobStats models.JobStats) error {
+	if jobStats.Stats == nil {
+		return errors.New("malformed job stats object")
+	}
+
 	conn := rjs.redisPool.Get()
 	defer conn.Close()
 

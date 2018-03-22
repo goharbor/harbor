@@ -25,4 +25,5 @@ worker_pool:
 logger:
   path: "/Users/szou/tmp/job_logs"
   level: "INFO"
+  archive_period: 1 #days
 
