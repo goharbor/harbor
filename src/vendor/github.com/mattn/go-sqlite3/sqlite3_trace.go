@@ -1,5 +1,4 @@
 // Copyright (C) 2016 Yasuhiro Matsumoto <mattn.jp@gmail.com>.
-// TODO: add "Gimpl do foo" team?
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -15,16 +14,12 @@ package sqlite3
 #endif
 #include <stdlib.h>
 
-void stepTrampoline(sqlite3_context*, int, sqlite3_value**);
-void doneTrampoline(sqlite3_context*);
-void traceCallbackTrampoline(unsigned traceEventCode, void *ctx, void *p, void *x);
+int traceCallbackTrampoline(unsigned int traceEventCode, void *ctx, void *p, void *x);
 */
 import "C"
 
 import (
-	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 	"sync"
 	"unsafe"
@@ -76,7 +71,7 @@ type TraceUserCallback func(TraceInfo) int
 
 type TraceConfig struct {
 	Callback        TraceUserCallback
-	EventMask       uint
+	EventMask       C.uint
 	WantExpandedSQL bool
 }
 
@@ -102,13 +97,13 @@ func fillExpandedSQL(info *TraceInfo, db *C.sqlite3, pStmt unsafe.Pointer) {
 
 //export traceCallbackTrampoline
 func traceCallbackTrampoline(
-	traceEventCode uint,
+	traceEventCode C.uint,
 	// Parameter named 'C' in SQLite docs = Context given at registration:
 	ctx unsafe.Pointer,
 	// Parameter named 'P' in SQLite docs (Primary event data?):
 	p unsafe.Pointer,
 	// Parameter named 'X' in SQLite docs (eXtra event data?):
-	xValue unsafe.Pointer) int {
+	xValue unsafe.Pointer) C.int {
 
 	if ctx == nil {
 		panic(fmt.Sprintf("No context (ev 0x%x)", traceEventCode))
@@ -196,7 +191,7 @@ func traceCallbackTrampoline(
 	if traceConf.Callback != nil {
 		r = traceConf.Callback(info)
 	}
-	return r
+	return C.int(r)
 }
 
 type traceMapEntry struct {
@@ -240,131 +235,6 @@ func popTraceMapping(connHandle uintptr) (TraceConfig, bool) {
 	return entryCopy.config, found
 }
 
-// RegisterAggregator makes a Go type available as a SQLite aggregation function.
-//
-// Because aggregation is incremental, it's implemented in Go with a
-// type that has 2 methods: func Step(values) accumulates one row of
-// data into the accumulator, and func Done() ret finalizes and
-// returns the aggregate value. "values" and "ret" may be any type
-// supported by RegisterFunc.
-//
-// RegisterAggregator takes as implementation a constructor function
-// that constructs an instance of the aggregator type each time an
-// aggregation begins. The constructor must return a pointer to a
-// type, or an interface that implements Step() and Done().
-//
-// The constructor function and the Step/Done methods may optionally
-// return an error in addition to their other return values.
-//
-// See _example/go_custom_funcs for a detailed example.
-func (c *SQLiteConn) RegisterAggregator(name string, impl interface{}, pure bool) error {
-	var ai aggInfo
-	ai.constructor = reflect.ValueOf(impl)
-	t := ai.constructor.Type()
-	if t.Kind() != reflect.Func {
-		return errors.New("non-function passed to RegisterAggregator")
-	}
-	if t.NumOut() != 1 && t.NumOut() != 2 {
-		return errors.New("SQLite aggregator constructors must return 1 or 2 values")
-	}
-	if t.NumOut() == 2 && !t.Out(1).Implements(reflect.TypeOf((*error)(nil)).Elem()) {
-		return errors.New("Second return value of SQLite function must be error")
-	}
-	if t.NumIn() != 0 {
-		return errors.New("SQLite aggregator constructors must not have arguments")
-	}
-
-	agg := t.Out(0)
-	switch agg.Kind() {
-	case reflect.Ptr, reflect.Interface:
-	default:
-		return errors.New("SQlite aggregator constructor must return a pointer object")
-	}
-	stepFn, found := agg.MethodByName("Step")
-	if !found {
-		return errors.New("SQlite aggregator doesn't have a Step() function")
-	}
-	step := stepFn.Type
-	if step.NumOut() != 0 && step.NumOut() != 1 {
-		return errors.New("SQlite aggregator Step() function must return 0 or 1 values")
-	}
-	if step.NumOut() == 1 && !step.Out(0).Implements(reflect.TypeOf((*error)(nil)).Elem()) {
-		return errors.New("type of SQlite aggregator Step() return value must be error")
-	}
-
-	stepNArgs := step.NumIn()
-	start := 0
-	if agg.Kind() == reflect.Ptr {
-		// Skip over the method receiver
-		stepNArgs--
-		start++
-	}
-	if step.IsVariadic() {
-		stepNArgs--
-	}
-	for i := start; i < start+stepNArgs; i++ {
-		conv, err := callbackArg(step.In(i))
-		if err != nil {
-			return err
-		}
-		ai.stepArgConverters = append(ai.stepArgConverters, conv)
-	}
-	if step.IsVariadic() {
-		conv, err := callbackArg(t.In(start + stepNArgs).Elem())
-		if err != nil {
-			return err
-		}
-		ai.stepVariadicConverter = conv
-		// Pass -1 to sqlite so that it allows any number of
-		// arguments. The call helper verifies that the minimum number
-		// of arguments is present for variadic functions.
-		stepNArgs = -1
-	}
-
-	doneFn, found := agg.MethodByName("Done")
-	if !found {
-		return errors.New("SQlite aggregator doesn't have a Done() function")
-	}
-	done := doneFn.Type
-	doneNArgs := done.NumIn()
-	if agg.Kind() == reflect.Ptr {
-		// Skip over the method receiver
-		doneNArgs--
-	}
-	if doneNArgs != 0 {
-		return errors.New("SQlite aggregator Done() function must have no arguments")
-	}
-	if done.NumOut() != 1 && done.NumOut() != 2 {
-		return errors.New("SQLite aggregator Done() function must return 1 or 2 values")
-	}
-	if done.NumOut() == 2 && !done.Out(1).Implements(reflect.TypeOf((*error)(nil)).Elem()) {
-		return errors.New("second return value of SQLite aggregator Done() function must be error")
-	}
-
-	conv, err := callbackRet(done.Out(0))
-	if err != nil {
-		return err
-	}
-	ai.doneRetConverter = conv
-	ai.active = make(map[int64]reflect.Value)
-	ai.next = 1
-
-	// ai must outlast the database connection, or we'll have dangling pointers.
-	c.aggregators = append(c.aggregators, &ai)
-
-	cname := C.CString(name)
-	defer C.free(unsafe.Pointer(cname))
-	opts := C.SQLITE_UTF8
-	if pure {
-		opts |= C.SQLITE_DETERMINISTIC
-	}
-	rv := C._sqlite3_create_function(c.db, cname, C.int(stepNArgs), C.int(opts), C.uintptr_t(newHandle(c, &ai)), nil, (*[0]byte)(unsafe.Pointer(C.stepTrampoline)), (*[0]byte)(unsafe.Pointer(C.doneTrampoline)))
-	if rv != C.SQLITE_OK {
-		return c.lastError()
-	}
-	return nil
-}
-
 // SetTrace installs or removes the trace callback for the given database connection.
 // It's not named 'RegisterTrace' because only one callback can be kept and called.
 // Calling SetTrace a second time on same database connection
@@ -396,7 +266,7 @@ func (c *SQLiteConn) SetTrace(requested *TraceConfig) error {
 	// The callback trampoline function does cleanup on Close event,
 	// regardless of the presence or absence of the user callback.
 	// Therefore it needs the Close event to be selected:
-	actualEventMask := reqCopy.EventMask | TraceClose
+	actualEventMask := uint(reqCopy.EventMask | TraceClose)
 	err := c.setSQLiteTrace(actualEventMask)
 	return err
 }
