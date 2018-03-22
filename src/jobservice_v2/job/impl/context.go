@@ -5,11 +5,14 @@ package impl
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 
-	hlog "github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice_v2/config"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
+	jlogger "github.com/vmware/harbor/src/jobservice_v2/job/impl/logger"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 )
 
 //Context ...
@@ -18,7 +21,7 @@ type Context struct {
 	sysContext context.Context
 
 	//Logger for job
-	logger *hlog.Logger
+	logger logger.Interface
 
 	//op command func
 	opCommandFunc job.CheckOPCmdFunc
@@ -46,13 +49,22 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 		sysContext: c.sysContext,
 	}
 
-	//TODO:Init logger here
+	//Init logger here
+	logPath := fmt.Sprintf("%s/%s.log", config.GetLogBasePath(), dep.ID)
+	jContext.logger = jlogger.New(logPath, config.GetLogLevel())
+	if jContext.logger == nil {
+		return nil, errors.New("failed to initialize job logger")
+	}
+
 	if opCommandFunc, ok := dep.ExtraData["opCommandFunc"]; ok {
 		if reflect.TypeOf(opCommandFunc).Kind() == reflect.Func {
 			if funcRef, ok := opCommandFunc.(job.CheckOPCmdFunc); ok {
 				jContext.opCommandFunc = funcRef
 			}
 		}
+	}
+	if jContext.opCommandFunc == nil {
+		return nil, errors.New("failed to inject opCommandFunc")
 	}
 
 	if checkInFunc, ok := dep.ExtraData["checkInFunc"]; ok {
@@ -61,6 +73,10 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 				jContext.checkInFunc = funcRef
 			}
 		}
+	}
+
+	if jContext.checkInFunc == nil {
+		return nil, errors.New("failed to inject checkInFunc")
 	}
 
 	return jContext, nil
@@ -94,4 +110,9 @@ func (c *Context) OPCommand() (string, bool) {
 	}
 
 	return "", false
+}
+
+//GetLogger returns the logger
+func (c *Context) GetLogger() logger.Interface {
+	return c.logger
 }

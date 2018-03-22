@@ -2,7 +2,11 @@
 
 package env
 
-import "context"
+import (
+	"context"
+
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
+)
 
 //JobContext is combination of BaseContext and other job specified resources.
 //JobContext will be the real execution context for one job.
@@ -45,6 +49,9 @@ type JobContext interface {
 	//  op command if have
 	//  flag to indicate if have command
 	OPCommand() (string, bool)
+
+	//Return the logger
+	GetLogger() logger.Interface
 }
 
 //JobData defines job context dependencies.

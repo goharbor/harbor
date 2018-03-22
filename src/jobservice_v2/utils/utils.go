@@ -24,12 +24,32 @@ func ReadEnv(key string) string {
 //FileExists check if the specified exists.
 func FileExists(file string) bool {
 	if !IsEmptyStr(file) {
-		if _, err := os.Stat(file); err == nil {
+		_, err := os.Stat(file)
+		if err == nil {
 			return true
 		}
+		if os.IsNotExist(err) {
+			return false
+		}
+
+		return true
 	}
 
 	return false
+}
+
+//DirExists check if the specified dir exists
+func DirExists(path string) bool {
+	if IsEmptyStr(path) {
+		return false
+	}
+
+	f, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return f.IsDir()
 }
 
 //IsValidPort check if port is valid.

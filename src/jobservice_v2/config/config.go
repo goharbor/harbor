@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
+	"strings"
 
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
 	yaml "gopkg.in/yaml.v2"
@@ -23,6 +24,8 @@ const (
 	jobServiceRedisHost         = "JOB_SERVICE_POOL_REDIS_HOST"
 	jobServiceRedisPort         = "JOB_SERVICE_POOL_REDIS_PORT"
 	jobServiceRedisNamespace    = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
+	jobServiceLoggerBasePath    = "JOB_SERVICE_LOGGER_BASE_PATH"
+	jobServiceLoggerLevel       = "JOB_SERVICE_LOGGER_LEVEL"
 
 	//JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -32,6 +35,9 @@ const (
 	//JobServicePoolBackendRedis represents redis backend
 	JobServicePoolBackendRedis = "redis"
 )
+
+//DefaultConfig is the default configuration reference
+var DefaultConfig = &Configuration{}
 
 //Configuration loads and keeps the related configuration items of job service.
 type Configuration struct {
@@ -46,27 +52,36 @@ type Configuration struct {
 
 	//Configurations of worker pool
 	PoolConfig *PoolConfig `yaml:"worker_pool,omitempty"`
+
+	//Logger configurations
+	LoggerConfig *LoggerConfig `yaml:"logger,omitempty"`
 }
 
-//HTTPSConfig keep additional configurations when using https protocol
+//HTTPSConfig keeps additional configurations when using https protocol
 type HTTPSConfig struct {
 	Cert string `yaml:"cert"`
 	Key  string `yaml:"key"`
 }
 
-//RedisPoolConfig keep redis pool info.
+//RedisPoolConfig keeps redis pool info.
 type RedisPoolConfig struct {
 	Host      string `yaml:"host"`
 	Port      uint   `yaml:"port"`
 	Namespace string `yaml:"namespace"`
 }
 
-//PoolConfig keep worker pool configurations.
+//PoolConfig keeps worker pool configurations.
 type PoolConfig struct {
 	//0 means unlimited
 	WorkerCount  uint             `yaml:"workers"`
 	Backend      string           `yaml:"backend"`
 	RedisPoolCfg *RedisPoolConfig `yaml:"redis_pool,omitempty"`
+}
+
+//LoggerConfig keeps logger configurations.
+type LoggerConfig struct {
+	BasePath string `yaml:"path"`
+	LogLevel string `yaml:"level"`
 }
 
 //Load the configuration options from the specified yaml file.
@@ -83,7 +98,6 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 		if err != nil {
 			return err
 		}
-
 		if err = yaml.Unmarshal(data, c); err != nil {
 			return err
 		}
@@ -96,6 +110,24 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 
 	//Validate settings
 	return c.validate()
+}
+
+//GetLogBasePath returns the log base path config
+func GetLogBasePath() string {
+	if DefaultConfig.LoggerConfig != nil {
+		return DefaultConfig.LoggerConfig.BasePath
+	}
+
+	return ""
+}
+
+//GetLogLevel returns the log level
+func GetLogLevel() string {
+	if DefaultConfig.LoggerConfig != nil {
+		return DefaultConfig.LoggerConfig.LogLevel
+	}
+
+	return ""
 }
 
 //Load env variables
@@ -183,6 +215,16 @@ func (c *Configuration) loadEnvs() {
 		}
 	}
 
+	//logger
+	loggerPath := utils.ReadEnv(jobServiceLoggerBasePath)
+	if !utils.IsEmptyStr(loggerPath) {
+		c.LoggerConfig.BasePath = loggerPath
+	}
+	loggerLevel := utils.ReadEnv(jobServiceLoggerLevel)
+	if !utils.IsEmptyStr(loggerLevel) {
+		c.LoggerConfig.LogLevel = loggerLevel
+	}
+
 }
 
 //Check if the configurations are valid settings.
@@ -234,6 +276,19 @@ func (c *Configuration) validate() error {
 		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.Namespace) {
 			return errors.New("namespace of redis pool is required")
 		}
+	}
+
+	if c.LoggerConfig == nil {
+		return errors.New("missing logger config")
+	}
+
+	if !utils.DirExists(c.LoggerConfig.BasePath) {
+		return errors.New("logger path should be an existing dir")
+	}
+
+	validLevels := "DEBUG,INFO,WARNING,ERROR,FATAL"
+	if !strings.Contains(validLevels, c.LoggerConfig.LogLevel) {
+		return fmt.Errorf("logger level can only be one of: %s", validLevels)
 	}
 
 	return nil //valid

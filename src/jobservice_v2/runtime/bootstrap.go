@@ -31,8 +31,7 @@ type Bootstrap struct{}
 //Return error if meet any problems.
 func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 	//Load configurations
-	cfg := config.Configuration{}
-	if err := cfg.Load(configFile, detectEnv); err != nil {
+	if err := config.DefaultConfig.Load(configFile, detectEnv); err != nil {
 		log.Errorf("Failed to load configurations with error: %s\n", err)
 		return
 	}
@@ -58,16 +57,16 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 
 	//Start the pool
 	var backendPool pool.Interface
-	if cfg.PoolConfig.Backend == config.JobServicePoolBackendRedis {
-		backendPool = bs.loadAndRunRedisWorkerPool(rootContext, cfg)
+	if config.DefaultConfig.PoolConfig.Backend == config.JobServicePoolBackendRedis {
+		backendPool = bs.loadAndRunRedisWorkerPool(rootContext, config.DefaultConfig)
 	}
 
 	//Initialize controller
 	ctl := core.NewController(backendPool)
 
 	//Start the API server
-	apiServer := bs.loadAndRunAPIServer(rootContext, cfg, ctl)
-	log.Infof("Server is started at %s:%d with %s", "", cfg.Port, cfg.Protocol)
+	apiServer := bs.loadAndRunAPIServer(rootContext, config.DefaultConfig, ctl)
+	log.Infof("Server is started at %s:%d with %s", "", config.DefaultConfig.Port, config.DefaultConfig.Protocol)
 
 	//Block here
 	sig := make(chan os.Signal, 1)
@@ -107,7 +106,7 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 }
 
 //Load and run the API server.
-func (bs *Bootstrap) loadAndRunAPIServer(ctx *env.Context, cfg config.Configuration, ctl *core.Controller) *api.Server {
+func (bs *Bootstrap) loadAndRunAPIServer(ctx *env.Context, cfg *config.Configuration, ctl *core.Controller) *api.Server {
 	//Initialized API server
 	handler := api.NewDefaultHandler(ctl)
 	router := api.NewBaseRouter(handler)
@@ -128,7 +127,7 @@ func (bs *Bootstrap) loadAndRunAPIServer(ctx *env.Context, cfg config.Configurat
 }
 
 //Load and run the worker pool
-func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg config.Configuration) pool.Interface {
+func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Configuration) pool.Interface {
 	redisPoolCfg := pool.RedisPoolConfig{
 		RedisHost:   cfg.PoolConfig.RedisPoolCfg.Host,
 		RedisPort:   cfg.PoolConfig.RedisPoolCfg.Port,

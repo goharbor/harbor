@@ -3,8 +3,11 @@ package core
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/robfig/cron"
+	"github.com/vmware/harbor/src/jobservice_v2/config"
+	"github.com/vmware/harbor/src/jobservice_v2/errs"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
 	"github.com/vmware/harbor/src/jobservice_v2/pool"
@@ -116,6 +119,25 @@ func (c *Controller) RetryJob(jobID string) error {
 	}
 
 	return c.backendPool.RetryJob(jobID)
+}
+
+//GetJobLogData is used to return the log text data for the specified job if exists
+func (c *Controller) GetJobLogData(jobID string) ([]byte, error) {
+	if utils.IsEmptyStr(jobID) {
+		return nil, errors.New("empty job ID")
+	}
+
+	logPath := fmt.Sprintf("%s/%s.log", config.GetLogBasePath(), jobID)
+	if !utils.FileExists(logPath) {
+		return nil, errs.NoObjectFoundError(fmt.Sprintf("%s.log", jobID))
+	}
+
+	logData, err := ioutil.ReadFile(logPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return logData, nil
 }
 
 //CheckStatus is implementation of same method in core interface.

@@ -47,42 +47,47 @@ func (rj *ReplicationJob) Validate(params map[string]interface{}) error {
 
 //Run the replication logic here.
 func (rj *ReplicationJob) Run(ctx env.JobContext, params map[string]interface{}) error {
+	logger := ctx.GetLogger()
+
 	defer func() {
+		logger.Info("I'm finished, exit!")
 		fmt.Println("I'm finished, exit!")
 	}()
-	fmt.Println("=======Replication job running=======")
-	fmt.Printf("params: %#v\n", params)
-	fmt.Printf("context: %#v\n", ctx)
+	logger.Info("=======Replication job running=======")
+	logger.Infof("params: %#v\n", params)
+	logger.Infof("context: %#v\n", ctx)
 
 	/*if 1 != 0 {
 		return errors.New("I suicide")
 	}*/
 
-	fmt.Println("check in 30%")
+	logger.Info("check in 30%")
 	ctx.Checkin("30%")
-	time.Sleep(5 * time.Second)
-	fmt.Println("check in 60%")
+	time.Sleep(2 * time.Second)
+	logger.Warning("check in 60%")
 	ctx.Checkin("60%")
-	time.Sleep(5 * time.Second)
-	fmt.Println("check in 100%")
+	time.Sleep(2 * time.Second)
+	logger.Debug("check in 100%")
 	ctx.Checkin("100%")
 	time.Sleep(1 * time.Second)
 
 	//HOLD ON FOR A WHILE
-	fmt.Println("Holding for 20 sec")
-	<-time.After(20 * time.Second)
-	fmt.Println("I'm back, check if I'm stopped/cancelled")
+	logger.Error("Holding for 20 sec")
+	<-time.After(10 * time.Second)
+	//logger.Fatal("I'm back, check if I'm stopped/cancelled")
 
 	if cmd, ok := ctx.OPCommand(); ok {
-		fmt.Printf("cmd=%s\n", cmd)
+		logger.Infof("cmd=%s\n", cmd)
 		if cmd == opm.CtlCommandCancel {
-			fmt.Println("exit for receiving cancel signal")
+			logger.Info("exit for receiving cancel signal")
 			return errs.JobCancelledError()
 		}
 
-		fmt.Println("exit for receiving stop signal")
+		logger.Info("exit for receiving stop signal")
 		return errs.JobStoppedError()
 	}
+
+	fmt.Println("I'm here")
 
 	return nil
 }

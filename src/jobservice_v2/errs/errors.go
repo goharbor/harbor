@@ -28,10 +28,14 @@ const (
 	StopJobErrorCode
 	//CancelJobErrorCode is code for the error of cancelling job
 	CancelJobErrorCode
-	//RetryJobErrorCode is code for the error of retry job
+	//RetryJobErrorCode is code for the error of retrying job
 	RetryJobErrorCode
 	//UnknownActionNameErrorCode is code for the case of unknown action name
 	UnknownActionNameErrorCode
+	//GetJobLogErrorCode is code for the error of getting job log
+	GetJobLogErrorCode
+	//NoObjectFoundErrorCode is code for the error of no object found
+	NoObjectFoundErrorCode
 )
 
 //baseError ...
@@ -109,6 +113,11 @@ func UnknownActionNameError(err error) error {
 	return New(UnknownActionNameErrorCode, "Unknown job action name", err.Error())
 }
 
+//GetJobLogError is error for the case of getting job log failed
+func GetJobLogError(err error) error {
+	return New(GetJobLogErrorCode, "Failed to get the job log", err.Error())
+}
+
 //jobStoppedError is designed for the case of stopping job.
 type jobStoppedError struct {
 	baseError
@@ -139,6 +148,22 @@ func JobCancelledError() error {
 	}
 }
 
+//objectNotFound is designed for the case of no object found
+type objectNotFoundError struct {
+	baseError
+}
+
+//NoObjectFoundError is error wrapper for the case of no object found
+func NoObjectFoundError(object string) error {
+	return objectNotFoundError{
+		baseError{
+			Code:        NoObjectFoundErrorCode,
+			Err:         "object is not found",
+			Description: object,
+		},
+	}
+}
+
 //IsJobStoppedError return true if the error is jobStoppedError
 func IsJobStoppedError(err error) bool {
 	_, ok := err.(jobStoppedError)
@@ -148,5 +173,11 @@ func IsJobStoppedError(err error) bool {
 //IsJobCancelledError return true if the error is jobCancelledError
 func IsJobCancelledError(err error) bool {
 	_, ok := err.(jobCancelledError)
+	return ok
+}
+
+//IsObjectNotFoundError return true if the error is objectNotFoundError
+func IsObjectNotFoundError(err error) bool {
+	_, ok := err.(objectNotFoundError)
 	return ok
 }

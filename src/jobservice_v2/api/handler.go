@@ -28,6 +28,9 @@ type Handler interface {
 
 	//HandleCheckStatusReq is used to handle the job service healthy status checking request.
 	HandleCheckStatusReq(w http.ResponseWriter, req *http.Request)
+
+	//HandleJobLogReq is used to handle the request of getting job logs
+	HandleJobLogReq(w http.ResponseWriter, req *http.Request)
 }
 
 //DefaultHandler is the default request handler which implements the Handler interface.
@@ -88,7 +91,13 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 
 	jobStats, err := dh.controller.GetJob(jobID)
 	if err != nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.GetJobStatsError(err))
+		code := http.StatusInternalServerError
+		backErr := errs.GetJobStatsError(err)
+		if errs.IsObjectNotFoundError(err) {
+			code = http.StatusNotFound
+			backErr = err
+		}
+		dh.handleError(w, code, backErr)
 		return
 	}
 
@@ -126,17 +135,35 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 	switch jobActionReq.Action {
 	case opm.CtlCommandStop:
 		if err := dh.controller.StopJob(jobID); err != nil {
-			dh.handleError(w, http.StatusInternalServerError, errs.StopJobError(err))
+			code := http.StatusInternalServerError
+			backErr := errs.StopJobError(err)
+			if errs.IsObjectNotFoundError(err) {
+				code = http.StatusNotFound
+				backErr = err
+			}
+			dh.handleError(w, code, backErr)
 			return
 		}
 	case opm.CtlCommandCancel:
 		if err := dh.controller.CancelJob(jobID); err != nil {
-			dh.handleError(w, http.StatusInternalServerError, errs.CancelJobError(err))
+			code := http.StatusInternalServerError
+			backErr := errs.CancelJobError(err)
+			if errs.IsObjectNotFoundError(err) {
+				code = http.StatusNotFound
+				backErr = err
+			}
+			dh.handleError(w, code, backErr)
 			return
 		}
 	case opm.CtlCommandRetry:
 		if err := dh.controller.RetryJob(jobID); err != nil {
-			dh.handleError(w, http.StatusInternalServerError, errs.RetryJobError(err))
+			code := http.StatusInternalServerError
+			backErr := errs.RetryJobError(err)
+			if errs.IsObjectNotFoundError(err) {
+				code = http.StatusNotFound
+				backErr = err
+			}
+			dh.handleError(w, code, backErr)
 			return
 		}
 	default:
@@ -166,6 +193,31 @@ func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
+}
+
+//HandleJobLogReq is implementation of method defined in interface 'Handler'
+func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Request) {
+	if !dh.preCheck(w) {
+		return
+	}
+
+	vars := mux.Vars(req)
+	jobID := vars["job_id"]
+
+	logData, err := dh.controller.GetJobLogData(jobID)
+	if err != nil {
+		code := http.StatusInternalServerError
+		backErr := errs.GetJobLogError(err)
+		if errs.IsObjectNotFoundError(err) {
+			code = http.StatusNotFound
+			backErr = err
+		}
+		dh.handleError(w, code, backErr)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(logData)
 }
 
 func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, object interface{}) ([]byte, bool) {

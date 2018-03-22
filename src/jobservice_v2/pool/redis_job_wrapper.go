@@ -30,16 +30,29 @@ func NewRedisJob(j interface{}, ctx *env.Context, statsManager opm.JobStatsManag
 
 //Run the job
 func (rj *RedisJob) Run(j *work.Job) error {
-	var cancelled = false
+	var (
+		cancelled          = false
+		buildContextFailed = false
+		runningJob         job.Interface
+		err                error
+		execContext        env.JobContext
+	)
 
-	execContext, err := rj.buildContext(j)
+	execContext, err = rj.buildContext(j)
 	if err != nil {
-		return err
+		buildContextFailed = true
+		goto FAILED //no need to retry
 	}
 
-	runningJob := Wrap(rj.job)
+	//Wrap job
+	runningJob = Wrap(rj.job)
+
 	defer func() {
-		if rj.shouldDisableRetry(runningJob, j, cancelled) {
+		if err == nil {
+			return //nothing need to do
+		}
+
+		if buildContextFailed || rj.shouldDisableRetry(runningJob, j, cancelled) {
 			j.Fails = 10000000000 //Make it big enough to avoid retrying
 			now := time.Now().Unix()
 			go func() {
@@ -75,6 +88,7 @@ func (rj *RedisJob) Run(j *work.Job) error {
 		return err //need to resume
 	}
 
+FAILED:
 	rj.jobFailed(j.ID)
 	return err
 }

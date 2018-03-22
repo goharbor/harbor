@@ -20,5 +20,9 @@ worker_pool:
     host: "10.160.178.186"
     port: 6379
     namespace: "harbor_job_service"
+
 #Logger for job
+logger:
+  path: "/Users/szou/tmp/job_logs"
+  level: "INFO"
 

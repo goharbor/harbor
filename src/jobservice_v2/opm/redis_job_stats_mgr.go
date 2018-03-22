@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/vmware/harbor/src/jobservice_v2/errs"
+
 	"github.com/vmware/harbor/src/jobservice_v2/period"
 
 	"github.com/robfig/cron"
@@ -543,7 +545,7 @@ func (rjs *RedisJobStatsManager) getJobStats(jobID string) (models.JobStats, err
 	}
 
 	if vals == nil || len(vals) == 0 {
-		return models.JobStats{}, fmt.Errorf("job '%s' is not found", jobID)
+		return models.JobStats{}, errs.NoObjectFoundError(fmt.Sprintf("job '%s'", jobID))
 	}
 
 	res := models.JobStats{

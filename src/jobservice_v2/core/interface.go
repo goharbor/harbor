@@ -53,4 +53,7 @@ type Interface interface {
 
 	//CheckStatus is used to handle the job service healthy status checking request.
 	CheckStatus() (models.JobPoolStats, error)
+
+	//GetJobLogData is used to return the log text data for the specified job if exists
+	GetJobLogData(jobID string) ([]byte, error)
 }
