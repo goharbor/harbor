@@ -91,3 +91,10 @@ func TestGetCert(t *testing.T) {
 	}
 	CommonDelUser()
 }
+func TestPing(t *testing.T) {
+	apiTest := newHarborAPI()
+	code, _, err := apiTest.Ping()
+	assert := assert.New(t)
+	assert.Nil(err, fmt.Sprintf("Unexpected Error: %v", err))
+	assert.Equal(200, code, fmt.Sprintf("Unexpected status code: %d", code))
+}

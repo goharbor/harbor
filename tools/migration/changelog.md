@@ -65,3 +65,8 @@ Changelog for harbor database schema
   - add pk `id` to table `properties`
   - remove pk index from column 'k' of table `properties` 
   - alter `name` length from 41 to 256 of table `project`
+
+## 1.5.0
+
+  - create table `harbor_label`
+  - create table `harbor_resource_label`

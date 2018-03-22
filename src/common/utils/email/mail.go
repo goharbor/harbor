@@ -130,6 +130,7 @@ func newClient(addr, identity, username, password string,
 			}); err != nil {
 				return nil, err
 			}
+			tls = true
 		} else {
 			log.Debugf("the email server %s does not support STARTTLS", addr)
 		}
@@ -137,9 +138,13 @@ func newClient(addr, identity, username, password string,
 
 	if ok, _ := client.Extension("AUTH"); ok {
 		log.Debug("authenticating the client...")
-		// only support plain auth
-		if err = client.Auth(smtp.PlainAuth(identity,
-			username, password, host)); err != nil {
+		var auth smtp.Auth
+		if tls {
+			auth = smtp.PlainAuth(identity, username, password, host)
+		} else {
+			auth = smtp.CRAMMD5Auth(username, password)
+		}
+		if err = client.Auth(auth); err != nil {
 			return nil, err
 		}
 	} else {

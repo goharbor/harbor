@@ -4,19 +4,19 @@ kind: StatefulSet
 metadata:
   name: {{ template "harbor.fullname" . }}-clair-pg
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
     component: clair-pg
 spec:
   serviceName: "{{ template "harbor.fullname" . }}-clair-pg"
   selector:
     matchLabels:
-{{ include "helm.matchLabels" . | indent 6 }}
+{{ include "harbor.matchLabels" . | indent 6 }}
       component: clair-pg
   template:
     metadata:
       name: {{ template "harbor.fullname" . }}-clair-pg
       labels:
-{{ include "helm.labels" . | indent 8 }}
+{{ include "harbor.labels" . | indent 8 }}
         component: clair-pg
     spec:
       containers:
@@ -55,7 +55,7 @@ spec:
   - metadata:
       name: pgdata
       labels:
-{{ include "helm.labels" . | indent 8 }}
+{{ include "harbor.labels" . | indent 8 }}
     spec:
       accessModes: [{{ .Values.clair.volumes.pgData.accessMode | quote }}]
       {{- if .Values.clair.volumes.pgData.storageClass }}

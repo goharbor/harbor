@@ -1,100 +1,134 @@
 export const CREATE_EDIT_RULE_TEMPLATE: string = `
-<clr-modal [(clrModalOpen)]="createEditRuleOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
-  <h3 class="modal-title">{{modalTitle}}</h3>
+<clr-modal [(clrModalOpen)]="createEditRuleOpened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
+  <h3 class="modal-title">{{headerTitle | translate}}</h3>
   <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body" style="max-height: 85vh;">
-    <form #ruleForm="ngForm">
-      <section class="form-block">
-        <div class="alert alert-warning" *ngIf="!editable">
-          <div class="alert-item static">
-            <div class="alert-icon-wrapper">
-              <clr-icon class="alert-icon" shape="exclamation-circle"></clr-icon>
-            </div>
-            <span class="alert-text">
-              {{'REPLICATION.CANNOT_EDIT' | translate}}
-            </span>
-          </div>
+    <form [formGroup]="ruleForm"  novalidate>
+     <section class="form-block">
+      <div class="form-group form-group-override">
+       <label class="form-group-label-override required">{{'REPLICATION.NAME' | translate}}</label>
+       <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
+              [class.invalid]='(ruleForm.controls.name.touched && ruleForm.controls.name.invalid) || isRuleNameExist'>
+        <input type="text" id="ruleName" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255" formControlName="name" #ruleName (keyup)='checkRuleName()' autocomplete="off">
+        <span class="tooltip-content">{{ruleNameTooltip | translate}}</span>
+       </label><span class="spinner spinner-inline spinner-pos" [hidden]="!inNameChecking"></span>
+      </div>
+      <!--Description-->
+      <div class="form-group form-group-override">
+       <label class="form-group-label-override">{{'REPLICATION.DESCRIPTION' | translate}}</label>
+       <textarea type="text" id="ruleDescription" class="inputWidth" row= 3; formControlName="description"></textarea>
+      </div>
+      <!--Projects-->
+      <div class="form-group form-group-override">
+       <label class="form-group-label-override required">{{'REPLICATION.SOURCE' | translate}}&nbsp;{{'PROJECT.PROJECTS' | translate | lowercase}}</label>
+       <div formArrayName="projects">
+        <div class="projectInput inputWidth" *ngFor="let project of projects.controls; let i= index" [formGroupName]="i" (mouseleave)="leaveInput()">
+         <input *ngIf="!projectId" formControlName="name" type="text" class="inputWidth"  value="name" required
+                pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" (keyup)='handleValidation()' (focus)="focusClear($event)" autocomplete="off">
+         <input *ngIf="projectId" formControlName="name" type="text"  class="inputWidth"  value="name" readonly>
+         <div class="selectBox inputWidth"  [style.display]="selectedProjectList.length ? 'block' : 'none'" >
+          <ul>
+           <li *ngFor="let project of selectedProjectList" (click)="selectedProjectName(project?.name)">{{project?.name}}</li>
+          </ul>
+         </div>
         </div>
-        <div class="form-group">
-          <label for="policy_name" class="col-md-4 form-group-label-override">{{'REPLICATION.NAME' | translate}}<span style="color: red">*</span></label>
-          <label for="policy_name" class="col-md-8"  aria-haspopup="true" role="tooltip" [class.invalid]="name.errors && (name.dirty || name.touched)" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="policy_name" [(ngModel)]="createEditRule.name" name="name" size="20" #name="ngModel" required [readonly]="readonly">
-            <span class="tooltip-content" *ngIf="name.errors && name.errors.required && (name.dirty || name.touched)">
-              {{'REPLICATION.NAME_IS_REQUIRED' | translate}}
-            </span>
+       </div>
+       <label *ngIf="noProjectInfo.length != 0" class="colorRed alertLabel">{{noProjectInfo | translate}}</label>
+      </div>
+    
+    <!--images/Filter-->
+      <div class="form-group form-group-override">
+       <label class="form-group-label-override">{{'REPLICATION.SOURCE_IMAGES_FILTER' | translate}}</label>
+       <div formArrayName="filters">
+        <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index"  [formGroupName]="i">
+         <div>
+          <div class="select floatSetPar">
+           <select formControlName="kind" (change)="filterChange($event)"  id="{{i}}" name="{{filterListData[i]?.name}}">
+            <option *ngFor="let filter of filterListData[i]?.options;" value="{{filter}}">{{filter}}</option>
+           </select>
+          </div>
+          <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
+                 [class.invalid]='ruleForm.controls.filters.controls[i].controls.pattern.touched && ruleForm.controls.filters.controls[i].controls.pattern.invalid'>
+           <input type="text" #filterValue required size="14" formControlName="pattern">
+           <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
           </label>
+          <clr-icon shape="times-circle" class="is-solid"  (click)="deleteFilter(i)"></clr-icon>
+         </div>
         </div>
-        <div class="form-group">
-          <label for="policy_description" class="col-md-4 form-group-label-override">{{'REPLICATION.DESCRIPTION' | translate}}</label>
-          <textarea class="col-md-8" id="policy_description" row="3" [(ngModel)]="createEditRule.description" name="description" size="20" #description="ngModel" [readonly]="readonly"></textarea>
+       </div>
+        <clr-icon shape="plus-circle" class="is-solid" [hidden]="isFilterHide" (click)="addNewFilter()" style="margin-top: 11px;"></clr-icon>
+      </div>
+      <!--Targets-->
+      <div class="form-group form-group-override">
+       <label class="form-group-label-override  required">{{'DESTINATION.ENDPOINT' | translate}}</label>
+       <div formArrayName="targets">
+        <div class="select endpointSelect pull-left" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
+          <select id="ruleTarget" (change)="targetChange($event)"  formControlName="id">
+           <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}-{{target.endpoint}}</option>
+          </select>
+         </div>
+       </div>
+       <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
+       <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'SIDE_NAV.SYSTEM_MGMT.REGISTRY' | translate}}</span>
+       </div>
+    
+      <!--Trigger-->
+      <div class="form-group form-group-override">
+       <label class="form-group-label-override">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
+       <div  formGroupName="trigger">
+        <!--on trigger-->
+        <div class="select floatSetPar">
+         <select id="ruleTrigger" formControlName="kind"  (change)="selectTrigger($event)">
+          <option value="Manual">{{'REPLICATION.MANUAL' | translate}}</option>
+          <option value="Immediate">{{'REPLICATION.IMMEDIATE' | translate}}</option>
+          <option value="Scheduled">{{'REPLICATION.SCHEDULE' | translate}}</option>
+         </select>
         </div>
-        <div class="form-group">
-          <label class="col-md-4 form-group-label-override">{{'REPLICATION.ENABLE' | translate}}</label>
-          <div class="checkbox-inline">
-            <input type="checkbox" id="policy_enable" [(ngModel)]="createEditRule.enable" name="enable" #enable="ngModel" [disabled]="untoggleable">
-            <label for="policy_enable"></label>
+        <!--on push-->
+        <div formGroupName="schedule_param">
+          <div class="select floatSet" [hidden]="!isScheduleOpt">
+           <select name="scheduleType" formControlName="type" (change)="selectSchedule($event)">
+            <option value="Daily">{{'REPLICATION.DAILY' | translate}}</option>
+            <option value="Weekly">{{'REPLICATION.WEEKLY' | translate}}</option>
+           </select>
           </div>
-        </div>
-        <div class="form-group">
-          <label for="destination_name" class="col-md-4 form-group-label-override">{{'REPLICATION.DESTINATION_NAME' | translate}}<span style="color: red">*</span></label>
-          <div class="select" *ngIf="!isCreateEndpoint">
-            <select id="destination_name" [(ngModel)]="createEditRule.endpointId" name="endpointId" (change)="selectEndpoint()" [disabled]="testOngoing || readonly">
-              <option *ngFor="let t of endpoints" [value]="t.id" [selected]="t.id == createEditRule.endpointId">{{t.name}}</option>
-            </select>
+          <!--weekly-->
+          <span [hidden]="!weeklySchedule || !isScheduleOpt">on &nbsp;</span>
+          <div  [hidden]="!weeklySchedule || !isScheduleOpt" class="select floatSet" style="width:104px">
+           <select name="scheduleDay" formControlName="weekday">
+            <option value="1">{{'WEEKLY.MONDAY' | translate}}</option>
+            <option value="2">{{'WEEKLY.TUESDAY' | translate}}</option>
+            <option value="3">{{'WEEKLY.WEDNESDAY' | translate}}</option>
+            <option value="4">{{'WEEKLY.THURSDAY' | translate}}</option>
+            <option value="5">{{'WEEKLY.FRIDAY' | translate}}</option>
+            <option value="6">{{'WEEKLY.SATURDAY' | translate}}</option>
+            <option value="7">{{'WEEKLY.SUNDAY' | translate}}</option>
+           </select>
           </div>
-          <label class="col-md-8" *ngIf="isCreateEndpoint" for="destination_name" aria-haspopup="true" role="tooltip" [class.invalid]="endpointName.errors && (endpointName.dirty || endpointName.touched)"
-            class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="destination_name" [(ngModel)]="createEditRule.endpointName" name="endpointName" size="8" #endpointName="ngModel" value="" required> 
-            <span class="tooltip-content" *ngIf="endpointName.errors && endpointName.errors.required && (endpointName.dirty || endpointName.touched)">
-              {{'REPLICATION.DESTINATION_NAME_IS_REQUIRED' | translate}}
-            </span>
-          </label>
-          <div class="checkbox-inline" *ngIf="showNewDestination">
-            <input type="checkbox" id="check_new" (click)="newEndpoint(checkedAddNew.checked)" #checkedAddNew [checked]="isCreateEndpoint" [disabled]="testOngoing || readonly">
-            <label for="check_new">{{'REPLICATION.NEW_DESTINATION' | translate}}</label>
-          </div>
+          <!--daily/time-->
+          <span [hidden]="!isScheduleOpt">at &nbsp;</span>
+          <input [hidden]="!isScheduleOpt" type="time" formControlName="offtime"  required value="08:00" />
         </div>
-        <div class="form-group">
-          <label for="destination_url" class="col-md-4 form-group-label-override">{{'REPLICATION.DESTINATION_URL' | translate}}<span style="color: red">*</span></label>
-          <label for="destination_url" class="col-md-8" aria-haspopup="true" role="tooltip" [class.invalid]="endpointUrl.errors && (endpointUrl.dirty || endpointUrl.touched)"
-            class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="destination_url" [disabled]="testOngoing" [readonly]="readonly || !isCreateEndpoint"
-            [(ngModel)]="createEditRule.endpointUrl" size="20" name="endpointUrl" required #endpointUrl="ngModel">
-            <span class="tooltip-content" *ngIf="endpointUrl.errors && endpointUrl.errors.required && (endpointUrl.dirty || endpointUrl.touched)">
-              {{'REPLICATION.DESTINATION_URL_IS_REQUIRED' | translate}}
-            </span>
-          </label>
-        </div>
-        <div class="form-group">
-          <label for="destination_username" class="col-md-4 form-group-label-override">{{'REPLICATION.DESTINATION_USERNAME' | translate}}</label>
-          <input type="text" class="col-md-8" id="destination_username" [disabled]="testOngoing" [readonly]="readonly || !isCreateEndpoint" 
-          [(ngModel)]="createEditRule.username" size="20" name="username" #username="ngModel">
-        </div>
-        <div class="form-group">
-          <label for="destination_password" class="col-md-4 form-group-label-override">{{'REPLICATION.DESTINATION_PASSWORD' | translate}}</label>
-          <input type="password" class="col-md-8" id="destination_password" [disabled]="testOngoing" [readonly]="readonly || !isCreateEndpoint" 
-          [(ngModel)]="createEditRule.password" size="20" name="password" #password="ngModel">
-        </div>
-        <div class="form-group">
-          <label for="destination_insecure" class="col-md-4 form-group-label-override">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</label>
-          <clr-checkbox #insecure  class="col-md-8" name="insecure" id="destination_insecure" [clrChecked]="!createEditRule.insecure"  [clrDisabled]="readonly || !isCreateEndpoint || testOngoing" (clrCheckedChange)="setInsecureValue($event)">
-             <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">
-                    <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                    <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate}}</span>
-                 </a>
-          </clr-checkbox>
-        </div>
-        <div class="form-group">
-          <label for="spin" class="col-md-4"></label>
-          <span class="col-md-8 spinner spinner-inline" [hidden]="!testOngoing"></span>
-          <span [style.color]="!pingStatus ? 'red': ''" class="form-group-label-override">{{ pingTestMessage }}</span>
-        </div>
-      </section>
+       </div>
+       <div style="width: 100%;" [hidden]="!isImmediate">
+        <clr-checkbox [clrChecked]="false" id="ruleDeletion" formControlName="replicate_deletion">
+         {{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}
+        </clr-checkbox>
+       </div>
+       <div  style="width: 100%;" >
+        <clr-checkbox [clrChecked]="true" id="ruleExit" formControlName="replicate_existing_image_now">
+         {{'REPLICATION.REPLICATE_IMMEDIATE' | translate}}
+        </clr-checkbox>
+       </div>
+      </div>
+      <div style="display:block;text-align:center">
+       <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+     </div>
+     </section>
     </form>
   </div>
   <div class="modal-footer">
-      <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="testOngoing || endpointUrl.errors || connectAbled">{{'REPLICATION.TEST_CONNECTION' | translate}}</button>
-      <button type="button" class="btn btn-outline" [disabled]="btnAbled" (click)="onCancel()">{{'BUTTON.CANCEL' | translate }}</button>
-      <button type="submit" class="btn btn-primary" [disabled]="!ruleForm.form.valid || testOngoing || !editable" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+    <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="this.inProgress" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
+    <button type="submit" id="ruleBtnOk" class="btn btn-primary"  (click)="onSubmit()" [disabled]="!ruleForm.valid || !isValid || !hasFormChange()">{{ 'BUTTON.SAVE' | translate }}</button>
   </div>
 </clr-modal>`;

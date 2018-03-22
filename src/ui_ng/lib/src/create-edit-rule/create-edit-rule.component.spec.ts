@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from '@angular/core/testing'; 
+import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
@@ -25,52 +25,55 @@ import {
   JobLogDefaultService
  } from '../service/index';
 import { EndpointService, EndpointDefaultService } from '../service/endpoint.service';
+import {ProjectDefaultService, ProjectService} from "../service/project.service";
 import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
+import {Project} from "../project-policy-config/project";
 
 describe('CreateEditRuleComponent (inline template)', ()=>{
 
   let mockRules: ReplicationRule[] = [
     {
         "id": 1,
-        "project_id": 1,
-        "project_name": "library",
-        "target_id": 1,
-        "target_name": "target_01",
         "name": "sync_01",
-        "enabled": 0,
         "description": "",
-        "cron_str": "",    
-        "error_job_count": 2,
-        "deleted": 0
-    },
-    {
-        "id": 2,
-        "project_id": 1,
-        "project_name": "library",
-        "target_id": 3,
-        "target_name": "target_02",
-        "name": "sync_02",
-        "enabled": 1,
-        "description": "",
-        "cron_str": "",
-        "error_job_count": 1,
-        "deleted": 0
-    },
-    {
-        "id": 3,
-        "project_id": 1,
-        "project_name": "library",
-        "target_id": 2,
-        "target_name": "target_03",
-        "name": "sync_03",
-        "enabled": 0,
-        "description": "",
-        "cron_str": "",
-        "error_job_count": 0,
-        "deleted": 0
-    }
-  ];
-
+        "projects": [{ "project_id": 1,
+          "owner_id": 0,
+          "name": 'project_01',
+          "creation_time": '',
+          "deleted": 0,
+          "owner_name": '',
+          "togglable": false,
+          "update_time": '',
+          "current_user_role_id": 0,
+          "repo_count": 0,
+          "has_project_admin_role": false,
+          "is_member": false,
+          "role_name": '',
+          "metadata": {
+              "public": '',
+              "enable_content_trust": '',
+              "prevent_vul": '',
+              "severity": '',
+              "auto_scan": '',
+          }
+        }],
+        "targets": [{
+            "id": 1,
+            "endpoint": "https://10.117.4.151",
+            "name": "target_01",
+            "username": "admin",
+            "password": "",
+            "insecure": false,
+            "type": 0
+        }],
+        "trigger": {
+            "kind": "Manual",
+            "schedule_param": null
+        },
+        "filters": [],
+        "replicate_existing_image_now": false,
+        "replicate_deletion": false,
+    }]
   let mockJobs: ReplicationJobItem[] = [
     {
         "id": 1,
@@ -144,17 +147,68 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
 
   let mockRule: ReplicationRule = {
       "id": 1,
-      "project_id": 1,
-      "project_name": "library",
-      "target_id": 1,
-      "target_name": "target_01",
       "name": "sync_01",
-      "enabled": 0,
       "description": "",
-      "cron_str": "",    
-      "error_job_count": 2,
-      "deleted": 0
-  };
+      "projects": [{ "project_id": 1,
+          "owner_id": 0,
+          "name": 'project_01',
+          "creation_time": '',
+          "deleted": 0,
+          "owner_name": '',
+          "togglable": false,
+          "update_time": '',
+          "current_user_role_id": 0,
+          "repo_count": 0,
+          "has_project_admin_role": false,
+          "is_member": false,
+          "role_name": '',
+          "metadata": {
+              "public": '',
+              "enable_content_trust": '',
+              "prevent_vul": '',
+              "severity": '',
+              "auto_scan": '',
+          }
+      }],
+      "targets": [{
+          "id": 1,
+          "endpoint": "https://10.117.4.151",
+          "name": "target_01",
+          "username": "admin",
+          "password": "",
+          "insecure": false,
+          "type": 0
+      }],
+      "trigger": {
+          "kind": "Manual",
+          "schedule_param": null
+      },
+      "filters": [],
+      "replicate_existing_image_now": false,
+      "replicate_deletion": false,
+  }
+  let mockProjects: Project[] = [
+        { "project_id": 1,
+            "owner_id": 0,
+            "name": 'project_01',
+            "creation_time": '',
+            "deleted": 0,
+            "owner_name": '',
+            "togglable": false,
+            "update_time": '',
+            "current_user_role_id": 0,
+            "repo_count": 0,
+            "has_project_admin_role": false,
+            "is_member": false,
+            "role_name": '',
+            "metadata": {
+                "public": '',
+                "enable_content_trust": '',
+                "prevent_vul": '',
+                "severity": '',
+                "auto_scan": '',
+            }
+        }];
 
   let fixture: ComponentFixture<ReplicationComponent>;
   let fixtureCreate: ComponentFixture<CreateEditRuleComponent>;
@@ -164,7 +218,7 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
 
   let replicationService: ReplicationService;
   let endpointService: EndpointService;
- 
+
   let spyRules: jasmine.Spy;
   let spyOneRule: jasmine.Spy;
 
@@ -172,12 +226,11 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
   let spyEndpoint: jasmine.Spy;
 
   let config: IServiceConfig = {
-    replicationRuleEndpoint: '/api/policies/replication/testing',
     replicationJobEndpoint: '/api/jobs/replication/testing',
     targetBaseEndpoint: '/api/targets/testing'
   };
 
-  beforeEach(async(()=>{
+  beforeEach(async(() =>{
     TestBed.configureTestingModule({
       imports: [ 
         SharedModule,
@@ -198,6 +251,7 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ReplicationService, useClass: ReplicationDefaultService },
         { provide: EndpointService, useClass: EndpointDefaultService },
+        { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: JobLogService, useClass: JobLogDefaultService }
       ]
     });
@@ -205,28 +259,27 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
 
   beforeEach(()=>{
     fixture = TestBed.createComponent(ReplicationComponent);
-
+    fixtureCreate = TestBed.createComponent(CreateEditRuleComponent);
     comp = fixture.componentInstance;
+    compCreate = fixtureCreate.componentInstance;
     comp.projectId = 1;
     comp.search.ruleId = 1;
 
     replicationService = fixture.debugElement.injector.get(ReplicationService);
-   
+
+
+    endpointService = fixtureCreate.debugElement.injector.get(EndpointService) ;
+
     spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(Promise.resolve(mockRules));
     spyOneRule = spyOn(replicationService, 'getReplicationRule').and.returnValue(Promise.resolve(mockRule));
     spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(Promise.resolve(mockJob));
-    fixture.detectChanges();
-  });
 
-  beforeEach(()=>{
-    fixtureCreate = TestBed.createComponent(CreateEditRuleComponent);
-    
-    compCreate = fixtureCreate.componentInstance;
-    compCreate.projectId = 1;
 
-    endpointService = fixtureCreate.debugElement.injector.get(EndpointService);
     spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(Promise.resolve(mockEndpoints));
+
     fixture.detectChanges();
+
+
   });
 
   it('Should open creation modal and load endpoints', async(()=>{

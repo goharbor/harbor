@@ -12,7 +12,7 @@ import { DatePickerComponent } from '../datetime-picker/datetime-picker.componen
 import { DateValidatorDirective } from '../datetime-picker/date-validator.directive';
 import { FilterComponent } from '../filter/filter.component';
 import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
-import { ReplicationRule, ReplicationJob, Endpoint } from '../service/interface';
+import {ReplicationRule, ReplicationJob, Endpoint} from '../service/interface';
 
 import { ErrorHandler } from '../error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
@@ -20,49 +20,92 @@ import { ReplicationService, ReplicationDefaultService } from '../service/replic
 import { EndpointService, EndpointDefaultService } from '../service/endpoint.service';
 import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
 import { JobLogService, JobLogDefaultService, ReplicationJobItem } from '../service/index';
+import {Project} from "../project-policy-config/project";
+import {ProjectDefaultService, ProjectService} from "service/project.service";
 
-describe('Replication Component (inline template)', ()=>{
+describe('Replication Component (inline template)', () => {
 
   let mockRules: ReplicationRule[] = [
-    {
-        "id": 1,
-        "project_id": 1,
-        "project_name": "library",
-        "target_id": 1,
-        "target_name": "target_01",
-        "name": "sync_01",
-        "enabled": 0,
-        "description": "",
-        "cron_str": "",    
-        "error_job_count": 2,
-        "deleted": 0
-    },
-    {
-        "id": 2,
-        "project_id": 1,
-        "project_name": "library",
-        "target_id": 3,
-        "target_name": "target_02",
-        "name": "sync_02",
-        "enabled": 1,
-        "description": "",
-        "cron_str": "",
-        "error_job_count": 1,
-        "deleted": 0
-    },
-    {
-        "id": 3,
-        "project_id": 1,
-        "project_name": "library",
-        "target_id": 2,
-        "target_name": "target_03",
-        "name": "sync_03",
-        "enabled": 0,
-        "description": "",
-        "cron_str": "",
-        "error_job_count": 0,
-        "deleted": 0
-    }
+      {
+          "id": 1,
+          "projects": [{
+              "project_id": 33,
+              "owner_id": 1,
+              "name": "aeas",
+              "deleted": 0,
+              "togglable": false,
+              "current_user_role_id": 0,
+              "repo_count": 0,
+              "metadata": {
+                  "public": false,
+                  "enable_content_trust": "",
+                  "prevent_vul": "",
+                  "severity": "",
+                  "auto_scan": ""},
+              "owner_name": "",
+              "creation_time": null,
+              "update_time": null,
+              "has_project_admin_role": true,
+              "is_member": true,
+              "role_name": ""
+          }],
+          "targets": [{
+              "id": 1,
+              "endpoint": "https://10.117.4.151",
+              "name": "target_01",
+              "username": "admin",
+              "password": "",
+              "insecure": false,
+              "type": 0
+          }],
+          "name": "sync_01",
+          "description": "",
+          "filters": null,
+          "trigger": {"kind": "Manual", "schedule_param": null},
+          "error_job_count": 2,
+          "replicate_deletion": false,
+          "replicate_existing_image_now": false,
+      },
+      {
+          "id": 2,
+          "projects": [{
+              "project_id": 33,
+              "owner_id": 1,
+              "name": "aeas",
+              "deleted": 0,
+              "togglable": false,
+              "current_user_role_id": 0,
+              "repo_count": 0,
+              "metadata": {
+                  "public": false,
+                  "enable_content_trust": "",
+                  "prevent_vul": "",
+                  "severity": "",
+                  "auto_scan": ""},
+              "owner_name": "",
+              "creation_time": null,
+              "update_time": null,
+              "has_project_admin_role": true,
+              "is_member": true,
+              "role_name": ""
+          }],
+          "targets": [{
+              "id": 1,
+              "endpoint": "https://10.117.4.151",
+              "name": "target_01",
+              "username": "admin",
+              "password": "",
+              "insecure": false,
+              "type": 0
+          }],
+          "name": "sync_02",
+          "description": "",
+          "filters": null,
+          "trigger": {"kind": "Manual", "schedule_param": null},
+          "error_job_count": 2,
+          "replicate_deletion": false,
+          "replicate_existing_image_now": false,
+      }
   ];
 
   let mockJobs: ReplicationJobItem[] = [
@@ -81,7 +124,7 @@ describe('Replication Component (inline template)', ()=>{
         "repository": "library/mysql",
         "policy_id": 1,
         "operation": "transfer",
-        "update_time": new Date("2017-05-27 12:20:33"),        
+        "update_time": new Date("2017-05-27 12:20:33"),
         "tags": null
     },
     {
@@ -95,71 +138,66 @@ describe('Replication Component (inline template)', ()=>{
     }
   ];
 
+    let mockEndpoints: Endpoint[] = [
+        {
+            "id": 1,
+            "endpoint": "https://10.117.4.151",
+            "name": "target_01",
+            "username": "admin",
+            "password": "",
+            "insecure": false,
+            "type": 0
+        },
+        {
+            "id": 2,
+            "endpoint": "https://10.117.5.142",
+            "name": "target_02",
+            "username": "AAA",
+            "password": "",
+            "insecure": false,
+            "type": 0
+        },
+    ];
+
+    let mockProjects: Project[] = [
+        { "project_id": 1,
+            "owner_id": 0,
+            "name": 'project_01',
+            "creation_time": '',
+            "deleted": 0,
+            "owner_name": '',
+            "togglable": false,
+            "update_time": '',
+            "current_user_role_id": 0,
+            "repo_count": 0,
+            "has_project_admin_role": false,
+            "is_member": false,
+            "role_name": '',
+            "metadata": {
+                "public": '',
+                "enable_content_trust": '',
+                "prevent_vul": '',
+                "severity": '',
+                "auto_scan": '',
+            }
+        }];
+
   let mockJob: ReplicationJob = {
     metadata: {xTotalCount: 3},
     data: mockJobs
   };
 
-  let mockEndpoints: Endpoint[] = [
-    {
-        "id": 1,
-        "endpoint": "https://10.117.4.151",
-        "name": "target_01",
-        "username": "admin",
-        "password": "",
-        "insecure": false,
-        "type": 0
-    },
-    {
-        "id": 2,
-        "endpoint": "https://10.117.5.142",
-        "name": "target_02",
-        "username": "AAA",
-        "password": "",
-        "insecure": false,
-        "type": 0
-    },
-    {
-        "id": 3,
-        "endpoint": "https://101.1.11.111",
-        "name": "target_03",
-        "username": "admin",
-        "password": "",
-        "insecure": false,
-        "type": 0
-    },
-    {
-        "id": 4,
-        "endpoint": "http://4.4.4.4",
-        "name": "target_04",
-        "username": "",
-        "password": "",
-        "insecure": false,
-        "type": 0
-    }
-  ];
-
-  let mockRule: ReplicationRule = {
-      "id": 1,
-      "project_id": 1,
-      "project_name": "library",
-      "target_id": 1,
-      "target_name": "target_01",
-      "name": "sync_01",
-      "enabled": 0,
-      "description": "",
-      "cron_str": "",    
-      "error_job_count": 2,
-      "deleted": 0
-  };
-
   let fixture: ComponentFixture<ReplicationComponent>;
+  let fixtureCreate: ComponentFixture<CreateEditRuleComponent>;
   let comp: ReplicationComponent;
+  let compCreate: CreateEditRuleComponent;
   
   let replicationService: ReplicationService;
+  let endpointService: EndpointService;
   
   let spyRules: jasmine.Spy;
   let spyJobs: jasmine.Spy;
+  let spyEndpoint: jasmine.Spy;
   
   let deGrids: DebugElement[];
   let deRules: DebugElement;
@@ -194,23 +232,29 @@ describe('Replication Component (inline template)', ()=>{
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ReplicationService, useClass: ReplicationDefaultService },
         { provide: EndpointService, useClass: EndpointDefaultService },
+        { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: JobLogService, useClass: JobLogDefaultService }
       ]
     });
   }));
 
-  beforeEach(()=>{
+  beforeEach(() => {
     fixture = TestBed.createComponent(ReplicationComponent);
-
+    fixtureCreate = TestBed.createComponent(CreateEditRuleComponent);
     comp = fixture.componentInstance;
+    compCreate = fixtureCreate.componentInstance;
     comp.projectId = 1;
     comp.search.ruleId = 1;
 
     replicationService = fixture.debugElement.injector.get(ReplicationService);
-           
+
+    endpointService = fixtureCreate.debugElement.injector.get(EndpointService);
+
     spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(Promise.resolve(mockRules));
     spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(Promise.resolve(mockJob));
-    
+
+    spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(Promise.resolve(mockEndpoints));
+
     fixture.detectChanges();
     fixture.whenStable().then(()=>{
       fixture.detectChanges();
@@ -220,6 +264,7 @@ describe('Replication Component (inline template)', ()=>{
       expect(deGrids.length).toEqual(2);
     });
   });
+
 
   it('Should load replication rules', async(()=>{    
     fixture.detectChanges();

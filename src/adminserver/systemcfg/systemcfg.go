@@ -89,6 +89,13 @@ var (
 			env:   "LDAP_VERIFY_CERT",
 			parse: parseStringToBool,
 		},
+		common.LDAPGroupBaseDN:        "LDAP_GROUP_BASEDN",
+		common.LDAPGroupSearchFilter:  "LDAP_GROUP_FILTER",
+		common.LDAPGroupAttributeName: "LDAP_GROUP_GID",
+		common.LDAPGroupSearchScope: &parser{
+			env:   "LDAP_GROUP_SCOPE",
+			parse: parseStringToInt,
+		},
 		common.EmailHost: "EMAIL_HOST",
 		common.EmailPort: &parser{
 			env:   "EMAIL_PORT",
@@ -152,6 +159,13 @@ var (
 	repeatLoadEnvs = map[string]interface{}{
 		common.ExtEndpoint:   "EXT_ENDPOINT",
 		common.MySQLPassword: "MYSQL_PWD",
+		common.MySQLHost:     "MYSQL_HOST",
+		common.MySQLUsername: "MYSQL_USR",
+		common.MySQLDatabase: "MYSQL_DATABASE",
+		common.MySQLPort: &parser{
+			env:   "MYSQL_PORT",
+			parse: parseStringToInt,
+		},
 		common.MaxJobWorkers: &parser{
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
@@ -170,6 +184,12 @@ var (
 			parse: parseStringToBool,
 		},
 		common.ClairDBPassword: "CLAIR_DB_PASSWORD",
+		common.ClairDBHost:     "CLAIR_DB_HOST",
+		common.ClairDBUsername: "CLAIR_DB_USERNAME",
+		common.ClairDBPort: &parser{
+			env:   "CLAIR_DB_PORT",
+			parse: parseStringToInt,
+		},
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
@@ -382,4 +402,5 @@ func validLdapScope(cfg map[string]interface{}, isMigrate bool) {
 		ldapScope = 0
 	}
 	cfg[ldapScopeKey] = ldapScope
+
 }

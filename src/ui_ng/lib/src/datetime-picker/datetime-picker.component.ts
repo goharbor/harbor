@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
+import {Component, Input, Output, EventEmitter, ViewChild, OnChanges} from '@angular/core';
 import { NgModel } from '@angular/forms';
 
 import { DATETIME_PICKER_TEMPLATE } from './datetime-picker.component.html';
@@ -7,7 +7,7 @@ import { DATETIME_PICKER_TEMPLATE } from './datetime-picker.component.html';
   selector: 'hbr-datetime',
   template: DATETIME_PICKER_TEMPLATE
 })
-export class DatePickerComponent {
+export class DatePickerComponent implements  OnChanges{
   
   @Input() dateInput: string;
   @Input() oneDayOffset: boolean;
@@ -16,6 +16,10 @@ export class DatePickerComponent {
   searchTime: NgModel;
 
   @Output() search = new EventEmitter<string>();
+
+  ngOnChanges(): void {
+    this.dateInput = this.dateInput.trim();
+  }
 
   get dateInvalid(): boolean {
     return (this.searchTime.errors && this.searchTime.errors.dateValidator && (this.searchTime.dirty || this.searchTime.touched)) || false;

@@ -4,7 +4,8 @@ kind: ConfigMap
 metadata:
   name: {{ template "harbor.fullname" . }}
   labels:
-{{ include "helm.labels" . | indent 4 }}
+{{ include "harbor.labels" . | indent 4 }}
+    component: clair
 data:
   config.yaml: |
     clair:

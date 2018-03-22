@@ -29,6 +29,11 @@ Pull requests (PR) are always welcome, even they are small fixes like typos or a
 
 Please submit a PR to contain changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in a incremental fasion.
 
+If you are not a member of `vmware` org in github, then your PR Drone CI build may fail. In that case, request one of the existing members / reviewers to fork your failed build to skip membership checking.
+```shell
+drone build start --param SKIP_CHECK_MEMBERSHIP=true vmware/harbor <Build Number>
+```
+
 ### Design new features
 
 You can propose new designs for existing Harbor features. You can also design
