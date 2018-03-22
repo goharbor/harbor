@@ -156,8 +156,8 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 	sql += `where 1=1 `
 
 	if len(q.Name) > 0 {
-		sql += `and r.name = ? `
-		params = append(params, q.Name)
+		sql += `and r.name like ? `
+		params = append(params, "%"+Escape(q.Name)+"%")
 	}
 
 	if len(q.ProjectIDs) > 0 {
