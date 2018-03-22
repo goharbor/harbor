@@ -89,6 +89,8 @@ MIGRATORFLAG=false
 VERSIONTAG=dev
 # for harbor package name
 PKGVERSIONTAG=dev
+# for harbor about dialog
+UIVERSIONTAG=dev
 VERSIONFILEPATH=$(CURDIR)
 VERSIONFILENAME=UIVERSION
 
@@ -239,7 +241,7 @@ ifeq ($(MIGRATORFLAG), true)
 endif
 
 version:
-	@printf $(VERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
+	@printf $(UIVERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
 
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
