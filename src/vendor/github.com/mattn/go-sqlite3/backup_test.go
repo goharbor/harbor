@@ -245,3 +245,46 @@ func TestBackupStepByStep(t *testing.T) {
 func TestBackupAllRemainingPages(t *testing.T) {
 	testBackup(t, testRowCount, false)
 }
+
+// Test the error reporting when preparing to perform a backup.
+func TestBackupError(t *testing.T) {
+	const driverName = "sqlite3_TestBackupError"
+
+	// The driver's connection will be needed in order to perform the backup.
+	var dbDriverConn *SQLiteConn
+	sql.Register(driverName, &SQLiteDriver{
+		ConnectHook: func(conn *SQLiteConn) error {
+			dbDriverConn = conn
+			return nil
+		},
+	})
+
+	// Connect to the database.
+	dbTempFilename := TempFilename(t)
+	defer os.Remove(dbTempFilename)
+	db, err := sql.Open(driverName, dbTempFilename)
+	if err != nil {
+		t.Fatal("Failed to open the database:", err)
+	}
+	defer db.Close()
+	db.Ping()
+
+	// Need the driver connection in order to perform the backup.
+	if dbDriverConn == nil {
+		t.Fatal("Failed to get the driver connection.")
+	}
+
+	// Prepare to perform the backup.
+	// Intentionally using the same connection for both the source and destination databases, to trigger an error result.
+	backup, err := dbDriverConn.Backup("main", dbDriverConn, "main")
+	if err == nil {
+		t.Fatal("Failed to get the expected error result.")
+	}
+	const expectedError = "source and destination must be distinct"
+	if err.Error() != expectedError {
+		t.Fatalf("Unexpected error message; expected value: \"%v\"; actual value: \"%v\"", expectedError, err.Error())
+	}
+	if backup != nil {
+		t.Fatal("Failed to get the expected nil backup result.")
+	}
+}

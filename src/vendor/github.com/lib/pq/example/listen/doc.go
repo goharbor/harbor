@@ -1,6 +1,6 @@
 /*
 
-Below you will find a self-contained Go program which uses the LISTEN / NOTIFY
+Package listen is a self-contained Go program which uses the LISTEN / NOTIFY
 mechanism to avoid polling the database while waiting for more work to arrive.
 
     //
@@ -77,7 +77,9 @@ mechanism to avoid polling the database while waiting for more work to arrive.
             }
         }
 
-        listener := pq.NewListener(conninfo, 10 * time.Second, time.Minute, reportProblem)
+        minReconn := 10 * time.Second
+        maxReconn := time.Minute
+        listener := pq.NewListener(conninfo, minReconn, maxReconn, reportProblem)
         err = listener.Listen("getwork")
         if err != nil {
             panic(err)
@@ -93,4 +95,4 @@ mechanism to avoid polling the database while waiting for more work to arrive.
 
 
 */
-package listen_example
+package listen
