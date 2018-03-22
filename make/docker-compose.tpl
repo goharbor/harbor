@@ -99,8 +99,7 @@ services:
     restart: always
     volumes:
       - /data/job_logs:/var/log/jobs:z
-      - ./common/config/jobservice/app.conf:/etc/jobservice/app.conf:z
-      - /data/secretkey:/etc/jobservice/key:z
+      - ./common/config/jobservice/config.yml:/etc/jobservice/config.yml:z
     networks:
       - harbor
     depends_on:

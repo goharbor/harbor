@@ -1,0 +1,25 @@
+---
+#Protocol used to serve
+protocol: "http"
+
+#Config certification if use 'https' protocol
+#https_config:
+#  cert: "server.crt"
+#  key: "server.key"
+
+#Server listening port
+port: 8080
+
+#Worker pool
+worker_pool:
+  #0 means unlimited
+  workers: 10
+  backend: "redis"
+  #Additional config if use 'redis' backend
+  #TODO: switch to internal redis endpoint and namespace.
+  redis_pool:
+    host: "redis_host"
+    port: 6379
+    namespace: "namespace"
+#Logger for job
+
