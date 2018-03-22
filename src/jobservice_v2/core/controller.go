@@ -11,6 +11,11 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
 
+const (
+	hookActivated   = "activated"
+	hookDeactivated = "error"
+)
+
 //Controller implement the core interface and provides related job handle methods.
 //Controller will coordinate the lower components to complete the process as a commander role.
 type Controller struct {
@@ -61,6 +66,17 @@ func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
 			req.Job.Metadata.Cron)
 	default:
 		res, err = c.backendPool.Enqueue(req.Job.Name, req.Job.Parameters, req.Job.Metadata.IsUnique)
+	}
+
+	//Register status hook?
+	if err == nil {
+		if !utils.IsEmptyStr(req.Job.StatusHook) {
+			if err := c.backendPool.RegisterHook(res.Stats.JobID, req.Job.StatusHook); err != nil {
+				res.Stats.HookStatus = hookDeactivated
+			} else {
+				res.Stats.HookStatus = hookActivated
+			}
+		}
 	}
 
 	return res, err

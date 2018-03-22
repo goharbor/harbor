@@ -26,7 +26,7 @@ type Interface interface {
 	//  error if failed to unschedule
 	UnSchedule(cronJobPolicyID string) error
 
-	//Load data
+	//Load and cache data if needed
 	//
 	//Return:
 	//  error if failed to do
@@ -39,5 +39,21 @@ type Interface interface {
 	Clear() error
 
 	//Start to serve
-	Start() error
+	Start()
+
+	//Accept the pushed policy and cache it
+	//
+	//policy *PeriodicJobPolicy : the periodic policy being accept
+	//
+	//Return:
+	//  error if failed to do
+	AcceptPeriodicPolicy(policy *PeriodicJobPolicy) error
+
+	//Remove the specified policy from the cache if it is existing
+	//
+	//policyID string : ID of the policy being removed
+	//
+	//Return:
+	//  the ptr of the being deletd policy
+	RemovePeriodicPolicy(policyID string) *PeriodicJobPolicy
 }

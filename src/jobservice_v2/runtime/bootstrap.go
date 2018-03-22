@@ -65,7 +65,7 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 
 	//Start the API server
 	apiServer := bs.loadAndRunAPIServer(rootContext, cfg, ctl)
-	log.Infof("Server is starting at %s:%d with %s", "", cfg.Port, cfg.Protocol)
+	log.Infof("Server is started at %s:%d with %s", "", cfg.Port, cfg.Protocol)
 
 	//Block here
 	sig := make(chan os.Signal, 1)

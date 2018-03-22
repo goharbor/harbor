@@ -5,7 +5,6 @@ package pool
 import (
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -34,15 +33,16 @@ const (
 
 //GoCraftWorkPool is the pool implementation based on gocraft/work powered by redis.
 type GoCraftWorkPool struct {
-	namespace    string
-	redisPool    *redis.Pool
-	pool         *work.WorkerPool
-	enqueuer     *work.Enqueuer
-	sweeper      *period.Sweeper
-	client       *work.Client
-	context      *env.Context
-	scheduler    period.Interface
-	statsManager opm.JobStatsManager
+	namespace     string
+	redisPool     *redis.Pool
+	pool          *work.WorkerPool
+	enqueuer      *work.Enqueuer
+	sweeper       *period.Sweeper
+	client        *work.Client
+	context       *env.Context
+	scheduler     period.Interface
+	statsManager  opm.JobStatsManager
+	messageServer *MessageServer
 
 	//no need to sync as write once and then only read
 	//key is name of known job
@@ -81,20 +81,22 @@ func NewGoCraftWorkPool(ctx *env.Context, cfg RedisPoolConfig) *GoCraftWorkPool 
 	pool := work.NewWorkerPool(RedisPoolContext{}, cfg.WorkerCount, cfg.Namespace, redisPool)
 	enqueuer := work.NewEnqueuer(cfg.Namespace, redisPool)
 	client := work.NewClient(cfg.Namespace, redisPool)
-	scheduler := period.NewRedisPeriodicScheduler(ctx.SystemContext, cfg.Namespace, redisPool)
+	scheduler := period.NewRedisPeriodicScheduler(ctx, cfg.Namespace, redisPool)
 	sweeper := period.NewSweeper(cfg.Namespace, redisPool, client)
 	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, cfg.Namespace, redisPool, client, scheduler)
+	msgServer := NewMessageServer(ctx.SystemContext, cfg.Namespace, redisPool)
 	return &GoCraftWorkPool{
-		namespace:    cfg.Namespace,
-		redisPool:    redisPool,
-		pool:         pool,
-		enqueuer:     enqueuer,
-		scheduler:    scheduler,
-		sweeper:      sweeper,
-		client:       client,
-		context:      ctx,
-		statsManager: statsMgr,
-		knownJobs:    make(map[string]interface{}),
+		namespace:     cfg.Namespace,
+		redisPool:     redisPool,
+		pool:          pool,
+		enqueuer:      enqueuer,
+		scheduler:     scheduler,
+		sweeper:       sweeper,
+		client:        client,
+		context:       ctx,
+		statsManager:  statsMgr,
+		knownJobs:     make(map[string]interface{}),
+		messageServer: msgServer,
 	}
 }
 
@@ -113,20 +115,39 @@ func (gcwp *GoCraftWorkPool) Start() {
 
 	gcwp.context.WG.Add(1)
 	go func() {
+		var err error
+
 		defer func() {
 			gcwp.context.WG.Done()
-			gcwp.statsManager.Shutdown()
+			if err != nil {
+				//report error
+				gcwp.context.ErrorChan <- err
+				done <- struct{}{} //exit immediately
+			}
 		}()
-		//Start stats manager
-		//None-blocking
-		gcwp.statsManager.Start()
-		log.Info("Redis job stats manager is started")
 
-		//blocking call
-		if err := gcwp.scheduler.Start(); err != nil {
-			//Scheduler exits with error
-			gcwp.context.ErrorChan <- err
-			done <- struct{}{}
+		//Register callbacks
+		if err = gcwp.messageServer.Subscribe(period.EventSchedulePeriodicPolicy,
+			func(data interface{}) error {
+				return gcwp.handleSchedulePolicy(data)
+			}); err != nil {
+			return
+		}
+		if err = gcwp.messageServer.Subscribe(period.EventUnSchedulePeriodicPolicy,
+			func(data interface{}) error {
+				return gcwp.handleUnSchedulePolicy(data)
+			}); err != nil {
+			return
+		}
+		if err = gcwp.messageServer.Subscribe(opm.EventRegisterStatusHook,
+			func(data interface{}) error {
+				return gcwp.handleRegisterStatusHook(data)
+			}); err != nil {
+			return
+		}
+
+		//Start message server
+		if err = gcwp.messageServer.Start(); err != nil {
 			return
 		}
 	}()
@@ -135,6 +156,21 @@ func (gcwp *GoCraftWorkPool) Start() {
 	go func() {
 		defer func() {
 			gcwp.context.WG.Done()
+			gcwp.statsManager.Shutdown()
+		}()
+		//Start stats manager
+		//None-blocking
+		gcwp.statsManager.Start()
+
+		//blocking call
+		gcwp.scheduler.Start()
+	}()
+
+	gcwp.context.WG.Add(1)
+	go func() {
+		defer func() {
+			gcwp.context.WG.Done()
+			log.Infof("Redis worker pool is stopped")
 		}()
 
 		//Clear dirty data before pool starting
@@ -156,7 +192,6 @@ func (gcwp *GoCraftWorkPool) Start() {
 		}
 
 		gcwp.pool.Stop()
-		log.Infof("Redis worker pool is stopped")
 	}()
 }
 
@@ -301,27 +336,34 @@ func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
 	}
 
 	//Find the heartbeat of this pool via pid
-	pid := os.Getpid()
+	stats := make([]*models.JobPoolStatsData, 0)
 	for _, hb := range hbs {
-		if hb.Pid == pid {
-			wPoolStatus := workerPoolStatusHealthy
-			if time.Unix(hb.HeartbeatAt, 0).Add(workerPoolDeadTime).Before(time.Now()) {
-				wPoolStatus = workerPoolStatusDead
-			}
-			stats := models.JobPoolStats{
-				WorkerPoolID: hb.WorkerPoolID,
-				StartedAt:    hb.StartedAt,
-				HeartbeatAt:  hb.HeartbeatAt,
-				JobNames:     hb.JobNames,
-				Concurrency:  hb.Concurrency,
-				Status:       wPoolStatus,
-			}
-
-			return stats, nil
+		if hb.HeartbeatAt == 0 {
+			continue //invalid ones
 		}
+
+		wPoolStatus := workerPoolStatusHealthy
+		if time.Unix(hb.HeartbeatAt, 0).Add(workerPoolDeadTime).Before(time.Now()) {
+			wPoolStatus = workerPoolStatusDead
+		}
+		stat := &models.JobPoolStatsData{
+			WorkerPoolID: hb.WorkerPoolID,
+			StartedAt:    hb.StartedAt,
+			HeartbeatAt:  hb.HeartbeatAt,
+			JobNames:     hb.JobNames,
+			Concurrency:  hb.Concurrency,
+			Status:       wPoolStatus,
+		}
+		stats = append(stats, stat)
 	}
 
-	return models.JobPoolStats{}, errors.New("Failed to get stats of worker pool")
+	if len(stats) == 0 {
+		return models.JobPoolStats{}, errors.New("Failed to get stats of worker pools")
+	}
+
+	return models.JobPoolStats{
+		Pools: stats,
+	}, nil
 }
 
 //StopJob will stop the job
@@ -353,6 +395,64 @@ func (gcwp *GoCraftWorkPool) ValidateJobParameters(jobType interface{}, params m
 
 	theJ := Wrap(jobType)
 	return theJ.Validate(params)
+}
+
+//RegisterHook registers status hook url
+//sync method
+func (gcwp *GoCraftWorkPool) RegisterHook(jobID string, hookURL string) error {
+	if utils.IsEmptyStr(jobID) {
+		return errors.New("empty job ID")
+	}
+
+	if utils.IsEmptyStr(hookURL) {
+		return errors.New("empty hook url")
+	}
+
+	return gcwp.statsManager.RegisterHook(jobID, hookURL, false)
+}
+
+func (gcwp *GoCraftWorkPool) handleSchedulePolicy(data interface{}) error {
+	if data == nil {
+		return errors.New("nil data interface")
+	}
+
+	pl, ok := data.(*period.PeriodicJobPolicy)
+	if !ok {
+		return errors.New("malformed policy object")
+	}
+
+	return gcwp.scheduler.AcceptPeriodicPolicy(pl)
+}
+
+func (gcwp *GoCraftWorkPool) handleUnSchedulePolicy(data interface{}) error {
+	if data == nil {
+		return errors.New("nil data interface")
+	}
+
+	pl, ok := data.(*period.PeriodicJobPolicy)
+	if !ok {
+		return errors.New("malformed policy object")
+	}
+
+	removed := gcwp.scheduler.RemovePeriodicPolicy(pl.PolicyID)
+	if removed == nil {
+		return errors.New("nothing removed")
+	}
+
+	return nil
+}
+
+func (gcwp *GoCraftWorkPool) handleRegisterStatusHook(data interface{}) error {
+	if data == nil {
+		return errors.New("nil data interface")
+	}
+
+	hook, ok := data.(*opm.HookData)
+	if !ok {
+		return errors.New("malformed hook object")
+	}
+
+	return gcwp.statsManager.RegisterHook(hook.JobID, hook.HookURL, true)
 }
 
 //log the job

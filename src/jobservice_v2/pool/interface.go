@@ -22,6 +22,9 @@ type Interface interface {
 	//Register multiple jobs.
 	//
 	//jobs	map[string]interface{}: job map, key is job name and value is job handler.
+	//
+	//Return:
+	//  error if failed to register
 	RegisterJobs(jobs map[string]interface{}) error
 
 	//Enqueue job
@@ -60,8 +63,9 @@ type Interface interface {
 
 	//Return the status info of the pool.
 	//
-	//models.JobPoolStats : the stats info of the pool
-	//error               :  failed to check
+	//Returns:
+	//  models.JobPoolStats : the stats info of all running pools
+	//  error               :  failed to check
 	Stats() (models.JobPoolStats, error)
 
 	//Check if the job has been already registered.
@@ -78,7 +82,7 @@ type Interface interface {
 	//jobType interface{}            : type of known job
 	// params map[string]interface{} : parameters of known job
 	//
-	//Returns:
+	//Return:
 	//  error if parameters are not valid
 
 	ValidateJobParameters(jobType interface{}, params map[string]interface{}) error
@@ -96,7 +100,7 @@ type Interface interface {
 	//
 	//jobID string : ID of the enqueued job
 	//
-	//Returns:
+	//Return:
 	//  error           : error returned if meet any problems
 	StopJob(jobID string) error
 
@@ -104,7 +108,7 @@ type Interface interface {
 	//
 	//jobID string : ID of the enqueued job
 	//
-	//Returns:
+	//Return:
 	//  error           : error returned if meet any problems
 	CancelJob(jobID string) error
 
@@ -112,7 +116,16 @@ type Interface interface {
 	//
 	//jobID string : ID of the enqueued job
 	//
-	//Returns:
+	//Return:
 	//  error           : error returned if meet any problems
 	RetryJob(jobID string) error
+
+	//Register hook
+	//
+	//jobID string   : ID of job
+	//hookURL string : the hook url
+	//
+	//Return:
+	//  error        : error returned if meet any problems
+	RegisterHook(jobID string, hookURL string) error
 }

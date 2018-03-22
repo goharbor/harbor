@@ -3,7 +3,6 @@
 package period
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"strconv"
@@ -14,13 +13,21 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
 
+const (
+	//EventSchedulePeriodicPolicy is for scheduling periodic policy event
+	EventSchedulePeriodicPolicy = "schedule"
+	//EventUnSchedulePeriodicPolicy is for unscheduling periodic policy event
+	EventUnSchedulePeriodicPolicy = "unschedule"
+)
+
 //RedisPeriodicScheduler manages the periodic scheduling policies.
 type RedisPeriodicScheduler struct {
-	context   context.Context
+	context   *env.Context
 	redisPool *redis.Pool
 	namespace string
 	pstore    *periodicJobPolicyStore
@@ -28,10 +35,10 @@ type RedisPeriodicScheduler struct {
 }
 
 //NewRedisPeriodicScheduler is constructor of RedisPeriodicScheduler
-func NewRedisPeriodicScheduler(ctx context.Context, namespace string, redisPool *redis.Pool) *RedisPeriodicScheduler {
+func NewRedisPeriodicScheduler(ctx *env.Context, namespace string, redisPool *redis.Pool) *RedisPeriodicScheduler {
 	pstore := &periodicJobPolicyStore{
 		lock:     new(sync.RWMutex),
-		policies: make(map[string]*periodicJobPolicy),
+		policies: make(map[string]*PeriodicJobPolicy),
 	}
 	enqueuer := newPeriodicEnqueuer(namespace, redisPool, pstore)
 
@@ -45,90 +52,25 @@ func NewRedisPeriodicScheduler(ctx context.Context, namespace string, redisPool 
 }
 
 //Start to serve
-//Enable PUB/SUB
-func (rps *RedisPeriodicScheduler) Start() error {
+func (rps *RedisPeriodicScheduler) Start() {
 	defer func() {
 		log.Info("Redis scheduler is stopped")
 	}()
 
 	//Load existing periodic job policies
 	if err := rps.Load(); err != nil {
-		return err
+		//exit now
+		rps.context.ErrorChan <- err
+		return
 	}
-
-	//As we get one connection from the pool, don't try to close it.
-	conn := rps.redisPool.Get()
-	defer conn.Close()
-
-	psc := redis.PubSubConn{
-		Conn: conn,
-	}
-
-	err := psc.Subscribe(redis.Args{}.AddFlat(utils.KeyPeriodicNotification(rps.namespace))...)
-	if err != nil {
-		return err
-	}
-
-	done := make(chan error, 1)
-	go func() {
-		for {
-			switch res := psc.Receive().(type) {
-			case error:
-				done <- res
-				return
-			case redis.Message:
-				if notification := readMessage(res.Data); notification != nil {
-					log.Infof("Got periodic job policy change notification: %s:%s\n", notification.Event, notification.PeriodicJobPolicy.PolicyID)
-
-					switch notification.Event {
-					case periodicJobPolicyChangeEventSchedule:
-						rps.pstore.add(notification.PeriodicJobPolicy)
-					case periodicJobPolicyChangeEventUnSchedule:
-						if notification.PeriodicJobPolicy != nil {
-							rps.pstore.remove(notification.PeriodicJobPolicy.PolicyID)
-						}
-					default:
-						//do nothing
-					}
-				}
-			case redis.Subscription:
-				switch res.Kind {
-				case "subscribe":
-					log.Infof("Subscribe redis channel %s\n", res.Channel)
-					break
-				case "unsubscribe":
-					//Unsubscribe all, means main goroutine is exiting
-					log.Infof("Unsubscribe redis channel %s\n", res.Channel)
-					done <- nil
-					return
-				}
-			}
-		}
-	}()
 
 	//start enqueuer
 	rps.enqueuer.start()
 	defer rps.enqueuer.stop()
 	log.Info("Redis scheduler is started")
 
-	ticker := time.NewTicker(time.Minute)
-	defer ticker.Stop()
-
 	//blocking here
-	for err == nil {
-		select {
-		case <-ticker.C:
-			err = psc.Ping("ping!")
-		case <-rps.context.Done():
-			err = errors.New("context exit")
-		case err = <-done:
-			return err
-		}
-	}
-
-	//Unsubscribe all
-	psc.Unsubscribe()
-	return <-done
+	<-rps.context.SystemContext.Done()
 }
 
 //Schedule is implementation of the same method in period.Interface
@@ -149,13 +91,13 @@ func (rps *RedisPeriodicScheduler) Schedule(jobName string, params models.Parame
 	//Although the ZSET can guarantee no duplicated items, we still need to check the existing
 	//of the job policy to avoid publish duplicated ones to other nodes as we
 	//use transaction commands.
-	jobPolicy := &periodicJobPolicy{
+	jobPolicy := &PeriodicJobPolicy{
 		JobName:       jobName,
 		JobParameters: params,
 		CronSpec:      cronSpec,
 	}
 	//Serialize data
-	rawJSON, err := jobPolicy.serialize()
+	rawJSON, err := jobPolicy.Serialize()
 	if err != nil {
 		return "", 0, nil
 	}
@@ -170,11 +112,11 @@ func (rps *RedisPeriodicScheduler) Schedule(jobName string, params models.Parame
 	uuid, score := utils.MakePeriodicPolicyUUID()
 	//Set back policy ID
 	jobPolicy.PolicyID = uuid
-	notification := &periodicJobPolicyEvent{
-		Event:             periodicJobPolicyChangeEventSchedule,
-		PeriodicJobPolicy: jobPolicy,
+	notification := &models.Message{
+		Event: EventSchedulePeriodicPolicy,
+		Data:  jobPolicy,
 	}
-	rawJSON2, err := notification.serialize()
+	rawJSON2, err := json.Marshal(notification)
 	if err != nil {
 		return "", 0, err
 	}
@@ -218,14 +160,14 @@ func (rps *RedisPeriodicScheduler) UnSchedule(cronJobPolicyID string) error {
 		return err
 	}
 
-	notification := &periodicJobPolicyEvent{
-		Event: periodicJobPolicyChangeEventUnSchedule,
-		PeriodicJobPolicy: &periodicJobPolicy{
+	notification := &models.Message{
+		Event: EventUnSchedulePeriodicPolicy,
+		Data: &PeriodicJobPolicy{
 			PolicyID: cronJobPolicyID, //Only ID required
 		},
 	}
 
-	rawJSON, err := notification.serialize()
+	rawJSON, err := json.Marshal(notification)
 	if err != nil {
 		return err
 	}
@@ -283,13 +225,13 @@ func (rps *RedisPeriodicScheduler) Load() error {
 		return err
 	}
 
-	allPeriodicPolicies := make([]*periodicJobPolicy, 0, len(bytes)/2)
+	allPeriodicPolicies := make([]*PeriodicJobPolicy, 0, len(bytes)/2)
 	for i, l := 0, len(bytes); i < l; i = i + 2 {
 		rawPolicy := bytes[i].([]byte)
 		rawScore := bytes[i+1].([]byte)
-		policy := &periodicJobPolicy{}
+		policy := &PeriodicJobPolicy{}
 
-		if err := policy.deSerialize(rawPolicy); err != nil {
+		if err := policy.DeSerialize(rawPolicy); err != nil {
 			//Ignore error which means the policy data is not valid
 			//Only logged
 			log.Warningf("failed to deserialize periodic policy with error:%s; raw data: %s\n", err, rawPolicy)
@@ -333,6 +275,26 @@ func (rps *RedisPeriodicScheduler) Clear() error {
 	return err
 }
 
+//AcceptPeriodicPolicy is implementation of the same method in period.Interface
+func (rps *RedisPeriodicScheduler) AcceptPeriodicPolicy(policy *PeriodicJobPolicy) error {
+	if policy == nil || utils.IsEmptyStr(policy.PolicyID) {
+		return errors.New("nil periodic policy")
+	}
+
+	rps.pstore.add(policy)
+
+	return nil
+}
+
+//RemovePeriodicPolicy is implementation of the same method in period.Interface
+func (rps *RedisPeriodicScheduler) RemovePeriodicPolicy(policyID string) *PeriodicJobPolicy {
+	if utils.IsEmptyStr(policyID) {
+		return nil
+	}
+
+	return rps.pstore.remove(policyID)
+}
+
 func (rps *RedisPeriodicScheduler) exists(rawPolicy string) (int64, bool) {
 	if utils.IsEmptyStr(rawPolicy) {
 		return 0, false
@@ -362,18 +324,4 @@ func (rps *RedisPeriodicScheduler) getIDByScore(score int64) (string, error) {
 	}
 
 	return ids[0], nil
-}
-
-func readMessage(data []byte) *periodicJobPolicyEvent {
-	if data == nil || len(data) == 0 {
-		return nil
-	}
-
-	notification := &periodicJobPolicyEvent{}
-	err := json.Unmarshal(data, notification)
-	if err != nil {
-		return nil
-	}
-
-	return notification
 }

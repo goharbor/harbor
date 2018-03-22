@@ -4,8 +4,10 @@ package opm
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"strconv"
 	"time"
@@ -29,6 +31,7 @@ const (
 	opUpdateStatus    = "update_job_status"
 	opCheckIn         = "check_in"
 	opDieAt           = "mark_die_at"
+	opReportStatus    = "report_status"
 	maxFails          = 3
 
 	//CtlCommandStop : command stop
@@ -40,6 +43,9 @@ const (
 
 	//Copy from period.enqueuer
 	periodicEnqueuerHorizon = 4 * time.Minute
+
+	//EventRegisterStatusHook is event name of registering hook
+	EventRegisterStatusHook = "register_hook"
 )
 
 type queueItem struct {
@@ -59,7 +65,8 @@ type RedisJobStatsManager struct {
 	stopChan    chan struct{}
 	doneChan    chan struct{}
 	processChan chan *queueItem
-	isRunning   bool //no need to sync
+	isRunning   bool       //no need to sync
+	hookStore   *HookStore //cache the hook here to avoid requesting backend
 }
 
 //NewRedisJobStatsManager is constructor of RedisJobStatsManager
@@ -73,6 +80,7 @@ func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *r
 		stopChan:    make(chan struct{}, 1),
 		doneChan:    make(chan struct{}, 1),
 		processChan: make(chan *queueItem, processBufferSize),
+		hookStore:   NewHookStore(),
 	}
 }
 
@@ -83,6 +91,8 @@ func (rjs *RedisJobStatsManager) Start() {
 	}
 	go rjs.loop()
 	rjs.isRunning = true
+
+	log.Info("Redis job stats manager is started")
 }
 
 //Shutdown is implementation of same method in JobStatsManager interface.
@@ -128,6 +138,9 @@ func (rjs *RedisJobStatsManager) SetJobStatus(jobID string, status string) {
 	}
 
 	rjs.processChan <- item
+
+	//Report status at the same time
+	rjs.submitStatusReportingItem(jobID, status, "")
 }
 
 func (rjs *RedisJobStatsManager) loop() {
@@ -144,12 +157,13 @@ func (rjs *RedisJobStatsManager) loop() {
 		select {
 		case item := <-rjs.processChan:
 			go func(item *queueItem) {
+				clearHookCache := false
 				if err := rjs.process(item); err != nil {
 					item.fails++
 					if item.fails < maxFails {
 						//Retry after a random interval
 						go func() {
-							timer := time.NewTimer(time.Duration(rand.Intn(5)) * time.Second)
+							timer := time.NewTimer(time.Duration(backoff(item.fails)) * time.Second)
 							defer timer.Stop()
 
 							select {
@@ -161,6 +175,22 @@ func (rjs *RedisJobStatsManager) loop() {
 						}()
 					} else {
 						log.Warningf("Failed to process '%s' request with error: %s (%d times tried)\n", item.op, err, maxFails)
+						if item.op == opReportStatus {
+							clearHookCache = true
+						}
+					}
+				} else {
+					if item.op == opReportStatus {
+						clearHookCache = true
+					}
+				}
+
+				if clearHookCache {
+					//Clear cache to save memory if job status is success or stopped.
+					data := item.data.([]string)
+					status := data[2]
+					if status == job.JobStatusSuccess || status == job.JobStatusStopped {
+						rjs.hookStore.Remove(data[0])
 					}
 				}
 			}(item)
@@ -284,6 +314,9 @@ func (rjs *RedisJobStatsManager) CheckIn(jobID string, message string) {
 	}
 
 	rjs.processChan <- item
+
+	//Report checkin message at the same time
+	rjs.submitStatusReportingItem(jobID, job.JobStatusRunning, message)
 }
 
 //CtlCommand checks if control command is fired for the specified job.
@@ -307,6 +340,64 @@ func (rjs *RedisJobStatsManager) DieAt(jobID string, dieAt int64) {
 	}
 
 	rjs.processChan <- item
+}
+
+//RegisterHook is used to save the hook url or cache the url in memory.
+func (rjs *RedisJobStatsManager) RegisterHook(jobID string, hookURL string, isCached bool) error {
+	if utils.IsEmptyStr(jobID) {
+		return errors.New("empty job ID")
+	}
+
+	if utils.IsEmptyStr(hookURL) {
+		return errors.New("invalid hook url")
+	}
+
+	if !isCached {
+		return rjs.saveHook(jobID, hookURL)
+	}
+
+	rjs.hookStore.Add(jobID, hookURL)
+
+	return nil
+}
+
+func (rjs *RedisJobStatsManager) submitStatusReportingItem(jobID string, status, checkIn string) {
+	//Let it run in a separate goroutine to avoid waiting more time
+	go func() {
+		var (
+			hookUrl string
+			ok      bool
+			err     error
+		)
+
+		hookUrl, ok = rjs.hookStore.Get(jobID)
+		if !ok {
+			//Retrieve from backend
+			hookUrl, err = rjs.getHook(jobID)
+			if err != nil {
+				//logged and exit
+				log.Warningf("no status hook found for job %s\n, abandon status reporting", jobID)
+				return
+			}
+		}
+
+		item := &queueItem{
+			op:   opReportStatus,
+			data: []string{jobID, hookUrl, status, checkIn},
+		}
+
+		rjs.processChan <- item
+	}()
+}
+
+func (rjs *RedisJobStatsManager) reportStatus(jobID string, hookURL, status, checkIn string) error {
+	reportingStatus := models.JobStatusChange{
+		JobID:   jobID,
+		Status:  status,
+		CheckIn: checkIn,
+	}
+
+	return DefaultHookClient.ReportStatus(hookURL, reportingStatus)
 }
 
 func (rjs *RedisJobStatsManager) expirePeriodicJobStats(jobID string) error {
@@ -339,7 +430,7 @@ func (rjs *RedisJobStatsManager) deleteScheduledJobsOfPeriodicPolicy(policyID st
 		epoch := t.Unix()
 		if err = rjs.client.DeleteScheduledJob(epoch, policyID); err != nil {
 			//only logged
-			log.Errorf("delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
+			log.Warningf("delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
 		}
 	}
 
@@ -451,6 +542,10 @@ func (rjs *RedisJobStatsManager) getJobStats(jobID string) (models.JobStats, err
 		return models.JobStats{}, err
 	}
 
+	if vals == nil || len(vals) == 0 {
+		return models.JobStats{}, fmt.Errorf("job '%s' is not found", jobID)
+	}
+
 	res := models.JobStats{
 		Stats: &models.JobStatData{},
 	}
@@ -504,6 +599,7 @@ func (rjs *RedisJobStatsManager) getJobStats(jobID string) (models.JobStats, err
 			v, _ := strconv.ParseInt(value, 10, 64)
 			res.Stats.DieAt = v
 		default:
+			break
 		}
 	}
 
@@ -572,9 +668,85 @@ func (rjs *RedisJobStatsManager) process(item *queueItem) error {
 	case opDieAt:
 		data := item.data.([]interface{})
 		return rjs.dieAt(data[0].(string), data[1].(int64))
+	case opReportStatus:
+		data := item.data.([]string)
+		return rjs.reportStatus(data[0], data[1], data[2], data[3])
 	default:
 		break
 	}
 
 	return nil
+}
+
+//HookData keeps the hook url info
+type HookData struct {
+	JobID   string `json:"job_id"`
+	HookURL string `json:"hook_url"`
+}
+
+func (rjs *RedisJobStatsManager) saveHook(jobID string, hookURL string) error {
+	conn := rjs.redisPool.Get()
+	defer conn.Close()
+
+	key := utils.KeyJobStats(rjs.namespace, jobID)
+	args := make([]interface{}, 0, 3)
+	args = append(args, key, "status_hook", hookURL)
+	msg := &models.Message{
+		Event: EventRegisterStatusHook,
+		Data: &HookData{
+			JobID:   jobID,
+			HookURL: hookURL,
+		},
+	}
+	rawJSON, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	//hook is saved into the job stats
+	//We'll not set expire time here, the expire time of the key will be set when saving job stats
+	if err := conn.Send("MULTI"); err != nil {
+		return err
+	}
+	if err := conn.Send("HMSET", args...); err != nil {
+		return err
+	}
+	if err := conn.Send("PUBLISH", utils.KeyPeriodicNotification(rjs.namespace), rawJSON); err != nil {
+		return err
+	}
+
+	_, err = conn.Do("EXEC")
+	return err
+}
+
+func (rjs *RedisJobStatsManager) getHook(jobID string) (string, error) {
+	conn := rjs.redisPool.Get()
+	defer conn.Close()
+
+	key := utils.KeyJobStats(rjs.namespace, jobID)
+	vals, err := redis.Strings(conn.Do("HGETALL", key))
+	if err != nil {
+		return "", err
+	}
+
+	for i, l := 0, len(vals); i < l; i = i + 2 {
+		prop := vals[i]
+		value := vals[i+1]
+		switch prop {
+		case "status_hook":
+			return value, nil
+		default:
+			break
+		}
+	}
+
+	return "", fmt.Errorf("no hook found for job '%s'", jobID)
+}
+
+func backoff(seed uint) int {
+	if seed < 1 {
+		seed = 1
+	}
+
+	return int(math.Pow(float64(seed+1), float64(seed))) + rand.Intn(5)
 }

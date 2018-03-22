@@ -14,7 +14,7 @@ import (
 
 //RedisJob is a job wrapper to wrap the job.Interface to the style which can be recognized by the redis pool.
 type RedisJob struct {
-	job          interface{}         // the real job implementation
+	job          interface{}         //the real job implementation
 	context      *env.Context        //context
 	statsManager opm.JobStatsManager //job stats manager
 }

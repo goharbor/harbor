@@ -76,4 +76,14 @@ type JobStatsManager interface {
 	//message string : The message being checked in
 	//
 	DieAt(jobID string, dieAt int64)
+
+	//RegisterHook is used to save the hook url or cache the url in memory.
+	//
+	//jobID string   : ID of job
+	//hookURL string : the hook url being registered
+	//isCached bool  :  to indicate if only cache the hook url
+	//
+	//Returns:
+	//  error if meet any problems
+	RegisterHook(jobID string, hookURL string, isCached bool) error
 }

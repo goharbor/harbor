@@ -16,8 +16,8 @@ const (
 	periodicJobPolicyChangeEventUnSchedule = "UnSchedule"
 )
 
-//periodicJobPolicy ...
-type periodicJobPolicy struct {
+//PeriodicJobPolicy ...
+type PeriodicJobPolicy struct {
 	//NOTES: The 'PolicyID' should not be set when serialize this policy struct to the zset
 	//because each 'Policy ID' is different and it may cause issue of losing zset unique capability.
 	PolicyID      string                 `json:"policy_id,omitempty"`
@@ -26,39 +26,23 @@ type periodicJobPolicy struct {
 	CronSpec      string                 `json:"cron_spec"`
 }
 
-//periodicJobPolicyEvent is the event content of periodic job policy change.
-type periodicJobPolicyEvent struct {
-	Event             string             `json:"event"`
-	PeriodicJobPolicy *periodicJobPolicy `json:"periodic_job_policy"`
-}
-
-//serialize the policy to raw data.
-func (pjp *periodicJobPolicy) serialize() ([]byte, error) {
+//Serialize the policy to raw data.
+func (pjp *PeriodicJobPolicy) Serialize() ([]byte, error) {
 	return json.Marshal(pjp)
 }
 
-//deSerialize the raw json to policy.
-func (pjp *periodicJobPolicy) deSerialize(rawJSON []byte) error {
+//DeSerialize the raw json to policy.
+func (pjp *PeriodicJobPolicy) DeSerialize(rawJSON []byte) error {
 	return json.Unmarshal(rawJSON, pjp)
-}
-
-//serialize the policy to raw data.
-func (pjpe *periodicJobPolicyEvent) serialize() ([]byte, error) {
-	return json.Marshal(pjpe)
-}
-
-//deSerialize the raw json to policy.
-func (pjpe *periodicJobPolicyEvent) deSerialize(rawJSON []byte) error {
-	return json.Unmarshal(rawJSON, pjpe)
 }
 
 //periodicJobPolicyStore is in-memory cache for the periodic job policies.
 type periodicJobPolicyStore struct {
 	lock     *sync.RWMutex
-	policies map[string]*periodicJobPolicy //k-v pair and key is the policy ID
+	policies map[string]*PeriodicJobPolicy //k-v pair and key is the policy ID
 }
 
-func (ps *periodicJobPolicyStore) addAll(items []*periodicJobPolicy) {
+func (ps *periodicJobPolicyStore) addAll(items []*PeriodicJobPolicy) {
 	if items == nil || len(items) == 0 {
 		return
 	}
@@ -74,8 +58,8 @@ func (ps *periodicJobPolicyStore) addAll(items []*periodicJobPolicy) {
 	}
 }
 
-func (ps *periodicJobPolicyStore) list() []*periodicJobPolicy {
-	allItems := make([]*periodicJobPolicy, 0)
+func (ps *periodicJobPolicyStore) list() []*PeriodicJobPolicy {
+	allItems := make([]*PeriodicJobPolicy, 0)
 
 	ps.lock.RLock()
 	defer ps.lock.RUnlock()
@@ -87,7 +71,7 @@ func (ps *periodicJobPolicyStore) list() []*periodicJobPolicy {
 	return allItems
 }
 
-func (ps *periodicJobPolicyStore) add(jobPolicy *periodicJobPolicy) {
+func (ps *periodicJobPolicyStore) add(jobPolicy *PeriodicJobPolicy) {
 	if jobPolicy == nil || utils.IsEmptyStr(jobPolicy.PolicyID) {
 		return
 	}
@@ -98,7 +82,7 @@ func (ps *periodicJobPolicyStore) add(jobPolicy *periodicJobPolicy) {
 	ps.policies[jobPolicy.PolicyID] = jobPolicy
 }
 
-func (ps *periodicJobPolicyStore) remove(policyID string) *periodicJobPolicy {
+func (ps *periodicJobPolicyStore) remove(policyID string) *PeriodicJobPolicy {
 	if utils.IsEmptyStr(policyID) {
 		return nil
 	}

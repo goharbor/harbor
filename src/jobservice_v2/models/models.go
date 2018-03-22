@@ -15,6 +15,7 @@ type JobData struct {
 	Name       string       `json:"name"`
 	Parameters Parameters   `json:"parameters"`
 	Metadata   *JobMetadata `json:"metadata"`
+	StatusHook string       `json:"status_hook"`
 }
 
 //JobMetadata stores the metadata of job.
@@ -45,10 +46,16 @@ type JobStatData struct {
 	CheckIn     string `json:"check_in,omitempty"`
 	CheckInAt   int64  `json:"check_in_at,omitempty"`
 	DieAt       int64  `json:"die_at,omitempty"`
+	HookStatus  string `json:"hook_status,omitempty"`
 }
 
-//JobPoolStats represent the healthy and status of the job service.
+//JobPoolStats represents the healthy and status of all the running worker pools.
 type JobPoolStats struct {
+	Pools []*JobPoolStatsData `json:"worker_pools"`
+}
+
+//JobPoolStatsData represent the healthy and status of the worker pool.
+type JobPoolStatsData struct {
 	WorkerPoolID string   `json:"worker_pool_id"`
 	StartedAt    int64    `json:"started_at"`
 	HeartbeatAt  int64    `json:"heartbeat_at"`
@@ -60,4 +67,17 @@ type JobPoolStats struct {
 //JobActionRequest defines for triggering job action like stop/cancel.
 type JobActionRequest struct {
 	Action string `json:"action"`
+}
+
+//JobStatusChange is designed for reporting the status change via hook.
+type JobStatusChange struct {
+	JobID   string `json:"job_id"`
+	Status  string `json:"status"`
+	CheckIn string `json:"check_in,omitempty"`
+}
+
+//Message is designed for sub/pub messages
+type Message struct {
+	Event string
+	Data  interface{} //generic format
 }
