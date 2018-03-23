@@ -120,3 +120,9 @@ func ListResourceLabels(query ...*models.ResourceLabelQuery) ([]*models.Resource
 	_, err := qs.All(&rls)
 	return rls, err
 }
+
+// DeleteResourceLabelByLabel delete the mapping relationship by label ID
+func DeleteResourceLabelByLabel(id int64) error {
+	_, err := GetOrmer().QueryTable(&models.ResourceLabel{}).Filter("LabelID", id).Delete()
+	return err
+}
