@@ -49,10 +49,10 @@ harbor_builds_bucket="harbor-builds"
 harbor_releases_bucket="harbor-releases"
 harbor_ci_pipeline_store_bucket="harbor-ci-pipeline-store/latest"
 harbor_target_bucket=""
-if [[ $DRONE_REPO_BRANCH == "master" ]]; then
+if [[ $DRONE_BRANCH == "master" ]]; then
   harbor_target_bucket=$harbor_builds_bucket
 else
-  harbor_target_bucket=$harbor_releases_bucket/$DRONE_REPO_BRANCH
+  harbor_target_bucket=$harbor_releases_bucket/$DRONE_BRANCH
 fi
 
 # GC credentials
@@ -79,15 +79,17 @@ target_release_version=$(cat ./VERSION)
 #  the harbor ui version will be shown in the about dialog.
 Harbor_UI_Version=$target_release_version-$git_commit
 #  the harbor package version is for both online and offline installer.
-Harbor_Package_Version=$target_release_version-$DRONE_BUILD_NUMBER
+#  harbor-offline-installer-v1.5.2-build.8.tgz
+Harbor_Package_Version=$target_release_version-'build.'$DRONE_BUILD_NUMBER
 #  the harbor assets version is for tag of harbor images:
 # 1, On master branch, it's same as package version.
 # 2, On release branch(others), it would set to the target realese version so that we can rename the latest passed CI build to publish.
-if [[ $DRONE_REPO_BRANCH == "master" ]]; then
-  Harbor_Assets_Version=$target_release_version-$DRONE_BUILD_NUMBER
+if [[ $DRONE_BRANCH == "master" ]]; then
+  Harbor_Assets_Version=$Harbor_Package_Version
 else
   Harbor_Assets_Version=$target_release_version
 fi
+export Harbor_UI_Version=$Harbor_UI_Version
 export Harbor_Assets_Version=$Harbor_Assets_Version
 #  the env is for online and offline package.
 export Harbor_Package_Version=$Harbor_Package_Version
@@ -115,7 +117,7 @@ function package_offline_installer {
 
 ## --------------------------------------------- Run Test Case ---------------------------------------------
 echo "--------------------------------------------------"
-echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_REPO_BRANCH"
+echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
 echo "--------------------------------------------------"
 
 ##
@@ -123,7 +125,7 @@ echo "--------------------------------------------------"
 #
 # Put code here is because that it needs clean code to build installer.
 ##
-if [[ $DRONE_REPO_BRANCH == "master" || $DRONE_REPO_BRANCH == *"refs/tags"* || $DRONE_REPO_BRANCH == "release-"* ]]; then
+if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]]; then
     if [[ $DRONE_BUILD_EVENT == "push" ]]; then
         package_offline_installer 
         upload_latest_build=true     
