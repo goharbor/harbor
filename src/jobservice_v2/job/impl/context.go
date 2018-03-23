@@ -8,6 +8,10 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/vmware/harbor/src/adminserver/client"
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/jobservice_v2/config"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
@@ -28,25 +32,58 @@ type Context struct {
 
 	//checkin func
 	checkInFunc job.CheckInFunc
+
+	//other required information
+	properties map[string]interface{}
+
+	//admin server client
+	adminClient client.Client
 }
 
 //NewContext ...
-func NewContext(sysCtx context.Context) *Context {
+func NewContext(sysCtx context.Context, adminClient client.Client) *Context {
 	return &Context{
-		sysContext: sysCtx,
+		sysContext:  sysCtx,
+		adminClient: adminClient,
+		properties:  make(map[string]interface{}),
 	}
 }
 
-//InitDao ...
-func (c *Context) InitDao() error {
-	return nil
+//Init ...
+func (c *Context) Init() error {
+	configs, err := c.adminClient.GetCfgs()
+	if err != nil {
+		return err
+	}
+
+	db := getDBFromConfig(configs)
+
+	return dao.InitDatabase(db)
 }
 
 //Build implements the same method in env.JobContext interface
 //This func will build the job execution context before running
 func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 	jContext := &Context{
-		sysContext: c.sysContext,
+		sysContext:  c.sysContext,
+		adminClient: c.adminClient,
+		properties:  make(map[string]interface{}),
+	}
+
+	//Copy properties
+	if len(c.properties) > 0 {
+		for k, v := range c.properties {
+			jContext.properties[k] = v
+		}
+	}
+
+	//Refresh admin server properties
+	props, err := c.adminClient.GetCfgs()
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range props {
+		jContext.properties[k] = v
 	}
 
 	//Init logger here
@@ -83,8 +120,9 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 }
 
 //Get implements the same method in env.JobContext interface
-func (c *Context) Get(prop string) interface{} {
-	return nil
+func (c *Context) Get(prop string) (interface{}, bool) {
+	v, ok := c.properties[prop]
+	return v, ok
 }
 
 //SystemContext implements the same method in env.JobContext interface
@@ -115,4 +153,18 @@ func (c *Context) OPCommand() (string, bool) {
 //GetLogger returns the logger
 func (c *Context) GetLogger() logger.Interface {
 	return c.logger
+}
+
+func getDBFromConfig(cfg map[string]interface{}) *models.Database {
+	database := &models.Database{}
+	database.Type = cfg[common.DatabaseType].(string)
+	mysql := &models.MySQL{}
+	mysql.Host = cfg[common.MySQLHost].(string)
+	mysql.Port = int(cfg[common.MySQLPort].(float64))
+	mysql.Username = cfg[common.MySQLUsername].(string)
+	mysql.Password = cfg[common.MySQLPassword].(string)
+	mysql.Database = cfg[common.MySQLDatabase].(string)
+	database.MySQL = mysql
+
+	return database
 }

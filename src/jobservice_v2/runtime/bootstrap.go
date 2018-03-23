@@ -26,7 +26,16 @@ import (
 var JobService = &Bootstrap{}
 
 //Bootstrap is coordinating process to help load and start the other components to serve.
-type Bootstrap struct{}
+type Bootstrap struct {
+	jobConextInitializer env.JobContextInitializer
+}
+
+//SetJobContextInitializer set the job context initializer
+func (bs *Bootstrap) SetJobContextInitializer(initializer env.JobContextInitializer) {
+	if initializer != nil {
+		bs.jobConextInitializer = initializer
+	}
+}
 
 //LoadAndRun will load configurations, initialize components and then start the related process to serve requests.
 //Return error if meet any problems.
@@ -48,13 +57,13 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 	}
 
 	//Build specified job context
-	//TODO:
-	jobCtx := impl.NewContext(ctx)
-	if err := jobCtx.InitDao(); err != nil {
-		log.Errorf("Failed to build job conetxt with error: %s\n", err)
-		return
+	if bs.jobConextInitializer != nil {
+		if jobCtx, err := bs.jobConextInitializer(rootContext); err == nil {
+			rootContext.JobContext = jobCtx
+		} else {
+			log.Fatalf("Failed to initialize job context: %s\n", err)
+		}
 	}
-	rootContext.JobContext = jobCtx
 
 	//Start the pool
 	var backendPool pool.Interface

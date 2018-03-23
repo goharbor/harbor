@@ -56,6 +56,9 @@ func (rj *ReplicationJob) Run(ctx env.JobContext, params map[string]interface{})
 	logger.Info("=======Replication job running=======")
 	logger.Infof("params: %#v\n", params)
 	logger.Infof("context: %#v\n", ctx)
+	if v, ok := ctx.Get("email_from"); ok {
+		fmt.Printf("Get prop form context: email_from=%s\n", v)
+	}
 
 	/*if 1 != 0 {
 		return errors.New("I suicide")

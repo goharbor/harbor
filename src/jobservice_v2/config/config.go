@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -27,6 +28,8 @@ const (
 	jobServiceLoggerBasePath      = "JOB_SERVICE_LOGGER_BASE_PATH"
 	jobServiceLoggerLevel         = "JOB_SERVICE_LOGGER_LEVEL"
 	jobServiceLoggerArchivePeriod = "JOB_SERVICE_LOGGER_ARCHIVE_PERIOD"
+	jobServiceAdminServerEndpoint = "JOB_SERVICE_ADMIN_SERVER_ENDPOINT"
+	jobServiceAuthSecret          = "JOBSERVICE_SECRET"
 
 	//JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -47,6 +50,8 @@ type Configuration struct {
 
 	//Server listening port
 	Port uint `yaml:"port"`
+
+	AdminServer string `yaml:"admin_server"`
 
 	//Additional config when using https
 	HTTPSConfig *HTTPSConfig `yaml:"https_config,omitempty"`
@@ -139,6 +144,16 @@ func GetLogArchivePeriod() uint {
 	}
 
 	return 1 //return default
+}
+
+//GetAuthSecret get the auth secret from the env
+func GetAuthSecret() string {
+	return utils.ReadEnv(jobServiceAuthSecret)
+}
+
+//GetAdminServerEndpoint return the admin server endpoint
+func GetAdminServerEndpoint() string {
+	return DefaultConfig.AdminServer
 }
 
 //Load env variables
@@ -251,6 +266,11 @@ func (c *Configuration) loadEnvs() {
 		}
 	}
 
+	//admin server
+	if adminServer := utils.ReadEnv(jobServiceAdminServerEndpoint); !utils.IsEmptyStr(adminServer) {
+		c.AdminServer = adminServer
+	}
+
 }
 
 //Check if the configurations are valid settings.
@@ -319,6 +339,10 @@ func (c *Configuration) validate() error {
 
 	if c.LoggerConfig.ArchivePeriod == 0 {
 		return fmt.Errorf("logger archive period should be greater than 0")
+	}
+
+	if _, err := url.Parse(c.AdminServer); err != nil {
+		return fmt.Errorf("invalid admin server endpoint: %s", err)
 	}
 
 	return nil //valid

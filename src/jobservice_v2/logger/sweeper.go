@@ -81,7 +81,7 @@ func (s *Sweeper) clear() {
 	}
 
 	for _, logFile := range logFiles {
-		if logFile.ModTime().Add(oneDay * time.Second).Before(time.Now()) {
+		if logFile.ModTime().Add(time.Duration(s.period*oneDay) * time.Second).Before(time.Now()) {
 			logFilePath := fmt.Sprintf("%s%s%s", s.workDir, string(os.PathSeparator), logFile.Name())
 			if err := os.Remove(logFilePath); err == nil {
 				cleared++

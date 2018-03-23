@@ -26,8 +26,9 @@ type JobContext interface {
 	//prop string : key of the context property
 	//
 	//Returns:
-	//  The data of the specified context property
-	Get(prop string) interface{}
+	//  The data of the specified context property if have
+	//  bool to indicate if the property existing
+	Get(prop string) (interface{}, bool)
 
 	//SystemContext returns the system context
 	//
@@ -61,3 +62,6 @@ type JobData struct {
 	Args      map[string]interface{}
 	ExtraData map[string]interface{}
 }
+
+//JobContextInitializer is a func to initialize the concrete job context
+type JobContextInitializer func(ctx *Context) (JobContext, error)

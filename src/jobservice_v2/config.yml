@@ -27,3 +27,6 @@ logger:
   level: "INFO"
   archive_period: 1 #days
 
+#Admin server endpoint
+admin_server: "http://10.160.178.186:9010/"
+
