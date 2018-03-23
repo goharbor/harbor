@@ -256,6 +256,11 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 		return models.JobStats{}, err
 	}
 
+	//avoid backend pool bug
+	if j == nil {
+		return models.JobStats{}, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
+	}
+
 	res := generateResult(j, job.JobKindGeneric, isUnique)
 	//Save data with async way. Once it fails to do, let it escape
 	//The client method may help if the job is still in progress when get stats of this job
@@ -280,6 +285,11 @@ func (gcwp *GoCraftWorkPool) Schedule(jobName string, params models.Parameters, 
 
 	if err != nil {
 		return models.JobStats{}, err
+	}
+
+	//avoid backend pool bug
+	if j == nil {
+		return models.JobStats{}, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
 	}
 
 	res := generateResult(j.Job, job.JobKindScheduled, isUnique)
