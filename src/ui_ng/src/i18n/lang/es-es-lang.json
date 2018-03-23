@@ -178,6 +178,7 @@
         "REPLICATION": "Replicación",
         "USERS": "Miembros",
         "LOGS": "Logs",
+        "LABELS": "labels",
         "PROJECTS": "Proyectos",
         "CONFIG": "Configuración"
     },
@@ -411,7 +412,10 @@
         "PLACEHOLDER": "We couldn't find any repositories!",
         "INFO": "Información",
         "NO_INFO": "Sin información de descripción para este repositorio",
-        "IMAGE": "Imágenes"
+        "IMAGE": "Imágenes",
+        "LABELS": ":labels",
+        "ADD_TO_IMAGE": "Add labels to this image",
+        "ADD_LABELS": "Add labels"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algunos cambios no se han guardado aún. ¿Quiere cancelar?"
@@ -433,6 +437,7 @@
         "AUTH": "Autentificación",
         "REPLICATION": "Replicación",
         "EMAIL": "Email",
+        "LABEL": "Label",
         "SYSTEM": "Opciones del Sistema",
         "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirma cancelación",
@@ -611,6 +616,18 @@
         "PLACEHOLDER": "We couldn't find any tags!",
         "COPY_ERROR": "Copy failed, please try to manually copy.",
         "FILTER_FOR_TAGS": "Etiquetas de filtro"
+    },
+    "LABEL": {
+        "LABEL": "Label",
+        "DESCRIPTION": "Description",
+        "CREATION_TIME": "Creation Time",
+        "NEW_LABEL": "New Label",
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "LABEL_NAME": "Label Name",
+        "COLOR": "Color",
+        "FILTER_Label_PLACEHOLDER": "Filter Labels",
+        "NO_LABELS": "No labels"
     },
     "WEEKLY": {
     "MONDAY": "Monday",

@@ -47,6 +47,8 @@ import {
   JobLogDefaultService,
   ProjectService,
   ProjectDefaultService,
+  LabelService,
+  LabelDefaultService
 } from './service/index';
 import {
   ErrorHandler,
@@ -58,6 +60,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { TranslateServiceInitializer } from './i18n/index';
 import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from './utils';
 import { ChannelService } from './channel/index';
+import {LABEL_DIRECTIVES} from "./label/index";
+import {CREATE_EDIT_LABEL_DIRECTIVES} from "./create-edit-label/index";
+import {LABEL_PIECE_DIRECTIVES} from "./label-piece/index";
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -81,7 +86,8 @@ export const DefaultServiceConfig: IServiceConfig = {
   langMessageFileSuffixForHttpLoader: "-lang.json",
   localI18nMessageVariableMap: {},
   configurationEndpoint: "/api/configurations",
-  scanJobEndpoint: "/api/jobs/scan"
+  scanJobEndpoint: "/api/jobs/scan",
+  labelEndpoint: "/api/labels"
 };
 
 /**
@@ -126,6 +132,9 @@ export interface HarborModuleConfig {
 
   //Service implementation for project policy
   projectPolicyService?: Provider,
+
+  //Service implementation for label
+  labelService?: Provider,
 }
 
 /**
@@ -170,7 +179,10 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     PUSH_IMAGE_BUTTON_DIRECTIVES,
     CONFIGURATION_DIRECTIVES,
     JOB_LOG_VIEWER_DIRECTIVES,
-    PROJECT_POLICY_CONFIG_DIRECTIVES
+    PROJECT_POLICY_CONFIG_DIRECTIVES,
+    LABEL_DIRECTIVES,
+    CREATE_EDIT_LABEL_DIRECTIVES,
+    LABEL_PIECE_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -192,7 +204,10 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     CONFIGURATION_DIRECTIVES,
     JOB_LOG_VIEWER_DIRECTIVES,
     TranslateModule,
-    PROJECT_POLICY_CONFIG_DIRECTIVES
+    PROJECT_POLICY_CONFIG_DIRECTIVES,
+    LABEL_DIRECTIVES,
+    CREATE_EDIT_LABEL_DIRECTIVES,
+    LABEL_PIECE_DIRECTIVES
   ],
   providers: []
 })
@@ -214,6 +229,7 @@ export class HarborLibraryModule {
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
+        config.labelService || {provide: LabelService, useClass: LabelDefaultService},
         // Do initializing
         TranslateServiceInitializer,
         {
@@ -243,6 +259,7 @@ export class HarborLibraryModule {
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
+        config.labelService || {provide: LabelService, useClass: LabelDefaultService},
         ChannelService
       ]
     };

@@ -386,6 +386,7 @@
         "AUTH": "Identification",
         "REPLICATION": "Réplication",
         "EMAIL": "Email",
+        "LABEL": "Label",
         "SYSTEM": "Réglages Système",
         "CONFIRM_TITLE": "Confirmer pour annuler",
         "CONFIRM_SUMMARY": "Certaines modifications n'ont pas été sauvegardées. Voulez-vous les défaire ?",
@@ -553,6 +554,11 @@
         "IMAGE_VULNERABILITIES": "Vulnérabilitées de l'Image",
         "PLACEHOLDER": "Nous ne trouvons aucun tag !",
         "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement."
+    },
+    "LABEL": {
+        "LABEL": "Label",
+        "DESCRIPTION": "Description",
+        "CREATION_TIME": "Creation Time"
     },
     "UNKNOWN_ERROR": "Des erreurs inconnues sont survenues. Veuillez réessayer plus tard.",
     "UNAUTHORIZED_ERROR": "Votre session est invalide ou a expiré. Vous devez vous connecter pour continuer votre action.",
