@@ -48,6 +48,7 @@ var (
 		common.EmailInsecure:    true,
 		common.LDAPVerifyCert:   true,
 		common.UAAVerifyCert:    true,
+		common.ReadOnly:         true,
 	}
 	mapKeys = map[string]bool{
 		common.ScanAllPolicy: true,

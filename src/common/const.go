@@ -99,4 +99,5 @@ const (
 	RegistryStorageProviderName = "registry_storage_provider_name"
 	UserMember                  = "u"
 	GroupMember                 = "g"
+	ReadOnly                    = "read_only"
 )
