@@ -37,6 +37,42 @@ Test Case - Ldap Sign in and out
     Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
     Close Browser
 
+Test Case - Add A Never Login Member 
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To User Tag
+    Page Should Not Contain  mike01
+    Back To Projects
+    Create An New Project  project${d}
+    Go Into Project  project${d}
+    Switch To Member
+    Add Guest Member To Project  mike02
+    Page Should Contain  mike02
+    Close Browser
+
+Test Case - Link For DB Should Not Exist
+    Init Chrome Driver
+    sign in harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Logout Harbor
+    Sleep  2
+    Page Should Not Contain  Sign up 
+    Page Should Not Contain  Forgot password
+    Close Browser
+
+Test Case - Ldap Add User Button Disabled
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To User Tag
+    Add User Button Should Be Disabled
+    Close Browser
+
+Test Case Ldap User Can Not Change Password
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  mike02  zhu88jie
+    Ldap User Should Not See Change Password
+    Close Browser
+
 Test Case - Ldap User Create Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
