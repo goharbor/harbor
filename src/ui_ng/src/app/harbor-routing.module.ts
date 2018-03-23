@@ -51,6 +51,7 @@ import { MemberGuard } from './shared/route/member-guard-activate.service';
 
 import { TagDetailPageComponent } from './repository/tag-detail/tag-detail-page.component';
 import { LeavingRepositoryRouteDeactivate } from './shared/route/leaving-repository-deactivate.service';
+import {ProjectLabelComponent} from "./project/project-label/project-label.component";
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -138,6 +139,9 @@ const harborRoutes: Routes = [
           {
             path: 'logs',
             component: AuditLogComponent
+          },{
+            path: 'labels',
+            component: ProjectLabelComponent
           },
           {
             path: 'configs',

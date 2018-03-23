@@ -179,7 +179,18 @@ export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[]
         property: string;
         value: string;
     }) => {
-        items = items.filter(item => regexpFilter(filter["value"], item[filter["property"]]));
+        items = items.filter(item => {
+            if (filter['property'].indexOf('.') !== -1) {
+                let arr = filter['property'].split('.');
+                if (Array.isArray(item[arr[0]]) && item[arr[0]].length) {
+                     return item[arr[0]].some((data: any) => {
+                         return regexpFilter(filter['value'], data[arr[1]]);
+                    });
+                }
+            }else {
+                return regexpFilter(filter['value'], item[filter['property']]);
+            }
+        });
     });
 
     return items;

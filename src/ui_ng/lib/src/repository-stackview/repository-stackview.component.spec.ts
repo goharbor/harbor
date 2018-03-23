@@ -9,7 +9,7 @@ import { TagComponent } from '../tag/tag.component';
 import { FilterComponent } from '../filter/filter.component';
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { Repository, RepositoryItem, Tag, SystemInfo } from '../service/interface';
+import {Repository, RepositoryItem, Tag, SystemInfo, Label} from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { RepositoryService, RepositoryDefaultService } from '../service/repository.service';
 import { TagService, TagDefaultService } from '../service/tag.service';
@@ -20,6 +20,8 @@ import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
 import { JobLogViewerComponent } from '../job-log-viewer/index';
 
 import { click } from '../utils';
+import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import {LabelDefaultService, LabelService} from "../service/label.service";
 
 describe('RepositoryComponentStackview (inline template)', () => {
 
@@ -27,10 +29,12 @@ describe('RepositoryComponentStackview (inline template)', () => {
   let fixtureRepo: ComponentFixture<RepositoryStackviewComponent>;
   let repositoryService: RepositoryService;
   let tagService: TagService;
+  let labelService: LabelService;
   let systemInfoService: SystemInfoService;
 
   let spyRepos: jasmine.Spy;
   let spyTags: jasmine.Spy;
+  let spyLabels: jasmine.Spy;
   let spySystemInfo: jasmine.Spy;
 
   let mockSystemInfo: SystemInfo = {
@@ -81,7 +85,31 @@ describe('RepositoryComponentStackview (inline template)', () => {
       "docker_version": "1.12.3",
       "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
       "created": new Date("2016-11-08T22:41:15.912313785Z"),
-      "signature": null
+      "signature": null,
+      "labels": []
+    }
+  ];
+
+  let mockLabels: Label[] = [
+    {
+      color: "#9b0d54",
+      creation_time: "",
+      description: "",
+      id: 1,
+      name: "label0-g",
+      project_id: 0,
+      scope: "g",
+      update_time: "",
+    },
+    {
+      color: "#9b0d54",
+      creation_time: "",
+      description: "",
+      id: 2,
+      name: "label1-g",
+      project_id: 0,
+      scope: "g",
+      update_time: "",
     }
   ];
 
@@ -99,6 +127,7 @@ describe('RepositoryComponentStackview (inline template)', () => {
       declarations: [
         RepositoryStackviewComponent,
         TagComponent,
+        LabelPieceComponent,
         ConfirmationDialogComponent,
         FilterComponent,
         VULNERABILITY_DIRECTIVES,
@@ -111,7 +140,8 @@ describe('RepositoryComponentStackview (inline template)', () => {
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: RepositoryService, useClass: RepositoryDefaultService },
         { provide: TagService, useClass: TagDefaultService },
-        { provide: SystemInfoService, useClass: SystemInfoDefaultService }
+        { provide: SystemInfoService, useClass: SystemInfoDefaultService },
+        {provide: LabelService, useClass: LabelDefaultService}
       ]
     });
   }));
@@ -127,6 +157,11 @@ describe('RepositoryComponentStackview (inline template)', () => {
 
     spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepo));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
+
+    labelService = fixtureRepo.debugElement.injector.get(LabelService);
+
+    spyLabels = spyOn(labelService, 'getLabels').and.returnValues(Promise.resolve(mockLabels));
+
     fixtureRepo.detectChanges();
   });
 

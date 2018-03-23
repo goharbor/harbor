@@ -30,7 +30,8 @@ export class TagDetailComponent implements OnInit {
         architecture: "--",
         os: "--",
         docker_version: "--",
-        digest: "--"
+        digest: "--",
+        labels: [],
     };
 
     @Output() backEvt: EventEmitter<any> = new EventEmitter<any>();

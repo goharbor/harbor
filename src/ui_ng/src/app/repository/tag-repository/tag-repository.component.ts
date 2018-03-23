@@ -30,6 +30,7 @@ export class TagRepositoryComponent implements OnInit {
   projectId: number;
   repoName: string;
   hasProjectAdminRole: boolean = false;
+  isGuest: boolean;
   registryUrl: string;
 
   @ViewChild(RepositoryComponent)
@@ -47,11 +48,12 @@ export class TagRepositoryComponent implements OnInit {
     if (!this.projectId) {
       this.projectId = this.route.snapshot.parent.params['id'];
     };
-    // let resolverData = this.route.snapshot.parent.data;
+
     let resolverData = this.route.snapshot.data;
 
     if (resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+      this.isGuest = (<Project>resolverData['projectResolver']).current_user_role_id === 3;
     }
     this.repoName = this.route.snapshot.params['repo'];
 

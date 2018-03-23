@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, async, } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
+import {Component, DebugElement} from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { SharedModule } from '../shared/shared.module';
@@ -16,12 +16,15 @@ import { JobLogViewerComponent } from '../job-log-viewer/index';
 
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { Repository, RepositoryItem, Tag, SystemInfo } from '../service/interface';
+import {Repository, RepositoryItem, Tag, SystemInfo, Label} from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { RepositoryService, RepositoryDefaultService } from '../service/repository.service';
 import { SystemInfoService, SystemInfoDefaultService } from '../service/system-info.service';
 import { TagService, TagDefaultService } from '../service/tag.service';
 import { ChannelService } from '../channel/index';
+import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import {LabelDefaultService, LabelService} from "../service/label.service";
+
 
 class RouterStub {
   navigateByUrl(url: string) { return url; }
@@ -34,10 +37,13 @@ describe('RepositoryComponent (inline template)', () => {
   let repositoryService: RepositoryService;
   let systemInfoService: SystemInfoService;
   let tagService: TagService;
+  let labelService: LabelService;
 
   let spyRepos: jasmine.Spy;
   let spyTags: jasmine.Spy;
   let spySystemInfo: jasmine.Spy;
+  let spyLabels: jasmine.Spy;
+  let spyLabels1: jasmine.Spy;
 
   let mockSystemInfo: SystemInfo = {
     'with_notary': true,
@@ -87,9 +93,52 @@ describe('RepositoryComponent (inline template)', () => {
       'docker_version': '1.12.3',
       'author': 'NGINX Docker Maintainers \"docker-maint@nginx.com\"',
       'created': new Date('2016-11-08T22:41:15.912313785Z'),
-      'signature': null
+      'signature': null,
+      'labels': []
     }
   ];
+
+  let mockLabels: Label[] = [{
+    color: "#9b0d54",
+    creation_time: "",
+    description: "",
+    id: 1,
+    name: "label0-g",
+    project_id: 1,
+    scope: "p",
+    update_time: "",
+  },
+    {
+      color: "#9b0d54",
+      creation_time: "",
+      description: "",
+      id: 2,
+      name: "label1-g",
+      project_id: 0,
+      scope: "g",
+      update_time: "",
+    }]
+
+  let mockLabels1: Label[] = [{
+    color: "#9b0d54",
+    creation_time: "",
+    description: "",
+    id: 1,
+    name: "label0-g",
+    project_id: 1,
+    scope: "p",
+    update_time: "",
+  },
+    {
+      color: "#9b0d54",
+      creation_time: "",
+      description: "",
+      id: 2,
+      name: "label1-g",
+      project_id: 1,
+      scope: "p",
+      update_time: "",
+    }]
 
   let config: IServiceConfig = {
     repositoryBaseEndpoint: '/api/repository/testing',
@@ -109,6 +158,7 @@ describe('RepositoryComponent (inline template)', () => {
         ConfirmationDialogComponent,
         FilterComponent,
         TagComponent,
+        LabelPieceComponent,
         VULNERABILITY_DIRECTIVES,
         PUSH_IMAGE_BUTTON_DIRECTIVES,
         INLINE_ALERT_DIRECTIVES,
@@ -120,25 +170,31 @@ describe('RepositoryComponent (inline template)', () => {
         { provide: RepositoryService, useClass: RepositoryDefaultService },
         { provide: SystemInfoService, useClass: SystemInfoDefaultService },
         { provide: TagService, useClass: TagDefaultService },
+        { provide: LabelService, useClass: LabelDefaultService},
         { provide: ChannelService},
-
       ]
     });
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(RepositoryComponent);
+
     compRepo = fixture.componentInstance;
+
     compRepo.projectId = 1;
     compRepo.hasProjectAdminRole = true;
     compRepo.repoName = 'library/nginx';
     repositoryService = fixture.debugElement.injector.get(RepositoryService);
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
     tagService = fixture.debugElement.injector.get(TagService);
+    labelService = fixture.debugElement.injector.get(LabelService);
 
     spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepo));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
     spyTags = spyOn(tagService, 'getTags').and.returnValues(Promise.resolve(mockTagData));
+
+    spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(Promise.resolve(mockLabels));
+    spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(Promise.resolve(mockLabels1));
     fixture.detectChanges();
   });
 

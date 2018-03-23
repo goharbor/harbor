@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/Observable';
 import { RequestQueryParams } from './RequestQueryParams';
-import { Tag } from './interface';
+import {Label, Tag} from './interface';
 import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { Http } from '@angular/http';
@@ -65,6 +65,9 @@ export abstract class TagService {
      * @memberOf TagService
      */
     abstract getTag(repositoryName: string, tag: string, queryParams?: RequestQueryParams): Observable<Tag> | Promise<Tag> | Tag;
+
+    abstract addLabelToImages(repoName: string, tagName: string, labelId: number): Observable<any> | Promise<any> | any;
+    abstract deleteLabelToImages(repoName: string, tagName: string, labelId: number): Observable<any> | Promise<any> | any;
 }
 
 /**
@@ -77,13 +80,14 @@ export abstract class TagService {
 @Injectable()
 export class TagDefaultService extends TagService {
     _baseUrl: string;
-
+    _labelUrl: string;
     constructor(
         private http: Http,
         @Inject(SERVICE_CONFIG) private config: IServiceConfig
     ) {
         super();
         this._baseUrl = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
+        this._labelUrl = this.config.labelEndpoint? this.config.labelEndpoint : '/api/labels';
     }
 
     //Private methods
@@ -134,6 +138,30 @@ export class TagDefaultService extends TagService {
         let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}`;
         return this.http.get(url, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.json() as Tag)
+            .catch(error => Promise.reject(error));
+    }
+
+    public addLabelToImages(repoName: string, tagName: string, labelId: number): Observable<any> | Promise<any> | any {
+
+        if (!labelId || !tagName || !repoName) {
+            return Promise.reject('Invalid parameters.');
+        }
+
+        let _addLabelToImageUrl = `/api/repositories/${repoName}/tags/${tagName}/labels`;
+        return this.http.post(_addLabelToImageUrl, {id: labelId}, HTTP_JSON_OPTIONS).toPromise()
+            .then(response => response.status)
+            .catch(error => Promise.reject(error));
+    }
+
+    public deleteLabelToImages(repoName: string, tagName: string, labelId: number): Observable<any> | Promise<any> | any {
+
+        if (!labelId || !tagName || !repoName) {
+            return Promise.reject('Invalid parameters.');
+        }
+
+        let _addLabelToImageUrl = `/api/repositories/${repoName}/tags/${tagName}/labels/${labelId}`;
+        return this.http.delete(_addLabelToImageUrl).toPromise()
+            .then(response => response.status)
             .catch(error => Promise.reject(error));
     }
 }
