@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	common_http "github.com/vmware/harbor/src/common/http"
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 )
 
 // Deleter deletes repository or images on the destination registry
@@ -14,7 +14,7 @@ type Deleter struct {
 	ctx         env.JobContext
 	repository  *repository
 	dstRegistry *registry
-	logger      *log.Logger
+	logger      logger.Interface
 	retry       bool
 }
 
@@ -49,8 +49,7 @@ func (d *Deleter) run(ctx env.JobContext, params map[string]interface{}) error {
 }
 
 func (d *Deleter) init(ctx env.JobContext, params map[string]interface{}) error {
-	// TODO
-	d.logger = log.DefaultLogger()
+	d.logger = ctx.GetLogger()
 	d.ctx = ctx
 
 	if canceled(d.ctx) {
