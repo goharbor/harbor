@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: "{{ template "harbor.fullname" . }}-ingress"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+  annotations:
+{{ toYaml .Values.ingress.annotations | indent 4 }}
+spec:
+{{ if not .Values.insecureRegistry }}
+  tls:
+  - hosts:
+    - "{{ .Values.externalDomain }}"
+    secretName: "{{ template "harbor.fullname" . }}-ingress"
+{{ end }}
+  rules:
+  - host: "{{ .Values.externalDomain }}"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ template "harbor.fullname" . }}-ui
+          servicePort: 80
+      - path: /v2
+        backend:
+          serviceName: {{ template "harbor.fullname" . }}-registry
+          servicePort: 5000

@@ -1,6 +1,6 @@
 """ The missing harbor python SDK
 
-See: https://github.com/tobegit3hub/harbor-py
+See: https://github.com/vmware/harbor/tree/master/contrib/sdk/harbor-py
 """
 
 from setuptools import setup, find_packages
@@ -17,7 +17,7 @@ setup(
     description='The missing harbor python SDK',
 
     # The project's main homepage.
-    url='https://github.com/tobegit3hub/harbor-py',
+    url='https://github.com/vmware/harbor',
 
     # Author details
     author='tobe',
@@ -68,7 +68,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    #install_requires=['peppercorn'],
+    install_requires=['requests>2.2.0'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

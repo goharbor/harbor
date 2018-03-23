@@ -1,0 +1,35 @@
+{{ if .Values.clair.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "harbor.fullname" . }}-clair
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: clair
+data:
+  config.yaml: |
+    clair:
+      database:
+        type: pgsql
+        options:
+          source: "postgresql://{{ .Values.clair.postgresUser }}:{{ .Values.clair.postgresPassword }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.clair.postgresDatabase }}?sslmode=disable"
+          # Number of elements kept in the cache
+          # Values unlikely to change (e.g. namespaces) are cached in order to save prevent needless roundtrips to the database.
+          cachesize: 16384
+
+      api:
+        # API server port
+        port: 6060
+        healthport: 6061
+
+        # Deadline before an API request will respond with a 503
+        timeout: 300s
+      updater:
+        interval: 12h
+
+      notifier:
+        attempts: 3
+        renotifyinterval: 2h
+        http:
+          endpoint: "http://{{ template "harbor.fullname" . }}-ui/service/notifications/clair"
+{{ end }}

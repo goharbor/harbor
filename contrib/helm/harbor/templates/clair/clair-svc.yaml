@@ -1,0 +1,17 @@
+{{ if .Values.clair.enabled }}
+# clair host isn't configurable yet.  this creates a service
+# to get it working for now.
+# see https://github.com/vmware/harbor/issues/3250
+apiVersion: v1
+kind: Service
+metadata:
+  name: clair
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+    - port: 6060
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: clair
+{{ end }}

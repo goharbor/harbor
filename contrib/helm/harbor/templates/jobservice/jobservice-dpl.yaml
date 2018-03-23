@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "{{ template "harbor.fullname" . }}-jobservice"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: jobservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: jobservice
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: jobservice
+    spec:
+      containers:
+      - name: jobservice
+        image: {{ .Values.jobservice.image.repository }}:{{ .Values.jobservice.image.tag }}
+        imagePullPolicy: {{ .Values.jobservice.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.jobservice.resources | indent 10 }}
+        envFrom:
+        - secretRef:
+            name: "{{ template "harbor.fullname" . }}-jobservice"
+        env:
+          - name: LOG_LEVEL
+            value: debug
+          - name: CONFIG_PATH
+            value: /etc/jobservice/app.conf
+          - name: GODEBUG
+            value: netdns=cgo
+          - name: ADMINSERVER_URL
+            value: "http://{{ template "harbor.fullname" . }}-adminserver"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: jobservice-config
+          mountPath: /etc/jobservice/app.conf
+          subPath: app.conf
+        - name: jobservice-secrets
+          mountPath: /etc/jobservice/key
+          subPath: key
+        - name: job-logs
+          mountPath: /var/log/jobs
+      volumes:
+      - name: jobservice-config
+        configMap:
+          name: "{{ template "harbor.fullname" . }}-jobservice"
+      - name: jobservice-secrets
+        secret:
+          secretName: "{{ template "harbor.fullname" . }}-jobservice"
+          items:
+            - key: secretKey
+              path: key
+      - name: job-logs
+        emptyDir: {}

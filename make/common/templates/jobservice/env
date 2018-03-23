@@ -1,0 +1,6 @@
+LOG_LEVEL=debug
+CONFIG_PATH=/etc/jobservice/app.conf
+UI_SECRET=$ui_secret
+JOBSERVICE_SECRET=$jobservice_secret
+ADMINSERVER_URL=http://adminserver:8080
+GODEBUG=netdns=cgo

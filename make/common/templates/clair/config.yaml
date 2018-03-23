@@ -1,0 +1,25 @@
+clair:
+  database:
+    type: pgsql
+    options:
+      source: postgresql://$username:$password@$host:$port?sslmode=disable
+
+      # Number of elements kept in the cache
+      # Values unlikely to change (e.g. namespaces) are cached in order to save prevent needless roundtrips to the database.
+      cachesize: 16384
+
+  api:
+    # API server port
+    port: 6060
+    healthport: 6061
+
+    # Deadline before an API request will respond with a 503
+    timeout: 300s
+  updater:
+    interval: 12h
+
+  notifier:
+    attempts: 3
+    renotifyinterval: 2h
+    http:
+      endpoint: http://ui:8080/service/notifications/clair

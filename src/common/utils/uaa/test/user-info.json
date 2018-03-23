@@ -1,0 +1,11 @@
+{
+        "user_id": "9a13488f-f3cf-47a6-98f0-4fed21f43520",
+        "sub": "9a13488f-f3cf-47a6-98f0-4fed21f43520",
+        "user_name": "user01",
+        "given_name": null,
+        "family_name": null,
+        "email": "user01@user.from.ldap.cf",
+        "phone_number": null,
+        "previous_logon_time": 1511247236160,
+        "name": ""
+}

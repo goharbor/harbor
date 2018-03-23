@@ -1,23 +1,36 @@
 version: '2'
 services:
   registry:
-    image: library/registry:2.4.0
+    image: vmware/registry-photon:__reg_version__
     restart: always
     volumes:
       - /data/registry:/storage
-      - ./config/registry/:/etc/registry/
+      - ./common/config/registry/:/etc/registry/
     environment:
       - GODEBUG=netdns=cgo
     ports:
       - 5000:5000
     command:
-      ["serve", "/etc/docker/registry/config.yml"]
+      ["serve", "/etc/registry/config.yml"]
   mysql:
-    build: ./db/
+    image: vmware/harbor-db:__version__
     restart: always
     volumes:
       - /data/database:/var/lib/mysql
     env_file:
-      - ./config/db/env
+      - ./common/config/db/env
     ports:
       - 3306:3306
+  adminserver:
+    build:
+      context: ../
+      dockerfile: make/dev/adminserver/Dockerfile
+    env_file:
+      - ./common/config/adminserver/env
+    restart: always
+    volumes:
+      - /data/config/:/etc/adminserver/config/
+      - /data/secretkey:/etc/adminserver/key
+      - /data/:/data/
+    ports:
+      - 8888:8080

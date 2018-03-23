@@ -1,0 +1,78 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "{{ template "harbor.fullname" . }}-ui"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: ui
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+{{ include "harbor.matchLabels" . | indent 8 }}
+        component: ui
+    spec:
+      containers:
+      - name: ui
+        image: {{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag }}
+        imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
+        env:
+          - name: UI_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-ui"
+                key: secret
+          - name: JOBSERVICE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-ui"
+                key: jobserviceSecret
+          - name: GODEBUG
+            value: netdns=cgo
+          - name: LOG_LEVEL
+            value: debug
+          - name: CONFIG_PATH
+            value: /etc/ui/app.conf
+          - name: ENABLE_HARBOR_SCAN_ON_PUSH
+            value: "1"
+          - name: ADMINSERVER_URL
+            value: "http://{{ template "harbor.fullname" . }}-adminserver"
+          - name: CLAIR_DB_HOST
+            value: "{{ template "harbor.fullname" . }}-clair-pg"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: ui-config
+          mountPath: /etc/ui/app.conf
+          subPath: app.conf
+        - name: ui-secrets-key
+          mountPath: /etc/ui/key
+          subPath: key
+        - name: ui-secrets-private-key
+          mountPath: /etc/ui/private_key.pem
+          subPath: private_key.pem
+        - name: ca-download
+          mountPath: /etc/ui/ca
+        - name: psc
+          mountPath: /etc/ui/token
+      volumes:
+      - name: ui-config
+        configMap:
+          name: "{{ template "harbor.fullname" . }}-ui"
+      - name: ui-secrets-key
+        secret:
+          secretName: "{{ template "harbor.fullname" . }}-ui"
+          items:
+            - key: secretKey
+              path: key
+      - name: ui-secrets-private-key
+        secret:
+          secretName: "{{ template "harbor.fullname" . }}-ui"
+          items:
+            - key: private_key.pem
+              path: private_key.pem
+      - name: ca-download
+        emptyDir: {}
+      - name: psc
+        emptyDir: {}

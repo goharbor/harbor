@@ -27,4 +27,4 @@ For example, if your mirror is serving on `http://reg.yourdomain.com`, you would
 docker --registry-mirror=https://reg.yourdomain.com daemon
 ```
 
-Refer to the [Registry as a pull through cache](https://github.com/docker/distribution/blob/master/docs/mirror.md) for detailed information.
+Refer to the [Registry as a pull through cache](https://docs.docker.com/registry/recipes/mirror/) for detailed information.
