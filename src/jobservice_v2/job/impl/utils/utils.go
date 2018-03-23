@@ -20,8 +20,8 @@ func NewRepositoryClient(endpoint string, insecure bool, credential auth.Credent
 		Transport: transport,
 	}, credential, tokenServiceEndpoint)
 
-	uam := &userAgentModifier{
-		userAgent: "harbor-registry-client",
+	uam := &UserAgentModifier{
+		UserAgent: "harbor-registry-client",
 	}
 
 	return registry.NewRepository(repository, endpoint, &http.Client{
@@ -43,8 +43,8 @@ func NewRepositoryClientForJobservice(repository, internalRegistryURL, secret, i
 		Transport: transport,
 	}, credential, internalTokenServiceURL)
 
-	uam := &userAgentModifier{
-		userAgent: "harbor-registry-client",
+	uam := &UserAgentModifier{
+		UserAgent: "harbor-registry-client",
 	}
 
 	return registry.NewRepository(repository, internalRegistryURL, &http.Client{
@@ -52,13 +52,14 @@ func NewRepositoryClientForJobservice(repository, internalRegistryURL, secret, i
 	})
 }
 
-type userAgentModifier struct {
-	userAgent string
+// UserAgentModifier adds the "User-Agent" header to the request
+type UserAgentModifier struct {
+	UserAgent string
 }
 
 // Modify adds user-agent header to the request
-func (u *userAgentModifier) Modify(req *http.Request) error {
-	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), u.userAgent)
+func (u *UserAgentModifier) Modify(req *http.Request) error {
+	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), u.UserAgent)
 	return nil
 }
 

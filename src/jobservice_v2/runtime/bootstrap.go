@@ -17,6 +17,7 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/core"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job/impl"
+	"github.com/vmware/harbor/src/jobservice_v2/job/impl/replication"
 	"github.com/vmware/harbor/src/jobservice_v2/job/impl/scan"
 	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/pool"
@@ -156,7 +157,12 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 		ctx.ErrorChan <- err
 		return redisWorkerPool //avoid nil pointer issue
 	}
-	if err := redisWorkerPool.RegisterJob(job.ImageScanJob, (*scan.ClairJob)(nil)); err != nil {
+	if err := redisWorkerPool.RegisterJobs(
+		map[string]interface{}{
+			job.ImageScanJob:             (*scan.ClairJob)(nil),
+			job.ImageReplicationTransfer: (*replication.Replicator)(nil),
+			job.ImageReplicationDelete:   (*replication.Deleter)(nil),
+		}); err != nil {
 		//exit
 		ctx.ErrorChan <- err
 		return redisWorkerPool //avoid nil pointer issue

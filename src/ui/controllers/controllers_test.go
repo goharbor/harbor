@@ -48,8 +48,10 @@ import (
 //var admin *usrInfo
 
 func init() {
-	_, file, _, _ := runtime.Caller(1)
-	apppath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator))))
+	_, file, _, _ := runtime.Caller(0)
+	dir := filepath.Dir(file)
+	dir = filepath.Join(dir, "..")
+	apppath, _ := filepath.Abs(dir)
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 	beego.AddTemplateExt("htm")
