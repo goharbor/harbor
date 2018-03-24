@@ -9,6 +9,7 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/errs"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/opm"
 )
 
@@ -48,6 +49,11 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	runningJob = Wrap(rj.job)
 
 	defer func() {
+		//Close open io stream first
+		if closer, ok := execContext.GetLogger().(logger.Closer); ok {
+			closer.Close()
+		}
+
 		if err == nil {
 			return //nothing need to do
 		}

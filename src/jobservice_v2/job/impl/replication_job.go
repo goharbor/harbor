@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/jobservice_v2/opm"
 
 	"github.com/vmware/harbor/src/jobservice_v2/errs"
@@ -58,6 +60,9 @@ func (rj *ReplicationJob) Run(ctx env.JobContext, params map[string]interface{})
 	logger.Infof("context: %#v\n", ctx)
 	if v, ok := ctx.Get("email_from"); ok {
 		fmt.Printf("Get prop form context: email_from=%s\n", v)
+	}
+	if u, err := dao.GetUser(models.User{}); err == nil {
+		fmt.Printf("u=%#+v\n", u)
 	}
 
 	/*if 1 != 0 {

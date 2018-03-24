@@ -12,6 +12,7 @@ import (
 //It used in the job to output logs to the logfile.
 type JobLogger struct {
 	backendLogger *log.Logger
+	streamRef     *os.File
 }
 
 //New logger
@@ -26,7 +27,18 @@ func New(logPath string, level string) logger.Interface {
 
 	return &JobLogger{
 		backendLogger: backendLogger,
+		streamRef:     f,
 	}
+}
+
+//Close the opened io stream
+//Implements logger.Closer interface
+func (jl *JobLogger) Close() error {
+	if jl.streamRef != nil {
+		jl.streamRef.Close()
+	}
+
+	return nil
 }
 
 //Debug ...
