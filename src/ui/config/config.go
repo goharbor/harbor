@@ -96,11 +96,6 @@ func InitByURL(adminServerURL string) error {
 	// init project manager based on deploy mode
 	initProjectManager()
 
-	GlobalJobserviceClient = jobservice_client.NewDefaultClient(InternalJobServiceURL(),
-		&jobservice_client.Config{
-			Secret: UISecret(),
-		})
-
 	return nil
 }
 
