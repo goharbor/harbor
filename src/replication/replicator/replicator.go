@@ -15,6 +15,7 @@
 package replicator
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/vmware/harbor/src/common/dao"
@@ -83,8 +84,8 @@ func (d *DefaultReplicator) Replicate(replication *Replication) error {
 				Metadata: &job_models.JobMetadata{
 					JobKind: common_job.JobKindGeneric,
 				},
-				// TODO
-				StatusHook: "",
+				StatusHook: fmt.Sprintf("%s/service/notifications/jobs/replication/%d",
+					config.InternalUIURL(), id),
 			}
 
 			if operation == common_models.RepOpTransfer {
