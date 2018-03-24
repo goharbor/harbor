@@ -85,8 +85,10 @@ func init() {
 		log.Fatalf("failed to get database configurations: %v", err)
 	}
 	dao.InitDatabase(database)
-	_, file, _, _ := runtime.Caller(1)
-	apppath, _ := filepath.Abs(filepath.Dir(filepath.Join(file, ".."+string(filepath.Separator))))
+	_, file, _, _ := runtime.Caller(0)
+	dir := filepath.Dir(file)
+	dir = filepath.Join(dir, "..")
+	apppath, _ := filepath.Abs(dir)
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 
@@ -138,7 +140,7 @@ func init() {
 	beego.Router("/api/replications", &ReplicationAPI{})
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
-    beego.Router("/api/ping", &SystemInfoAPI{}, "get:Ping")
+	beego.Router("/api/ping", &SystemInfoAPI{}, "get:Ping")
 	_ = updateInitPassword(1, "Harbor12345")
 
 	if err := core.Init(); err != nil {
