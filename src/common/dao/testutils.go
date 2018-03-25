@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -100,6 +101,26 @@ func initDatabaseForTest(db *models.Database) {
 	if alias != "default" {
 		if err = globalOrm.Using(alias); err != nil {
 			log.Fatalf("failed to create new orm: %v", err)
+		}
+	}
+}
+
+// PrepareTestData -- Clean and Create data
+func PrepareTestData(clearSqls []string, initSqls []string) {
+	o := GetOrmer()
+
+	for _, sql := range clearSqls {
+		fmt.Printf("Exec sql:%v\n", sql)
+		_, err := o.Raw(sql).Exec()
+		if err != nil {
+			fmt.Printf("failed to clear database, sql:%v, error: %v", sql, err)
+		}
+	}
+
+	for _, sql := range initSqls {
+		_, err := o.Raw(sql).Exec()
+		if err != nil {
+			fmt.Printf("failed to init database, sql:%v, error: %v", sql, err)
 		}
 	}
 }
