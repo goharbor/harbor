@@ -58,5 +58,5 @@ type LdapFailedImportUser struct {
 // LdapGroup ...
 type LdapGroup struct {
 	GroupName string `json:"group_name,omitempty"`
-	GroupDN   string `json:"group_dn,omitempty"`
+	GroupDN   string `json:"ldap_group_dn,omitempty"`
 }

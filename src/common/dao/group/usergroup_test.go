@@ -19,6 +19,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -80,7 +81,7 @@ func TestAddUserGroup(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		{"Insert an ldap user group", args{userGroup: models.UserGroup{GroupName: "sample_group", GroupType: 1, LdapGroupDN: "sample_ldap_dn_string"}}, 0, false},
+		{"Insert an ldap user group", args{userGroup: models.UserGroup{GroupName: "sample_group", GroupType: common.LdapGroupType, LdapGroupDN: "sample_ldap_dn_string"}}, 0, false},
 		{"Insert other user group", args{userGroup: models.UserGroup{GroupName: "other_group", GroupType: 3, LdapGroupDN: "other information"}}, 0, false},
 	}
 	for _, tt := range tests {
@@ -108,8 +109,8 @@ func TestQueryUserGroup(t *testing.T) {
 		wantErr bool
 	}{
 		{"Query all user group", args{query: models.UserGroup{GroupName: "test_group_01"}}, 1, false},
-		{"Query all ldap group", args{query: models.UserGroup{GroupType: 1}}, 2, false},
-		{"Query ldap group with group property", args{query: models.UserGroup{GroupType: 1, LdapGroupDN: "CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com"}}, 1, false},
+		{"Query all ldap group", args{query: models.UserGroup{GroupType: common.LdapGroupType}}, 2, false},
+		{"Query ldap group with group property", args{query: models.UserGroup{GroupType: common.LdapGroupType, LdapGroupDN: "CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com"}}, 1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -126,7 +127,7 @@ func TestQueryUserGroup(t *testing.T) {
 }
 
 func TestGetUserGroup(t *testing.T) {
-	userGroup := models.UserGroup{GroupName: "insert_group", GroupType: 1, LdapGroupDN: "ldap_dn_string"}
+	userGroup := models.UserGroup{GroupName: "insert_group", GroupType: common.LdapGroupType, LdapGroupDN: "ldap_dn_string"}
 	result, err := AddUserGroup(userGroup)
 	if err != nil {
 		t.Errorf("Error occurred when AddUserGroup: %v", err)
@@ -142,6 +143,7 @@ func TestGetUserGroup(t *testing.T) {
 		wantErr bool
 	}{
 		{"Get User Group", args{id: result}, "insert_group", false},
+		{"Get User Group does not exist", args{id: 9999}, "insert_group", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -150,7 +152,7 @@ func TestGetUserGroup(t *testing.T) {
 				t.Errorf("GetUserGroup() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got.GroupName != tt.want {
+			if got != nil && got.GroupName != tt.want {
 				t.Errorf("GetUserGroup() = %v, want %v", got.GroupName, tt.want)
 			}
 		})
@@ -212,6 +214,37 @@ func TestDeleteUserGroup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := DeleteUserGroup(tt.args.id); (err != nil) != tt.wantErr {
 				t.Errorf("DeleteUserGroup() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestOnBoardUserGroup(t *testing.T) {
+	type args struct {
+		g *models.UserGroup
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"OnBoardUserGroup",
+			args{g: &models.UserGroup{
+				GroupName:   "harbor_example",
+				LdapGroupDN: "cn=harbor_example,ou=groups,dc=example,dc=com",
+				GroupType:   common.LdapGroupType}},
+			false},
+		{"OnBoardUserGroup second time",
+			args{g: &models.UserGroup{
+				GroupName:   "harbor_example",
+				LdapGroupDN: "cn=harbor_example,ou=groups,dc=example,dc=com",
+				GroupType:   common.LdapGroupType}},
+			false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := OnBoardUserGroup(tt.args.g, "LdapGroupDN", "GroupType"); (err != nil) != tt.wantErr {
+				t.Errorf("OnBoardUserGroup() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
