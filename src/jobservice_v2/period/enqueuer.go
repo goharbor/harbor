@@ -9,8 +9,8 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/gocraft/work"
 	"github.com/robfig/cron"
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
 
@@ -52,7 +52,7 @@ func newPeriodicEnqueuer(namespace string, pool *redis.Pool, policyStore *period
 
 func (pe *periodicEnqueuer) start() {
 	go pe.loop()
-	log.Info("Periodic enqueuer is started")
+	logger.Info("Periodic enqueuer is started")
 }
 
 func (pe *periodicEnqueuer) stop() {
@@ -62,7 +62,7 @@ func (pe *periodicEnqueuer) stop() {
 
 func (pe *periodicEnqueuer) loop() {
 	defer func() {
-		log.Info("Periodic enqueuer is stopped")
+		logger.Info("Periodic enqueuer is stopped")
 	}()
 	// Begin reaping periodically
 	timer := time.NewTimer(periodicEnqueuerSleep + time.Duration(rand.Intn(30))*time.Second)
@@ -71,7 +71,7 @@ func (pe *periodicEnqueuer) loop() {
 	if pe.shouldEnqueue() {
 		err := pe.enqueue()
 		if err != nil {
-			log.Errorf("periodic_enqueuer.loop.enqueue:%s\n", err)
+			logger.Errorf("periodic_enqueuer.loop.enqueue:%s\n", err)
 		}
 	}
 
@@ -85,7 +85,7 @@ func (pe *periodicEnqueuer) loop() {
 			if pe.shouldEnqueue() {
 				err := pe.enqueue()
 				if err != nil {
-					log.Errorf("periodic_enqueuer.loop.enqueue:%s\n", err)
+					logger.Errorf("periodic_enqueuer.loop.enqueue:%s\n", err)
 				}
 			}
 		}
@@ -133,7 +133,7 @@ func (pe *periodicEnqueuer) enqueue() error {
 				return err
 			}
 
-			log.Infof("Schedule job %s for policy %s at %d\n", pj.jobName, pl.PolicyID, epoch)
+			logger.Infof("Schedule job %s for policy %s at %d\n", pj.jobName, pl.PolicyID, epoch)
 		}
 		//Directly use redis conn to update the periodic job (policy) status
 		//Do not care the result
@@ -153,7 +153,7 @@ func (pe *periodicEnqueuer) shouldEnqueue() bool {
 	if err == redis.ErrNil {
 		return true
 	} else if err != nil {
-		log.Errorf("periodic_enqueuer.should_enqueue:%s\n", err)
+		logger.Errorf("periodic_enqueuer.should_enqueue:%s\n", err)
 		return true
 	}
 

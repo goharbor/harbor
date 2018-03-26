@@ -4,14 +4,15 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/vmware/harbor/src/common/job"
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/api"
 	"github.com/vmware/harbor/src/jobservice_v2/config"
 	"github.com/vmware/harbor/src/jobservice_v2/core"
@@ -21,6 +22,13 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/job/impl/scan"
 	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/pool"
+)
+
+const (
+	dialConnectionTimeout = 30 * time.Second
+	healthCheckPeriod     = time.Minute
+	dialReadTimeout       = healthCheckPeriod + 10*time.Second
+	dialWriteTimeout      = 10 * time.Second
 )
 
 //JobService ...
@@ -40,13 +48,7 @@ func (bs *Bootstrap) SetJobContextInitializer(initializer env.JobContextInitiali
 
 //LoadAndRun will load configurations, initialize components and then start the related process to serve requests.
 //Return error if meet any problems.
-func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
-	//Load configurations
-	if err := config.DefaultConfig.Load(configFile, detectEnv); err != nil {
-		log.Errorf("Failed to load configurations with error: %s\n", err)
-		return
-	}
-
+func (bs *Bootstrap) LoadAndRun() {
 	//Create the root context
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -62,7 +64,7 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 		if jobCtx, err := bs.jobConextInitializer(rootContext); err == nil {
 			rootContext.JobContext = jobCtx
 		} else {
-			log.Fatalf("Failed to initialize job context: %s\n", err)
+			logger.Fatalf("Failed to initialize job context: %s\n", err)
 		}
 	}
 
@@ -77,7 +79,7 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 
 	//Start the API server
 	apiServer := bs.loadAndRunAPIServer(rootContext, config.DefaultConfig, ctl)
-	log.Infof("Server is started at %s:%d with %s", "", config.DefaultConfig.Port, config.DefaultConfig.Protocol)
+	logger.Infof("Server is started at %s:%d with %s", "", config.DefaultConfig.Port, config.DefaultConfig.Protocol)
 
 	//Start outdated log files sweeper
 	logSweeper := logger.NewSweeper(ctx, config.GetLogBasePath(), config.GetLogArchivePeriod())
@@ -89,7 +91,7 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 	select {
 	case <-sig:
 	case err := <-rootContext.ErrorChan:
-		log.Errorf("Server error:%s\n", err)
+		logger.Errorf("Server error:%s\n", err)
 	}
 
 	//Call cancel to send termination signal to other interested parts.
@@ -117,7 +119,7 @@ func (bs *Bootstrap) LoadAndRun(configFile string, detectEnv bool) {
 	rootContext.WG.Wait()
 	close <- true
 
-	log.Infof("Server gracefully exit")
+	logger.Infof("Server gracefully exit")
 }
 
 //Load and run the API server.
@@ -143,14 +145,25 @@ func (bs *Bootstrap) loadAndRunAPIServer(ctx *env.Context, cfg *config.Configura
 
 //Load and run the worker pool
 func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Configuration) pool.Interface {
-	redisPoolCfg := pool.RedisPoolConfig{
-		RedisHost:   cfg.PoolConfig.RedisPoolCfg.Host,
-		RedisPort:   cfg.PoolConfig.RedisPoolCfg.Port,
-		Namespace:   cfg.PoolConfig.RedisPoolCfg.Namespace,
-		WorkerCount: cfg.PoolConfig.WorkerCount,
+	redisPool := &redis.Pool{
+		MaxActive: 6,
+		MaxIdle:   6,
+		Wait:      true,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial(
+				"tcp",
+				fmt.Sprintf("%s:%d", cfg.PoolConfig.RedisPoolCfg.Host, cfg.PoolConfig.RedisPoolCfg.Port),
+				redis.DialConnectTimeout(dialConnectionTimeout),
+				redis.DialReadTimeout(dialReadTimeout),
+				redis.DialWriteTimeout(dialWriteTimeout),
+			)
+		},
 	}
 
-	redisWorkerPool := pool.NewGoCraftWorkPool(ctx, redisPoolCfg)
+	redisWorkerPool := pool.NewGoCraftWorkPool(ctx,
+		cfg.PoolConfig.RedisPoolCfg.Namespace,
+		cfg.PoolConfig.WorkerCount,
+		redisPool)
 	//Register jobs here
 	if err := redisWorkerPool.RegisterJob(impl.KnownJobReplication, (*impl.ReplicationJob)(nil)); err != nil {
 		//exit
@@ -159,9 +172,10 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 	}
 	if err := redisWorkerPool.RegisterJobs(
 		map[string]interface{}{
-			job.ImageScanJob:             (*scan.ClairJob)(nil),
-			job.ImageReplicationTransfer: (*replication.Replicator)(nil),
-			job.ImageReplicationDelete:   (*replication.Deleter)(nil),
+			job.ImageScanJob:   (*scan.ClairJob)(nil),
+			job.ImageTransfer:  (*replication.Transfer)(nil),
+			job.ImageDelete:    (*replication.Deleter)(nil),
+			job.ImageReplicate: (*replication.Replicator)(nil),
 		}); err != nil {
 		//exit
 		ctx.ErrorChan <- err

@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/config"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 )
 
 //Server serves the http requests.
@@ -91,7 +91,7 @@ func (s *Server) Start() {
 		var err error
 		defer func() {
 			s.context.WG.Done()
-			log.Infof("API server is gracefully shutdown")
+			logger.Infof("API server is gracefully shutdown")
 		}()
 
 		if s.config.Protocol == config.JobServiceProtocolHTTPS {
@@ -110,13 +110,13 @@ func (s *Server) Start() {
 func (s *Server) Stop() {
 	go func() {
 		defer func() {
-			log.Info("Stop API server done!")
+			logger.Info("Stop API server done!")
 		}()
 		shutDownCtx, cancel := context.WithTimeout(s.context.SystemContext, 10*time.Second)
 		defer cancel()
 
 		if err := s.httpServer.Shutdown(shutDownCtx); err != nil {
-			log.Errorf("Shutdown API server failed with error: %s\n", err)
+			logger.Errorf("Shutdown API server failed with error: %s\n", err)
 		}
 	}()
 }

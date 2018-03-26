@@ -9,11 +9,11 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/opm"
 	"github.com/vmware/harbor/src/jobservice_v2/period"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
@@ -39,7 +39,7 @@ func NewMessageServer(ctx context.Context, namespace string, redisPool *redis.Po
 //Start to serve
 func (ms *MessageServer) Start() error {
 	defer func() {
-		log.Info("Message server is stopped")
+		logger.Info("Message server is stopped")
 	}()
 
 	//As we get one connection from the pool, don't try to close it.
@@ -66,11 +66,11 @@ func (ms *MessageServer) Start() error {
 				m := &models.Message{}
 				if err := json.Unmarshal(res.Data, m); err != nil {
 					//logged
-					log.Warningf("read invalid message: %s\n", res.Data)
+					logger.Warningf("read invalid message: %s\n", res.Data)
 				}
 				if callback, ok := ms.callbacks[m.Event]; !ok {
 					//logged
-					log.Warningf("no handler to handle event %s\n", m.Event)
+					logger.Warningf("no handler to handle event %s\n", m.Event)
 				} else {
 					//Try to recover the concrete type
 					var converted interface{}
@@ -95,17 +95,17 @@ func (ms *MessageServer) Start() error {
 					if e != nil {
 						err := e.(error)
 						//logged
-						log.Errorf("failed to fire callback with error: %s\n", err)
+						logger.Errorf("failed to fire callback with error: %s\n", err)
 					}
 				}
 			case redis.Subscription:
 				switch res.Kind {
 				case "subscribe":
-					log.Infof("Subscribe redis channel %s\n", res.Channel)
+					logger.Infof("Subscribe redis channel %s\n", res.Channel)
 					break
 				case "unsubscribe":
 					//Unsubscribe all, means main goroutine is exiting
-					log.Infof("Unsubscribe redis channel %s\n", res.Channel)
+					logger.Infof("Unsubscribe redis channel %s\n", res.Channel)
 					done <- nil
 					return
 				}
@@ -113,7 +113,7 @@ func (ms *MessageServer) Start() error {
 		}
 	}()
 
-	log.Info("Message server is started")
+	logger.Info("Message server is started")
 
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()

@@ -9,7 +9,7 @@ import (
 	"github.com/gocraft/work"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
 
@@ -49,7 +49,7 @@ func (s *Sweeper) ClearOutdatedScheduledJobs() error {
 
 	if r == nil {
 		//Action is already locked by other workerpool
-		log.Info("Ignore clear outdated scheduled jobs")
+		logger.Info("Ignore clear outdated scheduled jobs")
 		return nil
 	}
 
@@ -71,7 +71,7 @@ func (s *Sweeper) ClearOutdatedScheduledJobs() error {
 			allErrors = append(allErrors, err)
 		}
 
-		log.Infof("Clear outdated scheduled job: %s run at %#v\n", j.ID, time.Unix(jobScore.Score, 0).String())
+		logger.Infof("Clear outdated scheduled job: %s run at %#v\n", j.ID, time.Unix(jobScore.Score, 0).String())
 	}
 
 	//Unlock

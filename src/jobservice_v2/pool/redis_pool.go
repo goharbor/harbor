@@ -9,9 +9,9 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/gocraft/work"
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
 	"github.com/vmware/harbor/src/jobservice_v2/opm"
 	"github.com/vmware/harbor/src/jobservice_v2/period"
@@ -19,11 +19,7 @@ import (
 )
 
 var (
-	dialConnectionTimeout = 30 * time.Second
-	healthCheckPeriod     = time.Minute
-	dialReadTimeout       = healthCheckPeriod + 10*time.Second
-	dialWriteTimeout      = 10 * time.Second
-	workerPoolDeadTime    = 10 * time.Second
+	workerPoolDeadTime = 10 * time.Second
 )
 
 const (
@@ -50,43 +46,21 @@ type GoCraftWorkPool struct {
 	knownJobs map[string]interface{}
 }
 
-//RedisPoolConfig defines configurations for GoCraftWorkPool.
-type RedisPoolConfig struct {
-	RedisHost   string
-	RedisPort   uint
-	Namespace   string
-	WorkerCount uint
-}
-
 //RedisPoolContext ...
 //We did not use this context to pass context info so far, just a placeholder.
 type RedisPoolContext struct{}
 
 //NewGoCraftWorkPool is constructor of goCraftWorkPool.
-func NewGoCraftWorkPool(ctx *env.Context, cfg RedisPoolConfig) *GoCraftWorkPool {
-	redisPool := &redis.Pool{
-		MaxActive: 6,
-		MaxIdle:   6,
-		Wait:      true,
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial(
-				"tcp",
-				fmt.Sprintf("%s:%d", cfg.RedisHost, cfg.RedisPort),
-				redis.DialConnectTimeout(dialConnectionTimeout),
-				redis.DialReadTimeout(dialReadTimeout),
-				redis.DialWriteTimeout(dialWriteTimeout),
-			)
-		},
-	}
-	pool := work.NewWorkerPool(RedisPoolContext{}, cfg.WorkerCount, cfg.Namespace, redisPool)
-	enqueuer := work.NewEnqueuer(cfg.Namespace, redisPool)
-	client := work.NewClient(cfg.Namespace, redisPool)
-	scheduler := period.NewRedisPeriodicScheduler(ctx, cfg.Namespace, redisPool)
-	sweeper := period.NewSweeper(cfg.Namespace, redisPool, client)
-	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, cfg.Namespace, redisPool, client, scheduler)
-	msgServer := NewMessageServer(ctx.SystemContext, cfg.Namespace, redisPool)
+func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, redisPool *redis.Pool) *GoCraftWorkPool {
+	pool := work.NewWorkerPool(RedisPoolContext{}, workerCount, namespace, redisPool)
+	enqueuer := work.NewEnqueuer(namespace, redisPool)
+	client := work.NewClient(namespace, redisPool)
+	scheduler := period.NewRedisPeriodicScheduler(ctx, namespace, redisPool)
+	sweeper := period.NewSweeper(namespace, redisPool, client)
+	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, namespace, redisPool, client, scheduler)
+	msgServer := NewMessageServer(ctx.SystemContext, namespace, redisPool)
 	return &GoCraftWorkPool{
-		namespace:     cfg.Namespace,
+		namespace:     namespace,
 		redisPool:     redisPool,
 		pool:          pool,
 		enqueuer:      enqueuer,
@@ -170,20 +144,20 @@ func (gcwp *GoCraftWorkPool) Start() {
 	go func() {
 		defer func() {
 			gcwp.context.WG.Done()
-			log.Infof("Redis worker pool is stopped")
+			logger.Infof("Redis worker pool is stopped")
 		}()
 
 		//Clear dirty data before pool starting
 		if err := gcwp.sweeper.ClearOutdatedScheduledJobs(); err != nil {
 			//Only logged
-			log.Errorf("Clear outdated data before pool starting failed with error:%s\n", err)
+			logger.Errorf("Clear outdated data before pool starting failed with error:%s\n", err)
 		}
 
 		//Append middlewares
 		gcwp.pool.Middleware((*RedisPoolContext).logJob)
 
 		gcwp.pool.Start()
-		log.Infof("Redis worker pool is started")
+		logger.Infof("Redis worker pool is started")
 
 		//Block on listening context and done signal
 		select {
@@ -467,7 +441,7 @@ func (gcwp *GoCraftWorkPool) handleRegisterStatusHook(data interface{}) error {
 
 //log the job
 func (rpc *RedisPoolContext) logJob(job *work.Job, next work.NextMiddlewareFunc) error {
-	log.Infof("Job incoming: %s:%s", job.Name, job.ID)
+	logger.Infof("Job incoming: %s:%s", job.Name, job.ID)
 	return next()
 }
 
