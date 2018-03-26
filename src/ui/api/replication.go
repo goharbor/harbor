@@ -41,7 +41,7 @@ func (r *ReplicationAPI) Prepare() {
 		return
 	}
 
-	if !r.SecurityCtx.IsSysAdmin() {
+	if !r.SecurityCtx.IsSysAdmin() && !r.SecurityCtx.IsSolutionUser() {
 		r.HandleForbidden(r.SecurityCtx.GetUsername())
 		return
 	}
