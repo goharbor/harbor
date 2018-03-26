@@ -28,7 +28,7 @@ const (
 	jobServiceLoggerBasePath      = "JOB_SERVICE_LOGGER_BASE_PATH"
 	jobServiceLoggerLevel         = "JOB_SERVICE_LOGGER_LEVEL"
 	jobServiceLoggerArchivePeriod = "JOB_SERVICE_LOGGER_ARCHIVE_PERIOD"
-	jobServiceAdminServerEndpoint = "JOB_SERVICE_ADMIN_SERVER_ENDPOINT"
+	jobServiceAdminServerEndpoint = "ADMINSERVER_URL"
 	jobServiceAuthSecret          = "JOBSERVICE_SECRET"
 
 	//JobServiceProtocolHTTPS points to the 'https' protocol

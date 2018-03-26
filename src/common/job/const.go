@@ -9,4 +9,6 @@ const (
 	ImageReplicationDelete = "IMAGE_REPLICATION_DELETE"
 	// ImagePeriodReplication : the name of period replication job in job service
 	ImagePeriodReplication = "IMAGE_PERIOD_REPLICATION"
+	// GenericKind marks the job as a generic job, it will be contained in job metadata and passed to job service.
+	GenericKind = "Generic"
 )

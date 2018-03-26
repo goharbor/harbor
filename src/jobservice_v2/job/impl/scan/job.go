@@ -64,7 +64,7 @@ func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error
 	if err != nil {
 		return err
 	}
-	imgDigest, _, payload, err := repoClient.PullManifest(jobParms.Tag, []string{schema2.MediaTypeManifest})
+	_, _, payload, err := repoClient.PullManifest(jobParms.Tag, []string{schema2.MediaTypeManifest})
 	if err != nil {
 		logger.Errorf("Error pulling manifest for image %s:%s :%v", jobParms.Repository, jobParms.Tag, err)
 		return err
@@ -96,7 +96,7 @@ func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error
 		return err
 	}
 	compOverview, sev := clair.TransformVuln(res)
-	err = dao.UpdateImgScanOverview(imgDigest, layerName, sev, compOverview)
+	err = dao.UpdateImgScanOverview(jobParms.Digest, layerName, sev, compOverview)
 	return err
 }
 
