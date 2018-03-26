@@ -10,6 +10,7 @@ import utils
 import importlib
 import glob
 import shutil
+import sys
 
 def main():
     target_version = '1.5.0'
