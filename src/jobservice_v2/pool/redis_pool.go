@@ -9,9 +9,9 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/gocraft/work"
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
 	"github.com/vmware/harbor/src/jobservice_v2/opm"
 	"github.com/vmware/harbor/src/jobservice_v2/period"
@@ -170,20 +170,20 @@ func (gcwp *GoCraftWorkPool) Start() {
 	go func() {
 		defer func() {
 			gcwp.context.WG.Done()
-			log.Infof("Redis worker pool is stopped")
+			logger.Infof("Redis worker pool is stopped")
 		}()
 
 		//Clear dirty data before pool starting
 		if err := gcwp.sweeper.ClearOutdatedScheduledJobs(); err != nil {
 			//Only logged
-			log.Errorf("Clear outdated data before pool starting failed with error:%s\n", err)
+			logger.Errorf("Clear outdated data before pool starting failed with error:%s\n", err)
 		}
 
 		//Append middlewares
 		gcwp.pool.Middleware((*RedisPoolContext).logJob)
 
 		gcwp.pool.Start()
-		log.Infof("Redis worker pool is started")
+		logger.Infof("Redis worker pool is started")
 
 		//Block on listening context and done signal
 		select {
@@ -467,7 +467,7 @@ func (gcwp *GoCraftWorkPool) handleRegisterStatusHook(data interface{}) error {
 
 //log the job
 func (rpc *RedisPoolContext) logJob(job *work.Job, next work.NextMiddlewareFunc) error {
-	log.Infof("Job incoming: %s:%s", job.Name, job.ID)
+	logger.Infof("Job incoming: %s:%s", job.Name, job.ID)
 	return next()
 }
 

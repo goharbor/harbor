@@ -9,6 +9,8 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/config"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job/impl"
+	ilogger "github.com/vmware/harbor/src/jobservice_v2/job/impl/logger"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/runtime"
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
@@ -22,6 +24,12 @@ func main() {
 	if configPath == nil || utils.IsEmptyStr(*configPath) {
 		fmt.Println("Config file should be specified")
 		flag.Usage()
+		return
+	}
+
+	//Load configurations
+	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
+		fmt.Printf("Failed to load configurations with error: %s\n", err)
 		return
 	}
 
@@ -42,6 +50,10 @@ func main() {
 		return jobCtx, nil
 	})
 
+	//New logger for job service
+	sLogger := ilogger.NewServiceLogger(config.GetLogLevel())
+	logger.SetLogger(sLogger)
+
 	//Start
-	runtime.JobService.LoadAndRun(*configPath, true)
+	runtime.JobService.LoadAndRun()
 }

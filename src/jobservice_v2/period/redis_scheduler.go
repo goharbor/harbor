@@ -12,8 +12,8 @@ import (
 	"github.com/robfig/cron"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
 )
@@ -54,7 +54,7 @@ func NewRedisPeriodicScheduler(ctx *env.Context, namespace string, redisPool *re
 //Start to serve
 func (rps *RedisPeriodicScheduler) Start() {
 	defer func() {
-		log.Info("Redis scheduler is stopped")
+		logger.Info("Redis scheduler is stopped")
 	}()
 
 	//Load existing periodic job policies
@@ -67,7 +67,7 @@ func (rps *RedisPeriodicScheduler) Start() {
 	//start enqueuer
 	rps.enqueuer.start()
 	defer rps.enqueuer.stop()
-	log.Info("Redis scheduler is started")
+	logger.Info("Redis scheduler is started")
 
 	//blocking here
 	<-rps.context.SystemContext.Done()
@@ -234,14 +234,14 @@ func (rps *RedisPeriodicScheduler) Load() error {
 		if err := policy.DeSerialize(rawPolicy); err != nil {
 			//Ignore error which means the policy data is not valid
 			//Only logged
-			log.Warningf("failed to deserialize periodic policy with error:%s; raw data: %s\n", err, rawPolicy)
+			logger.Warningf("failed to deserialize periodic policy with error:%s; raw data: %s\n", err, rawPolicy)
 			continue
 		}
 		score, err := strconv.ParseInt(string(rawScore), 10, 64)
 		if err != nil {
 			//Ignore error which means the policy data is not valid
 			//Only logged
-			log.Warningf("failed to parse the score of the periodic policy with error:%s\n", err)
+			logger.Warningf("failed to parse the score of the periodic policy with error:%s\n", err)
 			continue
 		}
 
@@ -261,7 +261,7 @@ func (rps *RedisPeriodicScheduler) Load() error {
 		rps.pstore.addAll(allPeriodicPolicies)
 	}
 
-	log.Infof("Load %d periodic job policies", len(allPeriodicPolicies))
+	logger.Infof("Load %d periodic job policies", len(allPeriodicPolicies))
 	return nil
 }
 

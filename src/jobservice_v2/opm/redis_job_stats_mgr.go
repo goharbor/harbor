@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/src/jobservice_v2/errs"
+	"github.com/vmware/harbor/src/jobservice_v2/logger"
 
 	"github.com/vmware/harbor/src/jobservice_v2/period"
 
@@ -21,7 +22,6 @@ import (
 	"github.com/gocraft/work"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
 	"github.com/vmware/harbor/src/jobservice_v2/utils"
@@ -94,7 +94,7 @@ func (rjs *RedisJobStatsManager) Start() {
 	go rjs.loop()
 	rjs.isRunning = true
 
-	log.Info("Redis job stats manager is started")
+	logger.Info("Redis job stats manager is started")
 }
 
 //Shutdown is implementation of same method in JobStatsManager interface.
@@ -152,7 +152,7 @@ func (rjs *RedisJobStatsManager) loop() {
 		rjs.isRunning = false
 		//Notify other sub goroutines
 		close(controlChan)
-		log.Info("Redis job stats manager is stopped")
+		logger.Info("Redis job stats manager is stopped")
 	}()
 
 	for {
@@ -176,7 +176,7 @@ func (rjs *RedisJobStatsManager) loop() {
 							}
 						}()
 					} else {
-						log.Warningf("Failed to process '%s' request with error: %s (%d times tried)\n", item.op, err, maxFails)
+						logger.Warningf("Failed to process '%s' request with error: %s (%d times tried)\n", item.op, err, maxFails)
 						if item.op == opReportStatus {
 							clearHookCache = true
 						}
@@ -238,7 +238,7 @@ func (rjs *RedisJobStatsManager) Stop(jobID string) error {
 		//thirdly expire the job stats of this periodic job if exists
 		if err := rjs.expirePeriodicJobStats(theJob.Stats.JobID); err != nil {
 			//only logged
-			log.Errorf("Expire the stats of job %s failed with error: %s\n", theJob.Stats.JobID, err)
+			logger.Errorf("Expire the stats of job %s failed with error: %s\n", theJob.Stats.JobID, err)
 		}
 	default:
 		break
@@ -378,7 +378,7 @@ func (rjs *RedisJobStatsManager) submitStatusReportingItem(jobID string, status,
 			hookURL, err = rjs.getHook(jobID)
 			if err != nil {
 				//logged and exit
-				log.Warningf("no status hook found for job %s\n, abandon status reporting", jobID)
+				logger.Warningf("no status hook found for job %s\n, abandon status reporting", jobID)
 				return
 			}
 		}
@@ -418,7 +418,7 @@ func (rjs *RedisJobStatsManager) expirePeriodicJobStats(jobID string) error {
 func (rjs *RedisJobStatsManager) deleteScheduledJobsOfPeriodicPolicy(policyID string, cronSpec string) error {
 	schedule, err := cron.Parse(cronSpec)
 	if err != nil {
-		log.Errorf("cron spec '%s' is not valid", cronSpec)
+		logger.Errorf("cron spec '%s' is not valid", cronSpec)
 		return err
 	}
 
@@ -432,7 +432,7 @@ func (rjs *RedisJobStatsManager) deleteScheduledJobsOfPeriodicPolicy(policyID st
 		epoch := t.Unix()
 		if err = rjs.client.DeleteScheduledJob(epoch, policyID); err != nil {
 			//only logged
-			log.Warningf("delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
+			logger.Warningf("delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
 		}
 	}
 
@@ -453,7 +453,7 @@ func (rjs *RedisJobStatsManager) getCrlCommand(jobID string) (string, error) {
 	_, err = conn.Do("DEL", key)
 	if err != nil {
 		//only logged
-		log.Errorf("del key %s failed with error: %s\n", key, err)
+		logger.Errorf("del key %s failed with error: %s\n", key, err)
 	}
 
 	return cmd, nil

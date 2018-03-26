@@ -8,8 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
-
-	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 const (
@@ -31,7 +29,7 @@ func NewSweeper(ctx context.Context, workDir string, period uint) *Sweeper {
 //Start to work
 func (s *Sweeper) Start() {
 	go s.loop()
-	log.Info("Logger sweeper is started")
+	Info("Logger sweeper is started")
 }
 
 func (s *Sweeper) loop() {
@@ -41,7 +39,7 @@ func (s *Sweeper) loop() {
 	}
 
 	defer func() {
-		log.Info("Logger sweeper is stopped")
+		Info("Logger sweeper is stopped")
 	}()
 
 	//First run
@@ -66,14 +64,14 @@ func (s *Sweeper) clear() {
 		count   = &cleared
 	)
 
-	log.Info("Start to clear the job outdated log files")
+	Info("Start to clear the job outdated log files")
 	defer func() {
-		log.Infof("%d job outdated log files cleared", *count)
+		Infof("%d job outdated log files cleared", *count)
 	}()
 
 	logFiles, err := ioutil.ReadDir(s.workDir)
 	if err != nil {
-		log.Errorf("Failed to get the outdated log files under '%s' with error: %s\n", s.workDir, err)
+		Errorf("Failed to get the outdated log files under '%s' with error: %s\n", s.workDir, err)
 		return
 	}
 	if len(logFiles) == 0 {
@@ -86,7 +84,7 @@ func (s *Sweeper) clear() {
 			if err := os.Remove(logFilePath); err == nil {
 				cleared++
 			} else {
-				log.Warningf("Failed to remove log file '%s'\n", logFilePath)
+				Warningf("Failed to remove log file '%s'\n", logFilePath)
 			}
 		}
 	}
