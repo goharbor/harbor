@@ -66,6 +66,16 @@ adminserver:
   emailInsecure: "False"
   emailPwd: not-a-secure-password
   harborAdminPassword: Harbor12345
+  harborAuthenticationMode: "db_auth"
+  selfRegistration: "on"
+  authenticationLdapURL: "ldaps://ldapserver"
+  authenticationLdapSearchDN: ""
+  authenticationLdapBaseDN: ""
+  authenticationLdapFilter: "(objectClass=person)"
+  authenticationLdapUID: "uid"
+  authenticationLdapScope: "2"
+  authenticationLdapTimeout: "5"
+  authenticationLdapVerifyCert: "True"
   ## Persist data to a persistent volume
   volumes:
     config:
