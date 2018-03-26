@@ -23,3 +23,5 @@ ${project_save_css}  html body.no-scrolling harbor-app harbor-shell clr-main-con
 ${log_xpath}  //clr-main-container/div/clr-vertical-nav/div/a[contains(.,'Logs')]
 ${projects_xpath}  //clr-main-container/div/clr-vertical-nav/div/a[contains(.,'Projects')]
 ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
+${project_log_xpath}  //project-detail//li[contains(.,'Logs')]
+${project_member_xpath}  //project-detail//li[contains(.,'Members')]
