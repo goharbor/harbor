@@ -64,17 +64,22 @@ func (s *StatisticAPI) Get() {
 	}
 
 	statistic[PubPC] = (int64)(len(pubProjs))
-
-	ids := []int64{}
-	for _, p := range pubProjs {
-		ids = append(ids, p.ProjectID)
+	if len(pubProjs) == 0 {
+		statistic[PubRC] = 0
+	} else {
+		ids := []int64{}
+		for _, p := range pubProjs {
+			ids = append(ids, p.ProjectID)
+		}
+		n, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
+			ProjectIDs: ids,
+		})
+		if err != nil {
+			log.Errorf("failed to get total of public repositories: %v", err)
+			s.CustomAbort(http.StatusInternalServerError, "")
+		}
+		statistic[PubRC] = n
 	}
-	n, err := dao.GetTotalOfRepositoriesByProject(ids, "")
-	if err != nil {
-		log.Errorf("failed to get total of public repositories: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "")
-	}
-	statistic[PubRC] = n
 
 	if s.SecurityCtx.IsSysAdmin() {
 		result, err := s.ProjectMgr.List(nil)
@@ -85,7 +90,7 @@ func (s *StatisticAPI) Get() {
 		statistic[TPC] = result.Total
 		statistic[PriPC] = result.Total - statistic[PubPC]
 
-		n, err := dao.GetTotalOfRepositories("")
+		n, err := dao.GetTotalOfRepositories()
 		if err != nil {
 			log.Errorf("failed to get total of repositories: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, "")
@@ -107,20 +112,25 @@ func (s *StatisticAPI) Get() {
 		}
 
 		statistic[PriPC] = result.Total
+		if result.Total == 0 {
+			statistic[PriRC] = 0
+		} else {
+			ids := []int64{}
+			for _, p := range result.Projects {
+				ids = append(ids, p.ProjectID)
+			}
 
-		ids := []int64{}
-		for _, p := range result.Projects {
-			ids = append(ids, p.ProjectID)
+			n, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
+				ProjectIDs: ids,
+			})
+			if err != nil {
+				s.HandleInternalServerError(fmt.Sprintf(
+					"failed to get total of repositories for user %s: %v",
+					s.username, err))
+				return
+			}
+			statistic[PriRC] = n
 		}
-
-		n, err = dao.GetTotalOfRepositoriesByProject(ids, "")
-		if err != nil {
-			s.HandleInternalServerError(fmt.Sprintf(
-				"failed to get total of repositories for user %s: %v",
-				s.username, err))
-			return
-		}
-		statistic[PriRC] = n
 	}
 
 	s.Data["json"] = statistic

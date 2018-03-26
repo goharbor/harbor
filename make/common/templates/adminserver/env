@@ -56,3 +56,4 @@ UAA_VERIFY_CERT=$uaa_verify_cert
 UI_URL=http://ui:8080
 JOBSERVICE_URL=http://jobservice:8080
 REGISTRY_STORAGE_PROVIDER_NAME=$storage_provider_name
+READ_ONLY=false

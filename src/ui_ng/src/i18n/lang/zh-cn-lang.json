@@ -178,6 +178,7 @@
         "REPLICATION": "复制",
         "USERS": "成员",
         "LOGS": "日志",
+        "LABELS": "标签",
         "PROJECTS": "项目",
         "CONFIG": "配置管理"
     },
@@ -411,7 +412,10 @@
         "PLACEHOLDER": "未发现任何镜像库!",
         "INFO": "描述信息",
         "NO_INFO": "此镜像仓库没有描述信息",
-        "IMAGE": "镜像"
+        "IMAGE": "镜像",
+        "LABELS": "标签",
+        "ADD_TO_IMAGE": "添加标签到此镜像",
+        "ADD_LABELS": "添加标签"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -433,6 +437,7 @@
         "AUTH": "认证模式",
         "REPLICATION": "复制",
         "EMAIL": "邮箱",
+        "LABEL": "标签",
         "SYSTEM": "系统设置",
         "VULNERABILITY": "漏洞",
         "CONFIRM_TITLE": "确认取消",
@@ -611,6 +616,18 @@
         "PLACEHOLDER": "未发现任何标签!",
         "COPY_ERROR": "拷贝失败，请尝试手动拷贝。",
         "FILTER_FOR_TAGS": "过滤项目"
+    },
+    "LABEL": {
+        "LABEL": "标签",
+        "DESCRIPTION": "描述",
+        "CREATION_TIME": "创建时间",
+        "NEW_LABEL": "新建标签",
+        "EDIT": "编辑",
+        "DELETE": "删除",
+        "LABEL_NAME": "标签名字",
+        "COLOR": "颜色",
+        "FILTER_Label_PLACEHOLDER": "过滤标签",
+        "NO_LABELS": "无标签"
     },
     "WEEKLY": {
         "MONDAY": "周一",

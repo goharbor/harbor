@@ -22,8 +22,9 @@ import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
 import { JobLogViewerComponent } from '../job-log-viewer/index';
 
 import { click } from '../utils';
+import {LabelPieceComponent} from "../label-piece/label-piece.component";
 
-describe('RepositoryComponentListview (inline template)', () => {
+describe('RepositoryComponentListView (inline template)', () => {
 
   let compRepo: RepositoryListviewComponent;
   let fixtureRepo: ComponentFixture<RepositoryListviewComponent>;
@@ -82,7 +83,8 @@ describe('RepositoryComponentListview (inline template)', () => {
       "docker_version": "1.12.3",
       "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
       "created": new Date("2016-11-08T22:41:15.912313785Z"),
-      "signature": null
+      "signature": null,
+      "labels": []
     }
   ];
 
@@ -101,6 +103,7 @@ describe('RepositoryComponentListview (inline template)', () => {
       declarations: [
         RepositoryListviewComponent,
         TagComponent,
+        LabelPieceComponent,
         ConfirmationDialogComponent,
         FilterComponent,
         VULNERABILITY_DIRECTIVES,

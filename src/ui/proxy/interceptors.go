@@ -154,6 +154,20 @@ func (uh urlHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	uh.next.ServeHTTP(rw, req)
 }
 
+type readonlyHandler struct {
+	next http.Handler
+}
+
+func (rh readonlyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if config.ReadOnly() {
+		if req.Method == http.MethodDelete || req.Method == http.MethodPost || req.Method == http.MethodPatch {
+			http.Error(rw, "Upload/Delete is prohibited in read only mode.", http.StatusServiceUnavailable)
+			return
+		}
+	}
+	rh.next.ServeHTTP(rw, req)
+}
+
 type listReposHandler struct {
 	next http.Handler
 }

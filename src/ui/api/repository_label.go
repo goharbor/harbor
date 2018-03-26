@@ -144,24 +144,20 @@ func (r *RepositoryLabelAPI) AddToImage() {
 	rl := &models.ResourceLabel{
 		LabelID:      r.label.ID,
 		ResourceType: common.ResourceTypeImage,
-		ResourceID:   fmt.Sprintf("%s:%s", r.repository.Name, r.tag),
+		ResourceName: fmt.Sprintf("%s:%s", r.repository.Name, r.tag),
 	}
 	r.addLabel(rl)
 }
 
 // RemoveFromImage removes the label from an image
 func (r *RepositoryLabelAPI) RemoveFromImage() {
-	rl := &models.ResourceLabel{
-		LabelID:      r.label.ID,
-		ResourceType: common.ResourceTypeImage,
-		ResourceID:   fmt.Sprintf("%s:%s", r.repository.Name, r.tag),
-	}
-	r.removeLabel(rl)
+	r.removeLabel(common.ResourceTypeImage,
+		fmt.Sprintf("%s:%s", r.repository.Name, r.tag), r.label.ID)
 }
 
 // GetOfRepository returns labels of a repository
 func (r *RepositoryLabelAPI) GetOfRepository() {
-	r.getLabels(common.ResourceTypeRepository, strconv.FormatInt(r.repository.RepositoryID, 10))
+	r.getLabels(common.ResourceTypeRepository, r.repository.RepositoryID)
 }
 
 // AddToRepository adds the label to a repository
@@ -169,26 +165,21 @@ func (r *RepositoryLabelAPI) AddToRepository() {
 	rl := &models.ResourceLabel{
 		LabelID:      r.label.ID,
 		ResourceType: common.ResourceTypeRepository,
-		ResourceID:   strconv.FormatInt(r.repository.RepositoryID, 10),
+		ResourceID:   r.repository.RepositoryID,
 	}
 	r.addLabel(rl)
 }
 
 // RemoveFromRepository removes the label from a repository
 func (r *RepositoryLabelAPI) RemoveFromRepository() {
-	rl := &models.ResourceLabel{
-		LabelID:      r.label.ID,
-		ResourceType: common.ResourceTypeRepository,
-		ResourceID:   strconv.FormatInt(r.repository.RepositoryID, 10),
-	}
-	r.removeLabel(rl)
+	r.removeLabel(common.ResourceTypeRepository, r.repository.RepositoryID, r.label.ID)
 }
 
-func (r *RepositoryLabelAPI) getLabels(rType, rID string) {
-	labels, err := dao.GetLabelsOfResource(rType, rID)
+func (r *RepositoryLabelAPI) getLabels(rType string, rIDOrName interface{}) {
+	labels, err := dao.GetLabelsOfResource(rType, rIDOrName)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get labels of resource %s %s: %v",
-			rType, rID, err))
+		r.HandleInternalServerError(fmt.Sprintf("failed to get labels of resource %s %v: %v",
+			rType, rIDOrName, err))
 		return
 	}
 	r.Data["json"] = labels
@@ -196,10 +187,16 @@ func (r *RepositoryLabelAPI) getLabels(rType, rID string) {
 }
 
 func (r *RepositoryLabelAPI) addLabel(rl *models.ResourceLabel) {
-	rlabel, err := dao.GetResourceLabel(rl.ResourceType, rl.ResourceID, rl.LabelID)
+	var rIDOrName interface{}
+	if rl.ResourceID != 0 {
+		rIDOrName = rl.ResourceID
+	} else {
+		rIDOrName = rl.ResourceName
+	}
+	rlabel, err := dao.GetResourceLabel(rl.ResourceType, rIDOrName, rl.LabelID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to check the existence of label %d for resource %s %s: %v",
-			rl.LabelID, rl.ResourceType, rl.ResourceID, err))
+		r.HandleInternalServerError(fmt.Sprintf("failed to check the existence of label %d for resource %s %v: %v",
+			rl.LabelID, rl.ResourceType, rIDOrName, err))
 		return
 	}
 
@@ -208,8 +205,8 @@ func (r *RepositoryLabelAPI) addLabel(rl *models.ResourceLabel) {
 		return
 	}
 	if _, err := dao.AddResourceLabel(rl); err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to add label %d to resource %s %s: %v",
-			rl.LabelID, rl.ResourceType, rl.ResourceID, err))
+		r.HandleInternalServerError(fmt.Sprintf("failed to add label %d to resource %s %v: %v",
+			rl.LabelID, rl.ResourceType, rIDOrName, err))
 		return
 	}
 
@@ -217,22 +214,22 @@ func (r *RepositoryLabelAPI) addLabel(rl *models.ResourceLabel) {
 	r.Redirect(http.StatusOK, strconv.FormatInt(rl.LabelID, 10))
 }
 
-func (r *RepositoryLabelAPI) removeLabel(rl *models.ResourceLabel) {
-	rlabel, err := dao.GetResourceLabel(rl.ResourceType, rl.ResourceID, rl.LabelID)
+func (r *RepositoryLabelAPI) removeLabel(rType string, rIDOrName interface{}, labelID int64) {
+	rl, err := dao.GetResourceLabel(rType, rIDOrName, labelID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to check the existence of label %d for resource %s %s: %v",
-			rl.LabelID, rl.ResourceType, rl.ResourceID, err))
+		r.HandleInternalServerError(fmt.Sprintf("failed to check the existence of label %d for resource %s %v: %v",
+			labelID, rType, rIDOrName, err))
 		return
 	}
 
-	if rlabel == nil {
+	if rl == nil {
 		r.HandleNotFound(fmt.Sprintf("label %d of resource %s %s not found",
-			rl.LabelID, rl.ResourceType, rl.ResourceID))
+			labelID, rType, rIDOrName))
 		return
 	}
-	if err = dao.DeleteResourceLabel(rlabel.ID); err != nil {
+	if err = dao.DeleteResourceLabel(rl.ID); err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to delete resource label record %d: %v",
-			rlabel.ID, err))
+			rl.ID, err))
 		return
 	}
 }

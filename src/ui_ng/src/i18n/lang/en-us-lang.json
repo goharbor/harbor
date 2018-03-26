@@ -178,6 +178,7 @@
         "REPLICATION": "Replication",
         "USERS": "Members",
         "LOGS": "Logs",
+        "LABELS": "labels",
         "PROJECTS": "Projects",
         "CONFIG": "Configuration"
     },
@@ -411,7 +412,10 @@
         "PLACEHOLDER": "We couldn't find any repositories!",
         "INFO": "Info",
         "NO_INFO": "No description info for this repository",
-        "IMAGE": "Images"
+        "IMAGE": "Images",
+        "LABELS": ":labels",
+        "ADD_TO_IMAGE": "Add labels to this image",
+        "ADD_LABELS": "Add labels"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
@@ -433,6 +437,7 @@
         "AUTH": "Authentication",
         "REPLICATION": "Replication",
         "EMAIL": "Email",
+        "LABEL": "Label",
         "SYSTEM": "System Settings",
         "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirm to cancel",
@@ -611,6 +616,18 @@
         "PLACEHOLDER": "We couldn't find any tags!",
         "COPY_ERROR": "Copy failed, please try to manually copy.",
         "FILTER_FOR_TAGS": "Filter Tags"
+    },
+    "LABEL": {
+        "LABEL": "Label",
+        "DESCRIPTION": "Description",
+        "CREATION_TIME": "Creation Time",
+        "NEW_LABEL": "New Label",
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "LABEL_NAME": "Label Name",
+        "COLOR": "Color",
+        "FILTER_LABEL_PLACEHOLDER": "Filter Labels",
+        "NO_LABELS": "No labels"
     },
     "WEEKLY": {
         "MONDAY": "Monday",

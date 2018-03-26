@@ -51,6 +51,7 @@ export class RepositoryComponent implements OnInit {
   @Input() repoName: string;
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
+  @Input() isGuest: boolean;
   @Input() withNotary: boolean;
   @Input() withClair: boolean;
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();

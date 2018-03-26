@@ -50,7 +50,8 @@ describe('TagDetailComponent (inline template)', () => {
     "author": "steven",
     "created": new Date("2016-11-08T22:41:15.912313785Z"),
     "signature": null,
-    scan_overview: mockVulnerability
+    "scan_overview": mockVulnerability,
+    "labels": [],
   };
 
   let config: IServiceConfig = {

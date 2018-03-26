@@ -37,7 +37,7 @@ type SystemInfoAPI struct {
 }
 
 const defaultRootCert = "/etc/ui/ca/ca.crt"
-const harborVersionFile = "/harbor/VERSION"
+const harborVersionFile = "/harbor/UIVERSION"
 
 //SystemInfo models for system info.
 type SystemInfo struct {

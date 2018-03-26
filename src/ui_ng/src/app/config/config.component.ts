@@ -38,7 +38,8 @@ const TabLinkContentMap = {
     'config-replication': 'replication',
     'config-email': 'email',
     'config-system': 'system_settings',
-    'config-vulnerability': 'vulnerability'
+    'config-vulnerability': 'vulnerability',
+    'config-label': 'system_label'
 };
 
 @Component({
@@ -198,6 +199,10 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.currentTabId === 'config-auth' &&
             this.allConfig.auth_mode &&
             this.allConfig.auth_mode.value === 'ldap_auth';
+    }
+
+    public get hideBtn(): boolean {
+        return this.currentTabId === 'config-label';
     }
 
     public get hideMailTestingSpinner(): boolean {

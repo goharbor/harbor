@@ -75,6 +75,7 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.UAAVerifyCert:              false,
 	common.UIURL:                      "http://myui:8888/",
 	common.JobServiceURL:              "http://myjob:8888/",
+	common.ReadOnly:                   false,
 }
 
 // NewAdminserver returns a mock admin server
