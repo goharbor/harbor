@@ -183,6 +183,7 @@ create table replication_job (
  repository varchar(256) NOT NULL,
  operation  varchar(64) NOT NULL,
  tags   varchar(16384),
+ job_uuid varchar(64),
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP
  );
@@ -204,6 +205,7 @@ create table img_scan_job (
  repository varchar(256) NOT NULL,
  tag   varchar(128) NOT NULL,
  digest varchar(64),
+ job_uuid varchar(64),
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP
  );
