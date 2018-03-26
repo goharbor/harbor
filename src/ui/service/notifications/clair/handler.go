@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	clairClient = clair.NewClient(config.ClairEndpoint(), nil)
+	clairClient *clair.Client
 )
 
 // Handler handles reqeust on /service/notifications/clair/, which listens to clair's notifications.
@@ -43,7 +43,10 @@ type Handler struct {
 
 // Handle ...
 func (h *Handler) Handle() {
-	var ne models.ClairNotificationEnvelope
+	if clairClient == nil {
+		clairClient = clair.NewClient(config.ClairEndpoint(), nil)
+	}
+    var ne models.ClairNotificationEnvelope
 	if err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &ne); err != nil {
 		log.Errorf("Failed to decode the request: %v", err)
 		return
@@ -85,7 +88,7 @@ func (h *Handler) Handle() {
 				return
 			}
 			for _, e := range l {
-				if err := clair.UpdateScanOverview(e.Digest, e.DetailsKey); err != nil {
+				if err := clair.UpdateScanOverview(e.Digest, e.DetailsKey,config.ClairEndpoint()); err != nil {
 					log.Errorf("Failed to refresh scan overview for image: %s", e.Digest)
 				} else {
 					log.Debugf("Refreshed scan overview for record with digest: %s", e.Digest)

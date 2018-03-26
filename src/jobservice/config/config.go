@@ -46,7 +46,7 @@ func Init() error {
 
 	adminServerURL := os.Getenv("ADMINSERVER_URL")
 	if len(adminServerURL) == 0 {
-		adminServerURL = "http://adminserver"
+		adminServerURL = common.DefaultAdminserverEndpoint
 	}
 	log.Infof("initializing client for adminserver %s ...", adminServerURL)
 	cfg := &client.Config{
@@ -112,7 +112,7 @@ func LocalUIURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
 		log.Warningf("Failed to Get job service UI URL from backend, error: %v, will return default value.")
-		return "http://ui"
+		return common.DefaultUIEndpoint
 	}
 	return strings.TrimSuffix(cfg[common.UIURL].(string), "/")
 
@@ -169,5 +169,12 @@ func InternalTokenServiceEndpoint() string {
 
 // ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
 func ClairEndpoint() string {
-	return common.DefaultClairEndpoint
+	cfg, err :=mg.Get()
+	if err != nil {
+		return common.DefaultClairEndpoint
+	}
+	if cfg[common.ClairURL] == nil {
+		return common.DefaultClairEndpoint
+	}
+	return cfg[common.ClairURL].(string)
 }
