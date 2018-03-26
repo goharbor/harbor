@@ -1,4 +1,4 @@
 UI_SECRET=$ui_secret
 JOBSERVICE_SECRET=$jobservice_secret
-ADMINSERVER_URL=http://adminserver:8080
+ADMINSERVER_URL=$adminserver_url
 GODEBUG=netdns=cgo

@@ -151,6 +151,9 @@ var (
 		},
 		common.UIURL:                       "UI_URL",
 		common.JobServiceURL:               "JOBSERVICE_URL",
+		common.TokenServiceURL:             "TOKEN_SERVICE_URL",
+		common.ClairURL:                    "CLAIR_URL",
+		common.NotaryURL:                   "NOTARY_URL",
 		common.RegistryStorageProviderName: "REGISTRY_STORAGE_PROVIDER_NAME",
 		common.ReadOnly: &parser{
 			env:   "READ_ONLY",
@@ -202,6 +205,12 @@ var (
 			parse: parseStringToBool,
 		},
 		common.RegistryStorageProviderName: "REGISTRY_STORAGE_PROVIDER_NAME",
+		common.UIURL:                       "UI_URL",
+		common.JobServiceURL:               "JOBSERVICE_URL",
+		common.RegistryURL:                 "REGISTRY_URL",
+		common.TokenServiceURL:             "TOKEN_SERVICE_URL",
+		common.ClairURL:                    "CLAIR_URL",
+		common.NotaryURL:                   "NOTARY_URL",
 	}
 )
 

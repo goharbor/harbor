@@ -35,7 +35,7 @@ const (
 var rec *httptest.ResponseRecorder
 
 // NotaryEndpoint , exported for testing.
-var NotaryEndpoint = config.InternalNotaryEndpoint()
+var NotaryEndpoint =""
 
 // MatchPullManifest checks if the request looks like a request to pull manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values
 func MatchPullManifest(req *http.Request) (bool, string, string) {
@@ -294,6 +294,9 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 }
 
 func matchNotaryDigest(img imageInfo) (bool, error) {
+	if NotaryEndpoint == "" {
+		NotaryEndpoint = config.InternalNotaryEndpoint()
+	}
 	targets, err := notary.GetInternalTargets(NotaryEndpoint, tokenUsername, img.repository)
 	if err != nil {
 		return false, err

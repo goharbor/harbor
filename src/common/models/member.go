@@ -32,3 +32,11 @@ type UserMember struct {
 	Rolename string `json:"role_name"`
 	Role     int    `json:"role_id"`
 }
+
+// MemberReq -  Create Project Member Request
+type MemberReq struct {
+	ProjectID   int64     `json:"project_id"`
+	Role        int       `json:"role_id,omitempty"`
+	MemberUser  User      `json:"member_user,omitempty"`
+	MemberGroup UserGroup `json:"member_group,omitempty"`
+}

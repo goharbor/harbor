@@ -84,6 +84,21 @@ func UpdateScanJobStatus(id int64, status string) error {
 	return err
 }
 
+// SetScanJobUUID set UUID to the record so it associates with the job in job service.
+func SetScanJobUUID(id int64, uuid string) error {
+	o := GetOrmer()
+	sj := models.ScanJob{
+		ID:   id,
+		UUID: uuid,
+	}
+	n, err := o.Update(&sj, "UUID")
+	if n == 0 {
+		log.Warningf("no records are updated when updating scan job %d", id)
+	}
+	return err
+
+}
+
 func scanJobQs(limit ...int) orm.QuerySeter {
 	o := GetOrmer()
 	l := -1
