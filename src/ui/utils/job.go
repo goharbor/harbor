@@ -85,6 +85,7 @@ func scanRepos(repos []*models.RepoRecord) {
 	}
 }
 
+// GetJobServiceClient returns the job service client instance.
 func GetJobServiceClient() job.Client {
 	cl.Lock()
 	defer cl.Unlock()

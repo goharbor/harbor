@@ -84,7 +84,7 @@ func UpdateScanJobStatus(id int64, status string) error {
 	return err
 }
 
-// SetScanJobDigest set UUID to the record so it associates with the job in job service.
+// SetScanJobUUID set UUID to the record so it associates with the job in job service.
 func SetScanJobUUID(id int64, uuid string) error {
 	o := GetOrmer()
 	sj := models.ScanJob{
