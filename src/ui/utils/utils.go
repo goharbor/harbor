@@ -33,7 +33,7 @@ import (
 
 // ScanAllImages scans all images of Harbor by submiting jobs to jobservice, the whole process will move on if failed to submit any job of a single image.
 func ScanAllImages() error {
-	repos, err := dao.GetAllRepositories()
+	repos, err := dao.GetRepositories()
 	if err != nil {
 		log.Errorf("Failed to list all repositories, error: %v", err)
 		return err
@@ -46,7 +46,9 @@ func ScanAllImages() error {
 
 // ScanImagesByProjectID scans all images under a projet, the whole process will move on if failed to submit any job of a single image.
 func ScanImagesByProjectID(id int64) error {
-	repos, err := dao.GetRepositoriesByProject(id, "", 0, 0)
+	repos, err := dao.GetRepositories(&models.RepositoryQuery{
+		ProjectIDs: []int64{id},
+	})
 	if err != nil {
 		log.Errorf("Failed list repositories in project %d, error: %v", id, err)
 		return err

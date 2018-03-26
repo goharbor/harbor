@@ -32,6 +32,7 @@ import { MemberService } from './member/member.service';
 import { ProjectRoutingResolver } from './project-routing-resolver.service';
 
 import { TargetExistsValidatorDirective } from '../shared/target-exists-directive';
+import {ProjectLabelComponent} from "../project/project-label/project-label.component";
 
 @NgModule({
   imports: [
@@ -48,7 +49,8 @@ import { TargetExistsValidatorDirective } from '../shared/target-exists-directiv
     ProjectDetailComponent,
     MemberComponent,
     AddMemberComponent,
-    TargetExistsValidatorDirective
+    TargetExistsValidatorDirective,
+    ProjectLabelComponent
   ],
   exports: [ProjectComponent, ListProjectComponent],
   providers: [ProjectRoutingResolver, ProjectService, MemberService]

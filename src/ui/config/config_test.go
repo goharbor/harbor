@@ -146,6 +146,9 @@ func TestConfig(t *testing.T) {
 	if !WithAdmiral() {
 		t.Errorf("WithAdmiral should be true")
 	}
+	if ReadOnly() {
+		t.Errorf("ReadOnly should be false")
+	}
 	if AdmiralEndpoint() != "http://www.vmware.com" {
 		t.Errorf("Unexpected admiral endpoint: %s", AdmiralEndpoint())
 	}

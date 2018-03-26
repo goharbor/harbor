@@ -96,6 +96,12 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
+	labelID, err := ra.GetInt64("label_id", 0)
+	if err != nil {
+		ra.HandleBadRequest(fmt.Sprintf("invalid label_id: %s", ra.GetString("label_id")))
+		return
+	}
+
 	exist, err := ra.ProjectMgr.Exists(projectID)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d",
@@ -117,33 +123,33 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
-	keyword := ra.GetString("q")
+	query := &models.RepositoryQuery{
+		ProjectIDs: []int64{projectID},
+		Name:       ra.GetString("q"),
+		LabelID:    labelID,
+	}
+	query.Page, query.Size = ra.GetPaginationParams()
 
-	total, err := dao.GetTotalOfRepositoriesByProject(
-		[]int64{projectID}, keyword)
+	total, err := dao.GetTotalOfRepositories(query)
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to get total of repositories of project %d: %v",
 			projectID, err))
 		return
 	}
 
-	page, pageSize := ra.GetPaginationParams()
-
-	repositories, err := getRepositories(projectID,
-		keyword, pageSize, pageSize*(page-1))
+	repositories, err := getRepositories(query)
 	if err != nil {
 		ra.HandleInternalServerError(fmt.Sprintf("failed to get repository: %v", err))
 		return
 	}
 
-	ra.SetPaginationHeader(total, page, pageSize)
+	ra.SetPaginationHeader(total, query.Page, query.Size)
 	ra.Data["json"] = repositories
 	ra.ServeJSON()
 }
 
-func getRepositories(projectID int64, keyword string,
-	limit, offset int64) ([]*repoResp, error) {
-	repositories, err := dao.GetRepositoriesByProject(projectID, keyword, limit, offset)
+func getRepositories(query *models.RepositoryQuery) ([]*repoResp, error) {
+	repositories, err := dao.GetRepositories(query)
 	if err != nil {
 		return nil, err
 	}
@@ -171,8 +177,7 @@ func assembleRepos(repositories []*models.RepoRecord) ([]*repoResp, error) {
 		}
 		repo.TagsCount = int64(len(tags))
 
-		labels, err := dao.GetLabelsOfResource(common.ResourceTypeRepository,
-			strconv.FormatInt(repository.RepositoryID, 10))
+		labels, err := dao.GetLabelsOfResource(common.ResourceTypeRepository, repository.RepositoryID)
 		if err != nil {
 			log.Errorf("failed to get labels of repository %s: %v", repository.Name, err)
 		} else {
@@ -385,6 +390,11 @@ func (ra *RepositoryAPI) GetTag() {
 // GetTags returns tags of a repository
 func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString(":splat")
+	labelID, err := ra.GetInt64("label_id", 0)
+	if err != nil {
+		ra.HandleBadRequest(fmt.Sprintf("invalid label_id: %s", ra.GetString("label_id")))
+		return
+	}
 
 	projectName, _ := utils.ParseRepository(repoName)
 	exist, err := ra.ProjectMgr.Exists(projectName)
@@ -420,7 +430,31 @@ func (ra *RepositoryAPI) GetTags() {
 		return
 	}
 
-	ra.Data["json"] = assembleTags(client, repoName, tags, ra.SecurityCtx.GetUsername())
+	// filter tags by label ID
+	if labelID > 0 {
+		rls, err := dao.ListResourceLabels(&models.ResourceLabelQuery{
+			LabelID:      labelID,
+			ResourceType: common.ResourceTypeImage,
+		})
+		if err != nil {
+			ra.HandleInternalServerError(fmt.Sprintf("failed to list resource labels: %v", err))
+			return
+		}
+		labeledTags := map[string]struct{}{}
+		for _, rl := range rls {
+			labeledTags[strings.Split(rl.ResourceName, ":")[1]] = struct{}{}
+		}
+		ts := []string{}
+		for _, tag := range tags {
+			if _, ok := labeledTags[tag]; ok {
+				ts = append(ts, tag)
+			}
+		}
+		tags = ts
+	}
+
+	ra.Data["json"] = assembleTags(client, repoName, tags,
+		ra.SecurityCtx.GetUsername())
 	ra.ServeJSON()
 }
 
@@ -442,6 +476,15 @@ func assembleTags(client *registry.Repository, repository string,
 	result := []*tagResp{}
 	for _, t := range tags {
 		item := &tagResp{}
+
+		// labels
+		image := fmt.Sprintf("%s:%s", repository, t)
+		labels, err := dao.GetLabelsOfResource(common.ResourceTypeImage, image)
+		if err != nil {
+			log.Errorf("failed to get labels of image %s: %v", image, err)
+		} else {
+			item.Labels = labels
+		}
 
 		// the detail information of tag
 		tagDetail, err := getTagDetail(client, t)
@@ -466,15 +509,6 @@ func assembleTags(client *registry.Repository, repository string,
 					}
 				}
 			}
-		}
-
-		// labels
-		image := fmt.Sprintf("%s:%s", repository, t)
-		labels, err := dao.GetLabelsOfResource(common.ResourceTypeImage, image)
-		if err != nil {
-			log.Errorf("failed to get labels of image %s: %v", image, err)
-		} else {
-			item.Labels = labels
 		}
 
 		result = append(result, item)

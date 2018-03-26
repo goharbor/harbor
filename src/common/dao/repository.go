@@ -47,15 +47,6 @@ func GetRepositoryByName(name string) (*models.RepoRecord, error) {
 	return &r, err
 }
 
-// GetAllRepositories ...
-func GetAllRepositories() ([]*models.RepoRecord, error) {
-	o := GetOrmer()
-	var repos []*models.RepoRecord
-	_, err := o.QueryTable("repository").Limit(-1).
-		OrderBy("Name").All(&repos)
-	return repos, err
-}
-
 // DeleteRepository ...
 func DeleteRepository(name string) error {
 	o := GetOrmer()
@@ -94,18 +85,6 @@ func RepositoryExists(name string) bool {
 	return o.QueryTable("repository").Filter("name", name).Exist()
 }
 
-// GetRepositoryByProjectName ...
-func GetRepositoryByProjectName(name string) ([]*models.RepoRecord, error) {
-	sql := `select * from repository 
-		where project_id = (
-			select project_id from project
-			where name = ?
-		)`
-	repos := []*models.RepoRecord{}
-	_, err := GetOrmer().Raw(sql, name).QueryRows(&repos)
-	return repos, err
-}
-
 //GetTopRepos returns the most popular repositories whose project ID is
 // in projectIDs
 func GetTopRepos(projectIDs []int64, n int) ([]*models.RepoRecord, error) {
@@ -124,46 +103,78 @@ func GetTopRepos(projectIDs []int64, n int) ([]*models.RepoRecord, error) {
 }
 
 // GetTotalOfRepositories ...
-func GetTotalOfRepositories(name string) (int64, error) {
-	qs := GetOrmer().QueryTable(&models.RepoRecord{})
-	if len(name) != 0 {
-		qs = qs.Filter("Name__contains", name)
+func GetTotalOfRepositories(query ...*models.RepositoryQuery) (int64, error) {
+	sql, params := repositoryQueryConditions(query...)
+	sql = `select count(*) ` + sql
+	var total int64
+	if err := GetOrmer().Raw(sql, params).QueryRow(&total); err != nil {
+		return 0, err
 	}
-	return qs.Count()
+	return total, nil
 }
 
-// GetTotalOfRepositoriesByProject ...
-func GetTotalOfRepositoriesByProject(projectIDs []int64, name string) (int64, error) {
-	if len(projectIDs) == 0 {
-		return 0, nil
-	}
-
-	qs := GetOrmer().QueryTable(&models.RepoRecord{}).
-		Filter("project_id__in", projectIDs)
-
-	if len(name) != 0 {
-		qs = qs.Filter("Name__contains", name)
-	}
-
-	return qs.Count()
-}
-
-// GetRepositoriesByProject ...
-func GetRepositoriesByProject(projectID int64, name string,
-	limit, offset int64) ([]*models.RepoRecord, error) {
-
+// GetRepositories ...
+func GetRepositories(query ...*models.RepositoryQuery) ([]*models.RepoRecord, error) {
 	repositories := []*models.RepoRecord{}
 
-	qs := GetOrmer().QueryTable(&models.RepoRecord{}).
-		Filter("ProjectID", projectID)
-
-	if len(name) != 0 {
-		qs = qs.Filter("Name__contains", name)
+	sql, params := repositoryQueryConditions(query...)
+	sql = `select r.repository_id, r.name, r.project_id, r.description, r.pull_count, 
+	r.star_count, r.creation_time, r.update_time ` + sql + `order by r.name `
+	if len(query) > 0 && query[0] != nil {
+		page, size := query[0].Page, query[0].Size
+		if size > 0 {
+			sql += `limit ? `
+			params = append(params, size)
+			if page > 0 {
+				sql += `offset ? `
+				params = append(params, size*(page-1))
+			}
+		}
 	}
-	if limit > 0 {
-		qs = qs.Limit(limit).Offset(offset)
-	}
-	_, err := qs.All(&repositories)
 
-	return repositories, err
+	if _, err := GetOrmer().Raw(sql, params).QueryRows(&repositories); err != nil {
+		return nil, err
+	}
+	return repositories, nil
+}
+
+func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []interface{}) {
+	params := []interface{}{}
+	sql := `from repository r `
+	if len(query) == 0 || query[0] == nil {
+		return sql, params
+	}
+	q := query[0]
+	if len(q.ProjectName) > 0 {
+		sql += `join project p on r.project_id = p.project_id `
+	}
+
+	if q.LabelID > 0 {
+		sql += `join harbor_resource_label rl on r.repository_id = rl.resource_id 
+		and rl.resource_type = 'r' `
+	}
+	sql += `where 1=1 `
+
+	if len(q.Name) > 0 {
+		sql += `and r.name like ? `
+		params = append(params, "%"+Escape(q.Name)+"%")
+	}
+
+	if len(q.ProjectIDs) > 0 {
+		sql += fmt.Sprintf(`and r.project_id in ( %s ) `,
+			paramPlaceholder(len(q.ProjectIDs)))
+		params = append(params, q.ProjectIDs)
+	}
+
+	if len(q.ProjectName) > 0 {
+		sql += `and p.name = ? `
+		params = append(params, q.ProjectName)
+	}
+
+	if q.LabelID > 0 {
+		sql += `and rl.label_id = ? `
+		params = append(params, q.LabelID)
+	}
+
+	return sql, params
 }

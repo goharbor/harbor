@@ -15,8 +15,8 @@ import (
 
 func TestSimpleError(t *testing.T) {
 	e := ErrError.Error()
-	if e != "SQL logic error or missing database" {
-		t.Error("wrong error code:" + e)
+	if e != "SQL logic error or missing database" && e != "SQL logic error" {
+		t.Error("wrong error code: " + e)
 	}
 }
 

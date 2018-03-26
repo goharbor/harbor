@@ -277,8 +277,9 @@ create table harbor_resource_label (
  label_id int NOT NULL,
 # the resource_id is the ID of project when the resource_type is p
 # the resource_id is the ID of repository when the resource_type is r
-# the resource_id is the name of image when the resource_type is i
- resource_id varchar(256) NOT NULL,
+ resource_id int,
+# the resource_name is the name of image when the resource_type is i
+ resource_name varchar(256),
 # 'p' for project
 # 'r' for repository
 # 'i' for image
@@ -286,7 +287,7 @@ create table harbor_resource_label (
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY(id),
- CONSTRAINT unique_label_resource UNIQUE (label_id,resource_id, resource_type)
+ CONSTRAINT unique_label_resource UNIQUE (label_id,resource_id, resource_name, resource_type)
  );
 
 CREATE TABLE IF NOT EXISTS `alembic_version` (

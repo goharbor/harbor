@@ -121,12 +121,7 @@ func TestRouteMatchers(t *testing.T) {
 		var routeMatch RouteMatch
 		matched := router.Match(request, &routeMatch)
 		if matched != shouldMatch {
-			// Need better messages. :)
-			if matched {
-				t.Errorf("Should match.")
-			} else {
-				t.Errorf("Should not match.")
-			}
+			t.Errorf("Expected: %v\nGot: %v\nRequest: %v %v", shouldMatch, matched, request.Method, url)
 		}
 
 		if matched {
@@ -188,7 +183,6 @@ func TestRouteMatchers(t *testing.T) {
 	match(true)
 
 	// 2nd route --------------------------------------------------------------
-
 	// Everything match.
 	reset2()
 	match(true)
@@ -687,7 +681,7 @@ func TestNewRegexp(t *testing.T) {
 	}
 
 	for pattern, paths := range tests {
-		p, _ = newRouteRegexp(pattern, false, false, false, false)
+		p, _ = newRouteRegexp(pattern, false, false, false, false, false)
 		for path, result := range paths {
 			matches = p.regexp.FindStringSubmatch(path)
 			if result == nil {

@@ -10,11 +10,14 @@
         <li class="nav-item" *ngIf="isSystemAdmin || isMember">
             <a class="nav-link" routerLink="members" routerLinkActive="active">{{'PROJECT_DETAIL.USERS' | translate}}</a>
         </li>
-        <li class="nav-item" *ngIf="isSystemAdmin || isMember">
-            <a class="nav-link" routerLink="logs" routerLinkActive="active">{{'PROJECT_DETAIL.LOGS' | translate}}</a>
-        </li>
         <li class="nav-item" *ngIf="isSProjectAdmin || isSystemAdmin">
             <a class="nav-link" routerLink="replications" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
+        </li>
+        <li class="nav-item" *ngIf="isSProjectAdmin || isSystemAdmin">
+            <a class="nav-link" routerLink="labels" routerLinkActive="active">{{'PROJECT_DETAIL.LABELS' | translate}}</a>
+        </li>
+        <li class="nav-item" *ngIf="isSystemAdmin || isMember">
+            <a class="nav-link" routerLink="logs" routerLinkActive="active">{{'PROJECT_DETAIL.LOGS' | translate}}</a>
         </li>
         <li class="nav-item" *ngIf="isSessionValid && (isSystemAdmin || isMember)">
             <a class="nav-link" routerLink="configs" routerLinkActive="active">{{'PROJECT_DETAIL.CONFIG' | translate}}</a>

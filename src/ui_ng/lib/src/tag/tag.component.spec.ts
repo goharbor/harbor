@@ -8,7 +8,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { TagComponent } from './tag.component';
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { Tag } from '../service/interface';
+import {Label, Tag} from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { TagService, TagDefaultService, ScanningResultService, ScanningResultDefaultService } from '../service/index';
 import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
@@ -19,6 +19,8 @@ import { ChannelService } from '../channel/index';
 
 import { JobLogViewerComponent } from '../job-log-viewer/index';
 import {CopyInputComponent} from "../push-image/copy-input.component";
+import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import {LabelDefaultService, LabelService} from "../service/label.service";
 
 describe('TagComponent (inline template)', () => {
 
@@ -26,6 +28,8 @@ describe('TagComponent (inline template)', () => {
   let fixture: ComponentFixture<TagComponent>;
   let tagService: TagService;
   let spy: jasmine.Spy;
+  let spyLabels: jasmine.Spy;
+  let spyLabels1: jasmine.Spy;
   let mockTags: Tag[] = [
     {
       "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
@@ -36,7 +40,54 @@ describe('TagComponent (inline template)', () => {
       "docker_version": "1.12.3",
       "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
       "created": new Date("2016-11-08T22:41:15.912313785Z"),
-      "signature": null
+      "signature": null,
+      "labels": [],
+    }
+  ];
+
+  let mockLabels: Label[] = [
+    {
+      color: "#9b0d54",
+      creation_time: "",
+      description: "",
+      id: 1,
+      name: "label0-g",
+      project_id: 0,
+      scope: "g",
+      update_time: "",
+    },
+    {
+      color: "#9b0d54",
+      creation_time: "",
+      description: "",
+      id: 2,
+      name: "label1-g",
+      project_id: 0,
+      scope: "g",
+      update_time: "",
+    }
+  ];
+
+  let mockLabels1: Label[] = [
+    {
+      color: "#9b0d54",
+      creation_time: "",
+      description: "",
+      id: 1,
+      name: "label0-g",
+      project_id: 1,
+      scope: "p",
+      update_time: "",
+    },
+    {
+      color: "#9b0d54",
+      creation_time: "",
+      description: "",
+      id: 2,
+      name: "label1-g",
+      project_id: 1,
+      scope: "p",
+      update_time: "",
     }
   ];
 
@@ -51,6 +102,7 @@ describe('TagComponent (inline template)', () => {
       ],
       declarations: [
         TagComponent,
+        LabelPieceComponent,
         ConfirmationDialogComponent,
         VULNERABILITY_DIRECTIVES,
         FILTER_DIRECTIVES,
@@ -62,7 +114,8 @@ describe('TagComponent (inline template)', () => {
         ChannelService,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: TagService, useClass: TagDefaultService },
-        { provide: ScanningResultService, useClass: ScanningResultDefaultService }
+        { provide: ScanningResultService, useClass: ScanningResultDefaultService },
+        {provide: LabelService, useClass: LabelDefaultService}
       ]
     });
   }));
@@ -78,8 +131,25 @@ describe('TagComponent (inline template)', () => {
     comp.registryUrl = 'http://registry.testing.com';
     comp.withNotary = false;
 
+
+    let labelService: LabelService;
+
+
     tagService = fixture.debugElement.injector.get(TagService);
     spy = spyOn(tagService, 'getTags').and.returnValues(Promise.resolve(mockTags));
+
+    labelService = fixture.debugElement.injector.get(LabelService);
+
+    /*spyLabels = spyOn(labelService, 'getLabels').and.callFake(function (param) {
+      if (param === 'g') {
+        return Promise.resolve(mockLabels);
+      }else {
+        Promise.resolve(mockLabels1)
+      }
+    })*/
+    spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(Promise.resolve(mockLabels));
+    spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(Promise.resolve(mockLabels1));
+
     fixture.detectChanges();
   });
 
