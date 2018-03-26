@@ -442,7 +442,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
       return  (size / Math.pow(1024, 2)).toFixed(2) + "MB";
     } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
-      return  (size / Math.pow(1024, 3)).toFixed(2) + "MB";
+      return  (size / Math.pow(1024, 3)).toFixed(2) + "GB";
     } else {
       return size + "B";
     }
