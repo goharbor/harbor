@@ -195,7 +195,7 @@ reload_config = rcp.get("configuration", "reload_config") if rcp.has_option(
     "configuration", "reload_config") else "false"
 hostname = rcp.get("configuration", "hostname")
 protocol = rcp.get("configuration", "ui_url_protocol")
-ui_url = protocol + "://" + hostname
+public_url = protocol + "://" + hostname
 email_identity = rcp.get("configuration", "email_identity")
 email_host = rcp.get("configuration", "email_server")
 email_port = rcp.get("configuration", "email_server_port")
@@ -270,7 +270,6 @@ storage_provider_name = rcp.get("configuration", "registry_storage_provider_name
 storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
 # yaml requires 1 or more spaces between the key and value
 storage_provider_config = storage_provider_config.replace(":", ": ", 1)
-
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 
@@ -298,6 +297,14 @@ job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
 cert_dir = os.path.join(config_dir, "nginx", "cert")
 log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf") 
+adminserver_url = "http://adminserver:8080"
+registry_url = "http://registry:5000"
+ui_url = "http://ui:8080"
+token_service_url = "http://ui:8080/service/token"
+
+jobservice_url = "http://jobservice:8080"
+clair_url = "http://clair:6060"
+notary_url = "http://notary-server:4443"
 
 if protocol == "https":
     target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
@@ -317,6 +324,7 @@ else:
 render(os.path.join(templates_dir, "adminserver", "env"),
         adminserver_conf_env,
         reload_config=reload_config,
+        public_url=public_url,
         ui_url=ui_url,
         auth_mode=auth_mode,
         self_registration=self_registration,
@@ -363,14 +371,20 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         uaa_clientid=uaa_clientid,
         uaa_clientsecret=uaa_clientsecret,
         uaa_verify_cert=uaa_verify_cert,
-        storage_provider_name=storage_provider_name
+        storage_provider_name=storage_provider_name,
+        registry_url=registry_url,
+        token_service_url=token_service_url,
+        jobservice_url=jobservice_url,
+        clair_url=clair_url,
+        notary_url=notary_url
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
         ui_conf_env, 
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret,
-        redis_url = redis_url
+        redis_url = redis_url,
+        adminserver_url = adminserver_url
         )
 
 registry_config_file = "config_ha.yml" if args.ha_mode else "config.yml"
@@ -385,6 +399,7 @@ storage_provider_info = ('\n' + ' ' * 4).join(
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
     storage_provider_info=storage_provider_info,
+    public_url=public_url,
     ui_url=ui_url,
     redis_url=redis_url)
 
@@ -395,7 +410,8 @@ render(os.path.join(templates_dir, "db", "env"),
 render(os.path.join(templates_dir, "jobservice", "env"),
         job_conf_env,
         ui_secret=ui_secret,
-        jobservice_secret=jobservice_secret)
+        jobservice_secret=jobservice_secret,
+        adminserver_url=adminserver_url)
 		
 render(os.path.join(templates_dir, "log", "logrotate.conf"),
         log_rotate_config,
@@ -522,7 +538,7 @@ if args.notary_mode:
     shutil.copy2(os.path.join(notary_temp_dir, "signer-config.json"), notary_config_dir)
     render(os.path.join(notary_temp_dir, "server-config.json"),
         os.path.join(notary_config_dir, "server-config.json"),
-        token_endpoint=ui_url)
+        token_endpoint=public_url)
 
     print("Copying nginx configuration file for notary")
     shutil.copy2(os.path.join(templates_dir, "nginx", "notary.upstream.conf"), nginx_conf_d)
