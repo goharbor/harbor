@@ -1,5 +1,3 @@
-LOG_LEVEL=debug
-CONFIG_PATH=/etc/jobservice/app.conf
 UI_SECRET=$ui_secret
 JOBSERVICE_SECRET=$jobservice_secret
 ADMINSERVER_URL=$adminserver_url

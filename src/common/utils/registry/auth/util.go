@@ -59,7 +59,7 @@ func getToken(client *http.Client, credential Credential, realm, service string,
 	}
 
 	if credential != nil {
-		credential.AddAuthorization(req)
+		credential.Modify(req)
 	}
 
 	resp, err := client.Do(req)

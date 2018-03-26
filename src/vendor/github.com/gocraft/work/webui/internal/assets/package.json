@@ -1,0 +1,33 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "mocha 'src/**/*.test.js' --require babel-register --require ignore-styles; exit 0",
+    "dev": "webpack --progress",
+    "build": "webpack --progress --config webpack.production.config.js",
+    "lint": "eslint src; exit 0",
+    "cover": "istanbul cover _mocha --root src/ --include-all-sources -x '**/*.test.js' -x 'index.js' -- 'src/**/*.test.js' --require babel-register --require ignore-styles; exit 0"
+  },
+  "devDependencies": {
+    "babel-core": "latest",
+    "babel-eslint": "latest",
+    "babel-loader": "latest",
+    "babel-preset-es2015": "latest",
+    "babel-preset-react": "latest",
+    "babel-preset-stage-0": "latest",
+    "css-loader": "latest",
+    "eslint": "latest",
+    "eslint-plugin-react": "latest",
+    "expect": "latest",
+    "file-loader": "latest",
+    "ignore-styles": "latest",
+    "istanbul": "^1.1.0-alpha.1",
+    "mocha": "latest",
+    "react": "latest",
+    "react-addons-test-utils": "latest",
+    "react-dom": "latest",
+    "react-router": "latest",
+    "style-loader": "latest",
+    "url-loader": "latest",
+    "webpack": "latest"
+  }
+}

@@ -29,6 +29,7 @@ type ScanJob struct {
 	Repository   string    `orm:"column(repository)" json:"repository"`
 	Tag          string    `orm:"column(tag)" json:"tag"`
 	Digest       string    `orm:"column(digest)" json:"digest"`
+	UUID         string    `orm:"column(job_uuid)" json:"-"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
