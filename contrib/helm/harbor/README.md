@@ -9,20 +9,17 @@ This [Helm](https://github.com/kubernetes/helm) chart installs [Harbor](http://v
 - Kubernetes cluster 1.8+ with Beta APIs enabled
 - Kubernetes Ingress Controller is enabled
 - kubectl CLI 1.8+
-- PV provisioner support in the underlying infrastructure
 
 ## Setup a Kubernetes cluster
 
 You can use any tools to setup a K8s cluster.
 In this guide, we use [minikube](https://github.com/kubernetes/minikube) to setup a K8s cluster as the dev/test env.
-
 ```bash
 # Start minikube
 minikube start --vm-driver=none
 # Enable Ingress Controller
 minikube addons enable ingress
 ```
-
 ## Installing the Chart
 
 First install [Helm CLI](https://github.com/kubernetes/helm#install), then initialize Helm.
@@ -47,15 +44,16 @@ open values.yaml, set the value of 'externalDomain' to your Harbor FQDN, and
 set value of 'tlsCrt', 'tlsKey', 'caCrt'. The common name of the certificate must match your Harbor FQDN.
 
 Install the Harbor helm chart with a release name `my-release`:
-
 ```bash
 helm install . --debug --name my-release --set externalDomain=harbor.my.domain
 ```
+**Make sure** `harbor.my.domain` resolves to the K8s Ingress Controller IP on the machines where you run docker or access Harbor UI.
+You can add `harbor.my.domain` and IP mapping in the DNS server, or in /etc/hosts, or use the FQDN `harbor.<IP>.xip.io`.
 
 Follow the `NOTES` section in the command output to get Harbor admin password and **add Harbor root CA into docker trusted certificates**.
 
 The command deploys Harbor on the Kubernetes cluster in the default configuration.
-The [configuration](#configuration) section lists the parameters that can be configured during installation.
+The [configuration](#configuration) section lists the parameters that can be configured in values.yaml or via '--set' params during installation.
 
 > **Tip**: List all releases using `helm list`
 
