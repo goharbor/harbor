@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This [Helm](https://github.com/kubernetes/helm) chart installs [Harbor](http://vmware.github.io/harbor/) in a Kubernetes cluster.
+This [Helm](https://github.com/kubernetes/helm) chart installs [Harbor](http://vmware.github.io/harbor/) in a Kubernetes cluster. Currently this chart supports Harbor v1.4.0 release.
 
 ## Prerequisites
 
@@ -29,30 +29,15 @@ First install [Helm CLI](https://github.com/kubernetes/helm#install), then initi
 ```bash
 helm init --canary-image
 ```
-
 Download Harbor helm chart code.
-
 ```bash
 git clone https://github.com/vmware/harbor
-cd harbor/contrib/helm/harbor
+cd contrib/helm/harbor
 ```
-
-### Insecure Registry Mode
-
-If setting Harbor Registry as insecure-registries for docker,
-you don't need to generate Root CA and SSL certificate for the Harbor ingress controller.
-
-Install the Harbor helm chart with a release name `my-release`:
-
+Download external dependent charts required by Harbor chart.
 ```bash
-helm install . --debug --name my-release --set externalDomain=harbor.my.domain,insecureRegistry=true
+helm dependency update
 ```
-
-**Make sure** `harbor.my.domain` resolves to the K8s Ingress Controller IP on the machines where you run docker or access Harbor UI.
-You can add `harbor.my.domain` and IP mapping in the DNS server, or in /etc/hosts, or use the FQDN `harbor.<IP>.xip.io`.
-
-Then add `"insecure-registries": ["harbor.my.domain"]` in the docker daemon config file and restart docker service.
-
 ### Secure Registry Mode
 
 By default this chart will generate a root CA and SSL certificate for your Harbor.
@@ -73,6 +58,20 @@ The command deploys Harbor on the Kubernetes cluster in the default configuratio
 The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
 > **Tip**: List all releases using `helm list`
+
+### Insecure Registry Mode
+
+If setting Harbor Registry as insecure-registries for docker,
+you don't need to generate Root CA and SSL certificate for the Harbor ingress controller.
+
+Install the Harbor helm chart with a release name `my-release`:
+```bash
+helm install . --debug --name my-release --set externalDomain=harbor.my.domain,insecureRegistry=true
+```
+**Make sure** `harbor.my.domain` resolves to the K8s Ingress Controller IP on the machines where you run docker or access Harbor UI.
+You can add `harbor.my.domain` and IP mapping in the DNS server, or in /etc/hosts, or use the FQDN `harbor.<IP>.xip.io`.
+
+Then add `"insecure-registries": ["harbor.my.domain"]` in the docker daemon config file and restart docker service.
 
 ## Uninstalling the Chart
 
