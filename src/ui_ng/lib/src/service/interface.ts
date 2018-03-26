@@ -60,6 +60,7 @@ export interface Tag extends Base {
     created: Date;
     signature?: string;
     scan_overview?: VulnerabilitySummary;
+    labels: Label[];
 }
 
 /**
@@ -266,4 +267,13 @@ export interface TagClickEvent {
     project_id: string | number;
     repository_name: string;
     tag_name: string;
+}
+
+export interface Label {
+    [key: string]: any | any[];
+    name: string;
+    description: string;
+    color: string;
+    scope: string;
+    project_id: number;
 }

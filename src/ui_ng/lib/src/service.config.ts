@@ -196,4 +196,16 @@ export interface IServiceConfig {
      * @memberof IServiceConfig
      */
     scanJobEndpoint?: string;
+
+    /**
+     * The base endpoint of the service used to handle the labels.
+     * labels related endpoints will be built based on this endpoint.
+     * E.g:
+     *   If the base endpoint is '/api/labels',
+     *   the label endpoint  will be '/api/labels/:id'.
+     *
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    labelEndpoint?: string;
 }

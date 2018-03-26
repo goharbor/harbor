@@ -61,7 +61,7 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: "registry-data"
-       labels:
+      labels:
 {{ include "harbor.labels" . | indent 8 }}
     spec:
       accessModes: [{{ .Values.registry.volumes.data.accessMode | quote }}]

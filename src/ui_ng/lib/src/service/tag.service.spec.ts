@@ -20,7 +20,8 @@ describe('TagService', () => {
       "docker_version": "1.12.3",
       "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
       "created": new Date("2016-11-08T22:41:15.912313785Z"),
-      "signature": null
+      "signature": null,
+      'labels': []
     }
   ];
 

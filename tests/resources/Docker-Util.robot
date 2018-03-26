@@ -49,13 +49,14 @@ Push image
     ${rc}=  Run And Return Rc  docker logout ${ip}
 
 Push Image With Tag
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}
+#tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest    
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}  ${tag1}=latest
     Log To Console  \nRunning docker push ${image}...
-    ${rc}=  Run And Return Rc  docker pull ${image}
+    ${rc}=  Run And Return Rc  docker pull ${image}:${tag1}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  docker tag ${image} ${ip}/${project}/${image}:${tag}
+    ${rc}=  Run And Return Rc  docker tag ${image}:${tag1} ${ip}/${project}/${image}:${tag}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}:${tag}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0

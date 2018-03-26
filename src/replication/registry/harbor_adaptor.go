@@ -2,6 +2,7 @@ package registry
 
 import (
 	"github.com/vmware/harbor/src/common/dao"
+	common_models "github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
@@ -30,7 +31,9 @@ func (ha *HarborAdaptor) GetNamespace(name string) models.Namespace {
 
 //GetRepositories is used to get all the repositories under the specified namespace
 func (ha *HarborAdaptor) GetRepositories(namespace string) []models.Repository {
-	repos, err := dao.GetRepositoryByProjectName(namespace)
+	repos, err := dao.GetRepositories(&common_models.RepositoryQuery{
+		ProjectName: namespace,
+	})
 	if err != nil {
 		log.Errorf("failed to get repositories under namespace %s: %v", namespace, err)
 		return nil

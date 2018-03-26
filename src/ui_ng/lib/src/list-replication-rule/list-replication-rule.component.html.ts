@@ -1,7 +1,7 @@
 export const LIST_REPLICATION_RULE_TEMPLATE: string = `
 <div style="padding-bottom: 15px;">
 <clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" [clDgRowSelection]="true">
-    <clr-dg-action-bar style="height:24px;">
+    <clr-dg-action-bar>
         <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
         <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!selectedRow" (click)="editRule(selectedRow)"><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'REPLICATION.EDIT_POLICY' | translate}}</button>
         <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!selectedRow" (click)="deleteRule(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPLICATION.DELETE_POLICY' | translate}}</button>

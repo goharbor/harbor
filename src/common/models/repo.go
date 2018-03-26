@@ -37,3 +37,12 @@ type RepoRecord struct {
 func (rp *RepoRecord) TableName() string {
 	return RepoTable
 }
+
+// RepositoryQuery : query parameters for repository
+type RepositoryQuery struct {
+	Name        string
+	ProjectIDs  []int64
+	ProjectName string
+	LabelID     int64
+	Pagination
+}
