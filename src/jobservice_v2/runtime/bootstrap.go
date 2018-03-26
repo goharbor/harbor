@@ -4,12 +4,14 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/vmware/harbor/src/common/job"
 	"github.com/vmware/harbor/src/jobservice_v2/api"
 	"github.com/vmware/harbor/src/jobservice_v2/config"
@@ -20,6 +22,13 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/job/impl/scan"
 	"github.com/vmware/harbor/src/jobservice_v2/logger"
 	"github.com/vmware/harbor/src/jobservice_v2/pool"
+)
+
+const (
+	dialConnectionTimeout = 30 * time.Second
+	healthCheckPeriod     = time.Minute
+	dialReadTimeout       = healthCheckPeriod + 10*time.Second
+	dialWriteTimeout      = 10 * time.Second
 )
 
 //JobService ...
@@ -136,14 +145,25 @@ func (bs *Bootstrap) loadAndRunAPIServer(ctx *env.Context, cfg *config.Configura
 
 //Load and run the worker pool
 func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Configuration) pool.Interface {
-	redisPoolCfg := pool.RedisPoolConfig{
-		RedisHost:   cfg.PoolConfig.RedisPoolCfg.Host,
-		RedisPort:   cfg.PoolConfig.RedisPoolCfg.Port,
-		Namespace:   cfg.PoolConfig.RedisPoolCfg.Namespace,
-		WorkerCount: cfg.PoolConfig.WorkerCount,
+	redisPool := &redis.Pool{
+		MaxActive: 6,
+		MaxIdle:   6,
+		Wait:      true,
+		Dial: func() (redis.Conn, error) {
+			return redis.Dial(
+				"tcp",
+				fmt.Sprintf("%s:%d", cfg.PoolConfig.RedisPoolCfg.Host, cfg.PoolConfig.RedisPoolCfg.Port),
+				redis.DialConnectTimeout(dialConnectionTimeout),
+				redis.DialReadTimeout(dialReadTimeout),
+				redis.DialWriteTimeout(dialWriteTimeout),
+			)
+		},
 	}
 
-	redisWorkerPool := pool.NewGoCraftWorkPool(ctx, redisPoolCfg)
+	redisWorkerPool := pool.NewGoCraftWorkPool(ctx,
+		cfg.PoolConfig.RedisPoolCfg.Namespace,
+		cfg.PoolConfig.WorkerCount,
+		redisPool)
 	//Register jobs here
 	if err := redisWorkerPool.RegisterJob(impl.KnownJobReplication, (*impl.ReplicationJob)(nil)); err != nil {
 		//exit

@@ -19,11 +19,7 @@ import (
 )
 
 var (
-	dialConnectionTimeout = 30 * time.Second
-	healthCheckPeriod     = time.Minute
-	dialReadTimeout       = healthCheckPeriod + 10*time.Second
-	dialWriteTimeout      = 10 * time.Second
-	workerPoolDeadTime    = 10 * time.Second
+	workerPoolDeadTime = 10 * time.Second
 )
 
 const (
@@ -50,43 +46,21 @@ type GoCraftWorkPool struct {
 	knownJobs map[string]interface{}
 }
 
-//RedisPoolConfig defines configurations for GoCraftWorkPool.
-type RedisPoolConfig struct {
-	RedisHost   string
-	RedisPort   uint
-	Namespace   string
-	WorkerCount uint
-}
-
 //RedisPoolContext ...
 //We did not use this context to pass context info so far, just a placeholder.
 type RedisPoolContext struct{}
 
 //NewGoCraftWorkPool is constructor of goCraftWorkPool.
-func NewGoCraftWorkPool(ctx *env.Context, cfg RedisPoolConfig) *GoCraftWorkPool {
-	redisPool := &redis.Pool{
-		MaxActive: 6,
-		MaxIdle:   6,
-		Wait:      true,
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial(
-				"tcp",
-				fmt.Sprintf("%s:%d", cfg.RedisHost, cfg.RedisPort),
-				redis.DialConnectTimeout(dialConnectionTimeout),
-				redis.DialReadTimeout(dialReadTimeout),
-				redis.DialWriteTimeout(dialWriteTimeout),
-			)
-		},
-	}
-	pool := work.NewWorkerPool(RedisPoolContext{}, cfg.WorkerCount, cfg.Namespace, redisPool)
-	enqueuer := work.NewEnqueuer(cfg.Namespace, redisPool)
-	client := work.NewClient(cfg.Namespace, redisPool)
-	scheduler := period.NewRedisPeriodicScheduler(ctx, cfg.Namespace, redisPool)
-	sweeper := period.NewSweeper(cfg.Namespace, redisPool, client)
-	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, cfg.Namespace, redisPool, client, scheduler)
-	msgServer := NewMessageServer(ctx.SystemContext, cfg.Namespace, redisPool)
+func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, redisPool *redis.Pool) *GoCraftWorkPool {
+	pool := work.NewWorkerPool(RedisPoolContext{}, workerCount, namespace, redisPool)
+	enqueuer := work.NewEnqueuer(namespace, redisPool)
+	client := work.NewClient(namespace, redisPool)
+	scheduler := period.NewRedisPeriodicScheduler(ctx, namespace, redisPool)
+	sweeper := period.NewSweeper(namespace, redisPool, client)
+	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, namespace, redisPool, client, scheduler)
+	msgServer := NewMessageServer(ctx.SystemContext, namespace, redisPool)
 	return &GoCraftWorkPool{
-		namespace:     cfg.Namespace,
+		namespace:     namespace,
 		redisPool:     redisPool,
 		pool:          pool,
 		enqueuer:      enqueuer,
