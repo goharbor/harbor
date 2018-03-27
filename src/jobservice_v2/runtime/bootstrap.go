@@ -165,7 +165,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 		cfg.PoolConfig.WorkerCount,
 		redisPool)
 	//Register jobs here
-	if err := redisWorkerPool.RegisterJob(impl.KnownJobReplication, (*impl.ReplicationJob)(nil)); err != nil {
+	if err := redisWorkerPool.RegisterJob(impl.KnownJobDemo, (*impl.DemoJob)(nil)); err != nil {
 		//exit
 		ctx.ErrorChan <- err
 		return redisWorkerPool //avoid nil pointer issue

@@ -17,21 +17,21 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 )
 
-//ReplicationJob is the job for replicating repositories.
-type ReplicationJob struct{}
+//DemoJob is the job to demostrate the job interface.
+type DemoJob struct{}
 
 //MaxFails is implementation of same method in Interface.
-func (rj *ReplicationJob) MaxFails() uint {
+func (dj *DemoJob) MaxFails() uint {
 	return 3
 }
 
 //ShouldRetry ...
-func (rj *ReplicationJob) ShouldRetry() bool {
+func (dj *DemoJob) ShouldRetry() bool {
 	return true
 }
 
 //Validate is implementation of same method in Interface.
-func (rj *ReplicationJob) Validate(params map[string]interface{}) error {
+func (dj *DemoJob) Validate(params map[string]interface{}) error {
 	if params == nil || len(params) == 0 {
 		return errors.New("parameters required for replication job")
 	}
@@ -48,7 +48,7 @@ func (rj *ReplicationJob) Validate(params map[string]interface{}) error {
 }
 
 //Run the replication logic here.
-func (rj *ReplicationJob) Run(ctx env.JobContext, params map[string]interface{}) error {
+func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error {
 	logger := ctx.GetLogger()
 
 	defer func() {

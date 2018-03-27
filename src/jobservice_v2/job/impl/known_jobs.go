@@ -5,6 +5,6 @@ package impl
 //Define the register name constants of known jobs
 
 const (
-	//KnownJobReplication is name of replication job
-	KnownJobReplication = "REPLICATION"
+	//KnownJobDemo is name of demo job
+	KnownJobDemo = "DEMO"
 )

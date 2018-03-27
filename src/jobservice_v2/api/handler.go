@@ -1,3 +1,5 @@
+// Copyright 2018 The Harbor Authors. All rights reserved.
+
 package api
 
 import (
@@ -35,11 +37,11 @@ type Handler interface {
 
 //DefaultHandler is the default request handler which implements the Handler interface.
 type DefaultHandler struct {
-	controller *core.Controller
+	controller core.Interface
 }
 
 //NewDefaultHandler is constructor of DefaultHandler.
-func NewDefaultHandler(ctl *core.Controller) *DefaultHandler {
+func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
 	return &DefaultHandler{
 		controller: ctl,
 	}

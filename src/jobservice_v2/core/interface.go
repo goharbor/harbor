@@ -41,7 +41,7 @@ type Interface interface {
 	//
 	//Return:
 	//  error   : Error returned if failed to retry the specified job.
-	RetryJob(jonID string) error
+	RetryJob(jobID string) error
 
 	//Cancel the job
 	//

@@ -1,0 +1,32 @@
+---
+#Protocol used to serve
+protocol: "https"
+
+#Config certification if use 'https' protocol
+https_config:
+  cert: "../server.crt"
+  key: "../server.key"
+
+#Server listening port
+port: 9443
+
+#Worker pool
+worker_pool:
+  #0 means unlimited
+  workers: 10
+  backend: "redis"
+  #Additional config if use 'redis' backend
+  redis_pool:
+    host: "10.160.178.186"
+    port: 6379
+    namespace: "harbor_job_service"
+
+#Logger for job
+logger:
+  path: "/tmp/job_logs"
+  level: "INFO"
+  archive_period: 1 #days
+
+#Admin server endpoint
+admin_server: "http://localhost:9010/"
+
