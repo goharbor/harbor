@@ -54,6 +54,7 @@ export class RepositoryComponent implements OnInit {
   @Input() isGuest: boolean;
   @Input() withNotary: boolean;
   @Input() withClair: boolean;
+  @Input() withAdmiral: boolean;
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
   @Output() backEvt: EventEmitter<any> = new EventEmitter<any>();
 

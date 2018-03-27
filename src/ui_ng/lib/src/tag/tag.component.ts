@@ -80,7 +80,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   @Input() registryUrl: string;
   @Input() withNotary: boolean;
   @Input() withClair: boolean;
-
+  @Input() withAdmiral: boolean;
   @Output() refreshRepo = new EventEmitter<boolean>();
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
   @Output() signatureOutput = new EventEmitter<any>();

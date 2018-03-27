@@ -81,6 +81,10 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.appConfigService.getConfig().with_clair;
     }
 
+    public get withAdmiral(): boolean {
+        return this.appConfigService.getConfig().with_admiral;
+    }
+
     isCurrentTabLink(tabId: string): boolean {
         return this.currentTabId === tabId;
     }

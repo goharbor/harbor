@@ -58,7 +58,7 @@ export const TAG_DETAIL_HTML: string = `
                 </div>
 
             </div>
-            <div *ngIf="tagDetails.labels.length">
+            <div *ngIf="tagDetails.labels.length && !withAdmiral">
                 <div class="third-column detail-title">{{'TAG.LABELS' | translate }}</div>
                 <div class="fourth-column">
                   <div *ngFor="let label of tagDetails.labels" style="margin-bottom: 2px;"><hbr-label-piece [label]="label"></hbr-label-piece></div>

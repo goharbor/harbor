@@ -24,6 +24,7 @@ export class TagDetailComponent implements OnInit {
 
     @Input() tagId: string;
     @Input() repositoryId: string;
+    @Input() withAdmiral: boolean;
     tagDetails: Tag = {
         name: "--",
         size: "--",

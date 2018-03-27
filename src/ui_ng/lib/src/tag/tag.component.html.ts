@@ -17,7 +17,8 @@ export const TAG_TEMPLATE = `
     <div class="row flex-items-xs-right rightPos">
       <div class='filterLabelPiece' [style.left.px]='filterLabelPieceWidth' ><hbr-label-piece [hidden]='!filterOneLabel' [label]="filterOneLabel"></hbr-label-piece></div>
       <div class="flex-xs-middle">
-        <clr-dropdown>
+      <hbr-filter  *ngIf="withAdmiral" [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" [currentValue]="lastFilteredTagName"></hbr-filter>
+        <clr-dropdown  *ngIf="!withAdmiral">
             <hbr-filter [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" [currentValue]="lastFilteredTagName" clrDropdownTrigger></hbr-filter>
             <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
                 <div style='display:grid'>
@@ -44,7 +45,7 @@ export const TAG_TEMPLATE = `
             <div class="btn-group">
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(canScanNow(selectedRow) && selectedRow.length==1)" (click)="scanNow(selectedRow)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)" ><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
-                <clr-dropdown>
+                <clr-dropdown *ngIf="!withAdmiral">
                     <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1) || isGuest" (click)="addLabels(selectedRow)" >{{'REPOSITORY.ADD_LABELS' | translate}}</button>
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
                     <div style='display:grid'>

@@ -13,6 +13,7 @@
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import {AppConfigService} from "../../app-config.service";
 
 @Component({
   selector: 'repository',
@@ -25,6 +26,7 @@ export class TagDetailPageComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private appConfigService: AppConfigService,
     private router: Router
   ) {
   }
@@ -33,6 +35,10 @@ export class TagDetailPageComponent implements OnInit {
     this.repositoryId = this.route.snapshot.params["repo"];
     this.tagId = this.route.snapshot.params["tag"];
     this.projectId = this.route.snapshot.params["id"];
+  }
+
+  get withAdmiral(): boolean {
+    return this.appConfigService.getConfig().with_admiral;
   }
 
   goBack(tag: string): void {
