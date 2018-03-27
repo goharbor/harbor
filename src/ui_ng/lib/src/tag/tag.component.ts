@@ -180,11 +180,11 @@ export class TagComponent implements OnInit, AfterViewInit {
         .subscribe((name: string) => {
           if (name && name.length) {
             this.filterOnGoing = true;
-            this.imageFilterLabels = [];
+            this.imageStickLabels = [];
 
             this.imageLabels.forEach(data => {
               if (data.label.name.indexOf(name) !== -1) {
-                this.imageFilterLabels.push(data);
+                this.imageStickLabels.push(data);
               }
             })
             setTimeout(() => {
@@ -302,7 +302,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.selectedChange(tag);
   }
   selectLabel(labelInfo: {[key: string]: any | string[]}): void {
-    if (labelInfo && labelInfo.iconsShow) {
+    if (labelInfo && !labelInfo.iconsShow) {
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
       toPromise<any>(this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
@@ -314,7 +314,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   unSelectLabel(labelInfo: {[key: string]: any | string[]}): void {
-    if (labelInfo && !labelInfo.iconsShow) {
+    if (labelInfo && labelInfo.iconsShow) {
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
       toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {

@@ -438,6 +438,8 @@
         "REPLICATION": "复制",
         "EMAIL": "邮箱",
         "LABEL": "标签",
+        "REPOSITORY": "仓库",
+        "REPO_READ_ONLY": "仓库只读",
         "SYSTEM": "系统设置",
         "VULNERABILITY": "漏洞",
         "CONFIRM_TITLE": "确认取消",
@@ -613,9 +615,12 @@
         "OS": "操作系统",
         "SCAN_COMPLETION_TIME": "扫描完成时间",
         "IMAGE_VULNERABILITIES": "镜像缺陷",
+        "LEVEL_VULNERABILITIES": "缺陷等级",
         "PLACEHOLDER": "未发现任何标签!",
         "COPY_ERROR": "拷贝失败，请尝试手动拷贝。",
-        "FILTER_FOR_TAGS": "过滤项目"
+        "FILTER_FOR_TAGS": "过滤项目",
+        "AUTHOR": "作者",
+        "LABELS": "标签"
     },
     "LABEL": {
         "LABEL": "标签",

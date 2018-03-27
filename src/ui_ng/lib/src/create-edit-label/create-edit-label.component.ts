@@ -16,7 +16,7 @@ import {
     Output,
     EventEmitter,
     OnDestroy,
-    Input, OnInit, ViewChild
+    Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef
 } from '@angular/core';
 
 
@@ -27,16 +27,15 @@ import { CREATE_EDIT_LABEL_TEMPLATE } from './create-edit-label.component.html';
 
 import {toPromise, clone, compareValue} from '../utils';
 
-import {Subject} from "rxjs/Subject";
-
 import {LabelService} from "../service/label.service";
 import {ErrorHandler} from "../error-handler/error-handler";
 import {NgForm} from "@angular/forms";
+import {Subject} from "rxjs/Subject";
 
 @Component({
     selector: 'hbr-create-edit-label',
     template: CREATE_EDIT_LABEL_TEMPLATE,
-    styles: [CREATE_EDIT_LABEL_STYLE]
+    styles: [CREATE_EDIT_LABEL_STYLE],
 })
 
 export class CreateEditLabelComponent implements OnInit, OnDestroy {
@@ -46,11 +45,12 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     labelModel: Label = this.initLabel();
     labelId = 0;
 
-    nameChecker: Subject<string> = new Subject<string>();
     checkOnGoing: boolean;
     isLabelNameExist = false;
 
     labelColor = ['#00ab9a', '#9da3db', '#be90d6', '#9b0d54', '#f52f22', '#747474', '#0095d3', '#f38b00', ' #62a420', '#89cbdf', '#004a70', '#9460b8'];
+
+    nameChecker = new Subject<string>();
 
     labelForm: NgForm;
     @ViewChild('labelForm')
@@ -66,16 +66,12 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     ) { }
 
     ngOnInit(): void {
-        this.nameChecker.debounceTime(500).distinctUntilChanged().subscribe((name: string) => {
+        this.nameChecker.debounceTime(500).subscribe((name: string) => {
             this.checkOnGoing = true;
-            toPromise<Label[]>(this.labelService.getLabels(this.scope, this.projectId))
+            toPromise<Label[]>(this.labelService.getLabels(this.scope, this.projectId, name))
                 .then(targets => {
                     if (targets && targets.length) {
-                        if (targets.find(m => m.name === name)) {
-                            this.isLabelNameExist = true;
-                        } else {
-                            this.isLabelNameExist = false;
-                        };
+                        this.isLabelNameExist = true;
                     }else {
                         this.isLabelNameExist = false;
                     }

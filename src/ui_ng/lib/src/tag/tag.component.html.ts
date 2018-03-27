@@ -21,7 +21,7 @@ export const TAG_TEMPLATE = `
             <hbr-filter [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" [currentValue]="lastFilteredTagName" clrDropdownTrigger></hbr-filter>
             <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
                 <div style='display:grid'>
-                    <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
+                    <label class="dropdown-header">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
                     <div class="form-group"><input type="text" placeholder="Filter labels" #labelNamePiece (keyup)="handleInputFilter(labelNamePiece.value)"></div>
                     <div [hidden]='imageFilterLabels.length'>{{'LABEL.NO_LABELS' | translate }}</div>
                     <div [hidden]='!imageFilterLabels.length' style='max-height:300px;overflow-y: auto;'>
@@ -52,10 +52,10 @@ export const TAG_TEMPLATE = `
                         <div class="form-group"><input type="text" placeholder="Filter labels" #stickLabelNamePiece (keyup)="handleStickInputFilter(stickLabelNamePiece.value)"></div>
                         <div [hidden]='imageStickLabels.length'>{{'LABEL.NO_LABELS' | translate }}</div>
                         <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
-                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="label.iconsShow = true; selectLabel(label)">
+                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="selectLabel(label); label.iconsShow = true">
                                 <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
                                 <div class='labelDiv'><hbr-label-piece [label]="label.label"></hbr-label-piece></div>
-                                <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); label.iconsShow = false; unSelectLabel(label)"></clr-icon>
+                                <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); unSelectLabel(label); label.iconsShow = false"></clr-icon>
                             </button>
                         </div>
                       </div>
