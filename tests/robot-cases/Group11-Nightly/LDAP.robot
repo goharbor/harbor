@@ -37,12 +37,12 @@ Test Case - Ldap Sign in and out
     Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
     Close Browser
 
-Test Case - Add A Never Login Member 
+Test Case - System Admin On-board New Member 
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To User Tag
-    Page Should Not Contain  mike01
+    Page Should Not Contain  mike02
     Back To Projects
     Create An New Project  project${d}
     Go Into Project  project${d}
@@ -51,25 +51,39 @@ Test Case - Add A Never Login Member
     Page Should Contain  mike02
     Close Browser
 
-Test Case - Link For DB Should Not Exist
+Test Case - LDAP User On-borad New Member 
     Init Chrome Driver
-    sign in harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  mike03  zhu88jie
+    Switch To User Tag
+    Page Should Not Contain  mike04
+    Back To Projects
+    Create An New Project  project${d}
+    Go Into Project  project${d}
+    Switch To Member
+    Add Guest Member To Project  mike04
+    Page Should Contain  mike04
+    Close Browser
+
+Test Case - Home Page Differences With DB Mode
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Logout Harbor
     Sleep  2
     Page Should Not Contain  Sign up 
     Page Should Not Contain  Forgot password
     Close Browser
 
-Test Case - Ldap Add User Button Disabled
+Test Case - New User Button Is Unusable
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To User Tag
     Add User Button Should Be Disabled
     Close Browser
 
-Test Case Ldap User Can Not Change Password
+Test Case - Change Password Is Invisible
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  mike02  zhu88jie
+    Sign In Harbor  ${HARBOR_URL}  mike05  zhu88jie
     Ldap User Should Not See Change Password
     Close Browser
 

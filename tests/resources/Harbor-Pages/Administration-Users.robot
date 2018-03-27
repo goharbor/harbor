@@ -43,3 +43,7 @@ User Email Should Exist
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Switch to User Tag
     Page Should Contain Element  xpath=//clr-dg-cell[contains(., '${email}')]
+
+Add User Button Should Be Disabled
+    Sleep  1
+    Page Should Contain Element  //button[contains(.,'New') and @disabled='']

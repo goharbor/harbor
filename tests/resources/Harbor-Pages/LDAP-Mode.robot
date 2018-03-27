@@ -26,6 +26,4 @@ Ldap User Should Not See Change Password
     Sleep  1
     Page Should Not Contain  Password
 
-Add User Button Should Be Disabled
-    Sleep  1
-    Page Should Contain Element  //button[contains(.,'New') and @disabled='']
+
