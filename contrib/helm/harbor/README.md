@@ -9,6 +9,7 @@ This [Helm](https://github.com/kubernetes/helm) chart installs [Harbor](http://v
 - Kubernetes cluster 1.8+ with Beta APIs enabled
 - Kubernetes Ingress Controller is enabled
 - kubectl CLI 1.8+
+- Helm CLI 2.8.0+
 
 ## Setup a Kubernetes cluster
 
@@ -24,7 +25,7 @@ minikube addons enable ingress
 
 First install [Helm CLI](https://github.com/kubernetes/helm#install), then initialize Helm.
 ```bash
-helm init --canary-image
+helm init
 ```
 Download Harbor helm chart code.
 ```bash
