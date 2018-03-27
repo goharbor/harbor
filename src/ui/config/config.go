@@ -66,7 +66,7 @@ func Init() error {
 	initKeyProvider()
 	adminServerURL := os.Getenv("ADMINSERVER_URL")
 	if len(adminServerURL) == 0 {
-		adminServerURL = "http://adminserver"
+		adminServerURL = common.DefaultAdminserverEndpoint
 	}
 
 	return InitByURL(adminServerURL)
@@ -295,19 +295,18 @@ func InternalJobServiceURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
 		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.")
-
-		return "http://jobservice"
+		return common.DefaultJobserviceEndpoint
 	}
 
 	if cfg[common.JobServiceURL] == nil {
-		return "http://jobservice"
+		return common.DefaultJobserviceEndpoint
 	}
 	return strings.TrimSuffix(cfg[common.JobServiceURL].(string), "/")
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
 func InternalTokenServiceEndpoint() string {
-	uiURL := "http://ui"
+	uiURL := common.DefaultUIEndpoint
 	cfg, err := mg.Get()
 	if err != nil {
 		log.Warningf("Failed to Get job service UI URL from backend, error: %v, will use default value.")
@@ -321,7 +320,15 @@ func InternalTokenServiceEndpoint() string {
 // InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
 // This is currently a conventional value and can be unaccessible when Harbor is not deployed with Notary.
 func InternalNotaryEndpoint() string {
-	return "http://notary-server:4443"
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Warningf("Failed to get Notary endpoint from backend, error: %v, will use default value.")
+		return common.DefaultNotaryEndpoint
+	}
+	if cfg[common.NotaryURL] == nil {
+		return common.DefaultNotaryEndpoint
+	}
+	return cfg[common.NotaryURL].(string)
 }
 
 // InitialAdminPassword returns the initial password for administrator
@@ -401,7 +408,7 @@ func JobserviceSecret() string {
 func WithNotary() bool {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Errorf("Failed to get configuration, will return WithNotary == false")
+		log.Warningf("Failed to get configuration, will return WithNotary == false")
 		return false
 	}
 	return cfg[common.WithNotary].(bool)
@@ -419,7 +426,12 @@ func WithClair() bool {
 
 // ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
 func ClairEndpoint() string {
-	return common.DefaultClairEndpoint
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get configuration, use default clair endpoint")
+		return common.DefaultClairEndpoint
+	}
+	return cfg[common.ClairURL].(string)
 }
 
 // ClairDB return Clair db info

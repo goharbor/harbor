@@ -20,14 +20,14 @@ http:
 auth:
   token:
     issuer: harbor-token-issuer
-    realm: $ui_url/service/token
+    realm: $public_url/service/token
     rootcertbundle: /etc/registry/root.crt
     service: harbor-registry
 notifications:
   endpoints:
   - name: harbor
     disabled: false
-    url: http://ui:8080/service/notifications
+    url: $ui_url/service/notifications
     timeout: 3000ms
     threshold: 5
     backoff: 1s

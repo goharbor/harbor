@@ -172,9 +172,10 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 	}
 	if err := redisWorkerPool.RegisterJobs(
 		map[string]interface{}{
-			job.ImageScanJob:             (*scan.ClairJob)(nil),
-			job.ImageReplicationTransfer: (*replication.Replicator)(nil),
-			job.ImageReplicationDelete:   (*replication.Deleter)(nil),
+			job.ImageScanJob:   (*scan.ClairJob)(nil),
+			job.ImageTransfer:  (*replication.Transfer)(nil),
+			job.ImageDelete:    (*replication.Deleter)(nil),
+			job.ImageReplicate: (*replication.Replicator)(nil),
 		}); err != nil {
 		//exit
 		ctx.ErrorChan <- err

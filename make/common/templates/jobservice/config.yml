@@ -22,4 +22,9 @@ worker_pool:
     port: 6379
     namespace: "namespace"
 #Logger for job
-
+logger:
+  path: "/var/log/jobs"
+  level: "INFO"
+  archive_period: 14 #days
+#Admin server endpoint
+admin_server: "http://adminserver:8080/"

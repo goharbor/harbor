@@ -1086,6 +1086,16 @@ func TestAddRepJob(t *testing.T) {
 	}
 }
 
+func TestSetRepJobUUID(t *testing.T) {
+	uuid := "u-rep-job-uuid"
+	assert := assert.New(t)
+	err := SetRepJobUUID(jobID, uuid)
+	assert.Nil(err)
+	j, err := GetRepJob(jobID)
+	assert.Nil(err)
+	assert.Equal(uuid, j.UUID)
+}
+
 func TestUpdateRepJobStatus(t *testing.T) {
 	err := UpdateRepJobStatus(jobID, models.JobFinished)
 	if err != nil {
@@ -1503,6 +1513,21 @@ func TestGetScanJobs(t *testing.T) {
 	assert.Nil(err)
 	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
+}
+
+func TestSetScanJobUUID(t *testing.T) {
+	uuid := "u-scan-job-uuid"
+	assert := assert.New(t)
+	id, err := AddScanJob(sj1)
+	assert.Nil(err)
+	err = SetScanJobUUID(id, uuid)
+	assert.Nil(err)
+	j, err := GetScanJob(id)
+	assert.Nil(err)
+	assert.Equal(uuid, j.UUID)
+	err = ClearTable(models.ScanJobTable)
+	assert.Nil(err)
+
 }
 
 func TestUpdateScanJobStatus(t *testing.T) {

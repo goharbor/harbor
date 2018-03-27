@@ -7,19 +7,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMaxFails(t *testing.T) {
+func TestMaxFailsOfReplicator(t *testing.T) {
 	r := &Replicator{}
-	assert.Equal(t, uint(3), r.MaxFails())
+	assert.Equal(t, uint(0), r.MaxFails())
 }
 
-func TestValidate(t *testing.T) {
+func TestValidateOfReplicator(t *testing.T) {
 	r := &Replicator{}
 	require.Nil(t, r.Validate(nil))
 }
 
-func TestShouldRetry(t *testing.T) {
+func TestShouldRetryOfReplicator(t *testing.T) {
 	r := &Replicator{}
-	assert.False(t, r.retry)
-	r.retry = true
-	assert.True(t, r.retry)
+	assert.False(t, r.ShouldRetry())
 }

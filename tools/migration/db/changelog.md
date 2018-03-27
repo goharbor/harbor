@@ -72,3 +72,4 @@ Changelog for harbor database schema
   - create table `harbor_resource_label`
   - create table `user_group`
   - modify table `project_member` use `id` as PK and add column `entity_type` to indicate if the member is user or group.
+  - add `job_uuid` column to `replication_job` and `img_scan_job`

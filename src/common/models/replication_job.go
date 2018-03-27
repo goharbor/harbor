@@ -61,6 +61,7 @@ type RepJob struct {
 	Operation  string   `orm:"column(operation)" json:"operation"`
 	Tags       string   `orm:"column(tags)" json:"-"`
 	TagList    []string `orm:"-" json:"tags"`
+	UUID       string   `orm:"column(job_uuid)" json:"-"`
 	//	Policy       RepPolicy `orm:"-" json:"policy"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`

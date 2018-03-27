@@ -391,6 +391,20 @@ func UpdateRepJobStatus(id int64, status string) error {
 	return err
 }
 
+// SetRepJobUUID ...
+func SetRepJobUUID(id int64, uuid string) error {
+	o := GetOrmer()
+	j := models.RepJob{
+		ID:   id,
+		UUID: uuid,
+	}
+	n, err := o.Update(&j, "UUID")
+	if n == 0 {
+		log.Warningf("no records are updated when updating replication job %d", id)
+	}
+	return err
+}
+
 // ResetRunningJobs update all running jobs status to pending, including replication jobs and scan jobs.
 func ResetRunningJobs() error {
 	o := GetOrmer()
