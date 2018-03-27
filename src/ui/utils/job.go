@@ -25,6 +25,7 @@ import (
 	"github.com/vmware/harbor/src/ui/config"
 
 	"encoding/json"
+	"fmt"
 	"sync"
 )
 
@@ -164,7 +165,7 @@ func buildScanJobData(jobID int64, repository, tag, digest string) (*jobmodels.J
 		return nil, err
 	}
 	meta := jobmodels.JobMetadata{
-		JobKind:  job.GenericKind,
+		JobKind:  job.JobKindGeneric,
 		IsUnique: false,
 	}
 
@@ -172,7 +173,7 @@ func buildScanJobData(jobID int64, repository, tag, digest string) (*jobmodels.J
 		Name:       job.ImageScanJob,
 		Parameters: jobmodels.Parameters(parmsMap),
 		Metadata:   &meta,
-		StatusHook: "",
+		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/scan/%d", config.InternalUIURL(), jobID),
 	}
 
 	return data, nil

@@ -19,6 +19,7 @@ import (
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/controllers"
 	"github.com/vmware/harbor/src/ui/service/notifications/clair"
+	"github.com/vmware/harbor/src/ui/service/notifications/jobs"
 	"github.com/vmware/harbor/src/ui/service/notifications/registry"
 	"github.com/vmware/harbor/src/ui/service/token"
 
@@ -112,10 +113,12 @@ func initRouters() {
 	//external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})
 	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
+	beego.Router("/service/notifications/jobs/scan/:id([0-9]+)", &jobs.Handler{}, "post:HandleScan")
+	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplication")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")
-	
+
 	//Error pages
 	beego.ErrorController(&controllers.ErrorController{})
 
