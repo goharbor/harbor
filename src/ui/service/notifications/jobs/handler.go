@@ -39,6 +39,7 @@ type Handler struct {
 	api.BaseController
 }
 
+// HandleScan handles the webhook of scan job
 func (h *Handler) HandleScan() {
 	id, err := h.GetInt64FromPath(":id")
 	if err != nil {
@@ -56,12 +57,13 @@ func (h *Handler) HandleScan() {
 	log.Debugf("Received scan job status update for job: %d, status: %s", id, data.Status)
 	if ok {
 		if err := dao.UpdateScanJobStatus(id, status); err != nil {
-			log.Errorf("Failed to update job status, id: %s, data: %v", id, data)
+			log.Errorf("Failed to update job status, id: %d, data: %v", id, data)
 			h.HandleInternalServerError(err.Error())
 		}
 	}
 
 }
 
+//HandleReplication handles the webhook of replication job
 func (h *Handler) HandleReplication() {
 }
