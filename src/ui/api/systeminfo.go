@@ -99,6 +99,7 @@ type GeneralInfo struct {
 	NextScanAll                 int64                            `json:"next_scan_all"`
 	ClairVulnStatus             *models.ClairVulnerabilityStatus `json:"clair_vulnerability_status,omitempty"`
 	RegistryStorageProviderName string                           `json:"registry_storage_provider_name"`
+	ReadOnly                    bool                             `json:"read_only"`
 }
 
 // validate for validating user if an admin.
@@ -177,6 +178,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		HasCARoot:                   caStatErr == nil,
 		HarborVersion:               harborVersion,
 		RegistryStorageProviderName: cfg[common.RegistryStorageProviderName].(string),
+		ReadOnly:                    config.ReadOnly(),
 	}
 	if info.WithClair {
 		info.ClairVulnStatus = getClairVulnStatus()
