@@ -15,27 +15,117 @@
 package replicator
 
 import (
-	"github.com/vmware/harbor/src/jobservice/client"
+	"strings"
+
+	"github.com/vmware/harbor/src/common/dao"
+	common_job "github.com/vmware/harbor/src/common/job"
+	job_models "github.com/vmware/harbor/src/common/job/models"
+	common_models "github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/replication/models"
+	"github.com/vmware/harbor/src/ui/config"
 )
+
+// Replication holds information for a replication
+type Replication struct {
+	PolicyID   int64
+	Candidates []models.FilterItem
+	Targets    []*common_models.RepTarget
+	Operation  string
+}
 
 // Replicator submits the replication work to the jobservice
 type Replicator interface {
-	Replicate(*client.Replication) error
+	Replicate(*Replication) error
 }
 
 // DefaultReplicator provides a default implement for Replicator
 type DefaultReplicator struct {
-	client client.Client
+	client common_job.Client
 }
 
 // NewDefaultReplicator returns an instance of DefaultReplicator
-func NewDefaultReplicator(client client.Client) *DefaultReplicator {
+func NewDefaultReplicator(client common_job.Client) *DefaultReplicator {
 	return &DefaultReplicator{
 		client: client,
 	}
 }
 
 // Replicate ...
-func (d *DefaultReplicator) Replicate(replication *client.Replication) error {
-	return d.client.SubmitReplicationJob(replication)
+func (d *DefaultReplicator) Replicate(replication *Replication) error {
+	repositories := map[string][]string{}
+	// TODO the operation of all candidates are same for now. Update it after supporting
+	// replicate deletion
+	operation := ""
+	for _, candidate := range replication.Candidates {
+		strs := strings.SplitN(candidate.Value, ":", 2)
+		repositories[strs[0]] = append(repositories[strs[0]], strs[1])
+		operation = candidate.Operation
+	}
+
+	for _, target := range replication.Targets {
+		for repository, tags := range repositories {
+			// create job in database
+			id, err := dao.AddRepJob(common_models.RepJob{
+				PolicyID:   replication.PolicyID,
+				Repository: repository,
+				TagList:    tags,
+				Operation:  operation,
+			})
+			if err != nil {
+				return err
+			}
+
+			// submit job to jobservice
+			log.Debugf("submiting replication job to jobservice, repository: %s, tags: %v, operation: %s, target: %s",
+				repository, tags, operation, target.URL)
+			job := &job_models.JobData{
+				Metadata: &job_models.JobMetadata{
+					JobKind: common_job.JobKindGeneric,
+				},
+				// TODO
+				StatusHook: "",
+			}
+
+			if operation == common_models.RepOpTransfer {
+				url, err := config.ExtEndpoint()
+				if err != nil {
+					return err
+				}
+				job.Name = common_job.ImageTransfer
+				job.Parameters = map[string]interface{}{
+					"repository":            repository,
+					"tags":                  tags,
+					"src_registry_url":      url,
+					"src_registry_insecure": true,
+					//"src_token_service_url":"",
+					"dst_registry_url":      target.URL,
+					"dst_registry_insecure": target.Insecure,
+					"dst_registry_username": target.Username,
+					"dst_registry_password": target.Password,
+				}
+			} else {
+				job.Name = common_job.ImageDelete
+				job.Parameters = map[string]interface{}{
+					"repository":            repository,
+					"tags":                  tags,
+					"dst_registry_url":      target.URL,
+					"dst_registry_insecure": target.Insecure,
+					"dst_registry_username": target.Username,
+					"dst_registry_password": target.Password,
+				}
+			}
+
+			uuid, err := d.client.SubmitJob(job)
+			if err != nil {
+				return err
+			}
+
+			// create the mapping relationship between the jobs in database and jobservice
+			if err = dao.SetRepJobUUID(id, uuid); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
