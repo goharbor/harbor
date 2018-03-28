@@ -73,3 +73,5 @@ Changelog for harbor database schema
   - create table `user_group`
   - modify table `project_member` use `id` as PK and add column `entity_type` to indicate if the member is user or group.
   - add `job_uuid` column to `replication_job` and `img_scan_job`
+  - add index `poid_status` in table replication_job
+  - add index `idx_status`, `idx_status`, `idx_digest`, `idx_repository_tag` in table img_scan_job
