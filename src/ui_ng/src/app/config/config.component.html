@@ -12,7 +12,7 @@
             <li role="presentation" class="nav-item">
                 <button id="config-system" class="btn btn-link nav-link" aria-controls="system_settings" [class.active]='isCurrentTabLink("config-system")' type="button" (click)='tabLinkClick("config-system")'>{{'CONFIG.SYSTEM' | translate }}</button>
             </li>
-            <li role="presentation" class="nav-item">
+            <li role="presentation" class="nav-item"  *ngIf="!withAdmiral">
                 <button id="config-label" class="btn btn-link nav-link" aria-controls="system_label" [class.active]='isCurrentTabLink("config-label")' type="button" (click)='tabLinkClick("config-label")'>{{'CONFIG.LABEL' | translate }}</button>
             </li>
             <li role="presentation" class="nav-item" *ngIf="withClair">
@@ -28,10 +28,9 @@
         <section id="system_settings" role="tabpanel" aria-labelledby="config-system" [hidden]='!isCurrentTabContent("system_settings")'>
             <system-settings [(systemSettings)]="allConfig" [hasAdminRole]="hasAdminRole" [hasCAFile]="hasCAFile"></system-settings>
         </section>
-        <section id="system_label" role="tabpanel" aria-labelledby="config-label" [hidden]='!isCurrentTabContent("system_label")' style="padding-top: 16px;">
+        <section id="system_label" role="tabpanel" aria-labelledby="config-label" *ngIf="!withAdmiral" [hidden]='!isCurrentTabContent("system_label")' style="padding-top: 16px;">
             <hbr-label [scope]="'g'"></hbr-label>
-            <!--<system-settings [(systemSettings)]="allConfig" [hasAdminRole]="hasAdminRole" [hasCAFile]="hasCAFile"></system-settings>-->
-        </section>
+      </section>
         <section id="vulnerability" *ngIf="withClair" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
             <vulnerability-config [(vulnerabilityConfig)]="allConfig"></vulnerability-config>
         </section>

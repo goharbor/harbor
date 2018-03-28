@@ -413,7 +413,7 @@
         "INFO": "Información",
         "NO_INFO": "Sin información de descripción para este repositorio",
         "IMAGE": "Imágenes",
-        "LABELS": ":labels",
+        "LABELS": "Labels",
         "ADD_TO_IMAGE": "Add labels to this image",
         "ADD_LABELS": "Add labels"
     },
@@ -438,6 +438,8 @@
         "REPLICATION": "Replicación",
         "EMAIL": "Email",
         "LABEL": "Label",
+        "REPOSITORY": "Repository",
+        "REPO_READ_ONLY": "Repository Read Only",
         "SYSTEM": "Opciones del Sistema",
         "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirma cancelación",
@@ -613,9 +615,12 @@
         "OS": "OS",
         "SCAN_COMPLETION_TIME": "Scan Completed",
         "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
+        "LEVEL_VULNERABILITIES": "Level Vulnerabilities",
         "PLACEHOLDER": "We couldn't find any tags!",
         "COPY_ERROR": "Copy failed, please try to manually copy.",
-        "FILTER_FOR_TAGS": "Etiquetas de filtro"
+        "FILTER_FOR_TAGS": "Etiquetas de filtro",
+        "AUTHOR": "Author",
+        "LABELS": "LABELS"
     },
     "LABEL": {
         "LABEL": "Label",

@@ -415,6 +415,7 @@
         "IMAGE": "Images",
         "LABELS": ":labels",
         "ADD_TO_IMAGE": "Add labels to this image",
+        "FILTER_BY_LABEL": "Filter projects by label",
         "ADD_LABELS": "Add labels"
     },
     "ALERT": {
@@ -438,6 +439,8 @@
         "REPLICATION": "Replication",
         "EMAIL": "Email",
         "LABEL": "Label",
+        "REPOSITORY": "Repository",
+        "REPO_READ_ONLY": "Repository Read Only",
         "SYSTEM": "System Settings",
         "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirm to cancel",

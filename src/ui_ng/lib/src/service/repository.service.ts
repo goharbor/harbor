@@ -140,6 +140,6 @@ export class RepositoryDefaultService extends RepositoryService {
 
         return this.http.delete(url, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
-            .catch(error => { Promise.reject(error); });
+            .catch(error => {return Promise.reject(error); });
     }
 }

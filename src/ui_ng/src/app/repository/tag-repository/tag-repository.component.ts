@@ -68,6 +68,10 @@ export class TagRepositoryComponent implements OnInit {
     return this.appConfigService.getConfig().with_clair;
   }
 
+  get withAdmiral(): boolean {
+    return this.appConfigService.getConfig().with_admiral;
+  }
+
   get hasSignedIn(): boolean {
     return this.session.getCurrentUser() !== null;
   }
