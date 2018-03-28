@@ -51,8 +51,7 @@ func (cj *ClairJob) Validate(params map[string]interface{}) error {
 
 // Run implements the interface in job/Interface
 func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error {
-	// TODO: get logger from ctx?
-	logger := log.DefaultLogger()
+	logger := ctx.GetLogger()
 
 	jobParms, err := transformParam(params)
 	if err != nil {
@@ -79,7 +78,11 @@ func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error
 		logger.Errorf("Failed to prepare layers, error: %v", err)
 		return err
 	}
-	clairClient := clair.NewClient(jobParms.ClairEndpoint, logger)
+	loggerImpl, ok := logger.(*log.Logger)
+	if !ok {
+		loggerImpl = log.DefaultLogger()
+	}
+	clairClient := clair.NewClient(jobParms.ClairEndpoint, loggerImpl)
 
 	for _, l := range layers {
 		logger.Infof("Scanning Layer: %s, path: %s", l.Name, l.Path)
