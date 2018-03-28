@@ -82,8 +82,8 @@ func TestDefaultConfig(t *testing.T) {
 		t.Errorf("Load config from yaml file, expect nil error but got error '%s'\n", err)
 	}
 
-	if endpoint := GetAdminServerEndpoint(); endpoint != "http://localhost:9010/" {
-		t.Errorf("expect default admin server endpoint 'http://localhost:9010/' but got '%s'\n", endpoint)
+	if endpoint := GetAdminServerEndpoint(); endpoint != "http://127.0.0.1:9010/" {
+		t.Errorf("expect default admin server endpoint 'http://127.0.0.1:9010/' but got '%s'\n", endpoint)
 	}
 
 	if basePath := GetLogBasePath(); basePath != "/tmp/job_logs" {
