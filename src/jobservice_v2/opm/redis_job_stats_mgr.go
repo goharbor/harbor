@@ -153,6 +153,8 @@ func (rjs *RedisJobStatsManager) loop() {
 				if err := rjs.process(item); err != nil {
 					item.fails++
 					if item.fails < maxFails {
+						logger.Warningf("Failed to process '%s' request with error: %s\n", item.op, err)
+
 						//Retry after a random interval
 						go func() {
 							timer := time.NewTimer(time.Duration(backoff(item.fails)) * time.Second)
