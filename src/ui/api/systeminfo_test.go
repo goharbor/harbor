@@ -64,6 +64,7 @@ func TestGetGeneralInfo(t *testing.T) {
 	assert.Equal(false, g.WithNotary, "with notary should be false")
 	assert.Equal(true, g.HasCARoot, "has ca root should be true")
 	assert.NotEmpty(g.HarborVersion, "harbor version should not be empty")
+	assert.Equal(false, g.ReadOnly, "readonly should be false")
 }
 
 func TestGetCert(t *testing.T) {
