@@ -9,6 +9,7 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/gocraft/work"
+	"github.com/robfig/cron"
 	"github.com/vmware/harbor/src/jobservice_v2/env"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
 	"github.com/vmware/harbor/src/jobservice_v2/logger"
@@ -25,6 +26,9 @@ var (
 const (
 	workerPoolStatusHealthy = "Healthy"
 	workerPoolStatusDead    = "Dead"
+
+	//Copy from period.enqueuer
+	periodicEnqueuerHorizon = 4 * time.Minute
 )
 
 //GoCraftWorkPool is the pool implementation based on gocraft/work powered by redis.
@@ -352,17 +356,98 @@ func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
 
 //StopJob will stop the job
 func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
-	return gcwp.statsManager.Stop(jobID)
+	if utils.IsEmptyStr(jobID) {
+		return errors.New("empty job ID")
+	}
+
+	theJob, err := gcwp.statsManager.Retrieve(jobID)
+	if err != nil {
+		return err
+	}
+
+	switch theJob.Stats.JobKind {
+	case job.JobKindGeneric:
+		//nothing need to do
+	case job.JobKindScheduled:
+		//we need to delete the scheduled job in the queue if it is not running yet
+		//otherwise, nothing need to do
+		if theJob.Stats.Status == job.JobStatusScheduled {
+			if err := gcwp.client.DeleteScheduledJob(theJob.Stats.RunAt, jobID); err != nil {
+				return err
+			}
+		}
+	case job.JobKindPeriodic:
+		//firstly delete the periodic job policy
+		if err := gcwp.scheduler.UnSchedule(jobID); err != nil {
+			return err
+		}
+		//secondly we need try to delete the job instances scheduled for this periodic job, a try best action
+		gcwp.deleteScheduledJobsOfPeriodicPolicy(theJob.Stats.JobID, theJob.Stats.CronSpec) //ignore error as we have logged
+		//thirdly expire the job stats of this periodic job if exists
+		if err := gcwp.statsManager.ExpirePeriodicJobStats(theJob.Stats.JobID); err != nil {
+			//only logged
+			logger.Errorf("Expire the stats of job %s failed with error: %s\n", theJob.Stats.JobID, err)
+		}
+	default:
+		break
+	}
+
+	//Check if the job has 'running' instance
+	if theJob.Stats.Status == job.JobStatusRunning {
+		//Send 'stop' ctl command to the running instance
+		if err := gcwp.statsManager.SendCommand(jobID, opm.CtlCommandStop); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 //CancelJob will cancel the job
 func (gcwp *GoCraftWorkPool) CancelJob(jobID string) error {
-	return gcwp.statsManager.Cancel(jobID)
+	if utils.IsEmptyStr(jobID) {
+		return errors.New("empty job ID")
+	}
+
+	theJob, err := gcwp.statsManager.Retrieve(jobID)
+	if err != nil {
+		return err
+	}
+
+	switch theJob.Stats.JobKind {
+	case job.JobKindGeneric:
+		if theJob.Stats.Status != job.JobStatusRunning {
+			return fmt.Errorf("only running job can be cancelled, job '%s' seems not running now", theJob.Stats.JobID)
+		}
+
+		//Send 'cancel' ctl command to the running instance
+		if err := gcwp.statsManager.SendCommand(jobID, opm.CtlCommandCancel); err != nil {
+			return err
+		}
+		break
+	default:
+		return fmt.Errorf("job kind '%s' does not support 'cancel' operation", theJob.Stats.JobKind)
+	}
+
+	return nil
 }
 
 //RetryJob retry the job
 func (gcwp *GoCraftWorkPool) RetryJob(jobID string) error {
-	return gcwp.statsManager.Retry(jobID)
+	if utils.IsEmptyStr(jobID) {
+		return errors.New("empty job ID")
+	}
+
+	theJob, err := gcwp.statsManager.Retrieve(jobID)
+	if err != nil {
+		return err
+	}
+
+	if theJob.Stats.DieAt == 0 {
+		return fmt.Errorf("job '%s' is not a retryable job", jobID)
+	}
+
+	return gcwp.client.RetryDeadJob(theJob.Stats.DieAt, jobID)
 }
 
 //IsKnownJob ...
@@ -393,6 +478,30 @@ func (gcwp *GoCraftWorkPool) RegisterHook(jobID string, hookURL string) error {
 	}
 
 	return gcwp.statsManager.RegisterHook(jobID, hookURL, false)
+}
+
+func (gcwp *GoCraftWorkPool) deleteScheduledJobsOfPeriodicPolicy(policyID string, cronSpec string) error {
+	schedule, err := cron.Parse(cronSpec)
+	if err != nil {
+		logger.Errorf("cron spec '%s' is not valid", cronSpec)
+		return err
+	}
+
+	now := utils.NowEpochSeconds()
+	nowTime := time.Unix(now, 0)
+	horizon := nowTime.Add(periodicEnqueuerHorizon)
+
+	//try to delete more
+	//return the last error if occurred
+	for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
+		epoch := t.Unix()
+		if err = gcwp.client.DeleteScheduledJob(epoch, policyID); err != nil {
+			//only logged
+			logger.Warningf("delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
+		}
+	}
+
+	return err
 }
 
 func (gcwp *GoCraftWorkPool) handleSchedulePolicy(data interface{}) error {

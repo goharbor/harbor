@@ -30,29 +30,14 @@ type JobStatsManager interface {
 	//Async method to retry
 	SetJobStatus(jobID string, status string)
 
-	//Stop the job
+	//Send command fro the specified job
 	//
-	//jobID string : ID of the being stopped job
-	//
-	//Returns:
-	// error if meet any problems
-	Stop(jobID string) error
-
-	//Cancel the job
-	//
-	//jobID string : ID of the being cancelled job
+	//jobID string   : ID of the being retried job
+	//command string : the command applied to the job like stop/cancel
 	//
 	//Returns:
-	// error if meet any problems
-	Cancel(jobID string) error
-
-	//Retry the job
-	//
-	//jobID string : ID of the being retried job
-	//
-	//Returns:
-	// error if meet any problems
-	Retry(jobID string) error
+	//  error if it was not successfully sent
+	SendCommand(jobID string, command string) error
 
 	//CtlCommand checks if control command is fired for the specified job.
 	//
@@ -86,4 +71,12 @@ type JobStatsManager interface {
 	//Returns:
 	//  error if meet any problems
 	RegisterHook(jobID string, hookURL string, isCached bool) error
+
+	//Mark the periodic job stats expired
+	//
+	//jobID string   : ID of job
+	//
+	//Returns:
+	//  error if meet any problems
+	ExpirePeriodicJobStats(jobID string) error
 }

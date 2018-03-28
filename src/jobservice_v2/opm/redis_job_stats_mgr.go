@@ -17,8 +17,6 @@ import (
 
 	"github.com/vmware/harbor/src/jobservice_v2/period"
 
-	"github.com/robfig/cron"
-
 	"github.com/gocraft/work"
 
 	"github.com/garyburd/redigo/redis"
@@ -42,9 +40,6 @@ const (
 	CtlCommandCancel = "cancel"
 	//CtlCommandRetry : command retry
 	CtlCommandRetry = "retry"
-
-	//Copy from period.enqueuer
-	periodicEnqueuerHorizon = 4 * time.Minute
 
 	//EventRegisterStatusHook is event name of registering hook
 	EventRegisterStatusHook = "register_hook"
@@ -99,6 +94,10 @@ func (rjs *RedisJobStatsManager) Start() {
 
 //Shutdown is implementation of same method in JobStatsManager interface.
 func (rjs *RedisJobStatsManager) Shutdown() {
+	defer func() {
+		rjs.isRunning = false
+	}()
+
 	if !rjs.isRunning {
 		return
 	}
@@ -206,102 +205,17 @@ func (rjs *RedisJobStatsManager) loop() {
 	}
 }
 
-//Stop the specified job.
-func (rjs *RedisJobStatsManager) Stop(jobID string) error {
+//SendCommand for the specified job
+func (rjs *RedisJobStatsManager) SendCommand(jobID string, command string) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
 	}
 
-	theJob, err := rjs.getJobStats(jobID)
-	if err != nil {
-		return err
+	if command != CtlCommandStop && command != CtlCommandCancel {
+		return errors.New("unknown command")
 	}
 
-	switch theJob.Stats.JobKind {
-	case job.JobKindGeneric:
-		//nothing need to do
-	case job.JobKindScheduled:
-		//we need to delete the scheduled job in the queue if it is not running yet
-		//otherwise, nothing need to do
-		if theJob.Stats.Status == job.JobStatusScheduled {
-			if err := rjs.client.DeleteScheduledJob(theJob.Stats.RunAt, jobID); err != nil {
-				return err
-			}
-		}
-	case job.JobKindPeriodic:
-		//firstly delete the periodic job policy
-		if err := rjs.scheduler.UnSchedule(jobID); err != nil {
-			return err
-		}
-		//secondly we need try to delete the job instances scheduled for this periodic job, a try best action
-		rjs.deleteScheduledJobsOfPeriodicPolicy(theJob.Stats.JobID, theJob.Stats.CronSpec) //ignore error as we have logged
-		//thirdly expire the job stats of this periodic job if exists
-		if err := rjs.expirePeriodicJobStats(theJob.Stats.JobID); err != nil {
-			//only logged
-			logger.Errorf("Expire the stats of job %s failed with error: %s\n", theJob.Stats.JobID, err)
-		}
-	default:
-		break
-	}
-
-	//Check if the job has 'running' instance
-	if theJob.Stats.Status == job.JobStatusRunning {
-		//Send 'stop' ctl command to the running instance
-		if err := rjs.writeCtlCommand(jobID, CtlCommandStop); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-//Cancel the specified job.
-//Async method, not blocking
-func (rjs *RedisJobStatsManager) Cancel(jobID string) error {
-	if utils.IsEmptyStr(jobID) {
-		return errors.New("empty job ID")
-	}
-
-	theJob, err := rjs.getJobStats(jobID)
-	if err != nil {
-		return err
-	}
-
-	switch theJob.Stats.JobKind {
-	case job.JobKindGeneric:
-		if theJob.Stats.Status != job.JobStatusRunning {
-			return fmt.Errorf("only running job can be cancelled, job '%s' seems not running now", theJob.Stats.JobID)
-		}
-
-		//Send 'cancel' ctl command to the running instance
-		if err := rjs.writeCtlCommand(jobID, CtlCommandCancel); err != nil {
-			return err
-		}
-		break
-	default:
-		return fmt.Errorf("job kind '%s' does not support 'cancel' operation", theJob.Stats.JobKind)
-	}
-
-	return nil
-}
-
-//Retry the specified job.
-//Async method, not blocking
-func (rjs *RedisJobStatsManager) Retry(jobID string) error {
-	if utils.IsEmptyStr(jobID) {
-		return errors.New("empty job ID")
-	}
-
-	theJob, err := rjs.getJobStats(jobID)
-	if err != nil {
-		return err
-	}
-
-	if theJob.Stats.DieAt == 0 {
-		return fmt.Errorf("job '%s' is not a retryable job", jobID)
-	}
-
-	return rjs.client.RetryDeadJob(theJob.Stats.DieAt, jobID)
+	return rjs.writeCtlCommand(jobID, command)
 }
 
 //CheckIn mesage
@@ -363,6 +277,20 @@ func (rjs *RedisJobStatsManager) RegisterHook(jobID string, hookURL string, isCa
 	return nil
 }
 
+//ExpirePeriodicJobStats marks the periodic job stats expired
+func (rjs *RedisJobStatsManager) ExpirePeriodicJobStats(jobID string) error {
+	conn := rjs.redisPool.Get()
+	defer conn.Close()
+
+	//The periodic job (policy) is stopped/unscheduled and then
+	//the stats of periodic job now can be expired
+	key := utils.KeyJobStats(rjs.namespace, jobID)
+	expireTime := 24 * 60 * 60 //1 day
+	_, err := conn.Do("EXPIRE", key, expireTime)
+
+	return err
+}
+
 func (rjs *RedisJobStatsManager) submitStatusReportingItem(jobID string, status, checkIn string) {
 	//Let it run in a separate goroutine to avoid waiting more time
 	go func() {
@@ -400,43 +328,6 @@ func (rjs *RedisJobStatsManager) reportStatus(jobID string, hookURL, status, che
 	}
 
 	return DefaultHookClient.ReportStatus(hookURL, reportingStatus)
-}
-
-func (rjs *RedisJobStatsManager) expirePeriodicJobStats(jobID string) error {
-	conn := rjs.redisPool.Get()
-	defer conn.Close()
-
-	//The periodic job (policy) is stopped/unscheduled and then
-	//the stats of periodic job now can be expired
-	key := utils.KeyJobStats(rjs.namespace, jobID)
-	expireTime := 24 * 60 * 60 //1 day
-	_, err := conn.Do("EXPIRE", key, expireTime)
-
-	return err
-}
-
-func (rjs *RedisJobStatsManager) deleteScheduledJobsOfPeriodicPolicy(policyID string, cronSpec string) error {
-	schedule, err := cron.Parse(cronSpec)
-	if err != nil {
-		logger.Errorf("cron spec '%s' is not valid", cronSpec)
-		return err
-	}
-
-	now := utils.NowEpochSeconds()
-	nowTime := time.Unix(now, 0)
-	horizon := nowTime.Add(periodicEnqueuerHorizon)
-
-	//try to delete more
-	//return the last error if occurred
-	for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
-		epoch := t.Unix()
-		if err = rjs.client.DeleteScheduledJob(epoch, policyID); err != nil {
-			//only logged
-			logger.Warningf("delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
-		}
-	}
-
-	return err
 }
 
 func (rjs *RedisJobStatsManager) getCrlCommand(jobID string) (string, error) {
