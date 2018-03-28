@@ -34,3 +34,10 @@ services:
       - /data/:/data/
     ports:
       - 8888:8080
+  redis:
+    image: vmware/redis-photon:4.0
+    restart: always
+    volumes:
+      - /data/redis:/data
+    ports:
+      - 6379:6379

@@ -37,33 +37,50 @@ var statusMap = map[string]string{
 // Handler handles reqeust on /service/notifications/jobs/*, which listens to the webhook of jobservice.
 type Handler struct {
 	api.BaseController
+	id     int64
+	status string
 }
 
-// HandleScan handles the webhook of scan job
-func (h *Handler) HandleScan() {
+// Prepare ...
+func (h *Handler) Prepare() {
 	id, err := h.GetInt64FromPath(":id")
 	if err != nil {
 		log.Errorf("Failed to get job ID, error: %v", err)
 		//Avoid job service from resending...
+		h.Abort("200")
 		return
 	}
+	h.id = id
 	var data jobmodels.JobStatusChange
 	err = json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
 	if err != nil {
 		log.Errorf("Failed to decode job status change, job ID: %d, error: %v", id, err)
+		h.Abort("200")
 		return
 	}
-	status, ok := statusMap[data.Status]
 	log.Debugf("Received scan job status update for job: %d, status: %s", id, data.Status)
-	if ok {
-		if err := dao.UpdateScanJobStatus(id, status); err != nil {
-			log.Errorf("Failed to update job status, id: %d, data: %v", id, data)
-			h.HandleInternalServerError(err.Error())
-		}
+	status, ok := statusMap[data.Status]
+	if !ok {
+		h.Abort("200")
+		return
 	}
+	h.status = status
+}
 
+// HandleScan handles the webhook of scan job
+func (h *Handler) HandleScan() {
+	if err := dao.UpdateScanJobStatus(h.id, h.status); err != nil {
+		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
+		h.HandleInternalServerError(err.Error())
+		return
+	}
 }
 
 //HandleReplication handles the webhook of replication job
 func (h *Handler) HandleReplication() {
+	if err := dao.UpdateRepJobStatus(h.id, h.status); err != nil {
+		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
+		h.HandleInternalServerError(err.Error())
+		return
+	}
 }

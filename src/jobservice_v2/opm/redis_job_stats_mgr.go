@@ -10,6 +10,7 @@ import (
 	"math"
 	"math/rand"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/vmware/harbor/src/jobservice_v2/errs"
@@ -55,12 +56,15 @@ type RedisJobStatsManager struct {
 	stopChan    chan struct{}
 	doneChan    chan struct{}
 	processChan chan *queueItem
-	isRunning   bool       //no need to sync
+	isRunning   *atomic.Value
 	hookStore   *HookStore //cache the hook here to avoid requesting backend
 }
 
 //NewRedisJobStatsManager is constructor of RedisJobStatsManager
 func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *redis.Pool) *RedisJobStatsManager {
+	isRunning := &atomic.Value{}
+	isRunning.Store(false)
+
 	return &RedisJobStatsManager{
 		namespace:   namespace,
 		context:     ctx,
@@ -69,16 +73,17 @@ func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *r
 		doneChan:    make(chan struct{}, 1),
 		processChan: make(chan *queueItem, processBufferSize),
 		hookStore:   NewHookStore(),
+		isRunning:   isRunning,
 	}
 }
 
 //Start is implementation of same method in JobStatsManager interface.
 func (rjs *RedisJobStatsManager) Start() {
-	if rjs.isRunning {
+	if rjs.isRunning.Load().(bool) {
 		return
 	}
 	go rjs.loop()
-	rjs.isRunning = true
+	rjs.isRunning.Store(true)
 
 	logger.Info("Redis job stats manager is started")
 }
@@ -86,10 +91,10 @@ func (rjs *RedisJobStatsManager) Start() {
 //Shutdown is implementation of same method in JobStatsManager interface.
 func (rjs *RedisJobStatsManager) Shutdown() {
 	defer func() {
-		rjs.isRunning = false
+		rjs.isRunning.Store(false)
 	}()
 
-	if !rjs.isRunning {
+	if !(rjs.isRunning.Load().(bool)) {
 		return
 	}
 	rjs.stopChan <- struct{}{}
@@ -139,7 +144,7 @@ func (rjs *RedisJobStatsManager) loop() {
 	controlChan := make(chan struct{})
 
 	defer func() {
-		rjs.isRunning = false
+		rjs.isRunning.Store(false)
 		//Notify other sub goroutines
 		close(controlChan)
 		logger.Info("Redis job stats manager is stopped")
@@ -153,6 +158,8 @@ func (rjs *RedisJobStatsManager) loop() {
 				if err := rjs.process(item); err != nil {
 					item.fails++
 					if item.fails < maxFails {
+						logger.Warningf("Failed to process '%s' request with error: %s\n", item.op, err)
+
 						//Retry after a random interval
 						go func() {
 							timer := time.NewTimer(time.Duration(backoff(item.fails)) * time.Second)
