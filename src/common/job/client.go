@@ -16,7 +16,7 @@ import (
 type Client interface {
 	SubmitJob(*models.JobData) (string, error)
 	GetJobLog(uuid string) ([]byte, error)
-	//TODO actions or stop?
+	//TODO actions or stop? Redirect joblog when we see there's memory issue.
 }
 
 // DefaultClient is the default implementation of Client interface
@@ -101,5 +101,3 @@ func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 	}
 	return data, nil
 }
-
-//TODO: builder, default client, etc.

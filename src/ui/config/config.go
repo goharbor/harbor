@@ -304,17 +304,20 @@ func InternalJobServiceURL() string {
 	return strings.TrimSuffix(cfg[common.JobServiceURL].(string), "/")
 }
 
-// InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
-func InternalTokenServiceEndpoint() string {
-	uiURL := common.DefaultUIEndpoint
+// InternalUIURL returns the local ui url
+func InternalUIURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to Get job service UI URL from backend, error: %v, will use default value.")
-
-	} else {
-		uiURL = cfg[common.UIURL].(string)
+		log.Warningf("Failed to Get job service UI URL from backend, error: %v, will return default value.")
+		return common.DefaultUIEndpoint
 	}
-	return strings.TrimSuffix(uiURL, "/") + "/service/token"
+	return strings.TrimSuffix(cfg[common.UIURL].(string), "/")
+
+}
+
+// InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
+func InternalTokenServiceEndpoint() string {
+	return InternalUIURL() + "/service/token"
 }
 
 // InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
