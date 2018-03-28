@@ -31,6 +31,7 @@ var client = &http.Client{
 func TestLaunchJobFailed(t *testing.T) {
 	server, port, ctx := createServer()
 	server.Start()
+	<-time.After(200 * time.Millisecond)
 
 	resData, err := postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs", port), createJobReq(false))
 	if e := expectFormatedError(resData, err); e != nil {
@@ -44,6 +45,7 @@ func TestLaunchJobFailed(t *testing.T) {
 func TestLaunchJobSucceed(t *testing.T) {
 	server, port, ctx := createServer()
 	server.Start()
+	<-time.After(200 * time.Millisecond)
 
 	res, err := postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs", port), createJobReq(true))
 	if err != nil {
@@ -64,6 +66,7 @@ func TestLaunchJobSucceed(t *testing.T) {
 func TestGetJobFailed(t *testing.T) {
 	server, port, ctx := createServer()
 	server.Start()
+	<-time.After(200 * time.Millisecond)
 
 	res, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port))
 	if e := expectFormatedError(res, err); e != nil {
@@ -77,6 +80,7 @@ func TestGetJobFailed(t *testing.T) {
 func TestGetJobSucceed(t *testing.T) {
 	server, port, ctx := createServer()
 	server.Start()
+	<-time.After(200 * time.Millisecond)
 
 	res, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok", port))
 	if err != nil {
@@ -97,6 +101,7 @@ func TestGetJobSucceed(t *testing.T) {
 func TestJobActionFailed(t *testing.T) {
 	server, port, ctx := createServer()
 	server.Start()
+	<-time.After(200 * time.Millisecond)
 
 	actionReq, err := createJobActionReq("stop")
 	if err != nil {
@@ -126,6 +131,7 @@ func TestJobActionFailed(t *testing.T) {
 func TestJobActionSucceed(t *testing.T) {
 	server, port, ctx := createServer()
 	server.Start()
+	<-time.After(200 * time.Millisecond)
 
 	actionReq, err := createJobActionReq("stop")
 	if err != nil {
@@ -161,6 +167,7 @@ func TestJobActionSucceed(t *testing.T) {
 func TestCheckStatus(t *testing.T) {
 	server, port, ctx := createServer()
 	server.Start()
+	<-time.After(200 * time.Millisecond)
 
 	resData, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/stats", port))
 	if err != nil {
@@ -186,6 +193,7 @@ func TestCheckStatus(t *testing.T) {
 func TestGetJobLog(t *testing.T) {
 	server, port, ctx := createServer()
 	server.Start()
+	<-time.After(200 * time.Millisecond)
 
 	resData, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok/log", port))
 	if err != nil {
