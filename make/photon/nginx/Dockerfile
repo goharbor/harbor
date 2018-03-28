@@ -10,4 +10,6 @@ EXPOSE 80
 VOLUME /var/cache/nginx /var/log/nginx /run
 STOPSIGNAL SIGQUIT
 
+HEALTHCHECK CMD curl --fail -s http://127.0.0.1 || exit 1
+
 CMD ["nginx", "-g", "daemon off;"]
