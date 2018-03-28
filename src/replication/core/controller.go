@@ -16,11 +16,9 @@ package core
 
 import (
 	"fmt"
-	"strings"
 
 	common_models "github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/jobservice/client"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 	"github.com/vmware/harbor/src/replication/policy"
@@ -28,7 +26,7 @@ import (
 	"github.com/vmware/harbor/src/replication/source"
 	"github.com/vmware/harbor/src/replication/target"
 	"github.com/vmware/harbor/src/replication/trigger"
-	"github.com/vmware/harbor/src/ui/config"
+	"github.com/vmware/harbor/src/ui/utils"
 )
 
 // Controller defines the methods that a replicatoin controllter should implement
@@ -81,7 +79,7 @@ func NewDefaultController(cfg ControllerConfig) *DefaultController {
 		triggerManager: trigger.NewManager(cfg.CacheCapacity),
 	}
 
-	ctl.replicator = replicator.NewDefaultReplicator(config.GlobalJobserviceClient)
+	ctl.replicator = replicator.NewDefaultReplicator(utils.GetJobServiceClient())
 
 	return ctl
 }
@@ -225,20 +223,25 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 
 	// prepare candidates for replication
 	candidates := getCandidates(&policy, ctl.sourcer, metadata...)
+	if len(candidates) == 0 {
+		log.Debugf("replicaton candidates are null, no further action needed")
+	}
 
-	/*
-		targets := []*common_models.RepTarget{}
-		for _, targetID := range policy.TargetIDs {
-			target, err := ctl.targetManager.GetTarget(targetID)
-			if err != nil {
-				return err
-			}
-			targets = append(targets, target)
+	targets := []*common_models.RepTarget{}
+	for _, targetID := range policy.TargetIDs {
+		target, err := ctl.targetManager.GetTarget(targetID)
+		if err != nil {
+			return err
 		}
-	*/
+		targets = append(targets, target)
+	}
 
 	// submit the replication
-	return replicate(ctl.replicator, policyID, candidates)
+	return ctl.replicator.Replicate(&replicator.Replication{
+		PolicyID:   policyID,
+		Candidates: candidates,
+		Targets:    targets,
+	})
 }
 
 func getCandidates(policy *models.ReplicationPolicy, sourcer *source.Sourcer,
@@ -285,34 +288,4 @@ func buildFilterChain(policy *models.ReplicationPolicy, sourcer *source.Sourcer)
 		source.NewTagFilter(patterns[replication.FilterItemKindTag], registry))
 
 	return source.NewDefaultFilterChain(filters)
-}
-
-func replicate(replicator replicator.Replicator, policyID int64, candidates []models.FilterItem) error {
-	if len(candidates) == 0 {
-		log.Debugf("replicaton candidates are null, no further action needed")
-	}
-
-	repositories := map[string][]string{}
-	// TODO the operation of all candidates are same for now. Update it after supporting
-	// replicate deletion
-	operation := ""
-	for _, candidate := range candidates {
-		strs := strings.SplitN(candidate.Value, ":", 2)
-		repositories[strs[0]] = append(repositories[strs[0]], strs[1])
-		operation = candidate.Operation
-	}
-
-	for repository, tags := range repositories {
-		replication := &client.Replication{
-			PolicyID:   policyID,
-			Repository: repository,
-			Operation:  operation,
-			Tags:       tags,
-		}
-		log.Debugf("submiting replication job to jobservice: %v", replication)
-		if err := replicator.Replicate(replication); err != nil {
-			return err
-		}
-	}
-	return nil
 }

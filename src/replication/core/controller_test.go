@@ -23,19 +23,18 @@ import (
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 	"github.com/vmware/harbor/src/replication/source"
+	"github.com/vmware/harbor/src/replication/target"
+	"github.com/vmware/harbor/src/replication/trigger"
 )
 
 func TestMain(m *testing.M) {
-	GlobalController = NewDefaultController(ControllerConfig{})
-	// set the policy manager used by GlobalController with a fake policy manager
-	controller := GlobalController.(*DefaultController)
-	controller.policyManager = &test.FakePolicyManager{}
+	GlobalController = &DefaultController{
+		policyManager:  &test.FakePolicyManager{},
+		targetManager:  target.NewDefaultManager(),
+		sourcer:        source.NewSourcer(),
+		triggerManager: trigger.NewManager(0),
+	}
 	os.Exit(m.Run())
-}
-
-func TestNewDefaultController(t *testing.T) {
-	controller := NewDefaultController(ControllerConfig{})
-	assert.NotNil(t, controller)
 }
 
 func TestInit(t *testing.T) {

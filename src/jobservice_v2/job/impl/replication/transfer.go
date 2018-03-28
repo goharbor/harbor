@@ -303,12 +303,12 @@ func (t *Transfer) pushManifest(tag, digest string, manifest distribution.Manife
 	}
 
 	repository := t.repository.name
-	_, exist, err := t.dstRegistry.ManifestExist(digest)
+	dgt, exist, err := t.dstRegistry.ManifestExist(tag)
 	if err != nil {
 		t.logger.Warningf("an error occurred while checking the existence of manifest of %s:%s on the destination registry: %v, try to push manifest",
 			repository, tag, err)
 	} else {
-		if exist {
+		if exist && dgt == digest {
 			t.logger.Infof("manifest of %s:%s exists on the destination registry, skip manifest pushing",
 				repository, tag)
 			return nil
