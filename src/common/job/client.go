@@ -16,7 +16,8 @@ import (
 type Client interface {
 	SubmitJob(*models.JobData) (string, error)
 	GetJobLog(uuid string) ([]byte, error)
-	//TODO actions or stop? Redirect joblog when we see there's memory issue.
+	PostAction(uuid, action string) error
+	//TODO Redirect joblog when we see there's memory issue.
 }
 
 // DefaultClient is the default implementation of Client interface
@@ -100,4 +101,15 @@ func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 		}
 	}
 	return data, nil
+}
+
+// PostAction call jobservice's API to operate action for job specified by uuid
+func (d *DefaultClient) PostAction(uuid, action string) error {
+	url := d.endpoint + "/api/v1/jobs/" + uuid
+	req := struct {
+		Action string `json:"action"`
+	}{
+		Action: action,
+	}
+	return d.client.Post(url, req)
 }

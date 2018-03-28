@@ -31,4 +31,7 @@ const (
 	JobServiceStatusSuccess = "Success"
 	//JobServiceStatusScheduled : job status scheduled
 	JobServiceStatusScheduled = "Scheduled"
+
+	// JobActionStop : the action to stop the job
+	JobActionStop = "stop"
 )
