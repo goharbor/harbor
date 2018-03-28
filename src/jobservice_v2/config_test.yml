@@ -28,5 +28,5 @@ logger:
   archive_period: 1 #days
 
 #Admin server endpoint
-admin_server: "http://127.0.0.1:8888/"
+admin_server: "http://127.0.0.1:8888"
 

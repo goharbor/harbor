@@ -15,10 +15,6 @@ import (
 	"github.com/vmware/harbor/src/jobservice_v2/errs"
 	"github.com/vmware/harbor/src/jobservice_v2/logger"
 
-	"github.com/vmware/harbor/src/jobservice_v2/period"
-
-	"github.com/gocraft/work"
-
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmware/harbor/src/jobservice_v2/job"
 	"github.com/vmware/harbor/src/jobservice_v2/models"
@@ -53,12 +49,9 @@ type queueItem struct {
 
 //RedisJobStatsManager implements JobStatsManager based on redis.
 type RedisJobStatsManager struct {
-	namespace string
-	redisPool *redis.Pool
-	context   context.Context
-	client    *work.Client
-	scheduler period.Interface
-
+	namespace   string
+	redisPool   *redis.Pool
+	context     context.Context
 	stopChan    chan struct{}
 	doneChan    chan struct{}
 	processChan chan *queueItem
@@ -67,13 +60,11 @@ type RedisJobStatsManager struct {
 }
 
 //NewRedisJobStatsManager is constructor of RedisJobStatsManager
-func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *redis.Pool, client *work.Client, scheduler period.Interface) *RedisJobStatsManager {
+func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *redis.Pool) *RedisJobStatsManager {
 	return &RedisJobStatsManager{
 		namespace:   namespace,
 		context:     ctx,
 		redisPool:   redisPool,
-		client:      client,
-		scheduler:   scheduler,
 		stopChan:    make(chan struct{}, 1),
 		doneChan:    make(chan struct{}, 1),
 		processChan: make(chan *queueItem, processBufferSize),

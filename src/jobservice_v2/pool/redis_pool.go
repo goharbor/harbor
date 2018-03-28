@@ -61,7 +61,7 @@ func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, re
 	client := work.NewClient(namespace, redisPool)
 	scheduler := period.NewRedisPeriodicScheduler(ctx, namespace, redisPool)
 	sweeper := period.NewSweeper(namespace, redisPool, client)
-	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, namespace, redisPool, client, scheduler)
+	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, namespace, redisPool)
 	msgServer := NewMessageServer(ctx.SystemContext, namespace, redisPool)
 	return &GoCraftWorkPool{
 		namespace:     namespace,
