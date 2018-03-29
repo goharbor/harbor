@@ -29,5 +29,11 @@ func init() {
 		new(ScanJob),
 		new(RepoRecord),
 		new(ImgScanOverview),
-		new(ClairVulnTimestamp))
+		new(ClairVulnTimestamp),
+		new(WatchItem),
+		new(ProjectMetadata),
+		new(ConfigEntry),
+		new(Label),
+		new(ResourceLabel),
+		new(UserGroup))
 }

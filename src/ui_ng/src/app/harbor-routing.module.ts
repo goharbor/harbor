@@ -50,6 +50,8 @@ import { LeavingConfigRouteDeactivate } from './shared/route/leaving-config-deac
 import { MemberGuard } from './shared/route/member-guard-activate.service';
 
 import { TagDetailPageComponent } from './repository/tag-detail/tag-detail-page.component';
+import { LeavingRepositoryRouteDeactivate } from './shared/route/leaving-repository-deactivate.service';
+import {ProjectLabelComponent} from "./project/project-label/project-label.component";
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -79,24 +81,15 @@ const harborRoutes: Routes = [
         canActivate: [SystemAdminGuard]
       },
       {
+        path: 'registries',
+        component: DestinationPageComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
         path: 'replications',
-        component: ReplicationManagementComponent,
+        component: TotalReplicationPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard],
-        children: [
-          {
-            path: 'rules',
-            component: TotalReplicationPageComponent
-          },
-          {
-            path: 'endpoints',
-            component: DestinationPageComponent
-          },
-          {
-            path: '**',
-            redirectTo: 'endpoints'
-          }
-        ]
       },
       {
         path: 'tags/:id/:repo',
@@ -105,6 +98,23 @@ const harborRoutes: Routes = [
         resolve: {
           projectResolver: ProjectRoutingResolver
         }
+      },
+      {
+        path: 'projects/:id/repositories/:repo',
+        component: TagRepositoryComponent,
+        canActivate: [MemberGuard],
+        canDeactivate: [LeavingRepositoryRouteDeactivate],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
+      },
+      {
+        path: 'projects/:id/repositories/:repo/tags/:tag',
+        component: TagDetailPageComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        },
       },
       {
         path: 'projects/:id',
@@ -119,13 +129,12 @@ const harborRoutes: Routes = [
             component: RepositoryPageComponent
           },
           {
-            path: 'repositories/:repo/tags/:tag',
-            component: TagDetailPageComponent
+            path: 'repositories/:repo/tags',
+            component: TagRepositoryComponent,
           },
           {
             path: 'replications',
             component: ReplicationPageComponent,
-            canActivate: [SystemAdminGuard]
           },
           {
             path: 'members',
@@ -134,6 +143,9 @@ const harborRoutes: Routes = [
           {
             path: 'logs',
             component: AuditLogComponent
+          },{
+            path: 'labels',
+            component: ProjectLabelComponent
           },
           {
             path: 'configs',
@@ -146,6 +158,12 @@ const harborRoutes: Routes = [
         component: ConfigurationComponent,
         canActivate: [SystemAdminGuard],
         canDeactivate: [LeavingConfigRouteDeactivate]
+      },
+      {
+        path: 'registry',
+        component: DestinationPageComponent,
+        canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
       }
     ]
   },

@@ -15,6 +15,7 @@ import (
 //
 type Policy interface {
 	//Name will return the name of the policy.
+	//If the policy supports multiple instances, please make sure the name is unique as an UUID.
 	Name() string
 
 	//Tasks will return the attached tasks with this policy.

@@ -16,6 +16,7 @@ import { Headers, Http, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { Repository } from 'harbor-ui';
+import {HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 
 export const topRepoEndpoint = "/api/repositories/top";
 /**
@@ -27,12 +28,6 @@ export const topRepoEndpoint = "/api/repositories/top";
  */
 @Injectable()
 export class TopRepoService {
-    headers = new Headers({
-        "Content-Type": 'application/json'
-    });
-    options = new RequestOptions({
-        headers: this.headers
-    });
 
     constructor(private http: Http) { }
 
@@ -45,7 +40,7 @@ export class TopRepoService {
      * @memberOf GlobalSearchService
      */
     getTopRepos(): Promise<Repository[]> {
-        return this.http.get(topRepoEndpoint, this.options).toPromise()
+        return this.http.get(topRepoEndpoint, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.json() as Repository[])
             .catch(error => Promise.reject(error));
     }

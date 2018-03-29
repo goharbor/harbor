@@ -1,7 +1,7 @@
 version: '2'
 services:
   registry:
-    image: vmware/registry:2.6.1-photon
+    image: vmware/registry-photon:__reg_version__
     restart: always
     volumes:
       - /data/registry:/storage
@@ -11,9 +11,9 @@ services:
     ports:
       - 5000:5000
     command:
-      ["serve", "/etc/docker/registry/config.yml"]
+      ["serve", "/etc/registry/config.yml"]
   mysql:
-    build: ./common/db/
+    image: vmware/harbor-db:__version__
     restart: always
     volumes:
       - /data/database:/var/lib/mysql
@@ -33,4 +33,4 @@ services:
       - /data/secretkey:/etc/adminserver/key
       - /data/:/data/
     ports:
-      - 8888:80
+      - 8888:8080

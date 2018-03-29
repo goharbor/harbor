@@ -1,15 +1,14 @@
-<clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading">
+    <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
+        <clr-dg-action-bar>
+            <button type="button" class="btn btn-sm btn-secondary" (click)="addNewProject()" *ngIf="projectCreationRestriction"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'PROJECT.NEW_PROJECT' | translate}}</button>
+            <button type="button" class="btn btn-sm btn-secondary"  [disabled]="!(selectedRow.length && (isSystemAdmin || canDelete))" (click)="deleteProjects(selectedRow)" ><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'PROJECT.DELETE' | translate}}</button>
+        </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'PROJECT.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="accessLevelComparator">{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>
     <clr-dg-column *ngIf="showRoleInfo" [clrDgSortBy]="roleComparator">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="repoCountComparator">{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="timeComparator">{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
-    <clr-dg-row *ngFor="let p of projects">
-        <clr-dg-action-overflow [hidden]="!(p.current_user_role_id === 1 || isSystemAdmin)">
-            <button class="action-item" (click)="newReplicationRule(p)" [hidden]="!isSystemAdmin">{{'PROJECT.REPLICATION_RULE' | translate}}</button>
-            <button class="action-item" (click)="toggleProject(p)">{{'PROJECT.MAKE' | translate}} {{(p.metadata.public === 'false' ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}} </button>
-            <button class="action-item" (click)="deleteProject(p)">{{'PROJECT.DELETE' | translate}}</button>
-        </clr-dg-action-overflow>
+        <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
         <clr-dg-cell><a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a></clr-dg-cell>
         <clr-dg-cell>{{ (p.metadata.public === 'true' ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
         <clr-dg-cell *ngIf="showRoleInfo">{{roleInfo[p.current_user_role_id] | translate}}</clr-dg-cell>

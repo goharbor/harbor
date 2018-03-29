@@ -7,4 +7,10 @@ export const INLINE_ALERT_STYLE: string = `
     padding: 0px !important;
     min-width: 30px !important;
   }
+  .alert-item {
+    text-align: center;
+}
+:host >>> .alert-icon-wrapper{
+    display: inline;
+}
 `;

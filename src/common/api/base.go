@@ -21,11 +21,8 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego/validation"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
 	http_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/auth"
 
 	"github.com/astaxie/beego"
 )
@@ -121,7 +118,8 @@ func (b *BaseAPI) RenderError(code int, text string) {
 func (b *BaseAPI) DecodeJSONReq(v interface{}) {
 	err := json.Unmarshal(b.Ctx.Input.CopyBody(1<<32), v)
 	if err != nil {
-		log.Errorf("Error while decoding the json request, error: %v", err)
+		log.Errorf("Error while decoding the json request, error: %v, %v",
+			err, string(b.Ctx.Input.CopyBody(1 << 32)[:]))
 		b.CustomAbort(http.StatusBadRequest, "Invalid json request")
 	}
 }
@@ -148,59 +146,6 @@ func (b *BaseAPI) Validate(v interface{}) {
 func (b *BaseAPI) DecodeJSONReqAndValidate(v interface{}) {
 	b.DecodeJSONReq(v)
 	b.Validate(v)
-}
-
-// ValidateUser checks if the request triggered by a valid user
-// TODO remove
-func (b *BaseAPI) ValidateUser() int {
-	userID, needsCheck, ok := b.GetUserIDForRequest()
-	if !ok {
-		log.Warning("No user id in session, canceling request")
-		b.CustomAbort(http.StatusUnauthorized, "")
-	}
-	if needsCheck {
-		u, err := dao.GetUser(models.User{UserID: userID})
-		if err != nil {
-			log.Errorf("Error occurred in GetUser, error: %v", err)
-			b.CustomAbort(http.StatusInternalServerError, "Internal error.")
-		}
-		if u == nil {
-			log.Warningf("User was deleted already, user id: %d, canceling request.", userID)
-			b.CustomAbort(http.StatusUnauthorized, "")
-		}
-	}
-	return userID
-}
-
-// GetUserIDForRequest tries to get user ID from basic auth header and session.
-// It returns the user ID, whether need further verification(when the id is from session) and if the action is successful
-// TODO remove
-func (b *BaseAPI) GetUserIDForRequest() (int, bool, bool) {
-	username, password, ok := b.Ctx.Request.BasicAuth()
-	if ok {
-		log.Infof("Requst with Basic Authentication header, username: %s", username)
-		user, err := auth.Login(models.AuthModel{
-			Principal: username,
-			Password:  password,
-		})
-		if err != nil {
-			log.Errorf("Error while trying to login, username: %s, error: %v", username, err)
-			user = nil
-		}
-		if user != nil {
-			b.SetSession("userId", user.UserID)
-			b.SetSession("username", user.Username)
-			// User login successfully no further check required.
-			return user.UserID, false, true
-		}
-	}
-	sessionUserID, ok := b.GetSession("userId").(int)
-	if ok {
-		// The ID is from session
-		return sessionUserID, true, true
-	}
-	log.Debug("No valid user id in session.")
-	return 0, false, false
 }
 
 // Redirect does redirection to resource URI with http header status code.

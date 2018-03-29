@@ -11,6 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+// This Module is used as Container For Endpoint and Replication Rules
+// Will deprecated on Harbor 1.4.0
+
 import { Component } from '@angular/core';
 
 @Component({

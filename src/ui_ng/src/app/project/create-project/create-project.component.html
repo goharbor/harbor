@@ -1,6 +1,6 @@
 <clr-modal [(clrModalOpen)]="createProjectOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
     <h3 class="modal-title">{{'PROJECT.NEW_PROJECT' | translate}}</h3>
-    <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
+    <inline-alert class="modal-title"></inline-alert>
     <div class="modal-body" style="height: 16.8em; overflow-y: hidden;">
         <form #projectForm="ngForm">
             <section class="form-block">
@@ -8,11 +8,12 @@
                     <label for="create_project_name" class="col-md-3 form-group-label-override required">{{'PROJECT.NAME' | translate}}</label>
                     <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="!isNameValid" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left">
             <input type="text" id="create_project_name"  [(ngModel)]="project.name" 
-            name="create_project_name" size="36" 
+            name="create_project_name" size="255"  style="width: 296px;"
             required
             pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
             minlength="2" 
-            #projectName="ngModel" 
+            #projectName="ngModel"
+                   autocomplete="off"
             (keyup)='handleValidation()'>
             <span class="tooltip-content">
               {{ nameTooltipText | translate }}
@@ -25,7 +26,7 @@
                     <div class="checkbox-inline">
                         <input type="checkbox" id="create_project_public" [(ngModel)]="project.metadata.public" name="public">
                         <label for="create_project_public"></label>
-                        <span class="access-level-label">{{ accessLevelDisplayText | translate}}</span>
+                        <span class="access-level-label">{{ 'PROJECT.PUBLIC' | translate}}</span>
                         <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-md tooltip-bottom-right" style="top:-8px; left:-8px;">
                             <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                             <span class="tooltip-content" style="margin-left: 5px;">{{'PROJECT.INLINE_HELP_PUBLIC' | translate }}</span>

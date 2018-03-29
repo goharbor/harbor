@@ -4,13 +4,14 @@
             <div class="form-group form-group-override">
                 <label for="username" class="required form-group-label-override">{{'PROFILE.USER_NAME' | translate}}</label>
                 <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("username")'>
-                <input type="text" required pattern='[^"~#$%]+' maxLengthExt="20" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="30" 
-                (input)='handleValidation("username", false)' 
-                (blur)='handleValidation("username", true)'>
-                <span class="tooltip-content">
-                    {{usernameTooltip | translate}}
-                </span>
-                </label><span class="spinner spinner-inline spinner-pos" [hidden]='isChecking("username")'></span>
+                    <input type="text" required pattern='[^"~#$%]+' maxLengthExt="20" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="30" 
+                    (input)='handleValidation("username", false)' 
+                    (blur)='handleValidation("username", true)'>
+                    <span class="tooltip-content">
+                        {{usernameTooltip | translate}}
+                    </span>
+                </label>
+                <span class="spinner spinner-inline spinner-pos" [hidden]='isChecking("username")'></span>
             </div>
             <div class="form-group form-group-override">
                 <label for="email" class="required form-group-label-override">{{'PROFILE.EMAIL' | translate}}</label>
@@ -31,7 +32,7 @@
             <div class="form-group form-group-override">
                 <label for="realname" class="required form-group-label-override">{{'PROFILE.FULL_NAME' | translate}}</label>
                 <label for="realname" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("realname")'>
-                      <input type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="20" id="realname" size="30"
+                      <input type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="80" id="realname" size="30"
                       (input)='handleValidation("realname", false)' 
                 (blur)='handleValidation("realname", true)'>
                       <span class="tooltip-content">

@@ -16,8 +16,6 @@ import { Router } from '@angular/router';
 import { Project } from './project';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { ListProjectComponent } from './list-project/list-project.component';
-import { AppConfigService } from '../app-config.service';
-import { SessionService } from '../shared/session.service';
 import { ProjectTypes } from '../shared/shared.const';
 
 @Component({
@@ -49,9 +47,7 @@ export class ProjectComponent implements OnInit {
     }
   }
 
-  constructor(
-    private appConfigService: AppConfigService,
-    private sessionService: SessionService) {
+  constructor() {
   }
 
   ngOnInit(): void {
@@ -59,19 +55,6 @@ export class ProjectComponent implements OnInit {
       this.currentFilteredType = +window.sessionStorage['projectTypeValue'];
       window.sessionStorage.removeItem('fromDetails');
     }
-  }
-
-  get projectCreationRestriction(): boolean {
-    let account = this.sessionService.getCurrentUser();
-    if (account) {
-      switch (this.appConfigService.getConfig().project_creation_restriction) {
-        case 'adminonly':
-          return (account.has_admin_role === 1);
-        case 'everyone':
-          return true;
-      }
-    }
-    return false;
   }
 
   openModal(): void {

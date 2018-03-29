@@ -20,6 +20,7 @@ import { SessionService } from '../../shared/session.service';
 import { ProjectService } from '../../project/project.service';
 
 import { RoleMapping } from '../../shared/shared.const';
+import {AppConfigService} from "../../app-config.service";
 
 @Component({
     selector: 'project-detail',
@@ -35,9 +36,10 @@ export class ProjectDetailComponent {
   roleName: string;
 
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private router: Router,
     private sessionService: SessionService,
+    private appConfigService: AppConfigService,
     private projectService: ProjectService) {
 
     this.hasSignedIn = this.sessionService.getCurrentUser() !== null;
@@ -50,11 +52,19 @@ export class ProjectDetailComponent {
 
   public get isSystemAdmin(): boolean {
     let account = this.sessionService.getCurrentUser();
-    return account != null && account.has_admin_role > 0;
+    return account && account.has_admin_role > 0;
+  }
+
+  public get isSProjectAdmin(): boolean {
+    return this.currentProject.has_project_admin_role;
   }
 
   public get isSessionValid(): boolean {
     return this.sessionService.getCurrentUser() != null;
+  }
+
+  public get withAdmiral(): boolean {
+    return this.appConfigService.getConfig().with_admiral;
   }
 
   backToProject(): void {

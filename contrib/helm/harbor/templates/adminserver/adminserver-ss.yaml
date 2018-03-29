@@ -1,0 +1,75 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: "{{ template "harbor.fullname" . }}-adminserver"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: adminserver
+spec:
+  replicas: 1
+  serviceName: "{{ template "harbor.fullname" . }}-adminserver"
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: adminserver
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: adminserver
+    component: adminserver
+    spec:
+      containers:
+      - name: adminserver
+        image: "{{ .Values.adminserver.image.repository }}:{{ .Values.adminserver.image.tag }}"
+        imagePullPolicy: "{{ .Values.adminserver.image.pullPolicy }}"
+        resources:
+{{ toYaml .Values.adminserver.resources | indent 10 }}
+        envFrom:
+        - configMapRef:
+            name: "{{ template "harbor.fullname" . }}-adminserver"
+        - secretRef:
+            name: "{{ template "harbor.fullname" . }}-adminserver"
+        env:
+          - name: PORT
+            value: "8080"
+          - name: JSON_CFG_STORE_PATH
+            value: /etc/adminserver/config/config.json
+          - name: KEY_PATH
+            value: /etc/adminserver/key
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: adminserver-config
+          mountPath: /etc/adminserver/config
+        - name: adminserver-key
+          mountPath: /etc/adminserver/key
+          subPath: key
+      volumes:
+      {{- if not .Values.persistence.enabled }}
+      - name: adminserver-config
+        emptyDir: {}
+      {{- end }}
+      - name: adminserver-key
+        secret:
+          secretName: "{{ template "harbor.fullname" . }}-adminserver"
+          items:
+          - key: secretKey
+            path: key
+  {{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: adminserver-config
+    spec:
+      accessModes: [{{ .Values.adminserver.volumes.config.accessMode | quote }}]
+      {{- if .Values.adminserver.volumes.config.storageClass }}
+      {{- if (eq "-" .Values.adminserver.volumes.config.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.adminserver.volumes.config.storageClass }}"
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.adminserver.volumes.config.size | quote }}
+  {{- end -}}

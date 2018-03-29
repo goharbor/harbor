@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "harbor.fullname" . }}-adminserver"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: adminserver
+data:
+  {{ if .Values.mysql.host -}}
+  MYSQL_HOST: "{{ .Values.mysql.host }}"
+  {{ else -}}
+  MYSQL_HOST: "{{ template "harbor.fullname" . }}-mysql"
+  {{ end -}}
+  MYSQL_PORT: "{{ .Values.mysql.port }}"
+  MYSQL_USR: "{{ .Values.mysql.user }}"
+  MYSQL_DATABASE: "{{ .Values.mysql.database }}"
+  EMAIL_HOST: "{{ .Values.adminserver.emailHost }}"
+  EMAIL_PORT: "{{ .Values.adminserver.emailPort }}"
+  EMAIL_USR: "{{ .Values.adminserver.emailUser }}"
+  EMAIL_SSL: "{{ .Values.adminserver.emailSsl }}"
+  EMAIL_FROM: "{{ .Values.adminserver.emailFrom }}"
+  EMAIL_IDENTITY: "{{ .Values.adminserver.emailIdentity }}"
+  EMAIL_INSECURE: "{{ .Values.adminserver.emailInsecure }}"
+  EXT_ENDPOINT: "https://{{ .Values.externalDomain }}"
+  UI_URL: "http://{{ template "harbor.fullname" . }}-ui"
+  JOBSERVICE_URL: "http://{{ template "harbor.fullname" . }}-jobservice"
+  REGISTRY_URL: "http://{{ template "harbor.fullname" . }}-registry:5000"
+  TOKEN_SERVICE_URL: "http://{{ template "harbor.fullname" . }}-ui/service/token"
+  WITH_NOTARY: "{{ .Values.notary.enabled }}"
+  LOG_LEVEL: "info"
+  IMAGE_STORE_PATH: "/" # This is a temporary hack.
+  AUTH_MODE: "{{ .Values.adminserver.authenticationMode }}"
+  SELF_REGISTRATION: "{{ .Values.adminserver.selfRegistration }}"
+  LDAP_URL: "{{ .Values.adminserver.ldap.url }}"
+  LDAP_SEARCH_DN: "{{ .Values.adminserver.ldap.searchDN }}"
+  LDAP_BASE_DN: "{{ .Values.adminserver.ldap.baseDN }}"
+  LDAP_FILTER: "{{ .Values.adminserver.ldap.filter }}"
+  LDAP_UID: "{{ .Values.adminserver.ldap.uid }}"
+  LDAP_SCOPE: "{{ .Values.adminserver.ldap.scope }}"
+  LDAP_TIMEOUT: "{{ .Values.adminserver.ldap.timeout }}"
+  LDAP_VERIFY_CERT: "{{ .Values.adminserver.ldap.verifyCert }}"
+  DATABASE_TYPE: "mysql"
+  PROJECT_CREATION_RESTRICTION: "everyone"
+  VERIFY_REMOTE_CERT: "off"
+  MAX_JOB_WORKERS: "3"
+  TOKEN_EXPIRATION: "30"
+  CFG_EXPIRATION: "5"
+  GODEBUG: "netdns=cgo"
+  ADMIRAL_URL: "NA"
+  RESET: "false"
+  WITH_CLAIR: "{{ .Values.clair.enabled }}"
+  CLAIR_DB_HOST: "{{ .Release.Name }}-postgresql"
+  CLAIR_DB_PORT: "5432"
+  CLAIR_DB: "{{ .Values.clair.postgresDatabase }}"
+  CLAIR_DB_USERNAME: "{{ .Values.clair.postgresUser }}"
+  CLAIR_DB_PASSWORD: "{{ .Values.clair.postgresPassword }}"
+  UAA_ENDPOINT: ""
+  UAA_CLIENTID: ""
+  UAA_CLIENTSECRET: ""
+  UAA_VERIFY_CERT: "True"
+  REGISTRY_STORAGE_PROVIDER_NAME: "filesystem"

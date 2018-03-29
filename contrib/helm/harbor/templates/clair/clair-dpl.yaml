@@ -1,0 +1,41 @@
+{{ if .Values.clair.enabled }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "harbor.fullname" . }}-clair
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: clair
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: clair
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: clair
+    spec:
+      containers:
+      - name: clair
+        image: {{ .Values.clair.image.repository }}:{{ .Values.clair.image.tag }}
+        imagePullPolicy: {{ .Values.clair.image.pullPolicy }}
+        args: ["-insecure-tls", "-config", "/config/config.yaml"]
+        resources:
+{{ toYaml .Values.clair.resources | indent 10 }}
+        ports:
+        - containerPort: 6060
+        volumeMounts:
+        - name: clair-config
+          mountPath: /config/config.yaml
+          subPath: config.yaml
+      volumes:
+      - name: clair-config
+        configMap:
+          name: "{{ template "harbor.fullname" . }}-clair"
+          items:
+            - key: config.yaml
+              path: config.yaml
+{{ end }}

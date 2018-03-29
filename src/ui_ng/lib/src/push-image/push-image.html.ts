@@ -1,20 +1,20 @@
 export const PUSH_IMAGE_HTML: string = `
 <div>
-    <clr-dropdown [clrMenuPosition]="'bottom-right'">
+    <clr-dropdown>
         <button class="btn btn-link btn-font" clrDropdownToggle (click)="onclick()">
-        {{ 'PUSH_IMAGE.TITLE' | translate | uppercase}}
-        <clr-icon shape="caret down"></clr-icon>
-    </button>
-        <div class="dropdown-menu" style="min-width:500px;">
+            {{ 'PUSH_IMAGE.TITLE' | translate | uppercase}}
+            <clr-icon shape="caret down"></clr-icon>
+        </button>
+        <clr-dropdown-menu *clrIfOpen [clrPosition]="'bottom-right'" style="min-width:500px;">
             <div class="commands-container">
                 <section>
                     <span><h5 class="h5-override">{{ 'PUSH_IMAGE.TITLE' | translate }}</h5></span>
                     <span>
-                      <clr-tooltip [clrTooltipDirection]="'top-right'" [clrTooltipSize]="'md'">
-                        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                          <clr-tooltip-content>
+                      <clr-tooltip>
+                        <clr-icon  clrTooltipTrigger shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                        <clr-tooltip-content [clrPosition]="'top-right'" [clrSize]="'md'" *clrIfOpen>
                             {{ 'PUSH_IMAGE.TOOLTIP' | translate }}
-                          </clr-tooltip-content>
+                        </clr-tooltip-content>
                       </clr-tooltip>
                     </span>
                 </section>
@@ -30,7 +30,7 @@ export const PUSH_IMAGE_HTML: string = `
                     </article>
                 </section>
             </div>
-        </div>
+        </clr-dropdown-menu>
     </clr-dropdown>
 </div>
 `;

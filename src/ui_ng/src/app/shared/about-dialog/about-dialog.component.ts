@@ -35,7 +35,7 @@ export class AboutDialogComponent implements OnInit{
 
     ngOnInit(): void {
         // custom skin
-        let customSkinObj = this.skinableConfig.getProjects();
+        let customSkinObj = this.skinableConfig.getProject();
         if (customSkinObj) {
             let selectedLang = this.translate.currentLang;
             this.customName = customSkinObj;

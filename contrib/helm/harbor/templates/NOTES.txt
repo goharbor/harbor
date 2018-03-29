@@ -1,0 +1,20 @@
+
+Add the Harbor CA certificate to Docker by executing the following command:
+
+  sudo mkdir -p /etc/docker/certs.d/{{ .Values.externalDomain }}
+  kubectl get secret \
+    --namespace {{ .Release.Namespace }} {{ template "harbor.fullname" . }}-ingress \
+    -o jsonpath="{.data.ca\.crt}" | base64 --decode | \
+    sudo tee /etc/docker/certs.d/{{ .Values.externalDomain }}/ca.crt
+
+Get Harbor admin password by executing the following command:
+
+  kubectl get secret --namespace {{ .Release.Namespace }} {{ template "harbor.fullname" . }}-adminserver -o jsonpath="{.data.HARBOR_ADMIN_PASSWORD}" | base64 --decode; echo
+
+Add Harbor FQDN {{ .Values.externalDomain }} to K8s Ingress Controller IP resolution on DNS Server or in file /etc/hosts.
+
+Access Harbor UI via https://{{ .Values.externalDomain }}
+
+Login Harbor with Docker CLI:
+
+  docker login {{ .Values.externalDomain }}

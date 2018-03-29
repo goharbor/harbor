@@ -31,7 +31,7 @@ Change Password
     Sleep  1
     Click Element  xpath=//password-setting/clr-modal//button[2]
     Sleep  2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/nav/section/a[2]
+    Click Element  xpath=${log_xpath}
     Sleep  1
 
 Update User Comment
@@ -49,7 +49,8 @@ Logout Harbor
     Wait Until Element Is Enabled  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
     Sleep  2
-    Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//a[4]
+    Click Link  Log Out
+    #Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//a[4]
     Sleep  1
     Capture Page Screenshot  Logout.png
     Sleep  2

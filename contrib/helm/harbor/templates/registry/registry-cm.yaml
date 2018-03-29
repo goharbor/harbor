@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "harbor.fullname" . }}-registry"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+data:
+  config.yml: |+
+    version: 0.1
+    log:
+      level: info
+      fields:
+        service: registry
+    storage:
+      {{- if .Values.registry.objectStorage }}
+{{ toYaml .Values.registry.objectStorage | indent 6 }}
+      {{- end }}
+      cache:
+        layerinfo: inmemory
+      filesystem:
+        rootdirectory: /var/lib/registry
+      maintenance:
+        uploadpurging:
+          enabled: false
+      delete:
+        enabled: true
+    http:
+      addr: :5000
+      # set via environment variable
+      # secret: placeholder
+      debug:
+        addr: localhost:5001
+    auth:
+      token:
+        issuer: harbor-token-issuer
+        realm: "https://{{ .Values.externalDomain }}/service/token"
+        rootcertbundle: /etc/registry/root.crt
+        service: harbor-registry
+
+    notifications:
+      endpoints:
+        - name: harbor
+          disabled: false
+          url: http://{{ template "harbor.fullname" . }}-ui/service/notifications
+          timeout: 3000ms
+          threshold: 5
+          backoff: 1s

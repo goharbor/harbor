@@ -20,8 +20,9 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	//"github.com/vmware/harbor/src/common/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -40,7 +41,7 @@ func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
 	return nil
 }
 
-func clearUp(username string) {
+func cleanByUser(username string) {
 	var err error
 
 	o := GetOrmer()
@@ -48,7 +49,7 @@ func clearUp(username string) {
 
 	err = execUpdate(o, `delete 
 		from project_member 
-		where user_id = (
+		where entity_id = (
 			select user_id
 			from user
 			where username = ?
@@ -155,9 +156,23 @@ func TestMain(m *testing.M) {
 }
 
 func testForAll(m *testing.M) int {
-	clearUp(username)
+	cleanByUser(username)
 
-	return m.Run()
+	rc := m.Run()
+	clearAll()
+	return rc
+}
+
+func clearAll() {
+	tables := []string{"project_member",
+		"project_metadata", "access_log", "repository", "replication_policy",
+		"replication_target", "replication_job", "replication_immediate_trigger", "img_scan_job",
+		"img_scan_overview", "clair_vuln_timestamp", "project", "user"}
+	for _, t := range tables {
+		if err := ClearTable(t); err != nil {
+			log.Errorf("Failed to clear table: %s,error: %v", t, err)
+		}
+	}
 }
 
 func TestRegister(t *testing.T) {
@@ -305,6 +320,7 @@ var currentUser *models.User
 func TestGetUser(t *testing.T) {
 	queryUser := models.User{
 		Username: username,
+		Email:    "tester01@vmware.com",
 	}
 	var err error
 	currentUser, err = GetUser(queryUser)
@@ -645,7 +661,7 @@ func TestGetUserByProject(t *testing.T) {
 }
 
 func TestGetUserProjectRoles(t *testing.T) {
-	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID)
+	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID, common.UserMember)
 	if err != nil {
 		t.Errorf("Error happened in GetUserProjectRole: %v, userID: %+v, project Id: %d", err, currentUser.UserID, currentProject.ProjectID)
 	}
@@ -685,12 +701,19 @@ func TestGetProjects(t *testing.T) {
 }
 
 func TestAddProjectMember(t *testing.T) {
-	err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER)
+	pmid, err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER, common.UserMember)
 	if err != nil {
 		t.Errorf("Error occurred in AddProjectMember: %v", err)
 	}
+	if pmid == 0 {
+		t.Errorf("Error add project member, pmid=0")
+	}
+	pmid, err = AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER, "randomstring")
+	if err == nil {
+		t.Errorf("Should failed on adding project member when adding duplicated items")
+	}
 
-	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID, common.UserMember)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}
@@ -709,11 +732,11 @@ func TestAddProjectMember(t *testing.T) {
 }
 
 func TestUpdateProjectMember(t *testing.T) {
-	err := UpdateProjectMember(currentProject.ProjectID, 1, models.GUEST)
+	err := UpdateProjectMember(currentProject.ProjectID, 1, models.GUEST, "randomstring")
 	if err != nil {
 		t.Errorf("Error occurred in UpdateProjectMember: %v", err)
 	}
-	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID, common.UserMember)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}
@@ -724,12 +747,12 @@ func TestUpdateProjectMember(t *testing.T) {
 }
 
 func TestDeleteProjectMember(t *testing.T) {
-	err := DeleteProjectMember(currentProject.ProjectID, 1)
+	err := DeleteProjectMember(currentProject.ProjectID, 1, "randomstring")
 	if err != nil {
 		t.Errorf("Error occurred in DeleteProjectMember: %v", err)
 	}
 
-	roles, err := GetUserProjectRoles(1, currentProject.ProjectID)
+	roles, err := GetUserProjectRoles(1, currentProject.ProjectID, common.UserMember)
 	if err != nil {
 		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
 	}
@@ -940,7 +963,6 @@ func TestFilterRepTargets(t *testing.T) {
 func TestAddRepPolicy(t *testing.T) {
 	policy := models.RepPolicy{
 		ProjectID:   1,
-		Enabled:     1,
 		TargetID:    targetID,
 		Description: "whatever",
 		Name:        "mypolicy",
@@ -960,15 +982,10 @@ func TestAddRepPolicy(t *testing.T) {
 		t.Errorf("Unable to find a policy with id: %d", id)
 	}
 
-	if p.Name != "mypolicy" || p.TargetID != targetID || p.Enabled != 1 || p.Description != "whatever" {
-		t.Errorf("The data does not match, expected: Name: mypolicy, TargetID: %d, Enabled: 1, Description: whatever;\n result: Name: %s, TargetID: %d, Enabled: %d, Description: %s",
-			targetID, p.Name, p.TargetID, p.Enabled, p.Description)
+	if p.Name != "mypolicy" || p.TargetID != targetID || p.Description != "whatever" {
+		t.Errorf("The data does not match, expected: Name: mypolicy, TargetID: %d, Description: whatever;\n result: Name: %s, TargetID: %d, Description: %s",
+			targetID, p.Name, p.TargetID, p.Description)
 	}
-	var tm = time.Now().AddDate(0, 0, -1)
-	if !p.StartTime.After(tm) {
-		t.Errorf("Unexpected start_time: %v", p.StartTime)
-	}
-
 }
 
 func TestGetRepPolicyByTarget(t *testing.T) {
@@ -1018,44 +1035,9 @@ func TestGetRepPolicyByName(t *testing.T) {
 
 }
 
-func TestDisableRepPolicy(t *testing.T) {
-	err := DisableRepPolicy(policyID)
-	if err != nil {
-		t.Errorf("Failed to disable policy, id: %d", policyID)
-	}
-	p, err := GetRepPolicy(policyID)
-	if err != nil {
-		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, policyID)
-	}
-	if p == nil {
-		t.Errorf("Unable to find a policy with id: %d", policyID)
-	}
-	if p.Enabled == 1 {
-		t.Errorf("The Enabled value of replication policy is still 1 after disabled, id: %d", policyID)
-	}
-}
-
-func TestEnableRepPolicy(t *testing.T) {
-	err := EnableRepPolicy(policyID)
-	if err != nil {
-		t.Errorf("Failed to disable policy, id: %d", policyID)
-	}
-	p, err := GetRepPolicy(policyID)
-	if err != nil {
-		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, policyID)
-	}
-	if p == nil {
-		t.Errorf("Unable to find a policy with id: %d", policyID)
-	}
-	if p.Enabled == 0 {
-		t.Errorf("The Enabled value of replication policy is still 0 after disabled, id: %d", policyID)
-	}
-}
-
 func TestAddRepPolicy2(t *testing.T) {
 	policy2 := models.RepPolicy{
 		ProjectID:   3,
-		Enabled:     0,
 		TargetID:    3,
 		Description: "whatever",
 		Name:        "mypolicy",
@@ -1071,10 +1053,6 @@ func TestAddRepPolicy2(t *testing.T) {
 	}
 	if p == nil {
 		t.Errorf("Unable to find a policy with id: %d", policyID2)
-	}
-	var tm time.Time
-	if p.StartTime.After(tm) {
-		t.Errorf("Unexpected start_time: %v", p.StartTime)
 	}
 }
 
@@ -1111,7 +1089,7 @@ func TestAddRepJob(t *testing.T) {
 func TestUpdateRepJobStatus(t *testing.T) {
 	err := UpdateRepJobStatus(jobID, models.JobFinished)
 	if err != nil {
-		t.Errorf("Error occured in UpdateRepJobStatus, error: %v, id: %d", err, jobID)
+		t.Errorf("Error occurred in UpdateRepJobStatus, error: %v, id: %d", err, jobID)
 		return
 	}
 	j, err := GetRepJob(jobID)
@@ -1126,7 +1104,7 @@ func TestUpdateRepJobStatus(t *testing.T) {
 	}
 	err = UpdateRepJobStatus(jobID, models.JobPending)
 	if err != nil {
-		t.Errorf("Error occured in UpdateRepJobStatus when update it back to status pending, error: %v, id: %d", err, jobID)
+		t.Errorf("Error occurred in UpdateRepJobStatus when update it back to status pending, error: %v, id: %d", err, jobID)
 		return
 	}
 }
@@ -1134,7 +1112,7 @@ func TestUpdateRepJobStatus(t *testing.T) {
 func TestGetRepPolicyByProject(t *testing.T) {
 	p1, err := GetRepPolicyByProject(99)
 	if err != nil {
-		t.Errorf("Error occured in GetRepPolicyByProject:%v, project ID: %d", err, 99)
+		t.Errorf("Error occurred in GetRepPolicyByProject:%v, project ID: %d", err, 99)
 		return
 	}
 	if len(p1) > 0 {
@@ -1160,7 +1138,7 @@ func TestGetRepPolicyByProject(t *testing.T) {
 func TestGetRepJobByPolicy(t *testing.T) {
 	jobs, err := GetRepJobByPolicy(999)
 	if err != nil {
-		t.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, 999)
+		t.Errorf("Error occurred in GetRepJobByPolicy: %v, policy ID: %d", err, 999)
 		return
 	}
 	if len(jobs) > 0 {
@@ -1169,7 +1147,7 @@ func TestGetRepJobByPolicy(t *testing.T) {
 	}
 	jobs, err = GetRepJobByPolicy(policyID)
 	if err != nil {
-		t.Errorf("Error occured in GetRepJobByPolicy: %v, policy ID: %d", err, policyID)
+		t.Errorf("Error occurred in GetRepJobByPolicy: %v, policy ID: %d", err, policyID)
 		return
 	}
 	if len(jobs) != 1 {
@@ -1183,9 +1161,9 @@ func TestGetRepJobByPolicy(t *testing.T) {
 }
 
 func TestFilterRepJobs(t *testing.T) {
-	jobs, _, err := FilterRepJobs(policyID, "", "", nil, nil, 1000, 0)
+	jobs, _, err := FilterRepJobs(policyID, "", []string{}, nil, nil, 1000, 0)
 	if err != nil {
-		t.Errorf("Error occured in FilterRepJobs: %v, policy ID: %d", err, policyID)
+		t.Errorf("Error occurred in FilterRepJobs: %v, policy ID: %d", err, policyID)
 		return
 	}
 	if len(jobs) != 1 {
@@ -1201,13 +1179,13 @@ func TestFilterRepJobs(t *testing.T) {
 func TestDeleteRepJob(t *testing.T) {
 	err := DeleteRepJob(jobID)
 	if err != nil {
-		t.Errorf("Error occured in DeleteRepJob: %v, id: %d", err, jobID)
+		t.Errorf("Error occurred in DeleteRepJob: %v, id: %d", err, jobID)
 		return
 	}
 	t.Logf("deleted rep job, id: %d", jobID)
 	j, err := GetRepJob(jobID)
 	if err != nil {
-		t.Errorf("Error occured in GetRepJob:%v", err)
+		t.Errorf("Error occurred in GetRepJob:%v", err)
 		return
 	}
 	if j != nil {
@@ -1270,7 +1248,7 @@ func TestGetRepoJobToStop(t *testing.T) {
 func TestDeleteRepTarget(t *testing.T) {
 	err := DeleteRepTarget(targetID)
 	if err != nil {
-		t.Errorf("Error occured in DeleteRepTarget: %v, id: %d", err, targetID)
+		t.Errorf("Error occurred in DeleteRepTarget: %v, id: %d", err, targetID)
 		return
 	}
 	t.Logf("deleted target, id: %d", targetID)
@@ -1283,8 +1261,13 @@ func TestDeleteRepTarget(t *testing.T) {
 	}
 }
 
+func TestGetTotalOfRepPolicies(t *testing.T) {
+	_, err := GetTotalOfRepPolicies("", 1)
+	require.Nil(t, err)
+}
+
 func TestFilterRepPolicies(t *testing.T) {
-	_, err := FilterRepPolicies("name", 0)
+	_, err := FilterRepPolicies("name", 0, 0, 0)
 	if err != nil {
 		t.Fatalf("failed to filter policy: %v", err)
 	}
@@ -1303,13 +1286,13 @@ func TestUpdateRepPolicy(t *testing.T) {
 func TestDeleteRepPolicy(t *testing.T) {
 	err := DeleteRepPolicy(policyID)
 	if err != nil {
-		t.Errorf("Error occured in DeleteRepPolicy: %v, id: %d", err, policyID)
+		t.Errorf("Error occurred in DeleteRepPolicy: %v, id: %d", err, policyID)
 		return
 	}
 	t.Logf("delete rep policy, id: %d", policyID)
 	p, err := GetRepPolicy(policyID)
 	if err != nil && err != orm.ErrNoRows {
-		t.Errorf("Error occured in GetRepPolicy:%v", err)
+		t.Errorf("Error occurred in GetRepPolicy:%v", err)
 	}
 	if p != nil && p.Deleted != 1 {
 		t.Errorf("Able to find rep policy after deletion, id: %d", policyID)
@@ -1531,8 +1514,6 @@ func TestUpdateScanJobStatus(t *testing.T) {
 	j, err := GetScanJob(id)
 	assert.Nil(err)
 	assert.Equal("newstatus", j.Status)
-	err = UpdateScanJobStatus(id+9, "newstatus")
-	assert.NotNil(err)
 	err = ClearTable(models.ScanJobTable)
 	assert.Nil(err)
 }
@@ -1630,4 +1611,109 @@ func TestGetScanJobsByStatus(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(1, len(r2))
 	assert.Equal(sj1.Repository, r2[0].Repository)
+}
+
+func TestIsSuperUser(t *testing.T) {
+	assert := assert.New(t)
+	assert.True(IsSuperUser("admin"))
+	assert.False(IsSuperUser("none"))
+}
+
+func TestSaveConfigEntries(t *testing.T) {
+	configEntries := []models.ConfigEntry{
+		{
+			Key:   "teststringkey",
+			Value: "192.168.111.211",
+		},
+		{
+			Key:   "testboolkey",
+			Value: "true",
+		},
+		{
+			Key:   "testnumberkey",
+			Value: "5",
+		},
+		{
+			Key:   common.CfgDriverDB,
+			Value: "db",
+		},
+	}
+	err := SaveConfigEntries(configEntries)
+	if err != nil {
+		t.Fatalf("failed to save configuration to database %v", err)
+	}
+	readEntries, err := GetConfigEntries()
+	if err != nil {
+		t.Fatalf("Failed to get configuration from database %v", err)
+	}
+	findItem := 0
+	for _, entry := range readEntries {
+		switch entry.Key {
+		case "teststringkey":
+			if "192.168.111.211" == entry.Value {
+				findItem++
+			}
+		case "testnumberkey":
+			if "5" == entry.Value {
+				findItem++
+			}
+		case "testboolkey":
+			if "true" == entry.Value {
+				findItem++
+			}
+		default:
+		}
+	}
+	if findItem != 3 {
+		t.Fatalf("Should update 3 configuration but only update %d", findItem)
+	}
+
+	configEntries = []models.ConfigEntry{
+		{
+			Key:   "teststringkey",
+			Value: "192.168.111.215",
+		},
+		{
+			Key:   "testboolkey",
+			Value: "false",
+		},
+		{
+			Key:   "testnumberkey",
+			Value: "7",
+		},
+		{
+			Key:   common.CfgDriverDB,
+			Value: "db",
+		},
+	}
+	err = SaveConfigEntries(configEntries)
+	if err != nil {
+		t.Fatalf("failed to save configuration to database %v", err)
+	}
+	readEntries, err = GetConfigEntries()
+	if err != nil {
+		t.Fatalf("Failed to get configuration from database %v", err)
+	}
+	findItem = 0
+	for _, entry := range readEntries {
+		switch entry.Key {
+		case "teststringkey":
+			if "192.168.111.215" == entry.Value {
+				findItem++
+			}
+		case "testnumberkey":
+			if "7" == entry.Value {
+				findItem++
+			}
+		case "testboolkey":
+			if "false" == entry.Value {
+				findItem++
+			}
+		default:
+		}
+	}
+	if findItem != 3 {
+		t.Fatalf("Should update 3 configuration but only update %d", findItem)
+	}
+
 }

@@ -2,7 +2,7 @@
     <div class="branding">
         <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
             <clr-icon shape="vm-bug"  *ngIf="!customStyle?.headerLogo"></clr-icon>
-            <img [attr.src]="customStyle?.headerLogo" *ngIf="customStyle?.headerLogo" style="width: 36px;height: 36px; object-fit: fill;">
+            <img [attr.src]="'static/images/'+customStyle?.headerLogo" *ngIf="customStyle?.headerLogo" style="width: 36px;height: 36px; object-fit: fill;">
             <span class="title">{{customProjectName?.projectName? customProjectName?.projectName:(appTitle | translate)}}</span>
         </a>
     </div>
@@ -18,25 +18,26 @@
                 <span style="padding-right: 8px;">{{currentLang}}</span>
                 <clr-icon shape="caret down"></clr-icon>
             </button>
-            <div class="dropdown-menu">
+            <clr-dropdown-menu *clrIfOpen>
                 <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("en-us")' [class.lang-selected]='matchLang("en-us")'>English</a>
                 <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("zh-cn")' [class.lang-selected]='matchLang("zh-cn")'>中文简体</a>
                 <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("es-es")' [class.lang-selected]='matchLang("es-es")'>Español</a>
-            </div>
+                <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("fr-fr")' [class.lang-selected]='matchLang("fr-fr")'>Français</a>
+            </clr-dropdown-menu>
         </clr-dropdown>
-        <clr-dropdown [clrMenuPosition]="'bottom-right'" class="dropdown" *ngIf="isSessionValid">
+        <clr-dropdown class="dropdown" *ngIf="isSessionValid">
             <button class="nav-text" clrDropdownToggle>
               <clr-icon shape="user" class="is-inverse" size="24" style="left: -2px;"></clr-icon>
               <span>{{accountName}}</span>
               <clr-icon shape="caret down"></clr-icon>
             </button>
-            <div class="dropdown-menu">
+            <clr-dropdown-menu [clrPosition]="'bottom-right'" *clrIfOpen>
                 <a href="javascript:void(0)" clrDropdownItem (click)="openAccountSettingsModal()">{{'ACCOUNT_SETTINGS.PROFILE' | translate}}</a>
                 <a *ngIf="canChangePassword" href="javascript:void(0)" clrDropdownItem (click)="openChangePwdModal()">{{'ACCOUNT_SETTINGS.CHANGE_PWD' | translate}}</a>
                 <a href="javascript:void(0)" clrDropdownItem (click)="openAboutDialog()">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
                 <div class="dropdown-divider"></div>
                 <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{'ACCOUNT_SETTINGS.LOGOUT' | translate}}</a>
-            </div>
+            </clr-dropdown-menu>
         </clr-dropdown>
         <div class="nav-divider" *ngIf="!isSessionValid"></div>
         <a href="javascript:void(0)" id="aboutMenu" class="nav-link nav-text nav-about-link" (click)="openAboutDialog()" *ngIf="!isSessionValid">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>

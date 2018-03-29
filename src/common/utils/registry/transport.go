@@ -17,17 +17,18 @@ package registry
 import (
 	"net/http"
 
+	"github.com/vmware/harbor/src/common/http/modifier"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
 // Transport holds information about base transport and modifiers
 type Transport struct {
 	transport http.RoundTripper
-	modifiers []Modifier
+	modifiers []modifier.Modifier
 }
 
 // NewTransport ...
-func NewTransport(transport http.RoundTripper, modifiers ...Modifier) *Transport {
+func NewTransport(transport http.RoundTripper, modifiers ...modifier.Modifier) *Transport {
 	return &Transport{
 		transport: transport,
 		modifiers: modifiers,

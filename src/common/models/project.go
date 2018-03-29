@@ -19,18 +19,21 @@ import (
 	"time"
 )
 
+// ProjectTable is the table name for project
+const ProjectTable = "project"
+
 // Project holds the details of a project.
 type Project struct {
 	ProjectID    int64             `orm:"pk;auto;column(project_id)" json:"project_id"`
 	OwnerID      int               `orm:"column(owner_id)" json:"owner_id"`
 	Name         string            `orm:"column(name)" json:"name"`
 	CreationTime time.Time         `orm:"column(creation_time)" json:"creation_time"`
-	UpdateTime   time.Time         `orm:"update_time" json:"update_time"`
+	UpdateTime   time.Time         `orm:"column(update_time)" json:"update_time"`
 	Deleted      int               `orm:"column(deleted)" json:"deleted"`
 	OwnerName    string            `orm:"-" json:"owner_name"`
 	Togglable    bool              `orm:"-" json:"togglable"`
 	Role         int               `orm:"-" json:"current_user_role_id"`
-	RepoCount    int               `orm:"-" json:"repo_count"`
+	RepoCount    int64             `orm:"-" json:"repo_count"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
 }
 
@@ -173,4 +176,9 @@ type ProjectRequest struct {
 type ProjectQueryResult struct {
 	Total    int64
 	Projects []*Project
+}
+
+//TableName is required by beego orm to map Project to table project
+func (p *Project) TableName() string {
+	return ProjectTable
 }

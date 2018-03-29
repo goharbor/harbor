@@ -15,10 +15,7 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"sort"
 	"strings"
@@ -39,7 +36,7 @@ import (
 )
 
 //sysadmin has all privileges to all projects
-func listRoles(userID int, projectID int64) ([]models.Role, error) {
+func listRoles(userID int, projectID int64, entityType string) ([]models.Role, error) {
 	roles := make([]models.Role, 0, 1)
 	isSysAdmin, err := dao.IsAdminRole(userID)
 	if err != nil {
@@ -56,7 +53,7 @@ func listRoles(userID int, projectID int64) ([]models.Role, error) {
 		return roles, nil
 	}
 
-	rs, err := dao.GetUserProjectRoles(userID, projectID)
+	rs, err := dao.GetUserProjectRoles(userID, projectID, entityType)
 	if err != nil {
 		log.Errorf("failed to get user %d 's roles for project %d: %v", userID, projectID, err)
 		return roles, err
@@ -77,94 +74,6 @@ func checkUserExists(name string) int {
 	return 0
 }
 
-// TriggerReplication triggers the replication according to the policy
-func TriggerReplication(policyID int64, repository string,
-	tags []string, operation string) error {
-	data := struct {
-		PolicyID  int64    `json:"policy_id"`
-		Repo      string   `json:"repository"`
-		Operation string   `json:"operation"`
-		TagList   []string `json:"tags"`
-	}{
-		PolicyID:  policyID,
-		Repo:      repository,
-		TagList:   tags,
-		Operation: operation,
-	}
-
-	b, err := json.Marshal(&data)
-	if err != nil {
-		return err
-	}
-	url := buildReplicationURL()
-
-	return uiutils.RequestAsUI("POST", url, bytes.NewBuffer(b), uiutils.NewStatusRespHandler(http.StatusOK))
-}
-
-// TriggerReplicationByRepository triggers the replication according to the repository
-func TriggerReplicationByRepository(projectID int64, repository string, tags []string, operation string) {
-	policies, err := dao.GetRepPolicyByProject(projectID)
-	if err != nil {
-		log.Errorf("failed to get policies for repository %s: %v", repository, err)
-		return
-	}
-
-	for _, policy := range policies {
-		if policy.Enabled == 0 {
-			continue
-		}
-		if err := TriggerReplication(policy.ID, repository, tags, operation); err != nil {
-			log.Errorf("failed to trigger replication of policy %d for %s: %v", policy.ID, repository, err)
-		} else {
-			log.Infof("replication of policy %d for %s triggered", policy.ID, repository)
-		}
-	}
-}
-
-func postReplicationAction(policyID int64, acton string) error {
-	data := struct {
-		PolicyID int64  `json:"policy_id"`
-		Action   string `json:"action"`
-	}{
-		PolicyID: policyID,
-		Action:   acton,
-	}
-
-	b, err := json.Marshal(&data)
-	if err != nil {
-		return err
-	}
-
-	url := buildReplicationActionURL()
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(b))
-	if err != nil {
-		return err
-	}
-
-	uiutils.AddUISecret(req)
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		return nil
-	}
-
-	b, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return fmt.Errorf("%d %s", resp.StatusCode, string(b))
-}
-
 // SyncRegistry syncs the repositories of registry with database.
 func SyncRegistry(pm promgr.ProjectManager) error {
 
@@ -177,7 +86,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 	}
 
 	var repoRecordsInDB []*models.RepoRecord
-	repoRecordsInDB, err = dao.GetAllRepositories()
+	repoRecordsInDB, err = dao.GetRepositories()
 	if err != nil {
 		log.Errorf("error occurred while getting all registories. %v", err)
 		return err

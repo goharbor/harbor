@@ -58,7 +58,8 @@ item=0
 with_notary=$false
 # clair is not enabled by default
 with_clair=$false
-
+# HA mode is not enabled by default
+harbor_ha=$false
 while [ $# -gt 0 ]; do
         case $1 in
             --help)
@@ -67,7 +68,9 @@ while [ $# -gt 0 ]; do
             --with-notary)
             with_notary=true;;
             --with-clair)
-            with_clair=true;;	 					 	
+            with_clair=true;;
+            --ha)
+            harbor_ha=true;;
             *)
             note "$usage"
             exit 1;;
@@ -158,7 +161,7 @@ then
 	sed "s/^hostname = .*/hostname = $host/g" -i ./harbor.cfg
 fi
 prepare_para=
-if [ $with_notary ]
+if [ $with_notary ] && [ ! $harbor_ha ]
 then
 	prepare_para="${prepare_para} --with-notary"
 fi
@@ -166,12 +169,16 @@ if [ $with_clair ]
 then
 	prepare_para="${prepare_para} --with-clair"
 fi
+if [ $harbor_ha ]
+then
+    prepare_para="${prepare_para} --ha"
+fi
 ./prepare $prepare_para
 echo ""
 
 h2 "[Step $item]: checking existing instance of Harbor ..."; let item+=1
 docker_compose_list='-f docker-compose.yml'
-if [ $with_notary ]
+if [ $with_notary ] && [ ! $harbor_ha ]
 then
 	docker_compose_list="${docker_compose_list} -f docker-compose.notary.yml"
 fi
@@ -188,6 +195,13 @@ fi
 echo ""
 
 h2 "[Step $item]: starting Harbor ..."
+if [ $harbor_ha ]
+then
+    mv docker-compose.yml docker-compose.yml.bak 
+    cp ha/docker-compose.yml docker-compose.yml
+    mv docker-compose.clair.yml docker-compose.clair.yml.bak
+    cp ha/docker-compose.clair.yml docker-compose.clair.yml
+fi
 docker-compose $docker_compose_list up -d
 
 protocol=http

@@ -1,0 +1,301 @@
+# Configure persisten Volumes per application
+## Applications that require storage have a `volumes` definition which will be used
+## when `persistence.enabled` is set to true.
+## example
+# mysql:
+#   volumes:
+#     data:
+## Persistent Volume Storage Class
+## If defined, storageClassName: <storageClass>
+## If set to "-", storageClassName: "", which disables dynamic provisioning
+## If undefined (the default) or set to null, no storageClassName spec is
+##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+##   GKE, AWS & OpenStack)
+##
+#     storageClass: "-"
+#     accessMode: ReadWriteOnce
+#     size: 1Gi
+
+## Configure resource requests and limits per application
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+##
+# mysql:
+#   resources:
+#     requests:
+#       memory: 256Mi
+#       cpu: 100m
+
+persistence:
+  enabled: false
+
+# The tag for Harbor docker images.
+harborImageTag: &harbor_image_tag v1.4.0
+
+# The FQDN for Harbor service.
+externalDomain: harbor.my.domain
+# If set to true, you don't need to set tlsCrt/tlsKey/caCrt, but must add
+# Harbor FQDN as insecure-registries for your docker client.
+insecureRegistry: false
+# The TLS certificate for Harbor. The common name of tlsCrt must match the externalDomain above.
+tlsCrt:
+tlsKey:
+caCrt:
+
+# The secret key used for encryption. Must be a string of 16 chars.
+secretKey: not-a-secure-key
+
+# These annotations allow the registry to work behind the nginx
+# ingress controller.
+ingress:
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.kubernetes.io/body-size: "0"
+    ingress.kubernetes.io/proxy-body-size: "0"
+
+adminserver:
+  image:
+    repository: vmware/harbor-adminserver
+    tag: *harbor_image_tag
+    pullPolicy: IfNotPresent
+  emailHost: "smtp.mydomain.com"
+  emailPort: "25"
+  emailUser: "sample_admin@mydomain.com"
+  emailSsl: "false"
+  emailFrom: "admin <sample_admin@mydomain.com>"
+  emailIdentity: ""
+  emailInsecure: "False"
+  emailPwd: not-a-secure-password
+  adminPassword: Harbor12345
+  authenticationMode: "db_auth"
+  selfRegistration: "on"
+  ldap:
+    url: "ldaps://ldapserver"
+    searchDN: ""
+    baseDN: ""
+    filter: "(objectClass=person)"
+    uid: "uid"
+    scope: "2"
+    timeout: "5"
+    verifyCert: "True"
+  ## Persist data to a persistent volume
+  volumes:
+    config:
+      # storageClass: "-"
+      accessMode: ReadWriteOnce
+      size: 1Gi
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+
+## jobservice
+#
+jobservice:
+  image:
+    repository: vmware/harbor-jobservice
+    tag: *harbor_image_tag
+    pullPolicy: IfNotPresent
+  secret: not-a-secure-secret
+# resources:
+#   requests:
+#     memory: 256Mi
+#     cpu: 100m
+
+## UI
+#
+ui:
+  image:
+    repository: vmware/harbor-ui
+    tag: *harbor_image_tag
+    pullPolicy: IfNotPresent
+  secret: not-a-secure-secret
+  privateKeyPem: |
+    -----BEGIN RSA PRIVATE KEY-----
+    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
+    -----END RSA PRIVATE KEY-----
+# resources:
+#  requests:
+#    memory: 256Mi
+#    cpu: 100m
+
+## MySQL Settings. Currently Harbor does not support an external
+## MySQL server, only their own image. Until this is fixed, do not
+## Change the settings below.
+#
+mysql:
+  image:
+    repository: vmware/harbor-db
+    tag: *harbor_image_tag
+    pullPolicy: IfNotPresent
+  # If left blank will use the included mysql service name.
+  host: ~
+  port: 3306
+  user: "root"
+  pass: "registry"
+  database: "registry"
+  volumes:
+    data:
+      # storageClass: "-"
+      accessMode: ReadWriteOnce
+      size: 1Gi
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+
+registry:
+  image:
+    repository: vmware/registry-photon
+    tag: v2.6.2-v1.4.0
+    pullPolicy: IfNotPresent
+  httpSecret: not-a-secure-secret
+  logLevel:
+# comment out one of the below to use your cloud's object storage.
+#  objectStorage:
+#    gcs:
+#      keyfile: ""
+#      bucket: ""
+#      chunksize: "5242880"
+#    s3:
+#      region: ""
+#      accesskey: ""
+#      secretkey: ""
+#      bucket: ""
+#      encrypt: "true"
+#    azure:
+#      accountname: ""
+#      accountkey: ""
+#      container: ""
+  rootCrt: |
+    -----BEGIN CERTIFICATE-----
+    MIIE0zCCArugAwIBAgIJAIgs3S+hsjhmMA0GCSqGSIb3DQEBCwUAMAAwHhcNMTcx
+    MTA5MTcyNzQ5WhcNMjcxMTA3MTcyNzQ5WjAAMIICIjANBgkqhkiG9w0BAQEFAAOC
+    Ag8AMIICCgKCAgEA4WYbxdrFGG6RnfyYKlHYML3lEqtA9cYWWOynE9BeaEr/cMnM
+    bBr1dd91/Nm6RiYhQvTDU2Kc6NejqjdliW5B9xUoVKayri8OU81a8ViXeNgKwCPR
+    AiTTla1zoX5DnvoxpO9G3lxyNvTKXc0cw8NjQDAXpaDbzJYLkshCeuyD9bco8R96
+    /zrpBEX8tADN3+3yA3fMcZzVXsBm4BTpHJRk/qBpHYEPSHzxyH3iGMNKk3vMUBZz
+    e0EYkK8NCA2CuEKMnC3acx9IdRwkx10abGvHQCLRCVY7rGoak+b0oZ99RJIRQ9Iq
+    YXsn8fsMBQly6xxvSeY5XuSP7Xb6JKDt3y8Spi4gR1M/5aEzhuOyu201rMna7Rs/
+    GPfaKjBlbX0jiLDa7v4zjsBPsPaf/c4uooz3ICLsdukaom+E538R0EiOkXt/wyw2
+    2YmaWNCsYlEpke7cVC33e/0dPBq4IHsVflawSF9OWS23ikVAs/n+76KjuucEDmbT
+    aKUYAJjvAmZL14j+EKc/CoplhCe6pKhavjmNIOfCSdlreIPBhOVbf1f817wKoSIZ
+    qVyCA1AYNkI9RYS00axtJGBGMlKbdQqCNpLL58c6To2awmckIZCEcATKOp++NoGm
+    Ib0bhdSasdGB5VCtwZVluN8bLl13zBKoxTGjNlEatUGDRnDAnLdZbXXffjsCAwEA
+    AaNQME4wHQYDVR0OBBYEFCMYYMOL0E/Uyj5wseDfIl7o4ELsMB8GA1UdIwQYMBaA
+    FCMYYMOL0E/Uyj5wseDfIl7o4ELsMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEL
+    BQADggIBABG8fPvrrR+erpwQFuB/56j2i6sO+qoOJPpAMYwkzICrT0eerWAavwoy
+    f0UAKN7cUeEJXjIR7s7CogGFijWdaWaQsXUD0zJq5aotLYZLimEc1O0uAmJEsfYC
+    v7mG07eU6ge22sSo5hxhVplGt52hnXnT0DdgSRZpq2mvgd9lcopAidM+KHlaasXk
+    IecHKM99KX9D8smr0AcQ6M/Ygbf2qjO9YRmpBIjyQWEake4y/4LWm+3+v08ecg4B
+    g+iMC0Rw1QcPqgwaGaWu71RtYhyTg7SnAknb5nBcHIbLb0hdLgQTa3ZdtXgqchIi
+    GuFlEBmHFZP6bLJORRUQ0ari5wpXIsYfrB4T8PybTzva3OCMlEsMjuysFr9ewhzM
+    9UGLiSQNDyKA10J8WwlzbeD0AAW944hW4Dbg6SWv4gAo51T+6AukRdup5y6lfQ5a
+    h4Lbo6pzaA369IsJBntvKvia6hUf/SghnbG7pCHX/AEilcgTb13HndF/G+7aZgKR
+    mi9qvNRSDsE/BrgZawovp81+j6aL4y6UtXYspHr+SuWsKYsaH7pl5HspNCyJ5vV6
+    dpJAwosFBqSEnI333wAunpMYmi/jKHH/j4WqjLnCInp0/wouzYu42l8Pmz591BSp
+    Jag500bEBxqI2RLELgMt/bUdjp4N2M7mrxdrN+2579HTzb6Hviu9
+    -----END CERTIFICATE-----
+  ## Persist data to a persistent volume
+  volumes:
+    data:
+      # storageClass: "-"
+      accessMode: ReadWriteOnce
+      size: 5Gi
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+
+clair:
+  enabled: true
+  image:
+    repository: vmware/clair-photon
+    tag: v2.0.1-v1.4.0
+    pullPolicy: IfNotPresent
+## The following needs to match the credentials
+## in the `postgresql` configuration under the
+## `postgresql` namespace below.
+  postgresPassword: not-a-secure-password
+  postgresUser: clair
+  postgresDatabase: clair
+# resources:
+#  requests:
+#    memory: 256Mi
+#    cpu: 100m
+# pgResources:
+#  requests:
+#    memory: 256Mi
+#    cpu: 100m
+  volumes:
+    pgData:
+      # storageClass: "-"
+      accessMode: ReadWriteOnce
+      size: 1Gi
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+
+## Notary support is not yet fully implemented in the Helm Charts
+## Enabling it will just break things.
+#
+notary:
+  enabled: false
+
+## Settings for postgresql dependency.
+## see https://github.com/kubernetes/charts/tree/master/stable/postgresql
+## for further configurables.
+postgresql:
+  postgresUser: clair
+  postgresPassword: not-a-secure-password
+  postgresDatabase: clair
+  persistence:
+    enabled: false

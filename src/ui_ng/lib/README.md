@@ -74,13 +74,14 @@ Use **withTitle** to set whether self-contained a header with title or not. Defa
 Support two different display scope mode: under specific project or whole system. 
 
 If **projectId** is set to the id of specified project, then only show the replication rules bound with the project. Otherwise, show all the rules of the whole system.
+On specific project mode, without need projectId, but also need to provide projectName for display.
 
 **withReplicationJob** is used to determine whether or not show the replication jobs which are relevant with the selected replication rule.
 
-**readonly** is to disable all the create/edit/delete actions.
+**isSystemAdmin** is for judgment if user has administrator privilege, if true, user can do the create/edit/delete/replicate actions.
 
 ```
-<hbr-replication [projectId]="..." [withReplicationJob]='...' [readonly]="..."></hbr-replication>
+<hbr-replication [projectId]="..." [projectName]="..." [withReplicationJob]='...' [isSystemAdmin]="..."></hbr-replication>
 ```
 
 * **Endpoint Management View**
@@ -92,6 +93,12 @@ If **projectId** is set to the id of specified project, then only show the repli
 
 * **Repository and Tag Management View**
 
+The `hbr-repository-stackview` directive is deprecated. Using `hbr-repository-listview` and `hbr-repository` instead. You should define two routers one for render 
+`hbr-repository-listview` the other is for `hbr-repository`. `hbr-repository-listview` will output an event, you need catch this event and redirect to related
+page contains `hbr-repository`.
+
+**hbr-repository-listview Directive**
+
 **projectId** is used to specify which projects the repositories are from.
 
 **projectName** is used to generate the related commands for pushing images.
@@ -100,18 +107,99 @@ If **projectId** is set to the id of specified project, then only show the repli
 
 **hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
 
-**tagClickEvent** is an @output event emitter for you to catch the tag click events.
+**repoClickEvent** is an @output event emitter for you to catch the repository click events.
+
 
 ```
-<hbr-repository-stackview [projectId]="..." [projectName]="" [hasSignedIn]="..." [hasProjectAdminRole]="..." (tagClickEvent)="watchTagClickEvent($event)"></hbr-repository-stackview>
+<hbr-repository-listview [projectId]="" [projectName]="" [hasSignedIn]="" [hasProjectAdminRole]="" 
+(repoClickEvent)="watchRepoClickEvent($event)"></hbr-repository-listview>
 
 ...
 
-watchTagClickEvent(tag: Tag): void {
-    //Process tag
+watchRepoClickEvent(repo: RepositoryItem): void {
+    //Process repo
+    ...
+}
+```
+
+
+**hbr-repository-gridview Directive**
+
+**projectId** is used to specify which projects the repositories are from.
+
+**projectName** is used to generate the related commands for pushing images.
+
+**hasSignedIn** is a user session related property to determined whether a valid user signed in session existing. This component supports anonymous user.
+
+**hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
+
+**withVIC** is integrated with VIC
+
+**repoClickEvent** is an @output event emitter for you to catch the repository click events.
+
+**repoProvisionEvent** is an @output event emitter for you to catch the deploy button click event.
+
+**addInfoEvent** is an @output event emitter for you to catch the add additional info button event.
+
+  @Output() repoProvisionEvent = new EventEmitter<RepositoryItem>();
+  @Output() addInfoEvent = new EventEmitter<RepositoryItem>();
+
+
+```
+<hbr-repository-gridview [projectId]="" [projectName]="" [hasSignedIn]="" [hasProjectAdminRole]="" 
+(repoClickEvent)="watchRepoClickEvent($event)"
+(repoProvisionEvent)="watchRepoProvisionEvent($event)"
+(addInfoEvent)="watchAddInfoEvent($event)"></hbr-repository-gridview>
+
+...
+
+
+watchRepoClickEvent(repo: RepositoryItem): void {
+    //Process repo
     ...
 }
 
+watchRepoProvisionEvent(repo: RepositoryItem): void {
+    //Process repo
+    ...
+}
+
+watchAddInfoEvent(repo: RepositoryItem): void {
+    //Process repo
+    ...
+}
+```
+
+
+**hbr-repository Directive**
+
+**projectId** is used to specify which projects the repositories are from.
+
+**repoName** is used to generate the related commands for pushing images.
+
+**hasSignedIn** is a user session related property to determined whether a valid user signed in session existing. This component supports anonymous user.
+
+**hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
+
+**withClair** is Clair installed
+
+**withNotary** is Notary installed
+
+**tagClickEvent** is an @output event emitter for you to catch the tag click events.
+
+**goBackClickEvent** is an @output event emitter for you to catch the go back events.
+
+```
+<hbr-repository [projectId]="" [repoName]="" [hasSignedIn]="" [hasProjectAdminRole]=""  [withClair]="" [withNotary]=""
+(tagClickEvent)="watchTagClickEvt($event)" (backEvt)="watchGoBackEvt($event)" ></hbr-repository>
+
+watchTagClickEvt(tagEvt: TagClickEvent): void {
+    ...
+}
+
+watchGoBackEvt(projectId: string): void {
+    ...
+}
 ```
 
 * **Tag detail view**

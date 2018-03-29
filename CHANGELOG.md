@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.3.0 (2018-1-4)
+
+- Project level policies for blocking the pull of images with vulnerabilities and unknown provenance.
+- Remote certificate verification of replication moved to target level.
+- Refined all images to improve security.
+
+## v1.2.0 (2017-9-15)
+
+- Authentication and authorization, implementing vCenter Single Sign On across components and role-based access control at the project level. [Read more](https://vmware.github.io/vic-product/assets/files/html/1.2/vic_overview/introduction.html#projects)
+- Full integration of the vSphere Integrated Containers Registry and Management Portal user interfaces. [Read more](https://vmware.github.io/vic-product/assets/files/html/1.2/vic_cloud_admin/)
+- Image vulnerabilities scanning.
 
 ## v1.1.0 (2017-4-18)
 

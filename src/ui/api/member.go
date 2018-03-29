@@ -17,14 +17,18 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/vmware/harbor/src/common"
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/auth"
 )
 
-// ProjectMemberAPI handles request to /api/projects/{}/members/{}
-type ProjectMemberAPI struct {
+// ProjectUserMemberAPI handles request to /api/projects/{}/members/{}
+type ProjectUserMemberAPI struct {
 	BaseController
 	memberID      int
 	currentUserID int
@@ -38,7 +42,7 @@ type memberReq struct {
 }
 
 // Prepare validates the URL and parms
-func (pma *ProjectMemberAPI) Prepare() {
+func (pma *ProjectUserMemberAPI) Prepare() {
 	pma.BaseController.Prepare()
 
 	if !pma.SecurityCtx.IsAuthenticated() {
@@ -114,7 +118,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 }
 
 // Get ...
-func (pma *ProjectMemberAPI) Get() {
+func (pma *ProjectUserMemberAPI) Get() {
 	pid := pma.project.ProjectID
 	if pma.memberID == 0 { //member id not set return list of the members
 		username := pma.GetString("username")
@@ -127,7 +131,7 @@ func (pma *ProjectMemberAPI) Get() {
 		}
 		pma.Data["json"] = userList
 	} else { //return detail of a  member
-		roleList, err := listRoles(pma.memberID, pid)
+		roleList, err := listRoles(pma.memberID, pid, common.UserMember)
 		if err != nil {
 			log.Errorf("Error occurred in GetUserProjectRoles, error: %v", err)
 			pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -153,19 +157,45 @@ func (pma *ProjectMemberAPI) Get() {
 }
 
 // Post ...
-func (pma *ProjectMemberAPI) Post() {
+func (pma *ProjectUserMemberAPI) Post() {
 	projectID := pma.project.ProjectID
 
 	var req memberReq
 	pma.DecodeJSONReq(&req)
-	username := req.Username
+	username := strings.TrimSpace(req.Username)
 	userID := checkUserExists(username)
 	if userID <= 0 {
-		log.Warningf("User does not exist, user name: %s", username)
-		pma.RenderError(http.StatusNotFound, "User does not exist")
-		return
+
+		user, err := auth.SearchUser(username)
+
+		if err != nil {
+			log.Errorf("Failed the search user, error: %v", err)
+			pma.RenderError(http.StatusInternalServerError, "Failed to search user")
+			return
+		}
+
+		if user == nil {
+			log.Errorf("Current user doesn't exist: %v", username)
+			pma.RenderError(http.StatusNotFound, "Failed to search user: "+username)
+			return
+		}
+
+		err = auth.OnBoardUser(user)
+
+		if err != nil {
+			log.Errorf("Failed the onboard user, error: %s", err)
+			pma.RenderError(http.StatusInternalServerError, "Failed to onboard user")
+			return
+		}
+		if user.UserID <= 0 {
+			log.Error("Failed the onboard user, UserId <=0")
+			pma.RenderError(http.StatusInternalServerError, "Failed to onboard user")
+			return
+		}
+		userID = user.UserID
+
 	}
-	rolelist, err := dao.GetUserProjectRoles(userID, projectID)
+	rolelist, err := dao.GetUserProjectRoles(userID, projectID, common.UserMember)
 	if err != nil {
 		log.Errorf("Error occurred in GetUserProjectRoles, error: %v", err)
 		pma.CustomAbort(http.StatusInternalServerError, "Internal error.")
@@ -187,7 +217,7 @@ func (pma *ProjectMemberAPI) Post() {
 		pma.CustomAbort(http.StatusBadRequest, "invalid role")
 	}
 
-	err = dao.AddProjectMember(projectID, userID, rid)
+	_, err = dao.AddProjectMember(projectID, userID, rid, common.UserMember)
 	if err != nil {
 		log.Errorf("Failed to update DB to add project user role, project id: %d, user id: %d, role id: %d", projectID, userID, rid)
 		pma.RenderError(http.StatusInternalServerError, "Failed to update data in database")
@@ -196,13 +226,13 @@ func (pma *ProjectMemberAPI) Post() {
 }
 
 // Put ...
-func (pma *ProjectMemberAPI) Put() {
+func (pma *ProjectUserMemberAPI) Put() {
 	pid := pma.project.ProjectID
 	mid := pma.memberID
 
 	var req memberReq
 	pma.DecodeJSONReq(&req)
-	roleList, err := dao.GetUserProjectRoles(mid, pid)
+	roleList, err := dao.GetUserProjectRoles(mid, pid, common.UserMember)
 	if len(roleList) == 0 {
 		log.Warningf("User is not in project, user id: %d, project id: %d", mid, pid)
 		pma.RenderError(http.StatusNotFound, "user not exist in project")
@@ -210,7 +240,7 @@ func (pma *ProjectMemberAPI) Put() {
 	}
 	//TODO: delete and insert should in one transaction
 	//delete user project role record for the given user
-	err = dao.DeleteProjectMember(pid, mid)
+	err = dao.DeleteProjectMember(pid, mid, common.UserMember)
 	if err != nil {
 		log.Errorf("Failed to delete project roles for user, user id: %d, project id: %d, error: %v", mid, pid, err)
 		pma.RenderError(http.StatusInternalServerError, "Failed to update data in DB")
@@ -218,7 +248,7 @@ func (pma *ProjectMemberAPI) Put() {
 	}
 	//insert roles in request
 	for _, rid := range req.Roles {
-		err = dao.AddProjectMember(pid, mid, int(rid))
+		_, err = dao.AddProjectMember(pid, mid, int(rid), common.UserMember)
 		if err != nil {
 			log.Errorf("Failed to update DB to add project user role, project id: %d, user id: %d, role id: %d", pid, mid, rid)
 			pma.RenderError(http.StatusInternalServerError, "Failed to update data in database")
@@ -228,11 +258,11 @@ func (pma *ProjectMemberAPI) Put() {
 }
 
 // Delete ...
-func (pma *ProjectMemberAPI) Delete() {
+func (pma *ProjectUserMemberAPI) Delete() {
 	pid := pma.project.ProjectID
 	mid := pma.memberID
 
-	err := dao.DeleteProjectMember(pid, mid)
+	err := dao.DeleteProjectMember(pid, mid, common.UserMember)
 	if err != nil {
 		log.Errorf("Failed to delete project roles for user, user id: %d, project id: %d, error: %v", mid, pid, err)
 		pma.RenderError(http.StatusInternalServerError, "Failed to update data in DB")

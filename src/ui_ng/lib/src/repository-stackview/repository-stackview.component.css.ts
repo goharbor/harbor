@@ -31,10 +31,17 @@ export const REPOSITORY_STACKVIEW_STYLES: string = `
 :host >>> .datagrid .datagrid-placeholder-container {
   display: none;
 }
+:host >>> .datagrid-overlay-wrapper{margin-top:24px;}
 
 .db-status-warning {
   position: absolute;
   left: 24px;
   display: inline-block;
+}
+.rightPos{
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
 }
 `;

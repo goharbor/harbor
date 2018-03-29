@@ -42,7 +42,7 @@ type ProjectAPI struct {
 	project *models.Project
 }
 
-const projectNameMaxLen int = 30
+const projectNameMaxLen int = 255
 const projectNameMinLen int = 2
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
 
@@ -199,6 +199,8 @@ func (p *ProjectAPI) Get() {
 		}
 	}
 
+	p.populateProperties(p.project)
+
 	p.Data["json"] = p.project
 	p.ServeJSON()
 }
@@ -268,7 +270,9 @@ func (p *ProjectAPI) Deletable() {
 }
 
 func deletable(projectID int64) (*deletableResp, error) {
-	count, err := dao.GetTotalOfRepositoriesByProject([]int64{projectID}, "")
+	count, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
+		ProjectIDs: []int64{projectID},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -372,30 +376,36 @@ func (p *ProjectAPI) List() {
 	}
 
 	for _, project := range result.Projects {
-		if p.SecurityCtx.IsAuthenticated() {
-			roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
-			if len(roles) != 0 {
-				project.Role = roles[0]
-			}
-
-			if project.Role == common.RoleProjectAdmin ||
-				p.SecurityCtx.IsSysAdmin() {
-				project.Togglable = true
-			}
-		}
-
-		repos, err := dao.GetRepositoryByProjectName(project.Name)
-		if err != nil {
-			log.Errorf("failed to get repositories of project %s: %v", project.Name, err)
-			p.CustomAbort(http.StatusInternalServerError, "")
-		}
-
-		project.RepoCount = len(repos)
+		p.populateProperties(project)
 	}
 
 	p.SetPaginationHeader(result.Total, page, size)
 	p.Data["json"] = result.Projects
 	p.ServeJSON()
+}
+
+func (p *ProjectAPI) populateProperties(project *models.Project) {
+	if p.SecurityCtx.IsAuthenticated() {
+		roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
+		if len(roles) != 0 {
+			project.Role = roles[0]
+		}
+
+		if project.Role == common.RoleProjectAdmin ||
+			p.SecurityCtx.IsSysAdmin() {
+			project.Togglable = true
+		}
+	}
+
+	total, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
+		ProjectIDs: []int64{project.ProjectID},
+	})
+	if err != nil {
+		log.Errorf("failed to get total of repositories of project %d: %v", project.ProjectID, err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	project.RepoCount = total
 }
 
 // Put ...
@@ -491,7 +501,7 @@ func (p *ProjectAPI) Logs() {
 func validateProjectReq(req *models.ProjectRequest) error {
 	pn := req.Name
 	if isIllegalLength(req.Name, projectNameMinLen, projectNameMaxLen) {
-		return fmt.Errorf("Project name is illegal in length. (greater than 2 or less than 30)")
+		return fmt.Errorf("Project name is illegal in length. (greater than %d or less than %d)", projectNameMaxLen, projectNameMinLen)
 	}
 	validProjectName := regexp.MustCompile(`^` + restrictedNameChars + `$`)
 	legal := validProjectName.MatchString(pn)

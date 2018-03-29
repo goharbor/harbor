@@ -29,3 +29,42 @@ func AuthModeCanBeModified() (bool, error) {
 	// admin and anonymous
 	return c == 2, nil
 }
+
+// GetConfigEntries Get configuration from database
+func GetConfigEntries() ([]*models.ConfigEntry, error) {
+	o := GetOrmer()
+	var p []*models.ConfigEntry
+	sql := "select * from properties"
+	n, err := o.Raw(sql, []interface{}{}).QueryRows(&p)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if n == 0 {
+		return nil, nil
+	}
+	return p, nil
+}
+
+// SaveConfigEntries Save configuration to database.
+func SaveConfigEntries(entries []models.ConfigEntry) error {
+	o := GetOrmer()
+	for _, entry := range entries {
+		tempEntry := models.ConfigEntry{}
+		tempEntry.Key = entry.Key
+		tempEntry.Value = entry.Value
+		created, _, error := o.ReadOrCreate(&tempEntry, "k")
+		if error != nil {
+			return error
+		}
+		if !created {
+			entry.ID = tempEntry.ID
+			_, err := o.Update(&entry, "v")
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

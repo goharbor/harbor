@@ -1,0 +1,79 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: "{{ template "harbor.fullname" . }}-registry"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: registry
+spec:
+  replicas: 1
+  serviceName: "{{ template "harbor.fullname" . }}-registry"
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: registry
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: registry
+    spec:
+      containers:
+      - name: registry
+        image: {{ .Values.registry.image.repository }}:{{ .Values.registry.image.tag }}
+        imagePullPolicy: {{ .Values.registry.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.mysql.resources | indent 10 }}
+        args: ["serve", "/etc/registry/config.yml"]
+        env:
+          - name: REGISTRY_HTTP_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-registry"
+                key: httpSecret
+        ports:
+        - containerPort: 5000
+        - containerPort: 5001
+        volumeMounts:
+        - name: registry-data
+          mountPath: /var/lib/registry
+        - name: registry-root-certificate
+          mountPath: /etc/registry/root.crt
+          subPath: root.crt
+        - name: registry-config
+          mountPath: /etc/registry/config.yml
+          subPath: config.yml
+      volumes:
+{{- if not .Values.registry.objectStorage }}
+{{- if not .Values.persistence.enabled }}
+      - name: registry-data
+        emptyDir: {}
+{{- end }}
+{{- end }}
+      - name: registry-root-certificate
+        secret:
+          secretName: "{{ template "harbor.fullname" . }}-registry"
+      - name: registry-config
+        configMap:
+          name: "{{ template "harbor.fullname" . }}-registry"
+  {{- if not .Values.registry.objectStorage }}
+  {{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: "registry-data"
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+    spec:
+      accessModes: [{{ .Values.registry.volumes.data.accessMode | quote }}]
+      {{- if .Values.registry.volumes.data.storageClass }}
+      {{- if (eq "-" .Values.registry.volumes.data.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.registry.volumes.data.storageClass }}"
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.registry.volumes.data.size | quote }}
+  {{- end -}}
+  {{- end -}}

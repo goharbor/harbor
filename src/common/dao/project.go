@@ -20,7 +20,6 @@ import (
 
 	"fmt"
 	"time"
-
 	//"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -46,7 +45,10 @@ func AddProject(project models.Project) (int64, error) {
 		return 0, err
 	}
 
-	err = AddProjectMember(projectID, project.OwnerID, models.PROJECTADMIN)
+	pmID, err := AddProjectMember(projectID, project.OwnerID, models.PROJECTADMIN, common.UserMember)
+	if pmID == 0 {
+		return projectID, fmt.Errorf("Failed to add project member, pmid=0")
+	}
 	return projectID, err
 }
 
@@ -146,7 +148,7 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 		sql += ` join project_member pm
 					on p.project_id = pm.project_id
 					join user u2
-					on pm.user_id=u2.user_id`
+					on pm.entity_id=u2.user_id`
 	}
 	sql += ` where p.deleted=0`
 
@@ -157,7 +159,7 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 
 	if len(query.Name) != 0 {
 		sql += ` and p.name like ?`
-		params = append(params, "%"+escape(query.Name)+"%")
+		params = append(params, "%"+Escape(query.Name)+"%")
 	}
 
 	if query.Member != nil && len(query.Member.Name) != 0 {

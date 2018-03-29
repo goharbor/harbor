@@ -66,11 +66,11 @@ export class AuditLogComponent implements OnInit {
     new FilterOption('others', 'AUDIT_LOG.OTHERS', true)
   ];
 
-  pageOffset: number = 1;
-  pageSize: number = 15;
-  totalRecordCount: number = 0;
-  currentPage: number;
-  totalPage: number;
+  pageOffset = 1;
+  pageSize = 15;
+  totalRecordCount = 0;
+  currentPage = 1;
+  totalPage = 0;
 
   @ViewChild('fromTime') fromTimeInput: NgModel;
   @ViewChild('toTime') toTimeInput: NgModel;

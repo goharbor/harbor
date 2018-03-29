@@ -19,7 +19,8 @@ import { SessionUser } from './session-user';
 import { Member } from '../project/member/member';
 
 import { SignInCredential } from './sign-in-credential';
-import { enLang } from '../shared/shared.const'
+import { enLang } from '../shared/shared.const';
+import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "./shared.utils";
 
 const signInUrl = '/login';
 const currentUserEndpint = "/api/users/current";
@@ -27,6 +28,7 @@ const signOffEndpoint = "/log_out";
 const accountEndpoint = "/api/users/:id";
 const langEndpoint = "/language";
 const userExistsEndpoint = "/userExists";
+const renameAdminEndpoint = 'api/internal/renameadmin';
 const langMap = {
     "zh": "zh-CN",
     "en": "en-US"
@@ -44,13 +46,9 @@ export class SessionService {
 
     projectMembers: Member[];
 
-    headers = new Headers({
-        "Content-Type": 'application/json'
-    });
-
-    formHeaders = new Headers({
+    /*formHeaders = new Headers({
         "Content-Type": 'application/x-www-form-urlencoded'
-    });
+    });*/
 
     constructor(private http: Http) { }
 
@@ -72,7 +70,7 @@ export class SessionService {
         '&password=' + encodeURIComponent(signInCredential.password);
 
         //Trigger Http
-        return this.http.post(signInUrl, queryParam, { headers: this.formHeaders })
+        return this.http.post(signInUrl, queryParam, HTTP_FORM_OPTIONS)
             .toPromise()
             .then(() => null)
             .catch(error => this.handleError(error));
@@ -86,7 +84,7 @@ export class SessionService {
      * @memberOf SessionService
      */
     retrieveUser(): Promise<SessionUser> {
-        return this.http.get(currentUserEndpint, { headers: this.headers }).toPromise()
+        return this.http.get(currentUserEndpint, HTTP_GET_OPTIONS).toPromise()
             .then(response => this.currentUser = response.json() as SessionUser)
             .catch(error => this.handleError(error))
     }
@@ -102,7 +100,7 @@ export class SessionService {
      * Log out the system
      */
     signOff(): Promise<any> {
-        return this.http.get(signOffEndpoint, { headers: this.headers }).toPromise()
+        return this.http.get(signOffEndpoint, HTTP_GET_OPTIONS).toPromise()
             .then(() => {
                 //Destroy current session cache
                 //this.currentUser = null;
@@ -124,12 +122,31 @@ export class SessionService {
             return Promise.reject("Invalid account settings");
         }
         let putUrl = accountEndpoint.replace(":id", account.user_id + "");
-        return this.http.put(putUrl, JSON.stringify(account), { headers: this.headers }).toPromise()
+        return this.http.put(putUrl, JSON.stringify(account), HTTP_JSON_OPTIONS).toPromise()
             .then(() => {
                 //Retrieve current session user
                 return this.retrieveUser();
             })
             .catch(error => this.handleError(error))
+    }
+
+    /**
+     *
+     * Update accpunt settings
+     *
+     * @param {SessionUser} account
+     * @returns {Promise<any>}
+     *
+     * @memberOf SessionService
+     */
+    renameAdmin(account: SessionUser): Promise<any> {
+        if (!account) {
+            return Promise.reject("Invalid account settings");
+        }
+        return this.http.post(renameAdminEndpoint, JSON.stringify({}), HTTP_JSON_OPTIONS)
+        .toPromise()
+        .then(() => null)
+        .catch(error => this.handleError(error));
     }
 
     /**
@@ -146,7 +163,7 @@ export class SessionService {
         }
 
         let getUrl = langEndpoint + "?lang=" + backendLang;
-        return this.http.get(getUrl).toPromise()
+        return this.http.get(getUrl, HTTP_GET_OPTIONS).toPromise()
             .then(() => null)
             .catch(error => this.handleError(error))
     }
@@ -158,7 +175,7 @@ export class SessionService {
         body.set('value', value);
 
         //Trigger Http
-        return this.http.post(userExistsEndpoint, body.toString(), { headers: this.formHeaders })
+        return this.http.post(userExistsEndpoint, body.toString(), HTTP_FORM_OPTIONS)
             .toPromise()
             .then(response => {
                 return response.json();

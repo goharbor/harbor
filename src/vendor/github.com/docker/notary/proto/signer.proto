@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package proto;
+
+// KeyManagement Interface
+service KeyManagement {
+
+  // CreateKey creates as asymmetric key pair and returns the PublicKey
+  rpc CreateKey(CreateKeyRequest) returns (PublicKey) {}
+
+  // DeleteKey deletes the key associated with a KeyID
+  rpc DeleteKey(KeyID) returns (Void) {}
+
+  // GetKeyInfo returns the PublicKey associated with a KeyID
+  rpc GetKeyInfo(KeyID) returns (GetKeyInfoResponse) {}
+}
+
+// Signer Interface
+service Signer {
+  // Sign calculates a cryptographic signature using the Key associated with a KeyID and returns the signature
+  rpc Sign(SignatureRequest) returns (Signature) {}
+}
+
+message CreateKeyRequest {
+  string algorithm = 1;
+  string gun = 2;
+  string role = 3;
+}
+
+// KeyInfo holds a KeyID that is used to reference the key and it's algorithm
+message KeyInfo {
+  KeyID keyID = 1;
+  Algorithm algorithm = 2;
+}
+
+// KeyID holds an ID that is used to reference the key
+message KeyID {
+  string ID = 1;
+}
+
+// Type holds the type of crypto algorithm used
+message Algorithm {
+  string algorithm = 1;
+}
+
+// GetKeyInfoResponse returns the public key, the role, and the algorithm and key ID.
+// For backwards compatibility, it doesn't embed a PublicKey object
+message GetKeyInfoResponse {
+  KeyInfo keyInfo = 1;
+  bytes publicKey = 2;
+  string role = 3;
+}
+
+
+// PublicKey has a KeyInfo that is used to reference the key, and opaque bytes of a publicKey
+message PublicKey {
+  KeyInfo keyInfo = 1;
+  bytes publicKey = 2;
+}
+
+// Signature specifies a KeyInfo that was used for signing and signed content
+message Signature {
+  KeyInfo keyInfo = 1;
+  Algorithm algorithm = 2;
+  bytes content = 3;
+}
+
+// SignatureRequests specifies a KeyInfo, and content to be signed
+message SignatureRequest {
+  KeyID keyID = 1;
+  bytes content = 2;
+}
+
+// Void represents an empty message type
+message Void {
+}

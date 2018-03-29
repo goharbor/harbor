@@ -32,7 +32,18 @@
         "YES": "是",
         "NO": "否",
         "NEGATIVE": "否",
-        "COPY": "拷贝"
+        "COPY": "拷贝",
+        "EDIT": "编辑",
+        "SWITCH": "切换",
+        "REPLICATE": "复制"
+    },
+    "BATCH": {
+        "DELETED_SUCCESS": "删除成功",
+        "DELETED_FAILURE": "删除失败",
+        "SWITCH_SUCCESS": "切换成功",
+        "SWITCH_FAILURE": "切换失败",
+        "REPLICATE_SUCCESS": "开始成功",
+        "REPLICATE_FAILURE": "开始失败"
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
@@ -50,7 +61,9 @@
         "NUMBER_REQUIRED": "此项为必填项且为数字。",
         "PORT_REQUIRED": "此项为必填项且为合法端口号。",
         "EMAIL_EXISTING": "邮件地址已经存在。",
-        "USER_EXISTING": "用户名已经存在。"
+        "USER_EXISTING": "用户名已经存在。",
+        "RULE_USER_EXISTING": "名称已经存在。",
+        "EMPTY": "名称为必填项"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -69,7 +82,10 @@
         "FULL_NAME": "全名",
         "COMMENT": "注释",
         "PASSWORD": "密码",
-        "SAVE_SUCCESS": "成功保存用户设置。"
+        "SAVE_SUCCESS": "成功保存用户设置。",
+        "ADMIN_RENAME_TIP": "双击将用户名改为 \"admin@harbor.local\", 注意这个操作是不可逆的",
+        "RENAME_SUCCESS": "用户名更改成功！",
+        "RENAME_CONFIRM_INFO": "更改用户名无法撤销, 你确定更改吗·?"
     },
     "CHANGE_PWD": {
         "TITLE": "修改密码",
@@ -95,13 +111,14 @@
         "SYSTEM_MGMT": {
             "NAME": "系统管理",
             "USER": "用户管理",
+            "REGISTRY": "仓库管理",
             "REPLICATION": "复制管理",
             "CONFIG": "配置管理"
         },
         "LOGS": "日志"
     },
     "USER": {
-        "ADD_ACTION": "用户",
+        "ADD_ACTION": "创建用户",
         "ENABLE_ADMIN_ACTION": "设置为管理员",
         "DISABLE_ADMIN_ACTION": "取消管理员",
         "DEL_ACTION": "删除",
@@ -161,13 +178,14 @@
         "REPLICATION": "复制",
         "USERS": "成员",
         "LOGS": "日志",
+        "LABELS": "标签",
         "PROJECTS": "项目",
         "CONFIG": "配置管理"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "项目仓库",
         "PUBLIC_TOGGLE": "公开",
-        "PUBLIC_POLICY": "此项目的仓库对所有访客公开。",
+        "PUBLIC_POLICY": "所有人都可访问公开的项目仓库。",
         "SECURITY": "部署安全",
         "CONTENT_TRUST_TOGGLE": "内容信任",
         "CONTENT_TRUST_POLCIY": "仅允许部署通过认证的镜像。",
@@ -188,7 +206,6 @@
         "DEVELOPER": "开发人员",
         "GUEST": "访客",
         "DELETE": "删除",
-        "OF": "共计",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
         "USERNAME_IS_REQUIRED": "用户名为必填项。",
@@ -200,7 +217,12 @@
         "DELETION_SUMMARY": "你确认删除项目成员 {{param}}?",
         "ADDED_SUCCESS": "成功新增成员。",
         "DELETED_SUCCESS": "成功删除成员。",
-        "SWITCHED_SUCCESS": "切换角色成功。"
+        "SWITCHED_SUCCESS": "切换角色成功。",
+        "OF": "共计",
+        "SWITCH_TITLE": "切换项目成员确认",
+        "SWITCH_SUMMARY": "你确认切换项目成员 {{param}}??",
+        "ACTION": "设置角色",
+        "REMOVE": "移除成员"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",
@@ -217,10 +239,10 @@
         "OTHERS": "其他",
         "ADVANCED": "高级检索",
         "SIMPLE": "简单检索",
-        "OF": "共计",
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志",
-        "INVALID_DATE": "无效日期。"
+        "INVALID_DATE": "无效日期。",
+        "OF": "共计"
     },
     "REPLICATION": {
         "REPLICATION_RULE": "复制规则",
@@ -231,7 +253,10 @@
         "DELETION_TITLE": "删除规则确认",
         "DELETION_SUMMARY": "确认删除规则 {{param}}?",
         "DELETION_TITLE_FAILURE": "规则确认删除失败",
-        "DELETION_SUMMARY_FAILURE": "{{param}} 有 pending/running/retrying 状态，不能删除",
+        "REPLICATION_TITLE": "复制规则确认",
+        "REPLICATION_SUMMARY": "确认复制规则 {{param}}?",
+        "DELETION_SUMMARY_FAILURE": "有 pending/running/retrying 状态，不能删除",
+        "REPLICATE_SUMMARY_FAILURE": "有 pending/running 状态，不能删除",
         "FILTER_TARGETS_PLACEHOLDER": "过滤目标",
         "DELETION_TITLE_TARGET": "删除目标确认",
         "DELETION_SUMMARY_TARGET": "确认删除目标 {{param}}?",
@@ -262,6 +287,7 @@
         "LAST_START_TIME": "上次起始时间",
         "ACTIVATION": "活动状态",
         "REPLICATION_JOBS": "复制任务",
+        "STOPJOB": "停止任务",
         "ALL": "全部",
         "PENDING": "挂起",
         "RUNNING": "运行中",
@@ -291,12 +317,30 @@
         "TOGGLED_SUCCESS": "切换复制规则状态成功。",
         "CANNOT_EDIT": "当复制规则启用时无法修改。",
         "POLICY_ALREADY_EXISTS": "规则已存在。",
-        "FAILED_TO_DELETE_POLICY_ENABLED": "删除复制规则失败： 仍有未完成的任务或规则未停用。",
+        "FAILED_TO_DELETE_POLICY_ENABLED": "删除复制规则失败： 仍有未完成的任务。",
         "FOUND_ERROR_IN_JOBS": "复制任务中包含错误，请检查。",
         "INVALID_DATE": "无效日期。",
         "PLACEHOLDER": "未发现任何复制规则!",
         "JOB_PLACEHOLDER": "未发现任何复制任务!",
-        "JOB_LOG_VIEWER": "查看复制任务日志"
+        "JOB_LOG_VIEWER": "查看复制任务日志",
+        "NO_ENDPOINT_INFO": "请先添加一个目标",
+        "NO_PROJECT_INFO": "请先添加一个项目名称",
+        "SOURCE_IMAGES_FILTER": "源镜像过滤器",
+        "SCHEDULE": "定时",
+        "MANUAL": "手动",
+        "IMMEDIATE": "即刻",
+        "DAILY": "每天",
+        "WEEKLY": "每周",
+        "SETTING":"设置",
+        "TRIGGER":"触发条件",
+        "TARGETS":"目标",
+        "MODE": "模式",
+        "TRIGGER_MODE": "触发模式",
+        "SOURCE": "源",
+        "REPLICATE": "复制",
+        "DELETE_REMOTE_IMAGES":"删除本地镜像时同时也删除远程的镜像。",
+        "REPLICATE_IMMEDIATE":"立即复制现有的镜像。",
+        "NEW": "新增"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -310,7 +354,8 @@
         "TEST_CONNECTION": "测试连接",
         "TITLE_EDIT": "编辑目标",
         "TITLE_ADD": "新建目标",
-        "DELETE": "删除目标",
+        "EDIT": "编辑",
+        "DELETE": "删除",
         "TESTING_CONNECTION": "正在测试连接...",
         "TEST_CONNECTION_SUCCESS": "测试连接成功。",
         "TEST_CONNECTION_FAILURE": "测试连接失败。",
@@ -348,6 +393,7 @@
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
         "SIZE": "大小",
+        "VULNERABILITY": "漏洞",
         "SIGNED": "已签名",
         "AUTHOR": "作者",
         "CREATED": "创建时间",
@@ -358,12 +404,23 @@
         "REPOSITORIES": "镜像仓库",
         "OF": "共计",
         "ITEMS": "条记录",
+        "NO_ITEMS": "没有记录",
         "POP_REPOS": "受欢迎的镜像仓库",
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",
         "DELETED_TAG_SUCCESS": "成功删除镜像标签。",
         "COPY": "复制",
         "NOTARY_IS_UNDETERMINED": "无法确定镜像标签签名。",
-        "PLACEHOLDER": "未发现任何镜像库!"
+        "PLACEHOLDER": "未发现任何镜像库!",
+        "INFO": "描述信息",
+        "NO_INFO": "此镜像仓库没有描述信息",
+        "IMAGE": "镜像",
+        "LABELS": "标签",
+        "ADD_TO_IMAGE": "添加标签到此镜像",
+        "ADD_LABELS": "添加标签",
+        "FILTER_BY_LABEL": "过滤标签",
+        "ACTION": "操作",
+        "DEPLOY": "部署",
+        "ADDITIONAL_INFO": "添加信息"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -385,7 +442,11 @@
         "AUTH": "认证模式",
         "REPLICATION": "复制",
         "EMAIL": "邮箱",
+        "LABEL": "标签",
+        "REPOSITORY": "仓库",
+        "REPO_READ_ONLY": "仓库只读",
         "SYSTEM": "系统设置",
+        "VULNERABILITY": "漏洞",
         "CONFIRM_TITLE": "确认取消",
         "CONFIRM_SUMMARY": "配置项有改动, 确定取消?",
         "SAVE_SUCCESS": "变更的配置项成功保存。",
@@ -395,6 +456,8 @@
         "MAIL_PASSWORD": "密码",
         "MAIL_FROM": "邮件来源",
         "MAIL_SSL": "邮件 SSL",
+        "MAIL_INSECURE": "验证证书",
+        "INSECURE_TOOLTIP": "确定是否要验证邮件服务器的证书。如果邮件服务器使用的是自签或者非信任证书，不要勾选此项。",
         "SSL_TOOLTIP": "启用SSL到邮件服务器连接。",
         "VERIFY_REMOTE_CERT": "验证远程证书",
         "TOKEN_EXPIRATION": "令牌过期时间（分钟）",
@@ -403,6 +466,7 @@
         "SELF_REGISTRATION": "允许自注册",
         "AUTH_MODE_DB": "数据库",
         "AUTH_MODE_LDAP": "LDAP",
+        "AUTH_MODE_UAA": "UAA",
         "SCOPE_BASE": "本层",
         "SCOPE_ONE_LEVEL": "下一层",
         "SCOPE_SUBTREE": "子树",
@@ -422,7 +486,8 @@
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
-            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。"
+            "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。",
+            "VERIFY_CERT": "检查来自LDAP服务端的证书"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -431,7 +496,14 @@
             "BASE_DN": "LDAP基础DN",
             "FILTER": "LDAP过滤器",
             "UID": "LDAP用户UID的属性",
-            "SCOPE": "LDAP搜索范围"
+            "SCOPE": "LDAP搜索范围",
+            "VERIFY_CERT": "LDAP 检查证书"
+        },
+        "UAA": {
+            "ENDPOINT": "UAA Endpoint",
+            "CLIENT_ID": "UAA Client ID",
+            "CLIENT_SECRET": "UAA Client Secret",
+            "VERIFY_CERT": "UAA 检查证书"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
@@ -461,7 +533,7 @@
     "ABOUT": {
         "VERSION": "版本",
         "BUILD": "构建",
-        "COPYRIGHT": "版权所有 © 1998-2017 VMware, Inc. 保留所有权利。此产品受美国及其他国家/地区的版权和知识产权以及国际条约保护。VMware产品受",
+        "COPYRIGHT": "版权所有 © 1998-2018 VMware, Inc. 保留所有权利。此产品受美国及其他国家/地区的版权和知识产权以及国际条约保护。VMware产品受",
         "COPYRIGHT_SUFIX": "上列出的一项或多项专利保护。",
         "TRADEMARK": "VMware徽标及设计都是VMware, Inc.在美国和/或其他法律辖区的注册商标或者商标。此处提到的其他所有商标和名称分别是其各自公司的商标。",
         "END_USER_LICENSE": "终端用户许可协议",
@@ -510,12 +582,13 @@
         "CHART": {
             "SCANNING_TIME": "扫描完成时间:",
             "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}."
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}.",
+            "TOOLTIPS_TITLE_ZERO": "没有发现可识别的漏洞包"
         },
         "SEVERITY": {
             "HIGH": "严重",
             "MEDIUM": "中等",
-            "LOW": "一般",
+            "LOW": "较低",
             "NEGLIGIBLE": "可忽略",
             "UNKNOWN": "未知",
             "NONE": "无"
@@ -547,8 +620,33 @@
         "OS": "操作系统",
         "SCAN_COMPLETION_TIME": "扫描完成时间",
         "IMAGE_VULNERABILITIES": "镜像缺陷",
+        "LEVEL_VULNERABILITIES": "缺陷等级",
         "PLACEHOLDER": "未发现任何标签!",
-        "COPY_ERROR": "拷贝失败，请尝试手动拷贝。"
+        "COPY_ERROR": "拷贝失败，请尝试手动拷贝。",
+        "FILTER_FOR_TAGS": "过滤项目",
+        "AUTHOR": "作者",
+        "LABELS": "标签"
+    },
+    "LABEL": {
+        "LABEL": "标签",
+        "DESCRIPTION": "描述",
+        "CREATION_TIME": "创建时间",
+        "NEW_LABEL": "新建标签",
+        "EDIT": "编辑",
+        "DELETE": "删除",
+        "LABEL_NAME": "标签名字",
+        "COLOR": "颜色",
+        "FILTER_Label_PLACEHOLDER": "过滤标签",
+        "NO_LABELS": "无标签"
+    },
+    "WEEKLY": {
+        "MONDAY": "周一",
+        "TUESDAY": "周二",
+        "WEDNESDAY": "周三",
+        "THURSDAY": "周四",
+        "FRIDAY": "周五",
+        "SATURDAY": "周六",
+        "SUNDAY": "周日"
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",

@@ -40,6 +40,11 @@ var (
 		common.LDAPFilter,
 		common.LDAPScope,
 		common.LDAPTimeout,
+		common.LDAPVerifyCert,
+		common.LDAPGroupAttributeName,
+		common.LDAPGroupBaseDN,
+		common.LDAPGroupSearchFilter,
+		common.LDAPGroupSearchScope,
 		common.EmailHost,
 		common.EmailPort,
 		common.EmailUsername,
@@ -51,6 +56,11 @@ var (
 		common.ProjectCreationRestriction,
 		common.TokenExpiration,
 		common.ScanAllPolicy,
+		common.UAAClientID,
+		common.UAAClientSecret,
+		common.UAAEndpoint,
+		common.UAAVerifyCert,
+		common.ReadOnly,
 	}
 
 	stringKeys = []string{
@@ -61,18 +71,24 @@ var (
 		common.LDAPBaseDN,
 		common.LDAPUID,
 		common.LDAPFilter,
+		common.LDAPGroupAttributeName,
+		common.LDAPGroupBaseDN,
+		common.LDAPGroupSearchFilter,
 		common.EmailHost,
 		common.EmailUsername,
 		common.EmailPassword,
 		common.EmailFrom,
 		common.EmailIdentity,
 		common.ProjectCreationRestriction,
+		common.UAAClientID,
+		common.UAAEndpoint,
 	}
 
 	numKeys = []string{
 		common.EmailPort,
 		common.LDAPScope,
 		common.LDAPTimeout,
+		common.LDAPGroupSearchScope,
 		common.TokenExpiration,
 	}
 
@@ -80,11 +96,15 @@ var (
 		common.EmailSSL,
 		common.EmailInsecure,
 		common.SelfRegistration,
+		common.LDAPVerifyCert,
+		common.UAAVerifyCert,
+		common.ReadOnly,
 	}
 
 	passwordKeys = []string{
 		common.EmailPassword,
 		common.LDAPSearchPwd,
+		common.UAAClientSecret,
 	}
 )
 
@@ -221,8 +241,8 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 	}
 
 	if value, ok := strMap[common.AUTHMode]; ok {
-		if value != common.DBAuth && value != common.LDAPAuth {
-			return false, fmt.Errorf("invalid %s, shoud be %s or %s", common.AUTHMode, common.DBAuth, common.LDAPAuth)
+		if value != common.DBAuth && value != common.LDAPAuth && value != common.UAAAuth {
+			return false, fmt.Errorf("invalid %s, shoud be one of %s, %s, %s", common.AUTHMode, common.DBAuth, common.LDAPAuth, common.UAAAuth)
 		}
 		flag, err := authModeCanBeModified()
 		if err != nil {
@@ -235,28 +255,28 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 	}
 
 	if mode == common.LDAPAuth {
-		ldap, err := config.LDAP()
+		ldapConf, err := config.LDAPConf()
 		if err != nil {
 			return true, err
 		}
 
-		if len(ldap.URL) == 0 {
+		if len(ldapConf.LdapURL) == 0 {
 			if _, ok := strMap[common.LDAPURL]; !ok {
 				return false, fmt.Errorf("%s is missing", common.LDAPURL)
 			}
 		}
 
-		if len(ldap.BaseDN) == 0 {
+		if len(ldapConf.LdapBaseDn) == 0 {
 			if _, ok := strMap[common.LDAPBaseDN]; !ok {
 				return false, fmt.Errorf("%s is missing", common.LDAPBaseDN)
 			}
 		}
-		if len(ldap.UID) == 0 {
+		if len(ldapConf.LdapUID) == 0 {
 			if _, ok := strMap[common.LDAPUID]; !ok {
 				return false, fmt.Errorf("%s is missing", common.LDAPUID)
 			}
 		}
-		if ldap.Scope == 0 {
+		if ldapConf.LdapScope == 0 {
 			if _, ok := numMap[common.LDAPScope]; !ok {
 				return false, fmt.Errorf("%s is missing", common.LDAPScope)
 			}
@@ -328,7 +348,6 @@ func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 		return nil, err
 	}
 	result[common.AUTHMode].Editable = flag
-
 	return result, nil
 }
 

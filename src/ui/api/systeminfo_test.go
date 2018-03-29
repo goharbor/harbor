@@ -64,6 +64,7 @@ func TestGetGeneralInfo(t *testing.T) {
 	assert.Equal(false, g.WithNotary, "with notary should be false")
 	assert.Equal(true, g.HasCARoot, "has ca root should be true")
 	assert.NotEmpty(g.HarborVersion, "harbor version should not be empty")
+	assert.Equal(false, g.ReadOnly, "readonly should be false")
 }
 
 func TestGetCert(t *testing.T) {
@@ -90,4 +91,11 @@ func TestGetCert(t *testing.T) {
 
 	}
 	CommonDelUser()
+}
+func TestPing(t *testing.T) {
+	apiTest := newHarborAPI()
+	code, _, err := apiTest.Ping()
+	assert := assert.New(t)
+	assert.Nil(err, fmt.Sprintf("Unexpected Error: %v", err))
+	assert.Equal(200, code, fmt.Sprintf("Unexpected status code: %d", code))
 }

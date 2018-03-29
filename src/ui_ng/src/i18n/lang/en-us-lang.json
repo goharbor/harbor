@@ -32,7 +32,18 @@
         "YES": "YES",
         "NO": "NO",
         "NEGATIVE": "NEGATIVE",
-        "COPY": "COPY"
+        "COPY": "COPY",
+        "EDIT": "EDIT",
+        "SWITCH": "SWITCH",
+        "REPLICATE": "REPLICATE"
+    },
+    "BATCH": {
+        "DELETED_SUCCESS": "Deleted successfully",
+        "DELETED_FAILURE": "Deleted failed",
+        "SWITCH_SUCCESS": "Switch successfully",
+        "SWITCH_FAILURE": "Switch failed",
+        "REPLICATE_SUCCESS": "Started successfully",
+        "REPLICATE_FAILURE": "Started failed"
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com.",
@@ -50,7 +61,9 @@
         "NUMBER_REQUIRED": "Field is required and should be numbers.",
         "PORT_REQUIRED": "Field is required and should be valid port number.",
         "EMAIL_EXISTING": "Email address already exists.",
-        "USER_EXISTING": "Username is already in use."
+        "USER_EXISTING": "Username is already in use.",
+        "RULE_USER_EXISTING": "Name is already in use.",
+        "EMPTY": "Name is required"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -69,7 +82,10 @@
         "FULL_NAME": "First and last name",
         "COMMENT": "Comments",
         "PASSWORD": "Password",
-        "SAVE_SUCCESS": "User profile saved successfully."
+        "SAVE_SUCCESS": "User profile saved successfully.",
+        "ADMIN_RENAME_TIP": "Double click to change your username to \"admin@harbor.local\", but this action can NOT redo.",
+        "RENAME_SUCCESS": "Rename success!",
+        "RENAME_CONFIRM_INFO": "This action can not undo, Confirm To Rename?"
     },
     "CHANGE_PWD": {
         "TITLE": "Change Password",
@@ -95,15 +111,16 @@
         "SYSTEM_MGMT": {
             "NAME": "Administration",
             "USER": "Users",
-            "REPLICATION": "Replication",
+            "REGISTRY": "Registries",
+            "REPLICATION": "Replications",
             "CONFIG": "Configuration"
         },
         "LOGS": "Logs"
     },
     "USER": {
-        "ADD_ACTION": "USER",
-        "ENABLE_ADMIN_ACTION": "Set as Administrator",
-        "DISABLE_ADMIN_ACTION": "Revoke Administrator",
+        "ADD_ACTION": "New User",
+        "ENABLE_ADMIN_ACTION": "SET AS ADMIN",
+        "DISABLE_ADMIN_ACTION": "REVOKE ADMIN",
         "DEL_ACTION": "Delete",
         "FILTER_PLACEHOLDER": "Filter users",
         "COLUMN_NAME": "Name",
@@ -116,7 +133,7 @@
         "SAVE_SUCCESS": "New user created successfully.",
         "DELETION_TITLE": "Confirm user deletion",
         "DELETION_SUMMARY": "Do you want to delete user {{param}}?",
-        "DELETE_SUCCESS": "User deleted successfully.",
+        "DELETE_SUCCESS": "Users deleted successfully.",
         "ITEMS": "items",
         "OF": "of"
     },
@@ -150,7 +167,7 @@
         "FILTER_PLACEHOLDER": "Filter Projects",
         "REPLICATION_RULE": "Replication Rule",
         "CREATED_SUCCESS": "Created project successfully.",
-        "DELETED_SUCCESS": "Deleted project successfully.",
+        "DELETED_SUCCESS": "Deleted projects successfully.",
         "TOGGLED_SUCCESS": "Toggled project successfully.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules cannot be deleted.",
         "INLINE_HELP_PUBLIC": "When a project is set to public, anyone has read permission to the repositories under this project, and the user does not need to run \"docker login\" before pulling images under this project.",
@@ -161,6 +178,7 @@
         "REPLICATION": "Replication",
         "USERS": "Members",
         "LOGS": "Logs",
+        "LABELS": "labels",
         "PROJECTS": "Projects",
         "CONFIG": "Configuration"
     },
@@ -195,12 +213,16 @@
         "USERNAME_ALREADY_EXISTS": "Username already exists.",
         "UNKNOWN_ERROR": "Unknown error occurred while adding member.",
         "FILTER_PLACEHOLDER": "Filter Members",
-        "DELETION_TITLE": "Confirm project member deletion",
-        "DELETION_SUMMARY": "Do you want to delete project member {{param}}?",
+        "DELETION_TITLE": "Confirm project members deletion",
+        "DELETION_SUMMARY": "Do you want to delete project members {{param}}?",
         "ADDED_SUCCESS": "Added member successfully.",
         "DELETED_SUCCESS": "Deleted member successfully.",
         "SWITCHED_SUCCESS": "Switched member role successfully.",
-        "OF": "of"
+        "OF": "of",
+        "SWITCH_TITLE": "Confirm project members switch",
+        "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?",
+        "ACTION": "SET ROLE",
+        "REMOVE": "REMOVE"
     },
     "AUDIT_LOG": {
         "USERNAME": "Username",
@@ -228,10 +250,13 @@
         "ENDPOINTS": "Endpoints",
         "FILTER_POLICIES_PLACEHOLDER": "Filter Rules",
         "FILTER_JOBS_PLACEHOLDER": "Filter Jobs",
-        "DELETION_TITLE": "Confirm Rule Deletion",
-        "DELETION_SUMMARY": "Do you want to delete rule {{param}}?",
+        "DELETION_TITLE": "Confirm Rules Deletion",
+        "DELETION_SUMMARY": "Do you want to delete rules {{param}}?",
+        "REPLICATION_TITLE": "Confirm Rules replication",
+        "REPLICATION_SUMMARY": "Do you want to replicate the Rules {{param}}?",
         "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
-        "DELETION_SUMMARY_FAILURE": "{{param}} have pending/running/retrying status",
+        "DELETION_SUMMARY_FAILURE": "have pending/running/retrying status",
+        "REPLICATE_SUMMARY_FAILURE": "have pending/running status",
         "FILTER_TARGETS_PLACEHOLDER": "Filter Endpoints",
         "DELETION_TITLE_TARGET": "Confirm Endpoint Deletion",
         "DELETION_SUMMARY_TARGET": "Do you want to delete the endpoint {{param}}?",
@@ -262,6 +287,7 @@
         "LAST_START_TIME": "Last Start Time",
         "ACTIVATION": "Activation",
         "REPLICATION_JOBS": "Replication Jobs",
+        "STOPJOB": "Stop Jobs",
         "ALL": "All",
         "PENDING": "Pending",
         "RUNNING": "Running",
@@ -286,17 +312,35 @@
         "CONFIRM_TOGGLE_DISABLE_POLICY": "After disabling the rule, all unfinished replication jobs of this rule will be stopped and canceled. \nPlease confirm to continue.",
         "CREATED_SUCCESS": "Created replication rule successfully.",
         "UPDATED_SUCCESS": "Updated replication rule successfully.",
-        "DELETED_SUCCESS": "Deleted replication rule successfully.",
-        "DELETED_FAILED": "Deleted replication rule failed.",
+        "DELETED_SUCCESS": "Deleted replications rule successfully.",
+        "DELETED_FAILED": "Deleted replications rule failed.",
         "TOGGLED_SUCCESS": "Toggled replication rule status successfully.",
         "CANNOT_EDIT": "Replication rule cannot be changed while it is enabled.",
         "POLICY_ALREADY_EXISTS": "Replication rule already exists.",
-        "FAILED_TO_DELETE_POLICY_ENABLED": "Cannot delete rule: rule has unfinished job(s) or rule is enabled.",
+        "FAILED_TO_DELETE_POLICY_ENABLED": "Cannot delete rule: rule has unfinished job(s)",
         "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check.",
         "INVALID_DATE": "Invalid date.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
-        "JOB_LOG_VIEWER": "View Replication Job Log"
+        "JOB_LOG_VIEWER": "View Replication Job Log",
+        "NO_ENDPOINT_INFO": "Please add an endpoint first",
+        "NO_PROJECT_INFO": "Please add a project name first",
+        "SOURCE_IMAGES_FILTER": "Source images filter",
+        "SCHEDULE": "Scheduled",
+        "MANUAL": "Manual",
+        "IMMEDIATE": "Immediate",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "SETTING":"Options",
+        "TRIGGER":"Triggering Condition",
+        "TARGETS":"Target",
+        "MODE": "Mode",
+        "TRIGGER_MODE": "Trigger Mode",
+        "SOURCE": "Source",
+        "REPLICATE": "Replicate",
+        "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
+        "REPLICATE_IMMEDIATE":"Replicate existing images immediately",
+        "NEW": "New"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",
@@ -310,7 +354,8 @@
         "TEST_CONNECTION": "Test Connection",
         "TITLE_EDIT": "Edit Endpoint",
         "TITLE_ADD": "Create Endpoint",
-        "DELETE": "Delete Endpoint",
+        "EDIT": "Edit",
+        "DELETE": "Delete",
         "TESTING_CONNECTION": "Testing Connection...",
         "TEST_CONNECTION_SUCCESS": "Connection tested successfully.",
         "TEST_CONNECTION_FAILURE": "Failed to ping endpoint.",
@@ -322,8 +367,8 @@
         "ITEMS": "items",
         "CREATED_SUCCESS": "Created endpoint successfully.",
         "UPDATED_SUCCESS": "Updated endpoint successfully.",
-        "DELETED_SUCCESS": "Deleted endpoint successfully.",
-        "DELETED_FAILED": "Deleted endpoint failed.",
+        "DELETED_SUCCESS": "Deleted endpoints successfully.",
+        "DELETED_FAILED": "Deleted endpoints failed.",
         "CANNOT_EDIT": "Endpoint cannot be changed while the replication rule is enabled.",
         "FAILED_TO_DELETE_TARGET_IN_USED": "Failed to delete the endpoint in use.",
         "PLACEHOLDER": "We couldn't find any endpoints!"
@@ -348,6 +393,7 @@
         "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
         "SIZE": "Size",
+        "VULNERABILITY": "Vulnerability",
         "SIGNED": "Signed",
         "AUTHOR": "Author",
         "CREATED": "Creation Time",
@@ -358,12 +404,23 @@
         "REPOSITORIES": "Repositories",
         "OF": "of",
         "ITEMS": "items",
+        "NO_ITEMS": "NO ITEMS",
         "POP_REPOS": "Popular Repositories",
-        "DELETED_REPO_SUCCESS": "Deleted repository successfully.",
-        "DELETED_TAG_SUCCESS": "Deleted tag successfully.",
+        "DELETED_REPO_SUCCESS": "Deleted repositories successfully.",
+        "DELETED_TAG_SUCCESS": "Deleted tags successfully.",
         "COPY": "Copy",
         "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
-        "PLACEHOLDER": "We couldn't find any repositories!"
+        "PLACEHOLDER": "We couldn't find any repositories!",
+        "INFO": "Info",
+        "NO_INFO": "No description info for this repository",
+        "IMAGE": "Images",
+        "LABELS": ":labels",
+        "ADD_TO_IMAGE": "Add labels to this image",
+        "FILTER_BY_LABEL": "Filter projects by label",
+        "ADD_LABELS": "Add labels",
+        "ACTION": "ACTION",
+        "DEPLOY": "DEPLOY",
+        "ADDITIONAL_INFO": "Add Additional Info"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
@@ -385,7 +442,11 @@
         "AUTH": "Authentication",
         "REPLICATION": "Replication",
         "EMAIL": "Email",
+        "LABEL": "Label",
+        "REPOSITORY": "Repository",
+        "REPO_READ_ONLY": "Repository Read Only",
         "SYSTEM": "System Settings",
+        "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirm to cancel",
         "CONFIRM_SUMMARY": "Some changes have not been saved. Do you want to discard them?",
         "SAVE_SUCCESS": "Configuration has been successfully saved.",
@@ -395,6 +456,8 @@
         "MAIL_PASSWORD": "Email Password",
         "MAIL_FROM": "Email From",
         "MAIL_SSL": "Email SSL",
+        "MAIL_INSECURE": "Verify Certificate",
+        "INSECURE_TOOLTIP": "Determine whether to verify the certificate of the Email server. Uncheck this box when the Email server uses a self-signed or untrusted certificate.",
         "SSL_TOOLTIP": "Enable SSL for email server connection",
         "VERIFY_REMOTE_CERT": "Verify Remote Cert",
         "TOKEN_EXPIRATION": "Token Expiration (Minutes)",
@@ -403,6 +466,7 @@
         "SELF_REGISTRATION": "Allow Self-Registration",
         "AUTH_MODE_DB": "Database",
         "AUTH_MODE_LDAP": "LDAP",
+        "AUTH_MODE_UAA": "UAA",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
         "SCOPE_SUBTREE": "Subtree",
@@ -422,7 +486,8 @@
             "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes.",
             "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
-            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
+            "VERIFY_CERT": "Verify Cert from LDAP Server"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -431,7 +496,14 @@
             "BASE_DN": "LDAP Base DN",
             "FILTER": "LDAP Filter",
             "UID": "LDAP UID",
-            "SCOPE": "LDAP Scope"
+            "SCOPE": "LDAP Scope",
+            "VERIFY_CERT": "LDAP Verify Cert"
+        },
+        "UAA": {
+            "ENDPOINT": "UAA Endpoint",
+            "CLIENT_ID": "UAA Client ID",
+            "CLIENT_SECRET": "UAA Client Secret",
+            "VERIFY_CERT": "UAA Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
@@ -461,7 +533,7 @@
     "ABOUT": {
         "VERSION": "Version",
         "BUILD": "Build",
-        "COPYRIGHT": "Copyright 1998-2017 VMware, Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
+        "COPYRIGHT": "Copyright 1998-2018 VMware, Inc. All rights reserved. This product is protected by U.S. and international property laws. VMware products are covered by one or more patents listed at",
         "COPYRIGHT_SUFIX": ".",
         "TRADEMARK": "VMware is a registered trademark or trademark of VMware, Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",
@@ -510,7 +582,8 @@
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability package found"
         },
         "SEVERITY": {
             "HIGH": "high",
@@ -548,7 +621,29 @@
         "SCAN_COMPLETION_TIME": "Scan Completed",
         "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
         "PLACEHOLDER": "We couldn't find any tags!",
-        "COPY_ERROR": "Copy failed, please try to manually copy."
+        "COPY_ERROR": "Copy failed, please try to manually copy.",
+        "FILTER_FOR_TAGS": "Filter Tags"
+    },
+    "LABEL": {
+        "LABEL": "Label",
+        "DESCRIPTION": "Description",
+        "CREATION_TIME": "Creation Time",
+        "NEW_LABEL": "New Label",
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "LABEL_NAME": "Label Name",
+        "COLOR": "Color",
+        "FILTER_LABEL_PLACEHOLDER": "Filter Labels",
+        "NO_LABELS": "No labels"
+    },
+    "WEEKLY": {
+        "MONDAY": "Monday",
+        "TUESDAY": "Tuesday",
+        "WEDNESDAY": "Wednesday",
+        "THURSDAY": "Thursday",
+        "FRIDAY": "Friday",
+        "SATURDAY": "Saturday",
+        "SUNDAY": "Sunday"
     },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
     "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action.",

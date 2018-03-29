@@ -35,7 +35,7 @@ const (
 var rec *httptest.ResponseRecorder
 
 // NotaryEndpoint , exported for testing.
-var NotaryEndpoint = config.InternalNotaryEndpoint()
+var NotaryEndpoint =""
 
 // MatchPullManifest checks if the request looks like a request to pull manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values
 func MatchPullManifest(req *http.Request) (bool, string, string) {
@@ -152,6 +152,20 @@ func (uh urlHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req = req.WithContext(ctx)
 	}
 	uh.next.ServeHTTP(rw, req)
+}
+
+type readonlyHandler struct {
+	next http.Handler
+}
+
+func (rh readonlyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if config.ReadOnly() {
+		if req.Method == http.MethodDelete || req.Method == http.MethodPost || req.Method == http.MethodPatch {
+			http.Error(rw, "Upload/Delete is prohibited in read only mode.", http.StatusServiceUnavailable)
+			return
+		}
+	}
+	rh.next.ServeHTTP(rw, req)
 }
 
 type listReposHandler struct {
@@ -280,6 +294,9 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 }
 
 func matchNotaryDigest(img imageInfo) (bool, error) {
+	if NotaryEndpoint == "" {
+		NotaryEndpoint = config.InternalNotaryEndpoint()
+	}
 	targets, err := notary.GetInternalTargets(NotaryEndpoint, tokenUsername, img.repository)
 	if err != nil {
 		return false, err

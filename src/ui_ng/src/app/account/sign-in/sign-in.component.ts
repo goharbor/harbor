@@ -51,6 +51,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     rememberedName: string = "";
 
     customLoginBgImg: string;
+    customAppTitle: string;
     //Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
@@ -77,8 +78,13 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     ngOnInit(): void {
         // custom skin
         let customSkinObj = this.skinableConfig.getSkinConfig();
-        if (customSkinObj && customSkinObj.loginBgImg) {
-            this.customLoginBgImg = customSkinObj.loginBgImg;
+        if (customSkinObj) {
+            if (customSkinObj.loginBgImg) {
+                this.customLoginBgImg = customSkinObj.loginBgImg;
+            }
+           if (customSkinObj.appTitle) {
+               this.customAppTitle = customSkinObj.appTitle;
+           }
         }
 
         //Make sure the updated configuration can be loaded
@@ -132,7 +138,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     }
 
     public get showForgetPwd(): boolean {
-        return this.appConfig.auth_mode != 'ldap_auth';
+        return this.appConfig.auth_mode !== 'ldap_auth' && this.appConfig.auth_mode !== 'uaa_auth';
     }
 
     clickRememberMe($event: any): void {

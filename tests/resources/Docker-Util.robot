@@ -40,24 +40,25 @@ Push image
     Log To Console  \nRunning docker push ${image}...
     ${rc}=  Run And Return Rc  docker pull ${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker tag ${image} ${ip}/${project}/${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
 
 Push Image With Tag
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}
+#tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest    
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}  ${tag1}=latest
     Log To Console  \nRunning docker push ${image}...
-    ${rc}=  Run And Return Rc  docker pull ${image}
+    ${rc}=  Run And Return Rc  docker pull ${image}:${tag1}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  docker tag ${image} ${tag}
-    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${tag}
-    Log To Console  ${output}
+    ${rc}=  Run And Return Rc  docker tag ${image}:${tag1} ${ip}/${project}/${image}:${tag}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}:${tag}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
 
@@ -66,7 +67,15 @@ Cannot Pull image
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/${project}/${image}
-    Log To Console  ${output}
+    Log  ${output}
+    Should Not Be Equal As Integers  ${rc}  0
+
+Cannot Pull Unsigned Image
+    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}  
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pass} ${ip}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${ip}/${proj}/${imagewithtag}
+    Should Contain  ${output}  The image is not signed in Notary
     Should Not Be Equal As Integers  ${rc}  0
 
 Cannot Push image
@@ -74,11 +83,11 @@ Cannot Push image
     Log To Console  \nRunning docker push ${image}...
     ${rc}=  Run And Return Rc  docker pull ${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
-    Log To Console  ${output}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker tag ${image} ${ip}/${project}/${image}
     ${rc}  ${output}=  Run And Return Rc And Output  docker push ${ip}/${project}/${image}
-    Log To Console  ${output}
+    Log  ${output}
     Should Not Be Equal As Integers  ${rc}  0
     ${rc}=  Run And Return Rc  docker logout ${ip}
 
@@ -118,9 +127,24 @@ Start Docker Daemon Locally
     Sleep  2s
     [Return]  ${handle}
 
+Prepare Docker Cert
+    [Arguments]  ${ip}
+    ${rc}  ${out}=  Run And Return Rc And Output  mkdir -p /etc/docker/certs.d/${ip}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${out}=  Run And Return Rc And Output  cp harbor_ca.crt /etc/docker/certs.d/${ip}
+    Should Be Equal As Integers  ${rc}  0   
+    
 Kill Local Docker Daemon
     [Arguments]  ${handle}  ${dockerd-pid}
     Terminate Process  ${handle}
     Process Should Be Stopped  ${handle}
     ${rc}=  Run And Return Rc  kill -9 ${dockerd-pid}
     Should Be Equal As Integers  ${rc}  0
+
+Docker Login Fail
+    [Arguments]  ${ip}  ${user}  ${pwd}
+    Log To Console  \nRunning docker login ${ip} ...
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
+    Should Not Be Equal As Integers  ${rc}  0
+    Should Contain  ${output}  unauthorized: authentication required
+    Should Not Contain  ${output}  500 Internal Server Error

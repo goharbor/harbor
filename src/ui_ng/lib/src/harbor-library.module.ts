@@ -6,7 +6,7 @@ import { ENDPOINT_DIRECTIVES } from './endpoint/index';
 import { REPOSITORY_DIRECTIVES } from './repository/index';
 import { REPOSITORY_STACKVIEW_DIRECTIVES } from './repository-stackview/index';
 
-import { LIST_REPOSITORY_DIRECTIVES } from './list-repository/index';
+import { REPOSITORY_LISTVIEW_DIRECTIVES } from './repository-listview/index';
 import { TAG_DIRECTIVES } from './tag/index';
 
 import { REPLICATION_DIRECTIVES } from './replication/index';
@@ -25,6 +25,8 @@ import { PUSH_IMAGE_BUTTON_DIRECTIVES } from './push-image/index';
 import { CONFIGURATION_DIRECTIVES } from './config/index';
 import { JOB_LOG_VIEWER_DIRECTIVES } from './job-log-viewer/index';
 import { PROJECT_POLICY_CONFIG_DIRECTIVES } from './project-policy-config/index';
+import { HBR_GRIDVIEW_DIRECTIVES } from './gridview/index';
+import { REPOSITORY_GRIDVIEW_DIRECTIVES } from './repository-gridview';
 
 import {
   SystemInfoService,
@@ -47,6 +49,8 @@ import {
   JobLogDefaultService,
   ProjectService,
   ProjectDefaultService,
+  LabelService,
+  LabelDefaultService
 } from './service/index';
 import {
   ErrorHandler,
@@ -58,6 +62,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { TranslateServiceInitializer } from './i18n/index';
 import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from './utils';
 import { ChannelService } from './channel/index';
+import {LABEL_DIRECTIVES} from "./label/index";
+import {CREATE_EDIT_LABEL_DIRECTIVES} from "./create-edit-label/index";
+import {LABEL_PIECE_DIRECTIVES} from "./label-piece/index";
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -81,7 +88,8 @@ export const DefaultServiceConfig: IServiceConfig = {
   langMessageFileSuffixForHttpLoader: "-lang.json",
   localI18nMessageVariableMap: {},
   configurationEndpoint: "/api/configurations",
-  scanJobEndpoint: "/api/jobs/scan"
+  scanJobEndpoint: "/api/jobs/scan",
+  labelEndpoint: "/api/labels"
 };
 
 /**
@@ -126,6 +134,9 @@ export interface HarborModuleConfig {
 
   //Service implementation for project policy
   projectPolicyService?: Provider,
+
+  //Service implementation for label
+  labelService?: Provider,
 }
 
 /**
@@ -157,7 +168,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     ENDPOINT_DIRECTIVES,
     REPOSITORY_DIRECTIVES,
     REPOSITORY_STACKVIEW_DIRECTIVES,
-    LIST_REPOSITORY_DIRECTIVES,
+    REPOSITORY_LISTVIEW_DIRECTIVES,
     TAG_DIRECTIVES,
     CREATE_EDIT_ENDPOINT_DIRECTIVES,
     CONFIRMATION_DIALOG_DIRECTIVES,
@@ -170,7 +181,12 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     PUSH_IMAGE_BUTTON_DIRECTIVES,
     CONFIGURATION_DIRECTIVES,
     JOB_LOG_VIEWER_DIRECTIVES,
-    PROJECT_POLICY_CONFIG_DIRECTIVES
+    PROJECT_POLICY_CONFIG_DIRECTIVES,
+    LABEL_DIRECTIVES,
+    CREATE_EDIT_LABEL_DIRECTIVES,
+    LABEL_PIECE_DIRECTIVES,
+    HBR_GRIDVIEW_DIRECTIVES,
+    REPOSITORY_GRIDVIEW_DIRECTIVES,
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -178,7 +194,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     ENDPOINT_DIRECTIVES,
     REPOSITORY_DIRECTIVES,
     REPOSITORY_STACKVIEW_DIRECTIVES,
-    LIST_REPOSITORY_DIRECTIVES,
+    REPOSITORY_LISTVIEW_DIRECTIVES,
     TAG_DIRECTIVES,
     CREATE_EDIT_ENDPOINT_DIRECTIVES,
     CONFIRMATION_DIALOG_DIRECTIVES,
@@ -192,7 +208,12 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     CONFIGURATION_DIRECTIVES,
     JOB_LOG_VIEWER_DIRECTIVES,
     TranslateModule,
-    PROJECT_POLICY_CONFIG_DIRECTIVES
+    PROJECT_POLICY_CONFIG_DIRECTIVES,
+    LABEL_DIRECTIVES,
+    CREATE_EDIT_LABEL_DIRECTIVES,
+    LABEL_PIECE_DIRECTIVES,
+    HBR_GRIDVIEW_DIRECTIVES,
+    REPOSITORY_GRIDVIEW_DIRECTIVES,
   ],
   providers: []
 })
@@ -214,7 +235,8 @@ export class HarborLibraryModule {
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
-        //Do initializing
+        config.labelService || {provide: LabelService, useClass: LabelDefaultService},
+        // Do initializing
         TranslateServiceInitializer,
         {
           provide: APP_INITIALIZER,
@@ -243,6 +265,7 @@ export class HarborLibraryModule {
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
+        config.labelService || {provide: LabelService, useClass: LabelDefaultService},
         ChannelService
       ]
     };

@@ -29,10 +29,18 @@ Pull requests (PR) are always welcome, even they are small fixes like typos or a
 
 Please submit a PR to contain changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in a incremental fasion.
 
+If you are not a member of `vmware` org in github, then your PR Drone CI build may fail. In that case, request one of the existing members / reviewers to fork your failed build to skip membership checking.
+```shell
+drone build start --param SKIP_CHECK_MEMBERSHIP=true vmware/harbor <Build Number>
+```
+
 ### Design new features
 
 You can propose new designs for existing Harbor features. You can also design
 entirely new features. Please do open an issue on Github for discussion first. This is necessary to ensure the overall architecture is consistent and to avoid duplicated work in the roadmap.
+
+### Dependency management
+Harbor uses [dep](https://github.com/golang/dep) for dependency management of go code.  The official maintainers will take the responsibility for managing the code in `vendor` directory.  Please don't try to submit PR to update the dependency code, open an issue instead.  If your PR requires a change in the vendor code please make sure you discuss it with maintainers in advance.
 
 ### Conventions
 

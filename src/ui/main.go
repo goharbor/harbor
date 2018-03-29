@@ -29,6 +29,8 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/notifier"
 	"github.com/vmware/harbor/src/common/scheduler"
+	"github.com/vmware/harbor/src/replication/core"
+	_ "github.com/vmware/harbor/src/replication/event"
 	"github.com/vmware/harbor/src/ui/api"
 	_ "github.com/vmware/harbor/src/ui/auth/db"
 	_ "github.com/vmware/harbor/src/ui/auth/ldap"
@@ -93,11 +95,11 @@ func main() {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 	if config.WithClair() {
-		clairDBPassword, err := config.ClairDBPassword()
+		clairDB, err := config.ClairDB()
 		if err != nil {
 			log.Fatalf("failed to load clair database information: %v", err)
 		}
-		if err := dao.InitClairDB(clairDBPassword); err != nil {
+		if err := dao.InitClairDB(clairDB); err != nil {
 			log.Fatalf("failed to initialize clair database: %v", err)
 		}
 	}
@@ -114,7 +116,9 @@ func main() {
 	scheduler.DefaultScheduler.Start()
 
 	//Subscribe the policy change topic.
-	notifier.Subscribe(notifier.ScanAllPolicyTopic, &notifier.ScanPolicyNotificationHandler{})
+	if err = notifier.Subscribe(notifier.ScanAllPolicyTopic, &notifier.ScanPolicyNotificationHandler{}); err != nil {
+		log.Errorf("failed to subscribe scan all policy change topic: %v", err)
+	}
 
 	//Get policy configuration.
 	scanAllPolicy := config.ScanAllPolicy()
@@ -127,11 +131,20 @@ func main() {
 		}
 
 		//Send notification to handle first policy change.
-		notifier.Publish(notifier.ScanAllPolicyTopic, notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)})
+		if err = notifier.Publish(notifier.ScanAllPolicyTopic,
+			notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)}); err != nil {
+			log.Errorf("failed to publish scan all policy topic: %v", err)
+		}
+	}
+
+	if err := core.Init(); err != nil {
+		log.Errorf("failed to initialize the replication controller: %v", err)
 	}
 
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
+	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
+	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json"))
 
 	initRouters()
 	if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {

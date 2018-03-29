@@ -18,6 +18,9 @@ import (
 	"time"
 )
 
+// UserTable is the name of table in DB that holds the user object
+const UserTable = "user"
+
 // User holds the details of a user.
 type User struct {
 	UserID   int    `orm:"pk;auto;column(user_id)" json:"user_id"`
@@ -35,8 +38,8 @@ type User struct {
 	HasAdminRole int       `orm:"column(sysadmin_flag)" json:"has_admin_role"`
 	ResetUUID    string    `orm:"column(reset_uuid)" json:"reset_uuid"`
 	Salt         string    `orm:"column(salt)" json:"-"`
-	CreationTime time.Time `orm:"creation_time" json:"creation_time"`
-	UpdateTime   time.Time `orm:"update_time" json:"update_time"`
+	CreationTime time.Time `orm:"column(creation_time)" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time)" json:"update_time"`
 }
 
 // UserQuery ...
@@ -44,4 +47,9 @@ type UserQuery struct {
 	Username   string
 	Email      string
 	Pagination *Pagination
+}
+
+// TableName ...
+func (u *User) TableName() string {
+	return UserTable
 }

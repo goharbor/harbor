@@ -32,7 +32,18 @@
         "YES": "SI",
         "NO": "NO",
         "NEGATIVE": "NEGATIVO",
-        "COPY": "COPY"
+        "COPY": "COPY",
+        "EDIT": "EDITAR",
+        "SWITCH": "SWITCH",
+        "REPLICATE": "REPLICATE"
+    },
+    "BATCH": {
+        "DELETED_SUCCESS": "Deleted successfully",
+        "DELETED_FAILURE": "Deleted failed",
+        "SWITCH_SUCCESS": "Switch successfully",
+        "SWITCH_FAILURE": "Switch failed",
+        "REPLICATE_SUCCESS": "Started successfully",
+        "REPLICATE_FAILURE": "Started failed"
     },
     "TOOLTIP": {
         "EMAIL": "El email debe ser una dirección válida como nombre@ejemplo.com.",
@@ -50,7 +61,9 @@
         "NUMBER_REQUIRED": "El campo es obligatorio y debería ser un número.",
         "PORT_REQUIRED": "El campo es obligatorio y debería ser un número de puerto válido.",
         "EMAIL_EXISTING": "Esa dirección de email ya existe.",
-        "USER_EXISTING": "Ese nombre de usuario ya existe."
+        "USER_EXISTING": "Ese nombre de usuario ya existe.",
+        "RULE_USER_EXISTING": "Name is already in use.",
+        "EMPTY": "Name is required"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Introduzca la contraseña actual",
@@ -69,7 +82,10 @@
         "FULL_NAME": "Nombre y apellidos",
         "COMMENT": "Comentarios",
         "PASSWORD": "Contraseña",
-        "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente."
+        "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente.",
+        "ADMIN_RENAME_TIP": "Double click to change your username to \"admin@harbor.local\", but this action can NOT redo.",
+        "RENAME_SUCCESS": "Rename success!",
+        "RENAME_CONFIRM_INFO": "This action can not undo, Confirm To Rename?"
     },
     "CHANGE_PWD": {
         "TITLE": "Cambiar contraseña",
@@ -95,13 +111,14 @@
         "SYSTEM_MGMT": {
             "NAME": "Administración",
             "USER": "Usuarios",
-            "REPLICATION": "Replicación",
+            "REGISTRY": "Registries",
+            "REPLICATION": "Replicacións",
             "CONFIG": "Configuración"
         },
         "LOGS": "Logs"
     },
     "USER": {
-        "ADD_ACTION": "USUARIO",
+        "ADD_ACTION": "New User",
         "ENABLE_ADMIN_ACTION": "Marcar como Administrador",
         "DISABLE_ADMIN_ACTION": "Desmarcar como Administrador",
         "DEL_ACTION": "Eliminar",
@@ -161,6 +178,7 @@
         "REPLICATION": "Replicación",
         "USERS": "Miembros",
         "LOGS": "Logs",
+        "LABELS": "labels",
         "PROJECTS": "Proyectos",
         "CONFIG": "Configuración"
     },
@@ -200,7 +218,11 @@
         "ADDED_SUCCESS": "Miembro añadido satisfactoriamente.",
         "DELETED_SUCCESS": "Miembro eliminado satisfactoriamente",
         "SWITCHED_SUCCESS": "Rol del miembro cambiado satisfactoriamente.",
-        "OF": "of"
+        "OF": "of",
+        "SWITCH_TITLE": "Confirm project members switch",
+        "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?",
+        "ACTION": "SET ROLE",
+        "REMOVE": "REMOVE"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",
@@ -231,7 +253,10 @@
         "DELETION_TITLE": "Confirmar Eliminación de Regla",
         "DELETION_SUMMARY": "¿Quiere eliminar la regla {{param}}?",
         "DELETION_TITLE_FAILURE": "failed to delete Rule Deletion",
-        "DELETION_SUMMARY_FAILURE": "{{param}} have pending/running/retrying status",
+        "DELETION_SUMMARY_FAILURE": "have pending/running/retrying status",
+        "REPLICATE_SUMMARY_FAILURE": "have pending/running status",
+        "REPLICATION_TITLE": "Confirm Rules replication",
+        "REPLICATION_SUMMARY": "Do you want to replicate the Rules {{param}}?",
         "FILTER_TARGETS_PLACEHOLDER": "Filtrar Endpoints",
         "DELETION_TITLE_TARGET": "Confirmar Eliminación de Endpoint",
         "DELETION_SUMMARY_TARGET": "¿Quiere eliminar el endpoint {{param}}?",
@@ -262,6 +287,7 @@
         "LAST_START_TIME": "Última Fecha de Inicio",
         "ACTIVATION": "Activación",
         "REPLICATION_JOBS": "Trabajos de Replicación",
+        "STOPJOB": "Stop Jobs",
         "ALL": "Todos",
         "PENDING": "Pendiente",
         "RUNNING": "Ejecutando",
@@ -296,7 +322,25 @@
         "INVALID_DATE": "Fecha invalida.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
-        "JOB_LOG_VIEWER": "View Replication Job Log"
+        "JOB_LOG_VIEWER": "View Replication Job Log",
+        "NO_ENDPOINT_INFO": "Please add an endpoint first",
+        "NO_PROJECT_INFO": "Please add a project name first",
+        "SOURCE_IMAGES_FILTER": "Source images filter",
+        "SCHEDULE": "Scheduled",
+        "MANUAL": "Manual",
+        "IMMEDIATE": "Immediate",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "SETTING":"Options",
+        "TRIGGER":"Triggering Condition",
+        "TARGETS":"Target",
+        "MODE": "Mode",
+        "TRIGGER_MODE": "Trigger Mode",
+        "SOURCE": "Source",
+        "REPLICATE": "Replicate",
+        "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
+        "REPLICATE_IMMEDIATE":"Replicate existing images immediately",
+        "NEW": "New"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -310,7 +354,8 @@
         "TEST_CONNECTION": "Comprobar conexión",
         "TITLE_EDIT": "Editar Endpoint",
         "TITLE_ADD": "Crear Endpoint",
-        "DELETE": "Eliminar Endpoint",
+        "EDIT": "Editar",
+        "DELETE": "Eliminar",
         "TESTING_CONNECTION": "Comprobar conexión...",
         "TEST_CONNECTION_SUCCESS": "Conexión comprobada satisfactoriamente.",
         "TEST_CONNECTION_FAILURE": "Fallo al comprobar el endpoint.",
@@ -329,8 +374,7 @@
         "PLACEHOLDER": "We couldn't find any endpoints!"
     },
     "REPOSITORY": {
-        "COPY_ID": "Copiar ID",
-        "COPY_PARENT_ID": "Copiar ID padre",
+        "COPY_DIGEST_ID": "Copy Digest",
         "DELETE": "Eliminar",
         "NAME": "Nombre",
         "TAGS_COUNT": "Etiquetas",
@@ -349,6 +393,7 @@
         "FILTER_FOR_REPOSITORIES": "Filtrar Repositorios",
         "TAG": "Etiqueta",
         "SIZE": "Size",
+        "VULNERABILITY": "Vulnerability",
         "SIGNED": "Firmada",
         "AUTHOR": "Autor",
         "CREATED": "Fecha de creación",
@@ -359,12 +404,23 @@
         "REPOSITORIES": "Repositorios",
         "OF": "of",
         "ITEMS": "elementos",
+        "NO_ITEMS": "NO ITEMS",
         "POP_REPOS": "Repositorios Populares",
         "DELETED_REPO_SUCCESS": "Repositorio eliminado satisfactoriamente.",
         "DELETED_TAG_SUCCESS": "Etiqueta eliminada satisfactoriamente.",
         "COPY": "Copiar",
         "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
-        "PLACEHOLDER": "We couldn't find any repositories!"
+        "PLACEHOLDER": "We couldn't find any repositories!",
+        "INFO": "Información",
+        "NO_INFO": "Sin información de descripción para este repositorio",
+        "IMAGE": "Imágenes",
+        "LABELS": "Labels",
+        "ADD_TO_IMAGE": "Add labels to this image",
+        "ADD_LABELS": "Add labels",
+        "FILTER_BY_LABEL": "Filter projects by label",
+        "ACTION": "ACTION",
+        "DEPLOY": "DEPLOY",
+        "ADDITIONAL_INFO": "Add Additional Info"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algunos cambios no se han guardado aún. ¿Quiere cancelar?"
@@ -386,7 +442,11 @@
         "AUTH": "Autentificación",
         "REPLICATION": "Replicación",
         "EMAIL": "Email",
+        "LABEL": "Label",
+        "REPOSITORY": "Repository",
+        "REPO_READ_ONLY": "Repository Read Only",
         "SYSTEM": "Opciones del Sistema",
+        "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirma cancelación",
         "CONFIRM_SUMMARY": "Algunos cambios no han sido guardados aún. ¿Quiere descartarlos?",
         "SAVE_SUCCESS": "La configuración ha sido guardada satisfactoriamente.",
@@ -396,6 +456,8 @@
         "MAIL_PASSWORD": "Contraseña del servidor de email",
         "MAIL_FROM": "Email De",
         "MAIL_SSL": "Email SSL",
+        "MAIL_INSECURE": "Verify Certificate",
+        "INSECURE_TOOLTIP": "Determine whether to verify the certificate of the Email server. Uncheck this box when the Email server uses a self-signed or untrusted certificate.",
         "SSL_TOOLTIP": "Activar SSL en conexiones al servidor de correo",
         "VERIFY_REMOTE_CERT": "Verificar Certificado Remoto",
         "TOKEN_EXPIRATION": "Expiración del Token (Minutos)",
@@ -404,6 +466,7 @@
         "SELF_REGISTRATION": "Permitir auto-registro",
         "AUTH_MODE_DB": "Base de datos",
         "AUTH_MODE_LDAP": "LDAP",
+        "AUTH_MODE_UAA": "UAA",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "UnNivel",
         "SCOPE_SUBTREE": "Subárbol",
@@ -423,7 +486,8 @@
             "TOKEN_EXPIRATION": "El tiempo de expiración (en minutos) del token creado por el servicio de tokens. Por defecto son 30 minutos.",
             "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
-            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday."
+            "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
+            "VERIFY_CERT": "Verify Cert from LDAP Server"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -432,7 +496,14 @@
             "BASE_DN": "LDAP Base DN",
             "FILTER": "LDAP Filtro",
             "UID": "LDAP UID",
-            "SCOPE": "LDAP Ámbito"
+            "SCOPE": "LDAP Ámbito",
+            "VERIFY_CERT": "LDAP Verify Cert"
+        },
+        "UAA": {
+            "ENDPOINT": "UAA Endpoint",
+            "CLIENT_ID": "UAA Client ID",
+            "CLIENT_SECRET": "UAA Client Secret",
+            "VERIFY_CERT": "UAA Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
@@ -462,7 +533,7 @@
     "ABOUT": {
         "VERSION": "Versión",
         "BUILD": "Construir",
-        "COPYRIGHT": "Copyright 1998-2017 VMware, Inc. Todos los derechos reservados. Este producto está protegido por E.U. y las leyes de propiedad internacionales. Los productos de VMware estan cubiertos por una o más patentes listadas en",
+        "COPYRIGHT": "Copyright 1998-2018 VMware, Inc. Todos los derechos reservados. Este producto está protegido por E.U. y las leyes de propiedad internacionales. Los productos de VMware estan cubiertos por una o más patentes listadas en",
         "COPYRIGHT_SUFIX": ".",
         "TRADEMARK": "VMware es una marca registrada o marca de VMware, Inc. en los Estados Unidos y otras jurisdicciones. Todas las demás marcas y nombres mencionados son marcas de sus respectivas compañías.",
         "END_USER_LICENSE": "Contrato de Usuario Final (EULA)",
@@ -478,6 +549,8 @@
         "PRO_ITEM": "PROYECTOS",
         "REPO_ITEM": "REPOSITORIOS",
         "INDEX_PRIVATE": "PRIVADO",
+        "INDEX_MY_PROJECTS": "MY PROJECTS",
+        "INDEX_MY_REPOSITORIES": "MY REPOSITORIES",
         "INDEX_PUB": "PÚBLICO",
         "INDEX_TOTAL": "TOTAL",
         "STORAGE": "ALMACENAMIENTO",
@@ -509,7 +582,8 @@
         "CHART": {
             "SCANNING_TIME": "Scan completed time:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} of {{totalPackages}} {{package}} have known {{vulnerability}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}."
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} of {{totalPackages}} {{package}} has known {{vulnerability}}.",
+            "TOOLTIPS_TITLE_ZERO": "No se encontró ningún paquete de vulnerabilidad reconocible"
         },
         "SEVERITY": {
             "HIGH": "high",
@@ -546,8 +620,33 @@
         "OS": "OS",
         "SCAN_COMPLETION_TIME": "Scan Completed",
         "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
+        "LEVEL_VULNERABILITIES": "Level Vulnerabilities",
         "PLACEHOLDER": "We couldn't find any tags!",
-        "COPY_ERROR": "Copy failed, please try to manually copy."
+        "COPY_ERROR": "Copy failed, please try to manually copy.",
+        "FILTER_FOR_TAGS": "Etiquetas de filtro",
+        "AUTHOR": "Author",
+        "LABELS": "LABELS"
+    },
+    "LABEL": {
+        "LABEL": "Label",
+        "DESCRIPTION": "Description",
+        "CREATION_TIME": "Creation Time",
+        "NEW_LABEL": "New Label",
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "LABEL_NAME": "Label Name",
+        "COLOR": "Color",
+        "FILTER_Label_PLACEHOLDER": "Filter Labels",
+        "NO_LABELS": "No labels"
+    },
+    "WEEKLY": {
+    "MONDAY": "Monday",
+    "TUESDAY": "Tuesday",
+    "WEDNESDAY": "Wednesday",
+    "THURSDAY": "Thursday",
+    "FRIDAY": "Friday",
+    "SATURDAY": "Saturday",
+    "SUNDAY": "Sunday"
     },
     "UNKNOWN_ERROR": "Ha ocurrido un error desconocido. Por favor, inténtelo de nuevo más tarde.",
     "UNAUTHORIZED_ERROR": "La sesión no es válida o ha caducado. Necesita identificarse de nuevo para llevar a cabo esa acción.",

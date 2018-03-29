@@ -14,9 +14,159 @@
 package db
 
 import (
+	"log"
+	"os"
 	"testing"
+
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/utils/test"
+
+	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/ldap"
+	"github.com/vmware/harbor/src/ui/auth"
+	uiConfig "github.com/vmware/harbor/src/ui/config"
 )
 
-func TestMain(t *testing.T) {
+var adminServerTestConfig = map[string]interface{}{
+	common.ExtEndpoint:   "host01.com",
+	common.AUTHMode:      "db_auth",
+	common.DatabaseType:  "mysql",
+	common.MySQLHost:     "127.0.0.1",
+	common.MySQLPort:     3306,
+	common.MySQLUsername: "root",
+	common.MySQLPassword: "root123",
+	common.MySQLDatabase: "registry",
+	common.SQLiteFile:    "/tmp/registry.db",
+	//config.SelfRegistration: true,
+	common.LDAPURL:       "ldap://127.0.0.1",
+	common.LDAPSearchDN:  "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd: "admin",
+	common.LDAPBaseDN:    "dc=example,dc=com",
+	common.LDAPUID:       "uid",
+	common.LDAPFilter:    "",
+	common.LDAPScope:     3,
+	common.LDAPTimeout:   30,
+	//	config.TokenServiceURL:            "",
+	//	config.RegistryURL:                "",
+	//	config.EmailHost:                  "",
+	//	config.EmailPort:                  25,
+	//	config.EmailUsername:              "",
+	//	config.EmailPassword:              "password",
+	//	config.EmailFrom:                  "from",
+	//	config.EmailSSL:                   true,
+	//	config.EmailIdentity:              "",
+	//	config.ProjectCreationRestriction: config.ProCrtRestrAdmOnly,
+	//	config.VerifyRemoteCert:           false,
+	//	config.MaxJobWorkers:              3,
+	//	config.TokenExpiration:            30,
+	common.CfgExpiration: 5,
+	//	config.JobLogDir:                  "/var/log/jobs",
+	common.AdminInitialPassword: "password",
 }
 
+func TestMain(m *testing.M) {
+	server, err := test.NewAdminserver(adminServerTestConfig)
+	if err != nil {
+		log.Fatalf("failed to create a mock admin server: %v", err)
+	}
+	defer server.Close()
+
+	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
+		log.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
+	}
+
+	secretKeyPath := "/tmp/secretkey"
+	_, err = test.GenerateKey(secretKeyPath)
+	if err != nil {
+		log.Fatalf("failed to generate secret key: %v", err)
+		return
+	}
+	defer os.Remove(secretKeyPath)
+
+	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
+		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
+	}
+
+	if err := uiConfig.Init(); err != nil {
+		log.Fatalf("failed to initialize configurations: %v", err)
+	}
+
+	database, err := uiConfig.Database()
+	if err != nil {
+		log.Fatalf("failed to get database configuration: %v", err)
+	}
+
+	if err := dao.InitDatabase(database); err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
+}
+
+func TestSearchUser(t *testing.T) {
+	//insert user first
+	user := &models.User{
+		Username: "existuser",
+		Email:    "existuser@placeholder.com",
+		Realname: "Existing user",
+	}
+
+	err := dao.OnBoardUser(user)
+	if err != nil {
+		t.Fatalf("Failed to OnBoardUser %v", user)
+	}
+
+	var auth *Auth
+	newUser, err := auth.SearchUser("existuser")
+	if err != nil {
+		t.Fatalf("Failed to search user, error %v", err)
+	}
+	if newUser == nil {
+		t.Fatalf("Failed to search user %v", newUser)
+	}
+
+}
+
+func TestAuthenticateHelperOnboardUser(t *testing.T) {
+	user := models.User{
+		Username: "test01",
+		Realname: "test01",
+		Email:    "test01@example.com",
+	}
+
+	err := auth.OnBoardUser(&user)
+	if err != nil {
+		t.Errorf("Failed to onboard user error: %v", err)
+	}
+
+}
+
+func TestAuthenticateHelperSearchUser(t *testing.T) {
+
+	user, err := auth.SearchUser("admin")
+	if err != nil {
+		t.Error("Failed to search user, admin")
+	}
+
+	if user == nil {
+		t.Error("Failed to search user admin")
+	}
+}
+
+func TestLdapConnectionTest(t *testing.T) {
+	var ldapConfig = models.LdapConf{
+		LdapURL:               "ldap://127.0.0.1",
+		LdapSearchDn:          "cn=admin,dc=example,dc=com",
+		LdapSearchPassword:    "admin",
+		LdapBaseDn:            "dc=example,dc=com",
+		LdapFilter:            "",
+		LdapUID:               "cn",
+		LdapScope:             3,
+		LdapConnectionTimeout: 10,
+		LdapVerifyCert:        false,
+	}
+	//Test ldap connection under auth_mod is db_auth
+	err := ldap.ConnectionTestWithConfig(ldapConfig)
+	if err != nil {
+		t.Fatalf("Failed to test ldap server! error %v", err)
+	}
+}

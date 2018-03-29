@@ -11,12 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+// import { RepositoryComponent} from 'harbor-ui';
 import { AppConfigService } from '../../app-config.service';
 import { SessionService } from '../../shared/session.service';
 import { TagClickEvent } from 'harbor-ui';
 import { Project } from '../../project/project';
+import { RepositoryComponent } from 'harbor-ui/src/repository/repository.component';
 
 @Component({
   selector: 'tag-repository',
@@ -28,7 +30,11 @@ export class TagRepositoryComponent implements OnInit {
   projectId: number;
   repoName: string;
   hasProjectAdminRole: boolean = false;
+  isGuest: boolean;
   registryUrl: string;
+
+  @ViewChild(RepositoryComponent)
+  repositoryComponent: RepositoryComponent;
 
   constructor(
     private route: ActivatedRoute,
@@ -38,11 +44,17 @@ export class TagRepositoryComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.projectId = this.route.snapshot.params['id'];
+    if (!this.projectId) {
+      this.projectId = this.route.snapshot.parent.params['id'];
+    };
+
     let resolverData = this.route.snapshot.data;
+
     if (resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+      this.isGuest = (<Project>resolverData['projectResolver']).current_user_role_id === 3;
     }
-    this.projectId = this.route.snapshot.params['id'];
     this.repoName = this.route.snapshot.params['repo'];
 
     this.registryUrl = this.appConfigService.getConfig().registry_url;
@@ -56,12 +68,24 @@ export class TagRepositoryComponent implements OnInit {
     return this.appConfigService.getConfig().with_clair;
   }
 
+  get withAdmiral(): boolean {
+    return this.appConfigService.getConfig().with_admiral;
+  }
+
   get hasSignedIn(): boolean {
     return this.session.getCurrentUser() !== null;
+  }
+
+  hasChanges(): boolean {
+    return this.repositoryComponent.hasChanges();
   }
 
   watchTagClickEvt(tagEvt: TagClickEvent): void {
     let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name, 'tags', tagEvt.tag_name];
     this.router.navigate(linkUrl);
+  }
+
+  watchGoBackEvt(projectId: string): void {
+    this.router.navigate(["harbor", "projects", projectId, "repositories"]);
   }
 }

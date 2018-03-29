@@ -16,9 +16,35 @@ package auth
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/vmware/harbor/src/common"
+	"github.com/vmware/harbor/src/common/models"
 )
 
 var l = NewUserLock(2 * time.Second)
+
+var adminServerLdapTestConfig = map[string]interface{}{
+	common.ExtEndpoint:          "host01.com",
+	common.AUTHMode:             "ldap_auth",
+	common.DatabaseType:         "mysql",
+	common.MySQLHost:            "127.0.0.1",
+	common.MySQLPort:            3306,
+	common.MySQLUsername:        "root",
+	common.MySQLPassword:        "root123",
+	common.MySQLDatabase:        "registry",
+	common.SQLiteFile:           "/tmp/registry.db",
+	common.LDAPURL:              "ldap://127.0.0.1",
+	common.LDAPSearchDN:         "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:        "admin",
+	common.LDAPBaseDN:           "dc=example,dc=com",
+	common.LDAPUID:              "uid",
+	common.LDAPFilter:           "",
+	common.LDAPScope:            3,
+	common.LDAPTimeout:          30,
+	common.CfgExpiration:        5,
+	common.AdminInitialPassword: "password",
+}
 
 func TestLock(t *testing.T) {
 	t.Log("Locking john")
@@ -36,4 +62,29 @@ func TestLock(t *testing.T) {
 	if l.IsLocked("daniel") {
 		t.Errorf("daniel has never been locked, he should not be locked")
 	}
+}
+
+func TestDefaultAuthenticate(t *testing.T) {
+	authHelper := DefaultAuthenticateHelper{}
+	m := models.AuthModel{}
+	user, err := authHelper.Authenticate(m)
+	if user != nil || err != nil {
+		t.Fatal("Default implementation should return nil")
+	}
+}
+
+func TestDefaultOnBoardUser(t *testing.T) {
+	user := &models.User{}
+	authHelper := DefaultAuthenticateHelper{}
+	err := authHelper.OnBoardUser(user)
+	if err != nil {
+		t.Fatal("Default implementation should return nil")
+	}
+}
+
+func TestErrAuth(t *testing.T) {
+	assert := assert.New(t)
+	e := NewErrAuth("test")
+	expectedStr := "Failed to authenticate user, due to error 'test'"
+	assert.Equal(expectedStr, e.Error())
 }

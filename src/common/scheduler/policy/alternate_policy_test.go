@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+const (
+	testPolicyName = "TestingPolicy"
+)
+
 type fakeTask struct {
 	number int32
 }
@@ -24,18 +28,18 @@ func (ft *fakeTask) Number() int32 {
 }
 
 func TestBasic(t *testing.T) {
-	tp := NewAlternatePolicy(&AlternatePolicyConfiguration{})
+	tp := NewAlternatePolicy(testPolicyName, &AlternatePolicyConfiguration{})
 	err := tp.AttachTasks(&fakeTask{number: 100})
 	if err != nil {
 		t.Fail()
 	}
 
 	if tp.GetConfig() == nil {
-		t.Fail()
+		t.Fatal("nil config")
 	}
 
-	if tp.Name() != "Alternate Policy" {
-		t.Fail()
+	if tp.Name() != testPolicyName {
+		t.Fatalf("Wrong name %s", tp.Name())
 	}
 
 	tks := tp.Tasks()
@@ -48,7 +52,7 @@ func TestBasic(t *testing.T) {
 func TestEvaluatePolicy(t *testing.T) {
 	now := time.Now().UTC()
 	utcOffset := (int64)(now.Hour()*3600 + now.Minute()*60)
-	tp := NewAlternatePolicy(&AlternatePolicyConfiguration{
+	tp := NewAlternatePolicy(testPolicyName, &AlternatePolicyConfiguration{
 		Duration:   1 * time.Second,
 		OffsetTime: utcOffset + 1,
 	})
@@ -78,7 +82,7 @@ func TestEvaluatePolicy(t *testing.T) {
 func TestDisablePolicy(t *testing.T) {
 	now := time.Now().UTC()
 	utcOffset := (int64)(now.Hour()*3600 + now.Minute()*60)
-	tp := NewAlternatePolicy(&AlternatePolicyConfiguration{
+	tp := NewAlternatePolicy(testPolicyName, &AlternatePolicyConfiguration{
 		Duration:   1 * time.Second,
 		OffsetTime: utcOffset + 1,
 	})
@@ -116,5 +120,30 @@ func TestDisablePolicy(t *testing.T) {
 	time.Sleep(2 * time.Second)
 	if atomic.LoadInt32(&counter) != atomic.LoadInt32(&copiedCounter) {
 		t.Fatalf("Policy is still running after calling Disable() %d=%d", atomic.LoadInt32(&copiedCounter), atomic.LoadInt32(&counter))
+	}
+}
+
+func TestPolicyEqual(t *testing.T) {
+	tp1 := NewAlternatePolicy(testPolicyName, &AlternatePolicyConfiguration{
+		Duration:   1 * time.Second,
+		OffsetTime: 8000,
+	})
+
+	tp2 := NewAlternatePolicy(testPolicyName+"2", &AlternatePolicyConfiguration{
+		Duration:   100 * time.Second,
+		OffsetTime: 8000,
+	})
+
+	if tp1.Equal(tp2) {
+		t.Fatal("tp1 should not equal tp2")
+	}
+
+	tp3 := NewAlternatePolicy(testPolicyName, &AlternatePolicyConfiguration{
+		Duration:   1 * time.Second,
+		OffsetTime: 8000,
+	})
+
+	if !tp1.Equal(tp3) {
+		t.Fatal("tp1 should equal tp3")
 	}
 }

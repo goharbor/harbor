@@ -1,11 +1,11 @@
 import { Observable } from 'rxjs/Observable';
 import { RequestQueryParams } from './RequestQueryParams';
-import { ReplicationJob, ReplicationRule, ReplicationJobItem } from './interface';
+import {ReplicationJob, ReplicationRule, ReplicationJobItem} from './interface';
 import { Injectable, Inject } from "@angular/core";
 import 'rxjs/add/observable/of';
 import { Http, RequestOptions } from '@angular/http';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
-import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';
+import { buildHttpRequestOptions, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from '../utils';
 
 /**
  * Define the service methods to handle the replication (rule and job) related things.
@@ -62,7 +62,7 @@ export abstract class ReplicationService {
      * 
      * @memberOf ReplicationService
      */
-    abstract updateReplicationRule(replicationRule: ReplicationRule): Observable<any> | Promise<any> | any;
+    abstract updateReplicationRule(id: number, rep: ReplicationRule): Observable<any> | Promise<any> | any;
 
     /**
      * Delete the specified replication rule.
@@ -97,6 +97,9 @@ export abstract class ReplicationService {
      */
     abstract disableReplicationRule(ruleId: number | string): Observable<any> | Promise<any> | any;
 
+
+    abstract replicateRule(ruleId: number | string): Observable<any> | Promise<any> | any;
+
     /**
      * Get the jobs for the specified replication rule.
      * Set query parameters through 'queryParams', support:
@@ -124,6 +127,8 @@ export abstract class ReplicationService {
      * @memberof ReplicationService
      */
     abstract getJobLog(jobId: number | string): Observable<string> | Promise<string> | string;
+
+    abstract stopJobs(jobId: number | string): Observable<string> | Promise<string> | string;
 }
 
 /**
@@ -137,6 +142,7 @@ export abstract class ReplicationService {
 export class ReplicationDefaultService extends ReplicationService {
     _ruleBaseUrl: string;
     _jobBaseUrl: string;
+    _replicateUrl: string;
 
     constructor(
         private http: Http,
@@ -147,12 +153,13 @@ export class ReplicationDefaultService extends ReplicationService {
             config.replicationRuleEndpoint : '/api/policies/replication';
         this._jobBaseUrl = config.replicationJobEndpoint ?
             config.replicationJobEndpoint : '/api/jobs/replication';
+        this._replicateUrl = '/api/replications';
     }
 
     //Private methods
     //Check if the rule object is valid
     _isValidRule(rule: ReplicationRule): boolean {
-        return rule !== undefined && rule != null && rule.name !== undefined && rule.name.trim() !== '' && rule.target_id !== 0;
+        return rule !== undefined && rule != null && rule.name !== undefined && rule.name.trim() !== '' && rule.targets.length !== 0;
     }
 
     public getReplicationRules(projectId?: number | string, ruleName?: string, queryParams?: RequestQueryParams): Observable<ReplicationRule[]> | Promise<ReplicationRule[]> | ReplicationRule[] {
@@ -170,7 +177,7 @@ export class ReplicationDefaultService extends ReplicationService {
 
         return this.http.get(this._ruleBaseUrl, buildHttpRequestOptions(queryParams)).toPromise()
             .then(response => response.json() as ReplicationRule[])
-            .catch(error => Promise.reject(error))
+            .catch(error => Promise.reject(error));
     }
 
     public getReplicationRule(ruleId: number | string): Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule {
@@ -179,7 +186,7 @@ export class ReplicationDefaultService extends ReplicationService {
         }
 
         let url: string = `${this._ruleBaseUrl}/${ruleId}`;
-        return this.http.get(url).toPromise()
+        return this.http.get(url, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.json() as ReplicationRule)
             .catch(error => Promise.reject(error));
     }
@@ -194,13 +201,13 @@ export class ReplicationDefaultService extends ReplicationService {
             .catch(error => Promise.reject(error));
     }
 
-    public updateReplicationRule(replicationRule: ReplicationRule): Observable<any> | Promise<any> | any {
-        if (!this._isValidRule(replicationRule) || !replicationRule.id) {
+    public updateReplicationRule(id: number, rep: ReplicationRule): Observable<any> | Promise<any> | any {
+        if (!this._isValidRule(rep)) {
             return Promise.reject('Bad argument');
         }
 
-        let url: string = `${this._ruleBaseUrl}/${replicationRule.id}`;
-        return this.http.put(url, JSON.stringify(replicationRule), HTTP_JSON_OPTIONS).toPromise()
+        let url = `${this._ruleBaseUrl}/${id}`;
+        return this.http.put(url, JSON.stringify(rep), HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
             .catch(error => Promise.reject(error));
     }
@@ -212,6 +219,17 @@ export class ReplicationDefaultService extends ReplicationService {
 
         let url: string = `${this._ruleBaseUrl}/${ruleId}`;
         return this.http.delete(url, HTTP_JSON_OPTIONS).toPromise()
+            .then(response => response)
+            .catch(error => Promise.reject(error));
+    }
+
+    public replicateRule(ruleId: number | string): Observable<any> | Promise<any> | any {
+        if (!ruleId) {
+            return Promise.reject("Bad argument");
+        }
+
+        let url: string = `${this._replicateUrl}`;
+        return this.http.post(url, {policy_id: ruleId}, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response)
             .catch(error => Promise.reject(error));
     }
@@ -280,9 +298,15 @@ export class ReplicationDefaultService extends ReplicationService {
             return Promise.reject('Bad argument');
         }
 
-        let logUrl: string = `${this._jobBaseUrl}/${jobId}/log`;
-        return this.http.get(logUrl).toPromise()
+        let logUrl = `${this._jobBaseUrl}/${jobId}/log`;
+        return this.http.get(logUrl, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.text())
+            .catch(error => Promise.reject(error));
+    }
+
+    public stopJobs(jobId: number | string): Observable<any> | Promise<any> | any {
+        return this.http.put(this._jobBaseUrl, JSON.stringify({'policy_id': jobId, 'status': 'stop' }), HTTP_JSON_OPTIONS).toPromise()
+            .then(response => response)
             .catch(error => Promise.reject(error));
     }
 }

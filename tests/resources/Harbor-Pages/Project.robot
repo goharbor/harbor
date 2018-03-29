@@ -29,7 +29,7 @@ Create An New Project
     Input Text  xpath=${project_name_xpath}  ${projectname}
     Sleep  3
     Run Keyword If  '${public}' == 'true'  Click Element  xpath=${project_public_xpath}
-    Click Element  css=${project_save_css}
+    Click Element  xpath=//button[contains(.,'OK')]
     Sleep  4
     Wait Until Page Contains  ${projectname}
     Wait Until Page Contains  Project Admin
@@ -44,11 +44,11 @@ Create An New Project With New User
 
 #It's the log of project.
 Go To Project Log
-    Click Element  xpath=//project-detail//ul/li[3]
+    Click Element  xpath=${project_log_xpath}
     Sleep  2
 
 Switch To Member
-    Click Element  xpath=//project-detail//li[2]
+    Click Element  xpath=${project_member_xpath}
     Sleep  1
 
 Switch To Log
@@ -56,12 +56,12 @@ Switch To Log
     Sleep  1
 
 Switch To Replication
-    Click Element  xpath=${replication_xpath}
+    Click Element  xpath=${project_replication_xpath}
     Sleep  1
 
 Back To projects
     Click Element  xpath=${projects_xpath}
-    Sleep  1
+    Sleep  2
 
 Project Should Display
     [Arguments]  ${projectname}
@@ -79,24 +79,54 @@ Search Private Projects
 
 Make Project Private
     [Arguments]  ${projectname}
+    Go Into Project  ${project name}    
     Sleep  1
-    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Private")]
+    Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
+    Checkbox Should Be Selected  xpath=//input[@name='public']
+    Click Element  //clr-checkbox[@name='public']//label
+    Click Element  //button[contains(.,'SAVE')]
 
 Make Project Public
     [Arguments]  ${projectname}
+    Go Into Project  ${project name}    
     Sleep  1
-    Click element  xpath=//project//list-project//clr-dg-row-master[contains(.,'${projectname}')]//clr-dg-action-overflow
-    Click element  xpath=//project//list-project//clr-dg-action-overflow//button[contains(.,"Make Public")]
+    Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
+    Checkbox Should Not Be Selected  xpath=//input[@name='public']
+    Click Element  //clr-checkbox[@name='public']//label
+    Click Element  //button[contains(.,'SAVE')]
 
 Delete Repo
     [Arguments]  ${projectname}
-    Click Element  xpath=//project-detail//clr-dg-row-master[contains(.,"${projectname}")]//clr-dg-action-overflow
+    Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox//label
     Sleep  1
-    Click Element  xpath=//clr-dg-action-overflow//button[contains(.,"Delete")]
+    Click Element  xpath=//button[contains(.,"Delete")]
     Sleep  1
-    Click Element  xpath=//clr-modal//div[@class="modal-dialog"]//button[2]
+    Click Element  xpath=//clr-modal//button[2]
+    Sleep  1
+    Click Element  xpath=//button[contains(.,"CLOSE")]
+
+Delete Project
+    [Arguments]  ${projectname}
+    Sleep  1
+    Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox//label
+    Sleep  1
+    Click Element  xpath=//button[contains(.,"Delete")]
     Sleep  2
+    Click Element  xpath=//clr-modal//button[2]
+    Sleep  1
+    Click Element  xpath=//button[contains(.,"CLOSE")]
+
+Project Should Not Be Deleted
+    [Arguments]  ${projname}
+    Delete Project  ${projname}
+    Sleep  1
+    Page Should Contain  ${projname}
+
+Project Should Be Deleted
+    [Arguments]  ${projname}
+    Delete Project  ${projname}
+    Sleep  2
+    Page Should Not Contain  ${projname}
 
 Advanced Search Should Display
     Page Should Contain Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button
@@ -140,24 +170,49 @@ Do Log Advanced Search
     #others
     Click Element  xpath=//audit-log//clr-dropdown/button
     Click Element  xpath=//audit-log//clr-dropdown//a[contains(.,"Others")]
-   	Sleep  1
-    Click element  xpath=//audit-log//hbr-filter//clr-icon
-    Input Text  xpath = //audit-log//hbr-filter//input  harbor
     Sleep  1
-    ${c} =  Get Matching Xpath Count  //audit-log//clr-dg-row
-    Should be equal as integers  ${c}  0
+    Click Element  xpath=//audit-log//hbr-filter//clr-icon
+    Input Text  xpath=//audit-log//hbr-filter//input  harbor
+    Sleep  1
+    Capture Page Screenshot  LogAdvancedSearch2.png
+    ${rc} =  Get Matching Xpath Count  //audit-log//clr-dg-row
+    Should Be Equal As Integers  ${rc}  0
+
+Go Into Repo
+    [Arguments]  ${repoName}
+    Sleep  2
+    Click Element  xpath=//hbr-filter//clr-icon
+    Sleep  2
+    Input Text  xpath=//hbr-filter//input  ${repoName}
+    Sleep  3
+    Wait Until Page Contains  ${repoName}
+    Click Element  xpath=//clr-dg-cell[contains(.,${repoName})]/a
+    Sleep  2
+    Capture Page Screenshot  gointo_${repoName}.png
 
 Expand Repo
     [Arguments]  ${projectname}
-    Click Element  //repository//clr-dg-row-master[contains(.,'${projectname}')]//button/clr-icon
-    sleep  1
+    Click Element  //repository//clr-dg-row[contains(.,'${projectname}')]//button/clr-icon
+    Sleep  1
 
-Scan Repo
-    [Arguments]  ${tagname}
-    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow
-    Click Element  //hbr-tag//clr-dg-row-master[contains(.,'${tagname}')]//clr-dg-action-overflow//button[contains(.,'Scan')]
-    Sleep  15
+Edit Repo Info
+    Click Element  //*[@id="repo-info"]
+    Sleep  1
+    Page Should Contain Element  //*[@id="info"]/form/div[2]/h3
+    # Cancel input
+    Click Element  xpath=//*[@id="info-edit-button"]/button
+    Input Text  xpath=//*[@id="info"]/form/div[2]/textarea  test_description_info
+    Click Element  xpath=//*[@id="info"]/form/div[3]/button[2]
+    Sleep  1
+    Click Element  xpath=//*[@id="info"]/form/confirmation-dialog/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+    Sleep  1
+    Page Should Contain Element  //*[@id="info"]/form/div[2]/h3
+    # Confirm input
+    Click Element  xpath=//*[@id="info-edit-button"]/button
+    Input Text  xpath=//*[@id="info"]/form/div[2]/textarea  test_description_info
+    Click Element  xpath=//*[@id="info"]/form/div[3]/button[1]
+    Sleep  1
+    Page Should Contain  test_description_info
+    Capture Page Screenshot  RepoInfo.png
 
-Summary Chart Should Display
-    [Arguments]  ${tagname}
-    Page Should Contain Element  //clr-dg-row-master[contains(.,'${tagname}')]//hbr-vulnerability-bar//hbr-vulnerability-summary-chart
+

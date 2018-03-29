@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, Input, Output, OnDestroy, EventEmitter } from '@angular/core';
-import { ResponseOptions, RequestOptions } from '@angular/http';
-import { NgModel } from '@angular/forms';
 
 import { TranslateService } from '@ngx-translate/core';
 
@@ -23,7 +21,7 @@ import { ErrorHandler } from '../error-handler/error-handler';
 
 import { ReplicationService } from '../service/replication.service';
 import { RequestQueryParams } from '../service/RequestQueryParams';
-import { ReplicationRule, ReplicationJob, Endpoint, ReplicationJobItem } from '../service/interface';
+import { ReplicationRule, ReplicationJob, ReplicationJobItem } from '../service/interface';
 
 import {
   toPromise,
@@ -43,6 +41,11 @@ import { JobLogViewerComponent } from '../job-log-viewer/index';
 import { State } from "clarity-angular";
 import {Observable} from "rxjs/Observable";
 import {Subscription} from "rxjs/Subscription";
+import {ConfirmationTargets, ConfirmationButtons, ConfirmationState} from "../shared/shared.const";
+import {ConfirmationMessage} from "../confirmation-dialog/confirmation-message";
+import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
+import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
+import {ConfirmationAcknowledgement} from "../confirmation-dialog/confirmation-state-message";
 
 const ruleStatus: { [key: string]: any } = [
   { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS' },
@@ -84,10 +87,14 @@ export class SearchOption {
 export class ReplicationComponent implements OnInit, OnDestroy {
 
   @Input() projectId: number | string;
+  @Input() projectName: string;
+  @Input() isSystemAdmin: boolean;
   @Input() withReplicationJob: boolean;
-  @Input() readonly: boolean;
 
   @Output() redirect = new EventEmitter<ReplicationRule>();
+  @Output() openCreateRule = new EventEmitter<any>();
+  @Output() openEdit = new EventEmitter<string | number>();
+  @Output() goToRegistry = new EventEmitter<any>();
 
   search: SearchOption = new SearchOption();
 
@@ -98,12 +105,13 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   currentJobStatus: { key: string, description: string };
 
   changedRules: ReplicationRule[];
-  initSelectedId: number | string;
 
   rules: ReplicationRule[];
   loading: boolean;
+  isStopOnGoing: boolean;
 
   jobs: ReplicationJobItem[];
+  batchDelectionInfos: BatchInfo[] = [];
 
   toggleJobSearchOption = optionalSearch;
   currentJobSearchOption: number;
@@ -116,6 +124,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   @ViewChild("replicationLogViewer")
   replicationLogViewer: JobLogViewerComponent;
+
+  @ViewChild('replicationConfirmDialog')
+  replicationConfirmDialog: ConfirmationDialogComponent;
 
   creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('creation_time', 'date');
   updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('update_time', 'date');
@@ -134,9 +145,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     private translateService: TranslateService) {
   }
 
-  public get creationAvailable(): boolean {
-    return !this.readonly && this.projectId ? true : false;
-  }
 
   public get showPaginationIndex(): boolean {
     return this.totalCount > 0;
@@ -154,18 +162,20 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
   }
 
+  // open replication rule
   openModal(): void {
-    this.createEditPolicyComponent.openCreateEditRule(true);
+    this.createEditPolicyComponent.openCreateEditRule();
   }
 
+  // edit replication rule
   openEditRule(rule: ReplicationRule) {
     if (rule) {
-      let editable = true;
-      if (rule.enabled === 1) {
-        editable = false;
-      }
-      this.createEditPolicyComponent.openCreateEditRule(editable, rule.id);
+      this.createEditPolicyComponent.openCreateEditRule(rule.id);
     }
+  }
+
+  goRegistry(): void {
+    this.goToRegistry.emit();
   }
 
   //Server driven data loading
@@ -199,6 +209,12 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
 
     this.jobsLoading = true;
+
+    //Do filtering and sorting
+    this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
+    this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
+
+    this.jobsLoading = false;
     toPromise<ReplicationJob>(this.replicationService
       .getJobs(this.search.ruleId, params))
       .then(
@@ -260,6 +276,60 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
   }
 
+  replicateManualRule(rule: ReplicationRule) {
+    if (rule) {
+      this.batchDelectionInfos = [];
+        let initBatchMessage = new BatchInfo ();
+        initBatchMessage.name = rule.name;
+        this.batchDelectionInfos.push(initBatchMessage);
+      let replicationMessage = new ConfirmationMessage(
+          'REPLICATION.REPLICATION_TITLE',
+          'REPLICATION.REPLICATION_SUMMARY',
+          rule.name,
+          rule,
+          ConfirmationTargets.TARGET,
+          ConfirmationButtons.REPLICATE_CANCEL);
+      this.replicationConfirmDialog.open(replicationMessage);
+    }
+  }
+
+  confirmReplication(message: ConfirmationAcknowledgement) {
+    if (message &&
+        message.source === ConfirmationTargets.TARGET &&
+        message.state === ConfirmationState.CONFIRMED) {
+      let rule: ReplicationRule = message.data;
+
+      if (rule) {
+        Promise.all([this.replicationOperate(+rule.id, rule.name)]).then((item) => {
+          this.selectOneRule(rule);
+        });
+      }
+    }
+  }
+
+  replicationOperate(ruleId: number, name: string) {
+    let findedList = this.batchDelectionInfos.find(data => data.name === name);
+
+    return toPromise<any>(this.replicationService.replicateRule(ruleId))
+        .then(response => {
+          this.translateService.get('BATCH.REPLICATE_SUCCESS')
+              .subscribe(res => findedList = BathInfoChanges(findedList, res));
+        })
+        .catch(error => {
+          if (error && error.status === 412) {
+            Observable.forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
+                this.translateService.get('REPLICATION.REPLICATE_SUMMARY_FAILURE'))
+                .subscribe(function (res) {
+              findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+            });
+          } else {
+            this.translateService.get('BATCH.REPLICATE_FAILURE').subscribe(res => {
+              findedList = BathInfoChanges(findedList, res, false, true);
+            });
+          }
+        });
+  }
+
   customRedirect(rule: ReplicationRule) {
     this.redirect.emit(rule);
   }
@@ -267,14 +337,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   doSearchRules(ruleName: string) {
     this.search.ruleName = ruleName;
     this.listReplicationRule.retrieveRules(ruleName);
-  }
-
-  doFilterRuleStatus($event: any) {
-    if ($event && $event.target && $event.target["value"]) {
-      let status = $event.target["value"];
-      this.currentRuleStatus = this.ruleStatus.find((r: any) => r.key === status);
-      this.listReplicationRule.filterRuleStatus(this.currentRuleStatus.key);
-    }
   }
 
   doFilterJobStatus($event: any) {
@@ -296,6 +358,23 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.loadFirstPage();
   }
 
+  hideJobs() {
+    this.search.ruleId = 0;
+    this.jobs = [];
+  }
+
+  stopJobs() {
+    if (this.jobs && this.jobs.length) {
+      this.isStopOnGoing = true;
+      toPromise(this.replicationService.stopJobs(this.jobs[0].policy_id))
+          .then(res => {
+            this.refreshJobs();
+            this.isStopOnGoing = false;
+          })
+          .catch(error =>  this.errorHandler.error(error));
+    }
+  }
+
   reloadRules(isReady: boolean) {
     if (isReady) {
       this.search.ruleName = '';
@@ -307,7 +386,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.listReplicationRule.retrieveRules();
   }
 
+
   refreshJobs() {
+    this.currentJobStatus = this.jobStatus[0];
+    this.search.startTime = ' ';
+    this.search.endTime = ' ';
     this.search.repoName = "";
     this.search.startTimestamp = "";
     this.search.endTimestamp = "";

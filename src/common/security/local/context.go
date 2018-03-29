@@ -175,7 +175,7 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 		return roles
 	}
 
-	roleList, err := dao.GetUserProjectRoles(user.UserID, project.ProjectID)
+	roleList, err := dao.GetUserProjectRoles(user.UserID, project.ProjectID, common.UserMember)
 	if err != nil {
 		log.Errorf("failed to get roles of user %d to project %d: %v", user.UserID, project.ProjectID, err)
 		return roles
@@ -191,6 +191,8 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 			roles = append(roles, common.RoleGuest)
 		}
 	}
+
+	//If len(roles)==0, Get Group Roles
 
 	return roles
 }

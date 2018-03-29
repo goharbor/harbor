@@ -50,6 +50,7 @@ type Job interface {
 	Type() Type
 	LogPath() string
 	UpdateStatus(status string) error
+	GetStatus() (string, error)
 	Init() error
 	//Parm() interface{}
 }
@@ -62,7 +63,6 @@ type RepJobParm struct {
 	TargetPassword string
 	Repository     string
 	Tags           []string
-	Enabled        int
 	Operation      string
 	Insecure       bool
 }
@@ -124,12 +124,7 @@ func (rj *RepJob) Init() error {
 		LocalRegURL: regURL,
 		Repository:  job.Repository,
 		Tags:        job.TagList,
-		Enabled:     policy.Enabled,
 		Operation:   job.Operation,
-	}
-	if policy.Enabled == 0 {
-		//worker will cancel this job
-		return nil
 	}
 	target, err := dao.GetRepTarget(policy.TargetID)
 	if err != nil {
@@ -156,6 +151,18 @@ func (rj *RepJob) Init() error {
 	rj.parm.TargetPassword = pwd
 	rj.parm.Insecure = target.Insecure
 	return nil
+}
+
+// GetStatus returns the status of the job
+func (rj *RepJob) GetStatus() (string, error) {
+	job, err := dao.GetRepJob(rj.id)
+	if err != nil {
+		return "", err
+	}
+	if job == nil {
+		return "", fmt.Errorf("replication job %v not found", rj.id)
+	}
+	return job.Status, nil
 }
 
 // NewRepJob returns a pointer to RepJob which implements the Job interface.
@@ -221,6 +228,18 @@ func (sj *ScanJob) Init() error {
 		return err
 	}
 	return nil
+}
+
+// GetStatus returns the status of the job
+func (sj *ScanJob) GetStatus() (string, error) {
+	job, err := dao.GetScanJob(sj.id)
+	if err != nil {
+		return "", err
+	}
+	if job == nil {
+		return "", fmt.Errorf("scan job %d not found", sj.id)
+	}
+	return job.Status, nil
 }
 
 //NewScanJob creates a instance of ScanJob by id.

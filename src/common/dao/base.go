@@ -43,20 +43,20 @@ type Database interface {
 }
 
 // InitClairDB ...
-func InitClairDB(password string) error {
+func InitClairDB(clairDB *models.PostGreSQL) error {
 	//Except for password other information will not be configurable, so keep it hard coded for 1.2.0.
 	p := &pgsql{
-		host:     "postgres",
-		port:     5432,
-		usr:      "postgres",
-		pwd:      password,
-		database: "postgres",
+		host:     clairDB.Host,
+		port:     clairDB.Port,
+		usr:      clairDB.Username,
+		pwd:      clairDB.Password,
+		database: clairDB.Database,
 		sslmode:  false,
 	}
 	if err := p.Register(ClairDBAlias); err != nil {
 		return err
 	}
-	log.Info("initialized clair databas")
+	log.Info("initialized clair database")
 	return nil
 }
 
@@ -71,6 +71,16 @@ func InitDatabase(database *models.Database) error {
 	if err := db.Register(); err != nil {
 		return err
 	}
+
+	version, err := GetSchemaVersion()
+	if err != nil {
+		return err
+	}
+	if version.Version != SchemaVersion {
+		return fmt.Errorf("unexpected database schema version, expected %s, got %s",
+			SchemaVersion, version.Version)
+	}
+
 	log.Info("initialize database completed")
 	return nil
 }
@@ -106,6 +116,15 @@ func GetOrmer() orm.Ormer {
 func ClearTable(table string) error {
 	o := GetOrmer()
 	sql := fmt.Sprintf("delete from %s where 1=1", table)
+	if table == models.ProjectTable {
+		sql = fmt.Sprintf("delete from %s where project_id > 1", table)
+	}
+	if table == models.UserTable {
+		sql = fmt.Sprintf("delete from %s where user_id > 2", table)
+	}
+	if table == "project_metadata" { //make sure library is public
+		sql = fmt.Sprintf("delete from %s where id > 1", table)
+	}
 	_, err := o.Raw(sql).Exec()
 	return err
 }
@@ -114,7 +133,8 @@ func paginateForRawSQL(sql string, limit, offset int64) string {
 	return fmt.Sprintf("%s limit %d offset %d", sql, limit, offset)
 }
 
-func escape(str string) string {
+//Escape ..
+func Escape(str string) string {
 	str = strings.Replace(str, `%`, `\%`, -1)
 	str = strings.Replace(str, `_`, `\_`, -1)
 	return str

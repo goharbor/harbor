@@ -16,6 +16,7 @@ package job
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/vmware/harbor/src/common/models"
@@ -155,9 +156,29 @@ func Dispatch() {
 		select {
 		case job := <-jobQueue:
 			go func(job Job) {
-				log.Debugf("Trying to dispatch job: %v", job)
+				jobID := job.ID()
+				jobType := strings.ToLower(job.Type().String())
+				log.Debugf("trying to dispatch %s job %d ...", jobType, jobID)
 				worker := <-WorkerPools[job.Type()].workerChan
+
+				status, err := job.GetStatus()
+				if err != nil {
+					// put the work back to the worker pool
+					worker.queue <- worker
+					log.Errorf("failed to get status of %s job %d: %v", jobType, jobID, err)
+					return
+				}
+
+				// check the status of job before dispatching
+				if status == models.JobStopped {
+					// put the work back to the worker pool
+					worker.queue <- worker
+					log.Debugf("%s job %d is stopped, skip dispatching", jobType, jobID)
+					return
+				}
+
 				worker.Jobs <- job
+				log.Debugf("%s job %d dispatched successfully", jobType, jobID)
 			}(job)
 		}
 	}
