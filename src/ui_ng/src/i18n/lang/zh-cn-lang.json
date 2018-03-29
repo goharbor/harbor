@@ -404,6 +404,7 @@
         "REPOSITORIES": "镜像仓库",
         "OF": "共计",
         "ITEMS": "条记录",
+        "NO_ITEMS": "没有记录",
         "POP_REPOS": "受欢迎的镜像仓库",
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",
         "DELETED_TAG_SUCCESS": "成功删除镜像标签。",
@@ -415,7 +416,11 @@
         "IMAGE": "镜像",
         "LABELS": "标签",
         "ADD_TO_IMAGE": "添加标签到此镜像",
-        "ADD_LABELS": "添加标签"
+        "ADD_LABELS": "添加标签",
+        "FILTER_BY_LABEL": "过滤标签",
+        "ACTION": "操作",
+        "DEPLOY": "部署",
+        "ADDITIONAL_INFO": "添加信息"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"

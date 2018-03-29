@@ -364,7 +364,11 @@
         "DELETED_TAG_SUCCESS": "Tag supprimé avec succés.",
         "COPY": "Copier",
         "NOTARY_IS_UNDETERMINED": "Ne peut pas déterminer la signature de ce tag.",
-        "PLACEHOLDER": "Nous ne trouvons aucun dépôt !"
+        "PLACEHOLDER": "Nous ne trouvons aucun dépôt !",
+        "IMAGE": "Images",
+        "ACTION": "ACTION",
+        "DEPLOY": "DEPLOY",
+        "ADDITIONAL_INFO": "Add Additional Info"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Certaines modifications ne sont pas encore enregistrées. Voulez-vous annuler ?"
