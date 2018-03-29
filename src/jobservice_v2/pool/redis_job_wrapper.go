@@ -3,6 +3,7 @@
 package pool
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gocraft/work"
@@ -69,6 +70,12 @@ func (rj *RedisJob) Run(j *work.Job) error {
 
 				rj.statsManager.DieAt(j.ID, now)
 			}()
+		}
+	}()
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("Runtime error: %s", r)
 		}
 	}()
 

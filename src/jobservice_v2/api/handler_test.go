@@ -49,14 +49,14 @@ func TestLaunchJobSucceed(t *testing.T) {
 
 	res, err := postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs", port), createJobReq(true))
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	obj, err := getResult(res)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if obj.Stats.JobID != "fake_ID_ok" {
-		t.Errorf("expect job ID 'fake_ID_ok' but got '%s'\n", obj.Stats.JobID)
+		t.Fatalf("expect job ID 'fake_ID_ok' but got '%s'\n", obj.Stats.JobID)
 	}
 
 	server.Stop()
@@ -70,7 +70,7 @@ func TestGetJobFailed(t *testing.T) {
 
 	res, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port))
 	if e := expectFormatedError(res, err); e != nil {
-		t.Error(e)
+		t.Fatal(e)
 	}
 
 	server.Stop()
@@ -84,14 +84,14 @@ func TestGetJobSucceed(t *testing.T) {
 
 	res, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok", port))
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	obj, err := getResult(res)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if obj.Stats.JobName != "testing" || obj.Stats.JobID != "fake_ID_ok" {
-		t.Errorf("expect job ID 'fake_ID_ok' of 'testing', but got '%s'\n", obj.Stats.JobID)
+		t.Fatalf("expect job ID 'fake_ID_ok' of 'testing', but got '%s'\n", obj.Stats.JobID)
 	}
 
 	server.Stop()
@@ -105,21 +105,21 @@ func TestJobActionFailed(t *testing.T) {
 
 	actionReq, err := createJobActionReq("stop")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	resData, err := postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port), actionReq)
 	expectFormatedError(resData, err)
 
 	actionReq, err = createJobActionReq("cancel")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	resData, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port), actionReq)
 	expectFormatedError(resData, err)
 
 	actionReq, err = createJobActionReq("retry")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	resData, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port), actionReq)
 	expectFormatedError(resData, err)
@@ -135,29 +135,29 @@ func TestJobActionSucceed(t *testing.T) {
 
 	actionReq, err := createJobActionReq("stop")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok", port), actionReq)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	actionReq, err = createJobActionReq("cancel")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok", port), actionReq)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	actionReq, err = createJobActionReq("retry")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok", port), actionReq)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	server.Stop()
@@ -171,7 +171,7 @@ func TestCheckStatus(t *testing.T) {
 
 	resData, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/stats", port))
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	poolStats := &models.JobPoolStats{
@@ -179,11 +179,11 @@ func TestCheckStatus(t *testing.T) {
 	}
 	err = json.Unmarshal(resData, poolStats)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if poolStats.Pools[0].WorkerPoolID != "fake_pool_ID" {
-		t.Errorf("expect pool ID 'fake_pool_ID' but got '%s'", poolStats.Pools[0].WorkerPoolID)
+		t.Fatalf("expect pool ID 'fake_pool_ID' but got '%s'", poolStats.Pools[0].WorkerPoolID)
 	}
 
 	server.Stop()
@@ -197,11 +197,11 @@ func TestGetJobLog(t *testing.T) {
 
 	resData, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok/log", port))
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if len(resData) == 0 {
-		t.Error("expect job log but got nothing")
+		t.Fatal("expect job log but got nothing")
 	}
 
 	server.Stop()

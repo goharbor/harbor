@@ -13,11 +13,11 @@ func TestSweeper(t *testing.T) {
 	workDir := "/tmp/sweeper_logs"
 
 	if err := os.MkdirAll(workDir, 0755); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	_, err := os.Create(fmt.Sprintf("%s/sweeper_test.log", workDir))
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -28,9 +28,9 @@ func TestSweeper(t *testing.T) {
 	<-time.After(100 * time.Millisecond)
 
 	if err := os.Remove(fmt.Sprintf("%s/sweeper_test.log", workDir)); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if err := os.Remove(workDir); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }

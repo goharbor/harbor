@@ -57,16 +57,16 @@ func TestSetJobStatus(t *testing.T) {
 	<-time.After(100 * time.Millisecond)
 	stats, err := mgr.Retrieve("fake_job_ID")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if stats.Stats.Status != "running" {
-		t.Errorf("expect job status 'running' but got '%s'\n", stats.Stats.Status)
+		t.Fatalf("expect job status 'running' but got '%s'\n", stats.Stats.Status)
 	}
 
 	key := utils.KeyJobStats(testingNamespace, "fake_job_ID")
 	if err := clear(key, redisPool.Get()); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -77,20 +77,20 @@ func TestCommand(t *testing.T) {
 	<-time.After(200 * time.Millisecond)
 
 	if err := mgr.SendCommand("fake_job_ID", CtlCommandStop); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if cmd, err := mgr.CtlCommand("fake_job_ID"); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	} else {
 		if cmd != CtlCommandStop {
-			t.Errorf("expect '%s' but got '%s'", CtlCommandStop, cmd)
+			t.Fatalf("expect '%s' but got '%s'", CtlCommandStop, cmd)
 		}
 	}
 
 	key := utils.KeyJobCtlCommands(testingNamespace, "fake_job_ID")
 	if err := clear(key, redisPool.Get()); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -105,7 +105,7 @@ func TestDieAt(t *testing.T) {
 
 	dieAt := time.Now().Unix()
 	if err := createDeadJob(redisPool.Get(), dieAt); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	<-time.After(200 * time.Millisecond)
 	mgr.DieAt("fake_job_ID", dieAt)
@@ -113,20 +113,20 @@ func TestDieAt(t *testing.T) {
 
 	stats, err := mgr.Retrieve("fake_job_ID")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if stats.Stats.DieAt != dieAt {
-		t.Errorf("expect die at '%d' but got '%d'\n", dieAt, stats.Stats.DieAt)
+		t.Fatalf("expect die at '%d' but got '%d'\n", dieAt, stats.Stats.DieAt)
 	}
 
 	key := utils.KeyJobStats(testingNamespace, "fake_job_ID")
 	if err := clear(key, redisPool.Get()); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	key2 := utils.RedisKeyDead(testingNamespace)
 	if err := clear(key2, redisPool.Get()); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -137,12 +137,12 @@ func TestRegisterHook(t *testing.T) {
 	<-time.After(200 * time.Millisecond)
 
 	if err := mgr.RegisterHook("fake_job_ID", "http://localhost:9999", false); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	key := utils.KeyJobStats(testingNamespace, "fake_job_ID")
 	if err := clear(key, redisPool.Get()); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -158,12 +158,12 @@ func TestExpireJobStats(t *testing.T) {
 	<-time.After(200 * time.Millisecond)
 
 	if err := mgr.ExpirePeriodicJobStats("fake_job_ID"); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	key := utils.KeyJobStats(testingNamespace, "fake_job_ID")
 	if err := clear(key, redisPool.Get()); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -185,7 +185,7 @@ func TestCheckIn(t *testing.T) {
 	defer ts.Close()
 
 	if err := mgr.RegisterHook("fake_job_ID", ts.URL, false); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	mgr.CheckIn("fake_job_ID", "checkin")
@@ -193,16 +193,16 @@ func TestCheckIn(t *testing.T) {
 
 	stats, err := mgr.Retrieve("fake_job_ID")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if stats.Stats.CheckIn != "checkin" {
-		t.Errorf("expect check in info 'checkin' but got '%s'\n", stats.Stats.CheckIn)
+		t.Fatalf("expect check in info 'checkin' but got '%s'\n", stats.Stats.CheckIn)
 	}
 
 	key := utils.KeyJobStats(testingNamespace, "fake_job_ID")
 	if err := clear(key, redisPool.Get()); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
