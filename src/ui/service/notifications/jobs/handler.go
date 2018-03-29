@@ -32,6 +32,7 @@ var statusMap = map[string]string{
 	job.JobServiceStatusCancelled: models.JobCanceled,
 	job.JobServiceStatusError:     models.JobError,
 	job.JobServiceStatusSuccess:   models.JobFinished,
+	job.JobServiceStatusScheduled: models.JobScheduled,
 }
 
 // Handler handles reqeust on /service/notifications/jobs/*, which listens to the webhook of jobservice.
@@ -58,9 +59,9 @@ func (h *Handler) Prepare() {
 		h.Abort("200")
 		return
 	}
-	log.Debugf("Received scan job status update for job: %d, status: %s", id, data.Status)
 	status, ok := statusMap[data.Status]
 	if !ok {
+		log.Debugf("drop the job status update event: job id-%d, status-%s", id, status)
 		h.Abort("200")
 		return
 	}
@@ -69,6 +70,7 @@ func (h *Handler) Prepare() {
 
 // HandleScan handles the webhook of scan job
 func (h *Handler) HandleScan() {
+	log.Debugf("received san job status update event: job-%d, status-%s", h.id, h.status)
 	if err := dao.UpdateScanJobStatus(h.id, h.status); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.HandleInternalServerError(err.Error())
@@ -78,6 +80,7 @@ func (h *Handler) HandleScan() {
 
 //HandleReplication handles the webhook of replication job
 func (h *Handler) HandleReplication() {
+	log.Debugf("received replication job status update event: job-%d, status-%s", h.id, h.status)
 	if err := dao.UpdateRepJobStatus(h.id, h.status); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.HandleInternalServerError(err.Error())

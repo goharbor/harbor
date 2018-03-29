@@ -19,6 +19,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 )
@@ -66,30 +68,26 @@ func TestCreateTrigger(t *testing.T) {
 }
 
 func TestSetupTrigger(t *testing.T) {
+	dao.DefaultDatabaseWatchItemDAO = &test.FakeWatchItemDAO{}
+
 	mgr := NewManager(1)
 
 	err := mgr.SetupTrigger(&models.ReplicationPolicy{
 		Trigger: &models.Trigger{
-			Kind: replication.TriggerKindSchedule,
-			ScheduleParam: &models.ScheduleParam{
-				Type:    replication.TriggerScheduleDaily,
-				Offtime: 1,
-			},
+			Kind: replication.TriggerKindImmediate,
 		},
 	})
 	assert.Nil(t, err)
 }
 
 func TestUnsetTrigger(t *testing.T) {
+	dao.DefaultDatabaseWatchItemDAO = &test.FakeWatchItemDAO{}
+
 	mgr := NewManager(1)
 
 	err := mgr.UnsetTrigger(&models.ReplicationPolicy{
 		Trigger: &models.Trigger{
-			Kind: replication.TriggerKindSchedule,
-			ScheduleParam: &models.ScheduleParam{
-				Type:    replication.TriggerScheduleDaily,
-				Offtime: 1,
-			},
+			Kind: replication.TriggerKindImmediate,
 		},
 	})
 	assert.Nil(t, err)
