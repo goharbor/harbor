@@ -65,7 +65,18 @@ adminserver:
   emailIdentity: ""
   emailInsecure: "False"
   emailPwd: not-a-secure-password
-  harborAdminPassword: Harbor12345
+  adminPassword: Harbor12345
+  authenticationMode: "db_auth"
+  selfRegistration: "on"
+  ldap:
+    url: "ldaps://ldapserver"
+    searchDN: ""
+    baseDN: ""
+    filter: "(objectClass=person)"
+    uid: "uid"
+    scope: "2"
+    timeout: "5"
+    verifyCert: "True"
   ## Persist data to a persistent volume
   volumes:
     config:
