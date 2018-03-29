@@ -20,7 +20,7 @@ export const REPOSITORY_LISTVIEW_TEMPLATE = `
         <clr-dg-column [clrDgSortBy]="pullCountComparator">{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'REPOSITORY.PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *ngFor="let r of repositories"  [clrDgItem]="r">
-          <clr-dg-cell><a href="javascript:void(0)" (click)="gotoLink(projectId || r.project_id, r.name || r.repository_name)">{{r.name}}</a></clr-dg-cell>
+          <clr-dg-cell><a href="javascript:void(0)" (click)="watchRepoClickEvt(r)">{{r.name}}</a></clr-dg-cell>
           <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
           <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
         </clr-dg-row>

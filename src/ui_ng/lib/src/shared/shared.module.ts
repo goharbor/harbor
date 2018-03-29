@@ -55,7 +55,7 @@ export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
                 provide: MissingTranslationHandler,
                 useClass: MyMissingTranslationHandler
             }
-        })
+        }),
     ],
     exports: [
         CommonModule,
@@ -65,9 +65,8 @@ export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
         CookieModule,
         ClipboardModule,
         ClarityModule,
-        TranslateModule
+        TranslateModule,
     ],
     providers: [CookieService]
 })
-
 export class SharedModule { }

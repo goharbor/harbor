@@ -211,10 +211,22 @@ Set Scan All To None
     click element  //vulnerability-config//select/option[@value='none']
     sleep  1
     click element  ${config_save_button_xpath}
+
 Set Scan All To Daily
     click element  //vulnerability-config//select
     click element  //vulnerability-config//select/option[@value='daily']
     sleep  1
     click element  ${config_save_button_xpath}
+
 Click Scan Now
     click element  //vulnerability-config//button[contains(.,'SCAN')]
+
+Enable Read Only
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":true}' "https://${ip}/api/configurations"
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
+Disable Read Only
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X PUT -d '{"read_only":false}' "https://${ip}/api/configurations"
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0

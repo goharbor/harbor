@@ -256,6 +256,10 @@ func (l *LabelAPI) Put() {
 // Delete the label
 func (l *LabelAPI) Delete() {
 	id := l.label.ID
+	if err := dao.DeleteResourceLabelByLabel(id); err != nil {
+		l.HandleInternalServerError(fmt.Sprintf("failed to delete resource label mappings of label %d: %v", id, err))
+		return
+	}
 	if err := dao.DeleteLabel(id); err != nil {
 		l.HandleInternalServerError(fmt.Sprintf("failed to delete label %d: %v", id, err))
 		return

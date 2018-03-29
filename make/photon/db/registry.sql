@@ -199,7 +199,8 @@ create table replication_job (
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
  PRIMARY KEY (id),
  INDEX policy (policy_id),
- INDEX poid_uptime (policy_id, update_time)
+ INDEX poid_uptime (policy_id, update_time),
+ INDEX poid_status (policy_id, status)
  );
 
 create table replication_immediate_trigger (
@@ -223,7 +224,11 @@ create table img_scan_job (
  job_uuid varchar(64),
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
- PRIMARY KEY (id)
+ PRIMARY KEY (id),
+ INDEX idx_status (status),
+ INDEX idx_digest (digest),
+ INDEX idx_uuid (job_uuid),
+ INDEX idx_repository_tag (repository,tag)
  );
 
 create table img_scan_overview (
@@ -298,4 +303,4 @@ CREATE TABLE IF NOT EXISTS `alembic_version` (
     `version_num` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-insert into alembic_version values ('1.4.0');
+insert into alembic_version values ('1.5.0');

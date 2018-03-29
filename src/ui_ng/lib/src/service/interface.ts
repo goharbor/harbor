@@ -250,7 +250,7 @@ export interface VulnerabilitySummary {
     job_id?: number;
     severity: VulnerabilitySeverity;
     components: VulnerabilityComponents;
-    update_time: Date; //Use as complete timestamp
+    update_time: Date; // Use as complete timestamp
 }
 
 export interface VulnerabilityComponents {
@@ -277,3 +277,15 @@ export interface Label {
     scope: string;
     project_id: number;
 }
+
+export interface CardItemEvent {
+    event_type: string;
+    item: any;
+    additional_info?: any;
+}
+
+export interface ScrollPosition {
+    sH: number;
+    sT: number;
+    cH: number;
+};

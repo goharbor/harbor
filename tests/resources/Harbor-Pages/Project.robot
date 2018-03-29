@@ -44,11 +44,11 @@ Create An New Project With New User
 
 #It's the log of project.
 Go To Project Log
-    Click Element  xpath=//project-detail//ul/li[3]
+    Click Element  xpath=${project_log_xpath}
     Sleep  2
 
 Switch To Member
-    Click Element  xpath=//project-detail//li[2]
+    Click Element  xpath=${project_member_xpath}
     Sleep  1
 
 Switch To Log

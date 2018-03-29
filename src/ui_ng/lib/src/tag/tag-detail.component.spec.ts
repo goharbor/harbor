@@ -10,6 +10,11 @@ import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { TagService, TagDefaultService, ScanningResultService, ScanningResultDefaultService } from '../service/index';
 import { FilterComponent } from '../filter/index';
 import { VULNERABILITY_SCAN_STATUS } from '../utils';
+import {VULNERABILITY_DIRECTIVES} from "../vulnerability-scanning/index";
+import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import {JobLogViewerComponent} from "../job-log-viewer/job-log-viewer.component";
+import {ChannelService} from "../channel/channel.service";
+import {JobLogService, JobLogDefaultService} from "../service/job-log.service";
 
 describe('TagDetailComponent (inline template)', () => {
 
@@ -66,10 +71,16 @@ describe('TagDetailComponent (inline template)', () => {
       declarations: [
         TagDetailComponent,
         ResultGridComponent,
+        VULNERABILITY_DIRECTIVES,
+          LabelPieceComponent,
+          JobLogViewerComponent,
         FilterComponent
       ],
       providers: [
         ErrorHandler,
+        ChannelService,
+        JobLogDefaultService,
+        {provide: JobLogService, useClass: JobLogDefaultService},
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: TagService, useClass: TagDefaultService },
         { provide: ScanningResultService, useClass: ScanningResultDefaultService }
@@ -119,7 +130,7 @@ describe('TagDetailComponent (inline template)', () => {
 
       let el: HTMLElement = fixture.nativeElement.querySelector('.tag-name');
       expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual('nginx');
+      expect(el.textContent.trim()).toEqual('mock_repo:nginx');
     });
   }));
 
@@ -133,7 +144,7 @@ describe('TagDetailComponent (inline template)', () => {
       expect(el).toBeTruthy();
       let el2: HTMLElement = el.querySelector('div');
       expect(el2).toBeTruthy();
-      expect(el2.textContent).toEqual("amd64");
+      expect(el2.textContent).toEqual("steven");
     });
   }));
 
@@ -147,7 +158,7 @@ describe('TagDetailComponent (inline template)', () => {
       expect(el).toBeTruthy();
       let el2: HTMLElement = el.querySelector('div');
       expect(el2).toBeTruthy();
-      expect(el2.textContent.trim()).toEqual("13 VULNERABILITY.SEVERITY.HIGH");
+      expect(el2.textContent.trim()).toEqual("13 VULNERABILITY.SEVERITY.HIGHTAG.LEVEL_VULNERABILITIES");
     });
   }));
 

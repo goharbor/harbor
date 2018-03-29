@@ -46,7 +46,7 @@ export const REPOSITORY_TEMPLATE = `
     </section>
     <section id="image" role="tabpanel" aria-labelledby="repo-image" [hidden]='!isCurrentTabContent("image")'>
       <div id=images-container>
-        <hbr-tag ngProjectAs="clr-dg-row-detail" (tagClickEvent)="watchTagClickEvt($event)" (signatureOutput)="saveSignatures($event)" class="sub-grid-custom" [repoName]="repoName" [registryUrl]="registryUrl" [withNotary]="withNotary" [withClair]="withClair" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [isGuest]="isGuest" [projectId]="projectId"></hbr-tag>
+        <hbr-tag ngProjectAs="clr-dg-row-detail" (tagClickEvent)="watchTagClickEvt($event)" (signatureOutput)="saveSignatures($event)" class="sub-grid-custom" [repoName]="repoName" [registryUrl]="registryUrl" [withNotary]="withNotary" [withClair]="withClair" [withAdmiral]="withAdmiral" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole" [isGuest]="isGuest" [projectId]="projectId"></hbr-tag>
       </div>
     </section>
   </div>
