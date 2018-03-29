@@ -21,7 +21,7 @@ func TestHookClient(t *testing.T) {
 		Status: "running",
 	})
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -37,6 +37,6 @@ func TestReportStatusFailed(t *testing.T) {
 		Status: "running",
 	})
 	if err == nil {
-		t.Error("expect error but got nil")
+		t.Fatal("expect error but got nil")
 	}
 }

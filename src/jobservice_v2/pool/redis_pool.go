@@ -323,6 +323,8 @@ func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
 		return models.JobPoolStats{}, err
 	}
 
+	fmt.Printf("hbs=%+#v\n", hbs[0])
+
 	//Find the heartbeat of this pool via pid
 	stats := make([]*models.JobPoolStatsData, 0)
 	for _, hb := range hbs {

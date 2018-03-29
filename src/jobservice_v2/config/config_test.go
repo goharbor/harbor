@@ -9,22 +9,22 @@ import (
 func TestConfigLoadingFailed(t *testing.T) {
 	cfg := &Configuration{}
 	if err := cfg.Load("./config.not-existing.yaml", false); err == nil {
-		t.Errorf("Load config from none-existing document, expect none nil error but got '%s'\n", err)
+		t.Fatalf("Load config from none-existing document, expect none nil error but got '%s'\n", err)
 	}
 }
 
 func TestConfigLoadingSucceed(t *testing.T) {
 	if err := CreateLogDir(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	cfg := &Configuration{}
 	if err := cfg.Load("../config_test.yml", false); err != nil {
-		t.Errorf("Load config from yaml file, expect nil error but got error '%s'\n", err)
+		t.Fatalf("Load config from yaml file, expect nil error but got error '%s'\n", err)
 	}
 
 	if err := RemoveLogDir(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -36,70 +36,70 @@ func TestConfigLoadingWithEnv(t *testing.T) {
 
 	cfg := &Configuration{}
 	if err := cfg.Load("../config_test.yml", true); err != nil {
-		t.Errorf("Load config from yaml file, expect nil error but got error '%s'\n", err)
+		t.Fatalf("Load config from yaml file, expect nil error but got error '%s'\n", err)
 	}
 
 	if cfg.Protocol != "https" {
-		t.Errorf("expect protocol 'https', but got '%s'\n", cfg.Protocol)
+		t.Fatalf("expect protocol 'https', but got '%s'\n", cfg.Protocol)
 	}
 	if cfg.Port != 8989 {
-		t.Errorf("expect port 8989 but got '%d'\n", cfg.Port)
+		t.Fatalf("expect port 8989 but got '%d'\n", cfg.Port)
 	}
 	if cfg.PoolConfig.WorkerCount != 8 {
-		t.Errorf("expect workcount 8 but go '%d'\n", cfg.PoolConfig.WorkerCount)
+		t.Fatalf("expect workcount 8 but go '%d'\n", cfg.PoolConfig.WorkerCount)
 	}
 	if cfg.PoolConfig.RedisPoolCfg.Host != "localhost" {
-		t.Errorf("expect redis host 'localhost' but got '%s'\n", cfg.PoolConfig.RedisPoolCfg.Host)
+		t.Fatalf("expect redis host 'localhost' but got '%s'\n", cfg.PoolConfig.RedisPoolCfg.Host)
 	}
 	if cfg.PoolConfig.RedisPoolCfg.Port != 7379 {
-		t.Errorf("expect redis port '7379' but got '%d'\n", cfg.PoolConfig.RedisPoolCfg.Port)
+		t.Fatalf("expect redis port '7379' but got '%d'\n", cfg.PoolConfig.RedisPoolCfg.Port)
 	}
 	if cfg.PoolConfig.RedisPoolCfg.Namespace != "ut_namespace" {
-		t.Errorf("expect redis namespace 'ut_namespace' but got '%s'\n", cfg.PoolConfig.RedisPoolCfg.Namespace)
+		t.Fatalf("expect redis namespace 'ut_namespace' but got '%s'\n", cfg.PoolConfig.RedisPoolCfg.Namespace)
 	}
 	if cfg.LoggerConfig.BasePath != "/tmp" {
-		t.Errorf("expect log base path '/tmp' but got '%s'\n", cfg.LoggerConfig.BasePath)
+		t.Fatalf("expect log base path '/tmp' but got '%s'\n", cfg.LoggerConfig.BasePath)
 	}
 	if cfg.LoggerConfig.LogLevel != "DEBUG" {
-		t.Errorf("expect log level 'DEBUG' but got '%s'\n", cfg.LoggerConfig.LogLevel)
+		t.Fatalf("expect log level 'DEBUG' but got '%s'\n", cfg.LoggerConfig.LogLevel)
 	}
 	if cfg.LoggerConfig.ArchivePeriod != 5 {
-		t.Errorf("expect log archive period 5 but got '%d'\n", cfg.LoggerConfig.ArchivePeriod)
+		t.Fatalf("expect log archive period 5 but got '%d'\n", cfg.LoggerConfig.ArchivePeriod)
 	}
 
 	unsetENV()
 	if err := RemoveLogDir(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
 func TestDefaultConfig(t *testing.T) {
 	if err := CreateLogDir(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if err := DefaultConfig.Load("../config_test.yml", true); err != nil {
-		t.Errorf("Load config from yaml file, expect nil error but got error '%s'\n", err)
+		t.Fatalf("Load config from yaml file, expect nil error but got error '%s'\n", err)
 	}
 
 	if endpoint := GetAdminServerEndpoint(); endpoint != "http://127.0.0.1:8888" {
-		t.Errorf("expect default admin server endpoint 'http://127.0.0.1:8888' but got '%s'\n", endpoint)
+		t.Fatalf("expect default admin server endpoint 'http://127.0.0.1:8888' but got '%s'\n", endpoint)
 	}
 
 	if basePath := GetLogBasePath(); basePath != "/tmp/job_logs" {
-		t.Errorf("expect default logger base path '/tmp/job_logs' but got '%s'\n", basePath)
+		t.Fatalf("expect default logger base path '/tmp/job_logs' but got '%s'\n", basePath)
 	}
 
 	if lvl := GetLogLevel(); lvl != "INFO" {
-		t.Errorf("expect default logger level 'INFO' but got '%s'\n", lvl)
+		t.Fatalf("expect default logger level 'INFO' but got '%s'\n", lvl)
 	}
 
 	if period := GetLogArchivePeriod(); period != 1 {
-		t.Errorf("expect default log archive period 1 but got '%d'\n", period)
+		t.Fatalf("expect default log archive period 1 but got '%d'\n", period)
 	}
 
 	if err := RemoveLogDir(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 

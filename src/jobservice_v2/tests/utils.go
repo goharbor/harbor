@@ -25,8 +25,8 @@ const (
 func GiveMeRedisPool() *redis.Pool {
 	redisHost := getRedisHost()
 	redisPool := &redis.Pool{
-		MaxActive: 2,
-		MaxIdle:   2,
+		MaxActive: 6,
+		MaxIdle:   6,
 		Wait:      true,
 		Dial: func() (redis.Conn, error) {
 			return redis.Dial(
@@ -56,6 +56,28 @@ func Clear(key string, conn redis.Conn) error {
 	}
 
 	return errors.New("failed to clear")
+}
+
+//ClearAll ...
+func ClearAll(namespace string, conn redis.Conn) error {
+	defer conn.Close()
+
+	keys, err := redis.Strings(conn.Do("KEYS", fmt.Sprintf("%s:*", namespace)))
+	if err != nil {
+		return err
+	}
+
+	if len(keys) == 0 {
+		return nil
+	}
+
+	for _, key := range keys {
+		if err := conn.Send("DEL", key); err != nil {
+			return err
+		}
+	}
+
+	return conn.Flush()
 }
 
 func getRedisHost() string {

@@ -15,16 +15,16 @@ import (
 func TestSweeper(t *testing.T) {
 	epoch := time.Now().Unix() - 1000
 	if err := createFakeScheduledJob(epoch); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	ns := tests.GiveMeTestNamespace()
 	sweeper := NewSweeper(ns, redisPool, work.NewClient(ns, redisPool))
 	if err := sweeper.ClearOutdatedScheduledJobs(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	err := tests.Clear(utils.RedisKeyScheduled(ns), redisPool.Get())
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 

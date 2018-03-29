@@ -14,11 +14,11 @@ func TestPeriodicJobPolicy(t *testing.T) {
 
 	data, err := p.Serialize()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if err := p.DeSerialize(data); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -37,17 +37,17 @@ func TestPeriodicJobPolicyStore(t *testing.T) {
 	pl = append(pl, createPolicy(""))
 	ps.addAll(pl)
 	if ps.size() != 3 {
-		t.Errorf("expect size 3 but got '%d'\n", ps.size())
+		t.Fatalf("expect size 3 but got '%d'\n", ps.size())
 	}
 
 	l := ps.list()
 	if l == nil || len(l) != 3 {
-		t.Error("expect a policy list with 3 items but got invalid list")
+		t.Fatal("expect a policy list with 3 items but got invalid list")
 	}
 
 	rp := ps.remove("fake_ID_Steven")
 	if rp == nil {
-		t.Error("expect none nil policy object but got nil")
+		t.Fatal("expect none nil policy object but got nil")
 	}
 }
 

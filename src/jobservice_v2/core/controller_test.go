@@ -17,11 +17,11 @@ func TestLaunchGenericJob(t *testing.T) {
 	req := createJobReq("Generic", false, false)
 	res, err := c.LaunchJob(req)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res.Stats.JobID != "fake_ID" {
-		t.Errorf("expect enqueued job ID 'fake_ID' but got '%s'\n", res.Stats.JobID)
+		t.Fatalf("expect enqueued job ID 'fake_ID' but got '%s'\n", res.Stats.JobID)
 	}
 }
 
@@ -31,11 +31,11 @@ func TestLaunchGenericJobUnique(t *testing.T) {
 	req := createJobReq("Generic", true, false)
 	res, err := c.LaunchJob(req)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res.Stats.JobID != "fake_ID" {
-		t.Errorf("expect enqueued job ID 'fake_ID' but got '%s'\n", res.Stats.JobID)
+		t.Fatalf("expect enqueued job ID 'fake_ID' but got '%s'\n", res.Stats.JobID)
 	}
 }
 
@@ -45,11 +45,11 @@ func TestLaunchGenericJobWithHook(t *testing.T) {
 	req := createJobReq("Generic", false, true)
 	res, err := c.LaunchJob(req)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res.Stats.JobID != "fake_ID" {
-		t.Errorf("expect enqueued job ID 'fake_ID' but got '%s'\n", res.Stats.JobID)
+		t.Fatalf("expect enqueued job ID 'fake_ID' but got '%s'\n", res.Stats.JobID)
 	}
 }
 
@@ -59,11 +59,11 @@ func TestLaunchScheduledJob(t *testing.T) {
 	req := createJobReq("Scheduled", false, true)
 	res, err := c.LaunchJob(req)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res.Stats.JobID != "fake_ID_Scheduled" {
-		t.Errorf("expect enqueued job ID 'fake_ID_Scheduled' but got '%s'\n", res.Stats.JobID)
+		t.Fatalf("expect enqueued job ID 'fake_ID_Scheduled' but got '%s'\n", res.Stats.JobID)
 	}
 }
 
@@ -73,11 +73,11 @@ func TestLaunchScheduledUniqueJob(t *testing.T) {
 	req := createJobReq("Scheduled", true, false)
 	res, err := c.LaunchJob(req)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res.Stats.JobID != "fake_ID_Scheduled" {
-		t.Errorf("expect enqueued job ID 'fake_ID_Scheduled' but got '%s'\n", res.Stats.JobID)
+		t.Fatalf("expect enqueued job ID 'fake_ID_Scheduled' but got '%s'\n", res.Stats.JobID)
 	}
 }
 
@@ -87,11 +87,11 @@ func TestLaunchPeriodicJob(t *testing.T) {
 	req := createJobReq("Periodic", true, false)
 	res, err := c.LaunchJob(req)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if res.Stats.JobID != "fake_ID_Periodic" {
-		t.Errorf("expect enqueued job ID 'fake_ID_Periodic' but got '%s'\n", res.Stats.JobID)
+		t.Fatalf("expect enqueued job ID 'fake_ID_Periodic' but got '%s'\n", res.Stats.JobID)
 	}
 }
 
@@ -100,11 +100,11 @@ func TestGetJobStats(t *testing.T) {
 	c := NewController(pool)
 	stats, err := c.GetJob("fake_ID")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if stats.Stats.Status != "running" {
-		t.Errorf("expect stauts 'running' but got '%s'\n", stats.Stats.Status)
+		t.Fatalf("expect stauts 'running' but got '%s'\n", stats.Stats.Status)
 	}
 }
 
@@ -113,15 +113,15 @@ func TestJobActions(t *testing.T) {
 	c := NewController(pool)
 
 	if err := c.StopJob("fake_ID"); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if err := c.CancelJob("fake_ID"); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if err := c.RetryJob("fake_ID"); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 }
 
@@ -134,7 +134,7 @@ func TestGetJobLogData(t *testing.T) {
 			t.Errorf("expect object not found error but got '%s'\n", err)
 		}
 	} else {
-		t.Error("expect error but got nil")
+		t.Fatal("expect error but got nil")
 	}
 }
 
@@ -144,15 +144,15 @@ func TestCheckStatus(t *testing.T) {
 
 	st, err := c.CheckStatus()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if len(st.Pools) == 0 {
-		t.Error("expect status data but got zero list")
+		t.Fatal("expect status data but got zero list")
 	}
 
 	if st.Pools[0].Status != "running" {
-		t.Errorf("expect status 'running' but got '%s'\n", st.Pools[0].Status)
+		t.Fatalf("expect status 'running' but got '%s'\n", st.Pools[0].Status)
 	}
 }
 
@@ -170,23 +170,23 @@ func TestInvalidCheck(t *testing.T) {
 	}
 
 	if _, err := c.LaunchJob(req); err == nil {
-		t.Error("error expected but got nil")
+		t.Fatal("error expected but got nil")
 	}
 
 	req.Job.Name = "fake"
 	if _, err := c.LaunchJob(req); err == nil {
-		t.Error("error expected but got nil")
+		t.Fatal("error expected but got nil")
 	}
 
 	req.Job.Metadata.JobKind = "Scheduled"
 	if _, err := c.LaunchJob(req); err == nil {
-		t.Error("error expected but got nil")
+		t.Fatal("error expected but got nil")
 	}
 
 	req.Job.Metadata.JobKind = "Periodic"
 	req.Job.Metadata.Cron = "x x x x x x"
 	if _, err := c.LaunchJob(req); err == nil {
-		t.Error("error expected but got nil")
+		t.Fatal("error expected but got nil")
 	}
 }
 
