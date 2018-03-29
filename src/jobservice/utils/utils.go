@@ -1,105 +1,87 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2018 The Harbor Authors. All rights reserved.
 
+//Package utils provides reusable and sharable utilities for other packages and components.
 package utils
 
 import (
-	"fmt"
-	"net/http"
+	"errors"
+	"os"
+	"strings"
 
-	"github.com/docker/distribution/registry/auth/token"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/registry"
-	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/garyburd/redigo/redis"
 )
 
-// NewRepositoryClient creates a repository client with standard token authorizer
-func NewRepositoryClient(endpoint string, insecure bool, credential auth.Credential,
-	tokenServiceEndpoint, repository string) (*registry.Repository, error) {
-
-	transport := registry.GetHTTPTransport(insecure)
-
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: transport,
-	}, credential, tokenServiceEndpoint)
-
-	uam := &userAgentModifier{
-		userAgent: "harbor-registry-client",
-	}
-
-	return registry.NewRepository(repository, endpoint, &http.Client{
-		Transport: registry.NewTransport(transport, authorizer, uam),
-	})
+//IsEmptyStr check if the specified str is empty (len ==0) after triming prefix and suffix spaces.
+func IsEmptyStr(str string) bool {
+	return len(strings.TrimSpace(str)) == 0
 }
 
-// NewRepositoryClientForJobservice creates a repository client that can only be used to
-// access the internal registry
-func NewRepositoryClientForJobservice(repository string) (*registry.Repository, error) {
-	endpoint, err := config.LocalRegURL()
+//ReadEnv return the value of env variable.
+func ReadEnv(key string) string {
+	return os.Getenv(key)
+}
+
+//FileExists check if the specified exists.
+func FileExists(file string) bool {
+	if !IsEmptyStr(file) {
+		_, err := os.Stat(file)
+		if err == nil {
+			return true
+		}
+		if os.IsNotExist(err) {
+			return false
+		}
+
+		return true
+	}
+
+	return false
+}
+
+//DirExists check if the specified dir exists
+func DirExists(path string) bool {
+	if IsEmptyStr(path) {
+		return false
+	}
+
+	f, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	return f.IsDir()
+}
+
+//IsValidPort check if port is valid.
+func IsValidPort(port uint) bool {
+	return port != 0 && port < 65536
+}
+
+//JobScore represents the data item with score in the redis db.
+type JobScore struct {
+	JobBytes []byte
+	Score    int64
+}
+
+//GetZsetByScore get the items from the zset filtered by the specified score scope.
+func GetZsetByScore(pool *redis.Pool, key string, scores []int64) ([]JobScore, error) {
+	if pool == nil || IsEmptyStr(key) || len(scores) < 2 {
+		return nil, errors.New("bad arguments")
+	}
+
+	conn := pool.Get()
+	defer conn.Close()
+
+	values, err := redis.Values(conn.Do("ZRANGEBYSCORE", key, scores[0], scores[1], "WITHSCORES"))
 	if err != nil {
 		return nil, err
 	}
 
-	transport := registry.GetHTTPTransport()
+	var jobsWithScores []JobScore
 
-	credential := auth.NewCookieCredential(&http.Cookie{
-		Name:  models.UISecretCookie,
-		Value: config.JobserviceSecret(),
-	})
-
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: transport,
-	}, credential, config.InternalTokenServiceEndpoint())
-
-	uam := &userAgentModifier{
-		userAgent: "harbor-registry-client",
+	if err := redis.ScanSlice(values, &jobsWithScores); err != nil {
+		return nil, err
 	}
 
-	return registry.NewRepository(repository, endpoint, &http.Client{
-		Transport: registry.NewTransport(transport, authorizer, uam),
-	})
-}
-
-type userAgentModifier struct {
-	userAgent string
-}
-
-// Modify adds user-agent header to the request
-func (u *userAgentModifier) Modify(req *http.Request) error {
-	req.Header.Set(http.CanonicalHeaderKey("User-Agent"), u.userAgent)
-	return nil
-}
-
-// BuildBlobURL ...
-func BuildBlobURL(endpoint, repository, digest string) string {
-	return fmt.Sprintf("%s/v2/%s/blobs/%s", endpoint, repository, digest)
-}
-
-//GetTokenForRepo is used for job handler to get a token for clair.
-func GetTokenForRepo(repository string) (string, error) {
-	c := &http.Cookie{Name: models.UISecretCookie, Value: config.JobserviceSecret()}
-	credentail := auth.NewCookieCredential(c)
-	t, err := auth.GetToken(config.InternalTokenServiceEndpoint(), true, credentail,
-		[]*token.ResourceActions{&token.ResourceActions{
-			Type:    "repository",
-			Name:    repository,
-			Actions: []string{"pull"},
-		}})
-	if err != nil {
-		return "", err
-	}
-
-	return t.Token, nil
+	return jobsWithScores, nil
 }
