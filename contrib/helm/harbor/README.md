@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This [Helm](https://github.com/kubernetes/helm) chart installs [Harbor](http://vmware.github.io/harbor/) in a Kubernetes cluster. Currently this chart supports Harbor v1.4.0 release.
+This [Helm](https://github.com/kubernetes/helm) chart installs [Harbor](http://vmware.github.io/harbor/) in a Kubernetes cluster. Currently this chart supports Harbor v1.4.0 release. Welcome to [contribute](CONTRIBUTING.md) to Helm Chart for Harbor.
 
 ## Prerequisites
 
