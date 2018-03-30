@@ -42,6 +42,7 @@ func filter(req *http.Request, resp http.ResponseWriter) {
 	}
 	if matchRepoTagDelete(req) {
 		resp.WriteHeader(http.StatusServiceUnavailable)
+		resp.Write([]byte("The system is in read only mode. Any modification is not prohibited."))
 	}
 }
 

@@ -16,8 +16,10 @@ package config
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -55,6 +57,8 @@ var (
 	AdmiralClient *http.Client
 	// TokenReader is used in integration mode to read token
 	TokenReader admiral.TokenReader
+
+	defaultCACertPath = "/etc/ui/ca/ca.crt"
 )
 
 // Init configurations
@@ -91,7 +95,10 @@ func InitByURL(adminServerURL string) error {
 	initSecretStore()
 
 	// init project manager based on deploy mode
-	initProjectManager()
+	if err := initProjectManager(); err != nil {
+		log.Errorf("Failed to initialise project manager, error: %v", err)
+		return err
+	}
 
 	return nil
 }
@@ -112,20 +119,28 @@ func initSecretStore() {
 	SecretStore = secret.NewStore(m)
 }
 
-func initProjectManager() {
+func initProjectManager() error {
 	var driver pmsdriver.PMSDriver
 	if WithAdmiral() {
-		// integration with admiral
-		log.Info("initializing the project manager based on PMS...")
-		// TODO read ca/cert file and pass it to the TLS config
+		log.Debugf("Initialising Admiral client with certificate: %s", defaultCACertPath)
+		content, err := ioutil.ReadFile(defaultCACertPath)
+		if err != nil {
+			return err
+		}
+		pool := x509.NewCertPool()
+		if ok := pool.AppendCertsFromPEM(content); !ok {
+			return fmt.Errorf("failed to append cert content into cert pool")
+		}
 		AdmiralClient = &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
+					RootCAs: pool,
 				},
 			},
 		}
 
+		// integration with admiral
+		log.Info("initializing the project manager based on PMS...")
 		path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
 		if len(path) == 0 {
 			path = defaultTokenFilePath
@@ -141,6 +156,7 @@ func initProjectManager() {
 		driver = local.NewDriver()
 	}
 	GlobalProjectMgr = promgr.NewDefaultProjectManager(driver, true)
+	return nil
 
 }
 
