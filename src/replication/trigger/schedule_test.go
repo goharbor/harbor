@@ -16,48 +16,35 @@ package trigger
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/vmware/harbor/src/common/scheduler"
 	"github.com/vmware/harbor/src/replication"
 )
-
-func TestAssembleName(t *testing.T) {
-	assert.Equal(t, "replication_policy_1", assembleName(1))
-}
 
 func TestKindOfScheduleTrigger(t *testing.T) {
 	trigger := NewScheduleTrigger(ScheduleParam{})
 	assert.Equal(t, replication.TriggerKindSchedule, trigger.Kind())
 }
 
-func TestSetupAndUnSetOfScheduleTrigger(t *testing.T) {
-	// invalid schedule param
-	trigger := NewScheduleTrigger(ScheduleParam{})
-	assert.NotNil(t, trigger.Setup())
+func TestParseOfftime(t *testing.T) {
+	cases := []struct {
+		offtime int64
+		hour    int
+		minite  int
+		second  int
+	}{
+		{0, 0, 0, 0},
+		{1, 0, 0, 1},
+		{60, 0, 1, 0},
+		{3600, 1, 0, 0},
+		{3661, 1, 1, 1},
+		{3600*24 + 60, 0, 1, 0},
+	}
 
-	// valid schedule param
-	var policyID int64 = 1
-	trigger = NewScheduleTrigger(ScheduleParam{
-		BasicParam: BasicParam{
-			PolicyID: policyID,
-		},
-		Type:    replication.TriggerScheduleWeekly,
-		Weekday: (int8(time.Now().Weekday()) + 1) % 7,
-		Offtime: 0,
-	})
-
-	count := scheduler.DefaultScheduler.PolicyCount()
-	require.Nil(t, scheduler.DefaultScheduler.GetPolicy(assembleName(policyID)))
-
-	require.Nil(t, trigger.Setup())
-
-	assert.Equal(t, count+1, scheduler.DefaultScheduler.PolicyCount())
-	assert.NotNil(t, scheduler.DefaultScheduler.GetPolicy(assembleName(policyID)))
-
-	require.Nil(t, trigger.Unset())
-	assert.Equal(t, count, scheduler.DefaultScheduler.PolicyCount())
-	assert.Nil(t, scheduler.DefaultScheduler.GetPolicy(assembleName(policyID)))
+	for _, c := range cases {
+		h, m, s := parseOfftime(c.offtime)
+		assert.Equal(t, c.hour, h)
+		assert.Equal(t, c.minite, m)
+		assert.Equal(t, c.second, s)
+	}
 }
