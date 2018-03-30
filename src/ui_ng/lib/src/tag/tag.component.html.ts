@@ -17,11 +17,12 @@ export const TAG_TEMPLATE = `
     <div class="row flex-items-xs-right rightPos">
       <div class='filterLabelPiece' [style.left.px]='filterLabelPieceWidth' ><hbr-label-piece [hidden]='!filterOneLabel' [label]="filterOneLabel"></hbr-label-piece></div>
       <div class="flex-xs-middle">
-        <clr-dropdown>
+      <hbr-filter *ngIf="withAdmiral" [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" [currentValue]="lastFilteredTagName"></hbr-filter>
+        <clr-dropdown *ngIf="!withAdmiral">
             <hbr-filter [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" [currentValue]="lastFilteredTagName" clrDropdownTrigger></hbr-filter>
             <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
                 <div style='display:grid'>
-                    <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
+                    <label class="dropdown-header">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
                     <div class="form-group"><input type="text" placeholder="Filter labels" #labelNamePiece (keyup)="handleInputFilter(labelNamePiece.value)"></div>
                     <div [hidden]='imageFilterLabels.length'>{{'LABEL.NO_LABELS' | translate }}</div>
                     <div [hidden]='!imageFilterLabels.length' style='max-height:300px;overflow-y: auto;'>
@@ -38,31 +39,29 @@ export const TAG_TEMPLATE = `
       </div>
     </div>
   </div>
-  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12"> 
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
         <clr-dg-action-bar>
-            <div class="btn-group">
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(canScanNow(selectedRow) && selectedRow.length==1)" (click)="scanNow(selectedRow)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)" ><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
-                <clr-dropdown>
-                    <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1) || isGuest" (click)="addLabels(selectedRow)" >{{'REPOSITORY.ADD_LABELS' | translate}}</button>
-                    <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-                    <div style='display:grid'>
-                        <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
-                        <div class="form-group"><input type="text" placeholder="Filter labels" #stickLabelNamePiece (keyup)="handleStickInputFilter(stickLabelNamePiece.value)"></div>
-                        <div [hidden]='imageStickLabels.length'>{{'LABEL.NO_LABELS' | translate }}</div>
-                        <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
-                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="label.iconsShow = true; selectLabel(label)">
-                                <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
-                                <div class='labelDiv'><hbr-label-piece [label]="label.label"></hbr-label-piece></div>
-                                <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); label.iconsShow = false; unSelectLabel(label)"></clr-icon>
-                            </button>
-                        </div>
-                      </div>
-                    </clr-dropdown-menu>
-                </clr-dropdown>
+          <clr-dropdown *ngIf="!withAdmiral" class="btn btn-sm btn-secondary">
+            <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1) || isGuest" (click)="addLabels(selectedRow)" >{{'REPOSITORY.ADD_LABELS' | translate}}</button>
+            <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+              <div style='display:grid'>
+                <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
+                <div class="form-group"><input type="text" placeholder="Filter labels" #stickLabelNamePiece (keyup)="handleStickInputFilter(stickLabelNamePiece.value)"></div>
+                <div [hidden]='imageStickLabels.length'>{{'LABEL.NO_LABELS' | translate }}</div>
+                <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
+                    <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="selectLabel(label); label.iconsShow = true">
+                        <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
+                        <div class='labelDiv'><hbr-label-piece [label]="label.label"></hbr-label-piece></div>
+                        <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); unSelectLabel(label); label.iconsShow = false"></clr-icon>
+                    </button>
+                </div>
+              </div>
+            </clr-dropdown-menu>
+          </clr-dropdown>
           <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
-            </div>
         </clr-dg-action-bar>
         <clr-dg-column style="width: 120px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 90px;" [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
@@ -72,7 +71,7 @@ export const TAG_TEMPLATE = `
         <clr-dg-column style="min-width: 130px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 160px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 80px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
-        <clr-dg-column style="width: 140px;" [clrDgField]="'labels'">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
+        <clr-dg-column *ngIf="!withAdmiral" style="width: 140px;" [clrDgField]="'labels'">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
           <clr-dg-cell  class="truncated"  style="width: 120px;" [ngSwitch]="withClair">
@@ -97,7 +96,7 @@ export const TAG_TEMPLATE = `
           <clr-dg-cell  class="truncated"  style="min-width: 130px;" title="{{t.author}}">{{t.author}}</clr-dg-cell>
           <clr-dg-cell style="width: 160px;">{{t.created | date: 'short'}}</clr-dg-cell>
           <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
-          <clr-dg-cell style="width: 140px;">
+          <clr-dg-cell *ngIf="!withAdmiral" style="width: 140px;">
             <hbr-label-piece *ngIf="t.labels?.length" [label]="t.labels[0]"></hbr-label-piece>
             <div class="signpost-item" [hidden]="t.labels?.length<=1">
                 <div class="trigger-item">
@@ -113,7 +112,7 @@ export const TAG_TEMPLATE = `
             </div>
           </clr-dg-cell>
         </clr-dg-row>
-        <clr-dg-footer> 
+        <clr-dg-footer>
           <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
           {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}&nbsp;&nbsp;&nbsp;&nbsp;
           <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>

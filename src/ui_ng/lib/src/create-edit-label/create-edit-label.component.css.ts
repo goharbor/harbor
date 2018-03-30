@@ -10,8 +10,8 @@ export const CREATE_EDIT_LABEL_STYLE: string = `
   section{padding:.5rem 0;}
   section> label{margin-left: 20px;}
   
-  .dropdown-menu{display:inline-block;width:166px; padding:6px;}
-  .dropdown-item{ display:inline-flex; margin:2px 4px;
+  .dropdown-menu {display:inline-block;width:166px; padding:6px;}
+  .dropdown-menu .dropdown-item{ display:inline-flex; margin:2px 4px;
   display: inline-block;padding: 0px; width:30px;height:24px; text-align: center;line-height: 24px;}
   .btnColor{
     margin: 0 !important;

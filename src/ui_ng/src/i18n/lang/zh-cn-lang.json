@@ -404,6 +404,7 @@
         "REPOSITORIES": "镜像仓库",
         "OF": "共计",
         "ITEMS": "条记录",
+        "NO_ITEMS": "没有记录",
         "POP_REPOS": "受欢迎的镜像仓库",
         "DELETED_REPO_SUCCESS": "成功删除镜像仓库。",
         "DELETED_TAG_SUCCESS": "成功删除镜像标签。",
@@ -415,7 +416,11 @@
         "IMAGE": "镜像",
         "LABELS": "标签",
         "ADD_TO_IMAGE": "添加标签到此镜像",
-        "ADD_LABELS": "添加标签"
+        "ADD_LABELS": "添加标签",
+        "FILTER_BY_LABEL": "过滤标签",
+        "ACTION": "操作",
+        "DEPLOY": "部署",
+        "ADDITIONAL_INFO": "添加信息"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -438,6 +443,8 @@
         "REPLICATION": "复制",
         "EMAIL": "邮箱",
         "LABEL": "标签",
+        "REPOSITORY": "仓库",
+        "REPO_READ_ONLY": "仓库只读",
         "SYSTEM": "系统设置",
         "VULNERABILITY": "漏洞",
         "CONFIRM_TITLE": "确认取消",
@@ -613,9 +620,12 @@
         "OS": "操作系统",
         "SCAN_COMPLETION_TIME": "扫描完成时间",
         "IMAGE_VULNERABILITIES": "镜像缺陷",
+        "LEVEL_VULNERABILITIES": "缺陷等级",
         "PLACEHOLDER": "未发现任何标签!",
         "COPY_ERROR": "拷贝失败，请尝试手动拷贝。",
-        "FILTER_FOR_TAGS": "过滤项目"
+        "FILTER_FOR_TAGS": "过滤项目",
+        "AUTHOR": "作者",
+        "LABELS": "标签"
     },
     "LABEL": {
         "LABEL": "标签",

@@ -13,7 +13,7 @@
         <li class="nav-item" *ngIf="isSProjectAdmin || isSystemAdmin">
             <a class="nav-link" routerLink="replications" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
         </li>
-        <li class="nav-item" *ngIf="isSProjectAdmin || isSystemAdmin">
+        <li class="nav-item" *ngIf="(isSProjectAdmin || isSystemAdmin) && !withAdmiral">
             <a class="nav-link" routerLink="labels" routerLinkActive="active">{{'PROJECT_DETAIL.LABELS' | translate}}</a>
         </li>
         <li class="nav-item" *ngIf="isSystemAdmin || isMember">

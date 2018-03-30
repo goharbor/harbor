@@ -20,7 +20,7 @@ import (
 
 const (
 	// SchemaVersion is the version of database schema
-	SchemaVersion = "1.4.0"
+	SchemaVersion = "1.5.0"
 )
 
 // GetSchemaVersion return the version of database schema

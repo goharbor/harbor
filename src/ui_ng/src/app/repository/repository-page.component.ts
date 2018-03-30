@@ -17,7 +17,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from '../project/project';
 import { SessionService } from '../shared/session.service';
 
-import { TagClickEvent } from 'harbor-ui';
+import { TagClickEvent, RepositoryItem } from 'harbor-ui';
 
 @Component({
   selector: 'repository',
@@ -47,8 +47,8 @@ export class RepositoryPageComponent implements OnInit {
     this.hasSignedIn = this.session.getCurrentUser() !== null;
   }
 
-  watchTagClickEvent(tagEvt: TagClickEvent): void {
-    let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name];
+  watchRepoClickEvent(repoEvt: RepositoryItem): void {
+    let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name];
     this.router.navigate(linkUrl);
   }
 };

@@ -68,6 +68,10 @@ export class TagRepositoryComponent implements OnInit {
     return this.appConfigService.getConfig().with_clair;
   }
 
+  get withAdmiral(): boolean {
+    return this.appConfigService.getConfig().with_admiral;
+  }
+
   get hasSignedIn(): boolean {
     return this.session.getCurrentUser() !== null;
   }
@@ -75,12 +79,13 @@ export class TagRepositoryComponent implements OnInit {
   hasChanges(): boolean {
     return this.repositoryComponent.hasChanges();
   }
+
   watchTagClickEvt(tagEvt: TagClickEvent): void {
     let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name, 'tags', tagEvt.tag_name];
     this.router.navigate(linkUrl);
   }
 
-  goBack(tag: string): void {
-    this.router.navigate(["harbor", "projects", this.projectId, "repositories"]);
+  watchGoBackEvt(projectId: string): void {
+    this.router.navigate(["harbor", "projects", projectId, "repositories"]);
   }
 }

@@ -404,6 +404,7 @@
         "REPOSITORIES": "Repositories",
         "OF": "of",
         "ITEMS": "items",
+        "NO_ITEMS": "NO ITEMS",
         "POP_REPOS": "Popular Repositories",
         "DELETED_REPO_SUCCESS": "Deleted repositories successfully.",
         "DELETED_TAG_SUCCESS": "Deleted tags successfully.",
@@ -415,7 +416,11 @@
         "IMAGE": "Images",
         "LABELS": ":labels",
         "ADD_TO_IMAGE": "Add labels to this image",
-        "ADD_LABELS": "Add labels"
+        "FILTER_BY_LABEL": "Filter projects by label",
+        "ADD_LABELS": "Add labels",
+        "ACTION": "ACTION",
+        "DEPLOY": "DEPLOY",
+        "ADDITIONAL_INFO": "Add Additional Info"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
@@ -438,6 +443,8 @@
         "REPLICATION": "Replication",
         "EMAIL": "Email",
         "LABEL": "Label",
+        "REPOSITORY": "Repository",
+        "REPO_READ_ONLY": "Repository Read Only",
         "SYSTEM": "System Settings",
         "VULNERABILITY": "Vulnerability",
         "CONFIRM_TITLE": "Confirm to cancel",

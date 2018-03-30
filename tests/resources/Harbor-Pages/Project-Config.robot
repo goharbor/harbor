@@ -9,6 +9,7 @@ ${HARBOR_VERSION}  V1.1.1
 
 Goto Project Config
     Click Element  //project-detail//ul/li[contains(.,'Configuration')]
+    Sleep  2
 
 Click Project Public
     Mouse Down  //hbr-project-policy-config//input[@name='public']

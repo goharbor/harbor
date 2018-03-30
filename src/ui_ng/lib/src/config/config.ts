@@ -81,6 +81,7 @@ export class Configuration {
     token_expiration: NumberValueItem;
     cfg_expiration: NumberValueItem;
     scan_all_policy: ComplexValueItem;
+    read_only: BoolValueItem;
 
     public constructor() {
         this.auth_mode = new StringValueItem("db_auth", true);
@@ -116,5 +117,6 @@ export class Configuration {
                 daily_time: 0
             }
         }, true);
+        this.read_only = new BoolValueItem(false, true);
     }
 }

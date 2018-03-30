@@ -109,6 +109,14 @@ const harborRoutes: Routes = [
         }
       },
       {
+        path: 'projects/:id/repositories/:repo/tags/:tag',
+        component: TagDetailPageComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        },
+      },
+      {
         path: 'projects/:id',
         component: ProjectDetailComponent,
         canActivate: [MemberGuard],
@@ -123,10 +131,6 @@ const harborRoutes: Routes = [
           {
             path: 'repositories/:repo/tags',
             component: TagRepositoryComponent,
-          },
-          {
-            path: 'repositories/:repo/tags/:tag',
-            component: TagDetailPageComponent
           },
           {
             path: 'replications',

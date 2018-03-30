@@ -81,4 +81,15 @@ func TestMethodsOfResourceLabel(t *testing.T) {
 	labels, err = GetLabelsOfResource(resourceType, resourceID)
 	require.Nil(t, err)
 	require.Equal(t, 0, len(labels))
+
+	// delete by label ID
+	id, err = AddResourceLabel(rl)
+	require.Nil(t, err)
+	err = DeleteResourceLabelByLabel(labelID)
+	require.Nil(t, err)
+	rls, err = ListResourceLabels(&models.ResourceLabelQuery{
+		LabelID: labelID,
+	})
+	require.Nil(t, err)
+	require.Equal(t, 0, len(rls))
 }

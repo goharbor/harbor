@@ -66,4 +66,11 @@ export const TAG_STYLE = `
 :host >>> .signpost-content-body{padding:0 .4rem;}
 :host >>> .signpost-content-header{display:none;}
 .filterLabelPiece{position: absolute; bottom :0px;z-index:1;}
+.dropdown .dropdown-toggle.btn {
+    padding-right: 1rem;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-radius: 0;
+    margin-top: -2px;
+}
 `;
