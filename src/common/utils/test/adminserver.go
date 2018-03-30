@@ -61,7 +61,7 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.TokenExpiration:            30,
 	common.CfgExpiration:              5,
 	common.AdminInitialPassword:       "password",
-	common.AdmiralEndpoint:            "http://www.vmware.com",
+	common.AdmiralEndpoint:            "",
 	common.WithNotary:                 false,
 	common.WithClair:                  false,
 	common.ClairDBUsername:            "postgres",
@@ -84,8 +84,13 @@ func NewAdminserver(config map[string]interface{}) (*httptest.Server, error) {
 	m := []*RequestHandlerMapping{}
 	if config == nil {
 		config = adminServerDefaultConfig
+	} else {
+		for k, v := range adminServerDefaultConfig {
+			if _, ok := config[k]; !ok {
+				config[k] = v
+			}
+		}
 	}
-
 	b, err := json.Marshal(config)
 	if err != nil {
 		return nil, err
