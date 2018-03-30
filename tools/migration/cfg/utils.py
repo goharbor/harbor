@@ -29,13 +29,13 @@ def read_conf(path):
 def get_conf_version(path):
     d = read_conf(path)
 #    print json.dumps(d,indent=4)
-    if d.has_key("_version"): # >=1.5.0
+    if "_version" in d: # >=1.5.0
         return d["_version"]
-    if not d.has_key("clair_db_password"):
+    if not "clair_db_password" in d:
         return "unsupported"
-    if d.has_key("registry_storage_provider_name"):
+    if "registry_storage_provider_name" in d:
         return "1.4.0"
-    if d.has_key("uaa_endpoint"):
+    if "uaa_endpoint" in d:
         return "1.3.0"
     return "1.2.0"
 
