@@ -117,7 +117,7 @@ Edit the file ```harbor.cfg```, update the hostname and the protocol, and update
 
 ```
   #set hostname
-  hostname = reg.yourdomain.com:port
+  hostname = yourdomain.com:port
   #set ui_url_protocol
   ui_url_protocol = https
   ......
@@ -148,9 +148,9 @@ After setting up HTTPS for Harbor, you can verify it by the following steps:
 
 * Notice that some browser may still shows the warning regarding Certificate Authority (CA) unknown for security reason even though we signed certificates by self-signed CA and deploy the CA to the place mentioned above. It is because self-signed CA essentially is not a trusted third-party CA. You can import the CA to the browser on your own to solve the warning.
 
-* On a machine with Docker daemon, make sure the option "-insecure-registry" for https://reg.yourdomain.com does not present. 
+* On a machine with Docker daemon, make sure the option "-insecure-registry" for https://yourdomain.com does not present. 
 
-* If you mapped nginx port 443 to another port, then you should instead create the directory ```/etc/docker/certs.d/reg.yourdomain.com:port``` (or your registry host IP:port). Then run any docker command to verify the setup, e.g.
+* If you mapped nginx port 443 to another port, then you should instead create the directory ```/etc/docker/certs.d/yourdomain.com:port``` (or your registry host IP:port). Then run any docker command to verify the setup, e.g.
 
 
 ```
@@ -173,14 +173,13 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
    On Ubuntu, this can be done by below commands:  
    
     ```sh
-    cp yourdomain.com.crt /usr/local/share/ca-certificates/reg.yourdomain.com.crt
+    cp yourdomain.com.crt /usr/local/share/ca-certificates/yourdomain.com.crt
     update-ca-certificates
     ```  
     
    On Red Hat (CentOS etc), the commands are:  
    
     ```sh
-    cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/reg.yourdomain.com.crt
+    cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/yourdomain.com.crt
     update-ca-trust
     ```
-   
