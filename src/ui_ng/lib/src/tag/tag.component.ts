@@ -217,7 +217,13 @@ export class TagComponent implements OnInit, AfterViewInit {
     st.page.size = this.pageSize;
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
-    st.filters = [{property: "name", value: this.lastFilteredTagName}];
+    let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
+    if (selectedLab) {
+      st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.name', value: selectedLab.label}];
+    }else {
+      st.filters = [{property: 'name', value: this.lastFilteredTagName}];
+    }
+
     this.clrLoad(st);
   }
 
@@ -514,6 +520,13 @@ export class TagComponent implements OnInit, AfterViewInit {
                       findedList = BathInfoChanges(findedList, res);
                     });
               }).catch(error => {
+            if (error.status === 503) {
+              Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                  this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
+                findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+              });
+              return;
+            }
             this.translateService.get("BATCH.DELETED_FAILURE").subscribe(res => {
               findedList = BathInfoChanges(findedList, res, false, true);
             });

@@ -31,6 +31,7 @@ import {
     SystemSettingsComponent,
     VulnerabilityConfigComponent,
 } from 'harbor-ui';
+import {RepoReadOnlyComponent} from "./repo/repo-read-only.component";
 
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 const TabLinkContentMap = {
@@ -39,7 +40,8 @@ const TabLinkContentMap = {
     'config-email': 'email',
     'config-system': 'system_settings',
     'config-vulnerability': 'vulnerability',
-    'config-label': 'system_label'
+    'config-label': 'system_label',
+    'config-repo': 'repoReadOnly'
 };
 
 @Component({
@@ -60,6 +62,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     @ViewChild(VulnerabilityConfigComponent) vulnerabilityConfig: VulnerabilityConfigComponent;
     @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
     @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
+    @ViewChild(RepoReadOnlyComponent) repoConfig: RepoReadOnlyComponent;
 
     constructor(
         private msgHandler: MessageHandlerService,
@@ -124,6 +127,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 break;
             case 'config-vulnerability':
                 properties = ['scan_all_policy'];
+                break;
+            case 'config-repo':
+                properties = ['read_only'];
                 break;
             default:
                 return null;
@@ -262,6 +268,14 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                     // HERE we choose force way
                     this.retrieveConfig();
 
+                    if (changes['read_only']) {
+                        this.msgHandler.handleReadOnly();
+                    }
+
+                    if (changes['read_only'].toString() === "false") {
+                        this.msgHandler.clear();
+                    }
+
                     // Reload bootstrap option
                     this.appConfigService.load().catch(error => console.error('Failed to reload bootstrap option with error: ', error));
 
@@ -273,7 +287,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 });
         } else {
             // Inprop situation, should not come here
-            console.error('Save obort becasue nothing changed');
+            console.error('Save abort because nothing changed');
         }
     }
 

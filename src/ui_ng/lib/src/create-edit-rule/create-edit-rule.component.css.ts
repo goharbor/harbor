@@ -19,7 +19,7 @@ h4{
 }
 .colorRed{color: red;}
 .colorRed a{text-decoration: underline;color: #007CBB;}
-.alertLabel{display:block; margin-top:0; line-height:1em; font-size:12px;}
+.alertLabel{display:block; margin-top:2px; line-height:1em; font-size:12px;}
 
 .inputWidth{width: 270px;}
 .endpointSelect{ width: 270px; margin-right: 20px;}

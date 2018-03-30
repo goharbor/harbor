@@ -53,6 +53,10 @@ export class MessageHandlerService implements ErrorHandler{
         }
     }
 
+    public handleReadOnly(): void {
+        this.msgService.announceAppLevelMessage(503, 'REPO_READ_ONLY', AlertType.WARNING);
+    }
+
     public showError(message: string, params: any): void {
         if (!params) {
             params = {};

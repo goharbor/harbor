@@ -1,7 +1,7 @@
 .global-message-alert {
-    position: fixed;
-    top: 60px;
-    left: 0px;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     z-index: 999;
 }
@@ -12,3 +12,4 @@
 :host >>> .alert-icon-wrapper{
     display: inline;
 }
+:host >>> .alert.alert-app-level.alert-warning{padding: 0;}

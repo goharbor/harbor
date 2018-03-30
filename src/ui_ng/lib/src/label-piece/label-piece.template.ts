@@ -11,7 +11,7 @@ export const LABEL_PIEICE_TEMPLATE: string = `
 `;
 
 export const LABEL_PIEICE_STYLES: string = `
-   .label{border: none; color:#222;padding-top:2px;}
+   .label{border: none; color:#222;padding-top:2px; max-width:140px;}
    .label clr-icon{ margin-right: 3px; display:block;}
    .btn-group .dropdown-menu clr-icon{display:block;}
 `;

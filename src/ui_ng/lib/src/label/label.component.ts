@@ -112,8 +112,8 @@ export class LabelComponent implements OnInit {
                 this.batchDelectionInfos.push(initBatchMessage);
             });
             let deletionMessage = new ConfirmationMessage(
-                'REPLICATION.DELETION_TITLE_TARGET',
-                'REPLICATION.DELETION_SUMMARY_TARGET',
+                'LABEL.DELETION_TITLE_TARGET',
+                'LABEL.DELETION_SUMMARY_TARGET',
                 targetNames.join(', ') || '',
                 targets,
                 ConfirmationTargets.TARGET,

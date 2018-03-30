@@ -44,23 +44,23 @@ export const TAG_TEMPLATE = `
         <clr-dg-action-bar>
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(canScanNow(selectedRow) && selectedRow.length==1)" (click)="scanNow(selectedRow)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)" ><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
-          <clr-dropdown *ngIf="!withAdmiral" class="btn btn-sm btn-secondary">
-            <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1) || isGuest" (click)="addLabels(selectedRow)" >{{'REPOSITORY.ADD_LABELS' | translate}}</button>
-            <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-              <div style='display:grid'>
-                <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
-                <div class="form-group"><input type="text" placeholder="Filter labels" #stickLabelNamePiece (keyup)="handleStickInputFilter(stickLabelNamePiece.value)"></div>
-                <div [hidden]='imageStickLabels.length'>{{'LABEL.NO_LABELS' | translate }}</div>
-                <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
-                    <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="selectLabel(label); label.iconsShow = true">
-                        <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
-                        <div class='labelDiv'><hbr-label-piece [label]="label.label"></hbr-label-piece></div>
-                        <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); unSelectLabel(label); label.iconsShow = false"></clr-icon>
-                    </button>
-                </div>
-              </div>
-            </clr-dropdown-menu>
-          </clr-dropdown>
+                <clr-dropdown *ngIf="!withAdmiral">
+                    <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1) || isGuest" (click)="addLabels(selectedRow)" ><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
+                    <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+                    <div style='display:grid'>
+                        <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
+                        <div class="form-group"><input type="text" placeholder="Filter labels" #stickLabelNamePiece (keyup)="handleStickInputFilter(stickLabelNamePiece.value)"></div>
+                        <div [hidden]='imageStickLabels.length'>{{'LABEL.NO_LABELS' | translate }}</div>
+                        <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
+                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="selectLabel(label); label.iconsShow = true">
+                                <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
+                                <div class='labelDiv'><hbr-label-piece [label]="label.label"></hbr-label-piece></div>
+                                <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); unSelectLabel(label); label.iconsShow = false"></clr-icon>
+                            </button>
+                        </div>
+                      </div>
+                    </clr-dropdown-menu>
+                </clr-dropdown>
           <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-bar>
         <clr-dg-column style="width: 120px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
@@ -74,9 +74,8 @@ export const TAG_TEMPLATE = `
         <clr-dg-column *ngIf="!withAdmiral" style="width: 140px;" [clrDgField]="'labels'">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
-          <clr-dg-cell  class="truncated"  style="width: 120px;" [ngSwitch]="withClair">
-            <a *ngSwitchCase="true" href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
-            <span *ngSwitchDefault>{{t.name}}</span>
+          <clr-dg-cell  class="truncated"  style="width: 120px;">
+            <a href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
           </clr-dg-cell>
           <clr-dg-cell style="width: 90px;">{{sizeTransform(t.size)}}</clr-dg-cell>
           <clr-dg-cell style="min-width: 100px; max-width:220px;" class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">

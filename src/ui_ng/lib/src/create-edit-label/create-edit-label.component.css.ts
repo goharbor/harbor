@@ -20,4 +20,5 @@ export const CREATE_EDIT_LABEL_STYLE: string = `
     height:22px;
     min-width: 26px;}
  .dropdown-item{border:0px; color: white; font-size:12px;}
+ .dropdown .dropdown-toggle.btn{padding:0 !important;}
 `;

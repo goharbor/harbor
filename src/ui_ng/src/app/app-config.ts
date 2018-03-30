@@ -27,6 +27,7 @@ export class AppConfig {
     clair_vulnerability_status?: ClairDBStatus;
     next_scan_all: number;
     registry_storage_provider_name: string;
+    read_only: boolean;
 
     constructor() {
         // Set default value
@@ -46,5 +47,6 @@ export class AppConfig {
         };
         this.next_scan_all = 0;
         this.registry_storage_provider_name = "";
+        this.read_only = false;
     }
 }
