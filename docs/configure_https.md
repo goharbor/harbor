@@ -18,7 +18,7 @@ In a test or development environment, you may choose to use a self-signed certif
 
 ## Getting Server Certificate
 
-Assuming that your registry's **hostname** is **reg.yourdomain.com**, and that its DNS record points to the host where you are running Harbor. In production environment, you first should get a certificate from a CA. In a test or development environment, you can use your own CA. The certificate usually contains a .crt file and a .key file, for example, **yourdomain.com.crt** and **yourdomain.com.key**.
+Assuming that your registry's **hostname** is **yourdomain.com**, and that its DNS record points to the host where you are running Harbor. In production environment, you first should get a certificate from a CA. In a test or development environment, you can use your own CA. The certificate usually contains a .crt file and a .key file, for example, **yourdomain.com.crt** and **yourdomain.com.key**.
 
 
 
@@ -30,7 +30,7 @@ Assuming that your registry's **hostname** is **reg.yourdomain.com**, and that i
 
 **2) Generate a Certificate Signing Request:**
 
-If you use FQDN like **reg.yourdomain.com** to connect your registry host, then you must use **reg.yourdomain.com** as CN (Common Name).
+If you use FQDN like **yourdomain.com** to connect your registry host, then you must use **yourdomain.com** as CN (Common Name).
 
 ```
   openssl req -sha512 -new \
@@ -41,7 +41,7 @@ If you use FQDN like **reg.yourdomain.com** to connect your registry host, then 
 
 **3) Generate the certificate of your registry host:**
 
-Whether you're using FQDN like **reg.yourdomain.com** or IP to connect your registry host, run this command to generate the certificate of your registry host which complies with Subject Alternative Name (SAN) and x509 v3 extension requirement:
+Whether you're using FQDN like **yourdomain.com** or IP to connect your registry host, run this command to generate the certificate of your registry host which comply with Subject Alternative Name (SAN) and x509 v3 extension requirement:
 
 **v3.ext**
 
@@ -54,8 +54,9 @@ extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1 = yourdomain.com
-DNS.2 = reg.yourdomain.com
+DNS.1=yourdomain.com
+DNS.2=yourdomain
+DNS.3=hostname
 EOF
 ```
 
@@ -68,34 +69,9 @@ EOF
     -out yourdomain.com.crt
 ```
 
-## Getting Client Certificate
-
-Use OpenSSL’s genrsa and req commands to first generate an RSA key ```client.key``` and then use the key to create the certificate ```client.crt```.
-
-```
-  openssl genrsa -out client.key 4096
-```
-
-```
-  openssl req -sha512 -new \
-    -subj "/C=TW/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=yourdomain.com" \
-    -key client.key \
-    -out client.csr
-```
-```
-  echo extendedKeyUsage = clientAuth >> extfile.cnf
-```
-```
-  openssl x509 -req -days 3650 \
-    -in client.csr \
-    -CA ca.crt -CAkey ca.key -CAcreateserial\
-    -extfile extfile.cnf \
-    -out client.cert
-```
-
 ## Configuration and Installation
 
-**1) Configure Server Certificate and Key**
+**1) Configure Server Certificate and Key for Harbor**
 
 After obtaining the **yourdomain.com.crt** and **yourdomain.com.key** files, 
 you can put them into directory such as ```/root/cert/```:
@@ -105,27 +81,35 @@ you can put them into directory such as ```/root/cert/```:
   cp yourdomain.com.key /data/cert/ 
 ```
 
-**2) Configure Client Certificate and CA**
+**2) Configure Server Certificate, Key and CA for Docker**
 
 The Docker daemon interprets ```.crt``` files as CA certificates and ```.cert``` files as client certificates. 
 
+Convert server ```yourdomain.com.crt``` to ```yourdomain.com.cert```:
+
 ```
-  cp client.cert /etc/docker/certs.d/yourdomain.com/
-  cp client.key /etc/docker/certs.d/yourdomain.com/
+openssl x509 -inform PEM -in yourdomain.com.crt -out yourdomain.com.cert
+```
+Delpoy ```yourdomain.com.cert```, ```yourdomain.com.key```, and ```ca.crt``` for Docker:
+
+```
+  cp yourdomain.com.cert /etc/docker/certs.d/yourdomain.com/
+  cp yourdomain.com.key /etc/docker/certs.d/yourdomain.com/
   cp ca.crt /etc/docker/certs.d/yourdomain.com/
 ```
-Notice that you may need to trust the certificate at OS level. Please refer to the [Troubleshooting](#Troubleshooting) section below.
 
 The following illustrates a configuration with custom certificates:
 
 
 ```
 /etc/docker/certs.d/
-    └── yourdomain.com   
-       ├── client.cert	<-- Client certificate signed by CA
-       ├── client.key	<-- Client key signed by CA
-       └── ca.crt		<-- Certificate authority that signed the registry certificate
+    └── yourdomain.com:port   
+       ├── yourdomain.com.cert  <-- Server certificate signed by CA
+       ├── yourdomain.com.key   <-- Server key signed by CA
+       └── ca.crt               <-- Certificate authority that signed the registry certificate
 ```
+
+Notice that you may need to trust the certificate at OS level. Please refer to the [Troubleshooting](#Troubleshooting) section below.
 
 **3) Configure Harbor**
 
@@ -133,7 +117,7 @@ Edit the file ```harbor.cfg```, update the hostname and the protocol, and update
 
 ```
   #set hostname
-  hostname = reg.yourdomain.com
+  hostname = reg.yourdomain.com:port
   #set ui_url_protocol
   ui_url_protocol = https
   ......
@@ -160,7 +144,7 @@ Finally, restart Harbor:
 ```
 After setting up HTTPS for Harbor, you can verify it by the following steps:
 
-* Open a browser and enter the address: https://reg.yourdomain.com. It should display the user interface of Harbor. 
+* Open a browser and enter the address: https://yourdomain.com. It should display the user interface of Harbor. 
 
 * Notice that some browser may still shows the warning regarding Certificate Authority (CA) unknown for security reason even though we signed certificates by self-signed CA and deploy the CA to the place mentioned above. It is because self-signed CA essentially is not a trusted third-party CA. You can import the CA to the browser on your own to solve the warning.
 
@@ -170,12 +154,12 @@ After setting up HTTPS for Harbor, you can verify it by the following steps:
 
 
 ```
-  docker login reg.yourdomain.com
+  docker login yourdomain.com
 ```
 If you've mapped nginx 443 port to another, you need to add the port to login, like below:
 
 ```
-  docker login reg.yourdomain.com:port
+  docker login yourdomain.com:port
 ```
 
 
@@ -189,7 +173,7 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
    On Ubuntu, this can be done by below commands:  
    
     ```sh
-    cp youdomain.com.crt /usr/local/share/ca-certificates/reg.yourdomain.com.crt
+    cp yourdomain.com.crt /usr/local/share/ca-certificates/reg.yourdomain.com.crt
     update-ca-certificates
     ```  
     
@@ -199,4 +183,4 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
     cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/reg.yourdomain.com.crt
     update-ca-trust
     ```
- 
+   
