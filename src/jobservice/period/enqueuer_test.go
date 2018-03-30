@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware/harbor/src/jobservice_v2/tests"
-	"github.com/vmware/harbor/src/jobservice_v2/utils"
+	"github.com/vmware/harbor/src/jobservice/tests"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 func TestPeriodicEnqueuerStartStop(t *testing.T) {

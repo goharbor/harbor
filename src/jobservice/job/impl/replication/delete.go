@@ -5,8 +5,8 @@ import (
 
 	common_http "github.com/vmware/harbor/src/common/http"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/logger"
+	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/vmware/harbor/src/jobservice/logger"
 )
 
 // Deleter deletes repository or images on the destination registry

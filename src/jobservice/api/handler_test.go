@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/models"
+	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/vmware/harbor/src/jobservice/models"
 )
 
 var testingHandler = NewDefaultHandler(&fakeController{})

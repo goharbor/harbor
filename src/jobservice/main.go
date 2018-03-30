@@ -6,13 +6,13 @@ import (
 	"fmt"
 
 	"github.com/vmware/harbor/src/adminserver/client"
-	"github.com/vmware/harbor/src/jobservice_v2/config"
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/job/impl"
-	ilogger "github.com/vmware/harbor/src/jobservice_v2/job/impl/logger"
-	"github.com/vmware/harbor/src/jobservice_v2/logger"
-	"github.com/vmware/harbor/src/jobservice_v2/runtime"
-	"github.com/vmware/harbor/src/jobservice_v2/utils"
+	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/vmware/harbor/src/jobservice/job/impl"
+	ilogger "github.com/vmware/harbor/src/jobservice/job/impl/logger"
+	"github.com/vmware/harbor/src/jobservice/logger"
+	"github.com/vmware/harbor/src/jobservice/runtime"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 func main() {

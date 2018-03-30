@@ -26,8 +26,8 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/clair"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/job/impl/utils"
+	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/vmware/harbor/src/jobservice/job/impl/utils"
 )
 
 // ClairJob is the struct to scan Harbor's Image with Clair

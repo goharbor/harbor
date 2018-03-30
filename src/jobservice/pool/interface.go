@@ -2,7 +2,7 @@
 
 package pool
 
-import "github.com/vmware/harbor/src/jobservice_v2/models"
+import "github.com/vmware/harbor/src/jobservice/models"
 
 //Interface for worker pool.
 //More like a driver to transparent the lower queue.

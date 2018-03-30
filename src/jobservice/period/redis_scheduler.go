@@ -12,10 +12,10 @@ import (
 	"github.com/robfig/cron"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/logger"
-	"github.com/vmware/harbor/src/jobservice_v2/models"
-	"github.com/vmware/harbor/src/jobservice_v2/utils"
+	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/vmware/harbor/src/jobservice/logger"
+	"github.com/vmware/harbor/src/jobservice/models"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 const (

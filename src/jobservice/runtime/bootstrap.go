@@ -13,15 +13,15 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmware/harbor/src/common/job"
-	"github.com/vmware/harbor/src/jobservice_v2/api"
-	"github.com/vmware/harbor/src/jobservice_v2/config"
-	"github.com/vmware/harbor/src/jobservice_v2/core"
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/job/impl"
-	"github.com/vmware/harbor/src/jobservice_v2/job/impl/replication"
-	"github.com/vmware/harbor/src/jobservice_v2/job/impl/scan"
-	"github.com/vmware/harbor/src/jobservice_v2/logger"
-	"github.com/vmware/harbor/src/jobservice_v2/pool"
+	"github.com/vmware/harbor/src/jobservice/api"
+	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/core"
+	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/vmware/harbor/src/jobservice/job/impl"
+	"github.com/vmware/harbor/src/jobservice/job/impl/replication"
+	"github.com/vmware/harbor/src/jobservice/job/impl/scan"
+	"github.com/vmware/harbor/src/jobservice/logger"
+	"github.com/vmware/harbor/src/jobservice/pool"
 )
 
 const (

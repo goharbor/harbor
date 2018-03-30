@@ -9,13 +9,13 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/vmware/harbor/src/jobservice_v2/logger"
-	"github.com/vmware/harbor/src/jobservice_v2/opm"
-	"github.com/vmware/harbor/src/jobservice_v2/period"
+	"github.com/vmware/harbor/src/jobservice/logger"
+	"github.com/vmware/harbor/src/jobservice/opm"
+	"github.com/vmware/harbor/src/jobservice/period"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/vmware/harbor/src/jobservice_v2/models"
-	"github.com/vmware/harbor/src/jobservice_v2/utils"
+	"github.com/vmware/harbor/src/jobservice/models"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 //MessageServer implements the sub/pub mechanism via redis to do async message exchanging.

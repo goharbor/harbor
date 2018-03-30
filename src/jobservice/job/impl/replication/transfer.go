@@ -17,9 +17,9 @@ import (
 	"github.com/vmware/harbor/src/common/utils"
 	reg "github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	job_utils "github.com/vmware/harbor/src/jobservice_v2/job/impl/utils"
-	"github.com/vmware/harbor/src/jobservice_v2/logger"
+	"github.com/vmware/harbor/src/jobservice/env"
+	job_utils "github.com/vmware/harbor/src/jobservice/job/impl/utils"
+	"github.com/vmware/harbor/src/jobservice/logger"
 )
 
 var (

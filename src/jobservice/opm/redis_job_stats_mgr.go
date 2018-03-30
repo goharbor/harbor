@@ -13,13 +13,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/vmware/harbor/src/jobservice_v2/errs"
-	"github.com/vmware/harbor/src/jobservice_v2/logger"
+	"github.com/vmware/harbor/src/jobservice/errs"
+	"github.com/vmware/harbor/src/jobservice/logger"
 
 	"github.com/garyburd/redigo/redis"
-	"github.com/vmware/harbor/src/jobservice_v2/job"
-	"github.com/vmware/harbor/src/jobservice_v2/models"
-	"github.com/vmware/harbor/src/jobservice_v2/utils"
+	"github.com/vmware/harbor/src/jobservice/job"
+	"github.com/vmware/harbor/src/jobservice/models"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 const (

@@ -29,7 +29,6 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
-	jobservice_client "github.com/vmware/harbor/src/jobservice/client"
 	"github.com/vmware/harbor/src/ui/promgr"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
@@ -56,8 +55,6 @@ var (
 	AdmiralClient *http.Client
 	// TokenReader is used in integration mode to read token
 	TokenReader admiral.TokenReader
-	// GlobalJobserviceClient is a global client for jobservice
-	GlobalJobserviceClient jobservice_client.Client
 )
 
 // Init configurations

@@ -8,13 +8,13 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/vmware/harbor/src/jobservice_v2/opm"
+	"github.com/vmware/harbor/src/jobservice/opm"
 
 	"github.com/gorilla/mux"
 
-	"github.com/vmware/harbor/src/jobservice_v2/core"
-	"github.com/vmware/harbor/src/jobservice_v2/errs"
-	"github.com/vmware/harbor/src/jobservice_v2/models"
+	"github.com/vmware/harbor/src/jobservice/core"
+	"github.com/vmware/harbor/src/jobservice/errs"
+	"github.com/vmware/harbor/src/jobservice/models"
 )
 
 //Handler defines approaches to handle the http requests.

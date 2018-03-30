@@ -8,8 +8,8 @@ import (
 
 	"github.com/gocraft/work"
 
-	"github.com/vmware/harbor/src/jobservice_v2/tests"
-	"github.com/vmware/harbor/src/jobservice_v2/utils"
+	"github.com/vmware/harbor/src/jobservice/tests"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 func TestSweeper(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	reg "github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/logger"
+	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/vmware/harbor/src/jobservice/logger"
 )
 
 // Replicator call UI's API to start a repliation according to the policy ID

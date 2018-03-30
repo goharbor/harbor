@@ -12,11 +12,11 @@ import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/jobservice_v2/config"
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/job"
-	jlogger "github.com/vmware/harbor/src/jobservice_v2/job/impl/logger"
-	"github.com/vmware/harbor/src/jobservice_v2/logger"
+	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/vmware/harbor/src/jobservice/job"
+	jlogger "github.com/vmware/harbor/src/jobservice/job/impl/logger"
+	"github.com/vmware/harbor/src/jobservice/logger"
 )
 
 //Context ...

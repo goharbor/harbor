@@ -5,7 +5,7 @@ package pool
 import (
 	"reflect"
 
-	"github.com/vmware/harbor/src/jobservice_v2/job"
+	"github.com/vmware/harbor/src/jobservice/job"
 )
 
 //Wrap returns a new job.Interface based on the wrapped job handler reference.

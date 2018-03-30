@@ -5,10 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/vmware/harbor/src/jobservice_v2/errs"
+	"github.com/vmware/harbor/src/jobservice/errs"
 
-	"github.com/vmware/harbor/src/jobservice_v2/env"
-	"github.com/vmware/harbor/src/jobservice_v2/models"
+	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/vmware/harbor/src/jobservice/models"
 )
 
 func TestLaunchGenericJob(t *testing.T) {

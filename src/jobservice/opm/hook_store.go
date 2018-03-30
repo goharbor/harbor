@@ -5,7 +5,7 @@ package opm
 import (
 	"sync"
 
-	"github.com/vmware/harbor/src/jobservice_v2/utils"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 //HookStore is used to cache the hooks in memory.

@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vmware/harbor/src/jobservice_v2/models"
-	"github.com/vmware/harbor/src/jobservice_v2/utils"
+	"github.com/vmware/harbor/src/jobservice/models"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 const (

@@ -10,11 +10,11 @@ import (
 
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/jobservice_v2/opm"
+	"github.com/vmware/harbor/src/jobservice/opm"
 
-	"github.com/vmware/harbor/src/jobservice_v2/errs"
+	"github.com/vmware/harbor/src/jobservice/errs"
 
-	"github.com/vmware/harbor/src/jobservice_v2/env"
+	"github.com/vmware/harbor/src/jobservice/env"
 )
 
 //DemoJob is the job to demostrate the job interface.

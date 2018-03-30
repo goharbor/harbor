@@ -8,12 +8,12 @@ import (
 	"io/ioutil"
 
 	"github.com/robfig/cron"
-	"github.com/vmware/harbor/src/jobservice_v2/config"
-	"github.com/vmware/harbor/src/jobservice_v2/errs"
-	"github.com/vmware/harbor/src/jobservice_v2/job"
-	"github.com/vmware/harbor/src/jobservice_v2/models"
-	"github.com/vmware/harbor/src/jobservice_v2/pool"
-	"github.com/vmware/harbor/src/jobservice_v2/utils"
+	"github.com/vmware/harbor/src/jobservice/config"
+	"github.com/vmware/harbor/src/jobservice/errs"
+	"github.com/vmware/harbor/src/jobservice/job"
+	"github.com/vmware/harbor/src/jobservice/models"
+	"github.com/vmware/harbor/src/jobservice/pool"
+	"github.com/vmware/harbor/src/jobservice/utils"
 )
 
 const (

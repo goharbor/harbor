@@ -2,7 +2,7 @@
 
 package opm
 
-import "github.com/vmware/harbor/src/jobservice_v2/models"
+import "github.com/vmware/harbor/src/jobservice/models"
 
 //JobStatsManager defines the methods to handle stats of job.
 type JobStatsManager interface {
