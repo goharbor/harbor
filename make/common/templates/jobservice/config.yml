@@ -18,9 +18,9 @@ worker_pool:
   #Additional config if use 'redis' backend
   #TODO: switch to internal redis endpoint and namespace.
   redis_pool:
-    host: "redis_host"
+    host: "redis"
     port: 6379
-    namespace: "namespace"
+    namespace: "harbor_job_service_namespace"
 #Logger for job
 logger:
   path: "/var/log/jobs"

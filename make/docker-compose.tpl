@@ -103,6 +103,7 @@ services:
     networks:
       - harbor
     depends_on:
+      - redis
       - ui
       - adminserver
     logging:
@@ -110,6 +111,14 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
+  redis:
+    image: vmware/redis-photon:__redis_version__
+    container_name: redis
+    restart: always
+    volumes:
+      - /data/redis:/data
+    networks:
+      - harbor
   proxy:
     image: vmware/nginx-photon:__nginx_version__
     container_name: nginx

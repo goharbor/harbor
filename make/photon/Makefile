@@ -80,6 +80,10 @@ DOCKERIMAGENAME_NOTARYSIGNER=vmware/notary-signer-photon
 DOCKERFILENAME_NOTARYSERVER=server.Dockerfile
 DOCKERIMAGENAME_NOTARYSERVER=vmware/notary-server-photon
 
+DOCKERFILEPATH_REDIS=$(DOCKERFILEPATH)/redis
+DOCKERFILENAME_REDIS=Dockerfile
+DOCKERIMAGENAME_REDIS=vmware/redis-photon
+
 _build_db: _build_mariadb
 	@echo "modify the db dockerfile..."
 	@$(SEDCMD) -i 's/__version__/$(MARIADBVERSION)/g' $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB)
@@ -167,11 +171,16 @@ _build_mariadb:
 	@cd $(DOCKERFILEPATH_MARIADB) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MARIADB)/$(DOCKERFILENAME_MARIADB) -t $(DOCKERIMAGENAME_MARIADB):$(MARIADBVERSION) .
 	@echo "Done."
 
+_build_redis:
+	@echo "building redis container for photon..."
+	@cd $(DOCKERFILEPATH_REDIS) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(REDISVERSION) .
+	@echo "Done."
+
 define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
 endef
 
-build: _build_postgresql _build_db _build_adminiserver _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_notary _build_clair
+build: _build_postgresql _build_db _build_adminiserver _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_notary _build_clair _build_redis
 
 cleanimage:
 	@echo "cleaning image for photon..."
