@@ -5,6 +5,7 @@
 from __future__ import print_function
 import argparse
 import os
+import sys
 import utils
 import importlib
 import glob
@@ -24,9 +25,12 @@ def main():
     input_version =  utils.get_conf_version(args.input_path)
     curr_dir = os.path.dirname(__file__)
     chain = []
+    if input_version == target_version:
+        print ("Version of input harbor.cfg is identical to target %s, no need to upgrade" % input_version)
+        sys.exit(0)
     if not search(curr_dir, input_version, target_version, chain):
         print ("No migrator for version: %s" % input_version)
-        os.exit(1)
+        sys.exit(1)
     else:
         print ("input version: %s, migrator chain: %s" % (input_version, chain))
     curr_input_path = args.input_path
