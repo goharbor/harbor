@@ -11,10 +11,14 @@ This [Helm](https://github.com/kubernetes/helm) chart installs [Harbor](http://v
 - kubectl CLI 1.8+
 - Helm CLI 2.8.0+
 
+## Known Issues
+
+- This chart doesn't work with Kubernetes security update release 1.8.9+ and 1.9.4+. Refer to [issue 4496](https://github.com/vmware/harbor/issues/4496).
+
 ## Setup a Kubernetes cluster
 
 You can use any tools to setup a K8s cluster.
-In this guide, we use [minikube](https://github.com/kubernetes/minikube) to setup a K8s cluster as the dev/test env.
+In this guide, we use [minikube](https://github.com/kubernetes/minikube) 0.25.0 to setup a K8s cluster as the dev/test env.
 ```bash
 # Start minikube
 minikube start --vm-driver=none
