@@ -79,7 +79,10 @@ func (st *ScheduleTrigger) Setup() error {
 
 //Unset is the implementation of same method defined in Trigger interface
 func (st *ScheduleTrigger) Unset() error {
-	jobs, _, err := dao.FilterRepJobs(st.params.PolicyID, "", nil, nil, nil, 0, 0, models.RepOpSchedule)
+	jobs, err := dao.GetRepJobs(&models.RepJobQuery{
+		PolicyID:   st.params.PolicyID,
+		Operations: []string{models.RepOpSchedule},
+	})
 	if err != nil {
 		return err
 	}

@@ -15,7 +15,6 @@
 package dao
 
 import (
-	"fmt"
 	"time"
 
 	"strings"
@@ -302,74 +301,58 @@ func GetRepJob(id int64) (*models.RepJob, error) {
 	return &j, nil
 }
 
-// GetRepJobByPolicy ...
-func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
-	var res []*models.RepJob
-	_, err := repJobPolicyIDQs(policyID).All(&res)
-	genTagListForJob(res...)
-	return res, err
+// GetTotalCountOfRepJobs ...
+func GetTotalCountOfRepJobs(query ...*models.RepJobQuery) (int64, error) {
+	qs := repJobQueryConditions(query...)
+	return qs.Count()
 }
 
-// FilterRepJobs ...
-func FilterRepJobs(policyID int64, repository string, status []string, startTime,
-	endTime *time.Time, limit, offset int64, operations ...string) ([]*models.RepJob, int64, error) {
-
+// GetRepJobs ...
+func GetRepJobs(query ...*models.RepJobQuery) ([]*models.RepJob, error) {
 	jobs := []*models.RepJob{}
 
-	qs := GetOrmer().QueryTable(new(models.RepJob))
-
-	if policyID != 0 {
-		qs = qs.Filter("PolicyID", policyID)
-	}
-	if len(repository) != 0 {
-		qs = qs.Filter("Repository__icontains", repository)
-	}
-	if len(status) != 0 {
-		qs = qs.Filter("Status__in", status)
-	}
-	if startTime != nil {
-		qs = qs.Filter("CreationTime__gte", startTime)
-	}
-	if endTime != nil {
-		qs = qs.Filter("CreationTime__lte", endTime)
-	}
-	if len(operations) != 0 {
-		qs = qs.Filter("Operation__in", operations)
-	}
-
-	total, err := qs.Count()
-	if err != nil {
-		return jobs, 0, err
+	qs := repJobQueryConditions(query...)
+	if len(query) > 0 && query[0] != nil {
+		qs = paginateForQuerySetter(qs, query[0].Page, query[0].Size)
 	}
 
 	qs = qs.OrderBy("-UpdateTime")
 
-	_, err = qs.Limit(limit).Offset(offset).All(&jobs)
-	if err != nil {
-		return jobs, 0, err
+	if _, err := qs.All(&jobs); err != nil {
+		return jobs, err
 	}
 
 	genTagListForJob(jobs...)
 
-	return jobs, total, nil
+	return jobs, nil
 }
 
-// GetRepJobToStop get jobs that are possibly being handled by workers of a certain policy.
-func GetRepJobToStop(policyID int64) ([]*models.RepJob, error) {
-	var res []*models.RepJob
-	_, err := repJobPolicyIDQs(policyID).Filter("status__in",
-		models.JobPending, models.JobRunning, models.JobRetrying).All(&res)
-	genTagListForJob(res...)
-	return res, err
-}
+func repJobQueryConditions(query ...*models.RepJobQuery) orm.QuerySeter {
+	qs := GetOrmer().QueryTable(new(models.RepJob))
+	if len(query) == 0 || query[0] == nil {
+		return qs
+	}
 
-func repJobQs() orm.QuerySeter {
-	o := GetOrmer()
-	return o.QueryTable("replication_job")
-}
-
-func repJobPolicyIDQs(policyID int64) orm.QuerySeter {
-	return repJobQs().Filter("policy_id", policyID)
+	q := query[0]
+	if q.PolicyID != 0 {
+		qs = qs.Filter("PolicyID", q.PolicyID)
+	}
+	if len(q.Repository) > 0 {
+		qs = qs.Filter("Repository__icontains", q.Repository)
+	}
+	if len(q.Statuses) > 0 {
+		qs = qs.Filter("Status__in", q.Statuses)
+	}
+	if len(q.Operations) > 0 {
+		qs = qs.Filter("Operation__in", q.Operations)
+	}
+	if q.StartTime != nil {
+		qs = qs.Filter("CreationTime__gte", q.StartTime)
+	}
+	if q.EndTime != nil {
+		qs = qs.Filter("CreationTime__lte", q.EndTime)
+	}
+	return qs
 }
 
 // DeleteRepJob ...
@@ -406,31 +389,6 @@ func SetRepJobUUID(id int64, uuid string) error {
 		log.Warningf("no records are updated when updating replication job %d", id)
 	}
 	return err
-}
-
-// ResetRunningJobs update all running jobs status to pending, including replication jobs and scan jobs.
-func ResetRunningJobs() error {
-	o := GetOrmer()
-	sql := fmt.Sprintf("update replication_job set status = '%s', update_time = ? where status = '%s'", models.JobPending, models.JobRunning)
-	_, err := o.Raw(sql, time.Now()).Exec()
-	if err != nil {
-		return err
-	}
-	sql = fmt.Sprintf("update %s set status = '%s', update_time = ? where status = '%s'", models.ScanJobTable, models.JobPending, models.JobRunning)
-	_, err = o.Raw(sql, time.Now()).Exec()
-	return err
-}
-
-// GetRepJobByStatus get jobs of certain statuses
-func GetRepJobByStatus(status ...string) ([]*models.RepJob, error) {
-	var res []*models.RepJob
-	var t []interface{}
-	for _, s := range status {
-		t = append(t, interface{}(s))
-	}
-	_, err := repJobQs().Filter("status__in", t...).All(&res)
-	genTagListForJob(res...)
-	return res, err
 }
 
 func genTagListForJob(jobs ...*models.RepJob) {

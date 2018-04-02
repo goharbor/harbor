@@ -133,6 +133,16 @@ func paginateForRawSQL(sql string, limit, offset int64) string {
 	return fmt.Sprintf("%s limit %d offset %d", sql, limit, offset)
 }
 
+func paginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
+	if size > 0 {
+		qs = qs.Limit(size)
+		if page > 0 {
+			qs = qs.Offset((page - 1) * size)
+		}
+	}
+	return qs
+}
+
 //Escape ..
 func Escape(str string) string {
 	str = strings.Replace(str, `%`, `\%`, -1)
