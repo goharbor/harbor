@@ -417,8 +417,8 @@
         "IMAGE": "Imágenes",
         "LABELS": "Labels",
         "ADD_TO_IMAGE": "Add labels to this image",
+        "FILTER_BY_LABEL": "Filter images by label",
         "ADD_LABELS": "Add labels",
-        "FILTER_BY_LABEL": "Filter projects by label",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info"

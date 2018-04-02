@@ -48,7 +48,7 @@ Test Case - Read Only Mode
     Close Browser
 
 Test Case - Create An New User
-    Init Chrome Driver    
+    Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Close Browser
@@ -73,7 +73,7 @@ Test Case - Update Password
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  tester${d}  Test12#4
     Close Browser
-	
+
 Test Case - Create An New Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -93,8 +93,8 @@ Test Case - User View Projects
     Wait Until Page Contains  test${d}1
     Wait Until Page Contains  test${d}2
     Wait Until Page Contains  test${d}3
-    Close Browser	
-	
+    Close Browser
+
 Test Case - Push Image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -108,21 +108,21 @@ Test Case - Push Image
 Test Case - User View Logs
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-				
+
     Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
 
     Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Pull image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
-    
+
     Go Into Project  project${d}
     Delete Repo  project${d}
-	
+
     Go To Project Log
     Advanced Search Should Display
-	
+
     Do Log Advanced Search
     Close Browser
-	
+
 Test Case - Manage project publicity
     Init Chrome Driver
     ${d}=    Get Current Date  result_format=%m%s
@@ -172,12 +172,12 @@ Test Case - Project Level Policy Public
     Click Project Public
     Save Project Config
     # Verify
-    Public Should Be Selected 
+    Public Should Be Selected
     Back To Projects
     # Project${d}  default should be private
     # Here logout and login to try avoid a bug only in autotest
     Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD} 
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Filter Object  project${d}
     Project Should Be Public  project${d}
     Close Browser
@@ -266,6 +266,52 @@ Test Case - Edit Token Expire
     Modify Token Expiration  30
     Close Browser
 
+Test Case - Create A New Labels
+    Init Chrome Driver
+    ${d}=    Get Current Date
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To System Labels
+    Create New Labels  label_${d}
+    Close Browser
+
+Test Case - Update Label
+   Init Chrome Driver
+   ${d}=    Get Current Date
+
+   Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+   Switch To System Labels
+   Create New Labels  label_${d}
+   Sleep  3
+   ${d1}=    Get Current Date
+   Update A Label  label_${d}
+   Close Browser
+
+Test Case - Delete Label
+    Init Chrome Driver
+    ${d}=    Get Current Date
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To System Labels
+    Create New Labels  label_${d}
+    Sleep  3
+    Delete A Label
+    Close Browser
+
+TestCase - Add Labels To A Repo
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
+    Create An New Project  project${d}
+    Push Image  ${ip}  test${d}  Test1@34  project${d}  vmware/photon:1.0
+    Sleep  2
+    #Add labels
+    Switch To System Labels
+    Create New Labels  label_${d}
+    Sleep  2
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/vmware/photon
+    Add Labels To Tag  1.0  label_${d}
+    Close Browser
+
 Test Case - Scan A Tag In The Repo
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
@@ -327,7 +373,7 @@ Test Case - Manual Scan All
     Summary Chart Should Display  latest
     Close Browser
 #
-Test Case - Project Level Image Serverity Policy 
+Test Case - Project Level Image Serverity Policy
     Init Chrome Driver
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  haproxy
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -346,7 +392,7 @@ Test Case - Scan Image On Push
     Go Into Project  library
     Goto Project Config
     Enable Scan On Push
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached 
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
     Back To Projects
     Go Into Project  library
     Go Into Repo  memcached
@@ -382,7 +428,7 @@ Test Case - Delete A Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New Project With New User  ${HARBOR_URL}  tester${d}  tester${d}@vmware.com  tester${d}  Test1@34  harobr  project${d}  false
-    Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world  
+    Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
     Project Should Not Be Deleted  project${d}
     Go Into Project  project${d}
     Delete Repo  project${d}
@@ -392,7 +438,7 @@ Test Case - Delete A Project
 
 Test Case - Delete Multi Project
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s 
+    ${d}=    Get Current Date    result_format=%m%s
     Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
     Create An New Project  projecta${d}
     Create An New Project  projectb${d}
@@ -418,8 +464,8 @@ Test Case - Delete Multi User
     Switch To User Tag
     Filter Object  delete
     Multi-delete Object  deletea  deleteb  deletec
-    # Assert delete 
-    Delete Success  
+    # Assert delete
+    Delete Success
     Sleep  1
     # Filter object  delete
     Page Should Not Contain  deletea
@@ -430,7 +476,7 @@ Test Case - Delete Multi Repo
     ${d}=   Get Current Date    result_format=%m%s
     Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
     Create An New Project  project${d}
-    Push Image  ${ip}  test${d}  Test1@34  project${d}  hello-world  
+    Push Image  ${ip}  test${d}  Test1@34  project${d}  hello-world
     Push Image  ${ip}  test${d}  Test1@34  project${d}  busybox
     Sleep  2
     Go Into Project  project${d}
@@ -471,7 +517,7 @@ Test Case - Delete Multi Member
     Delete Success
     Page Should Not Contain  testa${d}
     Close Browser
-    
+
 Test Case - Assign Sys Admin
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -490,7 +536,7 @@ Test Case - Admin Push Signed Image
 
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
     Log  ${output}
-		
+
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group9-Content-trust/notary-push-image.sh ${ip}
     Log  ${output}

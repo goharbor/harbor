@@ -215,4 +215,12 @@ Edit Repo Info
     Page Should Contain  test_description_info
     Capture Page Screenshot  RepoInfo.png
 
-
+Add Labels To Tag
+    [Arguments]  ${tagName}  ${labelName}
+    Click Element  xpath=//clr-dg-row[contains(.,"${tagName}")]//label
+    Sleep  1
+    Click Element  xpath=//clr-dg-action-bar//clr-dropdown//button
+    Sleep  1
+    Click Element  xpath=//clr-dropdown//div//label[contains(.,"${labelName}")]
+    Sleep  3
+    Page Should Contain Element  xpath=//clr-dg-row//label[contains(.,"${labelName}")]

@@ -15,7 +15,7 @@ export const TAG_TEMPLATE = `
 <div class="row" style="position:relative;">
   <div>
     <div class="row flex-items-xs-right rightPos">
-      <div class='filterLabelPiece' [style.left.px]='filterLabelPieceWidth' ><hbr-label-piece [hidden]='!filterOneLabel' [label]="filterOneLabel"></hbr-label-piece></div>
+      <div class='filterLabelPiece' [style.left.px]='filterLabelPieceWidth' ><hbr-label-piece [hidden]='!filterOneLabel' [label]="filterOneLabel"  [labelWidth]="130"></hbr-label-piece></div>
       <div class="flex-xs-middle">
       <hbr-filter *ngIf="withAdmiral" [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" [currentValue]="lastFilteredTagName"></hbr-filter>
         <clr-dropdown *ngIf="!withAdmiral">
@@ -23,12 +23,12 @@ export const TAG_TEMPLATE = `
             <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
                 <div style='display:grid'>
                     <label class="dropdown-header">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
-                    <div class="form-group"><input type="text" placeholder="Filter labels" #labelNamePiece (keyup)="handleInputFilter(labelNamePiece.value)"></div>
-                    <div [hidden]='imageFilterLabels.length'>{{'LABEL.NO_LABELS' | translate }}</div>
+                    <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]= "filterName" (keyup)="handleInputFilter()"></div>
+                    <div [hidden]='imageFilterLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
                     <div [hidden]='!imageFilterLabels.length' style='max-height:300px;overflow-y: auto;'>
                         <button type="button" class="dropdown-item" *ngFor='let label of imageFilterLabels' (click)="label.iconsShow = true; filterLabel(label)">
                             <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
-                            <div class='labelDiv'><hbr-label-piece [label]="label.label"></hbr-label-piece></div>
+                            <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
                             <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); label.iconsShow = false; unFilterLabel(label)"></clr-icon>
                         </button>
                     </div>
@@ -49,12 +49,12 @@ export const TAG_TEMPLATE = `
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
                     <div style='display:grid'>
                         <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
-                        <div class="form-group"><input type="text" placeholder="Filter labels" #stickLabelNamePiece (keyup)="handleStickInputFilter(stickLabelNamePiece.value)"></div>
-                        <div [hidden]='imageStickLabels.length'>{{'LABEL.NO_LABELS' | translate }}</div>
+                        <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
+                        <div [hidden]='imageStickLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
                         <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
                             <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="selectLabel(label); label.iconsShow = true">
                                 <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
-                                <div class='labelDiv'><hbr-label-piece [label]="label.label"></hbr-label-piece></div>
+                                <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
                                 <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); unSelectLabel(label); label.iconsShow = false"></clr-icon>
                             </button>
                         </div>
@@ -96,7 +96,7 @@ export const TAG_TEMPLATE = `
           <clr-dg-cell style="width: 160px;">{{t.created | date: 'short'}}</clr-dg-cell>
           <clr-dg-cell style="width: 80px;" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
           <clr-dg-cell *ngIf="!withAdmiral" style="width: 140px;">
-            <hbr-label-piece *ngIf="t.labels?.length" [label]="t.labels[0]"></hbr-label-piece>
+            <hbr-label-piece *ngIf="t.labels?.length" [label]="t.labels[0]" [labelWidth]="90"> </hbr-label-piece>
             <div class="signpost-item" [hidden]="t.labels?.length<=1">
                 <div class="trigger-item">
                     <clr-signpost>
