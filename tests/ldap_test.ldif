@@ -30,6 +30,9 @@ cn: harbor_users
 description: All users
 member: cn=mike,ou=people,dc=example,dc=com
 member: cn=mike02,ou=people,dc=example,dc=com
+member: cn=mike03,ou=people,dc=example,dc=com
+member: cn=mike04,ou=people,dc=example,dc=com
+member: cn=mike05,ou=people,dc=example,dc=com
 objectclass: groupOfNames
 objectclass: top
 
