@@ -821,7 +821,6 @@ func (ra *RepositoryAPI) ScanImage() {
 		return
 	}
 	err = uiutils.TriggerImageScan(repoName, tag)
-	//TODO better check existence
 	if err != nil {
 		log.Errorf("Error while calling job service to trigger image scan: %v", err)
 		ra.HandleInternalServerError("Failed to scan image, please check log for details")
