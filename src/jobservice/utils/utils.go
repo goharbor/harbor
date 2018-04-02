@@ -5,6 +5,7 @@ package utils
 
 import (
 	"errors"
+	"net/url"
 	"os"
 	"strings"
 
@@ -55,6 +56,19 @@ func DirExists(path string) bool {
 //IsValidPort check if port is valid.
 func IsValidPort(port uint) bool {
 	return port != 0 && port < 65536
+}
+
+//IsValidURL validates if the url is well-formted
+func IsValidURL(address string) bool {
+	if IsEmptyStr(address) {
+		return false
+	}
+
+	if _, err := url.Parse(address); err != nil {
+		return false
+	}
+
+	return true
 }
 
 //JobScore represents the data item with score in the redis db.

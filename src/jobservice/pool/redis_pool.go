@@ -123,6 +123,12 @@ func (gcwp *GoCraftWorkPool) Start() {
 			}); err != nil {
 			return
 		}
+		if err = gcwp.messageServer.Subscribe(opm.EventFireCommand,
+			func(data interface{}) error {
+				return gcwp.handleOPCommandFiring(data)
+			}); err != nil {
+			return
+		}
 
 		//Start message server
 		if err = gcwp.messageServer.Start(); err != nil {
@@ -323,8 +329,6 @@ func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
 		return models.JobPoolStats{}, err
 	}
 
-	fmt.Printf("hbs=%+#v\n", hbs[0])
-
 	//Find the heartbeat of this pool via pid
 	stats := make([]*models.JobPoolStatsData, 0)
 	for _, hb := range hbs {
@@ -367,9 +371,14 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 		return err
 	}
 
+	needSetStopStatus := false
+
 	switch theJob.Stats.JobKind {
 	case job.JobKindGeneric:
-		//nothing need to do
+		//Only running job can be stopped
+		if theJob.Stats.Status != job.JobStatusRunning {
+			return fmt.Errorf("job '%s' is not a running job", jobID)
+		}
 	case job.JobKindScheduled:
 		//we need to delete the scheduled job in the queue if it is not running yet
 		//otherwise, nothing need to do
@@ -377,6 +386,7 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 			if err := gcwp.client.DeleteScheduledJob(theJob.Stats.RunAt, jobID); err != nil {
 				return err
 			}
+			needSetStopStatus = true
 		}
 	case job.JobKindPeriodic:
 		//firstly delete the periodic job policy
@@ -390,6 +400,8 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 			//only logged
 			logger.Errorf("Expire the stats of job %s failed with error: %s\n", theJob.Stats.JobID, err)
 		}
+
+		needSetStopStatus = true
 	default:
 		break
 	}
@@ -400,6 +412,13 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 		if err := gcwp.statsManager.SendCommand(jobID, opm.CtlCommandStop); err != nil {
 			return err
 		}
+		//The job running instance will set the status to 'stopped'
+		needSetStopStatus = false
+	}
+
+	//If needed, update the job status to 'stopped'
+	if needSetStopStatus {
+		gcwp.statsManager.SetJobStatus(jobID, job.JobStatusStopped)
 	}
 
 	return nil
@@ -475,8 +494,8 @@ func (gcwp *GoCraftWorkPool) RegisterHook(jobID string, hookURL string) error {
 		return errors.New("empty job ID")
 	}
 
-	if utils.IsEmptyStr(hookURL) {
-		return errors.New("empty hook url")
+	if !utils.IsValidURL(hookURL) {
+		return errors.New("invalid hook url")
 	}
 
 	return gcwp.statsManager.RegisterHook(jobID, hookURL, false)
@@ -548,6 +567,24 @@ func (gcwp *GoCraftWorkPool) handleRegisterStatusHook(data interface{}) error {
 	}
 
 	return gcwp.statsManager.RegisterHook(hook.JobID, hook.HookURL, true)
+}
+
+func (gcwp *GoCraftWorkPool) handleOPCommandFiring(data interface{}) error {
+	if data == nil {
+		return errors.New("nil data interface")
+	}
+
+	commands, ok := data.([]interface{})
+	if !ok || len(commands) != 2 {
+		return errors.New("malformed op commands object")
+	}
+	jobID, ok := commands[0].(string)
+	command, ok := commands[1].(string)
+	if !ok {
+		return errors.New("malformed op command info")
+	}
+
+	return gcwp.statsManager.SendCommand(jobID, command)
 }
 
 //log the job

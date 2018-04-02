@@ -89,6 +89,9 @@ func (ms *MessageServer) Start() error {
 						dt, _ := json.Marshal(m.Data)
 						json.Unmarshal(dt, hookObject)
 						converted = hookObject
+					case opm.EventFireCommand:
+						//no need to convert []string
+						converted = m.Data
 					}
 					res := callback.Call([]reflect.Value{reflect.ValueOf(converted)})
 					e := res[0].Interface()

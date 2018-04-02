@@ -55,6 +55,7 @@ func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error 
 		logger.Info("I'm finished, exit!")
 		fmt.Println("I'm finished, exit!")
 	}()
+	fmt.Println("I'm running")
 	logger.Info("=======Replication job running=======")
 	logger.Infof("params: %#v\n", params)
 	logger.Infof("context: %#v\n", ctx)
@@ -81,11 +82,12 @@ func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error 
 
 	//HOLD ON FOR A WHILE
 	logger.Error("Holding for 20 sec")
-	<-time.After(10 * time.Second)
+	<-time.After(15 * time.Second)
 	//logger.Fatal("I'm back, check if I'm stopped/cancelled")
 
 	if cmd, ok := ctx.OPCommand(); ok {
 		logger.Infof("cmd=%s\n", cmd)
+		fmt.Printf("Receive OP command: %s\n", cmd)
 		if cmd == opm.CtlCommandCancel {
 			logger.Info("exit for receiving cancel signal")
 			return errs.JobCancelledError()
@@ -95,7 +97,7 @@ func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error 
 		return errs.JobStoppedError()
 	}
 
-	fmt.Println("I'm here")
+	fmt.Println("I'm close to end")
 
 	return nil
 }
