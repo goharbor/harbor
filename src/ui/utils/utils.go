@@ -16,42 +16,13 @@
 package utils
 
 import (
-	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/service/token"
 
-	"io"
 	"net/http"
 )
-
-// RequestAsUI is a shortcut to make a request attach UI secret and send the request.
-// Do not use this when you want to handle the response
-func RequestAsUI(method, url string, body io.Reader, h ResponseHandler) error {
-	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return err
-	}
-
-	AddUISecret(req)
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	return h.Handle(resp)
-}
-
-//AddUISecret add secret cookie to a request
-func AddUISecret(req *http.Request) {
-	if req != nil {
-		req.AddCookie(&http.Cookie{
-			Name:  models.UISecretCookie,
-			Value: config.UISecret(),
-		})
-	}
-}
 
 // NewRepositoryClientForUI creates a repository client that can only be used to
 // access the internal registry
