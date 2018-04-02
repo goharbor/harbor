@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/vmware/harbor/src/jobservice/errs"
+
 	"github.com/robfig/cron"
 
 	"github.com/garyburd/redigo/redis"
@@ -156,6 +158,10 @@ func (rps *RedisPeriodicScheduler) UnSchedule(cronJobPolicyID string) error {
 	}
 
 	score, err := rps.getScoreByID(cronJobPolicyID)
+	if err == redis.ErrNil {
+		return errs.NoObjectFoundError(err.Error())
+	}
+
 	if err != nil {
 		return err
 	}

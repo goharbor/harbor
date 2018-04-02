@@ -87,11 +87,6 @@ func TestCommand(t *testing.T) {
 			t.Fatalf("expect '%s' but got '%s'", CtlCommandStop, cmd)
 		}
 	}
-
-	key := utils.KeyJobCtlCommands(testingNamespace, "fake_job_ID")
-	if err := clear(key, redisPool.Get()); err != nil {
-		t.Fatal(err)
-	}
 }
 
 func TestDieAt(t *testing.T) {

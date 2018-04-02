@@ -15,6 +15,8 @@
 package target
 
 import (
+	"fmt"
+
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
@@ -42,7 +44,7 @@ func (d *DefaultManager) GetTarget(id int64) (*models.RepTarget, error) {
 	}
 
 	if target == nil {
-		return nil, nil
+		return nil, fmt.Errorf("target '%d' does not exist", id)
 	}
 
 	// decrypt the password

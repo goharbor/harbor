@@ -57,7 +57,8 @@ type RedisJobStatsManager struct {
 	doneChan    chan struct{}
 	processChan chan *queueItem
 	isRunning   *atomic.Value
-	hookStore   *HookStore //cache the hook here to avoid requesting backend
+	hookStore   *HookStore  //cache the hook here to avoid requesting backend
+	opCommands  *oPCommands //maintain the OP commands
 }
 
 //NewRedisJobStatsManager is constructor of RedisJobStatsManager
@@ -74,6 +75,7 @@ func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *r
 		processChan: make(chan *queueItem, processBufferSize),
 		hookStore:   NewHookStore(),
 		isRunning:   isRunning,
+		opCommands:  newOPCommands(ctx, namespace, redisPool),
 	}
 }
 
@@ -83,6 +85,7 @@ func (rjs *RedisJobStatsManager) Start() {
 		return
 	}
 	go rjs.loop()
+	rjs.opCommands.Start()
 	rjs.isRunning.Store(true)
 
 	logger.Info("Redis job stats manager is started")
@@ -97,6 +100,8 @@ func (rjs *RedisJobStatsManager) Shutdown() {
 	if !(rjs.isRunning.Load().(bool)) {
 		return
 	}
+
+	rjs.opCommands.Stop()
 	rjs.stopChan <- struct{}{}
 	<-rjs.doneChan
 }
@@ -213,7 +218,12 @@ func (rjs *RedisJobStatsManager) SendCommand(jobID string, command string) error
 		return errors.New("unknown command")
 	}
 
-	return rjs.writeCtlCommand(jobID, command)
+	if err := rjs.opCommands.Fire(jobID, command); err != nil {
+		return err
+	}
+
+	//Directly add to op commands maintaining list
+	return rjs.opCommands.Push(jobID, command)
 }
 
 //CheckIn mesage
@@ -239,7 +249,12 @@ func (rjs *RedisJobStatsManager) CtlCommand(jobID string) (string, error) {
 		return "", errors.New("empty job ID")
 	}
 
-	return rjs.getCrlCommand(jobID)
+	c, ok := rjs.opCommands.Pop(jobID)
+	if !ok {
+		return "", fmt.Errorf("no OP command fired to job %s", jobID)
+	}
+
+	return c, nil
 }
 
 //DieAt marks the failed jobs with the time they put into dead queue.
@@ -262,7 +277,7 @@ func (rjs *RedisJobStatsManager) RegisterHook(jobID string, hookURL string, isCa
 		return errors.New("empty job ID")
 	}
 
-	if utils.IsEmptyStr(hookURL) {
+	if !utils.IsValidURL(hookURL) {
 		return errors.New("invalid hook url")
 	}
 
@@ -302,7 +317,7 @@ func (rjs *RedisJobStatsManager) submitStatusReportingItem(jobID string, status,
 		if !ok {
 			//Retrieve from backend
 			hookURL, err = rjs.getHook(jobID)
-			if err != nil {
+			if err != nil || !utils.IsValidURL(hookURL) {
 				//logged and exit
 				logger.Warningf("no status hook found for job %s\n, abandon status reporting", jobID)
 				return
@@ -326,45 +341,6 @@ func (rjs *RedisJobStatsManager) reportStatus(jobID string, hookURL, status, che
 	}
 
 	return DefaultHookClient.ReportStatus(hookURL, reportingStatus)
-}
-
-func (rjs *RedisJobStatsManager) getCrlCommand(jobID string) (string, error) {
-	conn := rjs.redisPool.Get()
-	defer conn.Close()
-
-	key := utils.KeyJobCtlCommands(rjs.namespace, jobID)
-	cmd, err := redis.String(conn.Do("HGET", key, "command"))
-	if err != nil {
-		return "", err
-	}
-	//try to DEL it after getting the command
-	//Ignore the error,leave it as dirty data
-	_, err = conn.Do("DEL", key)
-	if err != nil {
-		//only logged
-		logger.Errorf("del key %s failed with error: %s\n", key, err)
-	}
-
-	return cmd, nil
-}
-
-func (rjs *RedisJobStatsManager) writeCtlCommand(jobID string, command string) error {
-	conn := rjs.redisPool.Get()
-	defer conn.Close()
-
-	key := utils.KeyJobCtlCommands(rjs.namespace, jobID)
-	args := make([]interface{}, 0, 5)
-	args = append(args, key, "command", command, "fire_time", time.Now().Unix())
-	if err := conn.Send("HMSET", args...); err != nil {
-		return err
-	}
-
-	expireTime := 24*60*60 + rand.Int63n(10)
-	if err := conn.Send("EXPIRE", key, expireTime); err != nil {
-		return err
-	}
-
-	return conn.Flush()
 }
 
 func (rjs *RedisJobStatsManager) updateJobStatus(jobID string, status string) error {
