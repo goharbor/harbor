@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -136,6 +137,56 @@ func TestPublishHook(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+	}()
+
+	ms.Start()
+}
+
+func TestPublishCommands(t *testing.T) {
+	ms, cancel := createMessageServer()
+	err := ms.Subscribe(opm.EventFireCommand, func(data interface{}) error {
+		cmds, ok := data.([]string)
+		if !ok {
+			t.Fatal("expect fired command but got other thing")
+			return errors.New("expect fired command but got other thing")
+		}
+		if len(cmds) != 2 {
+			t.Fatalf("expect a array with 2 items but only got '%d' items", len(cmds))
+			return fmt.Errorf("expect a array with 2 items but only got '%d' items", len(cmds))
+		}
+		if cmds[1] != "stop" {
+			t.Fatalf("expect command 'stop' but got '%s'", cmds[1])
+			return fmt.Errorf("expect command 'stop' but got '%s'", cmds[1])
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	go func() {
+		defer cancel()
+		<-time.After(200 * time.Millisecond)
+
+		notification := &models.Message{
+			Event: opm.EventRegisterStatusHook,
+			Data:  []string{"fake_job_ID", "stop"},
+		}
+
+		rawJSON, err := json.Marshal(notification)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		conn := redisPool.Get()
+		defer conn.Close()
+		err = conn.Send("PUBLISH", utils.KeyPeriodicNotification(tests.GiveMeTestNamespace()), rawJSON)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		//hold for a while
+		<-time.After(200 * time.Millisecond)
 	}()
 
 	ms.Start()
