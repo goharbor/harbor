@@ -2,5 +2,3 @@
 set -e
 
 python ./migrator.py "$@"
-
-exec "$@"

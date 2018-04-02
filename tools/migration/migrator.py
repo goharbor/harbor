@@ -37,10 +37,12 @@ class DBMigrator():
 
 class CfgMigrator():
 
-    def __init__(self, target):
+    def __init__(self, target, output):
         self.target = target
+        self.output = output
         self.cfg_path = "/harbor-migration/harbor-cfg/harbor.cfg"
         self.backup_path = "/harbor-migration/backup"
+        self.output_path = "/harbor-migration/output"
 
     def backup(self):
         try:
@@ -67,7 +69,13 @@ class CfgMigrator():
         if not os.path.exists(self.cfg_path):
             print ("Skip cfg up as no harbor.cfg in the path.")
             return True
-        cmd = "python ./cfg/run.py --input " + self.cfg_path
+
+        if self.output and os.path.isdir(self.output_path):
+            cmd = "python ./cfg/run.py --input " + self.cfg_path + " --output " + self.output_path + "/harbor.cfg"
+        else:
+            print ("The path of the migrated harbor.cfg is not set, the input file will be overwritten.")
+            cmd = "python ./cfg/run.py --input " + self.cfg_path
+
         if self.target != '':
             cmd = cmd + " --target " + self.target
         return run_cmd(cmd) == 0
@@ -84,6 +92,7 @@ class Parameters(object):
         self.db_user = os.getenv('DB_USR', '')
         self.db_pwd = os.getenv('DB_PWD', '')
         self.skip_confirm = os.getenv('SKIP_CONFIRM', 'n')
+        self.output = False
         self.is_migrate_db = True
         self.is_migrate_cfg = True
         self.target_version = ''
@@ -109,19 +118,20 @@ class Parameters(object):
                     sys.exit(RC_GEN) 
         
         if argv_len == 1:
-            return (True, True, '', last_argv)
+            return (True, True, '', False, last_argv)
 
         parser = argparse.ArgumentParser(description='migrator of harbor') 
         parser.add_argument('--db', action="store_true", dest='is_migrate_db', required=False, default=False, help='The flag to upgrade db.')
         parser.add_argument('--cfg', action="store_true", dest='is_migrate_cfg', required=False, default=False, help='The flag to upgrede cfg.')
         parser.add_argument('--version', action="store", dest='target_version', required=False, default='', help='The target version that the harbor will be migrated to.')         
-
+        parser.add_argument('--output', action="store_true", dest='output', required=False, default=False, help='The path of the migrated harbor.cfg, if not set the input file will be overwritten.')         
+    
         args = parser.parse_args(sys.argv[1:argv_len])
         args.action = last_argv
-        return (args.is_migrate_db, args.is_migrate_cfg, args.target_version, args.action)
+        return (args.is_migrate_db, args.is_migrate_cfg, args.target_version, args.output, args.action)
 
     def init_from_input(self):
-        (self.is_migrate_db, self.is_migrate_cfg, self.target_version, self.action) = self.parse_input()
+        (self.is_migrate_db, self.is_migrate_cfg, self.target_version, self.output, self.action) = self.parse_input()
 
 def run_cmd(cmd):
     return os.system(cmd)
@@ -144,7 +154,7 @@ def main():
     commandline_input = Parameters()
 
     db_migrator = DBMigrator(commandline_input.target_version)
-    cfg_migrator = CfgMigrator(commandline_input.target_version)
+    cfg_migrator = CfgMigrator(commandline_input.target_version, commandline_input.output)
 
     try:
         # test

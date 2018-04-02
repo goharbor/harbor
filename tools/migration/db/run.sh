@@ -113,7 +113,7 @@ mapprojects)
     ;;
 restore)
     echo "Performing restore..."
-    mysql $DBCNF < /harbor-migration/db/backup/registry.sql
+    mysql $DBCNF < /harbor-migration/backup/registry.sql
     rc="$?"
     echo "Restore performed."
     exit $rc
