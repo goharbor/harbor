@@ -36,6 +36,12 @@ log_rotate_count = $log_rotate_count
 #are all valid.
 log_rotate_size = $log_rotate_size
 
+#Config http proxy for Clair, e.g. http://my.proxy.com:3128
+#Clair doesn't need to connect to harbor ui container via http proxy.
+http_proxy =
+https_proxy =
+no_proxy = 127.0.0.1,localhost,ui
+
 #NOTES: The properties between BEGIN INITIAL PROPERTIES and END INITIAL PROPERTIES
 #only take effect in the first boot, the subsequent changes of these properties 
 #should be performed on web ui
@@ -92,6 +98,18 @@ ldap_timeout = 5
 
 #Verify certificate from LDAP server
 ldap_verify_cert = true
+
+#The base dn from which to lookup a group in LDAP/AD
+ldap_group_basedn = ou=group,dc=mydomain,dc=com
+
+#filter to search LDAP/AD group
+ldap_group_filter = objectclass=group
+
+#The attribute used to name a LDAP/AD group, it could be cn, name
+ldap_group_gid = cn
+
+#The scope to search for ldap groups. 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE
+ldap_group_scope = 2
 
 #Turn on or off the self-registration feature
 self_registration = on
