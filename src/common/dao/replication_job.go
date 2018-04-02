@@ -312,7 +312,7 @@ func GetRepJobByPolicy(policyID int64) ([]*models.RepJob, error) {
 
 // FilterRepJobs ...
 func FilterRepJobs(policyID int64, repository string, status []string, startTime,
-	endTime *time.Time, limit, offset int64) ([]*models.RepJob, int64, error) {
+	endTime *time.Time, limit, offset int64, operations ...string) ([]*models.RepJob, int64, error) {
 
 	jobs := []*models.RepJob{}
 
@@ -332,6 +332,9 @@ func FilterRepJobs(policyID int64, repository string, status []string, startTime
 	}
 	if endTime != nil {
 		qs = qs.Filter("CreationTime__lte", endTime)
+	}
+	if len(operations) != 0 {
+		qs = qs.Filter("Operation__in", operations)
 	}
 
 	total, err := qs.Count()

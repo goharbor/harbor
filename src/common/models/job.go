@@ -31,4 +31,6 @@ const (
 	JobRetrying string = "retrying"
 	//JobContinue is the status returned by statehandler to tell statemachine to move to next possible state based on trasition table.
 	JobContinue string = "_continue"
+	// JobScheduled ...
+	JobScheduled string = "scheduled"
 )

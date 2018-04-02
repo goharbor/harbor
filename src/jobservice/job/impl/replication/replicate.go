@@ -81,7 +81,7 @@ func (r *Replicator) replicate() error {
 		r.logger.Errorf("failed to send the replication request to %s: %v", r.url, err)
 		return err
 	}
-	r.logger.Infof("the replication request has been sent to %s successfully", r.url)
+	r.logger.Info("the replication request has been sent successfully")
 	return nil
 
 }

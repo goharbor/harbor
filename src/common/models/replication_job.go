@@ -26,6 +26,8 @@ const (
 	RepOpTransfer string = "transfer"
 	//RepOpDelete represents the operation of a job to remove repository from a remote registry/harbor instance.
 	RepOpDelete string = "delete"
+	//RepOpSchedule represents the operation of a job to schedule the real replication process
+	RepOpSchedule string = "schedule"
 	//UISecretCookie is the cookie name to contain the UI secret
 	UISecretCookie string = "secret"
 	//RepTargetTable is the table name for replication targets

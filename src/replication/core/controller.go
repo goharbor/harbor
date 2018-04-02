@@ -96,22 +96,6 @@ func (ctl *DefaultController) Init() error {
 		return nil
 	}
 
-	policies, err := ctl.policyManager.GetPolicies(models.QueryParameter{})
-	if err != nil {
-		return err
-	}
-	if policies != nil && len(policies.Policies) > 0 {
-		for _, policy := range policies.Policies {
-			if policy.Trigger == nil || policy.Trigger.Kind != replication.TriggerKindSchedule {
-				continue
-			}
-
-			if err := ctl.triggerManager.SetupTrigger(policy); err != nil {
-				log.Errorf("failed to setup trigger for policy %v: %v", policy, err)
-			}
-		}
-	}
-
 	//Initialize sourcer
 	ctl.sourcer.Init()
 
