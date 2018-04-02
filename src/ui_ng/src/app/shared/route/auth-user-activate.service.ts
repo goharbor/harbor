@@ -48,6 +48,10 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
     //When routing change, clear
     this.msgHandler.clear();
+    if (this.appConfigService.getConfig().read_only.toString() === 'true') {
+      this.msgHandler.handleReadOnly();
+    }
+
     this.searchTrigger.closeSearch(true);
     return new Promise((resolve, reject) => {
       //Before activating, we firstly need to confirm whether the route is coming from peer part - admiral

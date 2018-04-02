@@ -30,7 +30,7 @@ export const TAG_DETAIL_HTML: string = `
                     </div>
                 </div>
             </div>
-            <div>
+            <div *ngIf="withClair">
                 <div class="vulnerability">
                     <hbr-vulnerability-bar [repoName]="repositoryId" [tagId]="tagDetails.name" [summary]="tagDetails.scan_overview"></hbr-vulnerability-bar>
                 </div>

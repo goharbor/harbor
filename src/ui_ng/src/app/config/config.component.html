@@ -18,6 +18,9 @@
             <li role="presentation" class="nav-item" *ngIf="withClair">
                 <button id="config-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("config-vulnerability")' type="button" (click)='tabLinkClick("config-vulnerability")'>{{'CONFIG.VULNERABILITY' | translate}}</button>
             </li>
+            <li role="presentation" class="nav-item">
+                <button id="config-repo" class="btn btn-link nav-link" aria-controls="repoReadOnly" [class.active]='isCurrentTabLink("config-repo")' type="button" (click)='tabLinkClick("config-repo")'>{{'CONFIG.REPO_READ_ONLY' | translate}}</button>
+            </li>
         </ul>
         <section id="authentication" role="tabpanel" aria-labelledby="config-auth" [hidden]='!isCurrentTabContent("authentication")'>
             <config-auth [allConfig]="allConfig"></config-auth>
@@ -33,6 +36,9 @@
       </section>
         <section id="vulnerability" *ngIf="withClair" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
             <vulnerability-config [(vulnerabilityConfig)]="allConfig"></vulnerability-config>
+        </section>
+        <section id="repoReadOnly" role="tabpanel" aria-labelledby="config-repo" [hidden]='!isCurrentTabContent("repoReadOnly")'>
+            <repo-read-only [(repoConfig)]="allConfig"></repo-read-only>
         </section>
         <div>
             <button type="button" class="btn btn-primary" (click)="save()" [hidden]="hideBtn" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>

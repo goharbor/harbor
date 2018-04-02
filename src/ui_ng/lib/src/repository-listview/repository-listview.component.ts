@@ -176,6 +176,13 @@ export class RepositoryListviewComponent implements OnChanges, OnInit {
               });
               return;
             }
+            if (error.status === 503) {
+              Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                  this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
+                findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+              });
+              return;
+            }
             this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
               findedList = BathInfoChanges(findedList, res, false, true);
             });

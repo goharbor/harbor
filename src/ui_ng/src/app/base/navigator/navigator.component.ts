@@ -69,11 +69,15 @@ export class NavigatorComponent implements OnInit {
         this.translate.onLangChange.subscribe((langChange: {lang: string}) => {
             this.selectedLang = langChange.lang;
             //Keep in cookie for next use
-            let opt:CookieOptions = {path: '/', expires: new Date(Date.now() + 3600*1000*24*31)};
+            let opt: CookieOptions = {path: '/', expires: new Date(Date.now() + 3600*1000*24*31)};
             this.cookie.put("harbor-lang", langChange.lang, opt);
         });
         if (this.appConfigService.isIntegrationMode()) {
             this.appTitle = 'APP_TITLE.VIC';
+        }
+
+        if (this.appConfigService.getConfig().read_only) {
+            this.msgHandler.handleReadOnly();
         }
     }
 
