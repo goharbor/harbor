@@ -40,6 +40,11 @@ func (d *DefaultManager) GetTarget(id int64) (*models.RepTarget, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if target == nil {
+		return nil, nil
+	}
+
 	// decrypt the password
 	if len(target.Password) > 0 {
 		key, err := config.SecretKey()
