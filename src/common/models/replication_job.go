@@ -124,3 +124,14 @@ func (r *RepJob) TableName() string {
 func (r *RepPolicy) TableName() string {
 	return RepPolicyTable
 }
+
+// RepJobQuery holds query conditions for replication job
+type RepJobQuery struct {
+	PolicyID   int64
+	Repository string
+	Statuses   []string
+	Operations []string
+	StartTime  *time.Time
+	EndTime    *time.Time
+	Pagination
+}
