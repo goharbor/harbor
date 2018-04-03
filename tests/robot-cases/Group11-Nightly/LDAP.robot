@@ -55,12 +55,10 @@ Test Case - LDAP User On-borad New Member
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  mike03  zhu88jie
-    Switch To User Tag
-    Page Should Not Contain  mike04
-    Back To Projects
     Create An New Project  project${d}
     Go Into Project  project${d}
     Switch To Member
+    Page Should Not Contain  mike04
     Add Guest Member To Project  mike04
     Page Should Contain  mike04
     Close Browser

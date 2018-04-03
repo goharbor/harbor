@@ -111,7 +111,8 @@ export class TagComponent implements OnInit, AfterViewInit {
   labelNameFilter: Subject<string> = new Subject<string> ();
   stickLabelNameFilter: Subject<string> = new Subject<string> ();
   filterOnGoing: boolean;
-
+  stickName = ''
+  filterName = '';
   initFilter = {
     name: '',
     description: '',
@@ -159,12 +160,12 @@ export class TagComponent implements OnInit, AfterViewInit {
         .debounceTime(500)
         .distinctUntilChanged()
         .subscribe((name: string) => {
-          if (name && name.length) {
+          if (this.filterName.length) {
             this.filterOnGoing = true;
             this.imageFilterLabels = [];
 
             this.imageLabels.forEach(data => {
-              if (data.label.name.indexOf(name) !== -1) {
+              if (data.label.name.indexOf(this.filterName) !== -1) {
                 this.imageFilterLabels.push(data);
               }
             })
@@ -178,12 +179,12 @@ export class TagComponent implements OnInit, AfterViewInit {
         .debounceTime(500)
         .distinctUntilChanged()
         .subscribe((name: string) => {
-          if (name && name.length) {
+          if (this.stickName.length) {
             this.filterOnGoing = true;
             this.imageStickLabels = [];
 
             this.imageLabels.forEach(data => {
-              if (data.label.name.indexOf(name) !== -1) {
+              if (data.label.name.indexOf(this.stickName) !== -1) {
                 this.imageStickLabels.push(data);
               }
             })
@@ -217,7 +218,13 @@ export class TagComponent implements OnInit, AfterViewInit {
     st.page.size = this.pageSize;
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
-    st.filters = [{property: "name", value: this.lastFilteredTagName}];
+    let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
+    if (selectedLab) {
+      st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.name', value: selectedLab.label}];
+    }else {
+      st.filters = [{property: 'name', value: this.lastFilteredTagName}];
+    }
+
     this.clrLoad(st);
   }
 
@@ -379,17 +386,17 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  handleInputFilter($event: string) {
-    if ($event && $event.length) {
-      this.labelNameFilter.next($event);
+  handleInputFilter() {
+    if (this.filterName.length) {
+      this.labelNameFilter.next(this.filterName);
     }else {
       this.imageFilterLabels = clone(this.imageLabels);
     }
   }
 
-  handleStickInputFilter($event: string) {
-    if ($event && $event.length) {
-      this.stickLabelNameFilter.next($event);
+  handleStickInputFilter() {
+    if (this.stickName.length) {
+      this.stickLabelNameFilter.next(this.stickName);
     }else {
       this.imageStickLabels = clone(this.imageLabels);
     }
@@ -514,6 +521,13 @@ export class TagComponent implements OnInit, AfterViewInit {
                       findedList = BathInfoChanges(findedList, res);
                     });
               }).catch(error => {
+            if (error.status === 503) {
+              Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                  this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
+                findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+              });
+              return;
+            }
             this.translateService.get("BATCH.DELETED_FAILURE").subscribe(res => {
               findedList = BathInfoChanges(findedList, res, false, true);
             });

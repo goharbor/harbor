@@ -68,7 +68,8 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.nameChecker.debounceTime(500).subscribe((name: string) => {
             this.checkOnGoing = true;
-            toPromise<Label[]>(this.labelService.getLabels(this.scope, this.projectId, name))
+            let labelName = this.currentForm.controls['name'].value;
+            toPromise<Label[]>(this.labelService.getLabels(this.scope, this.projectId, labelName))
                 .then(targets => {
                     if (targets && targets.length) {
                         this.isLabelNameExist = true;

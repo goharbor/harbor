@@ -178,7 +178,7 @@
         "REPLICATION": "Replication",
         "USERS": "Members",
         "LOGS": "Logs",
-        "LABELS": "labels",
+        "LABELS": "Labels",
         "PROJECTS": "Projects",
         "CONFIG": "Configuration"
     },
@@ -390,6 +390,7 @@
         "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Signed tag cannot be deleted",
         "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.\nDelete from Notary via this command:\n{{param}}",
+        "TAGS_NO_DELETE": "Delete is prohibited in read only mode.",
         "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
         "SIZE": "Size",
@@ -414,9 +415,9 @@
         "INFO": "Info",
         "NO_INFO": "No description info for this repository",
         "IMAGE": "Images",
-        "LABELS": ":labels",
+        "LABELS": "Labels",
         "ADD_TO_IMAGE": "Add labels to this image",
-        "FILTER_BY_LABEL": "Filter projects by label",
+        "FILTER_BY_LABEL": "Filter images by label",
         "ADD_LABELS": "Add labels",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
@@ -442,7 +443,7 @@
         "AUTH": "Authentication",
         "REPLICATION": "Replication",
         "EMAIL": "Email",
-        "LABEL": "Label",
+        "LABEL": "Labels",
         "REPOSITORY": "Repository",
         "REPO_READ_ONLY": "Repository Read Only",
         "SYSTEM": "System Settings",
@@ -487,7 +488,8 @@
             "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
-            "VERIFY_CERT": "Verify Cert from LDAP Server"
+            "VERIFY_CERT": "Verify Cert from LDAP Server",
+            "REPO_TOOLTIP": "If true, means maintenance in Progress. During this period, you cannot delete repository, tag and push image."
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -620,6 +622,7 @@
         "OS": "OS",
         "SCAN_COMPLETION_TIME": "Scan Completed",
         "IMAGE_VULNERABILITIES": "Image Vulnerabilities",
+        "LEVEL_VULNERABILITIES": "Level Vulnerabilities",
         "PLACEHOLDER": "We couldn't find any tags!",
         "COPY_ERROR": "Copy failed, please try to manually copy.",
         "FILTER_FOR_TAGS": "Filter Tags"
@@ -634,7 +637,9 @@
         "LABEL_NAME": "Label Name",
         "COLOR": "Color",
         "FILTER_LABEL_PLACEHOLDER": "Filter Labels",
-        "NO_LABELS": "No labels"
+        "NO_LABELS": "No labels",
+        "DELETION_TITLE_TARGET": "Confirm Label Deletion",
+        "DELETION_SUMMARY_TARGET": "Do you want to delete {{param}}?"
     },
     "WEEKLY": {
         "MONDAY": "Monday",
@@ -647,6 +652,7 @@
     },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
     "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action.",
+    "REPO_READ_ONLY": "Maintenance in Progress: During this period, you cannot delete repository, tag and push image.",
     "FORBIDDEN_ERROR": "You do not have the proper privileges to perform the action.",
     "GENERAL_ERROR": "Errors have occurred when performing service call: {{param}}.",
     "BAD_REQUEST_ERROR": "We are unable to perform your action because of a bad request.",

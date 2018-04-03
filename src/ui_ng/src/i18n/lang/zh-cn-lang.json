@@ -390,6 +390,7 @@
         "DELETION_SUMMARY_TAG": "确认删除镜像标签 {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "已签名的镜像不能被删除",
         "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。\n请执行如下Notary命令删除:\n{{param}}",
+        "TAGS_NO_DELETE": "在只读模式下删除是被禁止的",
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
         "SIZE": "大小",
@@ -487,7 +488,8 @@
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
             "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。",
-            "VERIFY_CERT": "检查来自LDAP服务端的证书"
+            "VERIFY_CERT": "检查来自LDAP服务端的证书",
+            "REPO_TOOLTIP": "选中，表示正在维护状态，不可删除仓库及标签,也不可以推送镜像。"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -637,7 +639,9 @@
         "LABEL_NAME": "标签名字",
         "COLOR": "颜色",
         "FILTER_Label_PLACEHOLDER": "过滤标签",
-        "NO_LABELS": "无标签"
+        "NO_LABELS": "无标签",
+        "DELETION_TITLE_TARGET":"删除标签确认",
+        "DELETION_SUMMARY_TARGET": "确认删除标签 {{param}}?"
     },
     "WEEKLY": {
         "MONDAY": "周一",
@@ -650,6 +654,7 @@
     },
     "UNKNOWN_ERROR": "发生未知错误,请稍后再试。",
     "UNAUTHORIZED_ERROR": "会话无效或者已经过期, 请重新登录以继续。",
+    "REPO_READ_ONLY": "正在进行维护，在这期间，不能删除仓库、标签，也不能推送镜像。",
     "FORBIDDEN_ERROR": "当前操作被禁止，请确认你有合法的权限。",
     "GENERAL_ERROR": "调用后台服务时出现错误: {{param}}。",
     "BAD_REQUEST_ERROR": "错误请求, 操作无法完成。",

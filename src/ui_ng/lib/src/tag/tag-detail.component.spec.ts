@@ -148,18 +148,4 @@ describe('TagDetailComponent (inline template)', () => {
     });
   }));
 
-  it('should display vulnerability details', async(() => {
-    fixture.detectChanges();
-
-    fixture.whenStable().then(() => {
-      fixture.detectChanges();
-
-      let el: HTMLElement = fixture.nativeElement.querySelector('.second-column');
-      expect(el).toBeTruthy();
-      let el2: HTMLElement = el.querySelector('div');
-      expect(el2).toBeTruthy();
-      expect(el2.textContent.trim()).toEqual("13 VULNERABILITY.SEVERITY.HIGHTAG.LEVEL_VULNERABILITIES");
-    });
-  }));
-
 });

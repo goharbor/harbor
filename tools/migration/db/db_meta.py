@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.dialects import mysql
-
+import datetime
 
 Base = declarative_base()
 
@@ -27,6 +27,17 @@ class User(Base):
     update_time = sa.Column(mysql.TIMESTAMP)
 
 
+class UserGroup(Base):
+    __tablename__ = 'user_group'
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    group_name = sa.Column(sa.String(128), nullable = False)
+    group_type = sa.Column(sa.Integer, server_default=sa.text("'0'"))
+    ldap_group_dn = sa.Column(sa.String(512), nullable=False)
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default=sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+
 class Properties(Base):
     __tablename__ = 'properties'
 
@@ -38,14 +49,15 @@ class Properties(Base):
 class ProjectMember(Base):
     __tablename__ = 'project_member'
 
-    project_id = sa.Column(sa.Integer(), primary_key = True)
-    user_id = sa.Column(sa.Integer(), primary_key = True)
+    id = sa.Column(sa.Integer, primary_key=True)
+    project_id = sa.Column(sa.Integer(), nullable=False)
+    entity_id = sa.Column(sa.Integer(), nullable=False)
+    entity_type = sa.Column(sa.String(1), nullable=False)
     role = sa.Column(sa.Integer(), nullable = False)
-    creation_time = sa.Column(mysql.TIMESTAMP, nullable = True)
-    update_time = sa.Column(mysql.TIMESTAMP, nullable = True)
-    sa.ForeignKeyConstraint(['project_id'], [u'project.project_id'], ),
-    sa.ForeignKeyConstraint(['role'], [u'role.role_id'], ),
-    sa.ForeignKeyConstraint(['user_id'], [u'user.user_id'], ),
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+    __table_args__ = (sa.UniqueConstraint('project_id', 'entity_id', 'entity_type', name='unique_name_and_scope'),)
 
 
 class UserProjectRole(Base):
@@ -150,6 +162,7 @@ class ReplicationJob(Base):
     repository = sa.Column(sa.String(256), nullable=False)
     operation = sa.Column(sa.String(64), nullable=False)
     tags = sa.Column(sa.String(16384))
+    job_uuid = sa.Column(sa.String(64))
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
@@ -207,6 +220,7 @@ class ImageScanJob(Base):
     repository = sa.Column(sa.String(256), nullable=False)
     tag = sa.Column(sa.String(128), nullable=False)
     digest = sa.Column(sa.String(128))
+    job_uuid = sa.Column(sa.String(64))
     creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
     update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
 
@@ -230,3 +244,33 @@ class ClairVulnTimestamp(Base):
     id = sa.Column(sa.Integer, nullable=False, primary_key=True)
     namespace = sa.Column(sa.String(128), nullable=False, unique=True)
     last_update = sa.Column(mysql.TIMESTAMP)
+
+
+class HarborLabel(Base):
+    __tablename__ = "harbor_label"
+
+    id = sa.Column(sa.Integer, nullable=False, primary_key=True)
+    name = sa.Column(sa.String(128), nullable=False)
+    description = sa.Column(sa.Text)
+    color = sa.Column(sa.String(16))
+    level = sa.Column(sa.String(1), nullable=False)
+    scope = sa.Column(sa.String(1), nullable=False)
+    project_id = sa.Column(sa.Integer, nullable=False)
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+    __table_args__ = (sa.UniqueConstraint('name', 'scope', name='unique_name_and_scope'),)
+
+
+class HarborResourceLabel(Base):
+    __tablename__ = 'harbor_resource_label'
+ 
+    id = sa.Column(sa.Integer, nullable=False, primary_key=True)
+    label_id = sa.Column(sa.Integer, nullable=False)
+    resource_id =  sa.Column(sa.Integer)
+    resource_name = sa.Column(sa.String(256))
+    resource_type = sa.Column(sa.String(1), nullable=False)
+    creation_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP"))
+    update_time = sa.Column(mysql.TIMESTAMP, server_default = sa.text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+
+    __table_args__ = (sa.UniqueConstraint('label_id', 'resource_id', 'resource_name', 'resource_type', name='unique_label_resource'),)

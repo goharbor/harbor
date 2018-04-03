@@ -1,12 +1,12 @@
 #!/bin/bash
 
-export PYTHONPATH=$PYTHONPATH:/harbor-migration
+export PYTHONPATH=$PYTHONPATH:/harbor-migration/db
 if [ -z "$DB_USR" -o -z "$DB_PWD" ]; then
     echo "DB_USR or DB_PWD not set, exiting..."
     exit 1
 fi
 
-source ./alembic.tpl > ./alembic.ini
+source /harbor-migration/db/alembic.tpl > /harbor-migration/db/alembic.ini
 
 DBCNF="-hlocalhost -u${DB_USR}"
 
@@ -23,42 +23,41 @@ if [[ $1 = "help" || $1 = "h" || $# = 0 ]]; then
     exit 0
 fi
 
-if [[ ( $1 = "up" || $1 = "upgrade" ) && ${SKIP_CONFIRM} != "y" ]]; then
-    echo "Please backup before upgrade."
-    read -p "Enter y to continue updating or n to abort:" ans
-    case $ans in
-        [Yy]* )
-            ;;
-        [Nn]* )
-            exit 0
-            ;;
-        * ) echo "illegal answer: $ans. Upgrade abort!!"
-            exit 1
-            ;;
-    esac
-
-fi
+# if [[ ( $1 = "up" || $1 = "upgrade" ) && ${SKIP_CONFIRM} != "y" ]]; then
+#     echo "Please backup before upgrade."
+#     read -p "Enter y to continue updating or n to abort:" ans
+#     case $ans in
+#         [Yy]* )
+#             ;;
+#         [Nn]* )
+#             exit 0
+#             ;;
+#         * ) echo "illegal answer: $ans. Upgrade abort!!"
+#             exit 1
+#             ;;
+#     esac
+# fi
 
 echo 'Trying to start mysql server...'
 chown -R 10000:10000 /var/lib/mysql
 mysqld &
+echo 'Waiting for MySQL start...'
 for i in {60..0}; do
     mysqladmin -u$DB_USR -p$DB_PWD processlist >/dev/null 2>&1
     if [ $? = 0 ]; then
         break
     fi
-    echo 'Waiting for MySQL start...'
     sleep 1
 done
 if [ "$i" = 0 ]; then
     echo "timeout. Can't run mysql server."
     if [[ $1 = "test" ]]; then
-        echo "test failed."
+        echo "DB test failed."
     fi
     exit 1
 fi
 if [[ $1 = "test" ]]; then
-    echo "test passed."
+    echo "DB test passed."
     exit 0
 fi
 
@@ -84,39 +83,40 @@ up|upgrade)
             mysql $DBCNF -e "insert into registry.alembic_version values ('0.1.1')"
         fi
     fi
-    alembic -c ./alembic.ini current
-    alembic -c ./alembic.ini upgrade ${VERSION}
+    alembic -c /harbor-migration/db/alembic.ini current
+    alembic -c /harbor-migration/db/alembic.ini upgrade ${VERSION}
     rc="$?"
-    alembic -c ./alembic.ini current	
+    alembic -c /harbor-migration/db/alembic.ini current	
     echo "Upgrade performed."
-    echo $rc
     exit $rc	
     ;;
 backup)
     echo "Performing backup..."
-    mysqldump $DBCNF --add-drop-database --databases registry > ./backup/registry.sql
+    mysqldump $DBCNF --add-drop-database --databases registry > /harbor-migration/backup/registry.sql
+    rc="$?"
     echo "Backup performed."
+    exit $rc
     ;;
 export)
     echo "Performing export..."
-    ./export --dbuser ${DB_USR} --dbpwd ${DB_PWD} --exportpath ${EXPORTPATH}
+    /harbor-migration/db/export --dbuser ${DB_USR} --dbpwd ${DB_PWD} --exportpath ${EXPORTPATH}
     rc="$?"
     echo "Export performed."
-    echo $rc
     exit $rc
     ;;
 mapprojects)
     echo "Performing map projects..."
-    ./mapprojects --dbuser ${DB_USR} --dbpwd ${DB_PWD} --mapprojectsfile ${MAPPROJECTFILE}
+    /harbor-migration/db/mapprojects --dbuser ${DB_USR} --dbpwd ${DB_PWD} --mapprojectsfile ${MAPPROJECTFILE}
     rc="$?"
     echo "Map projects performed."
-    echo $rc
     exit $rc
     ;;
 restore)
     echo "Performing restore..."
-    mysql $DBCNF < ./backup/registry.sql
+    mysql $DBCNF < /harbor-migration/backup/registry.sql
+    rc="$?"
     echo "Restore performed."
+    exit $rc
     ;;
 *)
     echo "unknown option"

@@ -161,6 +161,7 @@
         "REPLICATION": "Réplication",
         "USERS": "Membres",
         "LOGS": "Logs",
+        "LABELS": "Labels",
         "PROJECTS": "Projets",
         "CONFIG": "Configuration"
     },
@@ -345,6 +346,7 @@
         "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Un tag signé ne peut être supprimé",
         "DELETION_SUMMARY_TAG_DENIED": "La balise doit être supprimée du Résumé avant qu'elle ne puisse être supprimée. \nSupprimer du Résumé via cette commande: \n{{param}}",
+        "TAGS_NO_DELETE": "Upload/Delete is prohibited in read only mode.",
         "FILTER_FOR_REPOSITORIES": "Filtrer les Dépôts",
         "TAG": "Tag",
         "SIZE": "Taille",
@@ -366,6 +368,10 @@
         "NOTARY_IS_UNDETERMINED": "Ne peut pas déterminer la signature de ce tag.",
         "PLACEHOLDER": "Nous ne trouvons aucun dépôt !",
         "IMAGE": "Images",
+        "LABELS": "Labels",
+        "ADD_TO_IMAGE": "Add labels to this image",
+        "FILTER_BY_LABEL": "Filter images by label",
+        "ADD_LABELS": "Add labels",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info"
@@ -390,7 +396,7 @@
         "AUTH": "Identification",
         "REPLICATION": "Réplication",
         "EMAIL": "Email",
-        "LABEL": "Label",
+        "LABEL": "Labels",
         "SYSTEM": "Réglages Système",
         "CONFIRM_TITLE": "Confirmer pour annuler",
         "CONFIRM_SUMMARY": "Certaines modifications n'ont pas été sauvegardées. Voulez-vous les défaire ?",
@@ -431,6 +437,7 @@
             "PRO_CREATION_RESTRICTION": "L'indicateur pour définir quels utilisateurs ont le droit de créer des projets. Par défaut, tout le monde peut créer un projet. Définissez sur 'Administrateur Seulement' pour que seul un administrateur puisse créer un projet.",
             "ROOT_CERT_DOWNLOAD": "Téléchargez le certificat racine du dépôt.",
             "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours."
+            "REPO_TOOLTIP": "If true, means maintenance in Progress. During this period, you cannot delete repository, tag and push image."
         },
         "LDAP": {
             "URL": "URL LDAP",
@@ -562,10 +569,29 @@
     "LABEL": {
         "LABEL": "Label",
         "DESCRIPTION": "Description",
-        "CREATION_TIME": "Creation Time"
+        "CREATION_TIME": "Creation Time",
+        "NEW_LABEL": "New Label",
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "LABEL_NAME": "Label Name",
+        "COLOR": "Color",
+        "FILTER_Label_PLACEHOLDER": "Filter Labels",
+        "NO_LABELS": "No labels",
+        "DELETION_TITLE_TARGET": "Confirm Label Deletion",
+        "DELETION_SUMMARY_TARGET": "Do you want to delete {{param}}?"
+    },
+    "WEEKLY": {
+        "MONDAY": "Monday",
+        "TUESDAY": "Tuesday",
+        "WEDNESDAY": "Wednesday",
+        "THURSDAY": "Thursday",
+        "FRIDAY": "Friday",
+        "SATURDAY": "Saturday",
+        "SUNDAY": "Sunday"
     },
     "UNKNOWN_ERROR": "Des erreurs inconnues sont survenues. Veuillez réessayer plus tard.",
     "UNAUTHORIZED_ERROR": "Votre session est invalide ou a expiré. Vous devez vous connecter pour continuer votre action.",
+    "REPO_READ_ONLY": "Maintenance in Progress: During this period, you cannot delete repository, tag and push image.",
     "FORBIDDEN_ERROR": "Vous n'avez pas les privilèges appropriés pour effectuer l'action.",
     "GENERAL_ERROR": "Des erreurs sont survenues lors de l'appel à un service : {{param}}.",
     "BAD_REQUEST_ERROR": "Nous ne pouvons pas exécuter votre action à cause d'une mauvaise requête.",
