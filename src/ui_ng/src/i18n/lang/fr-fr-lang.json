@@ -368,6 +368,10 @@
         "NOTARY_IS_UNDETERMINED": "Ne peut pas déterminer la signature de ce tag.",
         "PLACEHOLDER": "Nous ne trouvons aucun dépôt !",
         "IMAGE": "Images",
+        "LABELS": "Labels",
+        "ADD_TO_IMAGE": "Add labels to this image",
+        "FILTER_BY_LABEL": "Filter images by label",
+        "ADD_LABELS": "Add labels",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info"

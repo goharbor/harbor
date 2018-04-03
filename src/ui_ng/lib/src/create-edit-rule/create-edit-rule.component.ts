@@ -157,7 +157,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                 // if input value exit in project list
                 let pro = res.find((data: any) => data.name === name);
                 if (!pro) {
-                  this.noProjectInfo = 'REPLICATION.PROJECT_NOT_EXIST_INFO';
+                  this.noProjectInfo = 'REPLICATION.NO_PROJECT_INFO';
                   this.noSelectedProject = true;
                 } else {
                   this.noProjectInfo = '';
@@ -165,12 +165,12 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
                   this.setProject([pro])
                 }
               } else {
-                this.noProjectInfo = 'REPLICATION.PROJECT_NOT_EXIST_INFO';
+                this.noProjectInfo = 'REPLICATION.NO_PROJECT_INFO';
                 this.noSelectedProject = true;
               }
             }).catch((error: any) => {
               this.errorHandler.error(error);
-              this.noProjectInfo = 'REPLICATION.PROJECT_NOT_EXIST_INFO';
+              this.noProjectInfo = 'REPLICATION.NO_PROJECT_INFO';
               this.noSelectedProject = true;
               });
         });

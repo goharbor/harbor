@@ -30,6 +30,7 @@ import {Label} from "../service/interface";
 
 export class LabelPieceComponent implements OnInit {
     @Input() label: Label;
+    @Input() labelWidth: number;
 
     ngOnInit(): void {
     }

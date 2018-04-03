@@ -111,7 +111,8 @@ export class TagComponent implements OnInit, AfterViewInit {
   labelNameFilter: Subject<string> = new Subject<string> ();
   stickLabelNameFilter: Subject<string> = new Subject<string> ();
   filterOnGoing: boolean;
-
+  stickName = ''
+  filterName = '';
   initFilter = {
     name: '',
     description: '',
@@ -159,12 +160,12 @@ export class TagComponent implements OnInit, AfterViewInit {
         .debounceTime(500)
         .distinctUntilChanged()
         .subscribe((name: string) => {
-          if (name && name.length) {
+          if (this.filterName.length) {
             this.filterOnGoing = true;
             this.imageFilterLabels = [];
 
             this.imageLabels.forEach(data => {
-              if (data.label.name.indexOf(name) !== -1) {
+              if (data.label.name.indexOf(this.filterName) !== -1) {
                 this.imageFilterLabels.push(data);
               }
             })
@@ -178,12 +179,12 @@ export class TagComponent implements OnInit, AfterViewInit {
         .debounceTime(500)
         .distinctUntilChanged()
         .subscribe((name: string) => {
-          if (name && name.length) {
+          if (this.stickName.length) {
             this.filterOnGoing = true;
             this.imageStickLabels = [];
 
             this.imageLabels.forEach(data => {
-              if (data.label.name.indexOf(name) !== -1) {
+              if (data.label.name.indexOf(this.stickName) !== -1) {
                 this.imageStickLabels.push(data);
               }
             })
@@ -385,17 +386,17 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  handleInputFilter($event: string) {
-    if ($event && $event.length) {
-      this.labelNameFilter.next($event);
+  handleInputFilter() {
+    if (this.filterName.length) {
+      this.labelNameFilter.next(this.filterName);
     }else {
       this.imageFilterLabels = clone(this.imageLabels);
     }
   }
 
-  handleStickInputFilter($event: string) {
-    if ($event && $event.length) {
-      this.stickLabelNameFilter.next($event);
+  handleStickInputFilter() {
+    if (this.stickName.length) {
+      this.stickLabelNameFilter.next(this.stickName);
     }else {
       this.imageStickLabels = clone(this.imageLabels);
     }
