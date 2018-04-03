@@ -181,10 +181,6 @@ watchAddInfoEvent(repo: RepositoryItem): void {
 
 **hasProjectAdminRole** is a user session related property to determined whether the current user has project administrator role. Some action menus might be disabled based on this property.
 
-**withClair** is Clair installed
-
-**withNotary** is Notary installed
-
 **tagClickEvent** is an @output event emitter for you to catch the tag click events.
 
 **goBackClickEvent** is an @output event emitter for you to catch the go back events.
