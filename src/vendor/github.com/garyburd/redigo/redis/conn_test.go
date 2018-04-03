@@ -34,14 +34,16 @@ import (
 type testConn struct {
 	io.Reader
 	io.Writer
+	readDeadline  time.Time
+	writeDeadline time.Time
 }
 
-func (*testConn) Close() error                       { return nil }
-func (*testConn) LocalAddr() net.Addr                { return nil }
-func (*testConn) RemoteAddr() net.Addr               { return nil }
-func (*testConn) SetDeadline(t time.Time) error      { return nil }
-func (*testConn) SetReadDeadline(t time.Time) error  { return nil }
-func (*testConn) SetWriteDeadline(t time.Time) error { return nil }
+func (*testConn) Close() error                         { return nil }
+func (*testConn) LocalAddr() net.Addr                  { return nil }
+func (*testConn) RemoteAddr() net.Addr                 { return nil }
+func (c *testConn) SetDeadline(t time.Time) error      { c.readDeadline = t; c.writeDeadline = t; return nil }
+func (c *testConn) SetReadDeadline(t time.Time) error  { c.readDeadline = t; return nil }
+func (c *testConn) SetWriteDeadline(t time.Time) error { c.writeDeadline = t; return nil }
 
 func dialTestConn(r string, w io.Writer) redis.DialOption {
 	return redis.DialNetDial(func(network, addr string) (net.Conn, error) {
@@ -820,4 +822,46 @@ Bjqn3yoLHaoZVvbWOi0C2TCN4FjXjaLNZGifQPbIcaA=
 
 	clientTLSConfig.RootCAs = x509.NewCertPool()
 	clientTLSConfig.RootCAs.AddCert(certificate)
+}
+
+func TestWithTimeout(t *testing.T) {
+	for _, recv := range []bool{true, false} {
+		for _, defaultTimout := range []time.Duration{0, time.Minute} {
+			var buf bytes.Buffer
+			nc := &testConn{Reader: strings.NewReader("+OK\r\n+OK\r\n+OK\r\n+OK\r\n+OK\r\n+OK\r\n+OK\r\n+OK\r\n+OK\r\n+OK\r\n"), Writer: &buf}
+			c, _ := redis.Dial("", "", redis.DialReadTimeout(defaultTimout), redis.DialNetDial(func(network, addr string) (net.Conn, error) { return nc, nil }))
+			for i := 0; i < 4; i++ {
+				var minDeadline, maxDeadline time.Time
+
+				// Alternate between default and specified timeout.
+				if i%2 == 0 {
+					if defaultTimout != 0 {
+						minDeadline = time.Now().Add(defaultTimout)
+					}
+					if recv {
+						c.Receive()
+					} else {
+						c.Do("PING")
+					}
+					if defaultTimout != 0 {
+						maxDeadline = time.Now().Add(defaultTimout)
+					}
+				} else {
+					timeout := 10 * time.Minute
+					minDeadline = time.Now().Add(timeout)
+					if recv {
+						redis.ReceiveWithTimeout(c, timeout)
+					} else {
+						redis.DoWithTimeout(c, timeout, "PING")
+					}
+					maxDeadline = time.Now().Add(timeout)
+				}
+
+				// Expect set deadline in expected range.
+				if nc.readDeadline.Before(minDeadline) || nc.readDeadline.After(maxDeadline) {
+					t.Errorf("recv %v, %d: do deadline error: %v, %v, %v", recv, i, minDeadline, nc.readDeadline, maxDeadline)
+				}
+			}
+		}
+	}
 }

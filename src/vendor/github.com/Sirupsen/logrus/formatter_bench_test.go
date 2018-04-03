@@ -80,11 +80,14 @@ func BenchmarkLargeJSONFormatter(b *testing.B) {
 }
 
 func doBenchmark(b *testing.B, formatter Formatter, fields Fields) {
+	logger := New()
+
 	entry := &Entry{
 		Time:    time.Time{},
 		Level:   InfoLevel,
 		Message: "message",
 		Data:    fields,
+		Logger:  logger,
 	}
 	var d []byte
 	var err error

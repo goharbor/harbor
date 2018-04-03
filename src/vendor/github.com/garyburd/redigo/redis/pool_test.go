@@ -231,7 +231,7 @@ func TestPoolTimeout(t *testing.T) {
 
 	d.check("1", p, 1, 1, 0)
 
-	now = now.Add(p.IdleTimeout)
+	now = now.Add(p.IdleTimeout + 1)
 
 	c = p.Get()
 	c.Do("PING")
@@ -444,9 +444,6 @@ func startGoroutines(p *redis.Pool, cmd string, args ...interface{}) chan error 
 			errs <- err
 		}()
 	}
-
-	// Wait for goroutines to block.
-	time.Sleep(time.Second / 4)
 
 	return errs
 }
