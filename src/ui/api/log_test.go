@@ -15,96 +15,82 @@ package api
 
 import (
 	"fmt"
-	"strconv"
+	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/tests/apitests/apilib"
 )
 
 func TestLogGet(t *testing.T) {
 	fmt.Println("Testing Log API")
-	apiTest := newHarborAPI()
-	assert := assert.New(t)
 
-	CommonAddUser()
+	var projectID int64 = 1
+	username := "user_for_testing_log_api"
+	repository := "repository_for_testing_log_api"
+	tag := "tag_for_testing_log_api"
+	operation := "op_for_test_log_api"
+	now := time.Now()
+	err := dao.AddAccessLog(models.AccessLog{
+		ProjectID: projectID,
+		Username:  username,
+		RepoName:  repository,
+		RepoTag:   tag,
+		Operation: operation,
+		OpTime:    now,
+	})
+	require.Nil(t, err)
+	defer dao.GetOrmer().QueryTable(&models.AccessLog{}).
+		Filter("username", username).Delete()
 
-	statusCode, result, err := apiTest.LogGet(*testUser)
-	assert.Nil(err)
-	assert.Equal(200, statusCode)
-
-	logNum := len(result)
-
-	fmt.Println("add the project first.")
-	project := apilib.ProjectReq{
-		ProjectName: "project_for_test_log",
-		Metadata:    map[string]string{models.ProMetaPublic: "true"},
+	url := "/api/logs"
+	// 401
+	cc := &codeCheckingCase{
+		request: &testingRequest{
+			method: http.MethodGet,
+			url:    url,
+		},
+		code: http.StatusUnauthorized,
 	}
+	runCodeCheckingCases(t, cc)
 
-	reply, err := apiTest.ProjectsPost(*testUser, project)
-	if err != nil {
-		t.Error("Error while creat project", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(201), reply, "Case 2: Project creation status should be 201")
+	// 200, empty log list
+	c := &testingRequest{
+		method:     http.MethodGet,
+		url:        url,
+		credential: nonSysAdmin,
+		queryStruct: struct {
+			Username       string `url:"username"`
+			Repository     string `url:"repository"`
+			Tag            string `url:"tag"`
+			Operation      string `url:"operation"`
+			BeginTimestamp int64  `url:"begin_timestamp"`
+			EndTimestamp   int64  `url:"end_timestamp"`
+		}{
+			Username:       username,
+			Repository:     repository,
+			Tag:            tag,
+			Operation:      operation,
+			BeginTimestamp: now.Add(-1 * time.Second).Unix(),
+			EndTimestamp:   now.Add(1 * time.Second).Unix(),
+		},
 	}
-	//case 1: right parameters, expect the right output
-	statusCode, result, err = apiTest.LogGet(*testUser)
-	if err != nil {
-		t.Error("Error while get log information", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(logNum+1, len(result), "lines of logs should be equal")
-		num, index := getLog(result)
-		if num != 1 {
-			assert.Equal(1, num, "add my_project log number should be 1")
-		} else {
-			assert.Equal("project_for_test_log/", result[index].RepoName)
-			assert.Equal("N/A", result[index].RepoTag, "RepoTag should be equal")
-			assert.Equal("create", result[index].Operation, "Operation should be equal")
-		}
-	}
-	fmt.Println("log ", result)
+	logs := []*models.AccessLog{}
+	err = handleAndParse(c, &logs)
+	require.Nil(t, err)
+	require.Equal(t, 0, len(logs))
 
-	//get the project
-	var projects []apilib.Project
-	var addProjectID int32
-	httpStatusCode, projects, err := apiTest.ProjectsGet(
-		&apilib.ProjectQuery{
-			Name:   project.ProjectName,
-			Owner:  testUser.Name,
-			Public: true,
-		})
-	if err != nil {
-		t.Error("Error while search project by proName and isPublic", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
-		addProjectID = projects[0].ProjectId
-	}
-
-	//delete the project
-	projectID := strconv.Itoa(int(addProjectID))
-	httpStatusCode, err = apiTest.ProjectsDelete(*testUser, projectID)
-	if err != nil {
-		t.Error("Error while delete project", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(int(200), httpStatusCode, "Case 1: Project creation status should be 200")
-		//t.Log(result)
-	}
-	CommonDelUser()
-	fmt.Printf("\n")
-}
-
-func getLog(result []apilib.AccessLog) (int, int) {
-	var num, index int
-	for i := 0; i < len(result); i++ {
-		if result[i].RepoName == "project_for_test_log/" {
-			num++
-			index = i
-		}
-	}
-	return num, index
+	// 200
+	c.credential = projGuest
+	err = handleAndParse(c, &logs)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(logs))
+	assert.Equal(t, projectID, logs[0].ProjectID)
+	assert.Equal(t, username, logs[0].Username)
+	assert.Equal(t, repository, logs[0].RepoName)
+	assert.Equal(t, tag, logs[0].RepoTag)
+	assert.Equal(t, operation, logs[0].Operation)
 }
