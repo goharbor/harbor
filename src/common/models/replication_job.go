@@ -26,6 +26,8 @@ const (
 	RepOpTransfer string = "transfer"
 	//RepOpDelete represents the operation of a job to remove repository from a remote registry/harbor instance.
 	RepOpDelete string = "delete"
+	//RepOpSchedule represents the operation of a job to schedule the real replication process
+	RepOpSchedule string = "schedule"
 	//UISecretCookie is the cookie name to contain the UI secret
 	UISecretCookie string = "secret"
 	//RepTargetTable is the table name for replication targets
@@ -61,6 +63,7 @@ type RepJob struct {
 	Operation  string   `orm:"column(operation)" json:"operation"`
 	Tags       string   `orm:"column(tags)" json:"-"`
 	TagList    []string `orm:"-" json:"tags"`
+	UUID       string   `orm:"column(job_uuid)" json:"-"`
 	//	Policy       RepPolicy `orm:"-" json:"policy"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
@@ -120,4 +123,15 @@ func (r *RepJob) TableName() string {
 //TableName is required by by beego orm to map RepPolicy to table replication_policy
 func (r *RepPolicy) TableName() string {
 	return RepPolicyTable
+}
+
+// RepJobQuery holds query conditions for replication job
+type RepJobQuery struct {
+	PolicyID   int64
+	Repository string
+	Statuses   []string
+	Operations []string
+	StartTime  *time.Time
+	EndTime    *time.Time
+	Pagination
 }

@@ -26,7 +26,7 @@ func TestAddAuthorizationOfBasicAuthCredential(t *testing.T) {
 		t.Fatalf("failed to create request: %v", err)
 	}
 
-	cred.AddAuthorization(req)
+	cred.Modify(req)
 
 	usr, pwd, ok := req.BasicAuth()
 	if !ok {
@@ -53,7 +53,7 @@ func TestAddAuthorizationOfCookieCredential(t *testing.T) {
 		t.Fatalf("failed to create request: %v", err)
 	}
 
-	cred.AddAuthorization(req)
+	cred.Modify(req)
 
 	ck, err := req.Cookie("name")
 	if err != nil {

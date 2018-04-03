@@ -5,7 +5,6 @@ RUN mkdir /harbor/ \
     && tdnf install sudo -y >> /dev/null\
     && tdnf clean all \
     && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor 
-HEALTHCHECK CMD curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/api/jobs/replication/1/log|grep 401
 
 COPY ./make/photon/jobservice/start.sh ./make/dev/jobservice/harbor_jobservice /harbor/
 

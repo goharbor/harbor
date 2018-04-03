@@ -1,0 +1,30 @@
+---
+#Protocol used to serve
+protocol: "http"
+
+#Config certification if use 'https' protocol
+#https_config:
+#  cert: "server.crt"
+#  key: "server.key"
+
+#Server listening port
+port: 8080
+
+#Worker pool
+worker_pool:
+  #0 means unlimited
+  workers: 10
+  backend: "redis"
+  #Additional config if use 'redis' backend
+  #TODO: switch to internal redis endpoint and namespace.
+  redis_pool:
+    host: "redis"
+    port: 6379
+    namespace: "harbor_job_service_namespace"
+#Logger for job
+logger:
+  path: "/var/log/jobs"
+  level: "INFO"
+  archive_period: 14 #days
+#Admin server endpoint
+admin_server: "http://adminserver:8080/"

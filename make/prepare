@@ -290,7 +290,7 @@ adminserver_conf_env = os.path.join(config_dir, "adminserver", "env")
 ui_conf_env = os.path.join(config_dir, "ui", "env")
 ui_conf = os.path.join(config_dir, "ui", "app.conf")
 ui_cert_dir = os.path.join(config_dir, "ui", "certificates")
-jobservice_conf = os.path.join(config_dir, "jobservice", "app.conf")
+jobservice_conf = os.path.join(config_dir, "jobservice", "config.yml")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
 db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
@@ -419,7 +419,7 @@ render(os.path.join(templates_dir, "log", "logrotate.conf"),
 		log_rotate_size=log_rotate_size)
 
 print("Generated configuration file: %s" % jobservice_conf)
-shutil.copyfile(os.path.join(templates_dir, "jobservice", "app.conf"), jobservice_conf)
+shutil.copyfile(os.path.join(templates_dir, "jobservice", "config.yml"), jobservice_conf)
 
 print("Generated configuration file: %s" % ui_conf)
 shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)

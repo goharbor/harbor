@@ -31,7 +31,6 @@ import (
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/utils/log"
-	jobservice_client "github.com/vmware/harbor/src/jobservice/client"
 	"github.com/vmware/harbor/src/ui/promgr"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
@@ -58,8 +57,6 @@ var (
 	AdmiralClient *http.Client
 	// TokenReader is used in integration mode to read token
 	TokenReader admiral.TokenReader
-	// GlobalJobserviceClient is a global client for jobservice
-	GlobalJobserviceClient jobservice_client.Client
 
 	defaultCACertPath = "/etc/ui/ca/ca.crt"
 )
@@ -102,12 +99,6 @@ func InitByURL(adminServerURL string) error {
 		log.Errorf("Failed to initialise project manager, error: %v", err)
 		return err
 	}
-
-	//TODO: No longer needed after shifting to the new job service.
-	GlobalJobserviceClient = jobservice_client.NewDefaultClient(InternalJobServiceURL(),
-		&jobservice_client.Config{
-			Secret: UISecret(),
-		})
 
 	return nil
 }
@@ -321,17 +312,20 @@ func InternalJobServiceURL() string {
 	return strings.TrimSuffix(cfg[common.JobServiceURL].(string), "/")
 }
 
-// InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
-func InternalTokenServiceEndpoint() string {
-	uiURL := common.DefaultUIEndpoint
+// InternalUIURL returns the local ui url
+func InternalUIURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to Get job service UI URL from backend, error: %v, will use default value.")
-
-	} else {
-		uiURL = cfg[common.UIURL].(string)
+		log.Warningf("Failed to Get job service UI URL from backend, error: %v, will return default value.")
+		return common.DefaultUIEndpoint
 	}
-	return strings.TrimSuffix(uiURL, "/") + "/service/token"
+	return strings.TrimSuffix(cfg[common.UIURL].(string), "/")
+
+}
+
+// InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
+func InternalTokenServiceEndpoint() string {
+	return InternalUIURL() + "/service/token"
 }
 
 // InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers

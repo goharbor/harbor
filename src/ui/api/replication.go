@@ -41,7 +41,7 @@ func (r *ReplicationAPI) Prepare() {
 		return
 	}
 
-	if !r.SecurityCtx.IsSysAdmin() {
+	if !r.SecurityCtx.IsSysAdmin() && !r.SecurityCtx.IsSolutionUser() {
 		r.HandleForbidden(r.SecurityCtx.GetUsername())
 		return
 	}
@@ -63,8 +63,10 @@ func (r *ReplicationAPI) Post() {
 		return
 	}
 
-	_, count, err := dao.FilterRepJobs(replication.PolicyID, "",
-		[]string{models.JobRunning, models.JobPending}, nil, nil, 1, 0)
+	count, err := dao.GetTotalCountOfRepJobs(&models.RepJobQuery{
+		PolicyID: replication.PolicyID,
+		Statuses: []string{models.RepOpTransfer, models.RepOpDelete},
+	})
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to filter jobs of policy %d: %v",
 			replication.PolicyID, err))

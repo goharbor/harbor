@@ -3,7 +3,7 @@ sudo: true
 language: go
 
 go: 
-  - 1.7.3
+  - 1.9.2
 
 go_import_path: github.com/vmware/harbor
 
@@ -28,11 +28,13 @@ env:
   AUTH_MODE: db_auth
   SELF_REGISTRATION: on
   KEY_PATH: /data/secretkey
+  REDIS_HOST: localhost
 
 before_install:
    - sudo ./tests/hostcfg.sh
    - sudo ./tests/generateCerts.sh
    - sudo ./make/prepare
+   - sudo mkdir -p "/data/redis"
 
 install: 
   - sudo apt-get update && sudo apt-get install -y libldap2-dev 
@@ -114,6 +116,7 @@ script:
   - ./tests/swaggerchecker.sh
   - ./tests/startuptest.sh
   - ./tests/userlogintest.sh ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
+  - export REDIS_HOST=$IP
 
 #  - sudo ./tests/testprepare.sh
 #  - go test -v ./tests/apitests

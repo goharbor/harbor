@@ -15,8 +15,12 @@
 package target
 
 import (
+	"fmt"
+
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // Manager defines the methods that a target manager should implement
@@ -34,5 +38,26 @@ func NewDefaultManager() *DefaultManager {
 
 // GetTarget ...
 func (d *DefaultManager) GetTarget(id int64) (*models.RepTarget, error) {
-	return dao.GetRepTarget(id)
+	target, err := dao.GetRepTarget(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if target == nil {
+		return nil, fmt.Errorf("target '%d' does not exist", id)
+	}
+
+	// decrypt the password
+	if len(target.Password) > 0 {
+		key, err := config.SecretKey()
+		if err != nil {
+			return nil, err
+		}
+		pwd, err := utils.ReversibleDecrypt(target.Password, key)
+		if err != nil {
+			return nil, err
+		}
+		target.Password = pwd
+	}
+	return target, nil
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/utils"
 
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -29,6 +30,7 @@ type ScanJobAPI struct {
 	BaseController
 	jobID       int64
 	projectName string
+	jobUUID     string
 }
 
 // Prepare validates that whether user has read permission to the project of the repo the scan job scanned.
@@ -55,14 +57,21 @@ func (sj *ScanJobAPI) Prepare() {
 		sj.HandleForbidden(sj.SecurityCtx.GetUsername())
 	}
 	sj.projectName = projectName
+	sj.jobUUID = data.UUID
 }
 
 //GetLog ...
 func (sj *ScanJobAPI) GetLog() {
-	url := buildJobLogURL(strconv.FormatInt(sj.jobID, 10), ScanJobType)
-	err := utils.RequestAsUI(http.MethodGet, url, nil, utils.NewJobLogRespHandler(&sj.BaseAPI))
+	logBytes, err := utils.GetJobServiceClient().GetJobLog(sj.jobUUID)
 	if err != nil {
-		sj.RenderError(http.StatusInternalServerError, err.Error())
+		sj.HandleInternalServerError(fmt.Sprintf("Failed to get job logs, uuid: %s, error: %v", sj.jobUUID, err))
 		return
 	}
+	sj.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(logBytes)))
+	sj.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
+	_, err = sj.Ctx.ResponseWriter.Write(logBytes)
+	if err != nil {
+		sj.HandleInternalServerError(fmt.Sprintf("Failed to write job logs, uuid: %s, error: %v", sj.jobUUID, err))
+	}
+
 }

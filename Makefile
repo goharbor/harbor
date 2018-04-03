@@ -103,6 +103,7 @@ MARIADBVERSION=$(VERSIONTAG)
 CLAIRVERSION=v2.0.1
 CLAIRDBVERSION=$(VERSIONTAG)
 MIGRATORVERSION=1.4
+REDISVERSION=$(VERSIONTAG)
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
@@ -282,7 +283,7 @@ build:
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG) -e MARIADBVERSION=$(MARIADBVERSION) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e NGINXVERSION=$(NGINXVERSION) -e NOTARYVERSION=$(NOTARYVERSION) \
 	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRDBVERSION=$(CLAIRDBVERSION) -e VERSIONTAG=$(VERSIONTAG) \
-	 -e BUILDBIN=$(BUILDBIN)
+	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION)
 
 modify_composefile: modify_composefile_notary modify_composefile_clair
 	@echo "preparing docker-compose file..."
@@ -294,6 +295,7 @@ modify_composefile: modify_composefile_notary modify_composefile_clair
 	@$(SEDCMD) -i 's/__reg_version__/$(REGISTRYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i 's/__redis_version__/$(REDISVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 modify_composefile_notary:
 	@echo "preparing docker-compose notary file..."
