@@ -47,14 +47,10 @@ const TabLinkContentMap: {[index: string]: string} = {
 export class RepositoryComponent implements OnInit {
   signedCon: {[key: string]: any | string[]} = {};
   @Input() projectId: number;
-  @Input() projectName: string;
   @Input() repoName: string;
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
   @Input() isGuest: boolean;
-  @Input() withNotary: boolean;
-  @Input() withClair: boolean;
-  @Input() withAdmiral: boolean;
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
   @Output() backEvt: EventEmitter<any> = new EventEmitter<any>();
 
@@ -83,6 +79,18 @@ export class RepositoryComponent implements OnInit {
 
   public get registryUrl(): string {
     return this.systemInfo ? this.systemInfo.registry_url : '';
+  }
+
+  public get withNotary(): boolean {
+    return this.systemInfo ? this.systemInfo.with_notary : false;
+  }
+
+  public get withClair(): boolean {
+    return this.systemInfo ? this.systemInfo.with_clair : false;
+  }
+
+  public get withAdmiral(): boolean {
+    return this.systemInfo ? this.systemInfo.with_admiral : false;
   }
 
   ngOnInit(): void {

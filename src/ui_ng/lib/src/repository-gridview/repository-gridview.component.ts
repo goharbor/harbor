@@ -76,8 +76,22 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     return this.systemInfo ? this.systemInfo.registry_url : '';
   }
 
+  public get withClair(): boolean {
+    return this.systemInfo ? this.systemInfo.with_clair : false;
+  }
+
+  public get isClairDBReady(): boolean {
+    return this.systemInfo &&
+      this.systemInfo.clair_vulnerability_status &&
+      this.systemInfo.clair_vulnerability_status.overall_last_update > 0;
+  }
+
   public get withAdmiral(): boolean {
     return this.systemInfo ? this.systemInfo.with_admiral : false;
+  }
+
+  public get showDBStatusWarning(): boolean {
+    return this.withClair && !this.isClairDBReady;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
