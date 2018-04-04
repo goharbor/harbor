@@ -50,6 +50,10 @@ func QueryUserGroup(query models.UserGroup) ([]*models.UserGroup, error) {
 		sql += ` and ldap_group_dn = ? `
 		sqlParam = append(sqlParam, query.LdapGroupDN)
 	}
+	if query.ID != 0 {
+		sql += ` and id = ? `
+		sqlParam = append(sqlParam, query.ID)
+	}
 	_, err := o.Raw(sql, sqlParam).QueryRows(&groups)
 	if err != nil {
 		return nil, err
@@ -60,12 +64,14 @@ func QueryUserGroup(query models.UserGroup) ([]*models.UserGroup, error) {
 // GetUserGroup ...
 func GetUserGroup(id int) (*models.UserGroup, error) {
 	userGroup := models.UserGroup{ID: id}
-	o := dao.GetOrmer()
-	err := o.Read(&userGroup)
+	userGroupList, err := QueryUserGroup(userGroup)
 	if err != nil {
 		return nil, err
 	}
-	return &userGroup, nil
+	if len(userGroupList) > 0 {
+		return userGroupList[0], nil
+	}
+	return nil, nil
 }
 
 // DeleteUserGroup ...
@@ -91,4 +97,31 @@ func UpdateUserGroupName(id int, groupName string) error {
 	sql := "update user_group set group_name = ? where id =  ? "
 	_, err := o.Raw(sql, groupName, id).Exec()
 	return err
+}
+
+// OnBoardUserGroup will check if a usergroup exists in usergroup table, if not insert the usergroup and
+// put the id in the pointer of usergroup model, if it does exist, return the usergroup's profile.
+// This is used for ldap and uaa authentication, such the usergroup can have an ID in Harbor.
+// the keyAttribute and combinedKeyAttribute are key columns used to check duplicate usergroup in harbor
+func OnBoardUserGroup(g *models.UserGroup, keyAttribute string, combinedKeyAttributes ...string) error {
+	o := dao.GetOrmer()
+	created, ID, err := o.ReadOrCreate(g, keyAttribute, combinedKeyAttributes...)
+	if err != nil {
+		return err
+	}
+
+	if created {
+		g.ID = int(ID)
+	} else {
+		prevGroup, err := GetUserGroup(int(ID))
+		if err != nil {
+			return err
+		}
+		g.ID = prevGroup.ID
+		g.GroupName = prevGroup.GroupName
+		g.GroupType = prevGroup.GroupType
+		g.LdapGroupDN = prevGroup.LdapGroupDN
+	}
+
+	return nil
 }

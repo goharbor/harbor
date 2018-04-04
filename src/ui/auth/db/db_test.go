@@ -126,7 +126,7 @@ func TestSearchUser(t *testing.T) {
 
 }
 
-func TestAuthenticateHelperOnboardUser(t *testing.T) {
+func TestAuthenticateHelperOnBoardUser(t *testing.T) {
 	user := models.User{
 		Username: "test01",
 		Realname: "test01",

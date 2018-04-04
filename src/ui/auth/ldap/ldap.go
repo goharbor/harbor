@@ -19,7 +19,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/vmware/harbor/src/common"
+
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/dao/group"
 	"github.com/vmware/harbor/src/common/models"
 	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -128,6 +131,45 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 	}
 
 	return &user, nil
+}
+
+//SearchGroup -- Search group in ldap authenticator, groupKey is LDAP group DN.
+func (l *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
+	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
+
+	if err != nil {
+		return nil, fmt.Errorf("can not load system ldap config: %v", err)
+	}
+
+	if err = ldapSession.Open(); err != nil {
+		log.Warningf("ldap connection fail: %v", err)
+		return nil, err
+	}
+	defer ldapSession.Close()
+	userGroupList, err := ldapSession.SearchGroupByDN(groupKey)
+
+	if err != nil {
+		log.Warningf("ldap search group fail: %v", err)
+		return nil, err
+	}
+
+	if len(userGroupList) == 0 {
+		return nil, fmt.Errorf("Failed to searh ldap group with groupDN:%v", groupKey)
+	}
+	userGroup := models.UserGroup{
+		GroupName:   userGroupList[0].GroupName,
+		LdapGroupDN: userGroupList[0].GroupDN,
+	}
+	return &userGroup, nil
+}
+
+// OnBoardGroup -- Create Group in harbor DB, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
+func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
+	if len(altGroupName) > 0 {
+		u.GroupName = altGroupName
+	}
+	u.GroupType = common.LdapGroupType
+	return group.OnBoardUserGroup(u, "LdapGroupDN", "GroupType")
 }
 
 //PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser

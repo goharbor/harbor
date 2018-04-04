@@ -627,6 +627,167 @@ paths:
           description: Project ID does not exist.
         '500':
           description: Unexpected internal errors.
+  '/projects/{project_id}/projectmembers':
+    get:
+     summary: Get all project member information
+     description: Get all project member information
+     parameters:
+      - name: project_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant project ID.
+     tags:
+      - Products
+     responses:
+      '200':
+        description: Get project members successfully.
+        schema:
+          type: array
+          items: 
+            $ref: '#/definitions/ProjectMemberEntity'
+      '400':
+        description: The project id is invalid.
+      '401':
+        description: User need to log in first.
+      '403':
+        description: User in session does not have permission to the project.
+      '404':
+        description: Project ID does not exist.
+      '500':
+        description: Unexpected internal errors.
+    post:
+      summary: Create project member
+      description: >-
+        Create project member relationship, the member can be one of the user_member and group_member, 
+        The user_member need to specify user_id or username. If the user already exist in harbor DB, specify the user_id, 
+        If does not exist in harbor DB, it will SearchAndOnBoard the user.
+        The group_member need to specify id or ldap_group_dn. If the group already exist in harbor DB. specify the user group's id, 
+        If does not exist, it will SearchAndOnBoard the group. 
+      tags:
+       - Products
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: project_member
+          in: body
+          schema:
+            $ref: '#/definitions/ProjectMember'
+      responses:
+        '201':
+          description: Project member created successfully.
+        '400':
+          description: Illegal format of project member or project id is invalid.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the project.
+        '404':
+          description: Project does not exist.
+        '500':
+          description: Unexpected internal errors.  
+  '/projects/{project_id}/projectmembers/{mid}':
+    get:
+     summary: Get the project member information
+     description: Get the project member information
+     tags:
+      - Products
+     parameters:
+      - name: project_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant project ID.
+      - name: mid
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: The member ID
+     responses:
+        '200':
+          description: Project member retrieved successfully.
+          schema:
+            $ref: '#/definitions/ProjectMemberEntity'
+        '400':
+          description: Illegal format of project member or invalid project id, member id.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the project.
+        '404':
+          description: Project or projet member does not exist.
+        '500':
+          description: Unexpected internal errors.  
+    put:
+     summary: Update project member
+     description: Update project member relationship
+     tags:
+        - Products
+     parameters:
+      - name: project_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant project ID.
+      - name: mid
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Member ID.  
+      - name: role
+        in: body
+        schema:
+          $ref: '#/definitions/RoleRequest'
+     responses:
+      '200':
+        description: Project member updated successfully.
+      '400':
+        description: Invalid role id, it should be 1,2 or 3, or invalid project id, or invalid member id.
+      '401':
+        description: User need to log in first.
+      '403':
+        description: User in session does not have permission to the project.
+      '404':
+        description: project or project member does not exist.
+      '500':
+        description: Unexpected internal errors.           
+    delete:
+     summary: Delete project member
+     tags:
+      - Products
+     parameters:
+      - name: project_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant project ID.
+      - name: mid
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Member ID.  
+     responses:
+      '200':
+        description: Project member deleted successfully.
+      '400':
+        description: The project id or project member id is invalid.
+      '401':
+        description: User need to log in first.
+      '403':
+        description: User in session does not have permission to the project.
+      '500':
+        description: Unexpected internal errors.  
   /statistics:
     get:
       summary: Get projects number and repositories number relevant to the user
@@ -2307,8 +2468,153 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
+  /ldap/groups/search:
+    get:
+      summary: Search available ldap groups.
+      description: >
+        This endpoint searches the available ldap groups based on related
+        configuration parameters. Support searched by input ladp configuration,
+        load configuration from the system and specific filter.
+      parameters:
+        - name: groupname
+          in: query
+          type: string
+          required: false
+          description: Ldap group name
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Search ldap group successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserGroup'
+        '500':
+          description: Unexpected internal errors.
+  /usergroups:
+   get:
+    summary: Get all user groups information
+    description: Get all user groups information
+    tags:
+     - Products
+    responses:
+      '200':
+        description: Get user group successfully.
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/UserGroup'
+      '401':
+        description: User need to log in first.
+      '403':
+        description: User in session does not have permission to the user group.
+      '500':
+        description: Unexpected internal errors.      
+   post:
+      summary: Create user group
+      description: Create user group information
+      tags:
+        - Products    
+      parameters:
+        - name: usergroup
+          in: body
+          schema:
+            $ref: '#/definitions/UserGroup'
+      responses:
+        '201':
+          description: User group created successfully.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the user group.
+        '404':
+          description: The LDAP group is not found.  
+        '409':
+          description: An LDAP user group with same DN already exist. 
+        '500':
+          description: Unexpected internal errors.        
+  /usergroups/{group_id}:
+   get:
+    summary: Get user group information
+    description: Get user group information
+    tags:
+     - Products
+    parameters:
+     - name: group_id
+       in: path
+       type: integer
+       format: int64
+       required: true
+       description: Group ID
+    responses:
+      '200':
+        description: User group get successfully.
+        schema:
+          $ref: '#/definitions/UserGroup'
+      '400':
+        description: The user group id is invalid.
+      '401':
+        description: User need to log in first.
+      '403':
+        description: User in session does not have permission to the user group.
+      '404':
+        description: User group does not exist.
+      '500':
+        description: Unexpected internal errors.  
+   put:
+     summary: Update group information
+     description: Update user group information
+     tags:
+       - Products
+     parameters:
+       - name: group_id
+         in: path
+         type: integer
+         format: int64
+         required: true
+         description: Group ID
+       - name: usergroup
+         in: body
+         required: false
+         schema:
+           $ref: '#/definitions/UserGroup'
+     responses:
+       '200':
+         description: User group updated successfully.
+       '400':
+         description: The user group id is invalid.
+       '401':
+         description: User need to log in first.
+       '403':
+         description: Only admin has this authority.
+       '404':
+         description: User group does not exist.
+       '500':
+         description: Unexpected internal errors.  
+   delete:
+    summary: Delete user group
+    description: Delete user group
+    tags:
+     - Products
+    parameters:
+     - name: group_id
+       type: integer
+       in: path
+       required: true
+    responses:
+      '200':
+        description: User group deleted successfully.
+      '400':
+        description: The user group id is invalid.
+      '401':
+        description: User need to log in first.
+      '403':
+        description: Only admin has this authority.
+      '500':
+        description: Unexpected internal errors.       
   /ldap/users/search:
-    post:
+    get:
       summary: Search available ldap users.
       description: >
         This endpoint searches the available ldap users based on related
@@ -2320,15 +2626,6 @@ paths:
           type: string
           required: false
           description: Registered user ID
-        - name: ldap_conf
-          in: body
-          description: >-
-            ldap search configuration. ldapconf field can input ldap service
-            configuration. If this item are blank, will load default
-            configuration will load current configuration from the system.
-          required: false
-          schema:
-            $ref: '#/definitions/LdapConf'
       tags:
         - Products
       responses:
@@ -2338,14 +2635,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/LdapUsers'
-        '400':
-          description: Inviald ldap configuration parameters.
         '401':
           description: User need to login first.
         '403':
           description: Only admin has this authority.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
   /ldap/users/import:
@@ -2379,7 +2672,7 @@ paths:
           description: Only admin has this authority.
         '415':
           $ref: '#/responses/UnsupportedMediaType'
-        '500':
+        '404':
           description: Failed import some users.
           schema:
             type: array
@@ -3440,3 +3733,70 @@ definitions:
       update_time:
         type: string
         description: The update time of label.
+  ProjectMemberEntity:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: the project member id
+      project_id:
+        type: integer
+        description: the project id
+      entity_name:
+        type: string
+        description: the name of the group member. 
+      role_name:
+        type: string
+        description: the name of the role
+      role_id: 
+        type: integer
+        description: the role id
+      entity_id: 
+        type: integer
+        description: the id of entity, if the member is an user, it is user_id in user table. if the member is an user group, it is the user group's ID in user_group table.
+      entity_type:
+        type: string
+        description: the entity's type, u for user entity, g for group entity.
+  ProjectMember:
+    type: object
+    properties:
+      role_id:
+        type: integer
+        description: The role id 1 for projectAdmin, 2 for developer, 3 for guest
+      member_user:
+        $ref: '#/definitions/UserEntity'  
+      member_group:
+        $ref: '#/definitions/UserGroup'  
+  RoleRequest:
+    type: object
+    properties:
+      role_id:
+        type: integer
+        description: The role id 1 for projectAdmin, 2 for developer, 3 for guest
+  UserEntity:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        description: The ID of the user.
+      username:
+        type: string
+        description: The name of the user.
+  UserGroup:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of the user group
+      group_name:
+        type: string
+        description: The name of the user group
+      group_type: 
+        type: integer
+        description: The group type, 1 for LDAP group.
+      ldap_group_dn:
+        type: string
+        description: The DN of the LDAP group if group type is 1 (LDAP group).
+
+
+
