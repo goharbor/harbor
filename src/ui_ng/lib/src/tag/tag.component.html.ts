@@ -26,10 +26,9 @@ export const TAG_TEMPLATE = `
                     <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]= "filterName" (keyup)="handleInputFilter()"></div>
                     <div [hidden]='imageFilterLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
                     <div [hidden]='!imageFilterLabels.length' style='max-height:300px;overflow-y: auto;'>
-                        <button type="button" class="dropdown-item" *ngFor='let label of imageFilterLabels' (click)="label.iconsShow = true; filterLabel(label)">
+                        <button type="button" class="dropdown-item" *ngFor='let label of imageFilterLabels' (click)="rightFilterLabel(label)">
                             <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
                             <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
-                            <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); label.iconsShow = false; unFilterLabel(label)"></clr-icon>
                         </button>
                     </div>
                 </div>
@@ -52,10 +51,9 @@ export const TAG_TEMPLATE = `
                         <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
                         <div [hidden]='imageStickLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
                         <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
-                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="selectLabel(label); label.iconsShow = true">
+                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="stickLabel(label); label.iconsShow =(label.iconsShow== true?false: true)">
                                 <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
                                 <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
-                                <clr-icon shape="times-circle" class='pull-right' [hidden]='!label.iconsShow'  (click)="$event.stopPropagation(); unSelectLabel(label); label.iconsShow = false"></clr-icon>
                             </button>
                         </div>
                       </div>

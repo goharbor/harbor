@@ -284,7 +284,7 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
 
   it('Should open creation modal and load endpoints', async(()=>{
     fixture.detectChanges();
-    comp.openModal();
+    compCreate.openCreateEditRule();
     fixture.whenStable().then(()=>{
       fixture.detectChanges();
       let de: DebugElement = fixture.debugElement.query(By.css('input'));
@@ -299,7 +299,7 @@ describe('CreateEditRuleComponent (inline template)', ()=>{
 
   it('Should open modal to edit replication rule', async(()=>{
     fixture.detectChanges();
-    comp.openEditRule(mockRule);
+      compCreate.openCreateEditRule(mockRule.id);
     fixture.whenStable().then(()=>{
       fixture.detectChanges();
       let de: DebugElement = fixture.debugElement.query(By.css('input'));

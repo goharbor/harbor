@@ -128,7 +128,7 @@ describe('TagDetailComponent (inline template)', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
 
-      let el: HTMLElement = fixture.nativeElement.querySelector('.tag-name');
+      let el: HTMLElement = fixture.nativeElement.querySelector('.custom-h2');
       expect(el).toBeTruthy();
       expect(el.textContent.trim()).toEqual('mock_repo:nginx');
     });

@@ -625,7 +625,9 @@
         "LEVEL_VULNERABILITIES": "Level Vulnerabilities",
         "PLACEHOLDER": "We couldn't find any tags!",
         "COPY_ERROR": "Copy failed, please try to manually copy.",
-        "FILTER_FOR_TAGS": "Filter Tags"
+        "FILTER_FOR_TAGS": "Filter Tags",
+        "AUTHOR": "Author",
+        "LABELS": "LABELS"
     },
     "LABEL": {
         "LABEL": "Label",
@@ -652,7 +654,7 @@
     },
     "UNKNOWN_ERROR": "Unknown errors have occurred. Please try again later.",
     "UNAUTHORIZED_ERROR": "Your session is invalid or has expired. You need to sign in to continue your action.",
-    "REPO_READ_ONLY": "Maintenance in Progress: During this period, you cannot delete repository, tag and push image.",
+    "REPO_READ_ONLY": "Harbor is set to read-only mode, Deleting repository, tag and pushing image will be disabled under read-only mode.",
     "FORBIDDEN_ERROR": "You do not have the proper privileges to perform the action.",
     "GENERAL_ERROR": "Errors have occurred when performing service call: {{param}}.",
     "BAD_REQUEST_ERROR": "We are unable to perform your action because of a bad request.",

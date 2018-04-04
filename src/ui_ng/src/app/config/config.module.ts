@@ -19,7 +19,6 @@ import { ConfigurationComponent } from './config.component';
 import { ConfigurationService } from './config.service';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
-import {RepoReadOnlyComponent} from "./repo/repo-read-only.component";
 
 @NgModule({
   imports: [
@@ -30,7 +29,6 @@ import {RepoReadOnlyComponent} from "./repo/repo-read-only.component";
     ConfigurationComponent,
     ConfigurationAuthComponent,
     ConfigurationEmailComponent,
-    RepoReadOnlyComponent
   ],
   exports: [ConfigurationComponent],
   providers: [ConfigurationService]

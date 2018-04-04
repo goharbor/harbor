@@ -5,7 +5,7 @@ export const REPOSITORY_TEMPLATE = `
       <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="goBack()"></clr-icon>
     </div>
     <div class="title-block">
-      <h2 sub-header-title>{{repoName}}</h2>
+      <h2 sub-header-title class="custom-h2">{{repoName}}</h2>
     </div>
   </div>
 </section>

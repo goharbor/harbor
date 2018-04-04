@@ -41,6 +41,10 @@ export class SystemSettingsComponent {
         return this.systemSettingsForm && this.systemSettingsForm.valid;
     }
 
+    setRepoReadOnlyValue($event: any) {
+        this.systemSettings.read_only.value = $event;
+    }
+
     get canDownloadCert(): boolean {
         return this.hasAdminRole && this.hasCAFile;
     }

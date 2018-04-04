@@ -7,7 +7,7 @@ export const LOG_TEMPLATE: string = `
     <h2 class="h2-log-override" *ngIf="withTitle">{{'SIDE_NAV.LOGS' | translate}}</h2>
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
-        <div class="action-head-pos">
+        <div class="action-head-pos rightPos">
             <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
             <span (click)="refresh()" class="refresh-btn">
             <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
@@ -83,5 +83,11 @@ export const LOG_STYLES: string = `
     margin-left: 12px;
     top: 8px;
     position: relative;
+}
+.rightPos {
+    position: absolute;
+    z-index: 100;
+    right: 35px;
+    margin-top: 4px;
 }
 `;

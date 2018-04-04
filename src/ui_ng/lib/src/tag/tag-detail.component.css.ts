@@ -10,10 +10,6 @@ export const TAG_DETAIL_STYLES: string = `
     padding-right: 24px;
 }
 
-.title-block {
-    display: inline-block;
-}
-
 .title-wrapper {
     padding-top: 12px;
 }
@@ -50,6 +46,10 @@ export const TAG_DETAIL_STYLES: string = `
     margin-right: 6px;
     display: inline-flex;
     padding: 6px 6px 6px 12px;
+}
+
+.title-block {
+    display: inline-block;
 }
 
 .vulnerability-block {
