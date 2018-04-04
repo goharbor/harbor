@@ -7,10 +7,10 @@ metadata:
   annotations:
 {{ toYaml .Values.ingress.annotations | indent 4 }}
 spec:
-{{ if not .Values.insecureRegistry }}
   tls:
   - hosts:
     - "{{ .Values.externalDomain }}"
+{{ if not .Values.insecureRegistry }}
     secretName: "{{ template "harbor.fullname" . }}-ingress"
 {{ end }}
   rules:

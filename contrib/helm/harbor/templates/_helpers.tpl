@@ -16,6 +16,13 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+Harbor external URL.
+*/}}
+{{- define "harbor.externalURL" -}}
+{{- printf "https://%s" .Values.externalDomain -}}
+{{- end -}}
+
 {{/* Helm required labels */}}
 {{- define "harbor.labels" -}}
 heritage: {{ .Release.Service }}

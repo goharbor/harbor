@@ -21,7 +21,7 @@ data:
   EMAIL_FROM: "{{ .Values.adminserver.emailFrom }}"
   EMAIL_IDENTITY: "{{ .Values.adminserver.emailIdentity }}"
   EMAIL_INSECURE: "{{ .Values.adminserver.emailInsecure }}"
-  EXT_ENDPOINT: "https://{{ .Values.externalDomain }}"
+  EXT_ENDPOINT: "{{ template "harbor.externalURL" . }}"
   UI_URL: "http://{{ template "harbor.fullname" . }}-ui"
   JOBSERVICE_URL: "http://{{ template "harbor.fullname" . }}-jobservice"
   REGISTRY_URL: "http://{{ template "harbor.fullname" . }}-registry:5000"
