@@ -12,7 +12,7 @@ Contributors are encouraged to collaborate using the following resources in addi
 
 ### Sign the CLA
 
-Before doing contributions, you must sign the CLA. If it is the first time you're making a PR, please make sure to sign the contributor license agreement (CLA) online. A bot will automatically update the PR for the CLA process.
+Before doing contributions, you must sign the CLA. If it is the first time you're making a Pull Requests(PR), please make sure to sign the contributor license agreement (CLA) online. A bot will automatically update the PR for the CLA process.
 
 ### Fork Repository
 
@@ -39,18 +39,18 @@ To build the project, please refer the [build](docs/compile_guide.md) guideline.
 
 ### Repository Structure
 
-Here are the basic structure of the harbor code base. Some of the key folders / files are commented for your references.
+Here is the basic structure of the harbor code base. Some of the key folders / files are commented for your references.
 ```
 .
 ...
 ├── Makefile      #Make file for compile and build code
-├── contrib       #<TODO>
+├── contrib       #Contain documents, scripts, and other helpful things which are contributed by the community
 ├── docs          #Keep documents here
-├── make          #Resource for build and setup Harbor environment
+├── make          #Resource for building and setting up Harbor environment
 ...
 ├── src           #Source code folder
 ├── tests         #Test cases for API / e2e testings
-└── tools         #<TODO>
+└── tools         #Keep supporting tools
 ...
 ```
 
@@ -108,27 +108,29 @@ The folder graph below shows the structure of the source code folder `harbor/src
 ### Setup Development Environment
 
 #### Go
-Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbor backend service development environment, please [set one up](https://golang.org/doc/code.html).
+Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbor backend service development environment, please [set one up](https://golang.org/doc/install).
 
 |  Harbor  |  Requires Go  |
 |----------|---------------|
 |   1.1    |    1.7.3      |
 |   1.2    |    1.7.3      |
 |   1.3    |    1.9.2      |
+|   1.4    |    1.9.2      |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
-**Dependency Management:** Harbor uses [dep](https://github.com/golang/dep) for dependency management of go code.  The official maintainers will take the responsibility for managing the code in `vendor` directory.  Please don't try to submit PR to update the dependency code, open an issue instead.  If your PR requires a change in the vendor code please make sure you discuss it with maintainers in advance.
+**Dependency Management:** Harbor uses [dep](https://github.com/golang/dep) for dependency management of go code.  The official maintainers will take the responsibility for managing the code in `vendor` directory.  Please don't try to submit a PR to update the dependency code, open an issue instead.  If your PR requires a change in the vendor code please make sure you discuss it with the maintainers in advance.
 
 #### Web
 
-Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and [Angular](https://angular.io/) web framework. To setup web UI development environment, please make sure the [npm](https://www.npmjs.com/get-npm) tool is installed firstly.
+Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and [Angular](https://angular.io/) web framework. To setup web UI development environment, please make sure the [npm](https://www.npmjs.com/get-npm) tool is installed first.
 
 |  Harbor  |  Requires Angular  |  Requires Clarity  |
 |----------|--------------------|--------------------|
 |   1.1    |      2.4.1         |       0.8.7        |
 |   1.2    |      4.1.3         |       0.9.8        |
 |   1.3    |      4.3.0         |       0.10.17      |
+|   1.4    |                    |                    |
 
 **Npm Package Dependency:** Run the following commands to restore the package dependencies.
 ```
@@ -142,20 +144,20 @@ npm install
 ```
 
 
-To run the code, please refer the [build](docs/compile_guide.md) guideline.
+To run the code, please refer to the [build](docs/compile_guide.md) guideline.
 
 ## Contribute Workflow
 
-Pull requests (PR) are always welcome, even they are small fixes like typos or a few lines of code changes. If there will be significant effort, please first document as an issue and get the discussion going before starting to work on it.
+PR are always welcome, even if they only contain small fixes like typos or a few lines of code. If there will be a significant effort, please document it as an issue and get a discussion going before starting to work on it.
 
-Please submit a PR to contain changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in a incremental fasion.
+Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in an incremental fasion.
 
 The graphic shown below describes the overall workflow about how to contribute code to Harbor repository.
 ![contribute workflow](docs/img/workflow.png)
 
 ### Fork and clone
 
-Fork the Harbor repository and clone the code to your local workspace. Per Go's [workspace instructions](https://golang.org/doc/code.html#Workspaces), place Harbor's code on your `GOPATH`. Refer section [Fork Repository](#fork-repository) for details.
+Fork the Harbor repository and clone the code to your local workspace. Per Go's [workspace instructions](https://golang.org/doc/code.html#Workspaces), place Harbor's code on your `GOPATH`. Refer to section [Fork Repository](#fork-repository) for details.
 
 Define a local working directory:
 ```
@@ -170,7 +172,7 @@ user={your github profile name}
 Both `$working_dir` and `$user` are mentioned in the figure above.
 
 ### Branch
-Changes should be made on your own fork in a new branch. The branch should be named  `XXX-description` where XXX is the number of the issue. Pull requests should be rebased on top of master without multiple branches mixed into the PR. If your pull requests do not merge cleanly, use commands listed below to get it up to date.
+Changes should be made on your own fork in a new branch. The branch should be named  `XXX-description` where XXX is the number of the issue. PR should be rebased on top of master without multiple branches mixed into the PR. If your PR do not merge cleanly, use commands listed below to get it up to date.
 
 ```
 #vmware is the origin upstream
@@ -184,7 +186,7 @@ git rebase vmware/master
 Branch from the updated `master` branch:
 
 ```
-git checkout -b my_feature
+git checkout -b my_feature master
 ```
 
 ### Develop, Build and Test
@@ -202,7 +204,7 @@ go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
 
 ```
 
-Unit test cases should be added to cover the new code. Unit test framework for backend services is using [go testing](https://golang.org/doc/code.html#Testing). The UI library test framework is built based on [Jasmine](http://jasmine.github.io/2.4/introduction.html) and [Karma](https://karma-runner.github.io/1.0/index.html), please refer [Angular Testing](https://angular.io/guide/testing) for more details.
+Unit test cases should be added to cover the new code. Unit test framework for backend services is using [go testing](https://golang.org/doc/code.html#Testing). The UI library test framework is built based on [Jasmine](http://jasmine.github.io/2.4/introduction.html) and [Karma](https://karma-runner.github.io/1.0/index.html), please refer to [Angular Testing](https://angular.io/guide/testing) for more details.
 
 Run go test cases:
 ```
@@ -216,7 +218,7 @@ Run UI library test cases:
 npm run test
 ```
 
-To build code, please refer [build](docs/compile_guide.md) guideline.
+To build code, please refer to [build](docs/compile_guide.md) guideline.
 
 ###  Keep sync with upstream
 
@@ -235,7 +237,7 @@ Please don't use `git pull` instead of the above `fetch / rebase`. `git pull` do
 Commit your changes if they're ready:
 ```
 #git add -A
-git commit
+git commit #-a
 git push --force-with-lease $user my_feature
 ```
 
@@ -245,10 +247,7 @@ To help write conforming commit messages, it is recommended to set up the [git-g
 
 ```
 curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
-```
-### Squash Commits
-
-Before you submitting any pull request, always squash your commits into logical units of change. A logical unit of change is defined as a set of codes and documents that should be treated as a whole. When possible, compact your commits into one. The commands to use are `git rebase -i` and/or `git push -f`. 
+``` 
 
 ### Automated Testing
 [TODO:]
@@ -271,7 +270,7 @@ Commit changes made in response to review comments to the same branch on your fo
 It is a great way to contribute to Harbor by reporting an issue. Well-written and complete bug reports are always welcome! Please open an issue on Github and follow the template to fill in required information.
 
 Before opening any issue, please look up the existing [issues](https://github.com/vmware/harbor/issues) to avoid submitting a duplication.
-If you find a match, you can "subscribe" it to get notified on updates. If you have additional helpful information about the issue, please leave a comment.
+If you find a match, you can "subscribe" to it to get notified on updates. If you have additional helpful information about the issue, please leave a comment.
 
 When reporting issues, always include:
 
@@ -288,9 +287,9 @@ Be sure to include the steps to reproduce the problem if applicable. It can help
 
 Update the documentation if you are creating or changing features. Good documentation is as important as the code itself.
 
-The main location for the document is `docs/` folder. The images referred in documents can be placed in `docs/img`.
+The main location for the document is the `docs/` folder. The images referred in documents can be placed in `docs/img`.
 
-Document is written with Markdown text. See [Writting on GitHub](https://help.github.com/categories/writing-on-github/) for more details.
+Documents are written with Markdown text. See [Writting on GitHub](https://help.github.com/categories/writing-on-github/) for more details.
 
 ## Design new features
 
