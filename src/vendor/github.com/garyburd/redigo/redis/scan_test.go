@@ -84,8 +84,8 @@ var scanConversionTests = []struct {
 	{"1m", durationScan{Duration: time.Minute}},
 	{[]byte("1m"), durationScan{Duration: time.Minute}},
 	{time.Minute.Nanoseconds(), durationScan{Duration: time.Minute}},
-	{[]interface{}{[]byte("1m")}, []durationScan{durationScan{Duration: time.Minute}}},
-	{[]interface{}{[]byte("1m")}, []*durationScan{&durationScan{Duration: time.Minute}}},
+	{[]interface{}{[]byte("1m")}, []durationScan{{Duration: time.Minute}}},
+	{[]interface{}{[]byte("1m")}, []*durationScan{{Duration: time.Minute}}},
 }
 
 func TestScanConversion(t *testing.T) {
@@ -318,7 +318,7 @@ var scanSliceTests = []struct {
 		[]interface{}{[]byte("a1"), []byte("b1"), []byte("a2"), []byte("b2")},
 		nil,
 		true,
-		[]*struct{ A, B string }{{"a1", "b1"}, {"a2", "b2"}},
+		[]*struct{ A, B string }{{A: "a1", B: "b1"}, {A: "a2", B: "b2"}},
 	},
 	{
 		[]interface{}{[]byte("a1"), []byte("b1"), []byte("a2"), []byte("b2")},

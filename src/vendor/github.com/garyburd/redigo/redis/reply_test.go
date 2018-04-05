@@ -140,6 +140,11 @@ func dial() (redis.Conn, error) {
 	return redis.DialDefaultServer()
 }
 
+// serverAddr wraps DefaultServerAddr() with a more suitable function name for examples.
+func serverAddr() (string, error) {
+	return redis.DefaultServerAddr()
+}
+
 func ExampleBool() {
 	c, err := dial()
 	if err != nil {

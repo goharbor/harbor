@@ -4,7 +4,8 @@
 [[projects]]
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
-  revision = "a283a10442df8dc09befd873fab202bf8a253d6a"
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
 
 [[projects]]
   name = "github.com/Unknwon/goconfig"
@@ -118,8 +119,8 @@
     "internal",
     "redis"
   ]
-  revision = "47dc60e71eed504e3ef8e77ee3c6fe720f3be57f"
-  version = "v1.3.0"
+  revision = "a69d19351219b6dd56f274f96d85a7014a2ec34e"
+  version = "v1.6.0"
 
 [[projects]]
   name = "github.com/go-sql-driver/mysql"
@@ -147,7 +148,8 @@
 [[projects]]
   name = "github.com/gorilla/context"
   packages = ["."]
-  revision = "aed02d124ae4a0e94fea4541c8effd05bf0c8296"
+  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
+  version = "v1.1"
 
 [[projects]]
   name = "github.com/gorilla/handlers"
@@ -210,7 +212,10 @@
 
 [[projects]]
   name = "golang.org/x/crypto"
-  packages = ["pbkdf2"]
+  packages = [
+    "pbkdf2",
+    "ssh/terminal"
+  ]
   revision = "5f961cd492ac9d43fc33a8ef646bae79d113fd97"
 
 [[projects]]
@@ -270,6 +275,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ce26a28bd76c7bcfc4ed4dcd95a1522968cbe752a45cf7759b9e13734a31afc2"
+  inputs-digest = "e690fed3ef15e012cf97d5a1eb70fcb90ea051b54d7472e4c804291d08a58c80"
   solver-name = "gps-cdcl"
   solver-version = 1

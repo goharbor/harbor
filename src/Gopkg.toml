@@ -67,3 +67,15 @@ ignored = ["github.com/vmware/harbor/tests*"]
 [[constraint]]
   name = "github.com/gorilla/mux"
   version = "=1.6.0"
+
+[[override]]
+  name = "github.com/Sirupsen/logrus"
+  version = "=1.0.5"
+
+[[override]]
+  name = "github.com/gorilla/context"
+  version = "=1.1"
+
+[[override]]
+  name = "github.com/garyburd/redigo"
+  version = "=1.6.0"

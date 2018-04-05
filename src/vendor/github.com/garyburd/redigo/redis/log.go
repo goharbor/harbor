@@ -18,6 +18,11 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"time"
+)
+
+var (
+	_ ConnWithTimeout = (*loggingConn)(nil)
 )
 
 // NewLoggingConn returns a logging wrapper around a connection.
@@ -104,6 +109,12 @@ func (c *loggingConn) Do(commandName string, args ...interface{}) (interface{}, 
 	return reply, err
 }
 
+func (c *loggingConn) DoWithTimeout(timeout time.Duration, commandName string, args ...interface{}) (interface{}, error) {
+	reply, err := DoWithTimeout(c.Conn, timeout, commandName, args...)
+	c.print("DoWithTimeout", commandName, args, reply, err)
+	return reply, err
+}
+
 func (c *loggingConn) Send(commandName string, args ...interface{}) error {
 	err := c.Conn.Send(commandName, args...)
 	c.print("Send", commandName, args, nil, err)
@@ -113,5 +124,11 @@ func (c *loggingConn) Send(commandName string, args ...interface{}) error {
 func (c *loggingConn) Receive() (interface{}, error) {
 	reply, err := c.Conn.Receive()
 	c.print("Receive", "", nil, reply, err)
+	return reply, err
+}
+
+func (c *loggingConn) ReceiveWithTimeout(timeout time.Duration) (interface{}, error) {
+	reply, err := ReceiveWithTimeout(c.Conn, timeout)
+	c.print("ReceiveWithTimeout", "", nil, reply, err)
 	return reply, err
 }
