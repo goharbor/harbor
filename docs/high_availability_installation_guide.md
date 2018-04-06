@@ -107,7 +107,7 @@ If you are only setting up the HA for POC purpose. You can use docker to run Mar
 Import Harbor database schema to your external MariaDB 
 
 #### 1> Login to a machine that has MariaDB client installed
-#### 2> Save the [Harbor DB Schema](https://github.com/vmware/harbor/blob/release-1.4.0/make/common/db/registry.sql) to ```registry.sql```
+#### 2> Save the [Harbor DB Schema](https://github.com/vmware/harbor/blob/release-1.4.0/make/photon/db/registry.sql) to ```registry.sql```
 #### 3> Load the schema
 ```
 #> mysql -u your_db_username -p -h your_db_ip < registry.sql
