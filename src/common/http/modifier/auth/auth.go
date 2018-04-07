@@ -19,10 +19,7 @@ import (
 	"net/http"
 
 	"github.com/vmware/harbor/src/common/http/modifier"
-)
-
-const (
-	secretCookieName = "secret"
+	"github.com/vmware/harbor/src/common/secret"
 )
 
 // Authorizer is a kind of Modifier used to authorize the requests
@@ -45,10 +42,6 @@ func (s *SecretAuthorizer) Modify(req *http.Request) error {
 	if req == nil {
 		return errors.New("the request is null")
 	}
-
-	req.AddCookie(&http.Cookie{
-		Name:  secretCookieName,
-		Value: s.secret,
-	})
+	secret.AddToRequest(req, s.secret)
 	return nil
 }

@@ -30,6 +30,7 @@ import (
 	"github.com/astaxie/beego/session"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/dao"
+	commonsecret "github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/security/local"
 	"github.com/vmware/harbor/src/common/security/secret"
@@ -106,11 +107,7 @@ func TestSecretReqCtxModifier(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create request: %v", req)
 	}
-	req.AddCookie(&http.Cookie{
-		Name:  "secret",
-		Value: "secret",
-	})
-
+	commonsecret.AddToRequest(req, "secret")
 	ctx, err := newContext(req)
 	if err != nil {
 		t.Fatalf("failed to crate context: %v", err)

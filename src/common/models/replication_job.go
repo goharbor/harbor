@@ -28,8 +28,6 @@ const (
 	RepOpDelete string = "delete"
 	//RepOpSchedule represents the operation of a job to schedule the real replication process
 	RepOpSchedule string = "schedule"
-	//UISecretCookie is the cookie name to contain the UI secret
-	UISecretCookie string = "secret"
 	//RepTargetTable is the table name for replication targets
 	RepTargetTable = "replication_target"
 	//RepJobTable is the table name for replication jobs

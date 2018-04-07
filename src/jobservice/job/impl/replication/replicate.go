@@ -5,9 +5,8 @@ import (
 	"net/http"
 
 	common_http "github.com/vmware/harbor/src/common/http"
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/http/modifier/auth"
 	reg "github.com/vmware/harbor/src/common/utils/registry"
-	"github.com/vmware/harbor/src/common/utils/registry/auth"
 	"github.com/vmware/harbor/src/jobservice/env"
 	"github.com/vmware/harbor/src/jobservice/logger"
 )
@@ -57,10 +56,7 @@ func (r *Replicator) init(ctx env.JobContext, params map[string]interface{}) err
 	r.policyID = (int64)(params["policy_id"].(float64))
 	r.url = params["url"].(string)
 	r.insecure = params["insecure"].(bool)
-	cred := auth.NewCookieCredential(&http.Cookie{
-		Name:  models.UISecretCookie,
-		Value: secret(),
-	})
+	cred := auth.NewSecretAuthorizer(secret())
 
 	r.client = common_http.NewClient(&http.Client{
 		Transport: reg.GetHTTPTransport(r.insecure),

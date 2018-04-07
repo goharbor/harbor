@@ -15,6 +15,7 @@
 package auth
 
 import (
+	"github.com/vmware/harbor/src/common/secret"
 	"net/http"
 )
 
@@ -41,21 +42,10 @@ func (s *secretAuthenticator) Authenticate(req *http.Request) (bool, error) {
 	if len(s.secrets) == 0 {
 		return true, nil
 	}
-
-	secret, err := req.Cookie("secret")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			return false, nil
-		}
-		return false, err
-	}
-
-	if secret == nil {
-		return false, nil
-	}
+	reqSecret := secret.FromRequest(req)
 
 	for _, v := range s.secrets {
-		if secret.Value == v {
+		if reqSecret == v {
 			return true, nil
 		}
 	}

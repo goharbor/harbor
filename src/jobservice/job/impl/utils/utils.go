@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/docker/distribution/registry/auth/token"
-	"github.com/vmware/harbor/src/common/models"
+	httpauth "github.com/vmware/harbor/src/common/http/modifier/auth"
 	"github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
 )
@@ -33,11 +33,7 @@ func NewRepositoryClient(endpoint string, insecure bool, credential auth.Credent
 // access the internal registry
 func NewRepositoryClientForJobservice(repository, internalRegistryURL, secret, internalTokenServiceURL string) (*registry.Repository, error) {
 	transport := registry.GetHTTPTransport()
-
-	credential := auth.NewCookieCredential(&http.Cookie{
-		Name:  models.UISecretCookie,
-		Value: secret,
-	})
+	credential := httpauth.NewSecretAuthorizer(secret)
 
 	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
 		Transport: transport,
@@ -70,9 +66,8 @@ func BuildBlobURL(endpoint, repository, digest string) string {
 
 //GetTokenForRepo is used for job handler to get a token for clair.
 func GetTokenForRepo(repository, secret, internalTokenServiceURL string) (string, error) {
-	c := &http.Cookie{Name: models.UISecretCookie, Value: secret}
-	credentail := auth.NewCookieCredential(c)
-	t, err := auth.GetToken(internalTokenServiceURL, true, credentail,
+	credential := httpauth.NewSecretAuthorizer(secret)
+	t, err := auth.GetToken(internalTokenServiceURL, true, credential,
 		[]*token.ResourceActions{&token.ResourceActions{
 			Type:    "repository",
 			Name:    repository,

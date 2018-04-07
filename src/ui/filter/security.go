@@ -126,7 +126,7 @@ type secretReqCtxModifier struct {
 }
 
 func (s *secretReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
-	scrt := ctx.GetCookie("secret")
+	scrt := secstore.FromRequest(ctx.Request)
 	if len(scrt) == 0 {
 		return false
 	}
