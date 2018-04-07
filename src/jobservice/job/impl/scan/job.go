@@ -18,9 +18,11 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/job"
 	"github.com/vmware/harbor/src/common/models"
@@ -32,6 +34,10 @@ import (
 
 // ClairJob is the struct to scan Harbor's Image with Clair
 type ClairJob struct {
+	registryURL   string
+	secret        string
+	tokenEndpoint string
+	clairEndpoint string
 }
 
 // MaxFails implements the interface in job/Interface
@@ -52,6 +58,10 @@ func (cj *ClairJob) Validate(params map[string]interface{}) error {
 // Run implements the interface in job/Interface
 func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error {
 	logger := ctx.GetLogger()
+	if err := cj.init(ctx); err != nil {
+		logger.Errorf("Failed to initialize the job, error: %v", err)
+		return err
+	}
 
 	jobParms, err := transformParam(params)
 	if err != nil {
@@ -59,8 +69,9 @@ func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error
 		return err
 	}
 
-	repoClient, err := utils.NewRepositoryClientForJobservice(jobParms.Repository, jobParms.RegistryURL, jobParms.Secret, jobParms.TokenEndpoint)
+	repoClient, err := utils.NewRepositoryClientForJobservice(jobParms.Repository, cj.registryURL, cj.secret, cj.tokenEndpoint)
 	if err != nil {
+		logger.Errorf("Failed create repository client for repo: %s, error: %v", jobParms.Repository, err)
 		return err
 	}
 	_, _, payload, err := repoClient.PullManifest(jobParms.Tag, []string{schema2.MediaTypeManifest})
@@ -68,12 +79,12 @@ func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error
 		logger.Errorf("Error pulling manifest for image %s:%s :%v", jobParms.Repository, jobParms.Tag, err)
 		return err
 	}
-	token, err := utils.GetTokenForRepo(jobParms.Repository, jobParms.Secret, jobParms.TokenEndpoint)
+	token, err := utils.GetTokenForRepo(jobParms.Repository, cj.secret, cj.tokenEndpoint)
 	if err != nil {
 		logger.Errorf("Failed to get token, error: %v", err)
 		return err
 	}
-	layers, err := prepareLayers(payload, jobParms.RegistryURL, jobParms.Repository, token)
+	layers, err := prepareLayers(payload, cj.registryURL, jobParms.Repository, token)
 	if err != nil {
 		logger.Errorf("Failed to prepare layers, error: %v", err)
 		return err
@@ -82,7 +93,7 @@ func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error
 	if !ok {
 		loggerImpl = log.DefaultLogger()
 	}
-	clairClient := clair.NewClient(jobParms.ClairEndpoint, loggerImpl)
+	clairClient := clair.NewClient(cj.clairEndpoint, loggerImpl)
 
 	for _, l := range layers {
 		logger.Infof("Scanning Layer: %s, path: %s", l.Name, l.Path)
@@ -101,6 +112,32 @@ func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error
 	compOverview, sev := clair.TransformVuln(res)
 	err = dao.UpdateImgScanOverview(jobParms.Digest, layerName, sev, compOverview)
 	return err
+}
+
+func (cj *ClairJob) init(ctx env.JobContext) error {
+	errTpl := "Failed to get required property: %s"
+	if v, ok := ctx.Get(common.RegistryURL); ok && len(v.(string)) > 0 {
+		cj.registryURL = v.(string)
+	} else {
+		return fmt.Errorf(errTpl, common.RegistryURL)
+	}
+
+	if v := os.Getenv("JOBSERVICE_SECRET"); len(v) > 0 {
+		cj.secret = v
+	} else {
+		return fmt.Errorf(errTpl, "JOBSERVICE_SECRET")
+	}
+	if v, ok := ctx.Get(common.TokenServiceURL); ok && len(v.(string)) > 0 {
+		cj.tokenEndpoint = v.(string)
+	} else {
+		return fmt.Errorf(errTpl, common.TokenServiceURL)
+	}
+	if v, ok := ctx.Get(common.ClairURL); ok && len(v.(string)) > 0 {
+		cj.clairEndpoint = v.(string)
+	} else {
+		return fmt.Errorf(errTpl, common.ClairURL)
+	}
+	return nil
 }
 
 func transformParam(params map[string]interface{}) (*job.ScanJobParms, error) {

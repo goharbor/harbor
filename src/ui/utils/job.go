@@ -140,20 +140,11 @@ func triggerImageScan(repository, tag, digest string, client job.Client) error {
 }
 
 func buildScanJobData(jobID int64, repository, tag, digest string) (*jobmodels.JobData, error) {
-	regURL, err := config.RegistryURL()
-	if err != nil {
-		return nil, err
-	}
-	// TODO:job service can get some parms from context.
 	parms := job.ScanJobParms{
-		ClairEndpoint: config.ClairEndpoint(),
-		JobID:         jobID,
-		RegistryURL:   regURL,
-		Repository:    repository,
-		Secret:        config.JobserviceSecret(),
-		Digest:        digest,
-		Tag:           tag,
-		TokenEndpoint: config.InternalTokenServiceEndpoint(),
+		JobID:      jobID,
+		Repository: repository,
+		Digest:     digest,
+		Tag:        tag,
 	}
 	parmsMap := make(map[string]interface{})
 	b, err := json.Marshal(parms)
