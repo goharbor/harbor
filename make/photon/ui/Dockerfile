@@ -7,7 +7,7 @@ RUN tdnf distro-sync -y \
     && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor \
     && mkdir /harbor/
 
-HEALTHCHECK CMD curl -s -o /dev/null -w "%{http_code}" 127.0.0.1:8080/api/systeminfo|grep 200
+HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/ping || exit 1
 COPY ./make/dev/ui/harbor_ui ./src/favicon.ico ./make/photon/ui/start.sh ./UIVERSION /harbor/
 COPY ./src/ui/views /harbor/views
 COPY ./src/ui/static /harbor/static

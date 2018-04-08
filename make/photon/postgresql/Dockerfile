@@ -21,8 +21,10 @@ RUN touch /etc/localtime.bak \
 VOLUME /var/lib/postgresql/data
 
 ADD docker-entrypoint.sh /entrypoint.sh
-RUN chmod u+x /entrypoint.sh
+ADD docker-healthcheck.sh /docker-healthcheck.sh
+RUN chmod u+x /entrypoint.sh /docker-healthcheck.sh
 ENTRYPOINT ["/entrypoint.sh"]
+HEALTHCHECK CMD ["/docker-healthcheck.sh"]
 
 EXPOSE 5432
 CMD ["postgres"]
