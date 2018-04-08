@@ -40,21 +40,7 @@ func (rj *RedisJob) Run(j *work.Job) error {
 		execContext        env.JobContext
 	)
 
-	execContext, err = rj.buildContext(j)
-	if err != nil {
-		buildContextFailed = true
-		goto FAILED //no need to retry
-	}
-
-	//Wrap job
-	runningJob = Wrap(rj.job)
-
 	defer func() {
-		//Close open io stream first
-		if closer, ok := execContext.GetLogger().(logger.Closer); ok {
-			closer.Close()
-		}
-
 		if err == nil {
 			logger.Infof("Job '%s:%s' exit with success", j.Name, j.ID)
 			return //nothing need to do
@@ -82,6 +68,22 @@ func (rj *RedisJob) Run(j *work.Job) error {
 			err = fmt.Errorf("Runtime error: %s", r)
 			//record runtime error status
 			rj.jobFailed(j.ID)
+		}
+	}()
+
+	//Wrap job
+	runningJob = Wrap(rj.job)
+
+	execContext, err = rj.buildContext(j)
+	if err != nil {
+		buildContextFailed = true
+		goto FAILED //no need to retry
+	}
+
+	defer func() {
+		//Close open io stream first
+		if closer, ok := execContext.GetLogger().(logger.Closer); ok {
+			closer.Close()
 		}
 	}()
 
