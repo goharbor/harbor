@@ -20,6 +20,11 @@ data:
   MYSQL_USR: root
   MYSQL_PWD: "{{db_password}}"
   MYSQL_DATABASE: registry
+  CLAIR_DB_PASSWORD: "{{clair_db_password}}"
+  CLAIR_DB: postgres
+  CLAIR_DB_USERNAME: postgres
+  CLAIR_DB_HOST: postgres
+  CLAIR_DB_PORT: "5432"
   REGISTRY_URL: http://registry:5000
   TOKEN_SERVICE_URL: http://ui/service/token
   EMAIL_HOST: smtp.mydomain.com
