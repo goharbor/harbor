@@ -178,7 +178,7 @@ func (rjs *RedisJobStatsManager) loop() {
 							}
 						}()
 					} else {
-						logger.Warningf("Failed to process '%s' request with error: %s (%d times tried)\n", item.op, err, maxFails)
+						logger.Errorf("Failed to process '%s' request with error: %s (%d times tried)\n", item.op, err, maxFails)
 						if item.op == opReportStatus {
 							clearHookCache = true
 						}
@@ -348,7 +348,7 @@ func (rjs *RedisJobStatsManager) updateJobStatus(jobID string, status string) er
 	defer conn.Close()
 
 	key := utils.KeyJobStats(rjs.namespace, jobID)
-	args := make([]interface{}, 0, 5)
+	args := make([]interface{}, 0, 6)
 	args = append(args, key, "status", status, "update_time", time.Now().Unix())
 	if status == job.JobStatusSuccess {
 		//make sure the 'die_at' is reset in case it's a retrying job

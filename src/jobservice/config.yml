@@ -12,7 +12,7 @@ port: 9443
 
 #Worker pool
 worker_pool:
-  #0 means unlimited
+  #Worker concurrency
   workers: 10
   backend: "redis"
   #Additional config if use 'redis' backend

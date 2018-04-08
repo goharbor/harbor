@@ -56,8 +56,12 @@ func (rj *RedisJob) Run(j *work.Job) error {
 		}
 
 		if err == nil {
+			logger.Infof("Job '%s:%s' exit with success", j.Name, j.ID)
 			return //nothing need to do
 		}
+
+		//log error
+		logger.Errorf("Job '%s:%s' exit with error: %s\n", j.Name, j.ID, err)
 
 		if buildContextFailed || rj.shouldDisableRetry(runningJob, j, cancelled) {
 			j.Fails = 10000000000 //Make it big enough to avoid retrying
@@ -76,6 +80,8 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("Runtime error: %s", r)
+			//record runtime error status
+			rj.jobFailed(j.ID)
 		}
 	}()
 

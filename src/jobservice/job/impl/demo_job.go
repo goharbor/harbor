@@ -69,6 +69,9 @@ func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error 
 	/*if 1 != 0 {
 		return errors.New("I suicide")
 	}*/
+	//runtime error
+	//var runtime_err error = nil
+	//fmt.Println(runtime_err.Error())
 
 	logger.Info("check in 30%")
 	ctx.Checkin("30%")
