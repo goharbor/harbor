@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	commonsecret "github.com/vmware/harbor/src/common/secret"
 )
 
 func TestAuthorizeOfSecretAuthorizer(t *testing.T) {
@@ -32,8 +33,5 @@ func TestAuthorizeOfSecretAuthorizer(t *testing.T) {
 	req, err := http.NewRequest("", "", nil)
 	require.Nil(t, err)
 	require.Nil(t, authorizer.Modify(req))
-	require.Equal(t, 1, len(req.Cookies()))
-	v, err := req.Cookie(secretCookieName)
-	require.Nil(t, err)
-	assert.Equal(t, secret, v.Value)
+	assert.Equal(t, secret, commonsecret.FromRequest(req))
 }

@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	commonsecret "github.com/vmware/harbor/src/common/secret"
 )
 
 func TestAuthenticate(t *testing.T) {
@@ -32,11 +33,7 @@ func TestAuthenticate(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create request: %v", err)
 	}
-	req2.AddCookie(&http.Cookie{
-		Name:  "secret",
-		Value: secret,
-	})
-
+	_ = commonsecret.AddToRequest(req2, secret)
 	cases := []struct {
 		secrets map[string]string
 		req     *http.Request

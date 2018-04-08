@@ -40,7 +40,6 @@ import (
 const (
 	defaultKeyPath       string = "/etc/ui/key"
 	defaultTokenFilePath string = "/etc/ui/token/tokens.properties"
-	secretCookieName     string = "secret"
 )
 
 var (

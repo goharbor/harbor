@@ -46,25 +46,3 @@ func (b *basicAuthCredential) Modify(req *http.Request) error {
 	b.AddAuthorization(req)
 	return nil
 }
-
-type cookieCredential struct {
-	cookie *http.Cookie
-}
-
-// NewCookieCredential initialize a cookie based crendential handler, the cookie in parameter will be added to request to registry
-// if this crendential is attached to a registry client.
-func NewCookieCredential(c *http.Cookie) Credential {
-	return &cookieCredential{
-		cookie: c,
-	}
-}
-
-func (c *cookieCredential) AddAuthorization(req *http.Request) {
-	req.AddCookie(c.cookie)
-}
-
-// implement github.com/vmware/harbor/src/common/http/modifier.Modifier
-func (c *cookieCredential) Modify(req *http.Request) error {
-	c.AddAuthorization(req)
-	return nil
-}

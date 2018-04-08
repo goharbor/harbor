@@ -13,7 +13,7 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	common_http "github.com/vmware/harbor/src/common/http"
 	"github.com/vmware/harbor/src/common/http/modifier"
-	"github.com/vmware/harbor/src/common/models"
+	httpauth "github.com/vmware/harbor/src/common/http/modifier/auth"
 	"github.com/vmware/harbor/src/common/utils"
 	reg "github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/common/utils/registry/auth"
@@ -108,10 +108,7 @@ func (t *Transfer) init(ctx env.JobContext, params map[string]interface{}) error
 	// init source registry client
 	srcURL := params["src_registry_url"].(string)
 	srcInsecure := params["src_registry_insecure"].(bool)
-	srcCred := auth.NewCookieCredential(&http.Cookie{
-		Name:  models.UISecretCookie,
-		Value: secret(),
-	})
+	srcCred := httpauth.NewSecretAuthorizer(secret())
 	srcTokenServiceURL := ""
 	if stsu, ok := params["src_token_service_url"]; ok {
 		srcTokenServiceURL = stsu.(string)
