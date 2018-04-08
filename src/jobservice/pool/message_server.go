@@ -66,12 +66,14 @@ func (ms *MessageServer) Start() error {
 				m := &models.Message{}
 				if err := json.Unmarshal(res.Data, m); err != nil {
 					//logged
-					logger.Warningf("read invalid message: %s\n", res.Data)
+					logger.Warningf("Read invalid message: %s\n", res.Data)
 				}
 				if callback, ok := ms.callbacks[m.Event]; !ok {
 					//logged
 					logger.Warningf("no handler to handle event %s\n", m.Event)
 				} else {
+					//logged incoming events
+					logger.Infof("Receive event '%s' with data(unformatted): %+#v\n", m.Event, m.Data)
 					//Try to recover the concrete type
 					var converted interface{}
 					switch m.Event {
@@ -98,7 +100,7 @@ func (ms *MessageServer) Start() error {
 					if e != nil {
 						err := e.(error)
 						//logged
-						logger.Errorf("failed to fire callback with error: %s\n", err)
+						logger.Errorf("Failed to fire callback with error: %s\n", err)
 					}
 				}
 			case redis.Subscription:

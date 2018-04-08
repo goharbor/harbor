@@ -40,24 +40,14 @@ func (rj *RedisJob) Run(j *work.Job) error {
 		execContext        env.JobContext
 	)
 
-	execContext, err = rj.buildContext(j)
-	if err != nil {
-		buildContextFailed = true
-		goto FAILED //no need to retry
-	}
-
-	//Wrap job
-	runningJob = Wrap(rj.job)
-
 	defer func() {
-		//Close open io stream first
-		if closer, ok := execContext.GetLogger().(logger.Closer); ok {
-			closer.Close()
-		}
-
 		if err == nil {
+			logger.Infof("Job '%s:%s' exit with success", j.Name, j.ID)
 			return //nothing need to do
 		}
+
+		//log error
+		logger.Errorf("Job '%s:%s' exit with error: %s\n", j.Name, j.ID, err)
 
 		if buildContextFailed || rj.shouldDisableRetry(runningJob, j, cancelled) {
 			j.Fails = 10000000000 //Make it big enough to avoid retrying
@@ -76,6 +66,24 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("Runtime error: %s", r)
+			//record runtime error status
+			rj.jobFailed(j.ID)
+		}
+	}()
+
+	//Wrap job
+	runningJob = Wrap(rj.job)
+
+	execContext, err = rj.buildContext(j)
+	if err != nil {
+		buildContextFailed = true
+		goto FAILED //no need to retry
+	}
+
+	defer func() {
+		//Close open io stream first
+		if closer, ok := execContext.GetLogger().(logger.Closer); ok {
+			closer.Close()
 		}
 	}()
 
