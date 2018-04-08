@@ -6,9 +6,7 @@ export const TAG_DETAIL_HTML: string = `
                 <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
             </div>
             <div class="title-block">
-                <div class="tag-name">
-                    <h1>{{repositoryId}}:{{tagDetails.name}}</h1>
-                </div>
+                <h2 class="custom-h2" sub-header-title>{{repositoryId}}:{{tagDetails.name}}</h2>
             </div>
         </div>
         <div class="summary-block">

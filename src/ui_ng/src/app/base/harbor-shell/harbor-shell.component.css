@@ -16,7 +16,8 @@
 }
 
 .content-area-override {
-    padding: 36px !important;
+    padding-left: 36px !important;
+    padding-bottom: 36px !important;
     padding-right: 21px !important;
 }
 

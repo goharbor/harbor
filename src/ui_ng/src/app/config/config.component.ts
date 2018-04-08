@@ -31,7 +31,6 @@ import {
     SystemSettingsComponent,
     VulnerabilityConfigComponent,
 } from 'harbor-ui';
-import {RepoReadOnlyComponent} from "./repo/repo-read-only.component";
 
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 const TabLinkContentMap = {
@@ -41,7 +40,6 @@ const TabLinkContentMap = {
     'config-system': 'system_settings',
     'config-vulnerability': 'vulnerability',
     'config-label': 'system_label',
-    'config-repo': 'repoReadOnly'
 };
 
 @Component({
@@ -62,7 +60,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     @ViewChild(VulnerabilityConfigComponent) vulnerabilityConfig: VulnerabilityConfigComponent;
     @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
     @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
-    @ViewChild(RepoReadOnlyComponent) repoConfig: RepoReadOnlyComponent;
 
     constructor(
         private msgHandler: MessageHandlerService,
@@ -127,9 +124,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 break;
             case 'config-vulnerability':
                 properties = ['scan_all_policy'];
-                break;
-            case 'config-repo':
-                properties = ['read_only'];
                 break;
             default:
                 return null;

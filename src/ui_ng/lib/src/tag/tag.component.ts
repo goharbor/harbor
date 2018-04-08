@@ -310,8 +310,17 @@ export class TagComponent implements OnInit, AfterViewInit {
 
     this.selectedChange(tag);
   }
-  selectLabel(labelInfo: {[key: string]: any | string[]}): void {
+
+  stickLabel(labelInfo: {[key: string]: any | string[]}): void {
     if (labelInfo && !labelInfo.iconsShow) {
+      this.selectLabel(labelInfo);
+    }
+    if (labelInfo && labelInfo.iconsShow) {
+      this.unSelectLabel(labelInfo);
+    }
+  }
+
+  selectLabel(labelInfo: {[key: string]: any | string[]}): void {
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
       toPromise<any>(this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
@@ -319,11 +328,9 @@ export class TagComponent implements OnInit, AfterViewInit {
       }).catch(err => {
         this.errorHandler.error(err);
       });
-    }
   }
 
   unSelectLabel(labelInfo: {[key: string]: any | string[]}): void {
-    if (labelInfo && labelInfo.iconsShow) {
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
       toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
@@ -331,11 +338,19 @@ export class TagComponent implements OnInit, AfterViewInit {
       }).catch(err => {
         this.errorHandler.error(err);
       });
+  }
+
+  rightFilterLabel(labelInfo: {[key: string]: any | string[]}): void {
+    if (labelInfo) {
+      if (!labelInfo.iconsShow) {
+        this.filterLabel(labelInfo);
+      } else {
+        this.unFilterLabel(labelInfo);
+      }
     }
   }
 
   filterLabel(labelInfo: {[key: string]: any | string[]}): void {
-    if (labelInfo && labelInfo.iconsShow) {
       let labelName = labelInfo.label.name;
       this.imageFilterLabels.filter(data => {
         if (data.label.name !== labelName) {
@@ -361,11 +376,9 @@ export class TagComponent implements OnInit, AfterViewInit {
       }
 
       this.clrLoad(st);
-    }
   }
 
   unFilterLabel(labelInfo: {[key: string]: any | string[]}): void {
-    if (labelInfo && !labelInfo.iconsShow) {
       this.filterOneLabel = this.initFilter;
 
       // reload datagu
@@ -383,7 +396,6 @@ export class TagComponent implements OnInit, AfterViewInit {
         st.filters = [];
       }
       this.clrLoad(st);
-    }
   }
 
   handleInputFilter() {

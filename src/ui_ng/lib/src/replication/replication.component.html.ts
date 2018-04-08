@@ -73,6 +73,6 @@ export const REPLICATION_TEMPLATE: string = `
     </div>
     </div>
     <job-log-viewer #replicationLogViewer></job-log-viewer>
-    <hbr-create-edit-rule [projectId]="projectId" [projectName]="projectName" (goToRegistry)="goRegistry()" (reload)="reloadRules($event)"></hbr-create-edit-rule>
+    <hbr-create-edit-rule  *ngIf="isSystemAdmin" [projectId]="projectId" [projectName]="projectName" (goToRegistry)="goRegistry()" (reload)="reloadRules($event)"></hbr-create-edit-rule>
     <confirmation-dialog #replicationConfirmDialog [batchInfors]="batchDelectionInfos" (confirmAction)="confirmReplication($event)"></confirmation-dialog>
 </div>`;
