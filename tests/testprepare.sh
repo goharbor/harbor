@@ -2,8 +2,8 @@
 set -e
 cp tests/docker-compose.test.yml make/.
 
-mkdir -p /etc/ui
-cp make/common/config/ui/private_key.pem /etc/ui/.
+mkdir -p /etc/ui/private
+cp make/common/config/ui/private_key.pem /etc/ui/private/
 
 mkdir src/ui/conf
 cp make/common/config/ui/app.conf src/ui/conf/.

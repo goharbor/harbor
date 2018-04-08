@@ -146,8 +146,8 @@ def _get_secret(folder, filename, length=16):
     os.chmod(key_file, 0o600)
     return key
 
-def prep_conf_dir(root, name):
-    absolute_path = os.path.join(root, name)
+def prep_conf_dir(root, *name):
+    absolute_path = os.path.join(root, *name)
     if not os.path.exists(absolute_path):
         os.makedirs(absolute_path)
     return absolute_path
@@ -497,6 +497,7 @@ else:
 
 if args.notary_mode:
     notary_config_dir = prep_conf_dir(config_dir, "notary")
+    notary_config_private_dir = prep_conf_dir(config_dir, "notary", "private")
     notary_temp_dir = os.path.join(templates_dir, "notary") 
     print("Copying sql file for notary DB")
     if os.path.exists(os.path.join(notary_config_dir, "mysql-initdb.d")):
@@ -519,9 +520,9 @@ if args.notary_mode:
             os.chmod(signer_cert_path, 0o600)
             os.chmod(signer_key_path, 0o600)
             os.chmod(signer_ca_cert, 0o600)
-            shutil.copy2(signer_cert_path, notary_config_dir)
-            shutil.copy2(signer_key_path, notary_config_dir)
-            shutil.copy2(signer_ca_cert, notary_config_dir)
+            shutil.copy2(signer_cert_path, notary_config_private_dir)
+            shutil.copy2(signer_key_path, notary_config_private_dir)
+            shutil.copy2(signer_ca_cert, notary_config_private_dir)
         finally:
             srl_tmp = os.path.join(os.getcwd(), ".srl")
             if os.path.isfile(srl_tmp):
@@ -530,10 +531,10 @@ if args.notary_mode:
                 shutil.rmtree(temp_cert_dir, True)
     else:
         print("Copying certs for notary signer")
-        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.crt"), notary_config_dir)
-        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.key"), notary_config_dir)
-        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer-ca.crt"), notary_config_dir)
-    shutil.copy2(os.path.join(registry_config_dir, "root.crt"), notary_config_dir)
+        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.crt"), notary_config_private_dir)
+        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.key"), notary_config_private_dir)
+        shutil.copy2(os.path.join(notary_temp_dir, "notary-signer-ca.crt"), notary_config_private_dir)
+    shutil.copy2(os.path.join(registry_config_dir, "root.crt"), notary_config_private_dir)
     print("Copying notary signer configuration file")
     shutil.copy2(os.path.join(notary_temp_dir, "signer-config.json"), notary_config_dir)
     render(os.path.join(notary_temp_dir, "server-config.json"),
