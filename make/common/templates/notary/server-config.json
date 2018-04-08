@@ -22,7 +22,7 @@
             "realm": "$token_endpoint/service/token",
             "service": "harbor-notary",
             "issuer": "harbor-token-issuer",
-            "rootcertbundle": "/config/root.crt"
+            "rootcertbundle": "/etc/notary/root.crt"
         }
     }
 }
