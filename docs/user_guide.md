@@ -18,7 +18,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Add description to repositories](#add-description-to-repositories)
 * [Delete repositories and images.](#deleting-repositories)
 * [Content trust.  ](#content-trust)
-* [Vulnerability scanning via Clair.](#vulnerability-scaning-via-clair)
+* [Vulnerability scanning via Clair.](#vulnerability-scanning-via-clair)
 * [Pull image from Harbor in Kubernetes.](#pull-image-from-harbor-in-kubernetes)
 
 ## Role Based Access Control(RBAC)  
