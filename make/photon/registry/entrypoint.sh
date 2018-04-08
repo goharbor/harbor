@@ -2,12 +2,6 @@
 
 set -e
 
-if [ -d /etc/registry ]; then
-    chown 10000:10000 -R /etc/registry
-fi
-if [ -d /var/lib/registry ]; then
-    chown 10000:10000 -R /var/lib/registry
-fi
 if [ -d /storage ]; then
     if ! stat -c '%u:%g' /storage | grep -q '10000:10000' ; then
         # 10000 is the id of harbor user/group.
