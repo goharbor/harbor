@@ -125,8 +125,9 @@ func (bs *Bootstrap) LoadAndRun() {
 //Load and run the API server.
 func (bs *Bootstrap) loadAndRunAPIServer(ctx *env.Context, cfg *config.Configuration, ctl *core.Controller) *api.Server {
 	//Initialized API server
+	authProvider := &api.SecretAuthenticator{}
 	handler := api.NewDefaultHandler(ctl)
-	router := api.NewBaseRouter(handler)
+	router := api.NewBaseRouter(handler, authProvider)
 	serverConfig := api.ServerConfig{
 		Protocol: cfg.Protocol,
 		Port:     cfg.Port,
