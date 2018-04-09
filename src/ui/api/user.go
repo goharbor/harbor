@@ -142,6 +142,16 @@ func (ua *UserAPI) List() {
 		},
 	}
 
+	hasAdminRole := ua.GetString("has_admin_role")
+	if len(hasAdminRole) > 0 {
+		iAdminRole, err := strconv.Atoi(hasAdminRole)
+		if err != nil {
+			ua.HandleBadRequest(fmt.Sprintf("invalid has_admin_role: %s", hasAdminRole))
+			return
+		}
+		query.HasAdminRole = &iAdminRole
+	}
+
 	total, err := dao.GetTotalOfUsers(query)
 	if err != nil {
 		ua.HandleInternalServerError(fmt.Sprintf("failed to get total of users: %v", err))

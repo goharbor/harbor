@@ -864,6 +864,26 @@ func (a testapi) UsersGet(userName string, authInfo usrInfo) (int, []apilib.User
 	return httpStatusCode, successPayLoad, err
 }
 
+//Get registered users by admin role.
+func (a testapi) UsersGetByAdminRole(userName string, authInfo usrInfo, hasAdminRole int) (int, []apilib.User, error) {
+	_sling := sling.New().Get(a.basePath)
+	// create path and map variables
+	path := "/api/users/"
+	_sling = _sling.Path(path)
+	// body params
+	type QueryParams struct {
+		UserName     string `url:"username, omitempty"`
+		HasAdminRole int    `url:"has_admin_role, omitempty"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{UserName: userName, HasAdminRole: hasAdminRole})
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	var successPayLoad []apilib.User
+	if 200 == httpStatusCode && nil == err {
+		err = json.Unmarshal(body, &successPayLoad)
+	}
+	return httpStatusCode, successPayLoad, err
+}
+
 //Get registered users by userid.
 func (a testapi) UsersGetByID(userName string, authInfo usrInfo, userID int) (int, apilib.User, error) {
 	_sling := sling.New().Get(a.basePath)

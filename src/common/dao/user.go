@@ -130,6 +130,10 @@ func userQueryConditions(query *models.UserQuery) orm.QuerySeter {
 		qs = qs.Filter("email__contains", query.Email)
 	}
 
+	if query.HasAdminRole != nil {
+		qs = qs.Filter("sysadmin_flag", query.HasAdminRole)
+	}
+
 	return qs
 }
 

@@ -46,6 +46,7 @@ type User struct {
 type UserQuery struct {
 	Username   string
 	Email      string
+	HasAdminRole *int
 	Pagination *Pagination
 }
 
