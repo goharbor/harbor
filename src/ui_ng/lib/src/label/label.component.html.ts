@@ -22,7 +22,7 @@ export const LABEL_TEMPLATE = `
                 <clr-dg-column [clrDgField]="'name'">{{'LABEL.LABEL' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'endpoint'">{{'LABEL.DESCRIPTION' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'insecure'">{{'LABEL.CREATION_TIME' | translate }}</clr-dg-column>
-                 <clr-dg-placeholder>{{'DESTINATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
+                 <clr-dg-placeholder>{{'LABEL.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *clrDgItems="let label of targets" [clrDgItem]='label'>
                     <clr-dg-cell>
                         <hbr-label-piece [label]="label"></hbr-label-piece>

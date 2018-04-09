@@ -3,7 +3,7 @@
  */
 
 export const LABEL_PIEICE_TEMPLATE: string = `
-<label class="label" [ngStyle]="{'background-color': label.color}" [style.max-width.px]="labelWidth">
+<label class="label" [ngStyle]="{'background-color': labelColor?.color, 'color': labelColor?.textColor, 'border': labelColor?.color == '#FFFFFF'? '1px solid #666': 'none'}" [style.max-width.px]="labelWidth">
     <clr-icon *ngIf="label.scope=='p'" shape="organization"></clr-icon>
     <clr-icon *ngIf="label.scope=='g'" shape="administrator"></clr-icon>
      {{label.name}}
