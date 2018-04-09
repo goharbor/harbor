@@ -185,6 +185,10 @@ func TestConfig(t *testing.T) {
 		t.Errorf("unexpected scan all policy %v", s)
 	}
 
+	if TokenKeyPath := TokenPrivateKeyPath(); TokenKeyPath != "/etc/ui/private/private_key.pem" {
+		t.Errorf("Unexpected token private key path: %s, expected: %s", TokenKeyPath, "/etc/ui/private/private_key.pem")
+	}
+
 	us, err := UAASettings()
 	if err != nil {
 		t.Fatalf("failed to get UAA setting, error: %v", err)

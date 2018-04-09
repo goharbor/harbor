@@ -6,7 +6,7 @@
 		"type": "remote",
 		"hostname": "notarysigner",
 		"port": "7899",
-		"tls_ca_file": "./notary-signer-ca.crt",
+		"tls_ca_file": "./private/notary-signer-ca.crt",
 		"key_algorithm": "ecdsa"
 	},
 	"logging": {
@@ -22,7 +22,7 @@
             "realm": "$token_endpoint/service/token",
             "service": "harbor-notary",
             "issuer": "harbor-token-issuer",
-            "rootcertbundle": "/config/root.crt"
+            "rootcertbundle": "/etc/notary/private/root.crt"
         }
     }
 }

@@ -1,8 +1,8 @@
 {
 	"server": {
 		"grpc_addr": ":7899",
-		"tls_cert_file": "./notary-signer.crt",
-		"tls_key_file": "./notary-signer.key"
+		"tls_cert_file": "./private/notary-signer.crt",
+		"tls_key_file": "./private/notary-signer.key"
 	},
 	"logging": {
 		"level": "debug"
