@@ -102,7 +102,7 @@ NOTARYVERSION=v0.5.1
 MARIADBVERSION=$(VERSIONTAG)
 CLAIRVERSION=v2.0.1
 CLAIRDBVERSION=$(VERSIONTAG)
-MIGRATORVERSION=1.4
+MIGRATORVERSION=v1.5.0-test
 REDISVERSION=$(VERSIONTAG)
 
 #clarity parameters
@@ -239,7 +239,7 @@ ifeq ($(CLAIRFLAG), true)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
 endif
 ifeq ($(MIGRATORFLAG), true)
-	DOCKERSAVE_PARA+= vmware/harbor-db-migrator:$(MIGRATORVERSION)
+	DOCKERSAVE_PARA+= vmware/harbor-migrator:$(MIGRATORVERSION)
 endif
 
 version:
@@ -346,8 +346,8 @@ package_offline: compile version build modify_sourcefiles modify_composefile
 	@cp $(HARBORPKG)/photon/db/registry.sql $(HARBORPKG)/ha/
 	
 	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
-		echo "pulling DB migrator..."; \
-		$(DOCKERPULL) vmware/harbor-db-migrator:$(MIGRATORVERSION); \
+		echo "pulling Harbor migrator..."; \
+		$(DOCKERPULL) vmware/harbor-migrator:$(MIGRATORVERSION); \
 	fi
 
 	@echo "saving harbor docker image"
