@@ -157,7 +157,8 @@ func handleAndParse(r *testingRequest, v interface{}) error {
 }
 
 func runCodeCheckingCases(t *testing.T, cases ...*codeCheckingCase) {
-	for _, c := range cases {
+	for i, c := range cases {
+		t.Logf("running case %d ...", i)
 		resp, err := handle(c.request)
 		require.Nil(t, err)
 		equal := assert.Equal(t, c.code, resp.Code)
