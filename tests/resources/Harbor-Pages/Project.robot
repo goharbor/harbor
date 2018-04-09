@@ -215,6 +215,14 @@ Edit Repo Info
     Page Should Contain  test_description_info
     Capture Page Screenshot  RepoInfo.png
 
+Switch To Project Label
+    Click Element  xpath=//project-detail//a[contains(.,'Labels')]
+    Sleep  1
+
+Switch To Project Repo
+    Click Element  xpath=//project-detail//a[contains(.,'Repositories')]
+    Sleep  1
+
 Add Labels To Tag
     [Arguments]  ${tagName}  ${labelName}
     Click Element  xpath=//clr-dg-row[contains(.,"${tagName}")]//label
