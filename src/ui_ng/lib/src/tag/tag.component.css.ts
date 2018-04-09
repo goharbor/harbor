@@ -52,14 +52,14 @@ export const TAG_STYLE = `
 }
 
 .btn-group .dropdown-menu clr-icon{display: block;}
-.dropdown-menu .dropdown-item{position: relative;padding-left:.5rem; padding-right:.5rem;}
+.dropdown-menu .dropdown-item{position: relative;padding-left:.5rem; padding-right:.5rem;line-height:1.0}
 .dropdown-menu input{position: relative;margin-left:.5rem; margin-right:.5rem;}
 .pull-left{display:inline-block;float:left;}
 .pull-right{display:inline-block; float:right;}
 .btn-link{display:inline-flex;width: 15px;min-width:15px; color:black; vertical-align: super; }
 .trigger-item, .signpost-item{display: inline;}
 .signpost-content-body .label{margin:.3rem;}
-.labelDiv{position: absolute; left:34px;top:3px;}
+.labelDiv{position: absolute; left:34px;top:5px;}
 .datagrid-action-bar{z-index:10;}
 .trigger-item hbr-label-piece{display: flex !important;margin: 6px 0;}
 :host >>> .signpost-content{min-width:4rem;}

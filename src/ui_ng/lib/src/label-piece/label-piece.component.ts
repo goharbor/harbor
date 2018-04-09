@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import {Component, Input, Output, OnInit, EventEmitter, OnChanges} from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 
@@ -20,6 +20,7 @@ import 'rxjs/add/operator/distinctUntilChanged';
 
 import { LABEL_PIEICE_TEMPLATE, LABEL_PIEICE_STYLES } from './label-piece.template';
 import {Label} from "../service/interface";
+import {LabelColor} from "../shared/shared.const";
 
 
 @Component({
@@ -28,10 +29,17 @@ import {Label} from "../service/interface";
     template: LABEL_PIEICE_TEMPLATE
 })
 
-export class LabelPieceComponent implements OnInit {
+export class LabelPieceComponent implements OnInit, OnChanges {
     @Input() label: Label;
     @Input() labelWidth: number;
+    labelColor: {[key: string]: string};
 
-    ngOnInit(): void {
+    ngOnChanges(): void {
+        if (this.label) {
+            let color = this.label.color;
+            this.labelColor = LabelColor.find(data => data.color === color);
+        }
     }
+
+    ngOnInit(): void { }
 }

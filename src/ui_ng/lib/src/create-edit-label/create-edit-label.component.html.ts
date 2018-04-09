@@ -18,7 +18,7 @@ export const CREATE_EDIT_LABEL_TEMPLATE: string = `
                         <clr-icon shape="caret down" size="20" style='right:2px; width:24px; height:18px;'></clr-icon>
                     </button>
                     <clr-dropdown-menu *clrIfOpen>
-                        <label type="button" class="dropdown-item" (click)="labelModel.color=i" *ngFor="let i of labelColor" [ngStyle]="{'background-color': i}">Aa</label>
+                        <label type="button" class="dropdown-item"  (click)="labelModel.color=i.color" *ngFor="let i of labelColor" [ngStyle]="{'background-color': i.color, 'color': i.textColor }">Aa</label>
                     </clr-dropdown-menu>
                 </clr-dropdown>
                 <input type="text" id="color" size="8" name="color" [(ngModel)]="labelModel.color"  #color="ngModel">

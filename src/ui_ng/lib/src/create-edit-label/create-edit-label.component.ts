@@ -31,6 +31,7 @@ import {LabelService} from "../service/label.service";
 import {ErrorHandler} from "../error-handler/error-handler";
 import {NgForm} from "@angular/forms";
 import {Subject} from "rxjs/Subject";
+import {LabelColor} from "../shared/shared.const";
 
 @Component({
     selector: 'hbr-create-edit-label',
@@ -47,8 +48,6 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
 
     checkOnGoing: boolean;
     isLabelNameExist = false;
-
-    labelColor = ['#00ab9a', '#9da3db', '#be90d6', '#9b0d54', '#f52f22', '#747474', '#0095d3', '#f38b00', ' #62a420', '#89cbdf', '#004a70', '#9460b8'];
 
     nameChecker = new Subject<string>();
 
@@ -86,6 +85,10 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.nameChecker.unsubscribe();
+    }
+
+    get labelColor() {
+        return LabelColor;
     }
 
     initLabel(): Label {
