@@ -240,36 +240,36 @@ Switch To System Labels
 
 Create New Labels
     [Arguments]  ${labelname}
-    Click Element  xpath=//*[@id="system_label"]/hbr-label/div/div/div[2]/button[1]
+    Click Element  xpath=//button[contains(.,'New Label')]
     Sleep  1
     Input Text  xpath=//*[@id="name"]  ${labelname}
     Sleep  1
-    Click Element  xpath=//*[@id="system_label"]/hbr-label/div/div/div[2]/hbr-create-edit-label/div/form/section/label[2]/clr-dropdown/button
+    Click Element  xpath=//div/form/section//clr-dropdown/button
     Sleep  1
-    Click Element  xpath=//*[@id="system_label"]/hbr-label/div/div/div[2]/hbr-create-edit-label/div/form/section/label[2]/clr-dropdown/clr-dropdown-menu/label[1]
+    Click Element  xpath=//div/form/section//clr-dropdown/clr-dropdown-menu/label[1]
     Sleep  1
     Input Text  xpath=//*[@id="description"]  global
-    Click Element  xpath=//*[@id="system_label"]/hbr-label/div/div/div[2]/hbr-create-edit-label/div/form/section/label[4]/button[2]
+    Click Element  xpath=//div/form/section/label[4]/button[2]
     Capture Page Screenshot
     Wait Until Page Contains  ${labelname}
 
 Update A Label
     [Arguments]  ${labelname}
-    Click Element  xpath=//*[@id="system_label"]/hbr-label/div/div/div[3]/clr-datagrid/div/div/div/clr-dg-table-wrapper/div[2]/clr-dg-row[1]/div/clr-dg-cell[1]/clr-checkbox
+    Click Element  xpath=//clr-dg-row[1]/div/clr-dg-cell[1]/clr-checkbox
     Sleep  1
-    Click ELement  xpath=//*[@id="system_label"]/hbr-label/div/div/div[2]/button[2]
+    Click Element  xpath=//button[contains(.,'Edit')]
     Sleep  1
-    Input Text  xpath=//*[@id="name"]  ${labelname}
+    Input Text  xpath=//*[@id="name"]  ${labelname}1
     Sleep  1
-    Click Element  xpath=//*[@id="system_label"]/hbr-label/div/div/div[2]/hbr-create-edit-label/div/form/section/label[4]/button[2]
+    Click Element  xpath=//hbr-create-edit-label//form/section//button[2]
     Capture Page Screenshot
-    Wait Until Page Contains  ${labelname}
+    Wait Until Page Contains  ${labelname}1
 
 Delete A Label
-    Click Element  xpath=//*[@id="system_label"]/hbr-label/div/div/div[3]/clr-datagrid/div/div/div/clr-dg-table-wrapper/div[2]/clr-dg-row[1]/div/clr-dg-cell[1]/clr-checkbox
+    Click Element  xpath=//clr-dg-row[1]/div/clr-dg-cell[1]/clr-checkbox
     Sleep  1
-    Click ELement  xpath=//*[@id="system_label"]/hbr-label/div/div/div[2]/button[3]
+    Click ELement  xpath=//button[contains(.,'Delete')]
     Sleep  3
     Capture Page Screenshot
-    Click Element  xpath=//*[@id="system_label"]/hbr-label/div/confirmation-dialog/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+    Click Element  xpath=//clr-modal//div//button[contains(.,'DELETE')]
     Wait Until Page Contains  Deleted successfully

@@ -296,20 +296,54 @@ Test Case - Delete Label
     Delete A Label
     Close Browser
 
-TestCase - Add Labels To A Repo
+TestCase - Project Admin Operate Labels
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-    Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
-    Create An New Project  project${d}
-    Push Image  ${ip}  test${d}  Test1@34  project${d}  vmware/photon:1.0
+    Create An New Project With New User  url=${HARBOR_URL}  username=test${d}  email=test${d}@vmware.com  realname=test${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
+
+    Go Into Project  project${d}
     Sleep  2
-    #Add labels
-    Switch To System Labels
+    # Add labels
+    Switch To Project Label
     Create New Labels  label_${d}
     Sleep  2
+    Update A Label  label_${d}
+    Sleep  2
+    Delete A Label
+    Close Browser
+
+TestCase - Project Admin Add Labels To Repo
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project With New User  url=${HARBOR_URL}  username=test${d}  email=test${d}@vmware.com  realname=test${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
+    Push image  ip=${ip}  user=test${d}  pwd=Test1@34  project=project${d}  vmware/photon:1.0
+
     Go Into Project  project${d}
+    Sleep  2
+    # Add labels
+    Switch To Project Label
+    Create New Labels  label_${d}
+    Sleep  2
+    Switch To Project Repo
     Go Into Repo  project${d}/vmware/photon
     Add Labels To Tag  1.0  label_${d}
+    Close Browser
+
+TestCase - Developer Operate Labels
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project With New User  url=${HARBOR_URL}  username=test${d}  email=test${d}@vmware.com  realname=test${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
+    Logout Harbor
+    Create An New User  url=${HARBOR_URL}  username=bob${d}  email=bob${d}@vmware.com  realname=bob${d}  newPassword=Test1@34  comment=habor
+    Logout Harbor
+
+    Manage Project Member  test${d}  Test1@34  project${d}  bob${d}  Add
+    Change User Role In Project  test${d}  Test1@34  project${d}  bob${d}  Developer
+
+    Sign In Harbor  ${HARBOR_URL}  bob${d}  Test1@34
+    Go Into Project  project${d}
+    Sleep  3
+    Page Should Not Contain Element  xpath=//a[contains(.,'Labels')]
     Close Browser
 
 Test Case - Scan A Tag In The Repo
