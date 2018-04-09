@@ -31,6 +31,5 @@ View Scan Error Log
     Click Element  xpath=${view_log_xpath}
     Sleep  1
     Capture Page Screenshot  viewlog.png
-    Wait Until Page Contains  Entered scan initializer
-    Wait Until Page Contains  ERROR
     Wait Until Page Contains  View Scanning Job Log
+    Wait Until Page Contains  ERROR
