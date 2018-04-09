@@ -47,6 +47,50 @@ Test Case - Read Only Mode
     Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
     Close Browser
 
+Test Case - Repo Size
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  alpine  2.6  2.6
+    Go Into Project  library
+    Go Into Repo  alpine
+    Page Should Contain  1.92MB 
+    Close Browser
+
+Test Case - Staticsinfo
+    Init Chrome Driver
+    ${d}=  Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${privaterepocount1}=  Get Statics Private Repo
+    ${privateprojcount1}=  Get Statics Private Project
+    ${publicrepocount1}=  Get Statics Public Repo
+    ${publicprojcount1}=  Get Statics Public Project
+    ${totalrepocount1}=  Get Statics Total Repo
+    ${totalprojcount1}=  Get Statics Total Project
+    Create An New Project  private${d}
+    Create An New Project  public${d}  true
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  private${d}  hello-world
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  public${d}  hello-world
+    Reload Page
+    ${privaterepocount2}=  Get Statics Private Repo
+    ${privateprojcount2}=  get statics private project
+    ${publicrepocount2}=  get statics public repo
+    ${publicprojcount2}=  get statics public project
+    ${totalrepocount2}=  get statics total repo
+    ${totalprojcount2}=  get statics total project
+    ${privateprojcount}=  evaluate  ${privateprojcount1}+1
+    ${privaterepocount}=  evaluate  ${privaterepocount1}+1
+    ${publicprojcount}=  evaluate  ${publicprojcount1}+1
+    ${publicrepocount}=  evaluate  ${publicrepocount1}+1
+    ${totalrepocount}=  evaluate  ${totalrepocount1}+2
+    ${totalprojcount}=  evaluate  ${totalprojcount1}+2
+    Should Be Equal As Integers  ${privateprojcount2}  ${privateprojcount}
+    Should be equal as integers  ${privaterepocount2}  ${privaterepocount}
+    Should be equal as integers  ${publicprojcount2}  ${publicprojcount}
+    Should be equal as integers  ${publicrepocount2}  ${publicrepocount}
+    Should be equal as integers  ${totalprojcount2}  ${totalprojcount}
+    Should be equal as integers  ${totalrepocount2}  ${totalrepocount}
+
 Test Case - Create An New User
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -438,6 +482,23 @@ Test Case - Scan Image On Push
     Go Into Project  library
     Go Into Repo  memcached
     Summary Chart Should Display  latest
+    Close Browser
+
+Test Case - Verify Download Ca Link
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To System Settings
+    Page Should Contain  Registry Root Certificate
+    Close Browser
+
+Test Case - Edit Repo Info
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
+    Push Image  ${ip}  tester${d}  Test1@34  project${d}  hello-world
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/hello-world
+    Edit Repo Info
     Close Browser
 
 Test Case - Manage Project Member

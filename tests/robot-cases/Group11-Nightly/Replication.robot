@@ -62,14 +62,14 @@ Test Case - Endpoint Edit
     Wait Until Page Contains  deletea
     Close Browser
 
-#Test Case - Endpoint Delete  #Temp disable for ui is unstable
-#    Init Chrome Driver
-#    ${d}=  Get Current Date  result_format=%m%s
-#    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-#    Switch To Registries
-#    Delete Endpoint  deletea
-#    Wait Until Page Does Not Contain  deletea
-#    Close Browser
+Test Case - Endpoint Delete  
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Registries
+    Delete Endpoint  deletea
+    Wait Until Page Does Not Contain  deletea
+    Close Browser
    
 Test Case - Rule Edit
     Init Chrome Driver
@@ -111,7 +111,7 @@ Test Case - Trigger Immediate
     Page Should Contain  hello-world
     Go Into Repo  hello-world
     Page Should Contain  latest
-    Close browser
+    Close Browser
 
 Test Case - Trigger Manual
     Init Chrome Driver
@@ -130,8 +130,24 @@ Test Case - Trigger Manual
     Page Should Contain  hello-world
     Go Into Repo  hello-world
     Page Should Contain  latest
-    Close browser
+    Close Browser
 
+Test Case - Large Image Replicate
+    Init Chrome Driver
+    ${d}=    Get Current Date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Push Image with tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ubuntu  16.04  16.04
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint  rule${d}  project${d}  edp  Immediate
+    Logout Harbor
+    #logout and login target
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  project${d}
+    Page Should Contain  ubuntu
+    Go Into Repo  ubuntu
+    Page Should Contain  16.04
+    Close Browser
 
 Test Case - Proj Replication Jobs Log View
     Init Chrome Driver
@@ -149,4 +165,22 @@ Test Case - Proj Replication Jobs Log View
     Wait Until Page Contains  transfer 
     Wait Until Page Contains  error
     View Job Log  busybox
+    Close Browser
+
+Test Case - Project LeveL Replication Operation
+    Init Chrome Driver
+    ${d} =  Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  proj${d}
+    Go Into Project  proj${d}
+    Switch To Replication
+    Project Create A Rule With Existing Endpoint  rule${d}  proj${d}  edp  Manual
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj${d}  hello-world
+    Trigger Replication Manual  rule${d}
+    Logout Harbor
+    Sign In Harbor  https://${ip1}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  proj${d}
+    Page Should Contain  hello-world
+    Go Into Repo  hello-world
+    Page Should Contain  latest
     Close Browser

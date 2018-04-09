@@ -67,6 +67,32 @@ Create A Rule With Existing Endpoint
     #click save
     Click Element  ${rule_save_button}
 
+Project Create A Rule With Existing Endpoint
+# day 1=Monday..7=Sunday timeformat 12hour+am/pm    
+    [Arguments]  ${name}  ${project_name}  ${endpoint}  ${mode}  ${plan}=Daily  ${weekday}=1  ${time}=0800a
+    #click new
+    Click Element  ${new_name_xpath}
+    #input name
+    Input Text  ${rule_name}  ${name}
+    #input descripiton,here skip, leave it blank
+    #in this keyword, source project is not need to input
+    #set filter
+    Click Element  ${source_image_filter_add}
+    Input Text  ${source_iamge_repo_filter}  *
+    Click Element  ${source_image_filter_add}
+    Input Text  ${source_image_tag_filter}  *
+    #select endpoint
+    Click Element  ${rule_target_select}
+    Wait Until Element Is Visible  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
+    Click Element  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
+    #set trigger  
+    Click Element  ${rule_trigger_select}
+    Wait Until Element Is Visible  //select[@id="ruleTrigger"]//option[contains(.,'${mode}')]
+    Click Element  //select[@id="ruleTrigger"]//option[contains(.,'${mode}')]
+    Run Keyword If  '${mode}' == 'Scheduled'  Setting Replicaiton Schedule  ${plan}  ${weekday}  ${time}
+    #click save
+    Click Element  ${rule_save_button}
+
 Setting Replication Schedule
     [Arguments]  ${plan}  ${weekday}=1  ${time}=0800a
     Click Element  ${schedule_type_select}

@@ -33,3 +33,5 @@ View Scan Error Log
     Capture Page Screenshot  viewlog.png
     Wait Until Page Contains  View Scanning Job Log
     Wait Until Page Contains  ERROR
+
+

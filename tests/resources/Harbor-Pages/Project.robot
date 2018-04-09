@@ -212,7 +212,7 @@ Expand Repo
 Edit Repo Info
     Click Element  //*[@id="repo-info"]
     Sleep  1
-    Page Should Contain Element  //*[@id="info"]/form/div[2]/h3
+    Page Should Contain Element  //*[@id="info"]/form/div[2]
     # Cancel input
     Click Element  xpath=//*[@id="info-edit-button"]/button
     Input Text  xpath=//*[@id="info"]/form/div[2]/textarea  test_description_info
@@ -220,7 +220,7 @@ Edit Repo Info
     Sleep  1
     Click Element  xpath=//*[@id="info"]/form/confirmation-dialog/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
     Sleep  1
-    Page Should Contain Element  //*[@id="info"]/form/div[2]/h3
+    Page Should Contain Element  //*[@id="info"]/form/div[2]
     # Confirm input
     Click Element  xpath=//*[@id="info-edit-button"]/button
     Input Text  xpath=//*[@id="info"]/form/div[2]/textarea  test_description_info
@@ -268,3 +268,34 @@ Filter Labels In Tags
     Capture Page Screenshot  filter_${labelName2}.png
     Page Should Contain Element  xpath=//clr-dg-row[contains(.,"${labelName2}")]
     Page Should Not Contain Element  xpath=//clr-dg-row[contains(.,"${labelName1}")]
+
+Get Statics Private Repo
+    ${privaterepo}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+    Convert To Integer  ${privaterepo}
+    [Return]  ${privaterepo}
+
+Get Statics Private Project
+    ${privateproj}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[1]/statistics/div/span[1]
+    Convert To Integer  ${privateproj}
+    [Return]  ${privateproj}
+
+Get Statics Public Repo
+    ${publicrepo}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[2]/statistics/div/span[1]
+    Convert To Integer  ${publicrepo}
+    [Return]  ${publicrepo}
+
+Get Statics Public Project
+    ${publicproj}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[3]/div[1]/statistics/div/span[1]
+    Convert To Integer  ${publicproj}
+    [Return]  ${publicproj}
+
+Get Statics Total Repo
+    ${totalrepo}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[2]/statistics/div/span[1]
+     Convert To Integer  ${totalrepo}
+    [Return]  ${totalrepo}
+
+Get Statics Total Project
+    ${totalproj}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
+    Convert To Integer  ${totalproj}
+    [Return]  ${totalproj}
+
