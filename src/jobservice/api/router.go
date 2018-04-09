@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/vmware/harbor/src/jobservice/errs"
 )
 
 const (
@@ -28,13 +29,17 @@ type BaseRouter struct {
 
 	//Handler used to handle the requests
 	handler Handler
+
+	//Do auth
+	authenticator Authenticator
 }
 
 //NewBaseRouter is the constructor of BaseRouter.
-func NewBaseRouter(handler Handler) Router {
+func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 	br := &BaseRouter{
-		router:  mux.NewRouter(),
-		handler: handler,
+		router:        mux.NewRouter(),
+		handler:       handler,
+		authenticator: authenticator,
 	}
 
 	//Register routes here
@@ -45,6 +50,14 @@ func NewBaseRouter(handler Handler) Router {
 
 //ServeHTTP is the implementation of Router interface.
 func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	//Do auth
+	if err := br.authenticator.DoAuth(req); err != nil {
+		authErr := errs.UnauthorizedError(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(authErr.Error()))
+		return
+	}
+
 	//Directly pass requests to the server mux.
 	br.router.ServeHTTP(w, req)
 }

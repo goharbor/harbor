@@ -36,6 +36,8 @@ const (
 	GetJobLogErrorCode
 	//NoObjectFoundErrorCode is code for the error of no object found
 	NoObjectFoundErrorCode
+	//UnAuthorizedErrorCode is code for the error of unauthorized accessing
+	UnAuthorizedErrorCode
 )
 
 //baseError ...
@@ -116,6 +118,11 @@ func UnknownActionNameError(err error) error {
 //GetJobLogError is error for the case of getting job log failed
 func GetJobLogError(err error) error {
 	return New(GetJobLogErrorCode, "Failed to get the job log", err.Error())
+}
+
+//UnauthorizedError is error for the case of unauthorized accessing
+func UnauthorizedError(err error) error {
+	return New(UnAuthorizedErrorCode, "Unauthorized", err.Error())
 }
 
 //jobStoppedError is designed for the case of stopping job.

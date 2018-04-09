@@ -38,6 +38,9 @@ const (
 
 	//JobServicePoolBackendRedis represents redis backend
 	JobServicePoolBackendRedis = "redis"
+
+	//secret of UI
+	uiAuthSecret = "UI_SECRET"
 )
 
 //DefaultConfig is the default configuration reference
@@ -149,6 +152,11 @@ func GetLogArchivePeriod() uint {
 //GetAuthSecret get the auth secret from the env
 func GetAuthSecret() string {
 	return utils.ReadEnv(jobServiceAuthSecret)
+}
+
+//GetUIAuthSecret get the auth secret of UI side
+func GetUIAuthSecret() string {
+	return utils.ReadEnv(uiAuthSecret)
 }
 
 //GetAdminServerEndpoint return the admin server endpoint
