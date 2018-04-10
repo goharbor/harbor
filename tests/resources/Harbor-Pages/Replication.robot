@@ -180,6 +180,7 @@ Delete Endpoint
     Sleep  1
     #click checkbox before target endpoint
     Click Element  //clr-dg-row[contains(.,'${name}')]//label
+    Sleep  1
     Click Element  ${action_bar_delete}
     Wait Until Page Contains Element  ${dialog_delete}
     Click Element  ${dialog_delete}
