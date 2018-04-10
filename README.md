@@ -50,7 +50,7 @@ We welcome contributions from the community. If you wish to contribute code and 
 * ![play](docs/img/video.png) **Image Replication** ( [youtube](https://www.youtube.com/watch?v=1NPlzrm5ozE) , [Tencent Video](https://v.qq.com/x/page/a0553wc7fs9.html) )
 * ![play](docs/img/video.png) **VMworld 2017** ( [youtube](https://www.youtube.com/watch?v=tI5xMe24fJ4) )
 
-### License
+### Licensing
 Harbor is available under the [Apache 2 license](LICENSE).
 
 This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
