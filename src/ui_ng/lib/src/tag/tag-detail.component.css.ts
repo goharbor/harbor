@@ -10,10 +10,6 @@ export const TAG_DETAIL_STYLES: string = `
     padding-right: 24px;
 }
 
-.title-wrapper {
-    padding-top: 12px;
-}
-
 .tag-name {
     font-weight: 300;
     font-size: 32px;
@@ -37,20 +33,13 @@ export const TAG_DETAIL_STYLES: string = `
     transform: rotate(-90deg);
 }
 
-.arrow-back {
+.arrow-block a{
+    text-decoration: none;
     cursor: pointer;
+    color: #007cbb;
+    font-size: 12px;
 }
 
-.arrow-block {
-    border-right: 2px solid #cccccc;
-    margin-right: 6px;
-    display: inline-flex;
-    padding: 6px 6px 6px 12px;
-}
-
-.title-block {
-    display: inline-block;
-}
 
 .vulnerability-block {
     margin-bottom: 12px;
