@@ -21,6 +21,8 @@ export const REPOSITORY_GRIDVIEW_TEMPLATE = `
     <div *ngIf="!isCardView" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
         <clr-dg-action-bar>
+          <button *ngIf="withAdmiral" type="button" class="btn btn-sm btn-secondary" (click)="provisionItemEvent($event, selectedRow[0])" [disabled]="!(selectedRow.length===1 && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DEPLOY' | translate}}</button>
+          <button *ngIf="withAdmiral" type="button" class="btn btn-sm btn-secondary" (click)="itemAddInfoEvent($event, selectedRow[0])" [disabled]="!(selectedRow.length===1 && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.ADDITIONAL_INFO' | translate}}</button>
           <button type="button" class="btn btn-sm btn-secondary" (click)="deleteRepos(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-bar>
         <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
@@ -67,7 +69,7 @@ export const REPOSITORY_GRIDVIEW_TEMPLATE = `
                         <div>{{item.tags_count}}</div>
                     </div>
                     <div class="form-group">
-                        <label>{{'REPOSITORY.TAGS_COUNT' | translate}}</label>
+                        <label>{{'REPOSITORY.PULL_COUNT' | translate}}</label>
                         <div>{{item.pull_count}}</div>
                     </div>
                 </div>
