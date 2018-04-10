@@ -34,6 +34,7 @@ data:
   SELF_REGISTRATION: "{{ .Values.adminserver.selfRegistration }}"
   LDAP_URL: "{{ .Values.adminserver.ldap.url }}"
   LDAP_SEARCH_DN: "{{ .Values.adminserver.ldap.searchDN }}"
+  LDAP_SEARCH_PWD: "{{ .Values.adminserver.ldap.searchPassword }}"
   LDAP_BASE_DN: "{{ .Values.adminserver.ldap.baseDN }}"
   LDAP_FILTER: "{{ .Values.adminserver.ldap.filter }}"
   LDAP_UID: "{{ .Values.adminserver.ldap.uid }}"
