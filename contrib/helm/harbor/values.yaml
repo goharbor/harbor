@@ -71,6 +71,7 @@ adminserver:
   ldap:
     url: "ldaps://ldapserver"
     searchDN: ""
+    searchPassword: ""
     baseDN: ""
     filter: "(objectClass=person)"
     uid: "uid"
