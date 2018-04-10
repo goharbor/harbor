@@ -24,3 +24,6 @@
 .nav-link-override {
     width: 126px !important;
 }
+:host >>> .clr-vertical-nav .nav-trigger+.nav-content{
+    padding-top: 0;
+}

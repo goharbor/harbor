@@ -1,10 +1,11 @@
 export const REPOSITORY_TEMPLATE = `
 <section class="overview-section">
   <div class="title-wrapper">
-    <div class="title-block arrow-block">
-      <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="goBack()"></clr-icon>
+    <div class="arrow-block">
+      <a (click)="goProBack()">< {{'SIDE_NAV.PROJECTS'| translate}}</a>
+      <a (click)="goRepBack()">< {{'SIDE_NAV.SYSTEM_MGMT.REGISTRY'| translate}}</a>
     </div>
-    <div class="title-block">
+    <div>
       <h2 sub-header-title class="custom-h2">{{repoName}}</h2>
     </div>
   </div>

@@ -2,10 +2,12 @@ export const TAG_DETAIL_HTML: string = `
 <div>
     <section class="overview-section">
         <div class="title-wrapper">
-            <div class="title-block arrow-block">
-                <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
+            <div class="arrow-block">
+                <a (click)="onBackPro()">< {{'SIDE_NAV.PROJECTS'| translate}}</a>
+                <a (click)="onBackRep()">< {{'SIDE_NAV.SYSTEM_MGMT.REGISTRY'| translate}}</a>
+                <a (click)="onBackTag()">< {{repositoryId}}</a>
             </div>
-            <div class="title-block">
+            <div class="">
                 <h2 class="custom-h2" sub-header-title>{{repositoryId}}:{{tagDetails.name}}</h2>
             </div>
         </div>
