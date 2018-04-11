@@ -565,8 +565,10 @@ if args.clair_mode:
             password = clair_db_password,
             username = clair_db_username,
             host = clair_db_host,
-            port = clair_db_port)
-    # config http proxy for Clair
+            port = clair_db_port,
+            dbname = clair_db)
+
+# config http proxy for Clair
     http_proxy = rcp.get("configuration", "http_proxy").strip()
     https_proxy = rcp.get("configuration", "https_proxy").strip()
     no_proxy = rcp.get("configuration", "no_proxy").strip()
