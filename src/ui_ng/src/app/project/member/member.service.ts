@@ -24,34 +24,34 @@ import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 
 @Injectable()
 export class MemberService {
-  
+
   constructor(private http: Http) {}
 
   listMembers(projectId: number, username: string): Observable<Member[]> {
     return this.http
-               .get(`/api/projects/${projectId}/members?username=${username}`, HTTP_GET_OPTIONS)
-               .map(response=>response.json() as Member[])
-               .catch(error=>Observable.throw(error));            
+               .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS)
+               .map(response => response.json() as Member[])
+               .catch(error => Observable.throw(error));
   }
 
   addMember(projectId: number, username: string, roleId: number): Observable<any> {
     return this.http
-               .post(`/api/projects/${projectId}/members`, { username: username, roles: [ roleId ] }, HTTP_JSON_OPTIONS)
-               .map(response=>response.status)
-               .catch(error=>Observable.throw(error));
+               .post(`/api/projects/${projectId}/members`, { role_id: roleId, member_user: {username: username} }, HTTP_JSON_OPTIONS)
+               .map(response => response.status)
+               .catch(error => Observable.throw(error));
   }
 
   changeMemberRole(projectId: number, userId: number, roleId: number): Promise<any> {
     return this.http
-               .put(`/api/projects/${projectId}/members/${userId}`, { roles: [ roleId ]}, HTTP_JSON_OPTIONS).toPromise()
-               .then(response=>response.status)
-               .catch(error=>Promise.reject(error));
+               .put(`/api/projects/${projectId}/members/${userId}`, { role_id: roleId }, HTTP_JSON_OPTIONS).toPromise()
+               .then(response => response.status)
+               .catch(error => Promise.reject(error));
   }
 
   deleteMember(projectId: number, userId: number): Promise<any> {
     return this.http
                .delete(`/api/projects/${projectId}/members/${userId}`).toPromise()
-               .then(response=>response.status)
-               .catch(error=>Promise.reject(error));
+               .then(response => response.status)
+               .catch(error => Promise.reject(error));
   }
 }

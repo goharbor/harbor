@@ -54,7 +54,7 @@ import {Observable} from "rxjs/Observable";
 })
 export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
-  nullTime: string = '0001-01-01T00:00:00Z';
+  nullTime = '0001-01-01T00:00:00Z';
 
   @Input() projectId: number;
   @Input() isSystemAdmin: boolean;
@@ -72,7 +72,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   @Output() openNewRule = new EventEmitter<any>();
   @Output() replicateManual = new EventEmitter<ReplicationRule[]>();
 
-  projectScope: boolean = false;
+  projectScope = false;
 
   rules: ReplicationRule[];
   changedRules: ReplicationRule[];
@@ -108,7 +108,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    //Global scope
+    // Global scope
     if (!this.projectScope) {
       this.retrieveRules();
     }
@@ -120,15 +120,15 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
       if (proIdChange.currentValue !== proIdChange.previousValue) {
         if (proIdChange.currentValue) {
           this.projectId = proIdChange.currentValue;
-          this.projectScope = true; //Scope is project, not global list
-          //Initially load the replication rule data
+          this.projectScope = true; // Scope is project, not global list
+          // Initially load the replication rule data
           this.retrieveRules();
         }
       }
     }
   }
 
-  retrieveRules(ruleName: string = ''): void {
+  retrieveRules(ruleName = ''): void {
     this.loading = true;
     /*this.selectedRow = null;*/
     toPromise<ReplicationRule[]>(this.replicationService
@@ -184,7 +184,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
   jobList(id: string | number): Promise<void> {
     let ruleData: ReplicationJobItem[];
     this.canDeleteRule = true;
-    let count: number = 0;
+    let count = 0;
     return toPromise<ReplicationJob>(this.replicationService
         .getJobs(id))
         .then(response => {

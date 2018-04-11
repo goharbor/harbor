@@ -74,7 +74,6 @@ func GetProjectMember(queryMember models.Member) ([]*models.Member, error) {
 func AddProjectMember(member models.Member) (int, error) {
 
 	log.Debugf("Adding project member %+v", member)
-
 	o := dao.GetOrmer()
 
 	if member.EntityID <= 0 {
@@ -85,6 +84,11 @@ func AddProjectMember(member models.Member) (int, error) {
 		return 0, fmt.Errorf("Invalid project_id, member: %+v", member)
 	}
 
+	delSQL := "delete from project_member where project_id = ? and entity_id = ? and entity_type = ? "
+	_, err := o.Raw(delSQL, member.ProjectID, member.EntityID, member.EntityType).Exec()
+	if err != nil {
+		return 0, err
+	}
 	sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?)"
 	r, err := o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).Exec()
 	if err != nil {
@@ -99,7 +103,6 @@ func AddProjectMember(member models.Member) (int, error) {
 
 // UpdateProjectMemberRole updates the record in table project_member, only role can be changed
 func UpdateProjectMemberRole(pmID int, role int) error {
-
 	o := dao.GetOrmer()
 	sql := "update project_member set role = ? where id = ? "
 	_, err := o.Raw(sql, role, pmID).Exec()

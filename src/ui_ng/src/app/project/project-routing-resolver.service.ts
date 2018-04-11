@@ -42,7 +42,7 @@ export class ProjectRoutingResolver implements Resolve<Project>{
           if (currentUser) {
             let projectMembers = this.sessionService.getProjectMembers();
             if (projectMembers) {
-              let currentMember = projectMembers.find(m => m.user_id === currentUser.user_id);
+              let currentMember = projectMembers.find(m => m.entity_id === currentUser.user_id);
               if (currentMember) {
                 project.is_member = true;
                 project.has_project_admin_role = (currentMember.role_name === 'projectAdmin');

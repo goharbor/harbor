@@ -13,7 +13,7 @@ export abstract class SystemInfoService {
   /**
    *  Get global system information.
    *  @abstract
-   *  @returns 
+   *  @returns
    */
   abstract getSystemInfo(): Observable<SystemInfo> | Promise<SystemInfo> | SystemInfo;
 }
@@ -23,14 +23,14 @@ export class SystemInfoDefaultService extends SystemInfoService {
   constructor(
     @Inject(SERVICE_CONFIG) private config: IServiceConfig,
     private http: Http) {
-    super();  
+    super();
   }
   getSystemInfo(): Observable<SystemInfo> | Promise<SystemInfo> | SystemInfo {
     let url = this.config.systemInfoEndpoint ? this.config.systemInfoEndpoint : '/api/systeminfo';
     return this.http.get(url, HTTP_GET_OPTIONS)
       .toPromise()
-      .then(systemInfo=>systemInfo.json() as SystemInfo)
-      .catch(error=>Promise.reject(error));
+      .then(systemInfo => systemInfo.json() as SystemInfo)
+      .catch(error => Promise.reject(error));
   }
 }
 

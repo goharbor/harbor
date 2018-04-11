@@ -136,14 +136,19 @@ func TestListProjects(t *testing.T) {
 
 	//-------------------case 4 : add project member and check his role ------------------------//
 	CommonAddUser()
-	roles := &apilib.RoleParam{[]int32{2}, TestUserName}
+	member := &models.MemberReq{
+		Role: 2,
+		MemberUser: models.User{
+			Username: TestUserName,
+		},
+	}
 	projectID := strconv.Itoa(addPID)
-	httpStatusCode, err = apiTest.AddProjectMember(*admin, projectID, *roles)
+	httpStatusCode, err = apiTest.AddProjectMember(*admin, projectID, member)
 	if err != nil {
 		t.Error("Error whihle add project role member", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+		assert.Equal(int(201), httpStatusCode, "httpStatusCode should be 201")
 	}
 	httpStatusCode, result, err = apiTest.ProjectsGet(
 		&apilib.ProjectQuery{

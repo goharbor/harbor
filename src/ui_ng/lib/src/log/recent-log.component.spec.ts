@@ -58,7 +58,7 @@ describe('RecentLogComponent (inline template)', () => {
     serviceConfig = TestBed.get(SERVICE_CONFIG);
     logService = fixture.debugElement.injector.get(AccessLogService);
 
-    //Mock data
+    // Mock data
     for (let i = 0; i < 18; i++) {
       let item: AccessLogItem = {
         log_id: 23 + i,
@@ -80,7 +80,7 @@ describe('RecentLogComponent (inline template)', () => {
         if (params && params.get('repository')) {
           return Promise.resolve(mockData2);
         } else {
-          if (params.get('page') == '1') {
+          if (params.get('page') === '1') {
             mockData.data = mockItems.slice(0, 15);
           } else {
             mockData.data = mockItems.slice(15, 18)
@@ -205,7 +205,7 @@ describe('RecentLogComponent (inline template)', () => {
         fixture.whenStable().then(() => {
           fixture.detectChanges();
 
-          let els: HTMLElement[] = fixture.nativeElement.querySelectorAll('.datagrid-row');
+          els = fixture.nativeElement.querySelectorAll('.datagrid-row');
           expect(els).toBeTruthy();
           expect(els.length).toEqual(16);
         });

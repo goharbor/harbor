@@ -99,7 +99,7 @@ export class ConfirmationDialogComponent {
     }
 
     operate(): void {
-        if (!this.message){//Inproper condition
+        if (!this.message) {// Inproper condition
             this.close();
             return;
         }
@@ -120,7 +120,7 @@ export class ConfirmationDialogComponent {
     }
 
     confirm(): void {
-        if (!this.message){//Inproper condition
+        if (!this.message) {// Inproper condition
             this.close();
             return;
         }

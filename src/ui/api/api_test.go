@@ -31,13 +31,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/dao/project"
 	common_http "github.com/vmware/harbor/src/common/http"
 	"github.com/vmware/harbor/src/common/models"
 )
 
 var (
-	nonSysAdminID, projAdminID, projDeveloperID, projGuestID int
-
+	nonSysAdminID, projAdminID, projDeveloperID, projGuestID int64
+	projAdminPMID, projDeveloperPMID, projGuestPMID          int
 	// The following users/credentials are registered and assigned roles at the beginning of
 	// running testing and cleaned up at the end.
 	// Do not try to change the system and project roles that the users have during
@@ -206,7 +207,8 @@ func TestMain(m *testing.M) {
 
 func prepare() error {
 	// register nonSysAdmin
-	id, err := dao.Register(models.User{
+	var err error
+	nonSysAdminID, err = dao.Register(models.User{
 		Username: nonSysAdmin.Name,
 		Password: nonSysAdmin.Passwd,
 		Email:    nonSysAdmin.Name + "@test.com",
@@ -214,10 +216,9 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
-	nonSysAdminID = int(id)
 
 	// register projAdmin and assign project admin role
-	id, err = dao.Register(models.User{
+	projAdminID, err = dao.Register(models.User{
 		Username: projAdmin.Name,
 		Password: projAdmin.Passwd,
 		Email:    projAdmin.Name + "@test.com",
@@ -225,14 +226,18 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
-	projAdminID = int(id)
 
-	if _, err = dao.AddProjectMember(1, projAdminID, models.PROJECTADMIN, common.UserMember); err != nil {
+	if projAdminPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  1,
+		Role:       models.PROJECTADMIN,
+		EntityID:   int(projAdminID),
+		EntityType: common.UserMember,
+	}); err != nil {
 		return err
 	}
 
 	// register projDeveloper and assign project developer role
-	id, err = dao.Register(models.User{
+	projDeveloperID, err = dao.Register(models.User{
 		Username: projDeveloper.Name,
 		Password: projDeveloper.Passwd,
 		Email:    projDeveloper.Name + "@test.com",
@@ -240,14 +245,18 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
-	projDeveloperID = int(id)
 
-	if _, err = dao.AddProjectMember(1, projDeveloperID, models.DEVELOPER, common.UserMember); err != nil {
+	if projDeveloperPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  1,
+		Role:       models.DEVELOPER,
+		EntityID:   int(projDeveloperID),
+		EntityType: common.UserMember,
+	}); err != nil {
 		return err
 	}
 
 	// register projGuest and assign project guest role
-	id, err = dao.Register(models.User{
+	projGuestID, err = dao.Register(models.User{
 		Username: projGuest.Name,
 		Password: projGuest.Passwd,
 		Email:    projGuest.Name + "@test.com",
@@ -255,23 +264,29 @@ func prepare() error {
 	if err != nil {
 		return err
 	}
-	projGuestID = int(id)
 
-	_, err = dao.AddProjectMember(1, projGuestID, models.GUEST, common.UserMember)
+	if projGuestPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  1,
+		Role:       models.GUEST,
+		EntityID:   int(projGuestID),
+		EntityType: common.UserMember,
+	}); err != nil {
+		return err
+	}
 	return err
 }
 
 func clean() {
-	ids := []int{projAdminID, projDeveloperID, projGuestID}
-	for _, id := range ids {
-		if err := dao.DeleteProjectMember(1, id, common.UserMember); err != nil {
+	pmids := []int{projAdminPMID, projDeveloperPMID, projGuestPMID}
+
+	for _, id := range pmids {
+		if err := project.DeleteProjectMemberByID(id); err != nil {
 			fmt.Printf("failed to clean up member %d from project library: %v", id, err)
 		}
 	}
-
-	ids = append(ids, nonSysAdminID)
-	for _, id := range ids {
-		if err := dao.DeleteUser(id); err != nil {
+	userids := []int64{nonSysAdminID, projAdminID, projDeveloperID, projGuestID}
+	for _, id := range userids {
+		if err := dao.DeleteUser(int(id)); err != nil {
 			fmt.Printf("failed to clean up user %d: %v \n", id, err)
 		}
 	}

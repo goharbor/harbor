@@ -30,9 +30,11 @@
 */
 
 export class Member {
-  user_id: number;
-  username: string;
+  id: number;
+  project_id: number;
+  entity_name: string;
   role_name: string;
-  has_admin_role: number;
   role_id: number;
+  entity_id: number;
+  entity_type: string;
 }
