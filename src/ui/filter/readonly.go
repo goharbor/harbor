@@ -19,6 +19,7 @@ import (
 	"regexp"
 
 	"github.com/astaxie/beego/context"
+	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
 
@@ -42,7 +43,10 @@ func filter(req *http.Request, resp http.ResponseWriter) {
 	}
 	if matchRepoTagDelete(req) {
 		resp.WriteHeader(http.StatusServiceUnavailable)
-		resp.Write([]byte("The system is in read only mode. Any modification is not prohibited."))
+		_, err := resp.Write([]byte("The system is in read only mode. Any modification is not prohibited."))
+		if err != nil {
+			log.Errorf("failed to write response body: %v", err)
+		}
 	}
 }
 
