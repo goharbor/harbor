@@ -448,186 +448,7 @@ paths:
           description: Project or metadata does not exist.
         '500':
           description: Internal server errors.
-  '/projects/{project_id}/members/':
-    get:
-      summary: Return a project's relevant role members.
-      description: >
-        This endpoint is for user to search a specified project's relevant role
-        members.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant project ID.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get project's relevant role members successfully.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/User'
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User in session does not have permission to the project.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
-    post:
-      summary: Add project role member accompany with relevant project and user.
-      description: >
-        This endpoint is for user to add project role member accompany with
-        relevant project and user.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant project ID.
-        - name: roles
-          in: body
-          description: >-
-            Role members for adding to relevant project. Only one role is
-            supported in the role list.
-          schema:
-            $ref: '#/definitions/RoleParam'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Role members added to relevant project successfully.
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User in session does not have permission to the project.
-        '404':
-          description: Project ID or username does not exist.
-        '409':
-          description: User has already added as a project role member.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
-        '500':
-          description: Unexpected internal errors.
-  '/projects/{project_id}/members/{user_id}':
-    get:
-      summary: Return role members accompany with relevant project and user.
-      description: >
-        This endpoint is for user to get role members accompany with relevant
-        project and user. 
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant project ID
-        - name: user_id
-          in: path
-          type: integer
-          format: int
-          required: true
-          description: Relevant user ID
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get project role members successfully.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Role'
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User in session does not have permission to the project.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
-    put:
-      summary: Update project role members accompany with relevant project and user.
-      description: >
-        This endpoint is for user to update current project role members
-        accompany with relevant project and user.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant project ID.
-        - name: user_id
-          in: path
-          type: integer
-          format: int
-          required: true
-          description: Relevant user ID.
-        - name: roles
-          in: body
-          schema:
-            $ref: '#/definitions/RoleParam'
-          description: Updates for roles and username.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Project role members updated successfully.
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User in session does not have permission to the project.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
-    delete:
-      summary: Delete project role members accompany with relevant project and user.
-      description: >
-        This endpoint is aimed to remove project role members already added to
-        the relevant project and user.
-      parameters:
-        - name: project_id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant project ID.
-        - name: user_id
-          in: path
-          type: integer
-          format: int
-          required: true
-          description: Relevant user ID.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Project role members deleted successfully.
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User in session does not have permission to the project.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
-  '/projects/{project_id}/projectmembers':
+  '/projects/{project_id}/members':
     get:
      summary: Get all project member information
      description: Get all project member information
@@ -691,7 +512,7 @@ paths:
           description: Project does not exist.
         '500':
           description: Unexpected internal errors.  
-  '/projects/{project_id}/projectmembers/{mid}':
+  '/projects/{project_id}/members/{mid}':
     get:
      summary: Get the project member information
      description: Get the project member information
@@ -2492,6 +2313,71 @@ paths:
               $ref: '#/definitions/UserGroup'
         '500':
           description: Unexpected internal errors.
+  /ldap/users/search:
+    get:
+      summary: Search available ldap users.
+      description: >
+        This endpoint searches the available ldap users based on related
+        configuration parameters. Support searched by input ladp configuration,
+        load configuration from the system and specific filter.
+      parameters:
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Registered user ID
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Search ldap users successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LdapUsers'
+        '401':
+          description: User need to login first.
+        '403':
+          description: Only admin has this authority.
+        '500':
+          description: Unexpected internal errors.
+  /ldap/users/import:
+    post:
+      summary: Import selected available ldap users.
+      description: >
+        This endpoint adds the selected available ldap users to harbor based on
+        related configuration parameters from the system. System will try to
+        guess the user email address and realname, add to harbor user
+        information. 
+
+        If have errors when import user, will return the list of importing
+        failed uid and the failed reason.
+      parameters:
+        - name: uid_list
+          in: body
+          description: >-
+            The uid listed for importing. This list will check users validity of
+            ldap service based on configuration from the system.
+          required: true
+          schema:
+            $ref: '#/definitions/LdapImportUsers'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Add ldap users successfully.
+        '401':
+          description: User need to login first.
+        '403':
+          description: Only admin has this authority.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '404':
+          description: Failed import some users.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/LdapFailedImportUsers'
   /usergroups:
    get:
     summary: Get all user groups information
@@ -2613,71 +2499,7 @@ paths:
         description: Only admin has this authority.
       '500':
         description: Unexpected internal errors.       
-  /ldap/users/search:
-    get:
-      summary: Search available ldap users.
-      description: >
-        This endpoint searches the available ldap users based on related
-        configuration parameters. Support searched by input ladp configuration,
-        load configuration from the system and specific filter.
-      parameters:
-        - name: username
-          in: query
-          type: string
-          required: false
-          description: Registered user ID
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Search ldap users successfully.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/LdapUsers'
-        '401':
-          description: User need to login first.
-        '403':
-          description: Only admin has this authority.
-        '500':
-          description: Unexpected internal errors.
-  /ldap/users/import:
-    post:
-      summary: Import selected available ldap users.
-      description: >
-        This endpoint adds the selected available ldap users to harbor based on
-        related configuration parameters from the system. System will try to
-        guess the user email address and realname, add to harbor user
-        information. 
 
-        If have errors when import user, will return the list of importing
-        failed uid and the failed reason.
-      parameters:
-        - name: uid_list
-          in: body
-          description: >-
-            The uid listed for importing. This list will check users validity of
-            ldap service based on configuration from the system.
-          required: true
-          schema:
-            $ref: '#/definitions/LdapImportUsers'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Add ldap users successfully.
-        '401':
-          description: User need to login first.
-        '403':
-          description: Only admin has this authority.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
-        '404':
-          description: Failed import some users.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/LdapFailedImportUsers'
   /configurations:
     get:
       summary: Get system configurations.
@@ -3797,6 +3619,5 @@ definitions:
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).
-
 
 

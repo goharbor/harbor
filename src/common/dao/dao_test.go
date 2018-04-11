@@ -635,31 +635,6 @@ func TestGetProjectById(t *testing.T) {
 	}
 }
 
-func TestGetUserByProject(t *testing.T) {
-	pid := currentProject.ProjectID
-	u1 := models.User{
-		Username: "Tester",
-	}
-	u2 := models.User{
-		Username: "nononono",
-	}
-	users, err := GetUserByProject(pid, u1)
-	if err != nil {
-		t.Errorf("Error happened in GetUserByProject: %v, project Id: %d, user: %+v", err, pid, u1)
-	}
-	if len(users) != 1 {
-		t.Errorf("unexpected length of user list, expected: 1, the users list: %+v", users)
-	}
-	users, err = GetUserByProject(pid, u2)
-	if err != nil {
-		t.Errorf("Error happened in GetUserByProject: %v, project Id: %d, user: %+v", err, pid, u2)
-	}
-	if len(users) != 0 {
-		t.Errorf("unexpected length of user list, expected: 0, the users list: %+v", users)
-	}
-
-}
-
 func TestGetUserProjectRoles(t *testing.T) {
 	r, err := GetUserProjectRoles(currentUser.UserID, currentProject.ProjectID, common.UserMember)
 	if err != nil {
@@ -697,68 +672,6 @@ func TestGetProjects(t *testing.T) {
 	}
 	if projects[1].Name != projectName {
 		t.Errorf("Expected project name in the list: %s, actual: %s", projectName, projects[1].Name)
-	}
-}
-
-func TestAddProjectMember(t *testing.T) {
-	pmid, err := AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER, common.UserMember)
-	if err != nil {
-		t.Errorf("Error occurred in AddProjectMember: %v", err)
-	}
-	if pmid == 0 {
-		t.Errorf("Error add project member, pmid=0")
-	}
-	pmid, err = AddProjectMember(currentProject.ProjectID, 1, models.DEVELOPER, "randomstring")
-	if err == nil {
-		t.Errorf("Should failed on adding project member when adding duplicated items")
-	}
-
-	roles, err := GetUserProjectRoles(1, currentProject.ProjectID, common.UserMember)
-	if err != nil {
-		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
-	}
-
-	flag := false
-	for _, role := range roles {
-		if role.Name == "developer" {
-			flag = true
-			break
-		}
-	}
-
-	if !flag {
-		t.Errorf("the user which ID is 1 does not have developer privileges")
-	}
-}
-
-func TestUpdateProjectMember(t *testing.T) {
-	err := UpdateProjectMember(currentProject.ProjectID, 1, models.GUEST, "randomstring")
-	if err != nil {
-		t.Errorf("Error occurred in UpdateProjectMember: %v", err)
-	}
-	roles, err := GetUserProjectRoles(1, currentProject.ProjectID, common.UserMember)
-	if err != nil {
-		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
-	}
-	if roles[0].Name != "guest" {
-		t.Errorf("The user with ID 1 is not guest role after update, the acutal role: %s", roles[0].Name)
-	}
-
-}
-
-func TestDeleteProjectMember(t *testing.T) {
-	err := DeleteProjectMember(currentProject.ProjectID, 1, "randomstring")
-	if err != nil {
-		t.Errorf("Error occurred in DeleteProjectMember: %v", err)
-	}
-
-	roles, err := GetUserProjectRoles(1, currentProject.ProjectID, common.UserMember)
-	if err != nil {
-		t.Errorf("Error occurred in GetUserProjectRoles: %v", err)
-	}
-
-	if len(roles) != 0 {
-		t.Errorf("delete record failed from table project_member")
 	}
 }
 

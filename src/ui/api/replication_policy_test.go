@@ -19,6 +19,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/vmware/harbor/src/common/dao/project"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common"
@@ -314,17 +316,21 @@ func TestRepPolicyAPIList(t *testing.T) {
 		Password: "ProjectDev",
 		Email:    "project_dev@test.com",
 	}
-
+	var proAdminPMID, proDevPMID int
 	proAdminID, err := dao.Register(projectAdmin)
 	if err != nil {
 		panic(err)
 	}
 	defer dao.DeleteUser(int(proAdminID))
-
-	if _, err = dao.AddProjectMember(1, int(proAdminID), models.PROJECTADMIN, common.UserMember); err != nil {
+	if proAdminPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  1,
+		Role:       models.PROJECTADMIN,
+		EntityID:   int(proAdminID),
+		EntityType: common.UserMember,
+	}); err != nil {
 		panic(err)
 	}
-	defer dao.DeleteProjectMember(1, int(proAdminID), common.UserMember)
+	defer project.DeleteProjectMemberByID(proAdminPMID)
 
 	proDevID, err := dao.Register(projectDev)
 	if err != nil {
@@ -332,10 +338,15 @@ func TestRepPolicyAPIList(t *testing.T) {
 	}
 	defer dao.DeleteUser(int(proDevID))
 
-	if _, err = dao.AddProjectMember(1, int(proDevID), models.DEVELOPER, common.UserMember); err != nil {
+	if proDevPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  1,
+		Role:       models.DEVELOPER,
+		EntityID:   int(proDevID),
+		EntityType: common.UserMember,
+	}); err != nil {
 		panic(err)
 	}
-	defer dao.DeleteProjectMember(1, int(proDevID), common.UserMember)
+	defer project.DeleteProjectMemberByID(proDevPMID)
 
 	// 400: invalid project ID
 	runCodeCheckingCases(t, &codeCheckingCase{

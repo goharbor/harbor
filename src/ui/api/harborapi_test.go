@@ -104,11 +104,10 @@ func init() {
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
-	beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &ProjectUserMemberAPI{}, "get:Get;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &MetadataAPI{}, "post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &MetadataAPI{}, "put:Put;delete:Delete")
-	beego.Router("/api/projects/:pid([0-9]+)/projectmembers/?:pmid([0-9]+)", &ProjectMemberAPI{})
+	beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &ProjectMemberAPI{})
 	beego.Router("/api/repositories", &RepositoryAPI{})
 	beego.Router("/api/statistics", &StatisticAPI{})
 	beego.Router("/api/users/?:id", &UserAPI{})
@@ -440,12 +439,13 @@ func (a testapi) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int
 }
 
 //Add project role member accompany with  projectID
-func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, error) {
+//func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, error) {
+func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, member *models.MemberReq) (int, error) {
 	_sling := sling.New().Post(a.basePath)
 
 	path := "/api/projects/" + projectID + "/members/"
 	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(roles)
+	_sling = _sling.BodyJSON(member)
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
 

@@ -47,32 +47,32 @@ export class TargetExistsValidatorDirective implements Validator, OnChanges {
   }
   validate(control: AbstractControl): {[key: string]: any} {
     return this.valFn(control);
-  }   
+  }
 
   targetExistsValidator(target: string):  ValidatorFn {
     return (control: AbstractControl): {[key: string]: any} => {
-      switch(target) {
+      switch (target) {
       case 'PROJECT_NAME':
-        return new Promise(resolve=>{
+        return new Promise(resolve => {
                 this.projectService
                     .checkProjectExists(control.value)
-                    .subscribe(res=>resolve({'targetExists': true}),error=>resolve(null));
+                    .subscribe(res => resolve({'targetExists': true}),error=>resolve(null));
               });
       case 'MEMBER_NAME':
-        return new Promise(resolve=>{
+        return new Promise(resolve => {
                 this.memberService
                     .listMembers(this.projectId, control.value)
-                    .subscribe((members: Member[])=>{
-                     return members.filter(m=>{
-                        if(m.username === control.value) {
+                    .subscribe((members: Member[]) => {
+                     return members.filter(m => {
+                        if (m.entity_name === control.value) {
                           return true;
                         }
                         return null;
                       }).length > 0 ?
-                        resolve({'targetExists': true}) : resolve(null);                   
-                    },error=>resolve(null));
+                        resolve({'targetExists': true}) : resolve(null);
+                    }, error => resolve(null));
               });
       }
-    }
+    };
   }
 }

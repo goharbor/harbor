@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/dao/project"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/promgr"
@@ -122,25 +123,39 @@ func TestMain(m *testing.M) {
 	private.ProjectID = id
 	defer dao.DeleteProject(id)
 
+	var projectAdminPMID, developerUserPMID, guestUserPMID int
 	// add project members
-	_, err = dao.AddProjectMember(private.ProjectID, projectAdminUser.UserID, common.RoleProjectAdmin, common.UserMember)
+	projectAdminPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  private.ProjectID,
+		EntityID:   projectAdminUser.UserID,
+		EntityType: common.UserMember,
+		Role:       common.RoleProjectAdmin,
+	})
 	if err != nil {
 		log.Fatalf("failed to add member: %v", err)
 	}
-	defer dao.DeleteProjectMember(private.ProjectID, projectAdminUser.UserID, common.UserMember)
+	defer project.DeleteProjectMemberByID(projectAdminPMID)
 
-	_, err = dao.AddProjectMember(private.ProjectID, developerUser.UserID, common.RoleDeveloper, common.UserMember)
+	developerUserPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  private.ProjectID,
+		EntityID:   developerUser.UserID,
+		EntityType: common.UserMember,
+		Role:       common.RoleDeveloper,
+	})
 	if err != nil {
 		log.Fatalf("failed to add member: %v", err)
 	}
-	defer dao.DeleteProjectMember(private.ProjectID, developerUser.UserID, common.UserMember)
-
-	_, err = dao.AddProjectMember(private.ProjectID, guestUser.UserID, common.RoleGuest, common.UserMember)
+	defer project.DeleteProjectMemberByID(developerUserPMID)
+	guestUserPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  private.ProjectID,
+		EntityID:   guestUser.UserID,
+		EntityType: common.UserMember,
+		Role:       common.RoleGuest,
+	})
 	if err != nil {
 		log.Fatalf("failed to add member: %v", err)
 	}
-	defer dao.DeleteProjectMember(private.ProjectID, guestUser.UserID, common.UserMember)
-
+	defer project.DeleteProjectMemberByID(guestUserPMID)
 	os.Exit(m.Run())
 }
 

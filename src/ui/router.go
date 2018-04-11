@@ -46,8 +46,7 @@ func initRouters() {
 		beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
 
 		//API:
-		beego.Router("/api/projects/:pid([0-9]+)/members/?:mid", &api.ProjectUserMemberAPI{})
-		beego.Router("/api/projects/:pid([0-9]+)/projectmembers/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
+		beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
 		beego.Router("/api/projects/", &api.ProjectAPI{}, "head:Head")
 		beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
 

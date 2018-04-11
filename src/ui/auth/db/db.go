@@ -46,6 +46,11 @@ func (d *Auth) SearchUser(username string) (*models.User, error) {
 	return dao.GetUser(queryCondition)
 }
 
+// OnBoardUser -
+func (d *Auth) OnBoardUser(u *models.User) error {
+	return nil
+}
+
 func init() {
 	auth.Register("db_auth", &Auth{})
 }

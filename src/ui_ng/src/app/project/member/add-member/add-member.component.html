@@ -8,7 +8,7 @@
                     <label for="member_name" class="col-md-4 form-group-label-override required">{{'MEMBER.NAME' | translate}}</label>
                     <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="!isMemberNameValid"
                            class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"  (mouseleave)="leaveInput()">
-            <input type="text" id="member_name"  [(ngModel)]="member.username"
+            <input type="text" id="member_name"  [(ngModel)]="member.entity_name"
             name="member_name"
             size="20" 
             #memberName="ngModel" 

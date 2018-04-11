@@ -108,7 +108,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
               this.memberService
                   .listMembers(this.projectId, cont.value).toPromise()
                   .then((members: Member[]) => {
-                    if (members.filter(m => { return m.username === cont.value }).length > 0) {
+                    if (members.filter(m => { return m.entity_name === cont.value }).length > 0) {
                       this.isMemberNameValid = false;
                       this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
                     }
@@ -145,9 +145,9 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (!this.member.username || this.member.username.length === 0) { return; }
+    if (!this.member.entity_name || this.member.entity_name.length === 0) { return; }
     this.memberService
-      .addMember(this.projectId, this.member.username, +this.member.role_id)
+      .addMember(this.projectId, this.member.entity_name, +this.member.role_id)
       .subscribe(
       response => {
         this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
@@ -185,7 +185,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   }
 
   selectedName(username: string) {
-    this.member.username = username;
+    this.member.entity_name = username;
     this.selectUserName = [];
   }
 
@@ -230,7 +230,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     this.addMemberOpened = true;
     this.hasChanged = false;
     this.member.role_id = 1;
-    this.member.username = '';
+    this.member.entity_name = '';
     this.isMemberNameValid = true;
     this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
     this.selectUserName = [];

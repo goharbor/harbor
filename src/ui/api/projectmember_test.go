@@ -30,7 +30,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 		&codeCheckingCase{
 			request: &testingRequest{
 				method: http.MethodGet,
-				url:    "/api/projects/1/projectmembers",
+				url:    "/api/projects/1/members",
 			},
 			code: http.StatusUnauthorized,
 		},
@@ -38,7 +38,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 		&codeCheckingCase{
 			request: &testingRequest{
 				method:     http.MethodGet,
-				url:        "/api/projects/1/projectmembers",
+				url:        "/api/projects/1/members",
 				credential: admin,
 			},
 			code: http.StatusOK,
@@ -47,7 +47,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 		&codeCheckingCase{
 			request: &testingRequest{
 				method:     http.MethodGet,
-				url:        "/api/projects/0/projectmembers",
+				url:        "/api/projects/0/members",
 				credential: admin,
 			},
 			code: http.StatusBadRequest,
@@ -56,7 +56,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 		&codeCheckingCase{
 			request: &testingRequest{
 				method:     http.MethodGet,
-				url:        "/api/projects/1/projectmembers/121",
+				url:        "/api/projects/1/members/121",
 				credential: admin,
 			},
 			code: http.StatusNotFound,
@@ -81,7 +81,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 		&codeCheckingCase{
 			request: &testingRequest{
 				method: http.MethodPost,
-				url:    "/api/projects/1/projectmembers",
+				url:    "/api/projects/1/members",
 				bodyJSON: &models.MemberReq{
 					Role: 1,
 					MemberUser: models.User{
@@ -94,7 +94,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 		&codeCheckingCase{
 			request: &testingRequest{
 				method: http.MethodPost,
-				url:    "/api/projects/1/projectmembers",
+				url:    "/api/projects/1/members",
 				bodyJSON: &models.MemberReq{
 					Role: 1,
 					MemberUser: models.User{
@@ -108,7 +108,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 		&codeCheckingCase{
 			request: &testingRequest{
 				method: http.MethodPost,
-				url:    "/api/projects/1/projectmembers",
+				url:    "/api/projects/1/members",
 				bodyJSON: &models.MemberReq{
 					Role: 1,
 					MemberUser: models.User{
@@ -144,8 +144,8 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when add project member: %v", err)
 	}
-	URL := fmt.Sprintf("/api/projects/1/projectmembers/%v", ID)
-	badURL := fmt.Sprintf("/api/projects/1/projectmembers/%v", 0)
+	URL := fmt.Sprintf("/api/projects/1/members/%v", ID)
+	badURL := fmt.Sprintf("/api/projects/1/members/%v", 0)
 	cases := []*codeCheckingCase{
 		// 401
 		&codeCheckingCase{

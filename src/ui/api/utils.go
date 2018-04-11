@@ -35,45 +35,6 @@ import (
 	uiutils "github.com/vmware/harbor/src/ui/utils"
 )
 
-//sysadmin has all privileges to all projects
-func listRoles(userID int, projectID int64, entityType string) ([]models.Role, error) {
-	roles := make([]models.Role, 0, 1)
-	isSysAdmin, err := dao.IsAdminRole(userID)
-	if err != nil {
-		log.Errorf("failed to determine whether the user %d is system admin: %v", userID, err)
-		return roles, err
-	}
-	if isSysAdmin {
-		role, err := dao.GetRoleByID(models.PROJECTADMIN)
-		if err != nil {
-			log.Errorf("failed to get role %d: %v", models.PROJECTADMIN, err)
-			return roles, err
-		}
-		roles = append(roles, *role)
-		return roles, nil
-	}
-
-	rs, err := dao.GetUserProjectRoles(userID, projectID, entityType)
-	if err != nil {
-		log.Errorf("failed to get user %d 's roles for project %d: %v", userID, projectID, err)
-		return roles, err
-	}
-	roles = append(roles, rs...)
-	return roles, nil
-}
-
-func checkUserExists(name string) int {
-	u, err := dao.GetUser(models.User{Username: name})
-	if err != nil {
-		log.Errorf("Error occurred in GetUser, error: %v", err)
-		return 0
-	}
-	if u != nil {
-		return u.UserID
-	}
-	return 0
-}
-
 // SyncRegistry syncs the repositories of registry with database.
 func SyncRegistry(pm promgr.ProjectManager) error {
 
