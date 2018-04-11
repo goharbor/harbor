@@ -336,7 +336,7 @@
         "TARGETS":"Target",
         "MODE": "Mode",
         "TRIGGER_MODE": "Trigger Mode",
-        "SOURCE": "Source",
+        "SOURCE_PROJECT": "Source project",
         "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
         "REPLICATE_IMMEDIATE":"Replicate existing images immediately",
@@ -627,7 +627,7 @@
         "COPY_ERROR": "Copy failed, please try to manually copy.",
         "FILTER_FOR_TAGS": "Etiquetas de filtro",
         "AUTHOR": "Author",
-        "LABELS": "LABELS"
+        "LABELS": "Labels"
     },
     "LABEL": {
         "LABEL": "Label",

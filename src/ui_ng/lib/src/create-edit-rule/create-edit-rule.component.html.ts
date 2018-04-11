@@ -20,7 +20,7 @@ export const CREATE_EDIT_RULE_TEMPLATE: string = `
       </div>
       <!--Projects-->
       <div class="form-group form-group-override">
-       <label class="form-group-label-override required">{{'REPLICATION.SOURCE' | translate}}&nbsp;{{'PROJECT.PROJECTS' | translate | lowercase}}</label>
+       <label class="form-group-label-override required">{{'REPLICATION.SOURCE_PROJECT' | translate}}</label>
        <div formArrayName="projects">
         <div class="projectInput inputWidth" *ngFor="let project of projects.controls; let i= index" [formGroupName]="i" (mouseleave)="leaveInput()">
          <input *ngIf="!projectId" formControlName="name" type="text" class="inputWidth"  value="name" required

@@ -336,7 +336,7 @@
         "TARGETS":"目标",
         "MODE": "模式",
         "TRIGGER_MODE": "触发模式",
-        "SOURCE": "源",
+        "SOURCE_PROJECT": "源项目",
         "REPLICATE": "复制",
         "DELETE_REMOTE_IMAGES":"删除本地镜像时同时也删除远程的镜像。",
         "REPLICATE_IMMEDIATE":"立即复制现有的镜像。",

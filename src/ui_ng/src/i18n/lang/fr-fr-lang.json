@@ -297,7 +297,25 @@
         "INVALID_DATE": "Date non valide.",
         "PLACEHOLDER": "Nous n'avons trouvé aucune règle de réplication !",
         "JOB_PLACEHOLDER": "Nous n'avons trouvé aucun travail de réplication !",
-        "JOB_LOG_VIEWER": "Afficher les logs des travaux de réplication"
+        "JOB_LOG_VIEWER": "Afficher les logs des travaux de réplication",
+        "NO_ENDPOINT_INFO": "Please add an endpoint first",
+        "NO_PROJECT_INFO": "Please add a project name first",
+        "SOURCE_IMAGES_FILTER": "Source images filter",
+        "SCHEDULE": "Scheduled",
+        "MANUAL": "Manual",
+        "IMMEDIATE": "Immediate",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "SETTING":"Options",
+        "TRIGGER":"Triggering Condition",
+        "TARGETS":"Target",
+        "MODE": "Mode",
+        "TRIGGER_MODE": "Trigger Mode",
+        "SOURCE_PROJECT": "Source project",
+        "REPLICATE": "Replicate",
+        "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
+        "REPLICATE_IMMEDIATE":"Replicate existing images immediately",
+        "NEW": "New"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nouveau Point Final",
@@ -567,7 +585,7 @@
         "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement.",
         "FILTER_FOR_TAGS": "Filter Tags",
         "AUTHOR": "Author",
-        "LABELS": "LABELS"
+        "LABELS": "Labels"
     },
     "LABEL": {
         "LABEL": "Label",
