@@ -4,7 +4,7 @@ export const TAG_DETAIL_HTML: string = `
         <div class="title-wrapper">
             <div class="arrow-block">
                 <a (click)="onBackPro()">< {{'SIDE_NAV.PROJECTS'| translate}}</a>
-                <a (click)="onBackRep()">< {{'SIDE_NAV.SYSTEM_MGMT.REGISTRY'| translate}}</a>
+                <a (click)="onBackRep()">< {{'REPOSITORY.REPOSITORIES'| translate}}</a>
                 <a (click)="onBackTag()">< {{repositoryId}}</a>
             </div>
             <div class="">

@@ -3,7 +3,7 @@ export const REPOSITORY_TEMPLATE = `
   <div class="title-wrapper">
     <div class="arrow-block">
       <a (click)="goProBack()">< {{'SIDE_NAV.PROJECTS'| translate}}</a>
-      <a (click)="goRepBack()">< {{'SIDE_NAV.SYSTEM_MGMT.REGISTRY'| translate}}</a>
+      <a (click)="goRepBack()">< {{'REPOSITORY.REPOSITORIES'| translate}}</a>
     </div>
     <div>
       <h2 sub-header-title class="custom-h2">{{repoName}}</h2>
