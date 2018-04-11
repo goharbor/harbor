@@ -147,7 +147,6 @@ Test Case - Proj Replication Jobs Log View
     Filter Rule  rule${d}
     Select Rule  rule${d}
     Wait Until Page Contains  transfer 
-    Stop Jobs    #temp disable
-    Wait Until Page Contains  stopped
+    Wait Until Page Contains  error
     View Job Log  busybox
     Close Browser
