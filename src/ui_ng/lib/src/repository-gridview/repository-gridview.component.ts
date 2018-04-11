@@ -101,15 +101,16 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
   }
 
   ngOnInit(): void {
+    // Get system info for tag views
+    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
+      .then(systemInfo => this.systemInfo = systemInfo)
+      .catch(error => this.errorHandler.error(error));
+
     if (this.withAdmiral) {
       this.isCardView = true;
     } else {
       this.isCardView = false;
     }
-    // Get system info for tag views
-    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-      .then(systemInfo => this.systemInfo = systemInfo)
-      .catch(error => this.errorHandler.error(error));
 
     this.lastFilteredRepoName = '';
   }
@@ -259,18 +260,22 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     evt.stopPropagation();
     this.repoProvisionEvent.emit(repo);
   }
-  deleteItemEvent(evt: any, item: RepositoryItem): void {
-    evt.stopPropagation();
-    this.deleteRepos([item]);
-  }
+
   itemAddInfoEvent(evt: any, repo: RepositoryItem): void {
     evt.stopPropagation();
     this.addInfoEvent.emit(repo);
   }
+
+  deleteItemEvent(evt: any, item: RepositoryItem): void {
+    evt.stopPropagation();
+    this.deleteRepos([item]);
+  }
+
   selectedChange(): void {
     let hnd = setInterval(() => this.ref.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 2000);
   }
+
   refresh() {
     this.doSearchRepoNames('');
   }
