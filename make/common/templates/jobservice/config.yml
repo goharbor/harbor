@@ -12,8 +12,8 @@ port: 8080
 
 #Worker pool
 worker_pool:
-  #0 means unlimited
-  workers: 10
+  #Worker concurrency
+  workers: 50
   backend: "redis"
   #Additional config if use 'redis' backend
   #TODO: switch to internal redis endpoint and namespace.
