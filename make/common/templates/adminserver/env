@@ -1,5 +1,5 @@
 PORT=8080
-LOG_LEVEL=debug
+LOG_LEVEL=info
 EXT_ENDPOINT=$public_url
 AUTH_MODE=$auth_mode
 SELF_REGISTRATION=$self_registration
