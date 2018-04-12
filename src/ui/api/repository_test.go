@@ -195,7 +195,7 @@ func TestGetReposTop(t *testing.T) {
 		assert.Equal(int(200), code, "response code should be 200")
 		if r, ok := repos.([]*repoResp); ok {
 			assert.Equal(int(1), len(r), "the length should be 1")
-			assert.Equal(r[0].Name, "library/docker", "the name of repository should be library/docker")
+			assert.Equal(r[0].Name, "library/busybox", "the name of repository should be library/busybox")
 		} else {
 			t.Error("unexpected response")
 		}

@@ -48,7 +48,7 @@ func TestSearch(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 		assert.Equal("library", result.Repositories[0].ProjectName, "Project name should be library")
-		assert.Equal("library/docker", result.Repositories[0].RepositoryName, "Repository  name should be library/docker")
+		assert.Equal("library/busybox", result.Repositories[0].RepositoryName, "Repository  name should be library/busybox")
 		assert.True(result.Repositories[0].ProjectPublic, "Project public status should be 1 (true)")
 	}
 
@@ -60,7 +60,7 @@ func TestSearch(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 		assert.Equal("library", result.Repositories[0].ProjectName, "Project name should be library")
-		assert.Equal("library/docker", result.Repositories[0].RepositoryName, "Repository  name should be library/docker")
+		assert.Equal("library/busybox", result.Repositories[0].RepositoryName, "Repository  name should be library/busybox")
 		assert.True(result.Repositories[0].ProjectPublic, "Project public status should be 1 (true)")
 	}
 
