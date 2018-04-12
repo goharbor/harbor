@@ -3,7 +3,6 @@
 package opm
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -38,9 +37,6 @@ func NewHookClient() *HookClient {
 		Transport: &http.Transport{
 			MaxIdleConns:    maxIdleConnections,
 			IdleConnTimeout: idleConnectionTimeout,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
 		},
 	}
 

@@ -34,7 +34,7 @@ func New(logPath string, level string) *JobLogger {
 //Implements logger.Closer interface
 func (jl *JobLogger) Close() error {
 	if jl.streamRef != nil {
-		jl.streamRef.Close()
+		return jl.streamRef.Close()
 	}
 
 	return nil
