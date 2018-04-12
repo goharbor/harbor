@@ -316,7 +316,7 @@ TestCase - Project Admin Add Labels To Repo
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=test${d}  email=test${d}@vmware.com  realname=test${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
-    Push image  ip=${ip}  user=test${d}  pwd=Test1@34  project=project${d}  vmware/photon:1.0
+    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  vmware/photon  1.0  1.0
 
     Go Into Project  project${d}
     Sleep  2

@@ -54,7 +54,7 @@ Push Image With Tag
 #tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest    
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}  ${tag1}=latest
     Log To Console  \nRunning docker push ${image}...
-    ${rc}  ${output}=  Run And Return Rc  docker pull ${image}:${tag1}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${image}:${tag1}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${user} -p ${pwd} ${ip}
