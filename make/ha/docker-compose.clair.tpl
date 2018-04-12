@@ -27,6 +27,8 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "clair"
+    env_file:
+      ./common/config/clair/clair_env
 networks:
   harbor-clair:
     external: false
