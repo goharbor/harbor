@@ -30,6 +30,7 @@ Install Harbor to Test Server
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Should Be Equal As Integers  ${rc}  0
     Log To Console  \n${output}
+    Force Pull Photon
     Log To Console  \nconfig harbor cfg
     Config Harbor cfg  http_proxy=https
     Prepare Cert
@@ -171,3 +172,13 @@ Wait for Harbor Ready
     \  Return From Keyword If  ${status}  ${HARBOR_IP}
     \  Sleep  30s
     Fail Harbor failed to come up properly!
+
+Force Pull Photon
+    ${rc}  ${output}=  Run And Return Rc And Output  docker rmi -f vmware/photon:1.0
+    Log  ${rc}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull vmware/photon:1.0
+    Log  ${rc}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
