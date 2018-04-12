@@ -36,6 +36,7 @@ externalDomain: harbor.my.domain
 # If set to true, you don't need to set tlsCrt/tlsKey/caCrt, but must add
 # Harbor FQDN as insecure-registries for your docker client.
 insecureRegistry: false
+generateCertificates: true
 # The TLS certificate for Harbor. The common name of tlsCrt must match the externalDomain above.
 tlsCrt:
 tlsKey:
