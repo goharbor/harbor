@@ -75,9 +75,13 @@ You can create a project after you signed in. Check on the "Access Level" checkb
 
 ![create project](img/new_create_project.png)  
 
-After the project is created, you can browse repositories, members, logs, replication and configuration using the navigation tab.  
+After the project is created, you can browse repositories, members, logs, replication and configuration using the navigation tab.
 
-![browse project](img/new_browse_project.png)  
+![browse project](img/new_browse_project.png)
+
+There are two views to show repositories, listview, and cardview, you can switch between them by click correspond icon.
+
+![browse repositories](img/browse_project_repositories.png)
 
 All logs can be listed by clicking "Logs". You can apply a filter by username, or operations and dates under "Advanced Search".  
 
