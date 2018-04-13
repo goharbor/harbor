@@ -134,7 +134,7 @@ Save the [Keepalived configuration file](https://github.com/vmware/harbor/blob/r
 
 **Important**
 
-You need to change the **<change_to_VIP_address>** to the real IP address.(There are two place.) 
+You need to change the **<change_to_VIP_address>** to your VIP address.(There are two place.) 
 
 Change **harbor_node1_IP** (Two places) and **harbor_node2_IP** (Two places)to the real harbor nodes IPs. 
 
