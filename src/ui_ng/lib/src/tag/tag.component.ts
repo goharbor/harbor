@@ -294,12 +294,11 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   selectedChange(tag?: Tag[]): void {
     if (tag && tag[0].labels && tag[0].labels.length) {
+      this.imageStickLabels.forEach(data => {
+        data.iconsShow = false;
+      })
       tag[0].labels.forEach((labelInfo: Label) => {
-        this.imageStickLabels.forEach(data => {
-          if (labelInfo.id === data['label'].id) {
-            data.iconsShow = true;
-          }
-        });
+        this.imageStickLabels.find(data => labelInfo.id === data['label'].id).iconsShow = true;
       });
     }
   }
@@ -355,6 +354,8 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.imageFilterLabels.filter(data => {
         if (data.label.name !== labelName) {
           data.iconsShow = false;
+        }else {
+          data.iconsShow = true;
         }
       });
 
@@ -380,7 +381,7 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   unFilterLabel(labelInfo: {[key: string]: any | string[]}): void {
       this.filterOneLabel = this.initFilter;
-
+      labelInfo.iconsShow = false;
       // reload datagu
       this.currentPage = 1;
       let st: State = this.currentState;
