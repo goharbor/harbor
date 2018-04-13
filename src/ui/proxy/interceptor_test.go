@@ -110,6 +110,26 @@ func TestMatchListRepos(t *testing.T) {
 
 }
 
+func TestMatchCheckLayer(t *testing.T) {
+	assert := assert.New(t)
+	req1, _ := http.NewRequest("POST", "https://myregistry.com/v2/path1/path2/golang/blobs/sha256:ca4626b691f57d16ce1576231e4a2e2135554d32e13a85dcff380d51fdd13f6a", nil)
+	res1 := MatchCheckLayer(req1)
+	assert.False(res1, "%s %v is not a request to check layer", req1.Method, req1.URL)
+
+	req2, _ := http.NewRequest("HEAD", "https://myregistry.com/v2/library/golang/blobs/sha256:ca4626b691f57d16ce1576231e4a2e2135554d32e13a85dcff380d51fdd13f6a", nil)
+	res2 := MatchCheckLayer(req2)
+	assert.True(res2, "%s %v is a request to check layer", req2.Method, req2.URL)
+
+	req3, _ := http.NewRequest("HEAD", "https://myregistry.com/v2/path1/path2/golang/blobs/sha256:ca4626b691f57d16ce1576231e4a2e2135554d32e13a85dcff380d51fdd13f6a", nil)
+	res3 := MatchCheckLayer(req3)
+	assert.True(res3, "%s %v is not a request to check layer", req3.Method, req3.URL)
+
+	req4, _ := http.NewRequest("HEAD", "https://myregistry.com/v2/path1/path2/golang/blobs/1.6.2", nil)
+	res4 := MatchCheckLayer(req4)
+	assert.True(res4, "%s %v is not a request to check layer", req4.Method, req4.URL)
+
+}
+
 func TestPMSPolicyChecker(t *testing.T) {
 	var defaultConfigAdmiral = map[string]interface{}{
 		common.ExtEndpoint:     "https://" + endpoint,
