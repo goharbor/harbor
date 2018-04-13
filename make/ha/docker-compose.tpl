@@ -59,7 +59,7 @@ services:
     volumes:
       - ./common/config/ui/app.conf:/etc/ui/app.conf:z
       - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
-      - ./common/config/ui/certificates/:/etc/ui/certifates/
+      - ./common/config/ui/certificates/:/etc/ui/certificates/:z
       - /data/secretkey:/etc/ui/key:z
       - /data/ca_download/:/etc/ui/ca/:z
       - /data/psc/:/etc/ui/token/:z
@@ -82,7 +82,7 @@ services:
     restart: always
     volumes:
       - /data/job_logs:/var/log/jobs:z
-      - ./common/config/jobservice/app.conf:/etc/jobservice/app.conf:z
+      - ./common/config/jobservice/config.yml:/etc/jobservice/config.yml:z
       - /data/secretkey:/etc/jobservice/key:z
     networks:
       - harbor
