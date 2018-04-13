@@ -24,9 +24,10 @@ import (
 type contextKey string
 
 const (
-	manifestURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`
-	catalogURLPattern  = `/v2/_catalog`
-	imageInfoCtxKey    = contextKey("ImageInfo")
+	manifestURLPattern   = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`
+	checkLayerURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)blobs/([\w][\w.:-]{0,127})`
+	catalogURLPattern    = `/v2/_catalog`
+	imageInfoCtxKey      = contextKey("ImageInfo")
 	//TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	tokenUsername = "harbor-ui"
 )
@@ -60,6 +61,19 @@ func MatchListRepos(req *http.Request) bool {
 	re := regexp.MustCompile(catalogURLPattern)
 	s := re.FindStringSubmatch(req.URL.Path)
 	if len(s) == 1 {
+		return true
+	}
+	return false
+}
+
+// MatchCheckLayer checks if the request looks like a request to check the existing layer.
+func MatchCheckLayer(req *http.Request) bool {
+	if req.Method != http.MethodHead {
+		return false
+	}
+	re := regexp.MustCompile(checkLayerURLPattern)
+	s := re.FindStringSubmatch(req.URL.Path)
+	if len(s) == 3 {
 		return true
 	}
 	return false
@@ -118,7 +132,6 @@ type urlHandler struct {
 
 func (uh urlHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	log.Debugf("in url handler, path: %s", req.URL.Path)
-	req.URL.Path = strings.TrimPrefix(req.URL.Path, RegistryProxyPrefix)
 	flag, repository, reference := MatchPullManifest(req)
 	if flag {
 		components := strings.SplitN(repository, "/", 2)
@@ -159,9 +172,16 @@ type readonlyHandler struct {
 }
 
 func (rh readonlyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	errorCode := "DENIED"
+	errorMsg := "The system is in read only mode. Any modification is not prohibited."
+	req.URL.Path = strings.TrimPrefix(req.URL.Path, RegistryProxyPrefix)
 	if config.ReadOnly() {
+		if MatchCheckLayer(req) {
+			http.Error(rw, marshalError(errorCode, errorMsg), http.StatusForbidden)
+			return
+		}
 		if req.Method == http.MethodDelete || req.Method == http.MethodPost || req.Method == http.MethodPatch {
-			http.Error(rw, marshalError("DENIED", "The system is in read only mode. Any modification is not prohibited."), http.StatusForbidden)
+			http.Error(rw, marshalError(errorCode, errorMsg), http.StatusForbidden)
 			return
 		}
 	}
