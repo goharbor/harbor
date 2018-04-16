@@ -19,7 +19,22 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 ${HARBOR_VERSION}  v1.1.1
 
-
+*** Keywords ***
+Sign In Harbor
+    [Arguments]  ${url}  ${user}  ${pw}
+    Go To    ${url}
+    Sleep  5
+    ${title}=  Get Title
+    Log To Console  ${title}
+    Should Be Equal  ${title}  Harbor
+    Sleep  2
+    Input Text  login_username  ${user}
+    Input Text  login_password  ${pw}
+    Sleep  2
+    Click button  css=.btn
+    sleep  5
+    Log To Console  ${user}
+    Wait Until Page Contains  ${user}
 
 Sign Up Should Not Display
     Page Should Not Contain Element  xpath=${sign_up_button_xpath}

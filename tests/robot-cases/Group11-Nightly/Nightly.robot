@@ -36,10 +36,10 @@ Test Case - Vulnerability Data Not Ready
     Vulnerability Not Ready Config Hint
 
 Test Case - Read Only Mode
-    Init Chrome Driver    
-    ${d}=   Get Current Date    result_format=%m%s			
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=true
-    
+
     Enable Read Only
     Cannot Push image  ${ip}  tester${d}  Test1@34  project${d}  busybox:latest
 
@@ -324,16 +324,16 @@ TestCase - Project Admin Add Labels To Repo
     Sleep  2
     # Add labels
     Switch To Project Label
-    Create New Labels  label_${d}
+    Create New Labels  label111
     Capture Page Screenshot  CreateLabel1.png
-    Create New Labels  label11111
+    Create New Labels  label22
     Capture Page Screenshot  CreateLabel2.png
     Sleep  2
     Switch To Project Repo
     Go Into Repo  project${d}/redis
-    Add Labels To Tag  3.2.10-alpine  label_${d}
-    Add Labels To Tag  4.0.7-alpine  label11111
-    Filter Labels In Tags  label_${d}
+    Add Labels To Tag  3.2.10-alpine  label111
+    Add Labels To Tag  4.0.7-alpine  label22
+    Filter Labels In Tags  label111  label22
     Close Browser
 
 TestCase - Developer Operate Labels
