@@ -135,7 +135,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   }
 
   get onlySelf(): boolean {
-    if (this.selectedRow.length === 1 && this.selectedRow[0].id === this.currentUser.user_id) {
+    if (this.selectedRow.length === 1 && this.selectedRow[0].entity_id === this.currentUser.user_id) {
       return true;
     }
     return false;
@@ -163,7 +163,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     if (members && members.length) {
       let promiseList: any[] = [];
       members.forEach(member => {
-        if (member.id === this.currentUser.user_id) {
+        if (member.entity_id === this.currentUser.user_id) {
           let foundMember = this.batchActionInfos.find(batchInfo => batchInfo.name === member.entity_name);
           this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
             this.messageHandlerService.handleError(res + ": " + foundMember.name);
@@ -239,7 +239,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     if (members && members.length) {
       let promiseLists: any[] = [];
       members.forEach(member => {
-        if (member.id === this.currentUser.user_id) {
+        if (member.entity_id === this.currentUser.user_id) {
           let findedList = this.batchDeletionInfos.find(data => data.name === member.entity_name);
           this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
             findedList = BathInfoChanges(findedList, res, false, true);
