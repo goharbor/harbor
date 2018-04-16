@@ -318,6 +318,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         this.loading = false;
         this.errorHandler.error(error);
       });
+      let hnd = setInterval(() => this.ref.markForCheck(), 500);
+      setTimeout(() => clearInterval(hnd), 5000);
   }
 
   clrLoad(state: State): void {
