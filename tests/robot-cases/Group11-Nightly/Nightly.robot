@@ -541,6 +541,21 @@ Test Case - Delete Multi Tag
     Delete Success
     Close Browser
 
+Test Case - Delete Repo on CardView
+    Init Chrome Driver
+    ${d}=   Get Current Date  result_format=%m%s
+    Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
+    Create An New Project  project${d}
+    Push Image  ${ip}  test${d}  Test1@34  project${d}  hello-world
+    Push Image  ${ip}  test${d}  Test1@34  project${d}  busybox
+    Sleep  2
+    Go Into Project  project${d}
+    Switch To CardView
+    Delete Repo on CardView  hello-world
+    # Verify
+    Delete Success
+    Close Browser
+
 Test Case - Delete Multi Member
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
