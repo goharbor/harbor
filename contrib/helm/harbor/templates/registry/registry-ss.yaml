@@ -44,11 +44,9 @@ spec:
           mountPath: /etc/registry/config.yml
           subPath: config.yml
       volumes:
-{{- if not .Values.registry.objectStorage }}
-{{- if not .Values.persistence.enabled }}
+{{- if or (not .Values.persistence.enabled) .Values.registry.objectStorage }}
       - name: registry-data
         emptyDir: {}
-{{- end }}
 {{- end }}
       - name: registry-root-certificate
         secret:

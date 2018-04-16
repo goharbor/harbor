@@ -8,7 +8,7 @@ data:
   config.yml: |+
     version: 0.1
     log:
-      level: info
+      level: {{ .Values.registry.logLevel }}
       fields:
         service: registry
     storage:
@@ -17,8 +17,10 @@ data:
       {{- end }}
       cache:
         layerinfo: inmemory
+      {{- if not .Values.registry.objectStorage }}
       filesystem:
         rootdirectory: /var/lib/registry
+      {{- end }}
       maintenance:
         uploadpurging:
           enabled: false
