@@ -118,3 +118,33 @@ func DeleteProjectMemberByID(pmid int) error {
 	}
 	return nil
 }
+
+// SearchMemberByName search members of the project by entity_name
+func SearchMemberByName(projectID int64, entityName string) ([]*models.Member, error) {
+	o := dao.GetOrmer()
+	sql := `(select pm.id, pm.project_id, 
+	               u.username as entity_name, 
+	               r.name as rolename,
+			       pm.role, pm.entity_id, pm.entity_type 
+			  from project_member pm
+         left join user u on pm.entity_id = u.user_id and pm.entity_type = 'u'
+		 left join role r on pm.role = r.role_id
+			 where u.deleted = 0 and pm.project_id = ? and u.username like ? order by entity_name )
+			union
+		   (select pm.id, pm.project_id, 
+			       ug.group_name as entity_name, 
+				   r.name as rolename,
+				   pm.role, pm.entity_id, pm.entity_type 
+		      from project_member pm
+	     left join user_group ug on pm.entity_id = ug.id and pm.entity_type = 'g'
+	     left join role r on pm.role = r.role_id
+		     where pm.project_id = ? and ug.group_name like ? order by entity_name ) `
+	queryParam := make([]interface{}, 4)
+	queryParam = append(queryParam, projectID)
+	queryParam = append(queryParam, "%"+dao.Escape(entityName)+"%")
+	queryParam = append(queryParam, projectID)
+	queryParam = append(queryParam, "%"+dao.Escape(entityName)+"%")
+	members := []*models.Member{}
+	_, err := o.Raw(sql, queryParam).QueryRows(&members)
+	return members, err
+}
