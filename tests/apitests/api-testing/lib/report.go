@@ -16,7 +16,11 @@ func (r *Report) Passed(caseName string) {
 
 //Failed case
 func (r *Report) Failed(caseName string, err error) {
-	r.failed = append(r.failed, fmt.Sprintf("%s: [%s] %s", caseName, "FAILED", err.Error()))
+	errMsg := ""
+	if err != nil {
+		errMsg = err.Error()
+	}
+	r.failed = append(r.failed, fmt.Sprintf("%s: [%s] %s", caseName, "FAILED", errMsg))
 }
 
 //Print report
