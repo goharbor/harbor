@@ -316,17 +316,24 @@ TestCase - Project Admin Add Labels To Repo
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=test${d}  email=test${d}@vmware.com  realname=test${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
-    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  vmware/photon  1.0  1.0
+    ## Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  vmware/photon  1.0  1.0
+    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  redis  3.2.10-alpine  3.2.10-alpine
+    Push Image With Tag  ${ip}  test${d}  Test1@34  project${d}  redis  4.0.7-alpine  4.0.7-alpine
 
     Go Into Project  project${d}
     Sleep  2
     # Add labels
     Switch To Project Label
     Create New Labels  label_${d}
+    Capture Page Screenshot  CreateLabel1.png
+    Create New Labels  label11111
+    Capture Page Screenshot  CreateLabel2.png
     Sleep  2
     Switch To Project Repo
-    Go Into Repo  project${d}/vmware/photon
-    Add Labels To Tag  1.0  label_${d}
+    Go Into Repo  project${d}/redis
+    Add Labels To Tag  3.2.10-alpine  label_${d}
+    Add Labels To Tag  4.0.7-alpine  label11111
+    Filter Labels In Tags  label_${d}
     Close Browser
 
 TestCase - Developer Operate Labels
