@@ -7,7 +7,7 @@ export const CREATE_EDIT_LABEL_TEMPLATE: string = `
                     <label  aria-haspopup="true" role="tooltip" [class.invalid]="isLabelNameExist" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left">
                     <input type="text" id="name" name="name" required size="20" autocomplete="off" [(ngModel)]="labelModel.name" #name="ngModel" (keyup)="existValid(labelModel.name)">
                     <span class="tooltip-content">
-                      {{'LABEL.NAME_ALREADY_EXIST' | translate }}
+                      {{'LABEL.NAME_ALREADY_EXISTS' | translate }}
                     </span>
                 </label>
             </label>
