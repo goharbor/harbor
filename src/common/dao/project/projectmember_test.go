@@ -149,6 +149,25 @@ func TestAddProjectMember(t *testing.T) {
 	if len(memberList) == 0 {
 		t.Errorf("Failed to query project member, %v", queryMember)
 	}
+
+	_, err = AddProjectMember(models.Member{
+		ProjectID:  -1,
+		EntityID:   1,
+		EntityType: common.UserMember,
+		Role:       models.PROJECTADMIN,
+	})
+	if err == nil {
+		t.Fatal("Should failed with negative projectID")
+	}
+	_, err = AddProjectMember(models.Member{
+		ProjectID:  1,
+		EntityID:   -1,
+		EntityType: common.UserMember,
+		Role:       models.PROJECTADMIN,
+	})
+	if err == nil {
+		t.Fatal("Should failed with negative entityID")
+	}
 }
 func TestUpdateProjectMemberRole(t *testing.T) {
 	currentProject, err := dao.GetProjectByName("member_test_01")
@@ -195,6 +214,23 @@ func TestUpdateProjectMemberRole(t *testing.T) {
 		t.Errorf("member doesn't match!")
 	}
 
+	memberList2, err := SearchMemberByName(currentProject.ProjectID, "pm_sample")
+	if err != nil {
+		t.Errorf("Error occurred when SearchMemberByName: %v", err)
+	}
+	if len(memberList2) == 0 {
+		t.Errorf("Failed to search user pm_sample, project_id:%v, entityname:%v",
+			currentProject.ProjectID, "pm_sample")
+	}
+
+	memberList3, err := SearchMemberByName(currentProject.ProjectID, "")
+	if err != nil {
+		t.Errorf("Error occurred when SearchMemberByName: %v", err)
+	}
+	if len(memberList3) == 0 {
+		t.Errorf("Failed to search user pm_sample, project_id:%v, entityname is empty",
+			currentProject.ProjectID)
+	}
 }
 
 func TestGetProjectMember(t *testing.T) {

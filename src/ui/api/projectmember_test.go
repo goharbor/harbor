@@ -61,6 +61,15 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 			},
 			code: http.StatusNotFound,
 		},
+		// 404
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        "/api/projects/99999/members/121",
+				credential: admin,
+			},
+			code: http.StatusNotFound,
+		},
 	}
 	runCodeCheckingCases(t, cases...)
 }
@@ -118,6 +127,22 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 				credential: admin,
 			},
 			code: http.StatusInternalServerError,
+		},
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        "/api/projects/1/members?entityname=restuser",
+				credential: admin,
+			},
+			code: http.StatusOK,
+		},
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        "/api/projects/1/members",
+				credential: admin,
+			},
+			code: http.StatusOK,
 		},
 	}
 	runCodeCheckingCases(t, cases...)

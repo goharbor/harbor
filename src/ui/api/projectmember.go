@@ -73,7 +73,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 
 	pmid, err := pma.GetInt64FromPath(":pmid")
 	if err != nil {
-		log.Errorf("Failed to get pmid from path, error %v", err)
+		log.Warningf("Failed to get pmid from path, error %v", err)
 	}
 	if pmid <= 0 && (pma.Ctx.Input.IsPut() || pma.Ctx.Input.IsDelete()) {
 		pma.HandleBadRequest(fmt.Sprintf("The project member id is invalid, pmid:%s", pma.GetStringFromPath(":pmid")))
@@ -89,8 +89,8 @@ func (pma *ProjectMemberAPI) Get() {
 	queryMember.ProjectID = projectID
 	pma.Data["json"] = make([]models.Member, 0)
 	if pma.id == 0 {
-		//member id not set, return all member of current project
-		memberList, err := project.GetProjectMember(queryMember)
+		entityname := pma.GetString("entityname")
+		memberList, err := project.SearchMemberByName(projectID, entityname)
 		if err != nil {
 			pma.HandleInternalServerError(fmt.Sprintf("Failed to query database for member list, error: %v", err))
 			return
@@ -98,6 +98,7 @@ func (pma *ProjectMemberAPI) Get() {
 		if len(memberList) > 0 {
 			pma.Data["json"] = memberList
 		}
+
 	} else {
 		//return a specific member
 		queryMember.ID = pma.id
