@@ -57,10 +57,24 @@ You can add `harbor.my.domain` and IP mapping in the DNS server, or in /etc/host
 
 Follow the `NOTES` section in the command output to get Harbor admin password and **add Harbor root CA into docker trusted certificates**.
 
+If you are using an external service like [cert-manager](https://github.com/jetstack/cert-manager) for generating the TLS certificates,
+you will want to disable the certificate generation by helm by setting the value `generateCertificates` to _false_. Then the ingress' annotations will be scanned
+by _cert-manager_ and the appropriate secret will get created and updated by the service.
+
+If using acme's certificates, do not forget to add the following annotation to
+your ingress.
+
+```yaml
+ingress:
+  annotations:
+    kubernetes.io/tls-acme: "true"
+```
+
 The command deploys Harbor on the Kubernetes cluster in the default configuration.
 The [configuration](#configuration) section lists the parameters that can be configured in values.yaml or via '--set' params during installation.
 
 > **Tip**: List all releases using `helm list`
+
 
 ### Insecure Registry Mode
 
@@ -96,6 +110,7 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `harborImageTag`     | The tag for Harbor docker images | `v1.4.0` |
 | `externalDomain`       | Harbor will run on (https://`externalDomain`/). Recommend using K8s Ingress Controller FQDN as `externalDomain`, or make sure this FQDN resolves to the K8s Ingress Controller IP. | `harbor.my.domain` |
 | `insecureRegistry`     | If set to true, you don't need to set tlsCrt/tlsKey/caCrt, but must add Harbor FQDN as insecure-registries for your docker client. | `false` |
+| `generateCertificates`  | Set to false if TLS certificate will be managed by an external service | `true` |
 | `tlsCrt`               | TLS certificate to use for Harbor's https endpoint. Its CN must match `externalDomain`. | auto-generated |
 | `tlsKey`               | TLS key to use for Harbor's https endpoint | auto-generated |
 | `caCrt`                | CA Cert for self signed TLS cert | auto-generated |
