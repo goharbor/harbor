@@ -13,13 +13,13 @@ port: 8080
 #Worker pool
 worker_pool:
   #Worker concurrency
-  workers: 50
+  workers: $max_job_workers
   backend: "redis"
   #Additional config if use 'redis' backend
-  #TODO: switch to internal redis endpoint and namespace.
   redis_pool:
-    host: "redis"
-    port: 6379
+    #redis://[arbitrary_username:password@]ipaddress:port/database_index
+    #or ipaddress:port[,weight,password,database_index]
+    redis_url: $redis_url
     namespace: "harbor_job_service_namespace"
 #Logger for job
 logger:

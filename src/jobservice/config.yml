@@ -17,8 +17,9 @@ worker_pool:
   backend: "redis"
   #Additional config if use 'redis' backend
   redis_pool:
-    host: "10.160.178.186"
-    port: 6379
+    #redis://[arbitrary_username:password@]ipaddress:port/database_index
+    #or ipaddress:port[,weight,password,database_index]
+    redis_url: "redis:6379"
     namespace: "harbor_job_service"
 
 #Logger for job

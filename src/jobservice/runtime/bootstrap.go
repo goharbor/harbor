@@ -4,7 +4,6 @@ package runtime
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
@@ -151,9 +150,8 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 		MaxIdle:   6,
 		Wait:      true,
 		Dial: func() (redis.Conn, error) {
-			return redis.Dial(
-				"tcp",
-				fmt.Sprintf("%s:%d", cfg.PoolConfig.RedisPoolCfg.Host, cfg.PoolConfig.RedisPoolCfg.Port),
+			return redis.DialURL(
+				cfg.PoolConfig.RedisPoolCfg.RedisURL,
 				redis.DialConnectTimeout(dialConnectionTimeout),
 				redis.DialReadTimeout(dialReadTimeout),
 				redis.DialWriteTimeout(dialWriteTimeout),
