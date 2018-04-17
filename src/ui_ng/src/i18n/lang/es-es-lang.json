@@ -642,7 +642,8 @@
         "NO_LABELS": "No labels",
         "DELETION_TITLE_TARGET": "Confirm Label Deletion",
         "DELETION_SUMMARY_TARGET": "Do you want to delete {{param}}?",
-        "PLACEHOLDER": "We couldn't find any labels!"
+        "PLACEHOLDER": "We couldn't find any labels!",
+        "NAME_ALREADY_EXISTS": "Label name already exists."
     },
     "WEEKLY": {
     "MONDAY": "Monday",
