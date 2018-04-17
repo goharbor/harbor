@@ -412,6 +412,11 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret,
         adminserver_url=adminserver_url)
+
+render(os.path.join(templates_dir, "jobservice", "config.yml"),
+        jobservice_conf,
+        max_job_workers=max_job_workers,
+        redis_url=redis_url)
 		
 render(os.path.join(templates_dir, "log", "logrotate.conf"),
         log_rotate_config,
@@ -419,7 +424,6 @@ render(os.path.join(templates_dir, "log", "logrotate.conf"),
 		log_rotate_size=log_rotate_size)
 
 print("Generated configuration file: %s" % jobservice_conf)
-shutil.copyfile(os.path.join(templates_dir, "jobservice", "config.yml"), jobservice_conf)
 
 print("Generated configuration file: %s" % ui_conf)
 shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)

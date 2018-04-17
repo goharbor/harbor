@@ -48,11 +48,8 @@ func TestConfigLoadingWithEnv(t *testing.T) {
 	if cfg.PoolConfig.WorkerCount != 8 {
 		t.Fatalf("expect workcount 8 but go '%d'\n", cfg.PoolConfig.WorkerCount)
 	}
-	if cfg.PoolConfig.RedisPoolCfg.Host != "localhost" {
-		t.Fatalf("expect redis host 'localhost' but got '%s'\n", cfg.PoolConfig.RedisPoolCfg.Host)
-	}
-	if cfg.PoolConfig.RedisPoolCfg.Port != 7379 {
-		t.Fatalf("expect redis port '7379' but got '%d'\n", cfg.PoolConfig.RedisPoolCfg.Port)
+	if cfg.PoolConfig.RedisPoolCfg.RedisURL != "redis://arbitrary_username:password@8.8.8.8:6379/0" {
+		t.Fatalf("expect redis URL 'localhost' but got '%s'\n", cfg.PoolConfig.RedisPoolCfg.RedisURL)
 	}
 	if cfg.PoolConfig.RedisPoolCfg.Namespace != "ut_namespace" {
 		t.Fatalf("expect redis namespace 'ut_namespace' but got '%s'\n", cfg.PoolConfig.RedisPoolCfg.Namespace)
@@ -98,6 +95,11 @@ func TestDefaultConfig(t *testing.T) {
 		t.Fatalf("expect default log archive period 1 but got '%d'\n", period)
 	}
 
+	redisURL := DefaultConfig.PoolConfig.RedisPoolCfg.RedisURL
+	if redisURL != "redis://redis:6379" {
+		t.Fatalf("expect redisURL '%s' but got '%s'\n", "redis://redis:6379", redisURL)
+	}
+
 	if err := RemoveLogDir(); err != nil {
 		t.Fatal(err)
 	}
@@ -110,8 +112,7 @@ func setENV() {
 	os.Setenv("JOB_SERVICE_HTTPS_KEY", "../server.key")
 	os.Setenv("JOB_SERVICE_POOL_BACKEND", "redis")
 	os.Setenv("JOB_SERVICE_POOL_WORKERS", "8")
-	os.Setenv("JOB_SERVICE_POOL_REDIS_HOST", "localhost")
-	os.Setenv("JOB_SERVICE_POOL_REDIS_PORT", "7379")
+	os.Setenv("JOB_SERVICE_POOL_REDIS_URL", "8.8.8.8:6379,100,password,0")
 	os.Setenv("JOB_SERVICE_POOL_REDIS_NAMESPACE", "ut_namespace")
 	os.Setenv("JOB_SERVICE_LOGGER_BASE_PATH", "/tmp")
 	os.Setenv("JOB_SERVICE_LOGGER_LEVEL", "DEBUG")
@@ -125,8 +126,7 @@ func unsetENV() {
 	os.Unsetenv("JOB_SERVICE_HTTPS_KEY")
 	os.Unsetenv("JOB_SERVICE_POOL_BACKEND")
 	os.Unsetenv("JOB_SERVICE_POOL_WORKERS")
-	os.Unsetenv("JOB_SERVICE_POOL_REDIS_HOST")
-	os.Unsetenv("JOB_SERVICE_POOL_REDIS_PORT")
+	os.Unsetenv("JOB_SERVICE_POOL_REDIS_URL")
 	os.Unsetenv("JOB_SERVICE_POOL_REDIS_NAMESPACE")
 	os.Unsetenv("JOB_SERVICE_LOGGER_BASE_PATH")
 	os.Unsetenv("JOB_SERVICE_LOGGER_LEVEL")
