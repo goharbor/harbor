@@ -250,7 +250,15 @@ curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/ho
 ``` 
 
 ### Automated Testing
-[TODO:]
+Once your pull request has been opened, harbor will run two CI pipelines againest it. 
+1, In the travis CI, your source code will be checked via golint, go vet and go race that makes sure the code is readable, safe and correct. Also all of unit tests will be triggered via 'go test' against the pull request. What you need to pay attation to is the travis result and the coverage report. 
+* If any failure in travis, you need to figure out whether it is introduced by your commits.
+* If the coverage dramatic decline, you need to commit unit test to coverage your code.
+2, In the drone CI, the E2E test will be triggered against the pull request. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:
+* Registry Basic Verfication, to validate the image can be pulled and pushed successful.
+* Clair Basic Verfication, to validate the image can be scanned successful.
+* Notary Basic Verfication, to validate the image can be signed successful.
+* Ldap Basic Verfication, to validate harbor can work in LDAP environment. 
 
 ### Push and Create PR
 When ready for review, push your branch to your fork repository on `github.com`:
