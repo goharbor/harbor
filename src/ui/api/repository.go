@@ -324,7 +324,7 @@ func (ra *RepositoryAPI) Delete() {
 			return
 		}
 		if repository == nil {
-			ra.HandleNotFound(fmt.Sprintf("repository %s not found", repoName))
+			log.Warningf("the repository %s not found after deleting tags", repoName)
 			return
 		}
 

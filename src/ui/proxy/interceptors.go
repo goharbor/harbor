@@ -160,8 +160,9 @@ type readonlyHandler struct {
 
 func (rh readonlyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if config.ReadOnly() {
-		if req.Method == http.MethodDelete || req.Method == http.MethodPost || req.Method == http.MethodPatch {
-			http.Error(rw, marshalError("DENIED", "The system is in read only mode. Any modification is not prohibited."), http.StatusForbidden)
+		if req.Method == http.MethodDelete || req.Method == http.MethodPost || req.Method == http.MethodPatch || req.Method == http.MethodPut {
+                        log.Warningf("The request is prohibited in readonly mode, url is: %s", req.URL.Path)
+			http.Error(rw, marshalError("DENIED", "The system is in read only mode. Any modification is prohibited."), http.StatusForbidden)
 			return
 		}
 	}

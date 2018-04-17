@@ -105,6 +105,15 @@ Delete Repo
     Sleep  1
     Click Element  xpath=//button[contains(.,"CLOSE")]
 
+Delete Repo on CardView
+    [Arguments]  ${reponame}
+    Click Element  xpath=//hbr-gridview//span[contains(.,'reponame')]//clr-dropdown/button
+    Sleep  1
+    Click Element  xpath=//hbr-gridview//span[contains(.,'reponame')]//clr-dropdown/clr-dropdown-menu/button[contains(.,'Delete')]
+    Sleep  1
+    Click Element  //clr-modal//button[contains(.,'DELETE')]
+    Sleep  3
+
 Delete Project
     [Arguments]  ${projectname}
     Sleep  1
@@ -189,6 +198,11 @@ Go Into Repo
     Click Element  xpath=//clr-dg-cell[contains(.,${repoName})]/a
     Sleep  2
     Capture Page Screenshot  gointo_${repoName}.png
+
+Switch To CardView
+    Sleep  2
+    Click Element  xpath=//hbr-repository-gridview//span[1]/clr-icon
+    Sleep  5
 
 Expand Repo
     [Arguments]  ${projectname}

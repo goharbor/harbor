@@ -88,11 +88,8 @@ func (pu *ProjectUtil) CreateProject(projectName string, accessLevel bool) error
 	}
 
 	url := pu.rootURI + "/api/projects"
-	if err = pu.testingClient.Post(url, body); err != nil {
-		return err
-	}
 
-	return nil
+	return pu.testingClient.Post(url, body)
 }
 
 //DeleteProject : Delete project
@@ -108,11 +105,7 @@ func (pu *ProjectUtil) DeleteProject(projectName string) error {
 
 	url := fmt.Sprintf("%s%s%d", pu.rootURI, "/api/projects/", pid)
 
-	if err := pu.testingClient.Delete(url); err != nil {
-		return err
-	}
-
-	return nil
+	return pu.testingClient.Delete(url)
 }
 
 //AssignRole : Assign role to user
@@ -128,8 +121,10 @@ func (pu *ProjectUtil) AssignRole(projectName, username string) error {
 	}
 
 	m := models.Member{
-		UserName: username,
-		Roles:    []int{2},
+		RoleID: 2,
+		Member: &models.MemberUser{
+			Username: username,
+		},
 	}
 
 	body, err := json.Marshal(&m)
@@ -138,20 +133,17 @@ func (pu *ProjectUtil) AssignRole(projectName, username string) error {
 	}
 
 	url := fmt.Sprintf("%s%s%d%s", pu.rootURI, "/api/projects/", pid, "/members")
-	if err := pu.testingClient.Post(url, body); err != nil {
-		return err
-	}
 
-	return nil
+	return pu.testingClient.Post(url, body)
 }
 
 //RevokeRole : RevokeRole role from user
-func (pu *ProjectUtil) RevokeRole(projectName string, uid int) error {
+func (pu *ProjectUtil) RevokeRole(projectName string, username string) error {
 	if len(strings.TrimSpace(projectName)) == 0 {
 		return errors.New("Project name is required for revoking role")
 	}
 
-	if uid == 0 {
+	if len(strings.TrimSpace(username)) == 0 {
 		return errors.New("User ID is required for revoking role")
 	}
 
@@ -160,10 +152,42 @@ func (pu *ProjectUtil) RevokeRole(projectName string, uid int) error {
 		return fmt.Errorf("Failed to get project ID with name %s", projectName)
 	}
 
-	url := fmt.Sprintf("%s%s%d%s%d", pu.rootURI, "/api/projects/", pid, "/members/", uid)
-	if err := pu.testingClient.Delete(url); err != nil {
+	m, err := pu.GetProjectMember(pid, username)
+	if err != nil {
 		return err
 	}
 
-	return nil
+	url := fmt.Sprintf("%s%s%d%s%d", pu.rootURI, "/api/projects/", pid, "/members/", m.MID)
+
+	return pu.testingClient.Delete(url)
+}
+
+//GetProjectMember : Get the project member by name
+func (pu *ProjectUtil) GetProjectMember(pid int, member string) (*models.ExistingMember, error) {
+	if pid == 0 {
+		return nil, errors.New("invalid project ID")
+	}
+
+	if len(strings.TrimSpace(member)) == 0 {
+		return nil, errors.New("empty member name")
+	}
+
+	url := fmt.Sprintf("%s/api/projects/%d/members", pu.rootURI, pid)
+	data, err := pu.testingClient.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	members := []*models.ExistingMember{}
+	if err := json.Unmarshal(data, &members); err != nil {
+		return nil, err
+	}
+
+	for _, m := range members {
+		if m.Name == member {
+			return m, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no member found by the name '%s'", member)
 }

@@ -134,7 +134,7 @@ Save the [Keepalived configuration file](https://github.com/vmware/harbor/blob/r
 
 **Important**
 
-You need to change the **<change_to_VIP_address>** to the real IP address.(There are two place.) 
+You need to change the **<change_to_VIP_address>** to your VIP address.(There are two place.) 
 
 Change **harbor_node1_IP** (Two places) and **harbor_node2_IP** (Two places)to the real harbor nodes IPs. 
 
@@ -212,8 +212,6 @@ In harbor.cfg
 redis_url = 192.168.1.217:6379
 ```
 
-If you have multiple Redis servers then separate them with ";"
-
 ##### 7> Provide the Clair DB connection information
 In harbor.cfg
 
@@ -247,7 +245,7 @@ For example if you use swift as the storage backend then you need to set the fol
 
 ```
 registry_storage_provider_name = swift
-registry_storage_provider_config = username:yourusername,password:yourpass,authurl:http://192.168.1.217/identity/v3,tenant:admin,domain:default,region:RegionOne,container:docker_images
+registry_storage_provider_config = username: yourusername,password: yourpass,authurl: http://192.168.1.217/identity/v3,tenant: admin,domain: default,region: RegionOne,container: docker_images
 ```
 
 **Important**

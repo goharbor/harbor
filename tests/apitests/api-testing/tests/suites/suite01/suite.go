@@ -86,8 +86,7 @@ func (ccs *ConcourseCiSuite01) Run(onEnvironment *envs.Environment) *lib.Report 
 	}
 
 	//s7
-	uid := usr.GetUserID(onEnvironment.Account)
-	if err := pro.RevokeRole(onEnvironment.TestingProject, uid); err != nil {
+	if err := pro.RevokeRole(onEnvironment.TestingProject, onEnvironment.Account); err != nil {
 		report.Failed("RevokeRole", err)
 	} else {
 		report.Passed("RevokeRole")
