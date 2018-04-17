@@ -246,3 +246,24 @@ Add Labels To Tag
     Click Element  xpath=//clr-dropdown//div//label[contains(.,"${labelName}")]
     Sleep  3
     Page Should Contain Element  xpath=//clr-dg-row//label[contains(.,"${labelName}")]
+
+Filter Labels In Tags
+    [Arguments]  ${labelName1}  ${labelName2}
+    Sleep  2
+    Click Element  xpath=//clr-dropdown/hbr-filter/span/clr-icon
+    Sleep  2
+    Page Should Contain Element  xpath=//tag-repository//clr-dropdown-menu/div//button[contains(.,"${labelName1}")]
+    Click Element  xpath=//tag-repository//clr-dropdown-menu/div//button[contains(.,"${labelName1}")]
+    Sleep  2
+    Click Element  xpath=//clr-dropdown/hbr-filter/span/clr-icon
+    Page Should Contain Element  xpath=//clr-datagrid//label[contains(.,"${labelName1}")]
+
+    Click Element  xpath=//clr-dropdown/hbr-filter/span/clr-icon
+    Sleep  2
+    Click Element  xpath=//tag-repository//clr-dropdown-menu/div//button[contains(.,"${labelName2}")]
+    Sleep  2
+    Click Element  xpath=//clr-dropdown/hbr-filter/span/clr-icon
+    Sleep  2
+    Capture Page Screenshot  filter_${labelName2}.png
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,"${labelName2}")]
+    Page Should Not Contain Element  xpath=//clr-dg-row[contains(.,"${labelName1}")]
