@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -135,6 +136,10 @@ func (ac *APIClient) Post(url string, data []byte) error {
 
 	if resp.StatusCode != http.StatusCreated &&
 		resp.StatusCode != http.StatusOK {
+		if err := getErrorMessage(resp); err != nil {
+			return fmt.Errorf("%s:%s", resp.Status, err.Error())
+		}
+
 		return errors.New(resp.Status)
 	}
 
@@ -161,6 +166,10 @@ func (ac *APIClient) Delete(url string) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		if err := getErrorMessage(resp); err != nil {
+			return fmt.Errorf("%s:%s", resp.Status, err.Error())
+		}
+
 		return errors.New(resp.Status)
 	}
 
@@ -176,4 +185,26 @@ func (ac *APIClient) SwitchAccount(username, password string) {
 
 	ac.config.Username = username
 	ac.config.Password = password
+}
+
+//Read error message from response body
+func getErrorMessage(resp *http.Response) error {
+	if resp == nil {
+		return errors.New("nil response")
+	}
+
+	if resp.Body == nil || resp.ContentLength == 0 {
+		//nothing to read
+		return nil
+	}
+
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		//abandon to read deatiled error message
+		return nil
+	}
+
+	return fmt.Errorf("%s", data)
 }

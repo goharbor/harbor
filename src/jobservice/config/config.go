@@ -22,8 +22,7 @@ const (
 	jobServiceHTTPKey             = "JOB_SERVICE_HTTPS_KEY"
 	jobServiceWorkerPoolBackend   = "JOB_SERVICE_POOL_BACKEND"
 	jobServiceWorkers             = "JOB_SERVICE_POOL_WORKERS"
-	jobServiceRedisHost           = "JOB_SERVICE_POOL_REDIS_HOST"
-	jobServiceRedisPort           = "JOB_SERVICE_POOL_REDIS_PORT"
+	jobServiceRedisURL            = "JOB_SERVICE_POOL_REDIS_URL"
 	jobServiceRedisNamespace      = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
 	jobServiceLoggerBasePath      = "JOB_SERVICE_LOGGER_BASE_PATH"
 	jobServiceLoggerLevel         = "JOB_SERVICE_LOGGER_LEVEL"
@@ -41,6 +40,9 @@ const (
 
 	//secret of UI
 	uiAuthSecret = "UI_SECRET"
+
+	//redis protocol schema
+	redisSchema = "redis://"
 )
 
 //DefaultConfig is the default configuration reference
@@ -74,14 +76,13 @@ type HTTPSConfig struct {
 
 //RedisPoolConfig keeps redis pool info.
 type RedisPoolConfig struct {
-	Host      string `yaml:"host"`
-	Port      uint   `yaml:"port"`
+	RedisURL  string `yaml:"redis_url"`
 	Namespace string `yaml:"namespace"`
 }
 
 //PoolConfig keeps worker pool configurations.
 type PoolConfig struct {
-	//0 means unlimited
+	//Worker concurrency
 	WorkerCount  uint             `yaml:"workers"`
 	Backend      string           `yaml:"backend"`
 	RedisPoolCfg *RedisPoolConfig `yaml:"redis_pool,omitempty"`
@@ -116,6 +117,22 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	if detectEnv {
 		//Load from env variables
 		c.loadEnvs()
+	}
+
+	//translate redis url if needed
+	if c.PoolConfig != nil && c.PoolConfig.RedisPoolCfg != nil {
+		redisAddress := c.PoolConfig.RedisPoolCfg.RedisURL
+		if !utils.IsEmptyStr(redisAddress) {
+			if _, err := url.Parse(redisAddress); err != nil {
+				if redisURL, ok := utils.TranslateRedisAddress(redisAddress); ok {
+					c.PoolConfig.RedisPoolCfg.RedisURL = redisURL
+				}
+			} else {
+				if !strings.HasPrefix(redisAddress, redisSchema) {
+					c.PoolConfig.RedisPoolCfg.RedisURL = fmt.Sprintf("%s%s", redisSchema, redisAddress)
+				}
+			}
+		}
 	}
 
 	//Validate settings
@@ -222,22 +239,12 @@ func (c *Configuration) loadEnvs() {
 	}
 
 	if c.PoolConfig != nil && c.PoolConfig.Backend == JobServicePoolBackendRedis {
-		rh := utils.ReadEnv(jobServiceRedisHost)
-		if !utils.IsEmptyStr(rh) {
+		redisURL := utils.ReadEnv(jobServiceRedisURL)
+		if !utils.IsEmptyStr(redisURL) {
 			if c.PoolConfig.RedisPoolCfg == nil {
 				c.PoolConfig.RedisPoolCfg = &RedisPoolConfig{}
 			}
-			c.PoolConfig.RedisPoolCfg.Host = rh
-		}
-
-		rp := utils.ReadEnv(jobServiceRedisPort)
-		if !utils.IsEmptyStr(rp) {
-			if rport, err := strconv.Atoi(rp); err == nil {
-				if c.PoolConfig.RedisPoolCfg == nil {
-					c.PoolConfig.RedisPoolCfg = &RedisPoolConfig{}
-				}
-				c.PoolConfig.RedisPoolCfg.Port = uint(rport)
-			}
+			c.PoolConfig.RedisPoolCfg.RedisURL = redisURL
 		}
 
 		rn := utils.ReadEnv(jobServiceRedisNamespace)
@@ -321,12 +328,18 @@ func (c *Configuration) validate() error {
 		if c.PoolConfig.RedisPoolCfg == nil {
 			return fmt.Errorf("redis pool must be configured when backend is set to '%s'", c.PoolConfig.Backend)
 		}
-		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.Host) {
-			return errors.New("host of redis pool is empty")
+		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.RedisURL) {
+			return errors.New("URL of redis pool is empty")
 		}
-		if !utils.IsValidPort(c.PoolConfig.RedisPoolCfg.Port) {
-			return fmt.Errorf("redis port number should be a none zero integer and less or equal 65535, but current is %d", c.PoolConfig.RedisPoolCfg.Port)
+
+		if !strings.HasPrefix(c.PoolConfig.RedisPoolCfg.RedisURL, redisSchema) {
+			return errors.New("Invalid redis URL")
 		}
+
+		if _, err := url.Parse(c.PoolConfig.RedisPoolCfg.RedisURL); err != nil {
+			return fmt.Errorf("Invalid redis URL: %s", err.Error())
+		}
+
 		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.Namespace) {
 			return errors.New("namespace of redis pool is required")
 		}
