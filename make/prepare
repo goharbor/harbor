@@ -138,16 +138,16 @@ def _get_secret(folder, filename, length=16):
             print("loaded secret from file: %s" % key_file)
         return key
     if not os.path.isdir(folder):
-        os.makedirs(folder, mode=0o600)
+        os.makedirs(folder)
     key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(length))  
     with open(key_file, 'w') as f:
         f.write(key)
         print("Generated and saved secret to file: %s" % key_file)
-    os.chmod(key_file, 0o600)
+    mark_file(key_file)
     return key
 
-def prep_conf_dir(root, name):
-    absolute_path = os.path.join(root, name)
+def prep_conf_dir(root, *name):
+    absolute_path = os.path.join(root, *name)
     if not os.path.exists(absolute_path):
         os.makedirs(absolute_path)
     return absolute_path
@@ -172,6 +172,12 @@ def delfile(src):
         for item in os.listdir(src):
             itemsrc=os.path.join(src,item)
             delfile(itemsrc)
+
+#To meet security requirement
+#By default it will change file mode to 0600, and make the owner of the file to 10000:10000
+def mark_file(path, mode=0o600, uid=10000, gid=10000):
+    os.chmod(path, mode)
+    os.chown(path, uid, gid)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
@@ -431,7 +437,7 @@ shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)
 if auth_mode == "uaa_auth":
     if os.path.isfile(uaa_ca_cert):
         if not os.path.isdir(ui_cert_dir):
-            os.makedirs(ui_cert_dir, mode=0o600)
+            os.makedirs(ui_cert_dir)
         ui_uaa_ca = os.path.join(ui_cert_dir, "uaa_ca.pem")
         print("Copying UAA CA cert to %s" % ui_uaa_ca)
         shutil.copyfile(uaa_ca_cert, ui_uaa_ca)
@@ -491,8 +497,8 @@ if customize_crt == 'on' and openssl_installed():
     private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
     root_crt = os.path.join(config_dir, "registry", "root.crt")
     create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)
-    os.chmod(private_key_pem, 0o600)
-    os.chmod(root_crt, 0o600)
+    mark_file(private_key_pem)
+    mark_file(root_crt)
 else:
     print("Copied configuration file: %s" % ui_config_dir + "private_key.pem")
     shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
@@ -520,9 +526,6 @@ if args.notary_mode:
             create_root_cert(ca_subj, key_path=signer_ca_key, cert_path=signer_ca_cert)
             create_cert(cert_subj, signer_ca_key, signer_ca_cert, key_path=signer_key_path, cert_path=signer_cert_path)
             print("Copying certs for notary signer")
-            os.chmod(signer_cert_path, 0o600)
-            os.chmod(signer_key_path, 0o600)
-            os.chmod(signer_ca_cert, 0o600)
             shutil.copy2(signer_cert_path, notary_config_dir)
             shutil.copy2(signer_key_path, notary_config_dir)
             shutil.copy2(signer_ca_cert, notary_config_dir)
@@ -538,6 +541,10 @@ if args.notary_mode:
         shutil.copy2(os.path.join(notary_temp_dir, "notary-signer.key"), notary_config_dir)
         shutil.copy2(os.path.join(notary_temp_dir, "notary-signer-ca.crt"), notary_config_dir)
     shutil.copy2(os.path.join(registry_config_dir, "root.crt"), notary_config_dir)
+    mark_file(os.path.join(notary_config_dir, "notary-signer.crt"))
+    mark_file(os.path.join(notary_config_dir, "notary-signer.key"))
+    mark_file(os.path.join(notary_config_dir, "notary-signer-ca.crt"))
+    mark_file(os.path.join(notary_config_dir, "root.crt"))
     print("Copying notary signer configuration file")
     shutil.copy2(os.path.join(notary_temp_dir, "signer-config.json"), notary_config_dir)
     render(os.path.join(notary_temp_dir, "server-config.json"),
