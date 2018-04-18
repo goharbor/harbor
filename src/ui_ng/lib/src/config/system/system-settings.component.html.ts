@@ -27,7 +27,7 @@ export const SYSTEM_SETTINGS_HTML: string = `
          <span class="tooltip-content">{{'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate}}</span>
        </a>
    </div>
-   <div class="form-group">
+   <div *ngIf="!withAdmiral" class="form-group">
             <label for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}</label>
             <clr-checkbox name="repoReadOnly" id="repoReadOnly" [clrChecked]="systemSettings.read_only.value"  (clrCheckedChange)="setRepoReadOnlyValue($event)">
                 <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">

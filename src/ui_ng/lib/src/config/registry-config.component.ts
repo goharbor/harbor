@@ -57,6 +57,10 @@ export class RegistryConfigComponent implements OnInit {
         return this.systemInfo && this.systemInfo.with_clair;
     }
 
+    get withAdmiral(): boolean {
+        return this.systemInfo && this.systemInfo.with_admiral;
+    }
+
     ngOnInit(): void {
         this.loadSystemInfo();
         //Initialize
