@@ -38,9 +38,7 @@ export class TagDetailComponent implements OnInit {
         labels: [],
     };
 
-    @Output() backTagEvt: EventEmitter<any> = new EventEmitter<any>();
-    @Output() backRepEvt: EventEmitter<any> = new EventEmitter<any>();
-    @Output() backProEvt: EventEmitter<any> = new EventEmitter<any>();
+    @Output() backEvt: EventEmitter<any> = new EventEmitter<any>();
 
     constructor(
         private tagService: TagService,
@@ -79,14 +77,8 @@ export class TagDetailComponent implements OnInit {
         }
     }
 
-    onBackTag(): void {
-        this.backTagEvt.emit(this.repositoryId);
-    }
-    onBackRep(): void {
-        this.backRepEvt.emit();
-    }
-    onBackPro(): void {
-        this.backProEvt.emit();
+    onBack(): void {
+        this.backEvt.emit(this.repositoryId);
     }
 
     getPackageText(count: number): string {
