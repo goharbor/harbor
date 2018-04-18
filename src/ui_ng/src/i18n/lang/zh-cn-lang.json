@@ -489,7 +489,7 @@
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
             "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。",
             "VERIFY_CERT": "检查来自LDAP服务端的证书",
-            "REPO_TOOLTIP": "选中，表示正在维护状态，不可删除仓库及标签,也不可以推送镜像。"
+            "READONLY_TOOLTIP": "选中，表示正在维护状态，不可删除仓库及标签,也不可以推送镜像。"
         },
         "LDAP": {
             "URL": "LDAP URL",
