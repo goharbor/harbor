@@ -50,11 +50,11 @@ export const REPOSITORY_GRIDVIEW_TEMPLATE = `
         <ng-template let-item="item">
             <a class="card clickable" (click)="watchRepoClickEvt(item)">
                 <div class="card-header">
-                    <div class="card-media-block">
+                    <div [ngClass]="{'card-media-block': withAdmiral, 'card-media-block wrap': !withAdmiral }">
                         <img *ngIf="withAdmiral" [src]="getImgLink(item)"/>
                         <div class="card-media-description">
                             <span class="card-media-title">
-                                {{item.name}}
+                                {{ (item.name?.length>29) ? (item.name | slice:0:29) + '...' : (item.name)}}
                             </span>
                             <p class="card-media-text">{{registryUrl}}</p>
                         </div>
