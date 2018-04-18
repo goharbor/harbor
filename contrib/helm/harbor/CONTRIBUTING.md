@@ -8,3 +8,5 @@ Thanks very much to all contributers who submitted pull requests to Helm Chart f
 
 - [Paul Czarkowski @paulczar](https://github.com/paulczar)
 - [Luca Innocenti Mirri @lucaim](https://github.com/lucaim)
+- [Steven Arnott @ArcticSnowman](https://github.com/ArcticSnowman)
+- [Alex M @draeron](https://github.com/draeron)
