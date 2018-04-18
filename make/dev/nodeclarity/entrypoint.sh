@@ -35,6 +35,7 @@ cp ./dist/build.min.js ../ui/static/
 
 cp -r ./src/i18n/ ../ui/static/
 cp ./src/styles.css ../ui/static/
+cp -r ./src/images/ ../ui/static/
 
 cp ./node_modules/clarity-icons/clarity-icons.min.css ../ui/static/
 cp ./node_modules/mutationobserver-shim/dist/mutationobserver.min.js ../ui/static/
