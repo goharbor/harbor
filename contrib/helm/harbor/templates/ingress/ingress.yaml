@@ -11,6 +11,7 @@ spec:
   tls:
   - hosts:
     - "{{ .Values.externalDomain }}"
+    - "{{ template "harbor.notaryFQDN" . }}"
     secretName: "{{ template "harbor.fullname" . }}-ingress"
 {{ end }}
   rules:
@@ -25,3 +26,10 @@ spec:
         backend:
           serviceName: {{ template "harbor.fullname" . }}-registry
           servicePort: 5000
+  - host: "{{ template "harbor.notaryFQDN" . }}"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ template "harbor.notaryServiceName" . }}
+          servicePort: 4443

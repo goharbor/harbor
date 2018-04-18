@@ -29,3 +29,29 @@ app: "{{ template "harbor.name" . }}"
 release: {{ .Release.Name }}
 app: "{{ template "harbor.name" . }}"
 {{- end -}}
+
+{{/*
+Use *.domain.com as the Common Name in the certificate,
+so it can match Harbor service FQDN and Notary service FQDN.
+*/}}
+{{- define "harbor.certCommonName" -}}
+{{- $list := splitList "." .Values.externalDomain -}}
+{{- $list := prepend (rest $list) "*" -}}
+{{- $cn := join "." $list -}}
+{{- printf "%s" $cn -}}
+{{- end -}}
+
+{{/* The external FQDN of Notary server. */}}
+{{- define "harbor.notaryFQDN" -}}
+{{- printf "notary-%s" .Values.externalDomain -}}
+{{- end -}}
+
+{{/*
+The internal service name of Notary server.
+notary-server hostname is not configurable in Harbor 1.4.0.
+Once Harbor 1.5.x is released, use this instead:
+  {{- printf "%s-notary-server" (include "harbor.fullname") -}}
+*/}}
+{{- define "harbor.notaryServiceName" -}}
+{{- printf "%s" "notary-server" -}}
+{{- end -}}

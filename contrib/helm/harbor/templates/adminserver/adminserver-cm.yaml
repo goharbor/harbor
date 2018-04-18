@@ -27,6 +27,7 @@ data:
   REGISTRY_URL: "http://{{ template "harbor.fullname" . }}-registry:5000"
   TOKEN_SERVICE_URL: "http://{{ template "harbor.fullname" . }}-ui/service/token"
   WITH_NOTARY: "{{ .Values.notary.enabled }}"
+  NOTARY_URL: "http://{{ template "harbor.notaryServiceName" . }}:4443"
   LOG_LEVEL: "info"
   IMAGE_STORE_PATH: "/" # This is a temporary hack.
   AUTH_MODE: "{{ .Values.adminserver.authenticationMode }}"

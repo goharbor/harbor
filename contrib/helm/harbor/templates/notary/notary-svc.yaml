@@ -1,0 +1,43 @@
+{{ if .Values.notary.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "harbor.fullname" . }}-notary-db
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 3306
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: notary-db
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "harbor.notaryServiceName" . }}
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 4443
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: notary-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "harbor.fullname" . }}-notary-signer
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+  - port: 7899
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: notary-signer
+{{ end }}
