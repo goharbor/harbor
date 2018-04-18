@@ -1,5 +1,5 @@
 name: harbor
-version: 0.1.1
+version: 0.1.2
 appVersion: 1.4.0
 description: An Enterprise-class Docker Registry by VMware
 keywords:

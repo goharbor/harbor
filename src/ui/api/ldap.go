@@ -118,7 +118,7 @@ func (l *LdapAPI) ImportUser() {
 	}
 
 	if len(ldapFailedImportUsers) > 0 {
-		l.HandleNotFound("Import LDAP user have internal error")
+		l.HandleNotFound("Import LDAP user is not found")
 		l.Data["json"] = ldapFailedImportUsers
 		l.ServeJSON()
 		return
