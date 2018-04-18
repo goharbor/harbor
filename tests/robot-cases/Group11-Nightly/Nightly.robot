@@ -551,7 +551,7 @@ Test Case - Delete Repo on CardView
     Sleep  2
     Go Into Project  project${d}
     Switch To CardView
-    Delete Repo on CardView  hello-world
+    Delete Repo on CardView  busybox
     # Verify
     Delete Success
     Close Browser

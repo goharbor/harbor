@@ -107,9 +107,9 @@ Delete Repo
 
 Delete Repo on CardView
     [Arguments]  ${reponame}
-    Click Element  xpath=//hbr-gridview//span[contains(.,'reponame')]//clr-dropdown/button
+    Click Element  xpath=//hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/button
     Sleep  1
-    Click Element  xpath=//hbr-gridview//span[contains(.,'reponame')]//clr-dropdown/clr-dropdown-menu/button[contains(.,'Delete')]
+    Click Element  xpath=//hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/clr-dropdown-menu/button[contains(.,'Delete')]
     Sleep  1
     Click Element  //clr-modal//button[contains(.,'DELETE')]
     Sleep  3
@@ -201,7 +201,7 @@ Go Into Repo
 
 Switch To CardView
     Sleep  2
-    Click Element  xpath=//hbr-repository-gridview//span[1]/clr-icon
+    Click Element  xpath=//hbr-repository-gridview//span[@class='card-btn']/clr-icon
     Sleep  5
 
 Expand Repo
