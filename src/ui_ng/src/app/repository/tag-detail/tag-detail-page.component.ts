@@ -17,7 +17,8 @@ import {AppConfigService} from "../../app-config.service";
 
 @Component({
   selector: 'repository',
-  templateUrl: 'tag-detail-page.component.html'
+  templateUrl: 'tag-detail-page.component.html',
+  styles: ['.arrow-block a{text-decoration: none; cursor: pointer; cursor: pointer; color: #007cbb; font-size: 12px;}']
 })
 export class TagDetailPageComponent implements OnInit {
   tagId: string;
@@ -45,7 +46,7 @@ export class TagDetailPageComponent implements OnInit {
     return this.appConfigService.getConfig().with_clair;
   }
 
-  goBackTag(tag: string): void {
+  goBack(tag: string): void {
     this.router.navigate(["harbor", "projects", this.projectId, "repositories", tag]);
   }
   goBackRep(): void {
