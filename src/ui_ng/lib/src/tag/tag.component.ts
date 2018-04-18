@@ -220,7 +220,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     st.page.to = this.pageSize - 1;
     let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
     if (selectedLab) {
-      st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.name', value: selectedLab.label}];
+      st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.name', value: selectedLab.label.name}];
     }else {
       st.filters = [{property: 'name', value: this.lastFilteredTagName}];
     }
