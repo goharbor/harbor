@@ -454,8 +454,8 @@
             "TOKEN_EXPIRATION": "Le temps d'expiration (en minutes) d'un jeton créé par le service de jeton. La valeur par défaut est 30 minutes.",
             "PRO_CREATION_RESTRICTION": "L'indicateur pour définir quels utilisateurs ont le droit de créer des projets. Par défaut, tout le monde peut créer un projet. Définissez sur 'Administrateur Seulement' pour que seul un administrateur puisse créer un projet.",
             "ROOT_CERT_DOWNLOAD": "Téléchargez le certificat racine du dépôt.",
-            "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours."
-            "REPO_TOOLTIP": "If true, means maintenance in Progress. During this period, you cannot delete repository, tag and push image."
+            "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours.",
+            "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. "
         },
         "LDAP": {
             "URL": "URL LDAP",
