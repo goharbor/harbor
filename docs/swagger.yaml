@@ -459,6 +459,10 @@ paths:
         format: int64
         required: true
         description: Relevant project ID.
+      - name: entityname
+        in: query
+        type: string
+        description: The entity name to search.
      tags:
       - Products
      responses:
