@@ -32,6 +32,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
   @Input() urlPrefix: string;
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
+  @Input() mode = 'admiral';
   @Output() repoClickEvent = new EventEmitter<RepositoryItem>();
   @Output() repoProvisionEvent = new EventEmitter<RepositoryItem>();
   @Output() addInfoEvent = new EventEmitter<RepositoryItem>();
@@ -87,7 +88,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
   }
 
   public get withAdmiral(): boolean {
-    return this.systemInfo ? this.systemInfo.with_admiral : false;
+    return this.mode === 'admiral'
   }
 
   public get showDBStatusWarning(): boolean {
@@ -106,7 +107,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
       .then(systemInfo => this.systemInfo = systemInfo)
       .catch(error => this.errorHandler.error(error));
 
-    if (this.withAdmiral) {
+    if (this.mode === 'admiral') {
       this.isCardView = true;
     } else {
       this.isCardView = false;

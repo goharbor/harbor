@@ -36,16 +36,20 @@ export const REPOSITORY_GRIDVIEW_STYLE = `
     width: 100px;
 }
 
-
-.card-media-block {
-    margin-top: 12px;
-    margin-bottom: 12px;
-}
-
 .card-media-block > img {
     height: 45px;
     width: 45px;
 }
+
+.card-media-title {
+    overflow: hidden;
+    height: 24px;
+}
+.card-media-text {
+    overflow: hidden;
+    height: 21px
+}
+
 .card-media-description {
     height: 45px;
 }
