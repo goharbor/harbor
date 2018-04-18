@@ -28,6 +28,7 @@ export class SystemSettingsComponent {
     @Input() showSubTitle: boolean = false;
     @Input() hasAdminRole: boolean = false;
     @Input() hasCAFile: boolean = false;
+    @Input() withAdmiral = false;
 
     @ViewChild("systemConfigFrom") systemSettingsForm: NgForm;
 

@@ -29,7 +29,7 @@ export class MemberService {
 
   listMembers(projectId: number, username: string): Observable<Member[]> {
     return this.http
-               .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS)
+               .get(`/api/projects/${projectId}/members?entityname=${username}`, HTTP_GET_OPTIONS)
                .map(response => response.json() as Member[])
                .catch(error => Observable.throw(error));
   }
