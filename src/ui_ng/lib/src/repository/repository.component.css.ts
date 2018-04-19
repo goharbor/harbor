@@ -3,12 +3,20 @@ export const REPOSITORY_STYLE = `.option-right {
   margin-bottom: 12px;
 }
 
-.arrow-block a{
-    text-decoration: none;
-    cursor: pointer;
-    color: #007cbb;
-    font-size: 12px;
+.arrow-back {
+  cursor: pointer;
 }
+
+.arrow-block {	
+  border-right: 2px solid #cccccc;	
+  margin-right: 6px;	
+  display: inline-flex;	
+  padding: 6px 6px 6px 12px;	
+}	
+	
+.title-block {	
+  display: inline-block;	
+}	
 
 .tag-name {
   font-weight: 300;

@@ -52,8 +52,7 @@ export class RepositoryComponent implements OnInit {
   @Input() hasProjectAdminRole: boolean;
   @Input() isGuest: boolean;
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
-  @Output() backRepEvt: EventEmitter<any> = new EventEmitter<any>();
-  @Output() backProEvt: EventEmitter<any> = new EventEmitter<any>();
+  @Output() backEvt: EventEmitter<any> = new EventEmitter<any>();
 
   onGoing = false;
   editing = false;
@@ -156,11 +155,8 @@ export class RepositoryComponent implements OnInit {
            .catch(error => this.errorHandler.error(error));
  }
 
-    goRepBack(): void {
-        this.backRepEvt.emit(this.projectId);
-    }
-    goProBack(): void {
-        this.backProEvt.emit();
+    goBack(): void {
+        this.backEvt.emit(this.projectId);
     }
 
   hasChanges() {
