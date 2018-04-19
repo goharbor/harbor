@@ -30,7 +30,7 @@
         "clarity-icons": "0.10.24",
         "clarity-ui": "0.10.24",
         "core-js": "^2.4.1",
-        "harbor-ui": "0.6.83",
+        "harbor-ui": "0.7.2",
         "intl": "^1.2.5",
         "mutationobserver-shim": "^0.3.2",
         "ngx-cookie": "^1.0.0",
