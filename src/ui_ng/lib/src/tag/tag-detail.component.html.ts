@@ -1,17 +1,12 @@
 export const TAG_DETAIL_HTML: string = `
 <div>
     <section class="overview-section">
-        <div class="title-wrapper" *ngIf="withAdmiral">
-            <div class="title-block arrow-block">
+        <div class="title-wrapper">
+            <div class="title-block arrow-block" *ngIf="withAdmiral">
                 <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
             </div>
             <div class="title-block">
                 <h2 class="custom-h2">{{repositoryId}}:{{tagDetails.name}}</h2>
-            </div>
-        </div>
-        <div class="title-wrapper" *ngIf="!withAdmiral">
-            <div class="title-block">
-                 <h2 class="custom-h2">{{repositoryId}}:{{tagDetails.name}}</h2>
             </div>
         </div>
         <div class="summary-block">
