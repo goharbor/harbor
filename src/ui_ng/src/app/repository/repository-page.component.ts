@@ -28,6 +28,7 @@ export class RepositoryPageComponent implements OnInit {
   hasProjectAdminRole: boolean;
   hasSignedIn: boolean;
   projectName: string;
+  mode = 'standalone';
 
   constructor(
     private route: ActivatedRoute,
