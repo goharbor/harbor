@@ -2,13 +2,11 @@ export const TAG_DETAIL_HTML: string = `
 <div>
     <section class="overview-section">
         <div class="title-wrapper">
-            <div class="arrow-block">
-                <a (click)="onBackPro()">< {{'SIDE_NAV.PROJECTS'| translate}}</a>
-                <a (click)="onBackRep()">< {{'REPOSITORY.REPOSITORIES'| translate}}</a>
-                <a (click)="onBackTag()">< {{repositoryId}}</a>
+            <div class="title-block arrow-block" *ngIf="withAdmiral">
+                <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
             </div>
-            <div class="">
-                <h2 class="custom-h2" sub-header-title>{{repositoryId}}:{{tagDetails.name}}</h2>
+            <div class="title-block">
+                <h2 class="custom-h2">{{repositoryId}}:{{tagDetails.name}}</h2>
             </div>
         </div>
         <div class="summary-block">

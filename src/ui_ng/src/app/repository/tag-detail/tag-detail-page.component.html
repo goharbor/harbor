@@ -1,3 +1,8 @@
 <div>
-    <hbr-tag-detail (backTagEvt)="goBackTag($event)" (backRepEvt)="goBackRep()" (backProEvt)="goBackPro()" [tagId]="tagId" [withClair]="withClair"  [withAdmiral]="withAdmiral" [repositoryId]="repositoryId"></hbr-tag-detail>
+    <div class="arrow-block" *ngIf="!withAdmiral">
+        <a (click)="goBackPro()">< {{'SIDE_NAV.PROJECTS'| translate}}</a>
+        <a (click)="goBackRep()">< {{'REPOSITORY.REPOSITORIES'| translate}}</a>
+        <a (click)="goBack(repositoryId)">< {{repositoryId}}</a>
+    </div>
+    <hbr-tag-detail (backEvt)="goBack($event)" [tagId]="tagId" [withClair]="withClair"  [withAdmiral]="withAdmiral" [repositoryId]="repositoryId"></hbr-tag-detail>
 </div>

@@ -85,7 +85,7 @@ export class TagRepositoryComponent implements OnInit {
     this.router.navigate(linkUrl);
   }
 
-  goRepBack(projectId: string): void {
+  watchGoBackEvt(projectId: string| number): void {
     this.router.navigate(["harbor", "projects", projectId, "repositories"]);
   }
   goProBack(): void {
