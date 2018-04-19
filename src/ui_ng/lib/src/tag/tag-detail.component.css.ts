@@ -10,10 +10,15 @@ export const TAG_DETAIL_STYLES: string = `
     padding-right: 24px;
 }
 
+.title-block {
+    display: inline-block;
+}
+
 .tag-name {
     font-weight: 300;
     font-size: 32px;
 }
+.tag-name h2{margin-top:0;}
 
 .tag-timestamp {
     font-weight: 400;
@@ -33,11 +38,19 @@ export const TAG_DETAIL_STYLES: string = `
     transform: rotate(-90deg);
 }
 
-.arrow-block a{
-    text-decoration: none;
+.arrow-back {
     cursor: pointer;
-    color: #007cbb;
-    font-size: 12px;
+}
+
+.arrow-block {	
+    border-right: 2px solid #cccccc;	
+    margin-right: 6px;	
+    display: inline-flex;	
+    padding: 6px 6px 6px 12px;	
+}	
+	
+.title-block {	
+    display: inline-block;	
 }
 
 
