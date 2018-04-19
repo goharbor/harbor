@@ -1,18 +1,13 @@
 export const REPOSITORY_TEMPLATE = `
 <section class="overview-section">
-  <div class="title-wrapper"  *ngIf="withAdmiral">
-    <div class="title-block arrow-block">	
+  <div class="title-wrapper">
+    <div class="title-block arrow-block" *ngIf="withAdmiral">	
        <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="goBack()"></clr-icon>
     </div>
     <div class="title-block">
       <h2 sub-header-title class="custom-h2">{{repoName}}</h2>
     </div>
   </div>
-  <div class="title-wrapper" *ngIf="!withAdmiral">
-        <div class="title-block">
-             <h2 class="custom-h2">{{repoName}}</h2>
-        </div>
-    </div>
 </section>
 
 <section class="detail-section">
