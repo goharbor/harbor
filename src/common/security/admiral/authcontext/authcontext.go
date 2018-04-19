@@ -76,7 +76,7 @@ func (a *AuthContext) GetProjectRoles(projectIDOrName interface{}) []int {
 	roles := []string{}
 	for _, project := range a.Projects {
 		p := convertProject(project)
-		if p.ProjectID == id || p.Name == name {
+		if id != 0 && p.ProjectID == id || len(name) > 0 && p.Name == name {
 			roles = append(roles, project.Roles...)
 			break
 		}
