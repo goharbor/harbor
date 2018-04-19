@@ -34,6 +34,8 @@ type Context interface {
 	HasWritePerm(projectIDOrName interface{}) bool
 	// HasAllPerm returns whether the user has all permissions to the project
 	HasAllPerm(projectIDOrName interface{}) bool
+	//Get current user's all project
 	GetMyProjects() ([]*models.Project, error)
+	//Get user's role in provided project
 	GetProjectRoles(projectIDOrName interface{}) []int
 }

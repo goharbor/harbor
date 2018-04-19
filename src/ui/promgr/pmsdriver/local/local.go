@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/dao/group"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	errutil "github.com/vmware/harbor/src/common/utils/error"
@@ -117,7 +118,6 @@ func (d *driver) Delete(projectIDOrName interface{}) error {
 		}
 		id = project.ProjectID
 	}
-
 	return dao.DeleteProject(id)
 }
 
@@ -129,17 +129,26 @@ func (d *driver) Update(projectIDOrName interface{},
 }
 
 // List returns a project list according to the query parameters
-func (d *driver) List(query *models.ProjectQueryParam) (
-	*models.ProjectQueryResult, error) {
-	total, err := dao.GetTotalOfProjects(query)
+func (d *driver) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
+	var total int64
+	var projects []*models.Project
+	var groupDNCondition string
+
+	//List with LDAP group projects
+	if query != nil && query.Member != nil {
+		groupDNCondition = group.GetGroupDNQueryCondition(query.Member.GroupList)
+	}
+
+	count, err := dao.GetTotalGroupProjects(groupDNCondition, query)
+	if err != nil {
+		return nil, err
+	}
+	total = int64(count)
+	projects, err = dao.GetGroupProjects(groupDNCondition, query)
 	if err != nil {
 		return nil, err
 	}
 
-	projects, err := dao.GetProjects(query)
-	if err != nil {
-		return nil, err
-	}
 	return &models.ProjectQueryResult{
 		Total:    total,
 		Projects: projects,

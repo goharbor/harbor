@@ -109,7 +109,7 @@ func TestMain(m *testing.M) {
 
 	//Extract to test utils
 	initSqls := []string{
-		"insert into user (username, email, password, realname)  values ('member_test_01', 'member_test_01@example.com', '123456', 'member_test_01')",
+		"insert into harbor_user (username, email, password, realname)  values ('member_test_01', 'member_test_01@example.com', '123456', 'member_test_01')",
 		"insert into project (name, owner_id) values ('member_test_01', 1)",
 		"insert into user_group (group_name, group_type, group_property) values ('test_group_01', 1, 'CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com')",
 		"update project set owner_id = (select user_id from harbor_user where username = 'member_test_01') where name = 'member_test_01'",

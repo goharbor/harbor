@@ -347,19 +347,16 @@ func (p *ProjectAPI) List() {
 					return
 				}
 				projects = append(projects, pros...)
-
-				mps, err := p.ProjectMgr.List(&models.ProjectQueryParam{
-					Member: &models.MemberQuery{
-						Name: p.SecurityCtx.GetUsername(),
-					},
-				})
+				mps, err := p.SecurityCtx.GetMyProjects()
 				if err != nil {
 					p.HandleInternalServerError(fmt.Sprintf("failed to list projects: %v", err))
 					return
 				}
-				projects = append(projects, mps.Projects...)
+				projects = append(projects, mps...)
 			}
 		}
+		//Query projects by user group
+
 		if projects != nil {
 			projectIDs := []int64{}
 			for _, project := range projects {
