@@ -292,7 +292,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     });
   }
 
-  selectedChange(tag?: Tag[]): void {
+  labelSelectedChange(tag?: Tag[]): void {
     if (tag && tag[0].labels && tag[0].labels.length) {
       this.imageStickLabels.forEach(data => {
         data.iconsShow = false;
@@ -307,7 +307,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.labelListOpen = true;
     this.selectedTag = tag;
 
-    this.selectedChange(tag);
+    this.labelSelectedChange(tag);
   }
 
   stickLabel(labelInfo: {[key: string]: any | string[]}): void {
