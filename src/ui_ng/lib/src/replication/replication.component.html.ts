@@ -13,7 +13,7 @@ export const REPLICATION_TEMPLATE: string = `
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <hbr-list-replication-rule #listReplicationRule [projectId]="projectId" [isSystemAdmin]="isSystemAdmin"  (replicateManual)=replicateManualRule($event) (selectOne)="selectOneRule($event)" (hideJobs)="hideJobs()"  (openNewRule)="openModal()" (editOne)="openEditRule($event)" (reload)="reloadRules($event)" [loading]="loading" [withReplicationJob]="withReplicationJob" (redirect)="customRedirect($event)"></hbr-list-replication-rule>
     </div>
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding-left:0px;">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="padding-left:0px;" [hidden]='hiddenJobList'>
     <div *ngIf="withReplicationJob" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <div class="row flex-items-xs-between" style="height:60px;">
         <h5 class="flex-items-xs-bottom option-left-down" style="margin-left: 14px;">{{'REPLICATION.REPLICATION_JOBS' | translate}}</h5>
