@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/jobservice/logger"
 )
 
 //JobLogger is an implementation of logger.Interface.
@@ -16,7 +17,7 @@ type JobLogger struct {
 
 //New logger
 //nil might be returned
-func New(logPath string, level string) *JobLogger {
+func New(logPath string, level string) logger.Interface {
 	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil
