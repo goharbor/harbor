@@ -28,6 +28,7 @@ export class ReplicationPageComponent implements OnInit, AfterViewInit {
   projectName: string;
 
   constructor(private route: ActivatedRoute,
+              private router: Router,
               private proService: ProjectService,
               private session: SessionService) { }
 
@@ -58,5 +59,9 @@ export class ReplicationPageComponent implements OnInit, AfterViewInit {
         this.replicationView.openModal();
       }
     }
+  }
+
+  goRegistry(): void {
+    this.router.navigate(['/harbor', 'registries']);
   }
 }
