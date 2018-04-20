@@ -39,7 +39,7 @@ const (
 var privateKey string
 
 func init() {
-	privateKey = "/etc/ui/private_key.pem"
+	privateKey = config.TokenPrivateKeyPath()
 }
 
 // GetResourceActions ...
