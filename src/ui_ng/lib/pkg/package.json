@@ -1,6 +1,6 @@
 {
     "name": "harbor-ui",
-    "version": "0.7.2",
+    "version": "0.7.5",
     "description": "Harbor shared UI components based on Clarity and Angular4",
     "author": "VMware",
     "module": "index.js",
