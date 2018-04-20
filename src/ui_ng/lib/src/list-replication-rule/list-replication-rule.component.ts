@@ -135,14 +135,9 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
       .getReplicationRules(this.projectId, ruleName))
       .then(rules => {
         this.rules = rules || [];
-        if (this.rules && this.rules.length > 0) {
-          this.selectedId = this.rules[0].id || '';
-          this.selectOne.emit(this.rules[0]);
-        } else {
-          this.hideJobs.emit();
-        }
+        // job list hidden
+        this.hideJobs.emit();
         this.changedRules = this.rules;
-        this.selectedRow = this.changedRules[0];
         this.loading = false;
       }
       ).catch(error => {

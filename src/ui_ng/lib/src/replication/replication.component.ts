@@ -109,6 +109,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   rules: ReplicationRule[];
   loading: boolean;
   isStopOnGoing: boolean;
+  hiddenJobList = true;
+
 
   jobs: ReplicationJobItem[];
   batchDelectionInfos: BatchInfo[] = [];
@@ -267,6 +269,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   selectOneRule(rule: ReplicationRule) {
     if (rule && rule.id) {
+      this.hiddenJobList = false;
       this.search.ruleId = rule.id || '';
       this.search.repoName = '';
       this.search.status = '';
@@ -361,6 +364,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   hideJobs() {
     this.search.ruleId = 0;
     this.jobs = [];
+    this.hiddenJobList = true;
   }
 
   stopJobs() {
