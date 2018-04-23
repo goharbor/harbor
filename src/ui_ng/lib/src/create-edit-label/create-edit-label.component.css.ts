@@ -10,15 +10,21 @@ export const CREATE_EDIT_LABEL_STYLE: string = `
   section{padding:.5rem 0;}
   section> label{margin-left: 20px;}
   
-  .dropdown-menu {display:inline-block;width:166px; padding:6px;}
-  .dropdown-menu .dropdown-item{ display:inline-flex; margin:2px 4px;
-  display: inline-block;padding: 0px; width:30px;height:24px; text-align: center;line-height: 24px;}
+  .colorDrop {display:inline-block;position: relative; width: 132px;}
+  .colorDrop .colorPanel{position:absolute;  width:166px; padding:6px;    background-color: white; border: 1px solid #ccc; z-index:10;}
   .btnColor{
     margin: 0 !important;
     padding: 0;
     width: 26px;
     height:22px;
     min-width: 26px;}
- .dropdown-item{border:0px; color: white; font-size:12px;}
- .dropdown .dropdown-toggle.btn{padding:0 !important;}
+ .dropdown-item{margin: 5px 4px; width:30px;height:24px; text-align: center;line-height: 24px;font-size:12px;}
+ .closePanel{ display: block;
+    left: 138px;
+    position: relative;
+    font-size: 18px;
+    width: 10px;
+    line-height: 8px;
+    cursor: pointer;
+    text-decoration: none;}
 `;
