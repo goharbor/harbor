@@ -29,7 +29,7 @@ insert into role (role_code, name) values
 ('RS', 'guest');
 
 
-create table user (
+create table harbor_user (
  user_id INTEGER PRIMARY KEY,
 /*
  The max length of username controlled by API is 20, 
@@ -56,7 +56,7 @@ create table user (
  UNIQUE (email)
 );
 
-insert into user (username, email, password, realname, comment, deleted, sysadmin_flag, creation_time, update_time) values 
+insert into harbor_user (username, email, password, realname, comment, deleted, sysadmin_flag, creation_time, update_time) values 
 ('admin', 'admin@example.com', '', 'system admin', 'admin user',0, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('anonymous', 'anonymous@example.com', '', 'anonymous user', 'anonymous user', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
@@ -80,7 +80,7 @@ create table project (
  creation_time timestamp,
  update_time timestamp,
  deleted tinyint (1) DEFAULT 0 NOT NULL,
- FOREIGN KEY (owner_id) REFERENCES user(user_id),
+ FOREIGN KEY (owner_id) REFERENCES harbor_user(user_id),
  UNIQUE (name)
 );
 

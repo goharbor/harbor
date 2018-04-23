@@ -35,9 +35,9 @@ func GetProjectMember(queryMember models.Member) ([]*models.Member, error) {
 		on pm.project_id = ? and ug.id = pm.entity_id join role r on pm.role = r.role_id where  pm.entity_type = 'g')
 		union
 		(select pm.id as id, pm.project_id as project_id, u.user_id as entity_id, u.username as entity_name, u.creation_time, u.update_time, r.name as rolename, 
-		r.role_id as role, pm.entity_type as entity_type from user u join project_member pm 
+		r.role_id as role, pm.entity_type as entity_type from harbor_user u join project_member pm 
 		on pm.project_id = ? and u.user_id = pm.entity_id 
-		join role r on pm.role = r.role_id where u.deleted = 0 and pm.entity_type = 'u')) as a where a.project_id = ? `
+		join role r on pm.role = r.role_id where u.deleted = false and pm.entity_type = 'u')) as a where a.project_id = ? `
 
 	queryParam := make([]interface{}, 1)
 	// used ProjectID already
@@ -89,16 +89,14 @@ func AddProjectMember(member models.Member) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?)"
-	r, err := o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).Exec()
+
+	var pmid int
+	sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?) RETURNING id"
+	err = o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).QueryRow(&pmid)
 	if err != nil {
 		return 0, err
 	}
-	pmid, err := r.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-	return int(pmid), err
+	return pmid, err
 }
 
 // UpdateProjectMemberRole updates the record in table project_member, only role can be changed
@@ -127,9 +125,9 @@ func SearchMemberByName(projectID int64, entityName string) ([]*models.Member, e
 	               r.name as rolename,
 			       pm.role, pm.entity_id, pm.entity_type 
 			  from project_member pm
-         left join user u on pm.entity_id = u.user_id and pm.entity_type = 'u'
+         left join harbor_user u on pm.entity_id = u.user_id and pm.entity_type = 'u'
 		 left join role r on pm.role = r.role_id
-			 where u.deleted = 0 and pm.project_id = ? and u.username like ? order by entity_name )
+			 where u.deleted = false and pm.project_id = ? and u.username like ? order by entity_name )
 			union
 		   (select pm.id, pm.project_id, 
 			       ug.group_name as entity_name, 

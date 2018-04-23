@@ -27,32 +27,40 @@ var defaultRegistered = false
 
 // PrepareTestForMySQL is for test only.
 func PrepareTestForMySQL() {
-	dbHost := os.Getenv("MYSQL_HOST")
+}
+
+// PrepareTestForSQLite is for test only.
+func PrepareTestForSQLite() {
+}
+
+// PrepareTestForPostgresSQL is for test only.
+func PrepareTestForPostgresSQL() {
+	dbHost := os.Getenv("POSTGRESQL_HOST")
 	if len(dbHost) == 0 {
-		log.Fatalf("environment variable MYSQL_HOST is not set")
+		log.Fatalf("environment variable POSTGRESQL_HOST is not set")
 	}
-	dbUser := os.Getenv("MYSQL_USR")
+	dbUser := os.Getenv("POSTGRESQL_USR")
 	if len(dbUser) == 0 {
-		log.Fatalf("environment variable MYSQL_USR is not set")
+		log.Fatalf("environment variable POSTGRESQL_USR is not set")
 	}
-	dbPortStr := os.Getenv("MYSQL_PORT")
+	dbPortStr := os.Getenv("POSTGRESQL_PORT")
 	if len(dbPortStr) == 0 {
-		log.Fatalf("environment variable MYSQL_PORT is not set")
+		log.Fatalf("environment variable POSTGRESQL_PORT is not set")
 	}
 	dbPort, err := strconv.Atoi(dbPortStr)
 	if err != nil {
-		log.Fatalf("invalid MYSQL_PORT: %v", err)
+		log.Fatalf("invalid POSTGRESQL_PORT: %v", err)
 	}
 
-	dbPassword := os.Getenv("MYSQL_PWD")
-	dbDatabase := os.Getenv("MYSQL_DATABASE")
+	dbPassword := os.Getenv("POSTGRESQL_PWD")
+	dbDatabase := os.Getenv("POSTGRESQL_DATABASE")
 	if len(dbDatabase) == 0 {
-		log.Fatalf("environment variable MYSQL_DATABASE is not set")
+		log.Fatalf("environment variable POSTGRESQL_DATABASE is not set")
 	}
 
 	database := &models.Database{
-		Type: "mysql",
-		MySQL: &models.MySQL{
+		Type: "postgresql",
+		PostGreSQL: &models.PostGreSQL{
 			Host:     dbHost,
 			Port:     dbPort,
 			Username: dbUser,
@@ -61,23 +69,7 @@ func PrepareTestForMySQL() {
 		},
 	}
 
-	log.Infof("MYSQL_HOST: %s, MYSQL_USR: %s, MYSQL_PORT: %d, MYSQL_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
-	initDatabaseForTest(database)
-}
-
-// PrepareTestForSQLite is for test only.
-func PrepareTestForSQLite() {
-	file := os.Getenv("SQLITE_FILE")
-	if len(file) == 0 {
-		log.Fatalf("environment variable SQLITE_FILE is not set")
-	}
-
-	database := &models.Database{
-		Type: "sqlite",
-		SQLite: &models.SQLite{
-			File: file,
-		},
-	}
+	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 	initDatabaseForTest(database)
 }
 

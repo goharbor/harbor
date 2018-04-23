@@ -11,26 +11,11 @@ services:
   registry:
     networks:
       - harbor-clair
-  postgres:
+  postgresql:
     networks:
       harbor-clair:
         aliases:
-          - postgres
-    container_name: clair-db
-    image: vmware/postgresql-photon:__postgresql_version__
-    restart: always
-    depends_on:
-      - log
-    env_file:
-      ./common/config/clair/postgres_env
-    volumes:
-      - ./common/config/clair/postgresql-init.d/:/docker-entrypoint-initdb.d:z
-      - /data/clair-db:/var/lib/postgresql/data:z
-    logging:
-      driver: "syslog"
-      options:  
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "clair-db"
+          - harbor-db
   clair:
     networks:
       - harbor-clair
@@ -39,7 +24,7 @@ services:
     restart: always
     cpu_quota: 150000
     depends_on:
-      - postgres
+      - postgresql
     volumes:
       - ./common/config/clair/config.yaml:/etc/clair/config.yaml:z
     logging:

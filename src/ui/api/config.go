@@ -307,7 +307,7 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 			return false, fmt.Errorf("invalid %s: %d", k, n)
 		}
 		if (k == common.EmailPort ||
-			k == common.MySQLPort) && n > 65535 {
+			k == common.PostGreSQLPort) && n > 65535 {
 			return false, fmt.Errorf("invalid %s: %d", k, n)
 		}
 	}

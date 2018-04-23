@@ -29,18 +29,17 @@ import (
 func TestReadonlyFilter(t *testing.T) {
 
 	var defaultConfig = map[string]interface{}{
-		common.ExtEndpoint:     "host01.com",
-		common.AUTHMode:        "db_auth",
-		common.CfgExpiration:   5,
-		common.TokenExpiration: 30,
-		common.DatabaseType:    "mysql",
-		common.MySQLHost:       "127.0.0.1",
-		common.MySQLPort:       3306,
-		common.MySQLUsername:   "root",
-		common.MySQLPassword:   "root123",
-		common.MySQLDatabase:   "registry",
-		common.SQLiteFile:      "/tmp/registry.db",
-		common.ReadOnly:        true,
+		common.ExtEndpoint:        "host01.com",
+		common.AUTHMode:           "db_auth",
+		common.CfgExpiration:      5,
+		common.TokenExpiration:    30,
+		common.DatabaseType:       "postgresql",
+		common.PostGreSQLDatabase: "registry",
+		common.PostGreSQLHOST:     "127.0.0.1",
+		common.PostGreSQLPort:     5432,
+		common.PostGreSQLPassword: "root123",
+		common.PostGreSQLUsername: "postgres",
+		common.ReadOnly:           true,
 	}
 	adminServer, err := utilstest.NewAdminserver(defaultConfig)
 	if err != nil {

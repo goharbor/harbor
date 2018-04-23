@@ -1,0 +1,28 @@
+{
+	"server": {
+		"http_addr": ":4443"
+	},
+	"trust_service": {
+		"type": "remote",
+		"hostname": "notarysigner",
+		"port": "7899",
+		"tls_ca_file": "./notary-signer-ca.crt",
+		"key_algorithm": "ecdsa"
+	},
+	"logging": {
+		"level": "debug"
+	},
+	"storage": {
+		"backend": "postgres",
+		"db_url": "postgres://server:password@postgresql:5432/notaryserver?sslmode=disable"
+    },
+    "auth": {
+        "type": "token",
+        "options": {
+            "realm": "$token_endpoint/service/token",
+            "service": "harbor-notary",
+            "issuer": "harbor-token-issuer",
+            "rootcertbundle": "/etc/notary/root.crt"
+        }
+    }
+}

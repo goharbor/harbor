@@ -48,7 +48,7 @@ type RepPolicy struct {
 	ReplicateDeletion bool      `orm:"column(replicate_deletion)"`
 	CreationTime      time.Time `orm:"column(creation_time);auto_now_add"`
 	UpdateTime        time.Time `orm:"column(update_time);auto_now"`
-	Deleted           int       `orm:"column(deleted)"`
+	Deleted           bool      `orm:"column(deleted)"`
 }
 
 // RepJob is the model for a replication job, which is the execution unit on job service, currently it is used to transfer/remove

@@ -35,10 +35,19 @@ type DatabaseWatchItemDAO struct{}
 
 // Add a WatchItem
 func (d *DatabaseWatchItemDAO) Add(item *models.WatchItem) (int64, error) {
+	o := GetOrmer()
+
+	var triggerID int64
 	now := time.Now()
-	item.CreationTime = now
-	item.UpdateTime = now
-	return GetOrmer().Insert(item)
+
+	sql := "insert into replication_immediate_trigger (policy_id, namespace, on_deletion, on_push, creation_time, update_time) values (?, ?, ?, ?, ?, ?)  RETURNING id"
+
+	err := o.Raw(sql, item.PolicyID, item.Namespace, item.OnDeletion, item.OnPush, now, now).QueryRow(&triggerID)
+	if err != nil {
+		return 0, err
+	}
+
+	return triggerID, nil
 }
 
 // DeleteByPolicyID deletes the WatchItem specified by policy ID
@@ -51,9 +60,9 @@ func (d *DatabaseWatchItemDAO) DeleteByPolicyID(policyID int64) error {
 func (d *DatabaseWatchItemDAO) Get(namespace, operation string) ([]models.WatchItem, error) {
 	qs := GetOrmer().QueryTable(&models.WatchItem{}).Filter("Namespace", namespace)
 	if operation == "push" {
-		qs = qs.Filter("OnPush", 1)
+		qs = qs.Filter("OnPush", true)
 	} else if operation == "delete" {
-		qs = qs.Filter("OnDeletion", 1)
+		qs = qs.Filter("OnDeletion", true)
 	}
 
 	items := []models.WatchItem{}

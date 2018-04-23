@@ -27,7 +27,7 @@ func AddProjectMetadata(meta *models.ProjectMetadata) error {
 	now := time.Now()
 	sql := `insert into project_metadata
 				(project_id, name, value, creation_time, update_time, deleted)
-				 values (?, ?, ?, ?, ?, 0)`
+				 values (?, ?, ?, ?, ?, false)`
 	_, err := GetOrmer().Raw(sql, meta.ProjectID, meta.Name, meta.Value,
 		now, now).Exec()
 	return err
@@ -39,7 +39,7 @@ func AddProjectMetadata(meta *models.ProjectMetadata) error {
 func DeleteProjectMetadata(projectID int64, name ...string) error {
 	params := make([]interface{}, 1)
 	sql := `update project_metadata 
-			set deleted = 1 
+			set deleted = true 
 			where project_id = ?`
 	params = append(params, projectID)
 
@@ -56,7 +56,7 @@ func DeleteProjectMetadata(projectID int64, name ...string) error {
 func UpdateProjectMetadata(meta *models.ProjectMetadata) error {
 	sql := `update project_metadata 
 				set value = ?, update_time = ? 
-				where project_id = ? and name = ? and deleted = 0`
+				where project_id = ? and name = ? and deleted = false`
 	_, err := GetOrmer().Raw(sql, meta.Value, time.Now(), meta.ProjectID,
 		meta.Name).Exec()
 	return err
@@ -70,7 +70,7 @@ func GetProjectMetadata(projectID int64, name ...string) ([]*models.ProjectMetad
 	params := make([]interface{}, 1)
 
 	sql := `select * from project_metadata 
-				where project_id = ? and deleted = 0`
+				where project_id = ? and deleted = false`
 	params = append(params, projectID)
 
 	if len(name) > 0 {
@@ -93,7 +93,7 @@ func paramPlaceholder(n int) string {
 // ListProjectMetadata ...
 func ListProjectMetadata(name, value string) ([]*models.ProjectMetadata, error) {
 	sql := `select * from project_metadata 
-				where name = ? and value = ? and deleted = 0`
+				where name = ? and value = ? and deleted = false`
 	metadatas := []*models.ProjectMetadata{}
 	_, err := GetOrmer().Raw(sql, name, value).QueryRows(&metadatas)
 	return metadatas, err

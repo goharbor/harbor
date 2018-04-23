@@ -31,12 +31,12 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registry"
-  mysql:
+  postgresql:
     image: vmware/harbor-db:__version__
     container_name: harbor-db
     restart: always
     volumes:
-      - /data/database:/var/lib/mysql:z
+      - /data/database:/var/lib/postgresql/data:z
     networks:
       - harbor
     env_file:
@@ -47,7 +47,7 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        tag: "mysql"
+        tag: "postgresql"
   adminserver:
     image: vmware/harbor-adminserver:__version__
     container_name: harbor-adminserver
@@ -132,7 +132,7 @@ services:
       - 443:443
       - 4443:4443
     depends_on:
-      - mysql
+      - postgresql
       - registry
       - ui
       - log

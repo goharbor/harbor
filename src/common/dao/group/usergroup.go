@@ -15,6 +15,8 @@
 package group
 
 import (
+	"time"
+
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -23,11 +25,17 @@ import (
 // AddUserGroup - Add User Group
 func AddUserGroup(userGroup models.UserGroup) (int, error) {
 	o := dao.GetOrmer()
-	id, err := o.Insert(&userGroup)
+
+	sql := "insert into user_group (group_name, group_type, ldap_group_dn, creation_time, update_time) values (?, ?, ?, ?, ?) RETURNING id"
+	var id int
+	now := time.Now()
+
+	err := o.Raw(sql, userGroup.GroupName, userGroup.GroupType, userGroup.LdapGroupDN, now, now).QueryRow(&id)
 	if err != nil {
 		return 0, err
 	}
-	return int(id), err
+
+	return id, nil
 }
 
 // QueryUserGroup - Query User Group

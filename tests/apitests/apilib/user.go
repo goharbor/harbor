@@ -37,13 +37,13 @@ type User struct {
 
 	Comment string `json:"comment,omitempty"`
 
-	Deleted int32 `json:"deleted,omitempty"`
+	Deleted bool `json:"deleted,omitempty"`
 
 	RoleName string `json:"role_name,omitempty"`
 
 	RoleId int32 `json:"role_id,omitempty"`
 
-	HasAdminRole int32 `json:"has_admin_role,omitempty"`
+	HasAdminRole bool `json:"has_admin_role,omitempty"`
 
 	ResetUuid string `json:"reset_uuid,omitempty"`
 

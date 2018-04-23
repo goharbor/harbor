@@ -15,10 +15,11 @@ package api
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/tests/apitests/apilib"
-	"testing"
 
 	"github.com/astaxie/beego"
 )
@@ -306,7 +307,7 @@ func TestUsersToggleAdminRole(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 	//case 1: toggle user2 admin role without admin auth
-	code, err := apiTest.UsersToggleAdminRole(testUser0002ID, *testUser0002Auth, int32(1))
+	code, err := apiTest.UsersToggleAdminRole(testUser0002ID, *testUser0002Auth, true)
 	if err != nil {
 		t.Error("Error occured while toggle user admin role", err.Error())
 		t.Log(err)
@@ -314,7 +315,7 @@ func TestUsersToggleAdminRole(t *testing.T) {
 		assert.Equal(403, code, "Toggle user admin role status should be 403")
 	}
 	//case 2: toggle user2 admin role with admin auth
-	code, err = apiTest.UsersToggleAdminRole(testUser0002ID, *admin, int32(1))
+	code, err = apiTest.UsersToggleAdminRole(testUser0002ID, *admin, true)
 	if err != nil {
 		t.Error("Error occured while toggle user admin role", err.Error())
 		t.Log(err)

@@ -103,7 +103,7 @@ export class NavigatorComponent implements OnInit {
 
     public get canDownloadCert(): boolean {
         return this.session.getCurrentUser() &&
-            this.session.getCurrentUser().has_admin_role > 0 &&
+            this.session.getCurrentUser().has_admin_role &&
             this.appConfigService.getConfig() &&
             this.appConfigService.getConfig().has_ca_root;
     }
