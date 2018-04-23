@@ -48,6 +48,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
 
     checkOnGoing: boolean;
     isLabelNameExist = false;
+    panelHidden = true;
 
     nameChecker = new Subject<string>();
 
@@ -112,6 +113,13 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
         this.formShow = true;
         this.labelId = labelId;
         this.copeLabelModel = clone(label[0]);
+    }
+
+    openColorPanel(): void {
+        this.panelHidden = false;
+    }
+    closeColorPanel(): void {
+        this.panelHidden = true;
     }
 
     public get hasChanged(): boolean {
