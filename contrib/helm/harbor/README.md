@@ -176,24 +176,32 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `registry.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `registry.volumes` | used to create PVCs if persistence is enabled (see instructions in values.yaml) | see values.yaml |
 | **Clair** |
-| `clair.enabled` | Enable clair? | `true` |
+| `clair.enabled` | Enable Clair? | `true` |
 | `clair.image.repository` | Repository for clair image | `vmware/clair-photon` |
 | `clair.image.tag` | Tag for clair image | `v2.0.1-v1.4.0`
 | `clair.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined
 | `postgresql` | Overrides for postgresql chart [values.yaml](https://github.com/kubernetes/charts/blob/f2938a46e3ae8e2512ede1142465004094c3c333/stable/postgresql/values.yaml) | see values.yaml
-| | | |
+| **Notary** |
+| `notary.enabled` | Enable Notary? | `true` |
+| `notary.server.image.repository` | Repository for notary server image | `vmware/notary-server-photon` |
+| `notary.server.image.tag` | Tag for notary server image | `v0.5.1-v1.4.0`
+| `notary.signer.image.repository` | Repository for notary signer image | `vmware/notary-signer-photon` |
+| `notary.signer.image.tag` | Tag for notary signer image | `v0.5.1-v1.4.0`
+| `notary.db.image.repository` | Repository for notary database image | `vmware/mariadb-photon` |
+| `notary.db.image.tag` | Tag for notary database image | `v1.4.0`
+| `notary.db.password` | The password of users for notary database | Specify your own password |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
 ```bash
-helm install --name my-release --set mysql.pass=baconeggs .
+helm install . --name my-release --set externalDomain=harbor.<IP>.xip.io
 ```
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
 
 ```bash
-helm install --name my-release -f /path/to/values.yaml .
+helm install . --name my-release -f /path/to/values.yaml
 ```
 
 > **Tip**: You can use the default [values.yaml](values.yaml)

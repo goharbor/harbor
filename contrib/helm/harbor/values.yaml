@@ -50,8 +50,8 @@ secretKey: not-a-secure-key
 ingress:
   annotations:
     ingress.kubernetes.io/ssl-redirect: "true"
-    ingress.kubernetes.io/body-size: "0"
     ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
 
 adminserver:
   image:
@@ -285,12 +285,6 @@ clair:
   #    memory: 256Mi
   #    cpu: 100m
 
-## Notary support is not yet fully implemented in the Helm Charts
-## Enabling it will just break things.
-#
-notary:
-  enabled: false
-
 ## Settings for postgresql dependency.
 ## see https://github.com/kubernetes/charts/tree/master/stable/postgresql
 ## for further configurables.
@@ -300,3 +294,37 @@ postgresql:
   postgresDatabase: clair
   persistence:
     enabled: false
+
+notary:
+  enabled: true
+  server:
+    image:
+      repository: vmware/notary-server-photon
+      tag: v0.5.1-v1.4.0
+      pullPolicy: IfNotPresent
+  signer:
+    image:
+      repository: vmware/notary-signer-photon
+      tag: v0.5.1-v1.4.0
+      pullPolicy: IfNotPresent
+    env:
+      NOTARY_SIGNER_DEFAULTALIAS: defaultalias
+    # The TLS certificate for Notary Signer. Will auto generate them if unspecified here.
+    caCrt:
+    tlsCrt:
+    tlsKey:
+  db:
+    image:
+      repository: vmware/mariadb-photon
+      tag: *harbor_image_tag
+      pullPolicy: IfNotPresent
+    password: not-a-secure-password
+    volumes:
+      data:
+        # storageClass: "-"
+        accessMode: ReadWriteOnce
+        size: 1Gi
+    # resources:
+    #  requests:
+    #    memory: 256Mi
+    #    cpu: 100m

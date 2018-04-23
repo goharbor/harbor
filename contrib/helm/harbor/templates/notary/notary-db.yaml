@@ -1,0 +1,62 @@
+{{ if .Values.notary.enabled }}
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: {{ template "harbor.fullname" . }}-notary-db
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: notary-db
+spec:
+  replicas: 1
+  serviceName: "{{ template "harbor.fullname" . }}-notary-db"
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: notary-db
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: notary-db
+    spec:
+      containers:
+      - name: notary-db
+        image: {{ .Values.notary.db.image.repository }}:{{ .Values.notary.db.image.tag }}
+        imagePullPolicy: {{ .Values.notary.db.image.pullPolicy }}
+        args: ["--innodb_file_per_table"]
+        env:
+          - name: TERM
+            value: "dumb"
+          - name: MYSQL_ALLOW_EMPTY_PASSWORD
+            value: "true"
+        resources:
+{{ toYaml .Values.notary.db.resources | indent 10 }}
+        volumeMounts:
+        - name: notary-db-config
+          mountPath: /docker-entrypoint-initdb.d
+        - name: notary-db
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: notary-db-config
+        configMap:
+          name: "{{ template "harbor.fullname" . }}-notary-db"
+      {{- if not .Values.persistence.enabled }}
+      - name: notary-db
+        emptyDir: {}
+      {{- end -}}
+  {{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: notary-db
+    spec:
+      accessModes: [{{ .Values.notary.db.volumes.data.accessMode | quote }}]
+      {{- if (eq "-" .Values.notary.db.volumes.data.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.notary.db.volumes.data.storageClass }}"
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.adminserver.volumes.data.size | quote }}
+  {{- end -}}
+{{ end }}
