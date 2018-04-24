@@ -68,14 +68,21 @@ func (bs *Bootstrap) LoadAndRun() {
 	}
 
 	//Start the pool
-	var backendPool pool.Interface
+	var (
+		backendPool pool.Interface
+		wpErr       error
+	)
 	if config.DefaultConfig.PoolConfig.Backend == config.JobServicePoolBackendRedis {
-		backendPool = bs.loadAndRunRedisWorkerPool(rootContext, config.DefaultConfig)
+		backendPool, wpErr = bs.loadAndRunRedisWorkerPool(rootContext, config.DefaultConfig)
+		if wpErr != nil {
+			logger.Fatalf("Failed to load and run worker pool: %s\n", wpErr.Error())
+		}
+	} else {
+		logger.Fatalf("Worker pool backend '%s' is not supported", config.DefaultConfig.PoolConfig.Backend)
 	}
 
 	//Initialize controller
 	ctl := core.NewController(backendPool)
-
 	//Start the API server
 	apiServer := bs.loadAndRunAPIServer(rootContext, config.DefaultConfig, ctl)
 	logger.Infof("Server is started at %s:%d with %s", "", config.DefaultConfig.Port, config.DefaultConfig.Protocol)
@@ -144,7 +151,7 @@ func (bs *Bootstrap) loadAndRunAPIServer(ctx *env.Context, cfg *config.Configura
 }
 
 //Load and run the worker pool
-func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Configuration) pool.Interface {
+func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Configuration) (pool.Interface, error) {
 	redisPool := &redis.Pool{
 		MaxActive: 6,
 		MaxIdle:   6,
@@ -166,8 +173,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 	//Register jobs here
 	if err := redisWorkerPool.RegisterJob(impl.KnownJobDemo, (*impl.DemoJob)(nil)); err != nil {
 		//exit
-		ctx.ErrorChan <- err
-		return redisWorkerPool //avoid nil pointer issue
+		return nil, err
 	}
 	if err := redisWorkerPool.RegisterJobs(
 		map[string]interface{}{
@@ -177,11 +183,12 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 			job.ImageReplicate: (*replication.Replicator)(nil),
 		}); err != nil {
 		//exit
-		ctx.ErrorChan <- err
-		return redisWorkerPool //avoid nil pointer issue
+		return nil, err
 	}
 
-	redisWorkerPool.Start()
+	if err := redisWorkerPool.Start(); err != nil {
+		return nil, err
+	}
 
-	return redisWorkerPool
+	return redisWorkerPool, nil
 }

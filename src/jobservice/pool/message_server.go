@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"time"
 
@@ -16,6 +17,10 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/vmware/harbor/src/jobservice/models"
 	"github.com/vmware/harbor/src/jobservice/utils"
+)
+
+const (
+	msgServerRetryTimes = 5
 )
 
 //MessageServer implements the sub/pub mechanism via redis to do async message exchanging.
@@ -42,14 +47,13 @@ func (ms *MessageServer) Start() error {
 		logger.Info("Message server is stopped")
 	}()
 
-	//As we get one connection from the pool, don't try to close it.
-	conn := ms.redisPool.Get()
-	defer conn.Close()
-
+	conn := ms.redisPool.Get() //Get one backend connection!
 	psc := redis.PubSubConn{
 		Conn: conn,
 	}
+	defer psc.Close()
 
+	//Subscribe channel
 	err := psc.Subscribe(redis.Args{}.AddFlat(utils.KeyPeriodicNotification(ms.namespace))...)
 	if err != nil {
 		return err
@@ -60,8 +64,7 @@ func (ms *MessageServer) Start() error {
 		for {
 			switch res := psc.Receive().(type) {
 			case error:
-				done <- res
-				return
+				done <- fmt.Errorf("error occurred when receiving from pub/sub channel of message server: %s", res.(error).Error())
 			case redis.Message:
 				m := &models.Message{}
 				if err := json.Unmarshal(res.Data, m); err != nil {
@@ -131,12 +134,12 @@ func (ms *MessageServer) Start() error {
 		case <-ms.context.Done():
 			err = errors.New("context exit")
 		case err = <-done:
-			return err
 		}
 	}
 
 	//Unsubscribe all
 	psc.Unsubscribe()
+
 	return <-done
 }
 
