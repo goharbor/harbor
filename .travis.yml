@@ -54,7 +54,8 @@ install:
   - go get -d github.com/docker/distribution
   - go get -d github.com/docker/libtrust
   - go get -d github.com/go-sql-driver/mysql
-  - go get github.com/golang/lint/golint
+  - mkdir -p $GOPATH/src/golang.org/x && git clone https://github.com/golang/lint.git $GOPATH/src/golang.org/x/lint && go get golang.org/x/lint/golint
+  #- go get github.com/golang/lint/golint
   - go get github.com/GeertJohan/fgt
 
 #  - sudo rm /usr/local/bin/docker-compose
