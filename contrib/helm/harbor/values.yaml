@@ -198,7 +198,7 @@ registry:
     tag: v2.6.2-v1.4.0
     pullPolicy: IfNotPresent
   httpSecret: not-a-secure-secret
-  logLevel:
+  logLevel: info
 # comment out one of the below to use your cloud's object storage.
 #  objectStorage:
 #    gcs:

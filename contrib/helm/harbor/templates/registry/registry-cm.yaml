@@ -14,13 +14,12 @@ data:
     storage:
       {{- if .Values.registry.objectStorage }}
 {{ toYaml .Values.registry.objectStorage | indent 6 }}
-      {{- end }}
-      cache:
-        layerinfo: inmemory
-      {{- if not .Values.registry.objectStorage }}
+      {{- else }}
       filesystem:
         rootdirectory: /var/lib/registry
       {{- end }}
+      cache:
+        layerinfo: inmemory
       maintenance:
         uploadpurging:
           enabled: false

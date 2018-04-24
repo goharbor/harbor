@@ -35,8 +35,10 @@ spec:
         - containerPort: 5000
         - containerPort: 5001
         volumeMounts:
+{{- if not .Values.registry.objectStorage }}
         - name: registry-data
           mountPath: /var/lib/registry
+{{- end }}
         - name: registry-root-certificate
           mountPath: /etc/registry/root.crt
           subPath: root.crt
@@ -44,18 +46,13 @@ spec:
           mountPath: /etc/registry/config.yml
           subPath: config.yml
       volumes:
-{{- if or (not .Values.persistence.enabled) .Values.registry.objectStorage }}
-      - name: registry-data
-        emptyDir: {}
-{{- end }}
       - name: registry-root-certificate
         secret:
           secretName: "{{ template "harbor.fullname" . }}-registry"
       - name: registry-config
         configMap:
           name: "{{ template "harbor.fullname" . }}-registry"
-  {{- if not .Values.registry.objectStorage }}
-  {{- if .Values.persistence.enabled }}
+  {{- if and (not .Values.registry.objectStorage) .Values.persistence.enabled }}
   volumeClaimTemplates:
   - metadata:
       name: "registry-data"
@@ -73,5 +70,4 @@ spec:
       resources:
         requests:
           storage: {{ .Values.registry.volumes.data.size | quote }}
-  {{- end -}}
   {{- end -}}
