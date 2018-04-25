@@ -51,7 +51,7 @@ export const TAG_TEMPLATE = `
                         <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
                         <div [hidden]='imageStickLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
                         <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
-                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="stickLabel(label); label.iconsShow =(label.iconsShow== true?false: true)">
+                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="stickLabel(label)">
                                 <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
                                 <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
                             </button>
