@@ -29,6 +29,7 @@ const (
 	SeverityLow               = "low"
 	SeverityMedium            = "medium"
 	SeverityHigh              = "high"
+	SeverityCritical          = "critical"
 )
 
 // ProjectMetadata holds the metadata of a project.
