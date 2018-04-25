@@ -69,7 +69,10 @@
         "FULL_NAME": "Prénom et nom",
         "COMMENT": "Commentaires",
         "PASSWORD": "Mot de passe",
-        "SAVE_SUCCESS": "Profil utilisateur sauvegardé avec succès."
+        "SAVE_SUCCESS": "Profil utilisateur sauvegardé avec succès.",
+        "ADMIN_RENAME_TIP": "Select the button in order to change the username to \"admin@harbor.local\". This operation can not be undone.",
+        "RENAME_SUCCESS": "Rename success!",
+        "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone."
     },
     "CHANGE_PWD": {
         "TITLE": "Modifier le mot de passe",

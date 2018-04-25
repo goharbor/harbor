@@ -69,6 +69,19 @@ export class InlineAlertComponent {
         this.useAppLevelStyle = false;
     }
 
+    // Show warning
+    public showInlineWarning(warning: any): void {
+        this.displayedText = "";
+        if (warning && warning.message) {
+            this.translate.get(warning.message).subscribe((res: string) => this.displayedText = res);
+        }
+        this.inlineAlertType = 'alert-warning';
+        this.showCancelAction = false;
+        this.inlineAlertClosable = true;
+        this.alertClose = false;
+        this.useAppLevelStyle = false;
+    }
+
     // Show inline sccess info
     public showInlineSuccess(info: any): void {
         this.displayedText = "";

@@ -83,9 +83,9 @@
         "COMMENT": "Comentarios",
         "PASSWORD": "Contraseña",
         "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente.",
-        "ADMIN_RENAME_TIP": "Double click to change your username to \"admin@harbor.local\", but this action can NOT redo.",
+        "ADMIN_RENAME_TIP": "Select the button in order to change the username to \"admin@harbor.local\". This operation can not be undone.",
         "RENAME_SUCCESS": "Rename success!",
-        "RENAME_CONFIRM_INFO": "This action can not undo, Confirm To Rename?"
+        "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone."
     },
     "CHANGE_PWD": {
         "TITLE": "Cambiar contraseña",
