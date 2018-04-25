@@ -32,6 +32,7 @@ func TestParseServerity(t *testing.T) {
 		"LOW":        models.SevLow,
 		"Medium":     models.SevMedium,
 		"high":       models.SevHigh,
+		"Critical":   models.SevHigh,
 	}
 	for k, v := range in {
 		assert.Equal(v, ParseClairSev(k))
