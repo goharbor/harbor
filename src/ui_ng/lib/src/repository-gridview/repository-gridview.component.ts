@@ -266,11 +266,13 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
   provisionItemEvent(evt: any, repo: RepositoryItem): void {
     evt.stopPropagation();
+    repo.name = this.registryUrl + ':443/' + repo.name
     this.repoProvisionEvent.emit(repo);
   }
 
   itemAddInfoEvent(evt: any, repo: RepositoryItem): void {
     evt.stopPropagation();
+    repo.name = this.registryUrl + ':443/' + repo.name
     this.addInfoEvent.emit(repo);
   }
 
