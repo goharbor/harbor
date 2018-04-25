@@ -266,7 +266,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                         this.msgHandler.handleReadOnly();
                     }
 
-                    if (changes['read_only'] && changes['read_only'].toString() === "false") {
+                    if (changes && changes['read_only'] === false) {
                         this.msgHandler.clear();
                     }
 
