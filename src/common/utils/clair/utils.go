@@ -15,10 +15,10 @@
 package clair
 
 import (
+	"fmt"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"fmt"
 	"strings"
 )
 
@@ -34,7 +34,7 @@ func ParseClairSev(clairSev string) models.Severity {
 		return models.SevLow
 	case models.SeverityMedium:
 		return models.SevMedium
-	case models.SeverityHigh:
+	case models.SeverityHigh, models.SeverityCritical:
 		return models.SevHigh
 	default:
 		return models.SevUnknown
