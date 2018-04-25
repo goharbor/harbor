@@ -13,15 +13,16 @@ export const CREATE_EDIT_LABEL_TEMPLATE: string = `
             </label>
             <label>
                 <label for="color">{{'LABEL.COLOR' | translate}}</label>
-                <clr-dropdown [clrCloseMenuOnItemClick]="false">
-                    <button type="button" class="btn btn-outline btnColor btn-sm" clrDropdownTrigger>
-                        <clr-icon shape="caret down" size="20" style='right:2px; width:24px; height:18px;'></clr-icon>
-                    </button>
-                    <clr-dropdown-menu *clrIfOpen>
-                        <label type="button" class="dropdown-item"  (click)="labelModel.color=i.color" *ngFor="let i of labelColor" [ngStyle]="{'background-color': i.color, 'color': i.textColor }">Aa</label>
-                    </clr-dropdown-menu>
-                </clr-dropdown>
-                <input type="text" id="color" size="8" name="color" [(ngModel)]="labelModel.color"  #color="ngModel">
+                <div class="colorDrop">
+                  <button type="button" class="btn btn-outline btnColor btn-sm" >
+                    <clr-icon shape="caret down" size="20" style='right:2px; width:24px; height:18px;' (click)="openColorPanel()"></clr-icon>
+                  </button>
+                  <div class="colorPanel" [hidden]="panelHidden">
+                    <a class="closePanel" (click)="closeColorPanel()">&times;</a>
+                    <label type="button" class="dropdown-item"  (click)="labelModel.color=i.color" *ngFor="let i of labelColor" [ngStyle]="{'background-color': i.color, 'color': i.textColor }">Aa</label>
+                  </div>
+                  <input type="text" id="color" size="8" name="color" disabled [(ngModel)]="labelModel.color"  #color="ngModel">
+                </div>
             </label>
             <label>
                 <label for="description">{{'LABEL.DESCRIPTION' | translate}}</label>

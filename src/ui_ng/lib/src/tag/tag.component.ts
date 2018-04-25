@@ -95,6 +95,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   closable = false;
   lastFilteredTagName: string;
   batchDelectionInfos: BatchInfo[] = [];
+  inprogress: boolean;
 
   createdComparator: Comparator<Tag> = new CustomComparator<Tag>("created", "date");
 
@@ -320,23 +321,35 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   selectLabel(labelInfo: {[key: string]: any | string[]}): void {
+    if (!this.inprogress) {
+      this.inprogress = true;
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
       toPromise<any>(this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
         this.refresh();
+        labelInfo.iconsShow = true;
+        this.inprogress = false;
       }).catch(err => {
+        this.inprogress = false;
         this.errorHandler.error(err);
       });
+    }
   }
 
   unSelectLabel(labelInfo: {[key: string]: any | string[]}): void {
+    if (!this.inprogress) {
+      this.inprogress = true;
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
       toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
         this.refresh();
+        labelInfo.iconsShow = false;
+        this.inprogress = false;
       }).catch(err => {
+        this.inprogress = false;
         this.errorHandler.error(err);
       });
+    }
   }
 
   rightFilterLabel(labelInfo: {[key: string]: any | string[]}): void {
