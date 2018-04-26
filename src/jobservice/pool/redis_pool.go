@@ -5,6 +5,7 @@ package pool
 import (
 	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -29,6 +30,8 @@ const (
 
 	//Copy from period.enqueuer
 	periodicEnqueuerHorizon = 4 * time.Minute
+
+	pingRedisMaxTimes = 10
 )
 
 //GoCraftWorkPool is the pool implementation based on gocraft/work powered by redis.
@@ -80,13 +83,17 @@ func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, re
 
 //Start to serve
 //Unblock action
-func (gcwp *GoCraftWorkPool) Start() {
+func (gcwp *GoCraftWorkPool) Start() error {
 	if gcwp.redisPool == nil ||
 		gcwp.pool == nil ||
 		gcwp.context.SystemContext == nil {
 		//report and exit
-		gcwp.context.ErrorChan <- errors.New("Redis worker pool can not start as it's not correctly configured")
-		return
+		return errors.New("Redis worker pool can not start as it's not correctly configured")
+	}
+
+	//Test the redis connection
+	if err := gcwp.ping(); err != nil {
+		return err
 	}
 
 	done := make(chan interface{}, 1)
@@ -130,8 +137,18 @@ func (gcwp *GoCraftWorkPool) Start() {
 			return
 		}
 
+		startTimes := 0
+	START_MSG_SERVER:
 		//Start message server
 		if err = gcwp.messageServer.Start(); err != nil {
+			logger.Errorf("Message server exits with error: %s\n", err.Error())
+			if startTimes < msgServerRetryTimes {
+				startTimes++
+				time.Sleep(time.Duration((int)(math.Pow(2, (float64)(startTimes)))+5) * time.Second)
+				logger.Infof("Restart message server (%d times)\n", startTimes)
+				goto START_MSG_SERVER
+			}
+
 			return
 		}
 	}()
@@ -177,6 +194,8 @@ func (gcwp *GoCraftWorkPool) Start() {
 
 		gcwp.pool.Stop()
 	}()
+
+	return nil
 }
 
 //RegisterJob is used to register the job to the pool.
@@ -591,6 +610,23 @@ func (gcwp *GoCraftWorkPool) handleOPCommandFiring(data interface{}) error {
 func (rpc *RedisPoolContext) logJob(job *work.Job, next work.NextMiddlewareFunc) error {
 	logger.Infof("Job incoming: %s:%s", job.Name, job.ID)
 	return next()
+}
+
+//Ping the redis server
+func (gcwp *GoCraftWorkPool) ping() error {
+	conn := gcwp.redisPool.Get()
+	defer conn.Close()
+
+	var err error
+	for count := 1; count <= pingRedisMaxTimes; count++ {
+		if _, err = conn.Do("ping"); err == nil {
+			return nil
+		}
+
+		time.Sleep(time.Duration(count+4) * time.Second)
+	}
+
+	return fmt.Errorf("connect to redis server timeout: %s", err.Error())
 }
 
 //generate the job stats data
