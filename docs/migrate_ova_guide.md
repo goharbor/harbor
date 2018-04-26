@@ -9,11 +9,12 @@ This guide is limited to migrate a Harbor OVA instance to a next release. All Ha
    - **"Networking properties"** if need to keep these settings. you can find them in **"Edit Settings"** -> **"vApp Options"**  
    ![Screenshot of vApp Options](img/ovainstall/vappoptions.png)
 
-2. In the vSphere Web Client, Select **"Shut Down Guest OS"** on the existing OVA instances, then select **"Edit Settings"**, remove the **"Hard disk 2"**, uncheck **"Delete files from datastore"**. All disks in the logical volume "data1_vg" should be removed if the original logic volume have been extended. Use pvscan command to check disks in logical volume "data1_vg".
+2.  Use pvscan command to check disks in logical volume "data1_vg". Note down all location of disk files in logical volume "data1_vg".
    
    ![Screenshot of pvscan](img/ovainstall/pvscan.png)
    
-    Usually, the sda is the Hard Disk1 in the **"Edit Settings"** pannel, and the sdb is Hard Disk2 and so on. Note down all location of disk files in logical volume "data1_vg".
+   In the vSphere Web Client, Select **"Shut Down Guest OS"** on the existing OVA instances, then select **"Edit Settings"**, remove the **"Hard disk 2"**, uncheck **"Delete files from datastore"**. All disks in the logical volume "data1_vg" should be removed if the original logic volume have been extended.
+    Usually, the sda is the Hard Disk1 in the **"Edit Settings"** pannel, and the sdb is Hard Disk2 and so on. 
    
    ![Screenshot of Remove Disk](img/ovainstall/removedisk.png)
 
