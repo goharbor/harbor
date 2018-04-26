@@ -8,17 +8,18 @@ data:
   config.yml: |+
     version: 0.1
     log:
-      level: info
+      level: {{ .Values.registry.logLevel }}
       fields:
         service: registry
     storage:
       {{- if .Values.registry.objectStorage }}
 {{ toYaml .Values.registry.objectStorage | indent 6 }}
+      {{- else }}
+      filesystem:
+        rootdirectory: /var/lib/registry
       {{- end }}
       cache:
         layerinfo: inmemory
-      filesystem:
-        rootdirectory: /var/lib/registry
       maintenance:
         uploadpurging:
           enabled: false
