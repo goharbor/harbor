@@ -9,7 +9,7 @@ import { REPOSITORY_GRIDVIEW_TEMPLATE } from './repository-gridview.component.ht
 import { REPOSITORY_GRIDVIEW_STYLE } from './repository-gridview.component.css';
 import { Repository, SystemInfo, SystemInfoService, RepositoryService, RequestQueryParams, RepositoryItem, TagService } from '../service/index';
 import { ErrorHandler } from '../error-handler/error-handler';
-import { toPromise, CustomComparator , DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting} from '../utils';
+import { toPromise, CustomComparator , DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting, clone} from '../utils';
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
@@ -266,12 +266,16 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
   provisionItemEvent(evt: any, repo: RepositoryItem): void {
     evt.stopPropagation();
-    this.repoProvisionEvent.emit(repo);
+    let repoCopy = clone(repo)
+    repoCopy.name = this.registryUrl + ':443/' + repoCopy.name;
+    this.repoProvisionEvent.emit(repoCopy);
   }
 
   itemAddInfoEvent(evt: any, repo: RepositoryItem): void {
     evt.stopPropagation();
-    this.addInfoEvent.emit(repo);
+    let repoCopy = clone(repo)
+    repoCopy.name = this.registryUrl + ':443/' + repoCopy.name;
+    this.addInfoEvent.emit(repoCopy);
   }
 
   deleteItemEvent(evt: any, item: RepositoryItem): void {
