@@ -37,6 +37,7 @@ import {LabelColor} from "../shared/shared.const";
     selector: 'hbr-create-edit-label',
     template: CREATE_EDIT_LABEL_TEMPLATE,
     styles: [CREATE_EDIT_LABEL_STYLE],
+    changeDetection: ChangeDetectionStrategy.Default
 })
 
 export class CreateEditLabelComponent implements OnInit, OnDestroy {
@@ -63,6 +64,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     constructor(
        private labelService: LabelService,
        private errorHandler: ErrorHandler,
+       private ref: ChangeDetectorRef
     ) { }
 
     ngOnInit(): void {
@@ -81,6 +83,9 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
                         this.checkOnGoing = false;
                         this.errorHandler.error(error)
                     });
+            setTimeout(() => {
+                setInterval(() => this.ref.markForCheck(), 100);
+            }, 1000);
         });
     }
 
@@ -104,6 +109,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     openModal(): void {
         this.labelModel = this.initLabel();
         this.formShow = true;
+        this.isLabelNameExist = false;
         this.labelId = 0;
         this.copeLabelModel = null;
     }
