@@ -1,7 +1,6 @@
 export const TAG_DETAIL_STYLES: string = `
 .overview-section {
     padding-bottom: 36px;
-    border-bottom: 1px solid #cccccc;
 }
 
 .detail-section {
@@ -60,7 +59,7 @@ export const TAG_DETAIL_STYLES: string = `
 
 .summary-block {
     margin-top: 24px;
-    display: inline-flex;
+    display: flex;
     flex-wrap: row wrap;
 }
 

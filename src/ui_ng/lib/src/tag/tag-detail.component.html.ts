@@ -9,8 +9,8 @@ export const TAG_DETAIL_HTML: string = `
                 <h2 class="custom-h2">{{repositoryId}}:{{tagDetails.name}}</h2>
             </div>
         </div>
-        <div class="summary-block">
-            <div class="image-summary">
+        <div class="summary-block row">
+            <div class="image-summary col-md-4 col-lg-3">
                 <div class="flex-block">
                     <div class="image-detail-label">
                         <div>{{'TAG.AUTHOR' | translate }}</div>
@@ -28,7 +28,7 @@ export const TAG_DETAIL_HTML: string = `
                     </div>
                 </div>
             </div>
-            <div *ngIf="withClair">
+            <div *ngIf="withClair" class="col-md-4 col-lg-3">
                 <div class="vulnerability">
                     <hbr-vulnerability-bar [repoName]="repositoryId" [tagId]="tagDetails.name" [summary]="tagDetails.scan_overview"></hbr-vulnerability-bar>
                 </div>
