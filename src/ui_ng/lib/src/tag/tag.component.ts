@@ -60,12 +60,16 @@ import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-ba
 import {Observable} from "rxjs/Observable";
 import {LabelService} from "../service/label.service";
 import {Subject} from "rxjs/Subject";
+export interface LabelState {
+  iconsShow: boolean;
+  label: Label;
+  show: boolean;
+}
 
 @Component({
   selector: "hbr-tag",
   template: TAG_TEMPLATE,
   styles: [TAG_STYLE],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TagComponent implements OnInit, AfterViewInit {
 
@@ -103,16 +107,16 @@ export class TagComponent implements OnInit, AfterViewInit {
   copyFailed = false;
   selectedRow: Tag[] = [];
 
-  imageLabels: {[key: string]: boolean | Label | any}[] = [];
-  imageStickLabels: {[key: string]: boolean | Label | any}[] = [];
-  imageFilterLabels: {[key: string]: boolean | Label | any}[] = [];
+  imageLabels: LabelState[] = [];
+  imageStickLabels: LabelState[] = [];
+  imageFilterLabels: LabelState[] = [];
 
   labelListOpen = false;
   selectedTag: Tag[];
   labelNameFilter: Subject<string> = new Subject<string> ();
   stickLabelNameFilter: Subject<string> = new Subject<string> ();
   filterOnGoing: boolean;
-  stickName = ''
+  stickName = '';
   filterName = '';
   initFilter = {
     name: '',
@@ -120,7 +124,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     color: '',
     scope: '',
     project_id: 0,
-  }
+  };
   filterOneLabel: Label = this.initFilter;
 
 
@@ -163,13 +167,14 @@ export class TagComponent implements OnInit, AfterViewInit {
         .subscribe((name: string) => {
           if (this.filterName.length) {
             this.filterOnGoing = true;
-            this.imageFilterLabels = [];
 
-            this.imageLabels.forEach(data => {
+            this.imageFilterLabels.forEach(data => {
               if (data.label.name.indexOf(this.filterName) !== -1) {
-                this.imageFilterLabels.push(data);
+                data.show = true;
+              } else {
+                data.show = false;
               }
-            })
+            });
             setTimeout(() => {
               setInterval(() => this.ref.markForCheck(), 200);
             }, 1000);
@@ -182,11 +187,12 @@ export class TagComponent implements OnInit, AfterViewInit {
         .subscribe((name: string) => {
           if (this.stickName.length) {
             this.filterOnGoing = true;
-            this.imageStickLabels = [];
 
-            this.imageLabels.forEach(data => {
+            this.imageStickLabels.forEach(data => {
               if (data.label.name.indexOf(this.stickName) !== -1) {
-                this.imageStickLabels.push(data);
+                data.show = true;
+              }else {
+                data.show = false;
               }
             })
             setTimeout(() => {
@@ -221,7 +227,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     st.page.to = this.pageSize - 1;
     let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
     if (selectedLab) {
-      st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.name', value: selectedLab.label.name}];
+      st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: selectedLab.label.id}];
     }else {
       st.filters = [{property: 'name', value: this.lastFilteredTagName}];
     }
@@ -273,14 +279,14 @@ export class TagComponent implements OnInit, AfterViewInit {
     toPromise<Label[]>(this.labelService.getGLabels()).then((res: Label[]) => {
       if (res.length) {
         res.forEach(data => {
-          this.imageLabels.push({'iconsShow': false, 'label': data});
+          this.imageLabels.push({'iconsShow': false, 'label': data, 'show': true});
         });
       }
 
       toPromise<Label[]>(this.labelService.getPLabels(this.projectId)).then((res1: Label[]) => {
         if (res1.length) {
           res1.forEach(data => {
-            this.imageLabels.push({'iconsShow': false, 'label': data});
+            this.imageLabels.push({'iconsShow': false, 'label': data, 'show': true});
           });
         }
         this.imageFilterLabels = clone(this.imageLabels);
@@ -294,24 +300,31 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   labelSelectedChange(tag?: Tag[]): void {
-    if (tag && tag[0].labels && tag[0].labels.length) {
+    if (tag && tag[0].labels) {
       this.imageStickLabels.forEach(data => {
         data.iconsShow = false;
+        data.show = true;
       })
-      tag[0].labels.forEach((labelInfo: Label) => {
-        this.imageStickLabels.find(data => labelInfo.id === data['label'].id).iconsShow = true;
-      });
+      if (tag[0].labels.length) {
+        tag[0].labels.forEach((labelInfo: Label) => {
+          let findedLabel = this.imageStickLabels.find(data => labelInfo.id === data['label'].id);
+          this.imageStickLabels.splice(this.imageStickLabels.indexOf(findedLabel), 1);
+          this.imageStickLabels.unshift(findedLabel);
+
+          findedLabel.iconsShow = true;
+        });
+      }
     }
   }
 
   addLabels(tag: Tag[]): void {
     this.labelListOpen = true;
     this.selectedTag = tag;
-
+    this.stickName = '';
     this.labelSelectedChange(tag);
   }
 
-  stickLabel(labelInfo: {[key: string]: any | string[]}): void {
+  stickLabel(labelInfo: LabelState): void {
     if (labelInfo && !labelInfo.iconsShow) {
       this.selectLabel(labelInfo);
     }
@@ -320,13 +333,18 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  selectLabel(labelInfo: {[key: string]: any | string[]}): void {
+  selectLabel(labelInfo: LabelState): void {
     if (!this.inprogress) {
       this.inprogress = true;
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
       toPromise<any>(this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
         this.refresh();
+
+        // set the selected label in front
+        this.imageStickLabels.splice(this.imageStickLabels.indexOf(labelInfo), 1);
+        this.imageStickLabels.unshift(labelInfo);
+
         labelInfo.iconsShow = true;
         this.inprogress = false;
       }).catch(err => {
@@ -336,13 +354,16 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  unSelectLabel(labelInfo: {[key: string]: any | string[]}): void {
-    if (!this.inprogress) {
-      this.inprogress = true;
-      let labelId = labelInfo.label.id;
-      this.selectedRow = this.selectedTag;
-      toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
-        this.refresh();
+  unSelectLabel(labelInfo: LabelState): void {
+      if (!this.inprogress) {
+        this.inprogress = true;
+        let labelId = labelInfo.label.id;
+        this.selectedRow = this.selectedTag;
+        toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
+          this.refresh();
+
+          // insert the unselected label to groups with the same icons
+          this.sortOperation(this.imageStickLabels, labelInfo);
         labelInfo.iconsShow = false;
         this.inprogress = false;
       }).catch(err => {
@@ -352,7 +373,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  rightFilterLabel(labelInfo: {[key: string]: any | string[]}): void {
+  rightFilterLabel(labelInfo: LabelState): void {
     if (labelInfo) {
       if (!labelInfo.iconsShow) {
         this.filterLabel(labelInfo);
@@ -362,19 +383,27 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  filterLabel(labelInfo: {[key: string]: any | string[]}): void {
-      let labelName = labelInfo.label.name;
-      this.imageFilterLabels.filter(data => {
-        if (data.label.name !== labelName) {
-          data.iconsShow = false;
-        }else {
-          data.iconsShow = true;
-        }
-      });
+  filterLabel(labelInfo: LabelState): void {
+    let labelName = labelInfo.label.name;
+    let labelId = labelInfo.label.id;
+    // insert the unselected label to groups with the same icons
+    let preLabelInfo = this.imageFilterLabels.find(data => data.label.id === this.filterOneLabel.id);
+    if (preLabelInfo) {
+      this.sortOperation(this.imageFilterLabels, preLabelInfo);
+    }
 
+    this.imageFilterLabels.filter(data => {
+      if (data.label.id !== labelId) {
+        data.iconsShow = false;
+      }else {
+        data.iconsShow = true;
+      }
+    });
+     this.imageFilterLabels.splice(this.imageFilterLabels.indexOf(labelInfo), 1);
+     this.imageFilterLabels.unshift(labelInfo);
      this.filterOneLabel = labelInfo.label;
 
-      // reload datagu
+      // reload data
       this.currentPage = 1;
       let st: State = this.currentState;
       if (!st) {
@@ -384,39 +413,43 @@ export class TagComponent implements OnInit, AfterViewInit {
       st.page.from = 0;
       st.page.to = this.pageSize - 1;
       if (this.lastFilteredTagName) {
-        st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.name', value: labelName}];
+        st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: labelId}];
       }else {
-        st.filters = [{property: 'labels.name', value: labelName}];
+        st.filters = [{property: 'labels.id', value: labelId}];
       }
 
       this.clrLoad(st);
   }
 
-  unFilterLabel(labelInfo: {[key: string]: any | string[]}): void {
-      this.filterOneLabel = this.initFilter;
-      labelInfo.iconsShow = false;
-      // reload datagu
-      this.currentPage = 1;
-      let st: State = this.currentState;
-      if (!st) {
-        st = { page: {} };
-      }
-      st.page.size = this.pageSize;
-      st.page.from = 0;
-      st.page.to = this.pageSize - 1;
-      if (this.lastFilteredTagName) {
-        st.filters = [{property: 'name', value: this.lastFilteredTagName}];
-      }else {
-        st.filters = [];
-      }
-      this.clrLoad(st);
+  unFilterLabel(labelInfo: LabelState): void {
+    // insert the unselected label to groups with the same icons
+    this.sortOperation(this.imageFilterLabels, labelInfo);
+
+    this.filterOneLabel = this.initFilter;
+    labelInfo.iconsShow = false;
+
+    // reload data
+    this.currentPage = 1;
+    let st: State = this.currentState;
+    if (!st) {
+      st = { page: {} };
+    }
+    st.page.size = this.pageSize;
+    st.page.from = 0;
+    st.page.to = this.pageSize - 1;
+    if (this.lastFilteredTagName) {
+      st.filters = [{property: 'name', value: this.lastFilteredTagName}];
+    }else {
+      st.filters = [];
+    }
+    this.clrLoad(st);
   }
 
   handleInputFilter() {
     if (this.filterName.length) {
       this.labelNameFilter.next(this.filterName);
     }else {
-      this.imageFilterLabels = clone(this.imageLabels);
+      this.imageFilterLabels.every(data => data.show = true);
     }
   }
 
@@ -424,8 +457,26 @@ export class TagComponent implements OnInit, AfterViewInit {
     if (this.stickName.length) {
       this.stickLabelNameFilter.next(this.stickName);
     }else {
-      this.imageStickLabels = clone(this.imageLabels);
+      this.imageStickLabels.every(data => data.show = true);
     }
+  }
+
+  // insert the unselected label to groups with the same icons
+  sortOperation(labelList: LabelState[], labelInfo: LabelState): void {
+    labelList.some((data, i) => {
+      if (!data.iconsShow) {
+        if (data.label.scope === labelInfo.label.scope) {
+          labelList.splice(i, 0, labelInfo);
+          labelList.splice(labelList.indexOf(labelInfo, 0), 1);
+          return true;
+        }
+        if (data.label.scope !== labelInfo.label.scope && i === labelList.length - 1) {
+          labelList.push(labelInfo);
+          labelList.splice(labelList.indexOf(labelInfo), 1);
+          return true;
+        }
+      }
+    });
   }
 
   retrieve() {

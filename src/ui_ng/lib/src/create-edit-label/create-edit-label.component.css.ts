@@ -14,7 +14,7 @@ export const CREATE_EDIT_LABEL_STYLE: string = `
   .colorDrop .colorPanel{position:absolute;  width:166px; padding:6px;    background-color: white; border: 1px solid #ccc; z-index:10;}
   .btnColor{
     margin: 0 !important;
-    padding: 0;
+    padding: 0 !important;
     width: 26px;
     height:22px;
     min-width: 26px;}
