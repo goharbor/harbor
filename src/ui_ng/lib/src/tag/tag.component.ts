@@ -60,7 +60,7 @@ import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-ba
 import {Observable} from "rxjs/Observable";
 import {LabelService} from "../service/label.service";
 import {Subject} from "rxjs/Subject";
-export interface LabelOpe {
+export interface LabelState {
   iconsShow: boolean;
   label: Label;
   show: boolean;
@@ -70,7 +70,6 @@ export interface LabelOpe {
   selector: "hbr-tag",
   template: TAG_TEMPLATE,
   styles: [TAG_STYLE],
-  changeDetection: ChangeDetectionStrategy.Default
 })
 export class TagComponent implements OnInit, AfterViewInit {
 
@@ -108,9 +107,9 @@ export class TagComponent implements OnInit, AfterViewInit {
   copyFailed = false;
   selectedRow: Tag[] = [];
 
-  imageLabels: LabelOpe[] = [];
-  imageStickLabels: LabelOpe[] = [];
-  imageFilterLabels: LabelOpe[] = [];
+  imageLabels: LabelState[] = [];
+  imageStickLabels: LabelState[] = [];
+  imageFilterLabels: LabelState[] = [];
 
   labelListOpen = false;
   selectedTag: Tag[];
@@ -228,7 +227,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     st.page.to = this.pageSize - 1;
     let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
     if (selectedLab) {
-      st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.name', value: selectedLab.label.name}];
+      st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: selectedLab.label.id}];
     }else {
       st.filters = [{property: 'name', value: this.lastFilteredTagName}];
     }
@@ -325,7 +324,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.labelSelectedChange(tag);
   }
 
-  stickLabel(labelInfo: LabelOpe): void {
+  stickLabel(labelInfo: LabelState): void {
     if (labelInfo && !labelInfo.iconsShow) {
       this.selectLabel(labelInfo);
     }
@@ -334,7 +333,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  selectLabel(labelInfo: LabelOpe): void {
+  selectLabel(labelInfo: LabelState): void {
     if (!this.inprogress) {
       this.inprogress = true;
       let labelId = labelInfo.label.id;
@@ -355,13 +354,14 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  unSelectLabel(labelInfo: LabelOpe): void {
-    if (!this.inprogress) {
-      this.inprogress = true;
-      let labelId = labelInfo.label.id;
-      this.selectedRow = this.selectedTag;
-      toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
-        this.refresh();
+  unSelectLabel(labelInfo: LabelState): void {
+      if (!this.inprogress) {
+        this.inprogress = true;
+        let labelId = labelInfo.label.id;
+        this.selectedRow = this.selectedTag;
+        toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
+          this.refresh();
+
           // insert the unselected label to groups with the same icons
           this.sortOperation(this.imageStickLabels, labelInfo);
         labelInfo.iconsShow = false;
@@ -373,7 +373,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  rightFilterLabel(labelInfo: LabelOpe): void {
+  rightFilterLabel(labelInfo: LabelState): void {
     if (labelInfo) {
       if (!labelInfo.iconsShow) {
         this.filterLabel(labelInfo);
@@ -383,8 +383,9 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  filterLabel(labelInfo: LabelOpe): void {
+  filterLabel(labelInfo: LabelState): void {
     let labelName = labelInfo.label.name;
+    let labelId = labelInfo.label.id;
     // insert the unselected label to groups with the same icons
     let preLabelInfo = this.imageFilterLabels.find(data => data.label.id === this.filterOneLabel.id);
     if (preLabelInfo) {
@@ -392,7 +393,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
 
     this.imageFilterLabels.filter(data => {
-      if (data.label.name !== labelName) {
+      if (data.label.id !== labelId) {
         data.iconsShow = false;
       }else {
         data.iconsShow = true;
@@ -412,15 +413,15 @@ export class TagComponent implements OnInit, AfterViewInit {
       st.page.from = 0;
       st.page.to = this.pageSize - 1;
       if (this.lastFilteredTagName) {
-        st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.name', value: labelName}];
+        st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: labelId}];
       }else {
-        st.filters = [{property: 'labels.name', value: labelName}];
+        st.filters = [{property: 'labels.id', value: labelId}];
       }
 
       this.clrLoad(st);
   }
 
-  unFilterLabel(labelInfo: LabelOpe): void {
+  unFilterLabel(labelInfo: LabelState): void {
     // insert the unselected label to groups with the same icons
     this.sortOperation(this.imageFilterLabels, labelInfo);
 
@@ -461,7 +462,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   // insert the unselected label to groups with the same icons
-  sortOperation(labelList: LabelOpe[], labelInfo: LabelOpe): void {
+  sortOperation(labelList: LabelState[], labelInfo: LabelState): void {
     labelList.some((data, i) => {
       if (!data.iconsShow) {
         if (data.label.scope === labelInfo.label.scope) {
