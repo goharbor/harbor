@@ -122,6 +122,10 @@ func (pma *ProjectMemberAPI) Post() {
 	var request models.MemberReq
 	pma.DecodeJSONReq(&request)
 	pmid, err := AddOrUpdateProjectMember(projectID, request)
+	if err == auth.ErrorGroupNotExist || err == auth.ErrorUserNotExist {
+		pma.HandleNotFound(fmt.Sprintf("Failed to add project member, error: %v", err))
+		return
+	}
 	if err != nil {
 		pma.HandleInternalServerError(fmt.Sprintf("Failed to add project member, error: %v", err))
 		return
