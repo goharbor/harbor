@@ -149,11 +149,9 @@ export class ReplicationDefaultService extends ReplicationService {
         @Inject(SERVICE_CONFIG) config: IServiceConfig
     ) {
         super();
-        this._ruleBaseUrl = config.replicationRuleEndpoint ?
-            config.replicationRuleEndpoint : '/api/policies/replication';
-        this._jobBaseUrl = config.replicationJobEndpoint ?
-            config.replicationJobEndpoint : '/api/jobs/replication';
-        this._replicateUrl = '/api/replications';
+        this._ruleBaseUrl = config.replicationRuleEndpoint ? config.replicationRuleEndpoint : '/api/policies/replication';
+        this._jobBaseUrl = config.replicationJobEndpoint ? config.replicationJobEndpoint : '/api/jobs/replication';
+        this._replicateUrl = config.replicationBaseEndpoint ? config.replicationBaseEndpoint : '/api/replications';
     }
 
     //Private methods
