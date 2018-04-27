@@ -32,15 +32,14 @@ import (
 )
 
 var adminServerLdapTestConfig = map[string]interface{}{
-	common.ExtEndpoint:   "host01.com",
-	common.AUTHMode:      "ldap_auth",
-	common.DatabaseType:  "mysql",
-	common.MySQLHost:     "127.0.0.1",
-	common.MySQLPort:     3306,
-	common.MySQLUsername: "root",
-	common.MySQLPassword: "root123",
-	common.MySQLDatabase: "registry",
-	common.SQLiteFile:    "/tmp/registry.db",
+	common.ExtEndpoint:        "host01.com",
+	common.AUTHMode:           "ldap_auth",
+	common.DatabaseType:       "postgresql",
+	common.PostGreSQLHOST:     "127.0.0.1",
+	common.PostGreSQLPort:     5432,
+	common.PostGreSQLUsername: "postgres",
+	common.PostGreSQLPassword: "root123",
+	common.PostGreSQLDatabase: "registry",
 	//config.SelfRegistration: true,
 	common.LDAPURL:       "ldap://127.0.0.1",
 	common.LDAPSearchDN:  "cn=admin,dc=example,dc=com",
@@ -113,14 +112,14 @@ func TestMain(m *testing.M) {
 		"insert into user (username, email, password, realname)  values ('member_test_01', 'member_test_01@example.com', '123456', 'member_test_01')",
 		"insert into project (name, owner_id) values ('member_test_01', 1)",
 		"insert into user_group (group_name, group_type, group_property) values ('test_group_01', 1, 'CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com')",
-		"update project set owner_id = (select user_id from user where username = 'member_test_01') where name = 'member_test_01'",
-		"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select user_id from user where username = 'member_test_01'), 'u', 1)",
+		"update project set owner_id = (select user_id from harbor_user where username = 'member_test_01') where name = 'member_test_01'",
+		"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select user_id from harbor_user where username = 'member_test_01'), 'u', 1)",
 		"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_group_01'), 'g', 1)",
 	}
 
 	clearSqls := []string{
 		"delete from project where name='member_test_01'",
-		"delete from user where username='member_test_01' or username='pm_sample'",
+		"delete from harbor_user where username='member_test_01' or username='pm_sample'",
 		"delete from user_group",
 		"delete from project_member",
 	}

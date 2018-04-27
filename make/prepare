@@ -516,9 +516,9 @@ if args.notary_mode:
     notary_config_dir = prep_conf_dir(config_dir, "notary")
     notary_temp_dir = os.path.join(templates_dir, "notary") 
     print("Copying sql file for notary DB")
-    if os.path.exists(os.path.join(notary_config_dir, "mysql-initdb.d")):
-        shutil.rmtree(os.path.join(notary_config_dir, "mysql-initdb.d"))
-    shutil.copytree(os.path.join(notary_temp_dir, "mysql-initdb.d"), os.path.join(notary_config_dir, "mysql-initdb.d")) 
+    # if os.path.exists(os.path.join(notary_config_dir, "postgresql-initdb.d")):
+    #     shutil.rmtree(os.path.join(notary_config_dir, "postgresql-initdb.d"))
+    # shutil.copytree(os.path.join(notary_temp_dir, "postgresql-initdb.d"), os.path.join(notary_config_dir, "postgresql-initdb.d")) 
     if customize_crt == 'on' and openssl_installed():
         try:
             temp_cert_dir = os.path.join(base_dir, "cert_tmp")
@@ -553,11 +553,10 @@ if args.notary_mode:
     mark_file(os.path.join(notary_config_dir, "notary-signer-ca.crt"))
     mark_file(os.path.join(notary_config_dir, "root.crt"))
     print("Copying notary signer configuration file")
-    shutil.copy2(os.path.join(notary_temp_dir, "signer-config.json"), notary_config_dir)
-    render(os.path.join(notary_temp_dir, "server-config.json"),
-        os.path.join(notary_config_dir, "server-config.json"),
+    shutil.copy2(os.path.join(notary_temp_dir, "signer-config.postgres.json"), notary_config_dir)
+    render(os.path.join(notary_temp_dir, "server-config.postgres.json"),
+        os.path.join(notary_config_dir, "server-config.postgres.json"),
         token_endpoint=public_url)
-
     print("Copying nginx configuration file for notary")
     shutil.copy2(os.path.join(templates_dir, "nginx", "notary.upstream.conf"), nginx_conf_d)
     render(os.path.join(templates_dir, "nginx", "notary.server.conf"), 
@@ -567,6 +566,7 @@ if args.notary_mode:
 
     default_alias = get_alias(secretkey_path)
     render(os.path.join(notary_temp_dir, "signer_env"), os.path.join(notary_config_dir, "signer_env"), alias = default_alias)
+    shutil.copy2(os.path.join(notary_temp_dir, "server_env"), notary_config_dir)
 
 if args.clair_mode:
     clair_temp_dir = os.path.join(templates_dir, "clair")
@@ -601,4 +601,3 @@ if args.ha_mode:
 
 FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")
-

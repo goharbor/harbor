@@ -1,1 +1,1 @@
-MYSQL_ROOT_PASSWORD=$db_password
+POSTGRES_PASSWORD=$db_password

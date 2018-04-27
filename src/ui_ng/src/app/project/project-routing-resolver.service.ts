@@ -49,7 +49,7 @@ export class ProjectRoutingResolver implements Resolve<Project>{
                 project.role_name = currentMember.role_name;
               }
             }
-            if (currentUser.has_admin_role === 1) {
+            if (currentUser.has_admin_role) {
               project.has_project_admin_role = true;
             }
           }

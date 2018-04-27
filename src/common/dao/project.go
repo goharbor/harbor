@@ -25,20 +25,13 @@ import (
 
 // AddProject adds a project to the database along with project roles information and access log records.
 func AddProject(project models.Project) (int64, error) {
-
 	o := GetOrmer()
-	p, err := o.Raw("insert into project (owner_id, name, creation_time, update_time, deleted) values (?, ?, ?, ?, ?)").Prepare()
-	if err != nil {
-		return 0, err
-	}
 
+	sql := "insert into project (owner_id, name, creation_time, update_time, deleted) values (?, ?, ?, ?, ?) RETURNING project_id"
+	var projectID int64
 	now := time.Now()
-	r, err := p.Exec(project.OwnerID, project.Name, now, now, project.Deleted)
-	if err != nil {
-		return 0, err
-	}
 
-	projectID, err := r.LastInsertId()
+	err := o.Raw(sql, project.OwnerID, project.Name, now, now, project.Deleted).QueryRow(&projectID)
 	if err != nil {
 		return 0, err
 	}
@@ -53,9 +46,9 @@ func AddProject(project models.Project) (int64, error) {
 		return 0, err
 	}
 	if pmID == 0 {
-		return projectID, fmt.Errorf("Failed to add project member, pmid=0")
+		return projectID, err
 	}
-	return projectID, err
+	return projectID, nil
 }
 
 func addProjectMember(member models.Member) (int, error) {
@@ -72,16 +65,13 @@ func addProjectMember(member models.Member) (int, error) {
 		return 0, fmt.Errorf("Invalid project_id, member: %+v", member)
 	}
 
-	sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?)"
-	r, err := o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).Exec()
+	var pmID int
+	sql := "insert into project_member (project_id, entity_id , role, entity_type) values (?, ?, ?, ?) RETURNING id"
+	err := o.Raw(sql, member.ProjectID, member.EntityID, member.Role, member.EntityType).QueryRow(&pmID)
 	if err != nil {
 		return 0, err
 	}
-	pmid, err := r.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-	return int(pmid), err
+	return pmID, err
 }
 
 // GetProjectByID ...
@@ -89,7 +79,7 @@ func GetProjectByID(id int64) (*models.Project, error) {
 	o := GetOrmer()
 
 	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.update_time  
-		from project p left join user u on p.owner_id = u.user_id where p.deleted = 0 and p.project_id = ?`
+		from project p left join harbor_user u on p.owner_id = u.user_id where p.deleted = false and p.project_id = ?`
 	queryParam := make([]interface{}, 1)
 	queryParam = append(queryParam, id)
 
@@ -111,7 +101,7 @@ func GetProjectByID(id int64) (*models.Project, error) {
 func GetProjectByName(name string) (*models.Project, error) {
 	o := GetOrmer()
 	var p []models.Project
-	n, err := o.Raw(`select * from project where name = ? and deleted = 0`, name).QueryRows(&p)
+	n, err := o.Raw(`select * from project where name = ? and deleted = false`, name).QueryRows(&p)
 	if err != nil {
 		return nil, err
 	}
@@ -146,10 +136,12 @@ func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {
 // GetProjects returns a project list according to the query conditions
 func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 	sql, params := projectQueryConditions(query)
+	if query == nil {
+		sql += ` order by p.name`
+	}
 
 	sql = `select distinct p.project_id, p.name, p.owner_id, 
 				p.creation_time, p.update_time ` + sql
-
 	var projects []*models.Project
 	_, err := GetOrmer().Raw(sql, params).QueryRows(&projects)
 	return projects, err
@@ -161,7 +153,7 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 	sql := ` from project as p`
 
 	if query == nil {
-		sql += ` where p.deleted=0 order by p.name`
+		sql += ` where p.deleted=false`
 		return sql, params
 	}
 
@@ -172,17 +164,17 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 	}
 
 	if len(query.Owner) != 0 {
-		sql += ` join user u1
+		sql += ` join harbor_user u1
 					on p.owner_id = u1.user_id`
 	}
 
 	if query.Member != nil && len(query.Member.Name) != 0 {
 		sql += ` join project_member pm
 					on p.project_id = pm.project_id
-					join user u2
+					join harbor_user u2
 					on pm.entity_id=u2.user_id`
 	}
-	sql += ` where p.deleted=0`
+	sql += ` where p.deleted=false`
 
 	if len(query.Owner) != 0 {
 		sql += ` and u1.username=?`
@@ -220,10 +212,8 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 		params = append(params, query.ProjectIDs)
 	}
 
-	sql += ` order by p.name`
-
 	if query.Pagination != nil && query.Pagination.Size > 0 {
-		sql += ` limit ?`
+		sql += ` order by p.name limit ?`
 		params = append(params, query.Pagination.Size)
 
 		if query.Pagination.Page > 0 {
@@ -245,7 +235,7 @@ func DeleteProject(id int64) error {
 	name := fmt.Sprintf("%s#%d", project.Name, project.ProjectID)
 
 	sql := `update project 
-		set deleted = 1, name = ? 
+		set deleted = true, name = ? 
 		where project_id = ?`
 	_, err = GetOrmer().Raw(sql, name, id).Exec()
 	return err

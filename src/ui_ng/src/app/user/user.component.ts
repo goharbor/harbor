@@ -112,7 +112,11 @@ export class UserComponent implements OnInit, OnDestroy {
       if (user.user_id === 0 || this.isMySelf(user.user_id)) {
         return false;
       }
-      usersRole.push(user.has_admin_role);
+      if (user.has_admin_role) {
+        usersRole.push(1);
+      }else {
+        usersRole.push(0);
+      }
     })
     if (usersRole.length && usersRole.every(num => num === 0)) {
       this.ISADMNISTRATOR = 'USER.ENABLE_ADMIN_ACTION';
@@ -192,7 +196,7 @@ export class UserComponent implements OnInit, OnDestroy {
           let updatedUser: User = new User();
           updatedUser.user_id = this.selectedRow[i].user_id;
 
-          updatedUser.has_admin_role = 1; //Set as admin
+          updatedUser.has_admin_role = true; //Set as admin
           promiseLists.push(this.userService.updateUserRole(updatedUser));
         }
       }
@@ -205,7 +209,7 @@ export class UserComponent implements OnInit, OnDestroy {
           let updatedUser: User = new User();
           updatedUser.user_id = this.selectedRow[i].user_id;
 
-          updatedUser.has_admin_role = 0; //Set as none admin
+          updatedUser.has_admin_role = false; //Set as none admin
           promiseLists.push(this.userService.updateUserRole(updatedUser));
         }
       }

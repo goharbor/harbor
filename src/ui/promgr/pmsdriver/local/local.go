@@ -27,7 +27,7 @@ import (
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
 )
 
-const dupProjectPattern = `Duplicate entry '\w+' for key 'name'`
+const dupProjectPattern = `duplicate key value violates unique constraint \"project_name_key\"`
 
 type driver struct {
 }

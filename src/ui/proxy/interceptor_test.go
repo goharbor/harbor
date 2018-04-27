@@ -112,17 +112,16 @@ func TestMatchListRepos(t *testing.T) {
 
 func TestPMSPolicyChecker(t *testing.T) {
 	var defaultConfigAdmiral = map[string]interface{}{
-		common.ExtEndpoint:     "https://" + endpoint,
-		common.WithNotary:      true,
-		common.CfgExpiration:   5,
-		common.TokenExpiration: 30,
-		common.DatabaseType:    "mysql",
-		common.MySQLHost:       "127.0.0.1",
-		common.MySQLPort:       3306,
-		common.MySQLUsername:   "root",
-		common.MySQLPassword:   "root123",
-		common.MySQLDatabase:   "registry",
-		common.SQLiteFile:      "/tmp/registry.db",
+		common.ExtEndpoint:        "https://" + endpoint,
+		common.WithNotary:         true,
+		common.CfgExpiration:      5,
+		common.TokenExpiration:    30,
+		common.DatabaseType:       "postgresql",
+		common.PostGreSQLHOST:     "127.0.0.1",
+		common.PostGreSQLPort:     5432,
+		common.PostGreSQLUsername: "postgres",
+		common.PostGreSQLPassword: "root123",
+		common.PostGreSQLDatabase: "registry",
 	}
 	adminServer, err := utilstest.NewAdminserver(defaultConfigAdmiral)
 	if err != nil {

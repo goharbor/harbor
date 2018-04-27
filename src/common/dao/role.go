@@ -70,7 +70,7 @@ func IsAdminRole(userIDOrUsername interface{}) (bool, error) {
 		return false, nil
 	}
 
-	return user.HasAdminRole == 1, nil
+	return user.HasAdminRole, nil
 }
 
 // GetRoleByID ...

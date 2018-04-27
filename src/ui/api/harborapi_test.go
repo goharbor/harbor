@@ -919,13 +919,13 @@ func (a testapi) UsersPut(userID int, profile apilib.UserProfile, authInfo usrIn
 }
 
 //Update a registered user to be an administrator of Harbor.
-func (a testapi) UsersToggleAdminRole(userID int, authInfo usrInfo, hasAdminRole int32) (int, error) {
+func (a testapi) UsersToggleAdminRole(userID int, authInfo usrInfo, hasAdminRole bool) (int, error) {
 	_sling := sling.New().Put(a.basePath)
 	// create path and map variables
 	path := "/api/users/" + fmt.Sprintf("%d", userID) + "/sysadmin"
 	_sling = _sling.Path(path)
 	type QueryParams struct {
-		HasAdminRole int32 `json:"has_admin_role,omitempty"`
+		HasAdminRole bool `json:"has_admin_role,omitempty"`
 	}
 
 	_sling = _sling.BodyJSON(&QueryParams{HasAdminRole: hasAdminRole})

@@ -19,10 +19,10 @@
   "password": "",
   "realname": "",
   "comment": "",
-  "deleted": 0,
+  "deleted": false,
   "role_name": "projectAdmin",
   "role_id": 1,
-  "has_admin_role": 0,
+  "has_admin_role": false,
   "reset_uuid": "",
   "creation_time": "0001-01-01T00:00:00Z",
   "update_time": "0001-01-01T00:00:00Z"

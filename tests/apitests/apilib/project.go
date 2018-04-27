@@ -40,7 +40,7 @@ type Project struct {
 	UpdateTime string `json:"update_time,omitempty"`
 
 	// A deletion mark of the project (1 means it's deleted, 0 is not)
-	Deleted int32 `json:"deleted,omitempty"`
+	Deleted bool `json:"deleted,omitempty"`
 
 	// The owner name of the project.
 	OwnerName string `json:"owner_name,omitempty"`

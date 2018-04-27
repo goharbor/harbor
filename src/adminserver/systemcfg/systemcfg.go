@@ -47,7 +47,7 @@ var (
 	attrs = []string{
 		common.EmailPassword,
 		common.LDAPSearchPwd,
-		common.MySQLPassword,
+		common.PostGreSQLPassword,
 		common.AdminInitialPassword,
 		common.ClairDBPassword,
 		common.UAAClientSecret,
@@ -61,22 +61,22 @@ var (
 			env:   "SELF_REGISTRATION",
 			parse: parseStringToBool,
 		},
-		common.DatabaseType: "DATABASE_TYPE",
-		common.MySQLHost:    "MYSQL_HOST",
-		common.MySQLPort: &parser{
-			env:   "MYSQL_PORT",
+		common.DatabaseType:   "DATABASE_TYPE",
+		common.PostGreSQLHOST: "POSTGRESQL_HOST",
+		common.PostGreSQLPort: &parser{
+			env:   "POSTGRESQL_PORT",
 			parse: parseStringToInt,
 		},
-		common.MySQLUsername: "MYSQL_USR",
-		common.MySQLPassword: "MYSQL_PWD",
-		common.MySQLDatabase: "MYSQL_DATABASE",
-		common.SQLiteFile:    "SQLITE_FILE",
-		common.LDAPURL:       "LDAP_URL",
-		common.LDAPSearchDN:  "LDAP_SEARCH_DN",
-		common.LDAPSearchPwd: "LDAP_SEARCH_PWD",
-		common.LDAPBaseDN:    "LDAP_BASE_DN",
-		common.LDAPFilter:    "LDAP_FILTER",
-		common.LDAPUID:       "LDAP_UID",
+		common.PostGreSQLUsername: "POSTGRESQL_USERNAME",
+		common.PostGreSQLPassword: "POSTGRESQL_PASSWORD",
+		common.PostGreSQLDatabase: "POSTGRESQL_DATABASE",
+		common.PostGreSQLSSLMode:  "POSTGRESQL_SSLMODE",
+		common.LDAPURL:            "LDAP_URL",
+		common.LDAPSearchDN:       "LDAP_SEARCH_DN",
+		common.LDAPSearchPwd:      "LDAP_SEARCH_PWD",
+		common.LDAPBaseDN:         "LDAP_BASE_DN",
+		common.LDAPFilter:         "LDAP_FILTER",
+		common.LDAPUID:            "LDAP_UID",
 		common.LDAPScope: &parser{
 			env:   "LDAP_SCOPE",
 			parse: parseStringToInt,
@@ -141,7 +141,10 @@ var (
 		common.ClairDB:         "CLAIR_DB",
 		common.ClairDBUsername: "CLAIR_DB_USERNAME",
 		common.ClairDBHost:     "CLAIR_DB_HOST",
-		common.ClairDBPort:     "CLAIR_DB_PORT",
+		common.ClairDBPort: &parser{
+			env:   "CLAIR_DB_PORT",
+			parse: parseStringToInt,
+		},
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
@@ -164,15 +167,16 @@ var (
 	// configurations need read from environment variables
 	// every time the system startup
 	repeatLoadEnvs = map[string]interface{}{
-		common.ExtEndpoint:   "EXT_ENDPOINT",
-		common.MySQLPassword: "MYSQL_PWD",
-		common.MySQLHost:     "MYSQL_HOST",
-		common.MySQLUsername: "MYSQL_USR",
-		common.MySQLDatabase: "MYSQL_DATABASE",
-		common.MySQLPort: &parser{
-			env:   "MYSQL_PORT",
+		common.ExtEndpoint:    "EXT_ENDPOINT",
+		common.PostGreSQLHOST: "POSTGRESQL_HOST",
+		common.PostGreSQLPort: &parser{
+			env:   "POSTGRESQL_PORT",
 			parse: parseStringToInt,
 		},
+		common.PostGreSQLUsername: "POSTGRESQL_USERNAME",
+		common.PostGreSQLPassword: "POSTGRESQL_PASSWORD",
+		common.PostGreSQLDatabase: "POSTGRESQL_DATABASE",
+		common.PostGreSQLSSLMode:  "POSTGRESQL_SSLMODE",
 		common.MaxJobWorkers: &parser{
 			env:   "MAX_JOB_WORKERS",
 			parse: parseStringToInt,
@@ -383,16 +387,13 @@ func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
 func GetDatabaseFromCfg(cfg map[string]interface{}) *models.Database {
 	database := &models.Database{}
 	database.Type = cfg[common.DatabaseType].(string)
-	mysql := &models.MySQL{}
-	mysql.Host = cfg[common.MySQLHost].(string)
-	mysql.Port = int(cfg[common.MySQLPort].(int))
-	mysql.Username = cfg[common.MySQLUsername].(string)
-	mysql.Password = cfg[common.MySQLPassword].(string)
-	mysql.Database = cfg[common.MySQLDatabase].(string)
-	database.MySQL = mysql
-	sqlite := &models.SQLite{}
-	sqlite.File = cfg[common.SQLiteFile].(string)
-	database.SQLite = sqlite
+	postgresql := &models.PostGreSQL{}
+	postgresql.Host = cfg[common.PostGreSQLHOST].(string)
+	postgresql.Port = int(cfg[common.PostGreSQLPort].(int))
+	postgresql.Username = cfg[common.PostGreSQLUsername].(string)
+	postgresql.Password = cfg[common.PostGreSQLPassword].(string)
+	postgresql.Database = cfg[common.PostGreSQLDatabase].(string)
+	database.PostGreSQL = postgresql
 	return database
 }
 

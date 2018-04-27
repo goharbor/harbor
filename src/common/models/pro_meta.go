@@ -40,5 +40,5 @@ type ProjectMetadata struct {
 	Value        string    `orm:"column(value)" json:"value"`
 	CreationTime time.Time `orm:"column(creation_time)" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time)" json:"update_time"`
-	Deleted      int       `orm:"column(deleted)" json:"deleted"`
+	Deleted      bool      `orm:"column(deleted)" json:"deleted"`
 }
