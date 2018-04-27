@@ -309,7 +309,7 @@ create table harbor_label (
  creation_time timestamp default 'now'::timestamp,
  update_time timestamp default 'now'::timestamp,
  PRIMARY KEY(id),
- CONSTRAINT unique_name_and_scope UNIQUE (name,scope)
+ CONSTRAINT unique_label UNIQUE (name,scope, project_id)
  );
 
 CREATE TRIGGER harbor_label_update_time_at_modtime BEFORE UPDATE ON harbor_label FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
