@@ -135,6 +135,7 @@ func GetRepositories(query ...*models.RepositoryQuery) ([]*models.RepoRecord, er
 	if _, err := GetOrmer().Raw(sql, params).QueryRows(&repositories); err != nil {
 		return nil, err
 	}
+
 	return repositories, nil
 }
 
@@ -145,9 +146,6 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 		return sql, params
 	}
 	q := query[0]
-	if len(q.ProjectName) > 0 {
-		sql += `join project p on r.project_id = p.project_id `
-	}
 
 	if q.LabelID > 0 {
 		sql += `join harbor_resource_label rl on r.repository_id = rl.resource_id 
@@ -167,8 +165,10 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 	}
 
 	if len(q.ProjectName) > 0 {
-		sql += `and p.name = ? `
-		params = append(params, q.ProjectName)
+		// use "like" rather than "table joining" because that
+		// in integration mode the projects are saved in Admiral side
+		sql += `and r.name like ? `
+		params = append(params, q.ProjectName+"/%")
 	}
 
 	if q.LabelID > 0 {
