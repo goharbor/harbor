@@ -121,6 +121,20 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 				bodyJSON: &models.MemberReq{
 					Role: 1,
 					MemberUser: models.User{
+						Username: "notexistuser",
+					},
+				},
+				credential: admin,
+			},
+			code: http.StatusNotFound,
+		},
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    "/api/projects/1/members",
+				bodyJSON: &models.MemberReq{
+					Role: 1,
+					MemberUser: models.User{
 						UserID: 0,
 					},
 				},
