@@ -147,7 +147,7 @@ export class TagDefaultService extends TagService {
             return Promise.reject('Invalid parameters.');
         }
 
-        let _addLabelToImageUrl = `/api/repositories/${repoName}/tags/${tagName}/labels`;
+        let _addLabelToImageUrl = `${this._baseUrl}/${repoName}/tags/${tagName}/labels`;
         return this.http.post(_addLabelToImageUrl, {id: labelId}, HTTP_JSON_OPTIONS).toPromise()
             .then(response => response.status)
             .catch(error => Promise.reject(error));
@@ -159,7 +159,7 @@ export class TagDefaultService extends TagService {
             return Promise.reject('Invalid parameters.');
         }
 
-        let _addLabelToImageUrl = `/api/repositories/${repoName}/tags/${tagName}/labels/${labelId}`;
+        let _addLabelToImageUrl = `${this._baseUrl}/${repoName}/tags/${tagName}/labels/${labelId}`;
         return this.http.delete(_addLabelToImageUrl).toPromise()
             .then(response => response.status)
             .catch(error => Promise.reject(error));
