@@ -285,6 +285,6 @@ export function isEmptyObject(obj: any): boolean {
  * @returns {*} 
  */
 export function clone(srcObj: any): any {
-    if (!srcObj) return null;
+    if (!srcObj) { return null };
     return JSON.parse(JSON.stringify(srcObj));
 }
