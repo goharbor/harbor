@@ -26,7 +26,7 @@ export const TAG_TEMPLATE = `
                     <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]= "filterName" (keyup)="handleInputFilter()"></div>
                     <div [hidden]='imageFilterLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
                     <div [hidden]='!imageFilterLabels.length' style='max-height:300px;overflow-y: auto;'>
-                        <button type="button" class="dropdown-item" *ngFor='let label of imageFilterLabels' (click)="rightFilterLabel(label)">
+                        <button type="button" class="dropdown-item" *ngFor='let label of imageFilterLabels' [hidden]="!label.show" (click)="rightFilterLabel(label)">
                             <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
                             <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
                         </button>
@@ -51,7 +51,7 @@ export const TAG_TEMPLATE = `
                         <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
                         <div [hidden]='imageStickLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
                         <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
-                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' (click)="stickLabel(label)">
+                            <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' [hidden]='!label.show' (click)="stickLabel(label)">
                                 <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
                                 <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
                             </button>
@@ -69,7 +69,7 @@ export const TAG_TEMPLATE = `
         <clr-dg-column style="min-width: 130px;">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 160px;"[clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
         <clr-dg-column style="width: 80px;" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
-        <clr-dg-column *ngIf="!withAdmiral" style="width: 140px;" [clrDgField]="'labels'">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
+        <clr-dg-column *ngIf="!withAdmiral" style="width: 140px;">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
           <clr-dg-cell  class="truncated"  style="width: 120px;">
