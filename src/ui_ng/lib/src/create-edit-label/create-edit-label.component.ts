@@ -85,7 +85,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
                     });
             setTimeout(() => {
                 setInterval(() => this.ref.markForCheck(), 100);
-            }, 1000);
+            }, 3000);
         });
     }
 
