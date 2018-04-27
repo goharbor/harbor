@@ -89,6 +89,13 @@ export interface IServiceConfig {
     projectPolicyEndpoint?: string;
 
     /**
+     * The base endpoint of service used to handle projects
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    projectBaseEndpoint?: string;
+
+    /**
      * To determine whether or not to enable the i18 multiple languages supporting.
      * 
      * @type {boolean}
