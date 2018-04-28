@@ -73,16 +73,16 @@ export const REPOSITORY_GRIDVIEW_TEMPLATE = `
                 </div>
                 <div class="card-footer">
                     <clr-dropdown [clrCloseMenuOnItemClick]="false">
-                        <button *ngIf="withAdmiral" type="button" class="btn btn-link" (click)="provisionItemEvent($event, item)">{{'REPOSITORY.DEPLOY' | translate}}</button>
-                        <button type="button" class="btn btn-link" (click)="$event.stopPropagation()" clrDropdownTrigger>
+                        <button *ngIf="withAdmiral" type="button" class="btn btn-link" (click)="provisionItemEvent($event, item)" [disabled]="!hasProjectAdminRole">{{'REPOSITORY.DEPLOY' | translate}}</button>
+                        <button type="button" class="btn btn-link" (click)="$event.stopPropagation()" [disabled]="!hasProjectAdminRole" clrDropdownTrigger>
                             {{'REPOSITORY.ACTION' | translate}}
                             <clr-icon shape="caret down"></clr-icon>
                         </button>
                         <clr-dropdown-menu clrPosition="top-left" *clrIfOpen>
-                            <button *ngIf="withAdmiral" type="button" class="btn btn-link" clrDropdownItem (click)="itemAddInfoEvent($event, item)">
+                            <button *ngIf="withAdmiral" type="button" class="btn btn-link" clrDropdownItem (click)="itemAddInfoEvent($event, item)" [disabled]="!hasProjectAdminRole">
                                 {{'REPOSITORY.ADDITIONAL_INFO' | translate}}
                             </button>
-                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, item)">
+                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, item)" [disabled]="!hasProjectAdminRole">
                                 {{'REPOSITORY.DELETE' | translate}}
                             </button>
                         </clr-dropdown-menu>

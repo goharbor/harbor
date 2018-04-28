@@ -69,9 +69,9 @@ export const CREATE_EDIT_RULE_TEMPLATE: string = `
          </div>
        </div>
        <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
-       <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'SIDE_NAV.SYSTEM_MGMT.REGISTRY' | translate}}</span>
+       <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
        </div>
-    
+
       <!--Trigger-->
       <div class="form-group form-group-override">
        <label class="form-group-label-override">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
