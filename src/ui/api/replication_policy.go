@@ -252,6 +252,8 @@ func (pa *RepPolicyAPI) Delete() {
 	count, err := dao.GetTotalCountOfRepJobs(&models.RepJobQuery{
 		PolicyID: id,
 		Statuses: []string{models.JobRunning, models.JobRetrying, models.JobPending},
+		// only get the transfer and delete jobs, do not get schedule job
+		Operations: []string{models.RepOpTransfer, models.RepOpDelete},
 	})
 	if err != nil {
 		log.Errorf("failed to filter jobs of policy %d: %v", id, err)
