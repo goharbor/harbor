@@ -119,6 +119,13 @@ services:
       - /data/redis:/data
     networks:
       - harbor
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "redis"
   proxy:
     image: vmware/nginx-photon:__nginx_version__
     container_name: nginx
