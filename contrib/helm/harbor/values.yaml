@@ -254,7 +254,12 @@ registry:
   #  requests:
   #    memory: 256Mi
   #    cpu: 100m
+  ## Enable the redis caching in the registry
+  #redis:
+  #  addr: "redis-host:6379"
+  #  db: 2
 
+  
 clair:
   enabled: true
   image:

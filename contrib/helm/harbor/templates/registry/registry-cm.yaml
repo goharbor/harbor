@@ -24,6 +24,10 @@ data:
           enabled: false
       delete:
         enabled: true
+    {{- if .Values.registry.redis }}
+    redis:
+{{ toYaml .Values.registry.redis | indent 6 }}
+    {{- end }}
     http:
       addr: :5000
       # set via environment variable
