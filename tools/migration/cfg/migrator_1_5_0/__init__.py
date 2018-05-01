@@ -10,7 +10,7 @@ default = {
     'db_host':'mysql',
     'db_port':'3306',
     'db_user':'root',
-    'redis_url':'',
+    'redis_url':'redis:6379',
     'clair_db_host':'postgres',
     'clair_db_port':'5432',
     'clair_db_username':'postgres',
