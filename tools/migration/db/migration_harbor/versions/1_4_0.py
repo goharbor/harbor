@@ -27,6 +27,7 @@ depends_on = None
 
 from alembic import op
 from db_meta import *
+import os
 
 from sqlalchemy.dialects import mysql
 
@@ -52,17 +53,26 @@ def upgrade():
     # Divided policies into unabled and enabled group
     unenabled_policies = session.query(ReplicationPolicy).filter(ReplicationPolicy.enabled == 0)
     enabled_policies = session.query(ReplicationPolicy).filter(ReplicationPolicy.enabled == 1)
-
-    # migrate enabeld policies
-    enabled_policies.update({
-        ReplicationPolicy.cron_str: '{"kind":"Immediate"}'
+    
+    # As projects aren't stored in database of Harbor, migrate all replication
+    # policies with manual trigger
+    if os.getenv('WITH_ADMIRAL', '') == 'true':
+        print ("deployed with admiral, migrating all replication policies with manual trigger")
+        enabled_policies.update({
+        ReplicationPolicy.enabled: 1,
+        ReplicationPolicy.cron_str: '{"kind":"Manual"}'
     })
-    immediate_triggers = [ReplicationImmediateTrigger(
-        policy_id=policy.id,
-        namespace=session.query(Project).get(policy.project_id).name,
-        on_push=1,
-        on_deletion=1) for policy in enabled_policies]
-    session.add_all(immediate_triggers)
+    else:
+        # migrate enabeld policies
+        enabled_policies.update({
+            ReplicationPolicy.cron_str: '{"kind":"Immediate"}'
+        })
+        immediate_triggers = [ReplicationImmediateTrigger(
+            policy_id=policy.id,
+            namespace=session.query(Project).get(policy.project_id).name,
+            on_push=1,
+            on_deletion=1) for policy in enabled_policies]
+        session.add_all(immediate_triggers)
 
     # migrate unenabled policies
     unenabled_policies.update({
