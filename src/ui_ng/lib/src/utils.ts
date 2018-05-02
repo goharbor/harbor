@@ -34,7 +34,7 @@ export const DEFAULT_LANG_COOKIE_KEY = 'harbor-lang';
 /**
  * Declare what languages are supported now.
  */
-export const DEFAULT_SUPPORTING_LANGS = ['en-us', 'zh-cn', 'es-es'];
+export const DEFAULT_SUPPORTING_LANGS = ['en-us', 'zh-cn', 'es-es', 'fr-fr'];
 
 /**
  * The default language.
@@ -184,7 +184,7 @@ export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[]
                 let arr = filter['property'].split('.');
                 if (Array.isArray(item[arr[0]]) && item[arr[0]].length) {
                      return item[arr[0]].some((data: any) => {
-                         return regexpFilter(filter['value'], data[arr[1]]);
+                         return filter['value'] === data[arr[1]];
                     });
                 }
             }else {
