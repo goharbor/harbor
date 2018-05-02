@@ -52,7 +52,7 @@ export class ProjectDetailComponent {
 
   public get isSystemAdmin(): boolean {
     let account = this.sessionService.getCurrentUser();
-    return account && account.has_admin_role > 0;
+    return account && account.has_admin_role;
   }
 
   public get isSProjectAdmin(): boolean {

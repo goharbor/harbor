@@ -53,32 +53,32 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	dbHost := os.Getenv("MYSQL_HOST")
+	dbHost := os.Getenv("POSTGRESQL_HOST")
 	if len(dbHost) == 0 {
-		log.Fatalf("environment variable MYSQL_HOST is not set")
+		log.Fatalf("environment variable POSTGRES_HOST is not set")
 	}
-	dbPortStr := os.Getenv("MYSQL_PORT")
+	dbUser := os.Getenv("POSTGRESQL_USR")
+	if len(dbUser) == 0 {
+		log.Fatalf("environment variable POSTGRES_USR is not set")
+	}
+	dbPortStr := os.Getenv("POSTGRESQL_PORT")
 	if len(dbPortStr) == 0 {
-		log.Fatalf("environment variable MYSQL_PORT is not set")
+		log.Fatalf("environment variable POSTGRES_PORT is not set")
 	}
 	dbPort, err := strconv.Atoi(dbPortStr)
 	if err != nil {
-		log.Fatalf("invalid MYSQL_PORT: %v", err)
-	}
-	dbUser := os.Getenv("MYSQL_USR")
-	if len(dbUser) == 0 {
-		log.Fatalf("environment variable MYSQL_USR is not set")
+		log.Fatalf("invalid POSTGRESQL_PORT: %v", err)
 	}
 
-	dbPassword := os.Getenv("MYSQL_PWD")
-	dbDatabase := os.Getenv("MYSQL_DATABASE")
+	dbPassword := os.Getenv("POSTGRESQL_PWD")
+	dbDatabase := os.Getenv("POSTGRESQL_DATABASE")
 	if len(dbDatabase) == 0 {
-		log.Fatalf("environment variable MYSQL_DATABASE is not set")
+		log.Fatalf("environment variable POSTGRESQL_DATABASE is not set")
 	}
 
 	database := &models.Database{
-		Type: "mysql",
-		MySQL: &models.MySQL{
+		Type: "postgresql",
+		PostGreSQL: &models.PostGreSQL{
 			Host:     dbHost,
 			Port:     dbPort,
 			Username: dbUser,
@@ -87,7 +87,7 @@ func TestMain(m *testing.M) {
 		},
 	}
 
-	log.Infof("MYSQL_HOST: %s, MYSQL_USR: %s, MYSQL_PORT: %d, MYSQL_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
+	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
@@ -197,7 +197,7 @@ func TestIsSysAdmin(t *testing.T) {
 	// authenticated, admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "test",
-		HasAdminRole: 1,
+		HasAdminRole: true,
 	}, nil)
 	assert.True(t, ctx.IsSysAdmin())
 }
@@ -229,7 +229,7 @@ func TestHasReadPerm(t *testing.T) {
 	// private project, authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
-		HasAdminRole: 1,
+		HasAdminRole: true,
 	}, pm)
 	assert.True(t, ctx.HasReadPerm(private.Name))
 }
@@ -250,7 +250,7 @@ func TestHasWritePerm(t *testing.T) {
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
-		HasAdminRole: 1,
+		HasAdminRole: true,
 	}, pm)
 	assert.True(t, ctx.HasReadPerm(private.Name))
 }
@@ -267,7 +267,7 @@ func TestHasAllPerm(t *testing.T) {
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
-		HasAdminRole: 1,
+		HasAdminRole: true,
 	}, pm)
 	assert.True(t, ctx.HasAllPerm(private.Name))
 }

@@ -234,7 +234,7 @@ func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	isSysAdmin := ctx.Input.Session("isSysAdmin")
 	if isSysAdmin != nil && isSysAdmin.(bool) {
-		user.HasAdminRole = 1
+		user.HasAdminRole = true
 	}
 
 	log.Debug("using local database project manager")

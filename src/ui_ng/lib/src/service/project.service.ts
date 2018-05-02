@@ -1,9 +1,9 @@
 import { Observable } from 'rxjs/Observable';
 import { Injectable, Inject } from '@angular/core';
-import 'rxjs/add/observable/of';
 import { Http, Headers, RequestOptions } from '@angular/http';
-import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
+import 'rxjs/add/observable/of';
 
+import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { Project } from '../project-policy-config/project';
 import { ProjectPolicy } from '../project-policy-config/project-policy-config.component';
 import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS, buildHttpRequestOptions} from "../utils";
@@ -40,6 +40,18 @@ export abstract class ProjectService {
      */
     abstract updateProjectPolicy(projectId: number | string,  projectPolicy: ProjectPolicy): Observable<any> | Promise<any> | any;
 
+     /**
+     * Get all projects
+     *
+     * @abstract
+     * @param {string} name
+     * @param {number} isPublic
+     * @param {number} page
+     * @param {number} pageSize
+     * @returns {(Observable<any> | Promise<any> | any)}
+     *
+     * @memberOf EndpointService
+     */
     abstract listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<Project[]> | Promise<Project[]> | Project[];
 }
 
@@ -64,14 +76,15 @@ export class ProjectDefaultService extends ProjectService {
     if (!projectId) {
       return Promise.reject('Bad argument');
     }
-
+    let baseUrl: string = this.config.projectBaseEndpoint ? this.config.projectBaseEndpoint : '/api/projects';
     return this.http
-                .get(`/api/projects/${projectId}`, HTTP_GET_OPTIONS)
+                .get(`${baseUrl}/${projectId}`, HTTP_GET_OPTIONS)
                 .map(response => response.json())
                 .catch(error => Observable.throw(error));
   }
 
-    listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<Project[]> | Promise<Project[]> | Project[]  {
+    public listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<Project[]> | Promise<Project[]> | Project[]  {
+        let baseUrl: string = this.config.projectBaseEndpoint ? this.config.projectBaseEndpoint : '/api/projects';
         let params = new RequestQueryParams();
         if (page && pageSize) {
             params.set('page', page + '');
@@ -87,20 +100,24 @@ export class ProjectDefaultService extends ProjectService {
 
         // let options = new RequestOptions({ headers: this.getHeaders, search: params });
         return this.http
-            .get(`/api/projects`, buildHttpRequestOptions(params))
+            .get(baseUrl, buildHttpRequestOptions(params))
             .map(response => response.json())
             .catch(error => Observable.throw(error));
     }
 
   public updateProjectPolicy(projectId: number | string, projectPolicy: ProjectPolicy): any {
+    let baseUrl: string = this.config.projectBaseEndpoint ? this.config.projectBaseEndpoint : '/api/projects';
     return this.http
-              .put(`/api/projects/${projectId}`, { 'metadata': {
-                'public': projectPolicy.Public ? 'true' : 'false',
-                'enable_content_trust': projectPolicy.ContentTrust ? 'true' : 'false',
-                'prevent_vul': projectPolicy.PreventVulImg ? 'true' : 'false',
-                'severity': projectPolicy.PreventVulImgSeverity,
-                'auto_scan': projectPolicy.ScanImgOnPush ? 'true' : 'false'
-              } }, HTTP_JSON_OPTIONS)
+              .put(`${baseUrl}/${projectId}`, {
+                  'metadata': {
+                      'public': projectPolicy.Public ? 'true' : 'false',
+                      'enable_content_trust': projectPolicy.ContentTrust ? 'true' : 'false',
+                      'prevent_vul': projectPolicy.PreventVulImg ? 'true' : 'false',
+                      'severity': projectPolicy.PreventVulImgSeverity,
+                      'auto_scan': projectPolicy.ScanImgOnPush ? 'true' : 'false'
+                    }
+                },
+                HTTP_JSON_OPTIONS)
               .map(response => response.status)
               .catch(error => Observable.throw(error));
   }

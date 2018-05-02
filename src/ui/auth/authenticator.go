@@ -31,6 +31,12 @@ const frozenTime time.Duration = 1500 * time.Millisecond
 
 var lock = NewUserLock(frozenTime)
 
+// ErrorUserNotExist ...
+var ErrorUserNotExist = errors.New("User does not exist")
+
+// ErrorGroupNotExist ...
+var ErrorGroupNotExist = errors.New("Group does not exist")
+
 //ErrAuth is the type of error to indicate a failed authentication due to user's error.
 type ErrAuth struct {
 	details string
@@ -200,6 +206,9 @@ func SearchGroup(groupKey string) (*models.UserGroup, error) {
 // SearchAndOnBoardUser ... Search user and OnBoard user, if user exist, return the ID of current user.
 func SearchAndOnBoardUser(username string) (int, error) {
 	user, err := SearchUser(username)
+	if user == nil {
+		return 0, ErrorUserNotExist
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -215,6 +224,9 @@ func SearchAndOnBoardUser(username string) (int, error) {
 // SearchAndOnBoardGroup ... if altGroupName is not empty, take the altGroupName as groupName in harbor DB
 func SearchAndOnBoardGroup(groupKey, altGroupName string) (int, error) {
 	userGroup, err := SearchGroup(groupKey)
+	if userGroup == nil {
+		return 0, ErrorGroupNotExist
+	}
 	if err != nil {
 		return 0, err
 	}

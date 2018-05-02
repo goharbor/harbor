@@ -19,6 +19,6 @@ export class SessionUser {
     realname: string;
     role_name?: string;
     role_id?: number;
-    has_admin_role?: number;
+    has_admin_role?: boolean;
     comment: string;
 }

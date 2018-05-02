@@ -12,15 +12,15 @@ services:
       - 5000:5000
     command:
       ["serve", "/etc/registry/config.yml"]
-  mysql:
+  postgres:
     image: vmware/harbor-db:__version__
     restart: always
     volumes:
-      - /data/database:/var/lib/mysql
+      - /data/database:/var/lib/postgresql/data:z
     env_file:
       - ./common/config/db/env
     ports:
-      - 3306:3306
+      - 5432:5432
   adminserver:
     build:
       context: ../

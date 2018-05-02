@@ -95,7 +95,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     public get isSystemAdmin(): boolean {
         let account = this.session.getCurrentUser();
-        return account != null && account.has_admin_role > 0;
+        return account != null && account.has_admin_role;
     }
 
     public get isUserExisting(): boolean {

@@ -24,6 +24,6 @@ export class User {
     email?: string;
     password?: string;
     comment?: string;
-    has_admin_role?: number;
+    has_admin_role?: boolean;
     creation_time?: string;
 }

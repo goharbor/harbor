@@ -50,7 +50,7 @@ DOCKERFILEPATH_LOG=$(DOCKERFILEPATH)/log
 DOCKERFILENAME_LOG=Dockerfile
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 
-DOCKERFILEPATH_DB=$(DOCKERFILEPATH)/db
+DOCKERFILEPATH_DB=$(DOCKERFILEPATH)/db/postgresql
 DOCKERFILENAME_DB=Dockerfile
 DOCKERIMAGENAME_DB=vmware/harbor-db
 
@@ -84,13 +84,13 @@ DOCKERFILEPATH_REDIS=$(DOCKERFILEPATH)/redis
 DOCKERFILENAME_REDIS=Dockerfile
 DOCKERIMAGENAME_REDIS=vmware/redis-photon
 
-_build_db: _build_mariadb
+_build_db:
 	@echo "modify the db dockerfile..."
-	@$(SEDCMD) -i 's/__version__/$(MARIADBVERSION)/g' $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB)
+	@$(SEDCMD) -i 's/__postgresql_version__/$(VERSIONTAG)/g' $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB)
 	@echo "building db container for photon..."
 	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
-	@$(SEDCMD) -i 's/$(MARIADBVERSION)/__version__/g' $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB)
+	@$(SEDCMD) -i 's/$(VERSIONTAG)/__postgresql_version__/g' $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB)
 
 _build_adminiserver:		
 	@echo "building adminserver container for photon..."
@@ -142,7 +142,7 @@ _build_notary:
 			rm -rf $(DOCKERFILEPATH_NOTARY)/binary && mkdir -p $(DOCKERFILEPATH_NOTARY)/binary && \
 			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/notary-signer, $(DOCKERFILEPATH_NOTARY)/binary/notary-signer) && \
 			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/notary-server, $(DOCKERFILEPATH_NOTARY)/binary/notary-server) && \
-			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/notary-migrate.tgz, $(DOCKERFILEPATH_NOTARY)/binary/notary-migrate.tgz); \
+			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/notary-migrate-postgresql.tgz, $(DOCKERFILEPATH_NOTARY)/binary/notary-migrate.tgz); \
 			cd $(DOCKERFILEPATH_NOTARY)/binary && tar -zvxf notary-migrate.tgz; \
 		else \
 			cd $(DOCKERFILEPATH_NOTARY) && $(DOCKERFILEPATH_NOTARY)/builder_public $(NOTARYVERSION); \

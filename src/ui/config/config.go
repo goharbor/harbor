@@ -395,18 +395,17 @@ func Database() (*models.Database, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	database := &models.Database{}
 	database.Type = cfg[common.DatabaseType].(string)
-	mysql := &models.MySQL{}
-	mysql.Host = cfg[common.MySQLHost].(string)
-	mysql.Port = int(cfg[common.MySQLPort].(float64))
-	mysql.Username = cfg[common.MySQLUsername].(string)
-	mysql.Password = cfg[common.MySQLPassword].(string)
-	mysql.Database = cfg[common.MySQLDatabase].(string)
-	database.MySQL = mysql
-	sqlite := &models.SQLite{}
-	sqlite.File = cfg[common.SQLiteFile].(string)
-	database.SQLite = sqlite
+
+	postgresql := &models.PostGreSQL{}
+	postgresql.Host = cfg[common.PostGreSQLHOST].(string)
+	postgresql.Port = int(cfg[common.PostGreSQLPort].(float64))
+	postgresql.Username = cfg[common.PostGreSQLUsername].(string)
+	postgresql.Password = cfg[common.PostGreSQLPassword].(string)
+	postgresql.Database = cfg[common.PostGreSQLDatabase].(string)
+	database.PostGreSQL = postgresql
 
 	return database, nil
 }

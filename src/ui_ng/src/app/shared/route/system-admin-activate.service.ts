@@ -38,7 +38,7 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
           .then(() => {
             //updated user
             user = this.authService.getCurrentUser();
-            if (user.has_admin_role > 0) {
+            if (user.has_admin_role) {
               return resolve(true);
             } else {
               this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
@@ -60,7 +60,7 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
             }
           });
       } else {
-        if (user.has_admin_role > 0) {
+        if (user.has_admin_role) {
           return resolve(true);
         } else {
           this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);

@@ -94,7 +94,7 @@ export const DefaultServiceConfig: IServiceConfig = {
 
 /**
  * Define the configuration for harbor shareable module
- * 
+ *
  * @export
  * @interface HarborModuleConfig
  */
@@ -140,8 +140,6 @@ export interface HarborModuleConfig {
 }
 
 /**
- * 
- * 
  * @export
  * @param {AppConfigService} configService
  * @returns
