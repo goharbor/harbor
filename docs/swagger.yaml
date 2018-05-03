@@ -183,7 +183,7 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/Project'
+            $ref: '#/definitions/ProjectReq'
           description: Updates of project.
       tags:
         - Products
@@ -2643,26 +2643,9 @@ definitions:
       project_name:
         type: string
         description: The name of the project.
-      public:
-        type: integer
-        format: int
-        description: The public status of the project.
-      enable_content_trust:
-        type: boolean
-        description: >-
-          Whether content trust is enabled or not. If it is enabled, user cann't
-          pull unsigned images from this project.
-      prevent_vulnerable_images_from_running:
-        type: boolean
-        description: Whether prevent the vulnerable images from running.
-      prevent_vulnerable_images_from_running_severity:
-        type: string
-        description: >-
-          If the vulnerability is high than severity defined here, the images
-          cann't be pulled.
-      automatically_scan_images_on_push:
-        type: boolean
-        description: Whether scan images automatically when pushing.
+      metadata:
+        description: The metadata of the project.
+        $ref: '#/definitions/ProjectMetadata'
   Project:
     type: object
     properties:
@@ -2690,7 +2673,7 @@ definitions:
       owner_name:
         type: string
         description: The owner name of the project.
-      Togglable:
+      togglable:
         type: boolean
         description: >-
           Correspond to the UI about whether the project's publicity is 
@@ -2702,10 +2685,8 @@ definitions:
         type: integer
         description: The number of the repositories under this project.
       metadata:
-        type: object
         description: The metadata of the project.
-        items:
-          $ref: '#/definitions/ProjectMetadata'
+        $ref: '#/definitions/ProjectMetadata'
   ProjectMetadata:
     type: object
     properties:
