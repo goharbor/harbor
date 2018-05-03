@@ -18,7 +18,7 @@ export const CREATE_EDIT_LABEL_STYLE: string = `
     width: 26px;
     height:22px;
     min-width: 26px;}
- .dropdown-item{margin: 5px 4px; width:30px;height:24px; text-align: center;line-height: 24px;font-size:12px;}
+ .colorPanel span{margin: 5px 4px; width:30px;height:24px; text-align: center;line-height: 24px;font-size:12px; border:1px solid #A1A1A1;}
  .closePanel{ display: block;
     left: 138px;
     position: relative;
