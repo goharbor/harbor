@@ -19,7 +19,7 @@ export const CREATE_EDIT_LABEL_TEMPLATE: string = `
                   </button>
                   <div class="colorPanel" [hidden]="panelHidden">
                     <a class="closePanel" (click)="closeColorPanel()">&times;</a>
-                    <label type="button" class="dropdown-item"  (click)="labelModel.color=i.color" *ngFor="let i of labelColor" [ngStyle]="{'background-color': i.color, 'color': i.textColor }">Aa</label>
+                    <span type="button"  (click)="labelModel.color=i.color" *ngFor="let i of labelColor" [ngStyle]="{'background-color': i.color, 'color': i.textColor }">Aa</span>
                   </div>
                   <input type="text" id="color" size="8" name="color" disabled [(ngModel)]="labelModel.color"  #color="ngModel">
                 </div>
