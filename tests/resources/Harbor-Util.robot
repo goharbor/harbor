@@ -51,6 +51,7 @@ Down Harbor
     [Arguments]  ${with_notary}=true  ${with_clair}=true
     ${rc}  ${output}=  Run And Return Rc And Output  echo "Y" | make down -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair}
     Log  ${rc}
+    Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
