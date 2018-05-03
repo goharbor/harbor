@@ -17,6 +17,7 @@ package local
 import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/dao/group"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/promgr"
@@ -88,7 +89,6 @@ func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	}
 
 	roles := s.GetProjectRoles(projectIDOrName)
-
 	return len(roles) > 0
 }
 
@@ -97,12 +97,10 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 	if !s.IsAuthenticated() {
 		return false
 	}
-
 	// system admin
 	if s.IsSysAdmin() {
 		return true
 	}
-
 	roles := s.GetProjectRoles(projectIDOrName)
 	for _, role := range roles {
 		switch role {
@@ -111,7 +109,6 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 			return true
 		}
 	}
-
 	return false
 }
 
@@ -120,12 +117,10 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	if !s.IsAuthenticated() {
 		return false
 	}
-
 	// system admin
 	if s.IsSysAdmin() {
 		return true
 	}
-
 	roles := s.GetProjectRoles(projectIDOrName)
 	for _, role := range roles {
 		switch role {
@@ -133,17 +128,7 @@ func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 			return true
 		}
 	}
-
 	return false
-}
-
-// GetMyProjects ...
-func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
-	return dao.GetProjects(&models.ProjectQueryParam{
-		Member: &models.MemberQuery{
-			Name: s.GetUsername(),
-		},
-	})
 }
 
 // GetProjectRoles ...
@@ -164,7 +149,6 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 		log.Debugf("user %s not found", s.GetUsername())
 		return roles
 	}
-
 	project, err := s.pm.Get(projectIDOrName)
 	if err != nil {
 		log.Errorf("failed to get project %v: %v", projectIDOrName, err)
@@ -174,13 +158,11 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 		log.Errorf("project %v not found", projectIDOrName)
 		return roles
 	}
-
 	roleList, err := dao.GetUserProjectRoles(user.UserID, project.ProjectID, common.UserMember)
 	if err != nil {
 		log.Errorf("failed to get roles of user %d to project %d: %v", user.UserID, project.ProjectID, err)
 		return roles
 	}
-
 	for _, role := range roleList {
 		switch role.RoleCode {
 		case "MDRWS":
@@ -191,8 +173,42 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 			roles = append(roles, common.RoleGuest)
 		}
 	}
+	if len(roles) != 0 {
+		return roles
+	}
+	return s.GetRolesByGroup(projectIDOrName)
+}
 
-	//If len(roles)==0, Get Group Roles
-
+// GetRolesByGroup - Get the group role of current user to the project
+func (s *SecurityContext) GetRolesByGroup(projectIDOrName interface{}) []int {
+	var roles []int
+	user := s.user
+	project, err := s.pm.Get(projectIDOrName)
+	//No user, group or project info
+	if err != nil || project == nil || user == nil || len(user.GroupList) == 0 {
+		return roles
+	}
+	//Get role by LDAP group
+	groupDNConditions := group.GetGroupDNQueryCondition(user.GroupList)
+	roles, err = dao.GetRolesByLDAPGroup(project.ProjectID, groupDNConditions)
+	if err != nil {
+		return nil
+	}
 	return roles
+}
+
+// GetMyProjects ...
+func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
+	result, err := s.pm.List(
+		&models.ProjectQueryParam{
+			Member: &models.MemberQuery{
+				Name:      s.GetUsername(),
+				GroupList: s.user.GroupList,
+			},
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Projects, nil
 }

@@ -116,3 +116,17 @@ func PrepareTestData(clearSqls []string, initSqls []string) {
 		}
 	}
 }
+
+// ArrayEqual ...
+func ArrayEqual(arrayA, arrayB []int) bool {
+	if len(arrayA) != len(arrayB) {
+		return false
+	}
+	size := len(arrayA)
+	for i := 0; i < size; i++ {
+		if arrayA[i] != arrayB[i] {
+			return false
+		}
+	}
+	return true
+}

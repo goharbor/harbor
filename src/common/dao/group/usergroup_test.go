@@ -21,6 +21,7 @@ import (
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/dao/project"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
@@ -243,6 +244,181 @@ func TestOnBoardUserGroup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := OnBoardUserGroup(tt.args.g, "LdapGroupDN", "GroupType"); (err != nil) != tt.wantErr {
 				t.Errorf("OnBoardUserGroup() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetGroupDNQueryCondition(t *testing.T) {
+	userGroupList := []*models.UserGroup{
+		&models.UserGroup{
+			GroupName:   "sample1",
+			GroupType:   1,
+			LdapGroupDN: "cn=sample1_users,ou=groups,dc=example,dc=com",
+		},
+		&models.UserGroup{
+			GroupName:   "sample2",
+			GroupType:   1,
+			LdapGroupDN: "cn=sample2_users,ou=groups,dc=example,dc=com",
+		},
+		&models.UserGroup{
+			GroupName:   "sample3",
+			GroupType:   0,
+			LdapGroupDN: "cn=sample3_users,ou=groups,dc=example,dc=com",
+		},
+	}
+
+	groupQueryConditions := GetGroupDNQueryCondition(userGroupList)
+	expectedConditions := `'cn=sample1_users,ou=groups,dc=example,dc=com','cn=sample2_users,ou=groups,dc=example,dc=com'`
+	if groupQueryConditions != expectedConditions {
+		t.Errorf("Failed to GetGroupDNQueryCondition, expected %v, actual %v", expectedConditions, groupQueryConditions)
+	}
+	var userGroupList2 []*models.UserGroup
+	groupQueryCondition2 := GetGroupDNQueryCondition(userGroupList2)
+	if len(groupQueryCondition2) > 0 {
+		t.Errorf("Failed to GetGroupDNQueryCondition, expected %v, actual %v", "", groupQueryCondition2)
+	}
+	groupQueryCondition3 := GetGroupDNQueryCondition(nil)
+	if len(groupQueryCondition3) > 0 {
+		t.Errorf("Failed to GetGroupDNQueryCondition, expected %v, actual %v", "", groupQueryCondition3)
+	}
+}
+func TestGetGroupProjects(t *testing.T) {
+	userID, err := dao.Register(models.User{
+		Username: "grouptestu09",
+		Email:    "grouptest09@example.com",
+		Password: "Harbor123456",
+	})
+	defer dao.DeleteUser(int(userID))
+	projectID1, err := dao.AddProject(models.Project{
+		Name:    "grouptest01",
+		OwnerID: 1,
+	})
+	if err != nil {
+		t.Errorf("Error occurred when AddProject: %v", err)
+	}
+	defer dao.DeleteProject(projectID1)
+	projectID2, err := dao.AddProject(models.Project{
+		Name:    "grouptest02",
+		OwnerID: 1,
+	})
+	if err != nil {
+		t.Errorf("Error occurred when AddProject: %v", err)
+	}
+	defer dao.DeleteProject(projectID2)
+	groupID, err := AddUserGroup(models.UserGroup{
+		GroupName:   "test_group_01",
+		GroupType:   1,
+		LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
+	})
+	if err != nil {
+		t.Errorf("Error occurred when AddUserGroup: %v", err)
+	}
+	defer DeleteUserGroup(groupID)
+	pmid, err := project.AddProjectMember(models.Member{
+		ProjectID:  projectID1,
+		EntityID:   groupID,
+		EntityType: "g",
+	})
+	defer project.DeleteProjectMemberByID(pmid)
+	type args struct {
+		groupDNCondition string
+		query            *models.ProjectQueryParam
+	}
+	member := &models.MemberQuery{
+		Name: "grouptestu09",
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantSize int
+		wantErr  bool
+	}{
+		{"Query with group DN",
+			args{"'cn=harbor_users,ou=groups,dc=example,dc=com'",
+				&models.ProjectQueryParam{
+					Member: member,
+				}},
+			1, false},
+		{"Query without group DN",
+			args{"",
+				&models.ProjectQueryParam{}},
+			1, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := dao.GetGroupProjects(tt.args.groupDNCondition, tt.args.query)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetGroupProjects() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if len(got) < tt.wantSize {
+				t.Errorf("GetGroupProjects() size: %v, want %v", len(got), tt.wantSize)
+			}
+		})
+	}
+}
+
+func TestGetTotalGroupProjects(t *testing.T) {
+	projectID1, err := dao.AddProject(models.Project{
+		Name:    "grouptest01",
+		OwnerID: 1,
+	})
+	if err != nil {
+		t.Errorf("Error occurred when AddProject: %v", err)
+	}
+	defer dao.DeleteProject(projectID1)
+	projectID2, err := dao.AddProject(models.Project{
+		Name:    "grouptest02",
+		OwnerID: 1,
+	})
+	if err != nil {
+		t.Errorf("Error occurred when AddProject: %v", err)
+	}
+	defer dao.DeleteProject(projectID2)
+	groupID, err := AddUserGroup(models.UserGroup{
+		GroupName:   "test_group_01",
+		GroupType:   1,
+		LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
+	})
+	if err != nil {
+		t.Errorf("Error occurred when AddUserGroup: %v", err)
+	}
+	defer DeleteUserGroup(groupID)
+	pmid, err := project.AddProjectMember(models.Member{
+		ProjectID:  projectID1,
+		EntityID:   groupID,
+		EntityType: "g",
+	})
+	defer project.DeleteProjectMemberByID(pmid)
+	type args struct {
+		groupDNCondition string
+		query            *models.ProjectQueryParam
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantSize int
+		wantErr  bool
+	}{
+		{"Query with group DN",
+			args{"'cn=harbor_users,ou=groups,dc=example,dc=com'",
+				&models.ProjectQueryParam{}},
+			1, false},
+		{"Query without group DN",
+			args{"",
+				&models.ProjectQueryParam{}},
+			1, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := dao.GetTotalGroupProjects(tt.args.groupDNCondition, tt.args.query)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetGroupProjects() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got < tt.wantSize {
+				t.Errorf("GetGroupProjects() size: %v, want %v", got, tt.wantSize)
 			}
 		})
 	}

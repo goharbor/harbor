@@ -662,7 +662,7 @@ func TestGetTotalOfProjects(t *testing.T) {
 func TestGetProjects(t *testing.T) {
 	projects, err := GetProjects(nil)
 	if err != nil {
-		t.Errorf("Error occurred in GetAllProjects: %v", err)
+		t.Errorf("Error occurred in GetProjects: %v", err)
 	}
 	if len(projects) != 2 {
 		t.Errorf("Expected length of projects is 2, but actual: %d, the projects: %+v", len(projects), projects)

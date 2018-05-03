@@ -13,5 +13,3 @@
 // limitations under the License.
 
 package admiral
-
-// TODO add test cases

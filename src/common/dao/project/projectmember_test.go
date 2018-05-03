@@ -285,3 +285,50 @@ func TestGetProjectMember(t *testing.T) {
 	}
 
 }
+func PrepareGroupTest() {
+	initSqls := []string{
+		`insert into user_group (group_name, group_type, ldap_group_dn) values ('harbor_group_01', 1, 'cn=harbor_user,dc=example,dc=com')`,
+		`insert into harbor_user (username, email, password, realname) values ('sample01', 'sample01@example.com', 'harbor12345', 'sample01')`,
+		`insert into project (name, owner_id) values ('group_project', 1)`,
+		`insert into project (name, owner_id) values ('group_project_private', 1)`,
+		`insert into project_metadata (project_id, name, value) values ((select project_id from project where name = 'group_project'), 'public', 'false')`,
+		`insert into project_metadata (project_id, name, value) values ((select project_id from project where name = 'group_project_private'), 'public', 'false')`,
+		`insert into project_member (project_id, entity_id, entity_type, role) values ((select project_id from project where name = 'group_project'), (select id from user_group where group_name = 'harbor_group_01'),'g', 2)`,
+	}
+
+	clearSqls := []string{
+		`delete from project_metadata where project_id in (select project_id from project where name in ('group_project', 'group_project_private'))`,
+		`delete from project where name in ('group_project', 'group_project_private')`,
+		`delete from project_member where project_id in (select project_id from project where name in ('group_project', 'group_project_private'))`,
+		`delete from user_group where group_name = 'harbor_group_01'`,
+		`delete from harbor_user where username = 'sample01'`,
+	}
+	dao.PrepareTestData(clearSqls, initSqls)
+}
+func TestGetRolesByGroup(t *testing.T) {
+	PrepareGroupTest()
+
+	project, err := dao.GetProjectByName("group_project")
+	if err != nil {
+		t.Errorf("Error occurred when GetProjectByName : %v", err)
+	}
+	type args struct {
+		projectID        int64
+		groupDNCondition string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{"Query group with role", args{project.ProjectID, "'cn=harbor_user,dc=example,dc=com'"}, []int{2}},
+		{"Query group no role", args{project.ProjectID, "'cn=another_user,dc=example,dc=com'"}, []int{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetRolesByGroup(tt.args.projectID, tt.args.groupDNCondition); !dao.ArrayEqual(got, tt.want) {
+				t.Errorf("GetRolesByGroup() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

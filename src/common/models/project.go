@@ -147,8 +147,9 @@ type ProjectQueryParam struct {
 
 // MemberQuery fitler by member's username and role
 type MemberQuery struct {
-	Name string // the username of member
-	Role int    // the role of the member has to the project
+	Name      string       // the username of member
+	Role      int          // the role of the member has to the project
+	GroupList []*UserGroup // the group list of current user
 }
 
 // Pagination ...

@@ -76,13 +76,30 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	u.Username = ldapUsers[0].Username
 	u.Email = strings.TrimSpace(ldapUsers[0].Email)
 	u.Realname = ldapUsers[0].Realname
+	userGroups := make([]*models.UserGroup, 0)
 
 	dn := ldapUsers[0].DN
-
 	if err = ldapSession.Bind(dn, m.Password); err != nil {
 		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
 		return nil, auth.NewErrAuth(err.Error())
 	}
+
+	//Attach user group
+	for _, groupDN := range ldapUsers[0].GroupDNList {
+		userGroupQuery := models.UserGroup{
+			GroupType:   1,
+			LdapGroupDN: groupDN,
+		}
+		userGroupList, err := group.QueryUserGroup(userGroupQuery)
+		if err != nil {
+			continue
+		}
+		if len(userGroupList) == 0 {
+			continue
+		}
+		userGroups = append(userGroups, userGroupList[0])
+	}
+	u.GroupList = userGroups
 
 	return &u, nil
 }
