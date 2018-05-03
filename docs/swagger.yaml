@@ -3470,6 +3470,18 @@ definitions:
       ldap_timeout:
         type: integer
         description: timeout in seconds for connection to LDAP server.
+      ldap_group_attribute_name:
+        type: string
+        description: The attribute which is used as identity of the LDAP group, default is cn.
+      ldap_group_base_dn:
+        type: string
+        description: The base DN to search LDAP group.
+      ldap_group_search_filter:
+        type: string
+        description: The filter to search the ldap group.
+      ldap_group_search_scope:
+        type: integer
+        description: The scope to search ldap. '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
       project_creation_restriction:
         type: string
         description: >-
