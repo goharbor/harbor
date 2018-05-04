@@ -343,7 +343,12 @@ export class TagComponent implements OnInit, AfterViewInit {
 
         // set the selected label in front
         this.imageStickLabels.splice(this.imageStickLabels.indexOf(labelInfo), 1);
-        this.imageStickLabels.unshift(labelInfo);
+        this.imageStickLabels.some((data, i) => {
+          if (!data.iconsShow) {
+            this.imageStickLabels.splice(i, 0, labelInfo);
+            return true;
+          }
+        });
 
         labelInfo.iconsShow = true;
         this.inprogress = false;

@@ -246,7 +246,7 @@ Create New Labels
     Sleep  1
     Click Element  xpath=//hbr-create-edit-label//div[@class='colorDrop']//clr-icon
     Sleep  1
-    Click Element  xpath=//hbr-create-edit-label//div[@class='colorDrop']//div[@class='colorPanel']//label[1]
+    Click Element  xpath=//hbr-create-edit-label//div[@class='colorDrop']//div[@class='colorPanel']//span[1]
     Sleep  1
     Click Element  //hbr-create-edit-label//div[@class='colorDrop']//div[@class='colorPanel']/a[@class='closePanel']
     Sleep  1
