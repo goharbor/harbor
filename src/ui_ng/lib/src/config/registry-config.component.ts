@@ -9,7 +9,7 @@ import {
     isEmptyObject,
     clone
 } from '../utils';
-import { ErrorHandler } from '../error-handler';
+import { ErrorHandler } from '../error-handler/index';
 import {
     SystemSettingsComponent,
     VulnerabilityConfigComponent

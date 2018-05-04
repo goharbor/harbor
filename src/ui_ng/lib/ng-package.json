@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/ng-packagr/ng-package.schema.json",
+  "lib": {
+    "entryFile": "index.ts",
+    "externals": {
+      "@ngx-translate/core": "ngx-translate-core",
+      "@ngx-translate/core/index": "ngx-translate-core"
+     }
+  }
+}

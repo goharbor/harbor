@@ -5,8 +5,6 @@ import {Observable} from "rxjs/Observable";
 import { TranslateService } from '@ngx-translate/core';
 import { Comparator, State } from 'clarity-angular';
 
-import { REPOSITORY_GRIDVIEW_TEMPLATE } from './repository-gridview.component.html';
-import { REPOSITORY_GRIDVIEW_STYLE } from './repository-gridview.component.css';
 import { Repository, SystemInfo, SystemInfoService, RepositoryService, RequestQueryParams, RepositoryItem, TagService } from '../service/index';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { toPromise, CustomComparator , DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting, clone} from '../utils';
@@ -16,13 +14,13 @@ import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 import { Tag, CardItemEvent } from '../service/interface';
 import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
-import { GridViewComponent } from '../gridview/grid-view.component'
+import { GridViewComponent } from '../gridview/grid-view.component';
 
 
 @Component({
   selector: 'hbr-repository-gridview',
-  template: REPOSITORY_GRIDVIEW_TEMPLATE,
-  styles: [REPOSITORY_GRIDVIEW_STYLE],
+  templateUrl: './repository-gridview.component.html',
+  styleUrls: ['./repository-gridview.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RepositoryGridviewComponent implements OnChanges, OnInit {

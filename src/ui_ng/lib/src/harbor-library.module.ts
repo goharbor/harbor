@@ -26,7 +26,7 @@ import { CONFIGURATION_DIRECTIVES } from './config/index';
 import { JOB_LOG_VIEWER_DIRECTIVES } from './job-log-viewer/index';
 import { PROJECT_POLICY_CONFIG_DIRECTIVES } from './project-policy-config/index';
 import { HBR_GRIDVIEW_DIRECTIVES } from './gridview/index';
-import { REPOSITORY_GRIDVIEW_DIRECTIVES } from './repository-gridview';
+import { REPOSITORY_GRIDVIEW_DIRECTIVES } from './repository-gridview/index';
 
 import {
   SystemInfoService,
@@ -101,43 +101,43 @@ export const DefaultServiceConfig: IServiceConfig = {
  * @interface HarborModuleConfig
  */
 export interface HarborModuleConfig {
-  //Service endpoints
+  // Service endpoints
   config?: Provider,
 
-  //Handling error messages
+  // Handling error messages
   errorHandler?: Provider,
 
-  //Service implementation for system info
+  // Service implementation for system info
   systemInfoService?: Provider,
 
-  //Service implementation for log
+  // Service implementation for log
   logService?: Provider,
 
-  //Service implementation for endpoint
+  // Service implementation for endpoint
   endpointService?: Provider,
 
-  //Service implementation for replication
+  // Service implementation for replication
   replicationService?: Provider,
 
-  //Service implementation for repository
+  // Service implementation for repository
   repositoryService?: Provider,
 
-  //Service implementation for tag
+  // Service implementation for tag
   tagService?: Provider,
 
-  //Service implementation for vulnerability scanning
+  // Service implementation for vulnerability scanning
   scanningService?: Provider,
 
-  //Service implementation for configuration
+  // Service implementation for configuration
   configService?: Provider,
 
-  //Service implementation for job log
+  // Service implementation for job log
   jobLogService?: Provider,
 
-  //Service implementation for project policy
+  // Service implementation for project policy
   projectPolicyService?: Provider,
 
-  //Service implementation for label
+  // Service implementation for label
   labelService?: Provider,
 }
 

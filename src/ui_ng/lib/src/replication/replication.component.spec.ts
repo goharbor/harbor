@@ -21,7 +21,7 @@ import { EndpointService, EndpointDefaultService } from '../service/endpoint.ser
 import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
 import { JobLogService, JobLogDefaultService, ReplicationJobItem } from '../service/index';
 import {Project} from "../project-policy-config/project";
-import {ProjectDefaultService, ProjectService} from "service/project.service";
+import {ProjectDefaultService, ProjectService} from "../service/project.service";
 
 describe('Replication Component (inline template)', () => {
 

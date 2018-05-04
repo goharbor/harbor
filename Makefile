@@ -378,7 +378,7 @@ refresh_clarity_builder:
 
 run_clarity_ut:
 	@echo "run clarity ut ..."
-	@$(DOCKERCMD) run --rm -v $(UINGPATH)/lib:$(CLARITYSEEDPATH) -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
+	@$(DOCKERCMD) run --rm -v $(UINGPATH):$(CLARITYSEEDPATH) -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
 
 pushimage:
 	@echo "pushing harbor images ..."

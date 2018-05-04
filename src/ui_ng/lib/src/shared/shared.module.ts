@@ -4,12 +4,13 @@ import { HttpModule, Http } from '@angular/http';
 import { ClarityModule } from 'clarity-angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler } from '@ngx-translate/core';
-import { MyMissingTranslationHandler } from '../i18n/missing-trans.handler';
+import { CookieService, CookieModule } from 'ngx-cookie';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+
+import { ClipboardModule } from '../third-party/ngx-clipboard/index';
+import { MyMissingTranslationHandler } from '../i18n/missing-trans.handler';
 import { TranslatorJsonLoader } from '../i18n/local-json.loader';
 import { IServiceConfig, SERVICE_CONFIG } from '../service.config';
-import { CookieService, CookieModule } from 'ngx-cookie';
-import { ClipboardModule } from '../third-party/ngx-clipboard/index';
 
 /*export function HttpLoaderFactory(http: Http) {
     return new TranslateHttpLoader(http, 'i18n/lang/', '-lang.json');
