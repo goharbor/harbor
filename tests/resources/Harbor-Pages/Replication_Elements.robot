@@ -30,7 +30,7 @@ ${replication_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Replicatio
 ${destination_insecure_xpath}  //clr-checkbox[@id="destination_insecure"]//label
 
 ${new_replication-rule_button}  //button[contains(.,'New Replication Rule')]
-${link_to_registries}  //clr-modal//span[contains(.,'Registries')]
+${link_to_registries}  //clr-modal//span[contains(.,'Endpoint')]
 ${new_endpoint_button}  //hbr-endpoint//button[contains(.,'New')]
 ${rule_name}  //input[@id='ruleName']
 ${source_project}    //input[@value='name']
