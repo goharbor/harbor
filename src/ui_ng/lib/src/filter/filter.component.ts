@@ -34,6 +34,7 @@ export class FilterComponent implements OnInit {
     isExpanded: boolean = false;
 
     @Output("filter") private filterEvt = new EventEmitter<string>();
+    @Output() private openFlag = new EventEmitter<boolean>();
 
     @Input() currentValue: string;
     @Input("filterPlaceholder")
@@ -58,12 +59,17 @@ export class FilterComponent implements OnInit {
         this.filterTerms.next(this.currentValue.trim());
     }
 
+    inputFocus(): void {
+        this.openFlag.emit(this.isExpanded);
+    }
+
     onClick(): void {
         //Only enabled when expandMode is set to false
         if(this.expandMode){
             return;
         }
         this.isExpanded = !this.isExpanded;
+        this.openFlag.emit(this.isExpanded);
     }
 
     public get isShowSearchBox(): boolean {

@@ -100,6 +100,8 @@ export class TagComponent implements OnInit, AfterViewInit {
   lastFilteredTagName: string;
   batchDelectionInfos: BatchInfo[] = [];
   inprogress: boolean;
+  openLabelFilterPanel: boolean;
+  openLabelFilterPiece: boolean;
 
   createdComparator: Comparator<Tag> = new CustomComparator<Tag>("created", "date");
 
@@ -448,6 +450,30 @@ export class TagComponent implements OnInit, AfterViewInit {
       st.filters = [];
     }
     this.clrLoad(st);
+  }
+
+  closeFilter(): void {
+    this.openLabelFilterPanel = false;
+  }
+
+  openFlagEvent(isOpen: boolean): void {
+    if (isOpen) {
+      this.openLabelFilterPanel = true;
+      this.openLabelFilterPiece = true;
+      this.filterName = '';
+      // redisplay all labels
+      this.imageFilterLabels.forEach(data => {
+        if (data.label.name.indexOf(this.filterName) !== -1) {
+          data.show = true;
+        }else {
+          data.show = false;
+        }
+      });
+    }else  {
+      this.openLabelFilterPanel = false;
+      this.openLabelFilterPiece = false;
+    }
+
   }
 
   handleInputFilter() {

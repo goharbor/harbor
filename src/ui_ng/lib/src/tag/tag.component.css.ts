@@ -5,6 +5,7 @@ export const TAG_STYLE = `
 }
 
 .refresh-btn {
+  margin-top:8px;
   cursor: pointer;
 }
 
@@ -65,8 +66,56 @@ export const TAG_STYLE = `
 :host >>> .signpost-content{min-width:4rem;}
 :host >>> .signpost-content-body{padding:0 .4rem;}
 :host >>> .signpost-content-header{display:none;}
-.filterLabelPiece{position: absolute; bottom :0px;z-index:1;}
+.filterLabelPiece{position: absolute; top :4px;z-index:1;}
 .dropdown .dropdown-toggle.btn {
-    margin: .25rem .5rem .25rem 0;
+    margin: .25rem .5rem .25rem 0;   
 }
+.labelFilterPanel{
+    display: flex;
+    position: relative;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    background: #fff;
+    padding: .5rem 0;
+    border: 1px solid #ccc;
+    box-shadow: 0 1px 0.125rem hsla(0,0%,45%,.25);
+    min-width: 5rem;
+    max-width: 15rem;
+    border-radius: .125rem;
+}
+.labelBtn{
+    position: relative;
+    overflow: hidden;
+    font-size: .58333rem;
+    letter-spacing: normal;
+    font-weight: 400;
+    background: transparent;
+    border: 0;
+    color: #565656;
+    cursor: pointer;
+    display: block;
+    margin: 0;
+    width: 100%;
+    height:30px;
+    text-transform: none;}
+.labelBtn:hover{
+    background-color: #eee;
+}
+.labelBtn:focus{
+    outline: none;
+}
+.filterLabelHeader {
+    font-size: .5rem;
+    font-weight: 600;
+    letter-spacing: normal;
+    padding: 0 .5rem;
+    line-height: .75rem;
+    margin: 0;
+    color: #313131;
+}
+.labelFilterPanel .form-group input{position: relative;
+    margin-left: .5rem;
+    margin-right: .5rem;}
+    
+.filterClose{position:absolute; right: 8px; top: 5px; cursor:pointer; font-size:20px;}
 `;

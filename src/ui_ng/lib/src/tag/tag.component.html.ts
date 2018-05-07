@@ -15,28 +15,28 @@ export const TAG_TEMPLATE = `
 <div class="row" style="position:relative;">
   <div>
     <div class="row flex-items-xs-right rightPos">
-      <div class='filterLabelPiece' [style.left.px]='filterLabelPieceWidth' ><hbr-label-piece [hidden]='!filterOneLabel' [label]="filterOneLabel"  [labelWidth]="130"></hbr-label-piece></div>
+    <div id="filterArea">
+      <div class='filterLabelPiece' *ngIf="!withAdmiral" [hidden]="!openLabelFilterPiece"  [style.left.px]='filterLabelPieceWidth' ><hbr-label-piece [hidden]='!filterOneLabel' [label]="filterOneLabel"  [labelWidth]="130"></hbr-label-piece></div>
       <div class="flex-xs-middle">
-      <hbr-filter *ngIf="withAdmiral" [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" [currentValue]="lastFilteredTagName"></hbr-filter>
-        <clr-dropdown *ngIf="!withAdmiral">
-            <hbr-filter [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" [currentValue]="lastFilteredTagName" clrDropdownTrigger></hbr-filter>
-            <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-                <div style='display:grid'>
-                    <label class="dropdown-header">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
-                    <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]= "filterName" (keyup)="handleInputFilter()"></div>
-                    <div [hidden]='imageFilterLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
-                    <div [hidden]='!imageFilterLabels.length' style='max-height:300px;overflow-y: auto;'>
-                        <button type="button" class="dropdown-item" *ngFor='let label of imageFilterLabels' [hidden]="!label.show" (click)="rightFilterLabel(label)">
-                            <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
-                            <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
-                        </button>
-                    </div>
-                </div>
-            </clr-dropdown-menu>
-        </clr-dropdown>
-        <span class="refresh-btn" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></span> 
+      <hbr-filter [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filter)="doSearchTagNames($event)" (openFlag)="openFlagEvent($event)" [currentValue]="lastFilteredTagName"></hbr-filter>
+      <div class="labelFilterPanel" *ngIf="!withAdmiral" [hidden]="!openLabelFilterPanel">
+        <a class="filterClose" (click)="closeFilter()">&times;</a>
+        <label class="filterLabelHeader">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
+        <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]= "filterName" (keyup)="handleInputFilter()"></div>
+        <div [hidden]='imageFilterLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
+        <div [hidden]='!imageFilterLabels.length' style='max-height:300px;overflow-y: auto;'>
+            <button type="button" class="labelBtn" *ngFor='let label of imageFilterLabels' [hidden]="!label.show" (click)="rightFilterLabel(label)">
+                <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
+                <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="160"></hbr-label-piece></div>
+            </button>
+        </div>
       </div>
     </div>
+    </div>
+  
+  <span class="refresh-btn" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></span> 
+  
+  </div>
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <clr-datagrid [clrDgLoading]="loading" [class.embeded-datagrid]="isEmbedded"  [(clrDgSelected)]="selectedRow">
