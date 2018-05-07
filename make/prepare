@@ -20,7 +20,6 @@ if sys.version_info[:3][0] == 3:
     import io as StringIO
 
 DATA_VOL = "/data"
-JOB_LOG_DIR = os.path.join(DATA_VOL, "job_logs")
 
 def validate(conf, args): 
     if args.ha_mode:
@@ -182,10 +181,6 @@ def delfile(src):
             itemsrc=os.path.join(src,item)
             delfile(itemsrc)
 
-if not os.path.exists(JOB_LOG_DIR):
-    os.makedirs(JOB_LOG_DIR)
-mark_file(JOB_LOG_DIR, mode=0o755)
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
 parser.add_argument('--with-notary', dest='notary_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with notary")
@@ -318,6 +313,14 @@ token_service_url = "http://ui:8080/service/token"
 jobservice_url = "http://jobservice:8080"
 clair_url = "http://clair:6060"
 notary_url = "http://notary-server:4443"
+
+if len(admiral_url) != 0  and admiral_url != "NA":
+#VIC overwrites the data volume path, which by default should be same as the value of secretkey_path
+    DATA_VOL = secretkey_path
+JOB_LOG_DIR = os.path.join(DATA_VOL, "job_logs")
+if not os.path.exists(JOB_LOG_DIR):
+    os.makedirs(JOB_LOG_DIR)
+mark_file(JOB_LOG_DIR, mode=0o755)
 
 if protocol == "https":
     target_cert_path = os.path.join(cert_dir, os.path.basename(cert_path))
@@ -553,7 +556,9 @@ if args.notary_mode:
     mark_file(os.path.join(notary_config_dir, "notary-signer-ca.crt"))
     mark_file(os.path.join(notary_config_dir, "root.crt"))
     print("Copying notary signer configuration file")
-    shutil.copy2(os.path.join(notary_temp_dir, "signer-config.postgres.json"), notary_config_dir)
+    #Call render instead of copy so the umask will take effect to mark the file as 0644
+    render(os.path.join(notary_temp_dir, "signer-config.postgres.json"), 
+        os.path.join(notary_config_dir, "signer-config.postgres.json"))
     render(os.path.join(notary_temp_dir, "server-config.postgres.json"),
         os.path.join(notary_config_dir, "server-config.postgres.json"),
         token_endpoint=public_url)
