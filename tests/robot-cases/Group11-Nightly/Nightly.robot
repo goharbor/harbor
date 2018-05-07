@@ -217,7 +217,6 @@ Test Case - Project Level Policy Public
     Save Project Config
     # Verify
     Public Should Be Selected
-    Back To Projects
     # Project${d}  default should be private
     # Here logout and login to try avoid a bug only in autotest
     Logout Harbor
