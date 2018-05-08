@@ -1,15 +1,13 @@
 import { Component, Input, Output, EventEmitter, ViewChild, Inject } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
-import { SYSTEM_SETTINGS_HTML } from './system-settings.component.html';
 import { Configuration } from '../config';
-import { REGISTRY_CONFIG_STYLES } from '../registry-config.component.css';
 import { SERVICE_CONFIG, IServiceConfig } from '../../service.config';
 
 @Component({
     selector: 'system-settings',
-    template: SYSTEM_SETTINGS_HTML,
-    styles: [REGISTRY_CONFIG_STYLES]
+    templateUrl: './system-settings.component.html',
+    styleUrls: ['./system-settings.component.scss', '../registry-config.component.scss']
 })
 export class SystemSettingsComponent {
     config: Configuration;

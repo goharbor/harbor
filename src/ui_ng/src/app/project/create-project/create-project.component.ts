@@ -38,7 +38,7 @@ import "rxjs/add/operator/distinctUntilChanged";
 @Component({
   selector: "create-project",
   templateUrl: "create-project.component.html",
-  styleUrls: ["create-project.css"]
+  styleUrls: ["create-project.scss"]
 })
 export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestroy {
 

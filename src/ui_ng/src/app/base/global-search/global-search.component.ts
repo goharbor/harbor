@@ -31,7 +31,7 @@ const deBounceTime = 500; //ms
 @Component({
     selector: 'global-search',
     templateUrl: "global-search.component.html",
-    styleUrls: ["search.component.css"]
+    styleUrls: ["search.component.scss"]
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {
     //Keep search term as Subject

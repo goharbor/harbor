@@ -21,7 +21,7 @@ import { ProjectTypes } from '../shared/shared.const';
 @Component({
   selector: 'project',
   templateUrl: 'project.component.html',
-  styleUrls: ['./project.component.css']
+  styleUrls: ['./project.component.scss']
 })
 export class ProjectComponent implements OnInit {
   projectTypes = ProjectTypes;

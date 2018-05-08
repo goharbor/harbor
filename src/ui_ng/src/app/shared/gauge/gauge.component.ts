@@ -33,7 +33,7 @@ const RESOURCE_COLOR_GREY600: string = '#C7D1D6';
 @Component({
       selector: 'esxc-gauge',
       templateUrl: 'gauge.component.html',
-      styleUrls: ['gauge.component.css']
+      styleUrls: ['gauge.component.scss']
 })
 
 export class GaugeComponent implements AfterViewInit {

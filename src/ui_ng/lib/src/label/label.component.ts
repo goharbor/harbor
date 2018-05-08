@@ -15,8 +15,6 @@ import {
     Component, OnInit, OnDestroy, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef,
     Input
 } from '@angular/core';
-import {LABEL_TEMPLATE} from "./label.component.html";
-import {LABEL_STYLE} from "./label.component.css";
 import {Label} from "../service/interface";
 import {LabelDefaultService, LabelService} from "../service/label.service";
 import {toPromise} from "../utils";
@@ -30,8 +28,8 @@ import {TranslateService} from "@ngx-translate/core";
 import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
 @Component({
     selector: 'hbr-label',
-    template: LABEL_TEMPLATE,
-    styles: [LABEL_STYLE],
+    templateUrl: './label.component.html',
+    styleUrls: ['./label.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LabelComponent implements OnInit {

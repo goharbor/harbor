@@ -30,7 +30,7 @@ import { SessionService } from '../../shared/session.service';
 @Component({
     selector: 'new-user-form',
     templateUrl: 'new-user-form.component.html',
-    styleUrls: ['new-user-form.component.css', '../../common.css']
+    styleUrls: ['./new-user-form.component.scss', '../../common.scss']
 })
 
 export class NewUserFormComponent implements AfterViewChecked, OnInit {

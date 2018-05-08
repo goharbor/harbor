@@ -20,7 +20,7 @@ import { GridViewComponent } from '../gridview/grid-view.component';
 @Component({
   selector: 'hbr-repository-gridview',
   templateUrl: './repository-gridview.component.html',
-  styleUrls: ['./repository-gridview.component.css'],
+  styleUrls: ['./repository-gridview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RepositoryGridviewComponent implements OnChanges, OnInit {

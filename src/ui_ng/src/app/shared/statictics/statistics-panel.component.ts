@@ -28,7 +28,7 @@ import { AppConfigService } from "./../../app-config.service";
 @Component({
     selector: "statistics-panel",
     templateUrl: "statistics-panel.component.html",
-    styleUrls: ["statistics.component.css"],
+    styleUrls: ["statistics.component.scss"],
     providers: [StatisticsService]
 })
 

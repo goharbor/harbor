@@ -24,7 +24,7 @@ import { Project } from '../../project/project';
 @Component({
   selector: 'tag-repository',
   templateUrl: 'tag-repository.component.html',
-  styleUrls: ['./tag-repository.component.css']
+  styleUrls: ['./tag-repository.component.scss']
 })
 export class TagRepositoryComponent implements OnInit {
 

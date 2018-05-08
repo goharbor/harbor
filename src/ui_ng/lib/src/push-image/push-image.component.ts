@@ -2,13 +2,11 @@ import { Component, Input, ViewChild } from '@angular/core';
 import { CopyInputComponent } from './copy-input.component';
 import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
 
-import { PUSH_IMAGE_STYLE } from './push-image.css';
-import { PUSH_IMAGE_HTML } from './push-image.html';
 
 @Component({
     selector: 'hbr-push-image-button',
-    template: PUSH_IMAGE_HTML,
-    styles: [PUSH_IMAGE_STYLE],
+    templateUrl: './push-image.component.html',
+    styleUrls: ['./push-image.scss'],
 
     providers: []
 })

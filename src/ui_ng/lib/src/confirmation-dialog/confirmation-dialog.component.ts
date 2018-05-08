@@ -18,14 +18,12 @@ import { ConfirmationMessage } from './confirmation-message';
 import { ConfirmationAcknowledgement } from './confirmation-state-message';
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
 
-import { CONFIRMATION_DIALOG_TEMPLATE } from './confirmation-dialog.component.html';
-import { CONFIRMATION_DIALOG_STYLE } from './confirmation-dialog.component.css';
 import {BatchInfo} from './confirmation-batch-message';
 
 @Component({
     selector: 'confirmation-dialog',
-    template: CONFIRMATION_DIALOG_TEMPLATE,
-    styles: [ CONFIRMATION_DIALOG_STYLE ]
+    templateUrl: './confirmation-dialog.component.html',
+    styleUrls: [ './confirmation-dialog.component.scss' ]
 })
 
 export class ConfirmationDialogComponent {

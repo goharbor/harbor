@@ -6,7 +6,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { RepositoryComponent } from './repository.component';
-import { RepositoryListviewComponent } from '../repository-listview/repository-listview.component';
+import { RepositoryGridviewComponent } from '../repository-gridview/repository-gridview.component';
+import { GridViewComponent } from '../gridview/grid-view.component';
 import { FilterComponent } from '../filter/filter.component';
 import { TagComponent } from '../tag/tag.component';
 import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
@@ -154,7 +155,8 @@ describe('RepositoryComponent (inline template)', () => {
       ],
       declarations: [
         RepositoryComponent,
-        RepositoryListviewComponent,
+        GridViewComponent,
+        RepositoryGridviewComponent,
         ConfirmationDialogComponent,
         FilterComponent,
         TagComponent,

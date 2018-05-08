@@ -20,7 +20,7 @@
         "styles": [
             "../node_modules/clarity-icons/clarity-icons.min.css",
             "../node_modules/clarity-ui/clarity-ui.min.css",
-            "styles.css"
+            "styles.scss"
         ],
         "scripts": [
             "../node_modules/core-js/client/shim.min.js",

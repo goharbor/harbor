@@ -23,9 +23,6 @@ import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
 import { ConfirmationDialogComponent, ConfirmationMessage, ConfirmationAcknowledgement } from '../confirmation-dialog/index';
 import { toPromise } from '../utils';
 
-import { REPOSITORY_TEMPLATE } from './repository.component.html';
-import { REPOSITORY_STYLE } from './repository.component.css';
-
 const TabLinkContentMap: {[index: string]: string} = {
   'repo-info': 'info',
   'repo-image': 'image'
@@ -33,8 +30,8 @@ const TabLinkContentMap: {[index: string]: string} = {
 
 @Component({
   selector: 'hbr-repository',
-  template: REPOSITORY_TEMPLATE,
-  styles: [REPOSITORY_STYLE]
+  templateUrl: './repository.component.html',
+  styleUrls: ['./repository.component.scss']
 })
 export class RepositoryComponent implements OnInit {
   signedCon: {[key: string]: any | string[]} = {};

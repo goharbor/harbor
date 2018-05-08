@@ -34,9 +34,6 @@ import {
 
 import { Comparator } from 'clarity-angular';
 
-import { REPLICATION_TEMPLATE } from './replication.component.html';
-import { REPLICATION_STYLE } from './replication.component.css';
-
 import { JobLogViewerComponent } from '../job-log-viewer/index';
 import { State } from "clarity-angular";
 import {Observable} from "rxjs/Observable";
@@ -81,8 +78,8 @@ export class SearchOption {
 
 @Component({
   selector: 'hbr-replication',
-  template: REPLICATION_TEMPLATE,
-  styles: [REPLICATION_STYLE]
+  templateUrl: './replication.component.html',
+  styleUrls: ['./replication.component.scss']
 })
 export class ReplicationComponent implements OnInit, OnDestroy {
 

@@ -44,7 +44,7 @@ import {Project} from "../../project";
 @Component({
   selector: 'add-member',
   templateUrl: 'add-member.component.html',
-  styleUrls: ['add-member.component.css'],
+  styleUrls: ['add-member.component.scss'],
   providers: [UserService],
   changeDetection: ChangeDetectionStrategy.Default
 })

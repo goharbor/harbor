@@ -18,13 +18,10 @@ import { errorHandler } from '../shared/shared.utils';
 import { Observable } from 'rxjs/Rx';
 import { Subscription } from "rxjs";
 
-import { INLINE_ALERT_STYLE } from './inline-alert.component.css';
-import { INLINE_ALERT_TEMPLATE } from './inline-alert.component.html';
-
 @Component({
     selector: 'hbr-inline-alert',
-    template: INLINE_ALERT_TEMPLATE,
-    styles: [ INLINE_ALERT_STYLE ]
+    templateUrl: './inline-alert.component.html',
+    styleUrls: [ './inline-alert.component.scss' ]
 })
 export class InlineAlertComponent {
     inlineAlertType: string = 'alert-danger';

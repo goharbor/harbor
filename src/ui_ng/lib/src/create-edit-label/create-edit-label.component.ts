@@ -19,11 +19,7 @@ import {
     Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef
 } from '@angular/core';
 
-
 import {Label} from '../service/interface';
-
-import { CREATE_EDIT_LABEL_STYLE } from './create-edit-label.component.css';
-import { CREATE_EDIT_LABEL_TEMPLATE } from './create-edit-label.component.html';
 
 import {toPromise, clone, compareValue} from '../utils';
 
@@ -35,8 +31,8 @@ import {LabelColor} from "../shared/shared.const";
 
 @Component({
     selector: 'hbr-create-edit-label',
-    template: CREATE_EDIT_LABEL_TEMPLATE,
-    styles: [CREATE_EDIT_LABEL_STYLE],
+    templateUrl: './create-edit-label.component.html',
+    styleUrls: ['./create-edit-label.component.scss'],
     changeDetection: ChangeDetectionStrategy.Default
 })
 

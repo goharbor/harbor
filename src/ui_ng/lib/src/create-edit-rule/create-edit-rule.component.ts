@@ -21,8 +21,6 @@ import {Router, ActivatedRoute} from "@angular/router";
 import {compareValue, isEmptyObject, toPromise} from "../utils";
 import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
 import {ReplicationService} from "../service/replication.service";
-import {CREATE_EDIT_RULE_TEMPLATE} from "./create-edit-rule.component.html";
-import {CREATE_EDIT_RULE_STYLE} from "./create-edit-rule.component.css";
 import {ErrorHandler} from "../error-handler/error-handler";
 import {TranslateService} from "@ngx-translate/core";
 import {EndpointService} from "../service/endpoint.service";
@@ -34,8 +32,8 @@ const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
 
 @Component ({
   selector: 'hbr-create-edit-rule',
-  template: CREATE_EDIT_RULE_TEMPLATE,
-  styles: [CREATE_EDIT_RULE_STYLE]
+  templateUrl: './create-edit-rule.component.html',
+  styleUrls: ['./create-edit-rule.component.scss']
 
 })
 

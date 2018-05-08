@@ -41,7 +41,7 @@ import {BatchInfo, BathInfoChanges} from "../../shared/confirmation-dialog/confi
 
 @Component({
   templateUrl: "member.component.html",
-  styleUrls: ["./member.component.css"],
+  styleUrls: ["./member.component.scss"],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MemberComponent implements OnInit, OnDestroy {

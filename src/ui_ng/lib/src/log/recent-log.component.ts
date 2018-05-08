@@ -22,7 +22,6 @@ import {
 import { ErrorHandler } from '../error-handler/index';
 import { Observable } from 'rxjs/Observable';
 import { toPromise, CustomComparator } from '../utils';
-import { LOG_TEMPLATE, LOG_STYLES } from './recent-log.template';
 import {
     DEFAULT_PAGE_SIZE,
     calculatePage,
@@ -34,8 +33,8 @@ import { Comparator, State } from 'clarity-angular';
 
 @Component({
     selector: 'hbr-log',
-    styles: [LOG_STYLES],
-    template: LOG_TEMPLATE
+    templateUrl: './recent-log.component.html',
+    styleUrls: ['./recent-log.component.scss']
 })
 
 export class RecentLogComponent implements OnInit {

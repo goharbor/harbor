@@ -18,7 +18,7 @@ import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
 
 import { AccountSettingsModalComponent } from '../../account/account-settings/account-settings-modal.component';
-import { PasswordSettingComponent } from '../../account/password/password-setting.component';
+import { PasswordSettingComponent } from '../../account/password-setting/password-setting.component';
 import { NavigatorComponent } from '../navigator/navigator.component';
 import { SessionService } from '../../shared/session.service';
 
@@ -33,7 +33,7 @@ import { CommonRoutes } from '../../shared/shared.const';
 @Component({
     selector: 'harbor-shell',
     templateUrl: 'harbor-shell.component.html',
-    styleUrls: ["harbor-shell.component.css"]
+    styleUrls: ["harbor-shell.component.scss"]
 })
 
 export class HarborShellComponent implements OnInit, OnDestroy {

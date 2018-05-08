@@ -1,7 +1,6 @@
 import { Component, OnInit, EventEmitter, Output, ViewChild, Input } from '@angular/core';
 
 import { Configuration, ComplexValueItem } from './config';
-import { REGISTRY_CONFIG_HTML } from './registry-config.component.html';
 import { ConfigurationService, SystemInfoService, SystemInfo, ClairDBStatus } from '../service/index';
 import {
     toPromise,
@@ -24,7 +23,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'hbr-registry-config',
-    template: REGISTRY_CONFIG_HTML
+    templateUrl: './registry-config.component.html'
 })
 export class RegistryConfigComponent implements OnInit {
     config: Configuration = new Configuration();

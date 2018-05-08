@@ -24,7 +24,7 @@ import {BatchInfo} from "./confirmation-batch-message";
 @Component({
     selector: 'confiramtion-dialog',
     templateUrl: 'confirmation-dialog.component.html',
-    styleUrls: ['confirmation-dialog.component.css']
+    styleUrls: ['confirmation-dialog.component.scss']
 })
 
 export class ConfirmationDialogComponent implements OnDestroy {

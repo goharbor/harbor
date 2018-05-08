@@ -19,7 +19,7 @@ import { Configuration } from 'harbor-ui';
 @Component({
     selector: 'config-email',
     templateUrl: "config-email.component.html",
-    styleUrls: ['../config.component.css']
+    styleUrls: ['./config-email.component.scss', '../config.component.scss']
 })
 export class ConfigurationEmailComponent {
     @Input("mailConfig") currentConfig: Configuration = new Configuration();

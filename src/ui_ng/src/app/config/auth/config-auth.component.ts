@@ -20,7 +20,7 @@ import { Configuration } from 'harbor-ui';
 @Component({
     selector: 'config-auth',
     templateUrl: 'config-auth.component.html',
-    styleUrls: ['../config.component.css']
+    styleUrls: ['./config-auth.component.scss', '../config.component.scss']
 })
 export class ConfigurationAuthComponent implements OnChanges {
     changeSub: Subscription;

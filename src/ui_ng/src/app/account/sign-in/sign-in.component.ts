@@ -21,7 +21,7 @@ import { SignInCredential } from '../../shared/sign-in-credential';
 
 import { SignUpComponent } from '../sign-up/sign-up.component';
 import { CommonRoutes } from '../../shared/shared.const';
-import { ForgotPasswordComponent } from '../password/forgot-password.component';
+import { ForgotPasswordComponent } from '../password-setting/forgot-password/forgot-password.component';
 
 import { AppConfigService } from '../../app-config.service';
 import { AppConfig } from '../../app-config';
@@ -40,7 +40,7 @@ const expireDays = 10;
 @Component({
     selector: 'sign-in',
     templateUrl: "sign-in.component.html",
-    styleUrls: ['sign-in.component.css']
+    styleUrls: ['sign-in.component.scss']
 })
 
 export class SignInComponent implements AfterViewChecked, OnInit {

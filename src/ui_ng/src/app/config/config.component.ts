@@ -45,7 +45,7 @@ const TabLinkContentMap = {
 @Component({
     selector: 'config',
     templateUrl: 'config.component.html',
-    styleUrls: ['config.component.css']
+    styleUrls: ['config.component.scss']
 })
 export class ConfigurationComponent implements OnInit, OnDestroy {
     onGoing = false;
