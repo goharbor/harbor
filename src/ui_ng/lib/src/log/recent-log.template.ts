@@ -8,7 +8,15 @@ export const LOG_TEMPLATE: string = `
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
         <div class="action-head-pos rightPos">
-            <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
+            <div class="select filterTag" [hidden]="!isOpenFilterTag">
+                <select id="selectKey" (change)="selectFilterKey($event)">
+                    <option value="username">{{"AUDIT_LOG.USERNAME" | translate | lowercase}}</option>
+                    <option value="repository">{{"CONFIG.REPOSITORY" | translate | lowercase}}</option>
+                    <option value="tag">{{"REPOSITORY.TAG" | translate | lowercase}}</option>
+                    <option value="operation">{{"AUDIT_LOG.OPERATION" | translate | lowercase}}</option>
+                </select>
+            </div>
+            <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" (openFlag)="openFilter($event)" [currentValue]="currentTerm"></hbr-filter>
             <span (click)="refresh()" class="refresh-btn">
             <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>
             <span class="spinner spinner-inline" [hidden]="!inProgress"></span>
@@ -90,4 +98,5 @@ export const LOG_STYLES: string = `
     right: 35px;
     margin-top: 4px;
 }
+.filterTag{float:left;margin-top:8px;}
 `;

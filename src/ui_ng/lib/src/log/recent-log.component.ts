@@ -43,6 +43,8 @@ export class RecentLogComponent implements OnInit {
     logsCache: AccessLog;
     loading: boolean = true;
     currentTerm: string;
+    defaultFilter = "username";
+    isOpenFilterTag: boolean;
     @Input() withTitle: boolean = false;
 
     pageSize: number = DEFAULT_PAGE_SIZE;
@@ -94,6 +96,19 @@ export class RecentLogComponent implements OnInit {
         this.doFilter("");
     }
 
+    openFilter(isOpen: boolean): void {
+        if (isOpen) {
+            this.isOpenFilterTag = true;
+        }else {
+            this.isOpenFilterTag = false;
+        }
+    }
+
+    selectFilterKey($event: any): void {
+        this.defaultFilter = $event['target'].value;
+        this.doFilter(this.currentTerm);
+    }
+
     load(state: State) {
         //Keep it for future filter
         this.currentState = state;
@@ -105,7 +120,7 @@ export class RecentLogComponent implements OnInit {
             params.set("page", '' + pageNumber);
             params.set("page_size", '' + this.pageSize);
             if (this.currentTerm && this.currentTerm !== "") {
-                params.set('repository', this.currentTerm);
+                params.set(this.defaultFilter, this.currentTerm);
             }
 
             this.loading = true;
