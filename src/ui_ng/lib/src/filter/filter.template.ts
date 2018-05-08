@@ -5,7 +5,7 @@
 export const FILTER_TEMPLATE: string = `
 <span>
     <clr-icon shape="search" size="20" class="search-btn" [class.filter-icon]="isShowSearchBox" (click)="onClick()"></clr-icon>
-    <input [hidden]="!isShowSearchBox" type="text" style="padding-left: 15px;" (keyup)="valueChange()" placeholder="{{placeHolder}}" [(ngModel)]="currentValue"/>
+    <input [hidden]="!isShowSearchBox" type="text" style="padding-left: 15px;" (keyup)="valueChange()" (focus)="inputFocus()" placeholder="{{placeHolder}}" [(ngModel)]="currentValue"/>
     <span class="filter-divider" *ngIf="withDivider"></span>
 </span>
 `;
