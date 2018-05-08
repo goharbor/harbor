@@ -6,9 +6,20 @@ if [ -z "$DB_USR" -o -z "$DB_PWD" ]; then
     exit 1
 fi
 
-source /harbor-migration/db/alembic.tpl > /harbor-migration/db/alembic.ini
+LOCAL_DB="localhost:3306/registry?unix_socket=/var/run/mysqld/mysqld.sock"
+REMOTE_DB=${DB_HOST:-${LOCAL_DB}}
+REMOTE_PORT=${DB_PORT:-3306}
+DATABASE=${DATABASE_NAME:-registry}
 
-DBCNF="-hlocalhost -u${DB_USR}"
+if [ ${REMOTE_DB} == ${LOCAL_DB} ]; then
+    TEMPLATE_CONNECTION_STRING=${LOCAL_DB}
+    DBCNF="-hlocalhost -u${DB_USR}"
+else
+    TEMPLATE_CONNECTION_STRING="${REMOTE_DB}:${REMOTE_PORT}/${DATABASE}"
+    DBCNF="-h${REMOTE_DB} -P${REMOTE_PORT} -u${DB_USR}"
+fi
+
+source /harbor-migration/db/alembic.tpl > /harbor-migration/db/alembic.ini
 
 #prevent shell to print insecure message
 export MYSQL_PWD="${DB_PWD}"
@@ -38,12 +49,19 @@ fi
 #     esac
 # fi
 
-echo 'Trying to start mysql server...'
-chown -R 10000:10000 /var/lib/mysql
-mysqld &
-echo 'Waiting for MySQL start...'
+if [ ${REMOTE_DB} == ${LOCAL_DB} ]; then
+    echo 'Trying to start mysql server...'
+    chown -R 10000:10000 /var/lib/mysql
+    mysqld &
+    echo 'Waiting for MySQL start...'
+    TEST_CMD="mysqladmin -u${DB_USR} -p${DB_PWD} processlist"
+else
+    echo 'Trying to connect on MySQL Remote DB'
+    TEST_CMD="mysqladmin -u${DB_USR} -p${DB_PWD} -h${REMOTE_DB} -P${REMOTE_PORT} processlist"
+fi
+
 for i in {60..0}; do
-    mysqladmin -u$DB_USR -p$DB_PWD processlist >/dev/null 2>&1
+    $TEST_CMD >/dev/null 2>&1
     if [ $? = 0 ]; then
         break
     fi
