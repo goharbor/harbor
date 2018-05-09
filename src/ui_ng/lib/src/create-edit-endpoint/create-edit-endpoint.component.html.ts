@@ -49,7 +49,7 @@ export const CREATE_EDIT_ENDPOINT_TEMPLATE: string = `
             </clr-tooltip-content>
           </clr-tooltip>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="height:30px;">
           <label for="spin" class="col-md-4"></label>
           <span class="col-md-8 spinner spinner-inline" [hidden]="!inProgress"></span>
         </div>

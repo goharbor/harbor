@@ -77,7 +77,7 @@ describe('RecentLogComponent (inline template)', () => {
 
     spy = spyOn(logService, 'getRecentLogs')
       .and.callFake(function (params: RequestQueryParams) {
-        if (params && params.get('repository')) {
+        if (params && params.get('username')) {
           return Promise.resolve(mockData2);
         } else {
           if (params.get('page') === '1') {
