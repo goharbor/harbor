@@ -22,6 +22,6 @@ export * from './job-log-viewer/index';
 export * from './channel/index';
 export * from './project-policy-config/index';
 export * from './label/index';
-export * from './create-edit-label';
+export * from './create-edit-label/index';
 export * from './gridview/index';
 export * from './repository-gridview/index';

@@ -12,23 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, Input, Output, EventEmitter } from '@angular/core';
-
-import { RepositoryService } from '../service/repository.service';
-
-import { Repository, RepositoryItem, Tag, TagClickEvent,
-  SystemInfo, SystemInfoService, TagService } from '../service/index';
-
 import { TranslateService } from '@ngx-translate/core';
-
-import { ErrorHandler } from '../error-handler/error-handler';
-import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
-
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
-import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
-import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
-
 import { State } from 'clarity-angular';
 
+import { RepositoryService } from '../service/repository.service';
+import { Repository, RepositoryItem, Tag, TagClickEvent,
+  SystemInfo, SystemInfoService, TagService } from '../service/index';
+import { ErrorHandler } from '../error-handler/index';
+import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
+import { ConfirmationDialogComponent, ConfirmationMessage, ConfirmationAcknowledgement } from '../confirmation-dialog/index';
 import { toPromise } from '../utils';
 
 import { REPOSITORY_TEMPLATE } from './repository.component.html';

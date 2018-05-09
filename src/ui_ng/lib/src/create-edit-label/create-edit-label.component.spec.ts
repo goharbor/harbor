@@ -75,11 +75,11 @@ describe('CreateEditLabelComponent (inline template)', () => {
         expect(comp).toBeTruthy();
     });
 
-    it('should get label and open modal', () => {
+    it('should get label and open modal', async(() => {
         fixture.detectChanges();
         fixture.whenStable().then(() => {
             fixture.detectChanges();
             expect(comp.labelModel.name).toEqual('');
         });
-    });
+    }));
 });

@@ -1,4 +1,3 @@
-export const REPOSITORY_GRIDVIEW_STYLE = `
 .rightPos{
     position: absolute;
     z-index: 100;
@@ -77,4 +76,3 @@ export const REPOSITORY_GRIDVIEW_STYLE = `
     width: 24px;
     margin-right: 12px;
 }
-`;

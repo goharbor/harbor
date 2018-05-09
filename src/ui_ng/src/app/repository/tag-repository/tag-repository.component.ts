@@ -13,12 +13,13 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-// import { RepositoryComponent} from 'harbor-ui';
+import { RepositoryComponent } from 'harbor-ui';
+
 import { AppConfigService } from '../../app-config.service';
 import { SessionService } from '../../shared/session.service';
 import { TagClickEvent } from 'harbor-ui';
 import { Project } from '../../project/project';
-import { RepositoryComponent } from 'harbor-ui/src/repository/repository.component';
+
 
 @Component({
   selector: 'tag-repository',

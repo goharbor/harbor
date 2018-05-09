@@ -1,22 +1,24 @@
 {
     "name": "harbor-ui",
-    "version": "0.7.13",
+    "version": "0.7.18-dev.1",
     "description": "Harbor shared UI components based on Clarity and Angular4",
-    "scripts": {
-        "start": "ng serve --host 0.0.0.0 --port 4500 --proxy-config proxy.config.json",
-        "lint": "tslint \"src/**/*.ts\"",
-        "test": "ng test --single-run",
-        "test:win": "karma start karma.conf.win.js --single-run",
-        "pree2e": "webdriver-manager update",
-        "e2e": "protractor",
-        "cleanup": "rimraf dist",
-        "copy": "copyfiles -f README.md LICENSE AUTHORS pkg/package.json dist",
-        "transpile": "ngc -p tsconfig.json",
-        "package": "rollup -c",
-        "minify": "uglifyjs dist/bundles/harborui.umd.js --screw-ie8 --compress --mangle --comments --output dist/bundles/harborui.umd.min.js",
-        "build": "npm run cleanup && npm run transpile && npm run package && npm run minify && npm run copy"
+    "author": "VMware",
+    "module": "index.js",
+    "main": "bundles/harborui.umd.min.js",
+    "jsnext:main": "index.js",
+    "typings": "index.d.ts",
+    "keywords": [
+        "Harbor",
+        "Clarity",
+        "Angular4"
+    ],
+    "license": "Apache 2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/vmware/harbor.git"
     },
-    "dependencies": {
+    "homepage": "https://github.com/vmware/harbor#readme",
+    "peerDependencies": {
         "@angular/animations": "^4.3.0",
         "@angular/common": "^4.3.0",
         "@angular/compiler": "^4.3.0",
@@ -29,9 +31,9 @@
         "@ngx-translate/core": "^6.0.0",
         "@ngx-translate/http-loader": "0.0.3",
         "@webcomponents/custom-elements": "^1.0.0",
-        "clarity-angular": "^0.10.27",
-        "clarity-icons": "^0.10.27",
-        "clarity-ui": "^0.10.27",
+        "clarity-angular": "^0.10.17",
+        "clarity-icons": "^0.10.17",
+        "clarity-ui": "^0.10.17",
         "core-js": "^2.4.1",
         "intl": "^1.2.5",
         "mutationobserver-shim": "^0.3.2",
@@ -39,35 +41,6 @@
         "rxjs": "^5.0.1",
         "ts-helpers": "^1.1.1",
         "web-animations-js": "^2.2.1",
-        "zone.js": "0.8.19"
-    },
-    "devDependencies": {
-        "@angular/cli": "1.4.0",
-        "@angular/compiler-cli": "^4.3.0",
-        "@types/core-js": "^0.9.41",
-        "@types/jasmine": "~2.5.53",
-        "@types/node": "~6.0.60",
-        "bootstrap": "4.0.0-alpha.5",
-        "codelyzer": "~3.1.1",
-        "copyfiles": "^1.2.0",
-        "enhanced-resolve": "^3.0.0",
-        "jasmine-core": "~2.6.2",
-        "jasmine-spec-reporter": "~4.1.0",
-        "karma": "~1.7.0",
-        "karma-chrome-launcher": "~2.1.1",
-        "karma-cli": "~1.0.1",
-        "karma-jasmine": "~1.1.0",
-        "karma-mocha-reporter": "^2.2.4",
-        "karma-remap-istanbul": "^0.2.1",
-        "protractor": "^4.0.9",
-        "rimraf": "^2.6.1",
-        "rollup": "^0.41.6",
-        "rollup-plugin-node-resolve": "^3.0.0",
-        "ts-node": "~3.2.0",
-        "tslint": "~5.7.0",
-        "typescript": "~2.3.3",
-        "typings": "^1.4.0",
-        "uglify-js": "^2.8.22",
-        "webdriver-manager": "10.2.5"
+        "zone.js": "^0.8.4"
     }
 }

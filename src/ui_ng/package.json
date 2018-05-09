@@ -9,7 +9,8 @@
         "test": "ng test --single-run",
         "pree2e": "webdriver-manager update",
         "e2e": "protractor",
-        "build": "ngc -p tsconfig-aot.json"
+        "build": "ngc -p tsconfig-aot.json",
+        "build:lib": "ng-packagr -p ./lib/ng-package.json"
     },
     "private": true,
     "dependencies": {
@@ -30,7 +31,7 @@
         "clarity-icons": "^0.10.27",
         "clarity-ui": "^0.10.27",
         "core-js": "^2.4.1",
-        "harbor-ui": "0.7.18",
+        "harbor-ui": "0.7.18-dev.1",
         "intl": "^1.2.5",
         "mutationobserver-shim": "^0.3.2",
         "ngx-cookie": "^1.0.0",
@@ -42,19 +43,21 @@
     "devDependencies": {
         "@angular/cli": "^1.0.0",
         "@angular/compiler-cli": "^4.3.0",
-        "@types/core-js": "^0.9.34",
-        "@types/jasmine": "~2.2.30",
-        "@types/node": "^6.0.42",
+        "@types/core-js": "^0.9.41",
+        "@types/jasmine": "~2.5.53",
+        "@types/node": "~6.0.60",
         "bootstrap": "4.0.0-alpha.5",
         "codelyzer": "~2.0.0-beta.4",
         "enhanced-resolve": "^3.0.0",
         "jasmine-core": "2.4.1",
         "jasmine-spec-reporter": "2.5.0",
-        "karma": "1.2.0",
+        "karma": "~1.7.0",
+        "karma-chrome-launcher": "~2.1.1",
         "karma-cli": "^1.0.1",
-        "karma-jasmine": "^1.0.2",
-        "karma-mocha-reporter": "^2.2.1",
+        "karma-jasmine": "~1.1.0",
+        "karma-mocha-reporter": "^2.2.4",
         "karma-remap-istanbul": "^0.2.1",
+        "ng-packagr": "^1.7.0",
         "protractor": "4.0.9",
         "rollup": "^0.41.6",
         "rollup-plugin-commonjs": "^8.0.2",
@@ -64,6 +67,7 @@
         "tslint": "^4.1.1",
         "typescript": "~2.2.0",
         "typings": "^1.4.0",
+        "uglify-js": "3.3.18",
         "webdriver-manager": "10.2.5"
     }
 }
