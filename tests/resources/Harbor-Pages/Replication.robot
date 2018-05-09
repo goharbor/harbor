@@ -23,7 +23,8 @@ ${HARBOR_VERSION}  v1.1.1
 Check New Rule UI Without Endpoint
     Click Element  ${new_replication-rule_button}
     Page Should Contain  Please add an endpoint first
-    Click Element  ${link_to_registries}
+    Mouse Down  ${link_to_registries}
+    Mouse Up  ${link_to_registries}
     Page Should Contain  Endpoint Name
 
 Create A New Endpoint
