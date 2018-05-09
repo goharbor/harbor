@@ -68,6 +68,12 @@ func (u *Auth) OnBoardUser(user *models.User) error {
 	if len(user.Password) == 0 {
 		user.Password = "1234567ab"
 	}
+	fillEmailRealName(user)
+	user.Comment = "From UAA"
+	return dao.OnBoardUser(user)
+}
+
+func fillEmailRealName(user *models.User) {
 	if len(user.Realname) == 0 {
 		user.Realname = user.Username
 	}
@@ -75,8 +81,6 @@ func (u *Auth) OnBoardUser(user *models.User) error {
 		//TODO: handle the case when user.Username itself is an email address.
 		user.Email = user.Username + "@uaa.placeholder"
 	}
-	user.Comment = "From UAA"
-	return dao.OnBoardUser(user)
 }
 
 // PostAuthenticate will check if user exists in DB, if not on Board user, if he does, update the profile.
@@ -88,12 +92,9 @@ func (u *Auth) PostAuthenticate(user *models.User) error {
 	if dbUser == nil {
 		return u.OnBoardUser(user)
 	}
-	if user.Email != "" {
-		dbUser.Email = user.Email
-	}
-	if user.Realname != "" {
-		dbUser.Realname = user.Realname
-	}
+	user.UserID = dbUser.UserID
+	user.HasAdminRole = dbUser.HasAdminRole
+	fillEmailRealName(user)
 	if err2 := dao.ChangeUserProfile(*user, "Email", "Realname"); err2 != nil {
 		log.Warningf("Failed to update user profile, user: %s, error: %v", user.Username, err2)
 	}
