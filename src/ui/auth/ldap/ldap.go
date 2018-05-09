@@ -59,6 +59,8 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 
 	ldapUsers, err := ldapSession.SearchUser(p)
 
+	log.Debugf("Found ldap user %+v", ldapUsers[0])
+
 	if err != nil {
 		log.Warningf("ldap search fail: %v", err)
 		return nil, err

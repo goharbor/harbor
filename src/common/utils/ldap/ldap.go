@@ -202,7 +202,10 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 			case "email":
 				u.Email = val
 			case "memberof":
-				groupDNList = append(groupDNList, val)
+				for _, dnItem := range attr.Values {
+					groupDNList = append(groupDNList, strings.TrimSpace(dnItem))
+					log.Debugf("Found memberof %v", dnItem)
+				}
 			}
 			u.GroupDNList = groupDNList
 		}

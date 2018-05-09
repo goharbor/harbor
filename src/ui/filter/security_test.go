@@ -30,6 +30,7 @@ import (
 	"github.com/astaxie/beego/session"
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/models"
 	commonsecret "github.com/vmware/harbor/src/common/secret"
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/security/local"
@@ -146,6 +147,12 @@ func TestBasicAuthReqCtxModifier(t *testing.T) {
 }
 
 func TestSessionReqCtxModifier(t *testing.T) {
+	user := models.User{
+		Username:     "admin",
+		UserID:       1,
+		Email:        "admin@example.com",
+		HasAdminRole: true,
+	}
 	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)
 	if err != nil {
@@ -155,10 +162,7 @@ func TestSessionReqCtxModifier(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create session store: %v", err)
 	}
-	if err = store.Set("username", "admin"); err != nil {
-		t.Fatalf("failed to set session: %v", err)
-	}
-	if err = store.Set("isSysAdmin", true); err != nil {
+	if err = store.Set("user", user); err != nil {
 		t.Fatalf("failed to set session: %v", err)
 	}
 
@@ -184,6 +188,41 @@ func TestSessionReqCtxModifier(t *testing.T) {
 	assert.Equal(t, "admin", s.GetUsername())
 	assert.True(t, s.IsSysAdmin())
 	assert.NotNil(t, projectManager(ctx))
+
+}
+
+func TestSessionReqCtxModifierFailed(t *testing.T) {
+	user := "admin"
+	req, err := http.NewRequest(http.MethodGet,
+		"http://127.0.0.1/api/projects/", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", req)
+	}
+	store, err := beego.GlobalSessions.SessionStart(httptest.NewRecorder(), req)
+	if err != nil {
+		t.Fatalf("failed to create session store: %v", err)
+	}
+	if err = store.Set("user", user); err != nil {
+		t.Fatalf("failed to set session: %v", err)
+	}
+
+	req, err = http.NewRequest(http.MethodGet,
+		"http://127.0.0.1/api/projects/", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", req)
+	}
+	addSessionIDToCookie(req, store.SessionID())
+
+	ctx, err := newContext(req)
+	if err != nil {
+		t.Fatalf("failed to crate context: %v", err)
+	}
+
+	modifier := &sessionReqCtxModifier{}
+	modified := modifier.Modify(ctx)
+
+	assert.False(t, modified)
+
 }
 
 // TODO add test case
