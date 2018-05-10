@@ -59,7 +59,7 @@ data:
               "realm": "https://{{ .Values.externalDomain }}/service/token",
               "service": "harbor-notary",
               "issuer": "harbor-token-issuer",
-              "rootcertbundle": "/config/root.crt"
+              "rootcertbundle": "/root.crt"
           }
       }
     }
