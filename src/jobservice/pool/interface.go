@@ -8,7 +8,10 @@ import "github.com/vmware/harbor/src/jobservice/models"
 //More like a driver to transparent the lower queue.
 type Interface interface {
 	//Start to serve
-	Start()
+	//
+	//Return:
+	//  error if failed to start
+	Start() error
 
 	//Register job to the pool.
 	//
