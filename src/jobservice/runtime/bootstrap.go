@@ -91,13 +91,14 @@ func (bs *Bootstrap) LoadAndRun() {
 	logSweeper := logger.NewSweeper(ctx, config.GetLogBasePath(), config.GetLogArchivePeriod())
 	logSweeper.Start()
 
+	//To indicate if any errors occurred
+	var err error
 	//Block here
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
 	select {
 	case <-sig:
-	case err := <-rootContext.ErrorChan:
-		logger.Errorf("Server error:%s\n", err)
+	case err = <-rootContext.ErrorChan:
 	}
 
 	//Call cancel to send termination signal to other interested parts.
@@ -124,6 +125,10 @@ func (bs *Bootstrap) LoadAndRun() {
 
 	rootContext.WG.Wait()
 	close <- true
+
+	if err != nil {
+		logger.Fatalf("Server exit with error: %s\n", err)
+	}
 
 	logger.Infof("Server gracefully exit")
 }
