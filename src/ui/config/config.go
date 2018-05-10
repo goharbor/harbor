@@ -38,8 +38,9 @@ import (
 )
 
 const (
-	defaultKeyPath       string = "/etc/ui/key"
-	defaultTokenFilePath string = "/etc/ui/token/tokens.properties"
+	defaultKeyPath                     = "/etc/ui/key"
+	defaultTokenFilePath               = "/etc/ui/token/tokens.properties"
+	defaultRegistryTokenPrivateKeyPath = "/etc/ui/private_key.pem"
 )
 
 var (
@@ -56,7 +57,7 @@ var (
 	AdmiralClient *http.Client
 	// TokenReader is used in integration mode to read token
 	TokenReader admiral.TokenReader
-
+	// defined as a var for testing.
 	defaultCACertPath = "/etc/ui/ca/ca.crt"
 )
 
@@ -187,6 +188,15 @@ func AuthMode() (string, error) {
 		return "", err
 	}
 	return cfg[common.AUTHMode].(string), nil
+}
+
+// TokenPrivateKeyPath returns the path to the key for signing token for registry
+func TokenPrivateKeyPath() string {
+	path := os.Getenv("TOKEN_PRIVATE_KEY_PATH")
+	if len(path) == 0 {
+		path = defaultRegistryTokenPrivateKeyPath
+	}
+	return path
 }
 
 // LDAPConf returns the setting of ldap server
