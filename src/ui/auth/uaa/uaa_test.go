@@ -132,19 +132,33 @@ func TestPostAuthenticate(t *testing.T) {
 		Username: "test",
 	}
 	err := auth.PostAuthenticate(um)
+	//need a new user model to simulate a login case...
+	um2 := &models.User{
+		Username: "test",
+	}
 	assert.Nil(err)
 	user, _ := dao.GetUser(models.User{Username: "test"})
 	assert.Equal("test@uaa.placeholder", user.Email)
-	um.Email = "newEmail@new.com"
-	um.Realname = "newName"
-	err2 := auth.PostAuthenticate(um)
+	um2.Email = "newEmail@new.com"
+	um2.Realname = "newName"
+	err2 := auth.PostAuthenticate(um2)
+	assert.Equal(user.UserID, um2.UserID)
 	assert.Nil(err2)
 	user2, _ := dao.GetUser(models.User{Username: "test"})
 	assert.Equal("newEmail@new.com", user2.Email)
 	assert.Equal("newName", user2.Realname)
-	err3 := dao.ClearTable(models.UserTable)
+	//need a new user model to simulate a login case...
+	um3 := &models.User{
+		Username: "test",
+	}
+	err3 := auth.PostAuthenticate(um3)
 	assert.Nil(err3)
-
+	user3, _ := dao.GetUser(models.User{Username: "test"})
+	assert.Equal(user3.UserID, um3.UserID)
+	assert.Equal("test@uaa.placeholder", user3.Email)
+	assert.Equal("test", user3.Realname)
+	err4 := dao.ClearTable(models.UserTable)
+	assert.Nil(err4)
 }
 
 func TestSearchUser(t *testing.T) {
