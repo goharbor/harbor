@@ -31,7 +31,7 @@ spec:
         - name: notary-config
           mountPath: /config
         - name: root-certificate
-          mountPath: /config/root.crt
+          mountPath: /root.crt
           subPath: root.crt
       volumes:
       - name: notary-config
