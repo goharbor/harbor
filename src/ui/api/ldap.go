@@ -118,7 +118,8 @@ func (l *LdapAPI) ImportUser() {
 	}
 
 	if len(ldapFailedImportUsers) > 0 {
-		l.HandleNotFound("Import LDAP user is not found")
+		//Some user require json format response.
+		l.HandleNotFound("")
 		l.Data["json"] = ldapFailedImportUsers
 		l.ServeJSON()
 		return
