@@ -20,6 +20,6 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'replication-management',
   templateUrl: 'replication-management.component.html',
-  styleUrls: [ './replication-management.component.css' ]
+  styleUrls: [ './replication-management.component.scss' ]
 })
 export class ReplicationManagementComponent {}

@@ -21,7 +21,7 @@ import { Subscription } from "rxjs";
 @Component({
     selector: 'inline-alert',
     templateUrl: "inline-alert.component.html",
-    styleUrls: ['inline-alert.component.css']
+    styleUrls: ['inline-alert.component.scss']
 })
 export class InlineAlertComponent {
     inlineAlertType: string = 'alert-danger';

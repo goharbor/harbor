@@ -36,7 +36,7 @@ import { ProjectConfigComponent } from './project/project-config/project-config.
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { SignUpComponent } from './account/sign-up/sign-up.component';
-import { ResetPasswordComponent } from './account/password/reset-password.component';
+import { ResetPasswordComponent } from './account/password-setting/reset-password/reset-password.component';
 import { LogPageComponent } from './log/log-page.component';
 import { ConfigurationComponent } from './config/config.component';
 import { PageNotFoundComponent } from './shared/not-found/not-found.component'

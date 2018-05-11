@@ -41,15 +41,13 @@ import { toPromise, CustomComparator } from '../utils';
 
 import { State, Comparator } from 'clarity-angular';
 
-import { LIST_REPLICATION_RULE_TEMPLATE } from './list-replication-rule.component.html';
-import { LIST_REPLICATION_RULE_CSS } from './list-replication-rule.component.css';
 import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
 import {Observable} from "rxjs/Observable";
 
 @Component({
   selector: 'hbr-list-replication-rule',
-  template: LIST_REPLICATION_RULE_TEMPLATE,
-  styles: [LIST_REPLICATION_RULE_CSS],
+  templateUrl: './list-replication-rule.component.html',
+  styleUrls: ['./list-replication-rule.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListReplicationRuleComponent implements OnInit, OnChanges {

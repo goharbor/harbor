@@ -1,8 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 
-import { TAG_DETAIL_STYLES } from './tag-detail.component.css';
-import { TAG_DETAIL_HTML } from './tag-detail.component.html';
-
 import { TagService, Tag, VulnerabilitySeverity } from '../service/index';
 import { toPromise } from '../utils';
 import { ErrorHandler } from '../error-handler/index';
@@ -10,8 +7,8 @@ import {Label} from "../service/interface";
 
 @Component({
     selector: 'hbr-tag-detail',
-    styles: [TAG_DETAIL_STYLES],
-    template: TAG_DETAIL_HTML,
+    templateUrl: './tag-detail.component.html',
+    styleUrls: ['./tag-detail.component.scss'],
 
     providers: []
 })

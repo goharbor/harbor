@@ -1,11 +1,9 @@
 import {Component, Input, Output, EventEmitter, ViewChild, OnChanges} from '@angular/core';
 import { NgModel } from '@angular/forms';
 
-import { DATETIME_PICKER_TEMPLATE } from './datetime-picker.component.html';
-
 @Component({
   selector: 'hbr-datetime',
-  template: DATETIME_PICKER_TEMPLATE
+  templateUrl: './datetime-picker.component.html'
 })
 export class DatePickerComponent implements  OnChanges{
   

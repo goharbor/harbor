@@ -27,15 +27,15 @@ describe('CreateEditEndpointComponent (inline template)', () => {
 
   let comp: CreateEditEndpointComponent;
   let fixture: ComponentFixture<CreateEditEndpointComponent>;
- 
+
   let config: IServiceConfig = {
     systemInfoEndpoint: '/api/endpoints/testing'
   };
 
   let endpointService: EndpointService;
-  
+
   let spy: jasmine.Spy;
-  
+
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [ 
@@ -57,11 +57,11 @@ describe('CreateEditEndpointComponent (inline template)', () => {
   beforeEach(()=>{
     fixture = TestBed.createComponent(CreateEditEndpointComponent);
     comp = fixture.componentInstance;
-    
+
     endpointService = fixture.debugElement.injector.get(EndpointService);
     spy = spyOn(endpointService, 'getEndpoint').and.returnValue(Promise.resolve(mockData));
     fixture.detectChanges();
-    
+
     comp.openCreateEditTarget(true, 1);
     fixture.detectChanges();
   });

@@ -34,7 +34,7 @@ sed -i 's/* as//g' src/app/shared/gauge/gauge.component.js
 cp ./dist/build.min.js ../ui/static/
 
 cp -r ./src/i18n/ ../ui/static/
-cp ./src/styles.css ../ui/static/
+cp ./src/styles.scss ../ui/static/
 cp -r ./src/images/ ../ui/static/
 cp ./src/setting.json ../ui/static/
 

@@ -24,7 +24,7 @@ import { AlertType, dismissInterval, httpStatusCode, CommonRoutes } from '../sha
 @Component({
   selector: 'global-message',
   templateUrl: 'message.component.html',
-  styleUrls: ['message.component.css']
+  styleUrls: ['message.component.scss']
 })
 export class MessageComponent implements OnInit, OnDestroy {
 

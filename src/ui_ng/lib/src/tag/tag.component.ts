@@ -38,9 +38,6 @@ import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation
 
 import {Label, Tag, TagClickEvent} from "../service/interface";
 
-import { TAG_TEMPLATE } from "./tag.component.html";
-import { TAG_STYLE } from "./tag.component.css";
-
 import {
   toPromise,
   CustomComparator,
@@ -67,9 +64,9 @@ export interface LabelState {
 }
 
 @Component({
-  selector: "hbr-tag",
-  template: TAG_TEMPLATE,
-  styles: [TAG_STYLE],
+  selector: 'hbr-tag',
+  templateUrl: './tag.component.html',
+  styleUrls: ['./tag.component.scss']
 })
 export class TagComponent implements OnInit, AfterViewInit {
 

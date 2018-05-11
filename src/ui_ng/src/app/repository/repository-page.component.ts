@@ -52,4 +52,4 @@ export class RepositoryPageComponent implements OnInit {
     let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name];
     this.router.navigate(linkUrl);
   }
-};
+}

@@ -41,7 +41,7 @@ import {BatchInfo, BathInfoChanges} from '../shared/confirmation-dialog/confirma
 @Component({
   selector: 'harbor-user',
   templateUrl: 'user.component.html',
-  styleUrls: ['user.component.css'],
+  styleUrls: ['user.component.scss'],
   providers: [UserService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

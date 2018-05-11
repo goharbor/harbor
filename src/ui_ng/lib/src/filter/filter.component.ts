@@ -18,13 +18,11 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
 
-import { FILTER_TEMPLATE, FILTER_STYLES } from './filter.template';
-
 
 @Component({
     selector: 'hbr-filter',
-    styles: [FILTER_STYLES],
-    template: FILTER_TEMPLATE
+    templateUrl: './filter.component.html',
+    styleUrls: ['./filter.component.scss']
 })
 
 export class FilterComponent implements OnInit {

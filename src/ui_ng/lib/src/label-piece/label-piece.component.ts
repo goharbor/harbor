@@ -18,15 +18,14 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
 
-import { LABEL_PIEICE_TEMPLATE, LABEL_PIEICE_STYLES } from './label-piece.template';
 import {Label} from "../service/interface";
 import {LabelColor} from "../shared/shared.const";
 
 
 @Component({
     selector: 'hbr-label-piece',
-    styles: [LABEL_PIEICE_STYLES],
-    template: LABEL_PIEICE_TEMPLATE
+    templateUrl: './label-piece.component.html',
+    styleUrls: ['./label-piece.component.scss']
 })
 
 export class LabelPieceComponent implements OnInit, OnChanges {

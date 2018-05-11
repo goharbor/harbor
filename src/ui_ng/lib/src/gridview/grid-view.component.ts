@@ -16,14 +16,12 @@ import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 
 import { TranslateService } from '@ngx-translate/core';
-import { GRIDVIEW_TEMPLATE } from './grid-view.component.html';
-import { GRIDVIEW_STYLE } from './grid-view.component.css';
 import { ScrollPosition } from '../service/interface'
 
 @Component({
   selector: 'hbr-gridview',
-  template: GRIDVIEW_TEMPLATE,
-  styles: [GRIDVIEW_STYLE],
+  templateUrl: './grid-view.component.html',
+  styleUrls: ['./grid-view.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
 /**

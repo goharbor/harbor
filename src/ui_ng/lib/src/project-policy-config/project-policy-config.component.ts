@@ -1,7 +1,5 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 
-import { PROJECT_POLICY_CONFIG_TEMPLATE } from './project-policy-config.component.html';
-import { PROJECT_POLICY_CONFIG_STYLE } from './project-policy-config.component.css';
 import { toPromise, compareValue, clone } from '../utils';
 import { ProjectService } from '../service/project.service';
 import { ErrorHandler } from '../error-handler/error-handler';
@@ -42,8 +40,8 @@ export class ProjectPolicy {
 
 @Component({
   selector: 'hbr-project-policy-config',
-  template: PROJECT_POLICY_CONFIG_TEMPLATE,
-  styles: [PROJECT_POLICY_CONFIG_STYLE],
+  templateUrl: './project-policy-config.component.html',
+  styleUrls: ['./project-policy-config.component.scss']
 })
 export class ProjectPolicyConfigComponent implements OnInit {
   onGoing = false;

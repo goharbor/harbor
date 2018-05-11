@@ -13,7 +13,6 @@
 // limitations under the License.
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
 
-import { JOB_LOG_VIEWER_TEMPLATE, JOB_LOG_VIEWER_STYLES } from './job-log-viewer.component.template';
 import { JobLogService } from '../service/index';
 import { ErrorHandler } from '../error-handler/index';
 import { toPromise } from '../utils';
@@ -22,8 +21,8 @@ const supportSet: string[] = ["replication", "scan"];
 
 @Component({
     selector: 'job-log-viewer',
-    template: JOB_LOG_VIEWER_TEMPLATE,
-    styles: [JOB_LOG_VIEWER_STYLES],
+    templateUrl: './job-log-viewer.component.html',
+    styleUrls: ['./job-log-viewer.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 

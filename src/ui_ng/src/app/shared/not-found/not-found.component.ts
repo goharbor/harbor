@@ -20,7 +20,7 @@ const defaultLeftTime = 5;
 @Component({
     selector: 'page-not-found',
     templateUrl: "not-found.component.html",
-    styleUrls: ['not-found.component.css']
+    styleUrls: ['not-found.component.scss']
 })
 export class PageNotFoundComponent implements OnInit, OnDestroy{
     leftSeconds: number = defaultLeftTime;

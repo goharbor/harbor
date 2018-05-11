@@ -31,7 +31,7 @@ import {SkinableConfig} from "../../skinable-config.service";
 @Component({
     selector: 'navigator',
     templateUrl: "navigator.component.html",
-    styleUrls: ["navigator.component.css"]
+    styleUrls: ["navigator.component.scss"]
 })
 
 export class NavigatorComponent implements OnInit {

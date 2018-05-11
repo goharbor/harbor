@@ -29,9 +29,6 @@ import { Subscription } from 'rxjs/Subscription';
 
 import { CreateEditEndpointComponent } from '../create-edit-endpoint/create-edit-endpoint.component';
 
-import { ENDPOINT_STYLE } from './endpoint.component.css';
-import { ENDPOINT_TEMPLATE } from './endpoint.component.html';
-
 import { toPromise, CustomComparator } from '../utils';
 
 import { State, Comparator } from 'clarity-angular';
@@ -40,8 +37,8 @@ import {Observable} from "rxjs/Observable";
 
 @Component({
     selector: 'hbr-endpoint',
-    template: ENDPOINT_TEMPLATE,
-    styles: [ENDPOINT_STYLE],
+    templateUrl: './endpoint.component.html',
+    styleUrls: ['./endpoint.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EndpointComponent implements OnInit, OnDestroy {

@@ -32,9 +32,6 @@ import { Endpoint } from '../service/interface';
 
 import { TranslateService } from '@ngx-translate/core';
 
-import { CREATE_EDIT_ENDPOINT_STYLE } from './create-edit-endpoint.component.css';
-import { CREATE_EDIT_ENDPOINT_TEMPLATE } from './create-edit-endpoint.component.html';
-
 import { toPromise, clone, compareValue, isEmptyObject } from '../utils';
 
 import { Subscription } from 'rxjs/Subscription';
@@ -43,8 +40,8 @@ const FAKE_PASSWORD = 'rjGcfuRu';
 
 @Component({
     selector: 'hbr-create-edit-endpoint',
-    template: CREATE_EDIT_ENDPOINT_TEMPLATE,
-    styles: [CREATE_EDIT_ENDPOINT_STYLE]
+    templateUrl: './create-edit-endpoint.component.html',
+    styleUrls: ['./create-edit-endpoint.component.scss']
 })
 export class CreateEditEndpointComponent implements AfterViewChecked, OnDestroy {
     modalTitle: string;

@@ -25,7 +25,7 @@ import { CommonRoutes } from "../../shared/shared.const";
 @Component({
     selector: "account-settings-modal",
     templateUrl: "account-settings-modal.component.html",
-    styleUrls: ["../../common.css"]
+    styleUrls: ["./account-settings-modal.component.scss", "../../common.scss"]
 })
 
 export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {

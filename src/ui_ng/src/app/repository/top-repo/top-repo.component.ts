@@ -22,7 +22,7 @@ import { Repository } from 'harbor-ui';
 @Component({
     selector: 'top-repo',
     templateUrl: "top-repo.component.html",
-    styleUrls: ['top-repo.component.css'],
+    styleUrls: ['top-repo.component.scss'],
 
     providers: [TopRepoService]
 })

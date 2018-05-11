@@ -25,7 +25,7 @@ import {AppConfigService} from "../../app-config.service";
 @Component({
     selector: 'project-detail',
     templateUrl: 'project-detail.component.html',
-    styleUrls: [ 'project-detail.component.css' ]
+    styleUrls: [ 'project-detail.component.scss' ]
 })
 export class ProjectDetailComponent {
 

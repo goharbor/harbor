@@ -20,7 +20,7 @@ import { Project } from '../project';
 @Component({
   selector: 'app-project-config',
   templateUrl: './project-config.component.html',
-  styleUrls: ['./project-config.component.css']
+  styleUrls: ['./project-config.component.scss']
 })
 export class ProjectConfigComponent implements OnInit {
 
