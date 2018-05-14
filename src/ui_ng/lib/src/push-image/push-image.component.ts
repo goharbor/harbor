@@ -1,49 +1,49 @@
-import { Component, Input, ViewChild } from '@angular/core';
-import { CopyInputComponent } from './copy-input.component';
-import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
-
+import { Component, Input, ViewChild } from "@angular/core";
+import { CopyInputComponent } from "./copy-input.component";
+import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 
 @Component({
-    selector: 'hbr-push-image-button',
-    templateUrl: './push-image.component.html',
-    styleUrls: ['./push-image.scss'],
+  selector: "hbr-push-image-button",
+  templateUrl: "./push-image.component.html",
+  styleUrls: ["./push-image.scss"],
 
-    providers: []
+  providers: []
 })
 export class PushImageButtonComponent {
-    @Input() registryUrl: string = "unknown";
-    @Input() projectName: string = "unknown";
+  @Input() registryUrl: string = "unknown";
+  @Input() projectName: string = "unknown";
 
-    @ViewChild("tagCopy") tagCopyInput: CopyInputComponent;
-    @ViewChild("pushCopy") pushCopyInput: CopyInputComponent;
-    @ViewChild("copyAlert") copyAlert: InlineAlertComponent;
+  @ViewChild("tagCopy") tagCopyInput: CopyInputComponent;
+  @ViewChild("pushCopy") pushCopyInput: CopyInputComponent;
+  @ViewChild("copyAlert") copyAlert: InlineAlertComponent;
 
+  public get tagCommand(): string {
+    return `docker tag SOURCE_IMAGE[:TAG] ${this.registryUrl}/${
+      this.projectName
+    }/IMAGE[:TAG]`;
+  }
 
-    public get tagCommand(): string {
-        return `docker tag SOURCE_IMAGE[:TAG] ${this.registryUrl}/${this.projectName}/IMAGE[:TAG]`;
+  public get pushCommand(): string {
+    return `docker push ${this.registryUrl}/${this.projectName}/IMAGE[:TAG]`;
+  }
+
+  onclick(): void {
+    if (this.tagCopyInput) {
+      this.tagCopyInput.reset();
     }
 
-    public get pushCommand(): string {
-        return `docker push ${this.registryUrl}/${this.projectName}/IMAGE[:TAG]`;
+    if (this.pushCopyInput) {
+      this.pushCopyInput.reset();
     }
 
-    onclick(): void {
-        if (this.tagCopyInput) {
-            this.tagCopyInput.reset();
-        }
-
-        if (this.pushCopyInput) {
-            this.pushCopyInput.reset();
-        }
-
-        if(this.copyAlert){
-            this.copyAlert.close();
-        }
+    if (this.copyAlert) {
+      this.copyAlert.close();
     }
+  }
 
-    onCpError($event: any): void {
-        if(this.copyAlert){
-            this.copyAlert.showInlineError("PUSH_IMAGE.COPY_ERROR");
-        }
+  onCpError($event: any): void {
+    if (this.copyAlert) {
+      this.copyAlert.showInlineError("PUSH_IMAGE.COPY_ERROR");
     }
+  }
 }

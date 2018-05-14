@@ -11,21 +11,31 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
+import {
+  ConfirmationTargets,
+  ConfirmationButtons
+} from "../shared/shared.const";
 
 export class ConfirmationMessage {
-    public constructor(title: string, message: string, param: string, data: any, targetId: ConfirmationTargets, buttons?: ConfirmationButtons) {
-        this.title = title;
-        this.message = message;
-        this.data = data;
-        this.targetId = targetId;
-        this.param = param;
-        this.buttons = buttons ? buttons : ConfirmationButtons.CONFIRM_CANCEL;
-    }
-    title: string;
-    message: string;
-    data: any = {};//default is empty
-    targetId: ConfirmationTargets = ConfirmationTargets.EMPTY;
-    param: string;
-    buttons: ConfirmationButtons;
+  public constructor(
+    title: string,
+    message: string,
+    param: string,
+    data: any,
+    targetId: ConfirmationTargets,
+    buttons?: ConfirmationButtons
+  ) {
+    this.title = title;
+    this.message = message;
+    this.data = data;
+    this.targetId = targetId;
+    this.param = param;
+    this.buttons = buttons ? buttons : ConfirmationButtons.CONFIRM_CANCEL;
+  }
+  title: string;
+  message: string;
+  data: any = {}; // default is empty
+  targetId: ConfirmationTargets = ConfirmationTargets.EMPTY;
+  param: string;
+  buttons: ConfirmationButtons;
 }

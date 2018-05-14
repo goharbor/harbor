@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async } from '@angular/core/testing'; 
+import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 
@@ -14,7 +14,7 @@ import { ErrorHandler } from '../error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { ReplicationService, ReplicationDefaultService } from '../service/replication.service';
 
-describe('ListReplicationRuleComponent (inline template)', ()=>{
+describe('ListReplicationRuleComponent (inline template)', () => {
 
   let mockRules: ReplicationRule[] = [
     {
@@ -100,20 +100,20 @@ describe('ListReplicationRuleComponent (inline template)', ()=>{
   ];
 
   let fixture: ComponentFixture<ListReplicationRuleComponent>;
-  
+
   let comp: ListReplicationRuleComponent;
-  
+
   let replicationService: ReplicationService;
-   
+
   let spyRules: jasmine.Spy;
-  
+
   let config: IServiceConfig = {
     replicationRuleEndpoint: '/api/policies/replication/testing'
   };
 
-  beforeEach(async(()=>{
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ 
+      imports: [
         SharedModule,
         NoopAnimationsModule
       ],
@@ -129,7 +129,7 @@ describe('ListReplicationRuleComponent (inline template)', ()=>{
     });
   }));
 
-  beforeEach(()=>{
+  beforeEach(() => {
     fixture = TestBed.createComponent(ListReplicationRuleComponent);
     comp = fixture.componentInstance;
     replicationService = fixture.debugElement.injector.get(ReplicationService);
@@ -137,9 +137,9 @@ describe('ListReplicationRuleComponent (inline template)', ()=>{
     fixture.detectChanges();
   });
 
-  it('Should load and render data', async(()=>{
+  it('Should load and render data', async(() => {
     fixture.detectChanges();
-    fixture.whenStable().then(()=>{
+    fixture.whenStable().then(() => {
       fixture.detectChanges();
       let de: DebugElement = fixture.debugElement.query(By.css('datagrid-cell'));
       expect(de).toBeTruthy();

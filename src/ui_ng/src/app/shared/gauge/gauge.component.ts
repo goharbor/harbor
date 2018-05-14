@@ -24,7 +24,6 @@ import * as $ from 'jquery';
 const RESOURCE_COLOR_GREEN_NORMAL: string = '#5DB700';
 const RESOURCE_COLOR_ORANGE_NORMAL: string = '#FBBF00';
 const RESOURCE_COLOR_RED_NORMAL: string = '#EA400D';
-const RESOURCE_COLOR_GREY500: string = '#D7DEE2';
 const RESOURCE_COLOR_GREY600: string = '#C7D1D6';
 
 /**
@@ -40,8 +39,8 @@ export class GaugeComponent implements AfterViewInit {
       _backgroundColor: string;
       _colorOne: string;
       _colorTwo: string;
-      _size: string = "small"; //Support small, medium, large
-      _title: string = "UNKNOWN"; //Lang key
+      _size: string = "small"; // Support small, medium, large
+      _title: string = "UNKNOWN"; // Lang key
       _free: number = 0;
       _threasHold: number = 0;
 
@@ -107,7 +106,7 @@ export class GaugeComponent implements AfterViewInit {
             this.setAnimate();
       }
 
-      //Define the gauge size
+      // Define the gauge size
       @Input()
       get size(): string {
             return this._size;
@@ -279,7 +278,7 @@ export class GaugeComponent implements AfterViewInit {
 
             if (!this._animate) {
                   transition = 'none';
-            };
+            }
 
             for (let prefix of prefixes) {
                   css['-' + prefix + '-transition'] = transition;

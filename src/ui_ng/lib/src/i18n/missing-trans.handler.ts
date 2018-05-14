@@ -11,11 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { MissingTranslationHandler, MissingTranslationHandlerParams } from '@ngx-translate/core';
+import {
+  MissingTranslationHandler,
+  MissingTranslationHandlerParams
+} from "@ngx-translate/core";
 
 export class MyMissingTranslationHandler implements MissingTranslationHandler {
-    handle(params: MissingTranslationHandlerParams) {
-        const missingText:string = "{Harbor}";
-        return params.key || missingText;
-    }
+  handle(params: MissingTranslationHandlerParams) {
+    const missingText: string = "{Harbor}";
+    return params.key || missingText;
+  }
 }

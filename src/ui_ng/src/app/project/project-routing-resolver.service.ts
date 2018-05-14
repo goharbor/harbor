@@ -20,7 +20,7 @@ import { SessionService } from '../shared/session.service';
 import 'rxjs/add/operator/mergeMap';
 
 @Injectable()
-export class ProjectRoutingResolver implements Resolve<Project>{
+export class ProjectRoutingResolver implements Resolve<Project> {
 
   constructor(
     private sessionService: SessionService,
@@ -28,7 +28,7 @@ export class ProjectRoutingResolver implements Resolve<Project>{
     private router: Router) { }
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<Project> {
-    //Support both parameters and query parameters
+    // Support both parameters and query parameters
     let projectId = route.params['id'];
     if (!projectId) {
       projectId = route.queryParams['project_id'];

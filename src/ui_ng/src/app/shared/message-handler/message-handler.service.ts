@@ -11,27 +11,26 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Injectable } from '@angular/core'
-import { Subject } from 'rxjs/Subject';
+import { Injectable } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { ErrorHandler } from 'harbor-ui';
 
 import { MessageService } from '../../global-message/message.service';
 import { AlertType, httpStatusCode } from '../../shared/shared.const';
 import { errorHandler } from '../../shared/shared.utils';
-import { TranslateService } from '@ngx-translate/core';
 import { SessionService } from '../../shared/session.service';
 
-import { ErrorHandler } from 'harbor-ui';
 
 @Injectable()
-export class MessageHandlerService implements ErrorHandler{
+export class MessageHandlerService implements ErrorHandler {
 
     constructor(
         private msgService: MessageService,
         private translate: TranslateService,
         private session: SessionService) { }
 
-    //Handle the error and map it to the suitable message
-    //base on the status code of error.
+    // Handle the error and map it to the suitable message
+    // base on the status code of error.
 
     public handleError(error: any | string): void {
         if (!error) {
@@ -42,10 +41,10 @@ export class MessageHandlerService implements ErrorHandler{
         if (!(error.statusCode || error.status)) {
             this.msgService.announceMessage(500, msg, AlertType.DANGER);
         } else {
-            let code = error.statusCode | error.status;
+            let code = error.statusCode || error.status;
             if (code === httpStatusCode.Unauthorized) {
                 this.msgService.announceAppLevelMessage(code, msg, AlertType.DANGER);
-                //Session is invalida now, clare session cache
+                // Session is invalida now, clare session cache
                 this.session.clear();
             } else {
                 this.msgService.announceMessage(code, msg, AlertType.DANGER);
@@ -67,19 +66,19 @@ export class MessageHandlerService implements ErrorHandler{
     }
 
     public showSuccess(message: string): void {
-        if (message && message.trim() != "") {
+        if (message && message.trim() !== "") {
             this.msgService.announceMessage(200, message, AlertType.SUCCESS);
         }
     }
 
     public showInfo(message: string): void {
-        if (message && message.trim() != "") {
+        if (message && message.trim() !== "") {
             this.msgService.announceMessage(200, message, AlertType.INFO);
         }
     }
 
     public showWarning(message: string): void {
-        if (message && message.trim() != "") {
+        if (message && message.trim() !== "") {
             this.msgService.announceMessage(400, message, AlertType.WARNING);
         }
     }

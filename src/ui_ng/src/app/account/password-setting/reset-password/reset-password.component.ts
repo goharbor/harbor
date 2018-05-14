@@ -86,7 +86,7 @@ export class ResetPasswordComponent implements OnInit {
     }
 
     public close(): void {
-        //If already reset password ok, navigator to sign-in
+        // If already reset password ok, navigator to sign-in
         if (this.resetOk) {
             this.router.navigateByUrl(CommonRoutes.EMBEDDED_SIGN_IN);
         }
@@ -94,7 +94,7 @@ export class ResetPasswordComponent implements OnInit {
     }
 
     public send(): void {
-        //Double confirm to avoid improper situations
+        // Double confirm to avoid improper situations
         if (!this.password) {
             return;
         }
@@ -147,7 +147,7 @@ export class ResetPasswordComponent implements OnInit {
             let control1 = this.resetPwdForm.controls["newPassword"];
             let control2 = this.resetPwdForm.controls["reNewPassword"];
             if (control1 && control2) {
-                return control1.value == control2.value;
+                return control1.value === control2.value;
             }
         }
 

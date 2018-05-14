@@ -9,19 +9,28 @@
  * conditions of the subcomponent's license, as noted in the LICENSE file.
  */
 
-import { Component, Input, Output, SimpleChanges, ContentChild, ViewChild, ViewChildren,
-         TemplateRef, HostListener, ViewEncapsulation, EventEmitter, AfterViewInit } from '@angular/core';
-import { CancelablePromise } from '../shared/shared.utils';
-import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
+import {
+  Component,
+  Input,
+  Output,
+  ContentChild,
+  ViewChild,
+  ViewChildren,
+  TemplateRef,
+  HostListener,
+  ViewEncapsulation,
+  EventEmitter,
+  AfterViewInit
+} from "@angular/core";
+import { Subscription } from "rxjs/Subscription";
+import { TranslateService } from "@ngx-translate/core";
 
-import { TranslateService } from '@ngx-translate/core';
-import { ScrollPosition } from '../service/interface'
+import { ScrollPosition } from "../service/interface";
 
 @Component({
-  selector: 'hbr-gridview',
-  templateUrl: './grid-view.component.html',
-  styleUrls: ['./grid-view.component.scss'],
+  selector: "hbr-gridview",
+  templateUrl: "./grid-view.component.html",
+  styleUrls: ["./grid-view.component.scss"],
   encapsulation: ViewEncapsulation.None
 })
 /**
@@ -41,9 +50,9 @@ export class GridViewComponent implements AfterViewInit {
         return this.cardStyles[index];
       }
       return {
-        opacity: '0',
-        overflow: 'hidden'
-        };
+        opacity: "0",
+        overflow: "hidden"
+      };
     });
     this.cardStyles = newCardStyles;
     this._items = value;
@@ -51,8 +60,8 @@ export class GridViewComponent implements AfterViewInit {
 
   @Output() loadNextPageEvent = new EventEmitter<any>();
 
-  @ViewChildren('cardItem') cards: any;
-  @ViewChild('itemsHolder') itemsHolder: any;
+  @ViewChildren("cardItem") cards: any;
+  @ViewChild("itemsHolder") itemsHolder: any;
   @ContentChild(TemplateRef) gridItemTmpl: any;
 
   _items: any[] = [];
@@ -78,7 +87,7 @@ export class GridViewComponent implements AfterViewInit {
 
   preScrollPosition: ScrollPosition = null;
 
-  constructor(private translate: TranslateService) { }
+  constructor(private translate: TranslateService) {}
 
   ngAfterViewInit() {
     this.cards.changes.subscribe(() => {
@@ -91,21 +100,22 @@ export class GridViewComponent implements AfterViewInit {
     return this._items;
   }
 
-  @HostListener('scroll', ['$event'])
+  @HostListener("scroll", ["$event"])
   onScroll(event: any) {
-
     this.preScrollPosition = this.CurrentScrollPosition;
     this.CurrentScrollPosition = {
       sH: event.target.scrollHeight,
       sT: event.target.scrollTop,
       cH: event.target.clientHeight
+    };
+    if (
+      !this.loading &&
+      this.isScrollDown() &&
+      this.isScrollExpectPercent() &&
+      this.currentPage * this.pageSize < this.totalCount
+    ) {
+      this.loadNextPageEvent.emit();
     }
-    if (!this.loading
-        && this.isScrollDown()
-        && this.isScrollExpectPercent()
-        && (this.currentPage * this.pageSize < this.totalCount)) {
-          this.loadNextPageEvent.emit();
-        }
   }
 
   isScrollDown(): boolean {
@@ -113,10 +123,14 @@ export class GridViewComponent implements AfterViewInit {
   }
 
   isScrollExpectPercent(): boolean {
-    return ((this.CurrentScrollPosition.sT + this.CurrentScrollPosition.cH) / this.CurrentScrollPosition.sH) > (this.expectScrollPercent / 100);
+    return (
+      (this.CurrentScrollPosition.sT + this.CurrentScrollPosition.cH) /
+        this.CurrentScrollPosition.sH >
+      this.expectScrollPercent / 100
+    );
   }
 
-  @HostListener('window:resize')
+  @HostListener("window:resize")
   onResize(event: any) {
     this.throttleLayout();
   }
@@ -136,7 +150,7 @@ export class GridViewComponent implements AfterViewInit {
     let el = this.itemsHolder.nativeElement;
 
     let width = el.offsetWidth;
-    let items = el.querySelectorAll('.card-item');
+    let items = el.querySelectorAll(".card-item");
     let items_count = items.length;
     if (items_count === 0) {
       el.height = 0;
@@ -158,17 +172,24 @@ export class GridViewComponent implements AfterViewInit {
     let maxWidth = parseInt(maxWidthStyle, 10);
 
     let marginHeight: number =
-        parseInt(itemsStyle.marginTop, 10) + parseInt(itemsStyle.marginBottom, 10);
+      parseInt(itemsStyle.marginTop, 10) +
+      parseInt(itemsStyle.marginBottom, 10);
     let marginWidth: number =
-        parseInt(itemsStyle.marginLeft, 10) + parseInt(itemsStyle.marginRight, 10);
+      parseInt(itemsStyle.marginLeft, 10) +
+      parseInt(itemsStyle.marginRight, 10);
 
     let columns = Math.floor(width / (minWidth + marginWidth));
 
     let columnsToUse = Math.max(Math.min(columns, items_count), 1);
     let rows = Math.floor(items_count / columnsToUse);
-    let itemWidth = Math.min(Math.floor(width / columnsToUse) - marginWidth, maxWidth);
-    let itemSpacing = columnsToUse === 1 || columns > items_count ? marginWidth :
-        (width - marginWidth - columnsToUse * itemWidth) / (columnsToUse - 1);
+    let itemWidth = Math.min(
+      Math.floor(width / columnsToUse) - marginWidth,
+      maxWidth
+    );
+    let itemSpacing =
+      columnsToUse === 1 || columns > items_count
+        ? marginWidth
+        : (width - marginWidth - columnsToUse * itemWidth) / (columnsToUse - 1);
     if (!this.withAdmiral) {
       // Fixed spacing and margin on standalone mode
       itemSpacing = marginWidth;
@@ -176,7 +197,11 @@ export class GridViewComponent implements AfterViewInit {
     }
 
     let visible = items_count;
-    if (this.hidePartialRows && this.totalItemsCount && items_count !== this.totalItemsCount) {
+    if (
+      this.hidePartialRows &&
+      this.totalItemsCount &&
+      items_count !== this.totalItemsCount
+    ) {
       visible = rows * columnsToUse;
     }
 
@@ -191,27 +216,27 @@ export class GridViewComponent implements AfterViewInit {
       // trick to show nice apear animation, where the item is already positioned,
       // but it will pop out
       let oldTransform = itemStyle.transform;
-      if (!oldTransform || oldTransform === 'none') {
+      if (!oldTransform || oldTransform === "none") {
         this.cardStyles[i] = {
-          transform:  'translate(' + left + 'px,' + top + 'px) scale(0)',
-          width: itemWidth + 'px',
-          transition: 'none',
-          overflow: 'hidden'
+          transform: "translate(" + left + "px," + top + "px) scale(0)",
+          width: itemWidth + "px",
+          transition: "none",
+          overflow: "hidden"
         };
         this.throttleLayout();
       } else {
         this.cardStyles[i] = {
-          transform:  'translate(' + left + 'px,' + top + 'px) scale(1)',
-          width: itemWidth + 'px',
+          transform: "translate(" + left + "px," + top + "px) scale(1)",
+          width: itemWidth + "px",
           transition: null,
-          overflow: 'hidden'
+          overflow: "hidden"
         };
         this.throttleLayout();
       }
 
-      if (!item.classList.contains('context-selected')) {
+      if (!item.classList.contains("context-selected")) {
         let itemHeight = itemsHeight[i];
-        if (itemStyle.display === 'none' && itemHeight !== 0) {
+        if (itemStyle.display === "none" && itemHeight !== 0) {
           this.cardStyles[i].display = null;
         }
         if (itemHeight !== 0) {
@@ -222,20 +247,20 @@ export class GridViewComponent implements AfterViewInit {
 
     for (let i = visible; i < items_count; i++) {
       this.cardStyles[i] = {
-        display: 'none'
+        display: "none"
       };
     }
     this.itemsHolderStyle = {
-      height: Math.ceil(count / columnsToUse) * (height + marginHeight) + 'px'
+      height: Math.ceil(count / columnsToUse) * (height + marginHeight) + "px"
     };
   }
 
   onCardEnter(i: number) {
-    this.cardStyles[i].overflow = 'visible';
+    this.cardStyles[i].overflow = "visible";
   }
 
   onCardLeave(i: number) {
-    this.cardStyles[i].overflow = 'hidden';
+    this.cardStyles[i].overflow = "hidden";
   }
 
   trackByFn(index: number, item: any) {

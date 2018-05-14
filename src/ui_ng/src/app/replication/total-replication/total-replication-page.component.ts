@@ -14,9 +14,9 @@
 import { Component } from '@angular/core';
 
 import {Router, ActivatedRoute} from "@angular/router";
+import {ReplicationRule} from "harbor-ui";
 
 import {SessionService} from "../../shared/session.service";
-import {ReplicationRule} from "harbor-ui";
 
 @Component({
   selector: 'total-replication',
@@ -26,7 +26,7 @@ export class TotalReplicationPageComponent {
 
   constructor(private router: Router,
               private session: SessionService,
-              private activeRoute: ActivatedRoute){}
+              private activeRoute: ActivatedRoute) {}
   customRedirect(rule: ReplicationRule): void {
     if (rule) {
       this.router.navigate(['../projects', rule.projects[0].project_id, 'replications'],  { relativeTo: this.activeRoute });

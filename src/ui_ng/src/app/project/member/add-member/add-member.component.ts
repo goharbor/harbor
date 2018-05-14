@@ -23,23 +23,23 @@ import {
 } from '@angular/core';
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
-
-import { MemberService } from '../member.service';
-import { UserService } from '../../../user/user.service';
-
-import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
-import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
-
-import { TranslateService } from '@ngx-translate/core';
-
-import { Member } from '../member';
-
+import {ActivatedRoute} from "@angular/router";
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/distinctUntilChanged';
+
+import { TranslateService } from '@ngx-translate/core';
+
+import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
+import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
+import { UserService } from '../../../user/user.service';
 import {User} from "../../../user/user";
-import {ActivatedRoute, Router} from "@angular/router";
+
 import {Project} from "../../project";
+
+import { Member } from '../member';
+import { MemberService } from '../member.service';
+
 
 @Component({
   selector: 'add-member',
@@ -108,7 +108,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
               this.memberService
                   .listMembers(this.projectId, cont.value).toPromise()
                   .then((members: Member[]) => {
-                    if (members.filter(m => { return m.entity_name === cont.value }).length > 0) {
+                    if (members.filter(m => { return m.entity_name === cont.value; }).length > 0) {
                       this.isMemberNameValid = false;
                       this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
                     }
@@ -117,7 +117,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
                   .catch(error => {
                     this.checkOnGoing = false;
                   });
-              //username autocomplete
+              // username autocomplete
               if (this.userLists && this.userLists.length) {
                 this.selectUserName = [];
                 this.userLists.filter(data => {
@@ -244,8 +244,8 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   }
 
   public get isValid(): boolean {
-    return this.currentForm && 
-    this.currentForm.valid && 
+    return this.currentForm &&
+    this.currentForm.valid &&
     this.isMemberNameValid &&
     !this.checkOnGoing;
   }

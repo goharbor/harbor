@@ -19,25 +19,27 @@ import {
     OnDestroy, EventEmitter
 } from "@angular/core";
 import { Router } from "@angular/router";
-import { Project } from "../project";
-import { ProjectService } from "../project.service";
-
-import { SessionService } from "../../shared/session.service";
-import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
-import { RoleInfo } from "../../shared/shared.const";
-import { CustomComparator, doFiltering, doSorting, calculatePage } from "../../shared/shared.utils";
+import {Observable} from "rxjs/Observable";
+import 'rxjs/add/observable/forkJoin';
+import { Subscription } from "rxjs/Subscription";
 
 import { Comparator, State } from "clarity-angular";
-import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
-import { StatisticHandler } from "../../shared/statictics/statistic-handler.service";
-import { Subscription } from "rxjs/Subscription";
-import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
-import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
-import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
 import {TranslateService} from "@ngx-translate/core";
+
+import { RoleInfo, ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
+import { CustomComparator, doFiltering, doSorting, calculatePage } from "../../shared/shared.utils";
+
+import { SessionService } from "../../shared/session.service";
+import { StatisticHandler } from "../../shared/statictics/statistic-handler.service";
+import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
+import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
+import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
 import {BatchInfo, BathInfoChanges} from "../../shared/confirmation-dialog/confirmation-batch-message";
-import {Observable} from "rxjs/Observable";
+import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
 import {AppConfigService} from "../../app-config.service";
+
+import { Project } from "../project";
+import { ProjectService } from "../project.service";
 
 @Component({
     selector: "list-project",

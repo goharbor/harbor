@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { NgForm } from '@angular/forms';
-import { httpStatusCode, AlertType } from './shared.const';
-import { MessageService } from '../global-message/message.service';
-import { Comparator, State } from 'clarity-angular';
 import {RequestOptions, Headers} from "@angular/http";
+import { Comparator, State } from 'clarity-angular';
 import {RequestQueryParams} from "harbor-ui";
+
+import { MessageService } from '../global-message/message.service';
+import { httpStatusCode, AlertType } from './shared.const';
 
 /**
  * To handle the error message body
- * 
+ *
  * @export
  * @returns {string}
  */
@@ -29,7 +30,7 @@ export const errorHandler = function (error: any): string {
         return "UNKNOWN_ERROR";
     }
     if (!(error.statusCode || error.status)) {
-        //treat as string message
+        // treat as string message
         return '' + error;
     } else {
         switch (error.statusCode || error.status) {
@@ -51,7 +52,7 @@ export const errorHandler = function (error: any): string {
                 return "UNKNOWN_ERROR";
         }
     }
-}
+};
 
 /**
  * To check if form is empty
@@ -60,7 +61,7 @@ export const isEmptyForm = function (ngForm: NgForm): boolean {
     if (ngForm && ngForm.form) {
         let values = ngForm.form.value;
         if (values) {
-            for (var key in values) {
+            for (let key in values) {
                 if (values[key]) {
                     return false;
                 }
@@ -70,11 +71,11 @@ export const isEmptyForm = function (ngForm: NgForm): boolean {
     }
 
     return true;
-}
+};
 
 /**
  * Hanlde the 401 and 403 code
- * 
+ *
  * If handled the 401 or 403, then return true otherwise false
  */
 export const accessErrorHandler = function (error: any, msgService: MessageService): boolean {
@@ -86,9 +87,9 @@ export const accessErrorHandler = function (error: any, msgService: MessageServi
     }
 
     return false;
-}
+};
 
-//Provide capability of reconstructing the query paramter
+// Provide capability of reconstructing the query paramter
 export const maintainUrlQueryParmas = function (uri: string, key: string, value: string): string {
     let re: RegExp = new RegExp("([?&])" + key + "=.*?(&|#|$)", "i");
     if (value === undefined) {
@@ -101,18 +102,18 @@ export const maintainUrlQueryParmas = function (uri: string, key: string, value:
         if (uri.match(re)) {
             return uri.replace(re, '$1' + key + "=" + value + '$2');
         } else {
-            var hash = '';
+            let hash = '';
             if (uri.indexOf('#') !== -1) {
                 hash = uri.replace(/.*#/, '#');
                 uri = uri.replace(/#.*/, '');
             }
-            var separator = uri.indexOf('?') !== -1 ? "&" : "?";
+            let separator = uri.indexOf('?') !== -1 ? "&" : "?";
             return uri + separator + key + "=" + value + hash;
         }
     }
-}
+};
 
-//Copy from ui library utils.ts
+// Copy from ui library utils.ts
 
 /**
  * Calculate page number by state
@@ -127,7 +128,7 @@ export function calculatePage(state: State): number {
 
 /**
  * Comparator for fields with specific type.
- *  
+ *
  */
 export class CustomComparator<T> implements Comparator<T> {
 
@@ -203,10 +204,10 @@ export function buildHttpRequestOptions(params: RequestQueryParams): RequestOpti
 
 /**
  * Filter columns via RegExp
- * 
+ *
  * @export
- * @param {State} state 
- * @returns {void} 
+ * @param {State} state
+ * @returns {void}
  */
 export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
     if (!items || items.length === 0) {
@@ -229,11 +230,11 @@ export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[]
 
 /**
  * Match items via RegExp
- * 
+ *
  * @export
- * @param {string} terms 
- * @param {*} testedValue 
- * @returns {boolean} 
+ * @param {string} terms
+ * @param {*} testedValue
+ * @returns {boolean}
  */
 export function regexpFilter(terms: string, testedValue: any): boolean {
     let reg = new RegExp('.*' + terms + '.*', 'i');
@@ -242,12 +243,12 @@ export function regexpFilter(terms: string, testedValue: any): boolean {
 
 /**
  * Sorting the data by column
- * 
+ *
  * @export
- * @template T 
- * @param {T[]} items 
- * @param {State} state 
- * @returns {T[]} 
+ * @template T
+ * @param {T[]} items
+ * @param {State} state
+ * @returns {T[]}
  */
 export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
     if (!items || items.length === 0) {

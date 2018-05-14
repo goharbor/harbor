@@ -30,7 +30,7 @@ export function initConfig(configService: AppConfigService, skinableService: Ski
     return () => {
         skinableService.getCustomFile();
         configService.load();
-    }
+    };
 }
 
 export function getCurrentLanguage(translateService: TranslateService) {
@@ -43,6 +43,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
         ProjectConfigComponent,
     ],
     imports: [
+        BrowserModule,
         SharedModule,
         BaseModule,
         AccountModule,
@@ -61,7 +62,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
       {
         provide: LOCALE_ID,
         useFactory: getCurrentLanguage,
-        deps:[ TranslateService ]
+        deps: [ TranslateService ]
       }
     ],
     bootstrap: [AppComponent]

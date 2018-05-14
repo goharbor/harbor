@@ -34,7 +34,7 @@ export class LeavingConfigRouteDeactivate implements CanDeactivate<Configuration
     config: ConfigurationComponent,
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Promise<boolean> | boolean {
-    //Confirmation before leaving config route
+    // Confirmation before leaving config route
     return new Promise((resolve, reject) => {
       if (config && config.hasChanges()) {
         let msg: ConfirmationMessage = new ConfirmationMessage(
@@ -45,15 +45,15 @@ export class LeavingConfigRouteDeactivate implements CanDeactivate<Configuration
           ConfirmationTargets.CONFIG_ROUTE
         );
         this.confirmation.openComfirmDialog(msg);
-        return this.confirmation.confirmationConfirm$.subscribe(msg => {
-          if (msg && msg.source === ConfirmationTargets.CONFIG_ROUTE) {
-            if (msg.state === ConfirmationState.CONFIRMED) {
+        return this.confirmation.confirmationConfirm$.subscribe(confirmMsg => {
+          if (confirmMsg && confirmMsg.source === ConfirmationTargets.CONFIG_ROUTE) {
+            if (confirmMsg.state === ConfirmationState.CONFIRMED) {
               return resolve(true);
             } else {
-              return resolve(false);//Prevent leading route
+              return resolve(false); // Prevent leading route
             }
           } else {
-            return resolve(true);//Should go on
+            return resolve(true); // Should go on
           }
         });
       } else {

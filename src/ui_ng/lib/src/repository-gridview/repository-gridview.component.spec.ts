@@ -11,26 +11,23 @@ import { TagComponent } from '../tag/tag.component';
 import { FilterComponent } from '../filter/filter.component';
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import { Repository, RepositoryItem, Tag, SystemInfo } from '../service/interface';
+import { Repository, RepositoryItem, SystemInfo } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { RepositoryService, RepositoryDefaultService } from '../service/repository.service';
 import { TagService, TagDefaultService } from '../service/tag.service';
 import { SystemInfoService, SystemInfoDefaultService } from '../service/system-info.service';
 import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
-import { HBR_GRIDVIEW_DIRECTIVES } from '../gridview/index'
+import { HBR_GRIDVIEW_DIRECTIVES } from '../gridview/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from '../push-image/index';
 import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
 import { JobLogViewerComponent } from '../job-log-viewer/index';
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
-
-import { click } from '../utils';
 
 describe('RepositoryComponentGridview (inline template)', () => {
 
   let compRepo: RepositoryGridviewComponent;
   let fixtureRepo: ComponentFixture<RepositoryGridviewComponent>;
   let repositoryService: RepositoryService;
-  let tagService: TagService;
   let systemInfoService: SystemInfoService;
 
   let spyRepos: jasmine.Spy;
@@ -74,20 +71,20 @@ describe('RepositoryComponentGridview (inline template)', () => {
     data: mockRepoData
   };
 
-  let mockTagData: Tag[] = [
-    {
-      "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
-      "name": "1.11.5",
-      "size": "2049",
-      "architecture": "amd64",
-      "os": "linux",
-      "docker_version": "1.12.3",
-      "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
-      "created": new Date("2016-11-08T22:41:15.912313785Z"),
-      "signature": null,
-      "labels": []
-    }
-  ];
+  // let mockTagData: Tag[] = [
+  //   {
+  //     "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
+  //     "name": "1.11.5",
+  //     "size": "2049",
+  //     "architecture": "amd64",
+  //     "os": "linux",
+  //     "docker_version": "1.12.3",
+  //     "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
+  //     "created": new Date("2016-11-08T22:41:15.912313785Z"),
+  //     "signature": null,
+  //     "labels": []
+  //   }
+  // ];
 
   let config: IServiceConfig = {
     repositoryBaseEndpoint: '/api/repository/testing',

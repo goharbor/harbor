@@ -1,4 +1,4 @@
-import { NgModule, ModuleWithProviders, Provider, APP_INITIALIZER, Inject } from '@angular/core';
+import { NgModule, ModuleWithProviders, Provider, APP_INITIALIZER } from '@angular/core';
 
 import { LOG_DIRECTIVES } from './log/index';
 import { FILTER_DIRECTIVES } from './filter/index';
@@ -99,43 +99,43 @@ export const DefaultServiceConfig: IServiceConfig = {
  */
 export interface HarborModuleConfig {
   // Service endpoints
-  config?: Provider,
+  config?: Provider;
 
   // Handling error messages
-  errorHandler?: Provider,
+  errorHandler?: Provider;
 
   // Service implementation for system info
-  systemInfoService?: Provider,
+  systemInfoService?: Provider;
 
   // Service implementation for log
-  logService?: Provider,
+  logService?: Provider;
 
   // Service implementation for endpoint
-  endpointService?: Provider,
+  endpointService?: Provider;
 
   // Service implementation for replication
-  replicationService?: Provider,
+  replicationService?: Provider;
 
   // Service implementation for repository
-  repositoryService?: Provider,
+  repositoryService?: Provider;
 
   // Service implementation for tag
-  tagService?: Provider,
+  tagService?: Provider;
 
   // Service implementation for vulnerability scanning
-  scanningService?: Provider,
+  scanningService?: Provider;
 
   // Service implementation for configuration
-  configService?: Provider,
+  configService?: Provider;
 
   // Service implementation for job log
-  jobLogService?: Provider,
+  jobLogService?: Provider;
 
   // Service implementation for project policy
-  projectPolicyService?: Provider,
+  projectPolicyService?: Provider;
 
   // Service implementation for label
-  labelService?: Provider,
+  labelService?: Provider;
 }
 
 /**

@@ -14,14 +14,13 @@
 import { Component, OnInit } from '@angular/core';
 
 import { SessionService } from '../../shared/session.service';
-import { SessionUser } from '../../shared/session-user';
 
 @Component({
     selector: 'start-page',
     templateUrl: "start.component.html",
     styleUrls: ['start.component.scss']
 })
-export class StartPageComponent implements OnInit{
+export class StartPageComponent implements OnInit {
     isSessionValid: boolean = false;
 
     constructor(

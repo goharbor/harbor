@@ -28,7 +28,7 @@ import { UserService } from './user.service';
   exports: [
     UserComponent
   ],
-  providers:[UserService]
+  providers: [UserService]
 })
 export class UserModule {
 

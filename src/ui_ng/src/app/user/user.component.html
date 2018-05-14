@@ -2,7 +2,7 @@
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <h2 class="custom-h2">{{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}</h2>
         <div class="action-panel-pos rightPos">
-            <hbr-filter [withDivider]="true" class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
+            <hbr-filter [withDivider]="true" class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
             <span class="refresh-btn">
         <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress" (click)="refresh()"></clr-icon>
         <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>

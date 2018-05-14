@@ -23,17 +23,18 @@ import {
 import { Response } from "@angular/http";
 import { NgForm } from "@angular/forms";
 
-import { Project } from "../project";
-import { ProjectService } from "../project.service";
+import { Subject } from "rxjs/Subject";
+import "rxjs/add/operator/debounceTime";
+import "rxjs/add/operator/distinctUntilChanged";
+import { TranslateService } from "@ngx-translate/core";
 
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 
-import { TranslateService } from "@ngx-translate/core";
+import { Project } from "../project";
+import { ProjectService } from "../project.service";
 
-import { Subject } from "rxjs/Subject";
-import "rxjs/add/operator/debounceTime";
-import "rxjs/add/operator/distinctUntilChanged";
+
 
 @Component({
   selector: "create-project",
@@ -74,7 +75,6 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
   ngOnInit(): void {
     this.proNameChecker
       .debounceTime(500)
-      //.distinctUntilChanged()
       .subscribe((name: string) => {
         let cont = this.currentForm.controls["create_project_name"];
         if (cont && this.hasChanged) {
@@ -148,7 +148,7 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
     this.projectForm = this.currentForm;
     if (this.projectForm) {
       this.projectForm.valueChanges.subscribe(data => {
-        for (let i in data) {
+        for (let i = 0; i < data.length; i++) {
           let origin = this.initVal[i];
           let current = data[i];
           if (current && current !== origin) {

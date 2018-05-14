@@ -18,7 +18,7 @@ export const assiiChars = /[\u4e00-\u9fa5]/;
 
 export function maxLengthExtValidator(length: number): ValidatorFn {
     return (control: AbstractControl): { [key: string]: any } => {
-        const value: string = control.value
+        const value: string = control.value;
         if (!value || value.trim() === "") {
             return null;
         }
@@ -27,7 +27,7 @@ export function maxLengthExtValidator(length: number): ValidatorFn {
         let count = 0;
         let len = value.length;
 
-        for (var i = 0; i < len; i++) {
+        for (let i = 0; i < len; i++) {
             if (regExp.test(value[i])) {
                 count += 3;
             } else {
@@ -35,7 +35,7 @@ export function maxLengthExtValidator(length: number): ValidatorFn {
             }
         }
         return count > length ? { 'maxLengthExt': count } : null;
-    }
+    };
 }
 
 @Directive({

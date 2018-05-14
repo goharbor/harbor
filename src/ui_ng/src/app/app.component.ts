@@ -11,14 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, ReflectiveInjector, LOCALE_ID } from '@angular/core';
+import { Component } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+
 import { TranslateService } from '@ngx-translate/core';
 import { CookieService } from 'ngx-cookie';
 
-import { supportedLangs, enLang } from './shared/shared.const';
 import { SessionService } from './shared/session.service';
 import { AppConfigService } from './app-config.service';
-import { Title } from '@angular/platform-browser';
 
 @Component({
     selector: 'harbor-app',
@@ -31,7 +31,7 @@ export class AppComponent {
         private session: SessionService,
         private appConfigService: AppConfigService,
         private titleService: Title) {
-        //Override page title
+        // Override page title
         let key: string = "APP_TITLE.HARBOR";
         if (this.appConfigService.isIntegrationMode()) {
             key = "APP_TITLE.REG";

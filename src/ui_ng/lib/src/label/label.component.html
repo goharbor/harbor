@@ -3,7 +3,7 @@
         <div>
             <div class="row flex-items-xs-between rightPos">
                 <div class="flex-items-xs-middle option-right">
-                    <hbr-filter [withDivider]="true" filterPlaceholder='{{"LABEL.FILTER_LABEL_PLACEHOLDER" | translate}}' (filter)="doSearchTargets($event)" [currentValue]="targetName"></hbr-filter>
+                    <hbr-filter [withDivider]="true" filterPlaceholder='{{"LABEL.FILTER_LABEL_PLACEHOLDER" | translate}}' (filterEvt)="doSearchTargets($event)" [currentValue]="targetName"></hbr-filter>
                     <span class="refresh-btn" (click)="refreshTargets()">
                         <clr-icon shape="refresh"></clr-icon>
                     </span>

@@ -36,7 +36,7 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
       if (!user) {
         this.authService.retrieveUser()
           .then(() => {
-            //updated user
+            // updated user
             user = this.authService.getCurrentUser();
             if (user.has_admin_role) {
               return resolve(true);
@@ -46,10 +46,10 @@ export class SystemAdminGuard implements CanActivate, CanActivateChild {
             }
           })
           .catch(error => {
-            //Session retrieving failed then redirect to sign-in
-            //no matter what status code is.
-            //Please pay attention that route 'harborRootRoute' support anonymous user
-            if (state.url != CommonRoutes.HARBOR_ROOT && !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
+            // Session retrieving failed then redirect to sign-in
+            // no matter what status code is.
+            // Please pay attention that route 'harborRootRoute' support anonymous user
+            if (state.url !== CommonRoutes.HARBOR_ROOT && !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
               let navigatorExtra: NavigationExtras = {
                 queryParams: { "redirect_url": state.url }
               };

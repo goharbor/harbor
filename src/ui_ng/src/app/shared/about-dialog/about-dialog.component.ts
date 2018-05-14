@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import {Component, OnInit} from '@angular/core';
+import {TranslateService} from "@ngx-translate/core";
 
 import { AppConfigService } from '../../app-config.service';
-import {TranslateService} from "@ngx-translate/core";
 import {SkinableConfig} from "../../skinable-config.service";
 
 @Component({
@@ -22,7 +22,7 @@ import {SkinableConfig} from "../../skinable-config.service";
     templateUrl: "about-dialog.component.html",
     styleUrls: ["about-dialog.component.scss"]
 })
-export class AboutDialogComponent implements OnInit{
+export class AboutDialogComponent implements OnInit {
     opened: boolean = false;
     build: string = "4276418";
     customIntroduction: string;
@@ -47,7 +47,7 @@ export class AboutDialogComponent implements OnInit{
 
     public get version(): string {
         let appConfig = this.appConfigService.getConfig();
-        return appConfig?appConfig.harbor_version: "n/a";
+        return appConfig ? appConfig.harbor_version : "n/a";
     }
 
     public open(): void {

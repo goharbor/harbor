@@ -26,7 +26,7 @@ export class StartGuard implements CanActivate, CanActivateChild {
   constructor(private authService: SessionService, private router: Router) { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    //Authentidacted user should not see the start page now
+    // Authenticated user should not see the start page now
     return new Promise((resolve, reject) => {
       let user = this.authService.getCurrentUser();
       if (!user) {

@@ -1,29 +1,25 @@
-import { TestBed, inject, async } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing';
 
-import { TagService, TagDefaultService } from './tag.service';
 import { SharedModule } from '../shared/shared.module';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
+import { TagService, TagDefaultService } from './tag.service';
 
-import { Tag } from './interface';
-
-import { VerifiedSignature } from './tag.service';
-import { toPromise } from '../utils';
 
 describe('TagService', () => {
-  let mockTags: Tag[] = [
-    {
-      "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
-      "name": "1.11.5",
-      "size": "2049",
-      "architecture": "amd64",
-      "os": "linux",
-      "docker_version": "1.12.3",
-      "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
-      "created": new Date("2016-11-08T22:41:15.912313785Z"),
-      "signature": null,
-      'labels': []
-    }
-  ];
+  // let mockTags: Tag[] = [
+  //   {
+  //     "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
+  //     "name": "1.11.5",
+  //     "size": "2049",
+  //     "architecture": "amd64",
+  //     "os": "linux",
+  //     "docker_version": "1.12.3",
+  //     "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
+  //     "created": new Date("2016-11-08T22:41:15.912313785Z"),
+  //     "signature": null,
+  //     'labels': []
+  //   }
+  // ];
 
   const mockConfig: IServiceConfig = {
     repositoryBaseEndpoint: "/api/repositories/testing"

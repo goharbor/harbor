@@ -30,7 +30,7 @@
         </section>
         <section id="system_label" role="tabpanel" aria-labelledby="config-label" *ngIf="!withAdmiral" [hidden]='!isCurrentTabContent("system_label")' style="padding-top: 16px;">
             <hbr-label [scope]="'g'"></hbr-label>
-      </section>
+        </section>
         <section id="vulnerability" *ngIf="withClair" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
             <vulnerability-config [(vulnerabilityConfig)]="allConfig"></vulnerability-config>
         </section>

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, async, } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import {Component, DebugElement} from '@angular/core';
+import { DebugElement} from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { SharedModule } from '../shared/shared.module';
@@ -118,7 +118,7 @@ describe('RepositoryComponent (inline template)', () => {
       project_id: 0,
       scope: "g",
       update_time: "",
-    }]
+    }];
 
   let mockLabels1: Label[] = [{
     color: "#9b0d54",
@@ -139,7 +139,7 @@ describe('RepositoryComponent (inline template)', () => {
       project_id: 1,
       scope: "p",
       update_time: "",
-    }]
+    }];
 
   let config: IServiceConfig = {
     repositoryBaseEndpoint: '/api/repository/testing',

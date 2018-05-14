@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { DebugElement } from '@angular/core';
+// tslint:disable-next-line:no-unused-variable
 import { Observable } from 'rxjs/Observable';
 import { JobLogService, JobLogDefaultService } from '../service/index';
 

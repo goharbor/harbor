@@ -56,7 +56,7 @@ export class TargetExistsValidatorDirective implements Validator, OnChanges {
         return new Promise(resolve => {
                 this.projectService
                     .checkProjectExists(control.value)
-                    .subscribe(res => resolve({'targetExists': true}),error=>resolve(null));
+                    .subscribe(res => resolve({'targetExists': true}), error => resolve(null));
               });
       case 'MEMBER_NAME':
         return new Promise(resolve => {

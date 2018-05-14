@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core';
-import { Router, NavigationExtras, NavigationEnd } from '@angular/router';
-import { Repository } from 'harbor-ui';
+import { Router, NavigationEnd } from '@angular/router';
 import { State } from 'clarity-angular';
+import { Repository } from 'harbor-ui';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 
@@ -34,7 +34,7 @@ export class ListRepositoryROComponent implements OnInit {
     private router: Router,
     private searchTrigger: SearchTriggerService,
     private ref: ChangeDetectorRef) {
-    this.router.routeReuseStrategy.shouldReuseRoute = function(){
+    this.router.routeReuseStrategy.shouldReuseRoute = function() {
         return false;
     };
     this.router.events.subscribe((evt) => {

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Headers, Http, URLSearchParams } from '@angular/http';
+import { Http, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { SessionUser } from './session-user';
@@ -36,7 +36,7 @@ const langMap = {
 
 /**
  * Define related methods to handle account and session corresponding things
- * 
+ *
  * @export
  * @class SessionService
  */
@@ -52,24 +52,24 @@ export class SessionService {
 
     constructor(private http: Http) { }
 
-    //Handle the related exceptions
+    // Handle the related exceptions
     handleError(error: any): Promise<any> {
         return Promise.reject(error.message || error);
     }
 
-    //Clear session
+    // Clear session
     clear(): void {
         this.currentUser = null;
         this.projectMembers = [];
     }
 
-    //Submit signin form to backend (NOT restful service)
+    // Submit signin form to backend (NOT restful service)
     signIn(signInCredential: SignInCredential): Promise<any> {
-        //Build the form package
-        let queryParam:string = 'principal=' + encodeURIComponent(signInCredential.principal) + 
+        // Build the form package
+        let queryParam: string = 'principal=' + encodeURIComponent(signInCredential.principal) +
         '&password=' + encodeURIComponent(signInCredential.password);
 
-        //Trigger Http
+        // Trigger Http
         return this.http.post(signInUrl, queryParam, HTTP_FORM_OPTIONS)
             .toPromise()
             .then(() => null)
@@ -78,15 +78,15 @@ export class SessionService {
 
     /**
      * Get the related information of current signed in user from backend
-     * 
+     *
      * @returns {Promise<SessionUser>}
-     * 
+     *
      * @memberOf SessionService
      */
     retrieveUser(): Promise<SessionUser> {
         return this.http.get(currentUserEndpint, HTTP_GET_OPTIONS).toPromise()
             .then(response => this.currentUser = response.json() as SessionUser)
-            .catch(error => this.handleError(error))
+            .catch(error => this.handleError(error));
     }
 
     /**
@@ -102,19 +102,19 @@ export class SessionService {
     signOff(): Promise<any> {
         return this.http.get(signOffEndpoint, HTTP_GET_OPTIONS).toPromise()
             .then(() => {
-                //Destroy current session cache
-                //this.currentUser = null;
-            }) //Nothing returned
-            .catch(error => this.handleError(error))
+                // Destroy current session cache
+                // this.currentUser = null;
+            })  // Nothing returned
+            .catch(error => this.handleError(error));
     }
 
     /**
-     * 
+     *
      * Update accpunt settings
-     * 
+     *
      * @param {SessionUser} account
      * @returns {Promise<any>}
-     * 
+     *
      * @memberOf SessionService
      */
     updateAccountSettings(account: SessionUser): Promise<any> {
@@ -124,10 +124,10 @@ export class SessionService {
         let putUrl = accountEndpoint.replace(":id", account.user_id + "");
         return this.http.put(putUrl, JSON.stringify(account), HTTP_JSON_OPTIONS).toPromise()
             .then(() => {
-                //Retrieve current session user
+                // Retrieve current session user
                 return this.retrieveUser();
             })
-            .catch(error => this.handleError(error))
+            .catch(error => this.handleError(error));
     }
 
     /**
@@ -165,16 +165,16 @@ export class SessionService {
         let getUrl = langEndpoint + "?lang=" + backendLang;
         return this.http.get(getUrl, HTTP_GET_OPTIONS).toPromise()
             .then(() => null)
-            .catch(error => this.handleError(error))
+            .catch(error => this.handleError(error));
     }
 
     checkUserExisting(target: string, value: string): Promise<boolean> {
-        //Build the form package
+        // Build the form package
         const body = new URLSearchParams();
         body.set('target', target);
         body.set('value', value);
 
-        //Trigger Http
+        // Trigger Http
         return this.http.post(userExistsEndpoint, body.toString(), HTTP_FORM_OPTIONS)
             .toPromise()
             .then(response => {

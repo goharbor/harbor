@@ -1,12 +1,13 @@
 import { TestBed, inject } from '@angular/core/testing';
 import { SharedModule } from '../shared/shared.module';
-import { EndpointService, EndpointDefaultService } from './endpoint.service';
 import { IServiceConfig, SERVICE_CONFIG } from '../service.config';
+import { EndpointService, EndpointDefaultService } from './endpoint.service';
+
 
 
 describe('EndpointService', () => {
 
-  let mockEndpoint:IServiceConfig = {
+  let mockEndpoint: IServiceConfig = {
     targetBaseEndpoint: '/api/endpoint/testing'
   };
 

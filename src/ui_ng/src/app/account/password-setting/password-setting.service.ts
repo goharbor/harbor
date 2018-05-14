@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions, URLSearchParams } from '@angular/http';
+import { Http, URLSearchParams } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { PasswordSetting } from './password-setting';
@@ -51,7 +51,7 @@ export class PasswordSettingService {
             .then(response => response)
             .catch(error => {
                 return Promise.reject(error);
-            })
+            });
     }
 
     resetPassword(uuid: string, newPassword: string): Promise<any> {
@@ -59,7 +59,6 @@ export class PasswordSettingService {
             return Promise.reject("Invalid reset uuid or password");
         }
 
-        
         let body: URLSearchParams = new URLSearchParams();
         body.set("reset_uuid", uuid);
         body.set("password", newPassword);

@@ -14,7 +14,12 @@
 import { ConfirmationTargets, ConfirmationButtons } from '../../shared/shared.const';
 
 export class ConfirmationMessage {
-    public constructor(title: string, message: string, param: string, data: any, targetId: ConfirmationTargets, buttons?: ConfirmationButtons) {
+    public constructor(title: string,
+        message: string,
+        param: string,
+        data: any,
+        targetId: ConfirmationTargets,
+        buttons?: ConfirmationButtons) {
         this.title = title;
         this.message = message;
         this.data = data;
@@ -24,7 +29,7 @@ export class ConfirmationMessage {
     }
     title: string;
     message: string;
-    data: any = {};//default is empty
+    data: any = {}; // default is empty
     targetId: ConfirmationTargets = ConfirmationTargets.EMPTY;
     param: string;
     buttons: ConfirmationButtons;

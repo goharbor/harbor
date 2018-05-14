@@ -48,7 +48,7 @@ describe('LabelComponent (inline template)', () => {
             project_id: 0,
             scope: "g",
             update_time: "",
-        }
+        };
 
     let comp: LabelComponent;
     let fixture: ComponentFixture<LabelComponent>;
@@ -107,7 +107,7 @@ describe('LabelComponent (inline template)', () => {
             comp.editLabel([mockOneData]);
             fixture.detectChanges();
             expect(comp.targets[0].name).toEqual('label0-g');
-        })
+        });
     }));
 
     /*it('should open to edit existing label', async() => {
@@ -128,4 +128,4 @@ describe('LabelComponent (inline template)', () => {
         })
     })*/
 
-})
+});

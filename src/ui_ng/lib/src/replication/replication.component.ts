@@ -11,17 +11,29 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, Input, Output, OnDestroy, EventEmitter } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  Input,
+  Output,
+  OnDestroy,
+  EventEmitter
+} from "@angular/core";
 
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService } from "@ngx-translate/core";
 
-import { ListReplicationRuleComponent } from '../list-replication-rule/list-replication-rule.component';
-import { CreateEditRuleComponent } from '../create-edit-rule/create-edit-rule.component';
-import { ErrorHandler } from '../error-handler/error-handler';
+import { ListReplicationRuleComponent } from "../list-replication-rule/list-replication-rule.component";
+import { CreateEditRuleComponent } from "../create-edit-rule/create-edit-rule.component";
+import { ErrorHandler } from "../error-handler/error-handler";
 
-import { ReplicationService } from '../service/replication.service';
-import { RequestQueryParams } from '../service/RequestQueryParams';
-import { ReplicationRule, ReplicationJob, ReplicationJobItem } from '../service/interface';
+import { ReplicationService } from "../service/replication.service";
+import { RequestQueryParams } from "../service/RequestQueryParams";
+import {
+  ReplicationRule,
+  ReplicationJob,
+  ReplicationJobItem
+} from "../service/interface";
 
 import {
   toPromise,
@@ -30,59 +42,68 @@ import {
   doFiltering,
   doSorting,
   calculatePage
-} from '../utils';
+} from "../utils";
 
-import { Comparator } from 'clarity-angular';
+import { Comparator } from "clarity-angular";
 
-import { JobLogViewerComponent } from '../job-log-viewer/index';
+import { JobLogViewerComponent } from "../job-log-viewer/index";
 import { State } from "clarity-angular";
-import {Observable} from "rxjs/Observable";
-import {Subscription} from "rxjs/Subscription";
-import {ConfirmationTargets, ConfirmationButtons, ConfirmationState} from "../shared/shared.const";
-import {ConfirmationMessage} from "../confirmation-dialog/confirmation-message";
-import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
-import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
-import {ConfirmationAcknowledgement} from "../confirmation-dialog/confirmation-state-message";
+import { Observable } from "rxjs/Observable";
+import { Subscription } from "rxjs/Subscription";
+import {
+  ConfirmationTargets,
+  ConfirmationButtons,
+  ConfirmationState
+} from "../shared/shared.const";
+import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
+import {
+  BatchInfo,
+  BathInfoChanges
+} from "../confirmation-dialog/confirmation-batch-message";
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
+import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
 
 const ruleStatus: { [key: string]: any } = [
-  { 'key': 'all', 'description': 'REPLICATION.ALL_STATUS' },
-  { 'key': '1', 'description': 'REPLICATION.ENABLED' },
-  { 'key': '0', 'description': 'REPLICATION.DISABLED' }
+  { key: "all", description: "REPLICATION.ALL_STATUS" },
+  { key: "1", description: "REPLICATION.ENABLED" },
+  { key: "0", description: "REPLICATION.DISABLED" }
 ];
 
 const jobStatus: { [key: string]: any } = [
-  { 'key': 'all', 'description': 'REPLICATION.ALL' },
-  { 'key': 'pending', 'description': 'REPLICATION.PENDING' },
-  { 'key': 'running', 'description': 'REPLICATION.RUNNING' },
-  { 'key': 'error', 'description': 'REPLICATION.ERROR' },
-  { 'key': 'retrying', 'description': 'REPLICATION.RETRYING' },
-  { 'key': 'stopped', 'description': 'REPLICATION.STOPPED' },
-  { 'key': 'finished', 'description': 'REPLICATION.FINISHED' },
-  { 'key': 'canceled', 'description': 'REPLICATION.CANCELED' }
+  { key: "all", description: "REPLICATION.ALL" },
+  { key: "pending", description: "REPLICATION.PENDING" },
+  { key: "running", description: "REPLICATION.RUNNING" },
+  { key: "error", description: "REPLICATION.ERROR" },
+  { key: "retrying", description: "REPLICATION.RETRYING" },
+  { key: "stopped", description: "REPLICATION.STOPPED" },
+  { key: "finished", description: "REPLICATION.FINISHED" },
+  { key: "canceled", description: "REPLICATION.CANCELED" }
 ];
 
-const optionalSearch: {} = { 0: 'REPLICATION.ADVANCED', 1: 'REPLICATION.SIMPLE' };
+const optionalSearch: {} = {
+  0: "REPLICATION.ADVANCED",
+  1: "REPLICATION.SIMPLE"
+};
 
 export class SearchOption {
   ruleId: number | string;
-  ruleName: string = '';
-  repoName: string = '';
-  status: string = '';
-  startTime: string = '';
-  startTimestamp: string = '';
-  endTime: string = '';
-  endTimestamp: string = '';
+  ruleName: string = "";
+  repoName: string = "";
+  status: string = "";
+  startTime: string = "";
+  startTimestamp: string = "";
+  endTime: string = "";
+  endTimestamp: string = "";
   page: number = 1;
   pageSize: number = DEFAULT_PAGE_SIZE;
 }
 
 @Component({
-  selector: 'hbr-replication',
-  templateUrl: './replication.component.html',
-  styleUrls: ['./replication.component.scss']
+  selector: "hbr-replication",
+  templateUrl: "./replication.component.html",
+  styleUrls: ["./replication.component.scss"]
 })
 export class ReplicationComponent implements OnInit, OnDestroy {
-
   @Input() projectId: number | string;
   @Input() projectName: string;
   @Input() isSystemAdmin: boolean;
@@ -96,10 +117,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   search: SearchOption = new SearchOption();
 
   ruleStatus = ruleStatus;
-  currentRuleStatus: { key: string, description: string };
+  currentRuleStatus: { key: string; description: string };
 
   jobStatus = jobStatus;
-  currentJobStatus: { key: string, description: string };
+  currentJobStatus: { key: string; description: string };
 
   changedRules: ReplicationRule[];
 
@@ -107,7 +128,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   loading: boolean;
   isStopOnGoing: boolean;
   hiddenJobList = true;
-
 
   jobs: ReplicationJobItem[];
   batchDelectionInfos: BatchInfo[] = [];
@@ -124,13 +144,17 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @ViewChild("replicationLogViewer")
   replicationLogViewer: JobLogViewerComponent;
 
-  @ViewChild('replicationConfirmDialog')
+  @ViewChild("replicationConfirmDialog")
   replicationConfirmDialog: ConfirmationDialogComponent;
 
-  creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('creation_time', 'date');
-  updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<ReplicationJob>('update_time', 'date');
+  creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
+    ReplicationJob
+  >("creation_time", "date");
+  updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
+    ReplicationJob
+  >("update_time", "date");
 
-  //Server driven pagination
+  // Server driven pagination
   currentPage: number = 1;
   totalCount: number = 0;
   pageSize: number = DEFAULT_PAGE_SIZE;
@@ -141,9 +165,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   constructor(
     private errorHandler: ErrorHandler,
     private replicationService: ReplicationService,
-    private translateService: TranslateService) {
-  }
-
+    private translateService: TranslateService
+  ) {}
 
   public get showPaginationIndex(): boolean {
     return this.totalCount > 0;
@@ -177,7 +200,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.goToRegistry.emit();
   }
 
-  //Server driven data loading
+  // Server driven data loading
   clrLoadJobs(state: State): void {
     if (!state || !state.page || !this.search.ruleId) {
       return;
@@ -185,66 +208,72 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.currentState = state;
 
     let pageNumber: number = calculatePage(state);
-    if (pageNumber <= 0) { pageNumber = 1; }
+    if (pageNumber <= 0) {
+      pageNumber = 1;
+    }
 
     let params: RequestQueryParams = new RequestQueryParams();
-    //Pagination
-    params.set("page", '' + pageNumber);
-    params.set("page_size", '' + this.pageSize);
-    //Search by status
+    // Pagination
+    params.set("page", "" + pageNumber);
+    params.set("page_size", "" + this.pageSize);
+    // Search by status
     if (this.search.status.trim()) {
-      params.set('status', this.search.status);
+      params.set("status", this.search.status);
     }
-    //Search by repository
+    // Search by repository
     if (this.search.repoName.trim()) {
-      params.set('repository', this.search.repoName);
+      params.set("repository", this.search.repoName);
     }
-    //Search by timestamps
+    // Search by timestamps
     if (this.search.startTimestamp.trim()) {
-      params.set('start_time', this.search.startTimestamp);
+      params.set("start_time", this.search.startTimestamp);
     }
     if (this.search.endTimestamp.trim()) {
-      params.set('end_time', this.search.endTimestamp);
+      params.set("end_time", this.search.endTimestamp);
     }
 
     this.jobsLoading = true;
 
-    //Do filtering and sorting
+    // Do filtering and sorting
     this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
     this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
 
     this.jobsLoading = false;
-    toPromise<ReplicationJob>(this.replicationService
-      .getJobs(this.search.ruleId, params))
-      .then(
-      response => {
+    toPromise<ReplicationJob>(
+      this.replicationService.getJobs(this.search.ruleId, params)
+    )
+      .then(response => {
         this.totalCount = response.metadata.xTotalCount;
         this.jobs = response.data;
 
         if (!this.timerDelay) {
           this.timerDelay = Observable.timer(10000, 10000).subscribe(() => {
             let count: number = 0;
-            this.jobs.forEach((job) => {
-              if ((job.status === 'pending') || (job.status === 'running') || (job.status === 'retrying')) {
-                count ++;
+            this.jobs.forEach(job => {
+              if (
+                job.status === "pending" ||
+                job.status === "running" ||
+                job.status === "retrying"
+              ) {
+                count++;
               }
             });
             if (count > 0) {
               this.clrLoadJobs(this.currentState);
-            }else {
+            } else {
               this.timerDelay.unsubscribe();
               this.timerDelay = null;
             }
           });
         }
 
-        //Do filtering and sorting
+        // Do filtering and sorting
         this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
         this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
 
         this.jobsLoading = false;
-
-      }).catch(error => {
+      })
+      .catch(error => {
         this.jobsLoading = false;
         this.errorHandler.error(error);
       });
@@ -267,11 +296,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   selectOneRule(rule: ReplicationRule) {
     if (rule && rule.id) {
       this.hiddenJobList = false;
-      this.search.ruleId = rule.id || '';
-      this.search.repoName = '';
-      this.search.status = '';
+      this.search.ruleId = rule.id || "";
+      this.search.repoName = "";
+      this.search.status = "";
       this.currentJobSearchOption = 0;
-      this.currentJobStatus = { 'key': 'all', 'description': 'REPLICATION.ALL' };
+      this.currentJobStatus = { key: "all", description: "REPLICATION.ALL" };
       this.loadFirstPage();
     }
   }
@@ -279,30 +308,35 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   replicateManualRule(rule: ReplicationRule) {
     if (rule) {
       this.batchDelectionInfos = [];
-        let initBatchMessage = new BatchInfo ();
-        initBatchMessage.name = rule.name;
-        this.batchDelectionInfos.push(initBatchMessage);
+      let initBatchMessage = new BatchInfo();
+      initBatchMessage.name = rule.name;
+      this.batchDelectionInfos.push(initBatchMessage);
       let replicationMessage = new ConfirmationMessage(
-          'REPLICATION.REPLICATION_TITLE',
-          'REPLICATION.REPLICATION_SUMMARY',
-          rule.name,
-          rule,
-          ConfirmationTargets.TARGET,
-          ConfirmationButtons.REPLICATE_CANCEL);
+        "REPLICATION.REPLICATION_TITLE",
+        "REPLICATION.REPLICATION_SUMMARY",
+        rule.name,
+        rule,
+        ConfirmationTargets.TARGET,
+        ConfirmationButtons.REPLICATE_CANCEL
+      );
       this.replicationConfirmDialog.open(replicationMessage);
     }
   }
 
   confirmReplication(message: ConfirmationAcknowledgement) {
-    if (message &&
-        message.source === ConfirmationTargets.TARGET &&
-        message.state === ConfirmationState.CONFIRMED) {
+    if (
+      message &&
+      message.source === ConfirmationTargets.TARGET &&
+      message.state === ConfirmationState.CONFIRMED
+    ) {
       let rule: ReplicationRule = message.data;
 
       if (rule) {
-        Promise.all([this.replicationOperate(+rule.id, rule.name)]).then((item) => {
-          this.selectOneRule(rule);
-        });
+        Promise.all([this.replicationOperate(+rule.id, rule.name)]).then(
+          item => {
+            this.selectOneRule(rule);
+          }
+        );
       }
     }
   }
@@ -311,23 +345,33 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     let findedList = this.batchDelectionInfos.find(data => data.name === name);
 
     return toPromise<any>(this.replicationService.replicateRule(ruleId))
-        .then(response => {
-          this.translateService.get('BATCH.REPLICATE_SUCCESS')
-              .subscribe(res => findedList = BathInfoChanges(findedList, res));
-        })
-        .catch(error => {
-          if (error && error.status === 412) {
-            Observable.forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
-                this.translateService.get('REPLICATION.REPLICATE_SUMMARY_FAILURE'))
-                .subscribe(function (res) {
-              findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
-            });
-          } else {
-            this.translateService.get('BATCH.REPLICATE_FAILURE').subscribe(res => {
+      .then(response => {
+        this.translateService
+          .get("BATCH.REPLICATE_SUCCESS")
+          .subscribe(res => (findedList = BathInfoChanges(findedList, res)));
+      })
+      .catch(error => {
+        if (error && error.status === 412) {
+          Observable.forkJoin(
+            this.translateService.get("BATCH.REPLICATE_FAILURE"),
+            this.translateService.get("REPLICATION.REPLICATE_SUMMARY_FAILURE")
+          ).subscribe(function(res) {
+            findedList = BathInfoChanges(
+              findedList,
+              res[0],
+              false,
+              true,
+              res[1]
+            );
+          });
+        } else {
+          this.translateService
+            .get("BATCH.REPLICATE_FAILURE")
+            .subscribe(res => {
               findedList = BathInfoChanges(findedList, res, false, true);
             });
-          }
-        });
+        }
+      });
   }
 
   customRedirect(rule: ReplicationRule) {
@@ -344,12 +388,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       let status = $event.target["value"];
 
       this.currentJobStatus = this.jobStatus.find((r: any) => r.key === status);
-      if (this.currentJobStatus.key === 'all') {
-        status = '';
+      if (this.currentJobStatus.key === "all") {
+        status = "";
       }
       this.search.status = status;
       this.doSearchJobs(this.search.repoName);
-
     }
   }
 
@@ -368,17 +411,17 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     if (this.jobs && this.jobs.length) {
       this.isStopOnGoing = true;
       toPromise(this.replicationService.stopJobs(this.jobs[0].policy_id))
-          .then(res => {
-            this.refreshJobs();
-            this.isStopOnGoing = false;
-          })
-          .catch(error =>  this.errorHandler.error(error));
+        .then(res => {
+          this.refreshJobs();
+          this.isStopOnGoing = false;
+        })
+        .catch(error => this.errorHandler.error(error));
     }
   }
 
   reloadRules(isReady: boolean) {
     if (isReady) {
-      this.search.ruleName = '';
+      this.search.ruleName = "";
       this.listReplicationRule.retrieveRules(this.search.ruleName);
     }
   }
@@ -387,11 +430,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.listReplicationRule.retrieveRules();
   }
 
-
   refreshJobs() {
     this.currentJobStatus = this.jobStatus[0];
-    this.search.startTime = ' ';
-    this.search.endTime = ' ';
+    this.search.startTime = " ";
+    this.search.endTime = " ";
     this.search.repoName = "";
     this.search.startTimestamp = "";
     this.search.endTimestamp = "";
@@ -410,7 +452,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   }
 
   toggleSearchJobOptionalName(option: number) {
-    (option === 1) ? this.currentJobSearchOption = 0 : this.currentJobSearchOption = 1;
+    option === 1
+      ? (this.currentJobSearchOption = 0)
+      : (this.currentJobSearchOption = 1);
   }
 
   doJobSearchByStartTime(fromTimestamp: string) {

@@ -244,7 +244,7 @@ export class MemberComponent implements OnInit, OnDestroy {
           this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
             findedList = BathInfoChanges(findedList, res, false, true);
           });
-        }else {
+        } else {
           promiseLists.push(this.delOperate(this.projectId, member.id, member.entity_name));
         }
 

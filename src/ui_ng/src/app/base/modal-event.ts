@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//Define a object to store the modal event
+// Define a object to store the modal event
 export class ModalEvent {
     modalName: string;
-    modalFlag: boolean; //true for open, false for close
+    modalFlag: boolean; // true for open, false for close
 }
