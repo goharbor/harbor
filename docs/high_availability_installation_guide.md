@@ -15,7 +15,7 @@ Notices take these forms:
 ## Abstract 
 
 This guide describes how to install and configure Harbor for high availability. It supplements the [Installation Guides](installation_guide.md) and assumes that you are         familiar with the material in those guides.
-**Important**  This guide was last updated as of the Harbor 1.4.0 release. It will not apply to releases before 1.4.0. We advise that you read this at your own discretion when planning on your Harbor high availability implementation.  
+**Important**  This guide was last updated as of the Harbor 1.5.0 release. It will not apply to releases before 1.4.0. We advise that you read this at your own discretion when planning on your Harbor high availability implementation.  
 
 This guide is intended as advice only.
 
@@ -107,7 +107,7 @@ If you are only setting up the HA for POC purpose. You can use docker to run Mar
 Import Harbor database schema to your external MariaDB 
 
 #### 1> Login to a machine that has MariaDB client installed
-#### 2> Save the [Harbor DB Schema](https://github.com/vmware/harbor/blob/release-1.4.0/make/photon/db/registry.sql) to ```registry.sql```
+#### 2> Save the [Harbor DB Schema](https://github.com/vmware/harbor/blob/release-1.5.0/make/photon/db/registry.sql) to ```registry.sql```
 #### 3> Load the schema
 ```
 #> mysql -u your_db_username -p -h your_db_ip < registry.sql
@@ -129,7 +129,7 @@ Curl will be used in the keepalived check script.
 
 ##### 2> Config Keepalived
 
-Save the [Keepalived configuration file](https://github.com/vmware/harbor/blob/release-1.4.0/make/ha/sample/active_active/keepalived_active_active.conf) to ```/etc/keepalived/keepalived.conf```
+Save the [Keepalived configuration file](https://github.com/vmware/harbor/blob/release-1.5.0/make/ha/sample/active_active/keepalived_active_active.conf) to ```/etc/keepalived/keepalived.conf```
 
 
 **Important**
@@ -141,7 +141,7 @@ Change **harbor_node1_IP** (Two places) and **harbor_node2_IP** (Two places)to t
 If you have more than two nodes then please add more real_server definitions in the keepalived.conf 
 
 ##### 3> Configure health check
-Save the server [health check](https://github.com/vmware/harbor/blob/release-1.4.0/make/ha/sample/active_active/check.sh) script to ```/usr/local/bin/check.sh```
+Save the server [health check](https://github.com/vmware/harbor/blob/release-1.5.0/make/ha/sample/active_active/check.sh) script to ```/usr/local/bin/check.sh```
  
 Run the follow command to add the execute privilege.
 
