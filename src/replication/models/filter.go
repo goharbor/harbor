@@ -23,8 +23,9 @@ import (
 
 // Filter is the data model represents the filter defined by user.
 type Filter struct {
-	Kind    string `json:"kind"`
-	Pattern string `json:"pattern"`
+	Kind    string      `json:"kind"`
+	Pattern string      `json:"pattern"` // deprecated, use Value instead
+	Value   interface{} `json:"value"`
 }
 
 // Valid ...

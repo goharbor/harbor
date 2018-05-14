@@ -71,7 +71,7 @@ func (t *TagFilter) DoFilter(items []models.FilterItem) []models.FilterItem {
 		tag := strings.SplitN(item.Value, ":", 2)[1]
 		matched, err := match(t.pattern, tag)
 		if err != nil {
-			log.Errorf("failed to match pattern %s to value %s: %v", t.pattern, tag, err)
+			log.Errorf("failed to match pattern %s to value %s: %v, skip it", t.pattern, tag, err)
 			continue
 		}
 

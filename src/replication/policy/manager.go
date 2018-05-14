@@ -106,6 +106,11 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (models.Replicati
 		if err := json.Unmarshal([]byte(policy.Filters), &filters); err != nil {
 			return models.ReplicationPolicy{}, err
 		}
+		for i := range filters {
+			if filters[i].Value == nil && len(filters[i].Pattern) > 0 {
+				filters[i].Value = filters[i].Pattern
+			}
+		}
 		ply.Filters = filters
 	}
 
