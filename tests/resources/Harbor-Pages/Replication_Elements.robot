@@ -25,7 +25,7 @@ ${destination_name_xpath}  //*[@id='destination_name']
 ${destination_url_xpath}  //*[@id='destination_url']
 ${destination_username_xpath}  //*[@id='destination_username']
 ${destination_password_xpath}  //*[@id='destination_password']
-${replicaton_save_xpath}  //button[contains(.,'OK')]
+${replication_save_xpath}  //button[contains(.,'OK')]
 ${replication_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Replication')]
 ${destination_insecure_xpath}  //clr-checkbox[@id="destination_insecure"]//label
 

@@ -70,7 +70,7 @@ export class TagDetailComponent implements OnInit {
                         });
                     }
                 })
-                .catch(error => this.errorHandler.error(error))
+                .catch(error => this.errorHandler.error(error));
         }
     }
 

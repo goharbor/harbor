@@ -4,7 +4,7 @@
             <div class="row flex-items-xs-right option-right rightPos">
                 <div class="flex-xs-middle">
                     <hbr-push-image-button style="display: inline-block;" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
-                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filter)="doSearchRepoNames($event)" [currentValue]="lastFilteredRepoName"></hbr-filter>
+                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filterEvt)="doSearchRepoNames($event)" [currentValue]="lastFilteredRepoName"></hbr-filter>
                     <span class="card-btn" (click)="showCard(true)" (mouseenter) ="mouseEnter('card') "  (mouseleave) ="mouseLeave('card')">
                         <clr-icon [ngClass]="{'is-highlight': isCardView || isHovering('card') }" shape="view-cards"></clr-icon>
                     </span>

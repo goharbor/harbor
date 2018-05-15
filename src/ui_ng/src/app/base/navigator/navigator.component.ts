@@ -18,7 +18,6 @@ import { TranslateService } from '@ngx-translate/core';
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
 
-import { SessionUser } from '../../shared/session-user';
 import { SessionService } from '../../shared/session.service';
 import { CookieService, CookieOptions } from 'ngx-cookie';
 
@@ -68,8 +67,8 @@ export class NavigatorComponent implements OnInit {
         this.selectedLang = this.translate.currentLang;
         this.translate.onLangChange.subscribe((langChange: {lang: string}) => {
             this.selectedLang = langChange.lang;
-            //Keep in cookie for next use
-            let opt: CookieOptions = {path: '/', expires: new Date(Date.now() + 3600*1000*24*31)};
+            // Keep in cookie for next use
+            let opt: CookieOptions = {path: '/', expires: new Date(Date.now() + 3600 * 1000 * 24 * 31)};
             this.cookie.put("harbor-lang", langChange.lang, opt);
         });
         if (this.appConfigService.isIntegrationMode()) {
@@ -112,7 +111,8 @@ export class NavigatorComponent implements OnInit {
         let user = this.session.getCurrentUser();
         let config = this.appConfigService.getConfig();
 
-        return user && ((config && !(config.auth_mode === "ldap_auth" || config.auth_mode === "uaa_auth")) || (user.user_id === 1 && user.username === "admin"));
+        return user && ((config && !(config.auth_mode === "ldap_auth" || config.auth_mode === "uaa_auth")) ||
+        (user.user_id === 1 && user.username === "admin"));
     }
 
     matchLang(lang: string): boolean {
@@ -135,7 +135,7 @@ export class NavigatorComponent implements OnInit {
         });
     }
 
-    //Open about dialog
+    // Open about dialog
     openAboutDialog(): void {
         this.showPwdChangeModal.emit({
             modalName: modalEvents.ABOUT,
@@ -143,21 +143,21 @@ export class NavigatorComponent implements OnInit {
         });
     }
 
-    //Log out system
+    // Log out system
     logOut(): void {
-        //Naviagte to the sign in route
-        //Appending 'signout' means destroy session cache
+        // Naviagte to the sign in route
+        // Appending 'signout' means destroy session cache
         let navigatorExtra: NavigationExtras = {
             queryParams: { "signout": true }
         };
         this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
-        //Confirm search result panel is close
+        // Confirm search result panel is close
         this.searchTrigger.closeSearch(true);
     }
 
-    //Switch languages
+    // Switch languages
     switchLanguage(lang: string): void {
-        let selectedLang: string = enLang;//Default
+        let selectedLang: string = enLang; // Default
         if (supportedLangs.find(supportedLang => supportedLang === lang.trim())) {
             selectedLang = lang;
         } else {
@@ -167,17 +167,17 @@ export class NavigatorComponent implements OnInit {
         this.translate.use(selectedLang).subscribe(() => window.location.reload());
     }
 
-    //Handle the home action
+    // Handle the home action
     homeAction(): void {
         if (this.session.getCurrentUser() != null) {
-            //Navigate to default page
+            // Navigate to default page
             this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
         } else {
-            //Naviagte to signin page
+            // Naviagte to signin page
             this.router.navigate([CommonRoutes.HARBOR_ROOT]);
         }
 
-        //Confirm search result panel is close
+        // Confirm search result panel is close
         this.searchTrigger.closeSearch(true);
     }
 

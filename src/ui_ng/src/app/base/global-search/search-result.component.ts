@@ -11,13 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs/Subscription';
 
 import { GlobalSearchService } from './global-search.service';
 import { SearchResults } from './search-results';
 import { SearchTriggerService } from './search-trigger.service';
-
-import { Subscription } from 'rxjs/Subscription';
 
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 
@@ -35,15 +34,15 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
     currentTerm: string = "";
 
-    //Open or close
+    // Open or close
     stateIndicator: boolean = false;
-    //Search in progress
+    // Search in progress
     onGoing: boolean = false;
 
-    //Whether or not mouse point is onto the close indicator
+    // Whether or not mouse point is onto the close indicator
     mouseOn: boolean = false;
 
-    //Watch message channel
+    // Watch message channel
     searchSub: Subscription;
     closeSearchSub: Subscription;
 
@@ -76,12 +75,12 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
         if (src) {
             src.project.forEach(pro => res.project.push(Object.assign({}, pro)));
-            src.repository.forEach(repo => res.repository.push(Object.assign({}, repo)))
+            src.repository.forEach(repo => res.repository.push(Object.assign({}, repo)));
 
             return res;
         }
 
-        return res//Empty object
+        return res; // Empty object
     }
 
     public get state(): boolean {
@@ -96,47 +95,47 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         return this.mouseOn;
     }
 
-    //Show the results
+    // Show the results
     show(): void {
         this.stateIndicator = true;
     }
 
-    //Close the result page
+    // Close the result page
     close(): void {
         this.stateIndicator = false;
         this.searchTrigger.clear(true);
     }
 
-    //Call search service to complete the search request
+    // Call search service to complete the search request
     doSearch(term: string): void {
-        //Only search none empty term
+        // Only search none empty term
         if (!term || term.trim() === "") {
             return;
         }
-        //Do nothing if search is ongoing
+        // Do nothing if search is ongoing
         if (this.onGoing) {
             return;
         }
-        //Confirm page is displayed
+        // Confirm page is displayed
         if (!this.stateIndicator) {
             this.show();
         }
 
         this.currentTerm = term;
 
-        //If term is empty, then clear the results
+        // If term is empty, then clear the results
         if (term === "") {
             this.searchResults.project = [];
             this.searchResults.repository = [];
             return;
         }
-        //Show spinner
+        // Show spinner
         this.onGoing = true;
 
         this.search.doSearch(term)
             .then(searchResults => {
                 this.onGoing = false;
-                this.originalCopy = searchResults; //Keeo the original data
+                this.originalCopy = searchResults; // Keeo the original data
                 this.searchResults = this.clone(searchResults);
             })
             .catch(error => {

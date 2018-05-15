@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 export class Volumes {
-    constructor(){
+    constructor() {
         this.storage = new Storage();
     }
 
@@ -20,7 +20,7 @@ export class Volumes {
 }
 
 export class Storage {
-    constructor(){
+    constructor() {
         this.total = 0;
         this.free = 0;
     }

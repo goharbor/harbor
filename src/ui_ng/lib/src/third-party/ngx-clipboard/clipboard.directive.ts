@@ -5,6 +5,7 @@ import { Directive, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output
     selector: '[ngxClipboard]'
 })
 export class ClipboardDirective implements OnInit, OnDestroy {
+    // tslint:disable-next-line:no-input-rename
     @Input('ngxClipboard') public targetElm: HTMLInputElement;
 
     @Input() public cbContent: string;
@@ -24,7 +25,9 @@ export class ClipboardDirective implements OnInit, OnDestroy {
         this.clipboardSrv.destroy();
     }
 
-    @HostListener('click', ['$event.target']) private onClick(button: ElementRef) {
+    @HostListener('click', ['$event.target'])
+    // tslint:disable-next-line:no-unused-variable
+    private onClick(button: ElementRef) {
         if (!this.clipboardSrv.isSupported) {
             this.handleResult(false, undefined);
         } else if (this.targetElm && this.clipboardSrv.isTargetValid(this.targetElm)) {

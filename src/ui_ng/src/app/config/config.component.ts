@@ -12,25 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-
-import { ConfigurationService } from './config.service';
-import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
-import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { Subscription } from 'rxjs/Subscription';
-import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
+import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent } from 'harbor-ui';
 
-import { ConfigurationAuthComponent } from './auth/config-auth.component';
-import { ConfigurationEmailComponent } from './email/config-email.component';
+import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
+import { SessionService } from '../shared/session.service';
+import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
+import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
+import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
 import { AppConfigService } from '../app-config.service';
-import { SessionService } from '../shared/session.service';
-import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-import {
-    Configuration,
-    StringValueItem,
-    SystemSettingsComponent,
-    VulnerabilityConfigComponent,
-} from 'harbor-ui';
+import { ConfigurationAuthComponent } from './auth/config-auth.component';
+import { ConfigurationEmailComponent } from './email/config-email.component';
+import { ConfigurationService } from './config.service';
+
 
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 const TabLinkContentMap = {
@@ -444,12 +439,12 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         if (!this.allConfig || !this.originalCopy) {
             return changes;
         }
-        for (let prop in this.allConfig) {
+        for (let prop of Object.keys(this.allConfig)) {
             let field = this.originalCopy[prop];
             if (field && field.editable) {
                 if (!this.compareValue(field.value, this.allConfig[prop].value)) {
                     changes[prop] = this.allConfig[prop].value;
-                    // Number 
+                    // Number
                     if (typeof field.value === 'number') {
                         changes[prop] = +changes[prop];
                     }

@@ -2,7 +2,7 @@
   <div>
     <div class="row flex-items-xs-between rightPos">
       <div class="flex-xs-middle option-right">
-        <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_POLICIES_PLACEHOLDER" | translate}}' (filter)="doSearchRules($event)" [currentValue]="search.ruleName"></hbr-filter>
+        <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_POLICIES_PLACEHOLDER" | translate}}' (filterEvt)="doSearchRules($event)" [currentValue]="search.ruleName"></hbr-filter>
         <span class="refresh-btn" (click)="refreshRules()">
           <clr-icon shape="refresh"></clr-icon>
         </span>
@@ -18,7 +18,7 @@
         <h5 class="flex-items-xs-bottom option-left-down" style="margin-left: 14px;">{{'REPLICATION.REPLICATION_JOBS' | translate}}</h5>
         <div class="flex-items-xs-bottom option-right-down">
           <button class="btn btn-link" (click)="toggleSearchJobOptionalName(currentJobSearchOption)">{{toggleJobSearchOption[currentJobSearchOption] | translate}}</button>
-          <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_JOBS_PLACEHOLDER" | translate}}' (filter)="doSearchJobs($event)" [currentValue]="search.repoName" ></hbr-filter>
+          <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_JOBS_PLACEHOLDER" | translate}}' (filterEvt)="doSearchJobs($event)" [currentValue]="search.repoName" ></hbr-filter>
           <span class="refresh-btn" (click)="refreshJobs()">
             <clr-icon shape="refresh"></clr-icon>
           </span>

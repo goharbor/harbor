@@ -208,7 +208,7 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 	// prepare candidates for replication
 	candidates := getCandidates(&policy, ctl.sourcer, metadata...)
 	if len(candidates) == 0 {
-		log.Debugf("replicaton candidates are null, no further action needed")
+		log.Debugf("replication candidates are null, no further action needed")
 	}
 
 	targets := []*common_models.RepTarget{}

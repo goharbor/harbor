@@ -26,7 +26,7 @@ import { CommonRoutes } from '../../shared/shared.const';
 export class MemberGuard implements CanActivate, CanActivateChild {
   constructor(
     private sessionService: SessionService,
-    private projectService: ProjectService, 
+    private projectService: ProjectService,
     private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
@@ -34,32 +34,32 @@ export class MemberGuard implements CanActivate, CanActivateChild {
     this.sessionService.setProjectMembers([]);
     return new Promise((resolve, reject) => {
       let user = this.sessionService.getCurrentUser();
-      if(user === null) {
-        this.sessionService.retrieveUser().then(currentUser=>{
+      if (user === null) {
+        this.sessionService.retrieveUser().then(currentUser => {
           return resolve(this.checkMemberStatus(state.url, projectId));
-        }).catch(err=>resolve(true));
+        }).catch(err => resolve(true));
       } else {
         return resolve(this.checkMemberStatus(state.url, projectId));
-      } 
+      }
     });
   }
 
   checkMemberStatus(url: string, projectId: number): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject)=>{
+    return new Promise<boolean>((resolve, reject) => {
       this.projectService.checkProjectMember(projectId)
           .subscribe(
-          res=>{
+          res => {
             this.sessionService.setProjectMembers(res);
             return resolve(true);
           },
           error => {
-            //Add exception for repository in project detail router activation.
-            if(url.endsWith('repository')) {
+            // Add exception for repository in project detail router activation.
+            if (url.endsWith('repository')) {
               return resolve(true);
             }
             this.projectService.getProject(projectId)
-                .subscribe(project=>{
-                  if(project.public === 1) {
+                .subscribe(project => {
+                  if (project.public === 1) {
                     return resolve(true);
                   }
                   this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);

@@ -75,7 +75,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                 this.validationStateMap[key] = cont.valid;
                 // Check email existing from backend
                 if (cont.valid && key === "account_settings_email") {
-                    if (this.formValueChanged && this.account.email != this.originalStaticData.email) {
+                    if (this.formValueChanged && this.account.email !== this.originalStaticData.email) {
                         if (this.mailAlreadyChecked[this.account.email]) {
                             this.validationStateMap[key] = !this.mailAlreadyChecked[this.account.email].result;
                             if (!this.validationStateMap[key]) {
@@ -116,8 +116,8 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             return false;
         }
 
-        for (var prop in this.originalStaticData) {
-            if (this.originalStaticData[prop] != this.account[prop]) {
+        for (let prop in this.originalStaticData) {
+            if (this.originalStaticData[prop] !== this.account[prop]) {
                 return true;
             }
         }
@@ -140,7 +140,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         return this.checkOnGoing;
     }
 
-    public get renamable(): boolean {
+    public get canRename(): boolean {
         return this.account && this.account.has_admin_role && this.account.username === "admin" && this.account.user_id === 1;
     }
 
@@ -152,7 +152,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     confirmRename(): void {
-        if (this.renamable) {
+        if (this.canRename) {
             this.session.renameAdmin(this.account)
             .then(() => {
                 this.msgHandler.showSuccess("PROFILE.RENAME_SUCCESS");
@@ -164,7 +164,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
 
     ngAfterViewChecked(): void {
-        if (this.accountFormRef != this.accountForm) {
+        if (this.accountFormRef !== this.accountForm) {
             this.accountFormRef = this.accountForm;
             if (this.accountFormRef) {
                 this.accountFormRef.valueChanges.subscribe(data => {

@@ -11,10 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
 
 import { SearchTriggerService } from './search-trigger.service';
@@ -26,7 +25,7 @@ import 'rxjs/add/operator/distinctUntilChanged';
 import {TranslateService} from "@ngx-translate/core";
 import {SkinableConfig} from "../../skinable-config.service";
 
-const deBounceTime = 500; //ms
+const deBounceTime = 500; // ms
 
 @Component({
     selector: 'global-search',
@@ -34,14 +33,14 @@ const deBounceTime = 500; //ms
     styleUrls: ["search.component.scss"]
 })
 export class GlobalSearchComponent implements OnInit, OnDestroy {
-    //Keep search term as Subject
+    // Keep search term as Subject
     searchTerms = new Subject<string>();
 
-    //Keep subscription for future use
+    // Keep subscription for future use
     searchSub: Subscription;
     closeSub: Subscription;
 
-    //To indicate if the result panel is opened
+    // To indicate if the result panel is opened
     isResPanelOpened: boolean = false;
     searchTerm: string = "";
 
@@ -56,23 +55,22 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        //custom skin
+        // custom skin
         let customSkinObj = this.skinableConfig.getProject();
         if (customSkinObj && customSkinObj.projectName) {
             this.translate.get('GLOBAL_SEARCH.PLACEHOLDER', {'param': customSkinObj.projectName}).subscribe(res => {
-                //Placeholder text
+                // Placeholder text
                 this.placeholderText = res;
             });
-        }else {
+        } else {
             this.translate.get('GLOBAL_SEARCH.PLACEHOLDER', {'param': 'Harbor'}).subscribe(res => {
-                //Placeholder text
+                // Placeholder text
                 this.placeholderText = res;
             });
         }
 
         this.searchSub = this.searchTerms
             .debounceTime(deBounceTime)
-            //.distinctUntilChanged()
             .subscribe(term => {
                 this.searchTrigger.triggerSearch(term);
             });
@@ -95,9 +93,9 @@ export class GlobalSearchComponent implements OnInit, OnDestroy {
         }
     }
 
-    //Handle the term inputting event
+    // Handle the term inputting event
     search(term: string): void {
-        //Send event even term is empty
+        // Send event even term is empty
 
         this.searchTerms.next(term.trim());
     }

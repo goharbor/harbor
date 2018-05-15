@@ -13,10 +13,7 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 
-import { Http, Headers, RequestOptions, Response, URLSearchParams } from '@angular/http';
-import { Project } from './project';
-
-import { Message } from '../global-message/message';
+import { Http, URLSearchParams } from '@angular/http';
 
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
@@ -32,28 +29,27 @@ export class ProjectService {
   getProject(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}`, HTTP_GET_OPTIONS)
-               .map(response=>response.json())
-               .catch(error=>Observable.throw(error));
+               .map(response => response.json())
+               .catch(error => Observable.throw(error));
   }
 
-  listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<any>{    
+  listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<any> {
     let params = new URLSearchParams();
-    if(page && pageSize) {
+    if (page && pageSize) {
       params.set('page', page + '');
       params.set('page_size', pageSize + '');
     }
-    if(name && name.trim() !== ""){
+    if (name && name.trim() !== "") {
       params.set('name', name);
     }
-    if(isPublic !== undefined){
-      params.set('public', ''+isPublic);
+    if (isPublic !== undefined) {
+      params.set('public', '' + isPublic);
     }
 
-    //let options = new RequestOptions({ headers: this.getHeaders, search: params });
     return this.http
                .get(`/api/projects`, buildHttpRequestOptions(params))
-               .map(response=>response)
-               .catch(error=>Observable.throw(error));
+               .map(response => response)
+               .catch(error => Observable.throw(error));
   }
 
   createProject(name: string, metadata: any): Observable<any> {
@@ -63,8 +59,8 @@ export class ProjectService {
                   public: metadata.public ? 'true' : 'false',
                 }})
                 , HTTP_JSON_OPTIONS)
-               .map(response=>response.status)
-               .catch(error=>Observable.throw(error));
+               .map(response => response.status)
+               .catch(error => Observable.throw(error));
   }
 
   toggleProjectPublic(projectId: number, isPublic: string): Observable<any> {
@@ -77,22 +73,21 @@ export class ProjectService {
   deleteProject(projectId: number): Promise<any> {
     return this.http
                .delete(`/api/projects/${projectId}`).toPromise()
-               .then(response=>response.status)
-               .catch(error=>Promise.reject(error));
+               .then(response => response.status)
+               .catch(error => Promise.reject(error));
   }
 
   checkProjectExists(projectName: string): Observable<any> {
     return this.http
                .head(`/api/projects/?project_name=${projectName}`)
-               .map(response=>response.status)
-               .catch(error=>Observable.throw(error));
+               .map(response => response.status)
+               .catch(error => Observable.throw(error));
   }
-   
+
   checkProjectMember(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS)
-               .map(response=>response.json())
-               .catch(error=>Observable.throw(error));
+               .map(response => response.json())
+               .catch(error => Observable.throw(error));
   }
-  
 }

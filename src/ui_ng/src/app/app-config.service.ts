@@ -12,26 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
+import { Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
+import { CookieService } from 'ngx-cookie';
 
 import { AppConfig } from './app-config';
-import { CookieService } from 'ngx-cookie';
 import { CookieKeyOfAdmiral, HarborQueryParamKey } from './shared/shared.const';
-import {HTTP_JSON_OPTIONS, maintainUrlQueryParmas, HTTP_GET_OPTIONS} from './shared/shared.utils';
+import { maintainUrlQueryParmas, HTTP_GET_OPTIONS} from './shared/shared.utils';
 
 export const systemInfoEndpoint = "/api/systeminfo";
 /**
  * Declare service to handle the bootstrap options
- * 
- * 
+ *
+ *
  * @export
  * @class GlobalSearchService
  */
 @Injectable()
 export class AppConfigService {
 
-    //Store the application configuration
+    // Store the application configuration
     configurations: AppConfig = new AppConfig();
 
     constructor(
@@ -43,18 +43,14 @@ export class AppConfigService {
             .then(response => {
                 this.configurations = response.json() as AppConfig;
 
-                //Read admiral endpoint from cookie if existing
+                // Read admiral endpoint from cookie if existing
                 let admiralUrlFromCookie: string = this.cookie.get(CookieKeyOfAdmiral);
-                if(admiralUrlFromCookie){
-                    //Override the endpoint from configuration file
+                if (admiralUrlFromCookie) {
+                    // Override the endpoint from configuration file
                     this.configurations.admiral_endpoint = decodeURIComponent(admiralUrlFromCookie);
                 }
 
                 return this.configurations;
-            })
-            .catch(error => {
-                //Catch the error
-                console.error("Failed to load bootstrap options with error: ", error);
             });
     }
 
@@ -65,13 +61,13 @@ export class AppConfigService {
     public isIntegrationMode(): boolean {
         return this.configurations &&
             this.configurations.with_admiral &&
-            this.configurations.admiral_endpoint.trim() != "";
+            this.configurations.admiral_endpoint.trim() !== "";
     }
 
-    //Return the reconstructed admiral url
+    // Return the reconstructed admiral url
     public getAdmiralEndpoint(currentHref: string): string {
-        let admiralUrl:string = this.configurations.admiral_endpoint;
-        if(admiralUrl.trim() === "" || currentHref.trim() === ""){
+        let admiralUrl: string = this.configurations.admiral_endpoint;
+        if (admiralUrl.trim() === "" || currentHref.trim() === "") {
             return "#";
         }
 
@@ -79,12 +75,12 @@ export class AppConfigService {
     }
 
     public saveAdmiralEndpoint(endpoint: string): void {
-        if(!(endpoint.trim())){
+        if (!(endpoint.trim())) {
             return;
         }
 
-        //Save back to cookie
-        this.cookie.put(CookieKeyOfAdmiral, endpoint, HTTP_JSON_OPTIONS);
+        // Save back to cookie
+        this.cookie.put(CookieKeyOfAdmiral, endpoint);
         this.configurations.admiral_endpoint = endpoint;
     }
 }

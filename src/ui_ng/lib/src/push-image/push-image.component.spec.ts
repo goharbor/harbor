@@ -1,8 +1,4 @@
 import { async, ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { HttpModule } from '@angular/http';
-import { DebugElement } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
 
 import { PushImageButtonComponent } from './push-image.component';
 import { CopyInputComponent } from './copy-input.component';
@@ -10,7 +6,6 @@ import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
 
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { SharedModule } from '../shared/shared.module';
-import { click } from '../utils';
 
 describe('PushImageButtonComponent (inline template)', () => {
   let component: PushImageButtonComponent;
@@ -34,7 +29,7 @@ describe('PushImageButtonComponent (inline template)', () => {
     fixture = TestBed.createComponent(PushImageButtonComponent);
     component = fixture.componentInstance;
     component.projectName = 'testing';
-    component.registryUrl = 'https://testing.harbor.com'
+    component.registryUrl = 'https://testing.harbor.com';
     serviceConfig = TestBed.get(SERVICE_CONFIG);
 
     fixture.detectChanges();
@@ -57,9 +52,10 @@ describe('PushImageButtonComponent (inline template)', () => {
       fixture.whenStable().then(() => {
         fixture.detectChanges();
         expect(copyInputs.length).toEqual(2);
-        expect(copyInputs[0].value.trim()).toEqual(`docker tag SOURCE_IMAGE[:TAG] ${component.registryUrl}/${component.projectName}/IMAGE[:TAG]`);
+        expect(copyInputs[0].value.trim())
+        .toEqual(`docker tag SOURCE_IMAGE[:TAG] ${component.registryUrl}/${component.projectName}/IMAGE[:TAG]`);
         expect(copyInputs[1].value.trim()).toEqual(`docker push ${component.registryUrl}/${component.projectName}/IMAGE[:TAG]`);
-      })
+      });
     });
   }));
 

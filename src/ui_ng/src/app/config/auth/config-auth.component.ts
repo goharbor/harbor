@@ -24,6 +24,7 @@ import { Configuration } from 'harbor-ui';
 })
 export class ConfigurationAuthComponent implements OnChanges {
     changeSub: Subscription;
+    // tslint:disable-next-line:no-input-rename
     @Input('allConfig') currentConfig: Configuration = new Configuration();
 
     @ViewChild('authConfigFrom') authForm: NgForm;
@@ -37,7 +38,7 @@ export class ConfigurationAuthComponent implements OnChanges {
         }
     }
 
-    get checkable(){
+    get checkable() {
         return this.currentConfig &&
             this.currentConfig.self_registration &&
             this.currentConfig.self_registration.value === true;
@@ -78,7 +79,7 @@ export class ConfigurationAuthComponent implements OnChanges {
             let authMode = $event.target["value"];
             if (authMode === 'ldap_auth' || authMode === 'uaa_auth') {
                 if (this.currentConfig.self_registration.value) {
-                    this.currentConfig.self_registration.value = false; // uncheck
+                    this.currentConfig.self_registration.value = false; // unselect
                 }
             }
         }

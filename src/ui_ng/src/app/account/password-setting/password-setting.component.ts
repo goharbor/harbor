@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, ViewChild, AfterViewChecked } from '@angular/core';
-import { Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
 
 import { PasswordSettingService } from './password-setting.service';
@@ -50,7 +49,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
         private session: SessionService,
         private msgHandler: MessageHandlerService) { }
 
-    //If form is valid
+    // If form is valid
     public get isValid(): boolean {
         if (this.pwdForm && this.pwdForm.form.get("newPassword")) {
             return this.pwdForm.valid &&
@@ -74,7 +73,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
 
     handleValidation(key: string, flag: boolean): void {
         if (flag) {
-            //Checking
+            // Checking
             let cont = this.pwdForm.controls[key];
             if (cont) {
                 this.validationStateMap[key] = cont.valid;
@@ -89,13 +88,13 @@ export class PasswordSettingComponent implements AfterViewChecked {
                 }
             }
         } else {
-            //Reset
+            // Reset
             this.validationStateMap[key] = true;
         }
     }
 
     ngAfterViewChecked() {
-        if (this.pwdFormRef != this.pwdForm) {
+        if (this.pwdFormRef !== this.pwdForm) {
             this.pwdFormRef = this.pwdForm;
             if (this.pwdFormRef) {
                 this.pwdFormRef.valueChanges.subscribe(data => {
@@ -107,9 +106,9 @@ export class PasswordSettingComponent implements AfterViewChecked {
         }
     }
 
-    //Open modal dialog
+    // Open modal dialog
     open(): void {
-        //Reset state
+        // Reset state
         this.formValueChanged = false;
         this.onCalling = false;
         this.error = null;
@@ -123,13 +122,13 @@ export class PasswordSettingComponent implements AfterViewChecked {
         this.opened = true;
     }
 
-    //Close the moal dialog
+    // Close the modal dialog
     close(): void {
         if (this.formValueChanged) {
             if (isEmptyForm(this.pwdForm)) {
                 this.opened = false;
             } else {
-                //Need user confirmation
+                // Need user confirmation
                 this.inlineAlert.showInlineConfirmation({
                     message: "ALERT.FORM_CHANGE_CONFIRMATION"
                 });
@@ -143,23 +142,23 @@ export class PasswordSettingComponent implements AfterViewChecked {
         this.opened = false;
     }
 
-    //handle the ok action
+    // handle the ok action
     doOk(): void {
         if (this.onCalling) {
-            return;//To avoid duplicate click events
+            return; // To avoid duplicate click events
         }
 
         if (!this.isValid) {
-            return;//Double confirm
+            return; // Double confirm
         }
 
-        //Double confirm session is valid
+        // Double confirm session is valid
         let cUser = this.session.getCurrentUser();
         if (!cUser) {
             return;
         }
 
-        //Call service
+        // Call service
         this.onCalling = true;
 
         this.passwordService.changePassword(cUser.user_id,
@@ -169,7 +168,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
             })
             .then(() => {
                 this.onCalling = false;
-                this.opened = false
+                this.opened = false;
                 this.msgHandler.showSuccess("CHANGE_PWD.SAVE_SUCCESS");
             })
             .catch(error => {
@@ -179,7 +178,7 @@ export class PasswordSettingComponent implements AfterViewChecked {
                     this.opened = false;
                     this.msgHandler.handleError(error);
                 } else {
-                    //Special case for 400
+                    // Special case for 400
                     let msg = '' + error._body;
                     if (msg && msg.includes('old_password_is_not_correct')) {
                         this.inlineAlert.showInlineError("INCONRRECT_OLD_PWD");

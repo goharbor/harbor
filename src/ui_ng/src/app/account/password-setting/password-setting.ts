@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /**
- * 
+ *
  * Struct for password change
- * 
+ *
  * @export
  * @class PasswordSetting
  */

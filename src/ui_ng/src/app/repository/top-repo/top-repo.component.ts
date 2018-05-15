@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
+import { Repository } from 'harbor-ui';
 
-import { errorHandler } from '../../shared/shared.utils';
-import { AlertType, ListMode } from '../../shared/shared.const';
+import { ListMode } from '../../shared/shared.const';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { TopRepoService } from './top-repository.service';
-import { Repository } from 'harbor-ui';
+
 
 @Component({
     selector: 'top-repo',
@@ -26,7 +26,7 @@ import { Repository } from 'harbor-ui';
 
     providers: [TopRepoService]
 })
-export class TopRepoComponent implements OnInit{
+export class TopRepoComponent implements OnInit {
     topRepos: Repository[] = [];
 
     constructor(
@@ -38,17 +38,17 @@ export class TopRepoComponent implements OnInit{
         return ListMode.READONLY;
     }
 
-    //Implement ngOnIni
+    // Implement ngOnIni
     ngOnInit(): void {
         this.getTopRepos();
     }
 
-    //Get top popular repositories
+    // Get top popular repositories
     getTopRepos() {
         this.topRepoService.getTopRepos()
             .then(repos => this.topRepos = repos )
             .catch(error => {
                 this.messageHandlerService.handleError(error);
-            })
+            });
     }
 }

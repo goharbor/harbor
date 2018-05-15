@@ -1,25 +1,26 @@
-import { TestBed, inject } from '@angular/core/testing';
-import { SharedModule } from '../shared/shared.module';
-import { TranslateService } from '@ngx-translate/core';
-import { DEFAULT_LANG } from '../utils';
+import { TestBed, inject } from "@angular/core/testing";
+import { TranslateService } from "@ngx-translate/core";
 
-import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
+import { SharedModule } from "../shared/shared.module";
+import { DEFAULT_LANG } from "../utils";
+
+import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 
 const EN_US_LANG: any = {
-  "SIGN_UP": {
-    "TITLE": "Sign Up"
-  },
-}
+  SIGN_UP: {
+    TITLE: "Sign Up"
+  }
+};
 
 const ZH_CN_LANG: any = {
-  "SIGN_UP": {
-    "TITLE": "注册"
-  },
-}
+  SIGN_UP: {
+    TITLE: "注册"
+  }
+};
 
-describe('TranslateService', () => {
+describe("TranslateService", () => {
   let testConfig: IServiceConfig = {
-    langMessageLoader: 'local',
+    langMessageLoader: "local",
     localI18nMessageVariableMap: {
       "en-us": EN_US_LANG,
       "zh-cn": ZH_CN_LANG
@@ -27,37 +28,49 @@ describe('TranslateService', () => {
   };
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        SharedModule
-      ],
-      providers: [{
-        provide: SERVICE_CONFIG, useValue: testConfig
-      }]
+      imports: [SharedModule],
+      providers: [
+        {
+          provide: SERVICE_CONFIG,
+          useValue: testConfig
+        }
+      ]
     });
   });
 
-  it('should be initialized', inject([TranslateService], (service: TranslateService) => {
-    expect(service).toBeTruthy();
-  }));
+  it(
+    "should be initialized",
+    inject([TranslateService], (service: TranslateService) => {
+      expect(service).toBeTruthy();
+    })
+  );
 
-  it('should use the specified lang', inject([TranslateService], (service: TranslateService) => {
-    service.use(DEFAULT_LANG).subscribe(() => {
-      expect(service.currentLang).toEqual(DEFAULT_LANG);
-    });
-  }));
+  it(
+    "should use the specified lang",
+    inject([TranslateService], (service: TranslateService) => {
+      service.use(DEFAULT_LANG).subscribe(() => {
+        expect(service.currentLang).toEqual(DEFAULT_LANG);
+      });
+    })
+  );
 
-  it('should translate key to text [en-us]', inject([TranslateService], (service: TranslateService) => {
-    service.use(DEFAULT_LANG);
-    service.get('SIGN_UP.TITLE').subscribe(text => {
-      expect(text).toEqual('Sign Up');
-    });
-  }));
+  it(
+    "should translate key to text [en-us]",
+    inject([TranslateService], (service: TranslateService) => {
+      service.use(DEFAULT_LANG);
+      service.get("SIGN_UP.TITLE").subscribe(text => {
+        expect(text).toEqual("Sign Up");
+      });
+    })
+  );
 
-  it('should translate key to text [zh-cn]', inject([TranslateService], (service: TranslateService) => {
-    service.use('zh-cn');
-    service.get('SIGN_UP.TITLE').subscribe(text => {
-      expect(text).toEqual('注册');
-    });
-  }));
-
+  it(
+    "should translate key to text [zh-cn]",
+    inject([TranslateService], (service: TranslateService) => {
+      service.use("zh-cn");
+      service.get("SIGN_UP.TITLE").subscribe(text => {
+        expect(text).toEqual("注册");
+      });
+    })
+  );
 });

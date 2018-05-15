@@ -50,8 +50,8 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     @ViewChild(AboutDialogComponent)
     aboutDialog: AboutDialogComponent;
 
-    //To indicator whwther or not the search results page is displayed
-    //We need to use this property to do some overriding work
+    // To indicator whwther or not the search results page is displayed
+    // We need to use this property to do some overriding work
     isSearchResultsOpened: boolean = false;
 
     searchSub: Subscription;
@@ -65,7 +65,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
-            if(searchEvt && searchEvt.trim() != ""){
+            if (searchEvt && searchEvt.trim() !== "") {
                 this.isSearchResultsOpened = true;
             }
         });
@@ -103,7 +103,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         return account != null;
     }
 
-    //Open modal dialog
+    // Open modal dialog
     openModal(event: ModalEvent): void {
         switch (event.modalName) {
             case modalEvents.USER_PROFILE:

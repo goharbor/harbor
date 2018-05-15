@@ -13,7 +13,7 @@
 // limitations under the License.
 export class Statistics {
     constructor() {}
-    
+
     private_project_count: number;
     private_repo_count: number;
     public_project_count: number;

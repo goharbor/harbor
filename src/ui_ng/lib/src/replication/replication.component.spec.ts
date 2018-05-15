@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, async, inject } from '@angular/core/testing'; 
+import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
@@ -9,7 +9,6 @@ import { ReplicationComponent } from './replication.component';
 import { ListReplicationRuleComponent } from '../list-replication-rule/list-replication-rule.component';
 import { CreateEditRuleComponent } from '../create-edit-rule/create-edit-rule.component';
 import { DatePickerComponent } from '../datetime-picker/datetime-picker.component';
-import { DateValidatorDirective } from '../datetime-picker/date-validator.directive';
 import { FilterComponent } from '../filter/filter.component';
 import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
 import {ReplicationRule, ReplicationJob, Endpoint} from '../service/interface';
@@ -20,7 +19,6 @@ import { ReplicationService, ReplicationDefaultService } from '../service/replic
 import { EndpointService, EndpointDefaultService } from '../service/endpoint.service';
 import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
 import { JobLogService, JobLogDefaultService, ReplicationJobItem } from '../service/index';
-import {Project} from "../project-policy-config/project";
 import {ProjectDefaultService, ProjectService} from "../service/project.service";
 
 describe('Replication Component (inline template)', () => {
@@ -133,7 +131,7 @@ describe('Replication Component (inline template)', () => {
         "repository": "library/busybox",
         "policy_id": 2,
         "operation": "transfer",
-        "update_time": new Date("2017-04-23 12:20:33"),        
+        "update_time": new Date("2017-04-23 12:20:33"),
         "tags": null
     }
   ];
@@ -159,28 +157,28 @@ describe('Replication Component (inline template)', () => {
         },
     ];
 
-    let mockProjects: Project[] = [
-        { "project_id": 1,
-            "owner_id": 0,
-            "name": 'project_01',
-            "creation_time": '',
-            "deleted": 0,
-            "owner_name": '',
-            "togglable": false,
-            "update_time": '',
-            "current_user_role_id": 0,
-            "repo_count": 0,
-            "has_project_admin_role": false,
-            "is_member": false,
-            "role_name": '',
-            "metadata": {
-                "public": '',
-                "enable_content_trust": '',
-                "prevent_vul": '',
-                "severity": '',
-                "auto_scan": '',
-            }
-        }];
+    // let mockProjects: Project[] = [
+    //     { "project_id": 1,
+    //         "owner_id": 0,
+    //         "name": 'project_01',
+    //         "creation_time": '',
+    //         "deleted": 0,
+    //         "owner_name": '',
+    //         "togglable": false,
+    //         "update_time": '',
+    //         "current_user_role_id": 0,
+    //         "repo_count": 0,
+    //         "has_project_admin_role": false,
+    //         "is_member": false,
+    //         "role_name": '',
+    //         "metadata": {
+    //             "public": '',
+    //             "enable_content_trust": '',
+    //             "prevent_vul": '',
+    //             "severity": '',
+    //             "auto_scan": '',
+    //         }
+    //     }];
 
   let mockJob: ReplicationJob = {
     metadata: {xTotalCount: 3},
@@ -191,14 +189,14 @@ describe('Replication Component (inline template)', () => {
   let fixtureCreate: ComponentFixture<CreateEditRuleComponent>;
   let comp: ReplicationComponent;
   let compCreate: CreateEditRuleComponent;
-  
+
   let replicationService: ReplicationService;
   let endpointService: EndpointService;
-  
+
   let spyRules: jasmine.Spy;
   let spyJobs: jasmine.Spy;
   let spyEndpoint: jasmine.Spy;
-  
+
   let deGrids: DebugElement[];
   let deRules: DebugElement;
   let deJobs: DebugElement;
@@ -211,9 +209,9 @@ describe('Replication Component (inline template)', () => {
     replicationJobEndpoint: '/api/jobs/replication/testing'
   };
 
-  beforeEach(async(()=>{
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [ 
+      imports: [
         SharedModule,
         NoopAnimationsModule
       ],
@@ -256,9 +254,9 @@ describe('Replication Component (inline template)', () => {
     spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(Promise.resolve(mockEndpoints));
 
     fixture.detectChanges();
-    fixture.whenStable().then(()=>{
+    fixture.whenStable().then(() => {
       fixture.detectChanges();
-      deGrids = fixture.debugElement.queryAll(del=>del.classes['datagrid']);
+      deGrids = fixture.debugElement.queryAll(del => del.classes['datagrid']);
       fixture.detectChanges();
       expect(deGrids).toBeTruthy();
       expect(deGrids.length).toEqual(2);
@@ -266,9 +264,9 @@ describe('Replication Component (inline template)', () => {
   });
 
 
-  it('Should load replication rules', async(()=>{    
+  it('Should load replication rules', async(() => {
     fixture.detectChanges();
-    fixture.whenStable().then(()=>{
+    fixture.whenStable().then(() => {
       fixture.detectChanges();
       deRules = deGrids[0].query(By.css('datagrid-cell'));
       expect(deRules).toBeTruthy();
@@ -279,9 +277,9 @@ describe('Replication Component (inline template)', () => {
     });
   }));
 
-  it('Should load replication jobs', async(()=>{    
+  it('Should load replication jobs', async(() => {
     fixture.detectChanges();
-    fixture.whenStable().then(()=>{
+    fixture.whenStable().then(() => {
       fixture.detectChanges();
       deJobs = deGrids[1].query(By.css('datagrid-cell'));
       expect(deJobs).toBeTruthy();
@@ -293,21 +291,21 @@ describe('Replication Component (inline template)', () => {
     });
   }));
 
-  it('Should filter replication rules by keywords', async(()=>{
+  it('Should filter replication rules by keywords', async(() => {
     fixture.detectChanges();
-    fixture.whenStable().then(()=>{
-      fixture.detectChanges();     
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
       comp.doSearchRules('sync_01');
-      fixture.detectChanges();     
+      fixture.detectChanges();
       let el: HTMLElement = deRules.nativeElement;
       fixture.detectChanges();
       expect(el.textContent.trim()).toEqual('sync_01');
     });
   }));
 
-  it('Should filter replication jobs by keywords', async(()=>{
+  it('Should filter replication jobs by keywords', async(() => {
     fixture.detectChanges();
-    fixture.whenStable().then(()=>{
+    fixture.whenStable().then(() => {
       fixture.detectChanges();
       comp.doSearchJobs('nginx');
       fixture.detectChanges();
@@ -318,9 +316,9 @@ describe('Replication Component (inline template)', () => {
     });
   }));
 
-  it('Should filter replication jobs by status', async(()=>{
+  it('Should filter replication jobs by status', async(() => {
     fixture.detectChanges();
-    fixture.whenStable().then(()=>{
+    fixture.whenStable().then(() => {
       fixture.detectChanges();
       comp.doFilterJobStatus('finished');
       let el: HTMLElement = deJobs.nativeElement;
@@ -330,16 +328,16 @@ describe('Replication Component (inline template)', () => {
     });
   }));
 
-  it('Should filter replication jobs by date range', async(()=>{
+  it('Should filter replication jobs by date range', async(() => {
     fixture.detectChanges();
-    fixture.whenStable().then(()=>{
+    fixture.whenStable().then(() => {
       fixture.detectChanges();
       comp.doJobSearchByStartTime('2017-05-01');
       comp.doJobSearchByEndTime('2015-05-25');
-      let el: HTMLElement = deJobs.nativeElement; 
+      let el: HTMLElement = deJobs.nativeElement;
       fixture.detectChanges();
       expect(el).toBeTruthy();
       expect(el.textContent.trim()).toEqual('library/nginx');
     });
-  }))
+  }));
 });

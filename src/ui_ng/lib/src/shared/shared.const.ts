@@ -29,15 +29,15 @@ export const httpStatusCode = {
   "Forbidden": 403
 };
 export const enum ConfirmationTargets {
-  EMPTY, 
-  PROJECT, 
-  PROJECT_MEMBER, 
-  USER, 
-  POLICY, 
+  EMPTY,
+  PROJECT,
+  PROJECT_MEMBER,
+  USER,
+  POLICY,
   TOGGLE_CONFIRM,
-  TARGET, 
-  REPOSITORY, 
-  TAG, 
+  TARGET,
+  REPOSITORY,
+  TAG,
   CONFIG,
   CONFIG_ROUTE,
   CONFIG_TAB
@@ -70,12 +70,20 @@ export const enum ConfirmationButtons {
 };
 
 export const LabelColor = [
-  {'color': '#000000', 'textColor' : 'white'}, {'color': '#61717D', 'textColor': 'white'}, {'color': '#737373', 'textColor' : 'white'}, {'color': '#80746D', 'textColor': 'white'},
-  {'color': '#FFFFFF', 'textColor' : 'black'}, {'color': '#A9B6BE', 'textColor': 'black'}, {'color': '#DDDDDD', 'textColor' : 'black'}, {'color': '#BBB3A9', 'textColor': 'black'},
-  {'color': '#0065AB', 'textColor' : 'white'}, {'color': '#343DAC', 'textColor': 'white'}, {'color': '#781DA0', 'textColor' : 'white'}, {'color': '#9B0D54', 'textColor': 'white'},
-  {'color': '#0095D3', 'textColor' : 'black'}, {'color': '#9DA3DB', 'textColor': 'black'}, {'color': '#BE90D6', 'textColor' : 'black'}, {'color': '#F1428A', 'textColor': 'black'},
-  {'color': '#1D5100', 'textColor' : 'white'}, {'color': '#006668', 'textColor': 'white'}, {'color': '#006690', 'textColor' : 'white'}, {'color': '#004A70', 'textColor': 'white'},
-  {'color': '#48960C', 'textColor' : 'black'}, {'color': '#00AB9A', 'textColor': 'black'}, {'color': '#00B7D6', 'textColor' : 'black'}, {'color': '#0081A7', 'textColor': 'black'},
-  {'color': '#C92100', 'textColor' : 'white'}, {'color': '#CD3517', 'textColor': 'white'}, {'color': '#C25400', 'textColor' : 'white'}, {'color': '#D28F00', 'textColor': 'white'},
-  {'color': '#F52F52', 'textColor' : 'black'}, {'color': '#FF5501', 'textColor': 'black'}, {'color': '#F57600', 'textColor' : 'black'}, {'color': '#FFDC0B', 'textColor': 'black'},
+  { 'color': '#000000', 'textColor': 'white' }, { 'color': '#61717D', 'textColor': 'white' },
+  { 'color': '#737373', 'textColor': 'white' }, { 'color': '#80746D', 'textColor': 'white' },
+  { 'color': '#FFFFFF', 'textColor': 'black' }, { 'color': '#A9B6BE', 'textColor': 'black' },
+  { 'color': '#DDDDDD', 'textColor': 'black' }, { 'color': '#BBB3A9', 'textColor': 'black' },
+  { 'color': '#0065AB', 'textColor': 'white' }, { 'color': '#343DAC', 'textColor': 'white' },
+  { 'color': '#781DA0', 'textColor': 'white' }, { 'color': '#9B0D54', 'textColor': 'white' },
+  { 'color': '#0095D3', 'textColor': 'black' }, { 'color': '#9DA3DB', 'textColor': 'black' },
+  { 'color': '#BE90D6', 'textColor': 'black' }, { 'color': '#F1428A', 'textColor': 'black' },
+  { 'color': '#1D5100', 'textColor': 'white' }, { 'color': '#006668', 'textColor': 'white' },
+  { 'color': '#006690', 'textColor': 'white' }, { 'color': '#004A70', 'textColor': 'white' },
+  { 'color': '#48960C', 'textColor': 'black' }, { 'color': '#00AB9A', 'textColor': 'black' },
+  { 'color': '#00B7D6', 'textColor': 'black' }, { 'color': '#0081A7', 'textColor': 'black' },
+  { 'color': '#C92100', 'textColor': 'white' }, { 'color': '#CD3517', 'textColor': 'white' },
+  { 'color': '#C25400', 'textColor': 'white' }, { 'color': '#D28F00', 'textColor': 'white' },
+  { 'color': '#F52F52', 'textColor': 'black' }, { 'color': '#FF5501', 'textColor': 'black' },
+  { 'color': '#F57600', 'textColor': 'black' }, { 'color': '#FFDC0B', 'textColor': 'black' },
 ];

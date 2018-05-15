@@ -26,9 +26,9 @@ export class ModeGuard implements CanActivate, CanActivateChild {
   constructor(
     private router: Router,
     private appConfigService: AppConfigService) { }
-  
+
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    //Show the right sign-in page for different modes
+    // Show the right sign-in page for different modes
     return new Promise((resolve, reject) => {
       if (this.appConfigService.isIntegrationMode()) {
         if (state.url.startsWith(CommonRoutes.SIGN_IN)) {

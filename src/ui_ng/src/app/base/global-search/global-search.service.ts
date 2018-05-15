@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
+import { Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { SearchResults } from './search-results';
-import {HTTP_GET_OPTIONS} from "../../shared/shared.utils";
+import { HTTP_GET_OPTIONS } from "../../shared/shared.utils";
 
 const searchEndpoint = "/api/search";
 /**
  * Declare service to handle the global search
- * 
- * 
+ *
+ *
  * @export
  * @class GlobalSearchService
  */
@@ -33,10 +33,10 @@ export class GlobalSearchService {
 
     /**
      * Search related artifacts with the provided keyword
-     * 
+     *
      * @param {string} keyword
      * @returns {Promise<SearchResults>}
-     * 
+     *
      * @memberOf GlobalSearchService
      */
     doSearch(term: string): Promise<SearchResults> {

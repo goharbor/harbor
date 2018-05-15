@@ -15,19 +15,19 @@ import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, Chang
 import 'rxjs/add/operator/toPromise';
 import { Subscription } from 'rxjs/Subscription';
 
-import { UserService } from './user.service';
-import { User } from './user';
-import { NewUserModalComponent } from './new-user-modal.component';
 import { TranslateService } from '@ngx-translate/core';
+
+import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
-import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
+import {BatchInfo, BathInfoChanges} from '../shared/confirmation-dialog/confirmation-batch-message';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-
 import { SessionService } from '../shared/session.service';
 import { AppConfigService } from '../app-config.service';
-import {BatchInfo, BathInfoChanges} from '../shared/confirmation-dialog/confirmation-batch-message';
 
+import { NewUserModalComponent } from './new-user-modal.component';
+import { UserService } from './user.service';
+import { User } from './user';
 /**
  * NOTES:
  *   Pagination for this component is a temporary workaround solution. It will be replaced in future release.
@@ -114,10 +114,10 @@ export class UserComponent implements OnInit, OnDestroy {
       }
       if (user.has_admin_role) {
         usersRole.push(1);
-      }else {
+      } else {
         usersRole.push(0);
       }
-    })
+    });
     if (usersRole.length && usersRole.every(num => num === 0)) {
       this.ISADMNISTRATOR = 'USER.ENABLE_ADMIN_ACTION';
       return true;
@@ -164,7 +164,7 @@ export class UserComponent implements OnInit, OnDestroy {
     }
   }
 
-  //Filter items by keywords
+  // Filter items by keywords
   doFilter(terms: string): void {
     this.selectedRow = [];
     this.currentTerm = terms;
@@ -176,7 +176,7 @@ export class UserComponent implements OnInit, OnDestroy {
           return this.isMatchFilterTerm(terms, user.username);
         });
         this.totalCount = selectUsers.length;
-        this.users = selectUsers.slice((this.currentPage - 1) * 15, this.currentPage * 15);//First page
+        this.users = selectUsers.slice((this.currentPage - 1) * 15, this.currentPage * 15); // First page
 
         this.forceRefreshView(5000);
       }
@@ -196,7 +196,7 @@ export class UserComponent implements OnInit, OnDestroy {
           let updatedUser: User = new User();
           updatedUser.user_id = this.selectedRow[i].user_id;
 
-          updatedUser.has_admin_role = true; //Set as admin
+          updatedUser.has_admin_role = true; // Set as admin
           promiseLists.push(this.userService.updateUserRole(updatedUser));
         }
       }
@@ -209,14 +209,14 @@ export class UserComponent implements OnInit, OnDestroy {
           let updatedUser: User = new User();
           updatedUser.user_id = this.selectedRow[i].user_id;
 
-          updatedUser.has_admin_role = false; //Set as none admin
+          updatedUser.has_admin_role = false; // Set as none admin
           promiseLists.push(this.userService.updateUserRole(updatedUser));
         }
       }
 
         Promise.all(promiseLists).then(() => {
             this.selectedRow = [];
-            this.refresh()
+            this.refresh();
         })
         .catch(error => {
              this.selectedRow = [];
@@ -225,7 +225,7 @@ export class UserComponent implements OnInit, OnDestroy {
       }
   }
 
-  //Delete the specified user
+  // Delete the specified user
   deleteUsers(users: User[]): void {
     let userArr: string[] = [];
     this.batchDelectionInfos = [];
@@ -239,9 +239,9 @@ export class UserComponent implements OnInit, OnDestroy {
           initBatchMessage.name = user.username;
           this.batchDelectionInfos.push(initBatchMessage);
           userArr.push(user.username);
-        })
+        });
       this.deletionDialogService.addBatchInfoList(this.batchDelectionInfos);
-    //Confirm deletion
+    // Confirm deletion
     let msg: ConfirmationMessage = new ConfirmationMessage(
       "USER.DELETION_TITLE",
       "USER.DELETION_SUMMARY",
@@ -255,7 +255,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   delUser(users: User[]): void {
-    //this.batchInfoDialog.open();
+    // this.batchInfoDialog.open();
     let promiseLists: any[] = [];
     if (users && users.length) {
       users.forEach(user => {
@@ -289,19 +289,19 @@ export class UserComponent implements OnInit, OnDestroy {
      });
   }
 
-  //Refresh the user list
+  // Refresh the user list
   refreshUser(from: number, to: number): void {
     this.selectedRow = [];
-    //Start to get
+    // Start to get
     this.currentTerm = '';
     this.onGoing = true;
 
-    this.originalUsers = this.userService.getUsers()
-      .then(users => {
+    this.originalUsers = this.userService.getUsers();
+    this.originalUsers.then(users => {
         this.onGoing = false;
 
         this.totalCount = users.length;
-        this.users = users.slice(from, to);//First page
+        this.users = users.slice(from, to); // First page
 
         this.forceRefreshView(5000);
 
@@ -314,21 +314,21 @@ export class UserComponent implements OnInit, OnDestroy {
       });
   }
 
-  //Add new user
+  // Add new user
   addNewUser(): void {
     if (!this.canCreateUser) {
-      return;// No response to this hacking action
+      return; // No response to this hacking action
     }
     this.newUserDialog.open();
   }
 
-  //Add user to the user list
+  // Add user to the user list
   addUserToList(user: User): void {
-    //Currently we can only add it by reloading all
+    // Currently we can only add it by reloading all
     this.refresh();
   }
 
-  //Data loading
+  // Data loading
   load(state: any): void {
     this.selectedRow = [];
     if (state && state.page) {
@@ -341,13 +341,13 @@ export class UserComponent implements OnInit, OnDestroy {
         this.refreshUser(state.page.from, state.page.to + 1);
       }
     } else {
-      //Refresh
+      // Refresh
       this.refresh();
     }
   }
 
   refresh(): void {
-    this.currentPage = 1;//Refresh pagination
+    this.currentPage = 1; // Refresh pagination
     this.refreshUser(0, 15);
   }
 
@@ -356,7 +356,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   forceRefreshView(duration: number): void {
-    //Reset timer
+    // Reset timer
     if (this.timerHandler) {
       clearInterval(this.timerHandler);
     }

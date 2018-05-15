@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
+import { Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
 import { Configuration } from 'harbor-ui';
+
 import {HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS} from "../shared/shared.utils";
 
 const configEndpoint = "/api/configurations";

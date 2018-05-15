@@ -7,7 +7,7 @@
                 <div class="form-group form-group-override">
                     <label for="account_settings_username" aria-haspopup="true" class="form-group-label-override">{{'PROFILE.USER_NAME' | translate}}</label>
                     <input type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username" size="33">
-                    <clr-tooltip *ngIf="renamable">
+                    <clr-tooltip *ngIf="canRename">
                         <button (dblclick)="openRenameAlert()" class="btn btn-link">
                             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                         </button>

@@ -13,11 +13,10 @@
 // limitations under the License.
 import { Component, EventEmitter, Output, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
+import { State } from 'clarity-angular';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-
 import { Project } from '../../project/project';
-import { State } from 'clarity-angular';
 
 @Component({
   selector: 'list-project-ro',
@@ -27,14 +26,14 @@ import { State } from 'clarity-angular';
 export class ListProjectROComponent {
   @Input() projects: Project[];
   @Output() paginate = new EventEmitter<State>();
-  
+
 
   constructor(
     private searchTrigger: SearchTriggerService,
     private router: Router,
     private ref: ChangeDetectorRef) {
-    let hnd = setInterval(()=>ref.markForCheck(), 100);
-    setTimeout(()=>clearInterval(hnd), 1000);
+    let hnd = setInterval(() => ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 1000);
   }
 
   goToLink(proId: number): void {

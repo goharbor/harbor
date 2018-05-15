@@ -12,16 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Output, ViewChild, EventEmitter } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { Modal } from 'clarity-angular';
 
 import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
 import { User } from '../../user/user';
-
 import { SessionService } from '../../shared/session.service';
 import { UserService } from '../../user/user.service';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
-import { Modal } from 'clarity-angular';
 
 @Component({
     selector: 'sign-up',
@@ -66,13 +64,13 @@ export class SignUpComponent {
             this.formValueChanged = true;
         }
         if (this.error != null) {
-            this.error = null;//clear error
+            this.error = null; // clear error
         }
-        this.inlienAlert.close();//Close alert if being shown
+        this.inlienAlert.close(); // Close alert if being shown
     }
 
     open(): void {
-        //Reset state
+        // Reset state
         this.newUserForm.reset();
         this.formValueChanged = false;
         this.error = null;
@@ -87,7 +85,7 @@ export class SignUpComponent {
             if (this.newUserForm.isEmpty()) {
                 this.opened = false;
             } else {
-                //Need user confirmation
+                // Need user confirmation
                 this.inlienAlert.showInlineConfirmation({
                     message: "ALERT.FORM_CHANGE_CONFIRMATION"
                 });
@@ -102,21 +100,21 @@ export class SignUpComponent {
         this.modal.close();
     }
 
-    //Create new user
+    // Create new user
     create(): void {
-        //Double confirm everything is ok
-        //Form is valid
+        // Double confirm everything is ok
+        // Form is valid
         if (!this.isValid) {
             return;
         }
 
-        //We have new user data
+        // We have new user data
         let u = this.getNewUser();
         if (!u) {
             return;
         }
 
-        //Start process
+        // Start process
         this.onGoing = true;
 
         this.userService.addUser(u)

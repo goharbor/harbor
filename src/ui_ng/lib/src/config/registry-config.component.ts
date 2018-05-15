@@ -1,7 +1,11 @@
-import { Component, OnInit, EventEmitter, Output, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, Input } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 
-import { Configuration, ComplexValueItem } from './config';
-import { ConfigurationService, SystemInfoService, SystemInfo, ClairDBStatus } from '../service/index';
+import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
+import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
+import { ConfigurationService, SystemInfoService, SystemInfo } from '../service/index';
 import {
     toPromise,
     compareValue,
@@ -9,17 +13,8 @@ import {
     clone
 } from '../utils';
 import { ErrorHandler } from '../error-handler/index';
-import {
-    SystemSettingsComponent,
-    VulnerabilityConfigComponent
-} from './index';
-
-import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
-import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
-import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
-import { TranslateService } from '@ngx-translate/core';
-
+import { SystemSettingsComponent, VulnerabilityConfigComponent } from './index';
+import { Configuration } from './config';
 
 @Component({
     selector: 'hbr-registry-config',
@@ -62,7 +57,7 @@ export class RegistryConfigComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadSystemInfo();
-        //Initialize
+        // Initialize
         this.load();
     }
 
@@ -77,14 +72,14 @@ export class RegistryConfigComponent implements OnInit {
         return !isEmptyObject(this.getChanges());
     }
 
-    //Get system info
+    // Get system info
     loadSystemInfo(): void {
         toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
             .then((info: SystemInfo) => this.systemInfo = info)
             .catch(error => this.errorHandler.error(error));
     }
 
-    //Load configurations
+    // Load configurations
     load(): void {
         this.onGoing = true;
         toPromise<Configuration>(this.configService.getConfigurations())
@@ -99,12 +94,12 @@ export class RegistryConfigComponent implements OnInit {
             });
     }
 
-    //Save configuration changes
+    // Save configuration changes
     save(): void {
         let changes: { [key: string]: any | any[] } = this.getChanges();
 
         if (isEmptyObject(changes)) {
-            //Guard code, do nothing
+            // Guard code, do nothing
             return;
         }
 
@@ -116,10 +111,10 @@ export class RegistryConfigComponent implements OnInit {
                 this.translate.get("CONFIG.SAVE_SUCCESS").subscribe((res: string) => {
                     this.errorHandler.info(res);
                 });
-                //Reload to fetch all the updates
+                // Reload to fetch all the updates
                 this.load();
-                //Reload all system info 
-                //this.loadSystemInfo();
+                // Reload all system info
+                // this.loadSystemInfo();
             })
             .catch(error => {
                 this.onGoing = false;
@@ -127,7 +122,7 @@ export class RegistryConfigComponent implements OnInit {
             });
     }
 
-    //Cancel the changes if have
+    // Cancel the changes if have
     cancel(): void {
         let msg = new ConfirmationMessage(
             "CONFIG.CONFIRM_TITLE",
@@ -139,7 +134,7 @@ export class RegistryConfigComponent implements OnInit {
         this.confirmationDlg.open(msg);
     }
 
-    //Confirm cancel
+    // Confirm cancel
     confirmCancel(ack: ConfirmationAcknowledgement): void {
         if (ack && ack.source === ConfirmationTargets.CONFIG &&
             ack.state === ConfirmationState.CONFIRMED) {
@@ -148,9 +143,9 @@ export class RegistryConfigComponent implements OnInit {
     }
 
     reset(): void {
-        //Reset to the values of copy
+        // Reset to the values of copy
         let changes: { [key: string]: any | any[] } = this.getChanges();
-        for (let prop in changes) {
+        for (let prop of Object.keys(changes)) {
             this.config[prop] = clone(this.configCopy[prop]);
         }
     }
@@ -161,17 +156,17 @@ export class RegistryConfigComponent implements OnInit {
             return changes;
         }
 
-        for (let prop in this.config) {
+        for (let prop of Object.keys(this.config)) {
             let field = this.configCopy[prop];
             if (field && field.editable) {
                 if (!compareValue(field.value, this.config[prop].value)) {
                     changes[prop] = this.config[prop].value;
-                    //Number 
+                    // Number
                     if (typeof field.value === "number") {
                         changes[prop] = +changes[prop];
                     }
 
-                    //Trim string value
+                    // Trim string value
                     if (typeof field.value === "string") {
                         changes[prop] = ('' + changes[prop]).trim();
                     }

@@ -13,7 +13,7 @@
 // limitations under the License.
 /**
  * For user management
- * 
+ *
  * @export
  * @class User
  */

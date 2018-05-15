@@ -13,15 +13,13 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgModel } from '@angular/forms';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuditLog } from './audit-log';
 import { SessionUser } from '../shared/session-user';
 
 import { AuditLogService } from './audit-log.service';
-import { SessionService } from '../shared/session.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-import { AlertType } from '../shared/shared.const';
 
 import { State } from 'clarity-angular';
 
@@ -76,7 +74,7 @@ export class AuditLogComponent implements OnInit {
   @ViewChild('toTime') toTimeInput: NgModel;
 
   get fromTimeInvalid(): boolean {
-    return this.fromTimeInput.errors && this.fromTimeInput.errors.dateValidator && (this.fromTimeInput.dirty || this.fromTimeInput.touched)
+    return this.fromTimeInput.errors && this.fromTimeInput.errors.dateValidator && (this.fromTimeInput.dirty || this.fromTimeInput.touched);
   }
 
   get toTimeInvalid(): boolean {
@@ -87,8 +85,12 @@ export class AuditLogComponent implements OnInit {
     return this.totalRecordCount > 0;
   }
 
-  constructor(private route: ActivatedRoute, private router: Router, private auditLogService: AuditLogService, private messageHandlerService: MessageHandlerService) {
-    //Get current user from registered resolver.
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private auditLogService: AuditLogService,
+    private messageHandlerService: MessageHandlerService) {
+    // Get current user from registered resolver.
     this.route.data.subscribe(data => this.currentUser = <SessionUser>data['auditLogResolver']);
   }
 
@@ -108,7 +110,7 @@ export class AuditLogComponent implements OnInit {
       .listAuditLogs(this.queryParam)
       .subscribe(
       response => {
-        this.totalRecordCount = parseInt(response.headers.get('x-total-count'));
+        this.totalRecordCount = Number.parseInt(response.headers.get('x-total-count'));
         this.auditLogs = response.json();
       },
       error => {
@@ -153,10 +155,9 @@ export class AuditLogComponent implements OnInit {
   doSearchByOptions() {
     let selectAll = true;
     let operationFilter: string[] = [];
-    for (var i in this.filterOptions) {
-      let filterOption = this.filterOptions[i];
+    for (let filterOption of this.filterOptions) {
       if (filterOption.checked) {
-        operationFilter.push('operation=' + this.filterOptions[i].key);
+        operationFilter.push('operation=' + filterOption.key);
       } else {
         selectAll = false;
       }

@@ -13,7 +13,6 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
-import { AlertType } from '../../shared/shared.const';
 
 @Injectable()
 export class SearchTriggerService {
@@ -30,13 +29,13 @@ export class SearchTriggerService {
     this.searchTriggerSource.next(event);
   }
 
-  //Set event to true for shell
-  //set to false for search panel
+  // Set event to true for shell
+  // set to false for search panel
   closeSearch(event: boolean) {
     this.searchCloseSource.next(event);
   }
 
-  //Clear search term
+  // Clear search term
   clear(event: any): void {
     this.searchClearSource.next(event);
   }

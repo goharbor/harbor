@@ -11,9 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy} from '@angular/core';
-import { Router } from '@angular/router';
-import { Project } from './project';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { ListProjectComponent } from './list-project/list-project.component';
 import { ProjectTypes } from '../shared/shared.const';
@@ -32,7 +30,7 @@ export class ProjectComponent implements OnInit {
   @ViewChild(ListProjectComponent)
   listProject: ListProjectComponent;
 
-  currentFilteredType: number = 0;//all projects
+  currentFilteredType: number = 0; // all projects
   projectName: string = "";
 
   loading: boolean = true;

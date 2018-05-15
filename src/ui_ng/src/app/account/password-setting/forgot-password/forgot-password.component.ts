@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
 import { NgForm } from '@angular/forms';
 
 import { PasswordSettingService } from '../password-setting.service';
@@ -45,7 +44,7 @@ export class ForgotPasswordComponent {
     }
 
     public get btnCancelCaption(): string {
-        if(this.isSuccess){
+        if (this.isSuccess) {
             return "BUTTON.CLOSE";
         }
 
@@ -53,7 +52,7 @@ export class ForgotPasswordComponent {
     }
 
     public open(): void {
-        //Clear state data
+        // Clear state data
         this.validationState = true;
         this.isSuccess = false;
         this.onGoing = false;
@@ -69,7 +68,7 @@ export class ForgotPasswordComponent {
     }
 
     public send(): void {
-        //Double confirm to avoid improper situations
+        // Double confirm to avoid improper situations
         if (!this.email) {
             return;
         }
@@ -90,7 +89,7 @@ export class ForgotPasswordComponent {
             .catch(error => {
                 this.onGoing = false;
                 this.inlineAlert.showInlineError(error);
-            })
+            });
 
     }
 

@@ -3,7 +3,7 @@
         <div class="row flex-items-xs-right option-right">
             <div class="flex-xs-middle">
                 <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
-                <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doSearchAuditLogs($event)"></hbr-filter>
+                <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doSearchAuditLogs($event)"></hbr-filter>
                 <span class="refresh-btn" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>
                 </span>
@@ -58,8 +58,6 @@
             <clr-dg-footer>
                 <span *ngIf="showPaginationIndex">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'AUDIT_LOG.OF' | translate}} </span> {{pagination.totalItems }} {{'AUDIT_LOG.ITEMS' | translate}}
                 <clr-dg-pagination #pagination [clrDgPageSize]="15" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalRecordCount"></clr-dg-pagination>
-                <!--{{totalRecordCount}} {{'AUDIT_LOG.ITEMS' | translate}}
-                <clr-dg-pagination [clrDgPageSize]="pageOffset" [clrDgTotalItems]="totalPage"></clr-dg-pagination>-->
             </clr-dg-footer>
         </clr-datagrid>
     </div>

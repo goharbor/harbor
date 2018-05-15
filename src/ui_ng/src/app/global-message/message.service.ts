@@ -26,7 +26,7 @@ export class MessageService {
   messageAnnounced$ = this.messageAnnouncedSource.asObservable();
   appLevelAnnounced$ = this.appLevelAnnouncedSource.asObservable();
   clearChan$ = this.clearSource.asObservable();
- 
+
   announceMessage(statusCode: number, message: string, alertType: AlertType) {
     this.messageAnnouncedSource.next(Message.newMessage(statusCode, message, alertType));
   }

@@ -5,7 +5,7 @@ import { ProjectService } from '../service/project.service';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { State } from 'clarity-angular';
 
-import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
+import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';

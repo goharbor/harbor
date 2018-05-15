@@ -30,7 +30,7 @@ import { User } from '../../user/user';
 import { CookieService, CookieOptions } from 'ngx-cookie';
 import {SkinableConfig} from "../../skinable-config.service";
 
-//Define status flags for signing in states
+// Define status flags for signing in states
 export const signInStatusNormal = 0;
 export const signInStatusOnGoing = 1;
 export const signInStatusError = -1;
@@ -46,22 +46,22 @@ const expireDays = 10;
 export class SignInComponent implements AfterViewChecked, OnInit {
     redirectUrl: string = "";
     appConfig: AppConfig = new AppConfig();
-    //Remeber me indicator
+    // Remeber me indicator
     rememberMe: boolean = false;
     rememberedName: string = "";
 
     customLoginBgImg: string;
     customAppTitle: string;
-    //Form reference
+    // Form reference
     signInForm: NgForm;
     @ViewChild('signInForm') currentForm: NgForm;
     @ViewChild('signupDialog') signUpDialog: SignUpComponent;
     @ViewChild('forgotPwdDialog') forgotPwdDialog: ForgotPasswordComponent;
 
-    //Status flag
+    // Status flag
     signInStatus: number = signInStatusNormal;
 
-    //Initialize sign in credential
+    // Initialize sign in credential
     @Input() signInCredential: SignInCredential = {
         principal: "",
         password: ""
@@ -87,15 +87,20 @@ export class SignInComponent implements AfterViewChecked, OnInit {
            }
         }
 
-        //Make sure the updated configuration can be loaded
+        // Make sure the updated configuration can be loaded
         this.appConfigService.load()
-            .then(updatedConfig => this.appConfig = updatedConfig);
+            .then(updatedConfig => this.appConfig = updatedConfig)
+            .catch(error => {
+                // Catch the error
+                console.error("Failed to load bootstrap options with error: ", error);
+            });
+
         this.route.queryParams
             .subscribe(params => {
                 this.redirectUrl = params["redirect_url"] || "";
                 let isSignUp = params["sign_up"] || "";
-                if (isSignUp != "") {
-                    this.signUp();//Open sign up
+                if (isSignUp !== "") {
+                    this.signUp(); // Open sign up
                 }
             });
 
@@ -108,7 +113,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         }
     }
 
-    //App title
+    // App title
     public get appTitle(): string {
         if (this.appConfig && this.appConfig.with_admiral) {
             return "APP_TITLE.VIC";
@@ -117,7 +122,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         return "APP_TITLE.VMW_HARBOR";
     }
 
-    //For template accessing
+    // For template accessing
     public get isError(): boolean {
         return this.signInStatus === signInStatusError;
     }
@@ -126,12 +131,12 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         return this.signInStatus === signInStatusOnGoing;
     }
 
-    //Validate the related fields
+    // Validate the related fields
     public get isValid(): boolean {
         return this.currentForm.form.valid;
     }
 
-    //Whether show the 'sign up' link
+    // Whether show the 'sign up' link
     public get selfSignUp(): boolean {
         return this.appConfig.auth_mode === 'db_auth'
             && this.appConfig.self_registration;
@@ -145,7 +150,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         if ($event && $event.target) {
             this.rememberMe = $event.target.checked;
             if (!this.rememberMe) {
-                //Remove cookie data
+                // Remove cookie data
                 this.cookie.remove(remCookieKey);
                 this.rememberedName = "";
             }
@@ -154,8 +159,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     remeberMe(): void {
         if (this.rememberMe) {
-            if (this.rememberedName != this.signInCredential.principal) {
-                //Set expire time
+            if (this.rememberedName !== this.signInCredential.principal) {
+                // Set expire time
                 let expires: number = expireDays * 3600 * 24 * 1000;
                 let date = new Date(Date.now() + expires);
                 let cookieptions: CookieOptions = {
@@ -167,16 +172,16 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         }
     }
 
-    //General error handler
+    // General error handler
     handleError(error: any) {
-        //Set error status
+        // Set error status
         this.signInStatus = signInStatusError;
 
         let message = error.status ? error.status + ":" + error.statusText : error;
         console.error("An error occurred when signing in:", message);
     }
 
-    //Hande form values changes
+    // Hande form values changes
     formChanged() {
         if (this.currentForm === this.signInForm) {
             return;
@@ -191,7 +196,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     }
 
-    //Fill the new user info into the sign in form
+    // Fill the new user info into the sign in form
     handleUserCreation(user: User): void {
         if (user) {
             this.currentForm.setValue({
@@ -202,51 +207,51 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         }
     }
 
-    //Implement interface
-    //Watch the view change only when view is in error state
+    // Implement interface
+    // Watch the view change only when view is in error state
     ngAfterViewChecked() {
         if (this.signInStatus === signInStatusError) {
             this.formChanged();
         }
     }
 
-    //Update the status if we have done some changes
+    // Update the status if we have done some changes
     updateState(): void {
         if (this.signInStatus === signInStatusError) {
-            this.signInStatus = signInStatusNormal; //reset
+            this.signInStatus = signInStatusNormal; // reset
         }
     }
 
-    //Trigger the signin action
+    // Trigger the signin action
     signIn(): void {
-        //Should validate input firstly
+        // Should validate input firstly
         if (!this.isValid) {
-            //Set error status
+            // Set error status
             this.signInStatus = signInStatusError;
             return;
         }
 
         if (this.isOnGoing) {
-            //Ongoing, directly return
+            // Ongoing, directly return
             return;
         }
 
-        //Start signing in progress
+        // Start signing in progress
         this.signInStatus = signInStatusOnGoing;
 
-        //Call the service to send out the http request
+        // Call the service to send out the http request
         this.session.signIn(this.signInCredential)
             .then(() => {
-                //Set status
-                //Keep it ongoing to keep the button 'disabled'
-                //this.signInStatus = signInStatusNormal;
+                // Set status
+                // Keep it ongoing to keep the button 'disabled'
+                // this.signInStatus = signInStatusNormal;
 
-                //Remeber me
+                // Remeber me
                 this.remeberMe();
 
-                //Redirect to the right route
+                // Redirect to the right route
                 if (this.redirectUrl === "") {
-                    //Routing to the default location
+                    // Routing to the default location
                     this.router.navigateByUrl(CommonRoutes.HARBOR_DEFAULT);
                 } else {
                     this.router.navigateByUrl(this.redirectUrl);
@@ -257,12 +262,12 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             });
     }
 
-    //Open sign up dialog
+    // Open sign up dialog
     signUp(): void {
         this.signUpDialog.open();
     }
 
-    //Open forgot password dialog
+    // Open forgot password dialog
     forgotPassword(): void {
         this.forgotPwdDialog.open();
     }

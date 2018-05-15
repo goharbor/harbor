@@ -3,7 +3,6 @@
     overflow: hidden;
 }
 
-
 /*
  * Gauge track color
  *
@@ -13,7 +12,6 @@
 .esxc-gauge-circle-bg {
     background-color: #EEE;
 }
-
 
 /*
  * Gauge bar
@@ -28,7 +26,6 @@
     transform: rotate(0deg);
 }
 
-
 /*
  * Gauge center area
  */
@@ -38,7 +35,6 @@
     top: 0;
     left: 0;
 }
-
 
 /*
  * Gauge caption
@@ -51,7 +47,6 @@
 .esxc-gauge-bar-one {
     opacity: 0.5;
 }
-
 
 /*
  * Small size gauge sizing
@@ -86,7 +81,6 @@
     margin-top: 6px;
 }
 
-
 /*
  * Medium size gauge sizing
  */
@@ -113,7 +107,6 @@
     border-radius: 60px;
     margin: 5px;
 }
-
 
 /*
  * Large size gauge sizing
@@ -145,7 +138,6 @@
 .esxc-gauge-large .esxc-gauge-circle-caption {
     margin-top: 95px;
 }
-
 
 /*Sall size*/
 
@@ -200,7 +192,6 @@
     text-align: right;
 }
 
-
 /*medium size*/
 
 .esxc-gauge-medium .esxc-gauge-circle-caption {
@@ -244,7 +235,6 @@
     text-align: center;
     margin-top: -8px;
 }
-
 
 /*large size*/
 

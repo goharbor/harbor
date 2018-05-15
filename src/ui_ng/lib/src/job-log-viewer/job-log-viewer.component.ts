@@ -11,76 +11,80 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input
+} from "@angular/core";
 
-import { JobLogService } from '../service/index';
-import { ErrorHandler } from '../error-handler/index';
-import { toPromise } from '../utils';
+import { JobLogService } from "../service/index";
+import { ErrorHandler } from "../error-handler/index";
+import { toPromise } from "../utils";
 
 const supportSet: string[] = ["replication", "scan"];
 
 @Component({
-    selector: 'job-log-viewer',
-    templateUrl: './job-log-viewer.component.html',
-    styleUrls: ['./job-log-viewer.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "job-log-viewer",
+  templateUrl: "./job-log-viewer.component.html",
+  styleUrls: ["./job-log-viewer.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-
 export class JobLogViewerComponent {
-    _jobType: string = "replication";
+  _jobType: string = "replication";
 
-    opened: boolean = false;
-    log: string = '';
-    onGoing: boolean = true;
+  opened: boolean = false;
+  log: string = "";
+  onGoing: boolean = true;
 
-    @Input()
-    get jobType(): string {
-        return this._jobType;
+  @Input()
+  get jobType(): string {
+    return this._jobType;
+  }
+  set jobType(v: string) {
+    if (supportSet.find((t: string) => t === v)) {
+      this._jobType = v;
     }
-    set jobType(v: string) {
-        if (supportSet.find((t: string) => t === v)) {
-            this._jobType = v;
-        }
-    }
+  }
 
-    get title(): string {
-        if(this.jobType === "scan"){
-            return "VULNERABILITY.JOB_LOG_VIEWER";
-        }
-
-        return "REPLICATION.JOB_LOG_VIEWER";
+  get title(): string {
+    if (this.jobType === "scan") {
+      return "VULNERABILITY.JOB_LOG_VIEWER";
     }
 
-    constructor(
-        private jobLogService: JobLogService,
-        private errorHandler: ErrorHandler,
-        private ref: ChangeDetectorRef
-    ) { }
+    return "REPLICATION.JOB_LOG_VIEWER";
+  }
 
-    open(jobId: number | string): void {
-        this.opened = true;
-        this.load(jobId);
-    }
+  constructor(
+    private jobLogService: JobLogService,
+    private errorHandler: ErrorHandler,
+    private ref: ChangeDetectorRef
+  ) {}
 
-    close(): void {
-        this.opened = false;
-        this.log = "";
-    }
+  open(jobId: number | string): void {
+    this.opened = true;
+    this.load(jobId);
+  }
 
-    load(jobId: number | string): void {
-        this.onGoing = true;
+  close(): void {
+    this.opened = false;
+    this.log = "";
+  }
 
-        toPromise<string>(this.jobLogService.getJobLog(this.jobType, jobId))
-            .then((log: string) => {
-                this.onGoing = false;
-                this.log = log;
-            })
-            .catch(error => {
-                this.onGoing = false;
-                this.errorHandler.error(error);
-            });
+  load(jobId: number | string): void {
+    this.onGoing = true;
 
-        let hnd = setInterval(()=>this.ref.markForCheck(), 100);
-        setTimeout(()=>clearInterval(hnd), 2000);
-    }
+    toPromise<string>(this.jobLogService.getJobLog(this.jobType, jobId))
+      .then((log: string) => {
+        this.onGoing = false;
+        this.log = log;
+      })
+      .catch(error => {
+        this.onGoing = false;
+        this.errorHandler.error(error);
+      });
+
+    let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 2000);
+  }
 }

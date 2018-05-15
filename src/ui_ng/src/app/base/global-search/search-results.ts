@@ -11,15 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Project } from '../../project/project';
-import { Repository } from 'harbor-ui';
+import { Project } from "../../project/project";
+import { Repository } from "harbor-ui";
 
 export class SearchResults {
-    constructor(){
-        this.project = [];
-        this.repository = [];
-    }
+  constructor() {
+    this.project = [];
+    this.repository = [];
+  }
 
-    project: Project[];
-    repository: Repository[];
+  project: Project[];
+  repository: Repository[];
 }

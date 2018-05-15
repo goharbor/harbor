@@ -13,13 +13,15 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+
 import { ReplicationComponent } from 'harbor-ui';
+
 import {SessionService} from "../shared/session.service";
 import {Project} from "../project/project";
 import {ProjectService} from "../project/project.service";
 
 @Component({
-  selector: 'replicaton',
+  selector: 'replication',
   templateUrl: 'replication-page.component.html'
 })
 export class ReplicationPageComponent implements OnInit, AfterViewInit {

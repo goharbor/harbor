@@ -48,9 +48,9 @@ export class ConfirmationDialogComponent implements OnDestroy {
     colorChange(list: BatchInfo) {
         if (!list.loading && !list.errorState) {
             return 'green';
-        }else if (!list.loading && list.errorState) {
+        } else if (!list.loading && list.errorState) {
             return 'red';
-        }else {
+        } else {
             return '#666';
         }
     }
@@ -67,7 +67,7 @@ export class ConfirmationDialogComponent implements OnDestroy {
             this.message = msg;
             this.translate.get(this.dialogTitle).subscribe((res: string) => this.dialogTitle = res);
             this.translate.get(this.dialogContent, { 'param': msg.param }).subscribe((res: string) => this.dialogContent = res);
-            //Open dialog
+            // Open dialog
             this.buttons = msg.buttons;
             this.open();
         });
@@ -96,7 +96,8 @@ export class ConfirmationDialogComponent implements OnDestroy {
     }
 
     cancel(): void {
-        if(!this.message){//Inproper condition
+        if (!this.message) {
+            // Inproper condition
             this.close();
             return;
         }
@@ -133,7 +134,8 @@ export class ConfirmationDialogComponent implements OnDestroy {
     }
 
     confirm(): void {
-        if(!this.message){//Inproper condition
+        if (!this.message) {
+            // Inproper condition
             this.close();
             return;
         }

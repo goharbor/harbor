@@ -11,7 +11,7 @@
                     <option value="operation">{{"AUDIT_LOG.OPERATION" | translate | lowercase}}</option>
                 </select>
             </div>
-            <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filter)="doFilter($event)"
+            <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doFilter($event)"
                 (openFlag)="openFilter($event)" [currentValue]="currentTerm"></hbr-filter>
             <span (click)="refresh()" class="refresh-btn">
                 <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress"></clr-icon>

@@ -1,7 +1,5 @@
-import { ComponentFixture, TestBed, async, fakeAsync, tick } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
+import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { DebugElement } from '@angular/core';
-import { Router } from '@angular/router';
 
 import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -12,9 +10,8 @@ import {Label, Tag} from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { TagService, TagDefaultService, ScanningResultService, ScanningResultDefaultService } from '../service/index';
 import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
-import { FILTER_DIRECTIVES } from '../filter/index'
+import { FILTER_DIRECTIVES } from '../filter/index';
 
-import { Observable, Subscription } from 'rxjs/Rx';
 import { ChannelService } from '../channel/index';
 
 import { JobLogViewerComponent } from '../job-log-viewer/index';

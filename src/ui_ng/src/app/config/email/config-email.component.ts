@@ -22,6 +22,7 @@ import { Configuration } from 'harbor-ui';
     styleUrls: ['./config-email.component.scss', '../config.component.scss']
 })
 export class ConfigurationEmailComponent {
+    // tslint:disable-next-line:no-input-rename
     @Input("mailConfig") currentConfig: Configuration = new Configuration();
 
     @ViewChild("mailConfigFrom") mailForm: NgForm;

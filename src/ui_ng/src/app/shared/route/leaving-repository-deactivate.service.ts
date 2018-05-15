@@ -45,9 +45,9 @@ export class LeavingRepositoryRouteDeactivate implements CanDeactivate<TagReposi
           ConfirmationTargets.REPOSITORY
         );
         this.confirmation.openComfirmDialog(msg);
-        return this.confirmation.confirmationConfirm$.subscribe(msg => {
-          if (msg && msg.source === ConfirmationTargets.REPOSITORY) {
-            if (msg.state === ConfirmationState.CONFIRMED) {
+        return this.confirmation.confirmationConfirm$.subscribe(confirmMsg => {
+          if (confirmMsg && confirmMsg.source === ConfirmationTargets.REPOSITORY) {
+            if (confirmMsg.state === ConfirmationState.CONFIRMED) {
               return resolve(true);
             } else {
               return resolve(false); // Prevent leading route

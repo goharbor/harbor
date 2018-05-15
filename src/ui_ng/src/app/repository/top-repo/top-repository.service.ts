@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Headers, Http, RequestOptions } from '@angular/http';
+import { Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
-
 import { Repository } from 'harbor-ui';
+
 import {HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 
 export const topRepoEndpoint = "/api/repositories/top";
 /**
  * Declare service to handle the top repositories
- * 
- * 
+ *
+ *
  * @export
  * @class GlobalSearchService
  */
@@ -33,10 +33,10 @@ export class TopRepoService {
 
     /**
      * Get top popular repositories
-     * 
+     *
      * @param {string} keyword
      * @returns {Promise<TopRepo>}
-     * 
+     *
      * @memberOf GlobalSearchService
      */
     getTopRepos(): Promise<Repository[]> {

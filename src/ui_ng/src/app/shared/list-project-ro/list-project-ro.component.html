@@ -12,7 +12,5 @@
     <clr-dg-footer>
         <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'PROJECT.OF' | translate}} </span> {{pagination.totalItems }} {{'PROJECT.ITEMS' | translate}}
         <clr-dg-pagination #pagination [clrDgPageSize]="5"></clr-dg-pagination>
-        <!--{{(projects ? projects.length : 0)}} {{'PROJECT.ITEMS' | translate}}
-        <clr-dg-pagination [clrDgPageSize]="15"></clr-dg-pagination>-->
     </clr-dg-footer>
 </clr-datagrid>

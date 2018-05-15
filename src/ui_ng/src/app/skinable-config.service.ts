@@ -1,10 +1,6 @@
 
 import {Injectable} from "@angular/core";
 import {Http} from "@angular/http";
-import {Observable} from "rxjs/Observable";
-/**
- * Created by pengf on 9/15/2017.
- */
 
 @Injectable()
 export class SkinableConfig {
@@ -27,7 +23,7 @@ export class SkinableConfig {
     public getProject() {
         if (this.customSkinData) {
             return this.customSkinData.project;
-        }else {
+        } else {
             return null;
         }
     }

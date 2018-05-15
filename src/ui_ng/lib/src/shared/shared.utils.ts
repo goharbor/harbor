@@ -11,8 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { NgForm } from '@angular/forms';
-import { httpStatusCode, AlertType } from './shared.const';
 /**
  * To handle the error message body
  *
@@ -46,7 +44,7 @@ export const errorHandler = function (error: any): string {
                 return "UNKNOWN_ERROR";
         }
     }
-}
+};
 
 export class CancelablePromise<T> {
 

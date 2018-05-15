@@ -21,13 +21,15 @@ export const languageNames = {
 };
 export const enum AlertType {
   DANGER, WARNING, INFO, SUCCESS
-};
+}
 
 export const dismissInterval = 10 * 1000;
+
 export const httpStatusCode = {
   "Unauthorized": 401,
   "Forbidden": 403
 };
+
 export const enum ConfirmationTargets {
   EMPTY,
   PROJECT,
@@ -41,11 +43,11 @@ export const enum ConfirmationTargets {
   CONFIG,
   CONFIG_ROUTE,
   CONFIG_TAB
-};
+}
 
 export const enum ActionType {
   ADD_NEW, EDIT
-};
+}
 
 export const ListMode = {
   READONLY: "readonly",

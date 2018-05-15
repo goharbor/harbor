@@ -26,7 +26,7 @@ import {ReactiveFormsModule} from "@angular/forms";
   imports: [
     SharedModule,
     RouterModule,
-      ReactiveFormsModule
+    ReactiveFormsModule
   ],
   declarations: [
     ReplicationPageComponent,

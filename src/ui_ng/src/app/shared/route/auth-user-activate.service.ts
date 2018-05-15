@@ -46,7 +46,7 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
   }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
-    //When routing change, clear
+    // When routing change, clear
     this.msgHandler.clear();
     if (this.appConfigService.getConfig().read_only.toString() === 'true') {
       this.msgHandler.handleReadOnly();
@@ -54,12 +54,12 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
 
     this.searchTrigger.closeSearch(true);
     return new Promise((resolve, reject) => {
-      //Before activating, we firstly need to confirm whether the route is coming from peer part - admiral
+      // Before activating, we firstly need to confirm whether the route is coming from peer part - admiral
       let queryParams = route.queryParams;
       if (queryParams) {
         if (queryParams[AdmiralQueryParamKey]) {
           this.appConfigService.saveAdmiralEndpoint(queryParams[AdmiralQueryParamKey]);
-          //Remove the query parameter key pair and redirect
+          // Remove the query parameter key pair and redirect
           let keyRemovedUrl = maintainUrlQueryParmas(state.url, AdmiralQueryParamKey, undefined);
           if (!/[?]{1}.+/i.test(keyRemovedUrl)) {
             keyRemovedUrl = keyRemovedUrl.replace('?', '');
@@ -75,14 +75,14 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
         this.authService.retrieveUser()
           .then(() => resolve(true))
           .catch(error => {
-            //If is guest, skip it
+            // If is guest, skip it
             if (this.isGuest(route, state)) {
               return resolve(true);
             }
-            //Session retrieving failed then redirect to sign-in
-            //no matter what status code is.
-            //Please pay attention that route 'HARBOR_ROOT' and 'EMBEDDED_SIGN_IN' support anonymous user
-            if (state.url != CommonRoutes.HARBOR_ROOT && !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
+            // Session retrieving failed then redirect to sign-in
+            // no matter what status code is.
+            // Please pay attention that route 'HARBOR_ROOT' and 'EMBEDDED_SIGN_IN' support anonymous user
+            if (state.url !== CommonRoutes.HARBOR_ROOT && !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
               let navigatorExtra: NavigationExtras = {
                 queryParams: { "redirect_url": state.url }
               };
