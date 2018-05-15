@@ -7,6 +7,8 @@ const (
 	FilterItemKindRepository = "repository"
 	//FilterItemKindTag : Kind of filter item is 'tag'
 	FilterItemKindTag = "tag"
+	//FilterItemKindLabel : Kind of filter item is 'label'
+	FilterItemKindLabel = "label"
 
 	//AdaptorKindHarbor : Kind of adaptor of Harbor
 	AdaptorKindHarbor = "Harbor"

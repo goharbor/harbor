@@ -76,8 +76,8 @@ func (r *RepositoryFilter) DoFilter(items []models.FilterItem) []models.FilterIt
 			_, repository = utils.ParseRepository(repository)
 			matched, err := match(r.pattern, repository)
 			if err != nil {
-				log.Errorf("failed to match pattern %s to value %s: %v", r.pattern, repository, err)
-				break
+				log.Errorf("failed to match pattern %s to value %s: %v, skip it", r.pattern, repository, err)
+				continue
 			}
 			if matched {
 				log.Debugf("pattern %s matched, add %s to the repository filter result list", r.pattern, item.Value)
