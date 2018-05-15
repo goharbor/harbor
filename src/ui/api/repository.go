@@ -154,39 +154,53 @@ func getRepositories(query *models.RepositoryQuery) ([]*repoResp, error) {
 		return nil, err
 	}
 
-	return assembleRepos(repositories)
+	return assembleReposInParallel(repositories), nil
 }
 
-func assembleRepos(repositories []*models.RepoRecord) ([]*repoResp, error) {
-	result := []*repoResp{}
+func assembleReposInParallel(repositories []*models.RepoRecord) []*repoResp {
+	c := make(chan *repoResp)
 	for _, repository := range repositories {
-		repo := &repoResp{
-			ID:           repository.RepositoryID,
-			Name:         repository.Name,
-			ProjectID:    repository.ProjectID,
-			Description:  repository.Description,
-			PullCount:    repository.PullCount,
-			StarCount:    repository.StarCount,
-			CreationTime: repository.CreationTime,
-			UpdateTime:   repository.UpdateTime,
-		}
-
-		tags, err := getTags(repository.Name)
-		if err != nil {
-			return nil, err
-		}
-		repo.TagsCount = int64(len(tags))
-
-		labels, err := dao.GetLabelsOfResource(common.ResourceTypeRepository, repository.RepositoryID)
-		if err != nil {
-			log.Errorf("failed to get labels of repository %s: %v", repository.Name, err)
-		} else {
-			repo.Labels = labels
-		}
-
-		result = append(result, repo)
+		go assembleRepo(c, repository)
 	}
-	return result, nil
+	result := []*repoResp{}
+	var item *repoResp
+	for i := 0; i < len(repositories); i++ {
+		item = <-c
+		if item == nil {
+			continue
+		}
+		result = append(result, item)
+	}
+	return result
+}
+
+func assembleRepo(c chan *repoResp, repository *models.RepoRecord) {
+	repo := &repoResp{
+		ID:           repository.RepositoryID,
+		Name:         repository.Name,
+		ProjectID:    repository.ProjectID,
+		Description:  repository.Description,
+		PullCount:    repository.PullCount,
+		StarCount:    repository.StarCount,
+		CreationTime: repository.CreationTime,
+		UpdateTime:   repository.UpdateTime,
+	}
+
+	tags, err := getTags(repository.Name)
+	if err != nil {
+		log.Errorf("failed to list tags of %s: %v", repository.Name, err)
+	} else {
+		repo.TagsCount = int64(len(tags))
+	}
+
+	labels, err := dao.GetLabelsOfResource(common.ResourceTypeRepository, repository.RepositoryID)
+	if err != nil {
+		log.Errorf("failed to get labels of repository %s: %v", repository.Name, err)
+	} else {
+		repo.Labels = labels
+	}
+
+	c <- repo
 }
 
 // Delete ...
@@ -381,7 +395,7 @@ func (ra *RepositoryAPI) GetTag() {
 		return
 	}
 
-	result := assembleTags(client, repository, []string{tag},
+	result := assembleTagsInParallel(client, repository, []string{tag},
 		ra.SecurityCtx.GetUsername())
 	ra.Data["json"] = result[0]
 	ra.ServeJSON()
@@ -453,16 +467,15 @@ func (ra *RepositoryAPI) GetTags() {
 		tags = ts
 	}
 
-	ra.Data["json"] = assembleTags(client, repoName, tags,
+	ra.Data["json"] = assembleTagsInParallel(client, repoName, tags,
 		ra.SecurityCtx.GetUsername())
 	ra.ServeJSON()
 }
 
 // get config, signature and scan overview and assemble them into one
 // struct for each tag in tags
-func assembleTags(client *registry.Repository, repository string,
+func assembleTagsInParallel(client *registry.Repository, repository string,
 	tags []string, username string) []*tagResp {
-
 	var err error
 	signatures := map[string][]notary.Target{}
 	if config.WithNotary() {
@@ -473,48 +486,61 @@ func assembleTags(client *registry.Repository, repository string,
 		}
 	}
 
+	c := make(chan *tagResp)
+	for _, tag := range tags {
+		go assembleTag(c, client, repository, tag, config.WithClair(),
+			config.WithNotary(), signatures)
+	}
 	result := []*tagResp{}
-	for _, t := range tags {
-		item := &tagResp{}
-
-		// labels
-		image := fmt.Sprintf("%s:%s", repository, t)
-		labels, err := dao.GetLabelsOfResource(common.ResourceTypeImage, image)
-		if err != nil {
-			log.Errorf("failed to get labels of image %s: %v", image, err)
-		} else {
-			item.Labels = labels
+	var item *tagResp
+	for i := 0; i < len(tags); i++ {
+		item = <-c
+		if item == nil {
+			continue
 		}
+		result = append(result, item)
+	}
+	return result
+}
 
-		// the detail information of tag
-		tagDetail, err := getTagDetail(client, t)
-		if err != nil {
-			log.Errorf("failed to get v2 manifest of %s:%s: %v", repository, t, err)
-		}
-		if tagDetail != nil {
-			item.tagDetail = *tagDetail
-		}
+func assembleTag(c chan *tagResp, client *registry.Repository,
+	repository, tag string, clairEnabled, notaryEnabled bool,
+	signatures map[string][]notary.Target) {
+	item := &tagResp{}
+	// labels
+	image := fmt.Sprintf("%s:%s", repository, tag)
+	labels, err := dao.GetLabelsOfResource(common.ResourceTypeImage, image)
+	if err != nil {
+		log.Errorf("failed to get labels of image %s: %v", image, err)
+	} else {
+		item.Labels = labels
+	}
 
-		// scan overview
-		if config.WithClair() {
-			item.ScanOverview = getScanOverview(item.Digest, item.Name)
-		}
+	// the detail information of tag
+	tagDetail, err := getTagDetail(client, tag)
+	if err != nil {
+		log.Errorf("failed to get v2 manifest of %s:%s: %v", repository, tag, err)
+	}
+	if tagDetail != nil {
+		item.tagDetail = *tagDetail
+	}
 
-		// signature, compare both digest and tag
-		if config.WithNotary() {
-			if sigs, ok := signatures[item.Digest]; ok {
-				for _, sig := range sigs {
-					if item.Name == sig.Tag {
-						item.Signature = &sig
-					}
+	// scan overview
+	if clairEnabled {
+		item.ScanOverview = getScanOverview(item.Digest, item.Name)
+	}
+
+	// signature, compare both digest and tag
+	if notaryEnabled && signatures != nil {
+		if sigs, ok := signatures[item.Digest]; ok {
+			for _, sig := range sigs {
+				if item.Name == sig.Tag {
+					item.Signature = &sig
 				}
 			}
 		}
-
-		result = append(result, item)
 	}
-
-	return result
+	c <- item
 }
 
 // getTagDetail returns the detail information for v2 manifest image
@@ -709,13 +735,7 @@ func (ra *RepositoryAPI) GetTopRepos() {
 		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
 	}
 
-	result, err := assembleRepos(repos)
-	if err != nil {
-		log.Errorf("failed to popultate tags count to repositories: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
-	}
-
-	ra.Data["json"] = result
+	ra.Data["json"] = assembleReposInParallel(repos)
 	ra.ServeJSON()
 }
 
