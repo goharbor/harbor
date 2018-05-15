@@ -19,10 +19,14 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef
 } from "@angular/core";
+import { Subscription } from "rxjs/Subscription";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/observable/forkJoin";
+import { TranslateService } from "@ngx-translate/core";
+import { Comparator } from "clarity-angular";
+
 import { Endpoint } from "../service/interface";
 import { EndpointService } from "../service/endpoint.service";
-
-import { TranslateService } from "@ngx-translate/core";
 
 import { ErrorHandler } from "../error-handler/index";
 
@@ -36,18 +40,14 @@ import {
   ConfirmationButtons
 } from "../shared/shared.const";
 
-import { Subscription } from "rxjs/Subscription";
-
 import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
-
 import { toPromise, CustomComparator } from "../utils";
 
-import { Comparator } from "clarity-angular";
 import {
   BatchInfo,
   BathInfoChanges
 } from "../confirmation-dialog/confirmation-batch-message";
-import { Observable } from "rxjs/Observable";
+
 
 @Component({
   selector: "hbr-endpoint",
