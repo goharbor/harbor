@@ -52,3 +52,5 @@ src/ui_ng/aot/**/*.json
 **/aot
 **/dist
 **/.bin
+package-lock.json
+src/ui_ng/package-lock.json
