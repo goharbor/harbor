@@ -264,16 +264,37 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     });
   }
 
+  containsLatestTag(repo: RepositoryItem): Promise<boolean> {
+    return toPromise<Tag[]>(this.tagService.getTags(repo.name))
+    .then(items => {
+      if (items.some((t: Tag) => { return t.name === 'latest'; })) {
+        return true;
+        } else {
+          return false;
+        };
+      })
+      .catch(error => Promise.reject(false));
+  }
+
   provisionItemEvent(evt: any, repo: RepositoryItem): void {
     evt.stopPropagation();
-    let repoCopy = clone(repo)
-    repoCopy.name = this.registryUrl + ':443/' + repoCopy.name;
-    this.repoProvisionEvent.emit(repoCopy);
+    let repoCopy = clone(repo);
+    repoCopy.name = this.registryUrl + ":443/" + repoCopy.name;
+    this.containsLatestTag(repo)
+    .then(containsLatest => {
+      if (containsLatest) {
+        this.repoProvisionEvent.emit(repoCopy);
+      } else {
+        this.addInfoEvent.emit(repoCopy);
+      }
+    })
+    .catch( error => this.errorHandler.error(error));
+
   }
 
   itemAddInfoEvent(evt: any, repo: RepositoryItem): void {
     evt.stopPropagation();
-    let repoCopy = clone(repo)
+    let repoCopy = clone(repo);
     repoCopy.name = this.registryUrl + ':443/' + repoCopy.name;
     this.addInfoEvent.emit(repoCopy);
   }
