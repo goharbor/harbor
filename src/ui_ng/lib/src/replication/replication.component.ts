@@ -20,7 +20,11 @@ import {
   OnDestroy,
   EventEmitter
 } from "@angular/core";
-
+import { Comparator, State } from "clarity-angular";
+import { Observable } from "rxjs/Observable";
+import { Subscription } from "rxjs/Subscription";
+import 'rxjs/add/observable/forkJoin';
+import 'rxjs/add/observable/timer';
 import { TranslateService } from "@ngx-translate/core";
 
 import { ListReplicationRuleComponent } from "../list-replication-rule/list-replication-rule.component";
@@ -44,12 +48,8 @@ import {
   calculatePage
 } from "../utils";
 
-import { Comparator } from "clarity-angular";
-
 import { JobLogViewerComponent } from "../job-log-viewer/index";
-import { State } from "clarity-angular";
-import { Observable } from "rxjs/Observable";
-import { Subscription } from "rxjs/Subscription";
+
 import {
   ConfirmationTargets,
   ConfirmationButtons,
