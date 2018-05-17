@@ -45,5 +45,5 @@
             </clr-dg-footer>
         </clr-datagrid>
     </div>
-    <add-member [projectId]="projectId" (added)="addedMember($event)"></add-member>
+    <add-member [projectId]="projectId" [memberList]="members" (added)="addedMember($event)"></add-member>
 </div>
