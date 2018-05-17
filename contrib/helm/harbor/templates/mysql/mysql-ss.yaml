@@ -43,7 +43,9 @@ spec:
   - metadata:
       name: "mysql-data"
       labels:
-{{ include "harbor.labels" . | indent 8 }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+        app: "{{ template "harbor.name" . }}"
     spec:
       accessModes: [{{ .Values.mysql.volumes.data.accessMode | quote }}]
       {{- if .Values.mysql.volumes.data.storageClass }}
