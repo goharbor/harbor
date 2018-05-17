@@ -215,7 +215,6 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
 	securCtx := local.NewSecurityContext(user, pm)
-
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
 }
@@ -223,24 +222,25 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 type sessionReqCtxModifier struct{}
 
 func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
-	username := ctx.Input.Session("username")
-	if username == nil {
+	var user models.User
+	userInterface := ctx.Input.Session("user")
+
+	if userInterface == nil {
+		log.Debug("can not get user information from session")
 		return false
 	}
 
 	log.Debug("got user information from session")
-	user := &models.User{
-		Username: username.(string),
+	user, ok := userInterface.(models.User)
+	if !ok {
+		log.Info("can not get user information from session")
+		return false
 	}
-	isSysAdmin := ctx.Input.Session("isSysAdmin")
-	if isSysAdmin != nil && isSysAdmin.(bool) {
-		user.HasAdminRole = true
-	}
-
+	log.Debug("Getting user %+v", user)
 	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
-	securCtx := local.NewSecurityContext(user, pm)
+	securCtx := local.NewSecurityContext(&user, pm)
 
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 
