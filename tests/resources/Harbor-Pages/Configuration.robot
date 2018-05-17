@@ -257,7 +257,7 @@ Create New Labels
 
 Update A Label
     [Arguments]  ${labelname}
-    Click Element  xpath=//clr-dg-row[1]/div/clr-dg-cell[1]/clr-checkbox
+    Click Element  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox
     Sleep  1
     Click Element  xpath=//button[contains(.,'Edit')]
     Sleep  1
@@ -268,10 +268,11 @@ Update A Label
     Wait Until Page Contains  ${labelname}1
 
 Delete A Label
-    Click Element  xpath=//clr-dg-row[1]/div/clr-dg-cell[1]/clr-checkbox
+    [Arguments]  ${labelname}
+    Click Element  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox
     Sleep  1
     Click ELement  xpath=//button[contains(.,'Delete')]
     Sleep  3
     Capture Page Screenshot
     Click Element  xpath=//clr-modal//div//button[contains(.,'DELETE')]
-    Wait Until Page Contains  Deleted successfully
+    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${labelname}')]/../div/clr-icon[@shape="success-standard"
