@@ -37,6 +37,7 @@ var (
 	projectID            int64 = 1
 	targetID             int64
 	policyID             int64
+	labelID2             int64
 )
 
 func TestRepPolicyAPIPost(t *testing.T) {
@@ -51,6 +52,14 @@ func TestRepPolicyAPIPost(t *testing.T) {
 
 	CommonAddTarget()
 	targetID = int64(CommonGetTarget())
+
+	var err error
+	labelID2, err = dao.AddLabel(&models.Label{
+		Name:  "label_for_replication_filter",
+		Scope: "g",
+	})
+	require.Nil(t, err)
+	defer dao.DeleteLabel(labelID2)
 
 	cases := []*codeCheckingCase{
 		// 401
@@ -231,6 +240,41 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			},
 			code: http.StatusNotFound,
 		},
+		// 404, label not found
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    repPolicyAPIBasePath,
+				bodyJSON: &api_models.ReplicationPolicy{
+					Name: policyName,
+					Projects: []*models.Project{
+						&models.Project{
+							ProjectID: projectID,
+						},
+					},
+					Targets: []*models.RepTarget{
+						&models.RepTarget{
+							ID: targetID,
+						},
+					},
+					Filters: []rep_models.Filter{
+						rep_models.Filter{
+							Kind:    replication.FilterItemKindRepository,
+							Pattern: "*",
+						},
+						rep_models.Filter{
+							Kind:  replication.FilterItemKindLabel,
+							Value: 10000,
+						},
+					},
+					Trigger: &rep_models.Trigger{
+						Kind: replication.TriggerKindManual,
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusNotFound,
+		},
 		// 201
 		&codeCheckingCase{
 			request: &testingRequest{
@@ -252,6 +296,10 @@ func TestRepPolicyAPIPost(t *testing.T) {
 						rep_models.Filter{
 							Kind:    replication.FilterItemKindRepository,
 							Pattern: "*",
+						},
+						rep_models.Filter{
+							Kind:  replication.FilterItemKindLabel,
+							Value: labelID2,
 						},
 					},
 					Trigger: &rep_models.Trigger{
@@ -303,6 +351,21 @@ func TestRepPolicyAPIGet(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, policyID, policy.ID)
 	assert.Equal(t, policyName, policy.Name)
+	assert.Equal(t, 2, len(policy.Filters))
+	found := false
+	for _, filter := range policy.Filters {
+		if filter.Kind == replication.FilterItemKindLabel {
+			found = true
+			label, ok := filter.Value.(map[string]interface{})
+			if assert.True(t, ok) {
+				id := int64(label["id"].(float64))
+				inactive := label["inactive"].(bool)
+				assert.Equal(t, labelID2, id)
+				assert.True(t, inactive)
+			}
+		}
+	}
+	assert.True(t, found)
 }
 
 func TestRepPolicyAPIList(t *testing.T) {

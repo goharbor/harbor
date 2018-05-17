@@ -2959,9 +2959,14 @@ definitions:
         description: >-
           The replication policy filter kind. The valid values are project,
           repository and tag.
+      value:
+        type: 
+          - string
+          - integer
+        description: The value of replication policy filter. When creating repository and tag filter, filling it with the pattern as string. When creating label filter, filling it with label ID as integer.
       pattern:
         type: string
-        description: The replication policy filter pattern.
+        description: Depraceted, use value instead. The replication policy filter pattern.
       metadata:
         type: object
         description: This map object is the replication policy filter metadata.
@@ -3541,7 +3546,7 @@ definitions:
         type: string
         description: The color of label.
       scope:
-        type: integer
+        type: string
         description: The scope of label, g for global labels and p for project labels.
       project_id:
         type: integer

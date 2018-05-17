@@ -56,11 +56,13 @@ func (r *ReplicationPolicy) Valid(v *validation.Validation) {
 		v.SetError("targets", "can not be empty")
 	}
 
-	for _, filter := range r.Filters {
-		filter.Valid(v)
+	for i := range r.Filters {
+		r.Filters[i].Valid(v)
 	}
 
-	if r.Trigger != nil {
+	if r.Trigger == nil {
+		v.SetError("trigger", "can not be empty")
+	} else {
 		r.Trigger.Valid(v)
 	}
 }

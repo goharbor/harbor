@@ -23,6 +23,7 @@ import (
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/core"
 	rep_models "github.com/vmware/harbor/src/replication/models"
 	api_models "github.com/vmware/harbor/src/ui/api/models"
@@ -32,6 +33,14 @@ import (
 // RepPolicyAPI handles /api/replicationPolicies /api/replicationPolicies/:id/enablement
 type RepPolicyAPI struct {
 	BaseController
+}
+
+// labelWrapper wraps models.Label by adding the property "inactive"
+type labelWrapper struct {
+	models.Label
+	// if the label referenced by label filter is deleted,
+	// inactive will set be true
+	Inactive bool `json:"inactive"`
 }
 
 // Prepare validates whether the user has system admin role
@@ -153,6 +162,22 @@ func (pa *RepPolicyAPI) Post() {
 		}
 	}
 
+	// check the existence of labels
+	for _, filter := range policy.Filters {
+		if filter.Kind == replication.FilterItemKindLabel {
+			labelID := filter.Value.(int64)
+			label, err := dao.GetLabel(labelID)
+			if err != nil {
+				pa.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", labelID, err))
+				return
+			}
+			if label == nil {
+				pa.HandleNotFound(fmt.Sprintf("label %d not found", labelID))
+				return
+			}
+		}
+	}
+
 	id, err := core.GlobalController.CreatePolicy(convertToRepPolicy(policy))
 	if err != nil {
 		pa.HandleInternalServerError(fmt.Sprintf("failed to create policy: %v", err))
@@ -219,6 +244,22 @@ func (pa *RepPolicyAPI) Put() {
 		}
 	}
 
+	// check the existence of labels
+	for _, filter := range policy.Filters {
+		if filter.Kind == replication.FilterItemKindLabel {
+			labelID := filter.Value.(int64)
+			label, err := dao.GetLabel(labelID)
+			if err != nil {
+				pa.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", labelID, err))
+				return
+			}
+			if label == nil {
+				pa.HandleNotFound(fmt.Sprintf("label %d not found", labelID))
+				return
+			}
+		}
+	}
+
 	if err = core.GlobalController.UpdatePolicy(convertToRepPolicy(policy)); err != nil {
 		pa.HandleInternalServerError(fmt.Sprintf("failed to update policy %d: %v", id, err))
 		return
@@ -279,7 +320,6 @@ func convertFromRepPolicy(projectMgr promgr.ProjectManager, policy rep_models.Re
 		ID:                policy.ID,
 		Name:              policy.Name,
 		Description:       policy.Description,
-		Filters:           policy.Filters,
 		ReplicateDeletion: policy.ReplicateDeletion,
 		Trigger:           policy.Trigger,
 		CreationTime:      policy.CreationTime,
@@ -304,6 +344,28 @@ func convertFromRepPolicy(projectMgr promgr.ProjectManager, policy rep_models.Re
 		}
 		target.Password = ""
 		ply.Targets = append(ply.Targets, target)
+	}
+
+	// populate label used in label filter
+	for _, filter := range policy.Filters {
+		if filter.Kind == replication.FilterItemKindLabel {
+			labelID := filter.Value.(int64)
+			label, err := dao.GetLabel(labelID)
+			if err != nil {
+				return nil, err
+			}
+			lw := &labelWrapper{}
+			// if the label is not found, set inactive to true
+			if label == nil {
+				lw.ID = labelID
+				lw.Name = "unknown"
+				lw.Inactive = true
+			} else {
+				lw.Label = *label
+			}
+			filter.Value = lw
+		}
+		ply.Filters = append(ply.Filters, filter)
 	}
 
 	// TODO call the method from replication controller
