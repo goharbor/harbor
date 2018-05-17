@@ -35,7 +35,9 @@
         "COPY": "COPY",
         "EDIT": "EDITAR",
         "SWITCH": "SWITCH",
-        "REPLICATE": "REPLICATE"
+        "REPLICATE": "REPLICATE",
+        "ACTIONS": "Actions"
+
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",
@@ -83,6 +85,7 @@
         "COMMENT": "Comentarios",
         "PASSWORD": "Contraseña",
         "SAVE_SUCCESS": "Perfil de usuario guardado satisfactoriamente.",
+        "ADMIN_RENAME_BUTTON": "Change username",
         "ADMIN_RENAME_TIP": "Select the button in order to change the username to \"admin@harbor.local\". This operation can not be undone.",
         "RENAME_SUCCESS": "Rename success!",
         "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone."
@@ -112,6 +115,7 @@
             "NAME": "Administración",
             "USER": "Usuarios",
             "REGISTRY": "Registries",
+            "GROUP": "Groups",
             "REPLICATION": "Replicacións",
             "CONFIG": "Configuración"
         },
@@ -199,6 +203,7 @@
         "AUTOSCAN_POLICY": "Escanee automáticamente las imágenes cuando son enviadas al registro del proyecto."
     },
     "MEMBER": {
+        "NEW_USER": "New User",
         "NEW_MEMBER": "Nuevo miembro",
         "MEMBER": "Miembro",
         "NAME": "Nombre",
@@ -210,6 +215,25 @@
         "DELETE": "Eliminar",
         "ITEMS": "elementos",
         "ACTIONS": "Acciones",
+        "USER": " User",
+        "USERS": "Users",
+        "EMAIL": "Email",
+        "ADD_USER": "Add User",
+        "NEW_USER_INFO": "Add an user to be a member of this project with specified role",
+        "NEW_GROUP": "New Group",
+        "IMPORT_GROUP": "Import New LDAP Group",
+        "NEW_GROUP_INFO": "Import a new LDAP group or select one or more existing groups to add with the specific role.",
+        "ADD_GROUP_SELECT": "Add a group as a project member",
+        "CREATE_GROUP_SELECT": "Import a new group from LDAP",
+        "LDAP_SEARCH_DN": "LDAP Group DN",
+        "LDAP_SEARCH_NAME": "Name",
+        "LDAP_GROUP": "Group",
+        "LDAP_GROUPS": "Groups",
+        "LDAP_PROPERTY": "Property",
+        "ACTION": "ACTION",
+        "MEMBER_TYPE": "Member Type",
+        "GROUP_TYPE": "Group",
+        "USER_TYPE": "User",
         "USERNAME_IS_REQUIRED": "El nombre de usuario es obligatorio",
         "USERNAME_DOES_NOT_EXISTS": "Ese nombre de usuario no existe.",
         "USERNAME_ALREADY_EXISTS": "Ese nombre de usuario ya existe.",
@@ -223,8 +247,24 @@
         "OF": "of",
         "SWITCH_TITLE": "Confirm project members switch",
         "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?",
-        "ACTION": "SET ROLE",
-        "REMOVE": "REMOVE"
+        "SET_ROLE": "SET ROLE",
+        "REMOVE": "Remove"
+    },
+    "GROUP": {
+        "GROUP": "Group",
+        "GROUPS": "Groups",
+        "IMPORT_LDAP_GROUP": "Import LDAP Group",
+        "ADD": "Add",
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "TYPE": "Type",
+        "DN": "DN",
+        "GROUP_DN": "Ldap Group DN",
+        "PROPERTY": "Property",
+        "REG_TIME": "Registration Time",
+        "ADD_GROUP_SUCCESS": "Add group success",
+        "ADD_GROUP_FAILURE": "Add group failure",
+        "LDAP_TYPE": "LDAP"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",
@@ -506,7 +546,15 @@
             "FILTER": "LDAP Filtro",
             "UID": "LDAP UID",
             "SCOPE": "LDAP Ámbito",
-            "VERIFY_CERT": "LDAP Verify Cert"
+            "VERIFY_CERT": "LDAP Verify Cert",
+            "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
+            "LDAP_GROUP_BASE_DN_INFO": "The base DN of your LDAP group.",
+            "LDAP_GROUP_FILTER": "LDAP Group Filter",
+            "LDAP_GROUP_FILTER_INFO": "The filter of your LDAP group",
+            "LDAP_GROUP_GID": "LDAP Group GID",
+            "LDAP_GROUP_GID_INFO": "The Group gid of your LDAP group",
+            "GROUP_SCOPE": "LDAP Group Scope",
+            "GROUP_SCOPE_INFO": "The scope of your LDAP Group"
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -672,8 +720,11 @@
         "DELETE_USER": "Delete user",
         "DELETE_REGISTRY": "Delete registry",
         "DELETE_REPLICATION": "Delete replication",
-        "DELETE_MEMBER": "Delete member",
+        "DELETE_MEMBER": "Delete user member",
+        "DELETE_GROUP": "Delete group member",
         "SWITCH_ROLE": "Switch role",
+        "ADD_GROUP": "Add group member",
+        "ADD_USER": "Add user member",
         "DELETE_LABEL": "Delete label",
         "REPLICATION": "Replication",
         "DAY_AGO": " day(s) ago",

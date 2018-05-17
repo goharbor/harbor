@@ -13,6 +13,8 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs/Subscription';
+import { AppConfigService } from '../..//app-config.service';
 
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
@@ -23,11 +25,7 @@ import { NavigatorComponent } from '../navigator/navigator.component';
 import { SessionService } from '../../shared/session.service';
 
 import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
-
 import { SearchTriggerService } from '../global-search/search-trigger.service';
-
-import { Subscription } from 'rxjs/Subscription';
-
 import { CommonRoutes } from '../../shared/shared.const';
 
 @Component({
@@ -61,7 +59,8 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private session: SessionService,
-        private searchTrigger: SearchTriggerService) { }
+        private searchTrigger: SearchTriggerService,
+        private appConfigService: AppConfigService) { }
 
     ngOnInit() {
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
@@ -96,6 +95,11 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     public get isSystemAdmin(): boolean {
         let account = this.session.getCurrentUser();
         return account != null && account.has_admin_role;
+    }
+
+    public get isLdapMode(): boolean {
+        let appConfig = this.appConfigService.getConfig();
+        return appConfig.auth_mode === 'ldap_auth';
     }
 
     public get isUserExisting(): boolean {

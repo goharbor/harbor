@@ -78,3 +78,8 @@ export const enum ConfirmationButtons {
 export const ProjectTypes = { 0: 'PROJECT.ALL_PROJECTS', 1: 'PROJECT.PRIVATE_PROJECTS', 2: 'PROJECT.PUBLIC_PROJECTS' };
 export const RoleInfo = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST' };
 export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
+export const ProjectRoles = [
+  { id: 1, value: "MEMBER.PROJECT_ADMIN" },
+  { id: 2, value: "MEMBER.DEVELOPER" },
+  { id: 3, value: "MEMBER.GUEST" }
+];

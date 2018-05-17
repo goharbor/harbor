@@ -35,7 +35,8 @@
         "COPY": "拷贝",
         "EDIT": "编辑",
         "SWITCH": "切换",
-        "REPLICATE": "复制"
+        "REPLICATE": "复制",
+        "ACTIONS": "操作"
     },
     "BATCH": {
         "DELETED_SUCCESS": "删除成功",
@@ -85,7 +86,8 @@
         "SAVE_SUCCESS": "成功保存用户设置。",
         "ADMIN_RENAME_TIP": "单击将用户名改为 \"admin@harbor.local\", 注意这个操作是无法撤销的",
         "RENAME_SUCCESS": "用户名更改成功！",
-        "RENAME_CONFIRM_INFO": "更改用户名为admin@harbor.local是无法撤销的, 你确定更改吗·?"
+        "ADMIN_RENAME_BUTTON": "更改用户名",
+        "RENAME_CONFIRM_INFO": "更改用户名为admin@harbor.local是无法撤销的, 你确定更改吗?"
     },
     "CHANGE_PWD": {
         "TITLE": "修改密码",
@@ -111,6 +113,7 @@
         "SYSTEM_MGMT": {
             "NAME": "系统管理",
             "USER": "用户管理",
+            "GROUP": "组管理",
             "REGISTRY": "仓库管理",
             "REPLICATION": "复制管理",
             "CONFIG": "配置管理"
@@ -199,9 +202,11 @@
         "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描"
     },
     "MEMBER": {
+        "NEW_USER": "新用户",
         "NEW_MEMBER": "新建成员",
         "MEMBER": "成员",
         "NAME": "姓名",
+        "EMAIL": "邮箱",
         "ROLE": "角色",
         "SYS_ADMIN": "系统管理员",
         "PROJECT_ADMIN": "项目管理员",
@@ -210,6 +215,24 @@
         "DELETE": "删除",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
+        "USER": "用户",
+        "USERS": "用户",
+        "ADD_USER": "添加用户",
+        "NEW_USER_INFO": "添加用户到此项目中并给予相对应的角色",
+        "NEW_GROUP": "新增组",
+        "IMPORT_GROUP": "导入LDAP组",
+        "NEW_GROUP_INFO": "导入LDAP组，同时以选择的角色添加到项目成员列表",
+        "ADD_GROUP_SELECT": "添加组到项目成员",
+        "CREATE_GROUP_SELECT": "从LDAP导入新的组",
+        "LDAP_SEARCH_DN": "LDAP Group DN",
+        "LDAP_SEARCH_NAME": "名称",
+        "LDAP_GROUP": "组",
+        "LDAP_GROUPS": "组",
+        "LDAP_PROPERTY": "属性",
+        "ACTION": "其他操作",
+        "MEMBER_TYPE": "成员类型",
+        "GROUP_TYPE": "组",
+        "USER_TYPE": "用户",
         "USERNAME_IS_REQUIRED": "用户名为必填项。",
         "USERNAME_DOES_NOT_EXISTS": "用户名不存在。",
         "USERNAME_ALREADY_EXISTS": "用户名已存在。",
@@ -223,8 +246,25 @@
         "OF": "共计",
         "SWITCH_TITLE": "切换项目成员确认",
         "SWITCH_SUMMARY": "你确认切换项目成员 {{param}}??",
-        "ACTION": "设置角色",
+        "SET_ROLE": "设置角色",
         "REMOVE": "移除成员"
+    },
+    "GROUP": {
+        "GROUP": "组",
+        "GROUPS": "组",
+        "IMPORT_LDAP_GROUP": "导入LDAP组",
+        "ADD": "新增",
+        "EDIT": "编辑",
+        "DELETE": "删除",
+        "NAME": "名称",
+        "TYPE": "类型",
+        "DN": "DN",
+        "PROPERTY": "属性",
+        "GROUP_DN": "LDAP 组域",
+        "REG_TIME": "注册时间",
+        "ADD_GROUP_SUCCESS": "添加组成功",
+        "ADD_GROUP_FAILURE": "添加组失败",
+        "LDAP_TYPE": "LDAP"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",
@@ -504,9 +544,17 @@
             "SEARCH_PWD": "LDAP搜索密码",
             "BASE_DN": "LDAP基础DN",
             "FILTER": "LDAP过滤器",
-            "UID": "LDAP用户UID的属性",
+            "UID": "LDAP用户UID",
             "SCOPE": "LDAP搜索范围",
-            "VERIFY_CERT": "LDAP 检查证书"
+            "VERIFY_CERT": "LDAP 检查证书",
+            "LDAP_GROUP_BASE_DN": "LDAP组基础DN",
+            "LDAP_GROUP_BASE_DN_INFO": "LDAP组的基础DN",
+            "LDAP_GROUP_FILTER": "LDAP组过滤器",
+            "LDAP_GROUP_FILTER_INFO": "LDAP组的过滤器",
+            "LDAP_GROUP_GID": "LDAP组GID",
+            "LDAP_GROUP_GID_INFO": "LDAP组的GID",
+            "GROUP_SCOPE": "LDAP组搜索范围",
+            "GROUP_SCOPE_INFO": "搜索范围"
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -670,10 +718,13 @@
         "DELETE_REPO": "删除仓库",
         "DELETE_TAG": "删除镜像标签",
         "DELETE_USER": "删除用户",
-        "DELETE_REGISTRY": "Delete registry",
+        "DELETE_REGISTRY": "删除Registry",
         "DELETE_REPLICATION": "删除复制",
-        "DELETE_MEMBER": "删除成员",
+        "DELETE_MEMBER": "删除用户成员",
+        "DELETE_GROUP": "删除组成员",
         "SWITCH_ROLE": "切换角色",
+        "ADD_GROUP": "添加组成员",
+        "ADD_USER": "添加用户成员",
         "DELETE_LABEL": "删除标签",
         "REPLICATION": "复制",
         "DAY_AGO": "天前",

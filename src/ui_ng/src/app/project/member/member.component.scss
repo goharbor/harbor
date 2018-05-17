@@ -23,3 +23,9 @@
     right: 35px;
     margin-top: 4px;
 }
+
+clr-datagrid {
+    ::ng-deep clr-checkbox {
+        position: inherit;
+    }
+}
