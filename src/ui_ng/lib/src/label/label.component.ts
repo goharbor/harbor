@@ -12,35 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import {
-  Component,
-  OnInit,
-  ViewChild,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Input
+    Component,
+    OnInit,
+    ViewChild,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Input
 } from "@angular/core";
-import { Label } from "../service/interface";
-import { LabelService } from "../service/label.service";
-import { toPromise } from "../utils";
-import { ErrorHandler } from "../error-handler/error-handler";
-import { CreateEditLabelComponent } from "../create-edit-label/create-edit-label.component";
-import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
+import {Label} from "../service/interface";
+import {LabelService} from "../service/label.service";
+import {toPromise} from "../utils";
+import {ErrorHandler} from "../error-handler/error-handler";
+import {CreateEditLabelComponent} from "../create-edit-label/create-edit-label.component";
+import {ConfirmationMessage} from "../confirmation-dialog/confirmation-message";
 import {
-  ConfirmationButtons,
-  ConfirmationState,
-  ConfirmationTargets
+    ConfirmationButtons,
+    ConfirmationState,
+    ConfirmationTargets
 } from "../shared/shared.const";
-import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
-import { TranslateService } from "@ngx-translate/core";
-import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
+import {ConfirmationAcknowledgement} from "../confirmation-dialog/confirmation-state-message";
+import {TranslateService} from "@ngx-translate/core";
+import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
 import {operateChanges, OperateInfo, OperationState} from "../operation/operate";
 import {OperationService} from "../operation/operation.service";
 
 @Component({
-  selector: "hbr-label",
-  templateUrl: "./label.component.html",
-  styleUrls: ["./label.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: "hbr-label",
+    templateUrl: "./label.component.html",
+    styleUrls: ["./label.component.scss"],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LabelComponent implements OnInit {
     timerHandler: any;

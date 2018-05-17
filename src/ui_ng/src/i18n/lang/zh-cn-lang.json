@@ -669,9 +669,9 @@
         "SWITCH_ROLE": "切换角色",
         "DELETE_LABEL": "删除标签",
         "REPLICATION": "复制",
-        "DAY_AGO": "{{param}}天前",
-        "HOUR_AGO": "{{param}}小时前",
-        "MINUTE_AGO": "{{param}}分钟前",
+        "DAY_AGO": "天前",
+        "HOUR_AGO": "小时前",
+        "MINUTE_AGO": "分钟前",
         "SECOND_AGO": "少于一分钟",
         "EVENT_LOG": "事件日志"
     },

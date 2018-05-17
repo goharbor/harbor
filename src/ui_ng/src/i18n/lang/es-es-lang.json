@@ -669,9 +669,9 @@
         "SWITCH_ROLE": "Switch role",
         "DELETE_LABEL": "Delete label",
         "REPLICATION": "Replication",
-        "DAY_AGO": "{{param}} day(s) ago",
-        "HOUR_AGO": "{{param}} hour(s) ago",
-        "MINUTE_AGO": "{{param}} minute(s) ago",
+        "DAY_AGO": " day(s) ago",
+        "HOUR_AGO": " hour(s) ago",
+        "MINUTE_AGO": " minute(s) ago",
         "SECOND_AGO": "less 1 minute",
         "EVENT_LOG": "EVENT LOG"
     },

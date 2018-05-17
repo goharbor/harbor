@@ -12,45 +12,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ViewChild,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef
+    Component,
+    OnInit,
+    OnDestroy,
+    ViewChild,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef
 } from "@angular/core";
-import { Endpoint } from "../service/interface";
-import { EndpointService } from "../service/endpoint.service";
+import {Endpoint} from "../service/interface";
+import {EndpointService} from "../service/endpoint.service";
 
-import { TranslateService } from "@ngx-translate/core";
+import {TranslateService} from "@ngx-translate/core";
 
-import { ErrorHandler } from "../error-handler/index";
+import {ErrorHandler} from "../error-handler/index";
 
-import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
-import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
-import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
+import {ConfirmationMessage} from "../confirmation-dialog/confirmation-message";
+import {ConfirmationAcknowledgement} from "../confirmation-dialog/confirmation-state-message";
+import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
 
 import {
-  ConfirmationTargets,
-  ConfirmationState,
-  ConfirmationButtons
+    ConfirmationTargets,
+    ConfirmationState,
+    ConfirmationButtons
 } from "../shared/shared.const";
 
-import { Subscription } from "rxjs/Subscription";
+import {Subscription} from "rxjs/Subscription";
 
-import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
+import {CreateEditEndpointComponent} from "../create-edit-endpoint/create-edit-endpoint.component";
 
-import { toPromise, CustomComparator } from "../utils";
-import { Comparator } from "clarity-angular";
-import { Observable } from "rxjs/Observable";
+import {toPromise, CustomComparator} from "../utils";
+import {Comparator} from "clarity-angular";
+import {Observable} from "rxjs/Observable";
 import {operateChanges, OperateInfo, OperationState} from "../operation/operate";
 import {OperationService} from "../operation/operation.service";
 
 @Component({
-  selector: "hbr-endpoint",
-  templateUrl: "./endpoint.component.html",
-  styleUrls: ["./endpoint.component.scss"],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: "hbr-endpoint",
+    templateUrl: "./endpoint.component.html",
+    styleUrls: ["./endpoint.component.scss"],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EndpointComponent implements OnInit, OnDestroy {
     @ViewChild(CreateEditEndpointComponent)
