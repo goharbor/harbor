@@ -17,33 +17,36 @@
             </div>
         </div>
     </div>
-    <div *ngIf="!isCardView" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
-        <clr-dg-action-bar>
-          <button *ngIf="withAdmiral" type="button" class="btn btn-sm btn-secondary" (click)="provisionItemEvent($event, selectedRow[0])" [disabled]="!(selectedRow.length===1 && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DEPLOY' | translate}}</button>
-          <button *ngIf="withAdmiral" type="button" class="btn btn-sm btn-secondary" (click)="itemAddInfoEvent($event, selectedRow[0])" [disabled]="!(selectedRow.length===1 && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.ADDITIONAL_INFO' | translate}}</button>
-          <button type="button" class="btn btn-sm btn-secondary" (click)="deleteRepos(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
-        </clr-dg-action-bar>
-        <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
-        <clr-dg-column [clrDgSortBy]="tagsCountComparator">{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
-        <clr-dg-column [clrDgSortBy]="pullCountComparator">{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
-        <clr-dg-placeholder>{{'REPOSITORY.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-        <clr-dg-row *ngFor="let r of repositories"  [clrDgItem]="r">
-          <clr-dg-cell><a href="javascript:void(0)" (click)="watchRepoClickEvt(r)"><span *ngIf="withAdmiral" class="list-img"><img [src]="getImgLink(r)"/></span>{{r.name}}</a></clr-dg-cell>
-          <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
-          <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
-        </clr-dg-row>
-        <clr-dg-footer>
+    <div class="row">
+        <div *ngIf="!isCardView" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
+                <clr-dg-action-bar>
+                    <button *ngIf="withAdmiral" type="button" class="btn btn-sm btn-secondary" (click)="provisionItemEvent($event, selectedRow[0])" [disabled]="!(selectedRow.length===1 && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DEPLOY' | translate}}</button>
+                    <button *ngIf="withAdmiral" type="button" class="btn btn-sm btn-secondary" (click)="itemAddInfoEvent($event, selectedRow[0])" [disabled]="!(selectedRow.length===1 && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.ADDITIONAL_INFO' | translate}}</button>
+                    <button type="button" class="btn btn-sm btn-secondary" (click)="deleteRepos(selectedRow)" [disabled]="!(selectedRow.length && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
+                </clr-dg-action-bar>
+                <clr-dg-column [clrDgField]="'name'">{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
+                <clr-dg-column [clrDgSortBy]="tagsCountComparator">{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
+                <clr-dg-column [clrDgSortBy]="pullCountComparator">{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
+                <clr-dg-placeholder>{{'REPOSITORY.PLACEHOLDER' | translate }}</clr-dg-placeholder>
+                <clr-dg-row *ngFor="let r of repositories"  [clrDgItem]="r">
+                    <clr-dg-cell><a href="javascript:void(0)" (click)="watchRepoClickEvt(r)"><span *ngIf="withAdmiral" class="list-img"><img [src]="getImgLink(r)"/></span>{{r.name}}</a></clr-dg-cell>
+                    <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
+                    <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
+                </clr-dg-row>
+                <clr-dg-footer>
           <span *ngIf="showDBStatusWarning" class="db-status-warning">
             <clr-icon shape="warning" class="is-warning" size="24"></clr-icon>
             {{'CONFIG.SCANNING.DB_NOT_READY' | translate }}
           </span>
-          <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
-          {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
-          <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
-        </clr-dg-footer>
-      </clr-datagrid>
+                    <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
+                    {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
+                    <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
+                </clr-dg-footer>
+            </clr-datagrid>
+        </div>
     </div>
+
     <hbr-gridview *ngIf="isCardView" #gridView style="position:relative;" [items]="repositories" [loading]="loading" [pageSize]="pageSize"
         [currentPage]="currentPage" [totalCount]="totalCount" [expectScrollPercent]="90" [withAdmiral]="withAdmiral" (loadNextPageEvent)="loadNextPage()">
         <ng-template let-item="item">
@@ -90,5 +93,5 @@
             </a>
         </ng-template>
     </hbr-gridview>
-  <confirmation-dialog #confirmationDialog [batchInfors]="batchDelectionInfos" (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+  <confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
 </div>

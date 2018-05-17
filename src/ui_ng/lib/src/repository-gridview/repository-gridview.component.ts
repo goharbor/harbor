@@ -1,53 +1,20 @@
-import {
-  Component,
-  Input,
-  Output,
-  OnInit,
-  ViewChild,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  EventEmitter,
-  OnChanges,
-  SimpleChanges
-} from "@angular/core";
-import { Router } from "@angular/router";
-import { Observable } from "rxjs/Observable";
-import { TranslateService } from "@ngx-translate/core";
-import { Comparator, State } from "clarity-angular";
+import { Component, Input, Output, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Router } from '@angular/router';
+import {Observable} from "rxjs/Observable";
+import { TranslateService } from '@ngx-translate/core';
+import { Comparator, State } from 'clarity-angular';
 
-import {
-  Repository,
-  SystemInfo,
-  SystemInfoService,
-  RepositoryService,
-  RequestQueryParams,
-  RepositoryItem,
-  TagService
-} from "../service/index";
-import { ErrorHandler } from "../error-handler/error-handler";
-import {
-  toPromise,
-  CustomComparator,
-  DEFAULT_PAGE_SIZE,
-  calculatePage,
-  doFiltering,
-  doSorting,
-  clone
-} from "../utils";
-import {
-  ConfirmationState,
-  ConfirmationTargets,
-  ConfirmationButtons
-} from "../shared/shared.const";
-import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
-import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
-import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
-import { Tag } from "../service/interface";
-import {
-  BatchInfo,
-  BathInfoChanges
-} from "../confirmation-dialog/confirmation-batch-message";
-import { GridViewComponent } from "../gridview/grid-view.component";
+import { Repository, SystemInfo, SystemInfoService, RepositoryService, RequestQueryParams, RepositoryItem, TagService } from '../service/index';
+import { ErrorHandler } from '../error-handler/error-handler';
+import { toPromise, CustomComparator , DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting, clone} from '../utils';
+import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
+import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
+import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
+import { Tag } from '../service/interface';
+import { GridViewComponent } from '../gridview/grid-view.component';
+import {OperationService} from "../operation/operation.service";
+import {OperateInfo, OperationState, operateChanges} from "../operation/operate";
 
 @Component({
   selector: "hbr-repository-gridview",
@@ -78,13 +45,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
   cardHover = false;
   listHover = false;
 
-  batchDelectionInfos: BatchInfo[] = [];
-  pullCountComparator: Comparator<RepositoryItem> = new CustomComparator<
-    RepositoryItem
-  >("pull_count", "number");
-  tagsCountComparator: Comparator<RepositoryItem> = new CustomComparator<
-    RepositoryItem
-  >("tags_count", "number");
+  pullCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('pull_count', 'number');
+  tagsCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('tags_count', 'number');
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
@@ -102,6 +64,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     private repositoryService: RepositoryService,
     private systemInfoService: SystemInfoService,
     private tagService: TagService,
+    private operationService: OperationService,
     private ref: ChangeDetectorRef,
     private router: Router
   ) {}
@@ -152,19 +115,18 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
   }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
-    if (
-      message &&
-      message.source === ConfirmationTargets.REPOSITORY &&
-      message.state === ConfirmationState.CONFIRMED
-    ) {
-      let promiseLists: any[] = [];
-      let repoNames: string[] = message.data.split(",");
+    if (message &&
+        message.source === ConfirmationTargets.REPOSITORY &&
+        message.state === ConfirmationState.CONFIRMED) {
 
-      repoNames.forEach(repoName => {
-        promiseLists.push(this.delOperate(repoName));
-      });
+      let repoLists = message.data;
+      if (repoLists && repoLists.length) {
+        let promiseLists: any[] = [];
+        repoLists.forEach(repo => {
+          promiseLists.push(this.delOperate(repo));
+        });
 
-      Promise.all(promiseLists).then(item => {
+        Promise.all(promiseLists).then((item) => {
         this.selectedRow = [];
         this.refresh();
         let st: State = this.getStateAfterDeletion();
@@ -174,63 +136,50 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
           this.clrLoad(st);
         }
       });
+      }
     }
   }
 
-  delOperate(repoName: string) {
-    let findedList = this.batchDelectionInfos.find(
-      data => data.name === repoName
-    );
-    if (this.signedCon[repoName].length !== 0) {
-      Observable.forkJoin(
-        this.translateService.get("BATCH.DELETED_FAILURE"),
-        this.translateService.get("REPOSITORY.DELETION_TITLE_REPO_SIGNED")
-      ).subscribe(res => {
-        findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+  delOperate(repo: RepositoryItem) {
+    // init operation info
+    let operMessage = new OperateInfo();
+    operMessage.name = 'OPERATION.DELETE_REPO';
+    operMessage.data.id = repo.id;
+    operMessage.state = OperationState.progressing;
+    operMessage.data.name =repo.name ;
+    this.operationService.publishInfo(operMessage);
+
+    if (this.signedCon[repo.name].length !== 0) {
+      Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+          this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).subscribe(res => {
+        operateChanges(operMessage, OperationState.failure, res[1]);
       });
     } else {
-      return toPromise<number>(
-        this.repositoryService.deleteRepository(repoName)
-      )
-        .then(response => {
-          this.translateService.get("BATCH.DELETED_SUCCESS").subscribe(res => {
-            findedList = BathInfoChanges(findedList, res);
-          });
-        })
-        .catch(error => {
-          if (error.status === "412") {
-            Observable.forkJoin(
-              this.translateService.get("BATCH.DELETED_FAILURE"),
-              this.translateService.get("REPOSITORY.TAGS_SIGNED")
-            ).subscribe(res => {
-              findedList = BathInfoChanges(
-                findedList,
-                res[0],
-                false,
-                true,
-                res[1]
-              );
+      return toPromise<number>(this.repositoryService
+          .deleteRepository(repo.name))
+          .then(
+              response => {
+                this.translateService.get('BATCH.DELETED_SUCCESS').subscribe(res => {
+                  operateChanges(operMessage, OperationState.success);
+                });
+              }).catch(error => {
+            if (error.status === "412") {
+              Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                  this.translateService.get('REPOSITORY.TAGS_SIGNED')).subscribe(res => {
+                operateChanges(operMessage, OperationState.failure, res[1]);
+              });
+              return;
+            }
+            if (error.status === 503) {
+              Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                  this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
+                operateChanges(operMessage, OperationState.failure, res[1]);
+              });
+              return;
+            }
+            this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+              operateChanges(operMessage, OperationState.failure, res);
             });
-            return;
-          }
-          if (error.status === 503) {
-            Observable.forkJoin(
-              this.translateService.get("BATCH.DELETED_FAILURE"),
-              this.translateService.get("REPOSITORY.TAGS_NO_DELETE")
-            ).subscribe(res => {
-              findedList = BathInfoChanges(
-                findedList,
-                res[0],
-                false,
-                true,
-                res[1]
-              );
-            });
-            return;
-          }
-          this.translateService.get("BATCH.DELETED_FAILURE").subscribe(res => {
-            findedList = BathInfoChanges(findedList, res, false, true);
-          });
         });
     }
   }
@@ -255,14 +204,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
   deleteRepos(repoLists: RepositoryItem[]) {
     if (repoLists && repoLists.length) {
       let repoNames: string[] = [];
-      this.batchDelectionInfos = [];
       let repArr: any[] = [];
 
       repoLists.forEach(repo => {
         repoNames.push(repo.name);
-        let initBatchMessage = new BatchInfo();
-        initBatchMessage.name = repo.name;
-        this.batchDelectionInfos.push(initBatchMessage);
 
         if (!this.signedCon[repo.name]) {
           repArr.push(this.getTagInfo(repo.name));
@@ -270,13 +215,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
       });
 
       Promise.all(repArr).then(() => {
-        this.confirmationDialogSet(
-          "REPOSITORY.DELETION_TITLE_REPO",
-          "",
-          repoNames.join(","),
-          "REPOSITORY.DELETION_SUMMARY_REPO",
-          ConfirmationButtons.DELETE_CANCEL
-        );
+          this.confirmationDialogSet('REPOSITORY.DELETION_TITLE_REPO',  '', repoNames.join(','), repoLists, 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
       });
     }
   }
@@ -294,55 +233,26 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
       .catch(error => this.errorHandler.error(error));
   }
 
-  signedDataSet(repoName: string): void {
-    let signature = "";
-    if (this.signedCon[repoName].length === 0) {
-      this.confirmationDialogSet(
-        "REPOSITORY.DELETION_TITLE_REPO",
-        signature,
-        repoName,
-        "REPOSITORY.DELETION_SUMMARY_REPO",
-        ConfirmationButtons.DELETE_CANCEL
-      );
-      return;
-    }
-    signature = this.signedCon[repoName].join(",");
-    this.confirmationDialogSet(
-      "REPOSITORY.DELETION_TITLE_REPO_SIGNED",
-      signature,
-      repoName,
-      "REPOSITORY.DELETION_SUMMARY_REPO_SIGNED",
-      ConfirmationButtons.CLOSE
-    );
-  }
+  confirmationDialogSet(summaryTitle: string, signature: string, repoName: string, repoLists: RepositoryItem[],  summaryKey: string,  button: ConfirmationButtons): void {
+    this.translateService.get(summaryKey,
+        {
+          repoName: repoName,
+          signedImages: signature,
+        })
+        .subscribe((res: string) => {
+          summaryKey = res;
+          let message = new ConfirmationMessage(
+              summaryTitle,
+              summaryKey,
+              repoName,
+              repoLists,
+              ConfirmationTargets.REPOSITORY,
+              button);
+          this.confirmationDialog.open(message);
 
-  confirmationDialogSet(
-    summaryTitle: string,
-    signature: string,
-    repoName: string,
-    summaryKey: string,
-    button: ConfirmationButtons
-  ): void {
-    this.translateService
-      .get(summaryKey, {
-        repoName: repoName,
-        signedImages: signature
-      })
-      .subscribe((res: string) => {
-        summaryKey = res;
-        let message = new ConfirmationMessage(
-          summaryTitle,
-          summaryKey,
-          repoName,
-          repoName,
-          ConfirmationTargets.REPOSITORY,
-          button
-        );
-        this.confirmationDialog.open(message);
-
-        let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 5000);
-      });
+          let hnd = setInterval(() => this.ref.markForCheck(), 100);
+          setTimeout(() => clearInterval(hnd), 5000);
+    });
   }
 
   provisionItemEvent(evt: any, repo: RepositoryItem): void {

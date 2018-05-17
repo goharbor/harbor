@@ -1,4 +1,4 @@
-<confirmation-dialog class="hidden-tag" #confirmationDialog  [batchInfors]="batchDelectionInfos" (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+<confirmation-dialog class="hidden-tag" #confirmationDialog  (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
 <clr-modal class="hidden-tag" [(clrModalOpen)]="showTagManifestOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
   <div class="modal-body">
