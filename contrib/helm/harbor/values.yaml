@@ -26,10 +26,10 @@
 #       cpu: 100m
 
 persistence:
-  enabled: false
+  enabled: true
 
 # The tag for Harbor docker images.
-harborImageTag: &harbor_image_tag v1.4.0
+harborImageTag: &harbor_image_tag v1.5.0-chart-patch
 
 # The FQDN for Harbor service.
 externalDomain: harbor.my.domain
@@ -98,6 +98,7 @@ jobservice:
     tag: *harbor_image_tag
     pullPolicy: IfNotPresent
   secret: not-a-secure-secret
+  maxWorkers: 50
 # resources:
 #   requests:
 #     memory: 256Mi
@@ -196,7 +197,7 @@ mysql:
 registry:
   image:
     repository: vmware/registry-photon
-    tag: v2.6.2-v1.4.0
+    tag: v2.6.2-v1.5.0-chart-patch
     pullPolicy: IfNotPresent
   httpSecret: not-a-secure-secret
   logLevel: info
@@ -265,7 +266,7 @@ clair:
   enabled: true
   image:
     repository: vmware/clair-photon
-    tag: v2.0.1-v1.4.0
+    tag: v2.0.1-v1.5.0-chart-patch
     pullPolicy: IfNotPresent
 ## The following needs to match the credentials
 ## in the `postgresql` configuration under the
@@ -301,17 +302,31 @@ postgresql:
   persistence:
     enabled: false
 
+## Settings for redis dependency.
+## see https://github.com/kubernetes/charts/tree/master/stable/redis
+## for further configurables.
+redis:
+# Update needed in the cm that defines redis_url if usePassword is set to true.
+  usePassword: false
+  cluster:
+    enabled: false
+  master:
+    persistence:
+# TODO: There is a perm issue: Can't open the append-only file: Permission denied
+# TODO: Setting it to false is a temp workaround.  Will re-visit this problem.
+      enabled: false
+
 notary:
   enabled: true
   server:
     image:
       repository: vmware/notary-server-photon
-      tag: v0.5.1-v1.4.0
+      tag: v0.5.1-v1.5.0-chart-patch
       pullPolicy: IfNotPresent
   signer:
     image:
       repository: vmware/notary-signer-photon
-      tag: v0.5.1-v1.4.0
+      tag: v0.5.1-v1.5.0-chart-patch
       pullPolicy: IfNotPresent
     env:
       NOTARY_SIGNER_DEFAULTALIAS: defaultalias

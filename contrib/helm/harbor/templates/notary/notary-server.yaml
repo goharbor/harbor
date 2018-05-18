@@ -29,7 +29,7 @@ spec:
           value: "mysql://server:{{ .Values.notary.db.password }}@tcp({{ template "harbor.fullname" . }}-notary-db:3306)/notaryserver?parseTime=True"
         volumeMounts:
         - name: notary-config
-          mountPath: /config
+          mountPath: /etc/notary
         - name: root-certificate
           mountPath: /root.crt
           subPath: root.crt

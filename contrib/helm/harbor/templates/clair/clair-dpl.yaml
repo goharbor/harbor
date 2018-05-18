@@ -22,14 +22,14 @@ spec:
       - name: clair
         image: {{ .Values.clair.image.repository }}:{{ .Values.clair.image.tag }}
         imagePullPolicy: {{ .Values.clair.image.pullPolicy }}
-        args: ["-insecure-tls", "-config", "/config/config.yaml"]
+        args: ["-insecure-tls", "-config", "/etc/clair/config.yaml"]
         resources:
 {{ toYaml .Values.clair.resources | indent 10 }}
         ports:
         - containerPort: 6060
         volumeMounts:
         - name: clair-config
-          mountPath: /config/config.yaml
+          mountPath: /etc/clair/config.yaml
           subPath: config.yaml
       volumes:
       - name: clair-config

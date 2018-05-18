@@ -46,12 +46,6 @@ so it can match Harbor service FQDN and Notary service FQDN.
 {{- printf "notary-%s" .Values.externalDomain -}}
 {{- end -}}
 
-{{/*
-The internal service name of Notary server.
-notary-server hostname is not configurable in Harbor 1.4.0.
-Once Harbor 1.5.x is released, use this instead:
-  {{- printf "%s-notary-server" (include "harbor.fullname") -}}
-*/}}
 {{- define "harbor.notaryServiceName" -}}
-{{- printf "%s" "notary-server" -}}
+{{- printf "%s-notary-server" (include "harbor.fullname" .) -}}
 {{- end -}}
