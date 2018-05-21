@@ -35,6 +35,29 @@ func TestValid(t *testing.T) {
 			Kind:    replication.FilterItemKindRepository,
 			Pattern: "*",
 		}: false,
+		&Filter{
+			Kind:  replication.FilterItemKindRepository,
+			Value: "*",
+		}: false,
+		&Filter{
+			Kind: replication.FilterItemKindLabel,
+		}: true,
+		&Filter{
+			Kind:  replication.FilterItemKindLabel,
+			Value: "",
+		}: true,
+		&Filter{
+			Kind:  replication.FilterItemKindLabel,
+			Value: 1.2,
+		}: true,
+		&Filter{
+			Kind:  replication.FilterItemKindLabel,
+			Value: -1,
+		}: true,
+		&Filter{
+			Kind:  replication.FilterItemKindLabel,
+			Value: 1,
+		}: true,
 	}
 
 	for filter, hasError := range cases {

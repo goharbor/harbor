@@ -20,6 +20,7 @@ import (
 
 	"github.com/vmware/harbor/src/common/dao"
 	persist_models "github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/replication/models"
 	"github.com/vmware/harbor/src/ui/config"
 )
@@ -109,6 +110,11 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (models.Replicati
 		for i := range filters {
 			if filters[i].Value == nil && len(filters[i].Pattern) > 0 {
 				filters[i].Value = filters[i].Pattern
+			}
+			// convert the type of Value to int64 as the default type of
+			// json Unmarshal for number is float64
+			if filters[i].Kind == replication.FilterItemKindLabel {
+				filters[i].Value = int64(filters[i].Value.(float64))
 			}
 		}
 		ply.Filters = filters
