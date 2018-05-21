@@ -42,7 +42,8 @@ func (sj *ScanJobAPI) Prepare() {
 	}
 	id, err := sj.GetInt64FromPath(":id")
 	if err != nil {
-		sj.CustomAbort(http.StatusBadRequest, "ID is invalid")
+		sj.HandleBadRequest("invalid ID")
+		return
 	}
 	sj.jobID = id
 

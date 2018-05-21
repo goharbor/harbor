@@ -135,7 +135,8 @@ func (t *TargetAPI) Get() {
 	}
 
 	if target == nil {
-		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		t.HandleNotFound(fmt.Sprintf("target %d not found", id))
+		return
 	}
 
 	target.Password = ""
@@ -174,7 +175,8 @@ func (t *TargetAPI) Post() {
 	}
 
 	if ta != nil {
-		t.CustomAbort(http.StatusConflict, "name is already used")
+		t.HandleConflict("name is already used")
+		return
 	}
 
 	ta, err = dao.GetRepTargetByEndpoint(target.URL)
@@ -184,7 +186,8 @@ func (t *TargetAPI) Post() {
 	}
 
 	if ta != nil {
-		t.CustomAbort(http.StatusConflict, fmt.Sprintf("the target whose endpoint is %s already exists", target.URL))
+		t.HandleConflict(fmt.Sprintf("the target whose endpoint is %s already exists", target.URL))
+		return
 	}
 
 	if len(target.Password) != 0 {
@@ -215,7 +218,8 @@ func (t *TargetAPI) Put() {
 	}
 
 	if target == nil {
-		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		t.HandleNotFound(fmt.Sprintf("target %d not found", id))
+		return
 	}
 
 	if len(target.Password) != 0 {
@@ -264,7 +268,8 @@ func (t *TargetAPI) Put() {
 		}
 
 		if ta != nil {
-			t.CustomAbort(http.StatusConflict, "name is already used")
+			t.HandleConflict("name is already used")
+			return
 		}
 	}
 
@@ -276,7 +281,8 @@ func (t *TargetAPI) Put() {
 		}
 
 		if ta != nil {
-			t.CustomAbort(http.StatusConflict, fmt.Sprintf("the target whose endpoint is %s already exists", target.URL))
+			t.HandleConflict(fmt.Sprintf("the target whose endpoint is %s already exists", target.URL))
+			return
 		}
 	}
 
@@ -305,7 +311,8 @@ func (t *TargetAPI) Delete() {
 	}
 
 	if target == nil {
-		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		t.HandleNotFound(fmt.Sprintf("target %d not found", id))
+		return
 	}
 
 	policies, err := dao.GetRepPolicyByTarget(id)
@@ -315,6 +322,7 @@ func (t *TargetAPI) Delete() {
 	}
 
 	if len(policies) > 0 {
+		log.Error("the target is used by policies, can not be deleted")
 		t.CustomAbort(http.StatusPreconditionFailed, "the target is used by policies, can not be deleted")
 	}
 
@@ -346,7 +354,8 @@ func (t *TargetAPI) ListPolicies() {
 	}
 
 	if target == nil {
-		t.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		t.HandleNotFound(fmt.Sprintf("target %d not found", id))
+		return
 	}
 
 	policies, err := dao.GetRepPolicyByTarget(id)
