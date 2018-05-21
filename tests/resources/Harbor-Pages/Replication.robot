@@ -166,6 +166,7 @@ Delete Rule
     Wait Until Page Contains Element  ${dialog_delete}
     Click Element  ${dialog_delete}
     Wait Until Page Contains Element  ${dialog_close}
+    Sleep  2
     Click Element  ${dialog_close}
 
 Filter Rule
