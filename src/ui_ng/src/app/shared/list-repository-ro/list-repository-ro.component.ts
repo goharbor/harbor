@@ -11,24 +11,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, Input, Output, OnDestroy, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { State } from 'clarity-angular';
 import { Repository } from 'harbor-ui';
+import 'rxjs/add/operator/filter';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
+import {Subscription} from "rxjs/Subscription";
 
 @Component({
   selector: 'list-repository-ro',
   templateUrl: 'list-repository-ro.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ListRepositoryROComponent implements OnInit {
+export class ListRepositoryROComponent implements OnInit, OnDestroy {
 
   @Input() projectId: number;
   @Input() repositories: Repository[];
 
   @Output() paginate = new EventEmitter<State>();
+
+  routerSubscription: Subscription;
 
   constructor(
     private router: Router,
@@ -37,19 +41,22 @@ export class ListRepositoryROComponent implements OnInit {
     this.router.routeReuseStrategy.shouldReuseRoute = function() {
         return false;
     };
-    this.router.events.subscribe((evt) => {
-      if (evt instanceof NavigationEnd) {
+    this.routerSubscription = this.router.events.filter(event => event instanceof NavigationEnd)
+        .subscribe((event) => {
          // trick the Router into believing it's last link wasn't previously loaded
          this.router.navigated = false;
          // if you need to scroll back to top, here is the right place
          window.scrollTo(0, 0);
-      }
     });
   }
 
   ngOnInit(): void {
     let hnd = setInterval(() => this.ref.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 1000);
+  }
+
+  ngOnDestroy(): void {
+    this.routerSubscription.unsubscribe();
   }
 
   refresh(state: State) {

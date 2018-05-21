@@ -50,6 +50,7 @@ import { MemberService } from '../member.service';
 })
 export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
 
+  @Input() memberList: Member[] = [];
   member: Member = new Member();
 
   addMemberOpened: boolean;
@@ -85,6 +86,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     private ref: ChangeDetectorRef) { }
 
   ngOnInit(): void {
+
   let resolverData = this.route.snapshot.parent.data;
   let hasProjectAdminRole: boolean;
   if (resolverData) {
@@ -121,7 +123,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
               if (this.userLists && this.userLists.length) {
                 this.selectUserName = [];
                 this.userLists.filter(data => {
-                  if (data.username.startsWith(cont.value)) {
+                  if (data.username.startsWith(cont.value) && !this.memberList.find(mem => mem.entity_name === data.username)) {
                     if (this.selectUserName.length < 10) {
                       this.selectUserName.push(data.username);
                     }
