@@ -58,9 +58,6 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	defer ldapSession.Close()
 
 	ldapUsers, err := ldapSession.SearchUser(p)
-
-	log.Debugf("Found ldap user %+v", ldapUsers[0])
-
 	if err != nil {
 		log.Warningf("ldap search fail: %v", err)
 		return nil, err
@@ -73,6 +70,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		log.Warningf("Found more than one entry.")
 		return nil, auth.NewErrAuth("Multiple entries found")
 	}
+	log.Debugf("Found ldap user %+v", ldapUsers[0])
 
 	u := models.User{}
 	u.Username = ldapUsers[0].Username
