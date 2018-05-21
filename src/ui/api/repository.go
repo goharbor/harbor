@@ -242,17 +242,19 @@ func (ra *RepositoryAPI) Delete() {
 	if len(tag) == 0 {
 		tagList, err := rc.ListTag()
 		if err != nil {
+			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
+
 			if regErr, ok := err.(*registry_error.HTTPError); ok {
 				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 			}
 
-			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
 		}
 
 		// TODO remove the logic if the bug of registry is fixed
 		if len(tagList) == 0 {
-			ra.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+			ra.HandleNotFound(fmt.Sprintf("no tags found for repository %s", repoName))
+			return
 		}
 
 		tags = append(tags, tagList...)
@@ -293,6 +295,7 @@ func (ra *RepositoryAPI) Delete() {
 				if regErr.StatusCode == http.StatusNotFound {
 					continue
 				}
+				log.Errorf("failed to delete tag %s: %v", t, err)
 				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 			}
 			log.Errorf("error occurred while deleting tag %s:%s: %v", repoName, t, err)
@@ -614,7 +617,8 @@ func (ra *RepositoryAPI) GetManifests() {
 	}
 
 	if version != "v1" && version != "v2" {
-		ra.CustomAbort(http.StatusBadRequest, "version should be v1 or v2")
+		ra.HandleBadRequest("version should be v1 or v2")
+		return
 	}
 
 	projectName, _ := utils.ParseRepository(repoName)
@@ -648,11 +652,12 @@ func (ra *RepositoryAPI) GetManifests() {
 
 	manifest, err := getManifest(rc, tag, version)
 	if err != nil {
+		log.Errorf("error occurred while getting manifest of %s:%s: %v", repoName, tag, err)
+
 		if regErr, ok := err.(*registry_error.HTTPError); ok {
 			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
 		}
 
-		log.Errorf("error occurred while getting manifest of %s:%s: %v", repoName, tag, err)
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")
 	}
 
@@ -706,7 +711,8 @@ func getManifest(client *registry.Repository,
 func (ra *RepositoryAPI) GetTopRepos() {
 	count, err := ra.GetInt("count", 10)
 	if err != nil || count <= 0 {
-		ra.CustomAbort(http.StatusBadRequest, "invalid count")
+		ra.HandleBadRequest(fmt.Sprintf("invalid count: %s", ra.GetString("count")))
+		return
 	}
 
 	projectIDs := []int64{}

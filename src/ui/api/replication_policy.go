@@ -67,7 +67,8 @@ func (pa *RepPolicyAPI) Get() {
 	}
 
 	if policy.ID == 0 {
-		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		pa.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		return
 	}
 
 	if !pa.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
@@ -94,7 +95,8 @@ func (pa *RepPolicyAPI) List() {
 	if len(projectIDStr) > 0 {
 		projectID, err := strconv.ParseInt(projectIDStr, 10, 64)
 		if err != nil || projectID <= 0 {
-			pa.CustomAbort(http.StatusBadRequest, "invalid project ID")
+			pa.HandleBadRequest(fmt.Sprintf("invalid project ID: %s", projectIDStr))
+			return
 		}
 		queryParam.ProjectID = projectID
 	}
@@ -208,7 +210,8 @@ func (pa *RepPolicyAPI) Put() {
 	}
 
 	if originalPolicy.ID == 0 {
-		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		pa.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		return
 	}
 
 	policy := &api_models.ReplicationPolicy{}
@@ -287,7 +290,8 @@ func (pa *RepPolicyAPI) Delete() {
 	}
 
 	if policy.ID == 0 {
-		pa.CustomAbort(http.StatusNotFound, http.StatusText(http.StatusNotFound))
+		pa.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		return
 	}
 
 	count, err := dao.GetTotalCountOfRepJobs(&models.RepJobQuery{

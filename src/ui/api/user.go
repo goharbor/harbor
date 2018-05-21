@@ -292,7 +292,8 @@ func (ua *UserAPI) ChangePassword() {
 	}
 
 	if req.NewPassword == "" {
-		ua.CustomAbort(http.StatusBadRequest, "please_input_new_password")
+		ua.HandleBadRequest("new password is null")
+		return
 	}
 	updateUser := models.User{UserID: ua.userID, Password: req.NewPassword, Salt: user.Salt}
 	err = dao.ChangeUserPassword(updateUser, req.OldPassword)
