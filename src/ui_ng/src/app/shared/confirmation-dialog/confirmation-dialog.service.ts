@@ -16,17 +16,14 @@ import { Subject } from 'rxjs/Subject';
 
 import { ConfirmationMessage } from './confirmation-message';
 import { ConfirmationAcknowledgement } from './confirmation-state-message';
-import {BatchInfo} from "./confirmation-batch-message";
 
 @Injectable()
 export class ConfirmationDialogService {
     confirmationAnnoucedSource = new Subject<ConfirmationMessage>();
     confirmationConfirmSource = new Subject<ConfirmationAcknowledgement>();
-    confirmationBatchSource = new Subject<BatchInfo[]>();
 
     confirmationAnnouced$ = this.confirmationAnnoucedSource.asObservable();
     confirmationConfirm$ = this.confirmationConfirmSource.asObservable();
-    confirmationBatch$ = this.confirmationBatchSource.asObservable();
 
     // User confirm the action
     public confirm(ack: ConfirmationAcknowledgement): void {
@@ -41,8 +38,5 @@ export class ConfirmationDialogService {
     // Open the confirmation dialog
     public openComfirmDialog(message: ConfirmationMessage): void {
         this.confirmationAnnoucedSource.next(message);
-    }
-    public addBatchInfoList(data: BatchInfo[]): void {
-        this.confirmationBatchSource.next(data);
     }
 }

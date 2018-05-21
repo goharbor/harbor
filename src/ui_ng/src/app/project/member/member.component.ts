@@ -37,7 +37,7 @@ import { Subscription } from "rxjs/Subscription";
 
 import { Project } from "../../project/project";
 import {TranslateService} from "@ngx-translate/core";
-import {BatchInfo, BathInfoChanges} from "../../shared/confirmation-dialog/confirmation-batch-message";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
 
 @Component({
   templateUrl: "member.component.html",
@@ -62,8 +62,6 @@ export class MemberComponent implements OnInit, OnDestroy {
   roleNum: number;
   isDelete = false;
   isChangeRole = false;
-  batchActionInfos: BatchInfo[] = [];
-  batchDeletionInfos: BatchInfo[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -73,6 +71,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     private messageHandlerService: MessageHandlerService,
     private OperateDialogService: ConfirmationDialogService,
     private session: SessionService,
+    private operationService: OperationService,
     private ref: ChangeDetectorRef) {
 
     this.delSub = OperateDialogService.confirmationConfirm$.subscribe(message => {
@@ -146,15 +145,6 @@ export class MemberComponent implements OnInit, OnDestroy {
       this.isDelete = false;
       this.isChangeRole = true;
       this.roleNum = roleId;
-      let nameArr: string[] = [];
-      this.batchActionInfos = [];
-      m.forEach(data => {
-        nameArr.push(data.entity_name);
-        let initBatchMessage = new BatchInfo();
-        initBatchMessage.name = data.entity_name;
-        this.batchActionInfos.push(initBatchMessage);
-      });
-
       this.changeOpe(m);
     }
   }
@@ -163,15 +153,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     if (members && members.length) {
       let promiseList: any[] = [];
       members.forEach(member => {
-        if (member.entity_id === this.currentUser.user_id) {
-          let foundMember = this.batchActionInfos.find(batchInfo => batchInfo.name === member.entity_name);
-          this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
-            this.messageHandlerService.handleError(res + ": " + foundMember.name);
-            foundMember = BathInfoChanges(foundMember, res, false, true);
-          });
-        } else {
-          promiseList.push(this.changeOperate(this.projectId, member.id, this.roleNum, member.entity_name));
-        }
+        promiseList.push(this.changeOperate(this.projectId, this.roleNum, member));
       });
 
       Promise.all(promiseList).then(num => {
@@ -181,47 +163,45 @@ export class MemberComponent implements OnInit, OnDestroy {
     }
   }
 
-  changeOperate(projectId: number, memberId: number, roleId: number, username: string) {
-    let foundMember = this.batchActionInfos.find(batchInfo => batchInfo.name === username);
+  changeOperate(projectId: number, roleId: number, member: Member) {
+    // init operation info
+    let operMessage = new OperateInfo();
+    operMessage.name = 'OPERATION.SWITCH_ROLE';
+    operMessage.data.id = member.id;
+    operMessage.state = OperationState.progressing;
+    operMessage.data.name = member.entity_name;
+    this.operationService.publishInfo(operMessage);
+
+    if (member.entity_id === this.currentUser.user_id) {
+      this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
+        operateChanges(operMessage, OperationState.failure, res);
+      });
+      return null;
+    }
     return this.memberService
-        .changeMemberRole(projectId, memberId, roleId)
+        .changeMemberRole(projectId, member.id, roleId)
         .then(
             response => {
               this.translate.get("BATCH.SWITCH_SUCCESS").subscribe(res => {
-                foundMember = BathInfoChanges(foundMember, res);
+                operateChanges(operMessage, OperationState.success);
               });
             },
             error => {
               this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
-                this.messageHandlerService.handleError(res + ": " + username);
-                foundMember = BathInfoChanges(foundMember, res, false, true);
+                operateChanges(operMessage, OperationState.failure, res);
               });
             }
         );
-  }
-
-  ChangeRoleOngoing(username: string) {
-    if (this.batchActionInfos) {
-      let memberActionInfo = this.batchActionInfos.find(batchInfo => batchInfo.name === username);
-      return memberActionInfo && memberActionInfo.status === "pending";
-    } else {
-      return false;
-    }
   }
 
   deleteMembers(m: Member[]) {
     this.isDelete = true;
     this.isChangeRole = false;
     let nameArr: string[] = [];
-    this.batchDeletionInfos = [];
     if (m && m.length) {
       m.forEach(data => {
         nameArr.push(data.entity_name);
-        let initBatchMessage = new BatchInfo ();
-        initBatchMessage.name = data.entity_name;
-        this.batchDeletionInfos.push(initBatchMessage);
       });
-      this.OperateDialogService.addBatchInfoList(this.batchDeletionInfos);
 
       let deletionMessage = new ConfirmationMessage(
         "MEMBER.DELETION_TITLE",
@@ -239,15 +219,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     if (members && members.length) {
       let promiseLists: any[] = [];
       members.forEach(member => {
-        if (member.entity_id === this.currentUser.user_id) {
-          let findedList = this.batchDeletionInfos.find(data => data.name === member.entity_name);
-          this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
-            findedList = BathInfoChanges(findedList, res, false, true);
-          });
-        } else {
-          promiseLists.push(this.delOperate(this.projectId, member.id, member.entity_name));
-        }
-
+        promiseLists.push(this.delOperate(this.projectId, member));
       });
 
       Promise.all(promiseLists).then(item => {
@@ -257,19 +229,33 @@ export class MemberComponent implements OnInit, OnDestroy {
     }
   }
 
-  delOperate(projectId: number, memberId: number, username: string) {
-    let findedList = this.batchDeletionInfos.find(data => data.name === username);
+  delOperate(projectId: number, member: Member) {
+    // init operation info
+    let operMessage = new OperateInfo();
+    operMessage.name = 'OPERATION.DELETE_MEMBER';
+    operMessage.data.id = member.id;
+    operMessage.state = OperationState.progressing;
+    operMessage.data.name = member.entity_name;
+    this.operationService.publishInfo(operMessage);
+
+    if (member.entity_id === this.currentUser.user_id) {
+      this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
+        operateChanges(operMessage, OperationState.failure, res);
+      });
+      return null;
+    }
+
     return this.memberService
-        .deleteMember(projectId, memberId)
+        .deleteMember(projectId, member.id)
         .then(
             response => {
               this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
-                findedList = BathInfoChanges(findedList, res);
+                operateChanges(operMessage, OperationState.success);
               });
             },
             error => {
               this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
-                findedList = BathInfoChanges(findedList, res, false, true);
+                operateChanges(operMessage, OperationState.failure, res);
               });
             }
         );

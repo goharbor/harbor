@@ -34,8 +34,7 @@
             <clr-dg-row *clrDgItems="let m of members"  [clrDgItem]="m">
                 <clr-dg-cell>{{m.entity_name}}</clr-dg-cell>
                 <clr-dg-cell>
-                    <span *ngIf="ChangeRoleOngoing(m.entity_name)" class="spinner spinner-inline"> Loading... </span>
-                    <span *ngIf="!ChangeRoleOngoing(m.entity_name)">{{roleInfo[m.role_id] | translate}}</span>
+                    <span>{{roleInfo[m.role_id] | translate}}</span>
                 </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>

@@ -12,7 +12,7 @@ import {InlineAlertComponent} from "../inline-alert/inline-alert.component";
 import {ErrorHandler} from "../error-handler/error-handler";
 
 import {IServiceConfig, SERVICE_CONFIG} from "../service.config";
-
+import { OperationService } from "../operation/operation.service";
 
 describe('LabelComponent (inline template)', () => {
 
@@ -79,7 +79,8 @@ describe('LabelComponent (inline template)', () => {
             providers: [
                 ErrorHandler,
                 { provide: SERVICE_CONFIG, useValue: config },
-                {provide: LabelService, useClass: LabelDefaultService}
+                {provide: LabelService, useClass: LabelDefaultService},
+                { provide: OperationService }
             ]
         });
     }));

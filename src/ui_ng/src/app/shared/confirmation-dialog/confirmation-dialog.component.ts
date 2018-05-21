@@ -19,7 +19,6 @@ import { ConfirmationDialogService } from './confirmation-dialog.service';
 import { ConfirmationMessage } from './confirmation-message';
 import { ConfirmationAcknowledgement } from './confirmation-state-message';
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared.const';
-import {BatchInfo} from "./confirmation-batch-message";
 
 @Component({
     selector: 'confiramtion-dialog',
@@ -32,32 +31,9 @@ export class ConfirmationDialogComponent implements OnDestroy {
     dialogTitle: string = "";
     dialogContent: string = "";
     message: ConfirmationMessage;
-    resultLists: BatchInfo[] = [];
     annouceSubscription: Subscription;
-    batchInfoSubscription: Subscription;
     buttons: ConfirmationButtons;
     isDelete: boolean = false;
-
-    get batchOverStatus(): boolean {
-        if (this.resultLists.length) {
-            return this.resultLists.every(item => item.loading === false);
-        }
-        return false;
-    }
-
-    colorChange(list: BatchInfo) {
-        if (!list.loading && !list.errorState) {
-            return 'green';
-        } else if (!list.loading && list.errorState) {
-            return 'red';
-        } else {
-            return '#666';
-        }
-    }
-    toggleErrorTitle(errorSpan: any) {
-        errorSpan.style.display = (errorSpan.style.display === 'none') ? 'block' : 'none';
-    }
-
     constructor(
         private confirmationService: ConfirmationDialogService,
         private translate: TranslateService) {
@@ -71,18 +47,11 @@ export class ConfirmationDialogComponent implements OnDestroy {
             this.buttons = msg.buttons;
             this.open();
         });
-        this.batchInfoSubscription = confirmationService.confirmationBatch$.subscribe(data => {
-            this.resultLists = data;
-        });
     }
 
     ngOnDestroy(): void {
         if (this.annouceSubscription) {
             this.annouceSubscription.unsubscribe();
-        }
-        if (this.batchInfoSubscription) {
-            this.resultLists = [];
-            this.batchInfoSubscription.unsubscribe();
         }
     }
 
@@ -91,7 +60,6 @@ export class ConfirmationDialogComponent implements OnDestroy {
     }
 
     close(): void {
-        this.resultLists = [];
         this.opened = false;
     }
 
@@ -111,26 +79,6 @@ export class ConfirmationDialogComponent implements OnDestroy {
         ));
         this.isDelete = false;
         this.close();
-    }
-
-    operate(): void {
-        if (!this.message) {// Improper condition
-            this.close();
-            return;
-        }
-
-        if (this.resultLists.length) {
-            this.resultLists.every(item => item.loading = true);
-            this.isDelete = true;
-        }
-
-        let data: any = this.message.data ? this.message.data : {};
-        let target = this.message.targetId ? this.message.targetId : ConfirmationTargets.EMPTY;
-        this.confirmationService.confirm(new ConfirmationAcknowledgement(
-            ConfirmationState.CONFIRMED,
-            data,
-            target
-        ));
     }
 
     confirm(): void {

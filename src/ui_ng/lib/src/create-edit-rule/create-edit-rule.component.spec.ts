@@ -37,6 +37,7 @@ import {
   ProjectService
 } from "../service/project.service";
 import { JobLogViewerComponent } from "../job-log-viewer/job-log-viewer.component";
+import { OperationService } from "../operation/operation.service";
 
 describe("CreateEditRuleComponent (inline template)", () => {
   let mockRules: ReplicationRule[] = [
@@ -246,7 +247,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
         { provide: ReplicationService, useClass: ReplicationDefaultService },
         { provide: EndpointService, useClass: EndpointDefaultService },
         { provide: ProjectService, useClass: ProjectDefaultService },
-        { provide: JobLogService, useClass: JobLogDefaultService }
+        { provide: JobLogService, useClass: JobLogDefaultService },
+        { provide: OperationService }
       ]
     });
   }));

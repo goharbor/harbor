@@ -24,6 +24,10 @@ import { JOB_LOG_VIEWER_DIRECTIVES } from './job-log-viewer/index';
 import { PROJECT_POLICY_CONFIG_DIRECTIVES } from './project-policy-config/index';
 import { HBR_GRIDVIEW_DIRECTIVES } from './gridview/index';
 import { REPOSITORY_GRIDVIEW_DIRECTIVES } from './repository-gridview/index';
+import { OPERATION_DIRECTIVES } from './operation/index';
+import {LABEL_DIRECTIVES} from "./label/index";
+import {CREATE_EDIT_LABEL_DIRECTIVES} from "./create-edit-label/index";
+import {LABEL_PIECE_DIRECTIVES} from "./label-piece/index";
 
 import {
   SystemInfoService,
@@ -47,7 +51,7 @@ import {
   ProjectService,
   ProjectDefaultService,
   LabelService,
-  LabelDefaultService
+  LabelDefaultService,
 } from './service/index';
 import {
   ErrorHandler,
@@ -59,9 +63,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { TranslateServiceInitializer } from './i18n/index';
 import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from './utils';
 import { ChannelService } from './channel/index';
-import {LABEL_DIRECTIVES} from "./label/index";
-import {CREATE_EDIT_LABEL_DIRECTIVES} from "./create-edit-label/index";
-import {LABEL_PIECE_DIRECTIVES} from "./label-piece/index";
+import { OperationService } from  './operation/operation.service';
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -182,6 +184,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     LABEL_PIECE_DIRECTIVES,
     HBR_GRIDVIEW_DIRECTIVES,
     REPOSITORY_GRIDVIEW_DIRECTIVES,
+    OPERATION_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -207,6 +210,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     LABEL_PIECE_DIRECTIVES,
     HBR_GRIDVIEW_DIRECTIVES,
     REPOSITORY_GRIDVIEW_DIRECTIVES,
+    OPERATION_DIRECTIVES
   ],
   providers: []
 })
@@ -237,7 +241,8 @@ export class HarborLibraryModule {
           deps: [TranslateServiceInitializer, SERVICE_CONFIG],
           multi: true
         },
-        ChannelService
+        ChannelService,
+        OperationService
       ]
     };
   }
@@ -259,7 +264,8 @@ export class HarborLibraryModule {
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         config.labelService || {provide: LabelService, useClass: LabelDefaultService},
-        ChannelService
+        ChannelService,
+        OperationService
       ]
     };
   }

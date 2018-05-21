@@ -56,12 +56,10 @@ import {
   ConfirmationState
 } from "../shared/shared.const";
 import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
-import {
-  BatchInfo,
-  BathInfoChanges
-} from "../confirmation-dialog/confirmation-batch-message";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
+import {operateChanges, OperationState, OperateInfo} from "../operation/operate";
+import {OperationService} from "../operation/operation.service";
 
 const ruleStatus: { [key: string]: any } = [
   { key: "all", description: "REPLICATION.ALL_STATUS" },
@@ -130,7 +128,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   hiddenJobList = true;
 
   jobs: ReplicationJobItem[];
-  batchDelectionInfos: BatchInfo[] = [];
 
   toggleJobSearchOption = optionalSearch;
   currentJobSearchOption: number;
@@ -165,8 +162,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   constructor(
     private errorHandler: ErrorHandler,
     private replicationService: ReplicationService,
-    private translateService: TranslateService
-  ) {}
+    private operationService: OperationService,
+    private translateService: TranslateService) {}
 
   public get showPaginationIndex(): boolean {
     return this.totalCount > 0;
@@ -307,10 +304,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   replicateManualRule(rule: ReplicationRule) {
     if (rule) {
-      this.batchDelectionInfos = [];
-      let initBatchMessage = new BatchInfo();
-      initBatchMessage.name = rule.name;
-      this.batchDelectionInfos.push(initBatchMessage);
       let replicationMessage = new ConfirmationMessage(
         "REPLICATION.REPLICATION_TITLE",
         "REPLICATION.REPLICATION_SUMMARY",
@@ -332,43 +325,37 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       let rule: ReplicationRule = message.data;
 
       if (rule) {
-        Promise.all([this.replicationOperate(+rule.id, rule.name)]).then(
-          item => {
-            this.selectOneRule(rule);
-          }
-        );
+        Promise.all([this.replicationOperate(rule)]).then((item) => {
+          this.selectOneRule(rule);
+        });
       }
     }
   }
 
-  replicationOperate(ruleId: number, name: string) {
-    let findedList = this.batchDelectionInfos.find(data => data.name === name);
+  replicationOperate(rule: ReplicationRule) {
+    // init operation info
+    let operMessage = new OperateInfo();
+    operMessage.name = 'OPERATION.REPLICATION';
+    operMessage.data.id = rule.id;
+    operMessage.state = OperationState.progressing;
+    operMessage.data.name = rule.name;
+    this.operationService.publishInfo(operMessage);
 
-    return toPromise<any>(this.replicationService.replicateRule(ruleId))
-      .then(response => {
-        this.translateService
-          .get("BATCH.REPLICATE_SUCCESS")
-          .subscribe(res => (findedList = BathInfoChanges(findedList, res)));
-      })
-      .catch(error => {
-        if (error && error.status === 412) {
-          Observable.forkJoin(
-            this.translateService.get("BATCH.REPLICATE_FAILURE"),
-            this.translateService.get("REPLICATION.REPLICATE_SUMMARY_FAILURE")
-          ).subscribe(function(res) {
-            findedList = BathInfoChanges(
-              findedList,
-              res[0],
-              false,
-              true,
-              res[1]
-            );
-          });
-        } else {
-          this.translateService
-            .get("BATCH.REPLICATE_FAILURE")
-            .subscribe(res => {
-              findedList = BathInfoChanges(findedList, res, false, true);
+    return toPromise<any>(this.replicationService.replicateRule(+rule.id))
+        .then(response => {
+          this.translateService.get('BATCH.REPLICATE_SUCCESS')
+              .subscribe(res => operateChanges(operMessage, OperationState.success));
+        })
+        .catch(error => {
+          if (error && error.status === 412) {
+            Observable.forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
+                this.translateService.get('REPLICATION.REPLICATE_SUMMARY_FAILURE'))
+                .subscribe(function (res) {
+                  operateChanges(operMessage, OperationState.failure, res[1]);
+            });
+          } else {
+            this.translateService.get('BATCH.REPLICATE_FAILURE').subscribe(res => {
+              operateChanges(operMessage, OperationState.failure, res);
             });
         }
       });

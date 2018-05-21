@@ -16,6 +16,7 @@ import {
   EndpointDefaultService
 } from "../service/endpoint.service";
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
+import { OperationService } from "../operation/operation.service";
 
 import { click } from "../utils";
 
@@ -94,7 +95,8 @@ describe("EndpointComponent (inline template)", () => {
       providers: [
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: EndpointService, useClass: EndpointDefaultService }
+        { provide: EndpointService, useClass: EndpointDefaultService },
+        { provide: OperationService }
       ]
     });
   }));
