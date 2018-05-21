@@ -23,7 +23,7 @@ spec:
         image: {{ .Values.registry.image.repository }}:{{ .Values.registry.image.tag }}
         imagePullPolicy: {{ .Values.registry.image.pullPolicy }}
         resources:
-{{ toYaml .Values.mysql.resources | indent 10 }}
+{{ toYaml .Values.registry.resources | indent 10 }}
         args: ["serve", "/etc/registry/config.yml"]
         env:
           - name: REGISTRY_HTTP_SECRET
@@ -55,7 +55,7 @@ spec:
   {{- if and (not .Values.registry.objectStorage) .Values.persistence.enabled }}
   volumeClaimTemplates:
   - metadata:
-      name: "registry-data"
+      name: registry-data
       labels:
 {{ include "harbor.labels" . | indent 8 }}
     spec:

@@ -19,6 +19,21 @@ spec:
 {{ include "harbor.labels" . | indent 8 }}
         component: notary-db
     spec:
+      initContainers: 
+      - name: move-init-scripts
+        image: alpine:3.6
+        imagePullPolicy: IfNotPresent
+        command: [
+          "sh",
+          "-ce",
+          "ls -l /configmap/docker-entrypoint-initdb.d/* &&
+           cp -L /configmap/docker-entrypoint-initdb.d/* /docker-entrypoint-initdb.d/"
+        ]
+        volumeMounts:
+        - name: notary-db-config
+          mountPath: /configmap/docker-entrypoint-initdb.d
+        - name: notary-db-init
+          mountPath: /docker-entrypoint-initdb.d
       containers:
       - name: notary-db
         image: {{ .Values.notary.db.image.repository }}:{{ .Values.notary.db.image.tag }}
@@ -33,30 +48,36 @@ spec:
 {{ toYaml .Values.notary.db.resources | indent 10 }}
         volumeMounts:
         - name: notary-db-config
+          mountPath: /configmap/docker-entrypoint-initdb.d
+        - name: notary-db-init
           mountPath: /docker-entrypoint-initdb.d
-        - name: notary-db
+        - name: notary-db-data
           mountPath: /var/lib/mysql
       volumes:
       - name: notary-db-config
         configMap:
           name: "{{ template "harbor.fullname" . }}-notary-db"
+      - name: notary-db-init
+        emptyDir: {}
       {{- if not .Values.persistence.enabled }}
-      - name: notary-db
+      - name: notary-db-data
         emptyDir: {}
       {{- end -}}
   {{- if .Values.persistence.enabled }}
   volumeClaimTemplates:
   - metadata:
-      name: notary-db
+      name: notary-db-data
     spec:
       accessModes: [{{ .Values.notary.db.volumes.data.accessMode | quote }}]
+      {{- if .Values.notary.db.volumes.data.storageClass }}
       {{- if (eq "-" .Values.notary.db.volumes.data.storageClass) }}
       storageClassName: ""
       {{- else }}
       storageClassName: "{{ .Values.notary.db.volumes.data.storageClass }}"
       {{- end }}
+      {{- end }}
       resources:
         requests:
-          storage: {{ .Values.adminserver.volumes.data.size | quote }}
+          storage: {{ .Values.notary.db.volumes.data.size | quote }}
   {{- end -}}
 {{ end }}

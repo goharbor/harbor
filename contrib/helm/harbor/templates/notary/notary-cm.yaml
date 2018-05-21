@@ -43,7 +43,7 @@ data:
         "type": "remote",
         "hostname": "{{ template "harbor.fullname" . }}-notary-signer",
         "port": "7899",
-        "tls_ca_file": "/config/notary-signer-ca.crt",
+        "tls_ca_file": "./notary-signer-ca.crt",
         "key_algorithm": "ecdsa"
       },
       "logging": {

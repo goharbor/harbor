@@ -38,8 +38,6 @@ spec:
             value: "1"
           - name: ADMINSERVER_URL
             value: "http://{{ template "harbor.fullname" . }}-adminserver"
-          - name: CLAIR_DB_HOST
-            value: "{{ template "harbor.fullname" . }}-clair-pg"
         ports:
         - containerPort: 8080
         volumeMounts:
