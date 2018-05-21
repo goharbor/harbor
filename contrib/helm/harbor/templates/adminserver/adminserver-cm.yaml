@@ -54,6 +54,7 @@ data:
   CLAIR_DB_PORT: "5432"
   CLAIR_DB: "{{ .Values.clair.postgresDatabase }}"
   CLAIR_DB_USERNAME: "{{ .Values.clair.postgresUser }}"
+  CLAIR_URL: "http://{{ template "harbor.fullname" . }}-clair:6060"
   UAA_ENDPOINT: ""
   UAA_CLIENTID: ""
   UAA_CLIENTSECRET: ""

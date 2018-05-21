@@ -69,10 +69,7 @@ func (cc *CommonController) Login() {
 	if user == nil {
 		cc.CustomAbort(http.StatusUnauthorized, "")
 	}
-
-	cc.SetSession("userId", user.UserID)
-	cc.SetSession("username", user.Username)
-	cc.SetSession("isSysAdmin", user.HasAdminRole)
+	cc.SetSession("user", *user)
 }
 
 // LogOut Habor UI

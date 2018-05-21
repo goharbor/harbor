@@ -31,7 +31,7 @@ spec:
           value: {{ .Values.notary.signer.env.NOTARY_SIGNER_DEFAULTALIAS }}
         volumeMounts:
         - name: notary-config
-          mountPath: /config
+          mountPath: /etc/notary
       volumes:
       - name: notary-config
         configMap:

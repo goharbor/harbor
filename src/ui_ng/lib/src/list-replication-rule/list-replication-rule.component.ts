@@ -24,9 +24,10 @@ import {
     SimpleChange,
     SimpleChanges
 } from "@angular/core";
-import {Observable} from "rxjs/Observable";
-import {Comparator} from "clarity-angular";
-import {TranslateService} from "@ngx-translate/core";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/observable/forkJoin";
+import { Comparator } from "clarity-angular";
+import { TranslateService } from "@ngx-translate/core";
 
 import {ReplicationService} from "../service/replication.service";
 import {

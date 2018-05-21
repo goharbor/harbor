@@ -9,11 +9,12 @@ import {
     EventEmitter,
     OnChanges,
     SimpleChanges
-} from '@angular/core';
-import {Router} from '@angular/router';
+} from "@angular/core";
+import {Router} from "@angular/router";
 import {Observable} from "rxjs/Observable";
-import {TranslateService} from '@ngx-translate/core';
-import {Comparator, State} from 'clarity-angular';
+import "rxjs/add/observable/forkJoin";
+import {TranslateService} from "@ngx-translate/core";
+import {Comparator, State} from "clarity-angular";
 
 import {
     Repository,
@@ -233,7 +234,13 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
             });
 
             Promise.all(repArr).then(() => {
-                this.confirmationDialogSet('REPOSITORY.DELETION_TITLE_REPO', '', repoNames.join(','), repoLists, 'REPOSITORY.DELETION_SUMMARY_REPO', ConfirmationButtons.DELETE_CANCEL);
+                this.confirmationDialogSet(
+                    'REPOSITORY.DELETION_TITLE_REPO',
+                    '',
+                    repoNames.join(','),
+                    repoLists,
+                    'REPOSITORY.DELETION_SUMMARY_REPO',
+                    ConfirmationButtons.DELETE_CANCEL);
             });
         }
     }
@@ -271,13 +278,39 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 let hnd = setInterval(() => this.ref.markForCheck(), 100);
                 setTimeout(() => clearInterval(hnd), 5000);
             });
+        let hnd = setInterval(() => this.ref.markForCheck(), 100);
+        setTimeout(() => clearInterval(hnd), 5000);
+    }
+
+    containsLatestTag(repo: RepositoryItem): Promise<boolean> {
+        return toPromise<Tag[]>(this.tagService.getTags(repo.name))
+            .then(items => {
+                if (items.some((t: Tag) => {
+                        return t.name === 'latest';
+                    })) {
+                    return true;
+                } else {
+                    return false;
+                }
+                ;
+            })
+            .catch(error => Promise.reject(false));
     }
 
     provisionItemEvent(evt: any, repo: RepositoryItem): void {
         evt.stopPropagation();
         let repoCopy = clone(repo);
         repoCopy.name = this.registryUrl + ":443/" + repoCopy.name;
-        this.repoProvisionEvent.emit(repoCopy);
+        this.containsLatestTag(repo)
+            .then(containsLatest => {
+                if (containsLatest) {
+                    this.repoProvisionEvent.emit(repoCopy);
+                } else {
+                    this.addInfoEvent.emit(repoCopy);
+                }
+            })
+            .catch(error => this.errorHandler.error(error));
+
     }
 
     itemAddInfoEvent(evt: any, repo: RepositoryItem): void {
@@ -304,6 +337,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     loadNextPage() {
         if (this.currentPage * this.pageSize >= this.totalCount) {
             return;
+
         }
         this.currentPage = this.currentPage + 1;
 

@@ -19,12 +19,16 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from "@angular/core";
-import {Endpoint} from "../service/interface";
-import {EndpointService} from "../service/endpoint.service";
+import { Subscription } from "rxjs/Subscription";
+import { Observable } from "rxjs/Observable";
+import "rxjs/add/observable/forkJoin";
+import { TranslateService } from "@ngx-translate/core";
+import { Comparator } from "clarity-angular";
 
-import {TranslateService} from "@ngx-translate/core";
+import { Endpoint } from "../service/interface";
+import { EndpointService } from "../service/endpoint.service";
 
-import {ErrorHandler} from "../error-handler/index";
+import { ErrorHandler } from "../error-handler/index";
 
 import {ConfirmationMessage} from "../confirmation-dialog/confirmation-message";
 import {ConfirmationAcknowledgement} from "../confirmation-dialog/confirmation-state-message";
@@ -36,13 +40,8 @@ import {
     ConfirmationButtons
 } from "../shared/shared.const";
 
-import {Subscription} from "rxjs/Subscription";
-
-import {CreateEditEndpointComponent} from "../create-edit-endpoint/create-edit-endpoint.component";
-
-import {toPromise, CustomComparator} from "../utils";
-import {Comparator} from "clarity-angular";
-import {Observable} from "rxjs/Observable";
+import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
+import { toPromise, CustomComparator } from "../utils";
 import {operateChanges, OperateInfo, OperationState} from "../operation/operate";
 import {OperationService} from "../operation/operation.service";
 

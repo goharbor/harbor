@@ -18,6 +18,7 @@ import { JobLogViewerComponent } from '../job-log-viewer/index';
 import {CopyInputComponent} from "../push-image/copy-input.component";
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
 import {LabelDefaultService, LabelService} from "../service/label.service";
+import {OperationService} from "../operation/operation.service";
 
 describe('TagComponent (inline template)', () => {
 
@@ -112,7 +113,8 @@ describe('TagComponent (inline template)', () => {
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: TagService, useClass: TagDefaultService },
         { provide: ScanningResultService, useClass: ScanningResultDefaultService },
-        {provide: LabelService, useClass: LabelDefaultService}
+        {provide: LabelService, useClass: LabelDefaultService},
+        { provide: OperationService }
       ]
     });
   }));
