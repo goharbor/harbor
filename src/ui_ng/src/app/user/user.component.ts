@@ -24,10 +24,10 @@ import {BatchInfo, BathInfoChanges} from '../shared/confirmation-dialog/confirma
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 import { SessionService } from '../shared/session.service';
 import { AppConfigService } from '../app-config.service';
-
 import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
 import { User } from './user';
+import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
 /**
  * NOTES:
  *   Pagination for this component is a temporary workaround solution. It will be replaced in future release.
@@ -51,7 +51,6 @@ export class UserComponent implements OnInit, OnDestroy {
   originalUsers: Promise<User[]>;
   selectedRow: User[] = [];
   ISADMNISTRATOR: string = "USER.ENABLE_ADMIN_ACTION";
-  batchDelectionInfos: BatchInfo[] = [];
 
   currentTerm: string;
   totalCount: number = 0;
@@ -72,6 +71,7 @@ export class UserComponent implements OnInit, OnDestroy {
     private msgHandler: MessageHandlerService,
     private session: SessionService,
     private appConfigService: AppConfigService,
+    private operationService: OperationService,
     private ref: ChangeDetectorRef) {
     this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
       if (confirmed &&
@@ -228,20 +228,16 @@ export class UserComponent implements OnInit, OnDestroy {
   // Delete the specified user
   deleteUsers(users: User[]): void {
     let userArr: string[] = [];
-    this.batchDelectionInfos = [];
     if (this.onlySelf) {
       return;
     }
 
     if (users && users.length) {
-        users.forEach(user => {
-          let initBatchMessage = new BatchInfo ();
-          initBatchMessage.name = user.username;
-          this.batchDelectionInfos.push(initBatchMessage);
-          userArr.push(user.username);
-        });
-      this.deletionDialogService.addBatchInfoList(this.batchDelectionInfos);
-    // Confirm deletion
+      users.forEach(user => {
+        userArr.push(user.username);
+      })
+    }
+    //Confirm deletion
     let msg: ConfirmationMessage = new ConfirmationMessage(
       "USER.DELETION_TITLE",
       "USER.DELETION_SUMMARY",
@@ -252,21 +248,12 @@ export class UserComponent implements OnInit, OnDestroy {
     );
     this.deletionDialogService.openComfirmDialog(msg);
   }
-  }
 
   delUser(users: User[]): void {
-    // this.batchInfoDialog.open();
     let promiseLists: any[] = [];
     if (users && users.length) {
       users.forEach(user => {
-        let findedList = this.batchDelectionInfos.find(data => data.name === user.username);
-        if (this.isMySelf(user.user_id)) {
-          this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
-            findedList = BathInfoChanges(findedList, res, false, true);
-          });
-        } else {
-          promiseLists.push(this.delOperate(user.user_id, user.username));
-        }
+        promiseLists.push(this.delOperate(user));
       });
 
       Promise.all(promiseLists).then((item) => {
@@ -276,15 +263,31 @@ export class UserComponent implements OnInit, OnDestroy {
       });
     }
   }
-  delOperate(id: number, name:  string) {
-    let findedList = this.batchDelectionInfos.find(data => data.name === name);
-    return this.userService.deleteUser(id).then(() => {
+
+  delOperate(user: User) {
+    // init operation info
+    let operMessage = new OperateInfo();
+    operMessage.name = 'OPERATION.DELETE_USER';
+    operMessage.data.id = user.user_id;
+    operMessage.state = OperationState.progressing;
+    operMessage.data.name = user.username;
+    this.operationService.publishInfo(operMessage);
+
+    if (this.isMySelf(user.user_id)) {
+      this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+        operateChanges(operMessage, OperationState.failure, res);
+      });
+      return null;
+    }
+
+
+    return this.userService.deleteUser(user.user_id).then(() => {
       this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
-        findedList = BathInfoChanges(findedList, res);
+        operateChanges(operMessage, OperationState.success);
       });
     }).catch(error => {
       this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
-        findedList = BathInfoChanges(findedList, res, false, true);
+        operateChanges(operMessage, OperationState.failure, res);
       });
      });
   }

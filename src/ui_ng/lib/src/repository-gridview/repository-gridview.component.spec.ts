@@ -22,6 +22,7 @@ import { PUSH_IMAGE_BUTTON_DIRECTIVES } from '../push-image/index';
 import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
 import { JobLogViewerComponent } from '../job-log-viewer/index';
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import {OperationService} from "../operation/operation.service";
 
 describe('RepositoryComponentGridview (inline template)', () => {
 
@@ -115,7 +116,8 @@ describe('RepositoryComponentGridview (inline template)', () => {
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: RepositoryService, useClass: RepositoryDefaultService },
         { provide: TagService, useClass: TagDefaultService },
-        { provide: SystemInfoService, useClass: SystemInfoDefaultService }
+        { provide: SystemInfoService, useClass: SystemInfoDefaultService },
+        { provide: OperationService }
       ]
     });
   }));

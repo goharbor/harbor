@@ -25,6 +25,7 @@ import { TagService, TagDefaultService } from '../service/tag.service';
 import { ChannelService } from '../channel/index';
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
 import {LabelDefaultService, LabelService} from "../service/label.service";
+import {OperationService} from "../operation/operation.service";
 
 
 class RouterStub {
@@ -174,6 +175,7 @@ describe('RepositoryComponent (inline template)', () => {
         { provide: TagService, useClass: TagDefaultService },
         { provide: LabelService, useClass: LabelDefaultService},
         { provide: ChannelService},
+        { provide: OperationService }
       ]
     });
   }));

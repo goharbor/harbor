@@ -34,7 +34,6 @@ export class ConfirmationDialogComponent implements OnDestroy {
     message: ConfirmationMessage;
     resultLists: BatchInfo[] = [];
     annouceSubscription: Subscription;
-    batchInfoSubscription: Subscription;
     buttons: ConfirmationButtons;
     isDelete: boolean = false;
 
@@ -71,18 +70,11 @@ export class ConfirmationDialogComponent implements OnDestroy {
             this.buttons = msg.buttons;
             this.open();
         });
-        this.batchInfoSubscription = confirmationService.confirmationBatch$.subscribe(data => {
-            this.resultLists = data;
-        });
     }
 
     ngOnDestroy(): void {
         if (this.annouceSubscription) {
             this.annouceSubscription.unsubscribe();
-        }
-        if (this.batchInfoSubscription) {
-            this.resultLists = [];
-            this.batchInfoSubscription.unsubscribe();
         }
     }
 
@@ -111,26 +103,6 @@ export class ConfirmationDialogComponent implements OnDestroy {
         ));
         this.isDelete = false;
         this.close();
-    }
-
-    operate(): void {
-        if (!this.message) {// Improper condition
-            this.close();
-            return;
-        }
-
-        if (this.resultLists.length) {
-            this.resultLists.every(item => item.loading = true);
-            this.isDelete = true;
-        }
-
-        let data: any = this.message.data ? this.message.data : {};
-        let target = this.message.targetId ? this.message.targetId : ConfirmationTargets.EMPTY;
-        this.confirmationService.confirm(new ConfirmationAcknowledgement(
-            ConfirmationState.CONFIRMED,
-            data,
-            target
-        ));
     }
 
     confirm(): void {
