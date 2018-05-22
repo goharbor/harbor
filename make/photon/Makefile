@@ -11,6 +11,7 @@ BUILDPATH=$(CURDIR)
 MAKEPATH=$(BUILDPATH)/make
 MAKEDEVPATH=$(MAKEPATH)/dev
 SRCPATH=./src
+TOOLSPATH=$(CURDIR)/tools
 SEDCMD=$(shell which sed)
 WGET=$(shell which wget)
 
@@ -50,7 +51,7 @@ DOCKERFILEPATH_LOG=$(DOCKERFILEPATH)/log
 DOCKERFILENAME_LOG=Dockerfile
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 
-DOCKERFILEPATH_DB=$(DOCKERFILEPATH)/db/postgresql
+DOCKERFILEPATH_DB=$(DOCKERFILEPATH)/db
 DOCKERFILENAME_DB=Dockerfile
 DOCKERIMAGENAME_DB=vmware/harbor-db
 
@@ -70,10 +71,6 @@ DOCKERFILEPATH_REG=$(DOCKERFILEPATH)/registry
 DOCKERFILENAME_REG=Dockerfile
 DOCKERIMAGENAME_REG=vmware/registry-photon
 
-DOCKERFILEPATH_MARIADB=$(DOCKERFILEPATH)/mariadb
-DOCKERFILENAME_MARIADB=Dockerfile
-DOCKERIMAGENAME_MARIADB=vmware/mariadb-photon
-
 DOCKERFILEPATH_NOTARY=$(DOCKERFILEPATH)/notary
 DOCKERFILENAME_NOTARYSIGNER=signer.Dockerfile
 DOCKERIMAGENAME_NOTARYSIGNER=vmware/notary-signer-photon
@@ -84,13 +81,14 @@ DOCKERFILEPATH_REDIS=$(DOCKERFILEPATH)/redis
 DOCKERFILENAME_REDIS=Dockerfile
 DOCKERIMAGENAME_REDIS=vmware/redis-photon
 
+DOCKERFILEPATH_MIGRATOR=$(TOOLSPATH)/migration
+DOCKERFILENAME_MIGRATOR=Dockerfile
+DOCKERIMAGENAME_MIGRATOR=vmware/harbor-migrator
+
 _build_db:
-	@echo "modify the db dockerfile..."
-	@$(SEDCMD) -i 's/__postgresql_version__/$(VERSIONTAG)/g' $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB)
 	@echo "building db container for photon..."
 	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
-	@$(SEDCMD) -i 's/$(VERSIONTAG)/__postgresql_version__/g' $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB)
 
 _build_adminiserver:		
 	@echo "building adminserver container for photon..."
@@ -110,11 +108,6 @@ _build_jobservice:
 _build_log:	
 	@echo "building log container for photon..."
 	$(DOCKERBUILD) -f $(DOCKERFILEPATH_LOG)/$(DOCKERFILENAME_LOG) -t $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) $(DOCKERFILEPATH_LOG)
-	@echo "Done."
-
-_build_postgresql:		
-	@echo "building postgresql container for photon..."
-	@cd $(DOCKERFILEPATH_POSTGRESQL) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_POSTGRESQL)/$(DOCKERFILENAME_POSTGRESQL) -t $(DOCKERIMAGENAME_POSTGRESQL):$(CLAIRDBVERSION) .
 	@echo "Done."
 
 _build_clair:
@@ -165,22 +158,22 @@ _build_registry:
 	@cd $(DOCKERFILEPATH_REG) && chmod 655 $(DOCKERFILEPATH_REG)/binary/registry && $(DOCKERBUILD) -f $(DOCKERFILEPATH_REG)/$(DOCKERFILENAME_REG) -t $(DOCKERIMAGENAME_REG):$(REGISTRYVERSION)-$(VERSIONTAG) .
 	@rm -rf $(DOCKERFILEPATH_REG)/binary
 	@echo "Done."
-			
-_build_mariadb:	
-	@echo "building mariadb container for photon..."
-	@cd $(DOCKERFILEPATH_MARIADB) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MARIADB)/$(DOCKERFILENAME_MARIADB) -t $(DOCKERIMAGENAME_MARIADB):$(MARIADBVERSION) .
-	@echo "Done."
 
 _build_redis:
 	@echo "building redis container for photon..."
 	@cd $(DOCKERFILEPATH_REDIS) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(REDISVERSION) .
 	@echo "Done."
 
+_build_migrator:
+	@echo "building db migrator container for photon..."
+	@cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(VERSIONTAG) .
+	@echo "Done."
+
 define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
 endef
 
-build: _build_postgresql _build_db _build_adminiserver _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_notary _build_clair _build_redis
+build: _build_db _build_adminiserver _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_notary _build_clair _build_redis _build_migrator
 
 cleanimage:
 	@echo "cleaning image for photon..."

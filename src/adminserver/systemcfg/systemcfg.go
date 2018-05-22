@@ -215,6 +215,7 @@ var (
 		common.TokenServiceURL:             "TOKEN_SERVICE_URL",
 		common.ClairURL:                    "CLAIR_URL",
 		common.NotaryURL:                   "NOTARY_URL",
+		common.DatabaseType:                "DATABASE_TYPE",
 	}
 )
 
