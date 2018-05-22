@@ -15,11 +15,12 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
-	"net/http"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -44,7 +45,8 @@ func (ia *InternalAPI) Prepare() {
 func (ia *InternalAPI) SyncRegistry() {
 	err := SyncRegistry(ia.ProjectMgr)
 	if err != nil {
-		ia.CustomAbort(http.StatusInternalServerError, "internal error")
+		ia.HandleInternalServerError(err.Error())
+		return
 	}
 }
 
