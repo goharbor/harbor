@@ -204,41 +204,6 @@ func TestRegister(t *testing.T) {
 	}
 }
 
-func TestCheckUserPassword(t *testing.T) {
-	nonExistUser := models.User{
-		Username: "non-exist",
-	}
-	correctUser := models.User{
-		Username: username,
-		Password: password,
-	}
-	wrongPwd := models.User{
-		Username: username,
-		Password: "wrong",
-	}
-	u, err := CheckUserPassword(nonExistUser)
-	if err != nil {
-		t.Errorf("Failed in CheckUserPassword: %v", err)
-	}
-	if u != nil {
-		t.Errorf("Expected nil for Non exist user, but actual: %+v", u)
-	}
-	u, err = CheckUserPassword(wrongPwd)
-	if err != nil {
-		t.Errorf("Failed in CheckUserPassword: %v", err)
-	}
-	if u != nil {
-		t.Errorf("Expected nil for user with wrong password, but actual: %+v", u)
-	}
-	u, err = CheckUserPassword(correctUser)
-	if err != nil {
-		t.Errorf("Failed in CheckUserPassword: %v", err)
-	}
-	if u == nil {
-		t.Errorf("User should not be nil for correct user")
-	}
-}
-
 func TestUserExists(t *testing.T) {
 	var exists bool
 	var err error
@@ -397,42 +362,6 @@ func TestChangeUserPassword(t *testing.T) {
 		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
 	}
 }
-
-func TestChangeUserPasswordWithOldPassword(t *testing.T) {
-	user := models.User{UserID: currentUser.UserID}
-	query, err := GetUser(user)
-	if err != nil {
-		t.Errorf("Error occurred when get user salt")
-	}
-	currentUser.Salt = query.Salt
-
-	err = ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewerHarborTester12345", Salt: currentUser.Salt}, "NewHarborTester12345")
-	if err != nil {
-		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
-	}
-	loginedUser, err := LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "NewerHarborTester12345"})
-	if err != nil {
-		t.Errorf("Error occurred in LoginByDb: %v", err)
-	}
-	if loginedUser.Username != username {
-		t.Errorf("The username returned by Login does not match, expected: %s, acutal: %s", username, loginedUser.Username)
-	}
-}
-
-func TestChangeUserPasswordWithIncorrectOldPassword(t *testing.T) {
-	err := ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NNewerHarborTester12345", Salt: currentUser.Salt}, "WrongNewerHarborTester12345")
-	if err == nil {
-		t.Errorf("Error does not occurred due to old password is incorrect.")
-	}
-	loginedUser, err := LoginByDb(models.AuthModel{Principal: currentUser.Username, Password: "NNewerHarborTester12345"})
-	if err != nil {
-		t.Errorf("Error occurred in LoginByDb: %v", err)
-	}
-	if loginedUser != nil {
-		t.Errorf("The login user is not nil, acutal: %+v", loginedUser)
-	}
-}
-
 func TestAddProject(t *testing.T) {
 
 	project := models.Project{

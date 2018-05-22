@@ -15,9 +15,9 @@
 package dao
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/astaxie/beego/orm"
 
@@ -32,7 +32,7 @@ func GetUser(query models.User) (*models.User, error) {
 
 	o := GetOrmer()
 
-	sql := `select user_id, username, email, realname, comment, reset_uuid, salt,
+	sql := `select user_id, username, password, email, realname, comment, reset_uuid, salt,
 		sysadmin_flag, creation_time, update_time
 		from harbor_user u
 		where deleted = false `
@@ -153,34 +153,12 @@ func ToggleUserAdminRole(userID int, hasAdmin bool) error {
 }
 
 // ChangeUserPassword ...
-func ChangeUserPassword(u models.User, oldPassword ...string) (err error) {
-	if len(oldPassword) > 1 {
-		return errors.New("wrong numbers of params")
-	}
-
-	o := GetOrmer()
-
-	var r sql.Result
-	salt := utils.GenerateRandomString()
-	if len(oldPassword) == 0 {
-		//In some cases, it may no need to check old password, just as Linux change password policies.
-		r, err = o.Raw(`update harbor_user set password=?, salt=? where user_id=?`, utils.Encrypt(u.Password, salt), salt, u.UserID).Exec()
-	} else {
-		r, err = o.Raw(`update harbor_user set password=?, salt=? where user_id=? and password = ?`, utils.Encrypt(u.Password, salt), salt, u.UserID, utils.Encrypt(oldPassword[0], u.Salt)).Exec()
-	}
-
-	if err != nil {
-		return err
-	}
-	c, err := r.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if c == 0 {
-		return errors.New("no record has been modified, change password failed")
-	}
-
-	return nil
+func ChangeUserPassword(u models.User) error {
+	u.UpdateTime = time.Now()
+	u.Salt = utils.GenerateRandomString()
+	u.Password = utils.Encrypt(u.Password, u.Salt)
+	_, err := GetOrmer().Update(&u, "Password", "Salt", "UpdateTime")
+	return err
 }
 
 // ResetUserPassword ...
@@ -205,36 +183,6 @@ func UpdateUserResetUUID(u models.User) error {
 	o := GetOrmer()
 	_, err := o.Raw(`update harbor_user set reset_uuid=? where email=?`, u.ResetUUID, u.Email).Exec()
 	return err
-}
-
-// CheckUserPassword checks whether the password is correct.
-func CheckUserPassword(query models.User) (*models.User, error) {
-
-	currentUser, err := GetUser(query)
-	if err != nil {
-		return nil, err
-	}
-	if currentUser == nil {
-		return nil, nil
-	}
-
-	sql := `select user_id, username, salt from harbor_user where deleted = false and username = ? and password = ?`
-	queryParam := make([]interface{}, 1)
-	queryParam = append(queryParam, currentUser.Username)
-	queryParam = append(queryParam, utils.Encrypt(query.Password, currentUser.Salt))
-	o := GetOrmer()
-	var user []models.User
-
-	n, err := o.Raw(sql, queryParam).QueryRows(&user)
-	if err != nil {
-		return nil, err
-	}
-	if n == 0 {
-		log.Warning("User principal does not match password. Current:", currentUser)
-		return nil, nil
-	}
-
-	return &user[0], nil
 }
 
 // DeleteUser ...

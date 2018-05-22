@@ -15,10 +15,15 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/vmware/harbor/src/common/dao"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vmware/harbor/src/common/api"
+	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/tests/apitests/apilib"
 
 	"github.com/astaxie/beego"
@@ -323,82 +328,157 @@ func TestUsersToggleAdminRole(t *testing.T) {
 		assert.Equal(200, code, "Toggle user admin role status should be 200")
 	}
 }
+
+func buildChangeUserPasswordURL(id int) string {
+	return fmt.Sprintf("/api/users/%d/password", id)
+}
+
 func TestUsersUpdatePassword(t *testing.T) {
 	fmt.Println("Testing Update User Password")
-	assert := assert.New(t)
-	apiTest := newHarborAPI()
-	password := apilib.Password{OldPassword: "", NewPassword: ""}
-	t.Log("Update password-case 1")
-	//case 1: update user2 password with user3 auth
-	code, err := apiTest.UsersUpdatePassword(testUser0002ID, password, *testUser0003Auth)
-	if err != nil {
-		t.Error("Error occured while update user password", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(403, code, "Update user password status should be 403")
-	}
-	t.Log("Update password-case 2")
-	//case 2: update user2 password with admin auth, but oldpassword is empty
-	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
-	if err != nil {
-		t.Error("Error occured while update user password", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(400, code, "Update user password status should be 400")
-	}
-	t.Log("Update password-case 3")
-	//case 3: update user2 password with admin auth, but oldpassword is wrong
-	password.OldPassword = "000"
-	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
-	if err != nil {
-		t.Error("Error occured while update user password", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(403, code, "Update user password status should be 403")
-	}
-	t.Log("Update password-case 4")
-	//case 4: update user2 password with admin auth, but newpassword is empty
-	password.OldPassword = "testUser0002"
-	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
-	if err != nil {
-		t.Error("Error occured while update user password", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(400, code, "Update user password status should be 400")
-	}
-	t.Log("Update password-case 5")
-	//case 5: update user2 password with admin auth, right parameters
-	password.NewPassword = "TestUser0002"
-	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
-	if err != nil {
-		t.Error("Error occured while update user password", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(200, code, "Update user password status should be 200")
-		testUser0002.Password = password.NewPassword
-		testUser0002Auth.Passwd = password.NewPassword
-		//verify the new password takes effect
-		code, user, err := apiTest.UsersGetByID(testUser0002.Username, *testUser0002Auth, testUser0002ID)
-		if err != nil {
-			t.Error("Error occured while get users", err.Error())
-			t.Log(err)
-		} else {
-			assert.Equal(200, code, "Get users status should be 200")
-			assert.Equal(testUser0002.Username, user.Username, "Get users username should be equal")
-			assert.Equal(testUser0002.Email, user.Email, "Get users email should be equal")
-		}
+	oldPassword := "old_password"
+	newPassword := "new_password"
 
+	user01 := models.User{
+		Username: "user01_for_testing_change_password",
+		Email:    "user01_for_testing_change_password@test.com",
+		Password: oldPassword,
 	}
-	t.Log("Update password-case 6")
-	//case 6: update user2 password setting the new password same as the old
-	password.OldPassword = password.NewPassword
-	code, err = apiTest.UsersUpdatePassword(testUser0002ID, password, *admin)
-	if err != nil {
-		t.Error("Error occured while update user password", err.Error())
-		t.Log(err)
-	} else {
-		assert.Equal(200, code, "When new password is same as old, update user password status should be 200")
+	id, err := dao.Register(user01)
+	require.Nil(t, err)
+	user01.UserID = int(id)
+	defer dao.DeleteUser(user01.UserID)
+
+	user02 := models.User{
+		Username: "user02_for_testing_change_password",
+		Email:    "user02_for_testing_change_password@test.com",
+		Password: oldPassword,
 	}
+	id, err = dao.Register(user02)
+	require.Nil(t, err)
+	user02.UserID = int(id)
+	defer dao.DeleteUser(user02.UserID)
+
+	cases := []*codeCheckingCase{
+		// unauthorized
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    buildChangeUserPasswordURL(user01.UserID),
+			},
+			code: http.StatusUnauthorized,
+		},
+		// 404
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    buildChangeUserPasswordURL(10000),
+				credential: &usrInfo{
+					Name:   user01.Username,
+					Passwd: user01.Password,
+				},
+			},
+			code: http.StatusNotFound,
+		},
+		// 403, a normal user tries to change password of others
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    buildChangeUserPasswordURL(user02.UserID),
+				credential: &usrInfo{
+					Name:   user01.Username,
+					Passwd: user01.Password,
+				},
+			},
+			code: http.StatusForbidden,
+		},
+		// 400, empty old password
+		&codeCheckingCase{
+			request: &testingRequest{
+				method:   http.MethodPut,
+				url:      buildChangeUserPasswordURL(user01.UserID),
+				bodyJSON: &passwordReq{},
+				credential: &usrInfo{
+					Name:   user01.Username,
+					Passwd: user01.Password,
+				},
+			},
+			code: http.StatusBadRequest,
+		},
+		// 400, empty new password
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    buildChangeUserPasswordURL(user01.UserID),
+				bodyJSON: &passwordReq{
+					OldPassword: oldPassword,
+				},
+				credential: &usrInfo{
+					Name:   user01.Username,
+					Passwd: user01.Password,
+				},
+			},
+			code: http.StatusBadRequest,
+		},
+		// 403, incorrect old password
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    buildChangeUserPasswordURL(user01.UserID),
+				bodyJSON: &passwordReq{
+					OldPassword: "incorrect_old_password",
+					NewPassword: newPassword,
+				},
+				credential: &usrInfo{
+					Name:   user01.Username,
+					Passwd: user01.Password,
+				},
+			},
+			code: http.StatusForbidden,
+		},
+		// 200, normal user change own password
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    buildChangeUserPasswordURL(user01.UserID),
+				bodyJSON: &passwordReq{
+					OldPassword: oldPassword,
+					NewPassword: newPassword,
+				},
+				credential: &usrInfo{
+					Name:   user01.Username,
+					Passwd: user01.Password,
+				},
+			},
+			code: http.StatusOK,
+		},
+		// 400, admin user change password of others.
+		// the new password is same with the old one
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    buildChangeUserPasswordURL(user01.UserID),
+				bodyJSON: &passwordReq{
+					NewPassword: newPassword,
+				},
+				credential: admin,
+			},
+			code: http.StatusBadRequest,
+		},
+		// 200, admin user change password of others
+		&codeCheckingCase{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    buildChangeUserPasswordURL(user01.UserID),
+				bodyJSON: &passwordReq{
+					NewPassword: "another_new_password",
+				},
+				credential: admin,
+			},
+			code: http.StatusOK,
+		},
+	}
+
+	runCodeCheckingCases(t, cases...)
 }
 
 func TestUsersDelete(t *testing.T) {

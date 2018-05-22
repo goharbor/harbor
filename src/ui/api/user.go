@@ -24,6 +24,7 @@ import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/config"
 )
@@ -114,6 +115,7 @@ func (ua *UserAPI) Get() {
 			log.Errorf("Error occurred in GetUser, error: %v", err)
 			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
+		u.Password = ""
 		ua.Data["json"] = u
 		ua.ServeJSON()
 		return
@@ -273,33 +275,48 @@ func (ua *UserAPI) ChangePassword() {
 		return
 	}
 
+	changePwdOfOwn := ua.userID == ua.currentUserID
+
 	var req passwordReq
 	ua.DecodeJSONReq(&req)
-	if req.OldPassword == "" {
-		log.Error("Old password is blank")
-		ua.CustomAbort(http.StatusBadRequest, "Old password is blank")
-	}
 
-	queryUser := models.User{UserID: ua.userID, Password: req.OldPassword}
-	user, err := dao.CheckUserPassword(queryUser)
-	if err != nil {
-		log.Errorf("Error occurred in CheckUserPassword: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
-	}
-	if user == nil {
-		log.Warning("Password input is not correct")
-		ua.CustomAbort(http.StatusForbidden, "old_password_is_not_correct")
-	}
-
-	if req.NewPassword == "" {
-		ua.HandleBadRequest("new password is null")
+	if changePwdOfOwn && len(req.OldPassword) == 0 {
+		ua.HandleBadRequest("empty old_password")
 		return
 	}
-	updateUser := models.User{UserID: ua.userID, Password: req.NewPassword, Salt: user.Salt}
-	err = dao.ChangeUserPassword(updateUser, req.OldPassword)
+
+	if len(req.NewPassword) == 0 {
+		ua.HandleBadRequest("empty new_password")
+		return
+	}
+
+	user, err := dao.GetUser(models.User{UserID: ua.userID})
 	if err != nil {
-		log.Errorf("Error occurred in ChangeUserPassword: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		ua.HandleInternalServerError(fmt.Sprintf("failed to get user %d: %v", ua.userID, err))
+		return
+	}
+	if user == nil {
+		ua.HandleNotFound(fmt.Sprintf("user %d not found", ua.userID))
+		return
+	}
+	if changePwdOfOwn {
+		if user.Password != utils.Encrypt(req.OldPassword, user.Salt) {
+			ua.HandleForbidden("incorrect old_password")
+			return
+		}
+	}
+	if user.Password == utils.Encrypt(req.NewPassword, user.Salt) {
+		ua.HandleBadRequest("the new password can not be same with the old one")
+		return
+	}
+
+	updatedUser := models.User{
+		UserID:   ua.userID,
+		Password: req.NewPassword,
+	}
+	if err = dao.ChangeUserPassword(updatedUser); err != nil {
+		ua.HandleInternalServerError(fmt.Sprintf("failed to change password of user %d: %v", ua.userID, err))
+		return
 	}
 }
 
