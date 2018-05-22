@@ -190,7 +190,7 @@
         "CONTENT_TRUST_TOGGLE": "Enable content trust",
         "CONTENT_TRUST_POLCIY": "Only allow verified images to be deployed.",
         "PREVENT_VULNERABLE_TOGGLE": "Prevent vulnerable images from running.",
-        "PREVENT_VULNERABLE_1": "Prevent images with vulnerability serverity of",
+        "PREVENT_VULNERABLE_1": "Prevent images with vulnerability severity of",
         "PREVENT_VULNERABLE_2": "and above from being deployed.",
         "SCAN": "Vulnerability scanning",
         "AUTOSCAN_TOGGLE": "Automatically scan images on push",
