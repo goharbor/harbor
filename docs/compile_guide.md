@@ -50,19 +50,19 @@ You can compile the code by one of the three approaches:
 *  Build, install and bring up Harbor without Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.4.1
    ```
 
 *  Build, install and bring up Harbor with Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0 NOTARYFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.4.1 NOTARYFLAG=true
    ```
 
 *  Build, install and bring up Harbor with Clair:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.3.0 CLAIRFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.4.1 CLAIRFLAG=true
    ```
 
 #### II. Compile code with your own Golang environment, then build Harbor
