@@ -53,11 +53,10 @@ import {
   clone,
 } from "../utils";
 
-
 import {CopyInputComponent} from "../push-image/copy-input.component";
-import {BatchInfo, BathInfoChanges} from "../confirmation-dialog/confirmation-batch-message";
-
 import {LabelService} from "../service/label.service";
+import {operateChanges, OperateInfo, OperationState} from "../operation/operate";
+import {OperationService} from "../operation/operation.service";
 
 export interface LabelState {
   iconsShow: boolean;
@@ -97,7 +96,6 @@ export class TagComponent implements OnInit, AfterViewInit {
   staticBackdrop = true;
   closable = false;
   lastFilteredTagName: string;
-  batchDelectionInfos: BatchInfo[] = [];
   inprogress: boolean;
   openLabelFilterPanel: boolean;
   openLabelFilterPiece: boolean;
@@ -146,6 +144,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     private labelService: LabelService,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef,
+    private operationService: OperationService,
     private channel: ChannelService
   ) { }
 
@@ -566,12 +565,8 @@ export class TagComponent implements OnInit, AfterViewInit {
   deleteTags(tags: Tag[]) {
     if (tags && tags.length) {
       let tagNames: string[] = [];
-      this.batchDelectionInfos = [];
       tags.forEach(tag => {
         tagNames.push(tag.name);
-        let initBatchMessage = new BatchInfo ();
-        initBatchMessage.name = tag.name;
-        this.batchDelectionInfos.push(initBatchMessage);
       });
 
       let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
@@ -598,7 +593,7 @@ export class TagComponent implements OnInit, AfterViewInit {
       if (tags && tags.length) {
         let promiseLists: any[] = [];
         tags.forEach(tag => {
-          promiseLists.push(this.delOperate(tag.signature, tag.name));
+          promiseLists.push(this.delOperate(tag));
         });
 
         Promise.all(promiseLists).then((item) => {
@@ -609,34 +604,43 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  delOperate(signature: any, name:  string) {
-    let findedList = this.batchDelectionInfos.find(data => data.name === name);
-    if (signature) {
+  delOperate(tag: Tag) {
+    // init operation info
+    let operMessage = new OperateInfo();
+    operMessage.name = 'OPERATION.DELETE_TAG';
+    operMessage.data.id = tag.id;
+    operMessage.state = OperationState.progressing;
+    operMessage.data.name = tag.name;
+    this.operationService.publishInfo(operMessage);
+
+    if (tag.signature) {
       Observable.forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
         this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
-        let wrongInfo: string = res[1] + "notary -s https://" + this.registryUrl + ":4443 -d ~/.docker/trust remove -p " +
-         this.registryUrl + "/" + this.repoName + " " + name;
-        findedList = BathInfoChanges(findedList, res[0], false, true, wrongInfo);
+        let wrongInfo: string = res[1] + "notary -s https://" + this.registryUrl +
+            ":4443 -d ~/.docker/trust remove -p " +
+            this.registryUrl + "/" + this.repoName +
+            " " + name;
+        operateChanges(operMessage, OperationState.failure, wrongInfo);
       });
     } else {
       return toPromise<number>(this.tagService
-          .deleteTag(this.repoName, name))
+          .deleteTag(this.repoName, tag.name))
           .then(
               response => {
                 this.translateService.get("BATCH.DELETED_SUCCESS")
                     .subscribe(res =>  {
-                      findedList = BathInfoChanges(findedList, res);
+                      operateChanges(operMessage, OperationState.success);
                     });
               }).catch(error => {
             if (error.status === 503) {
               Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                   this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
-                findedList = BathInfoChanges(findedList, res[0], false, true, res[1]);
+                operateChanges(operMessage, OperationState.failure, res[1]);
               });
               return;
             }
             this.translateService.get("BATCH.DELETED_FAILURE").subscribe(res => {
-              findedList = BathInfoChanges(findedList, res, false, true);
+              operateChanges(operMessage, OperationState.failure, res);
             });
           });
     }

@@ -103,7 +103,6 @@ Delete Repo
     Sleep  1
     Click Element  xpath=//clr-modal//button[2]
     Sleep  1
-    Click Element  xpath=//button[contains(.,"CLOSE")]
 
 Delete Repo on CardView
     [Arguments]  ${reponame}

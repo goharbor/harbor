@@ -20,6 +20,7 @@ import { EndpointService, EndpointDefaultService } from '../service/endpoint.ser
 import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
 import { JobLogService, JobLogDefaultService, ReplicationJobItem } from '../service/index';
 import {ProjectDefaultService, ProjectService} from "../service/project.service";
+import {OperationService} from "../operation/operation.service";
 
 describe('Replication Component (inline template)', () => {
 
@@ -231,7 +232,8 @@ describe('Replication Component (inline template)', () => {
         { provide: ReplicationService, useClass: ReplicationDefaultService },
         { provide: EndpointService, useClass: EndpointDefaultService },
         { provide: ProjectService, useClass: ProjectDefaultService },
-        { provide: JobLogService, useClass: JobLogDefaultService }
+        { provide: JobLogService, useClass: JobLogDefaultService },
+        { provide: OperationService }
       ]
     });
   }));
