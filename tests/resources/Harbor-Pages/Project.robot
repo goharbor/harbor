@@ -120,21 +120,20 @@ Delete Project
     Sleep  1
     Click Element  xpath=//button[contains(.,"Delete")]
     Sleep  2
-    Click Element  xpath=//clr-modal//button[2]
+    Click Element  //clr-modal//button[contains(.,'DELETE')]
     Sleep  1
-    Click Element  xpath=//button[contains(.,"CLOSE")]
 
 Project Should Not Be Deleted
     [Arguments]  ${projname}
     Delete Project  ${projname}
     Sleep  1
-    Page Should Contain  ${projname}
+    Page Should Contain Element  //clr-tab-content//div[contains(.,'${projname}')]/../div/clr-icon[@shape="error-standard"]
 
 Project Should Be Deleted
     [Arguments]  ${projname}
     Delete Project  ${projname}
     Sleep  2
-    Page Should Not Contain  ${projname}
+    Page Should Contain Element  //clr-tab-content//div[contains(.,'${projname}')]/../div/clr-icon[@shape="success-standard"]
 
 Advanced Search Should Display
     Page Should Contain Element  xpath=//audit-log//div[@class="flex-xs-middle"]/button

@@ -336,7 +336,7 @@ Test Case - Delete Label
     Switch To System Labels
     Create New Labels  label_${d}
     Sleep  3
-    Delete A Label
+    Delete A Label  label_${d}
     Close Browser
 
 TestCase - Project Admin Operate Labels
@@ -352,7 +352,7 @@ TestCase - Project Admin Operate Labels
     Sleep  2
     Update A Label  label_${d}
     Sleep  2
-    Delete A Label
+    Delete A Label  label_${d}
     Close Browser
 
 TestCase - Project Admin Add Labels To Repo
@@ -546,10 +546,9 @@ Test Case - Delete Multi Project
     Push Image  ${ip}  test${d}  Test1@34  projecta${d}  hello-world
     Filter Object  project
     Multi-delete Object  projecta  projectb
-    Partly Success
     # Verify delete project with image should not be deleted directly
-    Page Should Contain  projecta${d}
-    Page Should Not Contain  projectb${d}
+    Delete Fail  projecta${d}
+    Delete Success  projectb${d}
     Close Browser
 
 Test Case - Delete Multi User
@@ -566,10 +565,8 @@ Test Case - Delete Multi User
     Filter Object  delete
     Multi-delete Object  deletea  deleteb  deletec
     # Assert delete
-    Delete Success
+    Delete Success  deletea  deleteb  deletec
     Sleep  1
-    # Filter object  delete
-    Page Should Not Contain  deletea
     Close Browser
 
 Test Case - Delete Multi Repo
@@ -583,7 +580,7 @@ Test Case - Delete Multi Repo
     Go Into Project  project${d}
     Multi-delete Object  hello-world  busybox
     # Verify
-    Delete Success
+    Delete Success  hello-world  busybox
     Close Browser
 
 Test Case - Delete Multi Tag
@@ -598,7 +595,7 @@ Test Case - Delete Multi Tag
     Go Into Repo  redis
     Multi-delete object  3.2.10-alpine  4.0.7-alpine
     # Verify
-    Delete Success
+    Delete Success  3.2.10-alpine  4.0.7-alpine
     Close Browser
 
 Test Case - Delete Repo on CardView
@@ -613,7 +610,7 @@ Test Case - Delete Repo on CardView
     Switch To CardView
     Delete Repo on CardView  busybox
     # Verify
-    Delete Success
+    Delete Success  busybox
     Close Browser
 
 Test Case - Delete Multi Member
@@ -630,8 +627,7 @@ Test Case - Delete Multi Member
     Add Guest Member to project  testa${d}
     Add Guest Member to project  testb${d}
     Multi-delete Member  testa${d}  testb${d}
-    Delete Success
-    Page Should Not Contain  testa${d}
+    Delete Success  testa${d}  testb${d}
     Close Browser
 
 Test Case - Assign Sys Admin
