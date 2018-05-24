@@ -275,4 +275,4 @@ Delete A Label
     Sleep  3
     Capture Page Screenshot
     Click Element  xpath=//clr-modal//div//button[contains(.,'DELETE')]
-    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${labelname}')]/../div/clr-icon[@shape="success-standard"
+    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${labelname}')]/../div/clr-icon[@shape="success-standard"]

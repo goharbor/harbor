@@ -68,7 +68,7 @@ Test Case - Endpoint Delete
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Registries
     Delete Endpoint  deletea
-    Wait Until Page Does Not Contain  deletea
+    Delete Success  deletea
     Close Browser
    
 Test Case - Rule Edit
@@ -90,7 +90,7 @@ Test Case - Rule Delete
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Replication Manage
     Delete Rule  newname
-    Wait Until Page Does Not Contain  newname
+    Delete Success  newname
     Close Browser
 
 
