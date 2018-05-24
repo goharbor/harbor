@@ -22,7 +22,7 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Delete Success
     [Arguments]  @{obj}
-    :For ${obj} in  @{obj}
+    :For  ${obj}  in  @{obj}
     \    Page Should Contain Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape="success-standard"]
     Sleep  1
 

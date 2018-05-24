@@ -143,8 +143,9 @@ Trigger Replication Manual
     Click Element  ${action_bar_replicate}
     Wait Until Page Contains Element  ${dialog_replicate}
     Click Element  ${dialog_replicate}
-    Wait Until Page Contains  successfully
-    Click Element  ${dialog_close}
+    Sleep  2
+    Page Should Contain Element  //clr-tab-content//div[contains(.,'${rule}')]/../div/clr-icon[@shape="success-standard"]
+    Sleep  1
 
 Rename Rule
     [Arguments]  ${rule}  ${newname}
@@ -165,9 +166,7 @@ Delete Rule
     Click Element  ${action_bar_delete}
     Wait Until Page Contains Element  ${dialog_delete}
     Click Element  ${dialog_delete}
-    Wait Until Page Contains Element  ${dialog_close}
     Sleep  2
-    Click Element  ${dialog_close}
 
 Filter Rule
     [Arguments]  ${rule} 
@@ -212,6 +211,3 @@ Delete Endpoint
     Click Element  ${action_bar_delete}
     Wait Until Page Contains Element  ${dialog_delete}
     Click Element  ${dialog_delete}
-    Wait Until Page Contains  success
-    Click Element  ${dialog_close}
-

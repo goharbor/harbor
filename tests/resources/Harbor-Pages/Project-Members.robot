@@ -110,8 +110,6 @@ Delete Project Member
     Sleep  2
     Click Element  xpath=//button[contains(.,'DELETE')]
     Sleep  2
-    Click Element  xpath=//button[contains(.,'CLOSE')]
-    Sleep  1
 
 User Should Be Owner Of Project
     [Arguments]  ${user}  ${pwd}  ${project}
