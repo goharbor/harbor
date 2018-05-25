@@ -377,7 +377,11 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 }
 
 func (r *Repository) monolithicBlobUpload(location, digest string, size int64, data io.Reader) error {
-	req, err := http.NewRequest("PUT", buildMonolithicBlobUploadURL(location, digest), data)
+	url, err := buildMonolithicBlobUploadURL(r.Endpoint.String(), location, digest)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("PUT", url, data)
 	if err != nil {
 		return err
 	}
@@ -462,7 +466,16 @@ func buildInitiateBlobUploadURL(endpoint, repoName string) string {
 	return fmt.Sprintf("%s/v2/%s/blobs/uploads/", endpoint, repoName)
 }
 
-func buildMonolithicBlobUploadURL(location, digest string) string {
+func buildMonolithicBlobUploadURL(endpoint, location, digest string) (string, error) {
+	relative, err := isRelativeURL(location)
+	if err != nil {
+		return "", err
+	}
+	// when the registry enables "relativeurls", the location returned
+	// has no scheme and host part
+	if relative {
+		location = endpoint + location
+	}
 	query := ""
 	if strings.ContainsRune(location, '?') {
 		query = "&"
@@ -470,5 +483,13 @@ func buildMonolithicBlobUploadURL(location, digest string) string {
 		query = "?"
 	}
 	query += fmt.Sprintf("digest=%s", digest)
-	return fmt.Sprintf("%s%s", location, query)
+	return fmt.Sprintf("%s%s", location, query), nil
+}
+
+func isRelativeURL(endpoint string) (bool, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return false, err
+	}
+	return !u.IsAbs(), nil
 }

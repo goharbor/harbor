@@ -24,6 +24,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
+
 	"github.com/docker/distribution/manifest/schema2"
 	registry_error "github.com/vmware/harbor/src/common/utils/error"
 	"github.com/vmware/harbor/src/common/utils/test"
@@ -398,4 +402,23 @@ func TestParseError(t *testing.T) {
 
 func newRepository(endpoint string) (*Repository, error) {
 	return NewRepository(repository, endpoint, &http.Client{})
+}
+
+func TestBuildMonolithicBlobUploadURL(t *testing.T) {
+	endpoint := "http://192.169.0.1"
+	digest := "sha256:ef15416724f6e2d5d5b422dc5105add931c1f2a45959cd4993e75e47957b3b55"
+
+	// absolute URL
+	location := "http://192.169.0.1/v2/library/golang/blobs/uploads/c9f84fd7-0198-43e3-80a7-dd13771cd7f0?_state=GabyCujPu0dpxiY8yYZTq"
+	expected := location + "&digest=" + digest
+	url, err := buildMonolithicBlobUploadURL(endpoint, location, digest)
+	require.Nil(t, err)
+	assert.Equal(t, expected, url)
+
+	// relative URL
+	location = "/v2/library/golang/blobs/uploads/c9f84fd7-0198-43e3-80a7-dd13771cd7f0?_state=GabyCujPu0dpxiY8yYZTq"
+	expected = endpoint + location + "&digest=" + digest
+	url, err = buildMonolithicBlobUploadURL(endpoint, location, digest)
+	require.Nil(t, err)
+	assert.Equal(t, expected, url)
 }
