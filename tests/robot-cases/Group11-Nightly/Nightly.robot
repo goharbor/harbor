@@ -25,6 +25,10 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
+Test Case - Get Harbor Version
+#Just get harbor version and log it
+    Get Harbor Version
+
 Test Case - Vulnerability Data Not Ready
 #This case must run before vulnerability db ready
     Init Chrome Driver
