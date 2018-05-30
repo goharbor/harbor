@@ -52,6 +52,18 @@ spec:
       - name: registry-config
         configMap:
           name: "{{ template "harbor.fullname" . }}-registry"
+    {{- with .Values.registry.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.registry.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.registry.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
   {{- if and (not .Values.registry.objectStorage) .Values.persistence.enabled }}
   volumeClaimTemplates:
   - metadata:
