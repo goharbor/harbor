@@ -135,7 +135,8 @@
         "DELETION_SUMMARY": "¿Quiere eliminar el usuario {{param}}?",
         "DELETE_SUCCESS": "Usuario eliminado satisfactoriamente.",
         "ITEMS": "elementos",
-        "OF": "of"
+        "OF": "of",
+        "RESET_Ok": "Users password reset successfully"
     },
     "PROJECT": {
         "PROJECTS": "Proyectos",

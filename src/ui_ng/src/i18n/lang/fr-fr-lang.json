@@ -118,7 +118,8 @@
         "DELETION_SUMMARY": "Voules-vous supprimer l'utilisateur {{param}}?",
         "DELETE_SUCCESS": "Utilisateur supprimé avec succès.",
         "ITEMS": "items",
-        "OF": "de"
+        "OF": "de",
+        "RESET_Ok": "Users password reset successfully"
     },
     "PROJECT": {
         "PROJECTS": "Projets",

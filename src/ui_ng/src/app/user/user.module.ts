@@ -16,6 +16,7 @@ import { SharedModule } from '../shared/shared.module';
 import { UserComponent } from './user.component';
 import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
+import {ChangePasswordComponent} from "./change-password/change-password.component";
 
 @NgModule({
   imports: [
@@ -23,6 +24,7 @@ import { UserService } from './user.service';
   ],
   declarations: [
     UserComponent,
+    ChangePasswordComponent,
     NewUserModalComponent
   ],
   exports: [
