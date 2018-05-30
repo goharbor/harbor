@@ -130,9 +130,6 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `adminserver.emailPwd` | password for email | `not-a-secure-password` |
 | `adminserver.adminPassword` | password for admin user | `Harbor12345` |
 | `adminserver.authenticationMode` | authentication mode for Harbor ( `db_auth` for local database, `ldap_auth` for LDAP, etc...) [Docs](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#user-account) | `db_auth` |
-| `adminserver.nodeSelector` | Node labels for pod assignment | `{}` |
-| `adminserver.tolerations` | Tolerations for pod assignment | `[]` |
-| `adminserver.affinity` | Node/Pod affinities | `{}` |
 | `adminserver.selfRegistration` | Allows users to register by themselves, otherwise only administrators can add users | `on` |
 | `adminserver.ldap.url` | LDAP server URL for `ldap_auth` authentication | `ldaps://ldapserver` |
 | `adminserver.ldap.searchDN` | LDAP Search DN | `` |
@@ -144,6 +141,9 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `adminserver.ldap.verifyCert` | LDAP Verify HTTPS Certificate | `True` |
 | `adminserver.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `adminserver.volumes` | used to create PVCs if persistence is enabled (see instructions in values.yaml) | see values.yaml |
+| `adminserver.nodeSelector` | Node labels for pod assignment | `{}` |
+| `adminserver.tolerations` | Tolerations for pod assignment | `[]` |
+| `adminserver.affinity` | Node/Pod affinities | `{}` |
 | **Jobservice** |
 | `jobservice.image.repository` | Repository for jobservice image | `vmware/harbor-jobservice` |
 | `jobservice.image.tag` | Tag for jobservice image | `v1.4.0` |
@@ -161,8 +161,7 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `ui.key` | ui key | `not-a-secure-key` |
 | `ui.secret` | ui secret | `not-a-secure-secret` |
 | `ui.privateKeyPem` | ui private key | see values.yaml |
-| `ui.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to
- allocate for container   | undefined |
+| `ui.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `ui.nodeSelector` | Node labels for pod assignment | `{}` |
 | `ui.tolerations` | Tolerations for pod assignment | `[]` |
 | `ui.affinity` | Node/Pod affinities | `{}` |
@@ -211,7 +210,7 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `notary.db.password` | The password of users for notary database | Specify your own password |
 | `notary.nodeSelector` | Node labels for pod assignment | `{}` |
 | `notary.tolerations` | Tolerations for pod assignment | `[]` |
-| `notary.affinity` | Node/Pod affinities | `{}` | 
+| `notary.affinity` | Node/Pod affinities | `{}` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
