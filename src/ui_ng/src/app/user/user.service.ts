@@ -73,4 +73,19 @@ export class UserService {
             .then(() => null)
             .catch(error => this.handleError(error));
     }
+
+    // admin change normal user pwd
+    changePassword(uid: number, newPassword: string, confirmPwd: string): Promise<any> {
+        if (!uid || !newPassword) {
+            return Promise.reject("Invalid change uid or password");
+        }
+
+        return this.http.put(userMgmtEndpoint + '/' + uid + '/password',
+            {"old_password": newPassword, 'new_password': confirmPwd}, HTTP_JSON_OPTIONS)
+            .toPromise()
+            .then(response => response)
+            .catch(error => {
+                return Promise.reject(error);
+            });
+    }
 }

@@ -26,6 +26,7 @@ import { AppConfigService } from '../app-config.service';
 import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
 import { User } from './user';
+import {ChangePasswordComponent} from "./change-password/change-password.component";
 import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
 /**
  * NOTES:
@@ -62,6 +63,8 @@ export class UserComponent implements OnInit, OnDestroy {
   private deletionSubscription: Subscription;
   @ViewChild(NewUserModalComponent)
   newUserDialog: NewUserModalComponent;
+  @ViewChild(ChangePasswordComponent)
+  changePwdDialog: ChangePasswordComponent;
 
   constructor(
     private userService: UserService,
@@ -161,6 +164,13 @@ export class UserComponent implements OnInit, OnDestroy {
       clearInterval(this.timerHandler);
       this.timerHandler = null;
     }
+  }
+
+  openChangePwdModal(): void {
+    if (this.selectedRow.length === 1) {
+      this.changePwdDialog.open(this.selectedRow[0].user_id);
+    }
+
   }
 
   // Filter items by keywords

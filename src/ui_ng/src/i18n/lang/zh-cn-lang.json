@@ -135,7 +135,8 @@
         "DELETION_SUMMARY": "你确认删除用户 {{param}}?",
         "DELETE_SUCCESS": "成功删除用户。",
         "OF": "共计",
-        "ITEMS": "条记录"
+        "ITEMS": "条记录",
+        "RESET_Ok": "成功修改用户密码"
     },
     "PROJECT": {
         "PROJECTS": "项目",
