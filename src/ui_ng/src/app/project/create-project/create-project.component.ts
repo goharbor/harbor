@@ -16,7 +16,6 @@ import {
   EventEmitter,
   Output,
   ViewChild,
-  AfterViewChecked,
   OnInit,
   OnDestroy
 } from "@angular/core";
@@ -41,7 +40,7 @@ import { ProjectService } from "../project.service";
   templateUrl: "create-project.component.html",
   styleUrls: ["create-project.scss"]
 })
-export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestroy {
+export class CreateProjectComponent implements OnInit, OnDestroy {
 
   projectForm: NgForm;
 
@@ -74,10 +73,10 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
 
   ngOnInit(): void {
     this.proNameChecker
-      .debounceTime(500)
+      .debounceTime(300)
       .subscribe((name: string) => {
         let cont = this.currentForm.controls["create_project_name"];
-        if (cont && this.hasChanged) {
+        if (cont) {
           this.isNameValid = cont.valid;
           if (this.isNameValid) {
             // Check exiting from backend
@@ -141,27 +140,8 @@ export class CreateProjectComponent implements AfterViewChecked, OnInit, OnDestr
 
   onCancel() {
       this.createProjectOpened = false;
-      this.projectForm.reset();
   }
 
-  ngAfterViewChecked(): void {
-    this.projectForm = this.currentForm;
-    if (this.projectForm) {
-      this.projectForm.valueChanges.subscribe(data => {
-        for (let i = 0; i < data.length; i++) {
-          let origin = this.initVal[i];
-          let current = data[i];
-          if (current && current !== origin) {
-            this.hasChanged = true;
-            break;
-          } else {
-            this.hasChanged = false;
-            this.inlineAlert.close();
-          }
-        }
-      });
-    }
-  }
 
   newProject() {
     this.project = new Project();
