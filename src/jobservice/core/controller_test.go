@@ -215,7 +215,9 @@ func createJobReq(kind string, isUnique bool, withHook bool) models.JobRequest {
 
 type fakePool struct{}
 
-func (f *fakePool) Start() {}
+func (f *fakePool) Start() error {
+	return nil
+}
 
 func (f *fakePool) RegisterJob(name string, job interface{}) error {
 	return nil

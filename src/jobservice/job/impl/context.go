@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
+	"time"
 
 	"github.com/vmware/harbor/src/adminserver/client"
 	"github.com/vmware/harbor/src/common"
@@ -17,6 +19,10 @@ import (
 	"github.com/vmware/harbor/src/jobservice/job"
 	jlogger "github.com/vmware/harbor/src/jobservice/job/impl/logger"
 	"github.com/vmware/harbor/src/jobservice/logger"
+)
+
+const (
+	maxRetryTimes = 5
 )
 
 //Context ...
@@ -51,9 +57,25 @@ func NewContext(sysCtx context.Context, adminClient client.Client) *Context {
 
 //Init ...
 func (c *Context) Init() error {
-	configs, err := c.adminClient.GetCfgs()
-	if err != nil {
-		return err
+	var (
+		counter = 0
+		err     error
+		configs map[string]interface{}
+	)
+
+	for counter == 0 || err != nil {
+		counter++
+		configs, err = c.adminClient.GetCfgs()
+		if err != nil {
+			logger.Errorf("Job context initialization error: %s\n", err.Error())
+			if counter < maxRetryTimes {
+				backoff := (int)(math.Pow(2, (float64)(counter))) + 2*counter + 5
+				logger.Infof("Retry in %d seconds", backoff)
+				time.Sleep(time.Duration(backoff) * time.Second)
+			} else {
+				return fmt.Errorf("job context initialization error: %s (%d times tried)", err.Error(), counter)
+			}
+		}
 	}
 
 	db := getDBFromConfig(configs)

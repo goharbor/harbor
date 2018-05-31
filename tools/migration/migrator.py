@@ -6,6 +6,14 @@ import os
 import sys
 import argparse
 
+if sys.version_info[:3][0] == 2:
+    import ConfigParser as ConfigParser
+    import StringIO as StringIO
+
+if sys.version_info[:3][0] == 3:
+    import configparser as ConfigParser
+    import io as StringIO
+
 RC_VALIDATE = 101
 RC_UP = 102
 RC_DOWN = 103
@@ -17,8 +25,22 @@ RC_GEN = 110
 class DBMigrator():
 
     def __init__(self, target):
+        path = "/harbor-migration/harbor-cfg/harbor.cfg"
+        env = ""
+        if os.path.exists(path):
+            temp_section = "configuration"
+            conf = StringIO.StringIO()
+            conf.write("[%s]\n" % temp_section)
+            conf.write(open(path).read())
+            conf.seek(0, os.SEEK_SET)
+            rcp = ConfigParser.RawConfigParser()
+            rcp.readfp(conf)
+            if rcp.get(temp_section, "admiral_url") != "NA":
+                env = "WITH_ADMIRAL=true"
+        else:
+            print("harbor.cfg not found, WITH_ADMIRAL will not be set to true")
         self.target = target
-        self.script = "./db/run.sh"
+        self.script = env + " ./db/run.sh"
 
     def backup(self):
         return run_cmd(self.script + " backup") == 0
