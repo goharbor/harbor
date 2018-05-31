@@ -62,11 +62,6 @@
     flex-wrap: row wrap;
 }
 
-.image-summary {
-    margin-right: 36px;
-    margin-left: 18px;
-}
-
 .flex-block {
     display: inline-flex;
     flex-wrap: row wrap;
@@ -121,6 +116,8 @@ margin-left:20px;}
 .tip-icon-low{
     color:yellow;
 }
-.second-column div, .fourth-column div, .image-detail-value div{
+.fourth-column div, .image-detail-value div{
 height: 24px;
 }
+.second-column div {padding-left: 30px;}
+.second-column div clr-icon{margin-right: 10px;  margin-left: -35px;}
