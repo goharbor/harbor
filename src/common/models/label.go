@@ -42,10 +42,11 @@ func (l *Label) TableName() string {
 
 // LabelQuery : query parameters for labels
 type LabelQuery struct {
-	Name      string
-	Level     string
-	Scope     string
-	ProjectID int64
+	Name           string
+	FuzzyMatchName bool // the property is used to determine the query for lable name is fuzzy matching or exaxt matching
+	Level          string
+	Scope          string
+	ProjectID      int64
 	Pagination
 }
 

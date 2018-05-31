@@ -72,7 +72,7 @@ func TestMethodsOfLabel(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), total)
 
-	// list
+	// list: exact match
 	labels, err := ListLabels(&models.LabelQuery{
 		Scope:     common.LabelScopeProject,
 		ProjectID: 1,
@@ -81,11 +81,21 @@ func TestMethodsOfLabel(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(labels))
 
-	// list
+	// list: fuzzy match
+	labels, err = ListLabels(&models.LabelQuery{
+		Scope:          common.LabelScopeProject,
+		ProjectID:      1,
+		Name:           label.Name[:1],
+		FuzzyMatchName: true,
+	})
+	require.Nil(t, err)
+	assert.Equal(t, 1, len(labels))
+
+	// list: not exist
 	labels, err = ListLabels(&models.LabelQuery{
 		Scope:     common.LabelScopeProject,
 		ProjectID: 1,
-		Name:      "not_exist_label",
+		Name:      label.Name[:1],
 	})
 	require.Nil(t, err)
 	assert.Equal(t, 0, len(labels))

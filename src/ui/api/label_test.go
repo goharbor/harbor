@@ -243,7 +243,7 @@ func TestLabelAPIList(t *testing.T) {
 		}{
 			Scope:     "p",
 			ProjectID: 1,
-			Name:      "test",
+			Name:      "tes",
 		},
 	}, &labels)
 	require.Nil(t, err)
