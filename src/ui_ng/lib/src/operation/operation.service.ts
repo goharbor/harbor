@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
+// tslint:disable-next-line:no-unused-variable
+import { Observable } from "rxjs/Observable";
 import {OperateInfo} from "./operate";
 
 @Injectable()
