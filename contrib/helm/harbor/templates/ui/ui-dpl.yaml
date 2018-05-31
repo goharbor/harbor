@@ -74,3 +74,15 @@ spec:
         emptyDir: {}
       - name: psc
         emptyDir: {}
+    {{- with .Values.ui.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.ui.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.ui.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

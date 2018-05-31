@@ -89,6 +89,9 @@ adminserver:
   #  requests:
   #    memory: 256Mi
   #    cpu: 100m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ## jobservice
 #
@@ -103,6 +106,9 @@ jobservice:
 #   requests:
 #     memory: 256Mi
 #     cpu: 100m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ## UI
 #
@@ -168,6 +174,9 @@ ui:
 #  requests:
 #    memory: 256Mi
 #    cpu: 100m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ## MySQL Settings. Currently Harbor does not support an external
 ## MySQL server, only their own image. Until this is fixed, do not
@@ -193,6 +202,9 @@ mysql:
   #  requests:
   #    memory: 256Mi
   #    cpu: 100m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 registry:
   image:
@@ -260,8 +272,10 @@ registry:
   #redis:
   #  addr: "redis-host:6379"
   #  db: 2
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
-  
 clair:
   enabled: true
   image:
@@ -291,6 +305,9 @@ clair:
   #  requests:
   #    memory: 256Mi
   #    cpu: 100m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ## Settings for postgresql dependency.
 ## see https://github.com/kubernetes/charts/tree/master/stable/postgresql
@@ -349,3 +366,6 @@ notary:
     #  requests:
     #    memory: 256Mi
     #    cpu: 100m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
