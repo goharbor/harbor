@@ -151,6 +151,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
           this.inProgress = false;
           this.reload.emit();
           this.labelModel = this.initLabel();
+          this.formShow = false;
         })
         .catch(err => {
           this.inProgress = false;
@@ -164,6 +165,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
           this.inProgress = false;
           this.reload.emit();
           this.labelModel = this.initLabel();
+          this.formShow = false;
         })
         .catch(err => {
           this.inProgress = false;

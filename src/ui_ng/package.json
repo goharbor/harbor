@@ -49,7 +49,7 @@
         "bootstrap": "4.0.0-alpha.5",
         "codelyzer": "~2.0.0-beta.4",
         "enhanced-resolve": "^3.0.0",
-        "harbor-ui": "0.7.19-test-5",
+        "harbor-ui": "0.7.19-test-8",
         "jasmine-core": "2.4.1",
         "jasmine-spec-reporter": "2.5.0",
         "karma": "~1.7.0",
