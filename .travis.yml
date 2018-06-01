@@ -18,7 +18,6 @@ env:
   POSTGRESQL_USR: postgres 
   POSTGRESQL_PWD: root123
   POSTGRESQL_DATABASE: registry
-  SQLITE_FILE: /tmp/registry.db
   ADMINSERVER_URL: http://127.0.0.1:8888
   DOCKER_COMPOSE_VERSION: 1.7.1
   HARBOR_ADMIN: admin
@@ -72,8 +71,7 @@ install:
 before_script:
   # create tables and load data
   # - mysql < ./make/db/registry.sql -uroot --verbose
-  - sudo sqlite3 /tmp/registry.db < make/photon/db/registry_sqlite.sql
-  - sudo chmod 777 /tmp/registry.db
+  # - sudo chmod 777 /tmp/registry.db
 
 script:
   - sudo mkdir -p /etc/ui/ca/
@@ -84,7 +82,7 @@ script:
   - sudo make run_clarity_ut CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.4.1
   - cat ./src/ui_ng/npm-ut-test-results
   - sudo ./tests/testprepare.sh 
-  - sudo make -f make/photon/Makefile _build_postgresql _build_db _build_registry -e VERSIONTAG=dev -e CLAIRDBVERSION=dev -e REGISTRYVERSION=v2.6.2
+  - sudo make -f make/photon/Makefile _build_db _build_registry -e VERSIONTAG=dev -e CLAIRDBVERSION=dev -e REGISTRYVERSION=v2.6.2
   - sudo sed -i 's/__reg_version__/v2.6.2-dev/g' ./make/docker-compose.test.yml
   - sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
   - sudo mkdir -p ./make/common/config/registry/
