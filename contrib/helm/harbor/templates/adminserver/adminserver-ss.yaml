@@ -56,6 +56,18 @@ spec:
           items:
           - key: secretKey
             path: key
+    {{- with .Values.adminserver.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.adminserver.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.adminserver.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
   {{- if .Values.persistence.enabled }}
   volumeClaimTemplates:
   - metadata:

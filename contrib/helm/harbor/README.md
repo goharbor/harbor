@@ -141,6 +141,9 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `adminserver.ldap.verifyCert` | LDAP Verify HTTPS Certificate | `True` |
 | `adminserver.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `adminserver.volumes` | used to create PVCs if persistence is enabled (see instructions in values.yaml) | see values.yaml |
+| `adminserver.nodeSelector` | Node labels for pod assignment | `{}` |
+| `adminserver.tolerations` | Tolerations for pod assignment | `[]` |
+| `adminserver.affinity` | Node/Pod affinities | `{}` |
 | **Jobservice** |
 | `jobservice.image.repository` | Repository for jobservice image | `vmware/harbor-jobservice` |
 | `jobservice.image.tag` | Tag for jobservice image | `v1.4.0` |
@@ -148,6 +151,9 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `jobservice.key` | jobservice key | `not-a-secure-key` |
 | `jobservice.secret` | jobservice secret | `not-a-secure-secret` |
 | `jobservice.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
+| `jobservice.nodeSelector` | Node labels for pod assignment | `{}` |
+| `jobservice.tolerations` | Tolerations for pod assignment | `[]` |
+| `jobservice.affinity` | Node/Pod affinities | `{}` |
 | **UI** |
 | `ui.image.repository` | Repository for ui image | `vmware/harbor-ui` |
 | `ui.image.tag` | Tag for ui image | `v1.4.0` |
@@ -156,6 +162,9 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `ui.secret` | ui secret | `not-a-secure-secret` |
 | `ui.privateKeyPem` | ui private key | see values.yaml |
 | `ui.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
+| `ui.nodeSelector` | Node labels for pod assignment | `{}` |
+| `ui.tolerations` | Tolerations for pod assignment | `[]` |
+| `ui.affinity` | Node/Pod affinities | `{}` |
 | **MySQL** |
 | `mysql.image.repository` | Repository for mysql image | `vmware/harbor-mysql` |
 | `mysql.image.tag` | Tag for mysql image | `v1.4.0` |
@@ -167,6 +176,9 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `mysql.database` | MySQL Database | `registry` |
 | `mysql.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `mysql.volumes` | used to create PVCs if persistence is enabled (see instructions in values.yaml) | see values.yaml |
+| `mysql.nodeSelector` | Node labels for pod assignment | `{}` |
+| `mysql.tolerations` | Tolerations for pod assignment | `[]` |
+| `mysql.affinity` | Node/Pod affinities | `{}` |
 | **Registry** |
 | `registry.image.repository` | Repository for registry image | `vmware/registry-photon` |
 | `registry.image.tag` | Tag for registry image | `v2.6.2-v1.4.0` |
@@ -175,11 +187,17 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `registry.httpSecret` | registry secret | `not-a-secure-secret` |
 | `registry.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `registry.volumes` | used to create PVCs if persistence is enabled (see instructions in values.yaml) | see values.yaml |
+| `registry.nodeSelector` | Node labels for pod assignment | `{}` |
+| `registry.tolerations` | Tolerations for pod assignment | `[]` |
+| `registry.affinity` | Node/Pod affinities | `{}` |
 | **Clair** |
 | `clair.enabled` | Enable Clair? | `true` |
 | `clair.image.repository` | Repository for clair image | `vmware/clair-photon` |
 | `clair.image.tag` | Tag for clair image | `v2.0.1-v1.4.0`
 | `clair.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined
+| `clair.nodeSelector` | Node labels for pod assignment | `{}` |
+| `clair.tolerations` | Tolerations for pod assignment | `[]` |
+| `clair.affinity` | Node/Pod affinities | `{}` |
 | `postgresql` | Overrides for postgresql chart [values.yaml](https://github.com/kubernetes/charts/blob/f2938a46e3ae8e2512ede1142465004094c3c333/stable/postgresql/values.yaml) | see values.yaml
 | **Notary** |
 | `notary.enabled` | Enable Notary? | `true` |
@@ -190,7 +208,9 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `notary.db.image.repository` | Repository for notary database image | `vmware/mariadb-photon` |
 | `notary.db.image.tag` | Tag for notary database image | `v1.4.0`
 | `notary.db.password` | The password of users for notary database | Specify your own password |
-
+| `notary.nodeSelector` | Node labels for pod assignment | `{}` |
+| `notary.tolerations` | Tolerations for pod assignment | `[]` |
+| `notary.affinity` | Node/Pod affinities | `{}` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 

@@ -40,4 +40,16 @@ spec:
       - name: root-certificate
         secret:
           secretName: "{{ template "harbor.fullname" . }}-registry"
+    {{- with .Values.notary.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.notary.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.notary.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
 {{ end }}

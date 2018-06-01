@@ -3,7 +3,7 @@ echo "
 
 [alembic]
 # path to migration scripts
-script_location = /harbor-migration/db/migration_harbor
+script_location = /harbor-migration/db/alembic/migration_harbor
 
 # template used to generate migration files
 # file_template = %%(rev)s_%%(slug)s
