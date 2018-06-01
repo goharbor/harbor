@@ -240,6 +240,7 @@ db_password = rcp.get("configuration", "db_password")
 db_host = rcp.get("configuration", "db_host")
 db_user = rcp.get("configuration", "db_user")
 db_port = rcp.get("configuration", "db_port")
+db_name  = rcp.get("configuration", "db_name")
 self_registration = rcp.get("configuration", "self_registration")
 if protocol == "https":
     cert_path = rcp.get("configuration", "ssl_cert")
@@ -361,6 +362,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         db_host=db_host,
         db_user=db_user,
         db_port=db_port,
+        db_name=db_name,
         email_host=email_host,
         email_port=email_port,
         email_usr=email_usr,
