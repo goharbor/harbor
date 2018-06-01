@@ -172,3 +172,7 @@ Wait for Harbor Ready
     \  Return From Keyword If  ${status}  ${HARBOR_IP}
     \  Sleep  30s
     Fail Harbor failed to come up properly!
+
+Get Harbor Version
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -k -X GET --header 'Accept: application/json' 'https://${ip}/api/systeminfo'|grep -i harbor_version
+    Log To Console  ${output}
