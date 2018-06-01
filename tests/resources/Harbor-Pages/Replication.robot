@@ -144,7 +144,7 @@ Trigger Replication Manual
     Wait Until Page Contains Element  ${dialog_replicate}
     Click Element  ${dialog_replicate}
     Sleep  2
-    Page Should Contain Element  //clr-tab-content//div[contains(.,'${rule}')]/../div/clr-icon[@shape="success-standard"]
+    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${rule}')]/../div/clr-icon[@shape="success-standard"]
     Sleep  1
 
 Rename Rule

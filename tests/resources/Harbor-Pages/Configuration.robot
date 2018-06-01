@@ -244,11 +244,9 @@ Create New Labels
     Sleep  1
     Input Text  xpath=//*[@id="name"]  ${labelname}
     Sleep  1
-    Click Element  xpath=//hbr-create-edit-label//div[@class='colorDrop']//clr-icon
+    Click Element  xpath=//hbr-create-edit-label//clr-dropdown/button/clr-icon
     Sleep  1
-    Click Element  xpath=//hbr-create-edit-label//div[@class='colorDrop']//div[@class='colorPanel']//span[1]
-    Sleep  1
-    Click Element  //hbr-create-edit-label//div[@class='colorDrop']//div[@class='colorPanel']/a[@class='closePanel']
+    Click Element  xpath=//hbr-create-edit-label//clr-dropdown-menu/label[1]
     Sleep  1
     Input Text  xpath=//*[@id="description"]  global
     Click Element  xpath=//div/form/section/label[4]/button[2]
