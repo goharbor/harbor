@@ -9,7 +9,7 @@
             </div>
         </div>
         <div class="summary-block row">
-            <div class="image-summary col-md-4 col-lg-3">
+            <div class="image-summary col-md-4 col-sm-6">
                 <div class="flex-block">
                     <div class="image-detail-label">
                         <div>{{'TAG.AUTHOR' | translate }}</div>
@@ -27,30 +27,16 @@
                     </div>
                 </div>
             </div>
-            <div *ngIf="withClair" class="col-md-4 col-lg-3">
+            <div *ngIf="withClair" class="col-md-4 col-sm-6">
                 <div class="vulnerability">
                     <hbr-vulnerability-bar [repoName]="repositoryId" [tagId]="tagDetails.name" [summary]="tagDetails.scan_overview"></hbr-vulnerability-bar>
                 </div>
                 <div class="flex-block vulnerabilities-info">
-                    <div>
-                        <div>
-                            <clr-icon shape="error" size="24" class="is-error"></clr-icon>
-                        </div>
-                        <div class="second-row">
-                            <clr-icon shape="exclamation-triangle" size="24" class="tip-icon-medium"></clr-icon>
-                        </div>
-                        <div>
-                            <clr-icon shape="play" size="20" class="tip-icon-low rotate-90"></clr-icon>
-                        </div>
-                        <div class="second-row">
-                            <clr-icon shape="help" size="18" style="margin-left: 2px;"></clr-icon>
-                        </div>
-                    </div>
                     <div class="second-column">
-                        <div>{{highCount}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }}{{'TAG.LEVEL_VULNERABILITIES' | translate }}</div>
-                        <div class="second-row">{{mediumCount}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }}{{'TAG.LEVEL_VULNERABILITIES' | translate }}</div>
-                        <div>{{lowCount}} {{'VULNERABILITY.SEVERITY.LOW' | translate }}{{'TAG.LEVEL_VULNERABILITIES' | translate }}</div>
-                        <div class="second-row">{{unknownCount}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }}{{'TAG.LEVEL_VULNERABILITIES' | translate }}</div>
+                        <div><clr-icon shape="error" size="24" class="is-error"></clr-icon> {{highCount}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }}&nbsp;{{'TAG.LEVEL_VULNERABILITIES' | translate }}</div>
+                        <div class="second-row"><clr-icon shape="exclamation-triangle" size="24" class="tip-icon-medium"></clr-icon>{{mediumCount}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }}&nbsp;{{'TAG.LEVEL_VULNERABILITIES' | translate }}</div>
+                        <div><clr-icon shape="play" size="20" class="tip-icon-low rotate-90"></clr-icon>{{lowCount}} {{'VULNERABILITY.SEVERITY.LOW' | translate }}&nbsp;{{'TAG.LEVEL_VULNERABILITIES' | translate }}</div>
+                        <div class="second-row"><clr-icon shape="help" size="18"></clr-icon>{{unknownCount}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }}&nbsp;{{'TAG.LEVEL_VULNERABILITIES' | translate }}</div>
                     </div>
                 </div>
 
