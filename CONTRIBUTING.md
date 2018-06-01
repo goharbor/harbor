@@ -28,7 +28,7 @@ cd $GOPATH/src/github.com/vmware/harbor
 
 #Track repository under your personal account
 git config push.default nothing # Anything to avoid pushing to vmware/harbor by default
-git remote rename origin vmware 
+git remote rename origin vmware
 git remote add $USER git@github.com:$USER/harbor.git
 git fetch $USER
 
@@ -149,7 +149,7 @@ To run the code, please refer to the [build](docs/compile_guide.md) guideline.
 
 PR are always welcome, even if they only contain small fixes like typos or a few lines of code. If there will be a significant effort, please document it as an issue and get a discussion going before starting to work on it.
 
-Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in an incremental fasion.
+Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
 
 The graphic shown below describes the overall workflow about how to contribute code to Harbor repository.
 ![contribute workflow](docs/img/workflow.png)
@@ -246,18 +246,18 @@ To help write conforming commit messages, it is recommended to set up the [git-g
 
 ```
 curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
-``` 
+```
 
 ### Automated Testing
-Once your pull request has been opened, harbor will run two CI pipelines againest it. 
-1. In the travis CI, your source code will be checked via `golint`, `go vet` and `go race` that makes sure the code is readable, safe and correct. Also all of unit tests will be triggered via `go test` against the pull request. What you need to pay attation to is the travis result and the coverage report. 
+Once your pull request has been opened, harbor will run two CI pipelines against it.
+1. In the travis CI, your source code will be checked via `golint`, `go vet` and `go race` that makes sure the code is readable, safe and correct. Also all of unit tests will be triggered via `go test` against the pull request. What you need to pay attention to is the travis result and the coverage report.
 * If any failure in travis, you need to figure out whether it is introduced by your commits.
 * If the coverage dramatic decline, you need to commit unit test to coverage your code.
 2. In the drone CI, the E2E test will be triggered against the pull request. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:
-* Registry Basic Verfication, to validate the image can be pulled and pushed successful.
-* Clair Basic Verfication, to validate the image can be scanned successful.
-* Notary Basic Verfication, to validate the image can be signed successful.
-* Ldap Basic Verfication, to validate harbor can work in LDAP environment. 
+* Registry Basic Verification, to validate the image can be pulled and pushed successful.
+* Clair Basic Verification, to validate the image can be scanned successful.
+* Notary Basic Verification, to validate the image can be signed successful.
+* Ldap Basic Verification, to validate harbor can work in LDAP environment.
 
 ### Push and Create PR
 When ready for review, push your branch to your fork repository on `github.com`:
@@ -283,20 +283,20 @@ When reporting issues, always include:
 
 * Version of docker engine and docker-compose
 * Configuration files of Harbor
-* Log files in /var/log/harbor/ 
+* Log files in /var/log/harbor/
 
 Because the issues are open to the public, when submitting the log and configuration files, be sure to remove any sensitive information, e.g. user name, password, IP address, and company name. You can
 replace those parts with "REDACTED" or other strings like "****".
 
 Be sure to include the steps to reproduce the problem if applicable. It can help us understand and fix your issue faster.
 
-## Documenting 
+## Documenting
 
 Update the documentation if you are creating or changing features. Good documentation is as important as the code itself.
 
 The main location for the document is the `docs/` folder. The images referred in documents can be placed in `docs/img`.
 
-Documents are written with Markdown text. See [Writting on GitHub](https://help.github.com/categories/writing-on-github/) for more details.
+Documents are written with Markdown text. See [Writing on GitHub](https://help.github.com/categories/writing-on-github/) for more details.
 
 ## Design new features
 

@@ -1,6 +1,6 @@
 # Community of Harbor
 
-Below are some of the partners and users of Harbor projects ( update constantly ). If you wish to be listed on this page as reference partners or users, please contact us at harbor@ vmware.com . 
+Below are some of the partners and users of Harbor projects ( updated constantly ). If you wish to be listed on this page as reference partners or users, please contact us at [harbor@vmware.com](mailto:harbor@vmware.com) . 
 
 ## Partners
 <a href="https://www.shurenyun.com/" border="0" target="_blank"><img alt="DataMan" src="docs/img/dataman.png"></a> &nbsp; &nbsp; <a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="docs/img/slamteclogo.png"></a>

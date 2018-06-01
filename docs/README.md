@@ -10,13 +10,13 @@ Guide for Harbor online installer and offline installer.
 How to use Harbor to manage images, projects, replications and users.
 
 [Configuring HTTPS for Harbor](configure_https.md)  
-Configure security connection between Harbor and Docker client. 
+Configure security connection between Harbor and Docker client.
 
 [Upgrade and Data Migration Guide](migration_guide.md)  
-Data migration may be needed when upgrading Harbor to a newer version. 
+Data migration may be needed when upgrading Harbor to a newer version.
 
 [Deploy Harbor on Kubernetes](kubernetes_deployment.md)  
-Guide to deploy Harbor on Kubenetes. (maintained by community)
+Guide to deploy Harbor on Kubernetes. (maintained by community)
 
 ### Developer documents
 
@@ -71,4 +71,3 @@ How to add your local language to Harbor.
 [Making a Private Secured Docker Registry in 15 Minutes](http://alexanderzeitler.com/articles/deploying-a-private-secured-docker-registry-within-15-minutes/)
 
 [Docker Private Registry Using Harbor](https://blog.imaginea.com/docker-private-registry-using-harbor-2/)
-
