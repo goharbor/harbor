@@ -136,7 +136,8 @@
         "DELETE_SUCCESS": "成功删除用户。",
         "OF": "共计",
         "ITEMS": "条记录",
-        "RESET_Ok": "成功修改用户密码"
+        "RESET_Ok": "成功修改用户密码",
+        "EXISTING_PASSWORD": "新密码不能与旧密码一致"
     },
     "PROJECT": {
         "PROJECTS": "项目",

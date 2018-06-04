@@ -119,7 +119,8 @@
         "DELETE_SUCCESS": "Utilisateur supprimé avec succès.",
         "ITEMS": "items",
         "OF": "de",
-        "RESET_Ok": "Users password reset successfully"
+        "RESET_Ok": "Users password reset successfully",
+        "EXISTING_PASSWORD": "The new password can not be same with the old one"
     },
     "PROJECT": {
         "PROJECTS": "Projets",
