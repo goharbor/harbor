@@ -23,13 +23,13 @@ ${HARBOR_VERSION}  v1.1.1
 Delete Success
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Page Should Contain Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape="success-standard"]
+    \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape="success-standard"]
     Sleep  1
 
 Delete Fail
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Page Should Contain Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape="error-standard"]
+    \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape="error-standard"]
     Sleep  1
 
 Filter Object

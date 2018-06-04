@@ -142,7 +142,9 @@ Trigger Replication Manual
     Click Element  //clr-dg-row[contains(.,'${rule}')]//label
     Click Element  ${action_bar_replicate}
     Wait Until Page Contains Element  ${dialog_replicate}
-    Click Element  ${dialog_replicate}
+    #change from click to mouse down and up 
+    Mouse Down  ${dialog_replicate}
+    Mouse Up  ${dialog_replicate}
     Sleep  2
     Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${rule}')]/../div/clr-icon[@shape="success-standard"]
     Sleep  1
@@ -165,7 +167,9 @@ Delete Rule
     Click Element  //clr-dg-row[contains(.,'${rule}')]//label
     Click Element  ${action_bar_delete}
     Wait Until Page Contains Element  ${dialog_delete}
-    Click Element  ${dialog_delete}
+    #change from click to mouse down and up
+    Mouse Down  ${dialog_delete}
+    Mouse Up  ${dialog_delete}
     Sleep  2
 
 Filter Rule
