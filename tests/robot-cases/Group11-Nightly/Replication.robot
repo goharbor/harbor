@@ -24,6 +24,9 @@ ${HARBOR_URL}  https://${ip}
 ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 *** Test Cases ***
+Test Case - Get Harbor Version
+#Just get harbor version and log it
+    Get Harbor Version
 
 Test Case - Pro Replication Rules Add
     Init Chrome Driver
