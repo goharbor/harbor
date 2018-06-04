@@ -17,6 +17,7 @@ import { NgForm } from '@angular/forms';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import {UserService} from "../user.service";
+import {TranslateService} from "@ngx-translate/core";
 
 @Component({
     selector: 'change-password',
@@ -41,6 +42,7 @@ export class ChangePasswordComponent {
     constructor(
         private userService: UserService,
         private msgHandler: MessageHandlerService,
+        private translateService: TranslateService,
         private ref: ChangeDetectorRef) { }
 
     public get showProgress(): boolean {
@@ -106,12 +108,14 @@ export class ChangePasswordComponent {
             })
             .catch(error => {
                 this.onGoing = false;
-                if (this.msgHandler.isAppLevel(error)) {
-                    this.msgHandler.handleError(error);
-                    this.opened = false;
-                } else {
+                if (error.status === 400) {
+                    this.translateService.get("USER.EXISTING_PASSWORD").subscribe(
+                        res => {this.inlineAlert.showInlineError(res); });
+                }else {
                     this.inlineAlert.showInlineError(error);
                 }
+                let hnd = setInterval(() => this.ref.markForCheck(), 100);
+                setTimeout(() => clearInterval(hnd), 2000);
             });
     }
 

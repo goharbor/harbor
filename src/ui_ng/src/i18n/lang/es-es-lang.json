@@ -136,7 +136,8 @@
         "DELETE_SUCCESS": "Usuario eliminado satisfactoriamente.",
         "ITEMS": "elementos",
         "OF": "of",
-        "RESET_Ok": "Users password reset successfully"
+        "RESET_Ok": "Users password reset successfully",
+        "EXISTING_PASSWORD": "The new password can not be same with the old one"
     },
     "PROJECT": {
         "PROJECTS": "Proyectos",
