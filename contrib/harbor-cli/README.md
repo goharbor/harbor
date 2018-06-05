@@ -6,7 +6,7 @@ This project provides a great native command-line experience for managing Harbor
 
 ## Install Harbor CLI
 
-Harbor CLI can be installed by one of two approaches:
+Harbor CLI can be installed by one of three approaches:
 
 * Option 1: Build as a Docker image(easy, recommended)
 * Option 2: Native Installation from Source
@@ -61,6 +61,7 @@ Create an alias:
 alias harbor='docker run \
  -e HARBOR_USERNAME="admin" \
  -e HARBOR_PASSWORD="Harbor12345" \
+ -e HARBOR_PROJECT=1 \
  -e HARBOR_URL="http://localhost" \
  --rm krystism/harborclient harbor'
 ```
