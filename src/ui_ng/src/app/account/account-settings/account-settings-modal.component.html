@@ -7,14 +7,17 @@
                 <div class="form-group form-group-override">
                     <label for="account_settings_username" aria-haspopup="true" class="form-group-label-override">{{'PROFILE.USER_NAME' | translate}}</label>
                     <input type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username" size="33">
-                    <clr-tooltip *ngIf="canRename">
-                        <button (dblclick)="openRenameAlert()" class="btn btn-link">
-                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <div  *ngIf="canRename" class="rename-tool">
+                        <button  [disabled]="RenameOnGoing" (click)="onRename()" class="btn btn-outline btn-sm">
+                            {{'PROFILE.ADMIN_RENAME_BUTTON' | translate}}
                         </button>
-                        <clr-tooltip-content clrPosition="bottom-left" clrSize="md" *clrIfOpen>
-                            <span (click)="openRenameAlert()"> {{'PROFILE.ADMIN_RENAME_TIP' | translate}}</span>
-                        </clr-tooltip-content>
-                    </clr-tooltip>
+                        <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="bottom-left" clrSize="md" *clrIfOpen>
+                                <span> {{'PROFILE.ADMIN_RENAME_TIP' | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </div>
                 </div>
                 <div class="form-group form-group-override">
                     <label for="account_settings_email" class="required form-group-label-override">{{'PROFILE.EMAIL' | translate}}</label>
