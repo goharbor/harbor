@@ -33,6 +33,7 @@ type Label struct {
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	CreationTime time.Time `orm:"column(creation_time)" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time)" json:"update_time"`
+	Deleted      bool      `orm:"column(deleted)" json:"deleted"`
 }
 
 // TableName ...

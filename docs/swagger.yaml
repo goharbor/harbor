@@ -3557,10 +3557,9 @@ definitions:
       update_time:
         type: string
         description: The update time of label.
-      inactive:
+      deleted:
         type: boolean
-        description: >-
-          The property is only returned in the label filter of response when getting replication polices. If it's true, the label referenced by the policy is already removed.
+        description: The label is deleted or not.
   ProjectMemberEntity:
     type: object
     properties:

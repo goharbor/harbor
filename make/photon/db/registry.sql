@@ -308,6 +308,7 @@ create table harbor_label (
  project_id int,
  creation_time timestamp default 'now'::timestamp,
  update_time timestamp default 'now'::timestamp,
+ deleted boolean DEFAULT false NOT NULL,
  PRIMARY KEY(id),
  CONSTRAINT unique_label UNIQUE (name,scope, project_id)
  );

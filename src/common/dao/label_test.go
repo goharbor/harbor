@@ -106,5 +106,5 @@ func TestMethodsOfLabel(t *testing.T) {
 
 	l, err = GetLabel(id)
 	require.Nil(t, err)
-	assert.Nil(t, l)
+	assert.True(t, l.Deleted)
 }
