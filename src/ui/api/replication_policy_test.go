@@ -359,9 +359,9 @@ func TestRepPolicyAPIGet(t *testing.T) {
 			label, ok := filter.Value.(map[string]interface{})
 			if assert.True(t, ok) {
 				id := int64(label["id"].(float64))
-				inactive := label["inactive"].(bool)
+				deleted := label["deleted"].(bool)
 				assert.Equal(t, labelID2, id)
-				assert.True(t, inactive)
+				assert.True(t, deleted)
 			}
 		}
 	}

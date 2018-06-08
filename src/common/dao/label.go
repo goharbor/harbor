@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -80,6 +81,7 @@ func getLabelQuerySetter(query *models.LabelQuery) orm.QuerySeter {
 	if query.ProjectID != 0 {
 		qs = qs.Filter("ProjectID", query.ProjectID)
 	}
+	qs = qs.Filter("Deleted", false)
 	return qs
 }
 
@@ -92,8 +94,13 @@ func UpdateLabel(label *models.Label) error {
 
 // DeleteLabel ...
 func DeleteLabel(id int64) error {
-	_, err := GetOrmer().Delete(&models.Label{
-		ID: id,
-	})
+	label, err := GetLabel(id)
+	if err != nil {
+		return err
+	}
+	label.Name = fmt.Sprintf("%s#%d", label.Name, label.ID)
+	label.UpdateTime = time.Now()
+	label.Deleted = true
+	_, err = GetOrmer().Update(label, "Name", "UpdateTime", "Deleted")
 	return err
 }

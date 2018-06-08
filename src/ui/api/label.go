@@ -57,7 +57,7 @@ func (l *LabelAPI) Prepare() {
 			return
 		}
 
-		if label == nil {
+		if label == nil || label.Deleted {
 			l.HandleNotFound(fmt.Sprintf("label %d not found", id))
 			return
 		}
@@ -139,7 +139,7 @@ func (l *LabelAPI) Get() {
 		return
 	}
 
-	if label == nil {
+	if label == nil || label.Deleted {
 		l.HandleNotFound(fmt.Sprintf("label %d not found", id))
 		return
 	}

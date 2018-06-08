@@ -75,3 +75,7 @@ Changelog for harbor database schema
   - add `job_uuid` column to `replication_job` and `img_scan_job`
   - add index `poid_status` in table replication_job
   - add index `idx_status`, `idx_status`, `idx_digest`, `idx_repository_tag` in table img_scan_job
+
+## 1.6.0
+
+  - add `deleted` column to table `harbor_label` 

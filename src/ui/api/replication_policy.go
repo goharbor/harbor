@@ -35,14 +35,6 @@ type RepPolicyAPI struct {
 	BaseController
 }
 
-// labelWrapper wraps models.Label by adding the property "inactive"
-type labelWrapper struct {
-	models.Label
-	// if the label referenced by label filter is deleted,
-	// inactive will set be true
-	Inactive bool `json:"inactive"`
-}
-
 // Prepare validates whether the user has system admin role
 func (pa *RepPolicyAPI) Prepare() {
 	pa.BaseController.Prepare()
@@ -173,7 +165,7 @@ func (pa *RepPolicyAPI) Post() {
 				pa.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", labelID, err))
 				return
 			}
-			if label == nil {
+			if label == nil || label.Deleted {
 				pa.HandleNotFound(fmt.Sprintf("label %d not found", labelID))
 				return
 			}
@@ -256,7 +248,7 @@ func (pa *RepPolicyAPI) Put() {
 				pa.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", labelID, err))
 				return
 			}
-			if label == nil {
+			if label == nil || label.Deleted {
 				pa.HandleNotFound(fmt.Sprintf("label %d not found", labelID))
 				return
 			}
@@ -358,16 +350,7 @@ func convertFromRepPolicy(projectMgr promgr.ProjectManager, policy rep_models.Re
 			if err != nil {
 				return nil, err
 			}
-			lw := &labelWrapper{}
-			// if the label is not found, set inactive to true
-			if label == nil {
-				lw.ID = labelID
-				lw.Name = "unknown"
-				lw.Inactive = true
-			} else {
-				lw.Label = *label
-			}
-			filter.Value = lw
+			filter.Value = label
 		}
 		ply.Filters = append(ply.Filters, filter)
 	}
