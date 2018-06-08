@@ -23,6 +23,7 @@ set -e
 ISMYSQL=false
 ISPGSQL=false
 ISNOTARY=false
+ISCLAIR=false
 
 cur_version=""
 PGSQL_USR="postgres" 
@@ -45,6 +46,10 @@ function init {
         ISPGSQL=true
     fi
 
+    if [ -d "/clair-db" ]; then
+        ISCLAIR=true
+    fi
+
     if [ $ISMYSQL == false ] && [ $ISPGSQL == false ]; then
         echo "No database has been mounted for the migration. Use '-v' to set it in 'docker run'."
         exit 1
@@ -65,7 +70,11 @@ function init {
     fi
 
     if [ $ISPGSQL == true ]; then
-        launch_pgsql $PGSQL_USR
+        if [ $ISCLAIR == true ]; then
+            launch_pgsql $PGSQL_USR "/clair-db"
+        else
+            launch_pgsql $PGSQL_USR
+        fi
     fi
 }
 
@@ -130,8 +139,10 @@ function validate {
 function upgrade {
     if [ $ISNOTARY == true ];then
         up_notary $PGSQL_USR
+    elif [ $ISCLAIR == true ];then
+        up_clair $PGSQL_USR
     else
-        up_harbor $1              
+        up_harbor $1          
     fi   
 }
 

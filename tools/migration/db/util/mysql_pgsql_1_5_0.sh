@@ -80,3 +80,14 @@ EOF
         stop_pgsql $1 
     fi
 }
+
+function up_clair {
+    # clair DB info: user: 'postgres' database: 'postgres'
+    pg_dump -U postgres postgres > /harbor-migration/db/schema/clair.pgsql
+    stop_pgsql postgres "/clair-db"
+
+    # it's harbor DB on pgsql.
+    launch_pgsql $1
+    psql -U $1 -f /harbor-migration/db/schema/clair.pgsql
+    stop_pgsql $1
+}
