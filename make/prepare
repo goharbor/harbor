@@ -144,6 +144,7 @@ def _get_secret(folder, filename, length=16):
         with open(key_file, 'r') as f:
             key = f.read()
             print("loaded secret from file: %s" % key_file)
+        mark_file(key_file)
         return key
     if not os.path.isdir(folder):
         os.makedirs(folder)
