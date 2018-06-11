@@ -83,11 +83,34 @@ EOF
 
 function up_clair {
     # clair DB info: user: 'postgres' database: 'postgres'
-    pg_dump -U postgres postgres > /harbor-migration/db/schema/clair.pgsql
-    stop_pgsql postgres "/clair-db"
 
-    # it's harbor DB on pgsql.
-    launch_pgsql $1
-    psql -U $1 -f /harbor-migration/db/schema/clair.pgsql
-    stop_pgsql $1
+    set +e
+    if [[ $(psql -U $1 -d postgres -t -c "select count(*) from vulnerability;") -eq 0 ]]; then
+        echo "no vulnerability data needs to be updated."
+        return 0
+    else
+    
+        ## it's not a clean clair db, so cannot execute the import step.
+        ## fail at here to call user to clean DB, then to run clair db migration.
+        if [[ $(psql -U $1 -d postgres -t -c "select count(*) from pg_tables where schemaname='public';") -ne 0 ]]; then
+            cat >&2 <<-EOF
+                *******************************************************************************
+                WARNING: Clair migration will only allow anyone haven't migrated clair or 
+                        launched harbor yet. 
+                        If you want to migrate clair data, please delete all the clair DB tables 
+                        in pgsql manually fistly.
+                *******************************************************************************
+EOF
+            exit 0           
+        fi
+        
+        set -e
+        pg_dump -U postgres postgres > /harbor-migration/db/schema/clair.pgsql
+        stop_pgsql postgres "/clair-db"
+
+        # it's harbor DB on pgsql.
+        launch_pgsql $1
+        psql -U $1 -f /harbor-migration/db/schema/clair.pgsql
+        stop_pgsql $1
+    fi
 }
