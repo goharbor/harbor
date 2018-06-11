@@ -7,7 +7,7 @@
       <div class="form-group form-group-override">
        <label class="form-group-label-override required">{{'REPLICATION.NAME' | translate}}</label>
        <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
-              [class.invalid]='(ruleForm.controls.name.touched && ruleForm.controls.name.invalid) || isRuleNameExist'>
+              [class.invalid]='(ruleForm.controls.name.touched && ruleForm.controls.name.invalid) || !isRuleNameValid'>
         <input type="text" id="ruleName" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255" formControlName="name" #ruleName (keyup)='checkRuleName()' autocomplete="off">
         <span class="tooltip-content">{{ruleNameTooltip | translate}}</span>
        </label><span class="spinner spinner-inline spinner-pos" [hidden]="!inNameChecking"></span>

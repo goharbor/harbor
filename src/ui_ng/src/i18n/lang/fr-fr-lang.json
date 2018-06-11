@@ -320,7 +320,8 @@
         "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES":"Delete remote images when locally deleted",
         "REPLICATE_IMMEDIATE":"Replicate existing images immediately",
-        "NEW": "New"
+        "NEW": "New",
+        "NAME_TOOLTIP": "replication rule name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers."
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nouveau Point Final",

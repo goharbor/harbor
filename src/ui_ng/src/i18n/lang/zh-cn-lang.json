@@ -342,7 +342,8 @@
         "REPLICATE": "复制",
         "DELETE_REMOTE_IMAGES":"删除本地镜像时同时也删除远程的镜像。",
         "REPLICATE_IMMEDIATE":"立即复制现有的镜像。",
-        "NEW": "新增"
+        "NEW": "新增",
+        "NAME_TOOLTIP": "项目名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
