@@ -55,7 +55,7 @@ function up_notary {
                 WARNING: Notary migration will only allow anyone haven't migrated notary or 
                          launched harbor yet. 
                          If you want to migrate notary data, please delete all the notaryserver 
-                         and notarysigner DB tables in pgsql manually fistly.
+                         and notarysigner DB tables in pgsql manually firstly.
                 *******************************************************************************
 EOF
             exit 0           
@@ -88,8 +88,12 @@ function up_clair {
     if [[ $(psql -U $1 -d postgres -t -c "select count(*) from vulnerability;") -eq 0 ]]; then
         echo "no vulnerability data needs to be updated."
         return 0
-    else
-    
+    else        
+        pg_dump -U postgres postgres > /harbor-migration/db/schema/clair.pgsql
+        stop_pgsql postgres "/clair-db"
+
+        # it's harbor DB on pgsql.
+        launch_pgsql $1
         ## it's not a clean clair db, so cannot execute the import step.
         ## fail at here to call user to clean DB, then to run clair db migration.
         if [[ $(psql -U $1 -d postgres -t -c "select count(*) from pg_tables where schemaname='public';") -ne 0 ]]; then
@@ -98,18 +102,12 @@ function up_clair {
                 WARNING: Clair migration will only allow anyone haven't migrated clair or 
                         launched harbor yet. 
                         If you want to migrate clair data, please delete all the clair DB tables 
-                        in pgsql manually fistly.
+                        in pgsql manually firstly.
                 *******************************************************************************
 EOF
             exit 0           
         fi
-        
         set -e
-        pg_dump -U postgres postgres > /harbor-migration/db/schema/clair.pgsql
-        stop_pgsql postgres "/clair-db"
-
-        # it's harbor DB on pgsql.
-        launch_pgsql $1
         psql -U $1 -f /harbor-migration/db/schema/clair.pgsql
         stop_pgsql $1
     fi
