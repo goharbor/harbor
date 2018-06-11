@@ -3,14 +3,14 @@
 Below are some of the partners and users of Harbor projects ( updated constantly ). If you wish to be listed on this page as reference partners or users, please contact us at [harbor@vmware.com](mailto:harbor@vmware.com) . 
 
 ## Partners
-<a href="https://www.caicloud.io" target="_blank" border="0"><img alt="CaiCloud" src="docs/img/caicloud.png" height="100"></a>&nbsp; &nbsp; 
-<a href="https://pivotal.io/" target="_blank" border="0"><img alt="Pivotal" src="docs/img/pivotal.png" height="100"></a>&nbsp; &nbsp; 
-<a href="https://rancher.com/" target="_blank" border="0"><img alt="Rancher" src="docs/img/rancher.png" height="100"></a>&nbsp; &nbsp; 
-<a href="https://www.shurenyun.com/" target="_blank" border="0"><img alt="DataMan" src="docs/img/dataman.png" height="100"></a>&nbsp; &nbsp; 
-<a href="https://www.tenxcloud.com/" target="_blank" border="0"><img alt="TenxCloud" src="docs/img/tenxcloud.png" height="100"></a>&nbsp; &nbsp; 
-<a href="http://www.bingocc.com/" target="_blank" border="0"><img alt="BingoCloud" src="docs/img/bingocloud.png" height="100"></a>&nbsp; &nbsp; 
-<a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="docs/img/slamtec.png" height="100"></a>&nbsp; &nbsp; 
-<a href="http://www.cloudchef.io/" target="_blank" border="0"><img alt="CloudChef" src="docs/img/cloudchef.png" height="100"></a>&nbsp; &nbsp; 
+<a href="https://www.caicloud.io" target="_blank" border="0"><img alt="CaiCloud" src="docs/img/caicloud.png" height="50"></a>&nbsp; &nbsp; 
+<a href="https://pivotal.io/" target="_blank" border="0"><img alt="Pivotal" src="docs/img/pivotal.png" height="50"></a>&nbsp; &nbsp; 
+<a href="https://rancher.com/" target="_blank" border="0"><img alt="Rancher" src="docs/img/rancher.png" height="50"></a>&nbsp; &nbsp; 
+<a href="https://www.shurenyun.com/" target="_blank" border="0"><img alt="DataMan" src="docs/img/dataman.png" height="50"></a>&nbsp; &nbsp; 
+<a href="https://www.tenxcloud.com/" target="_blank" border="0"><img alt="TenxCloud" src="docs/img/tenxcloud.png" height="50"></a>&nbsp; &nbsp; 
+<a href="http://www.bingocc.com/" target="_blank" border="0"><img alt="BingoCloud" src="docs/img/bingocloud.png" height="50"></a>&nbsp; &nbsp; 
+<a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="docs/img/slamtec.png" height="50"></a>&nbsp; &nbsp; 
+<a href="http://www.cloudchef.io/" target="_blank" border="0"><img alt="CloudChef" src="docs/img/cloudchef.png" height="50"></a>&nbsp; &nbsp; 
 
 ## Users
 <a href="https://www.onstar.com.cn" border="0" target="_blank"><img alt="OnStar" src="docs/img/onstar.png"></a>&nbsp; &nbsp; 
