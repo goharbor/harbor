@@ -16,8 +16,177 @@ webpackEmptyContext.id = "./src async recursive";
 /***/ "./src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<clr-main-container>\n    <header class=\"header header-6\">\n        <div class=\"branding\">\n            <a href=\"https://vmware.github.io/\" class=\"nav-link\">\n                <span class=\"clr-icon vmware-logo\"></span>\n                <span class=\"title\">Open Source Program Office</span>\n            </a>\n        </div>\n    </header>\n    <div class=\"content-container\">\n        <div id=\"content-area\" class=\"content-area\" hash-listener #scrollable>\n            <div class=\"hero\">\n                <div class=\"hero-image\"><img src=\"images/harbor.png\" alt=\"\"></div>\n                <h3>An Enterprise-class Container Registry Server based on Docker Distribution</h3>\n                <p><a href=\"https://github.com/vmware/harbor\" class=\"btn btn-primary\"><i class=\"icon icon-github\"></i> Fork Harbor</a></p>\n            </div>\n            <div id=\"overview\" class=\"section\">\n                <h2>What is Harbor</h2>\n\n                <p>Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor supports the setup of multiple registries and has images replicated between them. With Harbor, the images are stored within the private registry, keeping the bits and intellectual properties behind the company firewall. In addition, Harbor offers advanced security features, such as user management, access control and activity auditing.</p>\n\n                <br>\n\n                <ul>\n                    <li><strong>Role Based Access Control</strong> - Users and docker repositories are organized via \"projects\", a user can have different permission for images under a namespace.</li>\n                    <li><strong>Image replication</strong> - Images can be replicated (synchronized) between multiple registry instances. Great for load balancing, high availability, hybrid and multi-cloud scenarios.</li>\n                    <li><strong>Graphical user portal</strong> - User can easily browse, search docker repositories, manage projects/namespaces.</li>\n                    <li><strong>AD/LDAP support</strong> - Harbor integrates with existing enterprise AD/LDAP for user authentication and management.</li>\n                    <li><strong>Auditing</strong> - All the operations to the repositories are tracked and can be used for auditing purpose.</li>\n                    <li><strong>Internationalization</strong> - Already localized for English, Chinese, German, Japanese and Russian. More languages can be added.</li>\n                    <li><strong>RESTful API</strong> - RESTful APIs are provided for most administrative operations of Harbor. The integration with other management softwares becomes easy.</li>\n                    <li><strong>Easy deployment</strong> - Provide both an online and offline installer. Besides, a virtual appliance for vSphere platform (OVA) is available.</li>\n                </ul>\n\n                <p>See the <a href=\"https://github.com/vmware/harbor/blob/master/README.md\">README</a> for more information.</p>\n            </div>\n\n            <div id=\"gettingHarbor\" class=\"section\">\n                <h2>Getting Harbor</h2>\n\n                <p>Harbor can be installed on a Linux host. It can also be deployed as a virtual appliance on vSphere. Please download Harbor from the release page.</p>\n                <p>Refer to <a href=\"https://github.com/vmware/harbor/tree/master/docs\">Harbor’s documents</a> for more information.</p>\n            </div>\n\n            <div id=\"gettingStarted\" class=\"section\">\n                <h2>Getting Started</h2>\n                <p>We've provided a guide to help get you started:</p>\n\n                <a href=\"https://github.com/vmware/harbor/blob/master/README.md\" class=\"btn btn-outline\">README</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/installation_guide.md\" class=\"btn btn-outline\">Install Guide of Harbor</a>\n                <a href=\"https://github.com/vmware/harbor/blob/master/docs/user_guide.md\" class=\"btn btn-outline\">User Guide of Harbor</a>\n                                        </div>\n\n            <div id=\"contributors\" class=\"section\">\n                <h2>Contributors</h2>\n\n                <br>\n\n                <ul class=\"list-unstyled row\">\n                    <li *ngFor=\"let contributor of contributors\"><a [href]=\"contributor.html_url\"><img [src]=\"contributor.avatar_url\" alt=\"\" class=\"contributor\"></a></li>\n                </ul>\n            </div>\n\n            <div id=\"contributing\" class=\"section\">\n                <h2>Contributing</h2>\n\n                <p>We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our <a href=\"https://cla.vmware.com/faq\">FAQ</a>.</p>\n            </div>\n\n            <div id=\"license\" class=\"section\">\n                <h2>License</h2>\n\n                <p>Harbor is available under the <a href=\"https://github.com/vmware/harbor/blob/master/LICENSE\">Apache 2 license</a>.</p>\n            </div>\n        </div>\n        <nav class=\"sidenav\" [clr-nav-level]=\"2\">\n            <section class=\"sidenav-content\">\n                <section class=\"nav-group\" [scrollspy]=\"scrollable\">\n                    <label><a class=\"nav-link active\" routerLink=\".\" routerLinkActive=\"active\" fragment=\"overview\">Overview</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"gettingHarbor\">Getting Harbor</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"gettingStarted\">Getting Started</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"contributors\">Contributors</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"contributing\">Contributing</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" routerLink=\".\" fragment=\"license\">License</a></label>\n                    <label class=\"bump-down\"><a class=\"nav-link\" href=\"https://vmware.github.io/harbor/cn/\">中文版</a></label>\n                </section>\n            </section>\n        </nav>\n    </div>\n</clr-main-container>\n"
-
+module.exports = `
+<clr-main-container>
+    <header class="header header-6">
+        <div class="branding">
+            <a href="https://vmware.github.io/" class="nav-link">
+                <span class="clr-icon vmware-logo"></span>
+                <span class="title">Open Source Program Office</span>
+            </a>
+        </div>
+    </header>
+    <div class="content-container">
+        <div id="content-area" class="content-area" hash-listener #scrollable>
+            <div class="hero">
+                <div class="hero-image">
+                    <img src="images/harbor.png" alt="">
+                </div>
+                <h3>An Enterprise-class Container Registry Server based on Docker Distribution</h3>
+                <p>
+                    <a href="https://github.com/vmware/harbor" class="btn btn-primary">
+                        <i class="icon icon-github"></i> Fork Harbor</a>
+                </p>
+            </div>
+            <div id="overview" class="section">
+                <h2>What is Harbor</h2>
+                <p>Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends
+                    the open source Docker Distribution by adding the functionalities usually required by an enterprise,
+                    such as security, identity and management. As an enterprise private registry, Harbor offers better performance
+                    and security. Having a registry closer to the build and run environment improves the image transfer efficiency.
+                    Harbor supports the setup of multiple registries and has images replicated between them. With Harbor,
+                    the images are stored within the private registry, keeping the bits and intellectual properties behind
+                    the company firewall. In addition, Harbor offers advanced security features, such as user management,
+                    access control and activity auditing.</p>
+                <br>
+                <ul>
+                    <li>
+                        <strong>Role Based Access Control</strong> - Users and docker repositories are organized via "projects",
+                        a user can have different permission for images under a namespace.</li>
+                    <li>
+                        <strong>Image replication</strong> - Images can be replicated (synchronized) between multiple registry instances.
+                        Great for load balancing, high availability, hybrid and multi-cloud scenarios.</li>
+                    <li>
+                        <strong>Graphical user portal</strong> - User can easily browse, search docker repositories, manage projects/namespaces.</li>
+                    <li>
+                        <strong>AD/LDAP support</strong> - Harbor integrates with existing enterprise AD/LDAP for user authentication
+                        and management.</li>
+                    <li>
+                        <strong>Auditing</strong> - All the operations to the repositories are tracked and can be used for auditing
+                        purpose.
+                    </li>
+                    <li>
+                        <strong>Internationalization</strong> - Already localized for English, Chinese, German, Japanese and Russian.
+                        More languages can be added.</li>
+                    <li>
+                        <strong>RESTful API</strong> - RESTful APIs are provided for most administrative operations of Harbor. The
+                        integration with other management softwares becomes easy.</li>
+                    <li>
+                        <strong>Easy deployment</strong> - Provide both an online and offline installer. Besides, a virtual appliance
+                        for vSphere platform (OVA) is available.</li>
+                </ul>
+                <p>See the
+                    <a href="https://github.com/vmware/harbor/blob/master/README.md">README</a> for more information.</p>
+            </div>
+            <div id="gettingHarbor" class="section">
+                <h2>Getting Harbor</h2>
+                <p>Harbor can be installed on a Linux host. It can also be deployed as a virtual appliance on vSphere. Please
+                    download Harbor from the release page.</p>
+                <p>Refer to
+                    <a href="https://github.com/vmware/harbor/tree/master/docs">Harbor's documents</a> for more information.</p>
+            </div>
+            <div id="gettingStarted" class="section">
+                <h2>Getting Started</h2>
+                <p>We\'ve provided a guide to help get you started:</p>
+                <a href="https://github.com/vmware/harbor/blob/master/README.md" class="btn btn-outline">README</a>
+                <a href="https://github.com/vmware/harbor/blob/master/docs/installation_guide.md" class="btn btn-outline">Install Guide of Harbor</a>
+                <a href="https://github.com/vmware/harbor/blob/master/docs/user_guide.md" class="btn btn-outline">User Guide of Harbor</a>
+            </div>
+            <div id="contributors" class="section">
+                <h2>Contributors</h2>
+                <br>
+                <ul class="list-unstyled row">
+                    <li *ngFor="let contributor of contributors">
+                        <a [href]="contributor.html_url">
+                            <img [src]="contributor.avatar_url" alt="" class="contributor">
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div id="community" class="section">
+                <h2>Community</h2>
+                <p>
+                    <strong>Twitter:</strong>
+                    <a href="https://twitter.com/project_harbor">@project_harbor</a> User Group: Join Harbor user email group:
+                    <a href="https://groups.google.com/forum/#!forum/harbor-users">harbor-users@googlegroups.com</a> to get update of Harbor's news, features, releases, or to provide suggestion
+                    and feedback. To subscribe, send an email to
+                    <a href="mailto:harbor-users+subscribe@googlegroups.com">harbor-users+subscribe@googlegroups.com</a>.</p>
+                <p>
+                    <strong>Developer Group:</strong> Join Harbor developer group:
+                    <a href="https://groups.google.com/forum/#!forum/harbor-dev">harbor-dev@googlegroups.com</a> for discussion on Harbor development and contribution. To subscribe,
+                    send an email to
+                    <a href="harbor-dev+subscribe@googlegroups.com">harbor-dev+subscribe@googlegroups.com</a>.</p>
+                <p>
+                    <strong>Slack:</strong> Join Harbor's community for discussion and ask questions:
+                    <a href="https://code.vmware.com/join/">VMware {{'{'}}code{{'}'}}</a>, channel:
+                    <a href="https://vmwarecode.slack.com/messages/harbor">#harbor</a>. More info on
+                    <a href="partners and users">partners and users</a>.</p>
+            </div>
+            <div id="contribution" class="section">
+                <h2>Contribution</h2>
+                <p>We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor
+                    license agreement (CLA), our bot will update the issue when you open a pull request. For any questions
+                    about the CLA process, please refer to our
+                    <a href="https://cla.vmware.com/faq">FAQ</a>. Contact us for any questions:
+                    <a href="harbor@vmware.com">harbor@vmware.com</a>.</p>
+            </div>
+            <div id="demo" class="section">
+                <h2>Demos</h2>
+                <ul>
+                    <li>Content Trust (
+                        <a href="https://www.youtube.com/watch?v=pPklSTJZY2E">youtube</a>,
+                        <a href="https://v.qq.com/x/page/n0553fzzrnf.html">Tencent Video</a> )</li>
+                    <li>Role Based Access Control (
+                        <a href="https://www.youtube.com/watch?v=2ZIu9XTvsC0">youtube</a>,
+                        <a href="https://v.qq.com/x/page/l0553yw19ek.html">Tencent Video</a> )</li>
+                    <li>Vulnerability Scanning (
+                        <a href="https://www.youtube.com/watch?v=K4tJ6B2cGR4">youtube</a>,
+                        <a href="https://v.qq.com/x/page/s0553k9692d.html">Tencent Video</a> )</li>
+                    <li>Image Replication (
+                        <a href="https://www.youtube.com/watch?v=1NPlzrm5ozE">youtube</a>,
+                        <a href="https://v.qq.com/x/page/a0553wc7fs9.html">Tencent Video</a> )</li>
+                    <li>VMworld 2017 (
+                        <a href="https://www.youtube.com/watch?v=tI5xMe24fJ4">youtube</a> )</li>
+                </ul>
+            </div>
+            <div id="license" class="section">
+                <h2>License</h2>
+                <p>Harbor is available under the
+                    <a href="https://github.com/vmware/harbor/blob/master/LICENSE">Apache 2 license</a>.</p>
+            </div>
+        </div>
+        <nav class="sidenav" [clr-nav-level]="2">
+            <section class="sidenav-content">
+                <section class="nav-group" [scrollspy]="scrollable">
+                    <label>
+                        <a class="nav-link active" routerLink="." routerLinkActive="active" fragment="overview">Overview</a>
+                    </label>
+                    <label class="bump-down">
+                        <a class="nav-link" routerLink="." fragment="gettingHarbor">Getting Harbor</a>
+                    </label>
+                    <label class="bump-down">
+                        <a class="nav-link" routerLink="." fragment="gettingStarted">Getting Started</a>
+                    </label>
+                    <label class="bump-down">
+                        <a class="nav-link" routerLink="." fragment="contributors">Contributors</a>
+                    </label>
+                    <label class="bump-down">
+                            <a class="nav-link" routerLink="." fragment="community">Community</a>
+                    </label>
+                    <label class="bump-down">
+                        <a class="nav-link" routerLink="." fragment="contribution">Contribution</a>
+                    </label>
+                    <label class="bump-down">
+                            <a class="nav-link" routerLink="." fragment="demo">Demos</a>
+                        </label>
+                    <label class="bump-down">
+                        <a class="nav-link" routerLink="." fragment="license">License</a>
+                    </label>
+                </section>
+            </section>
+        </nav>
+    </div>
+</clr-main-container>`
 /***/ }),
 
 /***/ "./src/app/app.component.scss":
