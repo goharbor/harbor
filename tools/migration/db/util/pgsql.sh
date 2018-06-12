@@ -41,16 +41,20 @@ if [ "${1:0:1}" = '-' ]; then
 fi
 
 function launch_pgsql {
+    local pg_data=$2
+    if [ -z $2 ]; then
+        pg_data=$PGDATA
+    fi
 
     if [ "$1" = 'postgres' ]; then
-            chown -R postgres:postgres $PGDATA
+            chown -R postgres:postgres $pg_data
             # look specifically for PG_VERSION, as it is expected in the DB dir
-            if [ ! -s "$PGDATA/PG_VERSION" ]; then
+            if [ ! -s "$pg_data/PG_VERSION" ]; then
                     file_env 'POSTGRES_INITDB_ARGS'
                     if [ "$POSTGRES_INITDB_XLOGDIR" ]; then
                             export POSTGRES_INITDB_ARGS="$POSTGRES_INITDB_ARGS --xlogdir $POSTGRES_INITDB_XLOGDIR"
                     fi
-                    su - $1 -c "initdb -D $PGDATA  -U postgres -E UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8 $POSTGRES_INITDB_ARGS"
+                    su - $1 -c "initdb -D $pg_data  -U postgres -E UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8 $POSTGRES_INITDB_ARGS"
                     # check password first so we can output the warning before postgres
                     # messes it up
                     file_env 'POSTGRES_PASSWORD'
@@ -66,10 +70,10 @@ function launch_pgsql {
                     {
                             echo
                             echo "host all all all $authMethod"
-                    } >> "$PGDATA/pg_hba.conf"
+                    } >> "$pg_data/pg_hba.conf"
                     # internal start of server in order to allow set-up using psql-client
                     # does not listen on external TCP/IP and waits until start finishes
-                    su - $1 -c "pg_ctl -D \"$PGDATA\" -o \"-c listen_addresses='localhost'\" -w start"
+                    su - $1 -c "pg_ctl -D \"$pg_data\" -o \"-c listen_addresses='localhost'\" -w start"
 
                     file_env 'POSTGRES_USER' 'postgres'
                     file_env 'POSTGRES_DB' "$POSTGRES_USER"
@@ -107,19 +111,23 @@ EOSQL
                     done
 
                     #PGUSER="${PGUSER:-postgres}" \
-                    #su - $1 -c "pg_ctl -D \"$PGDATA\" -m fast -w stop"
+                    #su - $1 -c "pg_ctl -D \"$pg_data\" -m fast -w stop"
 
                     echo
                     echo 'PostgreSQL init process complete; ready for start up.'
                     echo
             else
-                su - $PGSQL_USR -c "pg_ctl -D \"$PGDATA\" -o \"-c listen_addresses='localhost'\" -w start"
+                su - $PGSQL_USR -c "pg_ctl -D \"$pg_data\" -o \"-c listen_addresses='localhost'\" -w start"
             fi
     fi
 }
 
 function stop_pgsql {
-    su - $1 -c "pg_ctl -D \"/var/lib/postgresql/data\" -w stop"
+    local pg_data=$2
+    if [ -z $2 ]; then
+        pg_data=$PGDATA
+    fi
+    su - $1 -c "pg_ctl -D \"$pg_data\" -w stop"
 }
 
 function get_version_pgsql {
