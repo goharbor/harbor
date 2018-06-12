@@ -107,7 +107,9 @@ module.exports = `
                 <h2>Community</h2>
                 <p>
                     <strong>Twitter:</strong>
-                    <a href="https://twitter.com/project_harbor">@project_harbor</a> User Group: Join Harbor user email group:
+                    <a href="https://twitter.com/project_harbor">@project_harbor</a></p>
+                <p>
+                    <strong>User Group:</strong> Join Harbor user email group:
                     <a href="https://groups.google.com/forum/#!forum/harbor-users">harbor-users@googlegroups.com</a> to get update of Harbor's news, features, releases, or to provide suggestion
                     and feedback. To subscribe, send an email to
                     <a href="mailto:harbor-users+subscribe@googlegroups.com">harbor-users+subscribe@googlegroups.com</a>.</p>
@@ -119,8 +121,10 @@ module.exports = `
                 <p>
                     <strong>Slack:</strong> Join Harbor's community for discussion and ask questions:
                     <a href="https://code.vmware.com/join/">VMware {{'{'}}code{{'}'}}</a>, channel:
-                    <a href="https://vmwarecode.slack.com/messages/harbor">#harbor</a>. More info on
-                    <a href="partners and users">partners and users</a>.</p>
+                    <a href="https://vmwarecode.slack.com/messages/harbor">#harbor</a>. </p>
+                <p>
+                    More info on
+                    <a href="https://github.com/vmware/harbor/blob/master/partners.md">partners and users</a>.</p>
             </div>
             <div id="contribution" class="section">
                 <h2>Contribution</h2>
@@ -146,7 +150,7 @@ module.exports = `
                     <li>Image Replication (
                         <a href="https://www.youtube.com/watch?v=1NPlzrm5ozE">youtube</a>,
                         <a href="https://v.qq.com/x/page/a0553wc7fs9.html">Tencent Video</a> )</li>
-                    <li>VMworld 2017 (
+                    <li>Introduction to Harbor (
                         <a href="https://www.youtube.com/watch?v=tI5xMe24fJ4">youtube</a> )</li>
                 </ul>
             </div>
