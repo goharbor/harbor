@@ -460,3 +460,20 @@ class HarborClient(object):
         else:
             logger.error("Fail to get configurations, response code: {}".format(response.status_code))
         return result
+
+    # PUT /configurations
+    def set_configurations(self, config):
+        result = False
+        path = '%s://%s/api/configurations' % (self.protocol, self.host)
+        request_body = json.dumps(config)
+        response = requests.put(path,
+                                cookies={'beegosessionID': self.session_id},
+                                data=request_body)
+        if response.status_code == 200:
+            result = True
+            logging.debug(
+                "Success set configurations: {}".format(config))
+        else:
+            logging.error(
+                "Fail to set configurations: {} with status code: {}".format(config, response.status_code))
+        return result
