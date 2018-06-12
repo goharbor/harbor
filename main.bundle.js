@@ -138,6 +138,8 @@ module.exports = `
                 <h2>Demos</h2>
                 <br>
                 <ul>
+                    <li>Introduction to Harbor (
+                        <a href="https://www.youtube.com/watch?v=tI5xMe24fJ4">youtube</a> )</li>
                     <li>Content Trust (
                         <a href="https://www.youtube.com/watch?v=pPklSTJZY2E">youtube</a>,
                         <a href="https://v.qq.com/x/page/n0553fzzrnf.html">Tencent Video</a> )</li>
@@ -150,8 +152,6 @@ module.exports = `
                     <li>Image Replication (
                         <a href="https://www.youtube.com/watch?v=1NPlzrm5ozE">youtube</a>,
                         <a href="https://v.qq.com/x/page/a0553wc7fs9.html">Tencent Video</a> )</li>
-                    <li>Introduction to Harbor (
-                        <a href="https://www.youtube.com/watch?v=tI5xMe24fJ4">youtube</a> )</li>
                 </ul>
             </div>
             <div id="license" class="section">
