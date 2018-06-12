@@ -70,7 +70,11 @@ func ListLabels(query *models.LabelQuery) ([]*models.Label, error) {
 func getLabelQuerySetter(query *models.LabelQuery) orm.QuerySeter {
 	qs := GetOrmer().QueryTable(&models.Label{})
 	if len(query.Name) > 0 {
-		qs = qs.Filter("Name", query.Name)
+		if query.FuzzyMatchName {
+			qs = qs.Filter("Name__icontains", query.Name)
+		} else {
+			qs = qs.Filter("Name", query.Name)
+		}
 	}
 	if len(query.Level) > 0 {
 		qs = qs.Filter("Level", query.Level)

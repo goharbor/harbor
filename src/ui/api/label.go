@@ -162,8 +162,9 @@ func (l *LabelAPI) Get() {
 // List labels according to the query strings
 func (l *LabelAPI) List() {
 	query := &models.LabelQuery{
-		Name:  l.GetString("name"),
-		Level: common.LabelLevelUser,
+		Name:           l.GetString("name"),
+		FuzzyMatchName: true,
+		Level:          common.LabelLevelUser,
 	}
 
 	scope := l.GetString("scope")
