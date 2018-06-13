@@ -22,6 +22,9 @@ import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/replication"
+	"github.com/vmware/harbor/src/replication/core"
+	rep_models "github.com/vmware/harbor/src/replication/models"
 )
 
 // LabelAPI handles requests for label management
@@ -265,4 +268,58 @@ func (l *LabelAPI) Delete() {
 		l.HandleInternalServerError(fmt.Sprintf("failed to delete label %d: %v", id, err))
 		return
 	}
+}
+
+// ListResources lists the resources that the label is referenced by
+func (l *LabelAPI) ListResources() {
+	if !l.SecurityCtx.IsAuthenticated() {
+		l.HandleUnauthorized()
+		return
+	}
+
+	id, err := l.GetInt64FromPath(":id")
+	if err != nil || id <= 0 {
+		l.HandleBadRequest("invalid label ID")
+		return
+	}
+
+	label, err := dao.GetLabel(id)
+	if err != nil {
+		l.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", id, err))
+		return
+	}
+
+	if label == nil || label.Deleted {
+		l.HandleNotFound(fmt.Sprintf("label %d not found", id))
+		return
+	}
+
+	if label.Scope == common.LabelScopeGlobal && !l.SecurityCtx.IsSysAdmin() ||
+		label.Scope == common.LabelScopeProject && !l.SecurityCtx.HasAllPerm(label.ProjectID) {
+		l.HandleForbidden(l.SecurityCtx.GetUsername())
+		return
+	}
+
+	result, err := core.GlobalController.GetPolicies(rep_models.QueryParameter{})
+	if err != nil {
+		l.HandleInternalServerError(fmt.Sprintf("failed to get policies: %v", err))
+		return
+	}
+	policies := []*rep_models.ReplicationPolicy{}
+	if result != nil {
+		for _, policy := range result.Policies {
+			for _, filter := range policy.Filters {
+				if filter.Kind != replication.FilterItemKindLabel {
+					continue
+				}
+				if filter.Value.(int64) == label.ID {
+					policies = append(policies, policy)
+				}
+			}
+		}
+	}
+	resources := map[string]interface{}{}
+	resources["replication_policies"] = policies
+	l.Data["json"] = resources
+	l.ServeJSON()
 }
