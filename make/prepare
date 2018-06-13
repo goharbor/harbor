@@ -3,9 +3,9 @@
 from __future__ import print_function, unicode_literals # We require Python 2.6 or later
 from string import Template
 import random
-import string
 import os
 import sys
+import string
 import argparse
 import subprocess
 import shutil
@@ -411,8 +411,10 @@ if storage_provider_name == "filesystem":
     elif "rootdirectory:" not in storage_provider_config:
         storage_provider_config = "rootdirectory: /storage" + "," + storage_provider_config
 # generate storage configuration section in yaml format
-storage_provider_info = ('\n' + ' ' * 4).join(
-    [storage_provider_name + ':'] + map(string.strip, storage_provider_config.split(",")))
+storage_provider_conf_list = [storage_provider_name + ':']
+for c in storage_provider_config.split(","):
+    storage_provider_conf_list.append(c.strip())
+storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
     storage_provider_info=storage_provider_info,
@@ -440,10 +442,8 @@ render(os.path.join(templates_dir, "log", "logrotate.conf"),
         log_rotate_count=log_rotate_count,
 		log_rotate_size=log_rotate_size)
 
-print("Generated configuration file: %s" % jobservice_conf)
-
-print("Generated configuration file: %s" % ui_conf)
 shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)
+print("Generated configuration file: %s" % ui_conf)
 
 if auth_mode == "uaa_auth":
     if os.path.isfile(uaa_ca_cert):
