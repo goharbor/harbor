@@ -22,6 +22,7 @@ import (
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao/group"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils/ldap"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
 )
@@ -105,14 +106,19 @@ func (uga *UserGroupAPI) Post() {
 	}
 	// User can not add ldap group when the ldap server is offline
 	ldapGroup, err := auth.SearchGroup(userGroup.LdapGroupDN)
+	if err == ldap.ErrNotFound || ldapGroup == nil {
+		uga.HandleNotFound(fmt.Sprintf("LDAP Group DN is not found: DN:%v", userGroup.LdapGroupDN))
+		return
+	}
+	if err == ldap.ErrDNSyntax {
+		uga.HandleBadRequest(fmt.Sprintf("Invalid DN syntax. DN: %v", userGroup.LdapGroupDN))
+		return
+	}
 	if err != nil {
 		uga.HandleInternalServerError(fmt.Sprintf("Error occurred in search user group. error: %v", err))
 		return
 	}
-	if ldapGroup == nil {
-		uga.HandleNotFound("The LDAP group is not found")
-		return
-	}
+
 	groupID, err := group.AddUserGroup(userGroup)
 	if err != nil {
 		uga.HandleInternalServerError(fmt.Sprintf("Error occurred in add user group, error: %v", err))

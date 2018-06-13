@@ -2441,6 +2441,8 @@ paths:
       responses:
         '201':
           description: User group created successfully.
+        '400':
+          description: Invalid LDAP group DN.
         '401':
           description: User need to log in first.
         '403':
