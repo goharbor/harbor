@@ -16,6 +16,7 @@ package ldap
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -29,10 +30,17 @@ import (
 	goldap "gopkg.in/ldap.v2"
 )
 
+//ErrNotFound ...
+var ErrNotFound = errors.New("entity not found")
+
+//ErrDNSyntax ...
+var ErrDNSyntax = errors.New("Invalid DN syntax")
+
 //Session - define a LDAP session
 type Session struct {
-	ldapConfig models.LdapConf
-	ldapConn   *goldap.Conn
+	ldapConfig      models.LdapConf
+	ldapGroupConfig models.LdapGroupConf
+	ldapConn        *goldap.Conn
 }
 
 //LoadSystemLdapConfig - load LDAP configure from adminserver
@@ -53,11 +61,23 @@ func LoadSystemLdapConfig() (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	return CreateWithConfig(*ldapConf)
+
+	ldapGroupConfig, err := config.LDAPGroupConf()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return CreateWithAllConfig(*ldapConf, *ldapGroupConfig)
 }
 
-// CreateWithConfig - create a Session with internal config
+//CreateWithConfig -
 func CreateWithConfig(ldapConf models.LdapConf) (*Session, error) {
+	return CreateWithAllConfig(ldapConf, models.LdapGroupConf{})
+}
+
+// CreateWithAllConfig - create a Session with internal config
+func CreateWithAllConfig(ldapConf models.LdapConf, ldapGroupConfig models.LdapGroupConf) (*Session, error) {
 	var session Session
 
 	if ldapConf.LdapURL == "" {
@@ -71,6 +91,7 @@ func CreateWithConfig(ldapConf models.LdapConf) (*Session, error) {
 
 	ldapConf.LdapURL = ldapURL
 	session.ldapConfig = ldapConf
+	session.ldapGroupConfig = ldapGroupConfig
 	return &session, nil
 }
 
@@ -126,11 +147,16 @@ func (session *Session) ConnectionTest() error {
 		return fmt.Errorf("Failed to load system ldap config")
 	}
 
-	return ConnectionTestWithConfig(session.ldapConfig)
+	return ConnectionTestWithAllConfig(session.ldapConfig, session.ldapGroupConfig)
 }
 
-//ConnectionTestWithConfig - test ldap session connection, out of the scope of normal session create/close
+//ConnectionTestWithConfig -
 func ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
+	return ConnectionTestWithAllConfig(ldapConfig, models.LdapGroupConf{})
+}
+
+//ConnectionTestWithAllConfig - test ldap session connection, out of the scope of normal session create/close
+func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig models.LdapGroupConf) error {
 
 	authMode, err := config.AuthMode()
 	if err != nil {
@@ -150,7 +176,7 @@ func ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
 		ldapConfig.LdapSearchPassword = session.ldapConfig.LdapSearchPassword
 	}
 
-	testSession, err := CreateWithConfig(ldapConfig)
+	testSession, err := CreateWithAllConfig(ldapConfig, ldapGroupConfig)
 
 	if err != nil {
 		return err
@@ -336,22 +362,25 @@ func (session *Session) Close() {
 
 //SearchGroupByName ...
 func (session *Session) SearchGroupByName(groupName string) ([]models.LdapGroup, error) {
-	ldapGroupConfig, err := config.LDAPGroupConf()
-	log.Debugf("Ldap group config: %+v", ldapGroupConfig)
-	if err != nil {
-		return nil, err
-	}
-	return session.searchGroup(ldapGroupConfig.LdapGroupBaseDN, ldapGroupConfig.LdapGroupFilter, groupName, ldapGroupConfig.LdapGroupNameAttribute)
+	return session.searchGroup(session.ldapGroupConfig.LdapGroupBaseDN,
+		session.ldapGroupConfig.LdapGroupFilter,
+		groupName,
+		session.ldapGroupConfig.LdapGroupNameAttribute)
 }
 
 //SearchGroupByDN ...
 func (session *Session) SearchGroupByDN(groupDN string) ([]models.LdapGroup, error) {
-	ldapGroupConfig, err := config.LDAPGroupConf()
-	log.Debugf("Ldap group config: %+v", ldapGroupConfig)
-	if err != nil {
-		return nil, err
+	if _, err := goldap.ParseDN(groupDN); err != nil {
+		return nil, ErrDNSyntax
 	}
-	return session.searchGroup(groupDN, ldapGroupConfig.LdapGroupFilter, "", ldapGroupConfig.LdapGroupNameAttribute)
+	groupList, err := session.searchGroup(groupDN, session.ldapGroupConfig.LdapGroupFilter, "", session.ldapGroupConfig.LdapGroupNameAttribute)
+	if serverError, ok := err.(*goldap.Error); ok {
+		log.Debugf("resultCode:%v", serverError.ResultCode)
+	}
+	if err != nil && goldap.IsErrorWithCode(err, goldap.LDAPResultNoSuchObject) {
+		return nil, ErrNotFound
+	}
+	return groupList, err
 }
 
 func (session *Session) searchGroup(baseDN, filter, groupName, groupNameAttribute string) ([]models.LdapGroup, error) {
