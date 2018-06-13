@@ -101,6 +101,7 @@ func (uga *UserGroupAPI) Post() {
 	}
 	if len(result) > 0 {
 		uga.HandleConflict("Error occurred in add user group, duplicate user group exist.")
+		return
 	}
 	// User can not add ldap group when the ldap server is offline
 	ldapGroup, err := auth.SearchGroup(userGroup.LdapGroupDN)
