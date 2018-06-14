@@ -8,7 +8,7 @@ Please use [releases](https://github.com/vmware/harbor/releases) instead of the 
 
 <img alt="Harbor" src="docs/img/harbor_logo.png">
 
-Project Harbor is an enterprise-class registry server that stores and distributes Docker images. Harbor extends the open source Docker Distribution by adding the functionalities usually required by an enterprise, such as security, identity and management. As an enterprise private registry, Harbor offers better performance and security. Having a registry closer to the build and run environment improves the image transfer efficiency. Harbor supports the setup of multiple registries and has images replicated between them. In addition, Harbor offers advanced security features, such as user management, access control and activity auditing.
+Project Harbor is an An open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
 
 ### Features
 * **Role based access control**: Users and repositories are organized via 'projects' and a user can have different permission for images under a project.
