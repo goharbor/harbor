@@ -17,6 +17,7 @@ import {Router, ActivatedRoute} from "@angular/router";
 import {ReplicationRule} from "harbor-ui";
 
 import {SessionService} from "../../shared/session.service";
+import {AppConfigService} from "../../app-config.service";
 
 @Component({
   selector: 'total-replication',
@@ -26,6 +27,7 @@ export class TotalReplicationPageComponent {
 
   constructor(private router: Router,
               private session: SessionService,
+              private appConfigService: AppConfigService,
               private activeRoute: ActivatedRoute) {}
   customRedirect(rule: ReplicationRule): void {
     if (rule) {
@@ -39,5 +41,9 @@ export class TotalReplicationPageComponent {
   public get isSystemAdmin(): boolean {
     let account = this.session.getCurrentUser();
     return account != null && account.has_admin_role;
+  }
+
+  get withAdmiral(): boolean {
+    return this.appConfigService.getConfig().with_admiral;
   }
 }

@@ -1,12 +1,13 @@
 <div style="padding-bottom: 15px;">
 <clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" [clDgRowSelection]="true">
-    <clr-dg-action-bar style="height: 24px;">
+    <clr-dg-action-bar>
         <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
         <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!selectedRow" (click)="editRule(selectedRow)"><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'REPLICATION.EDIT_POLICY' | translate}}</button>
         <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!selectedRow" (click)="deleteRule(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPLICATION.DELETE_POLICY' | translate}}</button>
         <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
     </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'projects'" *ngIf="!projectScope">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'targets'">{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
@@ -14,6 +15,17 @@
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p"  (click)="selectRule(p)" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-cell>{{p.name}}</clr-dg-cell>
+        <clr-dg-cell>
+            <div [ngSwitch]="hasDeletedLabel(p)">
+                <clr-tooltip *ngSwitchCase="'disabled'" class="tooltip-lg">
+                    <clr-icon clrTooltipTrigger shape="exclamation-triangle" style="vertical-align: text-bottom;" class="is-warning" size="22"></clr-icon>Disabled
+                    <clr-tooltip-content clrPosition="top-right" clrSize="xs" *clrIfOpen>
+                        <span>{{'REPLICATION.RULE_DISABLED' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+                <div *ngSwitchCase="'enabled'" ><clr-icon shape="success-standard" style="vertical-align: text-bottom;" class="is-success" size="18"></clr-icon> Enabled</div>
+            </div>
+        </clr-dg-cell>
         <clr-dg-cell *ngIf="!projectScope">
             <a href="javascript:void(0)" (click)="$event.stopPropagation(); redirectTo(p)">{{p.projects?.length>0  ? p.projects[0].name : ''}}</a>
         </clr-dg-cell>

@@ -350,6 +350,11 @@ export class TagComponent implements OnInit, AfterViewInit {
           }
         });
 
+        // when is the last one
+        if (this.imageStickLabels.every(data => data.iconsShow === true)) {
+          this.imageStickLabels.push(labelInfo);
+        }
+
         labelInfo.iconsShow = true;
         this.inprogress = false;
       }).catch(err => {

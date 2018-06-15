@@ -21,6 +21,8 @@ import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.componen
 import { JobLogService, JobLogDefaultService, ReplicationJobItem } from '../service/index';
 import {ProjectDefaultService, ProjectService} from "../service/project.service";
 import {OperationService} from "../operation/operation.service";
+import {FilterLabelComponent} from "../create-edit-rule/filter-label.component";
+import {LabelPieceComponent} from "../label-piece/label-piece.component";
 
 describe('Replication Component (inline template)', () => {
 
@@ -224,7 +226,9 @@ describe('Replication Component (inline template)', () => {
         DatePickerComponent,
         FilterComponent,
         InlineAlertComponent,
-        JobLogViewerComponent
+        JobLogViewerComponent,
+        FilterLabelComponent,
+        LabelPieceComponent
       ],
       providers: [
         ErrorHandler,

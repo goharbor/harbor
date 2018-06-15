@@ -152,6 +152,22 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         this.replicateManual.emit(rules);
     }
 
+    hasDeletedLabel(rule: any) {
+        if (rule.filters) {
+            let count = 0;
+            rule.filters.forEach((data: any) => {
+                if (data.kind === 'label' && data.value.deleted) {
+                    count ++;
+                }
+            });
+            if (count === 0) {
+                return 'enabled';
+            }else { return 'disabled'; }
+        }else {
+            return 'enabled';
+        }
+    }
+
     deletionConfirm(message: ConfirmationAcknowledgement) {
         if (
             message &&
