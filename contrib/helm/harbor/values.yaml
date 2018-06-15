@@ -33,6 +33,9 @@ harborImageTag: &harbor_image_tag v1.5.0-chart-patch
 
 # The FQDN for Harbor service.
 externalDomain: harbor.my.domain
+# externalPort is the Port for Harbor service, leave empty if the service is to be bound to
+# port 80/443
+externalPort: 32700
 # If set to true, you don't need to set tlsCrt/tlsKey/caCrt, but must add
 # Harbor FQDN as insecure-registries for your docker client.
 insecureRegistry: false

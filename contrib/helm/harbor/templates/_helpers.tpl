@@ -30,6 +30,14 @@ release: {{ .Release.Name }}
 app: "{{ template "harbor.name" . }}"
 {{- end -}}
 
+{{- define "harbor.externalURL" -}}
+{{- if .Values.externalPort -}}
+{{- printf "%s:%s" .Values.externalDomain (toString .Values.externalPort) -}}
+{{- else -}}
+{{- .Values.externalDomain -}}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Use *.domain.com as the Common Name in the certificate,
 so it can match Harbor service FQDN and Notary service FQDN.
