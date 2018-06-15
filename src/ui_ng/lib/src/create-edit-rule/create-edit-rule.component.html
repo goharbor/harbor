@@ -2,6 +2,14 @@
   <h3 class="modal-title">{{headerTitle | translate}}</h3>
   <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body" style="max-height: 85vh;">
+   <clr-alert [hidden]='!deletedLabelCount' [clrAlertType]="'alert-warning'"  [clrAlertSizeSmall]="true" [clrAlertClosable]="false" [(clrAlertClosed)]="alertClosed">
+    <div class="alert-item">
+     <span class="alert-text">{{deletedLabelInfo}}</span>
+     <div class="alert-actions">
+      <a class="alert-action" (click)=" alertClosed = true">{{'REPLICATION.ACKNOWLEDGE' | translate}}</a>
+     </div>
+    </div>
+   </clr-alert>
     <form [formGroup]="ruleForm"  novalidate>
      <section class="form-block">
       <div class="form-group form-group-override">
@@ -39,23 +47,28 @@
       <div class="form-group form-group-override">
        <label class="form-group-label-override">{{'REPLICATION.SOURCE_IMAGES_FILTER' | translate}}</label>
        <div formArrayName="filters">
-        <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index"  [formGroupName]="i">
-         <div>
+        <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
+         <div [formGroupName]="i">
           <div class="select floatSetPar">
-           <select formControlName="kind" (change)="filterChange($event)"  id="{{i}}" name="{{filterListData[i]?.name}}">
-            <option *ngFor="let filter of filterListData[i]?.options;" value="{{filter}}">{{filter}}</option>
+           <select formControlName="kind" #selectedValue (change)="filterChange($event, selectedValue.value)"  id="{{i}}" name="{{filterListData[i]?.name}}">
+            <option *ngFor="let opt of filterListData[i]?.options;" value="{{opt}}">{{opt}}</option>
            </select>
           </div>
           <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
-                 [class.invalid]='ruleForm.controls.filters.controls[i].controls.pattern.touched && ruleForm.controls.filters.controls[i].controls.pattern.invalid'>
-           <input type="text" #filterValue required size="14" formControlName="pattern">
+                 [class.invalid]='(ruleForm.controls.filters.controls[i].controls.value.dirty || ruleForm.controls.filters.controls[i].controls.value.touched) && ruleForm.controls.filters.controls[i].controls.value.invalid'>
+           <input type="text" #filterValue required size="14" formControlName="value"  [attr.disabled]="(filterListData[i]?.name=='label') ?'' : null">
            <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
           </label>
+          <div class="arrowSet" [hidden]="!(filterListData[i]?.name=='label')" (click)="openLabelList(selectedValue.value, i, $event)"><clr-icon shape="angle"></clr-icon></div>
+          <clr-icon shape="warning-standard" class="is-solid is-warning" size="14" style="margin-left: -15px;" [hidden]="!deletedLabelCount || !(filterListData[i]?.name=='label')"></clr-icon>
           <clr-icon shape="times-circle" class="is-solid"  (click)="deleteFilter(i)"></clr-icon>
+          <div *ngIf="!withAdmiral"><hbr-filter-label [projectId]="ruleForm.controls.projects.controls[0]?.value.project_id" [selectedLabelInfo]="filterLabelInfo" [isOpen]="filterListData[i].isOpen" (selectedLabels)="selectedLabelList($event, i)" (closePanelEvent)="filterListData[i].isOpen = false"></hbr-filter-label></div>
          </div>
         </div>
+
        </div>
-        <clr-icon shape="plus-circle" class="is-solid" [hidden]="isFilterHide" (click)="addNewFilter()" style="margin-top: 11px;"></clr-icon>
+       <clr-icon shape="plus-circle" class="is-solid" [hidden]="isFilterHide" (click)="addNewFilter()" style="margin-top: 11px;"></clr-icon>
+
       </div>
       <!--Targets-->
       <div class="form-group form-group-override">
