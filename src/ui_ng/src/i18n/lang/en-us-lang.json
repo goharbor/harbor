@@ -191,7 +191,7 @@
         "PUBLIC_POLICY": "Making a project registry public will make all repositories accessible to everyone.",
         "SECURITY": "Deployment security",
         "CONTENT_TRUST_TOGGLE": "Enable content trust",
-        "CONTENT_TRUST_POLCIY": "Only allow verified images to be deployed.",
+        "CONTENT_TRUST_POLCIY": "Allow only verified images to be deployed.",
         "PREVENT_VULNERABLE_TOGGLE": "Prevent vulnerable images from running.",
         "PREVENT_VULNERABLE_1": "Prevent images with vulnerability severity of",
         "PREVENT_VULNERABLE_2": "and above from being deployed.",
