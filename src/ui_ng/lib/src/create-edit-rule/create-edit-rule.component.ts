@@ -126,14 +126,13 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.createForm();
   }
 
-  baseFilterData(name: string, option: string[], state: boolean, inputValue: string) {
+  baseFilterData(name: string, option: string[], state: boolean) {
     return {
       name: name,
       options: option,
       state: state,
       isValid: true,
-      isOpen: false,  // label list
-      inputValue: inputValue
+      isOpen: false  // label list
     };
   }
 
@@ -299,8 +298,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
     if (rule.filters) {
       this.reOrganizeLabel(rule.filters);
-
-
       this.setFilter(rule.filters);
       this.updateFilter(rule.filters);
     }
@@ -318,12 +315,12 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
       let delLabel = '';
       filterLabels.forEach((data: any) => {
-        if (data.kind === 'label') {
-          if (data.value.deleted !== true) {
+        if (data.kind === this.filterSelect[2]) {
+          if (!data.value.deleted) {
             count++;
             this.filterLabelInfo.push(data.value);
           }
-          if (data.value.deleted === true) {
+          if (data.value.deleted) {
             this.deletedLabelCount++;
             delLabel += data.value.name + ',';
           }
@@ -344,7 +341,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           let lab = filterLabels.find(data => data.kind === this.filterSelect[2]);
           if (lab) {filterLabels.splice(filterLabels.indexOf(lab), 1); }
          }
-        filterLabels.push({kind: this.filterSelect[2], value: count + ' labels'});
+        filterLabels.push({kind: 'label', value: count + ' labels'});
         this.labelInputVal = count.toString();
       }
     }
@@ -401,14 +398,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           data.options.push(name);
         }
 
-        // if before select, $event is label, then after select set inputValue is empty and isOpen is false
-        if (this.filterSelect.length === 3 && name === this.filterSelect[2] && data.name === value) {
+        // if before select, $event is label
+        if (!this.withAdmiral && name === this.filterSelect[2] && data.name === value) {
           this.labelInputVal = controlArray.controls[index].get('value').value.split(' ')[0];
           data.isOpen = false;
           controlArray.controls[index].get('value').setValue('');
         }
-        // if before select, $event is  not label, then after select set inputValue is labelInputVal and isOpen is true
-        if (this.filterSelect.length === 3 && data.name === this.filterSelect[2]) {
+        // if before select, $event is  not label
+        if (!this.withAdmiral && data.name === this.filterSelect[2]) {
           if (this.labelInputVal) {
             controlArray.controls[index].get('value').setValue(this.labelInputVal + ' labels');
           } else {
@@ -425,7 +422,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   // when input value is label, then open label panel
   openLabelList(labelTag: string, indexId: number, $event: any) {
-    if (this.filterSelect.length === 3 && labelTag === this.filterSelect[2]) {
+    if (!this.withAdmiral && labelTag === this.filterSelect[2]) {
       this.filterListData.forEach((data, index) => {
         if (index === indexId) {
           data.isOpen = true;
@@ -498,7 +495,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           this.filterSelect[0],
           this.filterSelect.slice(),
           true,
-            ''
         )
       );
       controlArray.push(this.initFilter(this.filterSelect[0]));
@@ -511,14 +507,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.filterListData.filter(data => {
         data.options.splice(data.options.indexOf(nameArr[0]), 1);
       });
-      this.filterListData.push(this.baseFilterData(nameArr[0], nameArr, true, ''));
+      this.filterListData.push(this.baseFilterData(nameArr[0], nameArr, true));
       controlArray.push(this.initFilter(nameArr[0]));
     }
     this.filterCount += 1;
     if (this.filterCount >= this.filterSelect.length) {
       this.isFilterHide = true;
     }
-    if (controlArray.controls[this.filterCount - 1].get('kind').value === 'label' && this.labelInputVal) {
+    if (controlArray.controls[this.filterCount - 1].get('kind').value === this.filterSelect[2] && this.labelInputVal) {
       controlArray.controls[this.filterCount - 1].get('value').setValue(this.labelInputVal + ' labels');
     }
 
@@ -526,7 +522,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   // delete a filter
   deleteFilter(i: number): void {
-    if (i || i === 0) {
+    if (i >= 0) {
       let delFilter = this.filterListData.splice(i, 1)[0];
       if (this.filterCount === this.filterSelect.length) {
         this.isFilterHide = false;
@@ -541,7 +537,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         });
       }
       const control = <FormArray>this.ruleForm.get('filters');
-      if (control.controls[i].get('kind').value === 'label') {
+      if (control.controls[i].get('kind').value === this.filterSelect[2]) {
         this.labelInputVal = control.controls[i].get('value').value.split(' ')[0];
       }
       control.removeAt(i);
@@ -605,7 +601,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     filters.forEach((filter: any) => {
       let option: string[] = opt.slice();
       option.unshift(filter.kind);
-      this.filterListData.push(this.baseFilterData(filter.kind, option, true, ''));
+      this.filterListData.push(this.baseFilterData(filter.kind, option, true));
     });
     this.filterCount = filters.length;
     if (filters.length === this.filterSelect.length) {
@@ -618,7 +614,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     const controlArray = <FormArray> this.ruleForm.get('filters');
 
     this.filterListData.forEach((data, index) => {
-      if (data.name === 'label') {
+      if (data.name === this.filterSelect[2]) {
         let labelsLength = selectedLabels.filter(lab => lab.iconsShow === true).length;
         if (labelsLength > 0) {
           controlArray.controls[index].get('value').setValue(labelsLength + ' labels');
@@ -894,7 +890,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     let ruleValue: { [key: string]: any | any[] } = clone(this.ruleForm.value);
     if (ruleValue.filters && ruleValue.filters.length) {
       ruleValue.filters.forEach((data, index) => {
-        if (data.kind === 'label') {
+        if (data.kind === this.filterSelect[2]) {
           ruleValue.filters.splice(index, 1);
         }
       });
