@@ -271,6 +271,7 @@
         "TEST_CONNECTION_SUCCESS": "测试连接成功。",
         "TEST_CONNECTION_FAILURE": "测试连接失败。",
         "NAME": "名称",
+        "STATUS": "状态",
         "PROJECT": "项目",
         "NAME_IS_REQUIRED": "名称为必填项。",
         "DESCRIPTION": "描述",
@@ -343,7 +344,10 @@
         "DELETE_REMOTE_IMAGES":"删除本地镜像时同时也删除远程的镜像。",
         "REPLICATE_IMMEDIATE":"立即复制现有的镜像。",
         "NEW": "新增",
-        "NAME_TOOLTIP": "项目名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。"
+        "NAME_TOOLTIP": "项目名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
+        "DELETED_LABEL_INFO": "过滤项有被删除的标签 {{param}} , 点击保存按钮更新过滤项使规则可用。",
+        "ACKNOWLEDGE": "确认",
+        "RULE_DISABLED": "这个规则因为过滤选项中的标签被删除已经不能用了，更新过滤项以便重新启用规则。"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
