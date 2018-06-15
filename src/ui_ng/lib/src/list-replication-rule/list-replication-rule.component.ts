@@ -163,9 +163,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
             if (count === 0) {
                 return 'enabled';
             }else { return 'disabled'; }
-        }else {
-            return 'enabled';
         }
+        return 'enabled';
     }
 
     deletionConfirm(message: ConfirmationAcknowledgement) {
