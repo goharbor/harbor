@@ -38,6 +38,9 @@ import {
 } from "../service/project.service";
 import { JobLogViewerComponent } from "../job-log-viewer/job-log-viewer.component";
 import { OperationService } from "../operation/operation.service";
+import {FilterLabelComponent} from "./filter-label.component";
+import {LabelService} from "../service/label.service";
+import {LabelPieceComponent} from "../label-piece/label-piece.component";
 
 describe("CreateEditRuleComponent (inline template)", () => {
   let mockRules: ReplicationRule[] = [
@@ -239,7 +242,9 @@ describe("CreateEditRuleComponent (inline template)", () => {
         DatePickerComponent,
         FilterComponent,
         InlineAlertComponent,
-        JobLogViewerComponent
+        JobLogViewerComponent,
+        FilterLabelComponent,
+        LabelPieceComponent
       ],
       providers: [
         ErrorHandler,
@@ -248,7 +253,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
         { provide: EndpointService, useClass: EndpointDefaultService },
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: JobLogService, useClass: JobLogDefaultService },
-        { provide: OperationService }
+        { provide: OperationService },
+        { provide: LabelService }
       ]
     });
   }));
