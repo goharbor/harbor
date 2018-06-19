@@ -38,7 +38,7 @@ data:
     auth:
       token:
         issuer: harbor-token-issuer
-        realm: "https://{{ .Values.externalDomain }}/service/token"
+        realm: "https://{{ template "harbor.externalURL" . }}/service/token"
         rootcertbundle: /etc/registry/root.crt
         service: harbor-registry
 

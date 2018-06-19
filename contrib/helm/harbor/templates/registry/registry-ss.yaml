@@ -35,7 +35,7 @@ spec:
         - containerPort: 5000
         - containerPort: 5001
         volumeMounts:
-{{- if not .Values.registry.objectStorage }}
+{{- if and (not .Values.registry.objectStorage) .Values.persistence.enabled }}
         - name: registry-data
           mountPath: /var/lib/registry
 {{- end }}
