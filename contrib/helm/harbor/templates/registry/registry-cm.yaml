@@ -41,7 +41,6 @@ data:
         realm: "https://{{ template "harbor.externalURL" . }}/service/token"
         rootcertbundle: /etc/registry/root.crt
         service: harbor-registry
-
     notifications:
       endpoints:
         - name: harbor
