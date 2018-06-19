@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/vmware/harbor/src/common/dao"
+	common_http "github.com/vmware/harbor/src/common/http"
 	common_job "github.com/vmware/harbor/src/common/job"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -195,6 +196,12 @@ func (ra *RepJobAPI) GetLog() {
 
 	logBytes, err := utils.GetJobServiceClient().GetJobLog(job.UUID)
 	if err != nil {
+		if httpErr, ok := err.(*common_http.Error); ok {
+			ra.RenderError(httpErr.Code, "")
+			log.Errorf(fmt.Sprintf("failed to get log of job %d: %d %s",
+				ra.jobID, httpErr.Code, httpErr.Message))
+			return
+		}
 		ra.HandleInternalServerError(fmt.Sprintf("failed to get log of job %s: %v",
 			job.UUID, err))
 		return
