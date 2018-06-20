@@ -82,7 +82,7 @@ workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
 
 # The hostname in harbor.cfg has not been modified
-if grep 'hostname = reg.mydomain.com' &> /dev/null harbor.cfg
+if grep -q '^#[[:blank:]]*hostname = reg.mydomain.com' /dev/null harbor.cfg
 then
 	warn "$usage"
 	exit 1
