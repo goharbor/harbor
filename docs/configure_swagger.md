@@ -26,7 +26,7 @@ From time to time, you may need to mannually test Harbor REST API. You can deplo
 ```
 * Change the SERVER_IP to the IP address of your Harbor server.
 ```sh
-  SERVER_ID=<HARBOR_SERVER_DOMAIN>
+  SERVER_IP=<HARBOR_SERVER_DOMAIN>
 ```
 * Change the file mode.
 ```sh
