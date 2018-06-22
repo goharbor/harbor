@@ -16,6 +16,7 @@ package api
 
 import (
 	"github.com/vmware/harbor/src/common/dao"
+	common_http "github.com/vmware/harbor/src/common/http"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/utils"
 
@@ -65,6 +66,12 @@ func (sj *ScanJobAPI) Prepare() {
 func (sj *ScanJobAPI) GetLog() {
 	logBytes, err := utils.GetJobServiceClient().GetJobLog(sj.jobUUID)
 	if err != nil {
+		if httpErr, ok := err.(*common_http.Error); ok {
+			sj.RenderError(httpErr.Code, "")
+			log.Errorf(fmt.Sprintf("failed to get log of job %d: %d %s",
+				sj.jobID, httpErr.Code, httpErr.Message))
+			return
+		}
 		sj.HandleInternalServerError(fmt.Sprintf("Failed to get job logs, uuid: %s, error: %v", sj.jobUUID, err))
 		return
 	}
