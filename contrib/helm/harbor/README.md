@@ -211,6 +211,8 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `notary.nodeSelector` | Node labels for pod assignment | `{}` |
 | `notary.tolerations` | Tolerations for pod assignment | `[]` |
 | `notary.affinity` | Node/Pod affinities | `{}` |
+| **Ingress** |
+| `ingress.enabled` | Enable ingress objects. | `true` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
