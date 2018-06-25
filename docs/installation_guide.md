@@ -34,7 +34,7 @@ Harbor is deployed as several Docker containers, and, therefore, can be deployed
 |Port|Protocol|Description|
 |---|---|---|
 |443|HTTPS|Harbor UI and API will accept requests on this port for https protocol|
-|4443|HTTS|Connections to the Docker Content Trust service for Harbor, only needed when Notary is enabled|
+|4443|HTTPS|Connections to the Docker Content Trust service for Harbor, only needed when Notary is enabled|
 |80|HTTP|Harbor UI and API will accept requests on this port for http protocol|
 
 ## Installation Steps
