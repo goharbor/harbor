@@ -17,6 +17,13 @@ spec:
       labels:
 {{ include "harbor.labels" . | indent 8 }}
         component: notary-server
+{{- if .Values.notary.server.podLabels }}
+{{ toYaml .Values.notary.server.podLabels | indent 8 }}
+{{- end }}
+      {{- if .Values.notary.server.podAnnotations }}
+      annotations:
+{{ toYaml .Values.notary.server.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: notary-server

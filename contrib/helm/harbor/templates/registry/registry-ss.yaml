@@ -17,6 +17,13 @@ spec:
       labels:
 {{ include "harbor.labels" . | indent 8 }}
         component: registry
+{{- if .Values.registry.podLabels }}
+{{ toYaml .Values.registry.podLabels | indent 8 }}
+{{- end }}
+      {{- if .Values.registry.podAnnotations }}
+      annotations:
+{{ toYaml .Values.registry.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: registry

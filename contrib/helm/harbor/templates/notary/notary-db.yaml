@@ -18,6 +18,13 @@ spec:
       labels:
 {{ include "harbor.labels" . | indent 8 }}
         component: notary-db
+{{- if .Values.notary.db.podLabels }}
+{{ toYaml .Values.notary.db.podLabels | indent 8 }}
+{{- end }}
+      {{- if .Values.notary.db.podAnnotations }}
+      annotations:
+{{ toYaml .Values.notary.db.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       initContainers: 
       - name: move-init-scripts
