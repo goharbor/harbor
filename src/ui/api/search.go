@@ -17,7 +17,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 
 	"github.com/vmware/harbor/src/common"
@@ -80,8 +79,6 @@ func (s *SearchAPI) Get() {
 		}
 	}
 
-	projectSorter := &models.ProjectSorter{Projects: projects}
-	sort.Sort(projectSorter)
 	projectResult := []*models.Project{}
 	for _, p := range projects {
 		if len(keyword) > 0 && !strings.Contains(p.Name, keyword) {
@@ -125,43 +122,46 @@ func (s *SearchAPI) Get() {
 
 func filterRepositories(projects []*models.Project, keyword string) (
 	[]map[string]interface{}, error) {
+	result := []map[string]interface{}{}
+	if len(projects) == 0 {
+		return result, nil
+	}
 
-	repositories, err := dao.GetRepositories()
+	repositories, err := dao.GetRepositories(&models.RepositoryQuery{
+		Name: keyword,
+	})
 	if err != nil {
 		return nil, err
 	}
+	if len(repositories) == 0 {
+		return result, nil
+	}
 
-	i, j := 0, 0
-	result := []map[string]interface{}{}
-	for i < len(repositories) && j < len(projects) {
-		r := repositories[i]
-		p, _ := utils.ParseRepository(r.Name)
-		d := strings.Compare(p, projects[j].Name)
-		if d < 0 {
-			i++
+	projectMap := map[string]*models.Project{}
+	for _, project := range projects {
+		projectMap[project.Name] = project
+	}
+
+	for _, repository := range repositories {
+		projectName, _ := utils.ParseRepository(repository.Name)
+		project, exist := projectMap[projectName]
+		if !exist {
 			continue
-		} else if d == 0 {
-			i++
-			if len(keyword) != 0 && !strings.Contains(r.Name, keyword) {
-				continue
-			}
-			entry := make(map[string]interface{})
-			entry["repository_name"] = r.Name
-			entry["project_name"] = projects[j].Name
-			entry["project_id"] = projects[j].ProjectID
-			entry["project_public"] = projects[j].IsPublic()
-			entry["pull_count"] = r.PullCount
-
-			tags, err := getTags(r.Name)
-			if err != nil {
-				return nil, err
-			}
-			entry["tags_count"] = len(tags)
-
-			result = append(result, entry)
-		} else {
-			j++
 		}
+		entry := make(map[string]interface{})
+		entry["repository_name"] = repository.Name
+		entry["project_name"] = project.Name
+		entry["project_id"] = project.ProjectID
+		entry["project_public"] = project.IsPublic()
+		entry["pull_count"] = repository.PullCount
+
+		tags, err := getTags(repository.Name)
+		if err != nil {
+			return nil, err
+		}
+		entry["tags_count"] = len(tags)
+
+		result = append(result, entry)
 	}
 	return result, nil
 }
