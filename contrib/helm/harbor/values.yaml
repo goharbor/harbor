@@ -51,6 +51,7 @@ secretKey: not-a-secure-key
 # These annotations allow the registry to work behind the nginx
 # ingress controller.
 ingress:
+  enabled: true
   annotations:
     ingress.kubernetes.io/ssl-redirect: "true"
     ingress.kubernetes.io/proxy-body-size: "0"
