@@ -40,7 +40,9 @@ metadata:
 {{ include "harbor.labels" . | indent 4 }}
   annotations:
 {{ toYaml .Values.ingress.annotations | indent 4 }}
-    nginx.ingress.kubernetes.io/rewrite-target: /registryproxy/v2
+{{ if not .Values.nginx.enabled }}
+    {{ .Values.ingress.rewriteAnnotation }}: /registryproxy/v2
+{{ end }}
 spec:
 {{ if not .Values.insecureRegistry }}
   tls:
@@ -54,7 +56,7 @@ spec:
       paths:
       - path: /v2
         backend:
-          serviceName: {{ template "harbor.fullname" . }}-ui
+          serviceName: {{ template "harbor.fullname" . }}-{{ if .Values.nginx.enabled }}nginx{{ else }}ui{{ end }}
           servicePort: 80
 
 

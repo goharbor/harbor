@@ -52,6 +52,7 @@ secretKey: not-a-secure-key
 # ingress controller.
 ingress:
   enabled: true
+  rewriteAnnotation: "nginx.ingress.kubernetes.io/rewrite-target"
   annotations:
     ingress.kubernetes.io/ssl-redirect: "true"
     ingress.kubernetes.io/proxy-body-size: "0"
@@ -305,6 +306,21 @@ clair:
       # storageClass: "-"
       accessMode: ReadWriteOnce
       size: 1Gi
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Required if you ingress loadbalancer does not support rewriting.
+nginx:
+  enabled: false
+  image:
+    repository: nginx
+    tag: 1.14-alpine
+    pullPolicy: IfNotPresent
   # resources:
   #  requests:
   #    memory: 256Mi

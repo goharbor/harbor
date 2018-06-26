@@ -1,0 +1,46 @@
+{{ if .Values.nginx.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "harbor.fullname" . }}-nginx
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: nginx
+data:
+  default.conf: |
+    # https://docs.docker.com/registry/recipes/nginx/#setting-things-up
+    server {
+      listen       8080 default_server;
+      server_name  _;
+
+      # disable any limits to avoid HTTP 413 for large image uploads
+      client_max_body_size 0;
+
+      # required to avoid HTTP 411: see Issue #1486 (https://github.com/moby/moby/issues/1486)
+      chunked_transfer_encoding on;
+
+      set_real_ip_from  0.0.0.0/0;
+      real_ip_header    X-Forwarded-For;
+      real_ip_recursive on;
+
+      location = /health {
+        return 200 'OK';
+        add_header Content-Type text/plain;
+      }
+
+      location /v2/ {
+        # https://docs.docker.com/registry/recipes/nginx/#gotchas
+        proxy_pass              http://{{ template "harbor.fullname" . }}-ui/registryproxy/v2/;
+        proxy_next_upstream     error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_redirect          off;
+        proxy_buffering         off;
+        proxy_set_header        Host $host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_read_timeout      900;
+
+        # https://serverfault.com/questions/768693/nginx-how-to-completely-disable-request-body-buffering
+        proxy_http_version      1.1;
+        proxy_request_buffering off;
+      }
+    }
+{{ end }}
