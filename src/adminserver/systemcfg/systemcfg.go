@@ -17,6 +17,7 @@ package systemcfg
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -159,6 +160,7 @@ var (
 			env:   "READ_ONLY",
 			parse: parseStringToBool,
 		},
+		common.ReloadKey: "RELOAD_KEY",
 	}
 
 	// configurations need read from environment variables
@@ -240,17 +242,15 @@ func Init() (err error) {
 	if err = initCfgStore(); err != nil {
 		return err
 	}
-
-	loadAll := false
 	cfgs := map[string]interface{}{}
-
-	if os.Getenv("RESET") == "true" {
-		log.Info("RESET is set, will load all configurations from environment variables")
-		loadAll = true
+	//Use reload key to avoid reset customed setting after restart
+	curCfgs, err := CfgStore.Read()
+	if err != nil {
+		return err
 	}
-
+	loadAll := isLoadAll(curCfgs[common.ReloadKey])
 	if !loadAll {
-		cfgs, err = CfgStore.Read()
+		cfgs = curCfgs
 		if cfgs == nil {
 			log.Info("configurations read from storage driver are null, will load them from environment variables")
 			loadAll = true
@@ -263,6 +263,10 @@ func Init() (err error) {
 	}
 
 	return CfgStore.Write(cfgs)
+}
+
+func isLoadAll(curReloadKey interface{}) bool {
+	return strings.EqualFold(os.Getenv("RESET"), "true") && os.Getenv("RELOAD_KEY") != curReloadKey
 }
 
 func initCfgStore() (err error) {
@@ -358,13 +362,30 @@ func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
 		}
 	}
 
+	skipPattern := os.Getenv("SKIP_RELOAD_ENV_PATTERN")
+	skipPattern = strings.TrimSpace(skipPattern)
+	if len(skipPattern) == 0 {
+		skipPattern = "$^" // doesn't match any string by default
+	}
+	skipMatcher, err := regexp.Compile(skipPattern)
+	if err != nil {
+		log.Errorf("Regular express parse error, skipPattern:%v", skipPattern)
+		skipMatcher = regexp.MustCompile("$^")
+	}
+
 	for k, v := range envs {
 		if str, ok := v.(string); ok {
+			if all && skipMatcher.MatchString(str) {
+				continue
+			}
 			cfgs[k] = os.Getenv(str)
 			continue
 		}
 
 		if parser, ok := v.(*parser); ok {
+			if all && skipMatcher.MatchString(parser.env) {
+				continue
+			}
 			i, err := parser.parse(os.Getenv(parser.env))
 			if err != nil {
 				return err

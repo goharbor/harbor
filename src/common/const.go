@@ -107,4 +107,5 @@ const (
 	DefaultUIEndpoint           = "http://ui:8080"
 	DefaultNotaryEndpoint       = "http://notary-server:4443"
 	LdapGroupType               = 1
+	ReloadKey                   = "reload_key"
 )
