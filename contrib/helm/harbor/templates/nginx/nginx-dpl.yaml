@@ -1,0 +1,71 @@
+{{ if .Values.nginx.enabled }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "harbor.fullname" . }}-nginx
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: nginx
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: nginx
+{{- if .Values.nginx.podLabels }}
+{{ toYaml .Values.nginx.podLabels | indent 8 }}
+{{- end }}
+      {{- if .Values.nginx.podAnnotations }}
+      annotations:
+{{ toYaml .Values.nginx.podAnnotations | indent 8 }}
+      {{- end }}
+    spec:
+      containers:
+      - name: nginx
+        image: {{ .Values.nginx.image.repository }}:{{ .Values.nginx.image.tag }}
+        imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.nginx.resources | indent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 10
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: "{{ template "harbor.fullname" . }}-nginx"
+          items:
+            - key: default.conf
+              path: default.conf
+    {{- with .Values.nginx.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nginx.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nginx.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+{{ end }}

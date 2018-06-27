@@ -211,8 +211,17 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `notary.nodeSelector` | Node labels for pod assignment | `{}` |
 | `notary.tolerations` | Tolerations for pod assignment | `[]` |
 | `notary.affinity` | Node/Pod affinities | `{}` |
+| **Nginx** |
+| `nginx.enabled` | Enable Nginx? | `true` |
+| `nginx.image.repository` | Repository for clair image | `nginx` |
+| `nginx.image.tag` | Tag for nginx image | `1.14-alpine`
+| `nginx.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined
+| `nginx.nodeSelector` | Node labels for pod assignment | `{}` |
+| `nginx.tolerations` | Tolerations for pod assignment | `[]` |
+| `nginx.affinity` | Node/Pod affinities | `{}` |
 | **Ingress** |
 | `ingress.enabled` | Enable ingress objects. | `true` |
+| `ingress.rewriteAnnotation` | The name of the rewrite annotation if your ingress controller isn't nginx. | `nginx.ingress.kubernetes.io/rewrite-target` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
