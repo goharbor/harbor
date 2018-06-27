@@ -26,10 +26,9 @@ RUN chmod u+x /entrypoint.sh /docker-healthcheck.sh
 ENTRYPOINT ["/entrypoint.sh"]
 HEALTHCHECK CMD ["/docker-healthcheck.sh"]
 
-COPY registry.sql /docker-entrypoint-initdb.d/
-
 COPY initial-notaryserver.sql /docker-entrypoint-initdb.d/ 
 COPY initial-notarysigner.sql /docker-entrypoint-initdb.d/
+COPY initial-registry.sql /docker-entrypoint-initdb.d/
 
 EXPOSE 5432
 CMD ["postgres"]

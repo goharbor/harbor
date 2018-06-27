@@ -72,6 +72,11 @@ func (m *mysql) Name() string {
 	return "MySQL"
 }
 
+// UpgradeSchema is not supported for MySQL, it assumes the schema is initialized and up to date in the DB instance.
+func (m *mysql) UpgradeSchema() error {
+	return nil
+}
+
 // String returns the details of database
 func (m *mysql) String() string {
 	return fmt.Sprintf("type-%s host-%s port-%s user-%s database-%s",

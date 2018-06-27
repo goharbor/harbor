@@ -16,11 +16,19 @@ package dao
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/golang-migrate/migrate"
+	_ "github.com/golang-migrate/migrate/database/postgres" //import pgsql driver for migrator
+	_ "github.com/golang-migrate/migrate/source/file"       // import local file driver for migrator
+
 	_ "github.com/lib/pq" //register pgsql driver
 	"github.com/vmware/harbor/src/common/utils"
+	"github.com/vmware/harbor/src/common/utils/log"
 )
+
+const defaultMigrationPath = "migrations/postgresql/"
 
 type pgsql struct {
 	host     string
@@ -51,8 +59,8 @@ func (p *pgsql) String() string {
 		p.Name(), p.host, p.port, p.database, pgsqlSSLMode(p.sslmode))
 }
 
-// NewPQSQL returns an instance of postgres
-func NewPQSQL(host string, port string, usr string, pwd string, database string, sslmode bool) Database {
+// NewPGSQL returns an instance of postgres
+func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode bool) Database {
 	return &pgsql{
 		host:     host,
 		port:     port,
@@ -81,4 +89,34 @@ func (p *pgsql) Register(alias ...string) error {
 		p.host, p.port, p.usr, p.pwd, p.database, pgsqlSSLMode(p.sslmode))
 
 	return orm.RegisterDataBase(an, "postgres", info)
+}
+
+//UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
+func (p *pgsql) UpgradeSchema() error {
+	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", p.usr, p.pwd, p.host, p.port, p.database, pgsqlSSLMode(p.sslmode))
+	//For UT
+	path := os.Getenv("POSTGRES_MIGRATION_SCRIPTS_PATH")
+	if len(path) == 0 {
+		path = defaultMigrationPath
+	}
+	srcURL := fmt.Sprintf("file://%s", path)
+	m, err := migrate.New(srcURL, dbURL)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		srcErr, dbErr := m.Close()
+		if srcErr != nil || dbErr != nil {
+			log.Warningf("Failed to close migrator, source error: %v, db error: %v", srcErr, dbErr)
+		}
+	}()
+	log.Infof("Upgrading schema for pgsql ...")
+	err = m.Up()
+	if err == migrate.ErrNoChange {
+		log.Infof("No change in schema, skip.")
+	} else if err != nil { //migrate.ErrLockTimeout will be thrown when another process is doing migration and timeout.
+		log.Errorf("Failed to upgrade schema, error: %q", err)
+		return err
+	}
+	return nil
 }

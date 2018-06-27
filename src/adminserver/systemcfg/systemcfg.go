@@ -289,7 +289,8 @@ func initCfgStore() (err error) {
 			return err
 		}
 		cfgdb := GetDatabaseFromCfg(cfgs)
-		if err = dao.InitDatabase(cfgdb); err != nil {
+		//Initialize the schema.
+		if err = dao.InitDatabase(cfgdb, true); err != nil {
 			return err
 		}
 		CfgStore, err = database.NewCfgStore()
