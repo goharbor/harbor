@@ -275,6 +275,10 @@ if rcp.has_option("configuration", "redis_url"):
 else:
     redis_url = ""
 
+if rcp.has_option("configuration", "skip_reload_env_pattern"):
+    skip_reload_env_pattern = rcp.get("configuration", "skip_reload_env_pattern")
+else:
+    skip_reload_env_pattern = "$^"
 storage_provider_name = rcp.get("configuration", "registry_storage_provider_name").strip()
 storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
 # yaml requires 1 or more spaces between the key and value
@@ -337,7 +341,9 @@ if protocol == "https":
 else:
     render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
         nginx_conf)
-		
+#Use reload_key to avoid reload config after restart harbor
+reload_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) if reload_config == "true" else ""
+
 render(os.path.join(templates_dir, "adminserver", "env"),
         adminserver_conf_env,
         reload_config=reload_config,
@@ -393,7 +399,9 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         token_service_url=token_service_url,
         jobservice_url=jobservice_url,
         clair_url=clair_url,
-        notary_url=notary_url
+        notary_url=notary_url,
+        reload_key=reload_key,
+        skip_reload_env_pattern=skip_reload_env_pattern
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
