@@ -1,7 +1,3 @@
-CREATE DATABASE registry ENCODING 'UTF8';
-
-\c registry;
-
 create table access (
  access_id SERIAL PRIMARY KEY NOT NULL,
  access_code char(1),

@@ -54,3 +54,8 @@ func (s *sqlite) Name() string {
 func (s *sqlite) String() string {
 	return fmt.Sprintf("type-%s file:%s", s.Name(), s.file)
 }
+
+// UpgradeSchema is not supported for SQLite, it assumes the schema is initialized and up to date in the DB instance.
+func (s *sqlite) UpgradeSchema() error {
+	return nil
+}

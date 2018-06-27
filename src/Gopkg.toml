@@ -79,3 +79,8 @@ ignored = ["github.com/vmware/harbor/tests*"]
 [[override]]
   name = "github.com/garyburd/redigo"
   version = "=1.6.0"
+
+
+[[constraint]]
+  name = "github.com/golang-migrate/migrate"
+  version = "=3.3.0"
