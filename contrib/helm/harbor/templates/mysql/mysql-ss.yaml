@@ -17,6 +17,13 @@ spec:
       labels:
 {{ include "harbor.labels" . | indent 8 }}
         component: mysql
+{{- if .Values.mysql.podLabels }}
+{{ toYaml .Values.mysql.podLabels | indent 8 }}
+{{- end }}
+      {{- if .Values.mysql.podAnnotations }}
+      annotations:
+{{ toYaml .Values.mysql.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: mysql

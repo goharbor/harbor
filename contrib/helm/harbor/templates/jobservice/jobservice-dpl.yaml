@@ -16,6 +16,13 @@ spec:
       labels:
 {{ include "harbor.labels" . | indent 8 }}
         component: jobservice
+{{- if .Values.jobservice.podLabels }}
+{{ toYaml .Values.jobservice.podLabels | indent 8 }}
+{{- end }}
+      {{- if .Values.jobservice.podAnnotations }}
+      annotations:
+{{ toYaml .Values.jobservice.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: jobservice

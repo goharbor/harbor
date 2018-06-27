@@ -12,6 +12,13 @@ spec:
       labels:
 {{ include "harbor.matchLabels" . | indent 8 }}
         component: ui
+{{- if .Values.ui.podLabels }}
+{{ toYaml .Values.ui.podLabels | indent 8 }}
+{{- end }}
+      {{- if .Values.ui.podAnnotations }}
+      annotations:
+{{ toYaml .Values.ui.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: ui

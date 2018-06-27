@@ -17,6 +17,13 @@ spec:
       labels:
 {{ include "harbor.labels" . | indent 8 }}
         component: clair
+{{- if .Values.clair.podLabels }}
+{{ toYaml .Values.clair.podLabels | indent 8 }}
+{{- end }}
+      {{- if .Values.clair.podAnnotations }}
+      annotations:
+{{ toYaml .Values.clair.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: clair
