@@ -50,7 +50,7 @@ spec:
         - name: ui-secrets-private-key
           mountPath: /etc/ui/private_key.pem
           subPath: private_key.pem
-        {{- if not .Values.insecureRegistry }}
+        {{- if and (not .Values.insecureRegistry) .Values.ingress.enabled }}
         - name: ca-download
           mountPath: /etc/ui/ca/ca.crt
           subPath: ca.crt
@@ -73,7 +73,7 @@ spec:
           items:
             - key: private_key.pem
               path: private_key.pem
-      {{- if not .Values.insecureRegistry }}
+      {{- if and (not .Values.insecureRegistry) .Values.ingress.enabled }}
       - name: ca-download
         secret:
           secretName: "{{ template "harbor.fullname" . }}-ingress"
