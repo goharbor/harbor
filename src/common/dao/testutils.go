@@ -89,6 +89,9 @@ func initDatabaseForTest(db *models.Database) {
 	if err := database.Register(alias); err != nil {
 		panic(err)
 	}
+	if err := database.UpgradeSchema(); err != nil {
+		panic(err)
+	}
 
 	if alias != "default" {
 		if err = globalOrm.Using(alias); err != nil {

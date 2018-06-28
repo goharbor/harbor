@@ -40,6 +40,8 @@ type Database interface {
 	String() string
 	// Register registers the database which will be used
 	Register(alias ...string) error
+	// UpgradeSchema upgrades the DB schema to the latest version
+	UpgradeSchema() error
 }
 
 // InitClairDB ...
@@ -60,8 +62,9 @@ func InitClairDB(clairDB *models.PostGreSQL) error {
 	return nil
 }
 
-// InitDatabase initializes the database
-func InitDatabase(database *models.Database) error {
+// InitDatabase initializes the database, there's an optional parm as a flag
+// to indicate whether it should initialize the schema.
+func InitDatabase(database *models.Database, initSchema ...bool) error {
 	db, err := getDatabase(database)
 	if err != nil {
 		return err
@@ -70,6 +73,12 @@ func InitDatabase(database *models.Database) error {
 	log.Infof("initializing database: %s", db.String())
 	if err := db.Register(); err != nil {
 		return err
+	}
+	if len(initSchema) > 0 && initSchema[0] {
+		err := db.UpgradeSchema()
+		if err != nil {
+			return err
+		}
 	}
 
 	version, err := GetSchemaVersion()
@@ -86,9 +95,10 @@ func InitDatabase(database *models.Database) error {
 }
 
 func getDatabase(database *models.Database) (db Database, err error) {
+
 	switch database.Type {
 	case "", "postgresql":
-		db = NewPQSQL(database.PostGreSQL.Host,
+		db = NewPGSQL(database.PostGreSQL.Host,
 			strconv.Itoa(database.PostGreSQL.Port),
 			database.PostGreSQL.Username,
 			database.PostGreSQL.Password,

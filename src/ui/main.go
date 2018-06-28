@@ -91,7 +91,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-	if err := dao.InitDatabase(database); err != nil {
+	if err := dao.InitDatabase(database, true); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 	if config.WithClair() {
