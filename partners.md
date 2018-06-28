@@ -1,6 +1,6 @@
 # Community of Harbor
 
-Below are some of the partners and users of Harbor projects ( updated constantly ). If you wish to be listed on this page as reference partners or users, please contact us at harbor&#64;vmware.com. 
+Below are some of the partners and users of Harbor projects. If you wish to be listed on this page as reference partners or users, please contact us at harbor&#64;vmware.com. 
 
 ## Users
 <a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="docs/img/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; 
@@ -26,6 +26,3 @@ Below are some of the partners and users of Harbor projects ( updated constantly
 <a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="docs/img/slamtec.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; 
 <a href="http://www.cloudchef.io/" target="_blank" border="0"><img alt="CloudChef" src="docs/img/cloudchef.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; 
 <a href="https://pivotal.io/" target="_blank" border="0"><img alt="Pivotal" src="docs/img/pivotal.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp; 
-
-## Supporting Technologies
-<img alt="beego" src="docs/img/beegoLogo.png"> Harbor is powered by <a href="http://beego.me/">Beego</a>.
