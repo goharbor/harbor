@@ -43,30 +43,13 @@ module.exports = `
                 <p>Project Harbor is an an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.</p>
                 <br>
                 <ul>
-                    <li>
-                        <strong>Role Based Access Control</strong> - Users and docker repositories are organized via "projects",
-                        a user can have different permission for images under a namespace.</li>
-                    <li>
-                        <strong>Image replication</strong> - Images can be replicated (synchronized) between multiple registry instances.
-                        Great for load balancing, high availability, hybrid and multi-cloud scenarios.</li>
-                    <li>
-                        <strong>Graphical user portal</strong> - User can easily browse, search docker repositories, manage projects/namespaces.</li>
-                    <li>
-                        <strong>AD/LDAP support</strong> - Harbor integrates with existing enterprise AD/LDAP for user authentication
-                        and management.</li>
-                    <li>
-                        <strong>Auditing</strong> - All the operations to the repositories are tracked and can be used for auditing
-                        purpose.
-                    </li>
-                    <li>
-                        <strong>Internationalization</strong> - Already localized for English, Chinese, German, Japanese and Russian.
-                        More languages can be added.</li>
-                    <li>
-                        <strong>RESTful API</strong> - RESTful APIs are provided for most administrative operations of Harbor. The
-                        integration with other management softwares becomes easy.</li>
-                    <li>
-                        <strong>Easy deployment</strong> - Provide both an online and offline installer. Besides, a virtual appliance
-                        for vSphere platform (OVA) is available.</li>
+                    <li>Multi-tenant content signing and validation</li>
+                    <li>Security and vulnerability analysis</li>
+                    <li>Audit logging</li>
+                    <li>Identity integration and role-based access control</li>
+                    <li>Image replication between instances</li>
+                    <li>Extensible API and graphical UI</li>
+                    <li>Internationalization (currently English and Chinese)</li>
                 </ul>
                 <p>See the
                     <a href="https://github.com/vmware/harbor/blob/master/README.md">README</a> for more information.</p>
