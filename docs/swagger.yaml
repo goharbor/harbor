@@ -2720,25 +2720,24 @@ definitions:
     type: object
     properties:
       public:
-        type: integer
-        format: int
-        description: The public status of the project.
+        type: string
+        description: The public status of the project. The valid values are "true", "false".
       enable_content_trust:
-        type: boolean
+        type: string
         description: >-
           Whether content trust is enabled or not. If it is enabled, user cann't
-          pull unsigned images from this project.
+          pull unsigned images from this project. The valid values are "true", "false".
       prevent_vulnerable_images_from_running:
-        type: boolean
-        description: Whether prevent the vulnerable images from running.
+        type: string
+        description: Whether prevent the vulnerable images from running. The valid values are "true", "false".
       prevent_vulnerable_images_from_running_severity:
         type: string
         description: >-
           If the vulnerability is high than severity defined here, the images
-          cann't be pulled.
+          cann't be pulled. The valid values are "negligible", "low", "medium", "high", "critical".
       automatically_scan_images_on_push:
-        type: boolean
-        description: Whether scan images automatically when pushing.
+        type: string
+        description: Whether scan images automatically when pushing. The valid values are "true", "false".
   Manifest:
     type: object
     properties:
@@ -2989,9 +2988,7 @@ definitions:
           The replication policy filter kind. The valid values are project,
           repository and tag.
       value:
-        type: 
-          - string
-          - integer
+        type: string
         description: The value of replication policy filter. When creating repository and tag filter, filling it with the pattern as string. When creating label filter, filling it with label ID as integer.
       pattern:
         type: string
