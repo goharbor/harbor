@@ -41,6 +41,7 @@ metadata:
   annotations:
 {{ toYaml .Values.ingress.annotations | indent 4 }}
     nginx.ingress.kubernetes.io/rewrite-target: /registryproxy/v2
+    ingress.kubernetes.io/rewrite-target: /registryproxy/v2
 spec:
 {{ if not .Values.insecureRegistry }}
   tls:
