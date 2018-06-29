@@ -1,6 +1,5 @@
 # Community of Harbor
-
-Below are some of the partners and users of Harbor projects. If you wish to be listed on this page as reference partners or users, please contact us at harbor&#64;vmware.com. 
+Below are some of the partners and users of Harbor projects. If you wish to be listed on this page as reference partners or users, please contact us at <img alt="email" src="docs/img/harbor_email.png" valigin="middle" height="18"/>. 
 
 ## Users
 <a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="docs/img/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; 
