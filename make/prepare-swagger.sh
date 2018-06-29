@@ -1,6 +1,12 @@
 #!/bin/bash
+# Note: Download prepare-swagger.sh and swagger.yaml to the directory which contains the docker-compose.yml 
 SCHEME=http
 SERVER_IP=reg.mydomain.com
+
+if [ $# = 1 ]  && [ $1 = "-f" ]; then 
+    SCHEME=$(grep "ui_url_protocol =" ./harbor.cfg  |  awk '{ print $3 }')
+    SERVER_IP=$(grep "hostname =" ./harbor.cfg  |  awk '{ print $3 }')
+fi
 set -e
 echo "Doing some clean up..."
 rm -f *.tar.gz
@@ -17,4 +23,22 @@ mkdir -p ../src/ui/static/resources/yaml
 cp swagger.yaml ../src/ui/static/resources/yaml
 sed -i.bak 's/host: localhost/host: '$SERVER_IP'/g' ../src/ui/static/resources/yaml/swagger.yaml
 sed -i.bak 's/  \- http$/  \- '$SCHEME'/g' ../src/ui/static/resources/yaml/swagger.yaml
+
+
+COMPOSE_FILE=./docker-compose.yml
+
+if [ $# = 1 ]  && [ $1 = "-f" ];  then 
+    	if grep -q "swagger" -F $COMPOSE_FILE ; then
+		echo "Skip to enable swagger in docker-compose.yml"
+	else
+		sed -i.bak "/\/etc\/ui\/token\/\:z/a\      \- ../src/ui/static/vendors/swagger-ui-2.1.4/dist:/harbor/static/vendors/swagger\n\      \- ../src/ui/static/resources/yaml/swagger.yaml:/harbor/static/resources/yaml/swagger.yaml" ./docker-compose.yml
+
+	fi
+fi
 echo "Finish preparation for the Swagger UI."
+if [ $# = 1 ]  && [ $1 = "-f" ]; then 
+    echo "Restarting harbor"
+    docker-compose down -v 
+    docker-compose up -d
+    echo "Swagger UI is enabled, please visit $SCHEME://$SERVER_IP/static/vendors/swagger/index.html"
+fi
