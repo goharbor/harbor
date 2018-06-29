@@ -20,7 +20,7 @@ export abstract class LabelService {
 
   abstract getLabels(
     scope: string,
-    projectId: number,
+    projectId?: number,
     name?: string,
     queryParams?: RequestQueryParams
   ): Observable<Label[]> | Promise<Label[]>;
@@ -55,7 +55,7 @@ export class LabelDefaultService extends LabelService {
 
   getLabels(
     scope: string,
-    projectId: number,
+    projectId?: number,
     name?: string,
     queryParams?: RequestQueryParams
   ): Observable<Label[]> | Promise<Label[]> {
