@@ -105,26 +105,6 @@ func isTrue(value string) bool {
 		strings.ToLower(value) == "1"
 }
 
-// ProjectSorter holds an array of projects
-type ProjectSorter struct {
-	Projects []*Project
-}
-
-// Len returns the length of array in ProjectSorter
-func (ps *ProjectSorter) Len() int {
-	return len(ps.Projects)
-}
-
-// Less defines the comparison rules of project
-func (ps *ProjectSorter) Less(i, j int) bool {
-	return ps.Projects[i].Name < ps.Projects[j].Name
-}
-
-// Swap swaps the position of i and j
-func (ps *ProjectSorter) Swap(i, j int) {
-	ps.Projects[i], ps.Projects[j] = ps.Projects[j], ps.Projects[i]
-}
-
 // ProjectQueryParam can be used to set query parameters when listing projects.
 // The query condition will be set in the query if its corresponding field
 // is not nil. Leave it empty if you don't want to apply this condition.
