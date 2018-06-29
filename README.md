@@ -33,7 +33,7 @@ Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releas
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
 ### Community
-**Twitter:** [@project_harbor](https://twitter.com/project_harbor)
+**Twitter:** [@project_harbor](https://twitter.com/project_harbor)  
 **User Group:** Join Harbor user email group: [harbor-users@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback. To subscribe, send an email to [harbor-users+subscribe@googlegroups.com](mailto:harbor-users+subscribe@googlegroups.com) .  
 **Developer Group:** Join Harbor developer group: [harbor-dev@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-dev) for discussion on Harbor development and contribution. To subscribe, send an email to [harbor-dev+subscribe@googlegroups.com](mailto:harbor-dev+subscribe@googlegroups.com).  
 **Slack:** Join Harbor's community for discussion and ask questions: [VMware {code}](https://code.vmware.com/join/), channel: [#harbor](https://vmwarecode.slack.com/messages/harbor).
@@ -41,7 +41,7 @@ Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Har
 More info on [partners and users](partners.md).
 
 ### Contribution
-We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any questions: [harbor@vmware.com](mailto:harbor@vmware.com).
+We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any questions: <img alt="email" src="docs/img/harbor_email.png" valigin="middle" height="18"/>.
 
 ### Demos
 * ![play](docs/img/video.png) **Content Trust** ( [youtube](https://www.youtube.com/watch?v=pPklSTJZY2E) , [Tencent Video](https://v.qq.com/x/page/n0553fzzrnf.html) )
@@ -59,4 +59,4 @@ This project uses open source components which have additional licensing terms. 
 * MySQL 5.6: [docker image](https://hub.docker.com/_/mysql/), [license](https://github.com/docker-library/mysql/blob/master/LICENSE)
 
 ### Commercial Support
-If you need commercial support of Harbor, please contact us for more information: [harbor@vmware.com](mailto:harbor@vmware.com).
+If you need commercial support of Harbor, please contact us for more information: <img alt="email" src="docs/img/harbor_email.png" valigin="middle" height="18"/>.
