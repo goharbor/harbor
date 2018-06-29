@@ -1,0 +1,75 @@
+{"users":[
+        {"name": "user1"},
+	{"name": "user2"},
+	{"name": "user3"},
+	{"name": "user4"},
+	{"name": "user5"}
+	],
+ "admin":[
+         {"name": "user1", "has_admin": true},
+         {"name": "user2", "has_admin": true}
+	],
+
+ "endpoint":[{"url": "http://url", "name": "endpoint1", "user": "endpointuser", "pass": "endpointpass"}],
+ "replicationrule":[
+                    {"project": "project1", "endpoint": "endpoint1", "trigger": "Manual", "rulename": "rulename"},
+                    {"project": "library", "endpoint": "endpoint1", "trigger": "Manual", "rulename": "rulelibrary"}
+                   ],
+ "configuration": {"authmode": "Database", "projectcreation": "everyone", "selfreg": false,
+                   "emailsetting":{"emailserver": "emailserver", "emailport": "2220", "emailuser": "emailuser", "emailfrom": "emailfrom", "emailssl": false, "verifycert": false},
+                   "token": 30, "readonly": false, 
+                   "scanall": {"type": "none", "param":{"daily": 0}},
+                   "syslabel":[
+                         {"name": "label1"},
+                         {"name": "label2"},
+                 	 {"name": "label3"},
+                 	 {"name": "label4"},
+                 	 {"name": "label5"},
+                 	 {"name": "label6"}
+                 	      ]
+                 },
+ "projects":[
+         {"name": "project1",
+          "accesslevel": "public",
+          "repocounts": 2,
+          "repo": [
+                   {"name": "busybox", "tag": "latest", "signed": "False"},
+                   {"name": "alpine", "tag": "latest", "signed": "True"}
+                  ],
+          "member":[
+                  {"name": "user1", "role": 1},
+                  {"name": "user2", "role": 2},
+	          {"name": "user3", "role": 3}
+                  ],
+           "replications": {"rulename": "ruleproject1", "endpointname": "endpoint1", "trigger": "Manual"},
+           "labels": [{"name": "proj1label1"},{"name": "proj1label2"},{"name": "proj1label3"}],
+           "logs": [{"name": "admin", "operation": "create"}],
+           "configuration": {"enable_content_trust": "true",
+                             "automatically_scan_images_on_push": "true",
+                             "prevent_vulnerable_images_from_running": "true",
+                             "prevent_vlunerable_images_from_running_severity": "High"
+                             }
+         },
+         {"name": "project2",
+          "accesslevel": "public",
+          "repocounts": 2,
+          "repo": [
+                   {"name": "busybox", "tag": "latest", "signed": "False"},
+                   {"name": "alpine", "tag": "latest", "signed": "True"}
+                  ],
+          "member":[
+                  {"name": "user1", "role": 1},
+                  {"name": "user2", "role": 2},
+	          {"name": "user3", "role": 3}
+                  ],
+           "replications": {"rulename": "rulename1", "endpointname": "endpoint1", "trigger": "Manual"},
+           "labels": [{"name": "proj2label1"},{"name": "proj2label2"},{"name": "proj2label3"}],
+           "logs": [{"name": "admin", "operation": "create"}],
+           "configuration": {"enable_content_trust": "True",
+                             "automatically_scan_images_on_push": "True",
+                             "prevent_vulnerable_images_from_running": "True",
+                             "prevent_vlunerable_images_from_running_severity": "High"
+                             }
+         }
+   ]
+}
