@@ -33,6 +33,7 @@ type LdapGroupConf struct {
 	LdapGroupFilter        string `json:"ldap_group_filter,omitempty"`
 	LdapGroupNameAttribute string `json:"ldap_group_name_attribute,omitempty"`
 	LdapGroupSearchScope   int    `json:"ldap_group_search_scope"`
+	LdapGroupAdminDN       string `json:"ldap_group_admin_dn,omitempty"`
 }
 
 // LdapUser ...

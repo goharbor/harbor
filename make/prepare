@@ -344,6 +344,8 @@ else:
 #Use reload_key to avoid reload config after restart harbor
 reload_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) if reload_config == "true" else ""
 
+ldap_group_admin_dn = rcp.get("configuration", "ldap_group_admin_dn") if rcp.has_option("configuration", "ldap_group_admin_dn") else ""
+
 render(os.path.join(templates_dir, "adminserver", "env"),
         adminserver_conf_env,
         reload_config=reload_config,
@@ -364,6 +366,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         ldap_group_filter=ldap_group_filter,
         ldap_group_gid=ldap_group_gid,
         ldap_group_scope=ldap_group_scope,
+        ldap_group_admin_dn=ldap_group_admin_dn,
         db_password=db_password,
         db_host=db_host,
         db_user=db_user,

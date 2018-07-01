@@ -27,6 +27,7 @@ import (
 	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/ui/auth"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 // Auth implements AuthenticateHelper interface to authenticate against LDAP
@@ -84,8 +85,17 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		return nil, auth.NewErrAuth(err.Error())
 	}
 
+	//Retrieve ldap related info in login to avoid too many traffic with LDAP server.
+	//Get group admin dn
+	groupCfg, err := config.LDAPGroupConf()
+	groupAdminDN := strings.TrimSpace(groupCfg.LdapGroupAdminDN)
 	//Attach user group
 	for _, groupDN := range ldapUsers[0].GroupDNList {
+
+		if len(groupAdminDN) > 0 && groupAdminDN == groupDN {
+			u.HasAdminRole = true
+		}
+
 		userGroupQuery := models.UserGroup{
 			GroupType:   1,
 			LdapGroupDN: groupDN,
@@ -210,7 +220,8 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 			return nil
 		}
 		u.UserID = dbUser.UserID
-		u.HasAdminRole = dbUser.HasAdminRole
+		//If user has admin role already, do not overwrite by user info in DB.
+		u.HasAdminRole = u.HasAdminRole || dbUser.HasAdminRole
 
 		if dbUser.Email != u.Email {
 			Re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)

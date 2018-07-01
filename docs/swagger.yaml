@@ -3494,6 +3494,9 @@ definitions:
       ldap_group_search_scope:
         type: integer
         description: The scope to search ldap. '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
+      ldap_group_admin_dn:
+        type: string
+        description: Specify the ldap group which have the same privilege with Harbor admin.
       project_creation_restriction:
         type: string
         description: >-

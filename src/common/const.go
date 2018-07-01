@@ -108,4 +108,5 @@ const (
 	DefaultNotaryEndpoint       = "http://notary-server:4443"
 	LdapGroupType               = 1
 	ReloadKey                   = "reload_key"
+	LdapGroupAdminDn            = "ldap_group_admin_dn"
 )
