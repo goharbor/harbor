@@ -2,7 +2,8 @@
 A Swagger file is provided for viewing and testing Harbor REST API.
 
 ### Viewing Harbor REST API
-* Open the file **swagger.yaml** under the _docs_ directory in Harbor project;
+* http://editor.swagger.io/?url=https://raw.githubusercontent.com/vmware/harbor/master/docs/swagger.yaml
+* **OR** Open the file **[swagger.yaml](/docs/swagger.yaml)** under the _docs_ directory in Harbor project;
 * Paste all its content into the online Swagger Editor at http://editor.swagger.io. The descriptions of Harbor API will be shown on the right pane of the page.
 
 ![Swagger Editor](img/swaggerEditor.png)
