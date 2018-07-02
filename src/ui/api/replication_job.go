@@ -51,7 +51,8 @@ func (ra *RepJobAPI) Prepare() {
 	if len(ra.GetStringFromPath(":id")) != 0 {
 		id, err := ra.GetInt64FromPath(":id")
 		if err != nil {
-			ra.CustomAbort(http.StatusBadRequest, "ID is invalid")
+			ra.HandleBadRequest(fmt.Sprintf("invalid ID: %s", ra.GetStringFromPath(":id")))
+			return
 		}
 		ra.jobID = id
 	}
@@ -63,7 +64,8 @@ func (ra *RepJobAPI) List() {
 
 	policyID, err := ra.GetInt64("policy_id")
 	if err != nil || policyID <= 0 {
-		ra.CustomAbort(http.StatusBadRequest, "invalid policy_id")
+		ra.HandleBadRequest(fmt.Sprintf("invalid policy_id: %s", ra.GetString("policy_id")))
+		return
 	}
 
 	policy, err := core.GlobalController.GetPolicy(policyID)
@@ -73,7 +75,8 @@ func (ra *RepJobAPI) List() {
 	}
 
 	if policy.ID == 0 {
-		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("policy %d not found", policyID))
+		ra.HandleNotFound(fmt.Sprintf("policy %d not found", policyID))
+		return
 	}
 
 	if !ra.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
@@ -95,7 +98,8 @@ func (ra *RepJobAPI) List() {
 	if len(startTimeStr) != 0 {
 		i, err := strconv.ParseInt(startTimeStr, 10, 64)
 		if err != nil {
-			ra.CustomAbort(http.StatusBadRequest, "invalid start_time")
+			ra.HandleBadRequest(fmt.Sprintf("invalid start_time: %s", startTimeStr))
+			return
 		}
 		t := time.Unix(i, 0)
 		query.StartTime = &t
@@ -105,7 +109,8 @@ func (ra *RepJobAPI) List() {
 	if len(endTimeStr) != 0 {
 		i, err := strconv.ParseInt(endTimeStr, 10, 64)
 		if err != nil {
-			ra.CustomAbort(http.StatusBadRequest, "invalid end_time")
+			ra.HandleBadRequest(fmt.Sprintf("invalid end_time: %s", endTimeStr))
+			return
 		}
 		t := time.Unix(i, 0)
 		query.EndTime = &t
@@ -133,7 +138,8 @@ func (ra *RepJobAPI) List() {
 // Delete ...
 func (ra *RepJobAPI) Delete() {
 	if ra.jobID == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "id is nil")
+		ra.HandleBadRequest("ID is nil")
+		return
 	}
 
 	job, err := dao.GetRepJob(ra.jobID)
@@ -143,11 +149,13 @@ func (ra *RepJobAPI) Delete() {
 	}
 
 	if job == nil {
-		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("job %d not found", ra.jobID))
+		ra.HandleNotFound(fmt.Sprintf("job %d not found", ra.jobID))
+		return
 	}
 
 	if job.Status == models.JobPending || job.Status == models.JobRunning {
-		ra.CustomAbort(http.StatusBadRequest, fmt.Sprintf("job is %s, can not be deleted", job.Status))
+		ra.HandleBadRequest(fmt.Sprintf("job is %s, can not be deleted", job.Status))
+		return
 	}
 
 	if err = dao.DeleteRepJob(ra.jobID); err != nil {
@@ -159,7 +167,8 @@ func (ra *RepJobAPI) Delete() {
 // GetLog ...
 func (ra *RepJobAPI) GetLog() {
 	if ra.jobID == 0 {
-		ra.CustomAbort(http.StatusBadRequest, "id is nil")
+		ra.HandleBadRequest("ID is nil")
+		return
 	}
 
 	job, err := dao.GetRepJob(ra.jobID)
@@ -211,7 +220,8 @@ func (ra *RepJobAPI) StopJobs() {
 	}
 
 	if policy.ID == 0 {
-		ra.CustomAbort(http.StatusNotFound, fmt.Sprintf("policy %d not found", req.PolicyID))
+		ra.HandleNotFound(fmt.Sprintf("policy %d not found", req.PolicyID))
+		return
 	}
 
 	jobs, err := dao.GetRepJobs(&models.RepJobQuery{
