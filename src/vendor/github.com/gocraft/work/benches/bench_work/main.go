@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/gocraft/health"
-	"github.com/gocraft/work"
 	"os"
 	"sync/atomic"
 	"time"
+
+	"github.com/gocraft/health"
+	"github.com/gocraft/work"
+	"github.com/gomodule/redigo/redis"
 )
 
 var namespace = "bench_test"

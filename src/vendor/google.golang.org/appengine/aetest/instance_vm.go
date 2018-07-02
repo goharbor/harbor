@@ -71,7 +71,7 @@ func (i *instance) NewRequest(method, urlStr string, body io.Reader) (*http.Requ
 	}
 
 	// Associate this request.
-	release := internal.RegisterTestRequest(req, i.apiURL, func(ctx context.Context) context.Context {
+	req, release := internal.RegisterTestRequest(req, i.apiURL, func(ctx context.Context) context.Context {
 		ctx = internal.WithAppIDOverride(ctx, "dev~"+i.appID)
 		return ctx
 	})
@@ -212,7 +212,9 @@ func (i *instance) startChild() (err error) {
 	if err != nil {
 		return err
 	}
-	stderr = io.TeeReader(stderr, os.Stderr)
+	if !(i.opts != nil && i.opts.SuppressDevAppServerLog) {
+		stderr = io.TeeReader(stderr, os.Stderr)
+	}
 	if err = i.child.Start(); err != nil {
 		return err
 	}

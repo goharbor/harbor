@@ -32,8 +32,8 @@ func (g TUFFile) TableName() string {
 	return TUFFileTableName
 }
 
-// Change defines the the fields required for an object in the changefeed
-type Change struct {
+// SQLChange defines the the fields required for an object in the changefeed
+type SQLChange struct {
 	ID        uint `gorm:"primary_key" sql:"not null" json:",string"`
 	CreatedAt time.Time
 	GUN       string `gorm:"column:gun" sql:"type:varchar(255);not null"`
@@ -43,14 +43,14 @@ type Change struct {
 }
 
 // TableName sets a specific table name for Changefeed
-func (c Change) TableName() string {
+func (c SQLChange) TableName() string {
 	return ChangefeedTableName
 }
 
 // CreateTUFTable creates the DB table for TUFFile
 func CreateTUFTable(db gorm.DB) error {
 	// TODO: gorm
-	query := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&TUFFile{})
+	query := db.AutoMigrate(&TUFFile{})
 	if query.Error != nil {
 		return query.Error
 	}
@@ -61,6 +61,6 @@ func CreateTUFTable(db gorm.DB) error {
 
 // CreateChangefeedTable creates the DB table for Changefeed
 func CreateChangefeedTable(db gorm.DB) error {
-	query := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&Change{})
+	query := db.AutoMigrate(&SQLChange{})
 	return query.Error
 }

@@ -1,12 +1,13 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import styles from './bootstrap.min.css';
 
 export default class PageList extends React.Component {
   static propTypes = {
-    page: React.PropTypes.number.isRequired,
-    perPage: React.PropTypes.number.isRequired,
-    totalCount: React.PropTypes.number.isRequired,
-    jumpTo: React.PropTypes.func.isRequired,
+    page: PropTypes.number.isRequired,
+    perPage: PropTypes.number.isRequired,
+    totalCount: PropTypes.number.isRequired,
+    jumpTo: PropTypes.func.isRequired,
   }
 
   get totalPage() {

@@ -1,20 +1,96 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/docker/distribution/registry/client/auth"
+	"github.com/docker/notary/tuf/data"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
-
-	"github.com/docker/notary/tuf/data"
 )
+
+// TestImportRootCert does the following
+// 1. write a certificate to temp file
+// 2. use importRootCert to import the certificate
+// 3. confirm the content of the certificate to match expected content
+// 4. test reading non-existing file
+// 5. test reading non-certificate file
+// 6. test import non-valid certificate
+func TestImportRootCert(t *testing.T) {
+
+	certStr := `-----BEGIN CERTIFICATE-----
+MIIBWDCB/6ADAgECAhBKKoVsRNJdGsGh6tPWnE4rMAoGCCqGSM49BAMCMBMxETAP
+BgNVBAMTCGRvY2tlci8qMB4XDTE3MDQyODIwMTczMFoXDTI3MDQyNjIwMTczMFow
+EzERMA8GA1UEAxMIZG9ja2VyLyowWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAQQ
+6RhA8sX/kWedbPPFzNqOMI+AnWOQV+u0+FQfeNO+k/Uf0LBnKhHEPSwSBuuwLPon
+w+nR0YTdv3lFaM7x9nOUozUwMzAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYI
+KwYBBQUHAwMwDAYDVR0TAQH/BAIwADAKBggqhkjOPQQDAgNIADBFAiA+eHPInhLJ
+HgP8nha+UqdYgq8ZCOlhdGTJhSdHd4sCuQIhAPXqQeWhDLA3/Pf8B7G3ZwWpPbZ8
+adLwkjqoeEKMaAXf
+-----END CERTIFICATE-----`
+	//create a temp dir
+	dir := tempDirWithConfig(t, "{}")
+	defer os.RemoveAll(dir)
+
+	//1. write cert to file
+	certFile := filepath.Join(dir, "cert.crt")
+	err := ioutil.WriteFile(certFile, []byte(certStr), 0644)
+	require.NoError(t, err)
+
+	//2. import root cert
+	pKeys, err := importRootCert(certFile)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(pKeys), "length of the public key slice should be 1")
+
+	pkey := pKeys[0]
+
+	require.Equal(t, "c58a735abbb9577f87e149b2493e1039a836ca8002488c7932931d859b850d5d", pkey.ID())
+	require.Equal(t, "ecdsa-x509", pkey.Algorithm())
+	require.Equal(t, certStr, strings.TrimSpace(string(pkey.Public())))
+
+	//4. test import non-existing file
+	fakeFile := filepath.Join(dir, "fake.crt")
+	_, err = importRootCert(fakeFile)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "error reading")
+
+	//5. test import non-certificate file
+	nonCert := filepath.Join(dir, "noncert.crt")
+	err = ioutil.WriteFile(nonCert, []byte("fake certificate"), 0644)
+	require.NoError(t, err)
+
+	_, err = importRootCert(nonCert)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "does not contain a valid PEM certificate")
+
+	// 6. test import non-valid certificate
+	errCert := `-----BEGIN CERTIFICATE-----
+MIIBWDCB/6ADAgECAhBKKoVsRNJdGsGh6tPWnE4rMAoGCCqGSM49BAMCMBMxETAP
+BgNVBAMTCGRvY2tlci8qMB4XDTE31111111wMTczMFoXDTI3MDQyNjIwMTczMFow
+EzERMA8GA1UEAxMIZG9ja2VyLyowWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAQQ
+6RhA8sX/kWedbPPFzNqOMI+AnWOQV+u0+FQfeNO+k/Uf0LBnKhHEPSwSBuuwLPon
+w+nR0YTdv3lFaM7x9nOUozUwMzAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYI
+KwYBBQUHAwMwDAYDVR0TAQH/BAIwADAKBggqhkjOPQQDAgNIADBFAiA+eHPInhLJ
+HgP8nha+UqdYgq8ZCOlhdGTJhSdHd4sCuQIhAPXqQeWhDLA3/Pf8B7G3ZwWpPbZ8
+adLwkjqoeEKMaAXf
+-----END CERTIFICATE-----`
+	errCertFile := filepath.Join(dir, "err.crt")
+	err = ioutil.WriteFile(errCertFile, []byte(errCert), 0644)
+	require.NoError(t, err)
+
+	_, err = importRootCert(errCertFile)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "Parsing certificate PEM bytes to x509 certificate")
+
+}
 
 func TestTokenAuth(t *testing.T) {
 	var (

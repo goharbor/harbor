@@ -38,11 +38,13 @@ type Client struct {
 // be performed over SSL unless the host is localhost.
 func NewClient(host string, client *http.Client) (*Client, error) {
 	// Add an appcfg header to outgoing requests.
+	wrapClient := new(http.Client)
+	*wrapClient = *client
 	t := client.Transport
 	if t == nil {
 		t = http.DefaultTransport
 	}
-	client.Transport = &headerAddingRoundTripper{t}
+	wrapClient.Transport = &headerAddingRoundTripper{t}
 
 	url := url.URL{
 		Scheme: "https",
@@ -53,12 +55,12 @@ func NewClient(host string, client *http.Client) (*Client, error) {
 		url.Scheme = "http"
 	}
 	u := url.String()
-	appID, err := getAppID(client, u)
+	appID, err := getAppID(wrapClient, u)
 	if err != nil {
 		return nil, fmt.Errorf("unable to contact server: %v", err)
 	}
 	return &Client{
-		hc:    client,
+		hc:    wrapClient,
 		url:   u,
 		appID: appID,
 	}, nil

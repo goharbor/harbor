@@ -1,4 +1,4 @@
-FROM golang:1.7.3
+FROM golang:1.8.3
 
 RUN apt-get update && apt-get install -y \
 	curl \
@@ -20,6 +20,6 @@ RUN useradd -ms /bin/bash notary \
 ENV NOTARYDIR /go/src/github.com/docker/notary
 
 COPY . ${NOTARYDIR}
-RUN chmod -R a+rw /go
+RUN chmod -R a+rw /go && chmod 0600 ${NOTARYDIR}/fixtures/database/*
 
 WORKDIR ${NOTARYDIR}

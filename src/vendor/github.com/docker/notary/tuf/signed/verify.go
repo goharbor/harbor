@@ -9,6 +9,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/go/canonical/json"
 	"github.com/docker/notary/tuf/data"
+	"github.com/docker/notary/tuf/utils"
 )
 
 // Various basic signing errors
@@ -105,5 +106,18 @@ func VerifySignature(msg []byte, sig *data.Signature, pk data.PublicKey) error {
 		return fmt.Errorf("signature was invalid")
 	}
 	sig.IsValid = true
+	return nil
+}
+
+// VerifyPublicKeyMatchesPrivateKey checks if the private key and the public keys forms valid key pairs.
+// Supports both x509 certificate PublicKeys and non-certificate PublicKeys
+func VerifyPublicKeyMatchesPrivateKey(privKey data.PrivateKey, pubKey data.PublicKey) error {
+	pubKeyID, err := utils.CanonicalKeyID(pubKey)
+	if err != nil {
+		return fmt.Errorf("could not verify key pair: %v", err)
+	}
+	if privKey == nil || pubKeyID != privKey.ID() {
+		return fmt.Errorf("private key is nil or does not match public key")
+	}
 	return nil
 }

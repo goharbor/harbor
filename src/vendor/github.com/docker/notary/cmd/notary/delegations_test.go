@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/docker/notary/cryptoservice"
+	testutils "github.com/docker/notary/tuf/testutils/keys"
 	"github.com/docker/notary/tuf/utils"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -207,7 +208,7 @@ func generateExpiredTestCert() (*x509.Certificate, string, error) {
 
 func generateShortRSAKeyTestCert() (*x509.Certificate, string, error) {
 	// 1024 bits is too short
-	privKey, err := utils.GenerateRSAKey(rand.Reader, 1024)
+	privKey, err := testutils.GetRSAKey(1024)
 	if err != nil {
 		return nil, "", err
 	}

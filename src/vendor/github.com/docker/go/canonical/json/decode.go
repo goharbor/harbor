@@ -37,7 +37,6 @@ import (
 // To unmarshal JSON into a struct, Unmarshal matches incoming object
 // keys to the keys used by Marshal (either the struct field name or its tag),
 // preferring an exact match but also accepting a case-insensitive match.
-// Unmarshal will only set exported fields of the struct.
 //
 // To unmarshal JSON into an interface value,
 // Unmarshal stores one of these in the interface value:
@@ -49,26 +48,16 @@ import (
 //	map[string]interface{}, for JSON objects
 //	nil for JSON null
 //
-// To unmarshal a JSON array into a slice, Unmarshal resets the slice length
-// to zero and then appends each element to the slice.
-// As a special case, to unmarshal an empty JSON array into a slice,
-// Unmarshal replaces the slice with a new empty slice.
+// To unmarshal a JSON array into a slice, Unmarshal resets the slice to nil
+// and then appends each element to the slice.
 //
-// To unmarshal a JSON array into a Go array, Unmarshal decodes
-// JSON array elements into corresponding Go array elements.
-// If the Go array is smaller than the JSON array,
-// the additional JSON array elements are discarded.
-// If the JSON array is smaller than the Go array,
-// the additional Go array elements are set to zero values.
-//
-// To unmarshal a JSON object into a string-keyed map, Unmarshal first
-// establishes a map to use, If the map is nil, Unmarshal allocates a new map.
-// Otherwise Unmarshal reuses the existing map, keeping existing entries.
-// Unmarshal then stores key-value pairs from the JSON object into the map.
+// To unmarshal a JSON object into a map, Unmarshal replaces the map
+// with an empty map and then adds key-value pairs from the object to
+// the map.
 //
 // If a JSON value is not appropriate for a given target type,
 // or if a JSON number overflows the target type, Unmarshal
-// skips that field and completes the unmarshaling as best it can.
+// skips that field and completes the unmarshalling as best it can.
 // If no more serious errors are encountered, Unmarshal returns
 // an UnmarshalTypeError describing the earliest such error.
 //
@@ -185,66 +174,6 @@ func (n Number) Int64() (int64, error) {
 	return strconv.ParseInt(string(n), 10, 64)
 }
 
-// isValidNumber reports whether s is a valid JSON number literal.
-func isValidNumber(s string) bool {
-	// This function implements the JSON numbers grammar.
-	// See https://tools.ietf.org/html/rfc7159#section-6
-	// and http://json.org/number.gif
-
-	if s == "" {
-		return false
-	}
-
-	// Optional -
-	if s[0] == '-' {
-		s = s[1:]
-		if s == "" {
-			return false
-		}
-	}
-
-	// Digits
-	switch {
-	default:
-		return false
-
-	case s[0] == '0':
-		s = s[1:]
-
-	case '1' <= s[0] && s[0] <= '9':
-		s = s[1:]
-		for len(s) > 0 && '0' <= s[0] && s[0] <= '9' {
-			s = s[1:]
-		}
-	}
-
-	// . followed by 1 or more digits.
-	if len(s) >= 2 && s[0] == '.' && '0' <= s[1] && s[1] <= '9' {
-		s = s[2:]
-		for len(s) > 0 && '0' <= s[0] && s[0] <= '9' {
-			s = s[1:]
-		}
-	}
-
-	// e or E followed by an optional - or + and
-	// 1 or more digits.
-	if len(s) >= 2 && (s[0] == 'e' || s[0] == 'E') {
-		s = s[1:]
-		if s[0] == '+' || s[0] == '-' {
-			s = s[1:]
-			if s == "" {
-				return false
-			}
-		}
-		for len(s) > 0 && '0' <= s[0] && s[0] <= '9' {
-			s = s[1:]
-		}
-	}
-
-	// Make sure we are at the end.
-	return s == ""
-}
-
 // decodeState represents the state while decoding a JSON value.
 type decodeState struct {
 	data       []byte
@@ -313,7 +242,7 @@ func (d *decodeState) scanWhile(op int) int {
 			newOp = d.scan.eof()
 			d.off = len(d.data) + 1 // mark processed EOF with len+1
 		} else {
-			c := d.data[d.off]
+			c := int(d.data[d.off])
 			d.off++
 			newOp = d.scan.step(&d.scan, c)
 		}
@@ -829,7 +758,7 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 				d.saveError(err)
 				break
 			}
-			v.SetBytes(b[:n])
+			v.Set(reflect.ValueOf(b[0:n]))
 		case reflect.String:
 			v.SetString(string(s))
 		case reflect.Interface:
@@ -853,9 +782,6 @@ func (d *decodeState) literalStore(item []byte, v reflect.Value, fromQuoted bool
 		default:
 			if v.Kind() == reflect.String && v.Type() == numberType {
 				v.SetString(s)
-				if !isValidNumber(s) {
-					d.error(fmt.Errorf("json: invalid number literal, trying to unmarshal %q into Number", item))
-				}
 				break
 			}
 			if fromQuoted {

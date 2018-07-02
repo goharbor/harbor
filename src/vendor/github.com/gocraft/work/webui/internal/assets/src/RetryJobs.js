@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import PageList from './PageList';
 import UnixTime from './UnixTime';
 import styles from './bootstrap.min.css';
@@ -6,7 +7,7 @@ import cx from './cx';
 
 export default class RetryJobs extends React.Component {
   static propTypes = {
-    url: React.PropTypes.string,
+    url: PropTypes.string,
   }
 
   state = {
@@ -63,7 +64,7 @@ export default class RetryJobs extends React.Component {
                       <td>{job.err}</td>
                       <td><UnixTime ts={job.t} /></td>
                     </tr>
-                    );
+                  );
                 })
               }
             </tbody>

@@ -10,6 +10,6 @@
   },
   "storage": {
     "backend": "postgres",
-    "db_url": "postgres://signer@postgresql:5432/notarysigner?sslmode=disable"
+    "db_url": "postgres://signer@postgresql:5432/notarysigner?sslmode=verify-ca&sslrootcert=/go/src/github.com/docker/notary/fixtures/database/ca.pem&sslcert=/go/src/github.com/docker/notary/fixtures/database/notary-signer.pem&sslkey=/go/src/github.com/docker/notary/fixtures/database/notary-signer-key.pem"
   }
 }

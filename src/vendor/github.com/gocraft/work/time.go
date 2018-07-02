@@ -1,8 +1,6 @@
 package work
 
-import (
-	"time"
-)
+import "time"
 
 var nowMock int64
 

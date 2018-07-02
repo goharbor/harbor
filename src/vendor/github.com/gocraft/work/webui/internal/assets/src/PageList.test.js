@@ -1,16 +1,16 @@
+import './TestSetup';
 import expect from 'expect';
 import PageList from './PageList';
 import React from 'react';
-import ReactTestUtils from 'react-addons-test-utils';
+import { mount } from 'enzyme';
 
 describe('PageList', () => {
   it('lists pages', () => {
     let assertPage = (n, expected) => {
-      let r = ReactTestUtils.createRenderer();
-      r.render(<PageList page={n} perPage={2} totalCount={13} jumpTo={() => () => {}} />);
-      let output = r.getRenderOutput();
-      expect(output.type).toEqual('ul');
-      expect(output.props.children.map((el) => {
+      let pageList = mount(<PageList page={n} perPage={2} totalCount={13} jumpTo={() => () => {}} />);
+      let ul = pageList.find('ul');
+
+      expect(ul.props().children.map((el) => {
         expect(el.type).toEqual('li');
         return el.props.children.props.children;
       })).toEqual(expected);
@@ -26,10 +26,8 @@ describe('PageList', () => {
   });
 
   it('renders nothing if there is nothing', () => {
-    let r = ReactTestUtils.createRenderer();
-    r.render(<PageList page={1} perPage={2} totalCount={0} jumpTo={() => () => {}} />);
-    let output = r.getRenderOutput();
+    let pageList = mount(<PageList page={1} perPage={2} totalCount={0} jumpTo={() => () => {}} />);
 
-    expect(output).toEqual(null);
+    expect(pageList.html()).toEqual(null);
   });
 });

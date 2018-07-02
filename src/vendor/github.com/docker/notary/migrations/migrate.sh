@@ -10,7 +10,7 @@ case $SERVICE_NAME in
 		MIGRATIONS_PATH=${MIGRATIONS_PATH:-migrations/server/mysql}
 		DB_URL=${DB_URL:-mysql://server@tcp(mysql:3306)/notaryserver}
 		# have to poll for DB to come up
-		until migrate -path=$MIGRATIONS_PATH -url=$DB_URL version > /dev/null
+		until migrate -path=$MIGRATIONS_PATH -database="${DB_URL}" up
 		do
 			iter=$(( iter+1 ))
 			if [[ $iter -gt 30 ]]; then
@@ -20,24 +20,13 @@ case $SERVICE_NAME in
 			echo "waiting for $DB_URL to come up."
 			sleep 1
 		done
-		pre=$(migrate -path=$MIGRATIONS_PATH -url="${DB_URL}" version)
-		if migrate -path=$MIGRATIONS_PATH -url="${DB_URL}" up ; then
-			post=$(migrate -path=$MIGRATIONS_PATH -url="${DB_URL}" version)
-			if [ "$pre" != "$post" ]; then
-				echo "notaryserver database migrated to latest version"
-			else
-				echo "notaryserver database already at latest version"
-			fi
-		else
-			echo "notaryserver database migration failed"
-			exit 1
-		fi
+		echo "notaryserver database migrated to latest version"
 		;;
 	notary_signer)
 		MIGRATIONS_PATH=${MIGRATIONS_PATH:-migrations/signer/mysql}
 		DB_URL=${DB_URL:-mysql://signer@tcp(mysql:3306)/notarysigner}
 		# have to poll for DB to come up
-		until migrate -path=$MIGRATIONS_PATH -url=$DB_URL up version > /dev/null
+		until migrate -path=$MIGRATIONS_PATH -database="${DB_URL}" up
 		do
 			iter=$(( iter+1 ))
 			if [[ $iter -gt 30 ]]; then
@@ -47,17 +36,6 @@ case $SERVICE_NAME in
 			echo "waiting for $DB_URL to come up."
 			sleep 1
 		done
-		pre=$(migrate -path=$MIGRATIONS_PATH -url="${DB_URL}" version)
-		if migrate -path=$MIGRATIONS_PATH -url="${DB_URL}" up ; then
-			post=$(migrate -path=$MIGRATIONS_PATH -url="${DB_URL}" version)
-			if [ "$pre" != "$post" ]; then
-				echo "notarysigner database migrated to latest version"
-			else
-				echo "notarysigner database already at latest version"
-			fi
-		else
-			echo "notarysigner database migration failed"
-			exit 1
-		fi
+		echo "notarysigner database migrated to latest version"
 		;;
 esac

@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/gocraft/health"
-	"github.com/jrallison/go-workers"
 	"os"
 	"sync/atomic"
 	"time"
+
+	"github.com/gocraft/health"
+	"github.com/gomodule/redigo/redis"
+	"github.com/jrallison/go-workers"
 )
 
 func myJob(m *workers.Msg) {

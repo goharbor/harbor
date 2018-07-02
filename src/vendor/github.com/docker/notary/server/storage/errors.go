@@ -40,3 +40,13 @@ type ErrNoKey struct {
 func (err ErrNoKey) Error() string {
 	return fmt.Sprintf("Error, no timestamp key found for %s", err.gun)
 }
+
+// ErrBadQuery is used when the parameters provided cannot be appropriately
+// coerced.
+type ErrBadQuery struct {
+	msg string
+}
+
+func (err ErrBadQuery) Error() string {
+	return fmt.Sprintf("did not recognize parameters: %s", err.msg)
+}

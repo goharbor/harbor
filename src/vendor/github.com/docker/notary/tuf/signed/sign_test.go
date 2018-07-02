@@ -3,6 +3,7 @@ package signed
 import (
 	"crypto"
 	"crypto/rand"
+	"crypto/x509"
 	"encoding/pem"
 	"io"
 	"testing"
@@ -208,8 +209,26 @@ func TestSignReturnsNoSigs(t *testing.T) {
 }
 
 func TestSignWithX509(t *testing.T) {
-	// generate a key becase we need a cert
-	privKey, err := utils.GenerateRSAKey(rand.Reader, 1024)
+	// parse a RSA key because we need a cert
+	block, _ := pem.Decode([]byte(`-----BEGIN RSA PRIVATE KEY-----
+MIICXAIBAAKBgQDJ8BO2/HOHLJgrb3srafbNRUD8r0SGNJFi5h7t4vxZ4F5oBW/4
+O2/aZmdToinyuCm0eGguK77HAsTfSHqDUoEfuInNg7pPk4F6xa4feQzEeG6P0YaL
++VbApUdCHLBE0tVZg1SCW97+27wqIM4Cl1Tcsbb+aXfgMaOFGxlyga+a6wIDAQAB
+AoGBAKDWLH2kGMfjBtghlLKBVWcs75PSbPuPRvTEYIIMNf3HrKmhGwtVG8ORqF5+
+XHbLo7vv4tpTUUHkvLUyXxHVVq1oX+QqiRwTRm+ROF0/T6LlrWvTzvowTKtkRbsm
+mqIYEbc+fBZ/7gEeW2ycCfE7HWgxNGvbUsK4LNa1ozJbrVEBAkEA8ML0mXyxq+cX
+CwWvdXscN9vopLG/y+LKsvlKckoI/Hc0HjPyraq5Docwl2trZEmkvct1EcN8VvcV
+vCtVsrAfwQJBANa4EBPfcIH2NKYHxt9cP00n74dVSHpwJYjBnbec5RCzn5UTbqd2
+i62AkQREYhHZAryvBVE81JAFW3nqI9ZTpasCQBqEPlBRTXgzYXRTUfnMb1UvoTXS
+Zd9cwRppHmvr/4Ve05yn+AhsjyksdouWxyMqgTxuFhy4vQ8O85Pf6fZeM4ECQCPp
+Wv8H4thJplqSeGeJFSlBYaVf1SRtN0ndIBTCj+kwMaOMQXiOsiPNmfN9wG09v2Bx
+YVFJ/D8uNjN4vo+tI8sCQFbtF+Qkj4uSFDZGMESF6MOgsGt1R1iCpvpMSr9h9V02
+LPXyS3ozB7Deq26pEiCrFtHxw2Pb7RJO6GEqH7Dg4oU=
+-----END RSA PRIVATE KEY-----`))
+	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	require.NoError(t, err)
+
+	privKey, err := utils.RSAToPrivateKey(key)
 	require.NoError(t, err)
 
 	// make a RSA x509 key

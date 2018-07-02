@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import UnixTime from './UnixTime';
 import ShortList from './ShortList';
 import styles from './bootstrap.min.css';
@@ -6,7 +7,7 @@ import cx from './cx';
 
 class BusyWorkers extends React.Component {
   static propTypes = {
-    worker: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+    worker: PropTypes.arrayOf(PropTypes.object).isRequired,
   }
 
   render() {
@@ -31,7 +32,7 @@ class BusyWorkers extends React.Component {
                     <td><UnixTime ts={worker.checkin_at}/></td>
                     <td>{worker.checkin}</td>
                   </tr>
-                  );
+                );
               })
             }
           </tbody>
@@ -43,8 +44,8 @@ class BusyWorkers extends React.Component {
 
 export default class Processes extends React.Component {
   static propTypes = {
-    busyWorkerURL: React.PropTypes.string,
-    workerPoolURL: React.PropTypes.string,
+    busyWorkerURL: PropTypes.string,
+    workerPoolURL: PropTypes.string,
   }
 
   state = {
@@ -135,7 +136,7 @@ export default class Processes extends React.Component {
                   </table>
                 </div>
               </div>
-              );
+            );
           })
         }
       </section>

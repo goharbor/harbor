@@ -2,10 +2,11 @@ package work
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // ErrNotDeleted is returned by functions that delete jobs to indicate that although the redis commands were successful,

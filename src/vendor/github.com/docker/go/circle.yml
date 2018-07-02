@@ -1,7 +1,8 @@
-machine:
-  services:
-    - docker
-
 test:
+  pre:
+    - go version
+    - go get -t -d -v ./...
   override:
-    - make test
+    - test -z "$(gofmt -s -l . | tee /dev/stderr)"
+    - go test -race -test.v ./...:
+        timeout: 600

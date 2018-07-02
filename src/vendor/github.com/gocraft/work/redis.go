@@ -56,6 +56,22 @@ func redisKeyHeartbeat(namespace, workerPoolID string) string {
 	return redisNamespacePrefix(namespace) + "worker_pools:" + workerPoolID
 }
 
+func redisKeyJobsPaused(namespace, jobName string) string {
+	return redisKeyJobs(namespace, jobName) + ":paused"
+}
+
+func redisKeyJobsLock(namespace, jobName string) string {
+	return redisKeyJobs(namespace, jobName) + ":lock"
+}
+
+func redisKeyJobsLockInfo(namespace, jobName string) string {
+	return redisKeyJobs(namespace, jobName) + ":lock_info"
+}
+
+func redisKeyJobsConcurrency(namespace, jobName string) string {
+	return redisKeyJobs(namespace, jobName) + ":max_concurrency"
+}
+
 func redisKeyUniqueJob(namespace, jobName string, args map[string]interface{}) (string, error) {
 	var buf bytes.Buffer
 
@@ -78,6 +94,8 @@ func redisKeyLastPeriodicEnqueue(namespace string) string {
 	return redisNamespacePrefix(namespace) + "last_periodic_enqueue"
 }
 
+// Used to fetch the next job to run
+//
 // KEYS[1] = the 1st job queue we want to try, eg, "work:jobs:emails"
 // KEYS[2] = the 1st job queue's in prog queue, eg, "work:jobs:emails:97c84119d13cb54119a38743:inprogress"
 // KEYS[3] = the 2nd job queue...
@@ -85,13 +103,116 @@ func redisKeyLastPeriodicEnqueue(namespace string) string {
 // ...
 // KEYS[N] = the last job queue...
 // KEYS[N+1] = the last job queue's in prog queue...
-var redisLuaRpoplpushMultiCmd = `
-local res
+// ARGV[1] = job queue's workerPoolID
+var redisLuaFetchJob = fmt.Sprintf(`
+local function acquireLock(lockKey, lockInfoKey, workerPoolID)
+  redis.call('incr', lockKey)
+  redis.call('hincrby', lockInfoKey, workerPoolID, 1)
+end
+
+local function haveJobs(jobQueue)
+  return redis.call('llen', jobQueue) > 0
+end
+
+local function isPaused(pauseKey)
+  return redis.call('get', pauseKey)
+end
+
+local function canRun(lockKey, maxConcurrency)
+  local activeJobs = tonumber(redis.call('get', lockKey))
+  if (not maxConcurrency or maxConcurrency == 0) or (not activeJobs or activeJobs < maxConcurrency) then
+    -- default case: maxConcurrency not defined or set to 0 means no cap on concurrent jobs OR
+    -- maxConcurrency set, but lock does not yet exist OR
+    -- maxConcurrency set, lock is set, but not yet at max concurrency
+    return true
+  else
+    -- we are at max capacity for running jobs
+    return false
+  end
+end
+
+local res, jobQueue, inProgQueue, pauseKey, lockKey, maxConcurrency, workerPoolID, concurrencyKey, lockInfoKey
 local keylen = #KEYS
-for i=1,keylen,2 do
-  res = redis.call('rpoplpush', KEYS[i], KEYS[i+1])
+workerPoolID = ARGV[1]
+
+for i=1,keylen,%d do
+  jobQueue = KEYS[i]
+  inProgQueue = KEYS[i+1]
+  pauseKey = KEYS[i+2]
+  lockKey = KEYS[i+3]
+  lockInfoKey = KEYS[i+4]
+  concurrencyKey = KEYS[i+5]
+
+  maxConcurrency = tonumber(redis.call('get', concurrencyKey))
+
+  if haveJobs(jobQueue) and not isPaused(pauseKey) and canRun(lockKey, maxConcurrency) then
+    acquireLock(lockKey, lockInfoKey, workerPoolID)
+    res = redis.call('rpoplpush', jobQueue, inProgQueue)
+    return {res, jobQueue, inProgQueue}
+  end
+end
+return nil`, fetchKeysPerJobType)
+
+// Used by the reaper to re-enqueue jobs that were in progress
+//
+// KEYS[1] = the 1st job's in progress queue
+// KEYS[2] = the 1st job's job queue
+// KEYS[3] = the 2nd job's in progress queue
+// KEYS[4] = the 2nd job's job queue
+// ...
+// KEYS[N] = the last job's in progress queue
+// KEYS[N+1] = the last job's job queue
+// ARGV[1] = workerPoolID for job queue
+var redisLuaReenqueueJob = fmt.Sprintf(`
+local function releaseLock(lockKey, lockInfoKey, workerPoolID)
+  redis.call('decr', lockKey)
+  redis.call('hincrby', lockInfoKey, workerPoolID, -1)
+end
+
+local keylen = #KEYS
+local res, jobQueue, inProgQueue, workerPoolID, lockKey, lockInfoKey
+workerPoolID = ARGV[1]
+
+for i=1,keylen,%d do
+  inProgQueue = KEYS[i]
+  jobQueue = KEYS[i+1]
+  lockKey = KEYS[i+2]
+  lockInfoKey = KEYS[i+3]
+  res = redis.call('rpoplpush', inProgQueue, jobQueue)
   if res then
-    return {res, KEYS[i], KEYS[i+1]}
+    releaseLock(lockKey, lockInfoKey, workerPoolID)
+    return {res, inProgQueue, jobQueue}
+  end
+end
+return nil`, requeueKeysPerJob)
+
+// Used by the reaper to clean up stale locks
+//
+// KEYS[1] = the 1st job's lock
+// KEYS[2] = the 1st job's lock info hash
+// KEYS[3] = the 2nd job's lock
+// KEYS[4] = the 2nd job's lock info hash
+// ...
+// KEYS[N] = the last job's lock
+// KEYS[N+1] = the last job's lock info haash
+// ARGV[1] = the dead worker pool id
+var redisLuaReapStaleLocks = `
+local keylen = #KEYS
+local lock, lockInfo, deadLockCount
+local deadPoolID = ARGV[1]
+
+for i=1,keylen,2 do
+  lock = KEYS[i]
+  lockInfo = KEYS[i+1]
+  deadLockCount = tonumber(redis.call('hget', lockInfo, deadPoolID))
+
+  if deadLockCount then
+    redis.call('decrby', lock, deadLockCount)
+    redis.call('hdel', lockInfo, deadPoolID)
+
+    if tonumber(redis.call('get', lock)) < 0 then
+      redis.call('set', lock, 0)
+    end
   end
 end
 return nil
@@ -140,8 +261,8 @@ for i=1,jobCount do
   j = cjson.decode(jobs[i])
   if j['id'] == ARGV[2] then
     redis.call('zrem', KEYS[1], jobs[i])
-	deletedCount = deletedCount + 1
-	jobBytes = jobs[i]
+    deletedCount = deletedCount + 1
+    jobBytes = jobs[i]
   end
 end
 return {deletedCount, jobBytes}
@@ -225,7 +346,7 @@ return requeuedCount
 `
 
 // KEYS[1] = job queue to push onto
-// KEYS[2] = Unique job's key. Test for existance and set if we push.
+// KEYS[2] = Unique job's key. Test for existence and set if we push.
 // ARGV[1] = job
 var redisLuaEnqueueUnique = `
 if redis.call('set', KEYS[2], '1', 'NX', 'EX', '86400') then
@@ -236,7 +357,7 @@ return 'dup'
 `
 
 // KEYS[1] = scheduled job queue
-// KEYS[2] = Unique job's key. Test for existance and set if we push.
+// KEYS[2] = Unique job's key. Test for existence and set if we push.
 // ARGV[1] = job
 // ARGV[2] = epoch seconds for job to be run at
 var redisLuaEnqueueUniqueIn = `

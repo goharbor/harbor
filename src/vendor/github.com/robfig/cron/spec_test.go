@@ -109,12 +109,43 @@ func TestNext(t *testing.T) {
 		// Leap year
 		{"Mon Jul 9 23:35 2012", "0 0 0 29 Feb ?", "Mon Feb 29 00:00 2016"},
 
-		// Daylight savings time EST -> EDT
+		// Daylight savings time 2am EST (-5) -> 3am EDT (-4)
 		{"2012-03-11T00:00:00-0500", "0 30 2 11 Mar ?", "2013-03-11T02:30:00-0400"},
 
-		// Daylight savings time EDT -> EST
+		// hourly job
+		{"2012-03-11T00:00:00-0500", "0 0 * * * ?", "2012-03-11T01:00:00-0500"},
+		{"2012-03-11T01:00:00-0500", "0 0 * * * ?", "2012-03-11T03:00:00-0400"},
+		{"2012-03-11T03:00:00-0400", "0 0 * * * ?", "2012-03-11T04:00:00-0400"},
+		{"2012-03-11T04:00:00-0400", "0 0 * * * ?", "2012-03-11T05:00:00-0400"},
+
+		// 1am nightly job
+		{"2012-03-11T00:00:00-0500", "0 0 1 * * ?", "2012-03-11T01:00:00-0500"},
+		{"2012-03-11T01:00:00-0500", "0 0 1 * * ?", "2012-03-12T01:00:00-0400"},
+
+		// 2am nightly job (skipped)
+		{"2012-03-11T00:00:00-0500", "0 0 2 * * ?", "2012-03-12T02:00:00-0400"},
+
+		// Daylight savings time 2am EDT (-4) => 1am EST (-5)
 		{"2012-11-04T00:00:00-0400", "0 30 2 04 Nov ?", "2012-11-04T02:30:00-0500"},
 		{"2012-11-04T01:45:00-0400", "0 30 1 04 Nov ?", "2012-11-04T01:30:00-0500"},
+
+		// hourly job
+		{"2012-11-04T00:00:00-0400", "0 0 * * * ?", "2012-11-04T01:00:00-0400"},
+		{"2012-11-04T01:00:00-0400", "0 0 * * * ?", "2012-11-04T01:00:00-0500"},
+		{"2012-11-04T01:00:00-0500", "0 0 * * * ?", "2012-11-04T02:00:00-0500"},
+
+		// 1am nightly job (runs twice)
+		{"2012-11-04T00:00:00-0400", "0 0 1 * * ?", "2012-11-04T01:00:00-0400"},
+		{"2012-11-04T01:00:00-0400", "0 0 1 * * ?", "2012-11-04T01:00:00-0500"},
+		{"2012-11-04T01:00:00-0500", "0 0 1 * * ?", "2012-11-05T01:00:00-0500"},
+
+		// 2am nightly job
+		{"2012-11-04T00:00:00-0400", "0 0 2 * * ?", "2012-11-04T02:00:00-0500"},
+		{"2012-11-04T02:00:00-0500", "0 0 2 * * ?", "2012-11-05T02:00:00-0500"},
+
+		// 3am nightly job
+		{"2012-11-04T00:00:00-0400", "0 0 3 * * ?", "2012-11-04T03:00:00-0500"},
+		{"2012-11-04T03:00:00-0500", "0 0 3 * * ?", "2012-11-05T03:00:00-0500"},
 
 		// Unsatisfiable
 		{"Mon Jul 9 23:35 2012", "0 0 0 30 Feb ?", ""},
@@ -165,6 +196,51 @@ func getTime(value string) time.Time {
 			// Daylight savings time tests require location
 			if ny, err := time.LoadLocation("America/New_York"); err == nil {
 				t = t.In(ny)
+			}
+		}
+	}
+
+	return t
+}
+
+func TestNextWithTz(t *testing.T) {
+	runs := []struct {
+		time, spec string
+		expected   string
+	}{
+		// Failing tests
+		{"2016-01-03T13:09:03+0530", "0 14 14 * * *", "2016-01-03T14:14:00+0530"},
+		{"2016-01-03T04:09:03+0530", "0 14 14 * * ?", "2016-01-03T14:14:00+0530"},
+
+		// Passing tests
+		{"2016-01-03T14:09:03+0530", "0 14 14 * * *", "2016-01-03T14:14:00+0530"},
+		{"2016-01-03T14:00:00+0530", "0 14 14 * * ?", "2016-01-03T14:14:00+0530"},
+	}
+	for _, c := range runs {
+		sched, err := Parse(c.spec)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
+		actual := sched.Next(getTimeTZ(c.time))
+		expected := getTimeTZ(c.expected)
+		if !actual.Equal(expected) {
+			t.Errorf("%s, \"%s\": (expected) %v != %v (actual)", c.time, c.spec, expected, actual)
+		}
+	}
+}
+
+func getTimeTZ(value string) time.Time {
+	if value == "" {
+		return time.Time{}
+	}
+	t, err := time.Parse("Mon Jan 2 15:04 2006", value)
+	if err != nil {
+		t, err = time.Parse("Mon Jan 2 15:04:05 2006", value)
+		if err != nil {
+			t, err = time.Parse("2006-01-02T15:04:05-0700", value)
+			if err != nil {
+				panic(err)
 			}
 		}
 	}

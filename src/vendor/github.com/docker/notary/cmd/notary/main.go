@@ -243,14 +243,14 @@ func getPassphraseRetriever() notary.PassRetriever {
 	}
 }
 
-// Set the logging level to fatal on default, or the most specific level the user specified (debug or error)
+// Set the logging level to warn on default, or the most verbose level the user specified (debug, info)
 func (n *notaryCommander) setVerbosityLevel() {
 	if n.debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	} else if n.verbose {
-		logrus.SetLevel(logrus.ErrorLevel)
+		logrus.SetLevel(logrus.InfoLevel)
 	} else {
-		logrus.SetLevel(logrus.FatalLevel)
+		logrus.SetLevel(logrus.WarnLevel)
 	}
 	logrus.SetOutput(os.Stderr)
 }

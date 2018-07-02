@@ -407,7 +407,7 @@ func TestGetGUNPRefixes(t *testing.T) {
 // For sanity, make sure we can always parse the sample config
 func TestSampleConfig(t *testing.T) {
 	var registerCalled = 0
-	_, _, err := parseServerConfig("../../fixtures/server-config.json", fakeRegisterer(&registerCalled), false)
+	_, _, err := parseServerConfig("../../fixtures/server-config.sqlite.json", fakeRegisterer(&registerCalled), false)
 	require.NoError(t, err)
 
 	// once for the DB, once for the trust service

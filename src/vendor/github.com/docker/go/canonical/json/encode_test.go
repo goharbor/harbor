@@ -382,10 +382,16 @@ func TestStringBytes(t *testing.T) {
 		r = append(r, i)
 	}
 	s := string(r) + "\xff\xff\xffhello" // some invalid UTF-8 too
-	es.string(s)
+	_, err := es.string(s)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	esBytes := &encodeState{}
-	esBytes.stringBytes([]byte(s))
+	_, err = esBytes.stringBytes([]byte(s))
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	enc := es.Buffer.String()
 	encBytes := esBytes.Buffer.String()
@@ -435,18 +441,6 @@ func TestIssue6458(t *testing.T) {
 
 	if want := `{"M":"ImZvbyI="}`; string(b) != want {
 		t.Errorf("Marshal(x) = %#q; want %#q", b, want)
-	}
-}
-
-func TestIssue10281(t *testing.T) {
-	type Foo struct {
-		N Number
-	}
-	x := Foo{Number(`invalid`)}
-
-	b, err := Marshal(&x)
-	if err == nil {
-		t.Errorf("Marshal(&x) = %#q; want error", b)
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"fmt"
 	"reflect"
@@ -132,6 +133,47 @@ func TestParseECPrivateKey(t *testing.T) {
 	}
 }
 
+// See Issue https://github.com/golang/go/issues/6650.
+func TestParseEncryptedPrivateKeysFails(t *testing.T) {
+	const wantSubstring = "encrypted"
+	for i, tt := range testdata.PEMEncryptedKeys {
+		_, err := ParsePrivateKey(tt.PEMBytes)
+		if err == nil {
+			t.Errorf("#%d key %s: ParsePrivateKey successfully parsed, expected an error", i, tt.Name)
+			continue
+		}
+
+		if !strings.Contains(err.Error(), wantSubstring) {
+			t.Errorf("#%d key %s: got error %q, want substring %q", i, tt.Name, err, wantSubstring)
+		}
+	}
+}
+
+// Parse encrypted private keys with passphrase
+func TestParseEncryptedPrivateKeysWithPassphrase(t *testing.T) {
+	data := []byte("sign me")
+	for _, tt := range testdata.PEMEncryptedKeys {
+		s, err := ParsePrivateKeyWithPassphrase(tt.PEMBytes, []byte(tt.EncryptionKey))
+		if err != nil {
+			t.Fatalf("ParsePrivateKeyWithPassphrase returned error: %s", err)
+			continue
+		}
+		sig, err := s.Sign(rand.Reader, data)
+		if err != nil {
+			t.Fatalf("dsa.Sign: %v", err)
+		}
+		if err := s.PublicKey().Verify(data, sig); err != nil {
+			t.Errorf("Verify failed: %v", err)
+		}
+	}
+
+	tt := testdata.PEMEncryptedKeys[0]
+	_, err := ParsePrivateKeyWithPassphrase(tt.PEMBytes, []byte("incorrect"))
+	if err != x509.IncorrectPasswordError {
+		t.Fatalf("got %v want IncorrectPasswordError", err)
+	}
+}
+
 func TestParseDSA(t *testing.T) {
 	// We actually exercise the ParsePrivateKey codepath here, as opposed to
 	// using the ParseRawPrivateKey+NewSignerFromKey path that testdata_test.go
@@ -192,7 +234,7 @@ func TestMarshalParsePublicKey(t *testing.T) {
 	}
 }
 
-type authResult struct {
+type testAuthResult struct {
 	pubKey   PublicKey
 	options  []string
 	comments string
@@ -200,11 +242,11 @@ type authResult struct {
 	ok       bool
 }
 
-func testAuthorizedKeys(t *testing.T, authKeys []byte, expected []authResult) {
+func testAuthorizedKeys(t *testing.T, authKeys []byte, expected []testAuthResult) {
 	rest := authKeys
-	var values []authResult
+	var values []testAuthResult
 	for len(rest) > 0 {
-		var r authResult
+		var r testAuthResult
 		var err error
 		r.pubKey, r.comments, r.options, rest, err = ParseAuthorizedKey(rest)
 		r.ok = (err == nil)
@@ -222,7 +264,7 @@ func TestAuthorizedKeyBasic(t *testing.T) {
 	pub, pubSerialized := getTestKey()
 	line := "ssh-rsa " + pubSerialized + " user@host"
 	testAuthorizedKeys(t, []byte(line),
-		[]authResult{
+		[]testAuthResult{
 			{pub, nil, "user@host", "", true},
 		})
 }
@@ -244,7 +286,7 @@ func TestAuth(t *testing.T) {
 		authOptions := strings.Join(authWithOptions, eol)
 		rest2 := strings.Join(authWithOptions[3:], eol)
 		rest3 := strings.Join(authWithOptions[6:], eol)
-		testAuthorizedKeys(t, []byte(authOptions), []authResult{
+		testAuthorizedKeys(t, []byte(authOptions), []testAuthResult{
 			{pub, []string{`env="HOME=/home/root"`, "no-port-forwarding"}, "user@host", rest2, true},
 			{pub, []string{`env="HOME=/home/root2"`}, "user2@host2", rest3, true},
 			{nil, nil, "", "", false},
@@ -255,7 +297,7 @@ func TestAuth(t *testing.T) {
 func TestAuthWithQuotedSpaceInEnv(t *testing.T) {
 	pub, pubSerialized := getTestKey()
 	authWithQuotedSpaceInEnv := []byte(`env="HOME=/home/root dir",no-port-forwarding ssh-rsa ` + pubSerialized + ` user@host`)
-	testAuthorizedKeys(t, []byte(authWithQuotedSpaceInEnv), []authResult{
+	testAuthorizedKeys(t, []byte(authWithQuotedSpaceInEnv), []testAuthResult{
 		{pub, []string{`env="HOME=/home/root dir"`, "no-port-forwarding"}, "user@host", "", true},
 	})
 }
@@ -263,7 +305,7 @@ func TestAuthWithQuotedSpaceInEnv(t *testing.T) {
 func TestAuthWithQuotedCommaInEnv(t *testing.T) {
 	pub, pubSerialized := getTestKey()
 	authWithQuotedCommaInEnv := []byte(`env="HOME=/home/root,dir",no-port-forwarding ssh-rsa ` + pubSerialized + `   user@host`)
-	testAuthorizedKeys(t, []byte(authWithQuotedCommaInEnv), []authResult{
+	testAuthorizedKeys(t, []byte(authWithQuotedCommaInEnv), []testAuthResult{
 		{pub, []string{`env="HOME=/home/root,dir"`, "no-port-forwarding"}, "user@host", "", true},
 	})
 }
@@ -272,11 +314,11 @@ func TestAuthWithQuotedQuoteInEnv(t *testing.T) {
 	pub, pubSerialized := getTestKey()
 	authWithQuotedQuoteInEnv := []byte(`env="HOME=/home/\"root dir",no-port-forwarding` + "\t" + `ssh-rsa` + "\t" + pubSerialized + `   user@host`)
 	authWithDoubleQuotedQuote := []byte(`no-port-forwarding,env="HOME=/home/ \"root dir\"" ssh-rsa ` + pubSerialized + "\t" + `user@host`)
-	testAuthorizedKeys(t, []byte(authWithQuotedQuoteInEnv), []authResult{
+	testAuthorizedKeys(t, []byte(authWithQuotedQuoteInEnv), []testAuthResult{
 		{pub, []string{`env="HOME=/home/\"root dir"`, "no-port-forwarding"}, "user@host", "", true},
 	})
 
-	testAuthorizedKeys(t, []byte(authWithDoubleQuotedQuote), []authResult{
+	testAuthorizedKeys(t, []byte(authWithDoubleQuotedQuote), []testAuthResult{
 		{pub, []string{"no-port-forwarding", `env="HOME=/home/ \"root dir\""`}, "user@host", "", true},
 	})
 }
@@ -285,7 +327,7 @@ func TestAuthWithInvalidSpace(t *testing.T) {
 	_, pubSerialized := getTestKey()
 	authWithInvalidSpace := []byte(`env="HOME=/home/root dir", no-port-forwarding ssh-rsa ` + pubSerialized + ` user@host
 #more to follow but still no valid keys`)
-	testAuthorizedKeys(t, []byte(authWithInvalidSpace), []authResult{
+	testAuthorizedKeys(t, []byte(authWithInvalidSpace), []testAuthResult{
 		{nil, nil, "", "", false},
 	})
 }
@@ -295,7 +337,7 @@ func TestAuthWithMissingQuote(t *testing.T) {
 	authWithMissingQuote := []byte(`env="HOME=/home/root,no-port-forwarding ssh-rsa ` + pubSerialized + ` user@host
 env="HOME=/home/root",shared-control ssh-rsa ` + pubSerialized + ` user@host`)
 
-	testAuthorizedKeys(t, []byte(authWithMissingQuote), []authResult{
+	testAuthorizedKeys(t, []byte(authWithMissingQuote), []testAuthResult{
 		{pub, []string{`env="HOME=/home/root"`, `shared-control`}, "user@host", "", true},
 	})
 }
@@ -309,14 +351,14 @@ func TestInvalidEntry(t *testing.T) {
 }
 
 var knownHostsParseTests = []struct {
-	input     string
-	err       string
+	input string
+	err   string
 
-	marker   string
-	comment  string
-	hosts    []string
-	rest     string
-} {
+	marker  string
+	comment string
+	hosts   []string
+	rest    string
+}{
 	{
 		"",
 		"EOF",
@@ -375,13 +417,13 @@ var knownHostsParseTests = []struct {
 		"localhost,[host2:123]\tssh-rsa {RSAPUB}\tcomment comment",
 		"",
 
-		"", "comment comment", []string{"localhost","[host2:123]"}, "",
+		"", "comment comment", []string{"localhost", "[host2:123]"}, "",
 	},
 	{
 		"@marker \tlocalhost,[host2:123]\tssh-rsa {RSAPUB}",
 		"",
 
-		"marker", "", []string{"localhost","[host2:123]"}, "",
+		"marker", "", []string{"localhost", "[host2:123]"}, "",
 	},
 	{
 		"@marker \tlocalhost,[host2:123]\tssh-rsa aabbccdd",
@@ -436,5 +478,23 @@ func TestKnownHostsParsing(t *testing.T) {
 		if rest := string(rest); rest != test.rest {
 			t.Errorf("#%d: expected remaining input to be %q, but got %q", i, test.rest, rest)
 		}
+	}
+}
+
+func TestFingerprintLegacyMD5(t *testing.T) {
+	pub, _ := getTestKey()
+	fingerprint := FingerprintLegacyMD5(pub)
+	want := "fb:61:6d:1a:e3:f0:95:45:3c:a0:79:be:4a:93:63:66" // ssh-keygen -lf -E md5 rsa
+	if fingerprint != want {
+		t.Errorf("got fingerprint %q want %q", fingerprint, want)
+	}
+}
+
+func TestFingerprintSHA256(t *testing.T) {
+	pub, _ := getTestKey()
+	fingerprint := FingerprintSHA256(pub)
+	want := "SHA256:Anr3LjZK8YVpjrxu79myrW9Hrb/wpcMNpVvTq/RcBm8" // ssh-keygen -lf rsa
+	if fingerprint != want {
+		t.Errorf("got fingerprint %q want %q", fingerprint, want)
 	}
 }

@@ -1,4 +1,4 @@
-[![Circle CI](https://circleci.com/gh/docker/go.svg?style=svg)](https://circleci.com/gh/docker/go)
+[![Circle CI](https://circleci.com/gh/jfrazelle/go.svg?style=svg)](https://circleci.com/gh/jfrazelle/go)
 
 This is a repository used for building go packages based off upstream with
 small patches.

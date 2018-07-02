@@ -1,12 +1,13 @@
 package work
 
 import (
-	"github.com/garyburd/redigo/redis"
-	"github.com/robfig/cron"
 	"reflect"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/gomodule/redigo/redis"
+	"github.com/robfig/cron"
 )
 
 // WorkerPool represents a pool of workers. It forms the primary API of gocraft/work. WorkerPools provide the public API of gocraft/work. You can attach jobs and middlware to them. You can start and stop them. Based on their concurrency setting, they'll spin up N worker goroutines.
@@ -39,11 +40,26 @@ type jobType struct {
 	DynamicHandler reflect.Value
 }
 
+func (jt *jobType) calcBackoff(j *Job) int64 {
+	if jt.Backoff == nil {
+		return defaultBackoffCalculator(j)
+	}
+	return jt.Backoff(j)
+}
+
+// You may provide your own backoff function for retrying failed jobs or use the builtin one.
+// Returns the number of seconds to wait until the next attempt.
+//
+// The builtin backoff calculator provides an exponentially increasing wait function.
+type BackoffCalculator func(job *Job) int64
+
 // JobOptions can be passed to JobWithOptions.
 type JobOptions struct {
-	Priority uint // Priority from 1 to 10000
-	MaxFails uint // 1: send straight to dead (unless SkipDead)
-	SkipDead bool // If true, don't send failed jobs to the dead queue when retries are exhausted.
+	Priority       uint              // Priority from 1 to 10000
+	MaxFails       uint              // 1: send straight to dead (unless SkipDead)
+	SkipDead       bool              // If true, don't send failed jobs to the dead queue when retries are exhausted.
+	MaxConcurrency uint              // Max number of jobs to keep in flight (default is 0, meaning no max)
+	Backoff        BackoffCalculator // If not set, uses the default backoff algorithm
 }
 
 // GenericHandler is a job handler without any custom context.
@@ -61,7 +77,8 @@ type middlewareHandler struct {
 	GenericMiddlewareHandler GenericMiddlewareHandler
 }
 
-// NewWorkerPool creates a new worker pool. ctx should be a struct literal whose type will be used for middleware and handlers. concurrency specifies how many workers to spin up - each worker can process jobs concurrently.
+// NewWorkerPool creates a new worker pool. ctx should be a struct literal whose type will be used for middleware and handlers.
+// concurrency specifies how many workers to spin up - each worker can process jobs concurrently.
 func NewWorkerPool(ctx interface{}, concurrency uint, namespace string, pool *redis.Pool) *WorkerPool {
 	if pool == nil {
 		panic("NewWorkerPool needs a non-nil *redis.Pool")
@@ -111,7 +128,7 @@ func (wp *WorkerPool) Middleware(fn interface{}) *WorkerPool {
 	return wp
 }
 
-// Job registers the job name to the specified handler fn. For instnace, when workers pull jobs from the name queue, they'll be processed by the specified handler function.
+// Job registers the job name to the specified handler fn. For instance, when workers pull jobs from the name queue they'll be processed by the specified handler function.
 // fn can take one of these forms:
 // (*ContextType).func(*Job) error, (ContextType matches the type of ctx specified when creating a pool)
 // func(*Job) error, for the generic handler format.
@@ -119,7 +136,8 @@ func (wp *WorkerPool) Job(name string, fn interface{}) *WorkerPool {
 	return wp.JobWithOptions(name, JobOptions{}, fn)
 }
 
-// JobWithOptions adds a handler for 'name' jobs as per the Job function, but permits you specify additional options such as a job's priority, retry count, and whether to send dead jobs to the dead job queue or trash them.
+// JobWithOptions adds a handler for 'name' jobs as per the Job function, but permits you specify additional options
+// such as a job's priority, retry count, and whether to send dead jobs to the dead job queue or trash them.
 func (wp *WorkerPool) JobWithOptions(name string, jobOpts JobOptions, fn interface{}) *WorkerPool {
 	jobOpts = applyDefaultsAndValidate(jobOpts)
 
@@ -166,7 +184,10 @@ func (wp *WorkerPool) Start() {
 	}
 	wp.started = true
 
+	// TODO: we should cleanup stale keys on startup from previously registered jobs
+	wp.writeConcurrencyControlsToRedis()
 	go wp.writeKnownJobsToRedis()
+
 	for _, w := range wp.workers {
 		go w.start()
 	}
@@ -221,7 +242,7 @@ func (wp *WorkerPool) startRequeuers() {
 	}
 	wp.retrier = newRequeuer(wp.namespace, wp.pool, redisKeyRetry(wp.namespace), jobNames)
 	wp.scheduler = newRequeuer(wp.namespace, wp.pool, redisKeyScheduled(wp.namespace), jobNames)
-	wp.deadPoolReaper = newDeadPoolReaper(wp.namespace, wp.pool)
+	wp.deadPoolReaper = newDeadPoolReaper(wp.namespace, wp.pool, jobNames)
 	wp.retrier.start()
 	wp.scheduler.start()
 	wp.deadPoolReaper.start()
@@ -243,27 +264,29 @@ func (wp *WorkerPool) writeKnownJobsToRedis() {
 
 	conn := wp.pool.Get()
 	defer conn.Close()
-
 	key := redisKeyKnownJobs(wp.namespace)
-
 	jobNames := make([]interface{}, 0, len(wp.jobTypes)+1)
 	jobNames = append(jobNames, key)
 	for k := range wp.jobTypes {
 		jobNames = append(jobNames, k)
 	}
 
-	_, err := conn.Do("SADD", jobNames...)
-	if err != nil {
+	if _, err := conn.Do("SADD", jobNames...); err != nil {
 		logError("write_known_jobs", err)
 	}
 }
 
-func newJobTypeGeneric(name string, opts JobOptions, handler GenericHandler) *jobType {
-	return &jobType{
-		Name:           name,
-		JobOptions:     opts,
-		IsGeneric:      true,
-		GenericHandler: handler,
+func (wp *WorkerPool) writeConcurrencyControlsToRedis() {
+	if len(wp.jobTypes) == 0 {
+		return
+	}
+
+	conn := wp.pool.Get()
+	defer conn.Close()
+	for jobName, jobType := range wp.jobTypes {
+		if _, err := conn.Do("SET", redisKeyJobsConcurrency(wp.namespace, jobName), jobType.MaxConcurrency); err != nil {
+			logError("write_concurrency_controls_max_concurrency", err)
+		}
 	}
 }
 

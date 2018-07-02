@@ -1,7 +1,6 @@
 package trustmanager
 
 import (
-	"encoding/pem"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -114,11 +113,7 @@ func (s *GenericKeyStore) AddKey(keyInfo KeyInfo, privKey data.PrivateKey) error
 		}
 	}
 
-	if chosenPassphrase != "" {
-		pemPrivKey, err = utils.EncryptPrivateKey(privKey, keyInfo.Role, keyInfo.Gun, chosenPassphrase)
-	} else {
-		pemPrivKey, err = utils.KeyToPEM(privKey, keyInfo.Role, keyInfo.Gun)
-	}
+	pemPrivKey, err = utils.ConvertPrivateKeyToPKCS8(privKey, keyInfo.Role, keyInfo.Gun, chosenPassphrase)
 
 	if err != nil {
 		return err
@@ -204,11 +199,11 @@ func copyKeyInfoMap(keyInfoMap map[string]KeyInfo) map[string]KeyInfo {
 func KeyInfoFromPEM(pemBytes []byte, filename string) (string, KeyInfo, error) {
 	var keyID string
 	keyID = filepath.Base(filename)
-	block, _ := pem.Decode(pemBytes)
-	if block == nil {
-		return "", KeyInfo{}, fmt.Errorf("could not decode PEM block for key %s", filename)
+	role, gun, err := utils.ExtractPrivateKeyAttributes(pemBytes)
+	if err != nil {
+		return "", KeyInfo{}, err
 	}
-	return keyID, KeyInfo{Gun: data.GUN(block.Headers["gun"]), Role: data.RoleName(block.Headers["role"])}, nil
+	return keyID, KeyInfo{Gun: gun, Role: role}, nil
 }
 
 // getKeyRole finds the role for the given keyID. It attempts to look
@@ -224,10 +219,12 @@ func getKeyRole(s Storage, keyID string) (data.RoleName, error) {
 			if err != nil {
 				return "", err
 			}
-			block, _ := pem.Decode(d)
-			if block != nil {
-				return data.RoleName(block.Headers["role"]), nil
+
+			role, _, err := utils.ExtractPrivateKeyAttributes(d)
+			if err != nil {
+				return "", err
 			}
+			return role, nil
 		}
 	}
 	return "", ErrKeyNotFound{KeyID: keyID}

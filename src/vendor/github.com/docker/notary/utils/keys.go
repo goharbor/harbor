@@ -33,7 +33,7 @@ func ExportKeysByGUN(to io.Writer, s Exporter, gun string) error {
 	for _, loc := range keys {
 		keyFile, err := s.Get(loc)
 		if err != nil {
-			logrus.Info("Could not parse key file at ", loc)
+			logrus.Warn("Could not parse key file at ", loc)
 			continue
 		}
 		block, _ := pem.Decode(keyFile)
@@ -132,7 +132,7 @@ func ImportKeys(from io.Reader, to []Importer, fallbackRole string, fallbackGUN 
 					return errors.New("maximum number of passphrase attempts exceeded")
 				}
 			}
-			blockBytes, err = utils.EncryptPrivateKey(privKey, tufdata.RoleName(block.Headers["role"]), tufdata.GUN(block.Headers["gun"]), chosenPassphrase)
+			blockBytes, err = utils.ConvertPrivateKeyToPKCS8(privKey, tufdata.RoleName(block.Headers["role"]), tufdata.GUN(block.Headers["gun"]), chosenPassphrase)
 			if err != nil {
 				return errors.New("failed to encrypt key with given passphrase")
 			}
@@ -203,7 +203,7 @@ func checkValidity(block *pem.Block) (string, error) {
 	case tufdata.CanonicalSnapshotRole.String(), tufdata.CanonicalTargetsRole.String(), tufdata.CanonicalTimestampRole.String():
 		// check if the key is missing a gun header or has an empty gun and error out since we don't know what gun it belongs to
 		if block.Headers["gun"] == "" {
-			logrus.Infof("failed to import key (%s) to store: Cannot have canonical role key without a gun, don't know what gun it belongs to", block.Headers["path"])
+			logrus.Warnf("failed to import key (%s) to store: Cannot have canonical role key without a gun, don't know what gun it belongs to", block.Headers["path"])
 			return "", errors.New("invalid key pem block")
 		}
 	default:
@@ -219,7 +219,7 @@ func checkValidity(block *pem.Block) (string, error) {
 
 		decodedKey, err := utils.ParsePEMPrivateKey(pem.EncodeToMemory(block), "")
 		if err != nil {
-			logrus.Info("failed to import key to store: Invalid key generated, key may be encrypted and does not contain path header")
+			logrus.Warn("failed to import key to store: Invalid key generated, key may be encrypted and does not contain path header")
 			return "", errors.New("invalid key pem block")
 		}
 		loc = decodedKey.ID()

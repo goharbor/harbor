@@ -85,7 +85,7 @@ func (st *MemStorage) UpdateCurrent(gun data.GUN, update MetaUpdate) error {
 // the MemStorage. Behaviour is undefined otherwise
 func (st *MemStorage) writeChange(gun data.GUN, version int, checksum string) {
 	c := Change{
-		ID:        uint(len(st.changes) + 1),
+		ID:        strconv.Itoa(len(st.changes) + 1),
 		GUN:       gun.String(),
 		Version:   version,
 		SHA256:    checksum,
@@ -200,7 +200,7 @@ func (st *MemStorage) Delete(gun data.GUN) error {
 	}
 	delete(st.checksums, gun.String())
 	c := Change{
-		ID:        uint(len(st.changes) + 1),
+		ID:        strconv.Itoa(len(st.changes) + 1),
 		GUN:       gun.String(),
 		Category:  changeCategoryDeletion,
 		CreatedAt: time.Now(),
@@ -224,7 +224,7 @@ func (st *MemStorage) GetChanges(changeID string, records int, filterName string
 	} else {
 		id, err = strconv.ParseInt(changeID, 10, 32)
 		if err != nil {
-			return nil, err
+			return nil, ErrBadQuery{msg: fmt.Sprintf("change ID expected to be integer, provided ID was: %d", changeID)}
 		}
 	}
 	var (

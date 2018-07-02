@@ -240,6 +240,31 @@ func TestTranslateErrorsWhenCannotParse400(t *testing.T) {
 	}
 }
 
+// Cut off error reading after a certain size
+func TestTranslateErrorsLimitsErrorSize(t *testing.T) {
+	// if the error message itself is the max error size, then extra JSON surrounding it will put it over
+	// the top
+	msg := make([]byte, MaxErrorResponseSize)
+	for i := range msg {
+		msg[i] = 'a'
+	}
+
+	serialObj, err := validation.NewSerializableError(validation.ErrBadRoot{Msg: string(msg)})
+	require.NoError(t, err)
+	serialization, err := json.Marshal(serialObj)
+	require.NoError(t, err)
+	errorBody := bytes.NewBuffer([]byte(fmt.Sprintf(
+		`{"errors": [{"otherstuff": "what", "detail": %s}]}`,
+		string(serialization))))
+	errorResp := http.Response{
+		StatusCode: http.StatusBadRequest,
+		Body:       ioutil.NopCloser(errorBody),
+	}
+
+	err = translateStatusToError(&errorResp, "")
+	require.IsType(t, ErrInvalidOperation{}, err)
+}
+
 func TestHTTPStoreRemoveAll(t *testing.T) {
 	// Set up a simple handler and server for our store, just check that a non-error response back is fine
 	handler := func(w http.ResponseWriter, r *http.Request) {}
@@ -321,6 +346,27 @@ func TestHTTPStoreGetKey(t *testing.T) {
 	_, err = store.GetKey(data.CanonicalSnapshotRole)
 	require.IsType(t, NetworkError{}, err)
 	require.Equal(t, "FAIL", err.Error())
+}
+
+func TestHTTPStoreGetRotateKeySizeLimited(t *testing.T) {
+	tooLarge := make([]byte, MaxKeySize+10)
+	for i := range tooLarge {
+		tooLarge[i] = 'a'
+	}
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(t, "/metadata/snapshot.key", r.URL.Path)
+		w.Write(tooLarge)
+	}
+	server := httptest.NewServer(http.HandlerFunc(handler))
+	defer server.Close()
+	store, err := NewHTTPStore(server.URL, "metadata", "json", "key", http.DefaultTransport)
+	require.NoError(t, err)
+
+	for _, downloadFunc := range []func(data.RoleName) ([]byte, error){store.RotateKey, store.GetKey} {
+		gotten, err := downloadFunc(data.CanonicalSnapshotRole)
+		require.NoError(t, err)
+		require.Equal(t, tooLarge[:MaxKeySize], gotten)
+	}
 }
 
 func TestHTTPOffline(t *testing.T) {

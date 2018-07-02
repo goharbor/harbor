@@ -1,16 +1,14 @@
+import './TestSetup';
 import expect from 'expect';
 import RetryJobs from './RetryJobs';
 import React from 'react';
-import ReactTestUtils from 'react-addons-test-utils';
-import { findAllByTag } from './TestUtils';
+import { mount } from 'enzyme';
 
 describe('RetryJobs', () => {
   it('shows jobs', () => {
-    let r = ReactTestUtils.createRenderer();
-    r.render(<RetryJobs />);
-    let retryJobs = r.getMountedInstance();
+    let retryJobs = mount(<RetryJobs />);
 
-    expect(retryJobs.state.jobs.length).toEqual(0);
+    expect(retryJobs.state().jobs.length).toEqual(0);
 
     retryJobs.setState({
       count: 2,
@@ -20,13 +18,11 @@ describe('RetryJobs', () => {
       ]
     });
 
-    expect(retryJobs.state.jobs.length).toEqual(2);
+    expect(retryJobs.state().jobs.length).toEqual(2);
   });
 
   it('has pages', () => {
-    let r = ReactTestUtils.createRenderer();
-    r.render(<RetryJobs />);
-    let retryJobs = r.getMountedInstance();
+    let retryJobs = mount(<RetryJobs />);
 
     let genJob = (n) => {
       let job = [];
@@ -46,14 +42,13 @@ describe('RetryJobs', () => {
       jobs: genJob(21)
     });
 
-    expect(retryJobs.state.jobs.length).toEqual(21);
-    expect(retryJobs.state.page).toEqual(1);
+    expect(retryJobs.state().jobs.length).toEqual(21);
+    expect(retryJobs.state().page).toEqual(1);
 
-    let output = r.getRenderOutput();
-    let pageList = findAllByTag(output, 'PageList');
+    let pageList = retryJobs.find('PageList');
     expect(pageList.length).toEqual(1);
 
-    pageList[0].props.jumpTo(2)();
-    expect(retryJobs.state.page).toEqual(2);
+    pageList.at(0).props().jumpTo(2)();
+    expect(retryJobs.state().page).toEqual(2);
   });
 });

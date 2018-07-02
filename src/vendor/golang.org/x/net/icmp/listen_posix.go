@@ -65,22 +65,24 @@ func ListenPacket(network, address string) (*PacketConn, error) {
 		if err != nil {
 			return nil, os.NewSyscallError("socket", err)
 		}
-		defer syscall.Close(s)
 		if runtime.GOOS == "darwin" && family == syscall.AF_INET {
 			if err := syscall.SetsockoptInt(s, iana.ProtocolIP, sysIP_STRIPHDR, 1); err != nil {
+				syscall.Close(s)
 				return nil, os.NewSyscallError("setsockopt", err)
 			}
 		}
 		sa, err := sockaddr(family, address)
 		if err != nil {
+			syscall.Close(s)
 			return nil, err
 		}
 		if err := syscall.Bind(s, sa); err != nil {
+			syscall.Close(s)
 			return nil, os.NewSyscallError("bind", err)
 		}
 		f := os.NewFile(uintptr(s), "datagram-oriented icmp")
-		defer f.Close()
 		c, cerr = net.FilePacketConn(f)
+		f.Close()
 	default:
 		c, cerr = net.ListenPacket(network, address)
 	}

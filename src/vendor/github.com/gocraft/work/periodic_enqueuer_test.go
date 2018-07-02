@@ -1,11 +1,12 @@
 package work
 
 import (
-	"github.com/garyburd/redigo/redis"
-	"github.com/robfig/cron"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
+	"github.com/robfig/cron"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPeriodicEnqueuer(t *testing.T) {

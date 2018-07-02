@@ -1,8 +1,10 @@
 package work
 
 import (
-	"github.com/garyburd/redigo/redis"
+	"sync"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // Enqueuer can enqueue jobs.
@@ -14,6 +16,7 @@ type Enqueuer struct {
 	knownJobs             map[string]int64
 	enqueueUniqueScript   *redis.Script
 	enqueueUniqueInScript *redis.Script
+	mtx                   sync.RWMutex
 }
 
 // NewEnqueuer creates a new enqueuer with the specified Redis namespace and Redis pool.
@@ -95,7 +98,10 @@ func (e *Enqueuer) EnqueueIn(jobName string, secondsFromNow int64, args map[stri
 	return scheduledJob, nil
 }
 
-// EnqueueUnique enqueues a job unless a job is already enqueued with the same name and arguments. The already-enqueued job can be in the normal work queue or in the scheduled job queue. Once a worker begins processing a job, another job with the same name and arguments can be enqueued again. Any failed jobs in the retry queue or dead queue don't count against the uniqueness -- so if a job fails and is retried, two unique jobs with the same name and arguments can be enqueued at once.
+// EnqueueUnique enqueues a job unless a job is already enqueued with the same name and arguments.
+// The already-enqueued job can be in the normal work queue or in the scheduled job queue.
+// Once a worker begins processing a job, another job with the same name and arguments can be enqueued again.
+// Any failed jobs in the retry queue or dead queue don't count against the uniqueness -- so if a job fails and is retried, two unique jobs with the same name and arguments can be enqueued at once.
 // In order to add robustness to the system, jobs are only unique for 24 hours after they're enqueued. This is mostly relevant for scheduled jobs.
 // EnqueueUnique returns the job if it was enqueued and nil if it wasn't
 func (e *Enqueuer) EnqueueUnique(jobName string, args map[string]interface{}) (*Job, error) {
@@ -185,7 +191,11 @@ func (e *Enqueuer) EnqueueUniqueIn(jobName string, secondsFromNow int64, args ma
 func (e *Enqueuer) addToKnownJobs(conn redis.Conn, jobName string) error {
 	needSadd := true
 	now := time.Now().Unix()
+
+	e.mtx.RLock()
 	t, ok := e.knownJobs[jobName]
+	e.mtx.RUnlock()
+
 	if ok {
 		if now < t {
 			needSadd = false
@@ -195,7 +205,10 @@ func (e *Enqueuer) addToKnownJobs(conn redis.Conn, jobName string) error {
 		if _, err := conn.Do("SADD", redisKeyKnownJobs(e.Namespace), jobName); err != nil {
 			return err
 		}
+
+		e.mtx.Lock()
 		e.knownJobs[jobName] = now + 300
+		e.mtx.Unlock()
 	}
 
 	return nil

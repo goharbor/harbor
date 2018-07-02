@@ -15,8 +15,8 @@ case ${db} in
     ;;
   postgresql*)
     db="postgresql"
-    dbContainerOpts="--name postgresql_tests postgresql"
-    DBURL="postgres://server@postgresql_tests:5432/notaryserver?sslmode=disable"
+    dbContainerOpts="--name postgresql_tests postgresql -l"
+    DBURL="postgres://server@postgresql_tests:5432/notaryserver?sslmode=verify-ca&sslrootcert=/go/src/github.com/docker/notary/fixtures/database/ca.pem&sslcert=/go/src/github.com/docker/notary/fixtures/database/notary-server.pem&sslkey=/go/src/github.com/docker/notary/fixtures/database/notary-server-key.pem"
     ;;
   *)
     echo "Usage: $0 (mysql|rethink)"

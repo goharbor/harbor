@@ -80,7 +80,10 @@ ignored = ["github.com/vmware/harbor/tests*"]
   name = "github.com/garyburd/redigo"
   version = "=1.6.0"
 
-
 [[constraint]]
   name = "github.com/golang-migrate/migrate"
   version = "=3.3.0"
+
+[[constraint]]
+  name = "github.com/kubernetes/helm"
+  version = "=2.9.1"

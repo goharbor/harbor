@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import PageList from './PageList';
 import UnixTime from './UnixTime';
 import styles from './bootstrap.min.css';
@@ -6,7 +7,7 @@ import cx from './cx';
 
 export default class ScheduledJobs extends React.Component {
   static propTypes = {
-    url: React.PropTypes.string,
+    url: PropTypes.string,
   }
 
   state = {
@@ -59,9 +60,9 @@ export default class ScheduledJobs extends React.Component {
                     <tr key={job.id}>
                       <td>{job.name}</td>
                       <td>{JSON.stringify(job.args)}</td>
-                      <td><UnixTime ts={job.t} /></td>
+                      <td><UnixTime ts={job.run_at} /></td>
                     </tr>
-                    );
+                  );
                 })
               }
             </tbody>

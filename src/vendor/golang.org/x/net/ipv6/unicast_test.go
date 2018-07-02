@@ -1,4 +1,4 @@
-// Copyright 2013 The Go Authors.  All rights reserved.
+// Copyright 2013 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -20,14 +20,14 @@ import (
 
 func TestPacketConnReadWriteUnicastUDP(t *testing.T) {
 	switch runtime.GOOS {
-	case "nacl", "plan9", "solaris", "windows":
+	case "js", "nacl", "plan9", "windows":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !supportsIPv6 {
 		t.Skip("ipv6 is not supported")
 	}
 
-	c, err := net.ListenPacket("udp6", "[::1]:0")
+	c, err := nettest.NewLocalPacketListener("udp6")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,11 +35,7 @@ func TestPacketConnReadWriteUnicastUDP(t *testing.T) {
 	p := ipv6.NewPacketConn(c)
 	defer p.Close()
 
-	dst, err := net.ResolveUDPAddr("udp6", c.LocalAddr().String())
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	dst := c.LocalAddr()
 	cm := ipv6.ControlMessage{
 		TrafficClass: iana.DiffServAF11 | iana.CongestionExperienced,
 		Src:          net.IPv6loopback,
@@ -54,7 +50,8 @@ func TestPacketConnReadWriteUnicastUDP(t *testing.T) {
 	for i, toggle := range []bool{true, false, true} {
 		if err := p.SetControlMessage(cf, toggle); err != nil {
 			if nettest.ProtocolNotSupported(err) {
-				t.Skipf("not supported on %s", runtime.GOOS)
+				t.Logf("not supported on %s", runtime.GOOS)
+				continue
 			}
 			t.Fatal(err)
 		}
@@ -81,7 +78,7 @@ func TestPacketConnReadWriteUnicastUDP(t *testing.T) {
 
 func TestPacketConnReadWriteUnicastICMP(t *testing.T) {
 	switch runtime.GOOS {
-	case "nacl", "plan9", "solaris", "windows":
+	case "js", "nacl", "plan9", "windows":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !supportsIPv6 {
@@ -127,7 +124,11 @@ func TestPacketConnReadWriteUnicastICMP(t *testing.T) {
 		if toggle {
 			psh = nil
 			if err := p.SetChecksum(true, 2); err != nil {
-				t.Fatal(err)
+				// Solaris never allows to modify
+				// ICMP properties.
+				if runtime.GOOS != "solaris" {
+					t.Fatal(err)
+				}
 			}
 		} else {
 			psh = pshicmp
@@ -147,7 +148,8 @@ func TestPacketConnReadWriteUnicastICMP(t *testing.T) {
 		}
 		if err := p.SetControlMessage(cf, toggle); err != nil {
 			if nettest.ProtocolNotSupported(err) {
-				t.Skipf("not supported on %s", runtime.GOOS)
+				t.Logf("not supported on %s", runtime.GOOS)
+				continue
 			}
 			t.Fatal(err)
 		}

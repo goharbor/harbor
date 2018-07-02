@@ -34,7 +34,7 @@ JSON keys to learn more about the configuration section corresponding to that ke
     "url": "https://my-notary-server.my-private-registry.com",
     "root_ca": "./fixtures/root-ca.crt",
     "tls_client_cert": "./fixtures/secure.example.com.crt",
-    "tls_client_key": "./fixtures/secure.example.com.crt"
+    "tls_client_key": "./fixtures/secure.example.com.key"
   },
   <a href="#trust_pinning-section-optional">"trust_pinning"</a>: {
     "certs": {
@@ -67,7 +67,7 @@ Remote server example:
   "url": "https://my-notary-server.my-private-registry.com",
   "root_ca": "./fixtures/root-ca.crt",
   "tls_client_cert": "./fixtures/secure.example.com.crt",
-  "tls_client_key": "./fixtures/secure.example.com.crt"
+  "tls_client_key": "./fixtures/secure.example.com.key"
 }
 ```
 
@@ -132,9 +132,9 @@ but the pinned certificates will take highest priority for validation, followed
 by the pinned CA, followed by TOFUS (TOFU over HTTPS).  The diagram below
 describes this validation flow:
 
-<center>
-![Trust pinning flow](../images/trust-pinning-flow.png)
-</center>
+
+![Trust pinning flow](https://cdn.rawgit.com/docker/notary/27469f01fe244bdf70f34219616657b336724bc3/docs/images/trust-pinning-flow.png)
+
 
 Only one trust pinning option will be used to validate a GUN even if multiple
 sections are specified, and any validation failure will result in a failed

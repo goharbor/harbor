@@ -5,55 +5,100 @@
 package poly1305
 
 import (
-	"bytes"
+	"encoding/hex"
+	"flag"
 	"testing"
 	"unsafe"
 )
 
-var testData = []struct {
-	in, k, correct []byte
-}{
-	{
-		[]byte("Hello world!"),
-		[]byte("this is 32-byte key for Poly1305"),
-		[]byte{0xa6, 0xf7, 0x45, 0x00, 0x8f, 0x81, 0xc9, 0x16, 0xa2, 0x0d, 0xcc, 0x74, 0xee, 0xf2, 0xb2, 0xf0},
-	},
-	{
-		make([]byte, 32),
-		[]byte("this is 32-byte key for Poly1305"),
-		[]byte{0x49, 0xec, 0x78, 0x09, 0x0e, 0x48, 0x1e, 0xc6, 0xc2, 0x6b, 0x33, 0xb9, 0x1c, 0xcc, 0x03, 0x07},
-	},
-	{
-		make([]byte, 2007),
-		[]byte("this is 32-byte key for Poly1305"),
-		[]byte{0xda, 0x84, 0xbc, 0xab, 0x02, 0x67, 0x6c, 0x38, 0xcd, 0xb0, 0x15, 0x60, 0x42, 0x74, 0xc2, 0xaa},
-	},
-	{
-		make([]byte, 2007),
-		make([]byte, 32),
-		make([]byte, 16),
-	},
+var stressFlag = flag.Bool("stress", false, "run slow stress tests")
+
+type test struct {
+	in  string
+	key string
+	tag string
 }
 
-func testSum(t *testing.T, unaligned bool) {
-	var out [16]byte
-	var key [32]byte
+func (t *test) Input() []byte {
+	in, err := hex.DecodeString(t.in)
+	if err != nil {
+		panic(err)
+	}
+	return in
+}
 
+func (t *test) Key() [32]byte {
+	buf, err := hex.DecodeString(t.key)
+	if err != nil {
+		panic(err)
+	}
+	var key [32]byte
+	copy(key[:], buf[:32])
+	return key
+}
+
+func (t *test) Tag() [16]byte {
+	buf, err := hex.DecodeString(t.tag)
+	if err != nil {
+		panic(err)
+	}
+	var tag [16]byte
+	copy(tag[:], buf[:16])
+	return tag
+}
+
+func testSum(t *testing.T, unaligned bool, sumImpl func(tag *[TagSize]byte, msg []byte, key *[32]byte)) {
+	var tag [16]byte
 	for i, v := range testData {
-		in := v.in
+		in := v.Input()
 		if unaligned {
 			in = unalignBytes(in)
 		}
-		copy(key[:], v.k)
-		Sum(&out, in, &key)
-		if !bytes.Equal(out[:], v.correct) {
-			t.Errorf("%d: expected %x, got %x", i, v.correct, out[:])
+		key := v.Key()
+		sumImpl(&tag, in, &key)
+		if tag != v.Tag() {
+			t.Errorf("%d: expected %x, got %x", i, v.Tag(), tag[:])
 		}
 	}
 }
 
-func TestSum(t *testing.T)          { testSum(t, false) }
-func TestSumUnaligned(t *testing.T) { testSum(t, true) }
+func TestBurnin(t *testing.T) {
+	// This test can be used to sanity-check significant changes. It can
+	// take about many minutes to run, even on fast machines. It's disabled
+	// by default.
+	if !*stressFlag {
+		t.Skip("skipping without -stress")
+	}
+
+	var key [32]byte
+	var input [25]byte
+	var output [16]byte
+
+	for i := range key {
+		key[i] = 1
+	}
+	for i := range input {
+		input[i] = 2
+	}
+
+	for i := uint64(0); i < 1e10; i++ {
+		Sum(&output, input[:], &key)
+		copy(key[0:], output[:])
+		copy(key[16:], output[:])
+		copy(input[:], output[:])
+		copy(input[16:], output[:])
+	}
+
+	const expected = "5e3b866aea0b636d240c83c428f84bfa"
+	if got := hex.EncodeToString(output[:]); got != expected {
+		t.Errorf("expected %s, got %s", expected, got)
+	}
+}
+
+func TestSum(t *testing.T)                 { testSum(t, false, Sum) }
+func TestSumUnaligned(t *testing.T)        { testSum(t, true, Sum) }
+func TestSumGeneric(t *testing.T)          { testSum(t, false, sumGeneric) }
+func TestSumGenericUnaligned(t *testing.T) { testSum(t, true, sumGeneric) }
 
 func benchmark(b *testing.B, size int, unaligned bool) {
 	var out [16]byte
@@ -73,6 +118,7 @@ func Benchmark64(b *testing.B)          { benchmark(b, 64, false) }
 func Benchmark1K(b *testing.B)          { benchmark(b, 1024, false) }
 func Benchmark64Unaligned(b *testing.B) { benchmark(b, 64, true) }
 func Benchmark1KUnaligned(b *testing.B) { benchmark(b, 1024, true) }
+func Benchmark2M(b *testing.B)          { benchmark(b, 2097152, true) }
 
 func unalignBytes(in []byte) []byte {
 	out := make([]byte, len(in)+1)

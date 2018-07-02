@@ -6,6 +6,7 @@ import (
 
 	"github.com/docker/notary/tuf/data"
 	"github.com/docker/notary/tuf/signed"
+	testutils "github.com/docker/notary/tuf/testutils/keys"
 	"github.com/docker/notary/tuf/utils"
 	"github.com/stretchr/testify/require"
 )
@@ -89,7 +90,7 @@ func AddGetKeyCryptoServiceInterfaceBehaviorTests(t *testing.T, cs signed.Crypto
 		role := data.BaseRoles[i+1]
 		switch algo {
 		case data.RSAKey:
-			addedPrivKey, err = utils.GenerateRSAKey(rand.Reader, 2048)
+			addedPrivKey, err = testutils.GetRSAKey(2048)
 		case data.ECDSAKey:
 			addedPrivKey, err = utils.GenerateECDSAKey(rand.Reader)
 		case data.ED25519Key:
@@ -121,7 +122,7 @@ func AddListKeyCryptoServiceInterfaceBehaviorTests(t *testing.T, cs signed.Crypt
 		role := data.BaseRoles[i+1]
 		switch algo {
 		case data.RSAKey:
-			addedPrivKey, err = utils.GenerateRSAKey(rand.Reader, 2048)
+			addedPrivKey, err = testutils.GetRSAKey(2048)
 		case data.ECDSAKey:
 			addedPrivKey, err = utils.GenerateECDSAKey(rand.Reader)
 		case data.ED25519Key:

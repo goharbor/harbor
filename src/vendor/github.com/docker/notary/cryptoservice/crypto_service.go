@@ -1,12 +1,11 @@
 package cryptoservice
 
 import (
-	"crypto/rand"
-	"fmt"
-
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"fmt"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/docker/notary"
 	"github.com/docker/notary/trustmanager"
@@ -37,42 +36,18 @@ func NewCryptoService(keyStores ...trustmanager.KeyStore) *CryptoService {
 
 // Create is used to generate keys for targets, snapshots and timestamps
 func (cs *CryptoService) Create(role data.RoleName, gun data.GUN, algorithm string) (data.PublicKey, error) {
-	var privKey data.PrivateKey
-	var err error
+	if algorithm == data.RSAKey {
+		return nil, fmt.Errorf("%s keys can only be imported", data.RSAKey)
+	}
 
-	switch algorithm {
-	case data.RSAKey:
-		privKey, err = utils.GenerateRSAKey(rand.Reader, notary.MinRSABitSize)
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate RSA key: %v", err)
-		}
-	case data.ECDSAKey:
-		privKey, err = utils.GenerateECDSAKey(rand.Reader)
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate EC key: %v", err)
-		}
-	case data.ED25519Key:
-		privKey, err = utils.GenerateED25519Key(rand.Reader)
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate ED25519 key: %v", err)
-		}
-	default:
-		return nil, fmt.Errorf("private key type not supported for key generation: %s", algorithm)
+	privKey, err := utils.GenerateKey(algorithm)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate %s key: %v", algorithm, err)
 	}
 	logrus.Debugf("generated new %s key for role: %s and keyID: %s", algorithm, role.String(), privKey.ID())
+	pubKey := data.PublicKeyFromPrivate(privKey)
 
-	// Store the private key into our keystore
-	for _, ks := range cs.keyStores {
-		err = ks.AddKey(trustmanager.KeyInfo{Role: role, Gun: gun}, privKey)
-		if err == nil {
-			return data.PublicKeyFromPrivate(privKey), nil
-		}
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed to add key to filestore: %v", err)
-	}
-
-	return nil, fmt.Errorf("keystores would not accept new private keys for unknown reasons")
+	return pubKey, cs.AddKey(role, gun, privKey)
 }
 
 // GetPrivateKey returns a private key and role if present by ID.
@@ -173,9 +148,12 @@ func CheckRootKeyIsEncrypted(pemBytes []byte) error {
 		return ErrNoValidPrivateKey
 	}
 
-	if !x509.IsEncryptedPEMBlock(block) {
-		return ErrRootKeyNotEncrypted
+	if block.Type == "ENCRYPTED PRIVATE KEY" {
+		return nil
+	}
+	if !notary.FIPSEnabled() && x509.IsEncryptedPEMBlock(block) {
+		return nil
 	}
 
-	return nil
+	return ErrRootKeyNotEncrypted
 }

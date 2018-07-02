@@ -494,7 +494,7 @@ func TestEncryptedKeyImportFail(t *testing.T) {
 	privKey, err := utils.GenerateECDSAKey(rand.Reader)
 	require.NoError(t, err)
 
-	pemBytes, err := utils.EncryptPrivateKey(privKey, data.CanonicalRootRole, "", cannedPassphrase)
+	pemBytes, err := utils.ConvertPrivateKeyToPKCS8(privKey, data.CanonicalRootRole, "", cannedPassphrase)
 	require.NoError(t, err)
 
 	in := bytes.NewBuffer(pemBytes)
@@ -511,7 +511,7 @@ func TestEncryptedKeyImportSuccess(t *testing.T) {
 	originalKey := privKey.Private()
 	require.NoError(t, err)
 
-	pemBytes, err := utils.EncryptPrivateKey(privKey, data.CanonicalSnapshotRole, "somegun", cannedPassphrase)
+	pemBytes, err := utils.ConvertPrivateKeyToPKCS8(privKey, data.CanonicalSnapshotRole, "somegun", cannedPassphrase)
 	require.NoError(t, err)
 
 	b, _ := pem.Decode(pemBytes)
@@ -547,7 +547,7 @@ func TestEncryption(t *testing.T) {
 	originalKey := privKey.Private()
 	require.NoError(t, err)
 
-	pemBytes, err := utils.EncryptPrivateKey(privKey, "", "", "")
+	pemBytes, err := utils.ConvertPrivateKeyToPKCS8(privKey, "", "", "")
 	require.NoError(t, err)
 
 	in := bytes.NewBuffer(pemBytes)
