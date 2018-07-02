@@ -36,6 +36,7 @@ func rethinkDBSetup(t *testing.T) (RethinkDB, func()) {
 	cleanup()
 	require.NoError(t, rethinkdb.SetupDB(session, dbName, []rethinkdb.Table{
 		TUFFilesRethinkTable,
+		ChangeRethinkTable,
 	}))
 	return NewRethinkDBStorage(dbName, "", "", session), cleanup
 }
@@ -168,4 +169,11 @@ func TestRethinkTUFMetaStoreGetCurrent(t *testing.T) {
 	defer cleanup()
 
 	testTUFMetaStoreGetCurrent(t, dbStore)
+}
+
+func TestRethinkDBGetChanges(t *testing.T) {
+	dbStore, cleanup := rethinkDBSetup(t)
+	defer cleanup()
+
+	testGetChanges(t, dbStore)
 }

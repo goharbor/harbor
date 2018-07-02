@@ -56,7 +56,7 @@ func NewSQLKeyDBStore(passphraseRetriever notary.PassRetriever, defaultPassAlias
 	}
 
 	return &SQLKeyDBStore{
-		db:               db,
+		db:               *db,
 		dbType:           dbDialect,
 		defaultPassAlias: defaultPassAlias,
 		retriever:        passphraseRetriever,

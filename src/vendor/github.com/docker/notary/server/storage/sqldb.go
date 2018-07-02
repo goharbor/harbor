@@ -26,7 +26,7 @@ func NewSQLStorage(dialect string, args ...interface{}) (*SQLStorage, error) {
 		return nil, err
 	}
 	return &SQLStorage{
-		DB: gormDB,
+		DB: *gormDB,
 	}, nil
 }
 
@@ -166,7 +166,7 @@ func (db *SQLStorage) UpdateMany(gun data.GUN, updates []MetaUpdate) error {
 }
 
 func (db *SQLStorage) writeChangefeed(tx *gorm.DB, gun data.GUN, version int, checksum string) error {
-	c := &Change{
+	c := &SQLChange{
 		GUN:      gun.String(),
 		Version:  version,
 		SHA256:   checksum,
@@ -244,7 +244,7 @@ func (db *SQLStorage) Delete(gun data.GUN) error {
 		if res.RowsAffected == 0 {
 			return nil
 		}
-		c := &Change{
+		c := &SQLChange{
 			GUN:      gun.String(),
 			Category: changeCategoryDeletion,
 		}
@@ -281,7 +281,7 @@ func (db *SQLStorage) GetChanges(changeID string, records int, filterName string
 	} else {
 		id, err = strconv.ParseInt(changeID, 10, 32)
 		if err != nil {
-			return nil, err
+			return nil, ErrBadQuery{msg: fmt.Sprintf("change ID expected to be integer, provided ID was: %d", changeID)}
 		}
 	}
 

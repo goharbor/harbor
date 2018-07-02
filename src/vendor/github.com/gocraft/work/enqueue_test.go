@@ -2,9 +2,11 @@ package work
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEnqueue(t *testing.T) {
@@ -101,7 +103,7 @@ func TestEnqueueUnique(t *testing.T) {
 	ns := "work"
 	cleanKeyspace(ns, pool)
 	enqueuer := NewEnqueuer(ns, pool)
-
+	var mutex = &sync.Mutex{}
 	job, err := enqueuer.EnqueueUnique("wat", Q{"a": 1, "b": "cool"})
 	assert.NoError(t, err)
 	if assert.NotNil(t, job) {
@@ -134,15 +136,19 @@ func TestEnqueueUnique(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, job)
 
-	// Process the queues. Ensure the right numbero of jobs was processed
+	// Process the queues. Ensure the right number of jobs were processed
 	var wats, taws int64
 	wp := NewWorkerPool(TestContext{}, 3, ns, pool)
 	wp.JobWithOptions("wat", JobOptions{Priority: 1, MaxFails: 1}, func(job *Job) error {
+		mutex.Lock()
 		wats++
+		mutex.Unlock()
 		return nil
 	})
 	wp.JobWithOptions("taw", JobOptions{Priority: 1, MaxFails: 1}, func(job *Job) error {
+		mutex.Lock()
 		taws++
+		mutex.Unlock()
 		return fmt.Errorf("ohno")
 	})
 	wp.Start()

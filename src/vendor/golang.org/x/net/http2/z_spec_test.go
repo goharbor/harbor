@@ -311,7 +311,7 @@ func TestSpecCoverage(t *testing.T) {
 		t.Errorf("\tSECTION %s: %s", p.section, p.sentence)
 	}
 
-	t.Logf("%d/%d (%d%%) sentances covered", complete, total, (complete/total)*100)
+	t.Logf("%d/%d (%d%%) sentences covered", complete, total, (complete/total)*100)
 }
 
 func attrSig(se xml.StartElement) string {

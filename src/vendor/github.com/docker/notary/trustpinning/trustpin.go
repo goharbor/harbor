@@ -37,6 +37,11 @@ func NewTrustPinChecker(trustPinConfig TrustPinConfig, gun data.GUN, firstBootst
 		t.pinnedCertIDs = pinnedCerts
 		return t.certsCheck, nil
 	}
+	var ok bool
+	t.pinnedCertIDs, ok = wildcardMatch(gun, trustPinConfig.Certs)
+	if ok {
+		return t.certsCheck, nil
+	}
 
 	if caFilepath, err := getPinnedCAFilepathByPrefix(gun, trustPinConfig); err == nil {
 		logrus.Debugf("trust-pinning using root CA bundle at: %s", caFilepath)
@@ -120,4 +125,24 @@ func getPinnedCAFilepathByPrefix(gun data.GUN, t TrustPinConfig) (string, error)
 		return "", fmt.Errorf("could not find pinned CA for GUN: %s", gun)
 	}
 	return specificCAFilepath, nil
+}
+
+// wildcardMatch will attempt to match the most specific (longest prefix) wildcarded
+// trustpinning option for key IDs. Given the simple globbing and the use of maps,
+// it is impossible to have two different prefixes of equal length.
+// This logic also solves the issue of Go's randomization of map iteration.
+func wildcardMatch(gun data.GUN, certs map[string][]string) ([]string, bool) {
+	var (
+		longest = ""
+		ids     []string
+	)
+	for gunPrefix, keyIDs := range certs {
+		if strings.HasSuffix(gunPrefix, "*") {
+			if strings.HasPrefix(gun.String(), gunPrefix[:len(gunPrefix)-1]) && len(gunPrefix) > len(longest) {
+				longest = gunPrefix
+				ids = keyIDs
+			}
+		}
+	}
+	return ids, ids != nil
 }

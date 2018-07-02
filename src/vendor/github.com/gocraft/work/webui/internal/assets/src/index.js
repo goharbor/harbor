@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { render } from 'react-dom';
 import Processes from './Processes';
 import DeadJobs from './DeadJobs';
@@ -11,7 +12,7 @@ import cx from './cx';
 
 class App extends React.Component {
   static propTypes = {
-    children: React.PropTypes.element.isRequired,
+    children: PropTypes.element.isRequired,
   }
 
   render() {

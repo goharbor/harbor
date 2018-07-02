@@ -2,10 +2,11 @@ package work
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
 )
 
 type TestContext struct{}

@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/gocraft/work"
 	"math/rand"
 	"time"
+
+	"github.com/gocraft/work"
+	"github.com/gomodule/redigo/redis"
 )
 
 var redisHostPort = flag.String("redis", ":6379", "redis hostport")

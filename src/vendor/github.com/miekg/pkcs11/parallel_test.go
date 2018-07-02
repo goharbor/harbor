@@ -14,7 +14,7 @@ package pkcs11
 // there are no signers available, the caller blocks until there is one
 // available.
 //
-// Please set the appropiate env variables. See the init function.
+// Please set the appropriate env variables. See the init function.
 import (
 	"fmt"
 	"log"

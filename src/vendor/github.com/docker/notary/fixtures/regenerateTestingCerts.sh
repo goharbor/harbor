@@ -167,3 +167,49 @@ EOL
 
         rm "${selfsigned}.cnf" "${selfsigned}.csr" "${selfsigned}.key"
 done
+
+# Postgresql keys for testing server/client auth
+
+command -v cfssljson  >/dev/null 2>&1 || { 
+    echo >&2 "Installing cfssl tools"; go get -u github.com/cloudflare/cfssl/cmd/...;
+}
+
+# Create a dir to store keys generated temporarily
+mkdir cfssl
+cd cfssl
+
+# Generate CA and certificates
+
+echo '{"CN": "Test Notary CA","key":{"algo":"rsa","size":2048}}' | cfssl gencert -initca - | cfssljson -bare ca -
+
+echo '{"signing":{"default":{"expiry":"43800h"},"profiles":{"server":{"expiry":"43800h", "usages":["signing","key encipherment","server auth"]},"client":{"expiry":"43800h", "usages":["signing","key encipherment","client auth"]}}}}' > ca-config.json
+
+echo '{"CN":"database","hosts":["postgresql","mysql"],"key":{"algo":"rsa","size":2048}}' > server.json
+
+# Generate server cert and private key
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=server server.json | cfssljson -bare server
+
+# Generate client certificate (notary server)
+echo '{"CN":"server","hosts":[""],"key":{"algo":"rsa","size":2048}}' > notary-server.json
+
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client notary-server.json | cfssljson -bare notary-server
+
+# Generate client certificate (notary notary-signer)
+echo '{"CN":"signer","hosts":[""],"key":{"algo":"rsa","size":2048}}' > notary-signer.json
+
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=client notary-signer.json | cfssljson -bare notary-signer
+
+# Copy keys over to ../fixtures/database/[...] and ../notarysql/postgresql-initdb.d/[...]
+cp ca.pem ../database/
+cp notary-signer.pem ../database/
+cp notary-signer-key.pem ../database/
+cp notary-server.pem ../database
+cp notary-server-key.pem ../database/
+
+cp ca.pem ../../notarysql/postgresql-initdb.d/root.crt
+cp server.pem ../../notarysql/postgresql-initdb.d/server.crt
+cp server-key.pem ../../notarysql/postgresql-initdb.d/server.key
+
+# remove the working dir
+cd ..
+rm -rf cfssl

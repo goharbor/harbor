@@ -5,7 +5,9 @@
 package webdav
 
 import (
+	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -13,6 +15,8 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"golang.org/x/net/context"
 )
 
 // Proppatch describes a property update instruction as defined in RFC 4918.
@@ -100,23 +104,23 @@ type DeadPropsHolder interface {
 var liveProps = map[xml.Name]struct {
 	// findFn implements the propfind function of this property. If nil,
 	// it indicates a hidden property.
-	findFn func(FileSystem, LockSystem, string, os.FileInfo) (string, error)
+	findFn func(context.Context, FileSystem, LockSystem, string, os.FileInfo) (string, error)
 	// dir is true if the property applies to directories.
 	dir bool
 }{
-	xml.Name{Space: "DAV:", Local: "resourcetype"}: {
+	{Space: "DAV:", Local: "resourcetype"}: {
 		findFn: findResourceType,
 		dir:    true,
 	},
-	xml.Name{Space: "DAV:", Local: "displayname"}: {
+	{Space: "DAV:", Local: "displayname"}: {
 		findFn: findDisplayName,
 		dir:    true,
 	},
-	xml.Name{Space: "DAV:", Local: "getcontentlength"}: {
+	{Space: "DAV:", Local: "getcontentlength"}: {
 		findFn: findContentLength,
 		dir:    false,
 	},
-	xml.Name{Space: "DAV:", Local: "getlastmodified"}: {
+	{Space: "DAV:", Local: "getlastmodified"}: {
 		findFn: findLastModified,
 		// http://webdav.org/specs/rfc4918.html#PROPERTY_getlastmodified
 		// suggests that getlastmodified should only apply to GETable
@@ -127,19 +131,19 @@ var liveProps = map[xml.Name]struct {
 		// See golang.org/issue/15334.
 		dir: true,
 	},
-	xml.Name{Space: "DAV:", Local: "creationdate"}: {
+	{Space: "DAV:", Local: "creationdate"}: {
 		findFn: nil,
 		dir:    false,
 	},
-	xml.Name{Space: "DAV:", Local: "getcontentlanguage"}: {
+	{Space: "DAV:", Local: "getcontentlanguage"}: {
 		findFn: nil,
 		dir:    false,
 	},
-	xml.Name{Space: "DAV:", Local: "getcontenttype"}: {
+	{Space: "DAV:", Local: "getcontenttype"}: {
 		findFn: findContentType,
 		dir:    false,
 	},
-	xml.Name{Space: "DAV:", Local: "getetag"}: {
+	{Space: "DAV:", Local: "getetag"}: {
 		findFn: findETag,
 		// findETag implements ETag as the concatenated hex values of a file's
 		// modification time and size. This is not a reliable synchronization
@@ -150,8 +154,8 @@ var liveProps = map[xml.Name]struct {
 
 	// TODO: The lockdiscovery property requires LockSystem to list the
 	// active locks on a resource.
-	xml.Name{Space: "DAV:", Local: "lockdiscovery"}: {},
-	xml.Name{Space: "DAV:", Local: "supportedlock"}: {
+	{Space: "DAV:", Local: "lockdiscovery"}: {},
+	{Space: "DAV:", Local: "supportedlock"}: {
 		findFn: findSupportedLock,
 		dir:    true,
 	},
@@ -163,8 +167,8 @@ var liveProps = map[xml.Name]struct {
 //
 // Each Propstat has a unique status and each property name will only be part
 // of one Propstat element.
-func props(fs FileSystem, ls LockSystem, name string, pnames []xml.Name) ([]Propstat, error) {
-	f, err := fs.OpenFile(name, os.O_RDONLY, 0)
+func props(ctx context.Context, fs FileSystem, ls LockSystem, name string, pnames []xml.Name) ([]Propstat, error) {
+	f, err := fs.OpenFile(ctx, name, os.O_RDONLY, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +197,7 @@ func props(fs FileSystem, ls LockSystem, name string, pnames []xml.Name) ([]Prop
 		}
 		// Otherwise, it must either be a live property or we don't know it.
 		if prop := liveProps[pn]; prop.findFn != nil && (prop.dir || !isDir) {
-			innerXML, err := prop.findFn(fs, ls, name, fi)
+			innerXML, err := prop.findFn(ctx, fs, ls, name, fi)
 			if err != nil {
 				return nil, err
 			}
@@ -211,8 +215,8 @@ func props(fs FileSystem, ls LockSystem, name string, pnames []xml.Name) ([]Prop
 }
 
 // Propnames returns the property names defined for resource name.
-func propnames(fs FileSystem, ls LockSystem, name string) ([]xml.Name, error) {
-	f, err := fs.OpenFile(name, os.O_RDONLY, 0)
+func propnames(ctx context.Context, fs FileSystem, ls LockSystem, name string) ([]xml.Name, error) {
+	f, err := fs.OpenFile(ctx, name, os.O_RDONLY, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -251,8 +255,8 @@ func propnames(fs FileSystem, ls LockSystem, name string) ([]xml.Name, error) {
 // returned if they are named in 'include'.
 //
 // See http://www.webdav.org/specs/rfc4918.html#METHOD_PROPFIND
-func allprop(fs FileSystem, ls LockSystem, name string, include []xml.Name) ([]Propstat, error) {
-	pnames, err := propnames(fs, ls, name)
+func allprop(ctx context.Context, fs FileSystem, ls LockSystem, name string, include []xml.Name) ([]Propstat, error) {
+	pnames, err := propnames(ctx, fs, ls, name)
 	if err != nil {
 		return nil, err
 	}
@@ -266,12 +270,12 @@ func allprop(fs FileSystem, ls LockSystem, name string, include []xml.Name) ([]P
 			pnames = append(pnames, pn)
 		}
 	}
-	return props(fs, ls, name, pnames)
+	return props(ctx, fs, ls, name, pnames)
 }
 
 // Patch patches the properties of resource name. The return values are
 // constrained in the same manner as DeadPropsHolder.Patch.
-func patch(fs FileSystem, ls LockSystem, name string, patches []Proppatch) ([]Propstat, error) {
+func patch(ctx context.Context, fs FileSystem, ls LockSystem, name string, patches []Proppatch) ([]Propstat, error) {
 	conflict := false
 loop:
 	for _, patch := range patches {
@@ -302,7 +306,7 @@ loop:
 		return makePropstats(pstatForbidden, pstatFailedDep), nil
 	}
 
-	f, err := fs.OpenFile(name, os.O_RDWR, 0)
+	f, err := fs.OpenFile(ctx, name, os.O_RDWR, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -333,31 +337,78 @@ loop:
 	return []Propstat{pstat}, nil
 }
 
-func findResourceType(fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
+func escapeXML(s string) string {
+	for i := 0; i < len(s); i++ {
+		// As an optimization, if s contains only ASCII letters, digits or a
+		// few special characters, the escaped value is s itself and we don't
+		// need to allocate a buffer and convert between string and []byte.
+		switch c := s[i]; {
+		case c == ' ' || c == '_' ||
+			('+' <= c && c <= '9') || // Digits as well as + , - . and /
+			('A' <= c && c <= 'Z') ||
+			('a' <= c && c <= 'z'):
+			continue
+		}
+		// Otherwise, go through the full escaping process.
+		var buf bytes.Buffer
+		xml.EscapeText(&buf, []byte(s))
+		return buf.String()
+	}
+	return s
+}
+
+func findResourceType(ctx context.Context, fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
 	if fi.IsDir() {
 		return `<D:collection xmlns:D="DAV:"/>`, nil
 	}
 	return "", nil
 }
 
-func findDisplayName(fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
+func findDisplayName(ctx context.Context, fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
 	if slashClean(name) == "/" {
 		// Hide the real name of a possibly prefixed root directory.
 		return "", nil
 	}
-	return fi.Name(), nil
+	return escapeXML(fi.Name()), nil
 }
 
-func findContentLength(fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
+func findContentLength(ctx context.Context, fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
 	return strconv.FormatInt(fi.Size(), 10), nil
 }
 
-func findLastModified(fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
-	return fi.ModTime().Format(http.TimeFormat), nil
+func findLastModified(ctx context.Context, fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
+	return fi.ModTime().UTC().Format(http.TimeFormat), nil
 }
 
-func findContentType(fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
-	f, err := fs.OpenFile(name, os.O_RDONLY, 0)
+// ErrNotImplemented should be returned by optional interfaces if they
+// want the original implementation to be used.
+var ErrNotImplemented = errors.New("not implemented")
+
+// ContentTyper is an optional interface for the os.FileInfo
+// objects returned by the FileSystem.
+//
+// If this interface is defined then it will be used to read the
+// content type from the object.
+//
+// If this interface is not defined the file will be opened and the
+// content type will be guessed from the initial contents of the file.
+type ContentTyper interface {
+	// ContentType returns the content type for the file.
+	//
+	// If this returns error ErrNotImplemented then the error will
+	// be ignored and the base implementation will be used
+	// instead.
+	ContentType(ctx context.Context) (string, error)
+}
+
+func findContentType(ctx context.Context, fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
+	if do, ok := fi.(ContentTyper); ok {
+		ctype, err := do.ContentType(ctx)
+		if err != ErrNotImplemented {
+			return ctype, err
+		}
+	}
+	f, err := fs.OpenFile(ctx, name, os.O_RDONLY, 0)
 	if err != nil {
 		return "", err
 	}
@@ -379,14 +430,38 @@ func findContentType(fs FileSystem, ls LockSystem, name string, fi os.FileInfo) 
 	return ctype, err
 }
 
-func findETag(fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
+// ETager is an optional interface for the os.FileInfo objects
+// returned by the FileSystem.
+//
+// If this interface is defined then it will be used to read the ETag
+// for the object.
+//
+// If this interface is not defined an ETag will be computed using the
+// ModTime() and the Size() methods of the os.FileInfo object.
+type ETager interface {
+	// ETag returns an ETag for the file.  This should be of the
+	// form "value" or W/"value"
+	//
+	// If this returns error ErrNotImplemented then the error will
+	// be ignored and the base implementation will be used
+	// instead.
+	ETag(ctx context.Context) (string, error)
+}
+
+func findETag(ctx context.Context, fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
+	if do, ok := fi.(ETager); ok {
+		etag, err := do.ETag(ctx)
+		if err != ErrNotImplemented {
+			return etag, err
+		}
+	}
 	// The Apache http 2.4 web server by default concatenates the
 	// modification time and size of a file. We replicate the heuristic
 	// with nanosecond granularity.
 	return fmt.Sprintf(`"%x%x"`, fi.ModTime().UnixNano(), fi.Size()), nil
 }
 
-func findSupportedLock(fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
+func findSupportedLock(ctx context.Context, fs FileSystem, ls LockSystem, name string, fi os.FileInfo) (string, error) {
 	return `` +
 		`<D:lockentry xmlns:D="DAV:">` +
 		`<D:lockscope><D:exclusive/></D:lockscope>` +

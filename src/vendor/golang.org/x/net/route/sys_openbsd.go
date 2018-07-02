@@ -15,7 +15,7 @@ func (typ RIBType) parseable() bool {
 	}
 }
 
-// A RouteMetrics represents route metrics.
+// RouteMetrics represents route metrics.
 type RouteMetrics struct {
 	PathMTU int // path maximum transmission unit
 }
@@ -32,7 +32,7 @@ func (m *RouteMessage) Sys() []Sys {
 	}
 }
 
-// A InterfaceMetrics represents interface metrics.
+// InterfaceMetrics represents interface metrics.
 type InterfaceMetrics struct {
 	Type int // interface type
 	MTU  int // maximum transmission unit
@@ -51,22 +51,30 @@ func (m *InterfaceMessage) Sys() []Sys {
 	}
 }
 
-func probeRoutingStack() (int, map[int]parseFn) {
+func probeRoutingStack() (int, map[int]*wireFormat) {
 	var p uintptr
-	nooff := &wireFormat{extOff: -1, bodyOff: -1}
-	return int(unsafe.Sizeof(p)), map[int]parseFn{
-		sysRTM_ADD:        nooff.parseRouteMessage,
-		sysRTM_DELETE:     nooff.parseRouteMessage,
-		sysRTM_CHANGE:     nooff.parseRouteMessage,
-		sysRTM_GET:        nooff.parseRouteMessage,
-		sysRTM_LOSING:     nooff.parseRouteMessage,
-		sysRTM_REDIRECT:   nooff.parseRouteMessage,
-		sysRTM_MISS:       nooff.parseRouteMessage,
-		sysRTM_LOCK:       nooff.parseRouteMessage,
-		sysRTM_RESOLVE:    nooff.parseRouteMessage,
-		sysRTM_NEWADDR:    nooff.parseInterfaceAddrMessage,
-		sysRTM_DELADDR:    nooff.parseInterfaceAddrMessage,
-		sysRTM_IFINFO:     nooff.parseInterfaceMessage,
-		sysRTM_IFANNOUNCE: nooff.parseInterfaceAnnounceMessage,
+	rtm := &wireFormat{extOff: -1, bodyOff: -1}
+	rtm.parse = rtm.parseRouteMessage
+	ifm := &wireFormat{extOff: -1, bodyOff: -1}
+	ifm.parse = ifm.parseInterfaceMessage
+	ifam := &wireFormat{extOff: -1, bodyOff: -1}
+	ifam.parse = ifam.parseInterfaceAddrMessage
+	ifanm := &wireFormat{extOff: -1, bodyOff: -1}
+	ifanm.parse = ifanm.parseInterfaceAnnounceMessage
+	return int(unsafe.Sizeof(p)), map[int]*wireFormat{
+		sysRTM_ADD:        rtm,
+		sysRTM_DELETE:     rtm,
+		sysRTM_CHANGE:     rtm,
+		sysRTM_GET:        rtm,
+		sysRTM_LOSING:     rtm,
+		sysRTM_REDIRECT:   rtm,
+		sysRTM_MISS:       rtm,
+		sysRTM_LOCK:       rtm,
+		sysRTM_RESOLVE:    rtm,
+		sysRTM_NEWADDR:    ifam,
+		sysRTM_DELADDR:    ifam,
+		sysRTM_IFINFO:     ifm,
+		sysRTM_IFANNOUNCE: ifanm,
+		sysRTM_DESYNC:     rtm,
 	}
 }

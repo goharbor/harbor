@@ -1,4 +1,4 @@
-// Copyright 2013 The Go Authors.  All rights reserved.
+// Copyright 2013 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,31 +7,26 @@
 package ipv6
 
 import (
-	"syscall"
 	"unsafe"
 
 	"golang.org/x/net/internal/iana"
+	"golang.org/x/net/internal/socket"
 )
 
 func marshal2292HopLimit(b []byte, cm *ControlMessage) []byte {
-	m := (*syscall.Cmsghdr)(unsafe.Pointer(&b[0]))
-	m.Level = iana.ProtocolIPv6
-	m.Type = sysIPV6_2292HOPLIMIT
-	m.SetLen(syscall.CmsgLen(4))
+	m := socket.ControlMessage(b)
+	m.MarshalHeader(iana.ProtocolIPv6, sysIPV6_2292HOPLIMIT, 4)
 	if cm != nil {
-		data := b[syscall.CmsgLen(0):]
-		nativeEndian.PutUint32(data[:4], uint32(cm.HopLimit))
+		socket.NativeEndian.PutUint32(m.Data(4), uint32(cm.HopLimit))
 	}
-	return b[syscall.CmsgSpace(4):]
+	return m.Next(4)
 }
 
 func marshal2292PacketInfo(b []byte, cm *ControlMessage) []byte {
-	m := (*syscall.Cmsghdr)(unsafe.Pointer(&b[0]))
-	m.Level = iana.ProtocolIPv6
-	m.Type = sysIPV6_2292PKTINFO
-	m.SetLen(syscall.CmsgLen(sysSizeofInet6Pktinfo))
+	m := socket.ControlMessage(b)
+	m.MarshalHeader(iana.ProtocolIPv6, sysIPV6_2292PKTINFO, sizeofInet6Pktinfo)
 	if cm != nil {
-		pi := (*sysInet6Pktinfo)(unsafe.Pointer(&b[syscall.CmsgLen(0)]))
+		pi := (*inet6Pktinfo)(unsafe.Pointer(&m.Data(sizeofInet6Pktinfo)[0]))
 		if ip := cm.Src.To16(); ip != nil && ip.To4() == nil {
 			copy(pi.Addr[:], ip)
 		}
@@ -39,17 +34,15 @@ func marshal2292PacketInfo(b []byte, cm *ControlMessage) []byte {
 			pi.setIfindex(cm.IfIndex)
 		}
 	}
-	return b[syscall.CmsgSpace(sysSizeofInet6Pktinfo):]
+	return m.Next(sizeofInet6Pktinfo)
 }
 
 func marshal2292NextHop(b []byte, cm *ControlMessage) []byte {
-	m := (*syscall.Cmsghdr)(unsafe.Pointer(&b[0]))
-	m.Level = iana.ProtocolIPv6
-	m.Type = sysIPV6_2292NEXTHOP
-	m.SetLen(syscall.CmsgLen(sysSizeofSockaddrInet6))
+	m := socket.ControlMessage(b)
+	m.MarshalHeader(iana.ProtocolIPv6, sysIPV6_2292NEXTHOP, sizeofSockaddrInet6)
 	if cm != nil {
-		sa := (*sysSockaddrInet6)(unsafe.Pointer(&b[syscall.CmsgLen(0)]))
+		sa := (*sockaddrInet6)(unsafe.Pointer(&m.Data(sizeofSockaddrInet6)[0]))
 		sa.setSockaddr(cm.NextHop, cm.IfIndex)
 	}
-	return b[syscall.CmsgSpace(sysSizeofSockaddrInet6):]
+	return m.Next(sizeofSockaddrInet6)
 }

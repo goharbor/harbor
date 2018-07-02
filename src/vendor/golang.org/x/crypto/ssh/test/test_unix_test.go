@@ -10,6 +10,8 @@ package test
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -25,11 +27,14 @@ import (
 	"golang.org/x/crypto/ssh/testdata"
 )
 
-const sshd_config = `
+const (
+	defaultSshdConfig = `
 Protocol 2
+Banner {{.Dir}}/banner
 HostKey {{.Dir}}/id_rsa
 HostKey {{.Dir}}/id_dsa
 HostKey {{.Dir}}/id_ecdsa
+HostCertificate {{.Dir}}/id_rsa-cert.pub
 Pidfile {{.Dir}}/sshd.pid
 #UsePrivilegeSeparation no
 KeyRegenerationInterval 3600
@@ -48,8 +53,17 @@ RhostsRSAAuthentication no
 HostbasedAuthentication no
 PubkeyAcceptedKeyTypes=*
 `
+	multiAuthSshdConfigTail = `
+UsePAM yes
+PasswordAuthentication yes
+ChallengeResponseAuthentication yes
+AuthenticationMethods {{.AuthMethods}}
+`
+)
 
-var configTmpl = template.Must(template.New("").Parse(sshd_config))
+var configTmpl = map[string]*template.Template{
+	"default":   template.Must(template.New("").Parse(defaultSshdConfig)),
+	"MultiAuth": template.Must(template.New("").Parse(defaultSshdConfig + multiAuthSshdConfigTail))}
 
 type server struct {
 	t          *testing.T
@@ -57,6 +71,10 @@ type server struct {
 	configfile string
 	cmd        *exec.Cmd
 	output     bytes.Buffer // holds stderr from sshd process
+
+	testUser     string // test username for sshd
+	testPasswd   string // test password for sshd
+	sshdTestPwSo string // dynamic library to inject a custom password into sshd
 
 	// Client half of the network connection.
 	clientConn net.Conn
@@ -119,6 +137,11 @@ func clientConfig() *ssh.ClientConfig {
 			ssh.PublicKeys(testSigners["user"]),
 		},
 		HostKeyCallback: hostKeyDB().Check,
+		HostKeyAlgorithms: []string{ // by default, don't allow certs as this affects the hostKeyDB checker
+			ssh.KeyAlgoECDSA256, ssh.KeyAlgoECDSA384, ssh.KeyAlgoECDSA521,
+			ssh.KeyAlgoRSA, ssh.KeyAlgoDSA,
+			ssh.KeyAlgoED25519,
+		},
 	}
 	return config
 }
@@ -154,6 +177,12 @@ func unixConnection() (*net.UnixConn, *net.UnixConn, error) {
 }
 
 func (s *server) TryDial(config *ssh.ClientConfig) (*ssh.Client, error) {
+	return s.TryDialWithAddr(config, "")
+}
+
+// addr is the user specified host:port. While we don't actually dial it,
+// we need to know this for host key matching
+func (s *server) TryDialWithAddr(config *ssh.ClientConfig, addr string) (*ssh.Client, error) {
 	sshd, err := exec.LookPath("sshd")
 	if err != nil {
 		s.t.Skipf("skipping test: %v", err)
@@ -173,13 +202,27 @@ func (s *server) TryDial(config *ssh.ClientConfig) (*ssh.Client, error) {
 	s.cmd.Stdin = f
 	s.cmd.Stdout = f
 	s.cmd.Stderr = &s.output
+
+	if s.sshdTestPwSo != "" {
+		if s.testUser == "" {
+			s.t.Fatal("user missing from sshd_test_pw.so config")
+		}
+		if s.testPasswd == "" {
+			s.t.Fatal("password missing from sshd_test_pw.so config")
+		}
+		s.cmd.Env = append(os.Environ(),
+			fmt.Sprintf("LD_PRELOAD=%s", s.sshdTestPwSo),
+			fmt.Sprintf("TEST_USER=%s", s.testUser),
+			fmt.Sprintf("TEST_PASSWD=%s", s.testPasswd))
+	}
+
 	if err := s.cmd.Start(); err != nil {
 		s.t.Fail()
 		s.Shutdown()
 		s.t.Fatalf("s.cmd.Start: %v", err)
 	}
 	s.clientConn = c1
-	conn, chans, reqs, err := ssh.NewClientConn(c1, "", config)
+	conn, chans, reqs, err := ssh.NewClientConn(c1, addr, config)
 	if err != nil {
 		return nil, err
 	}
@@ -223,10 +266,48 @@ func writeFile(path string, contents []byte) {
 	}
 }
 
+// generate random password
+func randomPassword() (string, error) {
+	b := make([]byte, 12)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+// setTestPassword is used for setting user and password data for sshd_test_pw.so
+// This function also checks that ./sshd_test_pw.so exists and if not calls s.t.Skip()
+func (s *server) setTestPassword(user, passwd string) error {
+	wd, _ := os.Getwd()
+	wrapper := filepath.Join(wd, "sshd_test_pw.so")
+	if _, err := os.Stat(wrapper); err != nil {
+		s.t.Skip(fmt.Errorf("sshd_test_pw.so is not available"))
+		return err
+	}
+
+	s.sshdTestPwSo = wrapper
+	s.testUser = user
+	s.testPasswd = passwd
+	return nil
+}
+
 // newServer returns a new mock ssh server.
 func newServer(t *testing.T) *server {
+	return newServerForConfig(t, "default", map[string]string{})
+}
+
+// newServerForConfig returns a new mock ssh server.
+func newServerForConfig(t *testing.T, config string, configVars map[string]string) *server {
 	if testing.Short() {
 		t.Skip("skipping test due to -short")
+	}
+	u, err := user.Current()
+	if err != nil {
+		t.Fatalf("user.Current: %v", err)
+	}
+	if u.Name == "root" {
+		t.Skip("skipping test because current user is root")
 	}
 	dir, err := ioutil.TempDir("", "sshtest")
 	if err != nil {
@@ -236,13 +317,17 @@ func newServer(t *testing.T) *server {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = configTmpl.Execute(f, map[string]string{
-		"Dir": dir,
-	})
+	if _, ok := configTmpl[config]; ok == false {
+		t.Fatal(fmt.Errorf("Invalid server config '%s'", config))
+	}
+	configVars["Dir"] = dir
+	err = configTmpl[config].Execute(f, configVars)
 	if err != nil {
 		t.Fatal(err)
 	}
 	f.Close()
+
+	writeFile(filepath.Join(dir, "banner"), []byte("Server Banner"))
 
 	for k, v := range testdata.PEMBytes {
 		filename := "id_" + k
@@ -250,8 +335,13 @@ func newServer(t *testing.T) *server {
 		writeFile(filepath.Join(dir, filename+".pub"), ssh.MarshalAuthorizedKey(testPublicKeys[k]))
 	}
 
+	for k, v := range testdata.SSHCertificates {
+		filename := "id_" + k + "-cert.pub"
+		writeFile(filepath.Join(dir, filename), v)
+	}
+
 	var authkeys bytes.Buffer
-	for k, _ := range testdata.PEMBytes {
+	for k := range testdata.PEMBytes {
 		authkeys.Write(ssh.MarshalAuthorizedKey(testPublicKeys[k]))
 	}
 	writeFile(filepath.Join(dir, "authorized_keys"), authkeys.Bytes())
@@ -265,4 +355,14 @@ func newServer(t *testing.T) *server {
 			}
 		},
 	}
+}
+
+func newTempSocket(t *testing.T) (string, func()) {
+	dir, err := ioutil.TempDir("", "socket")
+	if err != nil {
+		t.Fatal(err)
+	}
+	deferFunc := func() { os.RemoveAll(dir) }
+	addr := filepath.Join(dir, "sock")
+	return addr, deferFunc
 }

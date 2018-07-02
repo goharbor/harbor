@@ -1,14 +1,13 @@
+import './TestSetup';
 import expect from 'expect';
 import Queues from './Queues';
 import React from 'react';
-import ReactTestUtils from 'react-addons-test-utils';
+import { mount } from 'enzyme';
 
 describe('Queues', () => {
   it('gets queued count', () => {
-    let r = ReactTestUtils.createRenderer();
-    r.render(<Queues />);
-    let queues = r.getMountedInstance();
-    expect(queues.state.queues.length).toEqual(0);
+    let queues = mount(<Queues />);
+    expect(queues.state().queues.length).toEqual(0);
 
     queues.setState({
       queues: [
@@ -17,7 +16,7 @@ describe('Queues', () => {
       ]
     });
 
-    expect(queues.state.queues.length).toEqual(2);
-    expect(queues.queuedCount).toEqual(3);
+    expect(queues.state().queues.length).toEqual(2);
+    expect(queues.instance().queuedCount).toEqual(3);
   });
 });

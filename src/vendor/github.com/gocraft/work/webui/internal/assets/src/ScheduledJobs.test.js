@@ -1,32 +1,28 @@
+import './TestSetup';
 import expect from 'expect';
 import ScheduledJobs from './ScheduledJobs';
 import React from 'react';
-import ReactTestUtils from 'react-addons-test-utils';
-import { findAllByTag } from './TestUtils';
+import { mount } from 'enzyme';
 
 describe('ScheduledJobs', () => {
   it('shows jobs', () => {
-    let r = ReactTestUtils.createRenderer();
-    r.render(<ScheduledJobs />);
-    let scheduledJobs = r.getMountedInstance();
+    let scheduledJobs = mount(<ScheduledJobs />);
 
-    expect(scheduledJobs.state.jobs.length).toEqual(0);
+    expect(scheduledJobs.state().jobs.length).toEqual(0);
 
     scheduledJobs.setState({
       count: 2,
       jobs: [
-        {id: 1, name: 'test', args: {}, t: 1467760821, err: 'err1'},
-        {id: 2, name: 'test2', args: {}, t: 1467760822, err: 'err2'}
+        {id: 1, name: 'test', args: {}, run_at: 1467760821, err: 'err1'},
+        {id: 2, name: 'test2', args: {}, run_at: 1467760822, err: 'err2'}
       ]
     });
 
-    expect(scheduledJobs.state.jobs.length).toEqual(2);
+    expect(scheduledJobs.state().jobs.length).toEqual(2);
   });
 
   it('has pages', () => {
-    let r = ReactTestUtils.createRenderer();
-    r.render(<ScheduledJobs />);
-    let scheduledJobs = r.getMountedInstance();
+    let scheduledJobs = mount(<ScheduledJobs />);
 
     let genJob = (n) => {
       let job = [];
@@ -35,7 +31,7 @@ describe('ScheduledJobs', () => {
           id: i,
           name: 'test',
           args: {},
-          t: 1467760821,
+          run_at: 1467760821,
           err: 'err',
         });
       }
@@ -46,14 +42,13 @@ describe('ScheduledJobs', () => {
       jobs: genJob(21)
     });
 
-    expect(scheduledJobs.state.jobs.length).toEqual(21);
-    expect(scheduledJobs.state.page).toEqual(1);
+    expect(scheduledJobs.state().jobs.length).toEqual(21);
+    expect(scheduledJobs.state().page).toEqual(1);
 
-    let output = r.getRenderOutput();
-    let pageList = findAllByTag(output, 'PageList');
+    let pageList = scheduledJobs.find('PageList');
     expect(pageList.length).toEqual(1);
 
-    pageList[0].props.jumpTo(2)();
-    expect(scheduledJobs.state.page).toEqual(2);
+    pageList.at(0).props().jumpTo(2)();
+    expect(scheduledJobs.state().page).toEqual(2);
   });
 });

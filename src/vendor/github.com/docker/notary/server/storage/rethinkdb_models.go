@@ -30,4 +30,18 @@ var (
 		},
 		JSONUnmarshaller: rdbTUFFileFromJSON,
 	}
+
+	// ChangeRethinkTable is the table definition for changefeed objects
+	ChangeRethinkTable = rethinkdb.Table{
+		Name:       Change{}.TableName(),
+		PrimaryKey: "id",
+		SecondaryIndexes: map[string][]string{
+			"rdb_created_at_id":     {"created_at", "id"},
+			"rdb_gun_created_at_id": {"gun", "created_at", "id"},
+		},
+		Config: map[string]string{
+			"write_acks": "majority",
+		},
+		JSONUnmarshaller: rdbChangeFromJSON,
+	}
 )

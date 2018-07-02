@@ -45,6 +45,7 @@ var (
 	flagNextProto = flag.String("nextproto", "h2,h2-14", "Comma-separated list of NPN/ALPN protocol names to negotiate.")
 	flagInsecure  = flag.Bool("insecure", false, "Whether to skip TLS cert validation")
 	flagSettings  = flag.String("settings", "empty", "comma-separated list of KEY=value settings for the initial SETTINGS frame. The magic value 'empty' sends an empty initial settings frame, and the magic value 'omit' causes no initial settings frame to be sent.")
+	flagDial      = flag.String("dial", "", "optional ip:port to dial, to connect to a host:port but use a different SNI name (including a SNI name without DNS)")
 )
 
 type command struct {
@@ -86,6 +87,14 @@ func withPort(host string) string {
 		return net.JoinHostPort(host, "443")
 	}
 	return host
+}
+
+// withoutPort strips the port from addr if present.
+func withoutPort(addr string) string {
+	if h, _, err := net.SplitHostPort(addr); err == nil {
+		return h
+	}
+	return addr
 }
 
 // h2i is the app's state.
@@ -134,16 +143,19 @@ func main() {
 
 func (app *h2i) Main() error {
 	cfg := &tls.Config{
-		ServerName:         app.host,
+		ServerName:         withoutPort(app.host),
 		NextProtos:         strings.Split(*flagNextProto, ","),
 		InsecureSkipVerify: *flagInsecure,
 	}
 
-	hostAndPort := withPort(app.host)
+	hostAndPort := *flagDial
+	if hostAndPort == "" {
+		hostAndPort = withPort(app.host)
+	}
 	log.Printf("Connecting to %s ...", hostAndPort)
 	tc, err := tls.Dial("tcp", hostAndPort, cfg)
 	if err != nil {
-		return fmt.Errorf("Error dialing %s: %v", withPort(app.host), err)
+		return fmt.Errorf("Error dialing %s: %v", hostAndPort, err)
 	}
 	log.Printf("Connected to %v", tc.RemoteAddr())
 	defer tc.Close()
@@ -168,7 +180,7 @@ func (app *h2i) Main() error {
 
 	app.framer = http2.NewFramer(tc, tc)
 
-	oldState, err := terminal.MakeRaw(0)
+	oldState, err := terminal.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		return err
 	}
@@ -238,7 +250,7 @@ func (app *h2i) Main() error {
 }
 
 func (app *h2i) logf(format string, args ...interface{}) {
-	fmt.Fprintf(app.term, format+"\n", args...)
+	fmt.Fprintf(app.term, format+"\r\n", args...)
 }
 
 func (app *h2i) readConsole() error {
@@ -435,15 +447,24 @@ func (app *h2i) readFrames() error {
 				return nil
 			})
 		case *http2.WindowUpdateFrame:
-			app.logf("  Window-Increment = %v\n", f.Increment)
+			app.logf("  Window-Increment = %v", f.Increment)
 		case *http2.GoAwayFrame:
-			app.logf("  Last-Stream-ID = %d; Error-Code = %v (%d)\n", f.LastStreamID, f.ErrCode, f.ErrCode)
+			app.logf("  Last-Stream-ID = %d; Error-Code = %v (%d)", f.LastStreamID, f.ErrCode, f.ErrCode)
 		case *http2.DataFrame:
 			app.logf("  %q", f.Data())
 		case *http2.HeadersFrame:
 			if f.HasPriority() {
 				app.logf("  PRIORITY = %v", f.Priority)
 			}
+			if app.hdec == nil {
+				// TODO: if the user uses h2i to send a SETTINGS frame advertising
+				// something larger, we'll need to respect SETTINGS_HEADER_TABLE_SIZE
+				// and stuff here instead of using the 4k default. But for now:
+				tableSize := uint32(4 << 10)
+				app.hdec = hpack.NewDecoder(tableSize, app.onNewHeaderField)
+			}
+			app.hdec.Write(f.HeaderBlockFragment())
+		case *http2.PushPromiseFrame:
 			if app.hdec == nil {
 				// TODO: if the user uses h2i to send a SETTINGS frame advertising
 				// something larger, we'll need to respect SETTINGS_HEADER_TABLE_SIZE
@@ -473,7 +494,7 @@ func (app *h2i) encodeHeaders(req *http.Request) []byte {
 		host = req.URL.Host
 	}
 
-	path := req.URL.Path
+	path := req.RequestURI
 	if path == "" {
 		path = "/"
 	}

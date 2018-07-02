@@ -1,14 +1,15 @@
 package signed
 
 import (
+	"crypto/rand"
 	"testing"
 	"time"
 
 	"github.com/docker/go/canonical/json"
 	"github.com/docker/notary"
-	"github.com/stretchr/testify/require"
-
 	"github.com/docker/notary/tuf/data"
+	"github.com/docker/notary/tuf/utils"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRoleNoKeys(t *testing.T) {
@@ -214,4 +215,35 @@ func TestVerifyExpiry(t *testing.T) {
 		&data.SignedCommon{Type: tufType, Version: 1, Expires: expired}, data.CanonicalRootRole)
 	require.Error(t, err)
 	require.IsType(t, ErrExpired{}, err)
+}
+
+func TestVerifyPublicKeyMatchesPrivateKeyHappyCase(t *testing.T) {
+	privKey, err := utils.GenerateECDSAKey(rand.Reader)
+	require.NoError(t, err)
+	pubKey := data.PublicKeyFromPrivate(privKey)
+	err = VerifyPublicKeyMatchesPrivateKey(privKey, pubKey)
+	require.NoError(t, err)
+}
+
+func TestVerifyPublicKeyMatchesPrivateKeyFails(t *testing.T) {
+	goodPrivKey, err := utils.GenerateECDSAKey(rand.Reader)
+	require.NoError(t, err)
+	badPrivKey, err := utils.GenerateECDSAKey(rand.Reader)
+	require.NoError(t, err)
+	badPubKey := data.PublicKeyFromPrivate(badPrivKey)
+	err = VerifyPublicKeyMatchesPrivateKey(goodPrivKey, badPubKey)
+	require.Error(t, err)
+
+	//witness fail signing
+	badPrivKey2, err := utils.GenerateED25519Key(rand.Reader)
+	require.NoError(t, err)
+	err = VerifyPublicKeyMatchesPrivateKey(badPrivKey2, data.PublicKeyFromPrivate(badPrivKey))
+	require.Error(t, err)
+
+	err = VerifyPublicKeyMatchesPrivateKey(nil, data.PublicKeyFromPrivate(goodPrivKey))
+	require.Error(t, err, "should throw error if pubKey is nil")
+
+	err = VerifyPublicKeyMatchesPrivateKey(goodPrivKey, nil)
+	require.Error(t, err, "should throw error if privKey is nil")
+
 }

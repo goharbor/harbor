@@ -15,6 +15,7 @@ import (
 	"compress/flate"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"hash"
 	"os"
 	"strings"
@@ -35,15 +36,16 @@ func newHashShake256() hash.Hash {
 }
 
 // testDigests contains functions returning hash.Hash instances
-// with output-length equal to the KAT length for both SHA-3 and
-// SHAKE instances.
+// with output-length equal to the KAT length for SHA-3, Keccak
+// and SHAKE instances.
 var testDigests = map[string]func() hash.Hash{
-	"SHA3-224": New224,
-	"SHA3-256": New256,
-	"SHA3-384": New384,
-	"SHA3-512": New512,
-	"SHAKE128": newHashShake128,
-	"SHAKE256": newHashShake256,
+	"SHA3-224":   New224,
+	"SHA3-256":   New256,
+	"SHA3-384":   New384,
+	"SHA3-512":   New512,
+	"Keccak-256": NewLegacyKeccak256,
+	"SHAKE128":   newHashShake128,
+	"SHAKE256":   newHashShake256,
 }
 
 // testShakes contains functions that return ShakeHash instances for
@@ -123,9 +125,34 @@ func TestKeccakKats(t *testing.T) {
 	})
 }
 
+// TestKeccak does a basic test of the non-standardized Keccak hash functions.
+func TestKeccak(t *testing.T) {
+	tests := []struct {
+		fn   func() hash.Hash
+		data []byte
+		want string
+	}{
+		{
+			NewLegacyKeccak256,
+			[]byte("abc"),
+			"4e03657aea45a94fc7d47ba826c8d667c0d1e6e33a64a036ec44f58fa12d6c45",
+		},
+	}
+
+	for _, u := range tests {
+		h := u.fn()
+		h.Write(u.data)
+		got := h.Sum(nil)
+		want := decodeHex(u.want)
+		if !bytes.Equal(got, want) {
+			t.Errorf("unexpected hash for size %d: got '%x' want '%s'", h.Size()*8, got, u.want)
+		}
+	}
+}
+
 // TestUnalignedWrite tests that writing data in an arbitrary pattern with
 // small input buffers.
-func testUnalignedWrite(t *testing.T) {
+func TestUnalignedWrite(t *testing.T) {
 	testUnalignedAndGeneric(t, func(impl string) {
 		buf := sequentialBytes(0x10000)
 		for alg, df := range testDigests {
@@ -201,7 +228,7 @@ func TestSqueezing(t *testing.T) {
 			d1 := newShakeHash()
 			d1.Write([]byte(testString))
 			var multiple []byte
-			for _ = range ref {
+			for range ref {
 				one := make([]byte, 1)
 				d1.Read(one)
 				multiple = append(multiple, one...)
@@ -289,6 +316,8 @@ func Example_sum() {
 	h := make([]byte, 64)
 	// Compute a 64-byte hash of buf and put it in h.
 	ShakeSum256(h, buf)
+	fmt.Printf("%x\n", h)
+	// Output: 0f65fe41fc353e52c55667bb9e2b27bfcc8476f2c413e9437d272ee3194a4e3146d05ec04a25d16b8f577c19b82d16b1424c3e022e783d2b4da98de3658d363d
 }
 
 func Example_mac() {
@@ -303,4 +332,6 @@ func Example_mac() {
 	d.Write(buf)
 	// Read 32 bytes of output from the hash into h.
 	d.Read(h)
+	fmt.Printf("%x\n", h)
+	// Output: 78de2974bd2711d5549ffd32b753ef0f5fa80a0db2556db60f0987eb8a9218ff
 }

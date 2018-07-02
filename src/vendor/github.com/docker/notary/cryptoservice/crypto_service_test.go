@@ -15,6 +15,7 @@ import (
 	"github.com/docker/notary/tuf/data"
 	"github.com/docker/notary/tuf/signed"
 	"github.com/docker/notary/tuf/testutils/interfaces"
+	testutils "github.com/docker/notary/tuf/testutils/keys"
 	"github.com/docker/notary/tuf/utils"
 )
 
@@ -85,6 +86,16 @@ func (c CryptoServiceTester) TestCreateAndGetWhenMultipleKeystores(t *testing.T)
 		c.errorMsg("Could not find key ID %s", tufKey.ID()))
 }
 
+func (c CryptoServiceTester) TestCreateRSAKey(t *testing.T) {
+	cryptoService := c.cryptoServiceFactory()
+	cryptoService.keyStores = append(cryptoService.keyStores,
+		trustmanager.NewKeyMemoryStore(passphraseRetriever))
+
+	// Test Create for RSA algo
+	_, err := cryptoService.Create(c.role, c.gun, c.keyAlgo)
+	require.Error(t, err, c.errorMsg("rsa keys can only be imported"))
+}
+
 // asserts that getting key fails for a non-existent key
 func (c CryptoServiceTester) TestGetNonexistentKey(t *testing.T) {
 	cryptoService := c.cryptoServiceFactory()
@@ -104,7 +115,7 @@ func (c CryptoServiceTester) TestSignWithKey(t *testing.T) {
 	cryptoService := c.cryptoServiceFactory()
 	content := []byte("this is a secret")
 
-	tufKey, err := cryptoService.Create(c.role, c.gun, c.keyAlgo)
+	tufKey, err := testutils.CreateOrAddKey(cryptoService, c.role, c.gun, c.keyAlgo)
 	require.NoError(t, err, c.errorMsg("error creating key"))
 
 	// Test Sign
@@ -170,7 +181,7 @@ func (c CryptoServiceTester) TestGetPrivateKeyPasswordInvalid(t *testing.T) {
 	store, err := trustmanager.NewKeyFileStore(tempBaseDir, retriever)
 	require.NoError(t, err)
 	cryptoService := NewCryptoService(store)
-	pubKey, err := cryptoService.Create(c.role, c.gun, c.keyAlgo)
+	pubKey, err := testutils.CreateOrAddKey(cryptoService, c.role, c.gun, c.keyAlgo)
 	require.NoError(t, err, "error generating key: %s", err)
 
 	// cryptoService's FileKeyStore caches the unlocked private key, so to test
@@ -194,7 +205,7 @@ func (c CryptoServiceTester) TestGetPrivateKeyAttemptsExceeded(t *testing.T) {
 	store, err := trustmanager.NewKeyFileStore(tempBaseDir, retriever)
 	require.NoError(t, err)
 	cryptoService := NewCryptoService(store)
-	pubKey, err := cryptoService.Create(c.role, c.gun, c.keyAlgo)
+	pubKey, err := testutils.CreateOrAddKey(cryptoService, c.role, c.gun, c.keyAlgo)
 	require.NoError(t, err, "error generating key: %s", err)
 
 	// trustmanager.KeyFileStore and trustmanager.KeyMemoryStore both cache the unlocked
@@ -214,7 +225,7 @@ func (c CryptoServiceTester) TestGetPrivateKeyAttemptsExceeded(t *testing.T) {
 func (c CryptoServiceTester) TestRemoveCreatedKey(t *testing.T) {
 	cryptoService := c.cryptoServiceFactory()
 
-	tufKey, err := cryptoService.Create(c.role, c.gun, c.keyAlgo)
+	tufKey, err := testutils.CreateOrAddKey(cryptoService, c.role, c.gun, c.keyAlgo)
 	require.NoError(t, err, c.errorMsg("error creating key"))
 	require.NotNil(t, cryptoService.GetKey(tufKey.ID()))
 
@@ -375,9 +386,15 @@ func testCryptoService(t *testing.T, gun data.GUN) {
 				keyAlgo: algo,
 				gun:     gun,
 			}
+			// cryptoservice can't generate RSA keys, so avoiding tests that include
+			// directly creating keys in case of RSA algorithm, testing it explicitly
+			if algo != data.RSAKey {
+				cst.TestCreateAndGetKey(t)
+				cst.TestCreateAndGetWhenMultipleKeystores(t)
+			} else {
+				cst.TestCreateRSAKey(t)
+			}
 			cst.TestAddKey(t)
-			cst.TestCreateAndGetKey(t)
-			cst.TestCreateAndGetWhenMultipleKeystores(t)
 			cst.TestGetNonexistentKey(t)
 			cst.TestSignWithKey(t)
 			cst.TestSignNoMatchingKeys(t)

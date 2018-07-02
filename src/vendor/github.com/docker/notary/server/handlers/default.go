@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -114,7 +116,22 @@ func atomicUpdateHandler(ctx context.Context, w http.ResponseWriter, r *http.Req
 		logger.Errorf("500 POST error applying update request: %v", err)
 		return errors.ErrUpdating.WithDetail(nil)
 	}
+
+	logTS(logger, gun.String(), updates)
+
 	return nil
+}
+
+// logTS logs the timestamp update at Info level
+func logTS(logger ctxu.Logger, gun string, updates []storage.MetaUpdate) {
+	for _, update := range updates {
+		if update.Role == data.CanonicalTimestampRole {
+			checksumBin := sha256.Sum256(update.Data)
+			checksum := hex.EncodeToString(checksumBin[:])
+			logger.Infof("updated %s to timestamp version %d, checksum %s", gun, update.Version, checksum)
+			break
+		}
+	}
 }
 
 // GetHandler returns the json for a specified role and GUN.
@@ -174,6 +191,7 @@ func DeleteHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) 
 		logger.Error("500 DELETE repository")
 		return errors.ErrUnknown.WithDetail(err)
 	}
+	logger.Infof("trust data deleted for %s", gun)
 	return nil
 }
 

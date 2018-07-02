@@ -16,12 +16,13 @@ import (
 
 	"github.com/docker/notary/tuf"
 	"github.com/docker/notary/tuf/signed"
+	"github.com/docker/notary/tuf/testutils/keys"
 )
 
 // CreateKey creates a new key inside the cryptoservice for the given role and gun,
 // returning the public key.  If the role is a root role, create an x509 key.
 func CreateKey(cs signed.CryptoService, gun data.GUN, role data.RoleName, keyAlgorithm string) (data.PublicKey, error) {
-	key, err := cs.Create(role, gun, keyAlgorithm)
+	key, err := keys.CreateOrAddKey(cs, role, gun, keyAlgorithm)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +163,7 @@ func SignAndSerialize(tufRepo *tuf.Repo) (map[data.RoleName][]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		metaBytes, err := json.MarshalCanonical(signedThing)
+		metaBytes, err := json.Marshal(signedThing)
 		if err != nil {
 			return nil, err
 		}

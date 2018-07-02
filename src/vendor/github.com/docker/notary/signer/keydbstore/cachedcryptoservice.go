@@ -9,7 +9,7 @@ import (
 
 type cachedKeyService struct {
 	signed.CryptoService
-	lock       *sync.Mutex
+	lock       *sync.RWMutex
 	cachedKeys map[string]*cachedKey
 }
 
@@ -22,7 +22,7 @@ type cachedKey struct {
 func NewCachedKeyService(baseKeyService signed.CryptoService) signed.CryptoService {
 	return &cachedKeyService{
 		CryptoService: baseKeyService,
-		lock:          &sync.Mutex{},
+		lock:          &sync.RWMutex{},
 		cachedKeys:    make(map[string]*cachedKey),
 	}
 }
@@ -47,7 +47,9 @@ func (s *cachedKeyService) AddKey(role data.RoleName, gun data.GUN, privKey data
 
 // GetKey returns the PrivateKey given a KeyID
 func (s *cachedKeyService) GetPrivateKey(keyID string) (data.PrivateKey, data.RoleName, error) {
+	s.lock.RLock()
 	cachedKeyEntry, ok := s.cachedKeys[keyID]
+	s.lock.RUnlock()
 	if ok {
 		return cachedKeyEntry.key, cachedKeyEntry.role, nil
 	}

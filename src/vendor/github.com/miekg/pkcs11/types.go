@@ -5,18 +5,9 @@
 package pkcs11
 
 /*
-#define CK_PTR *
-#ifndef NULL_PTR
-#define NULL_PTR 0
-#endif
-#define CK_DEFINE_FUNCTION(returnType, name) returnType name
-#define CK_DECLARE_FUNCTION(returnType, name) returnType name
-#define CK_DECLARE_FUNCTION_POINTER(returnType, name) returnType (* name)
-#define CK_CALLBACK_FUNCTION(returnType, name) returnType (* name)
-
 #include <stdlib.h>
 #include <string.h>
-#include "pkcs11.h"
+#include "pkcs11go.h"
 
 CK_ULONG Index(CK_ULONG_PTR array, CK_ULONG i)
 {
@@ -83,10 +74,10 @@ func toError(e C.CK_RV) error {
 	return Error(e)
 }
 
-/* SessionHandle is a Cryptoki-assigned value that identifies a session. */
+// SessionHandle is a Cryptoki-assigned value that identifies a session.
 type SessionHandle uint
 
-/* ObjectHandle is a token-specific identifier for an object.  */
+// ObjectHandle is a token-specific identifier for an object.
 type ObjectHandle uint
 
 // Version represents any version information from the library.
@@ -114,7 +105,7 @@ type Info struct {
 	LibraryVersion     Version
 }
 
-/* SlotInfo provides information about a slot. */
+// SlotInfo provides information about a slot.
 type SlotInfo struct {
 	SlotDescription string // 64 bytes.
 	ManufacturerID  string // 32 bytes.
@@ -123,7 +114,7 @@ type SlotInfo struct {
 	FirmwareVersion Version
 }
 
-/* TokenInfo provides information about a token. */
+// TokenInfo provides information about a token.
 type TokenInfo struct {
 	Label              string
 	ManufacturerID     string
@@ -145,7 +136,7 @@ type TokenInfo struct {
 	UTCTime            string
 }
 
-/* SesionInfo provides information about a session. */
+// SessionInfo provides information about a session.
 type SessionInfo struct {
 	SlotID      uint
 	State       uint
@@ -160,7 +151,7 @@ type Attribute struct {
 }
 
 // NewAttribute allocates a Attribute and returns a pointer to it.
-// Note that this is merely a convience function, as values returned
+// Note that this is merely a convenience function, as values returned
 // from the HSM are not converted back to Go values, those are just raw
 // byte slices.
 func NewAttribute(typ uint, x interface{}) *Attribute {
@@ -196,12 +187,12 @@ func NewAttribute(typ uint, x interface{}) *Attribute {
 }
 
 // cAttribute returns the start address and the length of an attribute list.
-func cAttributeList(a []*Attribute) (arena, C.CK_ATTRIBUTE_PTR, C.CK_ULONG) {
+func cAttributeList(a []*Attribute) (arena, C.ckAttrPtr, C.CK_ULONG) {
 	var arena arena
 	if len(a) == 0 {
 		return nil, nil, 0
 	}
-	pa := make([]C.CK_ATTRIBUTE, len(a))
+	pa := make([]C.ckAttr, len(a))
 	for i := 0; i < len(a); i++ {
 		pa[i]._type = C.CK_ATTRIBUTE_TYPE(a[i].Type)
 		//skip attribute if length is 0 to prevent panic in arena.Allocate
@@ -211,7 +202,7 @@ func cAttributeList(a []*Attribute) (arena, C.CK_ATTRIBUTE_PTR, C.CK_ULONG) {
 
 		pa[i].pValue, pa[i].ulValueLen = arena.Allocate(a[i].Value)
 	}
-	return arena, C.CK_ATTRIBUTE_PTR(&pa[0]), C.CK_ULONG(len(a))
+	return arena, C.ckAttrPtr(&pa[0]), C.CK_ULONG(len(a))
 }
 
 func cDate(t time.Time) []byte {
@@ -232,6 +223,7 @@ type Mechanism struct {
 	Parameter []byte
 }
 
+// NewMechanism returns a pointer to an initialized Mechanism.
 func NewMechanism(mech uint, x interface{}) *Mechanism {
 	m := new(Mechanism)
 	m.Mechanism = mech
@@ -239,18 +231,22 @@ func NewMechanism(mech uint, x interface{}) *Mechanism {
 		return m
 	}
 
-	// Add any parameters passed (For now presume always bytes were passed in, is there another case?)
-	m.Parameter = x.([]byte)
+	switch x.(type) {
+	case *GCMParams:
+		m.Parameter = cGCMParams(x.(*GCMParams))
+	default:
+		m.Parameter = x.([]byte)
+	}
 
 	return m
 }
 
-func cMechanismList(m []*Mechanism) (arena, C.CK_MECHANISM_PTR, C.CK_ULONG) {
+func cMechanismList(m []*Mechanism) (arena, C.ckMechPtr, C.CK_ULONG) {
 	var arena arena
 	if len(m) == 0 {
 		return nil, nil, 0
 	}
-	pm := make([]C.CK_MECHANISM, len(m))
+	pm := make([]C.ckMech, len(m))
 	for i := 0; i < len(m); i++ {
 		pm[i].mechanism = C.CK_MECHANISM_TYPE(m[i].Mechanism)
 		//skip parameter if length is 0 to prevent panic in arena.Allocate
@@ -260,7 +256,7 @@ func cMechanismList(m []*Mechanism) (arena, C.CK_MECHANISM_PTR, C.CK_ULONG) {
 
 		pm[i].pParameter, pm[i].ulParameterLen = arena.Allocate(m[i].Parameter)
 	}
-	return arena, C.CK_MECHANISM_PTR(&pm[0]), C.CK_ULONG(len(m))
+	return arena, C.ckMechPtr(&pm[0]), C.CK_ULONG(len(m))
 }
 
 // MechanismInfo provides information about a particular mechanism.

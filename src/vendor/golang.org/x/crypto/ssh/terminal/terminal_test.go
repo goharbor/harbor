@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build darwin dragonfly freebsd linux,!appengine netbsd openbsd windows plan9 solaris
+
 package terminal
 
 import (
+	"bytes"
 	"io"
 	"os"
+	"runtime"
 	"testing"
 )
 
@@ -269,6 +273,50 @@ func TestTerminalSetSize(t *testing.T) {
 	}
 }
 
+func TestReadPasswordLineEnd(t *testing.T) {
+	var tests = []struct {
+		input string
+		want  string
+	}{
+		{"\n", ""},
+		{"\r\n", ""},
+		{"test\r\n", "test"},
+		{"testtesttesttes\n", "testtesttesttes"},
+		{"testtesttesttes\r\n", "testtesttesttes"},
+		{"testtesttesttesttest\n", "testtesttesttesttest"},
+		{"testtesttesttesttest\r\n", "testtesttesttesttest"},
+	}
+	for _, test := range tests {
+		buf := new(bytes.Buffer)
+		if _, err := buf.WriteString(test.input); err != nil {
+			t.Fatal(err)
+		}
+
+		have, err := readPasswordLine(buf)
+		if err != nil {
+			t.Errorf("readPasswordLine(%q) failed: %v", test.input, err)
+			continue
+		}
+		if string(have) != test.want {
+			t.Errorf("readPasswordLine(%q) returns %q, but %q is expected", test.input, string(have), test.want)
+			continue
+		}
+
+		if _, err = buf.WriteString(test.input); err != nil {
+			t.Fatal(err)
+		}
+		have, err = readPasswordLine(buf)
+		if err != nil {
+			t.Errorf("readPasswordLine(%q) failed: %v", test.input, err)
+			continue
+		}
+		if string(have) != test.want {
+			t.Errorf("readPasswordLine(%q) returns %q, but %q is expected", test.input, string(have), test.want)
+			continue
+		}
+	}
+}
+
 func TestMakeRawState(t *testing.T) {
 	fd := int(os.Stdout.Fd())
 	if !IsTerminal(fd) {
@@ -279,6 +327,11 @@ func TestMakeRawState(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to get terminal state from GetState: %s", err)
 	}
+
+	if runtime.GOOS == "darwin" && (runtime.GOARCH == "arm" || runtime.GOARCH == "arm64") {
+		t.Skip("MakeRaw not allowed on iOS; skipping test")
+	}
+
 	defer Restore(fd, st)
 	raw, err := MakeRaw(fd)
 	if err != nil {
@@ -287,5 +340,19 @@ func TestMakeRawState(t *testing.T) {
 
 	if *st != *raw {
 		t.Errorf("states do not match; was %v, expected %v", raw, st)
+	}
+}
+
+func TestOutputNewlines(t *testing.T) {
+	// \n should be changed to \r\n in terminal output.
+	buf := new(bytes.Buffer)
+	term := NewTerminal(buf, ">")
+
+	term.Write([]byte("1\n2\n"))
+	output := string(buf.Bytes())
+	const expected = "1\r\n2\r\n"
+
+	if output != expected {
+		t.Errorf("incorrect output: was %q, expected %q", output, expected)
 	}
 }

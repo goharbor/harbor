@@ -14,7 +14,7 @@ services:
     command: -c "./migrations/migrate.sh && notary-server -config=fixtures/server-config.postgres.json"
     environment:
       MIGRATIONS_PATH: migrations/server/postgresql
-      DB_URL: postgres://server@postgresql:5432/notaryserver?sslmode=disable
+      DB_URL: postgres://server@postgresql:5432/notaryserver?sslmode=verify-ca&sslrootcert=/go/src/github.com/docker/notary/fixtures/database/ca.pem&sslcert=/go/src/github.com/docker/notary/fixtures/database/notary-server.pem&sslkey=/go/src/github.com/docker/notary/fixtures/database/notary-server-key.pem
     depends_on:
       - postgresql
       - signer
@@ -31,7 +31,7 @@ services:
     command: -c "./migrations/migrate.sh && notary-signer -config=fixtures/signer-config.postgres.json"
     environment:
       MIGRATIONS_PATH: migrations/signer/postgresql
-      DB_URL: postgres://signer@postgresql:5432/notarysigner?sslmode=disable
+      DB_URL: postgres://signer@postgresql:5432/notarysigner?sslmode=verify-ca&sslrootcert=/go/src/github.com/docker/notary/fixtures/database/ca.pem&sslcert=/go/src/github.com/docker/notary/fixtures/database/notary-signer.pem&sslkey=/go/src/github.com/docker/notary/fixtures/database/notary-signer-key.pem
     depends_on:
       - postgresql
   postgresql:
@@ -40,6 +40,7 @@ services:
       - mdb 
     volumes:
       - ./notarysql/postgresql-initdb.d:/docker-entrypoint-initdb.d
+    command: -l
   client:
     build:
       context: .

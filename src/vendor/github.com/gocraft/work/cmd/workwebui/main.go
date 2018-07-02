@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
 	"github.com/gocraft/work/webui"
+	"github.com/gomodule/redigo/redis"
 )
 
 var (
@@ -55,7 +55,7 @@ func newPool(addr string, database int) *redis.Pool {
 		MaxIdle:     3,
 		IdleTimeout: 240 * time.Second,
 		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", addr, redis.DialDatabase(database))
+			return redis.DialURL(addr, redis.DialDatabase(database))
 		},
 		Wait: true,
 	}

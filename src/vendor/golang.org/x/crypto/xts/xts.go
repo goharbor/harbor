@@ -23,7 +23,10 @@ package xts // import "golang.org/x/crypto/xts"
 
 import (
 	"crypto/cipher"
+	"encoding/binary"
 	"errors"
+
+	"golang.org/x/crypto/internal/subtle"
 )
 
 // Cipher contains an expanded key structure. It doesn't contain mutable state
@@ -54,7 +57,7 @@ func NewCipher(cipherFunc func([]byte) (cipher.Block, error), key []byte) (c *Ci
 }
 
 // Encrypt encrypts a sector of plaintext and puts the result into ciphertext.
-// Plaintext and ciphertext may be the same slice but should not overlap.
+// Plaintext and ciphertext must overlap entirely or not at all.
 // Sectors must be a multiple of 16 bytes and less than 2²⁴ bytes.
 func (c *Cipher) Encrypt(ciphertext, plaintext []byte, sectorNum uint64) {
 	if len(ciphertext) < len(plaintext) {
@@ -63,30 +66,32 @@ func (c *Cipher) Encrypt(ciphertext, plaintext []byte, sectorNum uint64) {
 	if len(plaintext)%blockSize != 0 {
 		panic("xts: plaintext is not a multiple of the block size")
 	}
+	if subtle.InexactOverlap(ciphertext[:len(plaintext)], plaintext) {
+		panic("xts: invalid buffer overlap")
+	}
 
 	var tweak [blockSize]byte
-	for i := 0; i < 8; i++ {
-		tweak[i] = byte(sectorNum)
-		sectorNum >>= 8
-	}
+	binary.LittleEndian.PutUint64(tweak[:8], sectorNum)
 
 	c.k2.Encrypt(tweak[:], tweak[:])
 
-	for i := 0; i < len(plaintext); i += blockSize {
-		for j := 0; j < blockSize; j++ {
-			ciphertext[i+j] = plaintext[i+j] ^ tweak[j]
+	for len(plaintext) > 0 {
+		for j := range tweak {
+			ciphertext[j] = plaintext[j] ^ tweak[j]
 		}
-		c.k1.Encrypt(ciphertext[i:], ciphertext[i:])
-		for j := 0; j < blockSize; j++ {
-			ciphertext[i+j] ^= tweak[j]
+		c.k1.Encrypt(ciphertext, ciphertext)
+		for j := range tweak {
+			ciphertext[j] ^= tweak[j]
 		}
+		plaintext = plaintext[blockSize:]
+		ciphertext = ciphertext[blockSize:]
 
 		mul2(&tweak)
 	}
 }
 
 // Decrypt decrypts a sector of ciphertext and puts the result into plaintext.
-// Plaintext and ciphertext may be the same slice but should not overlap.
+// Plaintext and ciphertext must overlap entirely or not at all.
 // Sectors must be a multiple of 16 bytes and less than 2²⁴ bytes.
 func (c *Cipher) Decrypt(plaintext, ciphertext []byte, sectorNum uint64) {
 	if len(plaintext) < len(ciphertext) {
@@ -95,23 +100,25 @@ func (c *Cipher) Decrypt(plaintext, ciphertext []byte, sectorNum uint64) {
 	if len(ciphertext)%blockSize != 0 {
 		panic("xts: ciphertext is not a multiple of the block size")
 	}
+	if subtle.InexactOverlap(plaintext[:len(ciphertext)], ciphertext) {
+		panic("xts: invalid buffer overlap")
+	}
 
 	var tweak [blockSize]byte
-	for i := 0; i < 8; i++ {
-		tweak[i] = byte(sectorNum)
-		sectorNum >>= 8
-	}
+	binary.LittleEndian.PutUint64(tweak[:8], sectorNum)
 
 	c.k2.Encrypt(tweak[:], tweak[:])
 
-	for i := 0; i < len(plaintext); i += blockSize {
-		for j := 0; j < blockSize; j++ {
-			plaintext[i+j] = ciphertext[i+j] ^ tweak[j]
+	for len(ciphertext) > 0 {
+		for j := range tweak {
+			plaintext[j] = ciphertext[j] ^ tweak[j]
 		}
-		c.k1.Decrypt(plaintext[i:], plaintext[i:])
-		for j := 0; j < blockSize; j++ {
-			plaintext[i+j] ^= tweak[j]
+		c.k1.Decrypt(plaintext, plaintext)
+		for j := range tweak {
+			plaintext[j] ^= tweak[j]
 		}
+		plaintext = plaintext[blockSize:]
+		ciphertext = ciphertext[blockSize:]
 
 		mul2(&tweak)
 	}

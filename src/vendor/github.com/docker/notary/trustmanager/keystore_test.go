@@ -2,8 +2,8 @@ package trustmanager
 
 import (
 	"crypto/rand"
+	"encoding/pem"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -58,7 +58,7 @@ func testAddKeyWithRole(t *testing.T, role data.RoleName) {
 	// Check to see if file exists
 	b, err := ioutil.ReadFile(expectedFilePath)
 	require.NoError(t, err, "expected file not found")
-	require.Contains(t, string(b), "-----BEGIN EC PRIVATE KEY-----")
+	require.Contains(t, string(b), "-----BEGIN ENCRYPTED PRIVATE KEY-----")
 
 	// Check that we have the role and gun info for this key's ID
 	keyInfo, ok := store.keyInfoMap[privKey.ID()]
@@ -91,9 +91,9 @@ func TestKeyStoreInternalState(t *testing.T) {
 		var privKeyPEM []byte
 		// generate the correct PEM role header
 		if role == data.CanonicalRootRole || data.IsDelegation(role) || !data.ValidRole(role) {
-			privKeyPEM, err = utils.KeyToPEM(privKey, role, "")
+			privKeyPEM, err = utils.ConvertPrivateKeyToPKCS8(privKey, role, "", "")
 		} else {
-			privKeyPEM, err = utils.KeyToPEM(privKey, role, gun)
+			privKeyPEM, err = utils.ConvertPrivateKeyToPKCS8(privKey, role, gun, "")
 		}
 
 		require.NoError(t, err, "could not generate PEM")
@@ -176,71 +176,45 @@ func TestGet(t *testing.T) {
 }
 
 func testGetKeyWithRole(t *testing.T, gun data.GUN, role data.RoleName) {
-	var testData []byte
-	if gun == "" {
-		testData = []byte(fmt.Sprintf(`-----BEGIN RSA PRIVATE KEY-----
-role: %s
+	var testPEM []byte
+	testPEM = []byte(`-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC2cL8WamG24ihl
+JSVG8ZVel05lPqYD0S8ol1L+zzwsHkim2DS+a5BLX5+QJtCfZrR+Pzo+4pCrjU+N
+R/71aYNm/M95h/JSJxdEoTgYCCHNJD8IYpTc6lXyy49lSQh7svLpZ2dQwHoGB5VC
+tpsh8xvLLbXfk/G7ihEeZqG7/Tnoe+uotkiODOTjxiTGvQQjoAc4hQgzGH4sjC7U
+8E8zB0j1BQWM/fhRX/ww3V/SRB2T1u0aAurF1BnUdDazZMBxWQ7DxmY3FNbeNXqf
+KKeQMN1Rodu8hJw0gxL1hbOWmcYksmGZfPDzYXiHBdscCFr/wimOl9BO/o2xbV5+
+phbph9cFAgMBAAECggEBAIAcA9L1uM/3V25O+zIqCj11+jLWHzWm+nqCaGFNnG9O
+hK3EPKVKWvTSnPVYjD6inDPaqkfmSLhubmJDICGsif0ToY0xjVNq58flfcJCU5n9
+zdVRhD7svpXTo0n4UuCp9DE5zy7BOe5p/MHwAFeCow21d3UcKi8K8KJsZz3ev38j
+9Y8ASd24NcyZfE4mnjDjA/MuzlPoQYMwAh4f3mrEKu5v9dCT+m70lJTzSNAc4gD0
+93mMkGRsUKjvZyCu/IlXncBczaSVovX5IGdiGPa7Qk+CP9r+PGQUasb+e5o7VMzh
+xyjIrCV1u48vRyJsc7xrZ+PUkVk74u9mQ3wxQXNzi7ECgYEA5BftyMlzv2oqAzQg
+isS0f616qX5YmRK/riC/4+HRaXEsA/LiI8tuW04vdgcelUqxo1TFpv+J4z16ItF5
+kscb6ev9wsFa0VInsvI3hqZ8e4AuqlvU8Rii1anxkbwE5mstRgeR9p410+0T2GiW
+JaWVy8mxsneVI0sdR5ooJ+ZBQpcCgYEAzMLtV52aQvnCLPejPI+fBnOjoLXTVaaB
+xqZWfOzuozjYVlqSUsKbKbMVtIy+rPIJt26/qw8i6V8Dx2HlUcySU5fAumpWigK4
+Dh64eZ+yJrQeqgRJoLoZhTbgxe4fv7+f649WcipwD0ptEaqjD11Wdr0973tw0wdc
+Pqn9SlPoksMCgYBqUKj5xMRZvQ82DQ75/3Oua1rYM9byCmYjsIogmrn0Ltb4RDaZ
+vpGCp2/B0NG1fmpMGhBCpatMqvQJ1J+ZBYuCPgg6xcsh8+wjIXk2HtW47udRappX
+gkcr1hmN9xhFmkEw+ghT7ixiyodMgHszsvmeUjWsXMa7+5/7JuR+rHlQowKBgE0T
+Lr3lMDT3yJSeno5kTWrjSntrFeLOq1j4MeQSV32PHzfaHewTHs7if1AYDooRDYFD
+qdgc+Xo47rY1blmNFKNsovpInsySW2/NNolpiGizMjuzI3fhtUuErbUzfjXyTqMf
+sF2HBelrjYSx43EcJDjL4S1tHLoCskFQQWyiCxB7AoGBANSohPiPmJLvCEmZTdHm
+KcRNz9jE0wO5atCZADIfuOrYHYTQk3YTI5V3GviUNLdmbw4TQChwAgAYVNth1rpL
+5jSqfF3RtNBePZixG2WzxYd2ZwvJxvKa33i1E8UfM+yEZH4Gc5ukDt28m0fyFBmi
+QvS5quTEllrvrVuWfhpsjl/l
+-----END PRIVATE KEY-----
+`)
+	testBlock, _ := pem.Decode(testPEM)
+	require.NotEmpty(t, testBlock, "could not decode pem")
 
-MIIEogIBAAKCAQEAyUIXjsrWRrvPa4Bzp3VJ6uOUGPay2fUpSV8XzNxZxIG/Opdr
-+k3EQi1im6WOqF3Y5AS1UjYRxNuRN+cAZeo3uS1pOTuoSupBXuchVw8s4hZJ5vXn
-TRmGb+xY7tZ1ZVgPfAZDib9sRSUsL/gC+aSyprAjG/YBdbF06qKbfOfsoCEYW1OQ
-82JqHzQH514RFYPTnEGpvfxWaqmFQLmv0uMxV/cAYvqtrGkXuP0+a8PknlD2obw5
-0rHE56Su1c3Q42S7L51K38tpbgWOSRcTfDUWEj5v9wokkNQvyKBwbS996s4EJaZd
-7r6M0h1pHnuRxcSaZLYRwgOe1VNGg2VfWzgd5QIDAQABAoIBAF9LGwpygmj1jm3R
-YXGd+ITugvYbAW5wRb9G9mb6wspnwNsGTYsz/UR0ZudZyaVw4jx8+jnV/i3e5PC6
-QRcAgqf8l4EQ/UuThaZg/AlT1yWp9g4UyxNXja87EpTsGKQGwTYxZRM4/xPyWOzR
-mt8Hm8uPROB9aA2JG9npaoQG8KSUj25G2Qot3ukw/IOtqwN/Sx1EqF0EfCH1K4KU
-a5TrqlYDFmHbqT1zTRec/BTtVXNsg8xmF94U1HpWf3Lpg0BPYT7JiN2DPoLelRDy
-a/A+a3ZMRNISL5wbq/jyALLOOyOkIqa+KEOeW3USuePd6RhDMzMm/0ocp5FCwYfo
-k4DDeaECgYEA0eSMD1dPGo+u8UTD8i7ZsZCS5lmXLNuuAg5f5B/FGghD8ymPROIb
-dnJL5QSbUpmBsYJ+nnO8RiLrICGBe7BehOitCKi/iiZKJO6edrfNKzhf4XlU0HFl
-jAOMa975pHjeCoZ1cXJOEO9oW4SWTCyBDBSqH3/ZMgIOiIEk896lSmkCgYEA9Xf5
-Jqv3HtQVvjugV/axAh9aI8LMjlfFr9SK7iXpY53UdcylOSWKrrDok3UnrSEykjm7
-UL3eCU5jwtkVnEXesNn6DdYo3r43E6iAiph7IBkB5dh0yv3vhIXPgYqyTnpdz4pg
-3yPGBHMPnJUBThg1qM7k6a2BKHWySxEgC1DTMB0CgYAGvdmF0J8Y0k6jLzs/9yNE
-4cjmHzCM3016gW2xDRgumt9b2xTf+Ic7SbaIV5qJj6arxe49NqhwdESrFohrKaIP
-kM2l/o2QaWRuRT/Pvl2Xqsrhmh0QSOQjGCYVfOb10nAHVIRHLY22W4o1jk+piLBo
-a+1+74NRaOGAnu1J6/fRKQKBgAF180+dmlzemjqFlFCxsR/4G8s2r4zxTMXdF+6O
-3zKuj8MbsqgCZy7e8qNeARxwpCJmoYy7dITNqJ5SOGSzrb2Trn9ClP+uVhmR2SH6
-AlGQlIhPn3JNzI0XVsLIloMNC13ezvDE/7qrDJ677EQQtNEKWiZh1/DrsmHr+irX
-EkqpAoGAJWe8PC0XK2RE9VkbSPg9Ehr939mOLWiHGYTVWPttUcum/rTKu73/X/mj
-WxnPWGtzM1pHWypSokW90SP4/xedMxludvBvmz+CTYkNJcBGCrJumy11qJhii9xp
-EMl3eFOJXjIch/wIesRSN+2dGOsl7neercjMh1i9RvpCwHDx/E0=
------END RSA PRIVATE KEY-----
-`, role))
-	} else {
-		testData = []byte(fmt.Sprintf(`-----BEGIN RSA PRIVATE KEY-----
-gun: %s
-role: %s
+	testPrivKey, err := utils.ParsePKCS8ToTufKey(testBlock.Bytes, nil)
+	require.NoError(t, err, "could not parse pkcs8 key")
 
-MIIEogIBAAKCAQEAyUIXjsrWRrvPa4Bzp3VJ6uOUGPay2fUpSV8XzNxZxIG/Opdr
-+k3EQi1im6WOqF3Y5AS1UjYRxNuRN+cAZeo3uS1pOTuoSupBXuchVw8s4hZJ5vXn
-TRmGb+xY7tZ1ZVgPfAZDib9sRSUsL/gC+aSyprAjG/YBdbF06qKbfOfsoCEYW1OQ
-82JqHzQH514RFYPTnEGpvfxWaqmFQLmv0uMxV/cAYvqtrGkXuP0+a8PknlD2obw5
-0rHE56Su1c3Q42S7L51K38tpbgWOSRcTfDUWEj5v9wokkNQvyKBwbS996s4EJaZd
-7r6M0h1pHnuRxcSaZLYRwgOe1VNGg2VfWzgd5QIDAQABAoIBAF9LGwpygmj1jm3R
-YXGd+ITugvYbAW5wRb9G9mb6wspnwNsGTYsz/UR0ZudZyaVw4jx8+jnV/i3e5PC6
-QRcAgqf8l4EQ/UuThaZg/AlT1yWp9g4UyxNXja87EpTsGKQGwTYxZRM4/xPyWOzR
-mt8Hm8uPROB9aA2JG9npaoQG8KSUj25G2Qot3ukw/IOtqwN/Sx1EqF0EfCH1K4KU
-a5TrqlYDFmHbqT1zTRec/BTtVXNsg8xmF94U1HpWf3Lpg0BPYT7JiN2DPoLelRDy
-a/A+a3ZMRNISL5wbq/jyALLOOyOkIqa+KEOeW3USuePd6RhDMzMm/0ocp5FCwYfo
-k4DDeaECgYEA0eSMD1dPGo+u8UTD8i7ZsZCS5lmXLNuuAg5f5B/FGghD8ymPROIb
-dnJL5QSbUpmBsYJ+nnO8RiLrICGBe7BehOitCKi/iiZKJO6edrfNKzhf4XlU0HFl
-jAOMa975pHjeCoZ1cXJOEO9oW4SWTCyBDBSqH3/ZMgIOiIEk896lSmkCgYEA9Xf5
-Jqv3HtQVvjugV/axAh9aI8LMjlfFr9SK7iXpY53UdcylOSWKrrDok3UnrSEykjm7
-UL3eCU5jwtkVnEXesNn6DdYo3r43E6iAiph7IBkB5dh0yv3vhIXPgYqyTnpdz4pg
-3yPGBHMPnJUBThg1qM7k6a2BKHWySxEgC1DTMB0CgYAGvdmF0J8Y0k6jLzs/9yNE
-4cjmHzCM3016gW2xDRgumt9b2xTf+Ic7SbaIV5qJj6arxe49NqhwdESrFohrKaIP
-kM2l/o2QaWRuRT/Pvl2Xqsrhmh0QSOQjGCYVfOb10nAHVIRHLY22W4o1jk+piLBo
-a+1+74NRaOGAnu1J6/fRKQKBgAF180+dmlzemjqFlFCxsR/4G8s2r4zxTMXdF+6O
-3zKuj8MbsqgCZy7e8qNeARxwpCJmoYy7dITNqJ5SOGSzrb2Trn9ClP+uVhmR2SH6
-AlGQlIhPn3JNzI0XVsLIloMNC13ezvDE/7qrDJ677EQQtNEKWiZh1/DrsmHr+irX
-EkqpAoGAJWe8PC0XK2RE9VkbSPg9Ehr939mOLWiHGYTVWPttUcum/rTKu73/X/mj
-WxnPWGtzM1pHWypSokW90SP4/xedMxludvBvmz+CTYkNJcBGCrJumy11qJhii9xp
-EMl3eFOJXjIch/wIesRSN+2dGOsl7neercjMh1i9RvpCwHDx/E0=
------END RSA PRIVATE KEY-----
-`, gun, role))
-	}
+	testData, err := utils.ConvertPrivateKeyToPKCS8(testPrivKey, role, gun, "")
+	require.NoError(t, err, "could not wrap pkcs8 key")
+
 	testName := "keyID"
 	testExt := "key"
 	perms := os.FileMode(0755)
@@ -266,7 +240,7 @@ EMl3eFOJXjIch/wIesRSN+2dGOsl7neercjMh1i9RvpCwHDx/E0=
 	privKey, _, err := store.GetKey(testName)
 	require.NoError(t, err, "failed to get %s key from store (it's in %s)", role, filepath.Join(tempBaseDir, notary.PrivDir))
 
-	pemPrivKey, err := utils.KeyToPEM(privKey, role, gun)
+	pemPrivKey, err := utils.ConvertPrivateKeyToPKCS8(privKey, role, gun, "")
 	require.NoError(t, err, "failed to convert key to PEM")
 	require.Equal(t, testData, pemPrivKey)
 }
@@ -274,6 +248,9 @@ EMl3eFOJXjIch/wIesRSN+2dGOsl7neercjMh1i9RvpCwHDx/E0=
 // TestGetLegacyKey ensures we can still load keys where the role
 // is stored as part of the filename (i.e. <hexID>_<role>.key
 func TestGetLegacyKey(t *testing.T) {
+	if notary.FIPSEnabled() {
+		t.Skip("skip backward compatibility test in FIPS mode")
+	}
 	testData := []byte(`-----BEGIN RSA PRIVATE KEY-----
 MIIEogIBAAKCAQEAyUIXjsrWRrvPa4Bzp3VJ6uOUGPay2fUpSV8XzNxZxIG/Opdr
 +k3EQi1im6WOqF3Y5AS1UjYRxNuRN+cAZeo3uS1pOTuoSupBXuchVw8s4hZJ5vXn

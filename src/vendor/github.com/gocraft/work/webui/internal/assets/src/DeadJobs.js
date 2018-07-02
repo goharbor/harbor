@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import PageList from './PageList';
 import UnixTime from './UnixTime';
 import styles from './bootstrap.min.css';
@@ -6,11 +7,11 @@ import cx from './cx';
 
 export default class DeadJobs extends React.Component {
   static propTypes = {
-    fetchURL: React.PropTypes.string,
-    deleteURL: React.PropTypes.string,
-    deleteAllURL: React.PropTypes.string,
-    retryURL: React.PropTypes.string,
-    retryAllURL: React.PropTypes.string,
+    fetchURL: PropTypes.string,
+    deleteURL: PropTypes.string,
+    deleteAllURL: PropTypes.string,
+    retryURL: PropTypes.string,
+    retryAllURL: PropTypes.string,
   }
 
   state = {
@@ -147,7 +148,7 @@ export default class DeadJobs extends React.Component {
                         <td>{job.err}</td>
                         <td><UnixTime ts={job.t} /></td>
                       </tr>
-                      );
+                    );
                   })
                 }
               </tbody>

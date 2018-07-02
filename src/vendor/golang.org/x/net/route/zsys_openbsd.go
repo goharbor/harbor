@@ -10,6 +10,8 @@ const (
 	sysAF_LINK   = 0x12
 	sysAF_INET6  = 0x18
 
+	sysSOCK_RAW = 0x3
+
 	sysNET_RT_DUMP    = 0x1
 	sysNET_RT_FLAGS   = 0x2
 	sysNET_RT_IFLIST  = 0x3
@@ -52,6 +54,9 @@ const (
 	sysRTM_IFINFO     = 0xe
 	sysRTM_IFANNOUNCE = 0xf
 	sysRTM_DESYNC     = 0x10
+	sysRTM_INVALIDATE = 0x11
+	sysRTM_BFD        = 0x12
+	sysRTM_PROPOSAL   = 0x13
 
 	sysRTA_DST     = 0x1
 	sysRTA_GATEWAY = 0x2
@@ -64,6 +69,10 @@ const (
 	sysRTA_SRC     = 0x100
 	sysRTA_SRCMASK = 0x200
 	sysRTA_LABEL   = 0x400
+	sysRTA_BFD     = 0x800
+	sysRTA_DNS     = 0x1000
+	sysRTA_STATIC  = 0x2000
+	sysRTA_SEARCH  = 0x4000
 
 	sysRTAX_DST     = 0x0
 	sysRTAX_GATEWAY = 0x1
@@ -76,5 +85,17 @@ const (
 	sysRTAX_SRC     = 0x8
 	sysRTAX_SRCMASK = 0x9
 	sysRTAX_LABEL   = 0xa
-	sysRTAX_MAX     = 0xb
+	sysRTAX_BFD     = 0xb
+	sysRTAX_DNS     = 0xc
+	sysRTAX_STATIC  = 0xd
+	sysRTAX_SEARCH  = 0xe
+	sysRTAX_MAX     = 0xf
+)
+
+const (
+	sizeofRtMsghdr = 0x60
+
+	sizeofSockaddrStorage = 0x100
+	sizeofSockaddrInet    = 0x10
+	sizeofSockaddrInet6   = 0x1c
 )

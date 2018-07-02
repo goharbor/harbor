@@ -77,7 +77,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"golang.org/x/net/context"
 	"golang.org/x/net/internal/timeseries"
 )
 
@@ -91,7 +90,7 @@ var DebugUseAfterFinish = false
 // It returns two bools; the first indicates whether the page may be viewed at all,
 // and the second indicates whether sensitive events will be shown.
 //
-// AuthRequest may be replaced by a program to customise its authorisation requirements.
+// AuthRequest may be replaced by a program to customize its authorization requirements.
 //
 // The default AuthRequest function returns (true, true) if and only if the request
 // comes from localhost/127.0.0.1/[::1].
@@ -111,30 +110,46 @@ var AuthRequest = func(req *http.Request) (any, sensitive bool) {
 }
 
 func init() {
-	http.HandleFunc("/debug/requests", func(w http.ResponseWriter, req *http.Request) {
-		any, sensitive := AuthRequest(req)
-		if !any {
-			http.Error(w, "not allowed", http.StatusUnauthorized)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		Render(w, req, sensitive)
-	})
-	http.HandleFunc("/debug/events", func(w http.ResponseWriter, req *http.Request) {
-		any, sensitive := AuthRequest(req)
-		if !any {
-			http.Error(w, "not allowed", http.StatusUnauthorized)
-			return
-		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		RenderEvents(w, req, sensitive)
-	})
+	// TODO(jbd): Serve Traces from /debug/traces in the future?
+	// There is no requirement for a request to be present to have traces.
+	http.HandleFunc("/debug/requests", Traces)
+	http.HandleFunc("/debug/events", Events)
+}
+
+// Traces responds with traces from the program.
+// The package initialization registers it in http.DefaultServeMux
+// at /debug/requests.
+//
+// It performs authorization by running AuthRequest.
+func Traces(w http.ResponseWriter, req *http.Request) {
+	any, sensitive := AuthRequest(req)
+	if !any {
+		http.Error(w, "not allowed", http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	Render(w, req, sensitive)
+}
+
+// Events responds with a page of events collected by EventLogs.
+// The package initialization registers it in http.DefaultServeMux
+// at /debug/events.
+//
+// It performs authorization by running AuthRequest.
+func Events(w http.ResponseWriter, req *http.Request) {
+	any, sensitive := AuthRequest(req)
+	if !any {
+		http.Error(w, "not allowed", http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	RenderEvents(w, req, sensitive)
 }
 
 // Render renders the HTML page typically served at /debug/requests.
-// It does not do any auth checking; see AuthRequest for the default auth check
-// used by the handler registered on http.DefaultServeMux.
-// req may be nil.
+// It does not do any auth checking. The request may be nil.
+//
+// Most users will use the Traces handler.
 func Render(w io.Writer, req *http.Request, sensitive bool) {
 	data := &struct {
 		Families         []string
@@ -238,7 +253,7 @@ func Render(w io.Writer, req *http.Request, sensitive bool) {
 
 	completedMu.RLock()
 	defer completedMu.RUnlock()
-	if err := pageTmpl.ExecuteTemplate(w, "Page", data); err != nil {
+	if err := pageTmpl().ExecuteTemplate(w, "Page", data); err != nil {
 		log.Printf("net/trace: Failed executing template: %v", err)
 	}
 }
@@ -270,18 +285,6 @@ func lookupBucket(fam string, b int) *traceBucket {
 type contextKeyT string
 
 var contextKey = contextKeyT("golang.org/x/net/trace.Trace")
-
-// NewContext returns a copy of the parent context
-// and associates it with a Trace.
-func NewContext(ctx context.Context, tr Trace) context.Context {
-	return context.WithValue(ctx, contextKey, tr)
-}
-
-// FromContext returns the Trace bound to the context, if any.
-func FromContext(ctx context.Context) (tr Trace, ok bool) {
-	tr, ok = ctx.Value(contextKey).(Trace)
-	return
-}
 
 // Trace represents an active request.
 type Trace interface {
@@ -333,7 +336,8 @@ func New(family, title string) Trace {
 	tr.ref()
 	tr.Family, tr.Title = family, title
 	tr.Start = time.Now()
-	tr.events = make([]event, 0, maxEventsPerTrace)
+	tr.maxEvents = maxEventsPerTrace
+	tr.events = tr.eventsBuf[:0]
 
 	activeMu.RLock()
 	s := activeTraces[tr.Family]
@@ -364,7 +368,11 @@ func New(family, title string) Trace {
 }
 
 func (tr *trace) Finish() {
-	tr.Elapsed = time.Now().Sub(tr.Start)
+	elapsed := time.Now().Sub(tr.Start)
+	tr.mu.Lock()
+	tr.Elapsed = elapsed
+	tr.mu.Unlock()
+
 	if DebugUseAfterFinish {
 		buf := make([]byte, 4<<10) // 4 KB should be enough
 		n := runtime.Stack(buf, false)
@@ -377,14 +385,17 @@ func (tr *trace) Finish() {
 	m.Remove(tr)
 
 	f := getFamily(tr.Family, true)
+	tr.mu.RLock() // protects tr fields in Cond.match calls
 	for _, b := range f.Buckets {
 		if b.Cond.match(tr) {
 			b.Add(tr)
 		}
 	}
+	tr.mu.RUnlock()
+
 	// Add a sample of elapsed time as microseconds to the family's timeseries
 	h := new(histogram)
-	h.addMeasurement(tr.Elapsed.Nanoseconds() / 1e3)
+	h.addMeasurement(elapsed.Nanoseconds() / 1e3)
 	f.LatencyMu.Lock()
 	f.Latency.Add(h)
 	f.LatencyMu.Unlock()
@@ -650,8 +661,8 @@ type event struct {
 	Elapsed    time.Duration // since previous event in trace
 	NewDay     bool          // whether this event is on a different day to the previous event
 	Recyclable bool          // whether this event was passed via LazyLog
-	What       interface{}   // string or fmt.Stringer
 	Sensitive  bool          // whether this event contains sensitive information
+	What       interface{}   // string or fmt.Stringer
 }
 
 // WhenString returns a string representation of the elapsed time of the event.
@@ -680,26 +691,24 @@ type trace struct {
 	// Title is the title of this trace.
 	Title string
 
-	// Timing information.
-	Start   time.Time
-	Elapsed time.Duration // zero while active
+	// Start time of the this trace.
+	Start time.Time
 
-	// Trace information if non-zero.
-	traceID uint64
-	spanID  uint64
+	mu        sync.RWMutex
+	events    []event // Append-only sequence of events (modulo discards).
+	maxEvents int
+	recycler  func(interface{})
+	IsError   bool          // Whether this trace resulted in an error.
+	Elapsed   time.Duration // Elapsed time for this trace, zero while active.
+	traceID   uint64        // Trace information if non-zero.
+	spanID    uint64
 
-	// Whether this trace resulted in an error.
-	IsError bool
-
-	// Append-only sequence of events (modulo discards).
-	mu     sync.RWMutex
-	events []event
-
-	refs     int32 // how many buckets this is in
-	recycler func(interface{})
-	disc     discarded // scratch space to avoid allocation
+	refs int32     // how many buckets this is in
+	disc discarded // scratch space to avoid allocation
 
 	finishStack []byte // where finish was called, if DebugUseAfterFinish is set
+
+	eventsBuf [4]event // preallocated buffer in case we only log a few events
 }
 
 func (tr *trace) reset() {
@@ -707,15 +716,23 @@ func (tr *trace) reset() {
 	tr.Family = ""
 	tr.Title = ""
 	tr.Start = time.Time{}
+
+	tr.mu.Lock()
 	tr.Elapsed = 0
 	tr.traceID = 0
 	tr.spanID = 0
 	tr.IsError = false
+	tr.maxEvents = 0
 	tr.events = nil
-	tr.refs = 0
 	tr.recycler = nil
+	tr.mu.Unlock()
+
+	tr.refs = 0
 	tr.disc = 0
 	tr.finishStack = nil
+	for i := range tr.eventsBuf {
+		tr.eventsBuf[i] = event{}
+	}
 }
 
 // delta returns the elapsed time since the last event or the trace start,
@@ -744,7 +761,7 @@ func (tr *trace) addEvent(x interface{}, recyclable, sensitive bool) {
 		and very unlikely to be the fault of this code.
 
 		The most likely scenario is that some code elsewhere is using
-		a requestz.Trace after its Finish method is called.
+		a trace.Trace after its Finish method is called.
 		You can temporarily set the DebugUseAfterFinish var
 		to help discover where that is; do not leave that var set,
 		since it makes this package much less efficient.
@@ -753,11 +770,11 @@ func (tr *trace) addEvent(x interface{}, recyclable, sensitive bool) {
 	e := event{When: time.Now(), What: x, Recyclable: recyclable, Sensitive: sensitive}
 	tr.mu.Lock()
 	e.Elapsed, e.NewDay = tr.delta(e.When)
-	if len(tr.events) < cap(tr.events) {
+	if len(tr.events) < tr.maxEvents {
 		tr.events = append(tr.events, e)
 	} else {
 		// Discard the middle events.
-		di := int((cap(tr.events) - 1) / 2)
+		di := int((tr.maxEvents - 1) / 2)
 		if d, ok := tr.events[di].What.(*discarded); ok {
 			(*d)++
 		} else {
@@ -777,7 +794,7 @@ func (tr *trace) addEvent(x interface{}, recyclable, sensitive bool) {
 			go tr.recycler(tr.events[di+1].What)
 		}
 		copy(tr.events[di+1:], tr.events[di+2:])
-		tr.events[cap(tr.events)-1] = e
+		tr.events[tr.maxEvents-1] = e
 	}
 	tr.mu.Unlock()
 }
@@ -790,21 +807,31 @@ func (tr *trace) LazyPrintf(format string, a ...interface{}) {
 	tr.addEvent(&lazySprintf{format, a}, false, false)
 }
 
-func (tr *trace) SetError() { tr.IsError = true }
+func (tr *trace) SetError() {
+	tr.mu.Lock()
+	tr.IsError = true
+	tr.mu.Unlock()
+}
 
 func (tr *trace) SetRecycler(f func(interface{})) {
+	tr.mu.Lock()
 	tr.recycler = f
+	tr.mu.Unlock()
 }
 
 func (tr *trace) SetTraceInfo(traceID, spanID uint64) {
+	tr.mu.Lock()
 	tr.traceID, tr.spanID = traceID, spanID
+	tr.mu.Unlock()
 }
 
 func (tr *trace) SetMaxEvents(m int) {
+	tr.mu.Lock()
 	// Always keep at least three events: first, discarded count, last.
 	if len(tr.events) == 0 && m > 3 {
-		tr.events = make([]event, 0, m)
+		tr.maxEvents = m
 	}
+	tr.mu.Unlock()
 }
 
 func (tr *trace) ref() {
@@ -813,6 +840,7 @@ func (tr *trace) ref() {
 
 func (tr *trace) unref() {
 	if atomic.AddInt32(&tr.refs, -1) == 0 {
+		tr.mu.RLock()
 		if tr.recycler != nil {
 			// freeTrace clears tr, so we hold tr.recycler and tr.events here.
 			go func(f func(interface{}), es []event) {
@@ -823,6 +851,7 @@ func (tr *trace) unref() {
 				}
 			}(tr.recycler, tr.events)
 		}
+		tr.mu.RUnlock()
 
 		freeTrace(tr)
 	}
@@ -833,7 +862,10 @@ func (tr *trace) When() string {
 }
 
 func (tr *trace) ElapsedTime() string {
+	tr.mu.RLock()
 	t := tr.Elapsed
+	tr.mu.RUnlock()
+
 	if t == 0 {
 		// Active trace.
 		t = time.Since(tr.Start)
@@ -894,10 +926,18 @@ func elapsed(d time.Duration) string {
 	return string(b)
 }
 
-var pageTmpl = template.Must(template.New("Page").Funcs(template.FuncMap{
-	"elapsed": elapsed,
-	"add":     func(a, b int) int { return a + b },
-}).Parse(pageHTML))
+var pageTmplCache *template.Template
+var pageTmplOnce sync.Once
+
+func pageTmpl() *template.Template {
+	pageTmplOnce.Do(func() {
+		pageTmplCache = template.Must(template.New("Page").Funcs(template.FuncMap{
+			"elapsed": elapsed,
+			"add":     func(a, b int) int { return a + b },
+		}).Parse(pageHTML))
+	})
+	return pageTmplCache
+}
 
 const pageHTML = `
 {{template "Prolog" .}}

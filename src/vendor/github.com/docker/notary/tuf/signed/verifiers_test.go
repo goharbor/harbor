@@ -97,7 +97,7 @@ func TestRSAPSSVerifierWithInvalidKeyType(t *testing.T) {
 }
 
 func TestRSAPSSVerifierWithInvalidKeyLength(t *testing.T) {
-	key, err := rsa.GenerateKey(rand.Reader, 512)
+	key, err := rsa.GenerateKey(rand.Reader, 1024)
 	require.NoError(t, err)
 
 	err = verifyPSS(key.Public(), nil, nil)

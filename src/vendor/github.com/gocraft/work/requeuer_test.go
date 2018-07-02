@@ -1,12 +1,9 @@
 package work
 
 import (
-	// "github.com/garyburd/redigo/redis"
-	"github.com/stretchr/testify/assert"
 	"testing"
-	// "fmt"
-	// "time"
-	// "os"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRequeue(t *testing.T) {

@@ -77,11 +77,11 @@ type kexAlgorithm interface {
 
 // dhGroup is a multiplicative group suitable for implementing Diffie-Hellman key agreement.
 type dhGroup struct {
-	g, p *big.Int
+	g, p, pMinus1 *big.Int
 }
 
 func (group *dhGroup) diffieHellman(theirPublic, myPrivate *big.Int) (*big.Int, error) {
-	if theirPublic.Sign() <= 0 || theirPublic.Cmp(group.p) >= 0 {
+	if theirPublic.Cmp(bigOne) <= 0 || theirPublic.Cmp(group.pMinus1) >= 0 {
 		return nil, errors.New("ssh: DH parameter out of bounds")
 	}
 	return new(big.Int).Exp(theirPublic, myPrivate, group.p), nil
@@ -90,10 +90,17 @@ func (group *dhGroup) diffieHellman(theirPublic, myPrivate *big.Int) (*big.Int, 
 func (group *dhGroup) Client(c packetConn, randSource io.Reader, magics *handshakeMagics) (*kexResult, error) {
 	hashFunc := crypto.SHA1
 
-	x, err := rand.Int(randSource, group.p)
-	if err != nil {
-		return nil, err
+	var x *big.Int
+	for {
+		var err error
+		if x, err = rand.Int(randSource, group.pMinus1); err != nil {
+			return nil, err
+		}
+		if x.Sign() > 0 {
+			break
+		}
 	}
+
 	X := new(big.Int).Exp(group.g, x, group.p)
 	kexDHInit := kexDHInitMsg{
 		X: X,
@@ -112,7 +119,7 @@ func (group *dhGroup) Client(c packetConn, randSource io.Reader, magics *handsha
 		return nil, err
 	}
 
-	kInt, err := group.diffieHellman(kexDHReply.Y, x)
+	ki, err := group.diffieHellman(kexDHReply.Y, x)
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +129,8 @@ func (group *dhGroup) Client(c packetConn, randSource io.Reader, magics *handsha
 	writeString(h, kexDHReply.HostKey)
 	writeInt(h, X)
 	writeInt(h, kexDHReply.Y)
-	K := make([]byte, intLength(kInt))
-	marshalInt(K, kInt)
+	K := make([]byte, intLength(ki))
+	marshalInt(K, ki)
 	h.Write(K)
 
 	return &kexResult{
@@ -146,13 +153,18 @@ func (group *dhGroup) Server(c packetConn, randSource io.Reader, magics *handsha
 		return
 	}
 
-	y, err := rand.Int(randSource, group.p)
-	if err != nil {
-		return
+	var y *big.Int
+	for {
+		if y, err = rand.Int(randSource, group.pMinus1); err != nil {
+			return
+		}
+		if y.Sign() > 0 {
+			break
+		}
 	}
 
 	Y := new(big.Int).Exp(group.g, y, group.p)
-	kInt, err := group.diffieHellman(kexDHInit.X, y)
+	ki, err := group.diffieHellman(kexDHInit.X, y)
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +177,8 @@ func (group *dhGroup) Server(c packetConn, randSource io.Reader, magics *handsha
 	writeInt(h, kexDHInit.X)
 	writeInt(h, Y)
 
-	K := make([]byte, intLength(kInt))
-	marshalInt(K, kInt)
+	K := make([]byte, intLength(ki))
+	marshalInt(K, ki)
 	h.Write(K)
 
 	H := h.Sum(nil)
@@ -371,8 +383,9 @@ func init() {
 	// 4253 and Oakley Group 2 in RFC 2409.
 	p, _ := new(big.Int).SetString("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE65381FFFFFFFFFFFFFFFF", 16)
 	kexAlgoMap[kexAlgoDH1SHA1] = &dhGroup{
-		g: new(big.Int).SetInt64(2),
-		p: p,
+		g:       new(big.Int).SetInt64(2),
+		p:       p,
+		pMinus1: new(big.Int).Sub(p, bigOne),
 	}
 
 	// This is the group called diffie-hellman-group14-sha1 in RFC
@@ -380,8 +393,9 @@ func init() {
 	p, _ = new(big.Int).SetString("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF", 16)
 
 	kexAlgoMap[kexAlgoDH14SHA1] = &dhGroup{
-		g: new(big.Int).SetInt64(2),
-		p: p,
+		g:       new(big.Int).SetInt64(2),
+		p:       p,
+		pMinus1: new(big.Int).Sub(p, bigOne),
 	}
 
 	kexAlgoMap[kexAlgoECDH521] = &ecdh{elliptic.P521()}
@@ -448,9 +462,9 @@ func (kex *curve25519sha256) Client(c packetConn, rand io.Reader, magics *handsh
 	writeString(h, kp.pub[:])
 	writeString(h, reply.EphemeralPubKey)
 
-	kInt := new(big.Int).SetBytes(secret[:])
-	K := make([]byte, intLength(kInt))
-	marshalInt(K, kInt)
+	ki := new(big.Int).SetBytes(secret[:])
+	K := make([]byte, intLength(ki))
+	marshalInt(K, ki)
 	h.Write(K)
 
 	return &kexResult{
@@ -496,9 +510,9 @@ func (kex *curve25519sha256) Server(c packetConn, rand io.Reader, magics *handsh
 	writeString(h, kexInit.ClientPubKey)
 	writeString(h, kp.pub[:])
 
-	kInt := new(big.Int).SetBytes(secret[:])
-	K := make([]byte, intLength(kInt))
-	marshalInt(K, kInt)
+	ki := new(big.Int).SetBytes(secret[:])
+	K := make([]byte, intLength(ki))
+	marshalInt(K, ki)
 	h.Write(K)
 
 	H := h.Sum(nil)

@@ -195,6 +195,7 @@ func testUpdateManyNoConflicts(t *testing.T, s MetaStore) []StoredTUFMeta {
 // UpdateMany does not insert any rows (or at least rolls them back) if there
 // are any conflicts.
 func testUpdateManyConflictRollback(t *testing.T, s MetaStore) []StoredTUFMeta {
+	blackoutTime = 0
 	var gun data.GUN = "testGUN"
 	successBatch := make([]StoredTUFMeta, 4)
 	updates := make([]MetaUpdate, 4)
@@ -206,9 +207,7 @@ func testUpdateManyConflictRollback(t *testing.T, s MetaStore) []StoredTUFMeta {
 	require.NoError(t, s.UpdateMany(gun, updates))
 
 	before, err := s.GetChanges("0", 1000, "")
-	if _, ok := s.(RethinkDB); !ok {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 
 	// conflicts with what's in DB
 	badBatch := make([]StoredTUFMeta, 4)
@@ -224,9 +223,7 @@ func testUpdateManyConflictRollback(t *testing.T, s MetaStore) []StoredTUFMeta {
 
 	// check no changes were written when there was a conflict+rollback
 	after, err := s.GetChanges("0", 1000, "")
-	if _, ok := s.(RethinkDB); !ok {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	require.Equal(t, len(before), len(after))
 
 	err = s.UpdateMany(gun, updates)
@@ -298,6 +295,7 @@ func testDeleteSuccess(t *testing.T, s MetaStore) {
 }
 
 func testGetChanges(t *testing.T, s MetaStore) {
+	blackoutTime = 0
 	// non-int changeID
 	c, err := s.GetChanges("foo", 10, "")
 	require.Error(t, err)
@@ -310,16 +308,22 @@ func testGetChanges(t *testing.T, s MetaStore) {
 			Version: 1,
 			Data:    []byte{'1'},
 		},
+	}))
+	require.NoError(t, s.UpdateMany("alpine", []MetaUpdate{
 		{
 			Role:    data.CanonicalTimestampRole,
 			Version: 2,
 			Data:    []byte{'2'},
 		},
+	}))
+	require.NoError(t, s.UpdateMany("alpine", []MetaUpdate{
 		{
 			Role:    data.CanonicalTimestampRole,
 			Version: 3,
 			Data:    []byte{'3'},
 		},
+	}))
+	require.NoError(t, s.UpdateMany("alpine", []MetaUpdate{
 		{
 			Role:    data.CanonicalTimestampRole,
 			Version: 4,
@@ -332,16 +336,22 @@ func testGetChanges(t *testing.T, s MetaStore) {
 			Version: 1,
 			Data:    []byte{'5'},
 		},
+	}))
+	require.NoError(t, s.UpdateMany("busybox", []MetaUpdate{
 		{
 			Role:    data.CanonicalTimestampRole,
 			Version: 2,
 			Data:    []byte{'6'},
 		},
+	}))
+	require.NoError(t, s.UpdateMany("busybox", []MetaUpdate{
 		{
 			Role:    data.CanonicalTimestampRole,
 			Version: 3,
 			Data:    []byte{'7'},
 		},
+	}))
+	require.NoError(t, s.UpdateMany("busybox", []MetaUpdate{
 		{
 			Role:    data.CanonicalTimestampRole,
 			Version: 4,
@@ -355,48 +365,35 @@ func testGetChanges(t *testing.T, s MetaStore) {
 	require.Len(t, c, 8)
 
 	for i := 0; i < 4; i++ {
-		require.Equal(t, uint(i+1), c[i].ID)
 		require.Equal(t, "alpine", c[i].GUN)
 		require.Equal(t, i+1, c[i].Version)
 	}
 	for i := 4; i < 8; i++ {
-		require.Equal(t, uint(i+1), c[i].ID)
 		require.Equal(t, "busybox", c[i].GUN)
 		require.Equal(t, i-3, c[i].Version)
 	}
+	full := c
 
 	c, err = s.GetChanges("-1", 4, "")
 	require.NoError(t, err)
 	require.Len(t, c, 4)
 	for i := 0; i < 4; i++ {
-		require.Equal(t, uint(i+5), c[i].ID)
 		require.Equal(t, "busybox", c[i].GUN)
 		require.Equal(t, i+1, c[i].Version)
 	}
 
-	c, err = s.GetChanges("10", 4, "")
+	c, err = s.GetChanges(full[7].ID, 4, "")
 	require.NoError(t, err)
 	require.Len(t, c, 0)
 
-	c, err = s.GetChanges("10", -4, "")
-	require.NoError(t, err)
-	require.Len(t, c, 4)
-	for i := 0; i < 4; i++ {
-		require.Equal(t, uint(i+5), c[i].ID)
-		require.Equal(t, "busybox", c[i].GUN)
-		require.Equal(t, i+1, c[i].Version)
-	}
-
-	c, err = s.GetChanges("7", -4, "")
+	c, err = s.GetChanges(full[6].ID, -4, "")
 	require.NoError(t, err)
 	require.Len(t, c, 4)
 	for i := 0; i < 2; i++ {
-		require.Equal(t, uint(i+3), c[i].ID)
 		require.Equal(t, "alpine", c[i].GUN)
 		require.Equal(t, i+3, c[i].Version)
 	}
 	for i := 2; i < 4; i++ {
-		require.Equal(t, uint(i+3), c[i].ID)
 		require.Equal(t, "busybox", c[i].GUN)
 		require.Equal(t, i-1, c[i].Version)
 	}
@@ -405,7 +402,6 @@ func testGetChanges(t *testing.T, s MetaStore) {
 	require.NoError(t, err)
 	require.Len(t, c, 4)
 	for i := 0; i < 4; i++ {
-		require.Equal(t, uint(i+5), c[i].ID)
 		require.Equal(t, "busybox", c[i].GUN)
 		require.Equal(t, i+1, c[i].Version)
 	}
@@ -414,7 +410,6 @@ func testGetChanges(t *testing.T, s MetaStore) {
 	require.NoError(t, err)
 	require.Len(t, c, 4)
 	for i := 0; i < 4; i++ {
-		require.Equal(t, uint(i+5), c[i].ID)
 		require.Equal(t, "busybox", c[i].GUN)
 		require.Equal(t, i+1, c[i].Version)
 	}
@@ -434,6 +429,17 @@ func testGetChanges(t *testing.T, s MetaStore) {
 	require.NoError(t, err)
 	require.Equal(t, before, after)
 
+	_, err1 := s.GetChanges("1000", 0, "")
+	_, err2 := s.GetChanges("doesn't exist", 0, "")
+	if _, ok := s.(RethinkDB); ok {
+		require.Error(t, err1)
+		require.Error(t, err2)
+	} else {
+		require.NoError(t, err1)
+		require.Error(t, err2)
+		require.IsType(t, ErrBadQuery{}, err2)
+	}
+
 	// do a deletion and check is shows up.
 	require.NoError(t, s.Delete("alpine"))
 	c, err = s.GetChanges("-1", -1, "")
@@ -450,4 +456,5 @@ func testGetChanges(t *testing.T, s MetaStore) {
 	require.Len(t, c, 2)
 	require.NotEqual(t, changeCategoryDeletion, c[0].Category)
 	require.NotEqual(t, "alpine", c[0].GUN)
+
 }

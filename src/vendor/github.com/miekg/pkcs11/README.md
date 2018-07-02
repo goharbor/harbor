@@ -58,6 +58,10 @@ A skeleton program would look somewhat like this (yes, pkcs#11 is verbose):
 
 Further examples are included in the tests.
 
+To expose PKCS#11 keys using the
+[crypto.Signer interface](https://golang.org/pkg/crypto/#Signer),
+please see [github.com/thalesignite/crypto11](https://github.com/thalesignite/crypto11).
+
 # TODO
 
 * Fix/double check endian stuff, see types.go NewAttribute()

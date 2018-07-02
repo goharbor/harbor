@@ -81,8 +81,7 @@ var (
 	funcs = make(map[string]*Function)
 
 	// precomputed types
-	contextType = reflect.TypeOf((*context.Context)(nil)).Elem()
-	errorType   = reflect.TypeOf((*error)(nil)).Elem()
+	errorType = reflect.TypeOf((*error)(nil)).Elem()
 
 	// errors
 	errFirstArg         = errors.New("first argument must be context.Context")
@@ -112,7 +111,7 @@ func Func(key string, i interface{}) *Function {
 		f.err = errors.New("not a function")
 		return f
 	}
-	if t.NumIn() == 0 || t.In(0) != contextType {
+	if t.NumIn() == 0 || !isContext(t.In(0)) {
 		f.err = errFirstArg
 		return f
 	}

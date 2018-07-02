@@ -81,10 +81,10 @@ func TestInitialize(t *testing.T) {
 
 func TestNew(t *testing.T) {
 	if p := New(""); p != nil {
-		t.Fatalf("init should have failed, got %s\n", p)
+		t.Fatalf("init should have failed, got %v\n", p)
 	}
 	if p := New("/does/not/exist"); p != nil {
-		t.Fatalf("init should have failed, got %s\n", p)
+		t.Fatalf("init should have failed, got %v\n", p)
 	}
 }
 
@@ -114,7 +114,7 @@ func TestFindObject(t *testing.T) {
 	session := getSession(p, t)
 	defer finishSession(p, session)
 
-	tokenLabel:= "TestFindObject"
+	tokenLabel := "TestFindObject"
 
 	// There are 2 keys in the db with this tag
 	generateRSAKeyPair(t, p, session, tokenLabel, false)
@@ -212,7 +212,6 @@ func TestDigestUpdate(t *testing.T) {
 	}
 }
 
-
 /*
 Purpose: Generate RSA keypair with a given name and persistence.
 Inputs: test object
@@ -288,15 +287,15 @@ func TestSign(t *testing.T) {
 }
 
 /* destroyObject
-	Purpose: destroy and object from the HSM
-	Inputs: test handle
-		session handle
-		searchToken: String containing the token label to search for.
-		class: Key type (CKO_PRIVATE_KEY or CKO_PUBLIC_KEY) to remove.
-	Outputs: removes object from HSM
-	Returns: Fatal error on failure.
+Purpose: destroy and object from the HSM
+Inputs: test handle
+	session handle
+	searchToken: String containing the token label to search for.
+	class: Key type (CKO_PRIVATE_KEY or CKO_PUBLIC_KEY) to remove.
+Outputs: removes object from HSM
+Returns: Fatal error on failure.
 */
-func destroyObject(t *testing.T, p *Ctx, session SessionHandle, searchToken string, class uint) (err error){
+func destroyObject(t *testing.T, p *Ctx, session SessionHandle, searchToken string, class uint) (err error) {
 	template := []*Attribute{
 		NewAttribute(CKA_LABEL, searchToken),
 		NewAttribute(CKA_CLASS, class)}
@@ -336,7 +335,7 @@ func TestDestroyObject(t *testing.T) {
 
 // ExampleSign shows how to sign some data with a private key.
 // Note: error correction is not implemented in this example.
-func ExampleSign() {
+func ExampleCtx_Sign() {
 	lib := "/usr/lib/softhsm/libsofthsm.so"
 	if x := os.Getenv("SOFTHSM_LIB"); x != "" {
 		lib = x
@@ -389,4 +388,5 @@ func ExampleSign() {
 	fmt.Printf("It works!")
 	// Output: It works!
 }
+
 // Copyright 2013 Miek Gieben. All rights reserved.

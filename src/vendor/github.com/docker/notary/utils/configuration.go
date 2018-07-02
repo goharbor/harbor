@@ -14,6 +14,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/bugsnag/bugsnag-go"
 	"github.com/docker/go-connections/tlsconfig"
+	"github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
 
 	"github.com/docker/notary"
@@ -109,6 +110,16 @@ func ParseSQLStorage(configuration *viper.Viper) (*Storage, error) {
 			"must provide a non-empty database source for %s",
 			store.Backend,
 		)
+	case store.Backend == notary.MySQLBackend:
+		urlConfig, err := mysql.ParseDSN(store.Source)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse the database source for %s",
+				store.Backend,
+			)
+		}
+
+		urlConfig.ParseTime = true
+		store.Source = urlConfig.FormatDSN()
 	}
 	return &store, nil
 }

@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package box authenticates and encrypts messages using public-key cryptography.
+Package box authenticates and encrypts small messages using public-key cryptography.
 
 Box uses Curve25519, XSalsa20 and Poly1305 to encrypt and authenticate
 messages. The length of messages is not hidden.
@@ -13,15 +13,33 @@ example, by using nonce 1 for the first message, nonce 2 for the second
 message, etc. Nonces are long enough that randomly generated nonces have
 negligible risk of collision.
 
-This package is interoperable with NaCl: http://nacl.cr.yp.to/box.html.
+Messages should be small because:
+
+1. The whole message needs to be held in memory to be processed.
+
+2. Using large messages pressures implementations on small machines to decrypt
+and process plaintext before authenticating it. This is very dangerous, and
+this API does not allow it, but a protocol that uses excessive message sizes
+might present some implementations with no other choice.
+
+3. Fixed overheads will be sufficiently amortised by messages as small as 8KB.
+
+4. Performance may be improved by working with messages that fit into data caches.
+
+Thus large amounts of data should be chunked so that each message is small.
+(Each message still needs a unique nonce.) If in doubt, 16KB is a reasonable
+chunk size.
+
+This package is interoperable with NaCl: https://nacl.cr.yp.to/box.html.
 */
 package box // import "golang.org/x/crypto/nacl/box"
 
 import (
+	"io"
+
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/salsa20/salsa"
-	"io"
 )
 
 // Overhead is the number of bytes of overhead when boxing a message.
@@ -55,7 +73,7 @@ func Precompute(sharedKey, peersPublicKey, privateKey *[32]byte) {
 }
 
 // Seal appends an encrypted and authenticated copy of message to out, which
-// will be Overhead bytes longer than the original and must not overlap. The
+// will be Overhead bytes longer than the original and must not overlap it. The
 // nonce must be unique for each distinct message for a given pair of keys.
 func Seal(out, message []byte, nonce *[24]byte, peersPublicKey, privateKey *[32]byte) []byte {
 	var sharedKey [32]byte

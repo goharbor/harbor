@@ -8,9 +8,10 @@
   version = "v1.0.5"
 
 [[projects]]
+  branch = "master"
   name = "github.com/Unknwon/goconfig"
   packages = ["."]
-  revision = "5f601ca6ef4d5cea8d52be2f8b3a420ee4b574a5"
+  revision = "ef1e4c783f8f0478bd8bff0edb3dd0bade552599"
 
 [[projects]]
   branch = "master"
@@ -42,9 +43,10 @@
   version = "v1.9.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/beego/i18n"
   packages = ["."]
-  revision = "e87155e8f0c05bf323d0b13470e1b97af0cb5652"
+  revision = "e9308947f407a24aaa1e7dbe35a01931e99cb255"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -83,10 +85,10 @@
   version = "v2.6.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/docker/go"
   packages = ["canonical/json"]
-  revision = "d30aec9fd63c35133f8f79c3412ad91a3b08be06"
+  revision = "62e5ec7cf43f795986ec658df7cb317255772993"
+  version = "v1.5.1-1"
 
 [[projects]]
   branch = "master"
@@ -111,7 +113,8 @@
     "tuf/utils",
     "tuf/validation"
   ]
-  revision = "c04e3e6d05881045def11167c51d4a8baa34899a"
+  revision = "ab64f58d0c021b2bea19236039a4a79d99f4b773"
+  version = "v0.5.1"
 
 [[projects]]
   name = "github.com/garyburd/redigo"
@@ -126,13 +129,13 @@
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
   revision = "a0583e0143b1624142adab07e0e97fe106d99561"
-  version = "v1.3"
+  version = "v1.3.0"
 
 [[projects]]
   name = "github.com/gocraft/work"
   packages = ["."]
-  revision = "67c8dc210ce647e8d8a4206c7f5856ea2390f290"
-  version = "v0.5.0"
+  revision = "1d4117a214abff263b472043871c8666aedb716b"
+  version = "v0.5.1"
 
 [[projects]]
   name = "github.com/golang-migrate/migrate"
@@ -148,8 +151,21 @@
 
 [[projects]]
   name = "github.com/golang/protobuf"
-  packages = ["proto"]
-  revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
+  packages = [
+    "proto",
+    "ptypes/any"
+  ]
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/gomodule/redigo"
+  packages = [
+    "internal",
+    "redis"
+  ]
+  revision = "9c11da706d9b7902c6da69c592f75637793fe121"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "master"
@@ -176,13 +192,19 @@
   version = "v1.6.0"
 
 [[projects]]
+  name = "github.com/kubernetes/helm"
+  packages = ["pkg/proto/hapi/chart"]
+  revision = "20adb27c7c5868466912eebdf6664e7390ebe710"
+  version = "v2.9.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/lib/pq"
   packages = [
     ".",
     "oid"
   ]
-  revision = "b2004221932bd6b13167ef654c81cffac36f7537"
+  revision = "90697d60dd844d5ef6ff15135d0203f65d2f53b8"
 
 [[projects]]
   name = "github.com/mattn/go-sqlite3"
@@ -191,9 +213,10 @@
   version = "v1.6.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/miekg/pkcs11"
   packages = ["."]
-  revision = "7283ca79f35edb89bc1b4ecae7f86a3680ce737f"
+  revision = "287d9350987cc9334667882061e202e96cdfb4d0"
 
 [[projects]]
   name = "github.com/opencontainers/go-digest"
@@ -210,8 +233,8 @@
 [[projects]]
   name = "github.com/robfig/cron"
   packages = ["."]
-  revision = "b024fc5ea0e34bc3f83d9941c8d60b0622bfaca4"
-  version = "v1"
+  revision = "b41be1df696709bb6395fe435af20370037c0b4c"
+  version = "v1.1"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -223,35 +246,41 @@
   version = "v1.2.0"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
   packages = [
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "5f961cd492ac9d43fc33a8ef646bae79d113fd97"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = [
     "context",
     "context/ctxhttp"
   ]
-  revision = "075e191f18186a8ff2becaf64478e30f4545cdad"
+  revision = "4cb1c02c05b0e749b0365f61ae859a8e0cfceed9"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
     "clientcredentials",
     "internal"
   ]
-  revision = "bb50c06baba3d0c76f9d125c0719093e315b5b44"
+  revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix"]
-  revision = "571f7bbbe08da2a8955aed9d4db316e78630e9a3"
+  packages = [
+    "unix",
+    "windows"
+  ]
+  revision = "7138fd3d9dc8335c567ca206f4333fb75eb05d56"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -264,13 +293,14 @@
     "internal/urlfetch",
     "urlfetch"
   ]
-  revision = "24e4144ec923c2374f6b06610c0df16a9222c3d9"
+  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
+  version = "v1.1.0"
 
 [[projects]]
   name = "gopkg.in/asn1-ber.v1"
   packages = ["."]
-  revision = "4e86f4367175e39f69d9358a5f17b4dda270378d"
-  version = "v1.1"
+  revision = "379148ca0225df7a432012b8df0355c2a2063ac0"
+  version = "v1.2"
 
 [[projects]]
   name = "gopkg.in/ldap.v2"
@@ -281,12 +311,12 @@
 [[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
-  version = "v2.1.1"
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a53e62d0a95585213a5c0519e5c02c570201189b9332d9dfca730d5671619dab"
+  inputs-digest = "d6cb7ad53bb52b7243e16b20774f160c24ea003285cf7b6c4db782bca6f1e3c8"
   solver-name = "gps-cdcl"
   solver-version = 1

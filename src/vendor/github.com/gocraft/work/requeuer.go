@@ -1,11 +1,10 @@
 package work
 
 import (
-	// "encoding/json"
 	"fmt"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 )
 
 type requeuer struct {
