@@ -32,7 +32,7 @@ module.exports = `
                 <div class="hero-image">
                     <img src="images/harbor.png" alt="">
                 </div>
-                <h3>An Enterprise-class Container Registry Server based on Docker Distribution</h3>
+                <h3>An open source trusted cloud native registry project</h3>
                 <p>
                     <a href="https://github.com/vmware/harbor" class="btn btn-primary">
                         <i class="icon icon-github"></i> Fork Harbor</a>
@@ -40,7 +40,7 @@ module.exports = `
             </div>
             <div id="overview" class="section">
                 <h2>What is Harbor</h2>
-                <p>Project Harbor is an an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.</p>
+                <p>Project Harbor is an an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Harbor supports advanced features such as user management, access control, activity monitoring, and replication between instances. Having a registry closer to the build and run environment can also improve image transfer efficiency.</p>
                 <br>
                 <ul>
                     <li>Multi-tenant content signing and validation</li>
