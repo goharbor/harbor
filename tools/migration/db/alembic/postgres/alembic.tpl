@@ -3,10 +3,16 @@ echo "
 
 [alembic]
 # path to migration scripts
-script_location = /harbor-migration/db/alembic/migration_harbor
+script_location = /harbor-migration/db/alembic/postgres/migration_harbor
 
 # template used to generate migration files
 # file_template = %%(rev)s_%%(slug)s
+
+# timezone to use when rendering the date
+# within the migration file as well as the filename.
+# string value is passed to dateutil.tz.gettz()
+# leave blank for localtime
+# timezone =
 
 # max length of characters to apply to the
 # "slug" field
@@ -30,7 +36,8 @@ script_location = /harbor-migration/db/alembic/migration_harbor
 # are written from script.py.mako
 # output_encoding = utf-8
 
-sqlalchemy.url = mysql://$DB_USR:$DB_PWD@localhost:3306/registry?unix_socket=/var/run/mysqld/mysqld.sock
+sqlalchemy.url = postgresql://$PGSQL_USR:$DB_PWD@localhost:5432/registry
+
 
 # Logging configuration
 [loggers]
