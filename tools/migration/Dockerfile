@@ -8,7 +8,7 @@ RUN tdnf distro-sync -y || echo \
     && groupadd -r -g 10000 mysql && useradd --no-log-init -r -g 10000 -u 10000 mysql \
     && tdnf install -y mariadb-server mariadb mariadb-devel python2 python2-devel python-pip gcc \
     linux-api-headers glibc-devel binutils zlib-devel openssl-devel postgresql >> /dev/null\
-    && pip install mysqlclient alembic \
+    && pip install mysqlclient alembic psycopg2 \
     && mkdir /docker-entrypoint-initdb.d /docker-entrypoint-updatedb.d \
     && rm -fr /var/lib/mysql \
     && mkdir -p /var/lib/mysql /var/run/mysqld \
