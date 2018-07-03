@@ -38,7 +38,7 @@ Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Har
 **Developer Group:** Join Harbor developer group: [harbor-dev@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-dev) for discussion on Harbor development and contribution. To subscribe, send an email to [harbor-dev+subscribe@googlegroups.com](mailto:harbor-dev+subscribe@googlegroups.com).  
 **Slack:** Join Harbor's community for discussion and ask questions: [VMware {code}](https://code.vmware.com/join/), channel: [#harbor](https://vmwarecode.slack.com/messages/harbor).
 
-**Preview Server** Harbor provide a preview server with latest Harbor stable build installed. If you want to have a try please refer to **[Preview Server](docs/preview_server.md)** for more details.
+**Demo Server:** Harbor provides a demo environment with the latest Harbor stable build installed. If you want to have a try, please refer to **[Demo Server](docs/demo_server.md)** for more details.
 
 More info on [partners and users](partners.md).
 
