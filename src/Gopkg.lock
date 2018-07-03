@@ -148,7 +148,10 @@
 
 [[projects]]
   name = "github.com/golang/protobuf"
-  packages = ["proto"]
+  packages = [
+    "proto",
+    "ptypes/any"
+  ]
   revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
 
 [[projects]]
@@ -174,6 +177,12 @@
   packages = ["."]
   revision = "7f08801859139f86dfafd1c296e2cba9a80d292e"
   version = "v1.6.0"
+
+[[projects]]
+  name = "github.com/kubernetes/helm"
+  packages = ["pkg/proto/hapi/chart"]
+  revision = "20adb27c7c5868466912eebdf6664e7390ebe710"
+  version = "v2.9.1"
 
 [[projects]]
   branch = "master"
@@ -287,6 +296,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a53e62d0a95585213a5c0519e5c02c570201189b9332d9dfca730d5671619dab"
+  inputs-digest = "d6cb7ad53bb52b7243e16b20774f160c24ea003285cf7b6c4db782bca6f1e3c8"
   solver-name = "gps-cdcl"
   solver-version = 1
