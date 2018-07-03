@@ -2,7 +2,6 @@ package chartserver
 
 import (
 	"errors"
-	"net/http/httputil"
 	"net/url"
 )
 
@@ -29,8 +28,8 @@ func NewController(backendServer *url.URL) (*Controller, error) {
 		return nil, errors.New("failed to create chartserver.Controller: backend sever address is required")
 	}
 
-	//Currently, no customization requirements needed, so let's use the simple proxy here now
-	proxy := httputil.NewSingleHostReverseProxy(backendServer)
+	//Use customized reverse proxy
+	proxy := NewProxyEngine(backendServer)
 
 	//Initialize chart operator for use
 	operator := &ChartOperator{}
