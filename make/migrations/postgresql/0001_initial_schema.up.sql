@@ -341,5 +341,5 @@ CREATE TABLE IF NOT EXISTS alembic_version (
     version_num varchar(32) NOT NULL
 );
 
-insert into alembic_version values ('1.5.0');
+insert into alembic_version values ('1.6.0');
 

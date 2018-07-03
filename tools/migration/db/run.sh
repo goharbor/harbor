@@ -198,13 +198,17 @@ function up_harbor {
             psql -U $PGSQL_USR -f /harbor-migration/db/schema/notaryserver_init.pgsql
             psql -U $PGSQL_USR -f /harbor-migration/db/schema/notarysigner_init.pgsql
 
-            ## it needs to call the alembic_up to target, disable it as it's now unsupported.
-            #alembic_up $target_version
-            stop_pgsql $PGSQL_USR
             stop_mysql $DB_USR $DB_PWD
+            ## it needs to call the alembic_up to target, disable it as it's now unsupported.
+            alembic_up pgsql $target_version
+            stop_pgsql $PGSQL_USR
+            
 
             rm -rf /var/lib/mysql/*
             cp -rf $PGDATA/* /var/lib/mysql
+
+            ## Chmod 700 to DB data directory
+            chmod 700 /var/lib/mysql
             return 0
         fi        
     fi
