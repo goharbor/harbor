@@ -181,6 +181,7 @@ fi
 #                                     latest.build
 #                                     harbor-offline-installer-latest.tgz
 #
+set -e
 if [ $upload_build == true ] && [ $rc -eq 0 ]; then
     cp $harbor_build_bundle harbor-offline-installer-latest.tgz
     uploader $harbor_build_bundle $harbor_target_bucket
@@ -207,5 +208,3 @@ fi
 if [ -f "$keyfile" ]; then
   rm -f $keyfile
 fi
-
-exit $rc
