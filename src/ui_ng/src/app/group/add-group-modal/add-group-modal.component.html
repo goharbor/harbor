@@ -1,0 +1,43 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
+    <h3 class="modal-title" *ngIf="mode === 'create'">{{'GROUP.IMPORT_LDAP_GROUP' | translate}}</h3>
+    <h3 class="modal-title" *ngIf="mode !== 'create'">{{'GROUP.EDIT' | translate}}</h3>
+
+    <div class="modal-body">
+        <form class="form" #groupForm="ngForm">
+            <section class="form-block">
+                <div class="form-group">
+                    <label for="ldap_group_dn" class="required">{{ 'GROUP.GROUP_DN' | translate}}</label>
+                    <label for="ldap_group_dn"
+                    aria-haspopup="true"
+                    role="tooltip"
+                    class="tooltip tooltip-validation tooltip-sm tooltip-right" 
+                    [class.invalid]="isDNInvalid">
+                        <input type="text" id="ldap_group_dn" name="ldap_group_dn"
+                        required
+                        [(ngModel)]="group.ldap_group_dn"
+                        #groupDN="ngModel">
+                        <span class="tooltip-content">
+                            {{dnTooltip | translate}}
+                        </span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="type">{{'GROUP.TYPE' | translate}}</label>
+                    <label id="type">LDAP</label>
+                </div>
+                <div class="form-group">
+                    <label for="group_name">{{'GROUP.NAME' | translate}}</label>
+                    <label for="group_name">
+                        <input type="text" id="group_name" name="group_name"
+                        [(ngModel)]="group.group_name"
+                        #groupDN="ngModel">
+                    </label>
+                </div>
+            </section>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate | translate}}</button>
+        <button type="button" class="btn btn-primary" [disabled]="!isFormValid"  (click)="save()">{{'BUTTON.SAVE' | translate | translate}}</button>
+    </div>
+</clr-modal>

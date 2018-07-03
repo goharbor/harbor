@@ -65,6 +65,10 @@ export class Configuration {
     ldap_uid: StringValueItem;
     ldap_url: StringValueItem;
     ldap_verify_cert: BoolValueItem;
+    ldap_group_base_dn: StringValueItem;
+    ldap_group_search_filter: StringValueItem;
+    ldap_group_attribute_name: StringValueItem;
+    ldap_group_search_scope: NumberValueItem;
     uaa_client_id: StringValueItem;
     uaa_client_secret?: StringValueItem;
     uaa_endpoint: StringValueItem;
@@ -96,6 +100,10 @@ export class Configuration {
         this.ldap_uid = new StringValueItem("", true);
         this.ldap_url = new StringValueItem("", true);
         this.ldap_verify_cert = new BoolValueItem(true, true);
+        this.ldap_group_base_dn = new StringValueItem("", true);
+        this.ldap_group_search_filter = new StringValueItem("", true);
+        this.ldap_group_attribute_name = new StringValueItem("", true);
+        this.ldap_group_search_scope = new NumberValueItem(0, true);
         this.uaa_client_id = new StringValueItem("", true);
         this.uaa_client_secret = new StringValueItem("", true);
         this.uaa_endpoint = new StringValueItem("", true);

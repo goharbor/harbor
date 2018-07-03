@@ -14,30 +14,26 @@
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 
-import { SessionUser } from "../../shared/session-user";
-import { Member } from "./member";
-import { MemberService } from "./member.service";
-
-import { AddMemberComponent } from "./add-member/add-member.component";
-
-import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
-import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
-
-import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
-import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
-import { SessionService } from "../../shared/session.service";
-
-import { RoleInfo } from "../../shared/shared.const";
-
 import "rxjs/add/operator/switchMap";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import "rxjs/add/observable/throw";
 import { Subscription } from "rxjs/Subscription";
-
-import { Project } from "../../project/project";
 import {TranslateService} from "@ngx-translate/core";
 import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+
+import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
+import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
+import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
+import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
+import { SessionService } from "../../shared/session.service";
+import { RoleInfo } from "../../shared/shared.const";
+import { Project } from "../../project/project";
+import { Member } from "./member";
+import { SessionUser } from "../../shared/session-user";
+import { AddGroupComponent } from './add-group/add-group.component';
+import { MemberService } from "./member.service";
+import { AddMemberComponent } from "./add-member/add-member.component";
 
 @Component({
   templateUrl: "member.component.html",
@@ -51,17 +47,25 @@ export class MemberComponent implements OnInit, OnDestroy {
   roleInfo = RoleInfo;
   delSub: Subscription;
 
-  @ViewChild(AddMemberComponent)
-  addMemberComponent: AddMemberComponent;
-
   currentUser: SessionUser;
   hasProjectAdminRole: boolean;
 
+  batchOps = 'delete';
   searchMember: string;
   selectedRow: Member[] = [];
   roleNum: number;
   isDelete = false;
   isChangeRole = false;
+  loading = false;
+
+  isChangingRole = false;
+  batchChangeRoleInfos = {};
+
+  @ViewChild(AddMemberComponent)
+  addMemberComponent: AddMemberComponent;
+
+  @ViewChild(AddGroupComponent)
+  addGroupComponent: AddGroupComponent;
 
   constructor(
     private route: ActivatedRoute,
@@ -78,32 +82,13 @@ export class MemberComponent implements OnInit, OnDestroy {
       if (message &&
         message.state === ConfirmationState.CONFIRMED &&
         message.source === ConfirmationTargets.PROJECT_MEMBER) {
-        if (this.isDelete) {
-          this.deleteMem(message.data);
-        }
-        if (this.isChangeRole) {
-          this.changeOpe(message.data);
+        if (this.batchOps === 'delete') {
+          this.deleteMembers(message.data);
         }
       }
     });
     let hnd = setInterval(() => ref.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 1000);
-  }
-
-  retrieve(projectId: number, username: string) {
-    this.selectedRow = [];
-    this.memberService
-      .listMembers(projectId, username)
-      .subscribe(
-      response => {
-        this.members = response;
-        let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 1000);
-      },
-      error => {
-        this.router.navigate(["/harbor", "projects"]);
-        this.messageHandlerService.handleError(error);
-      });
   }
 
   ngOnDestroy() {
@@ -124,147 +109,6 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.retrieve(this.projectId, "");
   }
 
-  openAddMemberModal() {
-    this.addMemberComponent.openAddMemberModal();
-  }
-
-  addedMember($event: any) {
-    this.searchMember = "";
-    this.retrieve(this.projectId, "");
-  }
-
-  get onlySelf(): boolean {
-    if (this.selectedRow.length === 1 && this.selectedRow[0].entity_id === this.currentUser.user_id) {
-      return true;
-    }
-    return false;
-  }
-
-  changeRole(m: Member[], roleId: number) {
-    if (m && m.length) {
-      this.isDelete = false;
-      this.isChangeRole = true;
-      this.roleNum = roleId;
-      this.changeOpe(m);
-    }
-  }
-
-  changeOpe(members: Member[]) {
-    if (members && members.length) {
-      let promiseList: any[] = [];
-      members.forEach(member => {
-        promiseList.push(this.changeOperate(this.projectId, this.roleNum, member));
-      });
-
-      Promise.all(promiseList).then(num => {
-            this.retrieve(this.projectId, "");
-          },
-      );
-    }
-  }
-
-  changeOperate(projectId: number, roleId: number, member: Member) {
-    // init operation info
-    let operMessage = new OperateInfo();
-    operMessage.name = 'OPERATION.SWITCH_ROLE';
-    operMessage.data.id = member.id;
-    operMessage.state = OperationState.progressing;
-    operMessage.data.name = member.entity_name;
-    this.operationService.publishInfo(operMessage);
-
-    if (member.entity_id === this.currentUser.user_id) {
-      this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
-        operateChanges(operMessage, OperationState.failure, res);
-      });
-      return null;
-    }
-    return this.memberService
-        .changeMemberRole(projectId, member.id, roleId)
-        .then(
-            response => {
-              this.translate.get("BATCH.SWITCH_SUCCESS").subscribe(res => {
-                operateChanges(operMessage, OperationState.success);
-              });
-            },
-            error => {
-              this.translate.get("BATCH.SWITCH_FAILURE").subscribe(res => {
-                operateChanges(operMessage, OperationState.failure, res);
-              });
-            }
-        );
-  }
-
-  deleteMembers(m: Member[]) {
-    this.isDelete = true;
-    this.isChangeRole = false;
-    let nameArr: string[] = [];
-    if (m && m.length) {
-      m.forEach(data => {
-        nameArr.push(data.entity_name);
-      });
-
-      let deletionMessage = new ConfirmationMessage(
-        "MEMBER.DELETION_TITLE",
-        "MEMBER.DELETION_SUMMARY",
-        nameArr.join(","),
-        m,
-        ConfirmationTargets.PROJECT_MEMBER,
-        ConfirmationButtons.DELETE_CANCEL
-      );
-       this.OperateDialogService.openComfirmDialog(deletionMessage);
-    }
-  }
-
-  deleteMem(members: Member[]) {
-    if (members && members.length) {
-      let promiseLists: any[] = [];
-      members.forEach(member => {
-        promiseLists.push(this.delOperate(this.projectId, member));
-      });
-
-      Promise.all(promiseLists).then(item => {
-        this.selectedRow = [];
-        this.retrieve(this.projectId, "");
-      });
-    }
-  }
-
-  delOperate(projectId: number, member: Member) {
-    // init operation info
-    let operMessage = new OperateInfo();
-    operMessage.name = 'OPERATION.DELETE_MEMBER';
-    operMessage.data.id = member.id;
-    operMessage.state = OperationState.progressing;
-    operMessage.data.name = member.entity_name;
-    this.operationService.publishInfo(operMessage);
-
-    if (member.entity_id === this.currentUser.user_id) {
-      this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
-        operateChanges(operMessage, OperationState.failure, res);
-      });
-      return null;
-    }
-
-    return this.memberService
-        .deleteMember(projectId, member.id)
-        .then(
-            response => {
-              this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
-                operateChanges(operMessage, OperationState.success);
-              });
-            },
-            error => {
-              this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
-                operateChanges(operMessage, OperationState.failure, res);
-              });
-            }
-        );
-  }
-
-  SelectedChange(): void {
-    // this.forceRefreshView(5000);
-  }
-
   doSearch(searchMember: string) {
     this.searchMember = searchMember;
     this.retrieve(this.projectId, this.searchMember);
@@ -272,5 +116,155 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   refresh() {
     this.retrieve(this.projectId, "");
+  }
+
+  retrieve(projectId: number, username: string) {
+    this.loading = true;
+    this.selectedRow = [];
+    this.memberService
+      .listMembers(projectId, username)
+      .finally(() => this.loading = false)
+      .subscribe(
+      response => {
+        this.members = response;
+        let hnd = setInterval(() => this.ref.markForCheck(), 100);
+        setTimeout(() => clearInterval(hnd), 1000);
+      },
+      error => {
+        this.router.navigate(["/harbor", "projects"]);
+        this.messageHandlerService.handleError(error);
+      });
+  }
+
+  get onlySelf(): boolean {
+    if (this.selectedRow.length === 1 &&
+      this.selectedRow[0].entity_type === 'u' &&
+       this.selectedRow[0].entity_id === this.currentUser.user_id) {
+      return true;
+    }
+    return false;
+  }
+
+  member_type_toString(user_type: string) {
+    if (user_type === 'u') {
+      return 'MEMBER.USER_TYPE';
+    } else {
+      return 'MEMBER.GROUP_TYPE';
+    }
+  }
+
+  // Add member
+  openAddMemberModal() {
+    this.addMemberComponent.openAddMemberModal();
+  }
+
+  addedMember(result: boolean) {
+    this.searchMember = "";
+    this.retrieve(this.projectId, "");
+  }
+
+  // Add group
+  openAddGroupModal() {
+    this.addGroupComponent.open();
+  }
+  addedGroup(result: boolean) {
+    this.searchMember = "";
+    this.retrieve(this.projectId, "");
+   }
+
+  changeMembersRole(members: Member[], roleId: number) {
+    if (!members) {
+      return;
+    }
+
+    let changeOperate = (projectId: number, member: Member, ) => {
+      return this.memberService
+          .changeMemberRole(projectId, member.id, roleId)
+          .then( () => this.batchChangeRoleInfos[member.id] = 'done')
+          .catch(error => this.messageHandlerService.handleError(error + ": " + member.entity_name));
+    };
+
+    // Preparation for members role change
+    this.batchChangeRoleInfos = {};
+    let RoleChangePromises: Promise<any>[] = [];
+    members.forEach(member => {
+      if (member.entity_type === 'u' && member.entity_id === this.currentUser.user_id) {
+        return;
+      }
+      this.batchChangeRoleInfos[member.id] = 'pending';
+      RoleChangePromises.push(changeOperate(this.projectId, member));
+    });
+
+    Promise.all(RoleChangePromises).then(() => {
+      this.retrieve(this.projectId, "");
+    });
+  }
+
+  ChangeRoleOngoing(entity_id: number) {
+    return this.batchChangeRoleInfos[entity_id] === 'pending';
+  }
+
+  // Delete members
+  openDeleteMembersDialog(members: Member[]) {
+    this.batchOps = 'delete';
+    let nameArr: string[] = [];
+    if (members && members.length) {
+      members.forEach(data => {
+        nameArr.push(data.entity_name);
+      });
+      let deletionMessage = new ConfirmationMessage(
+        "MEMBER.DELETION_TITLE",
+        "MEMBER.DELETION_SUMMARY",
+        nameArr.join(","),
+        members,
+        ConfirmationTargets.PROJECT_MEMBER,
+        ConfirmationButtons.DELETE_CANCEL
+      );
+       this.OperateDialogService.openComfirmDialog(deletionMessage);
+    }
+  }
+
+  deleteMembers(members: Member[]) {
+    if (!members) { return; }
+    let memberDeletingPromises: Promise<any>[] = [];
+
+    // Function to delete specific member
+    let deleteMember = (projectId: number, member: Member) => {
+      let operMessage = new OperateInfo();
+      operMessage.name = 'OPERATION.DELETE_MEMBER';
+      operMessage.data.id = member.id;
+      operMessage.state = OperationState.progressing;
+      operMessage.data.name = member.entity_name;
+
+      this.operationService.publishInfo(operMessage);
+      if (member.entity_type === 'u' && member.entity_id === this.currentUser.user_id) {
+        this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
+          operateChanges(operMessage, OperationState.failure, res);
+        });
+        return null;
+      }
+
+      return this.memberService
+        .deleteMember(projectId, member.id)
+        .then(response => {
+              this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
+                operateChanges(operMessage, OperationState.success);
+              });
+            })
+        .catch(error => {
+            this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
+              operateChanges(operMessage, OperationState.failure, res);
+            });
+          });
+    };
+
+    // Deleting member then wating for results
+    members.forEach(member => memberDeletingPromises.push(deleteMember(this.projectId, member)));
+
+    Promise.all(memberDeletingPromises).then(() => {
+      this.selectedRow = [];
+      this.batchOps = 'idle';
+      this.retrieve(this.projectId, "");
+    });
   }
 }

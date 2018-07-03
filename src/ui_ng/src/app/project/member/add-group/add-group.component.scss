@@ -1,0 +1,18 @@
+clr-datagrid {
+    ::ng-deep .datagrid {
+        margin-top: 0;
+    }
+}
+
+.row {
+    margin-top: 12px;
+}
+
+.modeSelectradios {
+    margin-top: 21px;
+}
+.filterTool {
+    position: relative;
+    z-index: 100;
+    right: 15px;
+}

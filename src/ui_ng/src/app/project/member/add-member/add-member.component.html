@@ -1,18 +1,19 @@
 <clr-modal [(clrModalOpen)]="addMemberOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
-    <h3 class="modal-title">{{'MEMBER.NEW_MEMBER' | translate}}</h3>
-    <inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></inline-alert>
+    <h3 class="modal-title">{{'MEMBER.NEW_USER' | translate}}</h3>
     <div class="modal-body">
+        <label>{{ 'MEMBER.NEW_USER_INFO' | translate}}</label>
+
         <form #memberForm="ngForm">
             <section class="form-block">
                 <div class="form-group">
                     <label for="member_name" class="col-md-4 form-group-label-override required">{{'MEMBER.NAME' | translate}}</label>
                     <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="!isMemberNameValid"
-                           class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"  (mouseleave)="leaveInput()">
+                           class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left"  (mouseleave)="leaveInput()">
             <input type="text" id="member_name"  [(ngModel)]="member.entity_name"
             name="member_name"
-            size="20" 
-            #memberName="ngModel" 
-            required 
+            size="20"
+            #memberName="ngModel"
+            required
             (keyup)='handleValidation()' autocomplete="off">
             <span class="tooltip-content">
               {{ memberTooltip | translate }}
@@ -28,15 +29,15 @@
                 <div class="form-group">
                     <label class="col-md-4 form-group-label-override">{{'MEMBER.ROLE' | translate}}</label>
                     <div class="radio">
-                        <input type="radio" name="member_role" id="checkrads_project_admin" [value]="1" [(ngModel)]="member.role_id">
+                        <input type="radio" name="member_role" id="checkrads_project_admin" [value]=1 [(ngModel)]="member.role_id">
                         <label for="checkrads_project_admin">{{'MEMBER.PROJECT_ADMIN' | translate}}</label>
                     </div>
                     <div class="radio">
-                        <input type="radio" name="member_role" id="checkrads_developer" [value]="2" [(ngModel)]="member.role_id">
+                        <input type="radio" name="member_role" id="checkrads_developer" [value]=2 [(ngModel)]="member.role_id">
                         <label for="checkrads_developer">{{'MEMBER.DEVELOPER' | translate}}</label>
                     </div>
                     <div class="radio">
-                        <input type="radio" name="member_role" id="checkrads_guest" [value]="3" [(ngModel)]="member.role_id">
+                        <input type="radio" name="member_role" id="checkrads_guest" [value]=3 [(ngModel)]="member.role_id">
                         <label for="checkrads_guest">{{'MEMBER.GUEST' | translate}}</label>
                     </div>
                 </div>

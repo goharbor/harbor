@@ -371,7 +371,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
             .catch(error => {
                 this.testingLDAPOnGoing = false;
                 let err = error._body;
-                if (!err) {
+                if (!err || !err.trim()) {
                     err = 'UNKNOWN';
                 }
                 this.msgHandler.showError('CONFIG.TEST_LDAP_FAILED', { 'param': err });

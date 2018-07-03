@@ -19,6 +19,7 @@ import { ProjectModule } from '../project/project.module';
 import { UserModule } from '../user/user.module';
 import { AccountModule } from '../account/account.module';
 import { RepositoryModule } from '../repository/repository.module';
+import { GroupModule } from '../group/group.module';
 
 import { NavigatorComponent } from './navigator/navigator.component';
 import { GlobalSearchComponent } from './global-search/global-search.component';
@@ -36,7 +37,8 @@ import { SearchTriggerService } from './global-search/search-trigger.service';
     UserModule,
     AccountModule,
     RouterModule,
-    RepositoryModule
+    RepositoryModule,
+    GroupModule
   ],
   declarations: [
     NavigatorComponent,
