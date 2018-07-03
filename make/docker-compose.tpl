@@ -116,7 +116,7 @@ services:
     container_name: redis
     restart: always
     volumes:
-      - /data/redis:/data
+      - /data/redis:/var/lib/redis
     networks:
       - harbor
     depends_on:
