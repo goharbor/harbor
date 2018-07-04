@@ -182,33 +182,39 @@ ui:
   tolerations: []
   affinity: {}
 
-## MySQL Settings. Currently Harbor does not support an external
-## MySQL server, only their own image. Until this is fixed, do not
-## Change the settings below.
-#
-mysql:
-  image:
-    repository: vmware/harbor-db
-    tag: *harbor_image_tag
-    pullPolicy: IfNotPresent
-  # If left blank will use the included mysql service name.
-  host: ~
-  port: 3306
-  user: "root"
-  pass: "registry"
-  database: "registry"
-  volumes:
-    data:
-      # storageClass: "-"
-      accessMode: ReadWriteOnce
-      size: 1Gi
-  # resources:
-  #  requests:
-  #    memory: 256Mi
-  #    cpu: 100m
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
+database:
+  # if external database is used, set "type" to "external"
+  # and fill the connection informations in "external" section
+  type: internal
+  internal:
+    image:
+      repository: vmware/harbor-db
+      tag: *harbor_image_tag
+      pullPolicy: IfNotPresent
+    # the superuser password of database
+    password: "changeit"
+    volumes:
+      data:
+        # storageClass: "-"
+        accessMode: ReadWriteOnce
+        size: 1Gi
+    # resources:
+    #  requests:
+    #    memory: 256Mi
+    #    cpu: 100m
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  external:
+    host: "192.168.0.1"
+    port: "5432"
+    username: "user"
+    password: "password"
+    coreDatabase: "registry"
+    clairDatabase: "clair"
+    notaryServerDatabase: "notary_server"
+    notarySignerDatabase: "notary_signer"
+
 
 registry:
   image:
@@ -283,15 +289,9 @@ registry:
 clair:
   enabled: true
   image:
-    repository: vmware/clair-photon
+    repository: ywk253100/clair-photon
     tag: v2.0.1-v1.5.0-chart-patch
     pullPolicy: IfNotPresent
-## The following needs to match the credentials
-## in the `postgresql` configuration under the
-## `postgresql` namespace below.
-  postgresPassword: not-a-secure-password
-  postgresUser: clair
-  postgresDatabase: clair
 # resources:
 #  requests:
 #    memory: 256Mi
@@ -312,16 +312,6 @@ clair:
   nodeSelector: {}
   tolerations: []
   affinity: {}
-
-## Settings for postgresql dependency.
-## see https://github.com/kubernetes/charts/tree/master/stable/postgresql
-## for further configurables.
-postgresql:
-  postgresUser: clair
-  postgresPassword: not-a-secure-password
-  postgresDatabase: clair
-  persistence:
-    enabled: false
 
 ## Settings for redis dependency.
 ## see https://github.com/kubernetes/charts/tree/master/stable/redis
@@ -355,21 +345,6 @@ notary:
     caCrt:
     tlsCrt:
     tlsKey:
-  db:
-    image:
-      repository: vmware/mariadb-photon
-      tag: *harbor_image_tag
-      pullPolicy: IfNotPresent
-    password: not-a-secure-password
-    volumes:
-      data:
-        # storageClass: "-"
-        accessMode: ReadWriteOnce
-        size: 1Gi
-    # resources:
-    #  requests:
-    #    memory: 256Mi
-    #    cpu: 100m
   nodeSelector: {}
   tolerations: []
   affinity: {}

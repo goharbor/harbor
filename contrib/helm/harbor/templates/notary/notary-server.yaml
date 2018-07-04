@@ -25,8 +25,10 @@ spec:
         resources:
 {{ toYaml .Values.notary.server.resources | indent 10 }}
         env:
+        - name: MIGRATIONS_PATH
+          value: migrations/server/postgresql
         - name: DB_URL
-          value: "mysql://server:{{ .Values.notary.db.password }}@tcp({{ template "harbor.fullname" . }}-notary-db:3306)/notaryserver?parseTime=True"
+          value: {{ template "harbor.database.notaryServer" . }}
         volumeMounts:
         - name: notary-config
           mountPath: /etc/notary

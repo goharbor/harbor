@@ -1,0 +1,70 @@
+{{- if eq .Values.database.type "internal" -}}
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: "{{ template "harbor.fullname" . }}-database"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: database
+spec:
+  replicas: 1
+  serviceName: "{{ template "harbor.fullname" . }}-database"
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: database
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: database
+    spec:
+      containers:
+      - name: database
+        image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
+        imagePullPolicy: {{ .Values.database.internal.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.database.internal.resources | indent 10 }}
+        envFrom:
+          - secretRef:
+              name: "{{ template "harbor.fullname" . }}-database"
+        volumeMounts:
+        - name: database-data
+          mountPath: /var/lib/postgresql/data
+      {{- if not .Values.persistence.enabled }}
+      volumes:
+      - name: "database-data"
+        emptyDir: {}
+      {{- end -}}
+    {{- with .Values.database.internal.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.database.internal.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.database.internal.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+  {{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: "database-data"
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+    spec:
+      accessModes: [{{ .Values.database.internal.volumes.data.accessMode | quote }}]
+      {{- if .Values.database.internal.volumes.data.storageClass }}
+      {{- if (eq "-" .Values.database.internal.volumes.data.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.database.internal.volumes.data.storageClass }}"
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.database.internal.volumes.data.size | quote }}
+  {{- end -}}
+  {{- end -}}
