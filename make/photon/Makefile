@@ -114,7 +114,7 @@ _build_clair:
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		if [ "$(BUILDBIN)" != "true" ] ; then \
 			rm -rf $(DOCKERFILEPATH_CLAIR)/binary && mkdir -p $(DOCKERFILEPATH_CLAIR)/binary && \
-			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/clair, $(DOCKERFILEPATH_CLAIR)/binary/clair); \
+			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/clair-fix-ubuntu-url, $(DOCKERFILEPATH_CLAIR)/binary/clair); \
 		else \
 			cd $(DOCKERFILEPATH_CLAIR) && $(DOCKERFILEPATH_CLAIR)/builder $(CLAIRVERSION); \
 		fi ; \
