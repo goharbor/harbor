@@ -21,6 +21,7 @@ Library  Process
 Library  SSHLibrary  1 minute
 Library  DateTime
 Library  Selenium2Library  10  10
+Library  JSONLibrary
 Resource  Nimbus-Util.robot
 Resource  Vsphere-Util.robot
 Resource  VCH-Util.robot
@@ -52,3 +53,4 @@ Resource  OVA-Util.robot
 Resource  Cert-Util.robot
 Resource  SeleniumUtil.robot
 Resource  Nightly-Util.robot
+Resource  Harbor-Pages/Verify.robot

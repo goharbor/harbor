@@ -214,7 +214,7 @@ To change Harbor's configuration, first stop existing Harbor instance and update
 ```
 $ sudo docker-compose down -v
 $ vim harbor.cfg
-$ sudo prepare
+$ sudo ./prepare
 $ sudo docker-compose up -d
 ``` 
 
@@ -239,7 +239,7 @@ For example, if you want to change configuration in ```harbor.cfg``` and re-depl
 ```sh
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml down -v
 $ vim harbor.cfg
-$ sudo prepare --with-notary
+$ sudo ./prepare --with-notary
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml up -d
 ```
 
@@ -253,7 +253,7 @@ For example, if you want to change configuration in ```harbor.cfg``` and re-depl
 ```sh
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.clair.yml down -v
 $ vim harbor.cfg
-$ sudo prepare --with-clair
+$ sudo ./prepare --with-clair
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.clair.yml up -d
 ```
 
@@ -263,7 +263,7 @@ If you have installed Notary and Clair, you should include both components in th
 ```sh
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml -f ./docker-compose.clair.yml down -v
 $ vim harbor.cfg
-$ sudo prepare --with-notary --with-clair
+$ sudo ./prepare --with-notary --with-clair
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml -f ./docker-compose.clair.yml up -d
 ```
 
