@@ -163,7 +163,8 @@ var (
 			env:   "READ_ONLY",
 			parse: parseStringToBool,
 		},
-		common.ReloadKey: "RELOAD_KEY",
+		common.ReloadKey:        "RELOAD_KEY",
+		common.LdapGroupAdminDn: "LDAP_GROUP_ADMIN_DN",
 	}
 
 	// configurations need read from environment variables

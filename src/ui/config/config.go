@@ -249,6 +249,9 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 			ldapGroupConf.LdapGroupSearchScope = int(scopeFloat)
 		}
 	}
+	if _, ok := cfg[common.LdapGroupAdminDn]; ok {
+		ldapGroupConf.LdapGroupAdminDN = cfg[common.LdapGroupAdminDn].(string)
+	}
 	return ldapGroupConf, nil
 }
 

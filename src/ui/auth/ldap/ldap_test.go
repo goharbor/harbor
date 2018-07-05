@@ -69,6 +69,7 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.LDAPGroupBaseDN:        "dc=example,dc=com",
 	common.LDAPGroupAttributeName: "cn",
 	common.LDAPGroupSearchScope:   2,
+	common.LdapGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
 }
 
 func TestMain(m *testing.M) {
@@ -179,6 +180,38 @@ func TestSearchUser(t *testing.T) {
 	}
 	if user == nil {
 		t.Errorf("Search user failed %v", user)
+	}
+}
+func TestAuthenticateWithAdmin(t *testing.T) {
+	var person models.AuthModel
+	var authHelper *Auth
+	person.Principal = "mike"
+	person.Password = "zhu88jie"
+	user, err := authHelper.Authenticate(person)
+	if err != nil {
+		t.Errorf("unexpected ldap authenticate fail: %v", err)
+	}
+	if user.Username != "mike" {
+		t.Errorf("unexpected ldap user authenticate fail: %s = %s", "user.Username", user.Username)
+	}
+	if !user.HasAdminRole {
+		t.Errorf("ldap user mike should have admin role!")
+	}
+}
+func TestAuthenticateWithoutAdmin(t *testing.T) {
+	var person models.AuthModel
+	var authHelper *Auth
+	person.Principal = "user001"
+	person.Password = "zhu88jie"
+	user, err := authHelper.Authenticate(person)
+	if err != nil {
+		t.Errorf("unexpected ldap authenticate fail: %v", err)
+	}
+	if user.Username != "user001" {
+		t.Errorf("unexpected ldap user authenticate fail: %s = %s", "user.Username", user.Username)
+	}
+	if user.HasAdminRole {
+		t.Errorf("ldap user user001 should not have admin role!")
 	}
 }
 func TestSearchUser_02(t *testing.T) {
