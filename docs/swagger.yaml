@@ -2325,14 +2325,18 @@ paths:
       summary: Search available ldap groups.
       description: >
         This endpoint searches the available ldap groups based on related
-        configuration parameters. Support searched by input ladp configuration,
-        load configuration from the system and specific filter.
+        configuration parameters. support to search by groupname or groupdn.
       parameters:
         - name: groupname
           in: query
           type: string
           required: false
           description: Ldap group name
+        - name: groupdn
+          in: query
+          type: string
+          required: false
+          description: The LDAP group DN
       tags:
         - Products
       responses:
@@ -2342,6 +2346,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/UserGroup'
+        "400":
+          description: The Ldap group DN is invalid.
+        '404':
+          description: No ldap group found.
         '500':
           description: Unexpected internal errors.
   /ldap/users/search:
@@ -2372,6 +2380,7 @@ paths:
           description: Only admin has this authority.
         '500':
           description: Unexpected internal errors.
+
   /ldap/users/import:
     post:
       summary: Import selected available ldap users.
@@ -3650,6 +3659,7 @@ definitions:
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).
+
   Resource:
     type: object
     properties:
