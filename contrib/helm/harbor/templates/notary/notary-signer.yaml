@@ -25,8 +25,10 @@ spec:
         resources:
 {{ toYaml .Values.notary.signer.resources | indent 10 }}
         env:
+        - name: MIGRATIONS_PATH
+          value: migrations/signer/postgresql
         - name: DB_URL
-          value: "mysql://signer:{{ .Values.notary.db.password }}@tcp({{ template "harbor.fullname" . }}-notary-db:3306)/notarysigner?parseTime=True"
+          value: {{ template "harbor.database.notarySigner" . }}
         - name: NOTARY_SIGNER_DEFAULTALIAS
           value: {{ .Values.notary.signer.env.NOTARY_SIGNER_DEFAULTALIAS }}
         volumeMounts:

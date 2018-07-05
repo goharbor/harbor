@@ -6,14 +6,10 @@ metadata:
 {{ include "harbor.labels" . | indent 4 }}
     component: adminserver
 data:
-  {{ if .Values.mysql.host -}}
-  MYSQL_HOST: "{{ .Values.mysql.host }}"
-  {{ else -}}
-  MYSQL_HOST: "{{ template "harbor.fullname" . }}-mysql"
-  {{ end -}}
-  MYSQL_PORT: "{{ .Values.mysql.port }}"
-  MYSQL_USR: "{{ .Values.mysql.user }}"
-  MYSQL_DATABASE: "{{ .Values.mysql.database }}"
+  POSTGRESQL_HOST: "{{ template "harbor.database.host" . }}"
+  POSTGRESQL_PORT: "{{ template "harbor.database.port" . }}"
+  POSTGRESQL_USERNAME: "{{ template "harbor.database.username" . }}"
+  POSTGRESQL_DATABASE: "{{ template "harbor.database.coreDatabase" . }}"
   EMAIL_HOST: "{{ .Values.adminserver.emailHost }}"
   EMAIL_PORT: "{{ .Values.adminserver.emailPort }}"
   EMAIL_USR: "{{ .Values.adminserver.emailUser }}"
@@ -40,7 +36,7 @@ data:
   LDAP_SCOPE: "{{ .Values.adminserver.ldap.scope }}"
   LDAP_TIMEOUT: "{{ .Values.adminserver.ldap.timeout }}"
   LDAP_VERIFY_CERT: "{{ .Values.adminserver.ldap.verifyCert }}"
-  DATABASE_TYPE: "mysql"
+  DATABASE_TYPE: "postgresql"
   PROJECT_CREATION_RESTRICTION: "everyone"
   VERIFY_REMOTE_CERT: "off"
   MAX_JOB_WORKERS: "3"
@@ -50,10 +46,10 @@ data:
   ADMIRAL_URL: "NA"
   RESET: "false"
   WITH_CLAIR: "{{ .Values.clair.enabled }}"
-  CLAIR_DB_HOST: "{{ .Release.Name }}-postgresql"
-  CLAIR_DB_PORT: "5432"
-  CLAIR_DB: "{{ .Values.clair.postgresDatabase }}"
-  CLAIR_DB_USERNAME: "{{ .Values.clair.postgresUser }}"
+  CLAIR_DB_HOST: "{{ template "harbor.database.host" . }}"
+  CLAIR_DB_PORT: "{{ template "harbor.database.port" . }}"
+  CLAIR_DB_USERNAME: "{{ template "harbor.database.username" . }}"
+  CLAIR_DB: "{{ template "harbor.database.clairDatabase" . }}"
   CLAIR_URL: "http://{{ template "harbor.fullname" . }}-clair:6060"
   UAA_ENDPOINT: ""
   UAA_CLIENTID: ""
