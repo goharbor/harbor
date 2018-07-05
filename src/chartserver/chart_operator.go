@@ -1,6 +1,6 @@
 package chartserver
 
-import "github.com/kubernetes/helm/pkg/proto/hapi/chart"
+import "k8s.io/helm/pkg/proto/hapi/chart"
 
 //ChartOperator is designed to process the contents of
 //the specified chart version to get more details

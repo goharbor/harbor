@@ -85,5 +85,9 @@ ignored = ["github.com/vmware/harbor/tests*"]
   version = "=3.3.0"
 
 [[constraint]]
-  name = "github.com/kubernetes/helm"
-  version = "=2.9.1"
+  name = "k8s.io/helm"
+  version = "2.9.1"
+
+[[constraint]]
+  name = "github.com/ghodss/yaml"
+  version = "=1.0.0"
