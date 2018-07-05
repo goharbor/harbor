@@ -110,6 +110,8 @@ func initRouters() {
 	beego.Router("/api/systeminfo/volumes", &api.SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &api.SystemInfoAPI{}, "get:GetCert")
 
+	beego.Router("/api/registry/gc", &api.RegistryCtlAPI{}, "post:Post")
+
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 

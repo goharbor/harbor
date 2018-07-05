@@ -1,0 +1,2 @@
+PORT=8080
+UI_SECRET=$ui_secret
