@@ -515,7 +515,7 @@ def openssl_installed():
 
 if customize_crt == 'on' and openssl_installed():
     shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
-    empty_subj = "/C=/ST=/L=/O=/CN=/"
+    empty_subj = "/"
     private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
     root_crt = os.path.join(config_dir, "registry", "root.crt")
     create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)
