@@ -131,6 +131,8 @@ function publishImage {
 echo "========================================"
 set -e
 /usr/local/bin/dockerd-entrypoint.sh dockerd &
+sleep 10s
+docker images
 docker pull hello-world
 docker tag hello-world:latest vmware/harbor-test:v1.5.0
 echo $DOCKER_HUB_USERNAME
