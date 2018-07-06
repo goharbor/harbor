@@ -135,8 +135,8 @@ sleep 10s
 docker images
 docker pull hello-world
 docker tag hello-world:latest vmware/harbor-test:v1.5.0
-echo $DOCKER_HUB_USERNAME
-echo $DOCKER_HUB_PASSWORD
+#echo $DOCKER_HUB_USERNAME
+#echo $DOCKER_HUB_PASSWORD
 publishImage
 exit 0
 
