@@ -50,6 +50,8 @@ pipeline:
       - mail_pwd
       - npm_password
       - npm_username
+      - docker_hub_username
+      - docker_hub_password
     commands:
       - export DOMAIN=${CI_DOMAIN}
       - export HOST_CONTAINER_ID=$(hostname)

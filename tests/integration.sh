@@ -189,6 +189,15 @@ if [ $upload_build == true ] && [ $rc -eq 0 ]; then
     upload_bundle_success=true 
 fi
 
+## ------------------- Publish Images To Docker Hub -------------------
+echo "Publishing images to Docker Hub..."
+echo "The images on the host:"
+docker images
+docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+# rename the images with tag "dev" and push to Docker Hub
+docker images | sed -n "s|\(vmware/[.-_a-z0-9]*\)\s*\($Harbor_Assets_Version\).*|docker tag \1:\2 \1:dev;docker push \1:dev|p" | bash
+ehco "Images are published successfully"
+
 ## --------------------------------------------- Upload Harbor Latest Build File ----------------------------------
 #
 # latest.build file holds the latest offline installer url, it must be sure that the installer has been uploaded successfull.
