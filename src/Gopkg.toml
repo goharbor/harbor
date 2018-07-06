@@ -91,3 +91,7 @@ ignored = ["github.com/vmware/harbor/tests*"]
 [[constraint]]
   name = "github.com/ghodss/yaml"
   version = "=1.0.0"
+
+[[constraint]]
+  name = "github.com/blang/semver"
+  version = "=3.5.1"

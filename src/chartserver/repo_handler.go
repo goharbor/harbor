@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -30,7 +28,7 @@ type RepositoryHandler struct {
 	trafficProxy *ProxyEngine
 
 	//HTTP client used to call the realted APIs of the backend chart repositories
-	apiClient *http.Client
+	apiClient *ChartClient
 
 	//Point to the url of the backend server
 	backendServerAddress *url.URL
@@ -60,14 +58,14 @@ func (rh *RepositoryHandler) GetIndexFile(w http.ResponseWriter, req *http.Reque
 	//Get project manager references
 	projectMgr, err := filter.GetProjectManager(req)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		writeInternalError(w, err)
 		return
 	}
 
 	//Get all the projects
 	results, err := projectMgr.List(nil)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		writeInternalError(w, err)
 		return
 	}
 
@@ -161,7 +159,7 @@ LOOP:
 			writeError(w, http.StatusInternalServerError, err)
 			return
 		case <-req.Context().Done():
-			writeError(w, http.StatusInternalServerError, errors.New("request aborted"))
+			writeInternalError(w, errors.New("request aborted"))
 			return
 		}
 	}
@@ -187,7 +185,7 @@ LOOP:
 
 	bytes, err := yaml.Marshal(mergedIndexFile)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		writeInternalError(w, err)
 		return
 	}
 
@@ -206,29 +204,12 @@ func (rh *RepositoryHandler) getIndexYamlWithNS(namespace string) (*helm_repo.In
 	rootURL := strings.TrimSuffix(rh.backendServerAddress.String(), "/")
 	url := fmt.Sprintf("%s/%s/index.yaml", rootURL, namespace)
 
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	content, err := rh.apiClient.GetContent(url)
 	if err != nil {
 		return nil, err
 	}
 
-	//Set basic auth
-	request.SetBasicAuth(userName, os.Getenv(passwordKey))
-
-	response, err := rh.apiClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to retrieve the index.yaml under repo %s", namespace)
-	}
-
-	content, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-
+	//Traverse to index file object for merging
 	indexFile := helm_repo.NewIndexFile()
 	if err := yaml.Unmarshal(content, indexFile); err != nil {
 		return nil, err
@@ -275,13 +256,4 @@ func emptyIndexFile() []byte {
 	rawData, _ := json.Marshal(emptyIndexFile)
 
 	return rawData
-}
-
-func writeError(w http.ResponseWriter, code int, err error) {
-	errorObj := make(map[string]string)
-	errorObj["error"] = err.Error()
-	errorContent, _ := json.Marshal(errorObj)
-
-	w.WriteHeader(code)
-	w.Write(errorContent)
 }

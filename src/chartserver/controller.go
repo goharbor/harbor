@@ -2,15 +2,7 @@ package chartserver
 
 import (
 	"errors"
-	"net/http"
 	"net/url"
-	"time"
-)
-
-const (
-	clientTimeout         = 10 * time.Second
-	maxIdleConnections    = 10
-	idleConnectionTimeout = 30 * time.Second
 )
 
 //Controller is used to handle flows of related requests based on the corresponding handlers
@@ -40,13 +32,7 @@ func NewController(backendServer *url.URL) (*Controller, error) {
 	proxy := NewProxyEngine(backendServer)
 
 	//Create http client with customized timeouts
-	client := &http.Client{
-		Timeout: clientTimeout,
-		Transport: &http.Transport{
-			MaxIdleConns:    maxIdleConnections,
-			IdleConnTimeout: idleConnectionTimeout,
-		},
-	}
+	client := NewChartClient()
 
 	//Initialize chart operator for use
 	operator := &ChartOperator{}
@@ -60,8 +46,10 @@ func NewController(backendServer *url.URL) (*Controller, error) {
 			backendServerAddress: backendServer,
 		},
 		manipulationHandler: &ManipulationHandler{
-			trafficProxy:  proxy,
-			chartOperator: operator,
+			trafficProxy:         proxy,
+			chartOperator:        operator,
+			apiClient:            client,
+			backendServerAddress: backendServer,
 		},
 	}, nil
 }
