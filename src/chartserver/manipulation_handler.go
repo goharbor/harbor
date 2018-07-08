@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
+	hlog "github.com/vmware/harbor/src/common/utils/log"
 	helm_repo "k8s.io/helm/pkg/repo"
 )
 
@@ -26,6 +27,9 @@ type ManipulationHandler struct {
 
 	//Point to the url of the backend server
 	backendServerAddress *url.URL
+
+	//Cache the chart data
+	chartCache *ChartCache
 }
 
 //ListCharts lists all the charts under the specified namespace
@@ -69,21 +73,36 @@ func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.
 		return
 	}
 
-	//TODO:
-	namespace := "repo2"
-	content, err := mh.getChartVersionContent(namespace, chartV.URLs[0])
-	if err != nil {
-		writeInternalError(w, err)
-		return
-	}
+	//Query cache
+	chartDetails := mh.chartCache.GetChart(chartV.Digest)
+	if chartDetails == nil {
+		//NOT hit!!
 
-	//Process bytes and get more details of chart version
-	chartDetails, err := mh.chartOperator.GetChartDetails(content)
-	if err != nil {
-		writeInternalError(w, err)
-		return
+		//TODO:
+		namespace := "repo2"
+		content, err := mh.getChartVersionContent(namespace, chartV.URLs[0])
+		if err != nil {
+			writeInternalError(w, err)
+			return
+		}
+
+		//Process bytes and get more details of chart version
+		chartDetails, err = mh.chartOperator.GetChartDetails(content)
+		if err != nil {
+			writeInternalError(w, err)
+			return
+		}
+		chartDetails.Metadata = chartV
+
+		//Put it into the cache for next access
+		mh.chartCache.PutChart(chartDetails)
+	} else {
+		//Just logged
+		hlog.Debugf("Get detailed data from cache for chart: %s:%s (%s)",
+			chartDetails.Metadata.Name,
+			chartDetails.Metadata.Version,
+			chartDetails.Metadata.Digest)
 	}
-	chartDetails.Metadata = chartV
 
 	bytes, err := json.Marshal(chartDetails)
 	if err != nil {

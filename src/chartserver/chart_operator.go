@@ -9,6 +9,7 @@ import (
 
 	"github.com/Masterminds/semver"
 
+	hlog "github.com/vmware/harbor/src/common/utils/log"
 	"k8s.io/helm/pkg/chartutil"
 	helm_repo "k8s.io/helm/pkg/repo"
 )
@@ -121,7 +122,8 @@ func getTheTwoCharts(chartVersions helm_repo.ChartVersions) (latestChart *helm_r
 	for _, chartVersion := range chartVersions {
 		currentV, err := semver.NewVersion(chartVersion.Version)
 		if err != nil {
-			//ignore it
+			//ignore it, just logged
+			hlog.Warningf("Malformed semversion %s for the chart %s", chartVersion.Version, chartVersion.Name)
 			continue
 		}
 

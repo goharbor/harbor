@@ -37,6 +37,9 @@ func NewController(backendServer *url.URL) (*Controller, error) {
 	//Initialize chart operator for use
 	operator := &ChartOperator{}
 
+	//Creat cache
+	cache := NewChartCache()
+
 	return &Controller{
 		backendServerAddr: backendServer,
 		baseHandler:       &BaseHandler{proxy},
@@ -50,6 +53,7 @@ func NewController(backendServer *url.URL) (*Controller, error) {
 			chartOperator:        operator,
 			apiClient:            client,
 			backendServerAddress: backendServer,
+			chartCache:           cache,
 		},
 	}, nil
 }
