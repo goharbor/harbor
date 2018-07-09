@@ -18,6 +18,7 @@ import (
 	"github.com/vmware/harbor/src/ui/api"
 	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/controllers"
+	"github.com/vmware/harbor/src/ui/service/notifications/admin"
 	"github.com/vmware/harbor/src/ui/service/notifications/clair"
 	"github.com/vmware/harbor/src/ui/service/notifications/jobs"
 	"github.com/vmware/harbor/src/ui/service/notifications/registry"
@@ -89,6 +90,11 @@ func initRouters() {
 	beego.Router("/api/jobs/replication/:id([0-9]+)", &api.RepJobAPI{})
 	beego.Router("/api/jobs/replication/:id([0-9]+)/log", &api.RepJobAPI{}, "get:GetLog")
 	beego.Router("/api/jobs/scan/:id([0-9]+)/log", &api.ScanJobAPI{}, "get:GetLog")
+
+	beego.Router("/api/admin/jobs", &api.AdminJobAPI{}, "put:Put;post:Post")
+	beego.Router("/api/admin/jobs/?:name", &api.AdminJobAPI{}, "get:Get")
+	beego.Router("/api/admin/jobs/:id([0-9]+)/log", &api.AdminJobAPI{}, "get:GetLog")
+
 	beego.Router("/api/policies/replication/:id([0-9]+)", &api.RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "post:Post")
@@ -118,6 +124,7 @@ func initRouters() {
 	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
 	beego.Router("/service/notifications/jobs/scan/:id([0-9]+)", &jobs.Handler{}, "post:HandleScan")
 	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplication")
+	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")

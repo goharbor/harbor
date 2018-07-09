@@ -9,6 +9,7 @@ import (
 	"github.com/vmware/harbor/src/common/job"
 	job_models "github.com/vmware/harbor/src/common/job/models"
 	"github.com/vmware/harbor/src/common/models"
+	common_utils "github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/replication"
 	"github.com/vmware/harbor/src/ui/config"
@@ -39,10 +40,10 @@ func (st *ScheduleTrigger) Setup() error {
 	}
 	switch st.params.Type {
 	case replication.TriggerScheduleDaily:
-		h, m, s := parseOfftime(st.params.Offtime)
+		h, m, s := common_utils.ParseOfftime(st.params.Offtime)
 		metadata.Cron = fmt.Sprintf("%d %d %d * * *", s, m, h)
 	case replication.TriggerScheduleWeekly:
-		h, m, s := parseOfftime(st.params.Offtime)
+		h, m, s := common_utils.ParseOfftime(st.params.Offtime)
 		metadata.Cron = fmt.Sprintf("%d %d %d * * %d", s, m, h, st.params.Weekday%7)
 	default:
 		return fmt.Errorf("unsupported schedual trigger type: %s", st.params.Type)
@@ -103,13 +104,4 @@ func (st *ScheduleTrigger) Unset() error {
 		}
 	}
 	return nil
-}
-
-func parseOfftime(offtime int64) (hour, minite, second int) {
-	offtime = offtime % (3600 * 24)
-	hour = int(offtime / 3600)
-	offtime = offtime % 3600
-	minite = int(offtime / 60)
-	second = int(offtime % 60)
-	return
 }
