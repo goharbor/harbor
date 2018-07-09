@@ -14,15 +14,7 @@ storage:
     enabled: true
 redis:
   addr: $redis_url
-  db: 0
-  dialtimeout: 10ms
-  readtimeout: 10ms
-  writetimeout: 10ms
-  pool:
-    maxidle: 16
-    maxactive: 64
-    idletimeout: 300s
-
+  db: 1
 http:
   addr: :5000
   secret: placeholder

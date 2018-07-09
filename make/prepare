@@ -415,7 +415,8 @@ render(os.path.join(templates_dir, "ui", "env"),
         adminserver_url = adminserver_url
         )
 
-registry_config_file = "config_ha.yml" if args.ha_mode else "config.yml"
+registry_config_file_ha = "config_ha.yml"
+registry_config_file = "config.yml"
 if storage_provider_name == "filesystem":
     if not storage_provider_config:
         storage_provider_config = "rootdirectory: /storage"
@@ -426,6 +427,13 @@ storage_provider_conf_list = [storage_provider_name + ':']
 for c in storage_provider_config.split(","):
     storage_provider_conf_list.append(c.strip())
 storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
+render(os.path.join(templates_dir, "registry", registry_config_file_ha),
+    registry_conf,
+    storage_provider_info=storage_provider_info,
+    public_url=public_url,
+    ui_url=ui_url,
+    redis_url=redis_url)
+
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
     storage_provider_info=storage_provider_info,
