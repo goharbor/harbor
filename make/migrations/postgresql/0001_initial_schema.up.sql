@@ -336,7 +336,25 @@ the resource_name is the name of image when the resource_type is i
  );
 
 CREATE TRIGGER harbor_resource_label_update_time_at_modtime BEFORE UPDATE ON harbor_resource_label FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
- 
+
+create table admin_job (
+ id SERIAL NOT NULL,
+ job_name varchar(64) NOT NULL,
+ job_kind varchar(64) NOT NULL,
+ cron_str varchar(256),
+ status varchar(64) NOT NULL,
+ job_uuid varchar(64),
+ creation_time timestamp default 'now'::timestamp,
+ update_time timestamp default 'now'::timestamp,
+ deleted boolean DEFAULT false NOT NULL,
+ PRIMARY KEY(id)
+);
+
+CREATE TRIGGER admin_job_update_time_at_modtime BEFORE UPDATE ON admin_job FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
+
+CREATE INDEX admin_job_status ON admin_job (status);
+CREATE INDEX admin_job_uuid ON admin_job (job_uuid);
+
 CREATE TABLE IF NOT EXISTS alembic_version (
     version_num varchar(32) NOT NULL
 );

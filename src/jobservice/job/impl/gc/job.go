@@ -15,7 +15,15 @@
 package gc
 
 import (
+	"fmt"
+	"net/http"
+	"os"
+
+	"github.com/vmware/harbor/src/common"
+	common_http "github.com/vmware/harbor/src/common/http"
+	"github.com/vmware/harbor/src/common/http/modifier/auth"
 	"github.com/vmware/harbor/src/common/registryctl"
+	reg "github.com/vmware/harbor/src/common/utils/registry"
 	"github.com/vmware/harbor/src/jobservice/env"
 	"github.com/vmware/harbor/src/jobservice/logger"
 	"github.com/vmware/harbor/src/registryctl/client"
@@ -25,6 +33,9 @@ import (
 type GarbageCollector struct {
 	registryCtlClient client.Client
 	logger            logger.Interface
+	uiclient          *common_http.Client
+	UIURL             string
+	insecure          bool
 }
 
 // MaxFails implements the interface in job/Interface
@@ -47,6 +58,10 @@ func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{
 	if err := gc.init(ctx); err != nil {
 		return err
 	}
+	if err := gc.readonly(true); err != nil {
+		return err
+	}
+	defer gc.readonly(false)
 	if err := gc.registryCtlClient.Health(); err != nil {
 		gc.logger.Errorf("failed to start gc as regsitry controller is unreachable: %v", err)
 		return err
@@ -66,5 +81,29 @@ func (gc *GarbageCollector) init(ctx env.JobContext) error {
 	registryctl.Init()
 	gc.registryCtlClient = registryctl.RegistryCtlClient
 	gc.logger = ctx.GetLogger()
+	cred := auth.NewSecretAuthorizer(os.Getenv("JOBSERVICE_SECRET"))
+	gc.insecure = false
+	gc.uiclient = common_http.NewClient(&http.Client{
+		Transport: reg.GetHTTPTransport(gc.insecure),
+	}, cred)
+	errTpl := "Failed to get required property: %s"
+	if v, ok := ctx.Get(common.UIURL); ok && len(v.(string)) > 0 {
+		gc.UIURL = v.(string)
+	} else {
+		return fmt.Errorf(errTpl, common.UIURL)
+	}
+	return nil
+}
+
+func (gc *GarbageCollector) readonly(switcher bool) error {
+	if err := gc.uiclient.Put(fmt.Sprintf("%s/api/configurations", gc.UIURL), struct {
+		ReadOnly bool `json:"read_only"`
+	}{
+		ReadOnly: switcher,
+	}); err != nil {
+		gc.logger.Errorf("failed to send readonly request to %s: %v", gc.UIURL, err)
+		return err
+	}
+	gc.logger.Info("the readonly request has been sent successfully")
 	return nil
 }

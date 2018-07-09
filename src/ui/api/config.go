@@ -38,7 +38,7 @@ func (c *ConfigAPI) Prepare() {
 		c.HandleUnauthorized()
 		return
 	}
-	if !c.SecurityCtx.IsSysAdmin() {
+	if !c.SecurityCtx.IsSysAdmin() && !c.SecurityCtx.IsSolutionUser() {
 		c.HandleForbidden(c.SecurityCtx.GetUsername())
 		return
 	}
