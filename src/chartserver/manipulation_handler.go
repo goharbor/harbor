@@ -79,7 +79,7 @@ func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.
 		//NOT hit!!
 
 		//TODO:
-		namespace := "repo2"
+		namespace := "repo1"
 		content, err := mh.getChartVersionContent(namespace, chartV.URLs[0])
 		if err != nil {
 			writeInternalError(w, err)

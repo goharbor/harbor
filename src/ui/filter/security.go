@@ -36,7 +36,8 @@ import (
 	"github.com/vmware/harbor/src/ui/promgr/pmsdriver/admiral"
 )
 
-type key string
+//ContextValueKey for content value
+type ContextValueKey string
 
 type pathMethod struct {
 	path   string
@@ -44,8 +45,11 @@ type pathMethod struct {
 }
 
 const (
-	securCtxKey key = "harbor_security_context"
-	pmKey       key = "harbor_project_manager"
+	//SecurCtxKey is context value key for security context
+	SecurCtxKey ContextValueKey = "harbor_security_context"
+
+	//PmKey is context value key for the project manager
+	PmKey ContextValueKey = "harbor_project_manager"
 )
 
 var (
@@ -307,8 +311,8 @@ func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 }
 
 func setSecurCtxAndPM(req *http.Request, ctx security.Context, pm promgr.ProjectManager) {
-	addToReqContext(req, securCtxKey, ctx)
-	addToReqContext(req, pmKey, pm)
+	addToReqContext(req, SecurCtxKey, ctx)
+	addToReqContext(req, PmKey, pm)
 }
 
 func addToReqContext(req *http.Request, key, value interface{}) {
@@ -321,7 +325,7 @@ func GetSecurityContext(req *http.Request) (security.Context, error) {
 		return nil, fmt.Errorf("request is nil")
 	}
 
-	ctx := req.Context().Value(securCtxKey)
+	ctx := req.Context().Value(SecurCtxKey)
 	if ctx == nil {
 		return nil, fmt.Errorf("the security context got from request is nil")
 	}
@@ -340,7 +344,7 @@ func GetProjectManager(req *http.Request) (promgr.ProjectManager, error) {
 		return nil, fmt.Errorf("request is nil")
 	}
 
-	pm := req.Context().Value(pmKey)
+	pm := req.Context().Value(PmKey)
 	if pm == nil {
 		return nil, fmt.Errorf("the project manager got from request is nil")
 	}

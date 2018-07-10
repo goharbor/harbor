@@ -53,15 +53,15 @@ func (cc *ChartClient) GetContent(url string) ([]byte, error) {
 		return nil, err
 	}
 
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to retrieve content from url %s", url)
-	}
-
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
 	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to retrieve content from url '%s' with error: %s", url, content)
+	}
 
 	return content, nil
 }

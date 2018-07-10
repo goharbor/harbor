@@ -160,7 +160,7 @@ func initCacheDriver(driverType string) (beego_cache.Cache, string) {
 		break
 	}
 
-	hlog.Info("Driver type %s is not suppotred, enable memory cache by default for chart caching")
+	hlog.Infof("Failed to config cache with driver '%s', enable memory cache by default for chart cache instead", driverType)
 	//Any other cases, use memory cache
 	return beego_cache.NewMemoryCache(), cacheDriverMem
 }
