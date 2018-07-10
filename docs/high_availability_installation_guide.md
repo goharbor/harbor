@@ -14,10 +14,12 @@ Notices take these forms:
 
 ## Abstract 
 
-This guide describes how to install and configure Harbor for high availability. It supplements the [Installation Guides](installation_guide.md) and assumes that you are         familiar with the material in those guides.
+This guide describes how to install and configure Harbor for high availability. It supplements the [Installation Guides](installation_guide.md) and assumes that you are familiar with the material in those guides.
 **Important**  This guide was last updated as of the Harbor 1.5.0 release. It will not apply to releases before 1.4.0. We advise that you read this at your own discretion when planning on your Harbor high availability implementation.  
 
 This guide is intended as advice only.
+
+[Additional HA topologies](https://github.com/vmware/harbor/issues/3582)
 
 ## Harbor High Availability Introduction 
 
