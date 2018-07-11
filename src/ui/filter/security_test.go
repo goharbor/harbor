@@ -292,7 +292,7 @@ func projectManager(ctx *beegoctx.Context) interface{} {
 	if ctx.Request == nil {
 		return nil
 	}
-	return ctx.Request.Context().Value(pmKey)
+	return ctx.Request.Context().Value(PmKey)
 }
 
 func TestGetSecurityContext(t *testing.T) {
@@ -310,7 +310,7 @@ func TestGetSecurityContext(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		securCtxKey, "test"))
+		SecurCtxKey, "test"))
 	ctx, err = GetSecurityContext(req)
 	assert.NotNil(t, err)
 
@@ -318,7 +318,7 @@ func TestGetSecurityContext(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		securCtxKey, local.NewSecurityContext(nil, nil)))
+		SecurCtxKey, local.NewSecurityContext(nil, nil)))
 	ctx, err = GetSecurityContext(req)
 	assert.Nil(t, err)
 	_, ok := ctx.(security.Context)
@@ -340,7 +340,7 @@ func TestGetProjectManager(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		pmKey, "test"))
+		PmKey, "test"))
 	pm, err = GetProjectManager(req)
 	assert.NotNil(t, err)
 
@@ -348,7 +348,7 @@ func TestGetProjectManager(t *testing.T) {
 	req, err = http.NewRequest("", "", nil)
 	assert.Nil(t, err)
 	req = req.WithContext(context.WithValue(req.Context(),
-		pmKey, promgr.NewDefaultProjectManager(driver_local.NewDriver(), true)))
+		PmKey, promgr.NewDefaultProjectManager(driver_local.NewDriver(), true)))
 	pm, err = GetProjectManager(req)
 	assert.Nil(t, err)
 	_, ok := pm.(promgr.ProjectManager)
