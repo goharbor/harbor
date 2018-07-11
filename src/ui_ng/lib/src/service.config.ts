@@ -220,4 +220,22 @@ export interface IServiceConfig {
      * @memberOf IServiceConfig
      */
     labelEndpoint?: string;
+
+    /**
+     * The base endpoint of the service used to handle the helm chart.
+     * helm charts related endpoints will be built based on this endpoint.
+     * E.g:
+     *   If the base endpoint is '/api/helmcharts',
+     *   the helm chart endpoint  will be '/api/helmcharts/:id'.
+     *
+     * @type {string}
+     * @memberOf IServiceConfig
+     */
+    helmChartEndpoint?: string;
+
+    /**
+     * The base endpoint of the chart download url
+     * @type {string}
+     */
+    downloadChartEndpoint?: string;
 }

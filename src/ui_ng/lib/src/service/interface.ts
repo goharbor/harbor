@@ -296,3 +296,80 @@ export interface ScrollPosition {
   sT: number;
   cH: number;
 }
+
+export interface HelmChartItem {
+  name: string;
+  total_versions: number;
+  created: string;
+  icon: string;
+  home: string;
+  status?: string;
+  pulls?: number;
+  maintainer?: string;
+
+}
+
+export interface HelmChartVersion {
+  name: string;
+  home: string;
+  sources: string[];
+  version: string;
+  description: string;
+  keywords: string[];
+  maintainers: HelmChartMaintainer[];
+  engine: string;
+  icon: string;
+  appVersion: string;
+  urls: string[];
+  created: string;
+  digest: string;
+}
+
+export interface HelmChartDetail {
+  metadata: HelmChartMetaData;
+  dependencies: HelmChartDependency[];
+  values: any;
+  files: HelmchartFile;
+  security: HelmChartSecurity;
+}
+
+export interface HelmChartMetaData {
+  name: string;
+  home: string;
+  sources: string[];
+  version: string;
+  description: string;
+  keywords: string[];
+  maintainers: HelmChartMaintainer[];
+  engine: string;
+  icon: string;
+  appVersion: string;
+  urls: string[];
+  created?: string;
+  digest: string;
+}
+
+export interface HelmChartMaintainer {
+  name: string;
+  email: string;
+}
+
+export interface HelmChartDependency {
+  name: string;
+  version: string;
+  repository: string;
+}
+
+export interface HelmchartFile {
+  "README.MD": string;
+  "values.yaml": string;
+}
+
+export interface HelmChartSecurity {
+  signature: HelmChartSignature;
+}
+
+export interface HelmChartSignature {
+  signed: boolean;
+  prov_file: string;
+}

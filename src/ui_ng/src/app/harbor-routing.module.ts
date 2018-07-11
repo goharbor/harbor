@@ -47,6 +47,9 @@ import { MemberComponent } from './project/member/member.component';
 import {ProjectLabelComponent} from "./project/project-label/project-label.component";
 import { ProjectConfigComponent } from './project/project-config/project-config.component';
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
+import { ListChartsComponent } from './project/list-charts/list-charts.component';
+import { ListChartVersionsComponent } from './project/list-chart-versions/list-chart-versions.component';
+import { ChartDetailComponent } from './project/chart-detail/chart-detail.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -117,6 +120,22 @@ const harborRoutes: Routes = [
         },
       },
       {
+        path: 'projects/:id/helm-charts/:chart/versions',
+        component: ListChartVersionsComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        },
+      },
+      {
+        path: 'projects/:id/helm-charts/:chart/versions/:version',
+        component: ChartDetailComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        },
+      },
+      {
         path: 'projects/:id',
         component: ProjectDetailComponent,
         canActivate: [MemberGuard],
@@ -127,6 +146,10 @@ const harborRoutes: Routes = [
           {
             path: 'repositories',
             component: RepositoryPageComponent
+          },
+          {
+            path: 'helm-charts',
+            component: ListChartsComponent
           },
           {
             path: 'repositories/:repo/tags',

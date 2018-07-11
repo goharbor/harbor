@@ -5,6 +5,7 @@ import { ClarityModule } from 'clarity-angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler } from '@ngx-translate/core';
 import { CookieService, CookieModule } from 'ngx-cookie';
+import { MarkdownModule } from 'ngx-markdown';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { ClipboardModule } from '../third-party/ngx-clipboard/index';
@@ -46,6 +47,7 @@ export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
         ClipboardModule,
         CookieModule.forRoot(),
         ClarityModule.forRoot(),
+        MarkdownModule.forRoot(),
         TranslateModule.forRoot({
             loader: {
                 provide: TranslateLoader,
@@ -63,9 +65,10 @@ export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
         HttpModule,
         FormsModule,
         ReactiveFormsModule,
-        CookieModule,
         ClipboardModule,
         ClarityModule,
+        CookieModule,
+        MarkdownModule,
         TranslateModule,
     ],
     providers: [CookieService]

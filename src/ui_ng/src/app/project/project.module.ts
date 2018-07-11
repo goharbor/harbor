@@ -34,6 +34,9 @@ import { ProjectRoutingResolver } from './project-routing-resolver.service';
 
 import { TargetExistsValidatorDirective } from '../shared/target-exists-directive';
 import { ProjectLabelComponent } from "../project/project-label/project-label.component";
+import { ListChartsComponent } from './list-charts/list-charts.component';
+import { ListChartVersionsComponent } from './list-chart-versions/list-chart-versions.component';
+import { ChartDetailComponent } from './chart-detail/chart-detail.component';
 
 @NgModule({
   imports: [
@@ -52,7 +55,10 @@ import { ProjectLabelComponent } from "../project/project-label/project-label.co
     AddMemberComponent,
     TargetExistsValidatorDirective,
     ProjectLabelComponent,
-    AddGroupComponent
+    AddGroupComponent,
+    ListChartsComponent,
+    ListChartVersionsComponent,
+    ChartDetailComponent
   ],
   exports: [ProjectComponent, ListProjectComponent],
   providers: [ProjectRoutingResolver, ProjectService, MemberService]

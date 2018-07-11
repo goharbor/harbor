@@ -6,7 +6,7 @@
     "scripts": {
         "start": "ng serve --ssl 1 --ssl-key ssl/server.key --ssl-cert ssl/server.crt --host 0.0.0.0 --proxy-config proxy.config.json",
         "lint": "tslint \"src/**/*.ts\"",
-        "lint:lib": "tslint \"lib/**/*.ts\"",
+        "lint:lib": "tslint \"lib/**/*.ts\"  -e \"lib/dist/**/*\" ",
         "test": "ng test --single-run",
         "pree2e": "webdriver-manager update",
         "e2e": "protractor",
@@ -35,6 +35,7 @@
         "intl": "^1.2.5",
         "mutationobserver-shim": "^0.3.2",
         "ngx-cookie": "^1.0.0",
+        "ngx-markdown": "1.5.2",
         "rxjs": "^5.0.1",
         "ts-helpers": "^1.1.1",
         "web-animations-js": "^2.2.1",

@@ -25,10 +25,10 @@ import { PROJECT_POLICY_CONFIG_DIRECTIVES } from './project-policy-config/index'
 import { HBR_GRIDVIEW_DIRECTIVES } from './gridview/index';
 import { REPOSITORY_GRIDVIEW_DIRECTIVES } from './repository-gridview/index';
 import { OPERATION_DIRECTIVES } from './operation/index';
-import {LABEL_DIRECTIVES} from "./label/index";
-import {CREATE_EDIT_LABEL_DIRECTIVES} from "./create-edit-label/index";
-import {LABEL_PIECE_DIRECTIVES} from "./label-piece/index";
-
+import { LABEL_DIRECTIVES } from "./label/index";
+import { CREATE_EDIT_LABEL_DIRECTIVES } from "./create-edit-label/index";
+import { LABEL_PIECE_DIRECTIVES } from "./label-piece/index";
+import { HELMCHART_DIRECTIVE } from "./helm-chart/index";
 import {
   SystemInfoService,
   SystemInfoDefaultService,
@@ -52,6 +52,8 @@ import {
   ProjectDefaultService,
   LabelService,
   LabelDefaultService,
+  HelmChartService,
+  HelmChartDefaultService
 } from './service/index';
 import {
   ErrorHandler,
@@ -90,7 +92,9 @@ export const DefaultServiceConfig: IServiceConfig = {
   localI18nMessageVariableMap: {},
   configurationEndpoint: "/api/configurations",
   scanJobEndpoint: "/api/jobs/scan",
-  labelEndpoint: "/api/labels"
+  labelEndpoint: "/api/labels",
+  helmChartEndpoint: "/api/chartrepo",
+  downloadChartEndpoint: "/chartrepo"
 };
 
 /**
@@ -138,6 +142,9 @@ export interface HarborModuleConfig {
 
   // Service implementation for label
   labelService?: Provider;
+
+  // Service implementation for helmchart
+  helmChartService?: Provider;
 }
 
 /**
@@ -184,7 +191,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     LABEL_PIECE_DIRECTIVES,
     HBR_GRIDVIEW_DIRECTIVES,
     REPOSITORY_GRIDVIEW_DIRECTIVES,
-    OPERATION_DIRECTIVES
+    OPERATION_DIRECTIVES,
+    HELMCHART_DIRECTIVE
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -210,7 +218,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     LABEL_PIECE_DIRECTIVES,
     HBR_GRIDVIEW_DIRECTIVES,
     REPOSITORY_GRIDVIEW_DIRECTIVES,
-    OPERATION_DIRECTIVES
+    OPERATION_DIRECTIVES,
+    HELMCHART_DIRECTIVE
   ],
   providers: []
 })
@@ -233,6 +242,7 @@ export class HarborLibraryModule {
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         config.labelService || {provide: LabelService, useClass: LabelDefaultService},
+        config.helmChartService || {provide: HelmChartService, useClass: HelmChartDefaultService},
         // Do initializing
         TranslateServiceInitializer,
         {
@@ -264,6 +274,7 @@ export class HarborLibraryModule {
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         config.labelService || {provide: LabelService, useClass: LabelDefaultService},
+        config.helmChartService || {provide: HelmChartService, useClass: HelmChartDefaultService},
         ChannelService,
         OperationService
       ]

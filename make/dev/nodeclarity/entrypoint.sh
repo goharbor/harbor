@@ -26,6 +26,15 @@ fi
 cat ./package.json
 npm install
 
+## Build harbor-ui and link it
+rm -rf /harbor_src/ui_ng/lib/dist
+npm run build:lib
+chmod -R +xr /harbor_src/ui_ng/lib/dist
+cd /harbor_src/ui_ng/lib/dist
+npm link
+cd /harbor_src/ui_ng
+npm link harbor-ui
+
 ./node_modules/.bin/ngc -p tsconfig-aot.json
 sed -i 's/* as//g' src/app/shared/gauge/gauge.component.js
 ./node_modules/.bin/rollup -c rollup-config.js
@@ -44,3 +53,8 @@ cp ./node_modules/@webcomponents/custom-elements/custom-elements.min.js ../ui/st
 cp ./node_modules/clarity-icons/clarity-icons.min.js ../ui/static/
 cp ./node_modules/clarity-ui/clarity-ui.min.css ../ui/static/
 cp -r ./node_modules/clarity-icons/shapes/ ../ui/static/
+
+cp ./node_modules/prismjs/themes/prism-solarizedlight.css ../ui/static/
+cp ./node_modules/marked/lib/marked.js ../ui/static/
+cp ./node_modules/prismjs/prism.js ../ui/static/
+cp ./node_modules/prismjs/components/prism-yaml.min.js ../ui/static/
