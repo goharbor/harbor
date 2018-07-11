@@ -32,9 +32,9 @@ app: "{{ template "harbor.name" . }}"
 
 {{- define "harbor.externalURL" -}}
 {{- if .Values.externalPort -}}
-{{- printf "%s:%s" .Values.externalDomain (toString .Values.externalPort) -}}
+{{- printf "%s://%s:%s" .Values.externalProtocol .Values.externalDomain (toString .Values.externalPort) -}}
 {{- else -}}
-{{- .Values.externalDomain -}}
+{{- printf "%s://%s" .Values.externalProtocol .Values.externalDomain -}}
 {{- end -}}
 {{- end -}}
 
