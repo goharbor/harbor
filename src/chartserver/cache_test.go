@@ -1,7 +1,7 @@
 package chartserver
 
 import (
-	"os"
+	"encoding/json"
 	"testing"
 
 	"k8s.io/helm/pkg/chartutil"
@@ -24,7 +24,7 @@ var (
 
 //Test the no cache set scenario
 func TestNoCache(t *testing.T) {
-	chartCache := NewChartCache()
+	chartCache := NewChartCache(nil)
 	if chartCache == nil {
 		t.Fatalf("cache instance should not be nil")
 	}
@@ -36,9 +36,9 @@ func TestNoCache(t *testing.T) {
 
 //Test the in memory cache
 func TestInMemoryCache(t *testing.T) {
-	os.Setenv(cacheDriverENVKey, cacheDriverMem)
-
-	chartCache := NewChartCache()
+	chartCache := NewChartCache(&ChartCacheConfig{
+		DriverType: cacheDriverMem,
+	})
 	if chartCache == nil {
 		t.Fatalf("cache instance should not be nil")
 	}
@@ -56,17 +56,23 @@ func TestInMemoryCache(t *testing.T) {
 	if theCachedChart == nil || theCachedChart.Metadata.Name != mockChart.Metadata.Name {
 		t.Fatal("In memory cache does work")
 	}
-
-	os.Unsetenv(cacheDriverENVKey)
 }
 
 //Test redis cache
 //Failed to config redis cache and then use in memory instead
 func TestRedisCache(t *testing.T) {
-	os.Setenv(cacheDriverENVKey, cacheDriverRedis)
-	os.Setenv(redisENVKey, ":6379")
+	redisConfigV := make(map[string]string)
+	redisConfigV["key"] = cacheCollectionName
+	redisConfigV["conn"] = ":6379"
+	redisConfigV["dbNum"] = "0"
+	redisConfigV["password"] = ""
 
-	chartCache := NewChartCache()
+	redisConfig, _ := json.Marshal(redisConfigV)
+
+	chartCache := NewChartCache(&ChartCacheConfig{
+		DriverType: cacheDriverRedis,
+		Config:     string(redisConfig),
+	})
 	if chartCache == nil {
 		t.Fatalf("cache instance should not be nil")
 	}
@@ -84,7 +90,4 @@ func TestRedisCache(t *testing.T) {
 	if theCachedChart == nil || theCachedChart.Metadata.Name != mockChart.Metadata.Name {
 		t.Fatal("In memory cache does work")
 	}
-
-	os.Unsetenv(redisENVKey)
-	os.Unsetenv(cacheDriverENVKey)
 }

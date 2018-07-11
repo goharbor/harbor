@@ -140,7 +140,7 @@ var frontServer = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.Respo
 }))
 
 //Http client
-var httpClient = NewChartClient()
+var httpClient = NewChartClient(nil)
 
 //Mock project manager
 type mockProjectManager struct{}

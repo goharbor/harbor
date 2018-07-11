@@ -3,10 +3,6 @@ package chartserver
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"net/url"
-	"os"
-	"strings"
 	"time"
 
 	beego_cache "github.com/astaxie/beego/cache"
@@ -28,43 +24,74 @@ const (
 //ChartCache is designed to cache some processed data for repeated accessing
 //to improve the performance
 type ChartCache struct {
-	//cache driver
+	//Cache driver
 	cache beego_cache.Cache
 
-	//Flag to indicate if cache driver is configured
-	isEnabled bool
-
-	//Backend driver type
+	//Keep the driver type
 	driverType string
+
+	//To indicate if the chart cache is enabled
+	isEnabled bool
+}
+
+//ChartCacheConfig keeps the configurations of ChartCache
+type ChartCacheConfig struct {
+	//Only support 'in-memory' and 'redis' now
+	DriverType string
+
+	//Align with config
+	Config string
 }
 
 //NewChartCache is constructor of ChartCache
-func NewChartCache() *ChartCache {
-	driverType, isSet := parseCacheDriver()
-
+//If return nil, that means no cache is enabled for chart repository server
+func NewChartCache(config *ChartCacheConfig) *ChartCache {
+	//Never return nil object
 	chartCache := &ChartCache{
-		isEnabled: isSet,
+		isEnabled: false,
 	}
-	if !chartCache.isEnabled {
-		hlog.Info("No cache driver is configured, chart cache will be disabled")
+
+	//Double check the configurations are what we want
+	if config == nil {
 		return chartCache
 	}
 
-	cache, enabledDriverType := initCacheDriver(driverType)
+	if config.DriverType != cacheDriverMem && config.DriverType != cacheDriverRedis {
+		return chartCache
+	}
+
+	if config.DriverType == cacheDriverRedis {
+		if len(config.Config) == 0 {
+			return chartCache
+		}
+	}
+
+	//Try to create the upstream cache
+	cache := initCacheDriver(config)
+	if cache == nil {
+		return chartCache
+	}
+
+	//Cache enabled
+	chartCache.isEnabled = true
+	chartCache.driverType = config.DriverType
 	chartCache.cache = cache
-	chartCache.driverType = enabledDriverType
 
 	return chartCache
 }
 
-//IsEnabled to indicate if the chart cache is configured
+//IsEnabled to indicate if the chart cache is successfully enabled
+//The cache may be disabled if
+//  user does not set
+//  wrong configurations
 func (chc *ChartCache) IsEnabled() bool {
 	return chc.isEnabled
 }
 
 //PutChart caches the detailed data of chart version
 func (chc *ChartCache) PutChart(chart *ChartVersionDetails) {
-	if !chc.isEnabled {
+	//If cache is not enabled, do nothing
+	if !chc.IsEnabled() {
 		return
 	}
 
@@ -85,7 +112,7 @@ func (chc *ChartCache) PutChart(chart *ChartVersionDetails) {
 			}
 		default:
 			//Should not reach here, but still put guard code here
-			err = chc.cache.Put(chart.Metadata.Digest, chart, standardExpireTime)
+			err = errors.New("Meet invalid cache driver")
 		}
 
 		if err != nil {
@@ -100,7 +127,8 @@ func (chc *ChartCache) PutChart(chart *ChartVersionDetails) {
 //If hit, return the cached item;
 //otherwise, nil object is returned
 func (chc *ChartCache) GetChart(chartDigest string) *ChartVersionDetails {
-	if !chc.isEnabled {
+	//If cache is not enabled, do nothing
+	if !chc.IsEnabled() {
 		return nil
 	}
 
@@ -127,90 +155,27 @@ func (chc *ChartCache) GetChart(chartDigest string) *ChartVersionDetails {
 	return nil
 }
 
-//What's the cache driver if it is set
-func parseCacheDriver() (string, bool) {
-	driver, ok := os.LookupEnv(cacheDriverENVKey)
-	return strings.ToLower(driver), ok
-}
-
 //Initialize the cache driver based on the config
-func initCacheDriver(driverType string) (beego_cache.Cache, string) {
-	switch driverType {
+func initCacheDriver(cacheConfig *ChartCacheConfig) beego_cache.Cache {
+	switch cacheConfig.DriverType {
 	case cacheDriverMem:
 		hlog.Info("Enable memory cache for chart caching")
-		return beego_cache.NewMemoryCache(), cacheDriverMem
+		return beego_cache.NewMemoryCache()
 	case cacheDriverRedis:
-		redisConfig, err := parseRedisConfig()
-		if err != nil {
-			//Just logged
-			hlog.Errorf("Failed to read redis configurations with error: %s", err)
-			break
-		}
-
-		redisCache, err := beego_cache.NewCache(cacheDriverRedis, redisConfig)
+		redisCache, err := beego_cache.NewCache(cacheDriverRedis, cacheConfig.Config)
 		if err != nil {
 			//Just logged
 			hlog.Errorf("Failed to initialize redis cache: %s", err)
-			break
+			return nil
 		}
 
-		hlog.Info("Enable reids cache for chart caching")
-		return redisCache, cacheDriverRedis
+		hlog.Info("Enable redis cache for chart caching")
+		return redisCache
 	default:
 		break
 	}
 
-	hlog.Infof("Failed to config cache with driver '%s', enable memory cache by default for chart cache instead", driverType)
-	//Any other cases, use memory cache
-	return beego_cache.NewMemoryCache(), cacheDriverMem
-}
-
-//Parse the redis configuration to the beego cache pattern
-//Config pattern is "address:port[,weight,password,db_index]"
-func parseRedisConfig() (string, error) {
-	redisConfigV := os.Getenv(redisENVKey)
-	if len(redisConfigV) == 0 {
-		return "", errors.New("empty redis config")
-	}
-
-	redisConfig := make(map[string]string)
-	redisConfig["key"] = cacheCollectionName
-
-	//The full pattern
-	if strings.Index(redisConfigV, ",") != -1 {
-		//Read only the previous 4 segments
-		configSegments := strings.SplitN(redisConfigV, ",", 4)
-		if len(configSegments) != 4 {
-			return "", errors.New("invalid redis config, it should be address:port[,weight,password,db_index]")
-		}
-
-		redisConfig["conn"] = configSegments[0]
-		redisConfig["password"] = configSegments[2]
-		redisConfig["dbNum"] = configSegments[3]
-	} else {
-		//The short pattern
-		redisConfig["conn"] = redisConfigV
-		redisConfig["dbNum"] = "0"
-		redisConfig["password"] = ""
-	}
-
-	//Try to validate the connection address
-	fullAddr := redisConfig["conn"]
-	if strings.Index(fullAddr, "://") == -1 {
-		//Append schema
-		fullAddr = fmt.Sprintf("redis://%s", fullAddr)
-	}
-	//Validate it by url
-	_, err := url.Parse(fullAddr)
-	if err != nil {
-		return "", err
-	}
-
-	//Convert config map to string
-	cfgData, err := json.Marshal(redisConfig)
-	if err != nil {
-		return "", err
-	}
-
-	return string(cfgData), nil
+	//Any other cases
+	hlog.Info("No cache is enabled for chart caching")
+	return nil
 }

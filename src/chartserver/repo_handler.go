@@ -155,12 +155,13 @@ LOOP:
 					indexFileOfRepo: indexFile,
 				}
 			}(namespace)
-		case err := <-errorChan:
-			writeError(w, http.StatusInternalServerError, err)
-			return
+		case err = <-errorChan:
+			//Quit earlier
+			break LOOP
 		case <-req.Context().Done():
-			writeInternalError(w, errors.New("request aborted"))
-			return
+			//Quit earlier
+			err = errors.New("request of getting index yaml file is aborted")
+			break LOOP
 		}
 	}
 
@@ -172,6 +173,13 @@ LOOP:
 
 	//Wait until merging thread quit
 	<-mergeDone
+
+	//All the threads are done
+	//Met an error
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
 
 	//Remove duplicated keys in public key list
 	hash := make(map[string]string)

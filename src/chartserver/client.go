@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -18,11 +17,16 @@ const (
 
 //ChartClient is a http client to get the content from the external http server
 type ChartClient struct {
+	//HTTP client
 	httpClient *http.Client
+
+	//Auth info
+	credentail *Credential
 }
 
 //NewChartClient is constructor of ChartClient
-func NewChartClient() *ChartClient { //Create http client with customized timeouts
+//credentail can be nil
+func NewChartClient(credentail *Credential) *ChartClient { //Create http client with customized timeouts
 	client := &http.Client{
 		Timeout: clientTimeout,
 		Transport: &http.Transport{
@@ -31,7 +35,10 @@ func NewChartClient() *ChartClient { //Create http client with customized timeou
 		},
 	}
 
-	return &ChartClient{client}
+	return &ChartClient{
+		httpClient: client,
+		credentail: credentail,
+	}
 }
 
 //GetContent get the bytes from the specified url
@@ -46,7 +53,9 @@ func (cc *ChartClient) GetContent(url string) ([]byte, error) {
 	}
 
 	//Set basic auth
-	request.SetBasicAuth(userName, os.Getenv(passwordKey))
+	if cc.credentail != nil {
+		request.SetBasicAuth(cc.credentail.Username, cc.credentail.Password)
+	}
 
 	response, err := cc.httpClient.Do(request)
 	if err != nil {

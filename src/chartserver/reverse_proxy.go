@@ -14,10 +14,7 @@ import (
 )
 
 const (
-	userName            = "chart_controller"
-	passwordKey         = "UI_SECRET"
 	agentHarbor         = "HARBOR"
-	authHeader          = "Authorization"
 	contentLengthHeader = "Content-Length"
 )
 
@@ -32,13 +29,13 @@ type ProxyEngine struct {
 }
 
 //NewProxyEngine is constructor of NewProxyEngine
-func NewProxyEngine(target *url.URL) *ProxyEngine {
+func NewProxyEngine(target *url.URL, cred *Credential) *ProxyEngine {
 	return &ProxyEngine{
 		backend: target,
 		engine: &httputil.ReverseProxy{
 			ErrorLog: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
 			Director: func(req *http.Request) {
-				director(target, req)
+				director(target, cred, req)
 			},
 			ModifyResponse: modifyResponse,
 		},
@@ -51,7 +48,8 @@ func (pe *ProxyEngine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 //Overwrite the http requests
-func director(target *url.URL, req *http.Request) {
+func director(target *url.URL, cred *Credential, req *http.Request) {
+	//Closure
 	targetQuery := target.RawQuery
 
 	//Overwrite the request URL to the target path
@@ -67,13 +65,10 @@ func director(target *url.URL, req *http.Request) {
 		req.Header.Set("User-Agent", agentHarbor)
 	}
 
-	//Get the password from the env
-	//Ignore the empty checking, the backend server should return the right status code
-	//with invalid credential
-	password := os.Getenv(passwordKey)
-
-	//Add authentication header
-	req.SetBasicAuth(userName, password)
+	//Add authentication header if it is existing
+	if cred != nil {
+		req.SetBasicAuth(cred.Username, cred.Password)
+	}
 }
 
 //Modify the http response
