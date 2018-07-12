@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -147,9 +148,22 @@ func main() {
 	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json"))
 
 	initRouters()
-	if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
-		log.Error(err)
+
+	syncRegistry := os.Getenv("NEED_SYNC_REGISTRY")
+	sync, err := strconv.ParseBool(syncRegistry)
+	if err != nil{
+		log.Errorf("failed to parse NEED_SYNC_REGISTRY: %v", err)
+		//if err set it default to true
+		sync = true;
 	}
+	if sync{
+		if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
+			log.Error(err)
+		}
+	}else {
+		log.Infof("Because NEED_SYNC_REGISTRY set false , no need to sysnc registry \n")
+	}
+
 	log.Info("Init proxy")
 	proxy.Init()
 	//go proxy.StartProxy()
