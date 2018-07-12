@@ -5,10 +5,10 @@ RUN tdnf distro-sync -y \
     && tdnf erase vim -y \
     && tdnf install -y git shadow sudo bzr rpm xz python-xml >>/dev/null\
     && tdnf clean all \
-    && mkdir /clair2.0.1/ \
+    && mkdir /clair/ \
     && groupadd -r -g 10000 clair \
     && useradd --no-log-init -m -r -g 10000 -u 10000 clair
-COPY ./binary/clair /clair2.0.1/
+COPY ./binary/clair /clair/
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY dumb-init /dumb-init 
 
@@ -16,8 +16,8 @@ VOLUME /config
 
 EXPOSE 6060 6061
 
-RUN chown -R 10000:10000 /clair2.0.1 \
-    && chmod u+x /clair2.0.1/clair \
+RUN chown -R 10000:10000 /clair \
+    && chmod u+x /clair/clair \
     && chmod u+x /docker-entrypoint.sh \
     && chmod +x /dumb-init
 
