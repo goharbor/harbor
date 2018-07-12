@@ -2,6 +2,7 @@ package chartserver
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -11,6 +12,14 @@ import (
 	hlog "github.com/vmware/harbor/src/common/utils/log"
 	helm_repo "k8s.io/helm/pkg/repo"
 )
+
+const (
+	//NamespaceContextKey is context key for the namespace
+	NamespaceContextKey ContextKey = ":repo"
+)
+
+//ContextKey is defined for add value in the context of http request
+type ContextKey string
 
 //ManipulationHandler includes all the handler methods for the purpose of manipulating the
 //chart repository
@@ -77,9 +86,20 @@ func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.
 	chartDetails := mh.chartCache.GetChart(chartV.Digest)
 	if chartDetails == nil {
 		//NOT hit!!
+		var namespace string
 
-		//TODO:
-		namespace := "repo1"
+		repoValue := req.Context().Value(NamespaceContextKey)
+		if repoValue != nil {
+			if ns, ok := repoValue.(string); ok {
+				namespace = ns
+			}
+		}
+
+		if len(strings.TrimSpace(namespace)) == 0 {
+			writeInternalError(w, errors.New("failed to extract namespace from the request"))
+			return
+		}
+
 		content, err := mh.getChartVersionContent(namespace, chartV.URLs[0])
 		if err != nil {
 			writeInternalError(w, err)
