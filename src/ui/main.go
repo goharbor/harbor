@@ -149,19 +149,19 @@ func main() {
 
 	initRouters()
 
-	syncRegistry := os.Getenv("NEED_SYNC_REGISTRY")
+	syncRegistry := os.Getenv("SYNC_REGISTRY")
 	sync, err := strconv.ParseBool(syncRegistry)
 	if err != nil{
-		log.Errorf("failed to parse NEED_SYNC_REGISTRY: %v", err)
-		//if err set it default to true
-		sync = true;
+		log.Errorf("Failed to parse SYNC_REGISTRY: %v", err)
+		//if err set it default to false
+		sync = false;
 	}
 	if sync{
 		if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
 			log.Error(err)
 		}
 	}else {
-		log.Infof("Because NEED_SYNC_REGISTRY set false , no need to sysnc registry \n")
+		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
 	}
 
 	log.Info("Init proxy")
