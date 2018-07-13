@@ -122,6 +122,21 @@ func initRouters() {
 
 	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")
 
+	//APIs for chart repository
+	chartRepositoryAPIType := &api.ChartRepositoryAPI{}
+	beego.Router("/api/chartserver/health", chartRepositoryAPIType, "get:GetHealthStatus")
+	beego.Router("/api/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
+	beego.Router("/api/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
+	beego.Router("/api/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
+	beego.Router("/api/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
+	beego.Router("/api/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
+	beego.Router("/api/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
+
+	//Repository services
+	beego.Router("/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
+	beego.Router("/index.yaml", chartRepositoryAPIType, "get:GetIndex")
+	beego.Router("/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
+
 	//Error pages
 	beego.ErrorController(&controllers.ErrorController{})
 

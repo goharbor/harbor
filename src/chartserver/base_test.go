@@ -113,6 +113,7 @@ var frontServer = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.Respo
 
 	var getChartV = regexp.MustCompile(`^/api/\w+/charts/.+/.+$`)
 	if r.Method == http.MethodGet && getChartV.MatchString(r.RequestURI) {
+		*r = *(r.WithContext(context.WithValue(r.Context(), NamespaceContextKey, "repo1")))
 		mockController.GetManipulationHandler().GetChartVersion(w, r)
 		return
 	}
