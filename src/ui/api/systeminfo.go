@@ -167,17 +167,17 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 	_, caStatErr := os.Stat(defaultRootCert)
 	harborVersion := sia.getVersion()
 	info := GeneralInfo{
-		AdmiralEndpoint:             cfg[common.AdmiralEndpoint].(string),
+		AdmiralEndpoint:             utils.SafeCastString(cfg[common.AdmiralEndpoint]),
 		WithAdmiral:                 config.WithAdmiral(),
 		WithNotary:                  config.WithNotary(),
 		WithClair:                   config.WithClair(),
-		AuthMode:                    cfg[common.AUTHMode].(string),
-		ProjectCreationRestrict:     cfg[common.ProjectCreationRestriction].(string),
-		SelfRegistration:            cfg[common.SelfRegistration].(bool),
+		AuthMode:                    utils.SafeCastString(cfg[common.AUTHMode]),
+		ProjectCreationRestrict:     utils.SafeCastString(cfg[common.ProjectCreationRestriction]),
+		SelfRegistration:            utils.SafeCastBool(cfg[common.SelfRegistration]),
 		RegistryURL:                 registryURL,
 		HasCARoot:                   caStatErr == nil,
 		HarborVersion:               harborVersion,
-		RegistryStorageProviderName: cfg[common.RegistryStorageProviderName].(string),
+		RegistryStorageProviderName: utils.SafeCastString(cfg[common.RegistryStorageProviderName]),
 		ReadOnly:                    config.ReadOnly(),
 	}
 	if info.WithClair {
