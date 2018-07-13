@@ -31,7 +31,7 @@ func ListCfgs(w http.ResponseWriter, r *http.Request) {
 		handleInternalServerError(w)
 		return
 	}
-
+	systemcfg.AddMissedKey(cfg)
 	if err = writeJSON(w, cfg); err != nil {
 		log.Errorf("failed to write response: %v", err)
 		return
@@ -52,7 +52,6 @@ func UpdateCfgs(w http.ResponseWriter, r *http.Request) {
 		handleBadRequestError(w, err.Error())
 		return
 	}
-
 	if err = systemcfg.CfgStore.Write(m); err != nil {
 		log.Errorf("failed to update system configurations: %v", err)
 		handleInternalServerError(w)
@@ -68,7 +67,6 @@ func ResetCfgs(w http.ResponseWriter, r *http.Request) {
 		handleInternalServerError(w)
 		return
 	}
-
 	if err := systemcfg.CfgStore.Write(cfgs); err != nil {
 		log.Errorf("failed to write system configurations to storage: %v", err)
 		handleInternalServerError(w)

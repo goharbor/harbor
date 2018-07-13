@@ -167,3 +167,35 @@ func ParseProjectIDOrName(value interface{}) (int64, string, error) {
 	}
 	return id, name, nil
 }
+
+//SafeCastString -- cast a object to string saftely
+func SafeCastString(value interface{}) string {
+	if result, ok := value.(string); ok {
+		return result
+	}
+	return ""
+}
+
+//SafeCastInt --
+func SafeCastInt(value interface{}) int {
+	if result, ok := value.(int); ok {
+		return result
+	}
+	return 0
+}
+
+//SafeCastBool --
+func SafeCastBool(value interface{}) bool {
+	if result, ok := value.(bool); ok {
+		return result
+	}
+	return false
+}
+
+//SafeCastFloat64 --
+func SafeCastFloat64(value interface{}) float64 {
+	if result, ok := value.(float64); ok {
+		return result
+	}
+	return 0
+}

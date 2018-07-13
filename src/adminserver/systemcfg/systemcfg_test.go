@@ -135,8 +135,10 @@ func TestIsLoadAll(t *testing.T) {
 	if err := os.Setenv("RESET", "True"); err != nil {
 		t.Fatalf("failed to set env: %v", err)
 	}
-	assert.False(t, isLoadAll("123456"))
-	assert.True(t, isLoadAll("654321"))
+	cfg1 := map[string]interface{}{common.ReloadKey: "123456"}
+	cfg2 := map[string]interface{}{common.ReloadKey: "654321"}
+	assert.False(t, isLoadAll(cfg1))
+	assert.True(t, isLoadAll(cfg2))
 }
 
 func TestLoadFromEnvWithReloadConfigInvalidSkipPattern(t *testing.T) {
@@ -255,6 +257,34 @@ func TestValidLdapScope(t *testing.T) {
 			t.Fatalf("Failed to update ldapScope expected %v, actual %v at index %v", item.ldapScopeResult, item.config[ldapScopeKey], i)
 		}
 
+	}
+
+}
+func Test_AddMissingKey(t *testing.T) {
+
+	cfg := map[string]interface{}{
+		common.LDAPURL:        "sampleurl",
+		common.EmailPort:      555,
+		common.LDAPVerifyCert: true,
+	}
+
+	type args struct {
+		cfg map[string]interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{"Add default value", args{cfg}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			AddMissedKey(tt.args.cfg)
+		})
+	}
+
+	if _, ok := cfg[common.LDAPBaseDN]; !ok {
+		t.Errorf("Can not found default value for %v", common.LDAPBaseDN)
 	}
 
 }
