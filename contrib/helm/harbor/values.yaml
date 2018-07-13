@@ -1,49 +1,33 @@
-# Configure persisten Volumes per application
-## Applications that require storage have a `volumes` definition which will be used
-## when `persistence.enabled` is set to true.
-## example
-# mysql:
-#   volumes:
-#     data:
-## Persistent Volume Storage Class
-## If defined, storageClassName: <storageClass>
-## If set to "-", storageClassName: "", which disables dynamic provisioning
-## If undefined (the default) or set to null, no storageClassName spec is
-##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-##   GKE, AWS & OpenStack)
-##
-#     storageClass: "-"
-#     accessMode: ReadWriteOnce
-#     size: 1Gi
-
-## Configure resource requests and limits per application
-## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-##
-# mysql:
-#   resources:
-#     requests:
-#       memory: 256Mi
-#       cpu: 100m
-
 persistence:
   enabled: true
-
-# The tag for Harbor docker images.
-harborImageTag: &harbor_image_tag v1.5.0-chart-patch
-
-# The FQDN for Harbor service.
+externalProtocol: https
+# The FQDN for Harbor service
 externalDomain: harbor.my.domain
-# externalPort is the Port for Harbor service, leave empty if the service is to be bound to
-# port 80/443
+# The Port for Harbor service, leave empty if the service 
+# is to be bound to port 80/443
 externalPort: 32700
-# If set to true, you don't need to set tlsCrt/tlsKey/caCrt, but must add
-# Harbor FQDN as insecure-registries for your docker client.
-insecureRegistry: false
-generateCertificates: true
-# The TLS certificate for Harbor. The common name of tlsCrt must match the externalDomain above.
-tlsCrt:
-tlsKey:
-caCrt:
+harborAdminPassword: Harbor12345
+authenticationMode: "db_auth"
+selfRegistration: "on"
+ldap:
+  url: "ldaps://ldapserver"
+  searchDN: ""
+  searchPassword: ""
+  baseDN: ""
+  filter: "(objectClass=person)"
+  uid: "uid"
+  scope: "2"
+  timeout: "5"
+  verifyCert: "True"
+email:
+  host: "smtp.mydomain.com"
+  port: "25"
+  username: "sample_admin@mydomain.com"
+  password: "password"
+  ssl: "false"
+  insecure: "false"
+  from: "admin <sample_admin@mydomain.com>"
+  identity: ""
 
 # The secret key used for encryption. Must be a string of 16 chars.
 secretKey: not-a-secure-key
@@ -54,36 +38,23 @@ ingress:
   enabled: true
   annotations:
     ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     ingress.kubernetes.io/proxy-body-size: "0"
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  tls:
+    # Fill the secretName if you want to use the certificate of 
+    # yourself when Harbor serves with HTTPS. A certificate will 
+    # be generated automatically by the chart if leave it empty
+    secretName: ""
+
+# The tag for Harbor docker images.
+harborImageTag: &harbor_image_tag dev
 
 adminserver:
   image:
     repository: vmware/harbor-adminserver
     tag: *harbor_image_tag
     pullPolicy: IfNotPresent
-  emailHost: "smtp.mydomain.com"
-  emailPort: "25"
-  emailUser: "sample_admin@mydomain.com"
-  emailSsl: "false"
-  emailFrom: "admin <sample_admin@mydomain.com>"
-  emailIdentity: ""
-  emailInsecure: "False"
-  emailPwd: not-a-secure-password
-  adminPassword: Harbor12345
-  authenticationMode: "db_auth"
-  selfRegistration: "on"
-  ldap:
-    url: "ldaps://ldapserver"
-    searchDN: ""
-    searchPassword: ""
-    baseDN: ""
-    filter: "(objectClass=person)"
-    uid: "uid"
-    scope: "2"
-    timeout: "5"
-    verifyCert: "True"
-  ## Persist data to a persistent volume
   volumes:
     config:
       # storageClass: "-"
@@ -97,8 +68,6 @@ adminserver:
   tolerations: []
   affinity: {}
 
-## jobservice
-#
 jobservice:
   image:
     repository: vmware/harbor-jobservice
@@ -114,8 +83,6 @@ jobservice:
   tolerations: []
   affinity: {}
 
-## UI
-#
 ui:
   image:
     repository: vmware/harbor-ui
@@ -215,11 +182,10 @@ database:
     notaryServerDatabase: "notary_server"
     notarySignerDatabase: "notary_signer"
 
-
 registry:
   image:
     repository: vmware/registry-photon
-    tag: v2.6.2-v1.5.0-chart-patch
+    tag: dev
     pullPolicy: IfNotPresent
   httpSecret: not-a-secure-secret
   logLevel: info
@@ -289,17 +255,9 @@ registry:
 clair:
   enabled: true
   image:
-    repository: ywk253100/clair-photon
-    tag: v2.0.1-v1.5.0-chart-patch
+    repository: vmware/clair-photon
+    tag: dev
     pullPolicy: IfNotPresent
-# resources:
-#  requests:
-#    memory: 256Mi
-#    cpu: 100m
-# pgResources:
-#  requests:
-#    memory: 256Mi
-#    cpu: 100m
   volumes:
     pgData:
       # storageClass: "-"
@@ -332,12 +290,12 @@ notary:
   server:
     image:
       repository: vmware/notary-server-photon
-      tag: v0.5.1-v1.5.0-chart-patch
+      tag: dev
       pullPolicy: IfNotPresent
   signer:
     image:
       repository: vmware/notary-signer-photon
-      tag: v0.5.1-v1.5.0-chart-patch
+      tag: dev
       pullPolicy: IfNotPresent
     env:
       NOTARY_SIGNER_DEFAULTALIAS: defaultalias

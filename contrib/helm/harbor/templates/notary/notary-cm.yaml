@@ -37,7 +37,7 @@ data:
       "auth": {
           "type": "token",
           "options": {
-              "realm": "https://{{ template "harbor.externalURL" . }}/service/token",
+              "realm": "{{ template "harbor.externalURL" . }}/service/token",
               "service": "harbor-notary",
               "issuer": "harbor-token-issuer",
               "rootcertbundle": "/root.crt"
