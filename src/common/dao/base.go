@@ -46,7 +46,6 @@ type Database interface {
 
 // InitClairDB ...
 func InitClairDB(clairDB *models.PostGreSQL) error {
-	//Except for password other information will not be configurable, so keep it hard coded for 1.2.0.
 	p := &pgsql{
 		host:     clairDB.Host,
 		port:     strconv.Itoa(clairDB.Port),
@@ -62,25 +61,26 @@ func InitClairDB(clairDB *models.PostGreSQL) error {
 	return nil
 }
 
-// InitDatabase initializes the database, there's an optional parm as a flag
-// to indicate whether it should initialize the schema.
-func InitDatabase(database *models.Database, initSchema ...bool) error {
+// UpgradeSchema will call the internal migrator to upgrade schema based on the setting of database.
+func UpgradeSchema(database *models.Database) error {
+	db, err := getDatabase(database)
+	if err != nil {
+		return err
+	}
+	return db.UpgradeSchema()
+}
+
+// InitDatabase registers the database
+func InitDatabase(database *models.Database) error {
 	db, err := getDatabase(database)
 	if err != nil {
 		return err
 	}
 
-	log.Infof("initializing database: %s", db.String())
+	log.Infof("Registering database: %s", db.String())
 	if err := db.Register(); err != nil {
 		return err
 	}
-	if len(initSchema) > 0 && initSchema[0] {
-		err := db.UpgradeSchema()
-		if err != nil {
-			return err
-		}
-	}
-
 	version, err := GetSchemaVersion()
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func InitDatabase(database *models.Database, initSchema ...bool) error {
 			SchemaVersion, version.Version)
 	}
 
-	log.Info("initialize database completed")
+	log.Info("Register database completed")
 	return nil
 }
 

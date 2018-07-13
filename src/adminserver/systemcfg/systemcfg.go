@@ -245,9 +245,24 @@ func parseStringToBool(str string) (interface{}, error) {
 // Init system configurations. If env RESET is set or configurations
 // read from storage driver is null, load all configurations from env
 func Init() (err error) {
-	if err = initCfgStore(); err != nil {
+	//init database
+	envCfgs := map[string]interface{}{}
+	if err := LoadFromEnv(envCfgs, true); err != nil {
 		return err
 	}
+	db := GetDatabaseFromCfg(envCfgs)
+	//Initialize the schema, then register the DB.
+	if err := dao.UpgradeSchema(db); err != nil {
+		return err
+	}
+	if err := dao.InitDatabase(db); err != nil {
+		return err
+	}
+
+	if err := initCfgStore(); err != nil {
+		return err
+	}
+
 	cfgs := map[string]interface{}{}
 	//Use reload key to avoid reset customed setting after restart
 	curCfgs, err := CfgStore.Read()
@@ -288,16 +303,6 @@ func initCfgStore() (err error) {
 	log.Infof("the path of json configuration storage: %s", path)
 
 	if drivertype == common.CfgDriverDB {
-		//init database
-		cfgs := map[string]interface{}{}
-		if err = LoadFromEnv(cfgs, true); err != nil {
-			return err
-		}
-		cfgdb := GetDatabaseFromCfg(cfgs)
-		//Initialize the schema.
-		if err = dao.InitDatabase(cfgdb, true); err != nil {
-			return err
-		}
 		CfgStore, err = database.NewCfgStore()
 		if err != nil {
 			return err
