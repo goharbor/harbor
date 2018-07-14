@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -42,12 +43,17 @@ func NewChartClient(credentail *Credential) *ChartClient { //Create http client 
 }
 
 //GetContent get the bytes from the specified url
-func (cc *ChartClient) GetContent(url string) ([]byte, error) {
-	if len(strings.TrimSpace(url)) == 0 {
+func (cc *ChartClient) GetContent(addr string) ([]byte, error) {
+	if len(strings.TrimSpace(addr)) == 0 {
 		return nil, errors.New("empty url is not allowed")
 	}
 
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	fullURI, err := url.Parse(addr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid url: %s", err.Error())
+	}
+
+	request, err := http.NewRequest(http.MethodGet, addr, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +75,7 @@ func (cc *ChartClient) GetContent(url string) ([]byte, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to retrieve content from url '%s' with error: %s", url, content)
+		return nil, fmt.Errorf("failed to retrieve content from '%s' with error: %s", fullURI.Path, content)
 	}
 
 	return content, nil

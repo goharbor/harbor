@@ -13,8 +13,12 @@ import (
 )
 
 const (
-	backendChartServerAddr = "BACKEND_CHART_SERVER"
-	namespaceParam         = ":repo"
+	backendChartServerAddr  = "BACKEND_CHART_SERVER"
+	namespaceParam          = ":repo"
+	defaultRepo             = "library"
+	rootUploadingEndpoint   = "/api/chartrepo/charts"
+	rootIndexEndpoint       = "/chartrepo/index.yaml"
+	chartRepoHealthEndpoint = "/api/chartrepo/health"
 
 	accessLevelPublic = iota
 	accessLevelRead
@@ -49,11 +53,28 @@ func (cra *ChartRepositoryAPI) Prepare() {
 	// -/index.yaml
 	// -/api/chartserver/health
 	incomingURI := cra.Ctx.Request.RequestURI
-	if incomingURI != "/index.yaml" && incomingURI != "/api/chartserver/health" {
+	if incomingURI == rootUploadingEndpoint {
+		//Forward to the default repository
+		cra.namespace = defaultRepo
+	}
+
+	if incomingURI != rootIndexEndpoint &&
+		incomingURI != chartRepoHealthEndpoint {
 		if !cra.requireNamespace(cra.namespace) {
 			return
 		}
 	}
+
+	//Rewrite URL path
+	cra.rewriteURLPath(cra.Ctx.Request)
+}
+
+//UploadChartVersionToDefaultNS ...
+func (cra *ChartRepositoryAPI) UploadChartVersionToDefaultNS() {
+	res := make(map[string]interface{})
+	res["result"] = "done"
+	cra.Data["json"] = res
+	cra.ServeJSON()
 }
 
 //GetHealthStatus handles GET /api/chartserver/health
@@ -63,11 +84,7 @@ func (cra *ChartRepositoryAPI) GetHealthStatus() {
 		return
 	}
 
-	//Override the request path to '/health'
-	req := cra.Ctx.Request
-	req.URL.Path = "/health"
-
-	chartController.GetBaseHandler().GetHealthStatus(cra.Ctx.ResponseWriter, req)
+	chartController.GetBaseHandler().GetHealthStatus(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
 //GetIndexByRepo handles GET /:repo/index.yaml
@@ -146,6 +163,8 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 
 //UploadChartVersion handles POST /api/:repo/charts
 func (cra *ChartRepositoryAPI) UploadChartVersion() {
+	hlog.Debugf("Header of request of uploading chart: %#v, content-len=%d", cra.Ctx.Request.Header, cra.Ctx.Request.ContentLength)
+
 	//Check access
 	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
 		return
@@ -162,6 +181,41 @@ func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 	}
 
 	chartController.GetManipulationHandler().UploadProvenanceFile(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+}
+
+//Rewrite the incoming URL with the right backend URL pattern
+//Remove 'chartrepo' from the endpoints of manipulation API
+//Remove 'chartrepo' from the endpoints of repository services
+func (cra *ChartRepositoryAPI) rewriteURLPath(req *http.Request) {
+	incomingURLPath := req.RequestURI
+
+	defer func() {
+		hlog.Debugf("Incoming URL '%s' is rewritten to '%s'", incomingURLPath, req.URL.String())
+	}()
+
+	//Health check endpoint
+	if incomingURLPath == chartRepoHealthEndpoint {
+		req.URL.Path = "/health"
+		return
+	}
+
+	//Root uploading endpoint
+	if incomingURLPath == rootUploadingEndpoint {
+		req.URL.Path = strings.Replace(incomingURLPath, "chartrepo", defaultRepo, 1)
+		return
+	}
+
+	//Repository endpoints
+	if strings.HasPrefix(incomingURLPath, "/chartrepo") {
+		req.URL.Path = strings.TrimPrefix(incomingURLPath, "/chartrepo")
+		return
+	}
+
+	//API endpoints
+	if strings.HasPrefix(incomingURLPath, "/api/chartrepo") {
+		req.URL.Path = strings.Replace(incomingURLPath, "/chartrepo", "", 1)
+		return
+	}
 }
 
 //Check if there exists a valid namespace
@@ -243,17 +297,23 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 
 //Initialize the chart service controller
 func initializeChartController() *chartserver.Controller {
-	addr := os.Getenv(backendChartServerAddr)
+	addr := strings.TrimSpace(os.Getenv(backendChartServerAddr))
+	if len(addr) == 0 {
+		hlog.Fatal("The address of chart storage server is not set")
+	}
+
+	addr = strings.TrimSuffix(addr, "/")
 	url, err := url.Parse(addr)
 	if err != nil {
-		hlog.Fatal("chart storage server is not correctly configured")
+		hlog.Fatal("Chart storage server is not correctly configured")
 	}
 
 	controller, err := chartserver.NewController(url)
 	if err != nil {
-		hlog.Fatal("failed to initialize chart API controller")
+		hlog.Fatal("Failed to initialize chart API controller")
 	}
 
+	hlog.Debugf("Chart storage server is set to %s", url.String())
 	hlog.Info("API controller for chart repository server is successfully initialized")
 
 	return controller
