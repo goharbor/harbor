@@ -92,7 +92,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-	if err := dao.InitDatabase(database, true); err != nil {
+	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 	if config.WithClair() {
@@ -151,16 +151,16 @@ func main() {
 
 	syncRegistry := os.Getenv("SYNC_REGISTRY")
 	sync, err := strconv.ParseBool(syncRegistry)
-	if err != nil{
+	if err != nil {
 		log.Errorf("Failed to parse SYNC_REGISTRY: %v", err)
 		//if err set it default to false
-		sync = false;
+		sync = false
 	}
-	if sync{
+	if sync {
 		if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
 			log.Error(err)
 		}
-	}else {
+	} else {
 		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
 	}
 
