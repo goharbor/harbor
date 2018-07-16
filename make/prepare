@@ -284,7 +284,7 @@ storage_provider_config = rcp.get("configuration", "registry_storage_provider_co
 # yaml requires 1 or more spaces between the key and value
 storage_provider_config = storage_provider_config.replace(":", ": ", 1)
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
-jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))
 
 adminserver_config_dir = os.path.join(config_dir,"adminserver")
 if not os.path.exists(adminserver_config_dir):
@@ -295,6 +295,7 @@ ui_certificates_dir =  prep_conf_dir(ui_config_dir,"certificates")
 db_config_dir = prep_conf_dir(config_dir, "db")
 job_config_dir = prep_conf_dir(config_dir, "jobservice")
 registry_config_dir = prep_conf_dir(config_dir, "registry")
+registryctl_config_dir = prep_conf_dir(config_dir, "registryctl")
 nginx_config_dir = prep_conf_dir (config_dir, "nginx")
 nginx_conf_d = prep_conf_dir(nginx_config_dir, "conf.d")
 log_config_dir = prep_conf_dir (config_dir, "log")
@@ -305,6 +306,8 @@ ui_conf = os.path.join(config_dir, "ui", "app.conf")
 ui_cert_dir = os.path.join(config_dir, "ui", "certificates")
 jobservice_conf = os.path.join(config_dir, "jobservice", "config.yml")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
+registryctl_conf_env = os.path.join(config_dir, "registryctl", "env")
+registryctl_conf_yml = os.path.join(config_dir, "registryctl", "config.yml")
 db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
@@ -312,6 +315,7 @@ cert_dir = os.path.join(config_dir, "nginx", "cert")
 log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf") 
 adminserver_url = "http://adminserver:8080"
 registry_url = "http://registry:5000"
+registry_controller_url = "http://registryctl:8080"
 ui_url = "http://ui:8080"
 token_service_url = "http://ui:8080/service/token"
 
@@ -404,7 +408,8 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         clair_url=clair_url,
         notary_url=notary_url,
         reload_key=reload_key,
-        skip_reload_env_pattern=skip_reload_env_pattern
+        skip_reload_env_pattern=skip_reload_env_pattern,
+        registry_controller_url = registry_controller_url
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
@@ -461,7 +466,13 @@ render(os.path.join(templates_dir, "log", "logrotate.conf"),
         log_rotate_count=log_rotate_count,
 		log_rotate_size=log_rotate_size)
 
+render(os.path.join(templates_dir, "registryctl", "env"),
+        registryctl_conf_env,
+        jobservice_secret=jobservice_secret,
+        ui_secret=ui_secret)
+
 shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)
+shutil.copyfile(os.path.join(templates_dir, "registryctl", "config.yml"), registryctl_conf_yml)
 print("Generated configuration file: %s" % ui_conf)
 
 if auth_mode == "uaa_auth":
