@@ -9,6 +9,8 @@ const (
 	ImageDelete = "IMAGE_DELETE"
 	// ImageReplicate : the name of image replicate job in job service
 	ImageReplicate = "IMAGE_REPLICATE"
+	// ImageGC the name of image garbage collection job in job service
+	ImageGC = "IMAGE_GC"
 
 	//JobKindGeneric : Kind of generic job
 	JobKindGeneric = "Generic"
