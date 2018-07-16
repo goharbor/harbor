@@ -19,6 +19,13 @@ spec:
 {{ include "harbor.labels" . | indent 8 }}
         component: database
     spec:
+      initContainers:
+      - name: "remove-lost-found"
+        image: "busybox:1.25.0"
+        command: ["rm", "-Rf", "/var/lib/postgresql/data/lost+found"]
+        volumeMounts:
+        - name: database-data
+          mountPath: /var/lib/postgresql/data
       containers:
       - name: database
         image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
