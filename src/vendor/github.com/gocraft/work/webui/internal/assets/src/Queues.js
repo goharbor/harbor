@@ -1,10 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import styles from './bootstrap.min.css';
 import cx from './cx';
 
 export default class Queues extends React.Component {
   static propTypes = {
-    url: React.PropTypes.string,
+    url: PropTypes.string,
   }
 
   state = {
@@ -53,7 +54,7 @@ export default class Queues extends React.Component {
                       <td>{queue.count}</td>
                       <td>{queue.latency}</td>
                     </tr>
-                    );
+                  );
                 })
               }
             </tbody>

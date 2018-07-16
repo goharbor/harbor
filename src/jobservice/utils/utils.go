@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 )
 
 //IsEmptyStr check if the specified str is empty (len ==0) after triming prefix and suffix spaces.

@@ -1,8 +1,6 @@
 package work
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestMakeIdentifier(t *testing.T) {
 	id := makeIdentifier()

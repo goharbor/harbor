@@ -13,7 +13,7 @@ import (
 
 	"github.com/robfig/cron"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 	"github.com/vmware/harbor/src/jobservice/env"
 	"github.com/vmware/harbor/src/jobservice/logger"
 	"github.com/vmware/harbor/src/jobservice/models"

@@ -1,9 +1,10 @@
 package work
 
 import (
-	"github.com/stretchr/testify/assert"
 	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestJobArgumentExtraction(t *testing.T) {

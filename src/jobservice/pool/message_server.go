@@ -14,7 +14,7 @@ import (
 	"github.com/vmware/harbor/src/jobservice/opm"
 	"github.com/vmware/harbor/src/jobservice/period"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 	"github.com/vmware/harbor/src/jobservice/models"
 	"github.com/vmware/harbor/src/jobservice/utils"
 )

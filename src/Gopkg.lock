@@ -165,8 +165,8 @@
 [[projects]]
   name = "github.com/gocraft/work"
   packages = ["."]
-  revision = "67c8dc210ce647e8d8a4206c7f5856ea2390f290"
-  version = "v0.5.0"
+  revision = "1d4117a214abff263b472043871c8666aedb716b"
+  version = "v0.5.1"
 
 [[projects]]
   name = "github.com/golang-migrate/migrate"
@@ -188,6 +188,15 @@
     "ptypes/timestamp"
   ]
   revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
+
+[[projects]]
+  name = "github.com/gomodule/redigo"
+  packages = [
+    "internal",
+    "redis"
+  ]
+  revision = "9c11da706d9b7902c6da69c592f75637793fe121"
+  version = "v2.0.0"
 
 [[projects]]
   branch = "master"
@@ -372,6 +381,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6849737bf604451aa7abcb3a56fca93cdf7bc9cb7da41e7d5aa796701cea559a"
+  inputs-digest = "f2bc787303dc9f72125800ed44f5fefed9e832183419e563183e87be26534a1c"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -3,8 +3,9 @@ package work
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/garyburd/redigo/redis"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // An observer observes a single worker. Each worker has its own observer.
@@ -120,7 +121,7 @@ func (o *observer) observeCheckin(jobName, jobID, checkin string) {
 }
 
 func (o *observer) loop() {
-	// Ever tick, we'll update redis if necessary
+	// Every tick we'll update redis if necessary
 	// We don't update it on every job because the only purpose of this data is for humans to inspect the system,
 	// and a fast worker could move onto new jobs every few ms.
 	ticker := time.Tick(1000 * time.Millisecond)

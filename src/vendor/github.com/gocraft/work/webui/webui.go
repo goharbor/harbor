@@ -8,10 +8,10 @@ import (
 	"sync"
 
 	"github.com/braintree/manners"
-	"github.com/garyburd/redigo/redis"
 	"github.com/gocraft/web"
 	"github.com/gocraft/work"
 	"github.com/gocraft/work/webui/internal/assets"
+	"github.com/gomodule/redigo/redis"
 )
 
 // Server implements an HTTP server which exposes a JSON API to view and manage gocraft/work items.

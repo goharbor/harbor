@@ -4,13 +4,14 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 	"github.com/vmware/harbor/src/common/job"
 	"github.com/vmware/harbor/src/jobservice/api"
 	"github.com/vmware/harbor/src/jobservice/config"
@@ -173,7 +174,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 	}
 
 	redisWorkerPool := pool.NewGoCraftWorkPool(ctx,
-		cfg.PoolConfig.RedisPoolCfg.Namespace,
+		fmt.Sprintf("{%s}", cfg.PoolConfig.RedisPoolCfg.Namespace),
 		cfg.PoolConfig.WorkerCount,
 		redisPool)
 	//Register jobs here

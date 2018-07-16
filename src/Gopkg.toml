@@ -99,3 +99,7 @@ ignored = ["github.com/vmware/harbor/tests*"]
 [[constraint]]
   name = "github.com/Masterminds/semver"
   version = "=1.4.2"
+
+[[constraint]]
+  name = "github.com/gocraft/work"
+  version = "=0.5.1"

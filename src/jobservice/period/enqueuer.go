@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
 	"github.com/gocraft/work"
+	"github.com/gomodule/redigo/redis"
 	"github.com/robfig/cron"
 	"github.com/vmware/harbor/src/jobservice/job"
 	"github.com/vmware/harbor/src/jobservice/logger"
