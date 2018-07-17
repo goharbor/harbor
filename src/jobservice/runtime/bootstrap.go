@@ -187,11 +187,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 			job.ImageTransfer:  (*replication.Transfer)(nil),
 			job.ImageDelete:    (*replication.Deleter)(nil),
 			job.ImageReplicate: (*replication.Replicator)(nil),
-<<<<<<< HEAD
-			job.ImageGC:        (*demojob.GarbageCollector)(nil),
-=======
 			job.ImageGC:        (*gc.GarbageCollector)(nil),
->>>>>>> 2d656c01b7de4657ddc0e6f8d10322a564cf1cbc
 		}); err != nil {
 		//exit
 		return nil, err
