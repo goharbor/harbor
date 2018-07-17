@@ -30,6 +30,7 @@ import (
 	comcfg "github.com/vmware/harbor/src/common/config"
 	"github.com/vmware/harbor/src/common/dao"
 	"github.com/vmware/harbor/src/common/models"
+	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
 )
 
@@ -242,31 +243,27 @@ func Init() (err error) {
 	if err = initCfgStore(); err != nil {
 		return err
 	}
-	cfgs := map[string]interface{}{}
+
 	//Use reload key to avoid reset customed setting after restart
 	curCfgs, err := CfgStore.Read()
 	if err != nil {
 		return err
 	}
-	loadAll := isLoadAll(curCfgs[common.ReloadKey])
-	if !loadAll {
-		cfgs = curCfgs
-		if cfgs == nil {
-			log.Info("configurations read from storage driver are null, will load them from environment variables")
-			loadAll = true
-			cfgs = map[string]interface{}{}
-		}
+	loadAll := isLoadAll(curCfgs)
+	if curCfgs == nil {
+		curCfgs = map[string]interface{}{}
 	}
-
-	if err = LoadFromEnv(cfgs, loadAll); err != nil {
+	//restart: only repeatload envs will be load
+	//reload_config: all envs will be reload except the skiped envs
+	if err = LoadFromEnv(curCfgs, loadAll); err != nil {
 		return err
 	}
-
-	return CfgStore.Write(cfgs)
+	AddMissedKey(curCfgs)
+	return CfgStore.Write(curCfgs)
 }
 
-func isLoadAll(curReloadKey interface{}) bool {
-	return strings.EqualFold(os.Getenv("RESET"), "true") && os.Getenv("RELOAD_KEY") != curReloadKey
+func isLoadAll(cfg map[string]interface{}) bool {
+	return cfg == nil || strings.EqualFold(os.Getenv("RESET"), "true") && os.Getenv("RELOAD_KEY") != cfg[common.ReloadKey]
 }
 
 func initCfgStore() (err error) {
@@ -316,7 +313,6 @@ func initCfgStore() (err error) {
 				// only used when migrating harbor release before v1.3
 				// after v1.3 there is always a db configuration before migrate.
 				validLdapScope(jsonconfig, true)
-
 				err = CfgStore.Write(jsonconfig)
 				if err != nil {
 					log.Error("Failed to update old configuration to database")
@@ -403,16 +399,16 @@ func LoadFromEnv(cfgs map[string]interface{}, all bool) error {
 // GetDatabaseFromCfg Create database object from config
 func GetDatabaseFromCfg(cfg map[string]interface{}) *models.Database {
 	database := &models.Database{}
-	database.Type = cfg[common.DatabaseType].(string)
+	database.Type = utils.SafeCastString(cfg[common.DatabaseType])
 	mysql := &models.MySQL{}
-	mysql.Host = cfg[common.MySQLHost].(string)
-	mysql.Port = int(cfg[common.MySQLPort].(int))
-	mysql.Username = cfg[common.MySQLUsername].(string)
-	mysql.Password = cfg[common.MySQLPassword].(string)
-	mysql.Database = cfg[common.MySQLDatabase].(string)
+	mysql.Host = utils.SafeCastString(cfg[common.MySQLHost])
+	mysql.Port = utils.SafeCastInt(cfg[common.MySQLPort])
+	mysql.Username = utils.SafeCastString(cfg[common.MySQLUsername])
+	mysql.Password = utils.SafeCastString(cfg[common.MySQLPassword])
+	mysql.Database = utils.SafeCastString(cfg[common.MySQLDatabase])
 	database.MySQL = mysql
 	sqlite := &models.SQLite{}
-	sqlite.File = cfg[common.SQLiteFile].(string)
+	sqlite.File = utils.SafeCastString(cfg[common.SQLiteFile])
 	database.SQLite = sqlite
 	return database
 }
@@ -436,5 +432,28 @@ func validLdapScope(cfg map[string]interface{}, isMigrate bool) {
 		ldapScope = 0
 	}
 	cfg[ldapScopeKey] = ldapScope
+
+}
+
+//AddMissedKey ... If the configure key is missing in the cfg map, add default value to it
+func AddMissedKey(cfg map[string]interface{}) {
+
+	for k, v := range common.HarborStringKeysMap {
+		if _, exist := cfg[k]; !exist {
+			cfg[k] = v
+		}
+	}
+
+	for k, v := range common.HarborNumKeysMap {
+		if _, exist := cfg[k]; !exist {
+			cfg[k] = v
+		}
+	}
+
+	for k, v := range common.HarborBoolKeysMap {
+		if _, exist := cfg[k]; !exist {
+			cfg[k] = v
+		}
+	}
 
 }

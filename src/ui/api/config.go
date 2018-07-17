@@ -26,88 +26,6 @@ import (
 	"github.com/vmware/harbor/src/ui/config"
 )
 
-var (
-	// the keys of configurations which user can modify in PUT method and user can
-	// get in GET method
-	validKeys = []string{
-		common.AUTHMode,
-		common.SelfRegistration,
-		common.LDAPURL,
-		common.LDAPSearchDN,
-		common.LDAPSearchPwd,
-		common.LDAPBaseDN,
-		common.LDAPUID,
-		common.LDAPFilter,
-		common.LDAPScope,
-		common.LDAPTimeout,
-		common.LDAPVerifyCert,
-		common.LDAPGroupAttributeName,
-		common.LDAPGroupBaseDN,
-		common.LDAPGroupSearchFilter,
-		common.LDAPGroupSearchScope,
-		common.EmailHost,
-		common.EmailPort,
-		common.EmailUsername,
-		common.EmailPassword,
-		common.EmailFrom,
-		common.EmailSSL,
-		common.EmailIdentity,
-		common.EmailInsecure,
-		common.ProjectCreationRestriction,
-		common.TokenExpiration,
-		common.ScanAllPolicy,
-		common.UAAClientID,
-		common.UAAClientSecret,
-		common.UAAEndpoint,
-		common.UAAVerifyCert,
-		common.ReadOnly,
-	}
-
-	stringKeys = []string{
-		common.AUTHMode,
-		common.LDAPURL,
-		common.LDAPSearchDN,
-		common.LDAPSearchPwd,
-		common.LDAPBaseDN,
-		common.LDAPUID,
-		common.LDAPFilter,
-		common.LDAPGroupAttributeName,
-		common.LDAPGroupBaseDN,
-		common.LDAPGroupSearchFilter,
-		common.EmailHost,
-		common.EmailUsername,
-		common.EmailPassword,
-		common.EmailFrom,
-		common.EmailIdentity,
-		common.ProjectCreationRestriction,
-		common.UAAClientID,
-		common.UAAEndpoint,
-	}
-
-	numKeys = []string{
-		common.EmailPort,
-		common.LDAPScope,
-		common.LDAPTimeout,
-		common.LDAPGroupSearchScope,
-		common.TokenExpiration,
-	}
-
-	boolKeys = []string{
-		common.EmailSSL,
-		common.EmailInsecure,
-		common.SelfRegistration,
-		common.LDAPVerifyCert,
-		common.UAAVerifyCert,
-		common.ReadOnly,
-	}
-
-	passwordKeys = []string{
-		common.EmailPassword,
-		common.LDAPSearchPwd,
-		common.UAAClientSecret,
-	}
-)
-
 // ConfigAPI ...
 type ConfigAPI struct {
 	BaseController
@@ -140,7 +58,7 @@ func (c *ConfigAPI) Get() {
 	}
 
 	cfgs := map[string]interface{}{}
-	for _, k := range validKeys {
+	for _, k := range common.HarborValidKeys {
 		if v, ok := configs[k]; ok {
 			cfgs[k] = v
 		}
@@ -162,7 +80,7 @@ func (c *ConfigAPI) Put() {
 	c.DecodeJSONReq(&m)
 
 	cfg := map[string]interface{}{}
-	for _, k := range validKeys {
+	for _, k := range common.HarborValidKeys {
 		if v, ok := m[k]; ok {
 			cfg[k] = v
 		}
@@ -205,7 +123,7 @@ func (c *ConfigAPI) Reset() {
 
 func validateCfg(c map[string]interface{}) (bool, error) {
 	strMap := map[string]string{}
-	for _, k := range stringKeys {
+	for k := range common.HarborStringKeysMap {
 		if _, ok := c[k]; !ok {
 			continue
 		}
@@ -215,7 +133,7 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 		strMap[k] = c[k].(string)
 	}
 	numMap := map[string]int{}
-	for _, k := range numKeys {
+	for k := range common.HarborNumKeysMap {
 		if _, ok := c[k]; !ok {
 			continue
 		}
@@ -225,7 +143,7 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 		numMap[k] = int(c[k].(float64))
 	}
 	boolMap := map[string]bool{}
-	for _, k := range boolKeys {
+	for k := range common.HarborBoolKeysMap {
 		if _, ok := c[k]; !ok {
 			continue
 		}
@@ -327,7 +245,7 @@ func validateCfg(c map[string]interface{}) (bool, error) {
 func convertForGet(cfg map[string]interface{}) (map[string]*value, error) {
 	result := map[string]*value{}
 
-	for _, k := range passwordKeys {
+	for _, k := range common.HarborPasswordKeys {
 		if _, ok := cfg[k]; ok {
 			delete(cfg, k)
 		}
