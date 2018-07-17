@@ -194,9 +194,10 @@ func TestInit(t *testing.T) {
 
 func TestBasicParser(t *testing.T) {
 	testList := []parserTestRec{parserTestRec{"library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
-		parserTestRec{"test/hello", image{"test", "hello", ""}, false},
-		parserTestRec{"myimage:14.04", image{}, true},
+		parserTestRec{"ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
+		parserTestRec{"team/myimage:14.04", image{"team", "myimage", "14.04"}, false},
 		parserTestRec{"org/team/img", image{"org", "team/img", ""}, false},
+		parserTestRec{"test/hello", image{"test", "hello", ""}, false},
 	}
 
 	p := &basicParser{}
@@ -216,10 +217,11 @@ func TestEndpointParser(t *testing.T) {
 		"10.117.4.142:5000",
 	}
 	testList := []parserTestRec{parserTestRec{"10.117.4.142:5000/library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
-		parserTestRec{"myimage:14.04", image{}, true},
+		parserTestRec{"10.117.4.142:5000/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
 		parserTestRec{"10.117.4.142:80/library/myimage:14.04", image{}, true},
 		parserTestRec{"library/myimage:14.04", image{}, true},
-		parserTestRec{"10.117.4.142:5000/myimage:14.04", image{}, true},
+		parserTestRec{"myimage:14.04", image{}, true},
+		parserTestRec{"10.117.4.142:5000/team/myimage:14.04", image{"team", "myimage", "14.04"}, false},
 		parserTestRec{"10.117.4.142:5000/org/team/img", image{"org", "team/img", ""}, false},
 	}
 	for _, rec := range testList {

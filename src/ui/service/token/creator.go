@@ -99,9 +99,6 @@ type endpointParser struct {
 
 func (e endpointParser) parse(s string) (*image, error) {
 	repo := strings.SplitN(s, "/", 2)
-	if len(repo) < 2 {
-		return nil, fmt.Errorf("Unable to parse image from string: %s", s)
-	}
 	if repo[0] != e.endpoint {
 		return nil, fmt.Errorf("Mismatch endpoint from string: %s, expected endpoint: %s", s, e.endpoint)
 	}
@@ -110,13 +107,16 @@ func (e endpointParser) parse(s string) (*image, error) {
 
 //build Image accepts a string like library/ubuntu:14.04 and build a image struct
 func parseImg(s string) (*image, error) {
+	namespace := "library"
+	imageTagged := s
 	repo := strings.SplitN(s, "/", 2)
-	if len(repo) < 2 {
-		return nil, fmt.Errorf("Unable to parse image from string: %s", s)
+	if len(repo) >= 2 {
+		namespace = repo[0]
+		imageTagged = repo[1]
 	}
-	i := strings.SplitN(repo[1], ":", 2)
+	i := strings.SplitN(imageTagged, ":", 2)
 	res := &image{
-		namespace: repo[0],
+		namespace: namespace,
 		repo:      i[0],
 	}
 	if len(i) == 2 {
