@@ -12,18 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package demojob
+package gc
 
 import (
-	"time"
-
+	"github.com/vmware/harbor/src/common/registryctl"
 	"github.com/vmware/harbor/src/jobservice/env"
 	"github.com/vmware/harbor/src/jobservice/logger"
+	"github.com/vmware/harbor/src/registryctl/client"
 )
 
 // GarbageCollector is the struct to run registry's garbage collection
 type GarbageCollector struct {
-	logger logger.Interface
+	registryCtlClient client.Client
+	logger            logger.Interface
 }
 
 // MaxFails implements the interface in job/Interface
@@ -46,15 +47,24 @@ func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{
 	if err := gc.init(ctx); err != nil {
 		return err
 	}
+	if err := gc.registryCtlClient.Health(); err != nil {
+		gc.logger.Errorf("failed to start gc as regsitry controller is unreachable: %v", err)
+		return err
+	}
+	gc.logger.Infof("start to run gc in job.")
+	gcr, err := gc.registryCtlClient.StartGC()
+	if err != nil {
+		gc.logger.Errorf("failed to get gc result: %v", err)
+		return err
+	}
+	gc.logger.Infof("GC results: status: %t, message: %s, start: %s, end: %s.", gcr.Status, gcr.Msg, gcr.StartTime, gcr.EndTime)
 	gc.logger.Infof("success to run gc in job.")
-	time.Sleep(20 * time.Second)
-	gc.logger.Infof("doing...")
-	time.Sleep(20 * time.Second)
-	gc.logger.Infof("done gc in job.")
 	return nil
 }
 
 func (gc *GarbageCollector) init(ctx env.JobContext) error {
+	registryctl.Init()
+	gc.registryCtlClient = registryctl.RegistryCtlClient
 	gc.logger = ctx.GetLogger()
 	return nil
 }

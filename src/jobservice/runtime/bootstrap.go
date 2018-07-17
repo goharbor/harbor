@@ -17,7 +17,7 @@ import (
 	"github.com/vmware/harbor/src/jobservice/core"
 	"github.com/vmware/harbor/src/jobservice/env"
 	"github.com/vmware/harbor/src/jobservice/job/impl"
-	"github.com/vmware/harbor/src/jobservice/job/impl/demojob"
+	"github.com/vmware/harbor/src/jobservice/job/impl/gc"
 	"github.com/vmware/harbor/src/jobservice/job/impl/replication"
 	"github.com/vmware/harbor/src/jobservice/job/impl/scan"
 	"github.com/vmware/harbor/src/jobservice/logger"
@@ -187,7 +187,11 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 			job.ImageTransfer:  (*replication.Transfer)(nil),
 			job.ImageDelete:    (*replication.Deleter)(nil),
 			job.ImageReplicate: (*replication.Replicator)(nil),
+<<<<<<< HEAD
 			job.ImageGC:        (*demojob.GarbageCollector)(nil),
+=======
+			job.ImageGC:        (*gc.GarbageCollector)(nil),
+>>>>>>> 2d656c01b7de4657ddc0e6f8d10322a564cf1cbc
 		}); err != nil {
 		//exit
 		return nil, err
