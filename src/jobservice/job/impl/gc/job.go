@@ -15,6 +15,10 @@
 package gc
 
 import (
+	"fmt"
+	"net/http"
+
+	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/registryctl"
 	"github.com/vmware/harbor/src/jobservice/env"
 	"github.com/vmware/harbor/src/jobservice/logger"
@@ -25,6 +29,8 @@ import (
 type GarbageCollector struct {
 	registryCtlClient client.Client
 	logger            logger.Interface
+	uiclient            *common_http.Client
+	UIURL             string // the URL of UI service
 }
 
 // MaxFails implements the interface in job/Interface
@@ -66,5 +72,28 @@ func (gc *GarbageCollector) init(ctx env.JobContext) error {
 	registryctl.Init()
 	gc.registryCtlClient = registryctl.RegistryCtlClient
 	gc.logger = ctx.GetLogger()
+	gc.uiclient = common_http.NewClient(&http.Client{
+		Transport: reg.GetHTTPTransport(r.insecure),
+	}, cred)
+	errTpl := "Failed to get required property: %s"
+	if v, ok := ctx.Get(common.UIURL); ok && len(v.(string)) > 0 {
+		cj.UIURL = v.(string)
+	} else {
+		return fmt.Errorf(errTpl, common.UIURL)
+	}
 	return nil
+}
+
+func (gc *GarbageCollector) readonly() error {
+	if err := gc.uiclient.Put(fmt.Sprintf("%s/api/configurations", gc.url), struct {
+		PolicyID int64 `json:"policy_id"`
+	}{
+		PolicyID: r.policyID,
+	}); err != nil {
+		r.logger.Errorf("failed to send readonly request to %s: %v", r.url, err)
+		return err
+	}
+	r.logger.Info("the readonly request has been sent successfully")
+	return nil
+
 }

@@ -46,18 +46,18 @@ type Handler struct {
 
 // Prepare ...
 func (h *Handler) Prepare() {
-	id, err := h.GetInt64FromPath(":id")
-	if err != nil {
-		log.Errorf("Failed to get job ID, error: %v", err)
-		//Avoid job service from resending...
-		h.Abort("200")
-		return
-	}
+	// id, err := h.GetInt64FromPath(":id")
+	// if err != nil {
+	// 	log.Errorf("Failed to get job ID, error: %v", err)
+	// 	//Avoid job service from resending...
+	// 	h.Abort("200")
+	// 	return
+	// }
 
 	var data job_model.JobStatusChange
-	err = json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
+	err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
 	if err != nil {
-		log.Errorf("Failed to decode job status change, job ID: %d, error: %v", id, err)
+		log.Errorf("Failed to decode job status change, error: %v", err)
 		h.Abort("200")
 		return
 	}
