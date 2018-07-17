@@ -58,7 +58,6 @@ Harbor is available under the [Apache 2 license](LICENSE).
 This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
 
 * Photon OS 1.0: [docker image](https://hub.docker.com/_/photon/), [license](https://github.com/vmware/photon/blob/master/COPYING)
-* MySQL 5.6: [docker image](https://hub.docker.com/_/mysql/), [license](https://github.com/docker-library/mysql/blob/master/LICENSE)
 
 ### Commercial Support
 If you need commercial support of Harbor, please contact us for more information: <img alt="email" src="docs/img/harbor_email.png" valigin="middle" height="18"/>.
