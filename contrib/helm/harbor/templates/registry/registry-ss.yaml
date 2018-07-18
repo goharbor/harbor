@@ -31,14 +31,64 @@ spec:
               secretKeyRef:
                 name: "{{ template "harbor.fullname" . }}-registry"
                 key: httpSecret
+          {{- $storage := .Values.registry.storage }}
+          {{- $type := $storage.type }}
+          {{- if eq $type "azure" }}
+          - name: REGISTRY_STORAGE_AZURE_ACCOUNTKEY
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-registry"
+                key: accountkey
+          {{- else if eq $type "s3" }}
+          {{- if $storage.s3.accesskey }}
+          - name: REGISTRY_STORAGE_S3_ACCESSKEY
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-registry"
+                key: accesskey
+          {{- end }}
+          {{- if $storage.s3.secretkey }}
+          - name: REGISTRY_STORAGE_S3_SECRETKEY
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-registry"
+                key: secretkey
+          {{- end }}
+          {{- else if eq $type "swift" }}
+          - name: REGISTRY_STORAGE_SWIFT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-registry"
+                key: password
+          {{- if $storage.swift.secretkey }}
+          - name: REGISTRY_STORAGE_SWIFT_SECRETKEY
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-registry"
+                key: secretkey
+          {{- end }}
+          {{- if $storage.swift.accesskey }}
+          - name: REGISTRY_STORAGE_SWIFT_ACCESSKEY
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-registry"
+                key: accesskey
+          {{- end }}
+          {{- else if eq $type "oss" }}
+          - name: REGISTRY_STORAGE_OSS_ACCESSKEYSECRET
+            valueFrom:
+              secretKeyRef:
+                name: "{{ template "harbor.fullname" . }}-registry"
+                key: accesskeysecret
+          {{- end }}
         ports:
         - containerPort: 5000
         - containerPort: 5001
         volumeMounts:
-{{- if and (not .Values.registry.objectStorage) .Values.persistence.enabled }}
+        {{- if (.Values.persistence.enabled) and eq .Values.registry.storage.type "filesystem" }}
         - name: registry-data
-          mountPath: /var/lib/registry
-{{- end }}
+          mountPath: {{ .Values.registry.storage.filesystem.rootdirectory }}
+        {{- end }}
         - name: registry-root-certificate
           mountPath: /etc/registry/root.crt
           subPath: root.crt
@@ -64,7 +114,7 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
-  {{- if and (not .Values.registry.objectStorage) .Values.persistence.enabled }}
+  {{- if (.Values.persistence.enabled) and eq .Values.registry.storage.type "filesystem" }}
   volumeClaimTemplates:
   - metadata:
       name: registry-data
@@ -82,4 +132,4 @@ spec:
       resources:
         requests:
           storage: {{ .Values.registry.volumes.data.size | quote }}
-  {{- end -}}
+  {{- end }}
