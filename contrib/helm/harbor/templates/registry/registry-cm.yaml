@@ -12,11 +12,122 @@ data:
       fields:
         service: registry
     storage:
-      {{- if .Values.registry.objectStorage }}
-{{ toYaml .Values.registry.objectStorage | indent 6 }}
-      {{- else }}
+      {{- $storage := .Values.registry.storage }}
+      {{- $type := $storage.type }}
+      {{- if eq $type "filesystem" }}
       filesystem:
-        rootdirectory: /var/lib/registry
+        rootdirectory: {{ $storage.filesystem.rootdirectory }}
+        {{- if $storage.filesystem.maxthreads }}
+        maxthreads: {{ $storage.filesystem.maxthreads }}
+        {{- end }}
+      {{- else if eq $type "azure" }}
+      azure:
+        accountname: {{ $storage.azure.accountname }}
+        container: {{ $storage.azure.container }}
+        {{- if $storage.azure.realm }}
+        realm: {{ $storage.azure.realm }}
+        {{- end }}
+      {{- else if eq $type "gcs" }}
+      gcs:
+        bucket: {{ $storage.gcs.bucket }}
+        {{- if $storage.gcs.rootdirectory }}
+        rootdirectory: {{ $storage.gcs.rootdirectory }}
+        {{- end }}
+        {{- if $storage.gcs.chunksize }}
+        chunksize: {{ $storage.gcs.chunksize }}
+        {{- end }}
+      {{- else if eq $type "s3" }}
+      s3:
+        region: {{ $storage.s3.region }}
+        bucket: {{ $storage.s3.bucket }}
+        {{- if $storage.s3.regionendpoint }}
+        regionendpoint: {{ $storage.s3.regionendpoint }}
+        {{- end }}
+        {{- if $storage.s3.encrypt }}
+        encrypt: {{ $storage.s3.encrypt }}
+        {{- end }}
+        {{- if $storage.s3.secure }}
+        secure: {{ $storage.s3.secure }}
+        {{- end }}
+        {{- if $storage.s3.v4auth }}
+        v4auth: {{ $storage.s3.v4auth }}
+        {{- end }}
+        {{- if $storage.s3.chunksize }}
+        chunksize: {{ $storage.s3.chunksize }}
+        {{- end }}
+        {{- if $storage.s3.rootdirectory }}
+        rootdirectory: {{ $storage.s3.rootdirectory }}
+        {{- end }}
+        {{- if $storage.s3.storageclass }}
+        storageclass: {{ $storage.s3.storageclass }}
+        {{- end }}
+      {{- else if eq $type "swift" }}
+      swift:
+        authurl: {{ $storage.swift.authurl }}
+        username: {{ $storage.swift.username }}
+        container: {{ $storage.swift.container }}
+        {{- if $storage.swift.region }}
+        region: {{ $storage.swift.region }}
+        {{- end }}
+        {{- if $storage.swift.tenant }}
+        tenant: {{ $storage.swift.tenant }}
+        {{- end }}
+        {{- if $storage.swift.tenantid }}
+        tenantid: {{ $storage.swift.tenantid }}
+        {{- end }}
+        {{- if $storage.swift.domain }}
+        domain: {{ $storage.swift.domain }}
+        {{- end }}
+        {{- if $storage.swift.domainid }}
+        domainid: {{ $storage.swift.domainid }}
+        {{- end }}
+        {{- if $storage.swift.trustid }}
+        trustid: {{ $storage.swift.trustid }}
+        {{- end }}
+        {{- if $storage.swift.insecureskipverify }}
+        insecureskipverify: {{ $storage.swift.insecureskipverify }}
+        {{- end }}
+        {{- if $storage.swift.chunksize }}
+        chunksize: {{ $storage.swift.chunksize }}
+        {{- end }}
+        {{- if $storage.swift.prefix }}
+        prefix: {{ $storage.swift.prefix }}
+        {{- end }}
+        {{- if $storage.swift.authversion }}
+        authversion: {{ $storage.swift.authversion }}
+        {{- end }}
+        {{- if $storage.swift.endpointtype }}
+        endpointtype: {{ $storage.swift.endpointtype }}
+        {{- end }}
+        {{- if $storage.swift.tempurlcontainerkey }}
+        tempurlcontainerkey: {{ $storage.swift.tempurlcontainerkey }}
+        {{- end }}
+        {{- if $storage.swift.tempurlmethods }}
+        tempurlmethods: {{ $storage.swift.tempurlmethods }}
+        {{- end }}
+      {{- else if eq $type "oss" }}
+      oss:
+        accesskeyid: {{ $storage.oss.accesskeyid }}
+        region: {{ $storage.oss.region }}
+        bucket: {{ $storage.oss.bucket }}
+        {{- if $storage.oss.endpoint }}
+        endpoint: {{ $storage.oss.endpoint }}
+        {{- end }}
+        {{- if $storage.oss.internal }}
+        internal: {{ $storage.oss.internal }}
+        {{- end }}
+        {{- if $storage.oss.encrypt }}
+        encrypt: {{ $storage.oss.encrypt }}
+        {{- end }}
+        {{- if $storage.oss.secure }}
+        secure: {{ $storage.oss.secure }}
+        {{- end }}
+        {{- if $storage.oss.chunksize }}
+        chunksize: {{ $storage.oss.chunksize }}
+        {{- end }}
+        {{- if $storage.oss.rootdirectory }}
+        rootdirectory: {{ $storage.oss.rootdirectory }}
+        {{- end }}
       {{- end }}
       cache:
         layerinfo: inmemory
