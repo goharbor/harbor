@@ -54,9 +54,9 @@ func SaveConfigEntries(entries []models.ConfigEntry) error {
 		tempEntry := models.ConfigEntry{}
 		tempEntry.Key = entry.Key
 		tempEntry.Value = entry.Value
-		created, _, error := o.ReadOrCreate(&tempEntry, "k")
-		if error != nil {
-			return error
+		created, _, err := o.ReadOrCreate(&tempEntry, "k")
+		if err != nil {
+			return err
 		}
 		if !created {
 			entry.ID = tempEntry.ID
