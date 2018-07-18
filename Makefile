@@ -217,12 +217,13 @@ PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/ha
+				  $(HARBORPKG)/open_source_license $(HARBORPKG)/ha
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/ha
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/ha \
+				  $(HARBORPKG)/open_source_license
 DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
@@ -332,6 +333,7 @@ package_online: modify_composefile
 		$(HARBORPKG)/ha/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
+	@cp open_source_license $(HARBORPKG)/open_source_license
 	@cp NOTICE $(HARBORPKG)/NOTICE
 	
 	@$(TARCMD) $(PACKAGE_ONLINE_PARA)
@@ -342,6 +344,7 @@ package_offline: compile version build modify_sourcefiles modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	@cp LICENSE $(HARBORPKG)/LICENSE
+	@cp open_source_license $(HARBORPKG)/open_source_license
 	@cp NOTICE $(HARBORPKG)/NOTICE
 	@cp $(HARBORPKG)/photon/db/registry.sql $(HARBORPKG)/ha/
 	
