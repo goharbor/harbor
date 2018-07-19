@@ -61,3 +61,4 @@ REGISTRY_STORAGE_PROVIDER_NAME=$storage_provider_name
 READ_ONLY=false
 SKIP_RELOAD_ENV_PATTERN=$skip_reload_env_pattern
 RELOAD_KEY=$reload_key
+CHART_SERVICE_URL=$chart_service_url

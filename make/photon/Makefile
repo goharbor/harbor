@@ -85,6 +85,13 @@ DOCKERFILEPATH_MIGRATOR=$(TOOLSPATH)/migration
 DOCKERFILENAME_MIGRATOR=Dockerfile
 DOCKERIMAGENAME_MIGRATOR=vmware/harbor-migrator
 
+# for chart server (chartmuseum)
+DOCKERFILEPATH_CHART_SERVER=$(DOCKERFILEPATH)/chartserver
+DOCKERFILENAME_CHART_SERVER=Dockerfile
+CHART_SERVER_CODE_BASE=github.com/helm/chartmuseum
+CHART_SERVER_MAIN_PATH=cmd/chartmuseum
+CHART_SERVER_BIN_NAME=chartm
+
 _build_db:
 	@echo "building db container for photon..."
 	@cd $(DOCKERFILEPATH_DB) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
@@ -121,6 +128,20 @@ _build_clair:
 		echo "building clair container for photon..." ; \
 		cd $(DOCKERFILEPATH_CLAIR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_CLAIR)/$(DOCKERFILENAME_CLAIR) -t $(DOCKERIMAGENAME_CLAIR):$(CLAIRVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_CLAIR)/binary; \
+		echo "Done." ; \
+	fi
+
+_build_chart_server:
+	@if [ "$(CHARTFLAG)" = "true" ] ; then \
+		if [ "$(BUILDBIN)" != "true" ] ; then \
+			rm -rf $(DOCKERFILEPATH_CHART_SERVER)/binary && mkdir -p $(DOCKERFILEPATH_CHART_SERVER)/binary && \
+			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/chartm, $(DOCKERFILEPATH_CHART_SERVER)/binary/chartm); \
+		else \
+			cd $(DOCKERFILEPATH_CHART_SERVER) && $(DOCKERFILEPATH_CHART_SERVER)/builder $(GOBUILDIMAGE) $(CHART_SERVER_CODE_BASE) $(CHARTMUSEUMVERSION) $(CHART_SERVER_MAIN_PATH) $(CHART_SERVER_BIN_NAME); \
+		fi ; \
+		echo "building chartmuseum container for photon..." ; \
+		cd $(DOCKERFILEPATH_CHART_SERVER) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_CHART_SERVER)/$(DOCKERFILENAME_CHART_SERVER) -t $(DOCKERIMAGENAME_CHART_SERVER):$(CHARTMUSEUMVERSION)-$(VERSIONTAG) . ; \
+		rm -rf $(DOCKERFILEPATH_CHART_SERVER)/binary; \
 		echo "Done." ; \
 	fi
 		
@@ -173,7 +194,7 @@ define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
 endef
 
-build: _build_db _build_adminiserver _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_notary _build_clair _build_redis _build_migrator
+build: _build_db _build_adminiserver _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_notary _build_clair _build_redis _build_migrator _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."

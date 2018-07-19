@@ -83,6 +83,8 @@ REBUILDCLARITYFLAG=false
 NEWCLARITYVERSION=
 BUILDBIN=false
 MIGRATORFLAG=false
+# enable/disable chart repo supporting
+CHARTFLAG=false
 
 # version prepare
 # for docker image tag
@@ -104,6 +106,8 @@ CLAIRVERSION=v2.0.1
 CLAIRDBVERSION=$(VERSIONTAG)
 MIGRATORVERSION=v1.5.0
 REDISVERSION=$(VERSIONTAG)
+# version of chartmuseum
+CHARTMUSEUMVERSION=v0.7.1
 
 #clarity parameters
 CLARITYIMAGE=vmware/harbor-clarity-ui-builder[:tag]
@@ -129,7 +133,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=reg.mydomain.com/library/harborgo[:tag]
+GOBUILDIMAGE=golang:1.9.2
 GOBUILDPATH=$(GOBASEPATH)/harbor
 GOIMAGEBUILDCMD=/usr/local/go/bin/go
 GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build
@@ -164,6 +168,10 @@ endif
 ifeq ($(CLAIRFLAG), true)
 	PREPARECMD_PARA+= --with-clair
 endif
+# append chartmuseum parameters if set
+ifeq ($(CHARTFLAG), true)
+    PREPARECMD_PARA+= --with-chartmuseum
+endif
 
 # makefile
 MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
@@ -179,6 +187,7 @@ DOCKERIMAGENAME_JOBSERVICE=vmware/harbor-jobservice
 DOCKERIMAGENAME_LOG=vmware/harbor-log
 DOCKERIMAGENAME_DB=vmware/harbor-db
 DOCKERIMAGENAME_CLARITY=vmware/harbor-clarity-ui-builder
+DOCKERIMAGENAME_CHART_SERVER=vmware/chartmuseum-photon
 
 # docker-compose files
 DOCKERCOMPOSEFILEPATH=$(MAKEPATH)
@@ -188,6 +197,8 @@ DOCKERCOMPOSENOTARYTPLFILENAME=docker-compose.notary.tpl
 DOCKERCOMPOSENOTARYFILENAME=docker-compose.notary.yml
 DOCKERCOMPOSECLAIRTPLFILENAME=docker-compose.clair.tpl
 DOCKERCOMPOSECLAIRFILENAME=docker-compose.clair.yml
+DOCKERCOMPOSECHARTMUSEUMTPLFILENAME=docker-compose.chartmuseum.tpl
+DOCKERCOMPOSECHARTMUSEUMFILENAME=docker-compose.chartmuseum.yml
 
 SEDCMD=$(shell which sed)
 
@@ -241,6 +252,13 @@ endif
 ifeq ($(MIGRATORFLAG), true)
 	DOCKERSAVE_PARA+= vmware/harbor-migrator:$(MIGRATORVERSION)
 endif
+# append chartmuseum parameters if set
+ifeq ($(CHARTFLAG), true)
+    DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_CHART_SERVER):$(CHARTMUSEUMVERSION)-$(VERSIONTAG)
+	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
+	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
+	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
+endif
 
 version:
 	@printf $(UIVERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
@@ -286,7 +304,7 @@ build:
 	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRDBVERSION=$(CLAIRDBVERSION) -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION)
 
-modify_composefile: modify_composefile_notary modify_composefile_clair
+modify_composefile: modify_composefile_notary modify_composefile_clair modify_composefile_chartmuseum
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@cp $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
@@ -312,6 +330,11 @@ modify_composefile_clair:
 	@$(SEDCMD) -i 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
 	@cp $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSECLAIRTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSECLAIRFILENAME)
 	@$(SEDCMD) -i 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSECLAIRFILENAME)
+
+modify_composefile_chartmuseum:
+	@echo "preparing docker-compose chartmuseum file..."
+	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
+	@$(SEDCMD) -i 's/__chartmuseum_version__/$(CHARTMUSEUMVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
 
 modify_sourcefiles:
 	@echo "change mode of source files."
