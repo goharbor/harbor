@@ -28,11 +28,13 @@ Init Chrome Driver
     Run  pkill chromedriver
     Run  pkill chrome
     ${chrome options}=    Evaluate    sys.modules['selenium.webdriver'].ChromeOptions()    sys
+    ${capabilities}=    Evaluate    sys.modules['selenium.webdriver'].DesiredCapabilities.CHROME    sys
+    Set To Dictionary    ${capabilities}    acceptInsecureCerts    ${True}
     Call Method    ${chrome options}    add_argument    --headless
     Call Method    ${chrome options}    add_argument    --disable-gpu
     Call Method    ${chrome options}    add_argument    --start-maximized
     Call Method    ${chrome options}    add_argument    --no-sandbox
     Call Method    ${chrome options}    add_argument    --window-size\=1600,900
     ${chrome options.binary_location}    Set Variable    /usr/bin/google-chrome
-    Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}
+    Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}    desired_capabilities=${capabilities}
     Sleep  5

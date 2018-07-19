@@ -31,7 +31,7 @@ Create An New Project
     Run Keyword If  '${public}' == 'true'  Click Element  xpath=${project_public_xpath}
     Click Element  xpath=//button[contains(.,'OK')]
     Sleep  4
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u %{HARBOR_ADMIN}:%{HARBOR_PASSWORD} -k -X GET --header 'Accept: application/json' ${HARBOR_URL}/api/projects?name=${projectname}
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -k -X GET --header 'Accept: application/json' ${HARBOR_URL}/api/projects?name=${projectname}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  ${projectname}

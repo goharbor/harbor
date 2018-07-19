@@ -15,8 +15,6 @@
 *** Settings ***
 Documentation  Harbor BATs
 Resource  ../../resources/Util.robot
-Suite Setup  Nightly Test Setup  ${ip}  ${SSH_PWD}  ${HARBOR_PASSWORD}  ${ip1}
-Suite Teardown  Collect Nightly Logs  ${ip}  ${SSH_PWD}  ${ip1}
 Default Tags  Nightly
 
 *** Variables ***
@@ -110,4 +108,4 @@ Test Case - Ldap User Push An Image
     Close Browser
 
 Test Case - Ldap User Can Not login
-    Docker Login Fail  ${ip}  test  123456
+    Docker Login Fail  ${ip}  testerDeesExist  123456

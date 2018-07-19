@@ -106,10 +106,12 @@ Add Guest Member To Project
 Delete Project Member
     [arguments]  ${member}
     Click Element  xpath=//clr-dg-row[contains(.,'${member}')]//input/../label
-    Click Element  xpath=${project_member_delete_button_xpath}
+    Click Element  ${member_action_xpath}
+    Sleep  1
+    Click Element  ${delete_action_xpath}
     Sleep  2
-    Click Element  xpath=//button[contains(.,'DELETE')]
-    Sleep  2
+    Click Element  //clr-modal//button[contains(.,'DELETE')]
+    Sleep  3
 
 User Should Be Owner Of Project
     [Arguments]  ${user}  ${pwd}  ${project}

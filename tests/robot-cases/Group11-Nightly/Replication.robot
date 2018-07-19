@@ -15,14 +15,13 @@
 *** Settings ***
 Documentation  Harbor BATs
 Resource  ../../resources/Util.robot
-Suite Setup  Nightly Test Setup  ${ip}  ${SSH_PWD}  ${HARBOR_PASSWORD}  ${ip1}
-Suite Teardown  Collect Nightly Logs  ${ip}  ${SSH_PWD}  ${ip1}
 Default Tags  Replication
 
 *** Variables ***
 ${HARBOR_URL}  https://${ip}
 ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
+
 *** Test Cases ***
 Test Case - Get Harbor Version
 #Just get harbor version and log it

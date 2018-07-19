@@ -44,6 +44,7 @@ Select Object
     [Arguments]    ${obj}
     Click Element  //clr-dg-row[contains(.,'${obj}')]//label
 
+# This func cannot support as the delete user flow changed.
 Multi-delete Object
     [Arguments]    @{obj}
     :For  ${obj}  in  @{obj}
@@ -54,12 +55,26 @@ Multi-delete Object
     Click Element  //clr-modal//button[contains(.,'DELETE')]
     Sleep  3
 
+Multi-delete User
+    [Arguments]    @{obj}
+    :For  ${obj}  in  @{obj}
+    \    Click Element  //clr-dg-row[contains(.,'${obj}')]//label
+    Sleep  1
+    Click Element  ${member_action_xpath}
+    Sleep  1
+    Click Element  //clr-dropdown/clr-dropdown-menu/button[2]
+    Sleep  2
+    Click Element  //clr-modal//button[contains(.,'DELETE')]
+    Sleep  3
+
 Multi-delete Member 
     [Arguments]    @{obj}
     :For  ${obj}  in  @{obj}
     \    Click Element  //clr-dg-row[contains(.,'${obj}')]//label
     Sleep  1
-    Click Element  //button[contains(.,'REMOVE')]
+    Click Element  ${member_action_xpath}
+    Sleep  1
+    Click Element  ${delete_action_xpath}
     Sleep  2
     Click Element  //clr-modal//button[contains(.,'DELETE')]
     Sleep  3
