@@ -35,5 +35,6 @@ func init() {
 		new(ConfigEntry),
 		new(Label),
 		new(ResourceLabel),
-		new(UserGroup))
+		new(UserGroup),
+		new(AdminJob))
 }
