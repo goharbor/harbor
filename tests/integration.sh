@@ -115,6 +115,18 @@ function package_offline_installer {
     du -ks $harbor_build_bundle | awk '{print $1 / 1024}' | { read x; echo $x MB; }
 }
 
+# publish images to Docker Hub
+function publishImage {
+    echo "Publishing images to Docker Hub..."
+    echo "The images on the host:"
+    docker images
+    docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+    # rename the images with tag "dev" and push to Docker Hub
+    docker images | sed -n "s|\(vmware/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:dev;docker push \1:dev|p" | bash
+    echo "Images are published successfully"
+    docker images
+}
+
 ## --------------------------------------------- Run Test Case ---------------------------------------------
 echo "--------------------------------------------------"
 echo "Running CI for $DRONE_BUILD_EVENT on $DRONE_BRANCH"
@@ -128,7 +140,7 @@ echo "--------------------------------------------------"
 if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]]; then
     if [[ $DRONE_BUILD_EVENT == "push" ]]; then
         package_offline_installer 
-        upload_latest_build=true     
+        upload_latest_build=true    
     fi
 fi
 
@@ -181,11 +193,13 @@ fi
 #                                     latest.build
 #                                     harbor-offline-installer-latest.tgz
 #
+set -e
 if [ $upload_build == true ] && [ $rc -eq 0 ]; then
     cp $harbor_build_bundle harbor-offline-installer-latest.tgz
     uploader $harbor_build_bundle $harbor_target_bucket
     uploader harbor-offline-installer-latest.tgz $harbor_target_bucket 
     upload_bundle_success=true 
+    publishImage 
 fi
 
 ## --------------------------------------------- Upload Harbor Latest Build File ----------------------------------
@@ -207,5 +221,3 @@ fi
 if [ -f "$keyfile" ]; then
   rm -f $keyfile
 fi
-
-exit $rc

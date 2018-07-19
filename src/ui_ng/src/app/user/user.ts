@@ -18,12 +18,31 @@
  * @class User
  */
 export class User {
-    user_id: number;
+    user_id?: number;
     username?: string;
     realname?: string;
     email?: string;
     password?: string;
     comment?: string;
+    deleted?: boolean;
+    role_name?: string;
+    role_id?: number;
     has_admin_role?: boolean;
+    reset_uuid?: string;
     creation_time?: string;
+    update_time?: string;
 }
+export interface LDAPUser {
+    ldap_username: string;
+    ldap_realname: string;
+    ldap_email: string;
+}
+function LDAPUsertoUser(ldapU: LDAPUser): User {
+    let user = new User();
+    user.user_id = 0;
+    user.username = ldapU.ldap_username;
+    user.realname = ldapU.ldap_realname;
+    user.email = ldapU.ldap_email;
+    return user;
+}
+export default LDAPUsertoUser;

@@ -1,0 +1,8 @@
+---
+protocol: "http"
+port: 8080
+log_level: "INFO"
+
+#https_config:
+#  cert: "server.crt"
+#  key: "server.key"

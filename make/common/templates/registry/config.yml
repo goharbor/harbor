@@ -5,13 +5,16 @@ log:
     service: registry
 storage:
   cache:
-    layerinfo: inmemory
+    layerinfo: redis
   $storage_provider_info
   maintenance:
     uploadpurging:
       enabled: false
   delete:
     enabled: true
+redis:
+  addr: $redis_url
+  db: 1
 http:
   addr: :5000
   secret: placeholder

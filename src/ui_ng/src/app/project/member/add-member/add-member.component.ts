@@ -86,19 +86,18 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     private ref: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-
-  let resolverData = this.route.snapshot.parent.data;
-  let hasProjectAdminRole: boolean;
-  if (resolverData) {
-    hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
-  }
-  if (hasProjectAdminRole) {
-    this.userService.getUsers()
+    let resolverData = this.route.snapshot.parent.data;
+    let hasProjectAdminRole: boolean;
+    if (resolverData) {
+      hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
+    }
+    if (hasProjectAdminRole) {
+      this.userService.getUsers()
         .then(users => {
           this.userLists = users;
         });
 
-    this.nameChecker
+      this.nameChecker
         .debounceTime(500)
         .distinctUntilChanged()
         .subscribe((name: string) => {
@@ -108,17 +107,17 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
             if (cont.valid) {
               this.checkOnGoing = true;
               this.memberService
-                  .listMembers(this.projectId, cont.value).toPromise()
-                  .then((members: Member[]) => {
-                    if (members.filter(m => { return m.entity_name === cont.value; }).length > 0) {
-                      this.isMemberNameValid = false;
-                      this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
-                    }
-                    this.checkOnGoing = false;
-                  })
-                  .catch(error => {
-                    this.checkOnGoing = false;
-                  });
+                .listMembers(this.projectId, cont.value).toPromise()
+                .then((members: Member[]) => {
+                  if (members.filter(m => { return m.entity_name === cont.value; }).length > 0) {
+                    this.isMemberNameValid = false;
+                    this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
+                  }
+                  this.checkOnGoing = false;
+                })
+                .catch(error => {
+                  this.checkOnGoing = false;
+                });
               // username autocomplete
               if (this.userLists && this.userLists.length) {
                 this.selectUserName = [];
@@ -129,17 +128,17 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
                     }
                   }
                 });
+                let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
                 setTimeout(() => {
-                  setInterval(() => this.ref.markForCheck(), 100);
-                }, 1000);
+                  clearInterval(changeTimer);
+                }, 2000);
               }
             } else {
               this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
             }
           }
         });
-  }
-
+    }
   }
 
   ngOnDestroy(): void {
@@ -149,12 +148,20 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   onSubmit(): void {
     if (!this.member.entity_name || this.member.entity_name.length === 0) { return; }
     this.memberService
-      .addMember(this.projectId, this.member.entity_name, +this.member.role_id)
+      .addUserMember(this.projectId, {username: this.member.entity_name}, +this.member.role_id)
+      .finally(() => {
+        this.addMemberOpened = false;
+        let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
+        setTimeout(() => {
+          clearInterval(changeTimer);
+        }, 2000);
+      }
+    )
       .subscribe(
-      response => {
+      () => {
         this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');
         this.added.emit(true);
-        this.addMemberOpened = false;
+        // this.addMemberOpened = false;
       },
       error => {
         if (error instanceof Response) {
@@ -171,19 +178,15 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
           }
           if (this.messageHandlerService.isAppLevel(error)) {
             this.messageHandlerService.handleError(error);
-            this.addMemberOpened = false;
+            // this.addMemberOpened = false;
           } else {
             this.translateService
               .get(errorMessageKey)
-              .subscribe(errorMessage => this.inlineAlert.showInlineError(errorMessage));
+              .subscribe(errorMessage => this.messageHandlerService.handleError(errorMessage));
           }
         }
-      }
-      );
-
-    setTimeout(() => {
-      setInterval(() => this.ref.markForCheck(), 100);
-    }, 1000);
+      });
+      // this.addMemberOpened = false;
   }
 
   selectedName(username: string) {
@@ -192,12 +195,8 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   }
 
   onCancel() {
-    if (this.hasChanged) {
-      this.inlineAlert.showInlineConfirmation({ message: 'ALERT.FORM_CHANGE_CONFIRMATION' });
-    } else {
       this.addMemberOpened = false;
       this.memberForm.reset();
-    }
   }
 
   leaveInput() {
@@ -212,18 +211,11 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
         let memberName = data['member_name'];
         if (memberName && memberName !== '') {
           this.hasChanged = true;
-          this.inlineAlert.close();
         } else {
           this.hasChanged = false;
         }
       });
     }
-  }
-
-  confirmCancel(confirmed: boolean) {
-    this.addMemberOpened = false;
-    this.inlineAlert.close();
-    this.memberForm.reset();
   }
 
   openAddMemberModal(): void {

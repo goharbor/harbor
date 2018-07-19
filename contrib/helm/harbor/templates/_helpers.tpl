@@ -32,9 +32,9 @@ app: "{{ template "harbor.name" . }}"
 
 {{- define "harbor.externalURL" -}}
 {{- if .Values.externalPort -}}
-{{- printf "%s:%s" .Values.externalDomain (toString .Values.externalPort) -}}
+{{- printf "%s://%s:%s" .Values.externalProtocol .Values.externalDomain (toString .Values.externalPort) -}}
 {{- else -}}
-{{- .Values.externalDomain -}}
+{{- printf "%s://%s" .Values.externalProtocol .Values.externalDomain -}}
 {{- end -}}
 {{- end -}}
 
@@ -56,4 +56,88 @@ so it can match Harbor service FQDN and Notary service FQDN.
 
 {{- define "harbor.notaryServiceName" -}}
 {{- printf "%s-notary-server" (include "harbor.fullname" .) -}}
+{{- end -}}
+
+{{- define "harbor.database.host" -}}
+  {{- if eq .Values.database.type "internal" -}}
+    {{- template "harbor.fullname" . }}-database
+  {{- else -}}
+    {{- .Values.database.external.host -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.database.port" -}}
+  {{- if eq .Values.database.type "internal" -}}
+    {{- printf "%s" "5432" -}}
+  {{- else -}}
+    {{- .Values.database.external.port -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.database.username" -}}
+  {{- if eq .Values.database.type "internal" -}}
+    {{- printf "%s" "postgres" -}}
+  {{- else -}}
+    {{- .Values.database.external.username -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.database.password" -}}
+  {{- if eq .Values.database.type "internal" -}}
+    {{- .Values.database.internal.password | b64enc | quote -}}
+  {{- else -}}
+    {{- .Values.database.external.password | b64enc | quote -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.database.rawPassword" -}}
+  {{- if eq .Values.database.type "internal" -}}
+    {{- .Values.database.internal.password -}}
+  {{- else -}}
+    {{- .Values.database.external.password -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.database.coreDatabase" -}}
+  {{- if eq .Values.database.type "internal" -}}
+    {{- printf "%s" "registry" -}}
+  {{- else -}}
+    {{- .Values.database.external.coreDatabase -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.database.clairDatabase" -}}
+  {{- if eq .Values.database.type "internal" -}}
+    {{- printf "%s" "postgres" -}}
+  {{- else -}}
+    {{- .Values.database.external.clairDatabase -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.database.notaryServerDatabase" -}}
+  {{- if eq .Values.database.type "internal" -}}
+    {{- printf "%s" "notaryserver" -}}
+  {{- else -}}
+    {{- .Values.database.external.notaryServerDatabase -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.database.notarySignerDatabase" -}}
+  {{- if eq .Values.database.type "internal" -}}
+    {{- printf "%s" "notarysigner" -}}
+  {{- else -}}
+    {{- .Values.database.external.notarySignerDatabase -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.database.clair" -}}
+postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.database.rawPassword" . }}@{{ template "harbor.database.host" . }}:{{ template "harbor.database.port" . }}/{{ template "harbor.database.clairDatabase" . }}?sslmode=disable
+{{- end -}}
+
+{{- define "harbor.database.notaryServer" -}}
+postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.database.rawPassword" . }}@{{ template "harbor.database.host" . }}:{{ template "harbor.database.port" . }}/{{ template "harbor.database.notaryServerDatabase" . }}?sslmode=disable
+{{- end -}}
+
+{{- define "harbor.database.notarySigner" -}}
+postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.database.rawPassword" . }}@{{ template "harbor.database.host" . }}:{{ template "harbor.database.port" . }}/{{ template "harbor.database.notarySignerDatabase" . }}?sslmode=disable
 {{- end -}}

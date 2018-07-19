@@ -248,3 +248,91 @@ func TestConvertMapToStruct(t *testing.T) {
 		}
 	}
 }
+
+func TestSafeCastString(t *testing.T) {
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"nil value", args{nil}, ""},
+		{"normal string", args{"sample"}, "sample"},
+		{"wrong type", args{12}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SafeCastString(tt.args.value); got != tt.want {
+				t.Errorf("SafeCastString() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSafeCastBool(t *testing.T) {
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"nil value", args{nil}, false},
+		{"normal bool", args{true}, true},
+		{"wrong type", args{"true"}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SafeCastBool(tt.args.value); got != tt.want {
+				t.Errorf("SafeCastBool() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSafeCastInt(t *testing.T) {
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{"nil value", args{nil}, 0},
+		{"normal int", args{1234}, 1234},
+		{"wrong type", args{"sample"}, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SafeCastInt(tt.args.value); got != tt.want {
+				t.Errorf("SafeCastInt() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSafeCastFloat64(t *testing.T) {
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{"nil value", args{nil}, 0},
+		{"normal float64", args{12.34}, 12.34},
+		{"wrong type", args{false}, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := SafeCastFloat64(tt.args.value); got != tt.want {
+				t.Errorf("SafeCastFloat64() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -32,7 +32,8 @@
         "YES": "OUI",
         "NO": "NON",
         "NEGATIVE": "NEGATIF",
-        "COPY": "COPIER"
+        "COPY": "COPIER",
+        "ACTIONS": "Actions"
     },
     "TOOLTIP": {
         "EMAIL": "L'email doit être une adresse email valide comme name@example.com.",
@@ -70,6 +71,7 @@
         "COMMENT": "Commentaires",
         "PASSWORD": "Mot de passe",
         "SAVE_SUCCESS": "Profil utilisateur sauvegardé avec succès.",
+        "ADMIN_RENAME_BUTTON": "Change username",
         "ADMIN_RENAME_TIP": "Select the button in order to change the username to \"admin@harbor.local\". This operation can not be undone.",
         "RENAME_SUCCESS": "Rename success!",
         "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone."
@@ -98,6 +100,7 @@
         "SYSTEM_MGMT": {
             "NAME": "Administration",
             "USER": "Utilisateurs",
+            "GROUP": "Groups",
             "REPLICATION": "Réplication",
             "CONFIG": "Configuration"
         },
@@ -185,10 +188,30 @@
         "AUTOSCAN_POLICY": "Analyser automatiquement les images lorsqu'elles sont envoyées au registre du projet."
     },
     "MEMBER": {
+        "NEW_USER": "New User",
         "NEW_MEMBER": "Nouveau Membre",
         "MEMBER": "Membre",
         "NAME": "Nom",
+        "EMAIL": "Email",
         "ROLE": "Rôle",
+        "ADD_USER": "Add User",
+        "NEW_USER_INFO": "Add an user to be a member of this project with specified role",
+        "NEW_GROUP": "New Group",
+        "IMPORT_GROUP": "Import New LDAP Group",
+        "NEW_GROUP_INFO": "Import a new LDAP group or select one or more existing groups to add with the specific role.",
+        "ADD_GROUP_SELECT": "Add a group as a project member",
+        "CREATE_GROUP_SELECT": "Import a new group from LDAP",
+        "LDAP_SEARCH_DN": "LDAP Group DN",
+        "LDAP_SEARCH_NAME": "Name",
+        "LDAP_GROUP": "Group",
+        "LDAP_GROUPS": "Groups",
+        "LDAP_PROPERTY": "Property",
+        "ACTION": "ACTION",
+        "USER": " User",
+        "USERS": "Users",
+        "MEMBER_TYPE": "Member Type",
+        "GROUP_TYPE": "Group",
+        "USER_TYPE": "User",
         "SYS_ADMIN": "System Admin",
         "PROJECT_ADMIN": "Project Admin",
         "DEVELOPER": "Développeur",
@@ -206,7 +229,26 @@
         "ADDED_SUCCESS": "Membre ajouté avec succès.",
         "DELETED_SUCCESS": "Membre supprimé avec succès.",
         "SWITCHED_SUCCESS": "Rôle du membre changé avec succés.",
-        "OF": "de"
+        "OF": "de",
+        "SET_ROLE": "SET ROLE",
+        "REMOVE": "Remove"
+    },
+    "GROUP": {
+        "Group": "Group",
+        "GROUPS": "Groups",
+        "IMPORT_LDAP_GROUP": "Import LDAP Group",
+        "ADD": "Add",
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "NAME": "Name",
+        "TYPE": "Type",
+        "DN": "DN",
+        "GROUP_DN": "Ldap Group DN",
+        "PROPERTY": "Property",
+        "REG_TIME": "Registration Time",
+        "ADD_GROUP_SUCCESS": "Add group success",
+        "ADD_GROUP_FAILURE": "Add group failure",
+        "LDAP_TYPE": "LDAP"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nom d'utilisateur",
@@ -474,7 +516,16 @@
             "BASE_DN": "Base DN LDAP",
             "FILTER": "Filtre LDAP",
             "UID": "UID LDAP",
-            "SCOPE": "Scope LDAP"
+            "SCOPE": "Scope LDAP",
+            "VERIFY_CERT": "LDAP Verify Cert",
+            "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
+            "LDAP_GROUP_BASE_DN_INFO": "The base DN of your LDAP group.",
+            "LDAP_GROUP_FILTER": "LDAP Group Filter",
+            "LDAP_GROUP_FILTER_INFO": "The filter of your LDAP group",
+            "LDAP_GROUP_GID": "LDAP Group GID",
+            "LDAP_GROUP_GID_INFO": "The Group gid of your LDAP group",
+            "GROUP_SCOPE": "LDAP Group Scope",
+            "GROUP_SCOPE_INFO": "The scope of your LDAP Group"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Déclenchement d'analyse globale avec succès !",
@@ -634,7 +685,10 @@
         "DELETE_REGISTRY": "Delete registry",
         "DELETE_REPLICATION": "Delete replication",
         "DELETE_MEMBER": "Delete member",
+        "DELETE_GROUP": "Delete member group",
         "SWITCH_ROLE": "Switch role",
+        "ADD_GROUP": "Add group member",
+        "ADD_USER": "Add user member",
         "DELETE_LABEL": "Delete label",
         "REPLICATION": "Replication",
         "DAY_AGO": " day(s) ago",

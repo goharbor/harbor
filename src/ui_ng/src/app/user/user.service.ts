@@ -15,10 +15,12 @@ import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 
-import { User } from './user';
 import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../shared/shared.utils";
+import { User, LDAPUser } from './user';
+import LDAPUsertoUser from './user';
 
 const userMgmtEndpoint = '/api/users';
+const ldapUserEndpoint = '/api/ldap/users';
 
 /**
  * Define related methods to handle account and session corresponding things
@@ -81,11 +83,33 @@ export class UserService {
         }
 
         return this.http.put(userMgmtEndpoint + '/' + uid + '/password',
-            {"old_password": newPassword, 'new_password': confirmPwd}, HTTP_JSON_OPTIONS)
+            {
+                "old_password": newPassword,
+                'new_password': confirmPwd
+            },
+            HTTP_JSON_OPTIONS)
             .toPromise()
             .then(response => response)
             .catch(error => {
                 return Promise.reject(error);
             });
+    }
+
+    // Get User from LDAP
+    getLDAPUsers(username: string): Promise<User[]> {
+        return this.http.get(`${ldapUserEndpoint}/search?username=${username}`, HTTP_GET_OPTIONS)
+        .toPromise()
+        .then(response => {
+            let ldapUser = response.json() as LDAPUser[] || [];
+            return ldapUser.map(u => LDAPUsertoUser(u));
+        })
+        .catch( error => this.handleError(error));
+    }
+
+    importLDAPUsers(usernames: string[]): Promise<any> {
+        return this.http.post(`${ldapUserEndpoint}/import`, JSON.stringify({ldap_uid_list: usernames}), HTTP_JSON_OPTIONS)
+        .toPromise()
+        .then(() => null )
+        .catch(err => this.handleError(err));
     }
 }

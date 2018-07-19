@@ -71,6 +71,10 @@ DOCKERFILEPATH_REG=$(DOCKERFILEPATH)/registry
 DOCKERFILENAME_REG=Dockerfile
 DOCKERIMAGENAME_REG=vmware/registry-photon
 
+DOCKERFILEPATH_REGISTRYCTL=$(DOCKERFILEPATH)/registryctl
+DOCKERFILENAME_REGISTRYCTL=Dockerfile
+DOCKERIMAGENAME_REGISTRYCTL=vmware/harbor-registryctl
+
 DOCKERFILEPATH_NOTARY=$(DOCKERFILEPATH)/notary
 DOCKERFILENAME_NOTARYSIGNER=signer.Dockerfile
 DOCKERIMAGENAME_NOTARYSIGNER=vmware/notary-signer-photon
@@ -177,6 +181,11 @@ _build_registry:
 	fi
 	@echo "building registry container for photon..."
 	@cd $(DOCKERFILEPATH_REG) && chmod 655 $(DOCKERFILEPATH_REG)/binary/registry && $(DOCKERBUILD) -f $(DOCKERFILEPATH_REG)/$(DOCKERFILENAME_REG) -t $(DOCKERIMAGENAME_REG):$(REGISTRYVERSION)-$(VERSIONTAG) .
+	@echo "Done."
+
+_build_registryctl:		
+	@echo "building registry controller for photon..."
+	$(DOCKERBUILD) -f $(DOCKERFILEPATH_REGISTRYCTL)/$(DOCKERFILENAME_REGISTRYCTL) -t $(DOCKERIMAGENAME_REGISTRYCTL):$(VERSIONTAG) .
 	@rm -rf $(DOCKERFILEPATH_REG)/binary
 	@echo "Done."
 
@@ -187,14 +196,14 @@ _build_redis:
 
 _build_migrator:
 	@echo "building db migrator container for photon..."
-	@cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(VERSIONTAG) .
+	@cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(MIGRATORVERSION) .
 	@echo "Done."
 
 define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
 endef
 
-build: _build_db _build_adminiserver _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_notary _build_clair _build_redis _build_migrator _build_chart_server
+build: _build_db _build_adminiserver _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_redis _build_migrator _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."

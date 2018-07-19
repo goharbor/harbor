@@ -38,6 +38,8 @@ Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Har
 **Developer Group:** Join Harbor developer group: [harbor-dev@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-dev) for discussion on Harbor development and contribution. To subscribe, send an email to [harbor-dev+subscribe@googlegroups.com](mailto:harbor-dev+subscribe@googlegroups.com).  
 **Slack:** Join Harbor's community for discussion and ask questions: [VMware {code}](https://code.vmware.com/join/), channel: [#harbor](https://vmwarecode.slack.com/messages/harbor).
 
+**Demo Server:** Harbor provides a demo environment with the latest Harbor stable build installed. If you want to have a try, please refer to **[Demo Server](docs/demo_server.md)** for more details.
+
 More info on [partners and users](partners.md).
 
 ### Contribution
@@ -56,7 +58,6 @@ Harbor is available under the [Apache 2 license](LICENSE).
 This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
 
 * Photon OS 1.0: [docker image](https://hub.docker.com/_/photon/), [license](https://github.com/vmware/photon/blob/master/COPYING)
-* MySQL 5.6: [docker image](https://hub.docker.com/_/mysql/), [license](https://github.com/docker-library/mysql/blob/master/LICENSE)
 
 ### Commercial Support
 If you need commercial support of Harbor, please contact us for more information: <img alt="email" src="docs/img/harbor_email.png" valigin="middle" height="18"/>.

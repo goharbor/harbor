@@ -76,7 +76,7 @@ function get_version_mysql {
     if [[ $(mysql $DBCNF -N -s -e "select count(*) from information_schema.tables \
         where table_schema='registry' and table_name='alembic_version';") -eq 0 ]]; then
         echo "table alembic_version does not exist. Trying to initial alembic_version."
-        mysql $DBCNF < ./alembic.sql
+        mysql $DBCNF < /harbor-migration/db/alembic/mysql/alembic.sql
         #compatible with version 0.1.0 and 0.1.1
         if [[ $(mysql $DBCNF -N -s -e "select count(*) from information_schema.tables \
             where table_schema='registry' and table_name='properties'") -eq 0 ]]; then

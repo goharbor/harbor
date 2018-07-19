@@ -1,23 +1,4 @@
 {{ if .Values.notary.enabled }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ template "harbor.fullname" . }}-notary-db
-  labels:
-{{ include "harbor.labels" . | indent 4 }}
-    component: notary-db
-data:
-  initial-notaryserver.sql: |
-    CREATE DATABASE IF NOT EXISTS `notaryserver`;
-    CREATE USER "server"@"%" IDENTIFIED BY "{{ .Values.notary.db.password }}";
-    GRANT ALL PRIVILEGES ON `notaryserver`.* TO "server"@"%"
-  initial-notarysigner.sql: |
-    CREATE DATABASE IF NOT EXISTS `notarysigner`;
-    CREATE USER "signer"@"%" IDENTIFIED BY "{{ .Values.notary.db.password }}";
-    GRANT ALL PRIVILEGES ON `notarysigner`.* TO "signer"@"%";
-
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -34,7 +15,7 @@ data:
 {{ .Values.notary.signer.tlsCrt | default $cert.Cert | indent 4 }}
   notary-signer.key: |
 {{ .Values.notary.signer.tlsKey | default $cert.Key  | indent 4 }}
-  server-config.json: |
+  server-config.postgres.json: |
     {
       "server": {
         "http_addr": ":4443"
@@ -50,20 +31,20 @@ data:
         "level": "debug"
       },
       "storage": {
-        "backend": "mysql",
-        "db_url": "server:{{ .Values.notary.db.password }}@tcp({{ template "harbor.fullname" . }}-notary-db:3306)/notaryserver?parseTime=True"
+        "backend": "postgres",
+        "db_url": "{{ template "harbor.database.notaryServer" . }}"
       },
       "auth": {
           "type": "token",
           "options": {
-              "realm": "https://{{ template "harbor.externalURL" . }}/service/token",
+              "realm": "{{ template "harbor.externalURL" . }}/service/token",
               "service": "harbor-notary",
               "issuer": "harbor-token-issuer",
               "rootcertbundle": "/root.crt"
           }
       }
     }
-  signer-config.json: |
+  signer-config.postgres.json: |
     {
       "server": {
         "grpc_addr": ":7899",
@@ -74,8 +55,8 @@ data:
         "level": "debug"
       },
       "storage": {
-        "backend": "mysql",
-        "db_url": "signer:{{ .Values.notary.db.password }}@tcp({{ template "harbor.fullname" . }}-notary-db:3306)/notarysigner?parseTime=True",
+        "backend": "postgres",
+        "db_url": "{{ template "harbor.database.notarySigner" . }}",
         "default_alias": "defaultalias"
       }
     }

@@ -295,7 +295,7 @@ storage_provider_config = rcp.get("configuration", "registry_storage_provider_co
 # yaml requires 1 or more spaces between the key and value
 storage_provider_config = storage_provider_config.replace(":", ": ", 1)
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
-jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))
 
 adminserver_config_dir = os.path.join(config_dir,"adminserver")
 if not os.path.exists(adminserver_config_dir):
@@ -306,6 +306,7 @@ ui_certificates_dir =  prep_conf_dir(ui_config_dir,"certificates")
 db_config_dir = prep_conf_dir(config_dir, "db")
 job_config_dir = prep_conf_dir(config_dir, "jobservice")
 registry_config_dir = prep_conf_dir(config_dir, "registry")
+registryctl_config_dir = prep_conf_dir(config_dir, "registryctl")
 nginx_config_dir = prep_conf_dir (config_dir, "nginx")
 nginx_conf_d = prep_conf_dir(nginx_config_dir, "conf.d")
 log_config_dir = prep_conf_dir (config_dir, "log")
@@ -316,6 +317,8 @@ ui_conf = os.path.join(config_dir, "ui", "app.conf")
 ui_cert_dir = os.path.join(config_dir, "ui", "certificates")
 jobservice_conf = os.path.join(config_dir, "jobservice", "config.yml")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
+registryctl_conf_env = os.path.join(config_dir, "registryctl", "env")
+registryctl_conf_yml = os.path.join(config_dir, "registryctl", "config.yml")
 db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
@@ -323,6 +326,7 @@ cert_dir = os.path.join(config_dir, "nginx", "cert")
 log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf") 
 adminserver_url = "http://adminserver:8080"
 registry_url = "http://registry:5000"
+registry_controller_url = "http://registryctl:8080"
 ui_url = "http://ui:8080"
 token_service_url = "http://ui:8080/service/token"
 
@@ -356,6 +360,8 @@ else:
 #Use reload_key to avoid reload config after restart harbor
 reload_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) if reload_config == "true" else ""
 
+ldap_group_admin_dn = rcp.get("configuration", "ldap_group_admin_dn") if rcp.has_option("configuration", "ldap_group_admin_dn") else ""
+
 render(os.path.join(templates_dir, "adminserver", "env"),
         adminserver_conf_env,
         reload_config=reload_config,
@@ -376,6 +382,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         ldap_group_filter=ldap_group_filter,
         ldap_group_gid=ldap_group_gid,
         ldap_group_scope=ldap_group_scope,
+        ldap_group_admin_dn=ldap_group_admin_dn,
         db_password=db_password,
         db_host=db_host,
         db_user=db_user,
@@ -415,6 +422,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         reload_key=reload_key,
         skip_reload_env_pattern=skip_reload_env_pattern,
         chart_service_url=chart_service_url
+        registry_controller_url = registry_controller_url
 	)
 
 render(os.path.join(templates_dir, "ui", "env"), 
@@ -425,7 +433,8 @@ render(os.path.join(templates_dir, "ui", "env"),
         adminserver_url = adminserver_url
         )
 
-registry_config_file = "config_ha.yml" if args.ha_mode else "config.yml"
+registry_config_file_ha = "config_ha.yml"
+registry_config_file = "config.yml"
 if storage_provider_name == "filesystem":
     if not storage_provider_config:
         storage_provider_config = "rootdirectory: /storage"
@@ -436,6 +445,13 @@ storage_provider_conf_list = [storage_provider_name + ':']
 for c in storage_provider_config.split(","):
     storage_provider_conf_list.append(c.strip())
 storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
+render(os.path.join(templates_dir, "registry", registry_config_file_ha),
+    registry_conf,
+    storage_provider_info=storage_provider_info,
+    public_url=public_url,
+    ui_url=ui_url,
+    redis_url=redis_url)
+
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
     storage_provider_info=storage_provider_info,
@@ -463,7 +479,13 @@ render(os.path.join(templates_dir, "log", "logrotate.conf"),
         log_rotate_count=log_rotate_count,
 		log_rotate_size=log_rotate_size)
 
+render(os.path.join(templates_dir, "registryctl", "env"),
+        registryctl_conf_env,
+        jobservice_secret=jobservice_secret,
+        ui_secret=ui_secret)
+
 shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)
+shutil.copyfile(os.path.join(templates_dir, "registryctl", "config.yml"), registryctl_conf_yml)
 print("Generated configuration file: %s" % ui_conf)
 
 if auth_mode == "uaa_auth":
@@ -525,7 +547,7 @@ def openssl_installed():
 
 if customize_crt == 'on' and openssl_installed():
     shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
-    empty_subj = "/C=/ST=/L=/O=/CN=/"
+    empty_subj = "/"
     private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
     root_crt = os.path.join(config_dir, "registry", "root.crt")
     create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)

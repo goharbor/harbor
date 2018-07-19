@@ -1,0 +1,40 @@
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <h2 class="custom-h2">{{'GROUP.GROUP' | translate}}</h2>
+    <div class="action-panel-pos rightPos">
+      <hbr-filter [withDivider]="true" class="filter-pos" filterPlaceholder='group name' (filterEvt)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
+      <span class="refresh-btn">
+        <clr-icon shape="refresh" [hidden]="loading" ng-disabled="loading" (click)="refresh()"></clr-icon>
+        <span class="spinner spinner-inline" [hidden]="loading === false"></span>
+      </span>
+    </div>
+    <div>
+      <clr-datagrid [(clrDgSelected)]="selectedGroups" [clrDgLoading]="loading">
+        <clr-dg-action-bar >
+            <button type="button" class="btn btn-sm btn-secondary" (click)="addGroup()" [disabled]="!canAddGroup">
+              <clr-icon shape="plus" size="15"></clr-icon>&nbsp;{{'GROUP.ADD' | translate}}</button>
+              <button type="button" class="btn btn-sm btn-secondary" (click)="editGroup()" [disabled]="!canEditGroup">
+                  <clr-icon shape="pencil" size="15"></clr-icon>&nbsp;{{'GROUP.EDIT' | translate}}</button>
+                  <button type="button" class="btn btn-sm btn-secondary" (click)="openDeleteConfirmationDialog()" [disabled]="!canAddGroup">
+                      <clr-icon shape="times" size="15"></clr-icon>&nbsp;{{'GROUP.DELETE' | translate}}</button>
+        </clr-dg-action-bar>
+
+        <clr-dg-column>{{'GROUP.NAME' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'GROUP.TYPE' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'GROUP.DN' | translate}}</clr-dg-column>
+
+        <clr-dg-row *clrDgItems="let group of groups" [clrDgItem]="group">
+          <clr-dg-cell>{{group.group_name}}</clr-dg-cell>
+          <clr-dg-cell>{{groupToSring(group.group_type) | translate}}</clr-dg-cell>
+          <clr-dg-cell>{{group.ldap_group_dn}}</clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>
+          <clr-dg-pagination #pagination [clrDgPageSize]="15">
+              {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'USER.OF' | translate }} {{pagination.totalItems}} {{'GROUP.GROUPS' | translate}}
+          </clr-dg-pagination>
+        </clr-dg-footer>
+      </clr-datagrid>
+    </div>
+    <hbr-add-group-modal (dataChange)="loadData()"></hbr-add-group-modal>
+  </div>
+</div>

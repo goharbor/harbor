@@ -26,13 +26,14 @@ import { ListProjectComponent } from './list-project/list-project.component';
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
 import { MemberComponent } from './member/member.component';
 import { AddMemberComponent } from './member/add-member/add-member.component';
+import { AddGroupComponent } from './member/add-group/add-group.component';
 
 import { ProjectService } from './project.service';
 import { MemberService } from './member/member.service';
 import { ProjectRoutingResolver } from './project-routing-resolver.service';
 
 import { TargetExistsValidatorDirective } from '../shared/target-exists-directive';
-import {ProjectLabelComponent} from "../project/project-label/project-label.component";
+import { ProjectLabelComponent } from "../project/project-label/project-label.component";
 
 @NgModule({
   imports: [
@@ -50,7 +51,8 @@ import {ProjectLabelComponent} from "../project/project-label/project-label.comp
     MemberComponent,
     AddMemberComponent,
     TargetExistsValidatorDirective,
-    ProjectLabelComponent
+    ProjectLabelComponent,
+    AddGroupComponent
   ],
   exports: [ProjectComponent, ListProjectComponent],
   providers: [ProjectRoutingResolver, ProjectService, MemberService]

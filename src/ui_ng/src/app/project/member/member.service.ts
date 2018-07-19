@@ -19,24 +19,48 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 
-import { Member } from './member';
 import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
+import { User } from '../../user/user';
+import { Member } from './member';
+
 
 @Injectable()
 export class MemberService {
 
   constructor(private http: Http) {}
 
-  listMembers(projectId: number, username: string): Observable<Member[]> {
+  listMembers(projectId: number, entity_name: string): Observable<Member[]> {
     return this.http
-               .get(`/api/projects/${projectId}/members?entityname=${username}`, HTTP_GET_OPTIONS)
+               .get(`/api/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS)
                .map(response => response.json() as Member[])
                .catch(error => Observable.throw(error));
   }
 
-  addMember(projectId: number, username: string, roleId: number): Observable<any> {
+  addUserMember(projectId: number, user: User, roleId: number): Observable<any> {
+    let member_user = {};
+    if (user.user_id) {
+      member_user = {user_id: user.user_id};
+    } else if (user.username) {
+      member_user = {username: user.username};
+    } else {
+      return;
+    }
+    return this.http.post(
+      `/api/projects/${projectId}/members`,
+      {
+        role_id: roleId,
+        member_user: member_user
+      },
+      HTTP_JSON_OPTIONS)
+      .map(response => response.status)
+      .catch(error => Observable.throw(error));
+  }
+
+  addGroupMember(projectId: number, group: any, roleId: number): Observable<any> {
     return this.http
-               .post(`/api/projects/${projectId}/members`, { role_id: roleId, member_user: {username: username} }, HTTP_JSON_OPTIONS)
+               .post(`/api/projects/${projectId}/members`,
+               { role_id: roleId, member_group: group},
+               HTTP_JSON_OPTIONS)
                .map(response => response.status)
                .catch(error => Observable.throw(error));
   }
@@ -48,9 +72,9 @@ export class MemberService {
                .catch(error => Promise.reject(error));
   }
 
-  deleteMember(projectId: number, userId: number): Promise<any> {
+  deleteMember(projectId: number, memberId: number): Promise<any> {
     return this.http
-               .delete(`/api/projects/${projectId}/members/${userId}`).toPromise()
+               .delete(`/api/projects/${projectId}/members/${memberId}`).toPromise()
                .then(response => response.status)
                .catch(error => Promise.reject(error));
   }

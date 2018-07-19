@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 
 	"github.com/vmware/harbor/src/common/utils"
 	"github.com/vmware/harbor/src/common/utils/log"
@@ -91,7 +92,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-	if err := dao.InitDatabase(database, true); err != nil {
+	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 	if config.WithClair() {
@@ -147,9 +148,22 @@ func main() {
 	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json", "multipart/form-data", "application/octet-stream"))
 
 	initRouters()
-	if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
-		log.Error(err)
+
+	syncRegistry := os.Getenv("SYNC_REGISTRY")
+	sync, err := strconv.ParseBool(syncRegistry)
+	if err != nil {
+		log.Errorf("Failed to parse SYNC_REGISTRY: %v", err)
+		//if err set it default to false
+		sync = false
 	}
+	if sync {
+		if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
+			log.Error(err)
+		}
+	} else {
+		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
+	}
+
 	log.Info("Init proxy")
 	proxy.Init()
 	//go proxy.StartProxy()

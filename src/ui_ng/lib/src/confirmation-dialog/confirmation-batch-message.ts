@@ -4,6 +4,7 @@
  */
 
 export class BatchInfo {
+    id?: number;
     name: string;
     status: string;
     loading: boolean;
@@ -17,11 +18,17 @@ export class BatchInfo {
     }
 }
 
-export function  BathInfoChanges(list: BatchInfo, status: string, loading = false, errStatus = false, errorInfo = '') {
-        list.status = status;
-        list.loading = loading;
-        list.errorState = errStatus;
-        list.errorInfo = errorInfo;
-        return list;
+export function  BathInfoChanges(batchInfo: BatchInfo, status: string, loading = false, errStatus = false, errorInfo = '') {
+        batchInfo.status = status;
+        batchInfo.loading = loading;
+        batchInfo.errorState = errStatus;
+        batchInfo.errorInfo = errorInfo;
+        return batchInfo;
+}
+
+export enum BatchOperations {
+    Idle,
+    Delete,
+    ChangeRole
 }
 

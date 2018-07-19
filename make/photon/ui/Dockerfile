@@ -11,8 +11,6 @@ HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/ping || exit 1
 COPY ./make/dev/ui/harbor_ui ./src/favicon.ico ./make/photon/ui/start.sh ./UIVERSION /harbor/
 COPY ./src/ui/views /harbor/views
 COPY ./src/ui/static /harbor/static
-#There is a race condition that both ui and adminserver may initialize schema
-COPY ./make/migrations /harbor/migrations
 
 RUN chmod u+x /harbor/start.sh /harbor/harbor_ui
 WORKDIR /harbor/

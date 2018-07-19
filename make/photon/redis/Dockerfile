@@ -1,12 +1,10 @@
 FROM vmware/photon:1.0
 
 RUN tdnf distro-sync -y \
-    && tdnf install -y redis sudo \
-    && mkdir /data \
-    && chown redis:redis /data
+    && tdnf install -y redis sudo 
 
-VOLUME /data
-WORKDIR /data
+VOLUME /var/lib/redis
+WORKDIR /var/lib/redis
 COPY docker-entrypoint.sh /usr/bin/
 COPY redis.conf /etc/redis.conf
 RUN chmod +x /usr/bin/docker-entrypoint.sh \

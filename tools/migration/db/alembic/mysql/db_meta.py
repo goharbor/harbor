@@ -265,7 +265,7 @@ class HarborLabel(Base):
 class HarborResourceLabel(Base):
     __tablename__ = 'harbor_resource_label'
  
-    id = sa.Column(sa.Integer, nullable=False, primary_key=True)
+    id = sa.Column(sa.Integer, primary_key=True)
     label_id = sa.Column(sa.Integer, nullable=False)
     resource_id =  sa.Column(sa.Integer)
     resource_name = sa.Column(sa.String(256))

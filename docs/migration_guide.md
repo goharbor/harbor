@@ -39,7 +39,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 
 5. Back up database/harbor.cfg to a directory such as `/path/to/backup`. You need to create the directory if it does not exist.  Also, note that the username and password to access the db are provided via environment variable "DB_USR" and "DB_PWD". 
 
-    **NOTE:** Upgrade from harbor 1.2 or older to harbor 1.3 must use `vmware/migratorharbor-db-migrator:1.2`. Because DB engine replaced by MariaDB in harbor 1.3
+    **NOTE:** Upgrade from harbor 1.2 or older to harbor 1.3 must use `vmware/harbor-db-migrator:1.2`. Because DB engine replaced by MariaDB in harbor 1.3
 
     ```
     docker run -it --rm -e DB_USR=root -e DB_PWD={db_pwd} -v ${harbor_db_path}:/var/lib/mysql -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg -v ${backup_path}:/harbor-migration/backup vmware/harbor-migrator:[tag] backup

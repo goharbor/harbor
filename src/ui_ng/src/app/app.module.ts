@@ -48,7 +48,9 @@ export function getCurrentLanguage(translateService: TranslateService) {
         BaseModule,
         AccountModule,
         HarborRoutingModule,
-        ConfigurationModule,
+        ConfigurationModule
+    ],
+    exports: [
     ],
     providers: [
       AppConfigService,

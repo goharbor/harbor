@@ -126,11 +126,12 @@ There may be a bit of delay during replication according to the situation of the
 Replication can be configured by creating a rule. Click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different image filters and trigger modes according to the different requirements. If there is no endpoint available in the list, you need to create one. Click `SAVE` to create a replication rule for the selected project. If `Replicate existing images immediately` is chosen, the existing images under the project will be replicated to the remote registry immediately.  
 
 #### Image filter
-Two image filters are supported:
+Three image filters are supported:
 * **Repository**: Filter images according to the repository part of image name.
 * **Tag**: Filter images according to the tag part of image name.
+* **Label**: Filter images according to the [labels](#managing-labels). **Notes**: If the labels referenced by a rule are deleted, the rule's status will be set to `Disabled`. You need to edit and update it according to the tips.
 
-Two terms are supported in filter pattern:
+Two terms are supported in the pattern used by repository filter and tag filter:
 * **\***: Matches any sequence of non-separator characters `/`.
 * **?**: Matches any single non-separator character `/`.
 

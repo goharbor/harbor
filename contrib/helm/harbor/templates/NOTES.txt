@@ -1,26 +1,3 @@
-
 Please wait for several minutes for Harbor deployment to complete.
-Then follow the steps below to use Harbor.
-
-1. Add the Harbor CA certificate to Docker by executing the following command:
-
-  sudo mkdir -p /etc/docker/certs.d/{{ .Values.externalDomain }}
-  kubectl get secret \
-    --namespace {{ .Release.Namespace }} {{ template "harbor.fullname" . }}-ingress \
-    -o jsonpath="{.data.ca\.crt}" | base64 --decode | \
-    sudo tee /etc/docker/certs.d/{{ .Values.externalDomain }}/ca.crt
-
-2. Get Harbor admin password by executing the following command:
-
-  kubectl get secret --namespace {{ .Release.Namespace }} {{ template "harbor.fullname" . }}-adminserver -o jsonpath="{.data.HARBOR_ADMIN_PASSWORD}" | base64 --decode; echo
-
-3. Add DNS resolution entry for Harbor FQDN {{ .Values.externalDomain }} to K8s Ingress Controller IP on DNS Server or in file /etc/hosts.
-{{- if .Values.notary.enabled }}
-   Add DNS resolution entry for Notary FQDN {{ template "harbor.notaryFQDN" . }} to K8s Ingress Controller IP on DNS Server or in file /etc/hosts.
-{{- end }}
-
-4. Access Harbor UI via https://{{ .Values.externalDomain }}
-
-5. Login Harbor with Docker CLI:
-
-  docker login {{ .Values.externalDomain }}
+Then you should be able to visit the UI portal at {{ template "harbor.externalURL" . }}. 
+For more details, please visit https://github.com/vmware/harbor.

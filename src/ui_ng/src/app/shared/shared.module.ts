@@ -14,6 +14,7 @@
 import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CookieService } from "ngx-cookie";
 import {
   IServiceConfig,
@@ -65,6 +66,8 @@ const uiLibConfig: IServiceConfig = {
     CoreModule,
     TranslateModule,
     RouterModule,
+    FormsModule,
+    ReactiveFormsModule,
     HarborLibraryModule.forRoot({
       config: { provide: SERVICE_CONFIG, useValue: uiLibConfig },
       errorHandler: { provide: ErrorHandler, useClass: MessageHandlerService }
@@ -103,7 +106,9 @@ const uiLibConfig: IServiceConfig = {
     ListProjectROComponent,
     ListRepositoryROComponent,
     GaugeComponent,
-    DateValidatorDirective
+    DateValidatorDirective,
+    FormsModule,
+    ReactiveFormsModule
   ],
   providers: [
     SessionService,

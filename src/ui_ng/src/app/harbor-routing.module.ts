@@ -27,6 +27,7 @@ import { ConfigurationComponent } from './config/config.component';
 import { UserComponent } from './user/user.component';
 import { SignInComponent } from './account/sign-in/sign-in.component';
 import { ResetPasswordComponent } from './account/password-setting/reset-password/reset-password.component';
+import { GroupComponent } from './group/group.component';
 
 import { TotalReplicationPageComponent } from './replication/total-replication/total-replication-page.component';
 import { DestinationPageComponent } from './replication/destination/destination-page.component';
@@ -72,6 +73,11 @@ const harborRoutes: Routes = [
       {
         path: 'users',
         component: UserComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
+        path: 'groups',
+        component: GroupComponent,
         canActivate: [SystemAdminGuard]
       },
       {

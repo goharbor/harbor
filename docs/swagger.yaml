@@ -2325,14 +2325,18 @@ paths:
       summary: Search available ldap groups.
       description: >
         This endpoint searches the available ldap groups based on related
-        configuration parameters. Support searched by input ladp configuration,
-        load configuration from the system and specific filter.
+        configuration parameters. support to search by groupname or groupdn.
       parameters:
         - name: groupname
           in: query
           type: string
           required: false
           description: Ldap group name
+        - name: groupdn
+          in: query
+          type: string
+          required: false
+          description: The LDAP group DN
       tags:
         - Products
       responses:
@@ -2342,6 +2346,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/UserGroup'
+        "400":
+          description: The Ldap group DN is invalid.
+        '404':
+          description: No ldap group found.
         '500':
           description: Unexpected internal errors.
   /ldap/users/search:
@@ -2372,6 +2380,7 @@ paths:
           description: Only admin has this authority.
         '500':
           description: Unexpected internal errors.
+
   /ldap/users/import:
     post:
       summary: Import selected available ldap users.
@@ -2720,25 +2729,24 @@ definitions:
     type: object
     properties:
       public:
-        type: integer
-        format: int
-        description: The public status of the project.
+        type: string
+        description: The public status of the project. The valid values are "true", "false".
       enable_content_trust:
-        type: boolean
+        type: string
         description: >-
           Whether content trust is enabled or not. If it is enabled, user cann't
-          pull unsigned images from this project.
+          pull unsigned images from this project. The valid values are "true", "false".
       prevent_vulnerable_images_from_running:
-        type: boolean
-        description: Whether prevent the vulnerable images from running.
+        type: string
+        description: Whether prevent the vulnerable images from running. The valid values are "true", "false".
       prevent_vulnerable_images_from_running_severity:
         type: string
         description: >-
           If the vulnerability is high than severity defined here, the images
-          cann't be pulled.
+          cann't be pulled. The valid values are "negligible", "low", "medium", "high", "critical".
       automatically_scan_images_on_push:
-        type: boolean
-        description: Whether scan images automatically when pushing.
+        type: string
+        description: Whether scan images automatically when pushing. The valid values are "true", "false".
   Manifest:
     type: object
     properties:
@@ -2989,9 +2997,7 @@ definitions:
           The replication policy filter kind. The valid values are project,
           repository and tag.
       value:
-        type: 
-          - string
-          - integer
+        type: string
         description: The value of replication policy filter. When creating repository and tag filter, filling it with the pattern as string. When creating label filter, filling it with label ID as integer.
       pattern:
         type: string
@@ -3497,6 +3503,9 @@ definitions:
       ldap_group_search_scope:
         type: integer
         description: The scope to search ldap. '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
+      ldap_group_admin_dn:
+        type: string
+        description: Specify the ldap group which have the same privilege with Harbor admin.
       project_creation_restriction:
         type: string
         description: >-
@@ -3653,6 +3662,7 @@ definitions:
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).
+
   Resource:
     type: object
     properties:
