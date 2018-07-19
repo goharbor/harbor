@@ -14,7 +14,6 @@ services:
     container_name: chartmuseum
     image: vmware/chartmuseum-photon:__chartmuseum_version__
     restart: always
-    cpu_quota: 150000
     networks:
       - harbor-chartmuseum
     depends_on:

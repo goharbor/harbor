@@ -3,6 +3,7 @@ package chartserver
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -73,24 +74,40 @@ func director(target *url.URL, cred *Credential, req *http.Request) {
 
 //Modify the http response
 func modifyResponse(res *http.Response) error {
-	//Detect the 401 code, if it is,
-	//overwrite it to 500.
-	//We also re-write the error content
-	if res.StatusCode == http.StatusUnauthorized {
-		errorObj := make(map[string]string)
-		errorObj["error"] = "operation request from unauthentic source is rejected"
-		content, err := json.Marshal(errorObj)
-		if err != nil {
-			return err
-		}
-
-		size := len(content)
-		body := ioutil.NopCloser(bytes.NewReader(content))
-		res.Body = body
-		res.ContentLength = int64(size)
-		res.Header.Set(contentLengthHeader, strconv.Itoa(size))
-		res.StatusCode = http.StatusInternalServerError
+	//Accept cases
+	//Success or redirect
+	if res.StatusCode >= http.StatusOK && res.StatusCode <= http.StatusTemporaryRedirect {
+		return nil
 	}
+
+	//Detect the 401 code, if it is,overwrite it to 500.
+	//We also re-write the error content to structural error object
+	errorObj := make(map[string]string)
+	if res.StatusCode == http.StatusUnauthorized {
+		errorObj["error"] = "operation request from unauthorized source is rejected"
+		res.StatusCode = http.StatusInternalServerError
+	} else {
+		//Extract the error and wrap it into the error object
+		data, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			errorObj["error"] = fmt.Sprintf("%s: %s", res.Status, err.Error())
+		} else {
+			if err := json.Unmarshal(data, &errorObj); err != nil {
+				errorObj["error"] = string(data)
+			}
+		}
+	}
+
+	content, err := json.Marshal(errorObj)
+	if err != nil {
+		return err
+	}
+
+	size := len(content)
+	body := ioutil.NopCloser(bytes.NewReader(content))
+	res.Body = body
+	res.ContentLength = int64(size)
+	res.Header.Set(contentLengthHeader, strconv.Itoa(size))
 
 	return nil
 }

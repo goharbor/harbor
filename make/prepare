@@ -333,7 +333,7 @@ token_service_url = "http://ui:8080/service/token"
 jobservice_url = "http://jobservice:8080"
 clair_url = "http://clair:6060"
 notary_url = "http://notary-server:4443"
-chart_service_url = "http://chartmuseum:9999"
+chart_repository_url = "http://chartmuseum:9999"
 
 if len(admiral_url) != 0  and admiral_url != "NA":
 #VIC overwrites the data volume path, which by default should be same as the value of secretkey_path
@@ -421,16 +421,24 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         notary_url=notary_url,
         reload_key=reload_key,
         skip_reload_env_pattern=skip_reload_env_pattern,
-        chart_service_url=chart_service_url
-        registry_controller_url = registry_controller_url
+        chart_repository_url=chart_repository_url,
+        registry_controller_url = registry_controller_url,
+        with_chartmuseum=args.chart_mode
 	)
+
+# set cache for chart repo server
+# default set 'memory' mode, if redis is configured then set to 'redis'
+chart_cache_driver = "memory"
+if len(redis_url) > 0:
+    chart_cache_driver = "redis"
 
 render(os.path.join(templates_dir, "ui", "env"), 
         ui_conf_env, 
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret,
         redis_url = redis_url,
-        adminserver_url = adminserver_url
+        adminserver_url = adminserver_url,
+        chart_cache_driver = chart_cache_driver
         )
 
 registry_config_file_ha = "config_ha.yml"
@@ -651,12 +659,12 @@ if args.ha_mode:
 # config chart repository
 if args.chart_mode:
     chartm_temp_dir = os.path.join(templates_dir, "chartserver")
-    chrtm_config_dir = os.path.join(config_dir, "chartserver")
+    chartm_config_dir = os.path.join(config_dir, "chartserver")
     chartm_env = os.path.join(config_dir, "chartserver", "env")
 
-    if not os.path.isdir(chrtm_config_dir):
-        print ("Create config folder: %s" % chrtm_config_dir)
-        os.makedirs(chrtm_config_dir)
+    if not os.path.isdir(chartm_config_dir):
+        print ("Create config folder: %s" % chartm_config_dir)
+        os.makedirs(chartm_config_dir)
 
     # process redis info
     cache_store = ""
@@ -733,7 +741,7 @@ if args.chart_mode:
 
     render(os.path.join(chartm_temp_dir, "env"),
         chartm_env,
-        cache_store=storage_driver,
+        cache_store=cache_store,
         cache_redis_addr=cache_redis_addr,
         cache_redis_password=cache_redis_password,
         cache_redis_db_index=cache_redis_db_index,

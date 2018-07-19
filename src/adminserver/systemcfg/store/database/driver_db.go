@@ -49,6 +49,7 @@ var (
 		common.LDAPVerifyCert:   true,
 		common.UAAVerifyCert:    true,
 		common.ReadOnly:         true,
+		common.WithChartMuseum:  true,
 	}
 	mapKeys = map[string]bool{
 		common.ScanAllPolicy: true,

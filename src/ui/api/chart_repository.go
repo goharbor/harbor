@@ -2,18 +2,18 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/vmware/harbor/src/chartserver"
 	hlog "github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 )
 
 const (
-	backendChartServerAddr  = "BACKEND_CHART_SERVER"
 	namespaceParam          = ":repo"
 	defaultRepo             = "library"
 	rootUploadingEndpoint   = "/api/chartrepo/charts"
@@ -28,7 +28,7 @@ const (
 )
 
 //chartController is a singleton instance
-var chartController = initializeChartController()
+var chartController *chartserver.Controller
 
 //ChartRepositoryAPI provides related API handlers for the chart repository APIs
 type ChartRepositoryAPI struct {
@@ -67,14 +67,6 @@ func (cra *ChartRepositoryAPI) Prepare() {
 
 	//Rewrite URL path
 	cra.rewriteURLPath(cra.Ctx.Request)
-}
-
-//UploadChartVersionToDefaultNS ...
-func (cra *ChartRepositoryAPI) UploadChartVersionToDefaultNS() {
-	res := make(map[string]interface{})
-	res["result"] = "done"
-	cra.Data["json"] = res
-	cra.ServeJSON()
 }
 
 //GetHealthStatus handles GET /api/chartserver/health
@@ -296,25 +288,25 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 }
 
 //Initialize the chart service controller
-func initializeChartController() *chartserver.Controller {
-	addr := strings.TrimSpace(os.Getenv(backendChartServerAddr))
-	if len(addr) == 0 {
-		hlog.Fatal("The address of chart storage server is not set")
+func initializeChartController() (*chartserver.Controller, error) {
+	addr, err := config.GetChartMuseumEndpoint()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get the endpoint URL of chart storage server: %s", err.Error())
 	}
 
 	addr = strings.TrimSuffix(addr, "/")
 	url, err := url.Parse(addr)
 	if err != nil {
-		hlog.Fatal("Chart storage server is not correctly configured")
+		return nil, errors.New("Endpoint URL of chart storage server is malformed")
 	}
 
 	controller, err := chartserver.NewController(url)
 	if err != nil {
-		hlog.Fatal("Failed to initialize chart API controller")
+		return nil, errors.New("Failed to initialize chart API controller")
 	}
 
 	hlog.Debugf("Chart storage server is set to %s", url.String())
 	hlog.Info("API controller for chart repository server is successfully initialized")
 
-	return controller
+	return controller, nil
 }

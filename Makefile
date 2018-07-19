@@ -312,7 +312,8 @@ build:
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG) -e MARIADBVERSION=$(MARIADBVERSION) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e NGINXVERSION=$(NGINXVERSION) -e NOTARYVERSION=$(NOTARYVERSION) \
 	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRDBVERSION=$(CLAIRDBVERSION) -e VERSIONTAG=$(VERSIONTAG) \
-	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION) -e MIGRATORVERSION=$(MIGRATORVERSION)
+	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION) -e MIGRATORVERSION=$(MIGRATORVERSION) \
+	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER)
 
 modify_composefile: modify_composefile_notary modify_composefile_clair modify_composefile_chartmuseum
 	@echo "preparing docker-compose file..."
@@ -444,7 +445,7 @@ start:
 	@echo "Start complete. You can visit harbor now."
 
 down:
-	@echo "Please make sure to set -e NOTARYFLAG=true/CLAIRFLAG=true if you are using Notary/CLAIR in Harbor, otherwise the Notary/CLAIR containers cannot be stop automaticlly."
+	@echo "Please make sure to set -e NOTARYFLAG=true/CLAIRFLAG=true/CHARTFLAG=true if you are using Notary/CLAIR/Chartmuseum in Harbor, otherwise the Notary/CLAIR/Chartmuseum containers cannot be stop automaticlly."
 	@while [ -z "$$CONTINUE" ]; do \
         read -r -p "Type anything but Y or y to exit. [Y/N]: " CONTINUE; \
     done ; \

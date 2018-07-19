@@ -28,7 +28,6 @@ env:
   SELF_REGISTRATION: on
   KEY_PATH: /data/secretkey
   REDIS_HOST: localhost
-  BACKEND_CHART_SERVER: http://localhost:9090
 
 before_install:
    - sudo ./tests/hostcfg.sh

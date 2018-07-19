@@ -113,6 +113,11 @@ func main() {
 		log.Error(err)
 	}
 
+	//Init API handler
+	if err := api.Init(); err != nil {
+		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
+	}
+
 	//Enable the policy scheduler here.
 	scheduler.DefaultScheduler.Start()
 

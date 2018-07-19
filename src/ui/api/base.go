@@ -20,6 +20,7 @@ import (
 	"github.com/vmware/harbor/src/common/api"
 	"github.com/vmware/harbor/src/common/security"
 	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/vmware/harbor/src/ui/config"
 	"github.com/vmware/harbor/src/ui/filter"
 	"github.com/vmware/harbor/src/ui/promgr"
 )
@@ -57,4 +58,21 @@ func (b *BaseController) Prepare() {
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
 	b.ProjectMgr = pm
+}
+
+//Init related objects/configurations for the API controllers
+func Init() error {
+	//If chart repository is not enabled then directly return
+	if !config.WithChartMuseum() {
+		return nil
+	}
+
+	chartCtl, err := initializeChartController()
+	if err != nil {
+		return err
+	}
+
+	chartController = chartCtl
+
+	return nil
 }

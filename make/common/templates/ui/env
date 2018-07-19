@@ -7,3 +7,4 @@ ADMINSERVER_URL=$adminserver_url
 UAA_CA_ROOT=/etc/ui/certificates/uaa_ca.pem
 _REDIS_URL=$redis_url
 SYNC_REGISTRY=false
+CHART_CACHE_DRIVER=$chart_cache_driver

@@ -166,6 +166,11 @@ var (
 		},
 		common.ReloadKey:        "RELOAD_KEY",
 		common.LdapGroupAdminDn: "LDAP_GROUP_ADMIN_DN",
+		common.ChartRepoURL:     "CHART_REPOSITORY_URL",
+		common.WithChartMuseum: &parser{
+			env:   "WITH_CHARTMUSEUM",
+			parse: parseStringToBool,
+		},
 	}
 
 	// configurations need read from environment variables
@@ -220,6 +225,11 @@ var (
 		common.ClairURL:                    "CLAIR_URL",
 		common.NotaryURL:                   "NOTARY_URL",
 		common.DatabaseType:                "DATABASE_TYPE",
+		common.ChartRepoURL:                "CHART_REPOSITORY_URL",
+		common.WithChartMuseum: &parser{
+			env:   "WITH_CHARTMUSEUM",
+			parse: parseStringToBool,
+		},
 	}
 )
 
