@@ -111,3 +111,87 @@ const (
 	LdapGroupAdminDn                  = "ldap_group_admin_dn"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
 )
+
+// Shared variable, not allowed to modify
+var (
+	// the keys of configurations which user can modify in PUT method and user can
+	// get in GET method
+	HarborValidKeys = []string{
+		AUTHMode,
+		SelfRegistration,
+		LDAPURL,
+		LDAPSearchDN,
+		LDAPSearchPwd,
+		LDAPBaseDN,
+		LDAPUID,
+		LDAPFilter,
+		LDAPScope,
+		LDAPTimeout,
+		LDAPVerifyCert,
+		LDAPGroupAttributeName,
+		LDAPGroupBaseDN,
+		LDAPGroupSearchFilter,
+		LDAPGroupSearchScope,
+		EmailHost,
+		EmailPort,
+		EmailUsername,
+		EmailPassword,
+		EmailFrom,
+		EmailSSL,
+		EmailIdentity,
+		EmailInsecure,
+		ProjectCreationRestriction,
+		TokenExpiration,
+		ScanAllPolicy,
+		UAAClientID,
+		UAAClientSecret,
+		UAAEndpoint,
+		UAAVerifyCert,
+		ReadOnly,
+	}
+
+	//value is default value
+	HarborStringKeysMap = map[string]string{
+		AUTHMode:                   "db_auth",
+		LDAPURL:                    "",
+		LDAPSearchDN:               "",
+		LDAPSearchPwd:              "",
+		LDAPBaseDN:                 "",
+		LDAPUID:                    "",
+		LDAPFilter:                 "",
+		LDAPGroupAttributeName:     "",
+		LDAPGroupBaseDN:            "",
+		LDAPGroupSearchFilter:      "",
+		EmailHost:                  "smtp.mydomain.com",
+		EmailUsername:              "sample_admin@mydomain.com",
+		EmailPassword:              "abc",
+		EmailFrom:                  "admin <sample_admin@mydomain.com>",
+		EmailIdentity:              "",
+		ProjectCreationRestriction: ProCrtRestrEveryone,
+		UAAClientID:                "",
+		UAAEndpoint:                "",
+	}
+
+	HarborNumKeysMap = map[string]int{
+		EmailPort:            25,
+		LDAPScope:            2,
+		LDAPTimeout:          5,
+		LDAPGroupSearchScope: 2,
+		TokenExpiration:      30,
+	}
+
+	HarborBoolKeysMap = map[string]bool{
+		EmailSSL:         false,
+		EmailInsecure:    false,
+		SelfRegistration: true,
+		LDAPVerifyCert:   true,
+		UAAVerifyCert:    true,
+		ReadOnly:         false,
+	}
+
+	HarborPasswordKeys = []string{
+		EmailPassword,
+		LDAPSearchPwd,
+		UAAClientSecret,
+	}
+)
