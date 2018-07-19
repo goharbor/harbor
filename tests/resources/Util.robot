@@ -44,6 +44,7 @@ Resource  Harbor-Pages/Administration-Users_Elements.robot
 Resource  Harbor-Pages/Configuration.robot
 Resource  Harbor-Pages/Configuration_Elements.robot
 Resource  Harbor-Pages/ToolKit.robot
+Resource  Harbor-Pages/ToolKit_Elements.robot
 Resource  Harbor-Pages/Vulnerability.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
 Resource  Docker-Util.robot
