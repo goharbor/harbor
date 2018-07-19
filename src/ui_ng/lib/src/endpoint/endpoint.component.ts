@@ -23,7 +23,7 @@ import { Subscription } from "rxjs/Subscription";
 import { Observable } from "rxjs/Observable";
 import "rxjs/add/observable/forkJoin";
 import { TranslateService } from "@ngx-translate/core";
-import { Comparator } from "clarity-angular";
+import { Comparator } from "@clr/angular";
 
 import { Endpoint } from "../service/interface";
 import { EndpointService } from "../service/endpoint.service";

@@ -1,6 +1,6 @@
-import { OpaqueToken } from '@angular/core';
+import { InjectionToken } from '@angular/core';
 
-export let SERVICE_CONFIG = new OpaqueToken("service.config");
+export let SERVICE_CONFIG = new InjectionToken("service.config");
 
 export interface IServiceConfig {
     /**

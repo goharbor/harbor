@@ -23,7 +23,7 @@ import {Observable} from "rxjs/Observable";
 import 'rxjs/add/observable/forkJoin';
 import { Subscription } from "rxjs/Subscription";
 
-import { Comparator, State } from "clarity-angular";
+import { Comparator, State } from "@clr/angular";
 import {TranslateService} from "@ngx-translate/core";
 
 import { RoleInfo, ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";

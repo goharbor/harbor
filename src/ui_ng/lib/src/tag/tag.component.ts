@@ -25,7 +25,7 @@ import {Subject} from "rxjs/Subject";
 import {Observable} from "rxjs/Observable";
 import "rxjs/add/observable/forkJoin";
 import { TranslateService } from "@ngx-translate/core";
-import { State, Comparator } from "clarity-angular";
+import { State, Comparator } from "@clr/angular";
 
 import { TagService, VulnerabilitySeverity, RequestQueryParams } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";

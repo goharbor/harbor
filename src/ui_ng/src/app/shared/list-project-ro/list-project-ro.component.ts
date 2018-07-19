@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, EventEmitter, Output, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { State } from 'clarity-angular';
+import { State } from '@clr/angular';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import { Project } from '../../project/project';

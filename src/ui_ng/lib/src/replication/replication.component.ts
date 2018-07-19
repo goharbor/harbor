@@ -20,7 +20,7 @@ import {
   OnDestroy,
   EventEmitter
 } from "@angular/core";
-import { Comparator, State } from "clarity-angular";
+import { Comparator, State } from "@clr/angular";
 import { Observable } from "rxjs/Observable";
 import { Subscription } from "rxjs/Subscription";
 import 'rxjs/add/observable/forkJoin';
