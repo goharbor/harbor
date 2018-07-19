@@ -1,4 +1,4 @@
-FROM vmware/photon:1.0
+FROM photon:1.0
 
 RUN tdnf distro-sync -y \
     && tdnf install -y cronie rsyslog logrotate shadow tar gzip sudo net-tools >> /dev/null\
