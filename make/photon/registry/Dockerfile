@@ -1,4 +1,4 @@
-FROM vmware/photon:1.0
+FROM photon:1.0
 
 MAINTAINER wangyan@vmware.com
 
