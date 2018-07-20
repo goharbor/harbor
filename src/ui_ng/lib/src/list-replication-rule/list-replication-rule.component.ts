@@ -148,8 +148,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
             });
     }
 
-    replicateRule(rules: ReplicationRule[]): void {
-        this.replicateManual.emit(rules);
+    replicateRule(rule: ReplicationRule): void {
+        this.replicateManual.emit([rule]);
     }
 
     hasDeletedLabel(rule: any) {
