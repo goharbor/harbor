@@ -15,7 +15,7 @@
       <div class="form-group form-group-override">
        <label class="form-group-label-override required">{{'REPLICATION.NAME' | translate}}</label>
        <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
-              [class.invalid]='(ruleForm.controls.name.touched && ruleForm.controls.name.invalid) || !isRuleNameValid'>
+              [class.invalid]='(ruleForm.get("name").touched && ruleForm.get("name").invalid) || !isRuleNameValid'>
         <input type="text" id="ruleName" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255" formControlName="name" #ruleName (keyup)='checkRuleName()' autocomplete="off">
         <span class="tooltip-content">{{ruleNameTooltip | translate}}</span>
        </label><span class="spinner spinner-inline spinner-pos" [hidden]="!inNameChecking"></span>
@@ -29,7 +29,7 @@
       <div class="form-group form-group-override">
        <label class="form-group-label-override required">{{'REPLICATION.SOURCE_PROJECT' | translate}}</label>
        <div formArrayName="projects">
-        <div class="projectInput inputWidth" *ngFor="let project of projects.controls; let i= index" [formGroupName]="i" (mouseleave)="leaveInput()">
+        <div class="projectInput inputWidth" *ngFor="let project of projects['controls']; let i= index" [formGroupName]="i" (mouseleave)="leaveInput()">
          <input *ngIf="!projectId" formControlName="name" type="text" class="inputWidth"  value="name" required
                 pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" (keyup)='handleValidation()' (focus)="focusClear($event)" autocomplete="off">
          <input *ngIf="projectId" formControlName="name" type="text"  class="inputWidth"  value="name" readonly>
@@ -47,7 +47,7 @@
       <div class="form-group form-group-override">
        <label class="form-group-label-override">{{'REPLICATION.SOURCE_IMAGES_FILTER' | translate}}</label>
        <div formArrayName="filters">
-        <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
+        <div class="filterSelect" *ngFor="let filter of filters['controls']; let i=index">
          <div [formGroupName]="i">
           <div class="select floatSetPar">
            <select formControlName="kind" #selectedValue (change)="filterChange($event, selectedValue.value)"  id="{{i}}" name="{{filterListData[i]?.name}}">
@@ -55,14 +55,14 @@
            </select>
           </div>
           <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
-                 [class.invalid]='(ruleForm.controls.filters.controls[i].controls.value.dirty || ruleForm.controls.filters.controls[i].controls.value.touched) && ruleForm.controls.filters.controls[i].controls.value.invalid'>
+                 [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
            <input type="text" #filterValue required size="14" formControlName="value"  [attr.disabled]="(filterListData[i]?.name=='label') ?'' : null">
            <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
           </label>
           <div class="arrowSet" [hidden]="!(filterListData[i]?.name=='label')" (click)="openLabelList(selectedValue.value, i, $event)"><clr-icon shape="angle"></clr-icon></div>
           <clr-icon shape="warning-standard" class="is-solid is-warning" size="14" style="margin-left: -15px;" [hidden]="!deletedLabelCount || !(filterListData[i]?.name=='label')"></clr-icon>
           <clr-icon shape="times-circle" class="is-solid"  (click)="deleteFilter(i)"></clr-icon>
-          <div *ngIf="!withAdmiral"><hbr-filter-label [projectId]="ruleForm.controls.projects.controls[0]?.value.project_id" [selectedLabelInfo]="filterLabelInfo" [isOpen]="filterListData[i].isOpen" (selectedLabels)="selectedLabelList($event, i)" (closePanelEvent)="filterListData[i].isOpen = false"></hbr-filter-label></div>
+          <div *ngIf="!withAdmiral"><hbr-filter-label [projectId]="projectId" [selectedLabelInfo]="filterLabelInfo" [isOpen]="filterListData[i].isOpen" (selectedLabels)="selectedLabelList($event, i)" (closePanelEvent)="filterListData[i].isOpen = false"></hbr-filter-label></div>
          </div>
         </div>
 
@@ -74,7 +74,7 @@
       <div class="form-group form-group-override">
        <label class="form-group-label-override  required">{{'DESTINATION.ENDPOINT' | translate}}</label>
        <div formArrayName="targets">
-        <div class="select endpointSelect pull-left" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
+        <div class="select endpointSelect pull-left" *ngFor="let target of targets['controls']; let i= index" [formGroupName]="i">
           <select id="ruleTarget" (change)="targetChange($event)"  formControlName="id">
            <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}-{{target.endpoint}}</option>
           </select>
