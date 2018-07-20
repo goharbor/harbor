@@ -17,7 +17,8 @@
     "dependencies": {
         "@angular/animations": "^6.0.0",
         "@angular/common": "^6.0.0",
-        "@angular/compiler": "^6.0.0",
+        "@angular/compiler": "^6.0.9",
+        "@angular/compiler-cli": "^6.0.9",
         "@angular/core": "^6.0.0",
         "@angular/forms": "^6.0.0",
         "@angular/http": "^6.0.0",
@@ -44,7 +45,7 @@
         "zone.js": "0.8.19"
     },
     "devDependencies": {
-        "@angular/cli": "^1.0.0",
+        "@angular/cli": "^6.0.8",
         "@types/core-js": "^0.9.41",
         "@types/jasmine": "~2.5.53",
         "@types/node": "~6.0.60",
@@ -60,7 +61,7 @@
         "karma-jasmine": "~1.1.0",
         "karma-mocha-reporter": "^2.2.4",
         "karma-remap-istanbul": "^0.2.1",
-        "ng-packagr": "^1.7.0",
+        "ng-packagr": "^3.0.3",
         "protractor": "4.0.9",
         "rollup": "^0.41.6",
         "rollup-plugin-commonjs": "^8.0.2",
@@ -68,7 +69,7 @@
         "rollup-plugin-uglify": "^1.0.1",
         "ts-node": "1.2.1",
         "tslint": "^4.1.1",
-        "typescript": "^2.6.2",
+        "typescript": "^2.7.2",
         "typings": "^1.5.0",
         "uglify-js": "3.3.18",
         "webdriver-manager": "10.2.5"

@@ -21,7 +21,7 @@ import {
   EventEmitter
 } from "@angular/core";
 import { Comparator, State } from "@clr/angular";
-import { Observable } from "rxjs/Observable";
+import { Observable} from "rxjs";
 import { Subscription } from "rxjs/Subscription";
 import 'rxjs/add/observable/forkJoin';
 import 'rxjs/add/observable/timer';

@@ -1,4 +1,4 @@
-import { Observable } from "rxjs/Observable";
+import { Observable} from "rxjs";
 import { Injectable, Inject } from "@angular/core";
 import { Http } from "@angular/http";
 import "rxjs/add/observable/of";

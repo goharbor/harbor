@@ -24,7 +24,7 @@ import {
     SimpleChange,
     SimpleChanges
 } from "@angular/core";
-import { Observable } from "rxjs/Observable";
+import { Observable} from "rxjs";
 import "rxjs/add/observable/forkJoin";
 import { Comparator } from "@clr/angular";
 import { TranslateService } from "@ngx-translate/core";

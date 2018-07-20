@@ -1,6 +1,6 @@
 import { TranslateLoader } from "@ngx-translate/core";
 import "rxjs/add/observable/of";
-import { Observable } from "rxjs/Observable";
+import { Observable} from "rxjs";
 
 import { IServiceConfig } from "../service.config";
 

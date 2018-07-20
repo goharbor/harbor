@@ -2,7 +2,7 @@
   <div class="items" [ngStyle]="itemsHolderStyle" #itemsHolder >
     <span *ngFor="let item of items;let i = index; trackBy:trackByFn" class='card-item' [ngStyle]="cardStyles[i]" #cardItem
           (mouseenter)='onCardEnter(i)' (mouseleave)='onCardLeave(i)'>
-      <ng-template [ngTemplateOutlet]="gridItemTmpl" [ngOutletContext]="{item: item}">
+      <ng-template [ngTemplateOutlet]="gridItemTmpl" [ngTemplateOutletContext]="{item: item}">
       </ng-template>
     </span>
     <span *ngIf="items.length === 0 && !loading" class="content-empty">

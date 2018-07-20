@@ -38,7 +38,8 @@
         "intl": "^1.2.5",
         "mutationobserver-shim": "^0.3.2",
         "ngx-cookie": "^1.0.0",
-        "rxjs": "^6.0.0",
+        "rxjs": "^6.2.2",
+        "rxjs-compat": "^6.2.2",
         "ts-helpers": "^1.1.1",
         "web-animations-js": "^2.2.1",
         "zone.js": "^0.8.4"
