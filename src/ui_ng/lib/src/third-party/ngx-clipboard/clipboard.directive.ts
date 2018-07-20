@@ -27,7 +27,7 @@ export class ClipboardDirective implements OnInit, OnDestroy {
 
     @HostListener('click', ['$event.target'])
     // tslint:disable-next-line:no-unused-variable
-    private onClick(button: ElementRef) {
+    public onClick(button: ElementRef) {
         if (!this.clipboardSrv.isSupported) {
             this.handleResult(false, undefined);
         } else if (this.targetElm && this.clipboardSrv.isTargetValid(this.targetElm)) {
