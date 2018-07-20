@@ -130,7 +130,7 @@ export class GridViewComponent implements AfterViewInit {
     );
   }
 
-  @HostListener("window:resize")
+  @HostListener("window:resize", ["$event"])
   onResize(event: any) {
     this.throttleLayout();
   }
