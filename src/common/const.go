@@ -110,6 +110,9 @@ const (
 	ReloadKey                         = "reload_key"
 	LdapGroupAdminDn                  = "ldap_group_admin_dn"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
+	WithChartMuseum                   = "with_chartmuseum"
+	ChartRepoURL                      = "chart_repository_url"
+	DefaultChartRepoURL               = "http://chartmuseum:9999"
 )
 
 // Shared variable, not allowed to modify

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -43,10 +44,10 @@ type ManipulationHandler struct {
 
 //ListCharts lists all the charts under the specified namespace
 func (mh *ManipulationHandler) ListCharts(w http.ResponseWriter, req *http.Request) {
-	rootURL := strings.TrimSuffix(mh.backendServerAddress.String(), "/")
-	fullURL := fmt.Sprintf("%s%s", rootURL, req.RequestURI)
+	url := strings.TrimPrefix(req.URL.String(), "/")
+	url = fmt.Sprintf("%s/%s", mh.backendServerAddress.String(), url)
 
-	content, err := mh.apiClient.GetContent(fullURL)
+	content, err := mh.apiClient.GetContent(url)
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -76,7 +77,7 @@ func (mh *ManipulationHandler) GetChart(w http.ResponseWriter, req *http.Request
 //This handler should return the details of the chart version,
 //maybe including metadata,dependencies and values etc.
 func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.Request) {
-	chartV, err := mh.getChartVersion(req.RequestURI)
+	chartV, err := mh.getChartVersion(req.URL.String())
 	if err != nil {
 		writeInternalError(w, err)
 		return
@@ -149,11 +150,10 @@ func (mh *ManipulationHandler) DeleteChartVersion(w http.ResponseWriter, req *ht
 }
 
 //Get the basic metadata of chart version
-func (mh *ManipulationHandler) getChartVersion(path string) (*helm_repo.ChartVersion, error) {
-	rootURL := strings.TrimSuffix(mh.backendServerAddress.String(), "/")
-	fullURL := fmt.Sprintf("%s%s", rootURL, path)
+func (mh *ManipulationHandler) getChartVersion(subPath string) (*helm_repo.ChartVersion, error) {
+	url := fmt.Sprintf("%s/%s", mh.backendServerAddress.String(), strings.TrimPrefix(subPath, "/"))
 
-	content, err := mh.apiClient.GetContent(fullURL)
+	content, err := mh.apiClient.GetContent(url)
 	if err != nil {
 		return nil, err
 	}
@@ -167,9 +167,9 @@ func (mh *ManipulationHandler) getChartVersion(path string) (*helm_repo.ChartVer
 }
 
 //Get the content bytes of the chart version
-func (mh *ManipulationHandler) getChartVersionContent(namespace string, path string) ([]byte, error) {
-	rootURL := strings.TrimSuffix(mh.backendServerAddress.String(), "/")
-	fullPath := fmt.Sprintf("%s/%s/%s", rootURL, namespace, path)
+func (mh *ManipulationHandler) getChartVersionContent(namespace string, subPath string) ([]byte, error) {
+	url := path.Join(namespace, subPath)
+	url = fmt.Sprintf("%s/%s", mh.backendServerAddress.String(), url)
 
-	return mh.apiClient.GetContent(fullPath)
+	return mh.apiClient.GetContent(url)
 }

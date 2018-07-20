@@ -113,6 +113,11 @@ func main() {
 		log.Error(err)
 	}
 
+	//Init API handler
+	if err := api.Init(); err != nil {
+		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
+	}
+
 	//Enable the policy scheduler here.
 	scheduler.DefaultScheduler.Start()
 
@@ -145,7 +150,7 @@ func main() {
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
-	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json"))
+	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json", "multipart/form-data", "application/octet-stream"))
 
 	initRouters()
 

@@ -18,6 +18,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -539,4 +540,32 @@ func ReadOnly() bool {
 		return false
 	}
 	return utils.SafeCastBool(cfg[common.ReadOnly])
+}
+
+// WithChartMuseum returns a bool to indicate if chartmuseum is deployed with Harbor.
+func WithChartMuseum() bool {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get 'with_chartmuseum' configuration with error: %s; return false as default", err.Error())
+		return false
+	}
+
+	return utils.SafeCastBool(cfg[common.WithChartMuseum])
+}
+
+// GetChartMuseumEndpoint returns the endpoint of the chartmuseum service
+// otherwise an non nil error is returned
+func GetChartMuseumEndpoint() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		log.Errorf("Failed to get 'chart_repository_url' configuration with error: %s; return false as default", err.Error())
+		return "", err
+	}
+
+	chartEndpoint := strings.TrimSpace(utils.SafeCastString(cfg[common.ChartRepoURL]))
+	if len(chartEndpoint) == 0 {
+		return "", errors.New("empty chartmuseum endpoint")
+	}
+
+	return chartEndpoint, nil
 }

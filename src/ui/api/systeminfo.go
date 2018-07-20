@@ -100,6 +100,7 @@ type GeneralInfo struct {
 	ClairVulnStatus             *models.ClairVulnerabilityStatus `json:"clair_vulnerability_status,omitempty"`
 	RegistryStorageProviderName string                           `json:"registry_storage_provider_name"`
 	ReadOnly                    bool                             `json:"read_only"`
+	WithChartMuseum             bool                             `json:"with_chartmuseum"`
 }
 
 // validate for validating user if an admin.
@@ -179,6 +180,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		HarborVersion:               harborVersion,
 		RegistryStorageProviderName: utils.SafeCastString(cfg[common.RegistryStorageProviderName]),
 		ReadOnly:                    config.ReadOnly(),
+		WithChartMuseum:             config.WithChartMuseum(),
 	}
 	if info.WithClair {
 		info.ClairVulnStatus = getClairVulnStatus()

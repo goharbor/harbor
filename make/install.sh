@@ -60,6 +60,9 @@ with_notary=$false
 with_clair=$false
 # HA mode is not enabled by default
 harbor_ha=$false
+# chartmuseum is not enabled by default
+with_chartmuseum=$false
+
 while [ $# -gt 0 ]; do
         case $1 in
             --help)
@@ -71,6 +74,8 @@ while [ $# -gt 0 ]; do
             with_clair=true;;
             --ha)
             harbor_ha=true;;
+			--with-chartmuseum)
+			with_chartmuseum=true;;
             *)
             note "$usage"
             exit 1;;
@@ -173,6 +178,11 @@ if [ $harbor_ha ]
 then
     prepare_para="${prepare_para} --ha"
 fi
+if [ $with_chartmuseum ]
+then
+    prepare_para="${prepare_para} --with-chartmuseum"
+fi
+
 ./prepare $prepare_para
 echo ""
 
@@ -185,6 +195,10 @@ fi
 if [ $with_clair ]
 then
 	docker_compose_list="${docker_compose_list} -f docker-compose.clair.yml"
+fi
+if [ $with_chartmuseum ]
+then
+    docker_compose_list="${docker_compose_list} -f docker-compose.chartmuseum.yml"
 fi
 
 if [ -n "$(docker-compose $docker_compose_list ps -q)"  ]

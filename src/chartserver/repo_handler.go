@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
+	"path"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -14,6 +14,8 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/vmware/harbor/src/ui/filter"
 	helm_repo "k8s.io/helm/pkg/repo"
+
+	hlog "github.com/vmware/harbor/src/common/utils/log"
 )
 
 const (
@@ -209,8 +211,9 @@ func (rh *RepositoryHandler) DownloadChartObject(w http.ResponseWriter, req *htt
 //Get the index yaml file under the specified namespace from the backend server
 func (rh *RepositoryHandler) getIndexYamlWithNS(namespace string) (*helm_repo.IndexFile, error) {
 	//Join url path
-	rootURL := strings.TrimSuffix(rh.backendServerAddress.String(), "/")
-	url := fmt.Sprintf("%s/%s/index.yaml", rootURL, namespace)
+	url := path.Join(namespace, "index.yaml")
+	url = fmt.Sprintf("%s/%s", rh.backendServerAddress.String(), url)
+	hlog.Debugf("Getting index.yaml from '%s'", url)
 
 	content, err := rh.apiClient.GetContent(url)
 	if err != nil {
@@ -238,7 +241,7 @@ func (rh *RepositoryHandler) mergeIndexFile(namespace string,
 			version.Name = nameWithNS
 			//Currently there is only one url
 			for index, url := range version.URLs {
-				version.URLs[index] = fmt.Sprintf("%s/%s", namespace, url)
+				version.URLs[index] = path.Join(namespace, url)
 			}
 		}
 

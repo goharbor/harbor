@@ -179,7 +179,7 @@ func TestResponseRewrite(t *testing.T) {
 	if msg, ok := errObj["error"]; !ok {
 		t.Fatal("Expect an error message from server but got nothing")
 	} else {
-		if !strings.Contains(msg.(string), "operation request from unauthentic source is rejected") {
+		if !strings.Contains(msg.(string), "operation request from unauthorized source is rejected") {
 			t.Fatal("Missing the required error message")
 		}
 	}

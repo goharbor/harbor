@@ -69,6 +69,16 @@ def validate(conf, args):
 
     if project_creation != "everyone" and project_creation != "adminonly":
         raise Exception("Error invalid value for project_creation_restriction: %s" % project_creation)
+    
+    valid_storage_drivers = ["filesystem", "azure", "gcs", "s3", "swift", "oss"]        
+    storage_provider_name = rcp.get("configuration", "registry_storage_provider_name").strip()
+    if storage_provider_name not in valid_storage_drivers:
+        raise Exception("Error: storage driver %s is not supported, only the following ones are supported: %s" % (storage_provider_name, ",".join(valid_storage_drivers)))
+        
+    storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
+    if storage_provider_name != "filesystem":
+        if storage_provider_config == "":
+            raise Exception("Error: no provider configurations are provided for provider %s" % storage_provider_name)
 
 #To meet security requirement
 #By default it will change file mode to 0600, and make the owner of the file to 10000:10000
@@ -188,6 +198,7 @@ parser.add_argument('--with-notary', dest='notary_mode', default=False, action='
 parser.add_argument('--with-clair', dest='clair_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with clair")
 parser.add_argument('--ha', dest='ha_mode', default=False, action='store_true', help="the Harbor instance is to be deployed in HA mode")
 parser.add_argument('--yes', dest='yes', default=False, action='store_true', help="Answer yes to all questions")
+parser.add_argument('--with-chartmuseum', dest='chart_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with chart repository supporting")
 args = parser.parse_args()
 
 delfile(config_dir)
@@ -322,6 +333,7 @@ token_service_url = "http://ui:8080/service/token"
 jobservice_url = "http://jobservice:8080"
 clair_url = "http://clair:6060"
 notary_url = "http://notary-server:4443"
+chart_repository_url = "http://chartmuseum:9999"
 
 if len(admiral_url) != 0  and admiral_url != "NA":
 #VIC overwrites the data volume path, which by default should be same as the value of secretkey_path
@@ -409,15 +421,24 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         notary_url=notary_url,
         reload_key=reload_key,
         skip_reload_env_pattern=skip_reload_env_pattern,
-        registry_controller_url = registry_controller_url
+        chart_repository_url=chart_repository_url,
+        registry_controller_url = registry_controller_url,
+        with_chartmuseum=args.chart_mode
 	)
+
+# set cache for chart repo server
+# default set 'memory' mode, if redis is configured then set to 'redis'
+chart_cache_driver = "memory"
+if len(redis_url) > 0:
+    chart_cache_driver = "redis"
 
 render(os.path.join(templates_dir, "ui", "env"), 
         ui_conf_env, 
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret,
         redis_url = redis_url,
-        adminserver_url = adminserver_url
+        adminserver_url = adminserver_url,
+        chart_cache_driver = chart_cache_driver
         )
 
 registry_config_file_ha = "config_ha.yml"
@@ -635,5 +656,99 @@ if args.clair_mode:
 if args.ha_mode:
     prepare_ha(rcp, args)
 
+# config chart repository
+if args.chart_mode:
+    chartm_temp_dir = os.path.join(templates_dir, "chartserver")
+    chartm_config_dir = os.path.join(config_dir, "chartserver")
+    chartm_env = os.path.join(config_dir, "chartserver", "env")
+
+    if not os.path.isdir(chartm_config_dir):
+        print ("Create config folder: %s" % chartm_config_dir)
+        os.makedirs(chartm_config_dir)
+
+    # process redis info
+    cache_store = ""
+    cache_redis_password = ""
+    cache_redis_addr = ""
+    cache_redis_db_index = 0
+    if redis_url and redis_url.strip():
+        cache_store = "redis"
+        segments = redis_url.split(',', 3)
+        for index, r_cfg in enumerate(segments):
+            # the addr:port
+            if index == 0:
+                cache_redis_addr = r_cfg
+            # the password if existing
+            elif index == 2:
+                cache_redis_password = r_cfg
+            # the database index if existing
+            elif index == 3:
+                cache_redis_db_index = r_cfg
+    
+    # process storage info
+    #default using local file system
+    storage_driver = "local"
+    # storage provider configurations
+    # please be aware that, we do not check the validations of the values for the specified keys
+    # convert the configs to config map
+    storage_provider_configs = storage_provider_config.split(",")
+    storgae_provider_confg_map = {}
+    storage_provider_config_options = []
+
+    for k_v in storage_provider_configs:
+        if len(k_v) > 0:
+            kvs = k_v.split(": ") # add space suffix to avoid existing ":" in the value
+            if len(kvs) == 2:
+                #key must not be empty
+                if kvs[0].strip() != "":
+                    storgae_provider_confg_map[kvs[0].strip()] = kvs[1].strip()
+
+    if storage_provider_name == "s3":
+        # aws s3 storage
+        storage_driver = "amazon"
+        storage_provider_config_options.append("STORAGE_AMAZON_BUCKET=%s" % storgae_provider_confg_map.get("bucket", ""))
+        storage_provider_config_options.append("STORAGE_AMAZON_PREFIX=%s" % storgae_provider_confg_map.get("rootdirectory", ""))
+        storage_provider_config_options.append("STORAGE_AMAZON_REGION=%s" % storgae_provider_confg_map.get("region", ""))
+        storage_provider_config_options.append("STORAGE_AMAZON_ENDPOINT=%s" % storgae_provider_confg_map.get("regionendpoint", ""))
+    elif storage_provider_name == "gcs":
+        # google cloud storage
+        storage_driver = "google"
+        storage_provider_config_options.append("STORAGE_GOOGLE_BUCKET=%s" % storgae_provider_confg_map.get("bucket", ""))
+        storage_provider_config_options.append("STORAGE_GOOGLE_PREFIX=%s" % storgae_provider_confg_map.get("rootdirectory", ""))
+    elif storage_provider_name == "azure":
+        # azure storage
+        storage_driver = "microsoft"
+        storage_provider_config_options.append("STORAGE_MICROSOFT_CONTAINER=%s" % storgae_provider_confg_map.get("container", ""))
+        storage_provider_config_options.append("STORAGE_MICROSOFT_PREFIX=/azure/harbor/charts")
+    elif storage_provider_name == "swift":
+        # open stack swift
+        storage_driver = "openstack"
+        storage_provider_config_options.append("STORAGE_OPENSTACK_CONTAINER=%s" % storgae_provider_confg_map.get("container", ""))
+        storage_provider_config_options.append("STORAGE_OPENSTACK_PREFIX=%s" % storgae_provider_confg_map.get("rootdirectory", ""))
+        storage_provider_config_options.append("STORAGE_OPENSTACK_REGION=%s" % storgae_provider_confg_map.get("region", ""))
+    elif storage_provider_name == "oss":
+        # aliyun OSS
+        storage_driver = "alibaba"
+        storage_provider_config_options.append("STORAGE_ALIBABA_BUCKET=%s" % storgae_provider_confg_map.get("bucket", ""))
+        storage_provider_config_options.append("STORAGE_ALIBABA_PREFIX=%s" % storgae_provider_confg_map.get("rootdirectory", ""))
+        storage_provider_config_options.append("STORAGE_ALIBABA_ENDPOINT=%s" % storgae_provider_confg_map.get("endpoint", ""))
+    else:
+        # use local file system
+        storage_provider_config_options.append("STORAGE_LOCAL_ROOTDIR=/chart_storage")
+
+    # generate storage provider configuration
+    all_storage_provider_configs = ('\n').join(storage_provider_config_options)
+
+    render(os.path.join(chartm_temp_dir, "env"),
+        chartm_env,
+        cache_store=cache_store,
+        cache_redis_addr=cache_redis_addr,
+        cache_redis_password=cache_redis_password,
+        cache_redis_db_index=cache_redis_db_index,
+        ui_secret=ui_secret,
+        storage_driver=storage_driver,
+        all_storage_driver_configs=all_storage_provider_configs)
+
+    
 FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")

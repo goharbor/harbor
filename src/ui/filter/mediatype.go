@@ -15,9 +15,12 @@
 package filter
 
 import (
-	beegoctx "github.com/astaxie/beego/context"
 	"net/http"
 	"strings"
+
+	beegoctx "github.com/astaxie/beego/context"
+
+	hlog "github.com/vmware/harbor/src/common/utils/log"
 )
 
 //MediaTypeFilter filters the POST request, it returns 415 if the content type of the request
@@ -34,6 +37,8 @@ func filterContentType(req *http.Request, resp http.ResponseWriter, mediaType ..
 	}
 	v := req.Header.Get("Content-Type")
 	mimeType := strings.Split(v, ";")[0]
+	hlog.Debugf("Mimetype of incoming request %s: %s", req.RequestURI, mimeType)
+
 	for _, t := range mediaType {
 		if t == mimeType {
 			return

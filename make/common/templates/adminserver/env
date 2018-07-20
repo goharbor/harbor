@@ -61,5 +61,7 @@ REGISTRY_STORAGE_PROVIDER_NAME=$storage_provider_name
 READ_ONLY=false
 SKIP_RELOAD_ENV_PATTERN=$skip_reload_env_pattern
 RELOAD_KEY=$reload_key
+CHART_REPOSITORY_URL=$chart_repository_url
 LDAP_GROUP_ADMIN_DN=$ldap_group_admin_dn
 REGISTRY_CONTROLLER_URL=$registry_controller_url
+WITH_CHARTMUSEUM=$with_chartmuseum
