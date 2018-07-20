@@ -72,6 +72,12 @@ func (b *BaseAPI) HandleBadRequest(text string) {
 	b.RenderError(http.StatusBadRequest, text)
 }
 
+// HandleStatusPreconditionFailed ...
+func (b *BaseAPI) HandleStatusPreconditionFailed(text string) {
+	log.Info(text)
+	b.RenderError(http.StatusPreconditionFailed, text)
+}
+
 // HandleConflict ...
 func (b *BaseAPI) HandleConflict(text ...string) {
 	msg := ""

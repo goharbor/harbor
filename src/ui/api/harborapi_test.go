@@ -28,6 +28,7 @@ import (
 	"strconv"
 
 	"github.com/vmware/harbor/src/common/dao"
+	"github.com/vmware/harbor/src/common/job/test"
 	"github.com/vmware/harbor/src/common/models"
 	"github.com/vmware/harbor/src/common/utils"
 	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
@@ -166,6 +167,9 @@ func init() {
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
 	beego.Router("/api/labels/:id([0-9]+)/resources", &LabelAPI{}, "get:ListResources")
 	beego.Router("/api/ping", &SystemInfoAPI{}, "get:Ping")
+	beego.Router("/api/system/gc/:id", &GCAPI{}, "get:GetGC")
+	beego.Router("/api/system/gc/:id([0-9]+)/log", &GCAPI{}, "get:GetLog")
+	beego.Router("/api/system/gc/schedule", &GCAPI{}, "get:Get;put:Put;post:Post")
 	_ = updateInitPassword(1, "Harbor12345")
 
 	if err := core.Init(); err != nil {
@@ -182,6 +186,9 @@ func init() {
 	unknownUsr = &usrInfo{"unknown", "unknown"}
 	testUser = &usrInfo{TestUserName, TestUserPwd}
 
+	//Init mock jobservice
+	mockServer := test.NewJobServiceServer()
+	defer mockServer.Close()
 }
 
 func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, []byte, error) {
@@ -1128,4 +1135,34 @@ func (a testapi) DeleteMeta(authInfor usrInfo, projectID int64, name string) (in
 
 	code, body, err := request(_sling, jsonAcceptHeader, authInfor)
 	return code, string(body), err
+}
+
+func (a testapi) AddGC(authInfor usrInfo, adminReq apilib.GCReq) (int, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	path := "/api/system/gc/schedule"
+
+	_sling = _sling.Path(path)
+
+	// body params
+	_sling = _sling.BodyJSON(adminReq)
+	var httpStatusCode int
+	var err error
+
+	httpStatusCode, _, err = request(_sling, jsonAcceptHeader, authInfor)
+
+	return httpStatusCode, err
+}
+
+func (a testapi) GCScheduleGet(authInfo usrInfo) (int, []apilib.AdminJob, error) {
+	_sling := sling.New().Get(a.basePath)
+	path := "/api/system/gc/schedule"
+	_sling = _sling.Path(path)
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	var successPayLoad []apilib.AdminJob
+	if 200 == httpStatusCode && nil == err {
+		err = json.Unmarshal(body, &successPayLoad)
+	}
+
+	return httpStatusCode, successPayLoad, err
 }
