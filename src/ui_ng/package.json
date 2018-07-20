@@ -68,7 +68,7 @@
         "rollup-plugin-uglify": "^1.0.1",
         "ts-node": "1.2.1",
         "tslint": "^4.1.1",
-        "typescript": "~2.2.0",
+        "typescript": "^2.6.2",
         "typings": "^1.5.0",
         "uglify-js": "3.3.18",
         "webdriver-manager": "10.2.5"
