@@ -23,7 +23,7 @@ export const enum AlertType {
   DANGER, WARNING, INFO, SUCCESS
 }
 
-export const dismissInterval = 10 * 1000;
+export const dismissInterval = 6 * 1000;
 
 export const httpStatusCode = {
   "Unauthorized": 401,
