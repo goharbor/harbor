@@ -55,7 +55,14 @@ func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails,
 	//Parse the requirements of chart
 	requirements, err := chartutil.LoadRequirements(chartData)
 	if err != nil {
-		return nil, err
+		//If no requirements.yaml, return empty dependency list
+		if _, ok := err.(chartutil.ErrNoRequirementsFile); ok {
+			requirements = &chartutil.Requirements{
+				Dependencies: make([]*chartutil.Dependency, 0),
+			}
+		} else {
+			return nil, err
+		}
 	}
 
 	var values map[string]interface{}
@@ -63,8 +70,10 @@ func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails,
 	//Parse values
 	if chartData.Values != nil {
 		values = parseRawValues([]byte(chartData.Values.GetRaw()))
-		//Append values.yaml file
-		files["values.yaml"] = chartData.Values.Raw
+		if len(values) > 0 {
+			//Append values.yaml file
+			files["values.yaml"] = chartData.Values.Raw
+		}
 	}
 
 	//Append other files like 'README.md'
