@@ -137,7 +137,7 @@ func (base *Base) Stat(ctx context.Context, path string) (storagedriver.FileInfo
 	ctx, done := context.WithTrace(ctx)
 	defer done("%s.Stat(%q)", base.Name(), path)
 
-	if !storagedriver.PathRegexp.MatchString(path) {
+	if !storagedriver.PathRegexp.MatchString(path) && path != "/" {
 		return nil, storagedriver.InvalidPathError{Path: path, DriverName: base.StorageDriver.Name()}
 	}
 

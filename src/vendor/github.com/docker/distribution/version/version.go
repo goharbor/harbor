@@ -8,4 +8,4 @@ var Package = "github.com/docker/distribution"
 // the latest release tag by hand, always suffixed by "+unknown". During
 // build, it will be replaced by the actual version. The value here will be
 // used if the registry is run after a go get based install.
-var Version = "v2.6.0+unknown"
+var Version = "v2.6.2+unknown"

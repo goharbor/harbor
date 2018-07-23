@@ -20,6 +20,10 @@
 #  version = "2.4.0"
 ignored = ["github.com/vmware/harbor/tests*"]
 
+[prune]
+  go-tests = true
+  unused-packages = true
+
 [[constraint]]
   name = "github.com/astaxie/beego"
   version = "=1.9.0"
@@ -34,7 +38,7 @@ ignored = ["github.com/vmware/harbor/tests*"]
 
 [[constraint]]
   name = "github.com/docker/distribution"
-  version = "=2.6.0"
+  version = "=2.6.2"
 
 [[constraint]]
   branch = "master"
@@ -93,5 +97,5 @@ ignored = ["github.com/vmware/harbor/tests*"]
   version = "=1.0.0"
 
 [[constraint]]
-  name = "github.com/blang/semver"
-  version = "=3.5.1"
+  name = "github.com/Masterminds/semver"
+  version = "=1.4.2"
