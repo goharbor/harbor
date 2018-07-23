@@ -12,7 +12,7 @@ data:
       workers: {{ .Values.jobservice.maxWorkers }}
       backend: "redis"
       redis_pool:
-        redis_url: "{{ .Release.Name }}-redis-master:{{ .Values.redis.master.port }}"
+        redis_url: "{{ template "harbor.redisForJobservice" . }}"
         namespace: "harbor_job_service_namespace"
     logger:
       path: "/var/log/jobs"

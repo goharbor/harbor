@@ -141,3 +141,54 @@ postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.datab
 {{- define "harbor.database.notarySigner" -}}
 postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.database.rawPassword" . }}@{{ template "harbor.database.host" . }}:{{ template "harbor.database.port" . }}/{{ template "harbor.database.notarySignerDatabase" . }}?sslmode=disable
 {{- end -}}
+
+{{- define "harbor.redis.host" -}}
+  {{- if .Values.redis.external.enabled -}}
+    {{- .Values.redis.external.host -}}
+  {{- else -}}
+    {{- .Release.Name }}-redis-master
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.redis.port" -}}
+  {{- if .Values.redis.external.enabled -}}
+    {{- .Values.redis.external.port -}}
+  {{- else -}}
+    {{- .Values.redis.master.port }}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.redis.databaseIndex" -}}
+  {{- if .Values.redis.external.enabled -}}
+    {{- .Values.redis.external.databaseIndex -}}
+  {{- else -}}
+    {{- printf "%s" "0" }}
+  {{- end -}}
+{{- end -}}
+
+{{- define "harbor.redis.password" -}}
+  {{- if and .Values.redis.external.enabled .Values.redis.external.usePassword -}}
+    {{- .Values.redis.external.password -}}
+  {{- else if and (not .Values.redis.external.enabled) .Values.redis.usePassword -}}
+    {{- .Values.redis.password -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*the username redis is used for a placeholder as no username needed in redis*/}}
+{{- define "harbor.redisForJobservice" -}}
+  {{- if and .Values.redis.external.enabled .Values.redis.external.usePassword -}}
+    redis:{{ template "harbor.redis.password" . }}@{{ template "harbor.redis.host" . }}:{{ template "harbor.redis.port" . }}/{{ template "harbor.redis.databaseIndex" }}
+  {{- else if and (not .Values.redis.external.enabled) .Values.redis.usePassword -}}
+    redis:{{ template "harbor.redis.password" . }}@{{ template "harbor.redis.host" . }}:{{ template "harbor.redis.port" . }}/{{ template "harbor.redis.databaseIndex" }}
+  {{- else }}
+    {{- template "harbor.redis.host" . }}:{{ template "harbor.redis.port" . }}/{{ template "harbor.redis.databaseIndex" }}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+host:port,pool_size,password
+100 is the default value of pool size
+*/}}
+{{- define "harbor.redisForUI" -}}
+  {{- template "harbor.redis.host" . }}:{{ template "harbor.redis.port" . }},100,{{ template "harbor.redis.password" . }}
+{{- end -}}
