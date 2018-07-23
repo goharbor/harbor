@@ -22,8 +22,9 @@ import (
 // These constants determine which architecture and OS to choose from a
 // manifest list when downconverting it to a schema1 manifest.
 const (
-	defaultArch = "amd64"
-	defaultOS   = "linux"
+	defaultArch         = "amd64"
+	defaultOS           = "linux"
+	maxManifestBodySize = 4 << 20
 )
 
 // imageManifestDispatcher takes the request context and builds the
@@ -241,8 +242,9 @@ func (imh *imageManifestHandler) PutImageManifest(w http.ResponseWriter, r *http
 	}
 
 	var jsonBuf bytes.Buffer
-	if err := copyFullPayload(w, r, &jsonBuf, imh, "image manifest PUT", &imh.Errors); err != nil {
+	if err := copyFullPayload(w, r, &jsonBuf, maxManifestBodySize, imh, "image manifest PUT"); err != nil {
 		// copyFullPayload reports the error if necessary
+		imh.Errors = append(imh.Errors, v2.ErrorCodeManifestInvalid.WithDetail(err.Error()))
 		return
 	}
 

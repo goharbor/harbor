@@ -38,6 +38,7 @@
   packages = [
     ".",
     "cache",
+    "cache/redis",
     "config",
     "context",
     "context/param",
@@ -57,12 +58,6 @@
   name = "github.com/beego/i18n"
   packages = ["."]
   revision = "e87155e8f0c05bf323d0b13470e1b97af0cb5652"
-
-[[projects]]
-  name = "github.com/blang/semver"
-  packages = ["."]
-  revision = "2ee87856327ba09384cabd113bc6b5d174e9ec0f"
-  version = "v3.5.1"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -97,8 +92,8 @@
     "registry/client/auth/challenge",
     "uuid"
   ]
-  revision = "325b0804fef3a66309d962357aac3c2ce3f4d329"
-  version = "v2.6.0"
+  revision = "48294d928ced5dd9b378f7fd7c6f5da3ff3f2c89"
+  version = "v2.6.2"
 
 [[projects]]
   branch = "master"
@@ -377,6 +372,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0392e2659013ae00be46cd4f0b9d56aa0765b6297d672a56175249c465e98a8d"
+  inputs-digest = "6849737bf604451aa7abcb3a56fca93cdf7bc9cb7da41e7d5aa796701cea559a"
   solver-name = "gps-cdcl"
   solver-version = 1
