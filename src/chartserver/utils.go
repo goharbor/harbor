@@ -14,8 +14,8 @@ const (
 	contentTypeJSON   = "application/json"
 )
 
-//Write error to http client
-func writeError(w http.ResponseWriter, code int, err error) {
+//WriteError writes error to http client
+func WriteError(w http.ResponseWriter, code int, err error) {
 	errorObj := make(map[string]string)
 	errorObj["error"] = err.Error()
 	errorContent, _ := json.Marshal(errorObj)
@@ -24,9 +24,9 @@ func writeError(w http.ResponseWriter, code int, err error) {
 	w.Write(errorContent)
 }
 
-//StatusCode == 500
-func writeInternalError(w http.ResponseWriter, err error) {
-	writeError(w, http.StatusInternalServerError, err)
+//WriteInternalError writes error with statusCode == 500
+func WriteInternalError(w http.ResponseWriter, err error) {
+	WriteError(w, http.StatusInternalServerError, err)
 }
 
 //Write JSON data to http client
@@ -34,6 +34,26 @@ func writeJSONData(w http.ResponseWriter, data []byte) {
 	w.Header().Set(contentTypeHeader, contentTypeJSON)
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
+}
+
+//Extract error object '{"error": "****---***"}' from the content if existing
+//nil error will be returned if it does exist
+func extractError(content []byte) error {
+	if len(content) == 0 {
+		return nil
+	}
+
+	errorObj := make(map[string]string)
+	err := json.Unmarshal(content, &errorObj)
+	if err != nil {
+		return nil
+	}
+
+	if errText, ok := errorObj["error"]; ok {
+		return errors.New(errText)
+	}
+
+	return nil
 }
 
 //Parse the redis configuration to the beego cache pattern

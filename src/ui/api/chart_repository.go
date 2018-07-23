@@ -1,9 +1,13 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
@@ -25,6 +29,10 @@ const (
 	accessLevelWrite
 	accessLevelAll
 	accessLevelSystem
+
+	formFieldNameForChart = "chart"
+	formFiledNameForProv  = "prov"
+	headerContentType     = "Content-Type"
 )
 
 //chartController is a singleton instance
@@ -162,6 +170,21 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 		return
 	}
 
+	//Rewrite file content
+	formFiles := make([]formFile, 0)
+	formFiles = append(formFiles,
+		formFile{
+			formField: formFieldNameForChart,
+			mustHave:  true,
+		},
+		formFile{
+			formField: formFiledNameForProv,
+		})
+	if err := cra.rewriteFileContent(formFiles, cra.Ctx.Request); err != nil {
+		chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
+		return
+	}
+
 	chartController.GetManipulationHandler().UploadChartVersion(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
@@ -169,6 +192,18 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 	//Check access
 	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
+		return
+	}
+
+	//Rewrite file content
+	formFiles := make([]formFile, 0)
+	formFiles = append(formFiles,
+		formFile{
+			formField: formFiledNameForProv,
+			mustHave:  true,
+		})
+	if err := cra.rewriteFileContent(formFiles, cra.Ctx.Request); err != nil {
+		chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
 		return
 	}
 
@@ -309,4 +344,64 @@ func initializeChartController() (*chartserver.Controller, error) {
 	hlog.Info("API controller for chart repository server is successfully initialized")
 
 	return controller, nil
+}
+
+//formFile is used to represent the uploaded files in the form
+type formFile struct {
+	//form field key contains the form file
+	formField string
+
+	//flag to indicate if the file identified by the 'formField'
+	//must exist
+	mustHave bool
+}
+
+//If the files are uploaded with multipart/form-data mimetype, beego will extract the data
+//from the request automatically. Then the request passed to the backend server with proxying
+//way will have empty content.
+//This method will refill the requests with file content.
+func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *http.Request) error {
+	if len(files) == 0 {
+		return nil //no files, early return
+	}
+
+	var body bytes.Buffer
+	w := multipart.NewWriter(&body)
+	defer func() {
+		if err := w.Close(); err != nil {
+			//Just log it
+			hlog.Errorf("Failed to defer close multipart writer with error: %s", err.Error())
+		}
+	}()
+
+	//Process files by key one by one
+	for _, f := range files {
+		mFile, mHeader, err := cra.GetFile(f.formField)
+		//Handle error case by case
+		if err != nil {
+			formatedErr := fmt.Errorf("Get file content with multipart header from key '%s' failed with error: %s", f.formField, err.Error())
+			if f.mustHave || err != http.ErrMissingFile {
+				return formatedErr
+			}
+
+			//Error can be ignored, just log it
+			hlog.Warning(formatedErr.Error())
+			continue
+		}
+
+		fw, err := w.CreateFormFile(f.formField, mHeader.Filename)
+		if err != nil {
+			return fmt.Errorf("Create form file with multipart header failed with error: %s", err.Error())
+		}
+
+		_, err = io.Copy(fw, mFile)
+		if err != nil {
+			return fmt.Errorf("Copy file stream in multipart form data failed with error: %s", err.Error())
+		}
+	}
+
+	request.Header.Set(headerContentType, w.FormDataContentType())
+	request.Body = ioutil.NopCloser(&body)
+
+	return nil
 }

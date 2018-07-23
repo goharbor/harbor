@@ -60,14 +60,14 @@ func (rh *RepositoryHandler) GetIndexFile(w http.ResponseWriter, req *http.Reque
 	//Get project manager references
 	projectMgr, err := filter.GetProjectManager(req)
 	if err != nil {
-		writeInternalError(w, err)
+		WriteInternalError(w, err)
 		return
 	}
 
 	//Get all the projects
 	results, err := projectMgr.List(nil)
 	if err != nil {
-		writeInternalError(w, err)
+		WriteInternalError(w, err)
 		return
 	}
 
@@ -179,7 +179,7 @@ LOOP:
 	//All the threads are done
 	//Met an error
 	if err != nil {
-		writeInternalError(w, err)
+		WriteInternalError(w, err)
 		return
 	}
 
@@ -195,7 +195,7 @@ LOOP:
 
 	bytes, err := yaml.Marshal(mergedIndexFile)
 	if err != nil {
-		writeInternalError(w, err)
+		WriteInternalError(w, err)
 		return
 	}
 

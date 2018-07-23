@@ -49,19 +49,19 @@ func (mh *ManipulationHandler) ListCharts(w http.ResponseWriter, req *http.Reque
 
 	content, err := mh.apiClient.GetContent(url)
 	if err != nil {
-		writeInternalError(w, err)
+		WriteInternalError(w, err)
 		return
 	}
 
 	chartList, err := mh.chartOperator.GetChartList(content)
 	if err != nil {
-		writeInternalError(w, err)
+		WriteInternalError(w, err)
 		return
 	}
 
 	jsonData, err := json.Marshal(chartList)
 	if err != nil {
-		writeInternalError(w, err)
+		WriteInternalError(w, err)
 		return
 	}
 
@@ -79,7 +79,7 @@ func (mh *ManipulationHandler) GetChart(w http.ResponseWriter, req *http.Request
 func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.Request) {
 	chartV, err := mh.getChartVersion(req.URL.String())
 	if err != nil {
-		writeInternalError(w, err)
+		WriteInternalError(w, err)
 		return
 	}
 
@@ -97,20 +97,20 @@ func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.
 		}
 
 		if len(strings.TrimSpace(namespace)) == 0 {
-			writeInternalError(w, errors.New("failed to extract namespace from the request"))
+			WriteInternalError(w, errors.New("failed to extract namespace from the request"))
 			return
 		}
 
 		content, err := mh.getChartVersionContent(namespace, chartV.URLs[0])
 		if err != nil {
-			writeInternalError(w, err)
+			WriteInternalError(w, err)
 			return
 		}
 
 		//Process bytes and get more details of chart version
 		chartDetails, err = mh.chartOperator.GetChartDetails(content)
 		if err != nil {
-			writeInternalError(w, err)
+			WriteInternalError(w, err)
 			return
 		}
 		chartDetails.Metadata = chartV
@@ -127,7 +127,7 @@ func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.
 
 	bytes, err := json.Marshal(chartDetails)
 	if err != nil {
-		writeInternalError(w, err)
+		WriteInternalError(w, err)
 		return
 	}
 

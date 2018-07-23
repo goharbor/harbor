@@ -75,6 +75,10 @@ func (cc *ChartClient) GetContent(addr string) ([]byte, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
+		if err := extractError(content); err != nil {
+			return nil, err
+		}
+
 		return nil, fmt.Errorf("failed to retrieve content from '%s' with error: %s", fullURI.Path, content)
 	}
 
