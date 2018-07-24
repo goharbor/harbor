@@ -45,6 +45,10 @@ def upgrade():
     SchemaMigrations.__table__.create(bind)
     session.add(SchemaMigrations(version=1, dirty=False))
 
+    ## Add table admin_job
+    AdminJob.__table__.create(bind)
+    op.execute('CREATE TRIGGER admin_job_update_time_at_modtime BEFORE UPDATE ON admin_job FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();')
+
     session.commit()
 
 def downgrade():

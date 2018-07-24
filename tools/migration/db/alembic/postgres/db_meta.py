@@ -282,3 +282,18 @@ class SchemaMigrations(Base):
 
     version = sa.Column(sa.BigInteger, primary_key=True)
     dirty = sa.Column(sa.Boolean, nullable=False)
+
+class AdminJob(Base):
+    __tablename__ = 'admin_job'
+ 
+    id = sa.Column(sa.Integer, primary_key=True)
+    job_name = sa.Column(sa.String(64), nullable=False)
+    job_kind = sa.Column(sa.String(64), nullable=False)
+    cron_str = sa.Column(sa.String(256))
+    status = sa.Column(sa.String(64), nullable=False)
+    job_uuid = sa.Column(sa.String(64))
+    deleted = sa.Column(sa.Boolean, nullable=False, server_default='false')
+    creation_time = sa.Column(sa.TIMESTAMP, server_default=sa.text("'now'::timestamp"))
+    update_time = sa.Column(sa.TIMESTAMP, server_default=sa.text("'now'::timestamp"))
+
+    __table_args__ = (sa.Index('status', "job_uuid"),)
