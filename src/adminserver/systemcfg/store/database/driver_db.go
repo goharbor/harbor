@@ -74,9 +74,9 @@ func NewCfgStore() (store.Driver, error) {
 
 // Read configuration from database
 func (c *cfgStore) Read() (map[string]interface{}, error) {
-	configEntries, error := dao.GetConfigEntries()
-	if error != nil {
-		return nil, error
+	configEntries, err := dao.GetConfigEntries()
+	if err != nil {
+		return nil, err
 	}
 	return WrapperConfig(configEntries)
 }
