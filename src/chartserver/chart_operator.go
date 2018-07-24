@@ -16,6 +16,7 @@ import (
 
 const (
 	readmeFileName = "README.md"
+	valuesFileName = "values.yaml"
 )
 
 //ChartVersionDetails keeps the detailed data info of the chart version
@@ -72,7 +73,7 @@ func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails,
 		values = parseRawValues([]byte(chartData.Values.GetRaw()))
 		if len(values) > 0 {
 			//Append values.yaml file
-			files["values.yaml"] = chartData.Values.Raw
+			files[valuesFileName] = chartData.Values.Raw
 		}
 	}
 
