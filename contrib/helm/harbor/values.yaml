@@ -149,6 +149,7 @@ ui:
   tolerations: []
   affinity: {}
 
+# TODO: change the style to be same with redis
 database:
   # if external database is used, set "type" to "external"
   # and fill the connection informations in "external" section
@@ -271,12 +272,12 @@ clair:
   tolerations: []
   affinity: {}
 
-## Settings for redis dependency.
-## see https://github.com/kubernetes/charts/tree/master/stable/redis
-## for further configurables.
 redis:
-# Update needed in the cm that defines redis_url if usePassword is set to true.
+  # if external Redis is used, set "external.enabled" to "true"
+  # and fill the connection informations in "external" section.
+  # or the internal Redis will be used
   usePassword: false
+  password: "changeit"
   cluster:
     enabled: false
   master:
@@ -284,6 +285,13 @@ redis:
 # TODO: There is a perm issue: Can't open the append-only file: Permission denied
 # TODO: Setting it to false is a temp workaround.  Will re-visit this problem.
       enabled: false
+  external:
+    enabled: false
+    host: "192.168.0.2"
+    port: "6379"
+    databaseIndex: "0"
+    usePassword: false
+    password: "changeit"
 
 notary:
   enabled: true
