@@ -1,4 +1,4 @@
-FROM vmware/photon:1.0
+FROM photon:1.0
 
 #The Docker Daemon has to be running with storage backend btrfs when building the image
 
