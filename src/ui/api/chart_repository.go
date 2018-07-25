@@ -33,6 +33,7 @@ const (
 	formFieldNameForChart = "chart"
 	formFiledNameForProv  = "prov"
 	headerContentType     = "Content-Type"
+	contentTypeMultipart  = "multipart/form-data"
 )
 
 //chartController is a singleton instance
@@ -170,19 +171,21 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 		return
 	}
 
-	//Rewrite file content
-	formFiles := make([]formFile, 0)
-	formFiles = append(formFiles,
-		formFile{
-			formField: formFieldNameForChart,
-			mustHave:  true,
-		},
-		formFile{
-			formField: formFiledNameForProv,
-		})
-	if err := cra.rewriteFileContent(formFiles, cra.Ctx.Request); err != nil {
-		chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
-		return
+	//Rewrite file content if the content type is "multipart/form-data"
+	if isMultipartFormData(cra.Ctx.Request) {
+		formFiles := make([]formFile, 0)
+		formFiles = append(formFiles,
+			formFile{
+				formField: formFieldNameForChart,
+				mustHave:  true,
+			},
+			formFile{
+				formField: formFiledNameForProv,
+			})
+		if err := cra.rewriteFileContent(formFiles, cra.Ctx.Request); err != nil {
+			chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
+			return
+		}
 	}
 
 	chartController.GetManipulationHandler().UploadChartVersion(cra.Ctx.ResponseWriter, cra.Ctx.Request)
@@ -195,16 +198,18 @@ func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 		return
 	}
 
-	//Rewrite file content
-	formFiles := make([]formFile, 0)
-	formFiles = append(formFiles,
-		formFile{
-			formField: formFiledNameForProv,
-			mustHave:  true,
-		})
-	if err := cra.rewriteFileContent(formFiles, cra.Ctx.Request); err != nil {
-		chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
-		return
+	//Rewrite file content if the content type is "multipart/form-data"
+	if isMultipartFormData(cra.Ctx.Request) {
+		formFiles := make([]formFile, 0)
+		formFiles = append(formFiles,
+			formFile{
+				formField: formFiledNameForProv,
+				mustHave:  true,
+			})
+		if err := cra.rewriteFileContent(formFiles, cra.Ctx.Request); err != nil {
+			chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
+			return
+		}
 	}
 
 	chartController.GetManipulationHandler().UploadProvenanceFile(cra.Ctx.ResponseWriter, cra.Ctx.Request)
@@ -401,7 +406,13 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 	}
 
 	request.Header.Set(headerContentType, w.FormDataContentType())
+	request.ContentLength = int64(body.Len())
 	request.Body = ioutil.NopCloser(&body)
 
 	return nil
+}
+
+//Check if the request content type is "multipart/form-data"
+func isMultipartFormData(req *http.Request) bool {
+	return strings.Contains(req.Header.Get(headerContentType), contentTypeMultipart)
 }
