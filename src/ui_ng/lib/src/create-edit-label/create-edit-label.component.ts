@@ -46,7 +46,6 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
   labelModel: Label = this.initLabel();
   labelId = 0;
 
-  checkOnGoing: boolean;
   isLabelNameExist = false;
 
   nameChecker = new Subject<string>();
@@ -66,26 +65,24 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.nameChecker.debounceTime(500).subscribe((name: string) => {
-      this.checkOnGoing = true;
-      let labelName = this.currentForm.controls["name"].value;
       toPromise<Label[]>(
-        this.labelService.getLabels(this.scope, this.projectId, labelName)
+        this.labelService.getLabels(this.scope, this.projectId, name)
       )
         .then(targets => {
+          this.isLabelNameExist = false;
           if (targets && targets.length) {
-            this.isLabelNameExist = true;
-          } else {
-            this.isLabelNameExist = false;
+            if (targets.find((target) => {
+              return target.name === name;
+            })) {
+              this.isLabelNameExist = true;
+            }
           }
-          this.checkOnGoing = false;
         })
         .catch(error => {
-          this.checkOnGoing = false;
           this.errorHandler.error(error);
         });
-      setTimeout(() => {
-        setInterval(() => this.ref.markForCheck(), 100);
-      }, 3000);
+      let hnd = setInterval(() => this.ref.markForCheck(), 100);
+      setTimeout(() => clearInterval(hnd), 5000);
     });
   }
 
@@ -127,7 +124,6 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
 
   public get isValid(): boolean {
     return !(
-      this.checkOnGoing ||
       this.isLabelNameExist ||
       !(this.currentForm && this.currentForm.valid) ||
       !this.hasChanged ||
@@ -138,6 +134,8 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
   existValid(text: string): void {
     if (text) {
       this.nameChecker.next(text);
+    } else {
+      this.isLabelNameExist = false;
     }
   }
 

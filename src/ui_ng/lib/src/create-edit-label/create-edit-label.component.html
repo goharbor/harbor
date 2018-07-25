@@ -16,7 +16,7 @@
                 <label for="color">{{'LABEL.COLOR' | translate}}</label>
                 <clr-dropdown [clrCloseMenuOnItemClick]="false">
                     <button type="button" class="btn btn-outline btnColor btn-sm" clrDropdownTrigger>
-                        <clr-icon shape="caret down" size="20" style='right:2px; width:24px; height:18px;'></clr-icon>
+                        <clr-icon shape="angle down"></clr-icon>
                     </button>
                     <clr-dropdown-menu *clrIfOpen>
                         <label class="dropdown-item" (click)="labelModel.color=i.color" *ngFor="let i of labelColor"
