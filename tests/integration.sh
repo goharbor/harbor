@@ -150,17 +150,17 @@ fi
 if (echo $buildinfo | grep -q "\[Specific CI="); then
     buildtype=$(echo $buildinfo | grep "\[Specific CI=")
     testsuite=$(echo $buildtype | awk -F"\[Specific CI=" '{sub(/\].*/,"",$2);print $2}')
-    pybot -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite tests/robot-cases
+    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite tests/robot-cases
 elif (echo $buildinfo | grep -q "\[Full CI\]"); then
-    pybot -v ip:$container_ip --removekeywords TAG:secret --exclude skip tests/robot-cases
+    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip --removekeywords TAG:secret --exclude skip tests/robot-cases
 elif (echo $buildinfo | grep -q "\[Skip CI\]"); then
     echo "Skip CI."
 elif (echo $buildinfo | grep -q "\[Upload Build\]"); then
     package_offline_installer
-    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 else
     # default mode is BAT.
-    pybot -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 fi
 
 # rc is used to identify test run pass or fail.
@@ -211,13 +211,9 @@ if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ] && [ $
     uploader $latest_build_file $harbor_target_bucket  
 fi
 
-## ------------------------------------- Build & Publish NPM Package for VIC ------------------------------------
-if [ $publish_npm == true ] && [ $rc -eq 0 ] && [[ $DRONE_BUILD_EVENT == "push" ]]; then
-    echo "build & publish package harbor-ui-vic to npm repo."
-    ./tools/ui_lib/build_ui_lib_4_vic.sh
-fi
-
 ## ------------------------------------------------ Tear Down ---------------------------------------------------
 if [ -f "$keyfile" ]; then
   rm -f $keyfile
 fi
+
+exit $rc
