@@ -21,6 +21,7 @@ Library  Process
 Library  SSHLibrary  1 minute
 Library  DateTime
 Library  Selenium2Library  10  10
+Library  JSONLibrary
 Resource  Nimbus-Util.robot
 Resource  Vsphere-Util.robot
 Resource  VCH-Util.robot
@@ -47,6 +48,7 @@ Resource  Harbor-Pages/ToolKit.robot
 Resource  Harbor-Pages/ToolKit_Elements.robot
 Resource  Harbor-Pages/Vulnerability.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
+Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
 Resource  Admiral-Util.robot
 Resource  OVA-Util.robot
