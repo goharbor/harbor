@@ -9,7 +9,7 @@
                         <clr-icon [ngClass]="{'is-highlight': isCardView || isHovering('card') }" shape="view-cards"></clr-icon>
                     </span>
                     <span class="list-btn" (click)="showCard(false)" (mouseenter) ="mouseEnter('list') "  (mouseleave) ="mouseLeave('list')">
-                        <clr-icon [ngClass]="{'is-highlight': !isCardView || isHovering('list') }"shape="view-list"></clr-icon>
+                        <clr-icon [ngClass]="{'is-highlight': !isCardView || isHovering('list') }" shape="view-list"></clr-icon>
                     </span>
                     <span class="filter-divider"></span>
                     <span class="refresh-btn" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></span>
