@@ -190,22 +190,68 @@ registry:
     pullPolicy: IfNotPresent
   httpSecret: not-a-secure-secret
   logLevel: info
-# comment out one of the below to use your cloud's object storage.
-#  objectStorage:
-#    gcs:
-#      keyfile: ""
-#      bucket: ""
-#      chunksize: "5242880"
-#    s3:
-#      region: ""
-#      accesskey: ""
-#      secretkey: ""
-#      bucket: ""
-#      encrypt: "true"
-#    azure:
-#      accountname: ""
-#      accountkey: ""
-#      container: ""
+  storage:
+    # specify the type of storage: "filesystem", "azure", "gcs", "s3", "swift", 
+    # "oss" and fill the information needed in the corresponding section
+    type: filesystem
+    filesystem:
+      rootdirectory: /var/lib/registry
+      #maxthreads: 100
+    azure:
+      accountname: accountname
+      accountkey: base64encodedaccountkey
+      container: containername
+      #realm: core.windows.net
+    gcs:
+      bucket: bucketname
+      # TODO: support the keyfile of gcs
+      #keyfile: /path/to/keyfile
+      #rootdirectory: /gcs/object/name/prefix
+      #chunksize: 5242880
+    s3:
+      region: us-west-1
+      bucket: bucketname
+      #accesskey: awsaccesskey
+      #secretkey: awssecretkey
+      #regionendpoint: http://myobjects.local
+      #encrypt: false
+      #keyid: mykeyid
+      #secure: true
+      #v4auth: true
+      #chunksize: 5242880
+      #rootdirectory: /s3/object/name/prefix
+      #storageclass: STANDARD
+    swift:
+      authurl: https://storage.myprovider.com/v3/auth
+      username: username
+      password: password
+      container: containername
+      #region: fr
+      #tenant: tenantname
+      #tenantid: tenantid
+      #domain: domainname
+      #domainid: domainid
+      #trustid: trustid
+      #insecureskipverify: false
+      #chunksize: 5M
+      #prefix:
+      #secretkey: secretkey
+      #accesskey: accesskey
+      #authversion: 3
+      #endpointtype: public
+      #tempurlcontainerkey: false
+      #tempurlmethods:
+    oss:
+      accesskeyid: accesskeyid
+      accesskeysecret: accesskeysecret
+      region: regionname
+      bucket: bucketname
+      #endpoint: endpoint
+      #internal: false
+      #encrypt: false
+      #secure: true
+      #chunksize: 10M
+      #rootdirectory: rootdirectory
   rootCrt: |
     -----BEGIN CERTIFICATE-----
     MIIE0zCCArugAwIBAgIJAIgs3S+hsjhmMA0GCSqGSIb3DQEBCwUAMAAwHhcNMTcx
