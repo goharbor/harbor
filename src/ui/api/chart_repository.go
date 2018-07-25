@@ -406,7 +406,7 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 	}
 
 	request.Header.Set(headerContentType, w.FormDataContentType())
-	request.ContentLength = int64(body.Len())
+	request.ContentLength = -1
 	request.Body = ioutil.NopCloser(&body)
 
 	return nil
