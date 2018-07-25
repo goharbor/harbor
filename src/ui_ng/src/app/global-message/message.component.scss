@@ -1,16 +1,3 @@
-.global-message-alert {
-    position: relative;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 999;
-    margin-bottom: 20px;
+.alert-app-level {
+    margin-bottom:20px;
 }
-.alert-item {
-    display: inline-block;
-    text-align: center;
-}
-:host >>> .alert-icon-wrapper{
-    display: inline;
-}
-:host >>> .alert.alert-app-level.alert-warning{padding: 0;}
