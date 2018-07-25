@@ -80,7 +80,7 @@ After the project is created, you can browse repositories, members, logs, replic
 
 ![browse project](img/new_browse_project.png)
 
-There are two views to show repositories, listview, and cardview, you can switch between them by click correspond icon.
+There are two views to show repositories, listview and card view, you can switch between them by clicking the corresponding icon.
 
 ![browse repositories](img/browse_project_repositories.png)
 
@@ -109,18 +109,18 @@ You can add members with different roles to an existing project. You can add a L
 ![browse project](img/new_add_member.png)
 
 ### Updating and removing members
-You can check one or more members, then click `MEMBER ACTION`, choose one role to batch switch checked members's roles. You can also click `MEMBER.REMOVE` to batch remove checked members.
+You can check one or more members, then click `MEMBER ACTION`, choose one role to batch switch checked members' roles. You can also click `MEMBER.REMOVE` to batch remove checked members.
 
 ![browse project](img/new_remove_update_member.png)
 
 ## Replicating images  
 Images replication is used to replicate repositories from one Harbor instance to another.
 
-The function is project-oriented, and once the system administrator set a rule to one project, all repositories under the project that match the defined [filter](#image-filter) patterns will be replicated to the remote registry when the [triggering condition](#trigger-mode) is triggered. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically, but if it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
+The function is project-oriented, and once the system administrator has set a rule to one project, all repositories under the project that match the defined [filter](#image-filter) patterns will be replicated to the remote registry when the [triggering condition](#trigger-mode) is triggered. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically. If it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
 
-There may be a bit of delay during replication according to the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later and the schedule will keep trying until the network issue resolved.  
+There may be a bit of delay during replication based on the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later and the schedule will keep trying until the network issue is resolved.  
 
-**Note:** The replication feature is incompatible between Harbor instance before version 0.3.5(included) and after version 0.3.5. 
+**Note:** The replication feature is incompatible between Harbor versions before version 0.3.5 (included) and those versions after 0.3.5. 
 
 ### Creating a replication rule
 Replication can be configured by creating a rule. Click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different image filters and trigger modes according to the different requirements. If there is no endpoint available in the list, you need to create one. Click `SAVE` to create a replication rule for the selected project. If `Replicate existing images immediately` is chosen, the existing images under the project will be replicated to the remote registry immediately.  
