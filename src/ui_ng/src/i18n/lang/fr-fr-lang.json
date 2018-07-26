@@ -347,7 +347,7 @@
         "JOB_PLACEHOLDER": "Nous n'avons trouvé aucun travail de réplication !",
         "JOB_LOG_VIEWER": "Afficher les logs des travaux de réplication",
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
-        "NO_PROJECT_INFO": "Please add a project name first",
+        "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_IMAGES_FILTER": "Source images filter",
         "SCHEDULE": "Scheduled",
         "MANUAL": "Manual",
