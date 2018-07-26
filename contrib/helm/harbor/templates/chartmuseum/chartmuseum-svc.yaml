@@ -1,0 +1,15 @@
+{{- if .Values.chartmuseum.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "harbor.fullname" . }}-chartmuseum"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+spec:
+  ports:
+    - port: 80
+      targetPort: 9999
+  selector:
+{{ include "harbor.matchLabels" . | indent 4 }}
+    component: chartmuseum
+{{- end }}

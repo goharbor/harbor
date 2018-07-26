@@ -40,6 +40,8 @@ spec:
             value: "1"
           - name: ADMINSERVER_URL
             value: "http://{{ template "harbor.fullname" . }}-adminserver"
+          - name: CHART_CACHE_DRIVER
+            value: "redis"
         ports:
         - containerPort: 8080
         volumeMounts:
