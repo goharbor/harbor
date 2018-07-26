@@ -270,6 +270,7 @@ clair_db_host = rcp.get("configuration", "clair_db_host")
 clair_db_port = rcp.get("configuration", "clair_db_port")
 clair_db_username = rcp.get("configuration", "clair_db_username")
 clair_db = rcp.get("configuration", "clair_db")
+clair_updaters_interval = rcp.get("configuration", "clair_updaters_interval")
 
 uaa_endpoint = rcp.get("configuration", "uaa_endpoint")
 uaa_clientid = rcp.get("configuration", "uaa_clientid")
@@ -641,7 +642,8 @@ if args.clair_mode:
             username = clair_db_username,
             host = clair_db_host,
             port = clair_db_port,
-            dbname = clair_db)
+            dbname = clair_db,
+            interval = clair_updaters_interval)
 
 # config http proxy for Clair
     http_proxy = rcp.get("configuration", "http_proxy").strip()
