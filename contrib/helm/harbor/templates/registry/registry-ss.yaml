@@ -91,14 +91,14 @@ spec:
         {{- end }}
         - name: registry-root-certificate
           mountPath: /etc/registry/root.crt
-          subPath: root.crt
+          subPath: tokenServiceRootCertBundle
         - name: registry-config
           mountPath: /etc/registry/config.yml
           subPath: config.yml
       volumes:
       - name: registry-root-certificate
         secret:
-          secretName: "{{ template "harbor.fullname" . }}-registry"
+          secretName: "{{ template "harbor.fullname" . }}-ui"
       - name: registry-config
         configMap:
           name: "{{ template "harbor.fullname" . }}-registry"
