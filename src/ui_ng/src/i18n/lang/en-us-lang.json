@@ -644,12 +644,12 @@
             "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability package found"
         },
         "SEVERITY": {
-            "HIGH": "high",
-            "MEDIUM": "medium",
-            "LOW": "low",
-            "NEGLIGIBLE": "negligible",
-            "UNKNOWN": "unknown",
-            "NONE": "none"
+            "HIGH": "High",
+            "MEDIUM": "Medium",
+            "LOW": "Low",
+            "NEGLIGIBLE": "Negligible",
+            "UNKNOWN": "Unknown",
+            "NONE": "None"
         },
         "SINGULAR": "vulnerability",
         "OVERALL_SEVERITY": "Vulnerability Severity:",

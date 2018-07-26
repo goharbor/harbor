@@ -608,12 +608,12 @@
             "TOOLTIPS_TITLE_ZERO": "Aucun paquet de vulnérabilité connue trouvé"
         },
         "SEVERITY": {
-            "HIGH": "haut",
-            "MEDIUM": "moyen",
-            "LOW": "bas",
-            "NEGLIGIBLE": "négligeable",
-            "UNKNOWN": "inconnu",
-            "NONE": "aucune"
+            "HIGH": "Haut",
+            "MEDIUM": "Moyen",
+            "LOW": "Bas",
+            "NEGLIGIBLE": "Négligeable",
+            "UNKNOWN": "Inconnu",
+            "NONE": "Aucune"
         },
         "SINGULAR": "vulnérabilitée",
         "OVERALL_SEVERITY": "Sévérité de la Vulnérabilitée :",
