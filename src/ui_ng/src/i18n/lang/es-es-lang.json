@@ -367,7 +367,7 @@
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
         "JOB_LOG_VIEWER": "View Replication Job Log",
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
-        "NO_PROJECT_INFO": "Please add a project name first",
+        "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_IMAGES_FILTER": "Source images filter",
         "SCHEDULE": "Scheduled",
         "MANUAL": "Manual",
@@ -643,12 +643,12 @@
             "TOOLTIPS_TITLE_ZERO": "No se encontró ningún paquete de vulnerabilidad reconocible"
         },
         "SEVERITY": {
-            "HIGH": "high",
-            "MEDIUM": "medium",
-            "LOW": "low",
-            "NEGLIGIBLE": "negligible",
-            "UNKNOWN": "unknown",
-            "NONE": "none"
+            "HIGH": "High",
+            "MEDIUM": "Medium",
+            "LOW": "Low",
+            "NEGLIGIBLE": "Negligible",
+            "UNKNOWN": "Unknown",
+            "NONE": "None"
         },
         "SINGULAR": "vulnerability",
         "OVERALL_SEVERITY": "Vulnerability Severity:",

@@ -26,7 +26,7 @@
                     <div>{{ 'PROJECT_CONFIG.PREVENT_VULNERABLE_1' | translate }}</div>
                     <div class="select">
                       <select id="severity" name="severity" [(ngModel)]="projectPolicy.PreventVulImgSeverity" [disabled]="!projectPolicy.PreventVulImg">
-                        <option *ngFor='let s of severityOptions' [ngValue]="s.severity">{{ s.severityLevel | translate | uppercase }}</option>                      
+                        <option *ngFor='let s of severityOptions' [ngValue]="s.severity">{{ s.severityLevel | translate }}</option>                      
                       </select>
                     </div> 
                     <div> {{ 'PROJECT_CONFIG.PREVENT_VULNERABLE_2' | translate }} </div>
