@@ -284,43 +284,48 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 		return true //do nothing
 	}
 
-	//At least, authentication is necessary when level > public
-	if !cra.SecurityCtx.IsAuthenticated() {
-		cra.HandleUnauthorized()
-		return false
-	}
-
 	theLevel := accessLevel
 	//If repo is empty, system admin role must be required
 	if len(namespace) == 0 {
 		theLevel = accessLevelSystem
 	}
 
+	var err error
+
 	switch theLevel {
 	//Should be system admin role
 	case accessLevelSystem:
 		if !cra.SecurityCtx.IsSysAdmin() {
-			cra.RenderError(http.StatusForbidden, fmt.Sprintf("system admin role is required but user '%s' is not", cra.SecurityCtx.GetUsername()))
-			return false
+			err = fmt.Errorf("system admin role is required but user '%s' is not", cra.SecurityCtx.GetUsername())
 		}
 	case accessLevelAll:
 		if !cra.SecurityCtx.HasAllPerm(namespace) {
-			cra.RenderError(http.StatusForbidden, fmt.Sprintf("project admin role is required but user '%s' does not have", cra.SecurityCtx.GetUsername()))
-			return false
+			err = fmt.Errorf("project admin role is required but user '%s' does not have", cra.SecurityCtx.GetUsername())
 		}
 	case accessLevelWrite:
 		if !cra.SecurityCtx.HasWritePerm(namespace) {
-			cra.RenderError(http.StatusForbidden, fmt.Sprintf("developer role is required but user '%s' does not have", cra.SecurityCtx.GetUsername()))
-			return false
+			err = fmt.Errorf("developer role is required but user '%s' does not have", cra.SecurityCtx.GetUsername())
 		}
 	case accessLevelRead:
 		if !cra.SecurityCtx.HasReadPerm(namespace) {
-			cra.RenderError(http.StatusForbidden, fmt.Sprintf("at least a guest role is required for user '%s'", cra.SecurityCtx.GetUsername()))
-			return false
+			err = fmt.Errorf("at least a guest role is required for user '%s'", cra.SecurityCtx.GetUsername())
 		}
 	default:
 		//access rejected for invalid scope
 		cra.RenderError(http.StatusForbidden, "unrecognized access scope")
+		return false
+	}
+
+	//Access is not granted, check if user has authenticated
+	if err != nil {
+		//Unauthenticated, return 401
+		if !cra.SecurityCtx.IsAuthenticated() {
+			cra.HandleUnauthorized()
+			return false
+		}
+
+		//Authenticated, return 403
+		cra.RenderError(http.StatusForbidden, err.Error())
 		return false
 	}
 
