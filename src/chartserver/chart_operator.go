@@ -25,6 +25,19 @@ type ChartVersionDetails struct {
 	Dependencies []*chartutil.Dependency `json:"dependencies"`
 	Values       map[string]interface{}  `json:"values"`
 	Files        map[string]string       `json:"files"`
+	Security     *SecurityReport         `json:"security"`
+}
+
+//SecurityReport keeps the info related with security
+//e.g.: digital signature, vulnerability scanning etc.
+type SecurityReport struct {
+	Signature *DigitalSignature `json:"signature"`
+}
+
+//DigitalSignature used to indicate if the chart has been signed
+type DigitalSignature struct {
+	Signed     bool   `json:"signed"`
+	Provenance string `json:"prov_file"`
 }
 
 //ChartInfo keeps the information of the chart
