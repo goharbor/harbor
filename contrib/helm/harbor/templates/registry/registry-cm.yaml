@@ -130,16 +130,16 @@ data:
         {{- end }}
       {{- end }}
       cache:
-        layerinfo: inmemory
+        layerinfo: redis
       maintenance:
         uploadpurging:
           enabled: false
       delete:
         enabled: true
-    {{- if .Values.registry.redis }}
     redis:
-{{ toYaml .Values.registry.redis | indent 6 }}
-    {{- end }}
+      addr: "{{ template "harbor.redis.host" . }}:{{ template "harbor.redis.port" . }}"
+      password: {{ template "harbor.redis.password" . }}
+      db: {{ template "harbor.redis.databaseIndex" . }}
     http:
       addr: :5000
       # set via environment variable
@@ -152,7 +152,6 @@ data:
         realm: "{{ template "harbor.externalURL" . }}/service/token"
         rootcertbundle: /etc/registry/root.crt
         service: harbor-registry
-
     notifications:
       endpoints:
         - name: harbor
