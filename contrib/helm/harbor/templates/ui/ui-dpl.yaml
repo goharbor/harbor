@@ -28,6 +28,8 @@ spec:
               secretKeyRef:
                 name: "{{ template "harbor.fullname" . }}-ui"
                 key: jobserviceSecret
+          - name: _REDIS_URL
+            value: {{ template "harbor.redisForUI" . }}
           - name: GODEBUG
             value: netdns=cgo
           - name: LOG_LEVEL

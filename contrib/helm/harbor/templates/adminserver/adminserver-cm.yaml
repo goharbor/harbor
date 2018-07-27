@@ -55,4 +55,4 @@ data:
   UAA_CLIENTID: ""
   UAA_CLIENTSECRET: ""
   UAA_VERIFY_CERT: "True"
-  REGISTRY_STORAGE_PROVIDER_NAME: "filesystem"
+  REGISTRY_STORAGE_PROVIDER_NAME: "{{ .Values.registry.storage.type }}"
