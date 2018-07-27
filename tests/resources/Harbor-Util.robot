@@ -102,17 +102,17 @@ Enable Notary Client
     Log  ${ip}
     ${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
     Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${ip}:4443/
+    ${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${notaryServerEndpoint}/
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${ip}:4443/
+    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${notaryServerEndpoint}/
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
     Log  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${ip}:4443/
+    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${notaryServerEndpoint}/
     Log  ${output}
 
 Prepare
