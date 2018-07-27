@@ -20,3 +20,12 @@ Because by default the local directory for storing meta files for notary client 
 alias notary="notary -s https://192.168.0.5:4443 -d ~/.docker/trust --tlscacert  /etc/docker/certs.d/192.168.0.5/ca.crt"
 
 ```
+
+### Change CA cert filename
+If you run into this problem:
+
+```
+error establishing connection to trust repository: Missing client certificate ca.cert for key ca.key
+```
+
+Please change your CA cert name to ```ca.cert```. Apply for 2 locations ```/etc/docker/certs.d/192.168.0.5/``` and ```~/.docker/tls/192.168.0.5:4443/```
