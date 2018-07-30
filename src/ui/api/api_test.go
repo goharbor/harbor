@@ -200,9 +200,10 @@ func TestMain(m *testing.M) {
 	if err := prepare(); err != nil {
 		panic(err)
 	}
-	defer clean()
 
-	os.Exit(m.Run())
+	ret := m.Run()
+	clean()
+	os.Exit(ret)
 }
 
 func prepare() error {
