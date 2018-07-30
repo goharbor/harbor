@@ -19,6 +19,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao"
@@ -70,6 +71,8 @@ func (u *Auth) OnBoardUser(user *models.User) error {
 	}
 	fillEmailRealName(user)
 	user.Comment = "From UAA"
+	user.CreationTime = time.Now().UTC() // Current time is register time
+
 	return dao.OnBoardUser(user)
 }
 

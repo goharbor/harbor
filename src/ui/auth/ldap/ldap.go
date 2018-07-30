@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/vmware/harbor/src/common"
 
@@ -124,8 +125,9 @@ func (l *Auth) OnBoardUser(u *models.User) error {
 			u.Email = u.Username + "@placeholder.com"
 		}
 	}
-	u.Password = "12345678AbC" //Password is not kept in local db
-	u.Comment = "from LDAP."   //Source is from LDAP
+	u.Password = "12345678AbC"        //Password is not kept in local db
+	u.Comment = "from LDAP."          //Source is from LDAP
+	u.CreationTime = time.Now().UTC() // Current time is register time
 
 	return dao.OnBoardUser(u)
 }
