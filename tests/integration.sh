@@ -150,17 +150,17 @@ fi
 if (echo $buildinfo | grep -q "\[Specific CI="); then
     buildtype=$(echo $buildinfo | grep "\[Specific CI=")
     testsuite=$(echo $buildtype | awk -F"\[Specific CI=" '{sub(/\].*/,"",$2);print $2}')
-    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip --removekeywords TAG:secret --suite $testsuite tests/robot-cases
+    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip -v notaryServerEndpoint:$container_ip:4443 --removekeywords TAG:secret --suite $testsuite tests/robot-cases
 elif (echo $buildinfo | grep -q "\[Full CI\]"); then
-    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip --removekeywords TAG:secret --exclude skip tests/robot-cases
+    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip -v notaryServerEndpoint:$container_ip:4443 --removekeywords TAG:secret --exclude skip tests/robot-cases
 elif (echo $buildinfo | grep -q "\[Skip CI\]"); then
     echo "Skip CI."
 elif (echo $buildinfo | grep -q "\[Upload Build\]"); then
     package_offline_installer
-    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip -v notaryServerEndpoint:$container_ip:4443 --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 else
     # default mode is BAT.
-    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
+    pybot -v HARBOR_ADMIN:$HARBOR_ADMIN -v HARBOR_PASSWORD:$HARBOR_PASSWORD -v ip:$container_ip -v notaryServerEndpoint:$container_ip:4443 --removekeywords TAG:secret --include BAT tests/robot-cases/Group0-BAT
 fi
 
 # rc is used to identify test run pass or fail.
