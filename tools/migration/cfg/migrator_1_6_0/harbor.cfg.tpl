@@ -4,43 +4,43 @@
 _version = 1.6.0
 #The IP address or hostname to access admin UI and registry service.
 #DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
-hostname = reg.mydomain.com
+hostname = $hostname
 
 #The protocol for accessing the UI and token/notification service, by default it is http.
 #It can be set to https if ssl is enabled on nginx.
-ui_url_protocol = http
+ui_url_protocol = $ui_url_protocol
 
 #Maximum number of job workers in job service  
-max_job_workers = 10 
+max_job_workers = 10
 
 #Determine whether or not to generate certificate for the registry's token.
 #If the value is on, the prepare script creates new root cert and private key 
 #for generating token to access the registry. If the value is off the default key/cert will be used.
 #This flag also controls the creation of the notary signer's cert.
-customize_crt = on
+customize_crt = $customize_crt
 
 #The path of cert and key files for nginx, they are applied only the protocol is set to https
-ssl_cert = /data/cert/server.crt
-ssl_cert_key = /data/cert/server.key
+ssl_cert = $ssl_cert
+ssl_cert_key = $ssl_cert_key
 
 #The path of secretkey storage
-secretkey_path = /data
+secretkey_path = $secretkey_path
 
 #Admiral's url, comment this attribute, or set its value to NA when Harbor is standalone
-admiral_url = NA
+admiral_url = $admiral_url
 
 #Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
-log_rotate_count = 50
+log_rotate_count = $log_rotate_count
 #Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes. 
 #If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G 
 #are all valid.
-log_rotate_size = 200M
+log_rotate_size = $log_rotate_size
 
 #Config http proxy for Clair, e.g. http://my.proxy.com:3128
 #Clair doesn't need to connect to harbor ui container via http proxy.
-http_proxy =
-https_proxy =
-no_proxy = 127.0.0.1,localhost,ui,registry
+http_proxy = $http_proxy
+https_proxy = $https_proxy
+no_proxy = $no_proxy
 
 #NOTES: The properties between BEGIN INITIAL PROPERTIES and END INITIAL PROPERTIES
 #only take effect in the first boot, the subsequent changes of these properties 
@@ -127,36 +127,39 @@ project_creation_restriction = everyone
 #######Harbor DB configuration section#######
 
 #The address of the Harbor database. Only need to change when using external db.
-db_host = postgresql
+db_host = $db_host
 
 #The password for the root user of Harbor DB. Change this before any production use.
-db_password = root123
+db_password = $db_password
 
 #The port of Harbor database host
-db_port = 5432
+db_port = $db_port
 
 #The user name of Harbor database
-db_user = postgres
+db_user = $db_user
 
 ##### End of Harbor DB configuration#######
 
 #The redis server address. Only needed in HA installation.
-#address:port[,weight,password,db_index]
-redis_url = redis:6379
+redis_url = $redis_url
 
 ##########Clair DB configuration############
 
 #Clair DB host address. Only change it when using an exteral DB.
-clair_db_host = postgresql
+clair_db_host = $clair_db_host
+
 #The password of the Clair's postgres database. Only effective when Harbor is deployed with Clair.
 #Please update it before deployment. Subsequent update will cause Clair's API server and Harbor unable to access Clair's database.
-clair_db_password = root123
+clair_db_password = $clair_db_password
+
 #Clair DB connect port
-clair_db_port = 5432
+clair_db_port = $clair_db_port
+
 #Clair DB username
-clair_db_username = postgres
+clair_db_username = $clair_db_username
+
 #Clair default database
-clair_db = postgres
+clair_db = $clair_db
 
 #The interval of clair updaters, the unit is hour, set to 0 to disable the updaters.
 clair_updaters_interval = 12
@@ -164,21 +167,16 @@ clair_updaters_interval = 12
 ##########End of Clair DB configuration############
 
 #The following attributes only need to be set when auth mode is uaa_auth
-uaa_endpoint = uaa.mydomain.org
-uaa_clientid = id
-uaa_clientsecret = secret
-uaa_verify_cert = true
-uaa_ca_cert = /path/to/ca.pem
+uaa_endpoint = $uaa_endpoint
+uaa_clientid = $uaa_clientid
+uaa_clientsecret = $uaa_clientsecret
+uaa_verify_cert = $uaa_verify_cert
+uaa_ca_cert = $uaa_ca_cert
 
 
 ### Docker Registry setting ###
 #registry_storage_provider can be: filesystem, s3, gcs, azure, etc.
-registry_storage_provider_name = filesystem
+registry_storage_provider_name = $registry_storage_provider_name
 #registry_storage_provider_config is a comma separated "key: value" pairs, e.g. "key1: value, key2: value2".
 #Refer to https://docs.docker.com/registry/configuration/#storage for all available configuration.
-registry_storage_provider_config =
-
-#If reload_config=true, all settings which present in harbor.cfg take effect after prepare and restart harbor, it overwrites exsiting settings.
-#reload_config=true
-#Regular expression to match skipped environment variables
-#skip_reload_env_pattern=(^EMAIL.*)|(^LDAP.*)
+registry_storage_provider_config = $registry_storage_provider_config
