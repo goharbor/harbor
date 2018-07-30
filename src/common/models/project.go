@@ -27,8 +27,8 @@ type Project struct {
 	ProjectID    int64             `orm:"pk;auto;column(project_id)" json:"project_id"`
 	OwnerID      int               `orm:"column(owner_id)" json:"owner_id"`
 	Name         string            `orm:"column(name)" json:"name"`
-	CreationTime time.Time         `orm:"column(creation_time)" json:"creation_time"`
-	UpdateTime   time.Time         `orm:"column(update_time)" json:"update_time"`
+	CreationTime time.Time         `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time         `orm:"column(update_time);auto_now" json:"update_time"`
 	Deleted      bool              `orm:"column(deleted)" json:"deleted"`
 	OwnerName    string            `orm:"-" json:"owner_name"`
 	Togglable    bool              `orm:"-" json:"togglable"`
