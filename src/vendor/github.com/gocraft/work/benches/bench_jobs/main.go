@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/albrow/jobs"
-	"github.com/garyburd/redigo/redis"
-	"github.com/gocraft/health"
 	"os"
 	"sync/atomic"
 	"time"
+
+	"github.com/albrow/jobs"
+	"github.com/gocraft/health"
+	"github.com/gomodule/redigo/redis"
 )
 
 var namespace = "jobs"
@@ -51,8 +52,8 @@ func main() {
 
 	job = stream.NewJob("run_all")
 	pool, err := jobs.NewPool(&jobs.PoolConfig{
-	// NumWorkers: 1000,
-	// BatchSize:  3000,
+		// NumWorkers: 1000,
+		// BatchSize:  3000,
 	})
 	if err != nil {
 		panic(err)

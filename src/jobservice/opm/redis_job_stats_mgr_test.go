@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 	"github.com/vmware/harbor/src/jobservice/job"
 	"github.com/vmware/harbor/src/jobservice/models"
 	"github.com/vmware/harbor/src/jobservice/utils"

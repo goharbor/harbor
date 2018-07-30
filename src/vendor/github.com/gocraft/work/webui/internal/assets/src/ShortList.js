@@ -1,9 +1,10 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import styles from './ShortList.css';
 
 export default class ShortList extends React.Component {
   static propTypes = {
-    item: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
+    item: PropTypes.arrayOf(PropTypes.string).isRequired,
   }
 
   render() {

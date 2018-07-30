@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/benmanns/goworker"
-	"github.com/garyburd/redigo/redis"
-	"github.com/gocraft/health"
 	"os"
 	"sync/atomic"
 	"time"
+
+	"github.com/benmanns/goworker"
+	"github.com/gocraft/health"
+	"github.com/gomodule/redigo/redis"
 )
 
 func myJob(queue string, args ...interface{}) error {

@@ -1,8 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export default class UnixTime extends React.Component {
   static propTypes = {
-    ts: React.PropTypes.number.isRequired,
+    ts: PropTypes.number.isRequired,
   }
 
   render() {

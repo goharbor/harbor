@@ -1,17 +1,15 @@
+import './TestSetup';
 import expect from 'expect';
 import Processes from './Processes';
 import React from 'react';
-import ReactTestUtils from 'react-addons-test-utils';
-import { findAllByTag } from './TestUtils';
+import { mount } from 'enzyme';
 
 describe('Processes', () => {
   it('shows workers', () => {
-    let r = ReactTestUtils.createRenderer();
-    r.render(<Processes />);
-    let processes = r.getMountedInstance();
+    let processes = mount(<Processes />);
 
-    expect(processes.state.busyWorker.length).toEqual(0);
-    expect(processes.state.workerPool.length).toEqual(0);
+    expect(processes.state().busyWorker.length).toEqual(0);
+    expect(processes.state().workerPool.length).toEqual(0);
 
     processes.setState({
       busyWorker: [
@@ -40,16 +38,15 @@ describe('Processes', () => {
       ]
     });
 
-    expect(processes.state.busyWorker.length).toEqual(1);
-    expect(processes.state.workerPool.length).toEqual(1);
-    expect(processes.workerCount).toEqual(3);
+    expect(processes.state().busyWorker.length).toEqual(1);
+    expect(processes.state().workerPool.length).toEqual(1);
+    expect(processes.instance().workerCount).toEqual(3);
 
     const expectedBusyWorker = [ { args_json: '{}', checkin: '123', checkin_at: 1467753603, job_name: 'job1', started_at: 1467753603, worker_id: '2' } ];
 
-    let output = r.getRenderOutput();
-    let busyWorkers = findAllByTag(output, 'BusyWorkers');
+    let busyWorkers = processes.find('BusyWorkers');
     expect(busyWorkers.length).toEqual(1);
-    expect(busyWorkers[0].props.worker).toEqual(expectedBusyWorker);
-    expect(processes.getBusyPoolWorker(processes.state.workerPool[0])).toEqual(expectedBusyWorker);
+    expect(busyWorkers.at(0).props().worker).toEqual(expectedBusyWorker);
+    expect(processes.instance().getBusyPoolWorker(processes.state().workerPool[0])).toEqual(expectedBusyWorker);
   });
 });

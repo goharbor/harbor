@@ -10,6 +10,7 @@ gocraft/work lets you enqueue and processes background jobs in Go. Jobs are dura
 * Enqueue unique jobs so that only one job with a given name/arguments exists in the queue at once.
 * Web UI to manage failed jobs and observe the system.
 * Periodically enqueue jobs on a cron-like schedule.
+* Pause / unpause jobs and control concurrency within and across processes
 
 ## Enqueue new jobs
 
@@ -19,7 +20,7 @@ To enqueue jobs, you need to make an Enqueuer with a redis namespace and a redig
 package main
 
 import (
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 	"github.com/gocraft/work"
 )
 
@@ -55,7 +56,7 @@ In order to process jobs, you'll need to make a WorkerPool. Add middleware and j
 package main
 
 import (
-	"github.com/garyburd/redigo/redis"
+	"github.com/gomodule/redigo/redis"
 	"github.com/gocraft/work"
 	"os"
 	"os/signal"
@@ -91,7 +92,7 @@ func main() {
 	pool.Job("send_email", (*Context).SendEmail)
 
 	// Customize options:
-	pool.JobWithOptions("export", JobOptions{Priority: 10, MaxFails: 1}, (*Context).Export)
+	pool.JobWithOptions("export", work.JobOptions{Priority: 10, MaxFails: 1}, (*Context).Export)
 
 	// Start processing jobs
 	pool.Start()
@@ -217,7 +218,7 @@ go install github.com/gocraft/work/cmd/workwebui
 
 Then, you can run it:
 ```bash
-workwebui -redis=":6379" -ns="work" -listen=":5040"
+workwebui -redis="redis:6379" -ns="work" -listen=":5040"
 ```
 
 Navigate to ```http://localhost:5040/```.
@@ -245,10 +246,11 @@ You'll see a view that looks like this:
 ### Processing a job
 
 * To process a job, a worker will execute a Lua script to atomically move a job its queue to an in-progress queue.
-* The worker will then run the job. The job will either finish successfully or result in an error or panic.
+  * A job is dequeued and moved to in-progress if the job queue is not paused and the number of active jobs does not exceed concurrency limit for the job type
+* The worker will then run the job and increment the job lock. The job will either finish successfully or result in an error or panic.
   * If the process completely crashes, the reaper will eventually find it in its in-progress queue and requeue it.
 * If the job is successful, we'll simply remove the job from the in-progress queue.
-* If the job returns an error or panic, we'll see how many retries a job has left. If it doesn't have any, we'll move it to the dead queue. If it has retries left, we'll consume a retry and add the job to the retry queue. 
+* If the job returns an error or panic, we'll see how many retries a job has left. If it doesn't have any, we'll move it to the dead queue. If it has retries left, we'll consume a retry and add the job to the retry queue.
 
 ### Workers and WorkerPools
 
@@ -283,11 +285,28 @@ You'll see a view that looks like this:
 * When a unique job is enqueued, we'll atomically set a redis key that includes the job name and arguments and enqueue the job.
 * When the job is processed, we'll delete that key to permit another job to be enqueued.
 
-### Periodic Jobs
+### Periodic jobs
 
 * You can tell a worker pool to enqueue jobs periodically using a cron schedule.
 * Each worker pool will wake up every 2 minutes, and if jobs haven't been scheduled yet, it will schedule all the jobs that would be executed in the next five minutes.
 * Each periodic job that runs at a given time has a predictable byte pattern. Since jobs are scheduled on the scheduled job queue (a Redis z-set), if the same job is scheduled twice for a given time, it can only exist in the z-set once.
+
+## Paused jobs
+
+* You can pause jobs from being processed from a specific queue by setting a "paused" redis key (see `redisKeyJobsPaused`)
+* Conversely, jobs in the queue will resume being processed once the paused redis key is removed
+
+## Job concurrency
+
+* You can control job concurrency using `JobOptions{MaxConcurrency: <num>}`.
+* Unlike the WorkerPool concurrency, this controls the limit on the number jobs of that type that can be active at one time by within a single redis instance
+* This works by putting a precondition on enqueuing function, meaning a new job will not be scheduled if we are at or over a job's `MaxConcurrency` limit
+* A redis key (see `redisKeyJobsLock`) is used as a counting semaphore in order to track job concurrency per job type
+* The default value is `0`, which means "no limit on job concurrency"
+* **Note:** if you want to run jobs "single threaded" then you can set the `MaxConcurrency` accordingly:
+```go
+      worker_pool.JobWithOptions(jobName, JobOptions{MaxConcurrency: 1}, (*Context).WorkFxn)
+```
 
 ### Terminology reference
 * "worker pool" - a pool of workers
@@ -301,10 +320,11 @@ You'll see a view that looks like this:
 * "job name" - each job has a name, like "create_watch"
 * "job type" - backend/private nomenclature for the handler+options for processing a job
 * "queue" - each job creates a queue with the same name as the job. only jobs named X go into the X queue.
-* "retry jobs" - If a job fails and needs to be retried, it will be put on this queue.
-* "scheduled jobs" - Jobs enqueued to be run in th future will be put on a scheduled job queue.
-* "dead jobs" - If a job exceeds its MaxFails count, it will be put on the dead job queue.
-
+* "retry jobs" - if a job fails and needs to be retried, it will be put on this queue.
+* "scheduled jobs" - jobs enqueued to be run in th future will be put on a scheduled job queue.
+* "dead jobs" - if a job exceeds its MaxFails count, it will be put on the dead job queue.
+* "paused jobs" - if paused key is present for a queue, then no jobs from that queue will be processed by any workers until that queue's paused key is removed
+* "job concurrency" - the number of jobs being actively processed  of a particular type across worker pool processes but within a single redis instance
 
 ## Benchmarks
 
@@ -333,5 +353,4 @@ These packages were developed by the [engineering team](https://eng.uservoice.co
 
 * Jonathan Novak -- [https://github.com/cypriss](https://github.com/cypriss)
 * Tai-Lin Chu -- [https://github.com/taylorchu](https://github.com/taylorchu)
-* Tyler Smith -- [https://github.com/tyler-smith](https://github.com/tyler-smith)
 * Sponsored by [UserVoice](https://eng.uservoice.com)

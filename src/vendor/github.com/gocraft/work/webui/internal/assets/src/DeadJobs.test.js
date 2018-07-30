@@ -1,17 +1,15 @@
+import './TestSetup';
 import expect from 'expect';
 import DeadJobs from './DeadJobs';
 import React from 'react';
-import ReactTestUtils from 'react-addons-test-utils';
-import { findAllByTag } from './TestUtils';
+import { mount } from 'enzyme';
 
 describe('DeadJobs', () => {
   it('shows dead jobs', () => {
-    let r = ReactTestUtils.createRenderer();
-    r.render(<DeadJobs />);
-    let deadJobs = r.getMountedInstance();
+    let deadJobs = mount(<DeadJobs />);
 
-    expect(deadJobs.state.selected.length).toEqual(0);
-    expect(deadJobs.state.jobs.length).toEqual(0);
+    expect(deadJobs.state().selected.length).toEqual(0);
+    expect(deadJobs.state().jobs.length).toEqual(0);
 
     deadJobs.setState({
       count: 2,
@@ -21,64 +19,54 @@ describe('DeadJobs', () => {
       ]
     });
 
-    expect(deadJobs.state.selected.length).toEqual(0);
-    expect(deadJobs.state.jobs.length).toEqual(2);
+    expect(deadJobs.state().selected.length).toEqual(0);
+    expect(deadJobs.state().jobs.length).toEqual(2);
 
-    let output = r.getRenderOutput();
-    let checkbox = findAllByTag(output, 'input');
+    let checkbox = deadJobs.find('input');
     expect(checkbox.length).toEqual(3);
+    expect(checkbox.at(0).props().checked).toEqual(false);
+    expect(checkbox.at(1).props().checked).toEqual(false);
+    expect(checkbox.at(2).props().checked).toEqual(false);
 
-    expect(checkbox[0].props.checked).toEqual(false);
-    expect(checkbox[1].props.checked).toEqual(false);
-    expect(checkbox[2].props.checked).toEqual(false);
-
-    checkbox[0].props.onChange();
-
-    output = r.getRenderOutput();
-    checkbox = findAllByTag(output, 'input');
+    checkbox.at(0).simulate('change');
+    checkbox = deadJobs.find('input');
     expect(checkbox.length).toEqual(3);
-    expect(checkbox[0].props.checked).toEqual(true);
-    expect(checkbox[1].props.checked).toEqual(true);
-    expect(checkbox[2].props.checked).toEqual(true);
+    expect(checkbox.at(0).props().checked).toEqual(true);
+    expect(checkbox.at(1).props().checked).toEqual(true);
+    expect(checkbox.at(2).props().checked).toEqual(true);
 
-    checkbox[1].props.onChange();
-
-    output = r.getRenderOutput();
-    checkbox = findAllByTag(output, 'input');
+    checkbox.at(1).simulate('change');
+    checkbox = deadJobs.find('input');
     expect(checkbox.length).toEqual(3);
-    expect(checkbox[0].props.checked).toEqual(true);
-    expect(checkbox[1].props.checked).toEqual(false);
-    expect(checkbox[2].props.checked).toEqual(true);
+    expect(checkbox.at(0).props().checked).toEqual(true);
+    expect(checkbox.at(1).props().checked).toEqual(false);
+    expect(checkbox.at(2).props().checked).toEqual(true);
 
-    checkbox[1].props.onChange();
-    output = r.getRenderOutput();
-    checkbox = findAllByTag(output, 'input');
+    checkbox.at(1).simulate('change');
+    checkbox = deadJobs.find('input');
     expect(checkbox.length).toEqual(3);
-    expect(checkbox[0].props.checked).toEqual(true);
-    expect(checkbox[1].props.checked).toEqual(true);
-    expect(checkbox[2].props.checked).toEqual(true);
+    expect(checkbox.at(0).props().checked).toEqual(true);
+    expect(checkbox.at(1).props().checked).toEqual(true);
+    expect(checkbox.at(2).props().checked).toEqual(true);
 
-    let button = findAllByTag(output, 'button');
+    let button = deadJobs.find('button');
     expect(button.length).toEqual(4);
-    button[0].props.onClick();
-    button[1].props.onClick();
-    button[2].props.onClick();
-    button[3].props.onClick();
+    button.at(0).simulate('click');
+    button.at(1).simulate('click');
+    button.at(2).simulate('click');
+    button.at(3).simulate('click');
 
-    checkbox[0].props.onChange();
+    checkbox.at(0).simulate('change');
 
-    output = r.getRenderOutput();
-    checkbox = findAllByTag(output, 'input');
+    checkbox = deadJobs.find('input');
     expect(checkbox.length).toEqual(3);
-    expect(checkbox[0].props.checked).toEqual(false);
-    expect(checkbox[1].props.checked).toEqual(false);
-    expect(checkbox[2].props.checked).toEqual(false);
+    expect(checkbox.at(0).props().checked).toEqual(false);
+    expect(checkbox.at(1).props().checked).toEqual(false);
+    expect(checkbox.at(2).props().checked).toEqual(false);
   });
 
   it('has pages', () => {
-    let r = ReactTestUtils.createRenderer();
-    r.render(<DeadJobs />);
-    let deadJobs = r.getMountedInstance();
+    let deadJobs = mount(<DeadJobs />);
 
     let genJob = (n) => {
       let job = [];
@@ -98,14 +86,13 @@ describe('DeadJobs', () => {
       jobs: genJob(21)
     });
 
-    expect(deadJobs.state.jobs.length).toEqual(21);
-    expect(deadJobs.state.page).toEqual(1);
+    expect(deadJobs.state().jobs.length).toEqual(21);
+    expect(deadJobs.state().page).toEqual(1);
 
-    let output = r.getRenderOutput();
-    let pageList = findAllByTag(output, 'PageList');
+    let pageList = deadJobs.find('PageList');
     expect(pageList.length).toEqual(1);
 
-    pageList[0].props.jumpTo(2)();
-    expect(deadJobs.state.page).toEqual(2);
+    pageList.at(0).props().jumpTo(2)();
+    expect(deadJobs.state().page).toEqual(2);
   });
 });
