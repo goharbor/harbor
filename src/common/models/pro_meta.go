@@ -38,7 +38,7 @@ type ProjectMetadata struct {
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	Name         string    `orm:"column(name)" json:"name"`
 	Value        string    `orm:"column(value)" json:"value"`
-	CreationTime time.Time `orm:"column(creation_time)" json:"creation_time"`
-	UpdateTime   time.Time `orm:"column(update_time)" json:"update_time"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 	Deleted      bool      `orm:"column(deleted)" json:"deleted"`
 }

@@ -31,8 +31,8 @@ type Label struct {
 	Level        string    `orm:"column(level)" json:"-"`
 	Scope        string    `orm:"column(scope)" json:"scope"`
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
-	CreationTime time.Time `orm:"column(creation_time)" json:"creation_time"`
-	UpdateTime   time.Time `orm:"column(update_time)" json:"update_time"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 	Deleted      bool      `orm:"column(deleted)" json:"deleted"`
 }
 
@@ -74,8 +74,8 @@ type ResourceLabel struct {
 	ResourceID   int64     `orm:"column(resource_id)"`
 	ResourceName string    `orm:"column(resource_name)"`
 	ResourceType string    `orm:"column(resource_type)"`
-	CreationTime time.Time `orm:"column(creation_time)"`
-	UpdateTime   time.Time `orm:"column(update_time)"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add"`
+	UpdateTime   time.Time `orm:"column(update_time);auto_now"`
 }
 
 // TableName ...
