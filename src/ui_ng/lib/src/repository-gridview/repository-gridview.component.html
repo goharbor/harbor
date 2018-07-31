@@ -55,7 +55,7 @@
                     <div [ngClass]="{'card-media-block': true, 'wrap': !withAdmiral }">
                         <img *ngIf="withAdmiral" [src]="getImgLink(item)"/>
                         <div class="card-media-description">
-                            <span class="card-media-title">{{item.name}}</span>
+                            <span class="card-media-title" [title]="item.name">{{item.name}}</span>
                             <p class="card-media-text">{{registryUrl}}</p>
                         </div>
                     </div>
