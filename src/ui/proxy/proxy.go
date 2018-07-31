@@ -14,9 +14,6 @@ var Proxy *httputil.ReverseProxy
 
 var handlers handlerChain
 
-// RegistryProxyPrefix is the prefix of url on UI.
-const RegistryProxyPrefix = "/registryproxy"
-
 type handlerChain struct {
 	head http.Handler
 }

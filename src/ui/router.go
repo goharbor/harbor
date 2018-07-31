@@ -128,7 +128,7 @@ func initRouters() {
 	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
 	beego.Router("/service/token", &token.Handler{})
 
-	beego.Router("/registryproxy/*", &controllers.RegistryProxy{}, "*:Handle")
+	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 
 	//APIs for chart repository
 	if config.WithChartMuseum() {
