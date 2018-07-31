@@ -157,7 +157,7 @@ Compile and Up Harbor With Source Code
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${golang_image}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  make install GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make install swagger_client GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     Sleep  20

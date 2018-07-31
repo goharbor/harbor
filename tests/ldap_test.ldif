@@ -87,6 +87,31 @@ member: cn=user026,ou=people,dc=example,dc=com
 objectclass: groupOfNames
 objectclass: top
 
+# Group Entry harbor_guest
+dn: cn=harbor_guest,ou=groups,dc=example,dc=com
+cn: harbor_guest
+description: harbor guest
+member: cn=guest_user,ou=people,dc=example,dc=com
+objectclass: groupOfNames
+objectclass: top
+
+# Group Entry harbor_dev
+dn: cn=harbor_dev,ou=groups,dc=example,dc=com
+cn: harbor_dev
+description: harbor developers
+member: cn=dev_user,ou=people,dc=example,dc=com
+objectclass: groupOfNames
+objectclass: top
+
+# Group Entry harbor_admin
+dn: cn=harbor_admin,ou=groups,dc=example,dc=com
+cn: harbor_admin
+description: harbor developers
+member: cn=admin_user,ou=people,dc=example,dc=com
+objectclass: groupOfNames
+objectclass: top
+
+
 # User belongs to harbor_user
 dn: cn=mike,ou=people,dc=example,dc=com
 cn: mike
@@ -652,4 +677,63 @@ sn: user026
 uid: user026
 uidnumber: 5030
 userpassword: {MD5}wb68DeX0CyENafzUADNn9A==
+
+dn: cn=guest_user,ou=people,dc=example,dc=com
+cn: guest_user
+gidnumber: 10000
+givenname: guest_user
+homedirectory: /home/guest_user
+loginshell: /bin/bash
+mail: guest_user@example.com
+objectclass: top
+objectclass: posixAccount
+objectclass: shadowAccount
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+objectclass: person
+sn: guest_user
+uid: guest_user
+uidnumber: 6001
+userpassword: {MD5}wb68DeX0CyENafzUADNn9A==
+memberof: cn=harbor_guest,ou=groups,dc=example,dc=com
+
+dn: cn=dev_user,ou=people,dc=example,dc=com
+cn: dev_user
+gidnumber: 10000
+givenname: guest_user
+homedirectory: /home/dev_user
+loginshell: /bin/bash
+mail: dev_user@example.com
+objectclass: top
+objectclass: posixAccount
+objectclass: shadowAccount
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+objectclass: person
+sn: dev_user
+uid: dev_user
+uidnumber: 6002
+userpassword: {MD5}wb68DeX0CyENafzUADNn9A==
+memberof: cn=harbor_dev,ou=groups,dc=example,dc=com
+
+dn: cn=admin_user,ou=people,dc=example,dc=com
+cn: admin_user
+gidnumber: 10000
+givenname: admin_user
+homedirectory: /home/admin_user
+loginshell: /bin/bash
+mail: admin_user@example.com
+objectclass: top
+objectclass: posixAccount
+objectclass: shadowAccount
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+objectclass: person
+sn: admin_user
+uid: admin_user
+uidnumber: 6003
+userpassword: {MD5}wb68DeX0CyENafzUADNn9A==
+memberof: cn=harbor_admin,ou=groups,dc=example,dc=com
+
+
 

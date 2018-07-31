@@ -53,3 +53,4 @@ Resource  OVA-Util.robot
 Resource  Cert-Util.robot
 Resource  SeleniumUtil.robot
 Resource  Nightly-Util.robot
+Resource  APITest-Util.robot
