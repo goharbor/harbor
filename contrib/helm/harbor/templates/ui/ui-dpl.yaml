@@ -51,7 +51,7 @@ spec:
           subPath: key
         - name: ui-secrets-private-key
           mountPath: /etc/ui/private_key.pem
-          subPath: private_key.pem
+          subPath: tokenServicePrivateKey
         {{- if eq .Values.externalProtocol "https" }}
         {{- if .Values.ingress.enabled }}
         {{- if eq .Values.ingress.tls.secretName "" }}
@@ -76,9 +76,6 @@ spec:
       - name: ui-secrets-private-key
         secret:
           secretName: "{{ template "harbor.fullname" . }}-ui"
-          items:
-            - key: private_key.pem
-              path: private_key.pem
       {{- if eq .Values.externalProtocol "https" }}
       {{- if .Values.ingress.enabled }}
       {{- if eq .Values.ingress.tls.secretName "" }}

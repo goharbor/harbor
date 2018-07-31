@@ -34,14 +34,14 @@ spec:
           mountPath: /etc/notary
         - name: root-certificate
           mountPath: /root.crt
-          subPath: root.crt
+          subPath: tokenServiceRootCertBundle
       volumes:
       - name: notary-config
         configMap:
           name: "{{ template "harbor.fullname" . }}-notary"
       - name: root-certificate
         secret:
-          secretName: "{{ template "harbor.fullname" . }}-registry"
+          secretName: "{{ template "harbor.fullname" . }}-ui"
     {{- with .Values.notary.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
