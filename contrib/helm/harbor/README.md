@@ -34,7 +34,7 @@ helm init
 Download Harbor helm chart code.
 ```bash
 git clone https://github.com/vmware/harbor
-cd contrib/helm/harbor
+cd harbor/contrib/helm/harbor
 ```
 Download external dependent charts required by Harbor chart.
 ```bash
