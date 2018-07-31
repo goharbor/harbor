@@ -31,11 +31,26 @@ create table harbor_user (
  reset_uuid varchar(40) DEFAULT NULL,
  salt varchar(40) DEFAULT NULL,
  sysadmin_flag smallint DEFAULT 0 NOT NULL,
- creation_time timestamp,
- update_time timestamp,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP,
  UNIQUE (username),
  UNIQUE (email)
 );
+
+CREATE FUNCTION update_update_time_at_column() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+  BEGIN
+    NEW.update_time = NOW();
+    RETURN NEW;
+  END;
+$$;
+
+/* 
+The trigger for harbor_user and project should be added by alembic pgsql v1.6.0, 
+put them here is to reduce DB operation, make all things be done in the creation of DB.
+*/
+CREATE TRIGGER harbor_user_update_time_at_modtime BEFORE UPDATE ON harbor_user FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
 create table project (
  project_id int PRIMARY KEY NOT NULL,
@@ -45,14 +60,16 @@ create table project (
  and 11 is reserved for marking the deleted project.
  */
  name varchar (255) NOT NULL,
- creation_time timestamp,
- update_time timestamp,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP,
  deleted smallint DEFAULT 0 NOT NULL,
  /*
  FOREIGN KEY (owner_id) REFERENCES harbor_user(user_id),
  */
  UNIQUE (name)
 );
+
+CREATE TRIGGER project_update_time_at_modtime BEFORE UPDATE ON project FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
 create table project_member (
  id int NOT NULL,
@@ -69,15 +86,6 @@ create table project_member (
  PRIMARY KEY (id),
  CONSTRAINT unique_project_entity_type UNIQUE (project_id, entity_id, entity_type)
 );
-
-CREATE FUNCTION update_update_time_at_column() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-  BEGIN
-    NEW.update_time = NOW();
-    RETURN NEW;
-  END;
-$$;
 
 CREATE TRIGGER project_member_update_time_at_modtime BEFORE UPDATE ON project_member FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
@@ -118,7 +126,7 @@ create table access_log (
  repo_tag varchar (128),
  GUID varchar(64), 
  operation varchar(20) NOT NULL,
- op_time timestamp,
+ op_time timestamp default CURRENT_TIMESTAMP,
  primary key (log_id)
 );
 
