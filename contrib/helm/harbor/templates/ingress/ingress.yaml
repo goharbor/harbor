@@ -2,7 +2,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: "{{ template "harbor.fullname" . }}-ingress-ui-notary"
+  name: "{{ template "harbor.fullname" . }}-ingress"
   labels:
 {{ include "harbor.labels" . | indent 4 }}
   annotations:
@@ -34,35 +34,4 @@ spec:
         backend:
           serviceName: {{ template "harbor.notaryServiceName" . }}
           servicePort: 4443
-
----
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: "{{ template "harbor.fullname" . }}-ingress-registry"
-  labels:
-{{ include "harbor.labels" . | indent 4 }}
-  annotations:
-{{ toYaml .Values.ingress.annotations | indent 4 }}
-    nginx.ingress.kubernetes.io/rewrite-target: /registryproxy/v2
-    ingress.kubernetes.io/rewrite-target: /registryproxy/v2
-spec:
-{{ if eq .Values.externalProtocol "https" }}
-  tls:
-  - hosts:
-    - "{{ .Values.externalDomain }}"
-    {{ if eq .Values.ingress.tls.secretName "" }}
-    secretName: "{{ template "harbor.fullname" . }}-ingress"
-    {{ else }}
-    secretName: {{ .Values.ingress.tls.secretName }}
-    {{ end }}
-{{ end }}
-  rules:
-  - host: "{{ .Values.externalDomain }}"
-    http:
-      paths:
-      - path: /v2
-        backend:
-          serviceName: {{ template "harbor.fullname" . }}-ui
-          servicePort: 80
 {{ end }}
