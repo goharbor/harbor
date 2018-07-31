@@ -1,8 +1,7 @@
+@import '../mixin';
+
 .rightPos{
-    position: absolute;
-    z-index: 100;
-    right: 35px;
-    margin-top: 4px;
+    @include grid-left-top-pos;
 }
 
 .toolbar {
@@ -13,7 +12,7 @@
     display: inline-block;
     height: 16px;
     width: 2px;
-    background-color: #cccccc;
+    background-color: #ccc;
     padding-top: 12px;
     padding-bottom: 12px;
     position: relative;
@@ -41,8 +40,8 @@
 }
 
 .card-media-title {
-    overflow: hidden;
     height: 24px;
+    @include text-overflow;
 }
 .card-media-text {
     overflow: hidden;
