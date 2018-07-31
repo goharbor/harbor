@@ -34,6 +34,7 @@ import { SessionUser } from "../../shared/session-user";
 import { AddGroupComponent } from './add-group/add-group.component';
 import { MemberService } from "./member.service";
 import { AddMemberComponent } from "./add-member/add-member.component";
+import {AppConfigService} from "../../app-config.service";
 
 @Component({
   templateUrl: "member.component.html",
@@ -57,6 +58,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   isDelete = false;
   isChangeRole = false;
   loading = false;
+  isLdapMode: boolean = false;
 
   isChangingRole = false;
   batchChangeRoleInfos = {};
@@ -76,6 +78,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     private OperateDialogService: ConfirmationDialogService,
     private session: SessionService,
     private operationService: OperationService,
+    private appConfigService: AppConfigService,
     private ref: ChangeDetectorRef) {
 
     this.delSub = OperateDialogService.confirmationConfirm$.subscribe(message => {
@@ -107,6 +110,9 @@ export class MemberComponent implements OnInit, OnDestroy {
       this.hasProjectAdminRole = (<Project>resolverData["projectResolver"]).has_project_admin_role;
     }
     this.retrieve(this.projectId, "");
+    if (this.appConfigService.isLdapMode()) {
+      this.isLdapMode = true;
+    }
   }
 
   doSearch(searchMember: string) {

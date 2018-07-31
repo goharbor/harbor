@@ -1,9 +1,13 @@
+body {
+    overflow-y: hidden;
+}
+
 .app-loading {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    margin-top: -54px;
-    margin-left: -54px;
+    top: 0;
+    left: 0;
+    right:0;
+    bottom:0;
     width: 108px !important;
     height: 108px !important;
 }
@@ -51,7 +55,8 @@
 
 /* set overflow bar style */
 ::-webkit-scrollbar {
-    width: 8px;background:transparent;
+    width: 8px;
+    background:transparent;
 }
 ::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 2px rgba(0,0,0,0.3);
@@ -66,6 +71,6 @@
     background: rgba(255,0,0,0.4);
 }
 .custom-h2 {
-    margin-top: 0px !important;
+    margin-top: 0 !important;
     line-height: 24px;
 }

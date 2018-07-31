@@ -16,7 +16,7 @@
             <button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()" [disabled]="!hasProjectAdminRole">
                 <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'MEMBER.NEW_USER' | translate }}</span>
             </button>
-            <button class="btn btn-sm btn-secondary" (click)="openAddGroupModal()" [disabled]="!hasProjectAdminRole">
+            <button class="btn btn-sm btn-secondary" (click)="openAddGroupModal()" [disabled]="!hasProjectAdminRole || !isLdapMode">
                 <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'MEMBER.NEW_GROUP' | translate}}</span>
             </button>
             <clr-dropdown id='member-action' [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
