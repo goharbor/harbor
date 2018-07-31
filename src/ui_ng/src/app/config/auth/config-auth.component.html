@@ -137,12 +137,9 @@
             </clr-checkbox>
         </div>
         <div class="form-group">
-            <label for="ldapGroupBaseDN" class="required">{{'CONFIG.LDAP.LDAP_GROUP_BASE_DN' | translate}}</label>
-            <label for="ldapGroupBaseDN" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-lg tooltip-top-right">
-                <input name="ldapGroupBaseDN" type="text" #ldapGroupDNInput="ngModel" [(ngModel)]="currentConfig.ldap_group_base_dn.value"
-                    id="ldapGroupBaseDN" size="40" [disabled]="disabled(currentConfig.ldap_group_base_dn)">
-                <span class="tooltip-content"> {{'TOOLTIP.ITEM_REQUIRED' | translate}} </span>
-            </label>
+            <label for="ldapGroupBaseDN">{{'CONFIG.LDAP.LDAP_GROUP_BASE_DN' | translate}}</label>
+            <input name="ldapGroupBaseDN" class="padding-right-28" type="text" #ldapGroupDNInput="ngModel" [(ngModel)]="currentConfig.ldap_group_base_dn.value"
+                id="ldapGroupBaseDN" size="40" [disabled]="disabled(currentConfig.ldap_group_base_dn)">
             <clr-tooltip>
                 <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                 <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
@@ -151,12 +148,9 @@
             </clr-tooltip>
         </div>
         <div class="form-group">
-            <label for="ldapGroupFilter" class="required">{{'CONFIG.LDAP.LDAP_GROUP_FILTER' | translate}}</label>
-            <label for="ldapGroupFilter" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-lg tooltip-top-right">
-                <input name="ldapGroupFilter" type="text" #ldapGroupFilterInput="ngModel" [(ngModel)]="currentConfig.ldap_group_search_filter.value"
-                    id="ldapGroupFilter" size="40" [disabled]="disabled(currentConfig.ldap_group_search_filter)">
-                <span class="tooltip-content"> {{'TOOLTIP.ITEM_REQUIRED' | translate}} </span>
-            </label>
+            <label for="ldapGroupFilter">{{'CONFIG.LDAP.LDAP_GROUP_FILTER' | translate}}</label>
+            <input name="ldapGroupFilter" type="text" class="padding-right-28" #ldapGroupFilterInput="ngModel" [(ngModel)]="currentConfig.ldap_group_search_filter.value"
+                id="ldapGroupFilter" size="40" [disabled]="disabled(currentConfig.ldap_group_search_filter)">
             <clr-tooltip>
                 <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                 <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
@@ -165,12 +159,9 @@
             </clr-tooltip>
         </div>
         <div class="form-group">
-            <label for="ldapGroupGID" class="required">{{'CONFIG.LDAP.LDAP_GROUP_GID' | translate}}</label>
-            <label for="ldapGroupGID" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-lg tooltip-top-right">
-                <input name="ldapGroupGID" type="text" #ldapGroupDNInput="ngModel" [(ngModel)]="currentConfig.ldap_group_attribute_name.value"
-                    id="ldapGroupGID" size="40" [disabled]="disabled(currentConfig.ldap_group_attribute_name)">
-                <span class="tooltip-content"> {{'TOOLTIP.ITEM_REQUIRED' | translate}} </span>
-            </label>
+            <label for="ldapGroupGID">{{'CONFIG.LDAP.LDAP_GROUP_GID' | translate}}</label>
+            <input name="ldapGroupGID" class="padding-right-28" type="text" #ldapGroupDNInput="ngModel" [(ngModel)]="currentConfig.ldap_group_attribute_name.value"
+                id="ldapGroupGID" size="40" [disabled]="disabled(currentConfig.ldap_group_attribute_name)">
             <clr-tooltip>
                 <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                 <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
@@ -178,6 +169,19 @@
                 </clr-tooltip-content>
             </clr-tooltip>
         </div>
+        <!-- This is for ldap group admin dn -->
+        <div class="form-group">
+            <label>{{'CONFIG.LDAP.LDAP_GROUP_ADMIN_DN' | translate}}</label>
+            <input name="ldapGroupAdminDN" class="padding-right-28" type="text" #ldapGroupFilterInput="ngModel" [(ngModel)]="currentConfig.ldap_group_admin_dn.value"
+                id="ldapGroupAdminDN" size="40" [disabled]="disabled(currentConfig.ldap_group_admin_dn)">
+            <clr-tooltip>
+                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                    <span>{{'CONFIG.LDAP.LDAP_GROUP_ADMIN_DN_INFO' | translate}}</span>
+                </clr-tooltip-content>
+            </clr-tooltip>
+        </div>
+        <!-- End of ldap group admin dn -->
         <div class="form-group">
             <label for="ldapGroupScope">{{'CONFIG.LDAP.GROUP_SCOPE' | translate}}</label>
             <div class="select">
@@ -194,6 +198,7 @@
                 </clr-tooltip-content>
             </clr-tooltip>
         </div>
+
     </section>
     <section class="form-block">
         <div class="form-group">

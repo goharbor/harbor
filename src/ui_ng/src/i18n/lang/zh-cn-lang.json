@@ -553,6 +553,8 @@
             "LDAP_GROUP_FILTER_INFO": "LDAP组的过滤器",
             "LDAP_GROUP_GID": "LDAP组GID",
             "LDAP_GROUP_GID_INFO": "LDAP组的GID",
+            "LDAP_GROUP_ADMIN_DN": "LDAP组管理员DN",
+            "LDAP_GROUP_ADMIN_DN_INFO": "LDAP组管理员DN",
             "GROUP_SCOPE": "LDAP组搜索范围",
             "GROUP_SCOPE_INFO": "搜索范围"
         },
