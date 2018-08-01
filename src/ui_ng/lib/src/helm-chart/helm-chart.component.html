@@ -69,9 +69,9 @@
                 </div>
             </a>
         </div>
-        <div *ngIf="loading" [ngClass]="{'central-block-loading': isFirstPage, 'central-block-loading-more': !isFirstPage}">
+        <div *ngIf="loading">
             <span class="vertical-helper"></span>
-            <div class="spinner"></div>
+            <span class="spinner"></span>
         </div>
     </div>
     <clr-modal [(clrModalOpen)]="isUploadModalOpen" [clrModalStaticBackdrop]="true">
@@ -89,11 +89,11 @@
                     </div>
                 </section>
                 <button type="submit" class="btn btn-secondary" [disabled]="isUploading">
-                    <span *ngIf="!isUploading">{{'HELM_CHART.UPLOAD' | translate}}</span>
-                    <span *ngIf="isUploading" class="spinner spinner-inline">
-                        Loading...
-                    </span>
+                    <span>{{'HELM_CHART.UPLOAD' | translate}}</span>
                 </button>
+                <span *ngIf="isUploading" class="spinner spinner-inline">
+                    Loading...
+                </span>
             </form>
         </div>
     </clr-modal>

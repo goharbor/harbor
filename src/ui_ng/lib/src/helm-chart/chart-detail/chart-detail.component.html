@@ -15,11 +15,9 @@
             (click)="downloadChart()">{{'HELM_CHART.DOWNLOAD' | translate}}</button>
         </div>
     </div>
-    <div class="detail-loading" *ngIf="loading">
-        <span class="spinner">
-            Loading...
-        </span>
-    </div>
+    <span *ngIf="loading" class="spinner spinner-lg detail-loading">
+        Loading...
+    </span>
     <div *ngIf="!loading && isChartExist">
         <clr-tabs>
             <clr-tab>
