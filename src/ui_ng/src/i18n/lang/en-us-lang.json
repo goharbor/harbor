@@ -553,6 +553,8 @@
             "LDAP_GROUP_FILTER_INFO": "The filter of your LDAP group",
             "LDAP_GROUP_GID": "LDAP Group GID",
             "LDAP_GROUP_GID_INFO": "The Group gid of your LDAP group",
+            "LDAP_GROUP_ADMIN_DN": "LDAP Group Admin DN",
+            "LDAP_GROUP_ADMIN_DN_INFO": "The Admin DN of your LDAP group",
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope of your LDAP Group"
 
