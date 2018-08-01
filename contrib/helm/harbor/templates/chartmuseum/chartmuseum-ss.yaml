@@ -1,0 +1,72 @@
+{{- if .Values.chartmuseum.enabled }}
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: "{{ template "harbor.fullname" . }}-chartmuseum"
+  labels:
+{{ include "harbor.labels" . | indent 4 }}
+    component: chartmuseum
+spec:
+  replicas: 1
+  serviceName: "{{ template "harbor.fullname" . }}-chartmuseum"
+  selector:
+    matchLabels:
+{{ include "harbor.matchLabels" . | indent 6 }}
+      component: chartmuseum
+  template:
+    metadata:
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+        component: chartmuseum
+    spec:
+      containers:
+      - name: chartmuseum
+        image: {{ .Values.chartmuseum.image.repository }}:{{ .Values.chartmuseum.image.tag }}
+        imagePullPolicy: {{ .Values.chartmuseum.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.chartmuseum.resources | indent 10 }}
+        envFrom:
+        - configMapRef:
+            name: "{{ template "harbor.fullname" . }}-chartmuseum"
+        - secretRef:
+            name: "{{ template "harbor.fullname" . }}-chartmuseum"
+        ports:
+        - containerPort: 9999
+        # TODO: update it after moving the storage out of registry scope
+        {{- if (.Values.persistence.enabled) and eq .Values.registry.storage.type "filesystem" }}
+        volumeMounts:
+        - name: chartmuseum-data
+          mountPath: /chart_storage
+        {{- end }}
+      {{- with .Values.chartmuseum.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.chartmuseum.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.chartmuseum.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+  {{- if (.Values.persistence.enabled) and eq .Values.registry.storage.type "filesystem" }}
+  volumeClaimTemplates:
+  - metadata:
+      name: chartmuseum-data
+      labels:
+{{ include "harbor.labels" . | indent 8 }}
+    spec:
+      accessModes: [{{ .Values.chartmuseum.volumes.data.accessMode | quote }}]
+      {{- if .Values.chartmuseum.volumes.data.storageClass }}
+      {{- if (eq "-" .Values.chartmuseum.volumes.data.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.chartmuseum.volumes.data.storageClass }}"
+      {{- end }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.chartmuseum.volumes.data.size | quote }}
+  {{- end -}}
+{{- end }}

@@ -214,6 +214,25 @@ registry:
   tolerations: []
   affinity: {}
 
+chartmuseum:
+  enabled: true
+  image:
+    repository: vmware/chartmuseum-photon
+    tag: dev
+    pullPolicy: IfNotPresent
+  volumes:
+    data:
+      # storageClass: "-"
+      accessMode: ReadWriteOnce
+      size: 5Gi
+  # resources:
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 100m
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
 clair:
   enabled: true
   image:
