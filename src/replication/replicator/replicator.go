@@ -119,6 +119,9 @@ func (d *DefaultReplicator) Replicate(replication *Replication) error {
 
 			uuid, err := d.client.SubmitJob(job)
 			if err != nil {
+				if er := dao.UpdateRepJobStatus(id, common_models.JobError); er != nil {
+					log.Errorf("failed to update the status of job %d: %s", id, er)
+				}
 				return err
 			}
 
