@@ -70,7 +70,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: 'The page nubmer, default is 1.'
+          description: 'The page number, default is 1.'
         - name: page_size
           in: query
           type: integer
@@ -147,7 +147,7 @@ paths:
           description: Unexpected internal errors.
   '/projects/{project_id}':
     get:
-      summary: Return specific project detail infomation
+      summary: Return specific project detail information
       description: |
         This endpoint returns specific project information by project ID.
       parameters:
@@ -274,7 +274,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: 'The page nubmer, default is 1.'
+          description: 'The page number, default is 1.'
         - name: page_size
           in: query
           type: integer
@@ -374,7 +374,7 @@ paths:
           format: int64
         - name: meta_name
           in: path
-          description: The name of metadat.
+          description: The name of metadata.
           required: true
           type: string
       tags:
@@ -401,7 +401,7 @@ paths:
           description: The ID of project.
         - name: meta_name
           in: path
-          description: The name of metadat.
+          description: The name of metadata.
           required: true
           type: string
       tags:
@@ -432,7 +432,7 @@ paths:
           format: int64
         - name: meta_name
           in: path
-          description: The name of metadat.
+          description: The name of metadata.
           required: true
           type: string
       tags:
@@ -441,9 +441,9 @@ paths:
         '200':
           description: Metadata is deleted successfully.
         '400':
-          description: Invalid requst.
+          description: Invalid request.
         '403':
-          description: User need to log in first.
+          description: User needs to log in first.
         '404':
           description: Project or metadata does not exist.
         '500':
@@ -486,9 +486,9 @@ paths:
       summary: Create project member
       description: >-
         Create project member relationship, the member can be one of the user_member and group_member, 
-        The user_member need to specify user_id or username. If the user already exist in harbor DB, specify the user_id, 
+        The user_member need to specify user_id or username. If the user already exists in harbor DB, specify the user_id, 
         If does not exist in harbor DB, it will SearchAndOnBoard the user.
-        The group_member need to specify id or ldap_group_dn. If the group already exist in harbor DB. specify the user group's id, 
+        The group_member need to specify id or ldap_group_dn. If the group already exists in harbor DB. specify the user group's id, 
         If does not exist, it will SearchAndOnBoard the group. 
       tags:
        - Products
@@ -547,7 +547,7 @@ paths:
         '403':
           description: User in session does not have permission to the project.
         '404':
-          description: Project or projet member does not exist.
+          description: Project or project member does not exist.
         '500':
           description: Unexpected internal errors.  
     put:
@@ -618,7 +618,7 @@ paths:
       summary: Get projects number and repositories number relevant to the user
       description: >
         This endpoint is aimed to statistic all of the projects number and
-        repositories number relevant to the logined user, also the public
+        repositories number relevant to the logged in user, also the public
         projects number and repositories number. If the user is admin, he can
         also get total projects number and total repositories number.
       tags:
@@ -639,7 +639,7 @@ paths:
       summary: Get registered users of Harbor.
       description: >
         This endpoint is for user to search registered users, support for
-        filtering results with username.Notice, by now this operation is only
+        filtering results with username. Notice, by now this operation is only
         for administrator.
       parameters:
         - name: username
@@ -657,7 +657,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: 'The page nubmer, default is 1.'
+          description: 'The page number, default is 1.'
         - name: page_size
           in: query
           type: integer
@@ -711,7 +711,7 @@ paths:
     get:
       summary: Get current user info.
       description: |
-        This endpoint is to get the current user infomation.
+        This endpoint is to get the current user information.
       tags:
         - Products
       responses:
@@ -784,7 +784,7 @@ paths:
       summary: Mark a registered user as be removed.
       description: |
         This endpoint let administrator of Harbor mark a registered user as
-        be removed.It actually won't be deleted from DB.
+        be removed. It actually won't be deleted from DB.
       parameters:
         - name: user_id
           in: path
@@ -902,7 +902,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: 'The page nubmer, default is 1.'
+          description: 'The page number, default is 1.'
         - name: page_size
           in: query
           type: integer
@@ -1009,7 +1009,7 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have read permisson for the repository to perform the action.
+          description: Forbidden. User should have read permission for the repository to perform the action.
         '404':
           description: Repository not found.
     post:
@@ -1036,7 +1036,7 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have write permisson for the repository to perform the action.
+          description: Forbidden. User should have write permission for the repository to perform the action.
         '404':
           description: Resource not found.
   '/repositories/{repo_name}/labels/{label_id}':
@@ -1063,7 +1063,7 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have write permisson for the repository to perform the action.
+          description: Forbidden. User should have write permission for the repository to perform the action.
         '404':
           description: Resource not found.
   '/repositories/{repo_name}/tags/{tag}':
@@ -1179,7 +1179,7 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have read permisson for the image to perform the action.
+          description: Forbidden. User should have read permission for the image to perform the action.
         '404':
           description: Resource not found.
     post:
@@ -1211,7 +1211,7 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have write permisson for the image to perform the action.
+          description: Forbidden. User should have write permission for the image to perform the action.
         '404':
           description: Resource not found.
   '/repositories/{repo_name}/tags/{tag}/labels/{label_id}':
@@ -1243,14 +1243,14 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have write permisson for the image to perform the action.
+          description: Forbidden. User should have write permission for the image to perform the action.
         '404':
           description: Resource not found.
   '/repositories/{repo_name}/tags/{tag}/manifest':
     get:
       summary: Get manifests of a relevant repository.
       description: |
-        This endpoint aims to retreive manifests from a relevant repository.
+        This endpoint aims to retrieve manifests from a relevant repository.
       parameters:
         - name: repo_name
           in: path
@@ -1318,21 +1318,21 @@ paths:
       summary: Scan all images of the registry.
       description: >
         The server will launch different jobs to scan each image on the
-        regsitry, so this is equivalent to calling  the API to scan the image
+        registry, so this is equivalent to calling the API to scan the image
         one by one in background, so there's no way to track the overall status
-        of the "scan all" action.  Only system adim has permission to call this
+        of the "scan all" action.  Only system admin has permission to call this
         API.  
       parameters:
         - name: project_id
           in: query
           type: integer
           description: >-
-            When this parm is set only the images under the project identified
+            When this param is set only the images under the project identified
             by the project_id will be scanned.
       responses:
         '202':
           description: >-
-            The action is successully taken in the background.  If some images
+            The action is successfully taken in the background.  If some images
             are failed to scan it will only be reflected in the job status.
         '401':
           description: User needs to login or call the API with correct credentials.
@@ -1477,7 +1477,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: 'The page nubmer, default is 1.'
+          description: 'The page number, default is 1.'
         - name: page_size
           in: query
           type: integer
@@ -1548,7 +1548,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: 'The page nubmer, default is 1.'
+          description: 'The page number, default is 1.'
         - name: page_size
           in: query
           type: integer
@@ -1699,7 +1699,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer.
+          description: The page number.
         - name: page_size
           in: query
           type: integer
@@ -1837,7 +1837,7 @@ paths:
           type: integer
           format: int32
           required: false
-          description: The page nubmer.
+          description: The page number.
         - name: page_size
           in: query
           type: integer
@@ -2091,7 +2091,7 @@ paths:
           description: Ping target successfully.
         '400':
           description: >-
-            Target id is invalid/ endpoint is needed/ invaild URL/ network
+            Target id is invalid/ endpoint is needed/ invalid URL/ network
             issue.
         '401':
           description: >-
@@ -2311,7 +2311,7 @@ paths:
         '200':
           description: Ping ldap service successfully.
         '400':
-          description: Inviald ldap configuration parameters.
+          description: Invalid ldap configuration parameters.
         '401':
           description: User need to login first.
         '403':
@@ -2625,7 +2625,7 @@ paths:
         '200':
           description: Ping email server successfully.
         '400':
-          description: Inviald email server settings.
+          description: Invalid email server settings.
         '401':
           description: User need to login first.
         '403':
@@ -2734,7 +2734,7 @@ definitions:
       enable_content_trust:
         type: string
         description: >-
-          Whether content trust is enabled or not. If it is enabled, user cann't
+          Whether content trust is enabled or not. If it is enabled, user can't
           pull unsigned images from this project. The valid values are "true", "false".
       prevent_vulnerable_images_from_running:
         type: string
@@ -2743,7 +2743,7 @@ definitions:
         type: string
         description: >-
           If the vulnerability is high than severity defined here, the images
-          cann't be pulled. The valid values are "negligible", "low", "medium", "high", "critical".
+          can't be pulled. The valid values are "negligible", "low", "medium", "high", "critical".
       automatically_scan_images_on_push:
         type: string
         description: Whether scan images automatically when pushing. The valid values are "true", "false".
@@ -2834,7 +2834,7 @@ definitions:
         description: Description of permissions for the role.
       role_name:
         type: string
-        description: Name the the role.
+        description: Name the role.
       role_mask:
         type: string
   RoleParam:
@@ -2934,7 +2934,7 @@ definitions:
         description: The description of the policy.
       projects:
         type: array
-        description: The project list that the policy applys to.
+        description: The project list that the policy applies to.
         items:
           $ref: '#/definitions/Project'
       targets:
@@ -2983,7 +2983,7 @@ definitions:
       weekday:
         type: integer
         format: int8
-        description: 'Optional, only used when the type is weedly. The valid values are 1-7.'
+        description: 'Optional, only used when the type is weekly. The valid values are 1-7.'
       offtime:
         type: integer
         format: int64
@@ -3001,7 +3001,7 @@ definitions:
         description: The value of replication policy filter. When creating repository and tag filter, filling it with the pattern as string. When creating label filter, filling it with label ID as integer.
       pattern:
         type: string
-        description: Depraceted, use value instead. The replication policy filter pattern.
+        description: Deprecated, use value instead. The replication policy filter pattern.
       metadata:
         type: object
         description: This map object is the replication policy filter metadata.
@@ -3195,7 +3195,7 @@ definitions:
       last_update:
         type: integer
         description: >-
-          The UTC timestamp in miliseconds of last successful update for
+          The UTC timestamp in milliseconds of last successful update for
           vulnerability data.
   SystemInfo:
     type: object
@@ -3222,14 +3222,14 @@ definitions:
         description: The base dn of ldap service.
       ldap_filter:
         type: string
-        description: The serach filter of ldap service.
+        description: The search filter of ldap service.
       ldap_uid:
         type: string
-        description: The serach uid from ldap service attributes.
+        description: The search uid from ldap service attributes.
       ldap_scope:
         type: integer
         format: int64
-        description: The serach scope of ldap service.
+        description: The search scope of ldap service.
       ldap_connection_timeout:
         type: integer
         format: int64
@@ -3287,7 +3287,7 @@ definitions:
         description: Use ssl/tls or not.
       email_identity:
         type: string
-        description: The dentity of email server.
+        description: The identity of email server.
   RepoSignature:
     type: object
     properties:
@@ -3339,7 +3339,7 @@ definitions:
           scan_status:
             type: string
             description: >-
-              The status of the scan job, it can be "pendnig", "running",
+              The status of the scan job, it can be "pending", "running",
               "finished", "error".
           job_id:
             type: integer
@@ -3424,7 +3424,7 @@ definitions:
         description: '1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High'
       package:
         type: string
-        description: The packge that introduces the vulnerability.
+        description: The package that introduces the vulnerability.
       version:
         type: string
         description: The version of the package.
@@ -3542,7 +3542,7 @@ definitions:
               daily_time:
                 type: integer
                 description: >-
-                  The offest in seconds of UTC 0 o'clock, only valid when the
+                  The offset in seconds of UTC 0 o'clock, only valid when the
                   policy type is "daily"
             description: >-
               The parameters of the policy, the values are dependant on the type
