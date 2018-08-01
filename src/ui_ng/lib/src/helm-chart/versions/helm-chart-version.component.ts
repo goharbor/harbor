@@ -119,9 +119,6 @@ export class ChartVersionComponent implements OnInit {
           this.versionsCopy = versions.map(x => Object.assign({}, x));
         },
         err => {
-          if (err.status && err.status === 404) {
-            this.backEvt.emit();
-          }
           this.errorHandler.error(err);
         }
       );
@@ -163,7 +160,11 @@ export class ChartVersionComponent implements OnInit {
   deleteVersions(versions: HelmChartVersion[]) {
     if (versions && versions.length < 1) { return; }
     let versionObs = versions.map(v => this.deleteVersion(v));
-    Observable.forkJoin(versionObs).finally(() => this.refresh()).subscribe();
+    Observable.forkJoin(versionObs).finally(() => this.refresh()).subscribe(res => {
+      if (this.chartVersions.length === versionObs.length) {
+        this.backEvt.emit();
+      }
+    });
   }
 
   versionDownload(item?: HelmChartVersion) {
