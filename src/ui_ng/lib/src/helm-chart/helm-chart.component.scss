@@ -1,0 +1,68 @@
+.chart-tool {
+    position: relative;
+    .toolbar {
+        overflow: hidden;
+        .rightPos {
+            position: absolute;
+            z-index: 100;
+            right: 35px;
+            margin-top: 4px;
+            .filter-divider {
+                display: inline-block;
+                height: 16px;
+                width: 2px;
+                background-color: #cccccc;
+                padding-top: 12px;
+                padding-bottom: 12px;
+                position: relative;
+                top: 9px;
+                margin-right: 6px;
+                margin-left: 6px;
+            }
+        }
+    }
+}
+
+.card-container {
+    margin-top: 21px;
+    .card-header {
+        .card-media-block {
+            .card-media-description {
+                height: 45px;
+                p {
+                    margin-top: 0;
+                }
+                .card-media-title {
+                    overflow: hidden;
+                    height: 24px;
+                }
+                .card-media-text {
+                    overflow: hidden;
+                    height: 21px
+                }
+            }
+        }
+    }
+    .card-block {
+        margin-top: 24px;
+        min-height: 100px;
+        .form-group {
+            display: flex;
+            label {
+                width: 100px;
+            }
+        }
+    }
+}
+
+.vertical-helper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.spinner {
+    width: 100px;
+    height: 100px;
+    vertical-align: middle;
+}

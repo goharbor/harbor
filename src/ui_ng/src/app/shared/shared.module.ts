@@ -58,7 +58,23 @@ const uiLibConfig: IServiceConfig = {
   langCookieKey: "harbor-lang",
   langMessageLoader: "http",
   langMessagePathForHttpLoader: "i18n/lang/",
-  langMessageFileSuffixForHttpLoader: "-lang.json"
+  langMessageFileSuffixForHttpLoader: "-lang.json",
+  systemInfoEndpoint: "/api/systeminfo",
+  repositoryBaseEndpoint: "/api/repositories",
+  logBaseEndpoint: "/api/logs",
+  targetBaseEndpoint: "/api/targets",
+  replicationBaseEndpoint: "/api/replications",
+  replicationRuleEndpoint: "/api/policies/replication",
+  replicationJobEndpoint: "/api/jobs/replication",
+  vulnerabilityScanningBaseEndpoint: "/api/repositories",
+  projectPolicyEndpoint: "/api/projects/configs",
+  projectBaseEndpoint: "/api/projects",
+  localI18nMessageVariableMap: {},
+  configurationEndpoint: "/api/configurations",
+  scanJobEndpoint: "/api/jobs/scan",
+  labelEndpoint: "/api/labels",
+  helmChartEndpoint: "/api/chartrepo",
+  downloadChartEndpoint: "/chartrepo"
 };
 
 @NgModule({

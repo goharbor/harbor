@@ -40,7 +40,8 @@ export const enum ConfirmationTargets {
   TAG,
   CONFIG,
   CONFIG_ROUTE,
-  CONFIG_TAB
+  CONFIG_TAB,
+  HELM_CHART
 };
 
 export const enum ActionType {
@@ -87,3 +88,7 @@ export const LabelColor = [
   { 'color': '#F52F52', 'textColor': 'black' }, { 'color': '#FF5501', 'textColor': 'black' },
   { 'color': '#F57600', 'textColor': 'black' }, { 'color': '#FFDC0B', 'textColor': 'black' },
 ];
+
+export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
+
+export const DefaultHelmIcon = '/static/images/helm-logo.svg';

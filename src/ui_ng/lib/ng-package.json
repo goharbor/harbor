@@ -4,7 +4,8 @@
     "entryFile": "index.ts",
     "externals": {
       "@ngx-translate/core": "ngx-translate-core",
-      "@ngx-translate/core/index": "ngx-translate-core"
+      "@ngx-translate/core/index": "ngx-translate-core",
+      "ngx-markdown": "ngx-markdown"
      }
   }
 }

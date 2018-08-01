@@ -47,8 +47,15 @@
         </div>
     </div>
 
-    <hbr-gridview *ngIf="isCardView" #gridView style="position:relative;" [items]="repositories" [loading]="loading" [pageSize]="pageSize"
-        [currentPage]="currentPage" [totalCount]="totalCount" [expectScrollPercent]="90" [withAdmiral]="withAdmiral" (loadNextPageEvent)="loadNextPage()">
+    <hbr-gridview *ngIf="isCardView" #gridView style="position:relative;" 
+    [items]="repositories" 
+    [loading]="loading"
+    [pageSize]="pageSize"
+    [currentPage]="currentPage"
+    [totalCount]="totalCount"
+    [expectScrollPercent]="90"
+    [withAdmiral]="withAdmiral"
+    (loadNextPageEvent)="loadNextPage()">
         <ng-template let-item="item">
             <a class="card clickable" (click)="watchRepoClickEvt(item)">
                 <div class="card-header">
@@ -84,7 +91,7 @@
                             <button *ngIf="withAdmiral" type="button" class="btn btn-link" clrDropdownItem (click)="itemAddInfoEvent($event, item)" [disabled]="!hasProjectAdminRole">
                                 {{'REPOSITORY.ADDITIONAL_INFO' | translate}}
                             </button>
-                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, item)" [disabled]="!hasProjectAdminRole">
+                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, [item])" [disabled]="!hasProjectAdminRole">
                                 {{'REPOSITORY.DELETE' | translate}}
                             </button>
                         </clr-dropdown-menu>

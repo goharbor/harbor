@@ -1,4 +1,4 @@
-FROM node:7.5.0
+FROM node:10.7.0
 
 RUN mkdir -p /harbor_resources
 RUN mkdir -p /harbor_src
@@ -7,14 +7,26 @@ COPY src/ui_ng/package.json /harbor_resources
 COPY make/dev/nodeclarity/entrypoint.sh /
 
 # Install Chrome
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
-RUN echo "deb http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list
-RUN apt-get update && apt-get -y install google-chrome-stable
+RUN apt-get update && apt-get install -y \
+	apt-transport-https \
+	ca-certificates \
+	curl \
+	gnupg \
+	hicolor-icon-theme \
+	libcanberra-gtk* \
+	libgl1-mesa-dri \
+	libgl1-mesa-glx \
+	libpango1.0-0 \
+	libpulse0 \
+	libv4l-0 \
+	--no-install-recommends
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+RUN dpkg -i google-chrome-stable_current_amd64.deb; apt-get -fy install
+RUN rm google-chrome-stable_current_amd64.deb
 
 # Install npm package
 WORKDIR /harbor_resources
 
-RUN npm __proxy__ install -g @angular/cli  && \
-	npm __proxy__ install && \
+RUN npm __proxy__ install && \
     chmod u+x /entrypoint.sh
 VOLUME ["/harbor_src"]

@@ -292,7 +292,6 @@
         "TEST_CONNECTION_SUCCESS": "Connexion testée avec succès.",
         "TEST_CONNECTION_FAILURE": "Echec du ping du point final.",
         "NAME": "Nom",
-        "STATUS": "Status",
         "PROJECT": "Projet",
         "NAME_IS_REQUIRED": "Le nom est obligatoire.",
         "DESCRIPTION": "Description",

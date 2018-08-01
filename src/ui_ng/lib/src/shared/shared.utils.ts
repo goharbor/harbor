@@ -45,27 +45,3 @@ export const errorHandler = function (error: any): string {
         }
     }
 };
-
-export class CancelablePromise<T> {
-
-  constructor(promise: Promise<T>) {
-    this.wrappedPromise = new Promise((resolve, reject) => {
-      promise.then((val) =>
-        this.isCanceled ? reject({isCanceled: true}) : resolve(val)
-      );
-      promise.catch((error) =>
-        this.isCanceled ? reject({isCanceled: true}) : reject(error)
-      );
-    });
-  }
-
-  private wrappedPromise: Promise<T>;
-  private isCanceled: boolean;
-  getPromise(): Promise<T> {
-    return this.wrappedPromise;
-  }
-
-  cancel() {
-    this.isCanceled = true;
-  }
-}

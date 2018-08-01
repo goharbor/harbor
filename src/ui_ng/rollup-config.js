@@ -21,7 +21,11 @@ export default {
   plugins: [
       nodeResolve({jsnext: true, module: true, browser: true}),
       commonjs({
-        include: ['node_modules/**'],
+        namedExports: {
+          'node_modules/ngx-markdown/dist/lib/index.js': ['MarkdownModule']
+        },
+        include: ['node_modules/**',
+        'node_modules/ngx-markdown/**'],
       }),
       uglify()
   ]

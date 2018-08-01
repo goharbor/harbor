@@ -57,6 +57,12 @@ export const HTTP_GET_OPTIONS: RequestOptions = new RequestOptions({
     })
 });
 
+export const FILE_UPLOAD_OPTION: RequestOptions = new RequestOptions({
+    headers: new Headers({
+        "Content-Type": 'multipart/form-data',
+    })
+});
+
 /**
  * Build http request options
  *
@@ -288,3 +294,15 @@ export function clone(srcObj: any): any {
     if (!srcObj) { return null; };
     return JSON.parse(JSON.stringify(srcObj));
 }
+
+export function downloadFile(fileData) {
+    let url = window.URL.createObjectURL(fileData.data);
+        let a = document.createElement("a");
+        document.body.appendChild(a);
+        a.setAttribute("style", "display: none");
+        a.href = url;
+        a.download = fileData.filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+};

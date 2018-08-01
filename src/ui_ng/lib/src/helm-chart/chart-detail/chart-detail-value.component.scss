@@ -1,0 +1,15 @@
+.value-container {
+    ::ng-deep pre {
+        min-height: fit-content;
+    }
+}
+
+.swichy-container {
+    margin-top: 3px;
+    margin-right: 15px;
+}
+
+pre {
+    max-height: max-content;
+    padding-left: 21px;
+}

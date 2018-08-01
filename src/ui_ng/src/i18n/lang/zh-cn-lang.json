@@ -311,7 +311,6 @@
         "TEST_CONNECTION_SUCCESS": "测试连接成功。",
         "TEST_CONNECTION_FAILURE": "测试连接失败。",
         "NAME": "名称",
-        "STATUS": "状态",
         "PROJECT": "项目",
         "NAME_IS_REQUIRED": "名称为必填项。",
         "DESCRIPTION": "描述",

@@ -18,6 +18,7 @@ import { HttpModule } from '@angular/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from 'clarity-angular';
 import { CookieModule } from 'ngx-cookie';
+import { MarkdownModule } from 'ngx-markdown';
 
 @NgModule({
     imports: [
@@ -26,6 +27,7 @@ import { CookieModule } from 'ngx-cookie';
         HttpModule,
         ClarityModule.forRoot(),
         CookieModule.forRoot(),
+        MarkdownModule.forRoot(),
         BrowserAnimationsModule
     ],
     exports: [
@@ -33,7 +35,8 @@ import { CookieModule } from 'ngx-cookie';
         FormsModule,
         HttpModule,
         ClarityModule,
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        MarkdownModule
     ]
 })
 export class CoreModule {

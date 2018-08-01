@@ -311,7 +311,6 @@
         "TEST_CONNECTION_SUCCESS": "Conexión comprobada satisfactoriamente.",
         "TEST_CONNECTION_FAILURE": "Fallo al conectar con el endpoint.",
         "NAME": "Nombre",
-        "STATUS": "Status",
         "PROJECT": "Proyecto",
         "NAME_IS_REQUIRED": "El nombre es obligatorio.",
         "DESCRIPTION": "Descripción",

@@ -26,3 +26,4 @@ export * from './gridview/index';
 export * from './repository-gridview/index';
 export * from './operation/index';
 export * from './_animations/index';
+export * from './helm-chart/index';
