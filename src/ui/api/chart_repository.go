@@ -263,13 +263,13 @@ func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 	existsing, err := cra.ProjectMgr.Exists(namespace)
 	if err != nil {
 		//Check failed with error
-		cra.RenderError(http.StatusInternalServerError, fmt.Sprintf("failed to check existence of namespace %s with error: %s", namespace, err.Error()))
+		cra.renderError(http.StatusInternalServerError, fmt.Sprintf("failed to check existence of namespace %s with error: %s", namespace, err.Error()))
 		return false
 	}
 
 	//Not existing
 	if !existsing {
-		cra.HandleBadRequest(fmt.Sprintf("namespace %s is not existing", namespace))
+		cra.renderError(http.StatusBadRequest, fmt.Sprintf("namespace %s is not existing", namespace))
 		return false
 	}
 
@@ -312,7 +312,7 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 		}
 	default:
 		//access rejected for invalid scope
-		cra.RenderError(http.StatusForbidden, "unrecognized access scope")
+		cra.renderError(http.StatusForbidden, "unrecognized access scope")
 		return false
 	}
 
@@ -320,40 +320,21 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 	if err != nil {
 		//Unauthenticated, return 401
 		if !cra.SecurityCtx.IsAuthenticated() {
-			cra.HandleUnauthorized()
+			cra.renderError(http.StatusUnauthorized, "Unauthorized")
 			return false
 		}
 
 		//Authenticated, return 403
-		cra.RenderError(http.StatusForbidden, err.Error())
+		cra.renderError(http.StatusForbidden, err.Error())
 		return false
 	}
 
 	return true
 }
 
-//Initialize the chart service controller
-func initializeChartController() (*chartserver.Controller, error) {
-	addr, err := config.GetChartMuseumEndpoint()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get the endpoint URL of chart storage server: %s", err.Error())
-	}
-
-	addr = strings.TrimSuffix(addr, "/")
-	url, err := url.Parse(addr)
-	if err != nil {
-		return nil, errors.New("Endpoint URL of chart storage server is malformed")
-	}
-
-	controller, err := chartserver.NewController(url)
-	if err != nil {
-		return nil, errors.New("Failed to initialize chart API controller")
-	}
-
-	hlog.Debugf("Chart storage server is set to %s", url.String())
-	hlog.Info("API controller for chart repository server is successfully initialized")
-
-	return controller, nil
+//write error message with unified format
+func (cra *ChartRepositoryAPI) renderError(code int, text string) {
+	chartserver.WriteError(cra.Ctx.ResponseWriter, code, errors.New(text))
 }
 
 //formFile is used to represent the uploaded files in the form
@@ -415,6 +396,30 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 	request.Body = ioutil.NopCloser(&body)
 
 	return nil
+}
+
+//Initialize the chart service controller
+func initializeChartController() (*chartserver.Controller, error) {
+	addr, err := config.GetChartMuseumEndpoint()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get the endpoint URL of chart storage server: %s", err.Error())
+	}
+
+	addr = strings.TrimSuffix(addr, "/")
+	url, err := url.Parse(addr)
+	if err != nil {
+		return nil, errors.New("Endpoint URL of chart storage server is malformed")
+	}
+
+	controller, err := chartserver.NewController(url)
+	if err != nil {
+		return nil, errors.New("Failed to initialize chart API controller")
+	}
+
+	hlog.Debugf("Chart storage server is set to %s", url.String())
+	hlog.Info("API controller for chart repository server is successfully initialized")
+
+	return controller, nil
 }
 
 //Check if the request content type is "multipart/form-data"
