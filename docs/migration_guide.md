@@ -5,7 +5,9 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 *If your install Harbor for the first time, or the database version is the same as that of the lastest version, you do not need any database migration.*
 
 **NOTE:**
-- From v1.5.0 on, the migration tool add support for the harbor.cfg migration, which supports upgrade from v1.2.x, v1.3.x and v1.4.x.  
+- From v1.6.0 on, Harbor migrates DB from MariaDB to Postgresql, and combines Harbor, Notary and Clair DB into one. 
+
+- From v1.5.0 on, the migration tool add support for the harbor.cfg migration, which supports upgrade from v1.2.x, v1.3.x and v1.4.x.
 
 - From v1.2 on, you need to use the release version as the tag of the migrator image. 'latest' is no longer used for new release.
 
@@ -45,7 +47,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     docker run -it --rm -e DB_USR=root -e DB_PWD={db_pwd} -v ${harbor_db_path}:/var/lib/mysql -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg -v ${backup_path}:/harbor-migration/backup vmware/harbor-migrator:[tag] backup
     ```
 
-    **NOTE:** By default, the migrator handles the backup for DB or CFG. If you want to backup DB or CFG only, refer to the following commands:
+    **NOTE:** By default, the migrator handles the backup for DB or CFG. If you want to backup DB or CFG only, refer to the following commands.
     
     ```
     docker run -it --rm -e DB_USR=root -e DB_PWD={db_pwd} -v ${harbor_db_path}:/var/lib/mysql -v ${backup_path}:/harbor-migration/backup vmware/harbor-migrator:[tag] --db backup
@@ -57,15 +59,28 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 
 6.  Upgrade database schema, harbor.cfg and migrate data.
 
+    **NOTE:** In v1.6.0, you needs to DO three sequential steps to fully migrate Harbor, Notary and Clair's DB. The migration of Notary and Clair's DB depends on Harbor's DB, you need to first upgrade Harbor's DB, then upgrade Notary and Clair's DB. The following command handles the upgrade for Harbor DB and CFG, not include Notary and Clair DB. 
+
     ```
     docker run -it --rm -e DB_USR=root -e DB_PWD={db_pwd} -v ${harbor_db_path}:/var/lib/mysql -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg vmware/harbor-migrator:[tag] up
     ```
 
-    **NOTE:** By default, the migrator handles the upgrade for DB and CFG. If you want to upgrade DB or CFG only, 
-    refer to the following commands:
+    **NOTE:** You must run migration of Notary and Clair's DB before launch Harbor. If you want to upgrade Notary and Clair DB, refer to the following commands:
+
+    ```
+    docker run -it --rm -e DB_USR=root -v /data/notary-db/:/var/lib/mysql -v /data/database:/var/lib/postgresql/data vmware/harbor-migrator:${tag} --db up
+
+    docker run -it --rm -v /data/clair-db/:/clair-db -v /data/database:/var/lib/postgresql/data vmware/harbor-migrator:${tag} --db up
+    ```
+
+    **NOTE:** If you want to upgrade DB or CFG only, refer to the following commands:
     
     ```
     docker run -it --rm -e DB_USR=root -e DB_PWD={db_pwd} -v ${harbor_db_path}:/var/lib/mysql vmware/harbor-migrator:[tag] --db up
+
+    docker run -it --rm -e DB_USR=root -v /data/notary-db/:/var/lib/mysql -v /data/database:/var/lib/postgresql/data vmware/harbor-migrator:${tag} --db up
+
+    docker run -it --rm -v /data/clair-db/:/clair-db -v /data/database:/var/lib/postgresql/data vmware/harbor-migrator:${tag} --db up
     ```
 
     ```
@@ -82,10 +97,17 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     ```
     will be occurred during upgrading from harbor 1.2 to harbor 1.3, just ignore them if harbor can start successfully.
 
+    ```
+    /usr/lib/python2.7/site-packages/psycopg2/__init__.py:144: UserWarning: The psycopg2 wheel package will be renamed from release 2.8; in order to keep installing from binary please use "pip install psycopg2-binary" instead. For details see: <http://initd.org/psycopg/docs/install.html#binary-install-from-pypi>.
+    ```
+    will be occurred during upgrading from harbor <= v1.5.0 to harbor v1.6.0, just ignore them if harbor can start successfully.
+
 7. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance. If you choose to install Harbor with components like Notary and/or Clair, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.
 
 ### Roll back from an upgrade
 For any reason, if you want to roll back to the previous version of Harbor, follow the below steps:
+
+**NOTE:** Roll back doesn't support upgrade across v1.5.0, like from v1.2.0 to v1.6.0. It's because Harbor changes DB to Postgresql from v1.6.0, the migrator cannot roll back data to MariaDB.    
 
 1. Stop and remove the current Harbor service if it is still running.
 
