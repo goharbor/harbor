@@ -83,24 +83,26 @@ func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.
 		return
 	}
 
+	//Get and check namespace
+	//even we get the data from cache
+	var namespace string
+
+	repoValue := req.Context().Value(NamespaceContextKey)
+	if repoValue != nil {
+		if ns, ok := repoValue.(string); ok {
+			namespace = ns
+		}
+	}
+
+	if len(strings.TrimSpace(namespace)) == 0 {
+		WriteInternalError(w, errors.New("failed to extract namespace from the request"))
+		return
+	}
+
 	//Query cache
 	chartDetails := mh.chartCache.GetChart(chartV.Digest)
 	if chartDetails == nil {
 		//NOT hit!!
-		var namespace string
-
-		repoValue := req.Context().Value(NamespaceContextKey)
-		if repoValue != nil {
-			if ns, ok := repoValue.(string); ok {
-				namespace = ns
-			}
-		}
-
-		if len(strings.TrimSpace(namespace)) == 0 {
-			WriteInternalError(w, errors.New("failed to extract namespace from the request"))
-			return
-		}
-
 		content, err := mh.getChartVersionContent(namespace, chartV.URLs[0])
 		if err != nil {
 			WriteInternalError(w, err)
@@ -115,26 +117,6 @@ func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.
 		}
 		chartDetails.Metadata = chartV
 
-		//Generate the security report
-		//prov file share same endpoint with the chart version
-		//Just add .prov suffix to the chart version to form the path of prov file
-		//Anyway, there will be a report about the digital signature status
-		chartDetails.Security = &SecurityReport{
-			Signature: &DigitalSignature{
-				Signed: false,
-			},
-		}
-		//Try to get the prov file to confirm if it is exitsing
-		provFilePath := fmt.Sprintf("%s.prov", chartV.URLs[0])
-		provBytes, err := mh.getChartVersionContent(namespace, provFilePath)
-		if err == nil && len(provBytes) > 0 {
-			chartDetails.Security.Signature.Signed = true
-			chartDetails.Security.Signature.Provenance = provFilePath
-		} else {
-			//Just log it
-			hlog.Errorf("Failed to get prov file for chart %s with error: %s, got %d bytes", chartV.Name, err.Error(), len(provBytes))
-		}
-
 		//Put it into the cache for next access
 		mh.chartCache.PutChart(chartDetails)
 	} else {
@@ -143,6 +125,28 @@ func (mh *ManipulationHandler) GetChartVersion(w http.ResponseWriter, req *http.
 			chartDetails.Metadata.Name,
 			chartDetails.Metadata.Version,
 			chartDetails.Metadata.Digest)
+	}
+	//The change of prov file will not cause any influence to the digest of chart,
+	//and then the digital signature status should be not cached
+	//
+	//Generate the security report
+	//prov file share same endpoint with the chart version
+	//Just add .prov suffix to the chart version to form the path of prov file
+	//Anyway, there will be a report about the digital signature status
+	chartDetails.Security = &SecurityReport{
+		Signature: &DigitalSignature{
+			Signed: false,
+		},
+	}
+	//Try to get the prov file to confirm if it is exitsing
+	provFilePath := fmt.Sprintf("%s.prov", chartV.URLs[0])
+	provBytes, err := mh.getChartVersionContent(namespace, provFilePath)
+	if err == nil && len(provBytes) > 0 {
+		chartDetails.Security.Signature.Signed = true
+		chartDetails.Security.Signature.Provenance = provFilePath
+	} else {
+		//Just log it
+		hlog.Errorf("Failed to get prov file for chart %s with error: %s, got %d bytes", chartV.Name, err.Error(), len(provBytes))
 	}
 
 	bytes, err := json.Marshal(chartDetails)
