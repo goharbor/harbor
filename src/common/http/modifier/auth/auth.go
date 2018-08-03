@@ -42,6 +42,6 @@ func (s *SecretAuthorizer) Modify(req *http.Request) error {
 	if req == nil {
 		return errors.New("the request is null")
 	}
-	secret.AddToRequest(req, s.secret)
-	return nil
+	err := secret.AddToRequest(req, s.secret)
+	return err
 }
