@@ -28,6 +28,7 @@ export class AppConfig {
     next_scan_all: number;
     registry_storage_provider_name: string;
     read_only: boolean;
+    with_chartmuseum: boolean;
 
     constructor() {
         // Set default value
@@ -48,5 +49,6 @@ export class AppConfig {
         this.next_scan_all = 0;
         this.registry_storage_provider_name = "";
         this.read_only = false;
+        this.with_chartmuseum = false;
     }
 }

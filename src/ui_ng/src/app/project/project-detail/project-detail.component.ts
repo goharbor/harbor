@@ -67,6 +67,10 @@ export class ProjectDetailComponent {
     return this.appConfigService.getConfig().with_admiral;
   }
 
+  public get withHelmChart(): boolean {
+    return this.appConfigService.getConfig().with_chartmuseum;
+  }
+
   backToProject(): void {
     if (window.sessionStorage) {
       window.sessionStorage.setItem('fromDetails', 'true');
