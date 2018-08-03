@@ -54,8 +54,10 @@
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate }}</clr-dg-column>
                 <clr-dg-row *ngFor="let v of chartVersions" [clrDgItem]="v">
                     <clr-dg-cell>
-                        <span class="list-img"><img [src]="getImgLink(v)"/></span>
-                        <a href="javascript:void(0)" (click)="onVersionClick(v)">{{ v.version }}</a>
+                        <span class="list-img">
+                            <img  [src]="v.icon ?v.icon:chartDefaultIcon"  (error)="getDefaultIcon(v);" />
+                        </span>
+                        <a href="#" (click)="onVersionClick(v)">{{ v.version }}</a>
                     </clr-dg-cell>
                     <clr-dg-cell>{{ v.engine }}</clr-dg-cell>
                     <clr-dg-cell>{{ getMaintainerString(v.maintainers) }}</clr-dg-cell>

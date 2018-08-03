@@ -319,8 +319,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           if (!data.value.deleted) {
             count++;
             this.filterLabelInfo.push(data.value);
-          }
-          if (data.value.deleted) {
+          } else {
             this.deletedLabelCount++;
             delLabel += data.value.name + ',';
           }
