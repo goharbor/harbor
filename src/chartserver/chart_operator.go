@@ -154,7 +154,12 @@ func getTheTwoCharts(chartVersions helm_repo.ChartVersions) (latestChart *helm_r
 		if latestChart == nil {
 			latestChart = chartVersion
 		} else {
-			lVersion, _ := semver.NewVersion(latestChart.Version)
+			lVersion, err := semver.NewVersion(latestChart.Version)
+			if err != nil {
+				//ignore it, just logged
+				hlog.Warningf("Malformed semversion %s for the chart %s", latestChart.Version, chartVersion.Name)
+				continue
+			}
 			if lVersion.LessThan(currentV) {
 				latestChart = chartVersion
 			}

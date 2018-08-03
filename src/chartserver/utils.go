@@ -18,8 +18,10 @@ const (
 func WriteError(w http.ResponseWriter, code int, err error) {
 	errorObj := make(map[string]string)
 	errorObj["error"] = err.Error()
-	errorContent, _ := json.Marshal(errorObj)
-
+	errorContent, errorMarshal := json.Marshal(errorObj)
+	if errorMarshal != nil {
+		errorContent = []byte(err.Error())
+	}
 	w.WriteHeader(code)
 	w.Write(errorContent)
 }
