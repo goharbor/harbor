@@ -201,6 +201,7 @@ export interface SystemInfo {
   with_clair?: boolean;
   with_notary?: boolean;
   with_admiral?: boolean;
+  with_chartmuseum?: boolean;
   admiral_endpoint?: string;
   auth_mode?: string;
   registry_url?: string;
