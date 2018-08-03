@@ -15,7 +15,6 @@
             </a>
         </div>
     </section>
-
     <section class="form-block" *ngIf="showUAA">
         <div class="form-group">
             <label for="uaa-endpoint" class="required">{{'CONFIG.UAA.ENDPOINT' | translate}}</label>
@@ -127,16 +126,6 @@
             </a>
         </div>
         <div class="form-group">
-            <label for="ldapVerifyCert">{{'CONFIG.LDAP.VERIFY_CERT' | translate}}</label>
-            <clr-checkbox name="ldapVerifyCert" id="ldapVerifyCert" [clrChecked]="currentConfig.ldap_verify_cert.value" [clrDisabled]="disabled(currentConfig.ldap_scope)"
-                (clrCheckedChange)="setVerifyCertValue($event)">
-                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">
-                    <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                    <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_CERT' | translate}}</span>
-                </a>
-            </clr-checkbox>
-        </div>
-        <div class="form-group">
             <label for="ldapGroupBaseDN">{{'CONFIG.LDAP.LDAP_GROUP_BASE_DN' | translate}}</label>
             <input name="ldapGroupBaseDN" class="padding-right-28" type="text" #ldapGroupDNInput="ngModel" [(ngModel)]="currentConfig.ldap_group_base_dn.value"
                 id="ldapGroupBaseDN" size="40" [disabled]="disabled(currentConfig.ldap_group_base_dn)">
@@ -198,22 +187,8 @@
                 </clr-tooltip-content>
             </clr-tooltip>
         </div>
-
     </section>
     <section class="form-block">
-        <div class="form-group">
-            <label for="proCreation">{{'CONFIG.PRO_CREATION_RESTRICTION' | translate}}</label>
-            <div class="select">
-                <select id="proCreation" name="proCreation" [(ngModel)]="currentConfig.project_creation_restriction.value" [disabled]="disabled(currentConfig.project_creation_restriction)">
-                    <option value="everyone">{{'CONFIG.PRO_CREATION_EVERYONE' | translate }}</option>
-                    <option value="adminonly">{{'CONFIG.PRO_CREATION_ADMIN' | translate }}</option>
-                </select>
-            </div>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top: -1px;">
-                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                <span class="tooltip-content">{{'CONFIG.TOOLTIP.PRO_CREATION_RESTRICTION' | translate}}</span>
-            </a>
-        </div>
         <div class="form-group" *ngIf="showSelfReg">
             <label for="selfReg">{{'CONFIG.SELF_REGISTRATION' | translate}}</label>
             <clr-checkbox name="selfReg" id="selfReg" [(ngModel)]="currentConfig.self_registration.value" [disabled]="disabled(currentConfig.self_registration)">
@@ -223,6 +198,18 @@
                     <ng-template #elseBlock>
                         <span class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_DISABLE' | translate}}</span>
                     </ng-template>
+                </a>
+            </clr-checkbox>
+        </div>
+    </section>
+    <section>
+        <div class="form-group">
+            <label for="ldapVerifyCert">{{'CONFIG.LDAP.VERIFY_CERT' | translate}}</label>
+            <clr-checkbox name="ldapVerifyCert" id="ldapVerifyCert" [clrChecked]="currentConfig.ldap_verify_cert.value" [clrDisabled]="disabled(currentConfig.ldap_scope)"
+                (clrCheckedChange)="setVerifyCertValue($event)">
+                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">
+                    <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                    <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_CERT' | translate}}</span>
                 </a>
             </clr-checkbox>
         </div>

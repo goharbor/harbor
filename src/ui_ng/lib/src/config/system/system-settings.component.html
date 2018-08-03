@@ -2,6 +2,19 @@
 <section class="form-block" style="margin-top:0px;margin-bottom:0px;">
   <label style="font-size:14px;font-weight:600;" *ngIf="showSubTitle">{{'CONFIG.SYSTEM' | translate}}</label>
   <div class="form-group">
+    <label for="proCreation">{{'CONFIG.PRO_CREATION_RESTRICTION' | translate}}</label>
+    <div class="select">
+        <select id="proCreation" name="proCreation" [(ngModel)]="systemSettings.project_creation_restriction.value" [disabled]="disabled(systemSettings.project_creation_restriction)">
+            <option value="everyone">{{'CONFIG.PRO_CREATION_EVERYONE' | translate }}</option>
+            <option value="adminonly">{{'CONFIG.PRO_CREATION_ADMIN' | translate }}</option>
+        </select> 
+    </div>
+    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top: -1px;">
+        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+        <span class="tooltip-content">{{'CONFIG.TOOLTIP.PRO_CREATION_RESTRICTION' | translate}}</span>
+    </a>
+  </div>
+  <div class="form-group">
       <label for="tokenExpiration" class="required">{{'CONFIG.TOKEN_EXPIRATION' | translate}}</label>
       <label for="tokenExpiration" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="tokenExpirationInput.invalid && (tokenExpirationInput.dirty || tokenExpirationInput.touched)">
         <input name="tokenExpiration" type="text" #tokenExpirationInput="ngModel" [(ngModel)]="systemSettings.token_expiration.value" 

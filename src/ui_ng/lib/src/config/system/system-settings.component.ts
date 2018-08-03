@@ -44,6 +44,10 @@ export class SystemSettingsComponent {
         this.systemSettings.read_only.value = $event;
     }
 
+    disabled(prop: any): boolean {
+        return !(prop && prop.editable);
+    }
+
     get canDownloadCert(): boolean {
         return this.hasAdminRole && this.hasCAFile;
     }
