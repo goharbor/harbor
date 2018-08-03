@@ -91,7 +91,7 @@
                             <button *ngIf="withAdmiral" type="button" class="btn btn-link" clrDropdownItem (click)="itemAddInfoEvent($event, item)" [disabled]="!hasProjectAdminRole">
                                 {{'REPOSITORY.ADDITIONAL_INFO' | translate}}
                             </button>
-                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, [item])" [disabled]="!hasProjectAdminRole">
+                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, item)" [disabled]="!hasProjectAdminRole">
                                 {{'REPOSITORY.DELETE' | translate}}
                             </button>
                         </clr-dropdown-menu>
