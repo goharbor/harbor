@@ -15,9 +15,11 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao/project"
@@ -34,6 +36,12 @@ type ProjectMemberAPI struct {
 	entityType string
 	project    *models.Project
 }
+
+// ErrDuplicateProjectMember ...
+var ErrDuplicateProjectMember = errors.New("The project member specified already exist")
+
+// ErrInvalidRole ...
+var ErrInvalidRole = errors.New("Failed to update project member, role is not in 1,2,3")
 
 // Prepare validates the URL and parms
 func (pma *ProjectMemberAPI) Prepare() {
@@ -121,12 +129,25 @@ func (pma *ProjectMemberAPI) Post() {
 	projectID := pma.project.ProjectID
 	var request models.MemberReq
 	pma.DecodeJSONReq(&request)
-	pmid, err := AddOrUpdateProjectMember(projectID, request)
+	request.MemberGroup.LdapGroupDN = strings.TrimSpace(request.MemberGroup.LdapGroupDN)
+
+	pmid, err := AddProjectMember(projectID, request)
 	if err == auth.ErrorGroupNotExist || err == auth.ErrorUserNotExist {
 		pma.HandleNotFound(fmt.Sprintf("Failed to add project member, error: %v", err))
 		return
-	}
-	if err != nil {
+	} else if err == auth.ErrDuplicateLDAPGroup {
+		pma.HandleConflict(fmt.Sprintf("Failed to add project member, already exist LDAP group or project member, groupDN:%v", request.MemberGroup.LdapGroupDN))
+		return
+	} else if err == ErrDuplicateProjectMember {
+		pma.HandleConflict(fmt.Sprintf("Failed to add project member, already exist LDAP group or project member, groupMemberID:%v", request.MemberGroup.ID))
+		return
+	} else if err == ErrInvalidRole {
+		pma.HandleBadRequest(fmt.Sprintf("Invalid role ID, role ID %v", request.Role))
+		return
+	} else if err == auth.ErrInvalidLDAPGroupDN {
+		pma.HandleBadRequest(fmt.Sprintf("Invalid LDAP DN: %v", request.MemberGroup.LdapGroupDN))
+		return
+	} else if err != nil {
 		pma.HandleInternalServerError(fmt.Sprintf("Failed to add project member, error: %v", err))
 		return
 	}
@@ -160,8 +181,8 @@ func (pma *ProjectMemberAPI) Delete() {
 	}
 }
 
-// AddOrUpdateProjectMember ... If the project member relationship does not exist, create it. if exist, update it
-func AddOrUpdateProjectMember(projectID int64, request models.MemberReq) (int, error) {
+// AddProjectMember ...
+func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 	var member models.Member
 	member.ProjectID = projectID
 	member.Role = request.Role
@@ -179,18 +200,20 @@ func AddOrUpdateProjectMember(projectID int64, request models.MemberReq) (int, e
 		}
 		member.EntityID = userID
 	} else if len(request.MemberGroup.LdapGroupDN) > 0 {
-		member.EntityType = common.GroupMember
-		//If groupname provided, use the provided groupname
-		//If ldap group already exist in harbor, use the previous group name
+
+		//If groupname provided, use the provided groupname to name this group
 		groupID, err := auth.SearchAndOnBoardGroup(request.MemberGroup.LdapGroupDN, request.MemberGroup.GroupName)
 		if err != nil {
 			return 0, err
 		}
 		member.EntityID = groupID
+		member.EntityType = common.GroupMember
 	}
 	if member.EntityID <= 0 {
 		return 0, fmt.Errorf("Can not get valid member entity, request: %+v", request)
 	}
+
+	//Check if member already exist in current project
 	memberList, err := project.GetProjectMember(models.Member{
 		ProjectID:  member.ProjectID,
 		EntityID:   member.EntityID,
@@ -200,12 +223,12 @@ func AddOrUpdateProjectMember(projectID int64, request models.MemberReq) (int, e
 		return 0, err
 	}
 	if len(memberList) > 0 {
-		project.UpdateProjectMemberRole(memberList[0].ID, member.Role)
-		return 0, nil
+		return 0, ErrDuplicateProjectMember
 	}
 
 	if member.Role < 1 || member.Role > 3 {
-		return 0, fmt.Errorf("Failed to update project member, role is not in 1,2,3 role:%v", member.Role)
+		//Return invalid role error
+		return 0, ErrInvalidRole
 	}
 	return project.AddProjectMember(member)
 }

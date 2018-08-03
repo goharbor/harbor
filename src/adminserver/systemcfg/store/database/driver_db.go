@@ -31,14 +31,15 @@ const (
 
 var (
 	numKeys = map[string]bool{
-		common.EmailPort:       true,
-		common.LDAPScope:       true,
-		common.LDAPTimeout:     true,
-		common.TokenExpiration: true,
-		common.MaxJobWorkers:   true,
-		common.CfgExpiration:   true,
-		common.ClairDBPort:     true,
-		common.PostGreSQLPort:  true,
+		common.EmailPort:            true,
+		common.LDAPScope:            true,
+		common.LDAPGroupSearchScope: true,
+		common.LDAPTimeout:          true,
+		common.TokenExpiration:      true,
+		common.MaxJobWorkers:        true,
+		common.CfgExpiration:        true,
+		common.ClairDBPort:          true,
+		common.PostGreSQLPort:       true,
 	}
 	boolKeys = map[string]bool{
 		common.WithClair:        true,

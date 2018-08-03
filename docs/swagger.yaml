@@ -513,13 +513,15 @@ paths:
         '201':
           description: Project member created successfully.
         '400':
-          description: Illegal format of project member or project id is invalid.
+          description: Illegal format of project member or project id is invalid, or LDAP DN is invalid.
         '401':
           description: User need to log in first.
         '403':
           description: User in session does not have permission to the project.
         '404':
           description: Project does not exist, or the username does not found, or the user group does not found.
+        '409':
+          description: An LDAP user group with same DN already exist.           
         '500':
           description: Unexpected internal errors.  
   '/projects/{project_id}/members/{mid}':

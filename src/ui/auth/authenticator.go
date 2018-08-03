@@ -37,6 +37,12 @@ var ErrorUserNotExist = errors.New("User does not exist")
 // ErrorGroupNotExist ...
 var ErrorGroupNotExist = errors.New("Group does not exist")
 
+// ErrDuplicateLDAPGroup ...
+var ErrDuplicateLDAPGroup = errors.New("An LDAP user group with same DN already exist")
+
+// ErrInvalidLDAPGroupDN ...
+var ErrInvalidLDAPGroupDN = errors.New("The LDAP group DN is invalid")
+
 //ErrAuth is the type of error to indicate a failed authentication due to user's error.
 type ErrAuth struct {
 	details string
