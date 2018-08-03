@@ -592,15 +592,15 @@
             "SCOPE": "LDAP Scope",
             "VERIFY_CERT": "LDAP Verify Cert",
             "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
-            "LDAP_GROUP_BASE_DN_INFO": "The base DN of your LDAP group.",
+            "LDAP_GROUP_BASE_DN_INFO": "The base DN from which to look up a group in LDAP/AD.",
             "LDAP_GROUP_FILTER": "LDAP Group Filter",
-            "LDAP_GROUP_FILTER_INFO": "The filter of your LDAP group",
+            "LDAP_GROUP_FILTER_INFO": "The filter to look up an LDAP/AD group, use objectclass=groupOfNames by default.",
             "LDAP_GROUP_GID": "LDAP Group GID",
-            "LDAP_GROUP_GID_INFO": "The Group gid of your LDAP group",
+            "LDAP_GROUP_GID_INFO": "The attribute used in a search to match a user, it could be uid, cn or other attributes depending on your LDAP/AD. the group in Harbor is named with this attribute by default.",
             "LDAP_GROUP_ADMIN_DN": "LDAP Group Admin DN",
-            "LDAP_GROUP_ADMIN_DN_INFO": "The Admin DN of your LDAP group",
+            "LDAP_GROUP_ADMIN_DN_INFO": "Specify an LDAP group DN. all LDAP user in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "GROUP_SCOPE": "LDAP Group Scope",
-            "GROUP_SCOPE_INFO": "The scope of your LDAP Group"
+            "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
 
         },
         "UAA": {
