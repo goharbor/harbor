@@ -35,6 +35,8 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 
 4. Before upgrading Harbor, perform migration first.  The migration tool is delivered as a docker image, so you should pull the image from docker hub. Replace [tag] with the release version of Harbor (e.g. v1.5.0) in the below command:
 
+    **NOTE:** Before harbor 1.5 , image name of the migration tool is `vmware/harbor-db-migrator:[tag]`
+
     ```
     docker pull vmware/harbor-migrator:[tag]
     ```
