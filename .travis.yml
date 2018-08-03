@@ -102,18 +102,8 @@ script:
   - sudo -E env "PATH=$PATH" "POSTGRES_MIGRATION_SCRIPTS_PATH=/home/travis/gopath/src/github.com/vmware/harbor/make/migrations/postgresql/" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci
   - docker-compose -f make/docker-compose.test.yml down
-  - sudo rm -rf /data/config/*
-  - sudo rm -rf /data/database/*
   - ls /data/cert
-  - sudo make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true CLAIRFLAG=true
-  - sleep 10  
-  - docker ps 
-  - ./tests/validatecontainers.sh
-  - ./tests/notarytest.sh
   - ./tests/swaggerchecker.sh
-  - ./tests/startuptest.sh
-  - ./tests/userlogintest.sh ${HARBOR_ADMIN} ${HARBOR_ADMIN_PASSWD}
-  - export REDIS_HOST=$IP
 
 #  - sudo ./tests/testprepare.sh
 #  - go test -v ./tests/apitests
