@@ -36,6 +36,9 @@ type Controller struct {
 
 	//To cover all the manipulation requests
 	manipulationHandler *ManipulationHandler
+
+	//To cover the other utility requests
+	utilityHandler *UtilityHandler
 }
 
 //NewController is constructor of the chartserver.Controller
@@ -86,6 +89,11 @@ func NewController(backendServer *url.URL) (*Controller, error) {
 			backendServerAddress: backendServer,
 			chartCache:           cache,
 		},
+		utilityHandler: &UtilityHandler{
+			apiClient:            client,
+			backendServerAddress: backendServer,
+			chartOperator:        operator,
+		},
 	}, nil
 }
 
@@ -102,6 +110,11 @@ func (c *Controller) GetRepositoryHandler() *RepositoryHandler {
 //GetManipulationHandler returns the reference of ManipulationHandler
 func (c *Controller) GetManipulationHandler() *ManipulationHandler {
 	return c.manipulationHandler
+}
+
+//GetUtilityHandler returns the reference of UtilityHandler
+func (c *Controller) GetUtilityHandler() *UtilityHandler {
+	return c.utilityHandler
 }
 
 //What's the cache driver if it is set

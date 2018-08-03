@@ -217,7 +217,7 @@ func (p *ProjectAPI) Delete() {
 		return
 	}
 
-	result, err := deletable(p.project.ProjectID)
+	result, err := p.deletable(p.project.ProjectID)
 	if err != nil {
 		p.HandleInternalServerError(fmt.Sprintf(
 			"failed to check the deletable of project %d: %v", p.project.ProjectID, err))
@@ -258,7 +258,7 @@ func (p *ProjectAPI) Deletable() {
 		return
 	}
 
-	result, err := deletable(p.project.ProjectID)
+	result, err := p.deletable(p.project.ProjectID)
 	if err != nil {
 		p.HandleInternalServerError(fmt.Sprintf(
 			"failed to check the deletable of project %d: %v", p.project.ProjectID, err))
@@ -269,7 +269,7 @@ func (p *ProjectAPI) Deletable() {
 	p.ServeJSON()
 }
 
-func deletable(projectID int64) (*deletableResp, error) {
+func (p *ProjectAPI) deletable(projectID int64) (*deletableResp, error) {
 	count, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
 		ProjectIDs: []int64{projectID},
 	})
@@ -280,7 +280,7 @@ func deletable(projectID int64) (*deletableResp, error) {
 	if count > 0 {
 		return &deletableResp{
 			Deletable: false,
-			Message:   "the project contains repositories, can not be deleled",
+			Message:   "the project contains repositories, can not be deleted",
 		}, nil
 	}
 
@@ -292,8 +292,23 @@ func deletable(projectID int64) (*deletableResp, error) {
 	if len(policies) > 0 {
 		return &deletableResp{
 			Deletable: false,
-			Message:   "the project contains replication rules, can not be deleled",
+			Message:   "the project contains replication rules, can not be deleted",
 		}, nil
+	}
+
+	//Check helm charts number
+	if config.WithChartMuseum() {
+		charts, err := chartController.GetUtilityHandler().GetChartsByNs(p.project.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(charts) > 0 {
+			return &deletableResp{
+				Deletable: false,
+				Message:   "the project contains helm charts, can not be deleted",
+			}, nil
+		}
 	}
 
 	return &deletableResp{
