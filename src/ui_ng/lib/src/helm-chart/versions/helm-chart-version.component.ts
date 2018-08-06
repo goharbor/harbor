@@ -290,6 +290,14 @@ export class ChartVersionComponent implements OnInit {
     }
   }
 
+  getImgLink(v: HelmChartVersion) {
+    if (v.icon) {
+      return v.icon;
+    } else {
+      return DefaultHelmIcon;
+    }
+  }
+
 
   getDefaultIcon(v: HelmChartVersion) {
     v.icon = this.chartDefaultIcon;
