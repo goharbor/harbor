@@ -455,6 +455,16 @@ down:
 	@$(DOCKERCOMPOSECMD) $(DOCKERCOMPOSE_LIST) down -v
 	@echo "Done."
 
+swagger_client:
+	@echo "Generate swagger client"
+	wget -q http://central.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
+	rm -rf harborclient
+	mkdir harborclient
+	java -jar swagger-codegen-cli.jar generate -i docs/swagger.yaml -l python -o harborclient
+	python ./harborclient/setup.py -q install --user --prefix= || true
+	pip install docker -q 
+	pip freeze
+
 cleanbinary:
 	@echo "cleaning binary..."
 	@if [ -f $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) ] ; then rm $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) ; fi

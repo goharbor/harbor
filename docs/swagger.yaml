@@ -2,16 +2,22 @@ swagger: '2.0'
 info:
   title: Harbor API
   description: These APIs provide services for manipulating Harbor project.
-  version: 1.4.0
+  version: 1.6.0
 host: localhost
 schemes:
   - http
+  - https
 basePath: /api
 produces:
   - application/json
   - text/plain
 consumes:
   - application/json
+securityDefinitions:
+  basicAuth:
+    type: basic
+security:
+  - basicAuth: []
 paths:
   /search:
     get:
@@ -2244,9 +2250,7 @@ paths:
         '200':
           description: Get general info successfully.
           schema:
-            type: object
-            items:
-              $ref: '#/definitions/GeneralInfo'
+            $ref: '#/definitions/GeneralInfo'
         '500':
           description: Unexpected internal error.
   /systeminfo/volumes:
@@ -2261,9 +2265,7 @@ paths:
         '200':
           description: Get system volumes successfully.
           schema:
-            type: object
-            items:
-              $ref: '#/definitions/SystemInfo'
+            $ref: '#/definitions/SystemInfo'
         '401':
           description: User need to log in first.
         '403':
@@ -2554,9 +2556,9 @@ paths:
         '200':
           description: Get system configurations successfully. The response body is a map.
           schema:
-            $ref: '#/definitions/Configurations'
+            $ref: '#/definitions/ConfigurationsResponse'
         '401':
-          description: User need to log in first.
+          description: User need to log in first.ß
         '403':
           description: User does not have permission of admin role.
         '500':
@@ -2662,7 +2664,7 @@ definitions:
         type: string
         description: The name of the project that the repository belongs to
       project_public:
-        type: integer
+        type: boolean
         description: >-
           The flag to indicate the publicity of the project that the repository
           belongs to (1 is public, 0 is not)
@@ -2705,9 +2707,8 @@ definitions:
         type: string
         description: The update time of the project.
       deleted:
-        type: integer
-        format: int32
-        description: 'A deletion mark of the project (1 means it''s deleted, 0 is not)'
+        type: boolean
+        description: A deletion mark of the project.
       owner_name:
         type: string
         description: The owner name of the project.
@@ -2774,8 +2775,7 @@ definitions:
       comment:
         type: string
       deleted:
-        type: integer
-        format: int32
+        type: boolean
       role_name:
         type: string
       role_id:
@@ -3436,6 +3436,7 @@ definitions:
         description: >-
           The version which the vulnerability is fixed, this is an optional
           property.
+
   Configurations:
     type: object
     properties:
@@ -3525,6 +3526,141 @@ definitions:
         description: 'The expiration time of the token for internal Registry, in minutes.'
       verify_remote_cert:
         type: boolean
+        description: >-
+          Whether or not the certificate will be verified when Harbor tries to
+          access a remote Harbor instance for replication.
+      scan_all_policy:
+        type: object
+        properties:
+          type:
+            type: string
+            description: >-
+              The type of scan all policy, currently the valid values are "none"
+              and "daily"
+          parameter:
+            type: object
+            properties:
+              daily_time:
+                type: integer
+                description: >-
+                  The offest in seconds of UTC 0 o'clock, only valid when the
+                  policy type is "daily"
+            description: >-
+              The parameters of the policy, the values are dependant on the type
+              of the policy.
+
+  ConfigurationsResponse:
+    type: object
+    properties:
+      auth_mode:
+        schema:
+          $ref: '#/definitions/StringConfigItem'        
+        description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
+      email_from:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: The sender name for Email notification.
+      email_host:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: The hostname of SMTP server that sends Email notification.
+      email_port:
+        schema:
+          $ref: '#/definitions/IntegerConfigItem'  
+        description: The port of SMTP server.
+      email_identity:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: By default it's empty so the email_username is picked.
+      email_username:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: The username for authenticate against SMTP server.
+      email_ssl:
+        schema:
+          $ref: '#/definitions/BoolConfigItem'  
+        description: >-
+          When it's set to true the system will access Email server via TLS by
+          default.  If it's set to false, it still will handle "STARTTLS" from
+          server side.
+      email_insecure:
+        schema:
+          $ref: '#/definitions/BoolConfigItem'  
+        description: >-
+          Whether or not the certificate will be verified when Harbor tries to
+          access the email server.
+      ldap_url:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: The URL of LDAP server.
+      ldap_base_dn:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: The Base DN for LDAP binding.
+      ldap_filter:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: The filter for LDAP binding.
+      ldap_scope:
+        type: integer
+        description: '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
+      ldap_uid:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: >-
+          The attribute which is used as identity for the LDAP binding, such as
+          "CN" or "SAMAccountname"
+      ldap_search_dn:
+        type: string
+        description: The DN of the user to do the search.
+      ldap_timeout:
+        schema:
+          $ref: '#/definitions/IntegerConfigItem'  
+        description: timeout in seconds for connection to LDAP server.
+      ldap_group_attribute_name:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: The attribute which is used as identity of the LDAP group, default is cn.
+      ldap_group_base_dn:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: The base DN to search LDAP group.
+      ldap_group_search_filter:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: The filter to search the ldap group.
+      ldap_group_search_scope:
+        schema:
+          $ref: '#/definitions/IntegerConfigItem'  
+        description: The scope to search ldap. '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
+      ldap_group_admin_dn:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: Specify the ldap group which have the same privilege with Harbor admin.
+      project_creation_restriction:
+        schema:
+          $ref: '#/definitions/StringConfigItem'  
+        description: >-
+          This attribute restricts what users have the permission to create
+          project.  It can be "everyone" or "adminonly".
+      read_only:
+        schema:
+          $ref: '#/definitions/BoolConfigItem'  
+        description: >-
+          'docker push' is prohibited by Harbor if you set it to true.   
+      self_registration:
+        schema:
+          $ref: '#/definitions/BoolConfigItem'  
+        description: >-
+          Whether the Harbor instance supports self-registration.  If it's set
+          to false, admin need to add user to the instance.
+      token_expiration:
+        schema:
+          $ref: '#/definitions/IntegerConfigItem'  
+        description: 'The expiration time of the token for internal Registry, in minutes.'
+      verify_remote_cert:
+        schema:
+          $ref: '#/definitions/BoolConfigItem'  
         description: >-
           Whether or not the certificate will be verified when Harbor tries to
           access a remote Harbor instance for replication.
@@ -3672,4 +3808,33 @@ definitions:
         items:
           $ref: '#/definitions/RepPolicy'
 
+  StringConfigItem:
+    type: object
+    properties:
+      value:
+        type: string
+        description: the string value of current config item
+      editable:
+        type: boolean
+        description: The configure item can be updated or not
+
+  BoolConfigItem:
+    type: object
+    properties:
+      value:
+        type: boolean
+        description: the boolean value of current config item
+      editable:
+        type: boolean
+        description: The configure item can be updated or not
+
+  IntegerConfigItem:
+    type: object
+    properties:
+      value:
+        type: int64
+        description: the integer value of current config item
+      editable:
+        type: boolean
+        description: The configure item can be updated or not
 
