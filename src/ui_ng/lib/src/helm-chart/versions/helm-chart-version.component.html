@@ -60,7 +60,7 @@
                         <span class="list-img">
                             <img  [src]="v.icon ?v.icon:chartDefaultIcon"  (error)="getDefaultIcon(v);" />
                         </span>
-                        <a href="#" (click)="onVersionClick(v)">{{ v.version }}</a>
+                        <a href="javascript:void(0)" (click)="onVersionClick(v)">{{ v.version }}</a>
                     </clr-dg-cell>
                     <clr-dg-cell>{{ v.engine }}</clr-dg-cell>
                     <clr-dg-cell>{{ getMaintainerString(v.maintainers) }}</clr-dg-cell>
