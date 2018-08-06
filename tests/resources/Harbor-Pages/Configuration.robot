@@ -93,7 +93,7 @@ Ldap Verify Cert Checkbox Should Be Disabled
 Set Pro Create Admin Only	
     #set limit to admin only
     Sleep  2
-    Click Element  xpath=${configuration_xpath}
+    Click Element  xpath=${system_config_xpath}
     Sleep  1
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="adminonly"]
@@ -103,7 +103,7 @@ Set Pro Create Admin Only
 
 Set Pro Create Every One	
     #set limit to Every One
-    Click Element  xpath=${configuration_xpath}
+    Click Element  xpath=${system_config_xpath}
     Sleep  1
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="everyone"]
@@ -147,8 +147,7 @@ Project Creation Should Not Display
 Switch To System Settings
     Sleep  1
     Click Element  xpath=${configuration_xpath}
-    Click Element  xpath=//*[@id="config-system"]
-
+    Click Element  xpath=${system_config_xpath}
 Modify Token Expiration
     [Arguments]  ${minutes}
     Input Text  xpath=//*[@id="tokenExpiration"]  ${minutes}
