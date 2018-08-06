@@ -104,6 +104,11 @@ export class ChartVersionComponent implements OnInit {
     this.lastFilteredVersionName = "";
   }
 
+  updateFilterValue(value: string) {
+    this.lastFilteredVersionName = value;
+    this.refresh();
+  }
+
   refresh() {
     this.loading = true;
     this.helmChartService
@@ -115,7 +120,7 @@ export class ChartVersionComponent implements OnInit {
       })
       .subscribe(
         versions => {
-          this.chartVersions = versions;
+          this.chartVersions = versions.filter(x => x.version.includes(this.lastFilteredVersionName));
           this.versionsCopy = versions.map(x => Object.assign({}, x));
         },
         err => {

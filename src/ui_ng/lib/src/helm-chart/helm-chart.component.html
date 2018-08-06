@@ -3,7 +3,9 @@
         <div class="toolbar">
             <div class="row flex-items-xs-right option-right rightPos">
                 <div class="flex-xs-middle">
-                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'HELM_CHART.FILTER_FOR_CHARTS' | translate}}" [currentValue]="lastFilteredChartName"></hbr-filter>
+                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'HELM_CHART.FILTER_FOR_CHARTS' | translate}}"
+                    [currentValue]="lastFilteredChartName"
+                    (filterEvt)="updateFilterValue($event)"></hbr-filter>
                     <span class="card-btn" (click)="showCard(true)" (mouseenter)="mouseEnter('card') " (mouseleave)="mouseLeave('card')">
                         <clr-icon [ngClass]="{'is-highlight': isCardView || isHovering('card') }" shape="view-cards"></clr-icon>
                     </span>
@@ -27,7 +29,7 @@
                     </button>
                 </clr-dg-action-bar>
                 <clr-dg-column [clrDgField]="'name'">{{'HELM_CHART.NAME' | translate}}</clr-dg-column>
-                <clr-dg-column>{{'HELM_CHART.VERSIONS' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'HELM_CHART.VERSION' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'HELM_CHART.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let chart of charts" [clrDgItem]="chart">
@@ -39,8 +41,7 @@
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize">
-                        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'HELM_CHART.OF' | translate}} {{pagination.totalItems}} {{'HELM_CHART.ITEMS'
-                        | translate}}
+                        {{pagination.totalItems}} {{'HELM_CHART.ITEMS'| translate}}
                     </clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>
