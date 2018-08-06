@@ -263,7 +263,7 @@
         "PROPERTY": "Property",
         "REG_TIME": "Registration Time",
         "ADD_GROUP_SUCCESS": "Add group success",
-        "ADD_GROUP_FAILURE": "Add group failure",
+        "EDIT_GROUP_SUCCESS": "Edit group success",
         "LDAP_TYPE": "LDAP"
     },
     "AUDIT_LOG": {

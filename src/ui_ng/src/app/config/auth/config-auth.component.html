@@ -202,7 +202,7 @@
             </clr-checkbox>
         </div>
     </section>
-    <section>
+    <section *ngIf="showLdap">
         <div class="form-group">
             <label for="ldapVerifyCert">{{'CONFIG.LDAP.VERIFY_CERT' | translate}}</label>
             <clr-checkbox name="ldapVerifyCert" id="ldapVerifyCert" [clrChecked]="currentConfig.ldap_verify_cert.value" [clrDisabled]="disabled(currentConfig.ldap_scope)"

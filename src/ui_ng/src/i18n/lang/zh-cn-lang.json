@@ -263,7 +263,7 @@
         "GROUP_DN": "LDAP 组域",
         "REG_TIME": "注册时间",
         "ADD_GROUP_SUCCESS": "添加组成功",
-        "ADD_GROUP_FAILURE": "添加组失败",
+        "EDIT_GROUP_SUCCESS": "修改组成功",
         "LDAP_TYPE": "LDAP"
     },
     "AUDIT_LOG": {
