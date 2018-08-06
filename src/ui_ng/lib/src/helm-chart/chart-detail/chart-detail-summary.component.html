@@ -18,14 +18,15 @@
                 <tbody>
                     <tr>
                         <td class="left">{{'HELM_CHART.HOME' | translate }}</td>
-                        <td class="left">
+                        <td class="left text-wrappe">
                             <a href="{{summary.home}}">{{summary.home}}</a>
                         </td>
                     </tr>
-                    <tr>
-                        <td class="left">{{'HELM_CHART.SRC_REPO' | translate }}</td>
-                        <td class="left">
-                            <a href="{{summary.sources}}">{{summary.sources}}</a>
+                    <tr *ngFor="let src of summary.sources; let i = index">
+                        <td class="left" *ngIf="i === 0">{{'HELM_CHART.SRC_REPO' | translate }}</td>
+                        <td class="left" *ngIf="i !== 0"></td>
+                        <td class="left text-wrapper" >
+                            <a href="{{src}}">{{src}}</a>
                         </td>
                     </tr>
                     <tr>
