@@ -296,19 +296,19 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 	//Should be system admin role
 	case accessLevelSystem:
 		if !cra.SecurityCtx.IsSysAdmin() {
-			err = fmt.Errorf("system admin role is required but user '%s' is not", cra.SecurityCtx.GetUsername())
+			err = errors.New("permission denied: system admin role is required")
 		}
 	case accessLevelAll:
 		if !cra.SecurityCtx.HasAllPerm(namespace) {
-			err = fmt.Errorf("project admin role is required but user '%s' does not have", cra.SecurityCtx.GetUsername())
+			err = errors.New("permission denied: project admin or higher role is required")
 		}
 	case accessLevelWrite:
 		if !cra.SecurityCtx.HasWritePerm(namespace) {
-			err = fmt.Errorf("developer role is required but user '%s' does not have", cra.SecurityCtx.GetUsername())
+			err = errors.New("permission denied: developer or higher role is required")
 		}
 	case accessLevelRead:
 		if !cra.SecurityCtx.HasReadPerm(namespace) {
-			err = fmt.Errorf("at least a guest role is required for user '%s'", cra.SecurityCtx.GetUsername())
+			err = errors.New("permission denied: guest or higher role is required")
 		}
 	default:
 		//access rejected for invalid scope

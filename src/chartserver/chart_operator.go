@@ -47,6 +47,7 @@ type ChartInfo struct {
 	Created       time.Time
 	Icon          string
 	Home          string
+	Deprecated    bool
 }
 
 //ChartOperator is designed to process the contents of
@@ -129,6 +130,7 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 			chartInfo.Created = oVersion.Created
 			chartInfo.Home = lVersion.Home
 			chartInfo.Icon = lVersion.Icon
+			chartInfo.Deprecated = lVersion.Deprecated
 			chartList = append(chartList, chartInfo)
 		}
 	}
