@@ -509,11 +509,14 @@
         "PLACEHOLDER": "We couldn't find any charts!",
         "NO_VERSION_PLACEHOLDER": "We couldn't find any versions!",
         "FILE_UPLOADED": "File upload successfully",
+        "SIGN": "Sign",
         "SIGNED": "Signed",
         "UNSIGNED": "Unsigned",
         "ITEMS": "items",
         "NO_README": "No readme file provided by this chart.",
-        "SECURITY": "Security"
+        "SECURITY": "Security",
+        "ACTIVE": "Active",
+        "DEPRECATED": "Deprecated"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
