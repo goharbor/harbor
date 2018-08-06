@@ -29,7 +29,7 @@
                     </button>
                 </clr-dg-action-bar>
                 <clr-dg-column [clrDgField]="'name'">{{'HELM_CHART.NAME' | translate}}</clr-dg-column>
-                <clr-dg-column>{{'HELM_CHART.VERSION' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'HELM_CHART.CHARTVERSIONS' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'HELM_CHART.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let chart of charts" [clrDgItem]="chart">

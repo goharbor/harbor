@@ -203,7 +203,7 @@
         "AUTOSCAN_POLICY": "Automatically scan images when they are pushed to the project registry."
     },
     "MEMBER": {
-        "NEW_USER": "New User",
+        "NEW_USER": "Add User Member",
         "NEW_MEMBER": "New Member",
         "MEMBER": "Member",
         "NAME": "Name",
@@ -221,10 +221,10 @@
         "ADD_USER": "Add User",
         "NEW_USER_INFO": "Add an user to be a member of this project with specified role",
         "NEW_GROUP": "New Group",
-        "IMPORT_GROUP": "Import New LDAP Group",
-        "NEW_GROUP_INFO": "Import a new LDAP group or select one or more existing groups to add with the specific role.",
-        "ADD_GROUP_SELECT": "Add a group as a project member",
-        "CREATE_GROUP_SELECT": "Import a new group from LDAP",
+        "IMPORT_GROUP": "Add Group Member",
+        "NEW_GROUP_INFO": "Add an existing user group or select a user group from LDAP/AD to project member",
+        "ADD_GROUP_SELECT": "Add an existing user group to project member",
+        "CREATE_GROUP_SELECT": "Add a group from LDAP to project member",
         "LDAP_SEARCH_DN": "LDAP Group DN",
         "LDAP_SEARCH_NAME": "Name",
         "LDAP_GROUP": "Group",
@@ -482,7 +482,7 @@
         "VALUES": "Values",
         "OVERVIEW": "Overview",
         "HOME": "Home",
-        "SRC_REPO": "Srouce Repository",
+        "SRC_REPO": "Source Repository",
         "CREATED": "Created Time",
         "MAINTAINERS": "Maintainers",
         "PULLS": "Pull Count",
@@ -512,7 +512,7 @@
         "SIGNED": "Signed",
         "UNSIGNED": "Unsigned",
         "ITEMS": "items",
-        "NO_README": "No readme file provided by this charts.",
+        "NO_README": "No readme file provided by this chart.",
         "SECURITY": "Security"
     },
     "ALERT": {

@@ -202,7 +202,7 @@
         "AUTOSCAN_POLICY": "当镜像上传后，自动进行扫描"
     },
     "MEMBER": {
-        "NEW_USER": "新用户",
+        "NEW_USER": "添加用户成员",
         "NEW_MEMBER": "新建成员",
         "MEMBER": "成员",
         "NAME": "姓名",
@@ -220,10 +220,10 @@
         "ADD_USER": "添加用户",
         "NEW_USER_INFO": "添加用户到此项目中并给予相对应的角色",
         "NEW_GROUP": "新增组",
-        "IMPORT_GROUP": "导入LDAP组",
-        "NEW_GROUP_INFO": "导入LDAP组，同时以选择的角色添加到项目成员列表",
-        "ADD_GROUP_SELECT": "添加组到项目成员",
-        "CREATE_GROUP_SELECT": "从LDAP导入新的组",
+        "IMPORT_GROUP": "添加组成员",
+        "NEW_GROUP_INFO": "添加已存在的组成员，或者导入LDAP组",
+        "ADD_GROUP_SELECT": "添加已存在组到项目成员",
+        "CREATE_GROUP_SELECT": "从LDAP组中选择，并添加到项目成员",
         "LDAP_SEARCH_DN": "LDAP Group DN",
         "LDAP_SEARCH_NAME": "名称",
         "LDAP_GROUP": "组",
