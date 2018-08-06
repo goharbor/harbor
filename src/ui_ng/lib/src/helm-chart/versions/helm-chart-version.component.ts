@@ -51,8 +51,10 @@ export class ChartVersionComponent implements OnInit {
   @Input() roleName: string;
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
+  @Input() chartDefaultIcon: string = DefaultHelmIcon;
   @Output() versionClickEvt = new EventEmitter<string>();
   @Output() backEvt = new EventEmitter<any>();
+
 
   lastFilteredVersionName: string;
   chartVersions: HelmChartVersion[] = [];
@@ -288,11 +290,8 @@ export class ChartVersionComponent implements OnInit {
     }
   }
 
-  getImgLink(v: HelmChartVersion) {
-    if (v.icon) {
-      return v.icon;
-    } else {
-      return DefaultHelmIcon;
-    }
+
+  getDefaultIcon(v: HelmChartVersion) {
+    v.icon = this.chartDefaultIcon;
   }
 }
