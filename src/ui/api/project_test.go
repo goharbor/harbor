@@ -16,9 +16,13 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/vmware/harbor/src/chartserver"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -362,6 +366,13 @@ func TestProjectLogsFilter(t *testing.T) {
 
 func TestDeletable(t *testing.T) {
 	apiTest := newHarborAPI()
+	chServer, oldController, err := mockChartController()
+	require.Nil(t, err)
+	require.NotNil(t, chServer)
+	defer chServer.Close()
+	defer func() {
+		chartController = oldController
+	}()
 
 	project := models.Project{
 		Name:    "project_for_test_deletable",
@@ -397,4 +408,37 @@ func TestDeletable(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, http.StatusOK, code)
 	assert.False(t, del)
+}
+
+//Provides a mock chart controller for deletable test cases
+func mockChartController() (*httptest.Server, *chartserver.Controller, error) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.RequestURI {
+		case "/api/project_for_test_deletable/charts":
+			if r.Method == http.MethodGet {
+				w.Write([]byte("{}"))
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusNotImplemented)
+		w.Write([]byte("not supported"))
+	}))
+
+	var oldController, newController *chartserver.Controller
+	url, err := url.Parse(mockServer.URL)
+	if err == nil {
+		newController, err = chartserver.NewController(url)
+	}
+
+	if err != nil {
+		mockServer.Close()
+		return nil, nil, err
+	}
+
+	//Override current controller and keep the old one for restoring
+	oldController = chartController
+	chartController = newController
+
+	return mockServer, oldController, nil
 }
