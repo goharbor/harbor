@@ -211,7 +211,17 @@ if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ] && [ $
     uploader $latest_build_file $harbor_target_bucket  
 fi
 
-## ------------------------------------------------ Tear Down ---------------------------------------------------
+## --------------------------------------------- Upload securego results ------------------------------------------
+if [ $DRONE_BUILD_EVENT == "push" ] && [ $rc -eq 0 ]; then
+    go get github.com/securego/gosec/cmd/gosec
+    go get github.com/dghubble/sling
+    make gosec -e GOSECRESULTS=harbor-gosec-results-latest.json
+    echo $git_commit > ./harbor-gosec-results-latest-version
+    uploader harbor-gosec-results-latest.json $harbor_target_bucket
+    uploader harbor-gosec-results-latest-version $harbor_target_bucket
+fi
+
+## ------------------------------------------------ Tear Down -----------------------------------------------------
 if [ -f "$keyfile" ]; then
   rm -f $keyfile
 fi
