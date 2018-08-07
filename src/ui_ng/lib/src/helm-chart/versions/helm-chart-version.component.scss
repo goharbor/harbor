@@ -1,3 +1,5 @@
+@import "../../mixin";
+
 .title-container {
     display: flex;
     .chart-name-span {
@@ -14,10 +16,7 @@
     .toolbar {
         overflow: hidden;
         .rightPos {
-            position: absolute;
-            z-index: 100;
-            right: 35px;
-            margin-top: 4px;
+            @include grid-left-top-pos;
             .filter-divider {
                 display: inline-block;
                 height: 16px;
@@ -86,11 +85,5 @@
 .vertical-helper {
     display: inline-block;
     height: 100%;
-    vertical-align: middle;
-}
-
-.spinner {
-    width: 100px;
-    height: 100px;
     vertical-align: middle;
 }

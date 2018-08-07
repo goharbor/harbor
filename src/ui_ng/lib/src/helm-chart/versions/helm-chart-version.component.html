@@ -16,7 +16,9 @@
         <div class="toolbar">
             <div class="row flex-items-xs-right option-right rightPos">
                 <div class="flex-xs-middle">
-                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'HELM_CHART.FILTER_FOR_CHARTS' | translate}}" [currentValue]="lastFilteredVersionName"></hbr-filter>
+                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'HELM_CHART.FILTER_FOR_CHARTS' | translate}}"
+                    [currentValue]="lastFilteredVersionName"
+                    (filterEvt)="updateFilterValue($event)"></hbr-filter>
                     <span class="card-btn" (click)="showCard(true)" (mouseenter)="mouseEnter('card') " (mouseleave)="mouseLeave('card')">
                         <clr-icon [ngClass]="{'is-highlight': isCardView || isHovering('card') }" shape="view-cards"></clr-icon>
                     </span>
@@ -52,12 +54,13 @@
                 <clr-dg-column>{{'HELM_CHART.ENGINE' | translate }}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.MAINTAINERS' | translate }}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate }}</clr-dg-column>
+                <clr-dg-placeholder>{{'HELM_CHART.NO_VERSION_PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let v of chartVersions" [clrDgItem]="v">
                     <clr-dg-cell>
                         <span class="list-img">
                             <img  [src]="v.icon ?v.icon:chartDefaultIcon"  (error)="getDefaultIcon(v);" />
                         </span>
-                        <a href="#" (click)="onVersionClick(v)">{{ v.version }}</a>
+                        <a href="javascript:void(0)" (click)="onVersionClick(v)">{{ v.version }}</a>
                     </clr-dg-cell>
                     <clr-dg-cell>{{ v.engine }}</clr-dg-cell>
                     <clr-dg-cell>{{ getMaintainerString(v.maintainers) }}</clr-dg-cell>
@@ -65,8 +68,7 @@
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize">
-                        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'HELM_CHART.OF' | translate}} {{pagination.totalItems}} {{'HELM_CHART.VERSIONS'
-                        | translate}}
+                        {{pagination.totalItems}} {{'HELM_CHART.ITEMS' | translate}}
                     </clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>
@@ -106,9 +108,9 @@
                 </div>
             </a>
         </div>
-        <div *ngIf="loading" [ngClass]="{'central-block-loading': isFirstPage, 'central-block-loading-more': !isFirstPage}">
+        <div *ngIf="loading">
             <span class="vertical-helper"></span>
-            <div class="spinner"></div>
+            <span class="spinner"></span>
         </div>
     </div>
     <clr-modal [(clrModalOpen)]="isUploadModalOpen" [clrModalStaticBackdrop]="true">
@@ -126,11 +128,11 @@
                     </div>
                 </section>
                 <button type="submit" class="btn btn-secondary" [disabled]="isUploading">
-                    <span *ngIf="!isUploading">{{'HELM_CHART.UPLOAD' | translate}}</span>
-                    <span *ngIf="isUploading" class="spinner spinner-inline">
-                        Loading...
-                    </span>
+                    <span>{{'HELM_CHART.UPLOAD' | translate}}</span>
                 </button>
+                <span *ngIf="isUploading" class="spinner spinner-inline">
+                    Loading...
+                </span>
             </form>
         </div>
     </clr-modal>

@@ -76,6 +76,11 @@ export class HelmChartComponent implements OnInit {
 
   }
 
+  updateFilterValue(value: string) {
+    this.lastFilteredChartName = value;
+    this.refresh();
+  }
+
   refresh() {
     this.loading = true;
     this.helmChartService
@@ -87,7 +92,7 @@ export class HelmChartComponent implements OnInit {
     })
     .subscribe(
       charts => {
-        this.charts = charts;
+        this.charts = charts.filter(x => x.name.includes(this.lastFilteredChartName));
         this.chartsCopy = charts.map(x => Object.assign({}, x));
       },
       err => {
