@@ -26,7 +26,7 @@ Project Harbor is an an open source trusted cloud native registry project that s
 
 **System requirements:**
 
-**On a Linux host:** docker 1.10.0+ and docker-compose 1.6.0+ .
+**On a Linux host:** docker 17.03.0-ce+ and docker-compose 1.10.0+ .
 
 Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
 
