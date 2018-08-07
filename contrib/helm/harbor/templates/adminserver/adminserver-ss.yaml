@@ -17,7 +17,6 @@ spec:
       labels:
 {{ include "harbor.labels" . | indent 8 }}
         component: adminserver
-    component: adminserver
     spec:
       containers:
       - name: adminserver
