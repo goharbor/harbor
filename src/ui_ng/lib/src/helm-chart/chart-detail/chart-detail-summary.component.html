@@ -111,19 +111,19 @@
             <table class="table">
                 <tbody>
                     <tr>
-                        <td class="left">{{'HELM_CHART.SIGNED' | translate }}</td>
+                        <td class="left">{{'HELM_CHART.PROV_FILE' | translate }}</td>
                         <div *ngIf="prov_ready;then signedContent else unsignedContent"></div>
                         <ng-template #signedContent>
                             <td class="left">
                                 <span class="content-icon">
                                     <clr-icon shape="shield-check" class="is-success"></clr-icon>
-                                </span>&nbsp;{{'HELM_CHART.SIGNED' | translate }}</td>
+                                </span>&nbsp;<a (click)="downloadChart()">{{'HELM_CHART.READY' | translate }}</a></td>
                         </ng-template>
                         <ng-template #unsignedContent>
                             <td class="left">
                                 <span class="content-icon">
                                     <clr-icon shape="shield-x" class="is-error"></clr-icon>
-                                </span>&nbsp;{{'HELM_CHART.UNSIGNED' | translate }}</td>
+                                </span>&nbsp;{{'HELM_CHART.NOT_READY' | translate }}</td>
                         </ng-template>
                     </tr>
                 </tbody>

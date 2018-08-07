@@ -518,7 +518,10 @@
         "ACTIVE": "Active",
         "DEPRECATED": "Deprecated",
         "VERIFY_CHART": "Verify Chart",
-        "COMMAND": "Commands"
+        "COMMAND": "Commands",
+        "PROV_FILE": "Prov File",
+        "READY": "Ready",
+        "NOT_READY": "Not Ready"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"

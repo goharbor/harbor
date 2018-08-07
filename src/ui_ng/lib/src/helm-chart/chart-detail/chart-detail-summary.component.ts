@@ -6,6 +6,9 @@ import {
 } from "@angular/core";
 
 import { HelmChartMetaData, HelmChartSecurity } from "./../../service/interface";
+import { downloadFile } from './../../utils';
+import { HelmChartService } from "../../service/index";
+import { ErrorHandler } from "./../../error-handler/error-handler";
 
 @Component({
   selector: "hbr-chart-detail-summary",
@@ -23,8 +26,14 @@ export class ChartDetailSummaryComponent implements OnInit {
   @Input() readme: string;
 
   copiedCMD = '';
+  addCMD = `helm repo add --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username <username> --password <password> <repo name> ${this.repoURL}/chartrepo/${this.projectName}`;
+  installCMD = `helm install --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username=<username> --password=<password> --version ${this.chartVersion} <repo name>/${this.chartName}`;
+  verifyCMD = `helm verify --keyring <key path> ${this.chartName}-${this.chartVersion}.tgz`;
 
-  constructor() {}
+  constructor(
+    private errorHandler: ErrorHandler,
+    private helmChartService: HelmChartService
+  ) {}
 
   ngOnInit(): void {
   }
@@ -37,21 +46,26 @@ export class ChartDetailSummaryComponent implements OnInit {
     this.copiedCMD = cmd;
   }
 
-
-  public get addCMD() {
-    return `helm repo add --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username <username> --password <password> <repo name> ${this.repoURL}/chartrepo/${this.projectName}`;
-  }
-
-  public get installCMD() {
-      return `helm install --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username=<username> --password=<password> --version ${this.chartVersion} <repo name>/${this.chartName}`;
-  }
-
-  public get verifyCMD() {
-    return `helm verify --keyring <key path> ${this.chartName}-${this.chartVersion}.tgz`;
-}
-
   public get prov_ready() {
     return this.security && this.security.signature && this.security.signature.signed;
+  }
+
+  downloadChart() {
+    if (!this.summary ||
+      !this.summary.urls ||
+      this.summary.urls.length < 1) {
+      return;
+    }
+    let filename = `${this.summary.urls[0]}.prov`;
+
+    this.helmChartService.downloadChart(this.projectName, filename).subscribe(
+      res => {
+        downloadFile(res);
+      },
+      error => {
+        this.errorHandler.error(error);
+      },
+    );
   }
 
 }

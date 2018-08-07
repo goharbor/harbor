@@ -517,7 +517,10 @@
         "ACTIVE": "Active",
         "DEPRECATED": "Deprecated",
         "VERIFY_CHART": "Verify Chart",
-        "COMMAND": "Commands"
+        "COMMAND": "Commands",
+        "PROV_FILE": "Prov File",
+        "READY": "Ready",
+        "NOT_READY": "Not Ready"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algunos cambios no se han guardado aún. ¿Quiere cancelar?"
