@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/vmware/harbor/src/common"
 	"github.com/vmware/harbor/src/common/dao/group"
@@ -94,6 +95,7 @@ func (uga *UserGroupAPI) Post() {
 	uga.DecodeJSONReq(&userGroup)
 	userGroup.ID = 0
 	userGroup.GroupType = common.LdapGroupType
+	userGroup.LdapGroupDN = strings.TrimSpace(userGroup.LdapGroupDN)
 	query := models.UserGroup{GroupType: userGroup.GroupType, LdapGroupDN: userGroup.LdapGroupDN}
 	result, err := group.QueryUserGroup(query)
 	if err != nil {

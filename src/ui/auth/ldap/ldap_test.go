@@ -27,6 +27,7 @@ import (
 	"github.com/vmware/harbor/src/common/utils/log"
 	"github.com/vmware/harbor/src/common/utils/test"
 	"github.com/vmware/harbor/src/ui/api"
+
 	"github.com/vmware/harbor/src/ui/auth"
 	uiConfig "github.com/vmware/harbor/src/ui/config"
 )
@@ -389,8 +390,7 @@ func TestSearchAndOnBoardUser(t *testing.T) {
 		t.Errorf("Can not search and onboard user %v", "mike")
 	}
 }
-func TestAddOrUpdateProjectMemberWithLdapUser(t *testing.T) {
-
+func TestAddProjectMemberWithLdapUser(t *testing.T) {
 	currentProject, err := dao.GetProjectByName("member_test_01")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
@@ -402,18 +402,15 @@ func TestAddOrUpdateProjectMemberWithLdapUser(t *testing.T) {
 		},
 		Role: models.PROJECTADMIN,
 	}
-
-	pmid, err := api.AddOrUpdateProjectMember(currentProject.ProjectID, member)
+	pmid, err := api.AddProjectMember(currentProject.ProjectID, member)
 	if err != nil {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: %v", err)
 	}
 	if pmid == 0 {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: pmid:%v", pmid)
 	}
-
 }
 func TestAddProjectMemberWithLdapGroup(t *testing.T) {
-
 	currentProject, err := dao.GetProjectByName("member_test_01")
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
@@ -425,8 +422,7 @@ func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 		},
 		Role: models.PROJECTADMIN,
 	}
-
-	pmid, err := api.AddOrUpdateProjectMember(currentProject.ProjectID, member)
+	pmid, err := api.AddProjectMember(currentProject.ProjectID, member)
 	if err != nil {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: %v", err)
 	}
@@ -440,7 +436,6 @@ func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to query project member, %v, error: %v", queryMember, err)
 	}
-
 	if len(memberList) == 0 {
 		t.Errorf("Failed to query project member, %v", queryMember)
 	}
