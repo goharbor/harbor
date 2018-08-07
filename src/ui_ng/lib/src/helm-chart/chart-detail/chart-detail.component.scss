@@ -14,3 +14,14 @@
 .detail-loading {
     @include absolute-center;
 }
+
+.flex-container {
+    display: flex;
+    -webkit-display:flex;
+    justify-content: space-between;
+
+    .title-container {
+        display: flex;
+        align-items:center;
+    }
+}
