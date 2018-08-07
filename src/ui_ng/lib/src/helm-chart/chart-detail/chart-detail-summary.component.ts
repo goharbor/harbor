@@ -22,17 +22,36 @@ export class ChartDetailSummaryComponent implements OnInit {
   @Input() chartVersion: string;
   @Input() readme: string;
 
+  copiedCMD = '';
+
   constructor() {}
 
   ngOnInit(): void {
   }
 
+  isCopied(cmd: string) {
+    return this.copiedCMD === cmd;
+  }
+
+  onCopySuccess(e: Event, cmd: string) {
+    this.copiedCMD = cmd;
+  }
+
+
   public get addCMD() {
-    return `helm repo add REPO_NAME ${this.repoURL}/chartrepo/${this.projectName}`;
+    return `helm repo add --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username <username> --password <password> <repo name> ${this.repoURL}/chartrepo/${this.projectName}`;
   }
 
   public get installCMD() {
-      return `helm install --version ${this.chartVersion} REPO_NAME/${this.chartName}`;
+      return `helm install --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username=<username> --password=<password> --version ${this.chartVersion} <repo name>/${this.chartName}`;
+  }
+
+  public get verifyCMD() {
+    return `helm verify --keyring <key path> ${this.chartName}-${this.chartVersion}.tgz`;
+}
+
+  public get prov_ready() {
+    return this.security && this.security.signature && this.security.signature.signed;
   }
 
 }

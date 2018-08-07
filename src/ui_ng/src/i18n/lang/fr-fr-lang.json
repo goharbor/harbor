@@ -490,7 +490,9 @@
         "ITEMS": "items",
         "SECURITY": "Security",
         "ACTIVE": "Active",
-        "DEPRECATED": "Deprecated"
+        "DEPRECATED": "Deprecated",
+        "VERIFY_CHART": "Verify Chart",
+        "COMMAND": "Commands"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Certaines modifications ne sont pas encore enregistrées. Voulez-vous annuler ?"

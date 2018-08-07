@@ -515,7 +515,9 @@
         "NO_README": "此Chart未提供README文件",
         "SECURITY": "安全",
         "ACTIVE": "正常",
-        "DEPRECATED": "废弃"
+        "DEPRECATED": "废弃",
+        "VERIFY_CHART": "验证Chart",
+        "COMMAND": "命令"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"

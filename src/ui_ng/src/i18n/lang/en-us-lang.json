@@ -516,7 +516,9 @@
         "NO_README": "No readme file provided by this chart.",
         "SECURITY": "Security",
         "ACTIVE": "Active",
-        "DEPRECATED": "Deprecated"
+        "DEPRECATED": "Deprecated",
+        "VERIFY_CHART": "Verify Chart",
+        "COMMAND": "Commands"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
