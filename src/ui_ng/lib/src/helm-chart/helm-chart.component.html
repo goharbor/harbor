@@ -34,6 +34,9 @@
                 <clr-dg-placeholder>{{'HELM_CHART.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let chart of charts" [clrDgItem]="chart">
                     <clr-dg-cell>
+                        <span class="list-img">
+                           <img  class="size-24 margin-right-12" [src]="chart.icon ?chart.icon:chartDefaultIcon"  (error)="getDefaultIcon(chart);" />
+                        </span>
                         <a href="javascript:void(0)" (click)="onChartClick(chart)">{{ chart.name }}</a>
                     </clr-dg-cell>
                     <clr-dg-cell>{{ chart.total_versions }}</clr-dg-cell>

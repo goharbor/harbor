@@ -1,12 +1,12 @@
+@import "../mixin";
+$width:24px;
+$height:$width;
 .chart-tool {
     position: relative;
     .toolbar {
         overflow: hidden;
         .rightPos {
-            position: absolute;
-            z-index: 100;
-            right: 35px;
-            margin-top: 4px;
+            @include grid-left-top-pos;
             .filter-divider {
                 display: inline-block;
                 height: 16px;
@@ -59,4 +59,13 @@
     display: inline-block;
     height: 100%;
     vertical-align: middle;
+}
+
+.size-24 {
+    width:$width;
+    height:$height;
+}
+
+.margin-right-12 {
+    margin-right:12px;
 }
