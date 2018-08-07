@@ -18,8 +18,8 @@ worker_pool:
   #Additional config if use 'redis' backend
   redis_pool:
     #redis://[arbitrary_username:password@]ipaddress:port/database_index
-    #or ipaddress:port[,weight,password,database_index]
-    redis_url: $redis_url
+    #or ipaddress:port[,weight,password,database_index], set weight to 100 as default
+    redis_url: $redis_host:$redis_port,100,$redis_password,$redis_db_index_js
     namespace: "harbor_job_service_namespace"
 #Logger for job
 logger:

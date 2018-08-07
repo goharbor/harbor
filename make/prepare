@@ -80,6 +80,10 @@ def validate(conf, args):
         if storage_provider_config == "":
             raise Exception("Error: no provider configurations are provided for provider %s" % storage_provider_name)
 
+    redis_db_index = rcp.get("configuration", "redis_db_index").strip()
+    if len(redis_db_index.split(",")) != 3:
+        raise Exception("Error invalid value for redis_db_index: %s. please set it as 1,2,3" % redis_db_index)
+
 #To meet security requirement
 #By default it will change file mode to 0600, and make the owner of the file to 10000:10000
 def mark_file(path, mode=0o600, uid=10000, gid=10000):
@@ -282,10 +286,15 @@ secret_key = get_secret_key(secretkey_path)
 log_rotate_count = rcp.get("configuration", "log_rotate_count")
 log_rotate_size = rcp.get("configuration", "log_rotate_size")
 
-if rcp.has_option("configuration", "redis_url"):
-    redis_url = rcp.get("configuration", "redis_url")
-else:
-    redis_url = ""
+redis_host = rcp.get("configuration", "redis_host")
+redis_port = rcp.get("configuration", "redis_port")
+redis_password = rcp.get("configuration", "redis_password")
+redis_db_index = rcp.get("configuration", "redis_db_index")
+
+db_indexs = redis_db_index.split(',')
+redis_db_index_reg = db_indexs[0]
+redis_db_index_js = db_indexs[1]
+redis_db_index_chart = db_indexs[2]
 
 if rcp.has_option("configuration", "skip_reload_env_pattern"):
     skip_reload_env_pattern = rcp.get("configuration", "skip_reload_env_pattern")
@@ -430,14 +439,16 @@ render(os.path.join(templates_dir, "adminserver", "env"),
 # set cache for chart repo server
 # default set 'memory' mode, if redis is configured then set to 'redis'
 chart_cache_driver = "memory"
-if len(redis_url) > 0:
+if len(redis_host) > 0:
     chart_cache_driver = "redis"
 
 render(os.path.join(templates_dir, "ui", "env"), 
         ui_conf_env, 
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret,
-        redis_url = redis_url,
+        redis_host=redis_host,
+        redis_port=redis_port,
+        redis_password=redis_password,
         adminserver_url = adminserver_url,
         chart_cache_driver = chart_cache_driver
         )
@@ -459,14 +470,20 @@ render(os.path.join(templates_dir, "registry", registry_config_file_ha),
     storage_provider_info=storage_provider_info,
     public_url=public_url,
     ui_url=ui_url,
-    redis_url=redis_url)
+    redis_host=redis_host,
+    redis_port=redis_port,
+    redis_password=redis_password,
+    redis_db_index_reg=redis_db_index_reg)
 
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
     storage_provider_info=storage_provider_info,
     public_url=public_url,
     ui_url=ui_url,
-    redis_url=redis_url)
+    redis_host=redis_host,
+    redis_port=redis_port,
+    redis_password=redis_password,
+    redis_db_index_reg=redis_db_index_reg)
 
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
@@ -481,8 +498,11 @@ render(os.path.join(templates_dir, "jobservice", "env"),
 render(os.path.join(templates_dir, "jobservice", "config.yml"),
         jobservice_conf,
         max_job_workers=max_job_workers,
-        redis_url=redis_url)
-		
+        redis_host=redis_host,
+        redis_port=redis_port,
+        redis_password=redis_password,
+        redis_db_index_js=redis_db_index_js)
+
 render(os.path.join(templates_dir, "log", "logrotate.conf"),
         log_rotate_config,
         log_rotate_count=log_rotate_count,
@@ -670,22 +690,9 @@ if args.chart_mode:
 
     # process redis info
     cache_store = ""
-    cache_redis_password = ""
-    cache_redis_addr = ""
-    cache_redis_db_index = 0
-    if redis_url and redis_url.strip():
-        cache_store = "redis"
-        segments = redis_url.split(',', 3)
-        for index, r_cfg in enumerate(segments):
-            # the addr:port
-            if index == 0:
-                cache_redis_addr = r_cfg
-            # the password if existing
-            elif index == 2:
-                cache_redis_password = r_cfg
-            # the database index if existing
-            elif index == 3:
-                cache_redis_db_index = r_cfg
+    cache_redis_password = redis_password
+    cache_redis_addr = redis_host+":"+redis_port
+    cache_redis_db_index = redis_db_index_chart
     
     # process storage info
     #default using local file system

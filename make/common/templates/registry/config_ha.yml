@@ -13,8 +13,9 @@ storage:
   delete:
     enabled: true
 redis:
-  addr: $redis_url
-  db: 1
+  addr: $redis_host:$redis_port
+  password: $redis_password
+  db: $redis_db_index_reg
 http:
   addr: :5000
   secret: placeholder
