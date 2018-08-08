@@ -2,18 +2,13 @@
 
 ## Introduction
 
-This [Helm](https://github.com/kubernetes/helm) chart installs [Harbor](http://vmware.github.io/harbor/) in a Kubernetes cluster. Currently this chart supports Harbor v1.4.0 release. Welcome to [contribute](CONTRIBUTING.md) to Helm Chart for Harbor.
+This [Helm](https://github.com/kubernetes/helm) chart installs [Harbor](http://vmware.github.io/harbor/) in a Kubernetes cluster. Welcome to [contribute](CONTRIBUTING.md) to Helm Chart for Harbor.
 
 ## Prerequisites
 
 - Kubernetes cluster 1.8+ with Beta APIs enabled
 - Kubernetes Ingress Controller is enabled
-- kubectl CLI 1.8+
 - Helm CLI 2.8.0+
-
-## Known Issues
-
-- This chart doesn't work with Kubernetes security update release 1.8.9+ and 1.9.4+. Refer to [issue 4496](https://github.com/vmware/harbor/issues/4496).
 
 ## Setup a Kubernetes cluster
 
@@ -40,55 +35,15 @@ Download external dependent charts required by Harbor chart.
 ```bash
 helm dependency update
 ```
-### Secure Registry Mode
-
-By default this chart will generate a root CA and SSL certificate for your Harbor.
-You can also use your own CA signed certificate:
-
-open values.yaml, set the value of 'externalDomain' to your Harbor FQDN, and
-set value of 'tlsCrt', 'tlsKey', 'caCrt'. The common name of the certificate must match your Harbor FQDN.
-
 Install the Harbor helm chart with a release name `my-release`:
 ```bash
-helm install . --debug --name my-release --set externalDomain=harbor.my.domain
+helm install --debug --name my-release --set externalDomain=harbor.my.domain,externalPort=443 .
 ```
-**Make sure** `harbor.my.domain` resolves to the K8s Ingress Controller IP on the machines where you run docker or access Harbor UI.
+**Note:** Make sure `harbor.my.domain` can be resolved to the K8s Ingress Controller IP on the machines where you run docker or access Harbor UI.
 You can add `harbor.my.domain` and IP mapping in the DNS server, or in /etc/hosts, or use the FQDN `harbor.<IP>.xip.io`.
 
-Follow the `NOTES` section in the command output to get Harbor admin password and **add Harbor root CA into docker trusted certificates**.
-
-If you are using an external service like [cert-manager](https://github.com/jetstack/cert-manager) for generating the TLS certificates,
-you will want to disable the certificate generation by helm by setting the value `generateCertificates` to _false_. Then the ingress' annotations will be scanned
-by _cert-manager_ and the appropriate secret will get created and updated by the service.
-
-If using acme's certificates, do not forget to add the following annotation to
-your ingress.
-
-```yaml
-ingress:
-  annotations:
-    kubernetes.io/tls-acme: "true"
-```
-
-The command deploys Harbor on the Kubernetes cluster in the default configuration.
-The [configuration](#configuration) section lists the parameters that can be configured in values.yaml or via '--set' params during installation.
-
-> **Tip**: List all releases using `helm list`
-
-
-### Insecure Registry Mode
-
-If setting Harbor Registry as insecure-registries for docker,
-you don't need to generate Root CA and SSL certificate for the Harbor ingress controller.
-
-Install the Harbor helm chart with a release name `my-release`:
-```bash
-helm install . --debug --name my-release --set externalDomain=harbor.my.domain,insecureRegistry=true
-```
-**Make sure** `harbor.my.domain` resolves to the K8s Ingress Controller IP on the machines where you run docker or access Harbor UI.
-You can add `harbor.my.domain` and IP mapping in the DNS server, or in /etc/hosts, or use the FQDN `harbor.<IP>.xip.io`.
-
-Then add `"insecure-registries": ["harbor.my.domain"]` in the docker daemon config file and restart docker service.
+The command deploys Harbor on the Kubernetes cluster with the default configuration.
+The [configuration](#configuration) section lists the parameters that can be configured in values.yaml or via '--set' flag during installation.
 
 ## Uninstalling the Chart
 
@@ -107,38 +62,39 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | Parameter                  | Description                        | Default                 |
 | -----------------------    | ---------------------------------- | ----------------------- |
 | **Harbor** |
-| `harborImageTag`     | The tag for Harbor docker images | `v1.4.0` |
+| `persistence.enabled`     | Persistent data | `true` |
+| `externalProtocol`     | The protocol Harbor serves with | `https` |
 | `externalDomain`       | Harbor will run on (https://`externalDomain`/). Recommend using K8s Ingress Controller FQDN as `externalDomain`, or make sure this FQDN resolves to the K8s Ingress Controller IP. | `harbor.my.domain` |
-| `insecureRegistry`     | If set to true, you don't need to set tlsCrt/tlsKey/caCrt, but must add Harbor FQDN as insecure-registries for your docker client. | `false` |
-| `generateCertificates`  | Set to false if TLS certificate will be managed by an external service | `true` |
-| `tlsCrt`               | TLS certificate to use for Harbor's https endpoint. Its CN must match `externalDomain`. | auto-generated |
-| `tlsKey`               | TLS key to use for Harbor's https endpoint | auto-generated |
-| `caCrt`                | CA Cert for self signed TLS cert | auto-generated |
-| `persistence.enabled` | enable persistent data storage | `false` |
-| `secretKey` | The secret key used for encryption. Must be a string of 16 chars. | `not-a-secure-key` |
+| `externalPort`     | The external port Harbor serves on. Configure it with the port of Ingress controller if it is enabled | `32700` |
+| `harborAdminPassword`  | The password of system admin | `Harbor12345` |
+| `authenticationMode` | The authentication mode: `db_auth` for local database, `ldap_auth` for LDAP | `db_auth` |
+| `selfRegistration`               | Allows users to register by themselves, otherwise only system administrators can add users | `on` |
+| `email.host` | The hostname of email server | `smtp.mydomain.com` |
+| `email.port` | The port of email server | `25` |
+| `email.username` | The username of email server | `sample_admin@mydomain.com` |
+| `email.password` | The password for email server | `password` |
+| `email.ssl` | Whether use TLS | `false` |
+| `email.insecure` | Whether the connection with email server is insecure | `false` |
+| `email.from` | The from address shows when send email| `admin <sample_admin@mydomain.com>` |
+| `email.identity` | | |
+| `ldap.url` | LDAP server URL for `ldap_auth` authentication | `ldaps://ldapserver` |
+| `ldap.searchDN` | LDAP search DN | |
+| `ldap.searchPassword` | LDAP search password | |
+| `ldap.baseDN` | LDAP base DN | |
+| `ldap.filter` | LDAP filter | `(objectClass=person)` |
+| `ldap.uid` | LDAP UID | `uid` |
+| `ldap.scope` | LDAP scope | `2` |
+| `ldap.timeout` | LDAP timeout | `5` |
+| `ldap.verifyCert` | Whether to verify HTTPS certificate | `true` |
+| `secretkey` | The key used for encryption. Must be a string of 16 chars | `not-a-secure-key` |
+| `harborImageTag` | The tag of Harbor images | `dev` |
+| **Ingress** |
+| `ingress.enabled` | Enable ingress objects | `true` |
+| `ingress.tls.secretName` | Fill the secretName if you want to use the certificate of yourself when Harbor serves with HTTPS. A certificate will be generated automatically by the chart if leave it empty | |
 | **Adminserver** |
 | `adminserver.image.repository` | Repository for adminserver image | `vmware/harbor-adminserver` |
-| `adminserver.image.tag` | Tag for adminserver image | `v1.4.0` |
+| `adminserver.image.tag` | Tag for adminserver image | `dev` |
 | `adminserver.image.pullPolicy` | Pull Policy for adminserver image | `IfNotPresent` |
-| `adminserver.emailHost` | email server | `smtp.mydomain.com` |
-| `adminserver.emailPort` | email port | `25` |
-| `adminserver.emailUser` | email username | `sample_admin@mydomain.com` |
-| `adminserver.emailSsl` | email uses SSL? | `false` |
-| `adminserver.emailFrom` | send email from address | `admin <sample_admin@mydomain.com>` |
-| `adminserver.emailIdentity` | | "" |
-| `adminserver.key` | adminsever key | `not-a-secure-key` |
-| `adminserver.emailPwd` | password for email | `not-a-secure-password` |
-| `adminserver.adminPassword` | password for admin user | `Harbor12345` |
-| `adminserver.authenticationMode` | authentication mode for Harbor ( `db_auth` for local database, `ldap_auth` for LDAP, etc...) [Docs](https://github.com/vmware/harbor/blob/master/docs/user_guide.md#user-account) | `db_auth` |
-| `adminserver.selfRegistration` | Allows users to register by themselves, otherwise only administrators can add users | `on` |
-| `adminserver.ldap.url` | LDAP server URL for `ldap_auth` authentication | `ldaps://ldapserver` |
-| `adminserver.ldap.searchDN` | LDAP Search DN | `` |
-| `adminserver.ldap.baseDN` | LDAP Base DN | `` |
-| `adminserver.ldap.filter` | LDAP Filter | `(objectClass=person)` |
-| `adminserver.ldap.uid` | LDAP UID | `uid` |
-| `adminserver.ldap.scope` | LDAP Scope | `2` |
-| `adminserver.ldap.timeout` | LDAP Timeout | `5` |
-| `adminserver.ldap.verifyCert` | LDAP Verify HTTPS Certificate | `True` |
 | `adminserver.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `adminserver.volumes` | used to create PVCs if persistence is enabled (see instructions in values.yaml) | see values.yaml |
 | `adminserver.nodeSelector` | Node labels for pod assignment | `{}` |
@@ -146,9 +102,8 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `adminserver.affinity` | Node/Pod affinities | `{}` |
 | **Jobservice** |
 | `jobservice.image.repository` | Repository for jobservice image | `vmware/harbor-jobservice` |
-| `jobservice.image.tag` | Tag for jobservice image | `v1.4.0` |
+| `jobservice.image.tag` | Tag for jobservice image | `dev` |
 | `jobservice.image.pullPolicy` | Pull Policy for jobservice image | `IfNotPresent` |
-| `jobservice.key` | jobservice key | `not-a-secure-key` |
 | `jobservice.secret` | jobservice secret | `not-a-secure-secret` |
 | `jobservice.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `jobservice.nodeSelector` | Node labels for pod assignment | `{}` |
@@ -156,80 +111,82 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `jobservice.affinity` | Node/Pod affinities | `{}` |
 | **UI** |
 | `ui.image.repository` | Repository for ui image | `vmware/harbor-ui` |
-| `ui.image.tag` | Tag for ui image | `v1.4.0` |
+| `ui.image.tag` | Tag for ui image | `dev` |
 | `ui.image.pullPolicy` | Pull Policy for ui image | `IfNotPresent` |
-| `ui.key` | ui key | `not-a-secure-key` |
 | `ui.secret` | ui secret | `not-a-secure-secret` |
-| `ui.privateKeyPem` | ui private key | see values.yaml |
 | `ui.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `ui.nodeSelector` | Node labels for pod assignment | `{}` |
 | `ui.tolerations` | Tolerations for pod assignment | `[]` |
 | `ui.affinity` | Node/Pod affinities | `{}` |
-| **MySQL** |
-| `mysql.image.repository` | Repository for mysql image | `vmware/harbor-mysql` |
-| `mysql.image.tag` | Tag for mysql image | `v1.4.0` |
-| `mysql.image.pullPolicy` | Pull Policy for mysql image | `IfNotPresent` |
-| `mysql.host` | MySQL Server | `~` |
-| `mysql.port` | MySQL Port | `3306` |
-| `mysql.user` | MySQL Username | `root` |
-| `mysql.pass` | MySQL Password | `registry` |
-| `mysql.database` | MySQL Database | `registry` |
-| `mysql.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
-| `mysql.volumes` | used to create PVCs if persistence is enabled (see instructions in values.yaml) | see values.yaml |
-| `mysql.nodeSelector` | Node labels for pod assignment | `{}` |
-| `mysql.tolerations` | Tolerations for pod assignment | `[]` |
-| `mysql.affinity` | Node/Pod affinities | `{}` |
+| **Database** |
+`database.type` | If external database is used, set it to `external` | `internal` |
+| `database.internal.image.repository` | Repository for database image | `vmware/harbor-db` |
+| `database.internal.image.tag` | Tag for database image | `dev` |
+| `database.internal.image.pullPolicy` | Pull Policy for database image | `IfNotPresent` |
+| `database.internal.password` | The password for database | `changeit` |
+| `database.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
+| `database.internal.volumes` | The volume used to persistent data |
+| `database.internal.nodeSelector` | Node labels for pod assignment | `{}` |
+| `database.internal.tolerations` | Tolerations for pod assignment | `[]` |
+| `database.internal.affinity` | Node/Pod affinities | `{}` |
+| `database.external.host` | The hostname of external database | `192.168.0.1` |
+| `database.external.port` | The port of external database | `5432` |
+| `database.external.username` | The username of external database | `user` |
+| `database.external.password` | The password of external database | `password` |
+| `database.external.coreDatabase` | The database used by core service | `registry` |
+| `database.external.clairDatabase` | The database used by clair | `clair` |
+| `database.external.notaryServerDatabase` | The database used by Notary server | `notary_server` |
+| `database.external.notarySignerDatabase` | The database used by Notary signer | `notary_signer` |
 | **Registry** |
 | `registry.image.repository` | Repository for registry image | `vmware/registry-photon` |
-| `registry.image.tag` | Tag for registry image | `v2.6.2-v1.4.0` |
+| `registry.image.tag` | Tag for registry image | `dev` |
 | `registry.image.pullPolicy` | Pull Policy for registry image | `IfNotPresent` |
-| `registry.rootCrt` | registry root cert | see values.yaml |
 | `registry.httpSecret` | registry secret | `not-a-secure-secret` |
+| `registry.logLevel` | The log level | `info` |
+| `registry.storage.type` | The storage used to store images: `filesystem`, `azure`, `gcs`, `s3`, `swift`, `oss` | `filesystem` |
 | `registry.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
 | `registry.volumes` | used to create PVCs if persistence is enabled (see instructions in values.yaml) | see values.yaml |
 | `registry.nodeSelector` | Node labels for pod assignment | `{}` |
 | `registry.tolerations` | Tolerations for pod assignment | `[]` |
 | `registry.affinity` | Node/Pod affinities | `{}` |
+| **Chartmuseum** |
+| `chartmuseum.enabled` | Enable chartmusuem to store chart | `true` |
+| `chartmuseum.image.repository` | Repository for chartmuseum image | `vmware/chartmuseum-photon` |
+| `chartmuseum.image.tag` | Tag for chartmuseum image | `dev` |
+| `chartmuseum.image.pullPolicy` | Pull Policy for chartmuseum image | `IfNotPresent` |
+| `chartmuseum.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined |
+| `chartmuseum.volumes` | used to create PVCs if persistence is enabled (see instructions in values.yaml) | see values.yaml |
+| `chartmuseum.nodeSelector` | Node labels for pod assignment | `{}` |
+| `chartmuseum.tolerations` | Tolerations for pod assignment | `[]` |
+| `chartmuseum.affinity` | Node/Pod affinities | `{}` |
 | **Clair** |
 | `clair.enabled` | Enable Clair? | `true` |
 | `clair.image.repository` | Repository for clair image | `vmware/clair-photon` |
-| `clair.image.tag` | Tag for clair image | `v2.0.1-v1.4.0`
+| `clair.image.tag` | Tag for clair image | `dev`
 | `clair.resources` | [resources](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/) to allocate for container   | undefined
 | `clair.nodeSelector` | Node labels for pod assignment | `{}` |
 | `clair.tolerations` | Tolerations for pod assignment | `[]` |
 | `clair.affinity` | Node/Pod affinities | `{}` |
-| `postgresql` | Overrides for postgresql chart [values.yaml](https://github.com/kubernetes/charts/blob/f2938a46e3ae8e2512ede1142465004094c3c333/stable/postgresql/values.yaml) | see values.yaml
+| **Redis** |
+| `redis.usePassword` | Whether use password | `false` |
+| `redis.password` | The password for Redis | `changeit` |
+| `redis.cluster.enabled` | Enable Redis cluster | `false` |
+| `redis.master.persistence.enabled` | Persistent data   | `false` |
+| `redis.external.enabled` | If an external Redis is used, set it to `true` | `false` |
+| `redis.external.host` | The hostname of external Redis | `192.168.0.2` |
+| `redis.external.port` | The port of external Redis | `6379` |
+| `redis.external.databaseIndex` | The database index of external Redis | `0` |
+| `redis.external.usePassword` | Whether use password for external Redis | `false` |
+| `redis.external.password` | The password of external Redis | `changeit` |
 | **Notary** |
 | `notary.enabled` | Enable Notary? | `true` |
 | `notary.server.image.repository` | Repository for notary server image | `vmware/notary-server-photon` |
-| `notary.server.image.tag` | Tag for notary server image | `v0.5.1-v1.4.0`
+| `notary.server.image.tag` | Tag for notary server image | `dev`
 | `notary.signer.image.repository` | Repository for notary signer image | `vmware/notary-signer-photon` |
-| `notary.signer.image.tag` | Tag for notary signer image | `v0.5.1-v1.4.0`
-| `notary.db.image.repository` | Repository for notary database image | `vmware/mariadb-photon` |
-| `notary.db.image.tag` | Tag for notary database image | `v1.4.0`
-| `notary.db.password` | The password of users for notary database | Specify your own password |
+| `notary.signer.image.tag` | Tag for notary signer image | `dev`
 | `notary.nodeSelector` | Node labels for pod assignment | `{}` |
 | `notary.tolerations` | Tolerations for pod assignment | `[]` |
 | `notary.affinity` | Node/Pod affinities | `{}` |
-| **Ingress** |
-| `ingress.enabled` | Enable ingress objects. | `true` |
-
-Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
-
-```bash
-helm install . --name my-release --set externalDomain=harbor.<IP>.xip.io
-```
-
-Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
-
-```bash
-helm install . --name my-release -f /path/to/values.yaml
-```
-
-> **Tip**: You can use the default [values.yaml](values.yaml)
 
 ## Persistence
-
-Harbor stores the data and configurations in emptyDir volumes. You can change the values.yaml to enable persistence and use a PersistentVolumeClaim instead.
-
-> *"An emptyDir volume is first created when a Pod is assigned to a Node, and exists as long as that Pod is running on that node. When a Pod is removed from a node for any reason, the data in the emptyDir is deleted forever."*
+TBD
