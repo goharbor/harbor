@@ -82,21 +82,21 @@
                         <img [src]="getImgLink(item)"/>
                         <div class="card-media-description">
                             <span class="card-media-title">{{item.name}}</span>
-                            <p class="card-media-text">{{item.home}}</p>
+                            <a class="card-media-text">{{item.home}}</a>
                         </div>
                     </div>
                 </div>
                 <div class="card-block">
                     <div class="form-group">
-                        <label>{{'HELM_CHART.ENGINE' | translate}}</label>
+                        <label class="card-label">{{'HELM_CHART.ENGINE' | translate}}</label>
                         <div>{{item.engine}}</div>
                     </div>
                     <div class="form-group">
-                        <label>{{'HELM_CHART.MAINTAINERS' | translate}}</label>
+                        <label class="card-label">{{'HELM_CHART.MAINTAINERS' | translate}}</label>
                         <div>{{getMaintainerString(item.maintainers)}}</div>
                     </div>
                     <div class="form-group">
-                        <label>{{'HELM_CHART.VERSION' | translate}}</label>
+                        <label class="card-label">{{'HELM_CHART.VERSION' | translate}}</label>
                         <div>{{item.appVersion}}</div>
                     </div>
                 </div>

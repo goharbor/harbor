@@ -14,6 +14,7 @@ import { SystemInfo, SystemInfoService, HelmChartItem } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { toPromise, DEFAULT_PAGE_SIZE } from "../utils";
 import { HelmChartService } from "../service/helm-chart.service";
+import { DefaultHelmIcon} from "../shared/shared.const";
 
 @Component({
   selector: "hbr-helm-chart",
@@ -30,6 +31,7 @@ export class HelmChartComponent implements OnInit {
   @Input() hasProjectAdminRole: boolean;
   @Output() chartClickEvt = new EventEmitter<any>();
   @Output() chartDownloadEve = new EventEmitter<string>();
+  @Input() chartDefaultIcon: string = DefaultHelmIcon;
 
   lastFilteredChartName: string;
   charts: HelmChartItem[] = [];
@@ -172,5 +174,9 @@ export class HelmChartComponent implements OnInit {
     } else {
       return this.listHover;
     }
+  }
+
+  getDefaultIcon(chart: HelmChartItem) {
+    chart.icon = this.chartDefaultIcon;
   }
 }
