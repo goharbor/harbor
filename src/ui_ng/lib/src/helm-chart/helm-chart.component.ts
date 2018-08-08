@@ -75,7 +75,6 @@ export class HelmChartComponent implements OnInit {
       .catch(error => this.errorHandler.error(error));
     this.lastFilteredChartName = "";
     this.refresh();
-
   }
 
   updateFilterValue(value: string) {

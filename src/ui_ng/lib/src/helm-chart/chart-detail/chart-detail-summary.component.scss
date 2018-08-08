@@ -25,4 +25,13 @@
             word-break: break-all;
         }
     }
+
+    .cmd-title {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .cmd-content {
+        width: 100%;
+    }
 }
