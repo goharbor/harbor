@@ -520,7 +520,8 @@
         "COMMAND": "命令",
         "PROV_FILE": "Prov 文件",
         "READY": "就绪",
-        "NOT_READY": "未就绪"
+        "NOT_READY": "未就绪",
+        "STATUS": "状态"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"

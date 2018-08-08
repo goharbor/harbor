@@ -495,7 +495,8 @@
         "COMMAND": "Commands",
         "PROV_FILE": "Prov File",
         "READY": "Ready",
-        "NOT_READY": "Not Ready"
+        "NOT_READY": "Not Ready",
+        "STATUS": "Status"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Certaines modifications ne sont pas encore enregistrées. Voulez-vous annuler ?"

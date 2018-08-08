@@ -521,7 +521,8 @@
         "COMMAND": "Commands",
         "PROV_FILE": "Prov File",
         "READY": "Ready",
-        "NOT_READY": "Not Ready"
+        "NOT_READY": "Not Ready",
+        "STATUS": "Status"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"

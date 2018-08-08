@@ -307,7 +307,7 @@ export interface HelmChartItem {
   status?: string;
   pulls?: number;
   maintainer?: string;
-
+  deprecated?: boolean;
 }
 
 export interface HelmChartVersion {
@@ -324,6 +324,7 @@ export interface HelmChartVersion {
   urls: string[];
   created: string;
   digest: string;
+  deprecated?: boolean;
 }
 
 export interface HelmChartDetail {

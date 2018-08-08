@@ -28,7 +28,8 @@
                             <clr-icon shape="upload" size="16"></clr-icon>&nbsp;{{'HELM_CHART.UPLOAD' | translate}}
                     </button>
                 </clr-dg-action-bar>
-                <clr-dg-column [clrDgField]="'name'">{{'HELM_CHART.NAME' | translate}}</clr-dg-column>
+                <clr-dg-column >{{'HELM_CHART.NAME' | translate}}</clr-dg-column>
+                <clr-dg-column >{{'HELM_CHART.STATUS' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CHARTVERSIONS' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'HELM_CHART.PLACEHOLDER' | translate }}</clr-dg-placeholder>
@@ -39,6 +40,7 @@
                         </span>
                         <a href="javascript:void(0)" (click)="onChartClick(chart)">{{ chart.name }}</a>
                     </clr-dg-cell>
+                    <clr-dg-cell>{{ getStatusString(chart) | translate }}</clr-dg-cell>
                     <clr-dg-cell>{{ chart.total_versions }}</clr-dg-cell>
                     <clr-dg-cell>{{ chart.created | date }}</clr-dg-cell>
                 </clr-dg-row>
@@ -51,7 +53,7 @@
         </div>
     </div>
     <div *ngIf="isCardView" class="row card-container">
-        <div *ngFor="let item of charts;" class="col-lg-2 col-md-5 col-sm-5 col-xs-6">
+        <div *ngFor="let item of charts;" class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
             <a let i=index; class="card clickable" (click)="onChartClick(item)">
                 <div class="card-header">
                     <div class="card-icon">
@@ -60,10 +62,18 @@
                     <div class="card-title">{{item.name}}</div>
                 </div>
                 <div class="card-footer">
-                    <div class="form-group">
-                        <span class="version-text">{{item.total_versions}}</span>
-                        <label *ngIf="item.total_versions !== 1">{{'HELM_CHART.CHARTVERSIONS' | translate}}</label>
-                        <label *ngIf="item.total_versions === 1">{{'HELM_CHART.VERSION' | translate}}</label>
+                    <div class="row flex-items-xs-between">
+                        <div class="col-xs-6">
+                            <span class="version-text">{{item.total_versions}}</span>
+                            <label *ngIf="item.total_versions !== 1">{{'HELM_CHART.CHARTVERSIONS' | translate}}</label>
+                            <label *ngIf="item.total_versions === 1">{{'HELM_CHART.VERSION' | translate}}</label>
+                        </div>
+                        <div class="col-xs-6">
+                            <span class="label"
+                            [class.label-danger]="item.deprecated"
+                            [class.label-success]="!item.deprecated"
+                            >{{getStatusString(item) | translate}}</span>
+                        </div>
                     </div>
                 </div>
             </a>
