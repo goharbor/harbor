@@ -26,9 +26,9 @@ export class ChartDetailSummaryComponent implements OnInit {
   @Input() readme: string;
 
   copiedCMD = '';
-  addCMD = `helm repo add --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username <username> --password <password> <repo name> ${this.repoURL}/chartrepo/${this.projectName}`;
-  installCMD = `helm install --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username=<username> --password=<password> --version ${this.chartVersion} <repo name>/${this.chartName}`;
-  verifyCMD = `helm verify --keyring <key path> ${this.chartName}-${this.chartVersion}.tgz`;
+  addCMD: string;
+  installCMD: string;
+  verifyCMD: string;
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -36,6 +36,9 @@ export class ChartDetailSummaryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.addCMD = `helm repo add --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username <username> --password <password> <repo name> ${this.repoURL}/chartrepo/${this.projectName}`;
+    this.installCMD = `helm install --ca-file <ca file> --cert-file <cert file> --key-file <key file> --username=<username> --password=<password> --version ${this.chartVersion} <repo name>/${this.chartName}`;
+    this.verifyCMD = `helm verify --keyring <key path> ${this.chartName}-${this.chartVersion}.tgz`;
   }
 
   isCopied(cmd: string) {
