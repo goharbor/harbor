@@ -90,7 +90,7 @@ Non-admin View Member Account
     Xpath Should Match X Times  //clr-dg-row-master  ${times}
 
 User Can Not Add Member
-    Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'New')]
+    Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'User')]
 
 Add Guest Member To Project
     [arguments]  ${member}
