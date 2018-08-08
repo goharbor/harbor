@@ -92,6 +92,7 @@ Ldap Verify Cert Checkbox Should Be Disabled
 
 Set Pro Create Admin Only	
     #set limit to admin only
+    Click Element  xpath=${configuration_xpath}
     Sleep  2
     Click Element  xpath=${system_config_xpath}
     Sleep  1
@@ -101,7 +102,9 @@ Set Pro Create Admin Only
     Click Element  xpath=${config_save_button_xpath}
     Capture Page Screenshot  AdminCreateOnly.png
 
-Set Pro Create Every One	
+Set Pro Create Every One
+    Click Element  xpath=${configuration_xpath}
+    sleep  1
     #set limit to Every One
     Click Element  xpath=${system_config_xpath}
     Sleep  1
