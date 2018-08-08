@@ -42,28 +42,30 @@
                 width: 45px;
             }
             .card-media-description {
+                width:80%;
                 height: 45px;
-                p {
-                    margin-top: 0;
-                }
                 .card-media-title {
                     overflow: hidden;
                     height: 24px;
                 }
                 .card-media-text {
-                    overflow: hidden;
-                    height: 21px
+                    font-size:0.8em;
+                    color:#007cbb;
+                    @include text-overflow;
+                    height: 20px;
                 }
             }
         }
     }
     .card-block {
+        font-size:0.9em;
         margin-top: 24px;
         min-height: 100px;
         .form-group {
             display: flex;
             label {
                 width: 100px;
+                color:#aaa;
             }
         }
         margin-top: 0px;

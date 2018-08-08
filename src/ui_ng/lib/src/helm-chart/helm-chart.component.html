@@ -51,24 +51,19 @@
         </div>
     </div>
     <div *ngIf="isCardView" class="row card-container">
-        <div *ngFor="let item of charts;" class="col-lg-3 col-md-4 col-sm-6">
+        <div *ngFor="let item of charts;" class="col-lg-2 col-md-5 col-sm-5 col-xs-6">
             <a let i=index; class="card clickable" (click)="onChartClick(item)">
                 <div class="card-header">
-                    <div class="card-media-block wrap">
-                        <div class="card-media-description">
-                            <span class="card-media-title">{{item.name}}</span>
-                            <p class="card-media-text">{{item.home}}</p>
-                        </div>
+                    <div class="card-icon">
+                        <img  class="size-60" [src]="item.icon ?item.icon:chartDefaultIcon"  (error)="getDefaultIcon(item);" />
                     </div>
+                    <div class="card-title">{{item.name}}</div>
                 </div>
-                <div class="card-block">
+                <div class="card-footer">
                     <div class="form-group">
-                        <label>{{'HELM_CHART.VERSIONS' | translate}}</label>
-                        <div>{{item.total_versions}}</div>
-                    </div>
-                    <div class="form-group">
-                            <label>{{'HELM_CHART.CREATED' | translate}}</label>
-                            <div>{{item.Created | date}}</div>
+                        <span class="version-text">{{item.total_versions}}</span>
+                        <label *ngIf="item.total_versions !== 1">{{'HELM_CHART.CHARTVERSIONS' | translate}}</label>
+                        <label *ngIf="item.total_versions === 1">{{'HELM_CHART.VERSION' | translate}}</label>
                     </div>
                 </div>
             </a>

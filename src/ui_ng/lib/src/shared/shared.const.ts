@@ -91,4 +91,4 @@ export const LabelColor = [
 
 export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
 
-export const DefaultHelmIcon = '/static/images/helm-logo.svg';
+export const DefaultHelmIcon = '/static/images/helm-gray.png';

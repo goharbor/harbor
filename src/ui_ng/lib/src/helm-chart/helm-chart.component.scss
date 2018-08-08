@@ -1,6 +1,12 @@
 @import "../mixin";
-$width:24px;
-$height:$width;
+$size24:24px;
+$size60:60px;
+
+@mixin flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .chart-tool {
     position: relative;
     .toolbar {
@@ -11,7 +17,7 @@ $height:$width;
                 display: inline-block;
                 height: 16px;
                 width: 2px;
-                background-color: #cccccc;
+                background-color: #ccc;
                 padding-top: 12px;
                 padding-bottom: 12px;
                 position: relative;
@@ -26,32 +32,20 @@ $height:$width;
 .card-container {
     margin-top: 21px;
     .card-header {
-        .card-media-block {
-            .card-media-description {
-                height: 45px;
-                p {
-                    margin-top: 0;
-                }
-                .card-media-title {
-                    overflow: hidden;
-                    height: 24px;
-                }
-                .card-media-text {
-                    overflow: hidden;
-                    height: 21px
-                }
-            }
+        .card-icon {
+           @include flex-center;
+        }
+        .card-title {
+           @include text-overflow;
+           text-align:center;
+           margin:15px;
         }
     }
-    .card-block {
-        margin-top: 24px;
-        min-height: 100px;
-        .form-group {
-            display: flex;
-            label {
-                width: 100px;
-            }
-        }
+    .card-footer {
+        background-color:#d7d7d7;
+         .version-text {
+             font-size:1.1rem;
+         }
     }
 }
 
@@ -62,8 +56,13 @@ $height:$width;
 }
 
 .size-24 {
-    width:$width;
-    height:$height;
+    width:$size24;
+    height:$size24;
+}
+
+.size-60 {
+    height:$size60;
+    max-width:165px;
 }
 
 .margin-right-12 {
