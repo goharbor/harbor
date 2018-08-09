@@ -140,8 +140,6 @@ db_user = $db_user
 
 ##### End of Harbor DB configuration#######
 
-#The redis server address. Only needed in HA installation.
-redis_url = $redis_url
 
 ##########Clair DB configuration############
 
@@ -165,6 +163,22 @@ clair_db = $clair_db
 clair_updaters_interval = 12
 
 ##########End of Clair DB configuration############
+
+##########Redis server configuration.############
+#Redis connection address
+redis_host = redis
+
+#Redis connection port
+redis_port = 6379
+
+#Redis connection password
+redis_password =
+
+#Redis connection db index
+#db_index 1,2,3 is for registry, jobservice and chartmuseum.
+#db_index 0 is for UI, it's unchangeable
+redis_db_index = 1,2,3
+##########Redis server configuration.############
 
 #The following attributes only need to be set when auth mode is uaa_auth
 uaa_endpoint = $uaa_endpoint
