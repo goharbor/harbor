@@ -22,7 +22,7 @@ pipeline:
     commands:
       - echo ${DRONE_COMMIT_AUTHOR}
       - echo $SKIP_CHECK_MEMBERSHIP
-      - if $SKIP_CHECK_MEMBERSHIP == true; then echo 'check-org-membership step skipped'; else /bin/bash -c '[[ ! $(curl --silent "https://api.github.com/orgs/vmware/members/${DRONE_COMMIT_AUTHOR}?access_token=$GITHUB_AUTOMATION_API_KEY") ]]'; fi
+      - if [ "$SKIP_CHECK_MEMBERSHIP" = "true" ]; then echo 'check-org-membership step skipped'; else /bin/bash -c '[[ ! $(curl --silent "https://api.github.com/orgs/vmware/members/${DRONE_COMMIT_AUTHOR}?access_token=$GITHUB_AUTOMATION_API_KEY") ]]'; fi
     when:
       status: success
 
