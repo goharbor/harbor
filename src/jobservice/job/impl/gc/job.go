@@ -18,7 +18,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/vmware/harbor/src/common"
 	common_http "github.com/vmware/harbor/src/common/http"
 	"github.com/vmware/harbor/src/common/http/modifier/auth"
@@ -29,6 +31,12 @@ import (
 	"github.com/vmware/harbor/src/registryctl/client"
 )
 
+const (
+	dialConnectionTimeout = 30 * time.Second
+	dialReadTimeout       = time.Minute + 10*time.Second
+	dialWriteTimeout      = 10 * time.Second
+)
+
 // GarbageCollector is the struct to run registry's garbage collection
 type GarbageCollector struct {
 	registryCtlClient client.Client
@@ -36,6 +44,7 @@ type GarbageCollector struct {
 	uiclient          *common_http.Client
 	UIURL             string
 	insecure          bool
+	redisURL          string
 }
 
 // MaxFails implements the interface in job/Interface
@@ -55,7 +64,7 @@ func (gc *GarbageCollector) Validate(params map[string]interface{}) error {
 
 // Run implements the interface in job/Interface
 func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{}) error {
-	if err := gc.init(ctx); err != nil {
+	if err := gc.init(ctx, params); err != nil {
 		return err
 	}
 	if err := gc.readonly(true); err != nil {
@@ -72,12 +81,15 @@ func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{
 		gc.logger.Errorf("failed to get gc result: %v", err)
 		return err
 	}
+	if err := gc.cleanCache(); err != nil {
+		return err
+	}
 	gc.logger.Infof("GC results: status: %t, message: %s, start: %s, end: %s.", gcr.Status, gcr.Msg, gcr.StartTime, gcr.EndTime)
 	gc.logger.Infof("success to run gc in job.")
 	return nil
 }
 
-func (gc *GarbageCollector) init(ctx env.JobContext) error {
+func (gc *GarbageCollector) init(ctx env.JobContext, params map[string]interface{}) error {
 	registryctl.Init()
 	gc.registryCtlClient = registryctl.RegistryCtlClient
 	gc.logger = ctx.GetLogger()
@@ -92,6 +104,7 @@ func (gc *GarbageCollector) init(ctx env.JobContext) error {
 	} else {
 		return fmt.Errorf(errTpl, common.UIURL)
 	}
+	gc.redisURL = params["redis_url_reg"].(string)
 	return nil
 }
 
@@ -105,5 +118,32 @@ func (gc *GarbageCollector) readonly(switcher bool) error {
 		return err
 	}
 	gc.logger.Info("the readonly request has been sent successfully")
+	return nil
+}
+
+// cleanCache is to clean the registry cache for GC.
+// To do this is because the issue https://github.com/docker/distribution/issues/2094
+func (gc *GarbageCollector) cleanCache() error {
+
+	con, err := redis.DialURL(
+		gc.redisURL,
+		redis.DialConnectTimeout(dialConnectionTimeout),
+		redis.DialReadTimeout(dialReadTimeout),
+		redis.DialWriteTimeout(dialWriteTimeout),
+	)
+
+	if err != nil {
+		gc.logger.Errorf("failed to connect to redis %v", err)
+		return err
+	}
+	defer con.Close()
+
+	// clean all keys in registry redis DB.
+	_, err = con.Do("FLUSHDB")
+	if err != nil {
+		gc.logger.Errorf("failed to clean registry cache %v", err)
+		return err
+	}
+
 	return nil
 }
