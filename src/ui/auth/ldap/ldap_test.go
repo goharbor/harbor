@@ -203,7 +203,7 @@ func TestAuthenticateWithoutAdmin(t *testing.T) {
 	var person models.AuthModel
 	var authHelper *Auth
 	person.Principal = "user001"
-	person.Password = "zhu88jie"
+	person.Password = "Test1@34"
 	user, err := authHelper.Authenticate(person)
 	if err != nil {
 		t.Errorf("unexpected ldap authenticate fail: %v", err)
