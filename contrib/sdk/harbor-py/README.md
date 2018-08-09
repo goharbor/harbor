@@ -35,8 +35,15 @@ The supported APIs are:
 
 ## Installation
 
+### Installation from PyPI
 ```
 pip install harbor-py
+```
+### Local Installation from Source Code
+```
+git clone https://github.com/vmware/harbor.git
+cd harbor/contrib/sdk/harbor-py
+python setup.py install --root /
 ```
 
 ## Usage
