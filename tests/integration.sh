@@ -18,7 +18,7 @@ gsutil version -l
 set +x
 
 ## -------------------------------------------- Pre-condition --------------------------------------------
-if [[ $DRONE_REPO != "vmware/harbor" ]]; then
+if [[ $DRONE_REPO != "goharbor/harbor" ]]; then
     echo "Only run tests again Harbor Repo."
     exit 1
 fi
