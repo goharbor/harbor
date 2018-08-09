@@ -73,17 +73,3 @@ pipeline:
       event: [push, tag, deployment]
       branch: [ master, release-*, refs/tags/* ]
       status: [ failure, success ]
-
-  trigger:
-    image: plugins/downstream
-    server: https://ci-vic.vmware.com
-    secrets:
-      - downstream_token
-    fork: true
-    repositories:
-       - vmware/vic-product
-    when:
-      repo: goharbor/harbor
-      event: [ push, tag ]
-      branch: [ master, release-*, refs/tags/* ]
-      status: success
