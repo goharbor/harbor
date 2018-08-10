@@ -57,3 +57,6 @@ We welcome contributions from the community. Need help contributing? Please feel
 
 ### License
 Harbor is available under the [Apache 2 license](LICENSE). This project uses open source components which have additional licensing terms.
+
+### Code of Conduct
+Harbor follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md).
