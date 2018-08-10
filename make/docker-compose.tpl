@@ -1,7 +1,7 @@
 version: '2'
 services:
   log:
-    image: vmware/harbor-log:__version__
+    image: goharbor/harbor-log:__version__
     container_name: harbor-log 
     restart: always
     volumes:
@@ -12,7 +12,7 @@ services:
     networks:
       - harbor
   registry:
-    image: vmware/registry-photon:__reg_version__
+    image: goharbor/registry-photon:__reg_version__
     container_name: registry
     restart: always
     volumes:
@@ -30,7 +30,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registry"
   registryctl:
-    image: vmware/harbor-registryctl:__version__
+    image: goharbor/harbor-registryctl:__version__
     container_name: registryctl
     env_file:
       - ./common/config/registryctl/env
@@ -51,7 +51,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registryctl"
   postgresql:
-    image: vmware/harbor-db:__version__
+    image: goharbor/harbor-db:__version__
     container_name: harbor-db
     restart: always
     volumes:
@@ -68,7 +68,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "postgresql"
   adminserver:
-    image: vmware/harbor-adminserver:__version__
+    image: goharbor/harbor-adminserver:__version__
     container_name: harbor-adminserver
     env_file:
       - ./common/config/adminserver/env
@@ -87,7 +87,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "adminserver"
   ui:
-    image: vmware/harbor-ui:__version__
+    image: goharbor/harbor-ui:__version__
     container_name: harbor-ui
     env_file:
       - ./common/config/ui/env
@@ -111,7 +111,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "ui"
   jobservice:
-    image: vmware/harbor-jobservice:__version__
+    image: goharbor/harbor-jobservice:__version__
     container_name: harbor-jobservice
     env_file:
       - ./common/config/jobservice/env
@@ -131,7 +131,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   redis:
-    image: vmware/redis-photon:__redis_version__
+    image: goharbor/redis-photon:__redis_version__
     container_name: redis
     restart: always
     volumes:
@@ -146,7 +146,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "redis"
   proxy:
-    image: vmware/nginx-photon:__nginx_version__
+    image: goharbor/nginx-photon:__nginx_version__
     container_name: nginx
     restart: always
     volumes:
