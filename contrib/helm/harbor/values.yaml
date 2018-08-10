@@ -52,7 +52,7 @@ harborImageTag: &harbor_image_tag dev
 
 adminserver:
   image:
-    repository: vmware/harbor-adminserver
+    repository: goharbor/harbor-adminserver
     tag: *harbor_image_tag
     pullPolicy: IfNotPresent
   volumes:
@@ -70,7 +70,7 @@ adminserver:
 
 jobservice:
   image:
-    repository: vmware/harbor-jobservice
+    repository: goharbor/harbor-jobservice
     tag: *harbor_image_tag
     pullPolicy: IfNotPresent
   secret: not-a-secure-secret
@@ -85,7 +85,7 @@ jobservice:
 
 ui:
   image:
-    repository: vmware/harbor-ui
+    repository: goharbor/harbor-ui
     tag: *harbor_image_tag
     pullPolicy: IfNotPresent
   secret: not-a-secure-secret
@@ -104,7 +104,7 @@ database:
   type: internal
   internal:
     image:
-      repository: vmware/harbor-db
+      repository: goharbor/harbor-db
       tag: *harbor_image_tag
       pullPolicy: IfNotPresent
     # the superuser password of database
@@ -133,7 +133,7 @@ database:
 
 registry:
   image:
-    repository: vmware/registry-photon
+    repository: goharbor/registry-photon
     tag: dev
     pullPolicy: IfNotPresent
   httpSecret: not-a-secure-secret
@@ -217,7 +217,7 @@ registry:
 chartmuseum:
   enabled: true
   image:
-    repository: vmware/chartmuseum-photon
+    repository: goharbor/chartmuseum-photon
     tag: dev
     pullPolicy: IfNotPresent
   volumes:
@@ -236,7 +236,7 @@ chartmuseum:
 clair:
   enabled: true
   image:
-    repository: vmware/clair-photon
+    repository: goharbor/clair-photon
     tag: dev
     pullPolicy: IfNotPresent
   volumes:
@@ -277,12 +277,12 @@ notary:
   enabled: true
   server:
     image:
-      repository: vmware/notary-server-photon
+      repository: goharbor/notary-server-photon
       tag: dev
       pullPolicy: IfNotPresent
   signer:
     image:
-      repository: vmware/notary-signer-photon
+      repository: goharbor/notary-signer-photon
       tag: dev
       pullPolicy: IfNotPresent
     env:
