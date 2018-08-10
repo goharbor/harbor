@@ -1,6 +1,6 @@
 {
     "APP_TITLE": {
-        "VMW_HARBOR": "VMware Harbor",
+        "VMW_HARBOR": "Harbor",
         "HARBOR": "Harbor",
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Management",
@@ -609,7 +609,7 @@
     "ABOUT": {
         "VERSION": "Version",
         "BUILD": "Build",
-        "COPYRIGHT": "Copyright 1998-2017 VMware, Inc. Tous droits réservés. Ce produit est protégé par les lois américaines et internationales sur la propriété intellectuelle. Les produits VMware sont couverts par un ou plusieurs brevets répertoriés à l'adresse suivante",
+        "COPYRIGHT": "Project Harbor is an an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Harbor supports advanced features such as user management, access control, activity monitoring, and replication between instances. Having a registry closer to the build and run environment can also improve image transfer efficiency.",
         "COPYRIGHT_SUFIX": ".",
         "TRADEMARK": "VMware est une marque déposée ou une marque déposée de VMware, Inc. aux États-Unis et dans d'autres juridictions. Toutes les autres marques et noms mentionnés dans le présent document peuvent être des marques de commerce de leurs sociétés respectives.",
         "END_USER_LICENSE": "Contrat de licence utilisateur final",
