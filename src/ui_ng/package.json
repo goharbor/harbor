@@ -58,7 +58,7 @@
         "karma-cli": "^1.0.1",
         "karma-jasmine": "~1.1.0",
         "karma-mocha-reporter": "^2.2.4",
-        "karma-remap-istanbul": "^0.2.1",
+        "karma-remap-istanbul": "^0.6.0",
         "ng-packagr": "^1.7.0",
         "protractor": "4.0.9",
         "rollup": "^0.41.6",
