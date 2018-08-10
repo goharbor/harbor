@@ -610,8 +610,8 @@ if args.notary_mode:
             temp_cert_dir = os.path.join(base_dir, "cert_tmp")
             if not os.path.exists(temp_cert_dir):
                 os.makedirs(temp_cert_dir)
-            ca_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=Self-signed by VMware, Inc."
-            cert_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=notarysigner"
+            ca_subj = "/C=US/ST=California/L=Palo Alto/O=GoHarbor/OU=Harbor/CN=Self-signed by GoHarbor"
+            cert_subj = "/C=US/ST=California/L=Palo Alto/O=GoHarbor/OU=Harbor/CN=notarysigner"
             signer_ca_cert = os.path.join(temp_cert_dir, "notary-signer-ca.crt")
             signer_ca_key = os.path.join(temp_cert_dir, "notary-signer-ca.key")
             signer_cert_path = os.path.join(temp_cert_dir, "notary-signer.crt")

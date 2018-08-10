@@ -70,7 +70,7 @@ container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print 
 echo $container_ip
 
 ## --------------------------------------------- Init Version -----------------------------------------------
-buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
+buildinfo=$(drone build info goharbor/harbor $DRONE_BUILD_NUMBER)
 echo $buildinfo
 git_commit=$(git rev-parse --short=8 HEAD)
 
@@ -122,7 +122,7 @@ function publishImage {
     docker images
     docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
     # rename the images with tag "dev" and push to Docker Hub
-    docker images | sed -n "s|\(vmware/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:dev;docker push \1:dev|p" | bash
+    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:dev;docker push \1:dev|p" | bash
     echo "Images are published successfully"
     docker images
 }

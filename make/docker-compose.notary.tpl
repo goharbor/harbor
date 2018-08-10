@@ -12,7 +12,7 @@ services:
         aliases:
           - harbor-db
   notary-server:
-    image: vmware/notary-server-photon:__notary_version__
+    image: goharbor/notary-server-photon:__notary_version__
     container_name: notary-server
     restart: always
     networks:
@@ -31,7 +31,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-server"
   notary-signer:
-    image: vmware/notary-signer-photon:__notary_version__
+    image: goharbor/notary-signer-photon:__notary_version__
     container_name: notary-signer
     restart: always
     networks:
