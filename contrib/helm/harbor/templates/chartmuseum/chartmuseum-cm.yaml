@@ -12,7 +12,6 @@ data:
   CACHE_REDIS_DB: "{{ template "harbor.redis.databaseIndex" }}"
   BASIC_AUTH_USER: "chart_controller"
   DEPTH: "1"
-  STORAGE: "local"
   STORAGE_LOCAL_ROOTDIR: "/chart_storage"
   DEBUG: "false"
   LOG_JSON: "true"
@@ -30,4 +29,9 @@ data:
   MAX_UPLOAD_SIZE: "20971520"
   CHART_POST_FORM_FIELD_NAME: "chart"
   PROV_POST_FORM_FIELD_NAME: "prov"
+{{- range $name, $value := .Values.chartmuseum.env.open }}
+{{- if not (empty $value) }}
+  {{ $name }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
 {{- end }}
