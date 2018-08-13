@@ -9,7 +9,7 @@ ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
 Test Case - Upgrade Verify
-    ${data}=  Load Json From File  ${CURDIR}${/}testdata.json
+    ${data}=  Load Json From File  ${CURDIR}${/}data.json
     Run Keyword  Verify User  ${data}    
     Run Keyword  Verify Project  ${data} 
     Run Keyword  Verify Member Exist  ${data}
