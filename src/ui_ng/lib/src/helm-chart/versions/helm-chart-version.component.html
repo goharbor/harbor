@@ -50,8 +50,10 @@
                     (click)="openVersionDeleteModal(selectedRows)">
                         <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}</button>
                 </clr-dg-action-bar>
-                <clr-dg-column [clrDgField]="'name'">{{'HELM_CHART.VERSION' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'HELM_CHART.VERSION' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'HELM_CHART.STATUS' | translate }}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.ENGINE' | translate }}</clr-dg-column>
+
                 <clr-dg-column>{{'HELM_CHART.MAINTAINERS' | translate }}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate }}</clr-dg-column>
                 <clr-dg-placeholder>{{'HELM_CHART.NO_VERSION_PLACEHOLDER' | translate }}</clr-dg-placeholder>
@@ -62,6 +64,7 @@
                         </span>
                         <a href="javascript:void(0)" (click)="onVersionClick(v)">{{ v.version }}</a>
                     </clr-dg-cell>
+                    <clr-dg-cell>{{ getStatusString(v) | translate }}</clr-dg-cell>
                     <clr-dg-cell>{{ v.engine }}</clr-dg-cell>
                     <clr-dg-cell>{{ getMaintainerString(v.maintainers) }}</clr-dg-cell>
                     <clr-dg-cell>{{ v.created | date}}</clr-dg-cell>
@@ -88,6 +91,10 @@
                 </div>
                 <div class="card-block">
                     <div class="form-group">
+                        <label class="card-label">{{'HELM_CHART.STATUS' | translate}}</label>
+                        <div>{{getStatusString(item) | translate}}</div>
+                    </div>
+                    <div class="form-group">
                         <label class="card-label">{{'HELM_CHART.ENGINE' | translate}}</label>
                         <div>{{item.engine}}</div>
                     </div>
@@ -103,7 +110,7 @@
                 <div class="card-footer">
                     <clr-dropdown [clrCloseMenuOnItemClick]="false">
                         <button type="button" class="btn btn-link" (click)="versionDownload($event, item)">{{'HELM_CHART.DOWNLOAD' | translate}}</button>
-                        <button type="button" class="btn btn-link" (click)="openVersionDeleteModal([item])">{{'BUTTON.DELETE' | translate}}</button>
+                        <button type="button" class="btn btn-link" (click)="deleteVersionCard($event, item)">{{'BUTTON.DELETE' | translate}}</button>
                     </clr-dropdown>
                 </div>
             </a>

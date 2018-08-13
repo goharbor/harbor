@@ -21,11 +21,11 @@ import {
   EventEmitter,
   Output
 } from "@angular/core";
-import {Filter, ReplicationRule, Endpoint, Label} from "../service/interface";
+import { Filter, ReplicationRule, Endpoint, Label } from "../service/interface";
 import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
-import {clone, compareValue, isEmptyObject, toPromise} from "../utils";
+import { clone, compareValue, isEmptyObject, toPromise } from "../utils";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { ReplicationService } from "../service/replication.service";
 import { ErrorHandler } from "../error-handler/error-handler";
@@ -33,7 +33,7 @@ import { TranslateService } from "@ngx-translate/core";
 import { EndpointService } from "../service/endpoint.service";
 import { ProjectService } from "../service/project.service";
 import { Project } from "../project-policy-config/project";
-import {LabelState} from "../tag/tag.component";
+import { LabelState } from "../tag/tag.component";
 
 const ONE_HOUR_SECONDS = 3600;
 const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
@@ -165,19 +165,19 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           if (this.isRuleNameValid) {
             this.inNameChecking = true;
             toPromise<ReplicationRule[]>(
-                this.repService.getReplicationRules(0, ruleName)
+              this.repService.getReplicationRules(0, ruleName)
             )
-                .then(response => {
-                  if (response.some(rule => rule.name === ruleName)) {
-                    this.ruleNameTooltip = "TOOLTIP.RULE_USER_EXISTING";
-                    this.isRuleNameValid = false;
-                  }
-                  this.inNameChecking = false;
-                })
-                .catch(() => {
-                  this.inNameChecking = false;
-                });
-          }else {
+              .then(response => {
+                if (response.some(rule => rule.name === ruleName)) {
+                  this.ruleNameTooltip = "TOOLTIP.RULE_USER_EXISTING";
+                  this.isRuleNameValid = false;
+                }
+                this.inNameChecking = false;
+              })
+              .catch(() => {
+                this.inNameChecking = false;
+              });
+          } else {
             this.ruleNameTooltip = "REPLICATION.NAME_TOOLTIP";
           }
         }
@@ -336,11 +336,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       // delete api return label info, replace with label count
       if (delLabel || count) {
         let len = filterLabels.length;
-        for (let i = 0 ; i < len; i ++) {
+        for (let i = 0; i < len; i++) {
           let lab = filterLabels.find(data => data.kind === this.filterSelect[2]);
-          if (lab) {filterLabels.splice(filterLabels.indexOf(lab), 1); }
-         }
-        filterLabels.push({kind: 'label', value: count + ' labels'});
+          if (lab) { filterLabels.splice(filterLabels.indexOf(lab), 1); }
+        }
+        filterLabels.push({ kind: 'label', value: count + ' labels' });
         this.labelInputVal = count.toString();
       }
     }
@@ -386,7 +386,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       let name: string = $event.target.name;
       let value: string = $event.target["value"];
 
-      const controlArray = <FormArray> this.ruleForm.get('filters');
+      const controlArray = <FormArray>this.ruleForm.get('filters');
       this.filterListData.forEach((data, index) => {
         if (index === +id) {
           data.name = $event.target.name = value;
@@ -425,7 +425,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.filterListData.forEach((data, index) => {
         if (index === indexId) {
           data.isOpen = true;
-        }else {
+        } else {
           data.isOpen = false;
         }
       });
@@ -487,7 +487,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   addNewFilter(): void {
-    const controlArray = <FormArray> this.ruleForm.get('filters');
+    const controlArray = <FormArray>this.ruleForm.get('filters');
     if (this.filterCount === 0) {
       this.filterListData.push(
         this.baseFilterData(
@@ -537,7 +537,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       }
       const control = <FormArray>this.ruleForm.get('filters');
       if (control.controls[i].get('kind').value === this.filterSelect[2]) {
-        this.labelInputVal = control.controls[i].get('value').value.split(' ')[0];
+        this.filterLabelInfo = [];
+        this.labelInputVal = "";
       }
       control.removeAt(i);
       this.setFilter(control.value);
@@ -610,7 +611,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   selectedLabelList(selectedLabels: LabelState[], indexId: number) {
     // set input value of filter label
-    const controlArray = <FormArray> this.ruleForm.get('filters');
+    const controlArray = <FormArray>this.ruleForm.get('filters');
 
     this.filterListData.forEach((data, index) => {
       if (data.name === this.filterSelect[2]) {
@@ -618,7 +619,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         if (labelsLength > 0) {
           controlArray.controls[index].get('value').setValue(labelsLength + ' labels');
           this.labelInputVal = labelsLength.toString();
-        }else {
+        } else {
           controlArray.controls[index].get('value').setValue('');
         }
       };
@@ -688,14 +689,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       filters.splice(filters.indexOf(labels), 1);
       let info: any[] = [];
       this.filterLabelInfo.forEach(data => {
-        info.push({kind: 'label', value: data.id});
+        info.push({ kind: 'label', value: data.id });
       });
       filters.push.apply(filters, info);
     }
   }
 
   public hasFormChange(): boolean {
-    return !isEmptyObject(this.getChanges());
+    return !isEmptyObject(this.hasChanges());
   }
 
   onSubmit() {
@@ -884,55 +885,29 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     return utcTimes;
   }
 
-  getChanges(): { [key: string]: any | any[] } {
-    let changes: { [key: string]: any | any[] } = {};
-    let ruleValue: { [key: string]: any | any[] } = clone(this.ruleForm.value);
-    if (ruleValue.filters && ruleValue.filters.length) {
-      ruleValue.filters.forEach((data, index) => {
+  hasChanges(): boolean {
+    let formValue = clone(this.ruleForm.value);
+    let initValue = clone(this.copyUpdateForm);
+    let initValueCopy: any = {};
+    for (let key of Object.keys(formValue)) {
+      initValueCopy[key] = initValue[key];
+    }
+
+    if (formValue.filters && formValue.filters.length > 0) {
+      formValue.filters.forEach((data, index) => {
         if (data.kind === this.filterSelect[2]) {
-          ruleValue.filters.splice(index, 1);
+          formValue.filters.splice(index, 1);
         }
       });
       // rewrite filter label
       this.filterLabelInfo.forEach(data => {
-        ruleValue.filters.push({kind: "label", pattern: "", value: data});
+        formValue.filters.push({ kind: "label", pattern: "", value: data });
       });
-
     }
 
-    if (!ruleValue || !this.copyUpdateForm) {
-      return changes;
+    if (!compareValue(formValue, initValueCopy)) {
+      return true;
     }
-    for (let prop of Object.keys(ruleValue)) {
-      let field: any = this.copyUpdateForm[prop];
-      if (!compareValue(field, ruleValue[prop])) {
-        if (
-          ruleValue[prop][0] &&
-          ruleValue[prop][0].project_id &&
-          ruleValue[prop][0].project_id === field[0].project_id
-        ) {
-          break;
-        }
-        if (
-          ruleValue[prop][0] &&
-          ruleValue[prop][0].id &&
-          ruleValue[prop][0].id === field[0].id
-        ) {
-          break;
-        }
-        changes[prop] = ruleValue[prop];
-        // Number
-        if (typeof field === "number") {
-          changes[prop] = +changes[prop];
-        }
-
-        // Trim string value
-        if (typeof field === "string") {
-          changes[prop] = ("" + changes[prop]).trim();
-        }
-      }
-    }
-
-    return changes;
+    return false;
   }
 }

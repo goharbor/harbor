@@ -119,7 +119,7 @@ class TestAssignRoleToLdapGroup(unittest.TestCase):
         self.assertTrue(self.queryUserLogs(username="admin_user", password="zhu88jie")>0, "admin user can see logs")
         self.assertTrue(self.queryUserLogs(username="dev_user", password="zhu88jie")>0, "dev user can see logs")
         self.assertTrue(self.queryUserLogs(username="guest_user", password="zhu88jie")>0, "guest user can see logs")
-        self.assertTrue(self.queryUserLogs(username="user001", password="zhu88jie")==0, "user001 can not see any logs")
+        self.assertTrue(self.queryUserLogs(username="test", password="123456")==0, "test user can not see any logs")
 
         pass
 

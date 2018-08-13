@@ -2,7 +2,7 @@ FROM photon:1.0
 
 MAINTAINER wangyan@vmware.com
 
-RUN tdnf distro-sync -y || echo \
+RUN tdnf distro-sync -y \
     && tdnf erase vim -y \
     && tdnf install sudo -y >> /dev/null\
     && tdnf clean all \

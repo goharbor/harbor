@@ -19,7 +19,6 @@ keys = [
     'db_password',
     'db_port',
     'db_user',
-    'redis_url',
     'clair_db_host',
     'clair_db_password',
     'clair_db_port',

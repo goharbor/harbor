@@ -1,6 +1,6 @@
 {
     "APP_TITLE": {
-        "VMW_HARBOR": "VMware Harbor",
+        "VMW_HARBOR": "Harbor",
         "HARBOR": "Harbor",
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Management",
@@ -520,7 +520,8 @@
         "COMMAND": "命令",
         "PROV_FILE": "Prov 文件",
         "READY": "就绪",
-        "NOT_READY": "未就绪"
+        "NOT_READY": "未就绪",
+        "STATUS": "状态"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -644,7 +645,7 @@
     "ABOUT": {
         "VERSION": "版本",
         "BUILD": "构建",
-        "COPYRIGHT": "版权所有 © 1998-2018 VMware, Inc. 保留所有权利。此产品受美国及其他国家/地区的版权和知识产权以及国际条约保护。VMware产品受",
+        "COPYRIGHT": "Harbor是一个用于存储和分发Docker镜像的企业级Registry服务器，通过添加一些企业必需的功能特性，例如安全、标识和管理等，扩展了开源Docker Distribution。作为一个企业级私有Registry服务器，Harbor提供了更好的性能和安全。提升用户使用Registry构建和运行环境传输镜像的效率。",
         "COPYRIGHT_SUFIX": "上列出的一项或多项专利保护。",
         "TRADEMARK": "VMware徽标及设计都是VMware, Inc.在美国和/或其他法律辖区的注册商标或者商标。此处提到的其他所有商标和名称分别是其各自公司的商标。",
         "END_USER_LICENSE": "终端用户许可协议",

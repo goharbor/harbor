@@ -21,7 +21,8 @@ if sys.version_info[:3][0] == 3:
 
 DATA_VOL = "/data"
 
-def validate(conf, args): 
+def validate(conf, args):
+
     if args.ha_mode:
         db_host = rcp.get("configuration", "db_host")
         if db_host == "mysql":
@@ -32,9 +33,6 @@ def validate(conf, args):
             msg = 'Is the Harbor Docker Registry configured to use shared storage (e.g. NFS, Ceph etc.)? [yes/no]:'
             if raw_input(msg).lower() != "yes":
                 raise Exception("Error: In HA mode, shared storage configuration for Docker Registry in harbor.cfg is required. Refer to HA installation guide for details.")
-        redis_url = rcp.get("configuration", "redis_url")
-        if redis_url is None or len(redis_url) < 1:
-            raise Exception("Error: In HA mode, redis_url in harbor.cfg needs to point to a Redis cluster.")
         if args.notary_mode:
             raise Exception("Error: HA mode doesn't support Notary currently")
         if args.clair_mode:
@@ -79,6 +77,18 @@ def validate(conf, args):
     if storage_provider_name != "filesystem":
         if storage_provider_config == "":
             raise Exception("Error: no provider configurations are provided for provider %s" % storage_provider_name)
+
+    redis_host = rcp.get("configuration", "redis_host")
+    if redis_host is None or len(redis_host) < 1:
+        raise Exception("Error: redis_host in harbor.cfg needs to point to an endpoint of Redis server or cluster.")
+
+    redis_port = rcp.get("configuration", "redis_port")
+    if len(redis_port) < 1:
+        raise Exception("Error: redis_port in harbor.cfg needs to point to the port of Redis server or cluster.")
+
+    redis_db_index = rcp.get("configuration", "redis_db_index").strip()
+    if len(redis_db_index.split(",")) != 3:
+        raise Exception("Error invalid value for redis_db_index: %s. please set it as 1,2,3" % redis_db_index)
 
 #To meet security requirement
 #By default it will change file mode to 0600, and make the owner of the file to 10000:10000
@@ -282,10 +292,22 @@ secret_key = get_secret_key(secretkey_path)
 log_rotate_count = rcp.get("configuration", "log_rotate_count")
 log_rotate_size = rcp.get("configuration", "log_rotate_size")
 
-if rcp.has_option("configuration", "redis_url"):
-    redis_url = rcp.get("configuration", "redis_url")
+redis_host = rcp.get("configuration", "redis_host")
+redis_port = rcp.get("configuration", "redis_port")
+redis_password = rcp.get("configuration", "redis_password")
+redis_db_index = rcp.get("configuration", "redis_db_index")
+
+db_indexs = redis_db_index.split(',')
+redis_db_index_reg = db_indexs[0]
+redis_db_index_js = db_indexs[1]
+redis_db_index_chart = db_indexs[2]
+
+#redis://[arbitrary_username:password@]ipaddress:port/database_index
+redis_url_js = ''
+if len(redis_password) > 0:
+    redis_url_js = "redis://anonymous:%s@%s:%s/%s" % (redis_password, redis_host, redis_port, redis_db_index_js)
 else:
-    redis_url = ""
+    redis_url_js = "redis://%s:%s/%s" % (redis_host, redis_port, redis_db_index_js)
 
 if rcp.has_option("configuration", "skip_reload_env_pattern"):
     skip_reload_env_pattern = rcp.get("configuration", "skip_reload_env_pattern")
@@ -430,14 +452,16 @@ render(os.path.join(templates_dir, "adminserver", "env"),
 # set cache for chart repo server
 # default set 'memory' mode, if redis is configured then set to 'redis'
 chart_cache_driver = "memory"
-if len(redis_url) > 0:
+if len(redis_host) > 0:
     chart_cache_driver = "redis"
 
 render(os.path.join(templates_dir, "ui", "env"), 
         ui_conf_env, 
         ui_secret=ui_secret,
         jobservice_secret=jobservice_secret,
-        redis_url = redis_url,
+        redis_host=redis_host,
+        redis_port=redis_port,
+        redis_password=redis_password,
         adminserver_url = adminserver_url,
         chart_cache_driver = chart_cache_driver
         )
@@ -459,14 +483,20 @@ render(os.path.join(templates_dir, "registry", registry_config_file_ha),
     storage_provider_info=storage_provider_info,
     public_url=public_url,
     ui_url=ui_url,
-    redis_url=redis_url)
+    redis_host=redis_host,
+    redis_port=redis_port,
+    redis_password=redis_password,
+    redis_db_index_reg=redis_db_index_reg)
 
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
     storage_provider_info=storage_provider_info,
     public_url=public_url,
     ui_url=ui_url,
-    redis_url=redis_url)
+    redis_host=redis_host,
+    redis_port=redis_port,
+    redis_password=redis_password,
+    redis_db_index_reg=redis_db_index_reg)
 
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
@@ -481,8 +511,8 @@ render(os.path.join(templates_dir, "jobservice", "env"),
 render(os.path.join(templates_dir, "jobservice", "config.yml"),
         jobservice_conf,
         max_job_workers=max_job_workers,
-        redis_url=redis_url)
-		
+        redis_url=redis_url_js)
+
 render(os.path.join(templates_dir, "log", "logrotate.conf"),
         log_rotate_config,
         log_rotate_count=log_rotate_count,
@@ -580,8 +610,8 @@ if args.notary_mode:
             temp_cert_dir = os.path.join(base_dir, "cert_tmp")
             if not os.path.exists(temp_cert_dir):
                 os.makedirs(temp_cert_dir)
-            ca_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=Self-signed by VMware, Inc."
-            cert_subj = "/C=US/ST=California/L=Palo Alto/O=VMware, Inc./OU=Harbor/CN=notarysigner"
+            ca_subj = "/C=US/ST=California/L=Palo Alto/O=GoHarbor/OU=Harbor/CN=Self-signed by GoHarbor"
+            cert_subj = "/C=US/ST=California/L=Palo Alto/O=GoHarbor/OU=Harbor/CN=notarysigner"
             signer_ca_cert = os.path.join(temp_cert_dir, "notary-signer-ca.crt")
             signer_ca_key = os.path.join(temp_cert_dir, "notary-signer-ca.key")
             signer_cert_path = os.path.join(temp_cert_dir, "notary-signer.crt")
@@ -669,23 +699,10 @@ if args.chart_mode:
         os.makedirs(chartm_config_dir)
 
     # process redis info
-    cache_store = ""
-    cache_redis_password = ""
-    cache_redis_addr = ""
-    cache_redis_db_index = 0
-    if redis_url and redis_url.strip():
-        cache_store = "redis"
-        segments = redis_url.split(',', 3)
-        for index, r_cfg in enumerate(segments):
-            # the addr:port
-            if index == 0:
-                cache_redis_addr = r_cfg
-            # the password if existing
-            elif index == 2:
-                cache_redis_password = r_cfg
-            # the database index if existing
-            elif index == 3:
-                cache_redis_db_index = r_cfg
+    cache_store = "redis"
+    cache_redis_password = redis_password
+    cache_redis_addr = redis_host+":"+redis_port
+    cache_redis_db_index = redis_db_index_chart
     
     # process storage info
     #default using local file system

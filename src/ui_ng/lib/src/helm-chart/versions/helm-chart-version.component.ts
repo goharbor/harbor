@@ -172,7 +172,10 @@ export class ChartVersionComponent implements OnInit {
     });
   }
 
-  versionDownload(item?: HelmChartVersion) {
+  versionDownload(evt: Event, item?: HelmChartVersion) {
+    if (evt) {
+      evt.stopPropagation();
+    }
     let selectedVersion: HelmChartVersion;
 
     if (item) {
@@ -268,6 +271,10 @@ export class ChartVersionComponent implements OnInit {
     }
   }
 
+  deleteVersionCard(env: Event, version: HelmChartVersion) {
+    env.stopPropagation();
+    this.openVersionDeleteModal([version]);
+  }
   openVersionDeleteModal(versions: HelmChartVersion[]) {
     let versionNames = versions.map(v => v.name).join(",");
     this.translateService.get("HELM_CHART.DELETE_CHART_VERSION").subscribe(key => {
@@ -304,8 +311,15 @@ export class ChartVersionComponent implements OnInit {
     }
   }
 
-
   getDefaultIcon(v: HelmChartVersion) {
     v.icon = this.chartDefaultIcon;
+  }
+
+  getStatusString(chartVersion: HelmChartVersion) {
+    if (chartVersion.deprecated) {
+      return "HELM_CHART.DEPRECATED";
+    } else {
+      return "HELM_CHART.ACTIVE";
+    }
   }
 }

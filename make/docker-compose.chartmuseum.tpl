@@ -12,7 +12,7 @@ services:
           - redis
   chartmuseum:
     container_name: chartmuseum
-    image: vmware/chartmuseum-photon:__chartmuseum_version__
+    image: goharbor/chartmuseum-photon:__chartmuseum_version__
     restart: always
     networks:
       - harbor-chartmuseum

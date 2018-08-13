@@ -178,4 +178,12 @@ export class HelmChartComponent implements OnInit {
   getDefaultIcon(chart: HelmChartItem) {
     chart.icon = this.chartDefaultIcon;
   }
+
+  getStatusString(chart: HelmChartItem) {
+    if (chart.deprecated) {
+      return "HELM_CHART.DEPRECATED";
+    } else {
+      return "HELM_CHART.ACTIVE";
+    }
+  }
 }

@@ -5,6 +5,6 @@ JOBSERVICE_SECRET=$jobservice_secret
 GODEBUG=netdns=cgo
 ADMINSERVER_URL=$adminserver_url
 UAA_CA_ROOT=/etc/ui/certificates/uaa_ca.pem
-_REDIS_URL=$redis_url
+_REDIS_URL=$redis_host:$redis_port,100,$redis_password
 SYNC_REGISTRY=false
 CHART_CACHE_DRIVER=$chart_cache_driver

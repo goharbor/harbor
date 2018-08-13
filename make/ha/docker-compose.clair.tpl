@@ -15,7 +15,7 @@ services:
     networks:
       - harbor-clair
     container_name: clair
-    image: vmware/clair-photon:__clair_version__
+    image: goharbor/clair-photon:__clair_version__
     restart: always
     cpu_quota: 150000
     depends_on:

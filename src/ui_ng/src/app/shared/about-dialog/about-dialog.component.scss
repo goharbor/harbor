@@ -1,7 +1,3 @@
-.margin-left-override {
-    margin-left: 24px !important;
-}
-
 .about-version {
     font-size: 14px;
     color: #565656;
@@ -11,4 +7,12 @@
 .about-build {
     font-size: 14px;
     color: #565656;
+}
+
+.dialog-body {
+    display:flex;
+}
+
+.content {
+    margin:0 10px 10px 10px;
 }
