@@ -224,7 +224,6 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
-		$(DOCKERIMAGENAME_REGCTL):$(VERSIONTAG) \
 		goharbor/redis-photon:$(REDISVERSION) \
 		goharbor/nginx-photon:$(NGINXVERSION) goharbor/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG)
 
@@ -297,10 +296,6 @@ compile_golangimage: compile_clarity
 
 	@echo "compiling binary for jobservice (golang image)..."
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
-	@echo "Done."
-
-	@echo "compiling binary for harbor regsitry controller (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
 	@echo "Done."
 
 compile:check_environment compile_golangimage
