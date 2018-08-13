@@ -29,27 +29,6 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registry"
-  registryctl:
-    image: goharbor/harbor-registryctl:__version__
-    container_name: registryctl
-    env_file:
-      - ./common/config/registryctl/env
-    restart: always
-    volumes:
-      - /data/registry:/storage:z
-      - ./common/config/registry/:/etc/registry/:z
-      - ./common/config/registryctl/config.yml:/etc/registryctl/config.yml:z
-    networks:
-      - harbor
-    environment:
-      - GODEBUG=netdns=cgo
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:  
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "registryctl"
   postgresql:
     image: goharbor/harbor-db:__version__
     container_name: harbor-db

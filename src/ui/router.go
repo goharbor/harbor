@@ -91,11 +91,6 @@ func initRouters() {
 	beego.Router("/api/jobs/replication/:id([0-9]+)/log", &api.RepJobAPI{}, "get:GetLog")
 	beego.Router("/api/jobs/scan/:id([0-9]+)/log", &api.ScanJobAPI{}, "get:GetLog")
 
-	beego.Router("/api/system/gc", &api.GCAPI{}, "get:List")
-	beego.Router("/api/system/gc/:id", &api.GCAPI{}, "get:GetGC")
-	beego.Router("/api/system/gc/:id([0-9]+)/log", &api.GCAPI{}, "get:GetLog")
-	beego.Router("/api/system/gc/schedule", &api.GCAPI{}, "get:Get;put:Put;post:Post")
-
 	beego.Router("/api/policies/replication/:id([0-9]+)", &api.RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "post:Post")
