@@ -7,7 +7,7 @@ Harbor can be installed by one of three approaches:
 
 - **OVA installer:** Use this installer when user have a vCenter environment, Harbor is launched after OVA deployed. Detail information please refer **[Harbor OVA install guide](install_guide_ova.md)**
 
-All installers can be downloaded from the **[official release](https://github.com/vmware/harbor/releases)** page. 
+All installers can be downloaded from the **[official release](https://github.com/goharbor/harbor/releases)** page. 
 
 This guide describes the steps to install and configure Harbor by using the online or offline installer. The installation processes are almost the same. 
 
@@ -48,7 +48,7 @@ The installation steps boil down to the following
 
 #### Downloading the installer:
 
-The binary of the installer can be downloaded from the [release](https://github.com/vmware/harbor/releases) page. Choose either online or offline installer. Use *tar* command to extract the package.
+The binary of the installer can be downloaded from the [release](https://github.com/goharbor/harbor/releases) page. Choose either online or offline installer. Use *tar* command to extract the package.
 
 Online installer:
 ```
@@ -311,7 +311,7 @@ hostname = 192.168.0.2:8888
 
 3.Re-deploy Harbor refering to previous section "Managing Harbor's lifecycle".
 ### For HTTPS protocol
-1.Enable HTTPS in Harbor by following this [guide](https://github.com/vmware/harbor/blob/master/docs/configure_https.md).  
+1.Enable HTTPS in Harbor by following this [guide](https://github.com/goharbor/harbor/blob/master/docs/configure_https.md).  
 2.Modify docker-compose.yml  
 Replace the first "443" to a customized port, e.g. 8888:443.  
 

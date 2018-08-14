@@ -11,8 +11,8 @@ Open the `setting.json` file, you'll see the default content as shown below:
   "headerLogo": "",
   "loginBgImg": "",
   "product": {
-    "title": "VMware Harbor",
-    "company": "vmware",
+    "title": "Harbor",
+    "company": "goharbor",
     "name": "Harbor",
     "introductions": {
       "zh-cn": "",

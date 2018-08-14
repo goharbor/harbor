@@ -39,10 +39,10 @@ version				 | set harbor version
 #### EXAMPLE:
 
 #### Build and run harbor from source code.
-make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true HTTPPROXY=
+make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true HTTPPROXY=
 
 ### Package offline installer
-make package_offline GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:0.8.4 NOTARYFLAG=true HTTPPROXY=
+make package_offline GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true HTTPPROXY=
 
 ### Start harbor with notary
 make -e NOTARYFLAG=true start
