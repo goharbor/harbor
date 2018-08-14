@@ -34,6 +34,10 @@ type UserGroupAPI struct {
 	id int
 }
 
+const (
+	userNameEmptyMsg = "User group name can not be empty!"
+)
+
 // Prepare validates the URL and parms
 func (uga *UserGroupAPI) Prepare() {
 	uga.BaseController.Prepare()
@@ -96,6 +100,11 @@ func (uga *UserGroupAPI) Post() {
 	userGroup.ID = 0
 	userGroup.GroupType = common.LdapGroupType
 	userGroup.LdapGroupDN = strings.TrimSpace(userGroup.LdapGroupDN)
+	userGroup.GroupName = strings.TrimSpace(userGroup.GroupName)
+	if len(userGroup.GroupName) == 0 {
+		uga.HandleBadRequest(userNameEmptyMsg)
+		return
+	}
 	query := models.UserGroup{GroupType: userGroup.GroupType, LdapGroupDN: userGroup.LdapGroupDN}
 	result, err := group.QueryUserGroup(query)
 	if err != nil {
@@ -134,6 +143,11 @@ func (uga *UserGroupAPI) Put() {
 	userGroup := models.UserGroup{}
 	uga.DecodeJSONReq(&userGroup)
 	ID := uga.id
+	userGroup.GroupName = strings.TrimSpace(userGroup.GroupName)
+	if len(userGroup.GroupName) == 0 {
+		uga.HandleBadRequest(userNameEmptyMsg)
+		return
+	}
 	userGroup.GroupType = common.LdapGroupType
 	log.Debugf("Updated user group %v", userGroup)
 	err := group.UpdateUserGroupName(ID, userGroup.GroupName)
