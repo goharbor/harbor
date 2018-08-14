@@ -116,7 +116,12 @@ func (ua *UserAPI) Get() {
 			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		u.Password = ""
-		if ua.userID == ua.currentUserID {
+		authMode, err := config.AuthMode()
+		if err != nil {
+			log.Errorf("Error occurred in GetUser, error: %v", err)
+			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		}
+		if authMode == common.LDAPAuth && ua.userID == ua.currentUserID {
 			u.HasAdminRole = ua.SecurityCtx.IsSysAdmin()
 		}
 		ua.Data["json"] = u
