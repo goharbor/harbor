@@ -624,3 +624,35 @@ Test Case - Admin Push Signed Image
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  sha256
+
+Test Case - List Helm Charts
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user027  Test1@34
+    Create An New Project  project${d}
+    Go Into Project  project${d}
+    Sleep  2
+    
+    Switch To Project Charts
+    Upload Chart files
+    Go Into Chart Version  ${prometheus_chart_name}
+    Wait Until Page Contains  ${prometheus_chart_version}
+    Go Into Chart Detail  ${prometheus_chart_version}
+
+    # Summary tab
+    Page Should Contain Element  ${summary_markdown}
+    Page Should Contain Element  ${summary_container}
+
+    # Dependency tab
+    Click Element  xpath=${detail_dependency}
+    Sleep  1
+    Page Should Contain Element  ${dependency_content}
+
+    # Values tab
+    Click Element  xpath=${detail_value}
+    Sleep  1
+    Page Should Contain Element  ${value_content}
+
+    Go Back To Versions And Delete
+    Close Browser
