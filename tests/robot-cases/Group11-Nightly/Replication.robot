@@ -14,6 +14,7 @@
 
 *** Settings ***
 Documentation  Harbor BATs
+Library  ../../apitests/python/library/Harbor.py  ${SERVER_CONFIG}
 Resource  ../../resources/Util.robot
 Default Tags  Replication
 
@@ -21,6 +22,13 @@ Default Tags  Replication
 ${HARBOR_URL}  https://${ip}
 ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
+${SERVER}  ${ip}
+${SERVER_URL}  https://${SERVER}
+${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
+&{SERVER_CONFIG}  endpoint=${SERVER_API_ENDPOINT}  verify_ssl=False
+${REMOTE_SERVER}  ${ip1}
+${REMOTE_SERVER_URL}  https://${REMOTE_SERVER}
+${REMOTE_SERVER_API_ENDPOINT}  ${REMOTE_SERVER_URL}/api
 
 *** Test Cases ***
 Test Case - Get Harbor Version
@@ -186,3 +194,31 @@ Test Case - Project LeveL Replication Operation
     Go Into Repo  hello-world
     Page Should Contain  latest
     Close Browser
+
+Test Case - Replicate based on label
+    ${project_id}  ${project_name} =  Create Project
+    
+    Docker Pull  hello-world:latest
+    Docker Login  ${SERVER}  admin  Harbor12345
+    Docker Tag  hello-world:latest  ${SERVER}/${project_name}/hello-world:1.0
+    Docker Push  ${SERVER}/${project_name}/hello-world:1.0
+    Docker Tag  hello-world:latest  ${SERVER}/${project_name}/hello-world:2.0
+    Docker Push  ${SERVER}/${project_name}/hello-world:2.0
+
+    ${label_id}  ${label_name} =  Create Label
+    Add Label To Image  ${label_id}  ${project_name}/hello-world  1.0
+    
+    ${registry_id} =  Get Registry Id By Endpoint  ${REMOTE_SERVER_URL}
+    
+    ${projects} =  Create List  ${project_id}
+    ${registries} =  Create List  ${registry_id}
+    ${label_filter} =  Create Dictionary  kind=label  value=${label_id}
+    ${filters} =  Create List  ${label_filter}
+    ${rule_id}  ${rule_name} =  Create Replication Rule  ${projects}  ${registries}  filters=${filters}
+    
+    Start Replication  ${rule_id}
+    Wait Until Jobs Finish  ${rule_id}
+
+    Image Should Exist  ${project_name}/hello-world  1.0  endpoint=${REMOTE_SERVER_API_ENDPOINT}  verify_ssl=False
+    Image Should Not Exist  ${project_name}/hello-world  2.0  endpoint=${REMOTE_SERVER_API_ENDPOINT}  verify_ssl=False
+

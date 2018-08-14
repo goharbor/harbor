@@ -471,7 +471,7 @@ swagger_client:
 	rm -rf harborclient
 	mkdir harborclient
 	java -jar swagger-codegen-cli.jar generate -i docs/swagger.yaml -l python -o harborclient
-	python ./harborclient/setup.py -q install --user --prefix= || true
+	cd harborclient; python ./setup.py install
 	pip install docker -q 
 	pip freeze
 
