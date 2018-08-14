@@ -8,3 +8,5 @@ UAA_CA_ROOT=/etc/ui/certificates/uaa_ca.pem
 _REDIS_URL=$redis_host:$redis_port,100,$redis_password
 SYNC_REGISTRY=false
 CHART_CACHE_DRIVER=$chart_cache_driver
+_REDIS_URL_REG=$redis_url_reg
+

@@ -17,6 +17,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/vmware/harbor/src/common/dao"
@@ -209,6 +210,9 @@ func (gc *GCAPI) submitJob(gr *models.GCReq) {
 		return
 	}
 	gr.ID = id
+	gr.Parameters = map[string]interface{}{
+		"redis_url_reg": os.Getenv("_REDIS_URL_REG"),
+	}
 	job, err := gr.ToJob()
 	if err != nil {
 		gc.HandleInternalServerError(fmt.Sprintf("%v", err))

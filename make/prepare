@@ -304,10 +304,13 @@ redis_db_index_chart = db_indexs[2]
 
 #redis://[arbitrary_username:password@]ipaddress:port/database_index
 redis_url_js = ''
+redis_url_reg = ''
 if len(redis_password) > 0:
     redis_url_js = "redis://anonymous:%s@%s:%s/%s" % (redis_password, redis_host, redis_port, redis_db_index_js)
+    redis_url_reg = "redis://anonymous:%s@%s:%s/%s" % (redis_password, redis_host, redis_port, redis_db_index_reg)
 else:
     redis_url_js = "redis://%s:%s/%s" % (redis_host, redis_port, redis_db_index_js)
+    redis_url_reg = "redis://%s:%s/%s" % (redis_host, redis_port, redis_db_index_reg)
 
 if rcp.has_option("configuration", "skip_reload_env_pattern"):
     skip_reload_env_pattern = rcp.get("configuration", "skip_reload_env_pattern")
@@ -463,8 +466,8 @@ render(os.path.join(templates_dir, "ui", "env"),
         redis_port=redis_port,
         redis_password=redis_password,
         adminserver_url = adminserver_url,
-        chart_cache_driver = chart_cache_driver
-        )
+        chart_cache_driver = chart_cache_driver,
+        redis_url_reg = redis_url_reg)
 
 registry_config_file_ha = "config_ha.yml"
 registry_config_file = "config.yml"
