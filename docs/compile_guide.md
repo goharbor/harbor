@@ -21,7 +21,7 @@ golang*               | 1.7.3 +
 ## Step 2: Getting the source code
 
    ```sh
-      $ git clone https://github.com/vmware/harbor
+      $ git clone https://github.com/goharbor/harbor
    ```
 
 ## Step 3: Building and installing Harbor
@@ -50,19 +50,19 @@ You can compile the code by one of the three approaches:
 *  Build, install and bring up Harbor without Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.6.0
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0
    ```
 
 *  Build, install and bring up Harbor with Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true
    ```
 
 *  Build, install and bring up Harbor with Clair:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=vmware/harbor-clarity-ui-builder:1.6.0 CLAIRFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 CLAIRFLAG=true
    ```
 
 #### II. Compile code with your own Golang environment, then build Harbor
@@ -70,22 +70,22 @@ You can compile the code by one of the three approaches:
 * Move source code to $GOPATH
 
    ```sh
-      $ mkdir $GOPATH/src/github.com/vmware/
+      $ mkdir $GOPATH/src/github.com/goharbor/
       $ cd ..
-      $ mv harbor $GOPATH/src/github.com/vmware/.
+      $ mv harbor $GOPATH/src/github.com/goharbor/.
    ```
 
 *  Build, install and run Harbor without Notary and Clair:
 
    ```sh
-      $ cd $GOPATH/src/github.com/vmware/harbor
+      $ cd $GOPATH/src/github.com/goharbor/harbor
       $ make install
    ```
 
 *  Build, install and run Harbor with Notary and Clair:
 
    ```sh
-      $ cd $GOPATH/src/github.com/vmware/harbor
+      $ cd $GOPATH/src/github.com/goharbor/harbor
       $ make install -e NOTARYFLAG=true CLAIRFLAG=true
    ```   
  

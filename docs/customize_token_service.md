@@ -40,7 +40,7 @@ Email Address []:
 
 After you execute these two commands, you will see private_key.pem and root.crt in the **current directory**, just type "ls", you'll see them.
 
-3.Refer to [Installation Guide](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md) to install Harbor, After you execute ./prepare, Harbor generates several config files. We need to replace the original private key and certificate with your own key and certificate.
+3.Refer to [Installation Guide](https://github.com/goharbor/harbor/blob/master/docs/installation_guide.md) to install Harbor, After you execute ./prepare, Harbor generates several config files. We need to replace the original private key and certificate with your own key and certificate.
 
 4.Replace the default key and certificate. Assume that you key and certificate are in the directory /root/cert, following are what you should do:
 
@@ -55,6 +55,6 @@ $ cp /root/cert/root.crt ../registry/root.crt
   $ docker-compose up -d
 ```
 
-6.Then you can push/pull images to see if your own certificate works. Please refer [User Guide](https://github.com/vmware/harbor/blob/master/docs/user_guide.md) for more info.
+6.Then you can push/pull images to see if your own certificate works. Please refer [User Guide](https://github.com/goharbor/harbor/blob/master/docs/user_guide.md) for more info.
 
 

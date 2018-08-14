@@ -327,7 +327,7 @@ Run the below commands on the host which Harbor is deployed on to preview what f
 ```sh
 $ docker-compose stop
 
-$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.2-photon garbage-collect --dry-run /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry goharbor/registry:2.6.2-photon garbage-collect --dry-run /etc/registry/config.yml
 
 ```  
 **NOTE:** The above option "--dry-run" will print the progress without removing any data.  
@@ -336,7 +336,7 @@ Verify the result of the above test, then use the below commands to perform garb
 
 ```sh
 
-$ docker run -it --name gc --rm --volumes-from registry vmware/registry:2.6.2-photon garbage-collect  /etc/registry/config.yml
+$ docker run -it --name gc --rm --volumes-from registry goharbor/registry:2.6.2-photon garbage-collect  /etc/registry/config.yml
 
 $ docker-compose start
 ```  
