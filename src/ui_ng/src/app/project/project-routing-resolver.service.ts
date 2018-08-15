@@ -1,3 +1,4 @@
+import { RoleInfo } from './../shared/shared.const';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,17 +41,14 @@ export class ProjectRoutingResolver implements Resolve<Project> {
         if (project) {
           let currentUser = this.sessionService.getCurrentUser();
           if (currentUser) {
-            let projectMembers = this.sessionService.getProjectMembers();
-            if (projectMembers) {
-              let currentMember = projectMembers.find(m => m.entity_id === currentUser.user_id);
-              if (currentMember) {
-                project.is_member = true;
-                project.has_project_admin_role = (currentMember.role_name === 'projectAdmin');
-                project.role_name = currentMember.role_name;
-              }
-            }
             if (currentUser.has_admin_role) {
               project.has_project_admin_role = true;
+              project.is_member = true;
+              project.role_name = 'MEMBER.SYS_ADMIN';
+            } else {
+              project.has_project_admin_role = (project.current_user_role_id === 1);
+              project.is_member = (project.current_user_role_id > 0);
+              project.role_name = RoleInfo[project.current_user_role_id];
             }
           }
           return project;

@@ -40,7 +40,7 @@ export class ListChartVersionsComponent implements OnInit {
     if (resolverData) {
       let project = <Project>(resolverData["projectResolver"]);
       this.hasProjectAdminRole = project.has_project_admin_role;
-      this.roleName = RoleMapping[project.role_name];
+      this.roleName = project.role_name;
       this.projectName = project.name;
     }
   }

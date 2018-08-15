@@ -46,7 +46,7 @@ export class ProjectDetailComponent {
     this.route.data.subscribe(data => {
       this.currentProject = <Project>data['projectResolver'];
       this.isMember = this.currentProject.is_member;
-      this.roleName = RoleMapping[this.currentProject.role_name];
+      this.roleName = this.currentProject.role_name;
     });
   }
 
