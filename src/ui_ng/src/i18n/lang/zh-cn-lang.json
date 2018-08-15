@@ -494,6 +494,7 @@
         "DELETE": "删除",
         "OF": "的",
         "VERSIONS": "版本",
+        "APP_VERSION": "应用版本",
         "IMAGES": "镜像",
         "ENGINE": "引擎",
         "ACTION": "动作",
