@@ -10,7 +10,7 @@
     ```
     {
         "APP_TITLE": {
-            "VMW_HARBOR": "VMware Harbor",
+            "VMW_HARBOR": "Harbor",
             "HARBOR": "Harbor",
             ...
         },
