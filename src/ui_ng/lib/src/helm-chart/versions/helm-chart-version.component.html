@@ -105,8 +105,11 @@
                 </div>
                 <div class="card-footer">
                     <clr-dropdown [clrCloseMenuOnItemClick]="false">
-                        <button type="button" class="btn btn-link" (click)="versionDownload($event, item)">{{'HELM_CHART.DOWNLOAD' | translate}}</button>
-                        <button type="button" class="btn btn-link" (click)="deleteVersionCard($event, item)">{{'BUTTON.DELETE' | translate}}</button>
+                        <button type="button" class="btn btn-link"
+                        (click)="versionDownload($event, item)">{{'HELM_CHART.DOWNLOAD' | translate}}</button>
+                        <button type="button" class="btn btn-link"
+                        [disabled]="selectedRows.length<=0 || !hasProjectAdminRole"
+                        (click)="deleteVersionCard($event, item)">{{'BUTTON.DELETE' | translate}}</button>
                     </clr-dropdown>
                 </div>
             </a>
