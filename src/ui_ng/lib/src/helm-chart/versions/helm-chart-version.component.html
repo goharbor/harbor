@@ -38,10 +38,6 @@
             <clr-datagrid (clrDgRefresh)="refresh($event)" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
                 <clr-dg-action-bar>
                     <button type="button" class="btn btn-sm btn-secondary"
-                    [disabled]="!hasProjectAdminRole"
-                    (click)="versionUpload($event)">
-                        <clr-icon shape="upload" size="16"></clr-icon>&nbsp;{{'HELM_CHART.UPLOAD' | translate}}</button>
-                    <button type="button" class="btn btn-sm btn-secondary"
                     [disabled]="!(selectedRows.length===1)"
                     (click)="versionDownload()">
                         <clr-icon shape="download" size="16"></clr-icon>&nbsp;{{'HELM_CHART.DOWNLOAD' | translate}}</button>
@@ -120,28 +116,5 @@
             <span class="spinner"></span>
         </div>
     </div>
-    <clr-modal [(clrModalOpen)]="isUploadModalOpen" [clrModalStaticBackdrop]="true">
-        <h3 class="modal-title">{{'HELM_CHART.UPLOAD_TITLE' | translate}}</h3>
-        <div class="modal-body">
-            <form #chartUploadForm="ngForm" enctype="multipart/form-data" (ngSubmit)="upload()">
-                <section class="form-block">
-                    <div class="form-group">
-                        <label for="chart"> {{'HELM_CHART.CHART_FILE' | translate}} </label>
-                        <input type="file" id="chart" name="chart" ngModel (change)="onChartFileChangeEvent($event)">
-                    </div>
-                    <div class="form-group">
-                        <label for="prov"> {{'HELM_CHART.CHART_PROV' | translate}} </label>
-                        <input type="file" id="prov" name="prov" ngModel (change)="onProvFileChangeEvent($event)">
-                    </div>
-                </section>
-                <button type="submit" class="btn btn-secondary" [disabled]="isUploading">
-                    <span>{{'HELM_CHART.UPLOAD' | translate}}</span>
-                </button>
-                <span *ngIf="isUploading" class="spinner spinner-inline">
-                    Loading...
-                </span>
-            </form>
-        </div>
-    </clr-modal>
     <confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
 </div>
