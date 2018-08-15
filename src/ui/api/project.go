@@ -371,11 +371,22 @@ func (p *ProjectAPI) List() {
 			}
 		}
 		//Query projects by user group
+		dstProject, err := p.ProjectMgr.Get(query.Name)
+		if err != nil {
+			p.ParseAndHandleError("failed to get project", err)
+			return
+		}
 
 		if projects != nil {
 			projectIDs := []int64{}
 			for _, project := range projects {
-				projectIDs = append(projectIDs, project.ProjectID)
+				if dstProject == nil {
+					projectIDs = append(projectIDs, project.ProjectID)
+				} else {
+					if project.ProjectID == dstProject.ProjectID {
+						projectIDs = append(projectIDs, project.ProjectID)
+					}
+				}
 			}
 			query.ProjectIDs = projectIDs
 		}
