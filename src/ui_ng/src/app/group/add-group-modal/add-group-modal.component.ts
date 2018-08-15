@@ -45,6 +45,10 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
     let dnControl = this.groupForm.controls['ldap_group_dn'];
     return  dnControl && dnControl.invalid && (dnControl.dirty || dnControl.touched);
   }
+  public get isNameInvalid(): boolean {
+    let dnControl = this.groupForm.controls['group_name'];
+    return  dnControl && dnControl.invalid && (dnControl.dirty || dnControl.touched);
+  }
 
   public get isFormValid(): boolean {
     return this.groupForm.valid;

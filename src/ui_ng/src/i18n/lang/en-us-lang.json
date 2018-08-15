@@ -487,7 +487,7 @@
         "MAINTAINERS": "Maintainers",
         "PULLS": "Pull Count",
         "VERSION": "Version",
-        "APP_VERSION": "App Version",
+        "APP_VERSION": "Application Version",
         "INSTALL": "Install",
         "INSTALL_CHART": "Install Chart",
         "NAME": "Name",
