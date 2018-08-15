@@ -175,9 +175,15 @@ To install Harbor with Clair service, add a parameter when you run ```install.sh
 For more information about Clair, please refer to Clair's documentation: 
 https://coreos.com/clair/docs/2.0.1/
 
-**Note**: If you want to install both Notary and Clair, you must specify both parameters in the same command:
+##### Installation with chart repository service
+To install Harbor with chart repository service, add a parameter when you run ```install.sh```:
 ```sh
-    $ sudo ./install.sh --with-notary --with-clair
+    $ sudo ./install.sh --with-chartmuseum
+```
+
+**Note**: If you want to install Notary, Clair and chart repository service, you must specify all the parameters in the same command:
+```sh
+    $ sudo ./install.sh --with-notary --with-clair --with-chartmuseum
 ```
 
 For information on how to use Harbor, please refer to **[User Guide of Harbor](user_guide.md)** .
@@ -257,14 +263,28 @@ $ sudo prepare --with-clair
 $ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.clair.yml up -d
 ```
 
-#### _Managing lifecycle of Harbor when it's installed with Notary and Clair_ 
+#### _Managing lifecycle of Harbor when it's installed with chart repository service_ 
 
-If you have installed Notary and Clair, you should include both components in the docker-compose and prepare commands:
+When Harbor is installed with chart repository service, an extra template file ```docker-compose.chartmuseum.yml``` is needed for docker-compose commands. The docker-compose commands to manage the lifecycle of Harbor are:
+```
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.chartmuseum.yml [ up|down|ps|stop|start ]
+```
+For example, if you want to change configuration in ```harbor.cfg``` and re-deploy Harbor when it's installed with chart repository service, the following commands should be used:
 ```sh
-$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml -f ./docker-compose.clair.yml down -v
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.chartmuseum.yml down -v
 $ vim harbor.cfg
-$ sudo prepare --with-notary --with-clair
-$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml -f ./docker-compose.clair.yml up -d
+$ sudo prepare --with-chartmuseum
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.chartmuseum.yml up -d
+```
+
+#### _Managing lifecycle of Harbor when it's installed with Notary, Clair and chart repository service_ 
+
+If you want to install Notary, Clair and chart repository service together, you should include all the components in the docker-compose and prepare commands:
+```sh
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml -f ./docker-compose.clair.yml -f ./docker-compose.chartmuseum.yml down -v
+$ vim harbor.cfg
+$ sudo prepare --with-notary --with-clair --with-chartmuseum
+$ sudo docker-compose -f ./docker-compose.yml -f ./docker-compose.notary.yml -f ./docker-compose.clair.yml -f ./docker-compose.chartmuseum.yml up -d
 ```
 
 Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
