@@ -1,4 +1,4 @@
-**IMPORTANT** This guide is deprecated and not updated any more. We strongly recommend using [Harbor Helm Chart](https://github.com/vmware/harbor/tree/master/contrib/helm/harbor) to deploy latest Harbor release on Kubernetes.
+**IMPORTANT** This guide is deprecated and not updated any more. We strongly recommend using [Harbor Helm Chart](https://github.com/goharbor/harbor/tree/master/contrib/helm/harbor) to deploy latest Harbor release on Kubernetes.
 
 ## Integration with Kubernetes
 This Document decribes how to deploy Harbor on Kubernetes. It has been verified on **Kubernetes v1.6.5** and **Harbor v1.2.0**
@@ -7,7 +7,7 @@ This Document decribes how to deploy Harbor on Kubernetes. It has been verified 
 
 * You should have domain knowledge about Kubernetes (Deployment, Service, Persistent Volume, Persistent Volume Claim, Config Map, Ingress).
 * **Optional**: Load the docker images onto woker nodes.  *If you skip this step, worker node will pull images from Docker Hub when starting the pods.*
-	* Download the offline installer of Harbor v1.2.0 from the [release](https://github.com/vmware/harbor/releases) page.
+	* Download the offline installer of Harbor v1.2.0 from the [release](https://github.com/goharbor/harbor/releases) page.
 	* Uncompress the offline installer and get the images tgz file harbor.*.tgz, transfer it to each of the worker nodes.
 	* Load the images into docker:  
 		```
