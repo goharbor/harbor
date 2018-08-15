@@ -5,8 +5,10 @@ import {
   ChangeDetectionStrategy,
   Output,
   EventEmitter,
+  ViewChild,
   ChangeDetectorRef
 } from "@angular/core";
+import { NgForm } from '@angular/forms';
 import { TranslateService } from "@ngx-translate/core";
 import { State } from "clarity-angular";
 
@@ -28,6 +30,7 @@ export class HelmChartComponent implements OnInit {
   @Input() projectName = "unknown";
   @Input() urlPrefix: string;
   @Input() hasSignedIn: boolean;
+  @Input() projectRoleID = 0;
   @Input() hasProjectAdminRole: boolean;
   @Output() chartClickEvt = new EventEmitter<any>();
   @Output() chartDownloadEve = new EventEmitter<string>();
@@ -56,6 +59,8 @@ export class HelmChartComponent implements OnInit {
   totalCount = 0;
   currentState: State;
 
+  @ViewChild('chartUploadForm') uploadForm: NgForm;
+
   constructor(
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
@@ -66,6 +71,11 @@ export class HelmChartComponent implements OnInit {
 
   public get registryUrl(): string {
     return this.systemInfo ? this.systemInfo.registry_url : "";
+  }
+
+  public get developerRoleOrAbove(): boolean {
+    // 1: admin, 2: developer, 3: guest
+    return this.projectRoleID === 2 || this.hasProjectAdminRole;
   }
 
   ngOnInit(): void {
@@ -107,6 +117,9 @@ export class HelmChartComponent implements OnInit {
   }
 
   onChartUpload() {
+    this.chartFile = null;
+    this.provFile = null;
+    this.uploadForm.reset();
     this.isUploadModalOpen = true;
   }
 
