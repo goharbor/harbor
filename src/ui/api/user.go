@@ -116,6 +116,9 @@ func (ua *UserAPI) Get() {
 			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 		}
 		u.Password = ""
+		if ua.userID == ua.currentUserID {
+			u.HasAdminRole = ua.SecurityCtx.IsSysAdmin()
+		}
 		ua.Data["json"] = u
 		ua.ServeJSON()
 		return
