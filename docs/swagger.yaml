@@ -456,48 +456,50 @@ paths:
           description: Internal server errors.
   '/projects/{project_id}/members':
     get:
-     summary: Get all project member information
-     description: Get all project member information
-     parameters:
-      - name: project_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Relevant project ID.
-      - name: entityname
-        in: query
-        type: string
-        description: The entity name to search.
-     tags:
-      - Products
-     responses:
-      '200':
-        description: Get project members successfully.
-        schema:
-          type: array
-          items: 
-            $ref: '#/definitions/ProjectMemberEntity'
-      '400':
-        description: The project id is invalid.
-      '401':
-        description: User need to log in first.
-      '403':
-        description: User in session does not have permission to the project.
-      '404':
-        description: Project ID does not exist.
-      '500':
-        description: Unexpected internal errors.
+      summary: Get all project member information
+      description: Get all project member information
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: entityname
+          in: query
+          type: string
+          description: The entity name to search.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get project members successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProjectMemberEntity'
+        '400':
+          description: The project id is invalid.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the project.
+        '404':
+          description: Project ID does not exist.
+        '500':
+          description: Unexpected internal errors.
     post:
       summary: Create project member
       description: >-
-        Create project member relationship, the member can be one of the user_member and group_member, 
-        The user_member need to specify user_id or username. If the user already exist in harbor DB, specify the user_id, 
-        If does not exist in harbor DB, it will SearchAndOnBoard the user.
-        The group_member need to specify id or ldap_group_dn. If the group already exist in harbor DB. specify the user group's id, 
-        If does not exist, it will SearchAndOnBoard the group. 
+        Create project member relationship, the member can be one of the
+        user_member and group_member,  The user_member need to specify user_id
+        or username. If the user already exist in harbor DB, specify the
+        user_id,  If does not exist in harbor DB, it will SearchAndOnBoard the
+        user. The group_member need to specify id or ldap_group_dn. If the group
+        already exist in harbor DB. specify the user group's id,  If does not
+        exist, it will SearchAndOnBoard the group. 
       tags:
-       - Products
+        - Products
       parameters:
         - name: project_id
           in: path
@@ -513,43 +515,47 @@ paths:
         '201':
           description: Project member created successfully.
         '400':
-          description: Illegal format of project member or project id is invalid, or LDAP DN is invalid.
+          description: >-
+            Illegal format of project member or project id is invalid, or LDAP
+            DN is invalid.
         '401':
           description: User need to log in first.
         '403':
           description: User in session does not have permission to the project.
         '404':
-          description: Project does not exist, or the username does not found, or the user group does not found.
+          description: >-
+            Project does not exist, or the username does not found, or the user
+            group does not found.
         '409':
-          description: An LDAP user group with same DN already exist.           
+          description: An LDAP user group with same DN already exist.
         '500':
-          description: Unexpected internal errors.  
+          description: Unexpected internal errors.
   '/projects/{project_id}/members/{mid}':
     get:
-     summary: Get the project member information
-     description: Get the project member information
-     tags:
-      - Products
-     parameters:
-      - name: project_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Relevant project ID.
-      - name: mid
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: The member ID
-     responses:
+      summary: Get the project member information
+      description: Get the project member information
+      tags:
+        - Products
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: mid
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The member ID
+      responses:
         '200':
           description: Project member retrieved successfully.
           schema:
             $ref: '#/definitions/ProjectMemberEntity'
         '400':
-          description: Illegal format of project member or invalid project id, member id.
+          description: 'Illegal format of project member or invalid project id, member id.'
         '401':
           description: User need to log in first.
         '403':
@@ -557,70 +563,72 @@ paths:
         '404':
           description: Project or projet member does not exist.
         '500':
-          description: Unexpected internal errors.  
+          description: Unexpected internal errors.
     put:
-     summary: Update project member
-     description: Update project member relationship
-     tags:
+      summary: Update project member
+      description: Update project member relationship
+      tags:
         - Products
-     parameters:
-      - name: project_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Relevant project ID.
-      - name: mid
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Member ID.  
-      - name: role
-        in: body
-        schema:
-          $ref: '#/definitions/RoleRequest'
-     responses:
-      '200':
-        description: Project member updated successfully.
-      '400':
-        description: Invalid role id, it should be 1,2 or 3, or invalid project id, or invalid member id.
-      '401':
-        description: User need to log in first.
-      '403':
-        description: User in session does not have permission to the project.
-      '404':
-        description: project or project member does not exist.
-      '500':
-        description: Unexpected internal errors.           
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: mid
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Member ID.
+        - name: role
+          in: body
+          schema:
+            $ref: '#/definitions/RoleRequest'
+      responses:
+        '200':
+          description: Project member updated successfully.
+        '400':
+          description: >-
+            Invalid role id, it should be 1,2 or 3, or invalid project id, or
+            invalid member id.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the project.
+        '404':
+          description: project or project member does not exist.
+        '500':
+          description: Unexpected internal errors.
     delete:
-     summary: Delete project member
-     tags:
-      - Products
-     parameters:
-      - name: project_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Relevant project ID.
-      - name: mid
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Member ID.  
-     responses:
-      '200':
-        description: Project member deleted successfully.
-      '400':
-        description: The project id or project member id is invalid.
-      '401':
-        description: User need to log in first.
-      '403':
-        description: User in session does not have permission to the project.
-      '500':
-        description: Unexpected internal errors.  
+      summary: Delete project member
+      tags:
+        - Products
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: mid
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Member ID.
+      responses:
+        '200':
+          description: Project member deleted successfully.
+        '400':
+          description: The project id or project member id is invalid.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the project.
+        '500':
+          description: Unexpected internal errors.
   /statistics:
     get:
       summary: Get projects number and repositories number relevant to the user
@@ -1017,7 +1025,9 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have read permisson for the repository to perform the action.
+          description: >-
+            Forbidden. User should have read permisson for the repository to
+            perform the action.
         '404':
           description: Repository not found.
     post:
@@ -1044,7 +1054,9 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have write permisson for the repository to perform the action.
+          description: >-
+            Forbidden. User should have write permisson for the repository to
+            perform the action.
         '404':
           description: Resource not found.
   '/repositories/{repo_name}/labels/{label_id}':
@@ -1071,7 +1083,9 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have write permisson for the repository to perform the action.
+          description: >-
+            Forbidden. User should have write permisson for the repository to
+            perform the action.
         '404':
           description: Resource not found.
   '/repositories/{repo_name}/tags/{tag}':
@@ -1187,7 +1201,9 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have read permisson for the image to perform the action.
+          description: >-
+            Forbidden. User should have read permisson for the image to perform
+            the action.
         '404':
           description: Resource not found.
     post:
@@ -1219,7 +1235,9 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have write permisson for the image to perform the action.
+          description: >-
+            Forbidden. User should have write permisson for the image to perform
+            the action.
         '404':
           description: Resource not found.
   '/repositories/{repo_name}/tags/{tag}/labels/{label_id}':
@@ -1251,7 +1269,9 @@ paths:
         '401':
           description: Unauthorized.
         '403':
-          description: Forbidden. User should have write permisson for the image to perform the action.
+          description: >-
+            Forbidden. User should have write permisson for the image to perform
+            the action.
         '404':
           description: Resource not found.
   '/repositories/{repo_name}/tags/{tag}/manifest':
@@ -1821,7 +1841,7 @@ paths:
   /labels:
     get:
       summary: List labels according to the query strings.
-      description: >
+      description: |
         This endpoint let user list labels by name, scope and project_id
       parameters:
         - name: name
@@ -1833,13 +1853,15 @@ paths:
           in: query
           type: string
           required: true
-          description: The label scope. Valid values are g and p. g for global labels and p for project labels.
+          description: >-
+            The label scope. Valid values are g and p. g for global labels and p
+            for project labels.
         - name: project_id
           in: query
           type: integer
           format: int64
           required: false
-          description: Relevant project ID, required when scope is p.
+          description: 'Relevant project ID, required when scope is p.'
         - name: page
           in: query
           type: integer
@@ -1869,7 +1891,7 @@ paths:
           description: Unexpected internal errors.
     post:
       summary: Post creates a label
-      description: >
+      description: |
         This endpoint let user creates a label.
       parameters:
         - name: label
@@ -1888,8 +1910,7 @@ paths:
         '401':
           description: User need to log in first.
         '409':
-          description: >-
-            Label with the same name and same scope already exists.
+          description: Label with the same name and same scope already exists.
         '415':
           $ref: '#/responses/UnsupportedMediaType'
         '500':
@@ -1921,7 +1942,7 @@ paths:
           description: Unexpected internal errors.
     put:
       summary: Update the label properties.
-      description: >
+      description: |
         This endpoint let user update label properties.
       parameters:
         - name: id
@@ -1948,13 +1969,12 @@ paths:
         '404':
           description: The resource does not exist.
         '409':
-          description: >-
-            The label with the same name already exists.
+          description: The label with the same name already exists.
         '500':
           description: Unexpected internal errors.
     delete:
       summary: Delete the label specified by ID.
-      description: >
+      description: |
         Delete the label specified by ID.
       parameters:
         - name: id
@@ -1979,8 +1999,9 @@ paths:
   '/labels/{id}/resources':
     get:
       summary: Get the resources that the label is referenced by.
-      description: |
-        This endpoint let user get the resources that the label is referenced by. Only the replication policies are returned for now.
+      description: >
+        This endpoint let user get the resources that the label is referenced
+        by. Only the replication policies are returned for now.
       parameters:
         - name: id
           in: path
@@ -2350,7 +2371,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/UserGroup'
-        "400":
+        '400':
           description: The Ldap group DN is invalid.
         '404':
           description: No ldap group found.
@@ -2384,7 +2405,6 @@ paths:
           description: Only admin has this authority.
         '500':
           description: Unexpected internal errors.
-
   /ldap/users/import:
     post:
       summary: Import selected available ldap users.
@@ -2414,38 +2434,38 @@ paths:
           description: User need to login first.
         '403':
           description: Only admin has this authority.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
         '404':
           description: Failed import some users.
           schema:
             type: array
             items:
               $ref: '#/definitions/LdapFailedImportUsers'
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
   /usergroups:
-   get:
-    summary: Get all user groups information
-    description: Get all user groups information
-    tags:
-     - Products
-    responses:
-      '200':
-        description: Get user group successfully.
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/UserGroup'
-      '401':
-        description: User need to log in first.
-      '403':
-        description: User in session does not have permission to the user group.
-      '500':
-        description: Unexpected internal errors.      
-   post:
+    get:
+      summary: Get all user groups information
+      description: Get all user groups information
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get user group successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserGroup'
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the user group.
+        '500':
+          description: Unexpected internal errors.
+    post:
       summary: Create user group
       description: Create user group information
       tags:
-        - Products    
+        - Products
       parameters:
         - name: usergroup
           in: body
@@ -2461,91 +2481,90 @@ paths:
         '403':
           description: User in session does not have permission to the user group.
         '404':
-          description: The LDAP group is not found.  
+          description: The LDAP group is not found.
         '409':
-          description: An LDAP user group with same DN already exist. 
+          description: An LDAP user group with same DN already exist.
         '500':
-          description: Unexpected internal errors.        
-  /usergroups/{group_id}:
-   get:
-    summary: Get user group information
-    description: Get user group information
-    tags:
-     - Products
-    parameters:
-     - name: group_id
-       in: path
-       type: integer
-       format: int64
-       required: true
-       description: Group ID
-    responses:
-      '200':
-        description: User group get successfully.
-        schema:
-          $ref: '#/definitions/UserGroup'
-      '400':
-        description: The user group id is invalid.
-      '401':
-        description: User need to log in first.
-      '403':
-        description: User in session does not have permission to the user group.
-      '404':
-        description: User group does not exist.
-      '500':
-        description: Unexpected internal errors.  
-   put:
-     summary: Update group information
-     description: Update user group information
-     tags:
-       - Products
-     parameters:
-       - name: group_id
-         in: path
-         type: integer
-         format: int64
-         required: true
-         description: Group ID
-       - name: usergroup
-         in: body
-         required: false
-         schema:
-           $ref: '#/definitions/UserGroup'
-     responses:
-       '200':
-         description: User group updated successfully.
-       '400':
-         description: The user group id is invalid.
-       '401':
-         description: User need to log in first.
-       '403':
-         description: Only admin has this authority.
-       '404':
-         description: User group does not exist.
-       '500':
-         description: Unexpected internal errors.  
-   delete:
-    summary: Delete user group
-    description: Delete user group
-    tags:
-     - Products
-    parameters:
-     - name: group_id
-       type: integer
-       in: path
-       required: true
-    responses:
-      '200':
-        description: User group deleted successfully.
-      '400':
-        description: The user group id is invalid.
-      '401':
-        description: User need to log in first.
-      '403':
-        description: Only admin has this authority.
-      '500':
-        description: Unexpected internal errors.       
-
+          description: Unexpected internal errors.
+  '/usergroups/{group_id}':
+    get:
+      summary: Get user group information
+      description: Get user group information
+      tags:
+        - Products
+      parameters:
+        - name: group_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Group ID
+      responses:
+        '200':
+          description: User group get successfully.
+          schema:
+            $ref: '#/definitions/UserGroup'
+        '400':
+          description: The user group id is invalid.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the user group.
+        '404':
+          description: User group does not exist.
+        '500':
+          description: Unexpected internal errors.
+    put:
+      summary: Update group information
+      description: Update user group information
+      tags:
+        - Products
+      parameters:
+        - name: group_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Group ID
+        - name: usergroup
+          in: body
+          required: false
+          schema:
+            $ref: '#/definitions/UserGroup'
+      responses:
+        '200':
+          description: User group updated successfully.
+        '400':
+          description: The user group id is invalid.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: Only admin has this authority.
+        '404':
+          description: User group does not exist.
+        '500':
+          description: Unexpected internal errors.
+    delete:
+      summary: Delete user group
+      description: Delete user group
+      tags:
+        - Products
+      parameters:
+        - name: group_id
+          type: integer
+          in: path
+          required: true
+      responses:
+        '200':
+          description: User group deleted successfully.
+        '400':
+          description: The user group id is invalid.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: Only admin has this authority.
+        '500':
+          description: Unexpected internal errors.
   /configurations:
     get:
       summary: Get system configurations.
@@ -2638,10 +2657,246 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
+  /chartrepo/health:
+    get:
+      summary: Check the health of chart repository service.
+      description: Check the health of chart repository service.
+      tags:
+        - Products
+        - Chart Repository
+      responses:
+        '200':
+          description: Health status of chart repository service is returned.
+          schema:
+            type: object
+            properties:
+              healthy:
+                type: boolean
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+  /chartrepo/{repo}/charts:
+    get:
+      summary: Get all the charts under the specified project
+      description: Get all the charts under the specified project
+      tags:
+        - Products
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '200':
+          $ref: '#/definitions/ChartInfoList'
+  /chartrepo/{repo}/charts/{name}:
+    get:
+      summary: Get all the versions of the specified chart
+      description: Get all the versions of the specified chart
+      tags:
+        - Products
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '404':
+          $ref: '#/definitions/NotFoundChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '200':
+          $ref: '#/definitions/ChartVersions'
+  /chartrepo/{repo}/charts/{name}/{version}:
+    get:
+      summary: Get the specified chart version
+      description: Get the specified chart version
+      tags:
+        - Products
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+        - name: version
+          in: path
+          type: string
+          required: true
+          description: The chart version
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '404':
+          $ref: '#/definitions/NotFoundChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '200':
+          $ref: '#/definitions/ChartVersionDetails'
+    delete:
+      summary: Delete the specified chart version
+      description: Delete the specified chart version
+      tags:
+        - Products
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+        - name: version
+          in: path
+          type: string
+          required: true
+          description: The chart version
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '404':
+          $ref: '#/definitions/NotFoundChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '200':
+          description: The specified chart entry is successfully deleted.
+  /chartrepo/{repo}/charts:
+    post:
+      summary: Upload a chart file to the specified project.
+      description: Upload a chart file to the specified project. With this API, the corresponding provance file can be uploaded together with chart file at once.
+      tags:
+        - Products
+        - Chart Repository
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: chart
+          in: formData
+          type: file
+          required: true
+          description: The chart file
+        - name: prov
+          in: formData
+          type: file
+          required: false
+          description: The provance file
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '507':
+          $ref: '#/definitions/InsufficientStorageChartAPIError'
+        '201':
+          description: The specified chart is successfully uploaded.
+  /chartrepo/{repo}/prov:
+    post:
+      summary: Upload a provance file to the specified project.
+      description: Upload a provance file to the specified project. The provance file should be targeted for an existing chart file.
+      tags:
+        - Products
+        - Chart Repository
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: prov
+          in: formData
+          type: file
+          required: true
+          description: The provance file
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '507':
+          $ref: '#/definitions/InsufficientStorageChartAPIError'
+        '201':
+          description: The provance file is successfully uploaded.
+  /chartrepo/charts:
+    post:
+      summary: Upload a chart file to the defult 'library' project.
+      description: Upload a chart file to the default 'library' project. Uploading together with the prov file at the same time is also supported.
+      tags:
+        - Products
+        - Chart Repository
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: chart
+          in: formData
+          type: file
+          required: true
+          description: The chart file
+        - name: prov
+          in: formData
+          type: file
+          required: false
+          description: The provance file
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '507':
+          $ref: '#/definitions/InsufficientStorageChartAPIError'
+        '201':
+          description: The specified chart is successfully uploaded.
 responses:
-  UnsupportedMediaType: 
-    description: The Media Type of the request is not supported, it has to be "application/json"
-
+  UnsupportedMediaType:
+    description: >-
+      The Media Type of the request is not supported, it has to be
+      "application/json"
 definitions:
   Search:
     type: object
@@ -2733,23 +2988,31 @@ definitions:
     properties:
       public:
         type: string
-        description: The public status of the project. The valid values are "true", "false".
+        description: >-
+          The public status of the project. The valid values are "true",
+          "false".
       enable_content_trust:
         type: string
         description: >-
           Whether content trust is enabled or not. If it is enabled, user cann't
-          pull unsigned images from this project. The valid values are "true", "false".
+          pull unsigned images from this project. The valid values are "true",
+          "false".
       prevent_vulnerable_images_from_running:
         type: string
-        description: Whether prevent the vulnerable images from running. The valid values are "true", "false".
+        description: >-
+          Whether prevent the vulnerable images from running. The valid values
+          are "true", "false".
       prevent_vulnerable_images_from_running_severity:
         type: string
         description: >-
           If the vulnerability is high than severity defined here, the images
-          cann't be pulled. The valid values are "negligible", "low", "medium", "high", "critical".
+          cann't be pulled. The valid values are "negligible", "low", "medium",
+          "high", "critical".
       automatically_scan_images_on_push:
         type: string
-        description: Whether scan images automatically when pushing. The valid values are "true", "false".
+        description: >-
+          Whether scan images automatically when pushing. The valid values are
+          "true", "false".
   Manifest:
     type: object
     properties:
@@ -3000,10 +3263,13 @@ definitions:
           repository and tag.
       value:
         type: string
-        description: The value of replication policy filter. When creating repository and tag filter, filling it with the pattern as string. When creating label filter, filling it with label ID as integer.
+        description: >-
+          The value of replication policy filter. When creating repository and
+          tag filter, filling it with the pattern as string. When creating label
+          filter, filling it with label ID as integer.
       pattern:
         type: string
-        description: Depraceted, use value instead. The replication policy filter pattern.
+        description: 'Depraceted, use value instead. The replication policy filter pattern.'
       metadata:
         type: object
         description: This map object is the replication policy filter metadata.
@@ -3438,7 +3704,6 @@ definitions:
         description: >-
           The version which the vulnerability is fixed, this is an optional
           property.
-
   Configurations:
     type: object
     properties:
@@ -3496,7 +3761,9 @@ definitions:
         description: timeout in seconds for connection to LDAP server.
       ldap_group_attribute_name:
         type: string
-        description: The attribute which is used as identity of the LDAP group, default is cn.
+        description: >-
+          The attribute which is used as identity of the LDAP group, default is
+          cn.
       ldap_group_base_dn:
         type: string
         description: The base DN to search LDAP group.
@@ -3505,10 +3772,14 @@ definitions:
         description: The filter to search the ldap group.
       ldap_group_search_scope:
         type: integer
-        description: The scope to search ldap. '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
+        description: >-
+          The scope to search ldap. '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL,
+          2-LDAP_SCOPE_SUBTREE'
       ldap_group_admin_dn:
         type: string
-        description: Specify the ldap group which have the same privilege with Harbor admin.
+        description: >-
+          Specify the ldap group which have the same privilege with Harbor
+          admin.
       project_creation_restriction:
         type: string
         description: >-
@@ -3516,8 +3787,7 @@ definitions:
           project.  It can be "everyone" or "adminonly".
       read_only:
         type: boolean
-        description: >-
-          'docker push' is prohibited by Harbor if you set it to true.   
+        description: '''docker push'' is prohibited by Harbor if you set it to true.   '
       self_registration:
         type: boolean
         description: >-
@@ -3550,65 +3820,52 @@ definitions:
             description: >-
               The parameters of the policy, the values are dependant on the type
               of the policy.
-
   ConfigurationsResponse:
     type: object
     properties:
       auth_mode:
-        schema:
-          $ref: '#/definitions/StringConfigItem'        
+        $ref: '#/definitions/StringConfigItem'
         description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
       email_from:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
-        description: The sender name for Email notification.
+        $ref: '#/definitions/StringConfigItem'
+        description: "The sender name for Email notification."
       email_host:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: The hostname of SMTP server that sends Email notification.
       email_port:
-        schema:
-          $ref: '#/definitions/IntegerConfigItem'  
+        $ref: '#/definitions/IntegerConfigItem'
         description: The port of SMTP server.
       email_identity:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: By default it's empty so the email_username is picked.
       email_username:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: The username for authenticate against SMTP server.
       email_ssl:
-        schema:
-          $ref: '#/definitions/BoolConfigItem'  
+        $ref: '#/definitions/BoolConfigItem'
         description: >-
           When it's set to true the system will access Email server via TLS by
           default.  If it's set to false, it still will handle "STARTTLS" from
           server side.
       email_insecure:
-        schema:
-          $ref: '#/definitions/BoolConfigItem'  
+        $ref: '#/definitions/BoolConfigItem'
         description: >-
           Whether or not the certificate will be verified when Harbor tries to
           access the email server.
       ldap_url:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: The URL of LDAP server.
       ldap_base_dn:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: The Base DN for LDAP binding.
       ldap_filter:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: The filter for LDAP binding.
       ldap_scope:
         type: integer
         description: '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
       ldap_uid:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: >-
           The attribute which is used as identity for the LDAP binding, such as
           "CN" or "SAMAccountname"
@@ -3616,53 +3873,47 @@ definitions:
         type: string
         description: The DN of the user to do the search.
       ldap_timeout:
-        schema:
-          $ref: '#/definitions/IntegerConfigItem'  
+        $ref: '#/definitions/IntegerConfigItem'
         description: timeout in seconds for connection to LDAP server.
       ldap_group_attribute_name:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
-        description: The attribute which is used as identity of the LDAP group, default is cn.
+        $ref: '#/definitions/StringConfigItem'
+        description: >-
+          The attribute which is used as identity of the LDAP group, default is
+          cn.
       ldap_group_base_dn:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: The base DN to search LDAP group.
       ldap_group_search_filter:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: The filter to search the ldap group.
       ldap_group_search_scope:
-        schema:
-          $ref: '#/definitions/IntegerConfigItem'  
-        description: The scope to search ldap. '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE'
+        $ref: '#/definitions/IntegerConfigItem'
+        description: >-
+          The scope to search ldap. '0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL,
+          2-LDAP_SCOPE_SUBTREE'
       ldap_group_admin_dn:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
-        description: Specify the ldap group which have the same privilege with Harbor admin.
+        $ref: '#/definitions/StringConfigItem'
+        description: >-
+          Specify the ldap group which have the same privilege with Harbor
+          admin.
       project_creation_restriction:
-        schema:
-          $ref: '#/definitions/StringConfigItem'  
+        $ref: '#/definitions/StringConfigItem'
         description: >-
           This attribute restricts what users have the permission to create
           project.  It can be "everyone" or "adminonly".
       read_only:
-        schema:
-          $ref: '#/definitions/BoolConfigItem'  
-        description: >-
-          'docker push' is prohibited by Harbor if you set it to true.   
+        $ref: '#/definitions/BoolConfigItem'
+        description: '''docker push'' is prohibited by Harbor if you set it to true.   '
       self_registration:
-        schema:
-          $ref: '#/definitions/BoolConfigItem'  
+        $ref: '#/definitions/BoolConfigItem'
         description: >-
           Whether the Harbor instance supports self-registration.  If it's set
           to false, admin need to add user to the instance.
       token_expiration:
-        schema:
-          $ref: '#/definitions/IntegerConfigItem'  
+        $ref: '#/definitions/IntegerConfigItem'
         description: 'The expiration time of the token for internal Registry, in minutes.'
       verify_remote_cert:
-        schema:
-          $ref: '#/definitions/BoolConfigItem'  
+        $ref: '#/definitions/BoolConfigItem'
         description: >-
           Whether or not the certificate will be verified when Harbor tries to
           access a remote Harbor instance for replication.
@@ -3723,7 +3974,7 @@ definitions:
         description: The color of label.
       scope:
         type: string
-        description: The scope of label, g for global labels and p for project labels.
+        description: 'The scope of label, g for global labels and p for project labels.'
       project_id:
         type: integer
         description: The project ID if the label is a project label.
@@ -3747,35 +3998,38 @@ definitions:
         description: the project id
       entity_name:
         type: string
-        description: the name of the group member. 
+        description: the name of the group member.
       role_name:
         type: string
         description: the name of the role
-      role_id: 
+      role_id:
         type: integer
         description: the role id
-      entity_id: 
+      entity_id:
         type: integer
-        description: the id of entity, if the member is an user, it is user_id in user table. if the member is an user group, it is the user group's ID in user_group table.
+        description: >-
+          the id of entity, if the member is an user, it is user_id in user
+          table. if the member is an user group, it is the user group's ID in
+          user_group table.
       entity_type:
         type: string
-        description: the entity's type, u for user entity, g for group entity.
+        description: 'the entity''s type, u for user entity, g for group entity.'
   ProjectMember:
     type: object
     properties:
       role_id:
         type: integer
-        description: The role id 1 for projectAdmin, 2 for developer, 3 for guest
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest'
       member_user:
-        $ref: '#/definitions/UserEntity'  
+        $ref: '#/definitions/UserEntity'
       member_group:
-        $ref: '#/definitions/UserGroup'  
+        $ref: '#/definitions/UserGroup'
   RoleRequest:
     type: object
     properties:
       role_id:
         type: integer
-        description: The role id 1 for projectAdmin, 2 for developer, 3 for guest
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest'
   UserEntity:
     type: object
     properties:
@@ -3794,13 +4048,12 @@ definitions:
       group_name:
         type: string
         description: The name of the user group
-      group_type: 
+      group_type:
         type: integer
-        description: The group type, 1 for LDAP group.
+        description: 'The group type, 1 for LDAP group.'
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).
-
   Resource:
     type: object
     properties:
@@ -3809,34 +4062,223 @@ definitions:
         description: The replication policy list.
         items:
           $ref: '#/definitions/RepPolicy'
-
   StringConfigItem:
     type: object
     properties:
       value:
         type: string
-        description: the string value of current config item
+        description: The string value of current config item
       editable:
         type: boolean
         description: The configure item can be updated or not
-
   BoolConfigItem:
     type: object
     properties:
       value:
         type: boolean
-        description: the boolean value of current config item
+        description: The boolean value of current config item
       editable:
         type: boolean
         description: The configure item can be updated or not
-
   IntegerConfigItem:
     type: object
     properties:
       value:
-        type: int64
-        description: the integer value of current config item
+        type: integer
+        description: The integer value of current config item
       editable:
         type: boolean
         description: The configure item can be updated or not
-
+  ChartAPIError:
+    description: The error object returned by chart repository API
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: string
+        description: The error message returned by the chart API
+  UnauthorizedChartAPIError:
+    description: Unauthorized
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  ForbiddenChartAPIError:
+    description: Operation is forbidden
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  InternalChartAPIError:
+    description: Internal server error occurred
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  NotFoundChartAPIError:
+    description: Not found
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  InsufficientStorageChartAPIError:
+    description: Insufficient storage
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  ChartInfoEntry:
+    type: object
+    description: The object contains basic chart information
+    required:
+      - name
+      - total_versions
+      - created
+    properties:
+      name:
+        type: string
+        description: Name of chart
+      total_versions:
+        type: integer
+        description: Total count of chart versions
+      created:
+        type: string
+        description: The created time of chart
+      icon:
+        type: string
+        description: The icon path of chart
+      home:
+        type: string
+        description: The home website of chart
+      deprecated:
+        type: boolean
+        description: Flag to indicate if the chart is deprecated
+  ChartInfoList:
+    type: array
+    description: The chart list under the project
+    items:
+      $ref: '#/definitions/ChartInfoEntry'
+  ChartMetadata:
+    type: object
+    description: The metadata of chart version
+    required:
+      - name
+      - version
+      - engine
+      - icon
+      - apiVersion
+      - appVersion
+    properties:
+      name:
+        type: string
+        description: The name of the chart
+      home:
+        type: string
+        description: The URL to the relevant project page
+      sources:
+        type: array
+        description: The URL to the source code of chart
+        items:
+          type: string
+      version:
+        type: string
+        description: A SemVer 2 version of chart
+      description:
+        type: string
+        description: A one-sentence description of chart
+      keywords:
+        type: array
+        description: A list of string keywords
+        items:
+          type: string
+      engine:
+        type: string
+        description: The name of template engine
+      icon:
+        type: string
+        description: The URL to an icon file
+      apiVersion:
+        type: string
+        description: The API version of this chart
+      appVersion:
+        type: string
+        description: The version of the application enclosed in the chart
+      deprecated:
+        type: boolean
+        description: Whether or not this chart is deprecated
+  ChartVersion:
+    type: object
+    description: A specified chart entry
+    allOf:
+      - $ref: '#/definitions/ChartMetadata'
+      - type: object
+        properties:
+          created:
+            type: string
+            description: The created time of the chart entry
+          removed:
+            type: boolean
+            description: A flag to indicate if the chart entry is removed
+          digest:
+            type: string
+            description: The digest value of the chart entry
+          urls:
+            type: array
+            description: The urls of the chart entry
+            items:
+              type: string
+  ChartVersions:
+    type: array
+    description: A list of chart entry
+    items:
+      $ref: '#/definitions/ChartVersion'
+  DigitalSignature:
+    type: object
+    description: The signature of the chart
+    properties:
+      signed:
+        type: boolean
+        description: A flag to indicate if the chart is signed
+      prov_file:
+        type: string
+        description: The URL of the provance file
+  SecurityReport:
+    type: object
+    description: The security information of the chart
+    properties:
+      signature:
+        $ref: '#/definitions/DigitalSignature'
+  Dependency:
+    type: object
+    description: Another chart the chart depends on
+    required:
+      - name
+      - version
+    properties:
+      name:
+        type: string
+        description: The name of the chart denpendency
+      version:
+        type: string
+        description: The version of the chart dependency
+      repository:
+        type: string
+        description: The URL to the repository
+  ChartVersionDetails:
+    type: object
+    description: The detailed information of the chart entry
+    properties:
+      metadata:
+        $ref: '#/definitions/ChartVersion'
+      security:
+        $ref: '#/definitions/SecurityReport'
+      dependencies:
+        $ref: '#/definitions/Dependency'
+      values:
+        type: object
+        additionalProperties:
+          type: object
+      files:
+        type: object
+        additionalProperties:
+          type: string
+        
+        
+        
+    
