@@ -227,6 +227,22 @@ func TestCheckStatus(t *testing.T) {
 	ctx.WG.Wait()
 }
 
+func TestGetJobLogInvalidID(t *testing.T) {
+	exportUISecret(fakeSecret)
+
+	server, port, ctx := createServer()
+	server.Start()
+	<-time.After(200 * time.Millisecond)
+
+	_, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/%%2F..%%2Fpasswd/log", port))
+	if err == nil || strings.Contains(err.Error(), "400") {
+		t.Fatalf("Expected 400 error but got: %v", err)
+	}
+
+	server.Stop()
+	ctx.WG.Wait()
+}
+
 func TestGetJobLog(t *testing.T) {
 	exportUISecret(fakeSecret)
 
