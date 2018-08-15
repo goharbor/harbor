@@ -22,6 +22,9 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Content trust.  ](#content-trust)
 * [Vulnerability scanning via Clair.](#vulnerability-scanning-via-clair)
 * [Pull image from Harbor in Kubernetes.](#pull-image-from-harbor-in-kubernetes)
+* [Manage Helm Charts](#manage-helm-charts)
+  * [Manage Helm Charts via portal](#manage-helm-charts-via-portal)
+  * [Working with Helm CLI](#working-with-helm-cli)
 
 ## Role Based Access Control(RBAC)  
 
