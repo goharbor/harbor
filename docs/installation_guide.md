@@ -5,8 +5,6 @@ Harbor can be installed by one of three approaches:
 
 - **Offline installer:** Use this installer when the host does not have an Internet connection. The installer contains pre-built images so its size is larger.
 
-- **OVA installer:** Use this installer when user have a vCenter environment, Harbor is launched after OVA deployed. Detail information please refer **[Harbor OVA install guide](install_guide_ova.md)**
-
 All installers can be downloaded from the **[official release](https://github.com/goharbor/harbor/releases)** page. 
 
 This guide describes the steps to install and configure Harbor by using the online or offline installer. The installation processes are almost the same. 

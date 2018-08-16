@@ -685,11 +685,3 @@ Test Case - Scan Image On Push
     Go Into Repo  memcached
     Summary Chart Should Display  latest
     Close Browser
-
-#Test Case - OVA reboot
-#    Reboot VM  ${vm_name}  ${vc_host}  ${vc_user}  ${vc_password}
-#    Wait for Harbor Ready  https  ${ip}
-
-#Test Case - OVA reset
-#    Reset VM  ${vm_name}  ${vc_host}  ${vc_user}  ${vc_password}
-#    Wait for Harbor Ready  https  ${ip}
