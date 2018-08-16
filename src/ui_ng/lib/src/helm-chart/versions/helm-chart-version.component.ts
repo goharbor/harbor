@@ -245,20 +245,18 @@ export class ChartVersionComponent implements OnInit {
   }
 
   openVersionDeleteModal(versions: HelmChartVersion[]) {
-    let versionNames = versions.map(v => v.name).join(",");
-    this.translateService.get("HELM_CHART.DELETE_CHART_VERSION").subscribe(key => {
-        let message = new ConfirmationMessage(
-          "HELM_CHART.DELETE_CHART_VERSION_TITLE",
-          key,
-          versionNames,
-          versions,
-          ConfirmationTargets.HELM_CHART,
-          ConfirmationButtons.DELETE_CANCEL
-        );
-        this.confirmationDialog.open(message);
-        let hnd = setInterval(() => this.cdr.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 2000);
-      });
+    let versionNames = versions.map(v => v.version).join(",");
+    let message = new ConfirmationMessage(
+      "HELM_CHART.DELETE_CHART_VERSION_TITLE",
+      "HELM_CHART.DELETE_CHART_VERSION",
+      versionNames,
+      versions,
+      ConfirmationTargets.HELM_CHART,
+      ConfirmationButtons.DELETE_CANCEL
+    );
+    this.confirmationDialog.open(message);
+    let hnd = setInterval(() => this.cdr.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 2000);
   }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
