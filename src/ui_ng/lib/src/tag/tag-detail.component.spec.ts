@@ -140,11 +140,9 @@ describe('TagDetailComponent (inline template)', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
 
-      let el: HTMLElement = fixture.nativeElement.querySelector('.image-detail-value');
+      let el: HTMLElement = fixture.nativeElement.querySelector('.image-detail-label .image-details');
       expect(el).toBeTruthy();
-      let el2: HTMLElement = el.querySelector('div');
-      expect(el2).toBeTruthy();
-      expect(el2.textContent).toEqual("steven");
+      expect(el.textContent).toEqual("steven");
     });
   }));
 
