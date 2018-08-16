@@ -5,7 +5,6 @@ import { Component, OnInit } from '@angular/core';
 import { Project } from './../project';
 import { SessionUser } from './../../shared/session-user';
 import { SessionService } from './../../shared/session.service';
-import { RoleMapping } from '../../shared/shared.const';
 
 @Component({
   selector: 'list-chart-version',

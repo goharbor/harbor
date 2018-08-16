@@ -20,6 +20,8 @@ import { ProjectService } from './project.service';
 import { SessionService } from '../shared/session.service';
 import 'rxjs/add/operator/mergeMap';
 
+import { Roles } from '../shared/shared.const'
+
 @Injectable()
 export class ProjectRoutingResolver implements Resolve<Project> {
 
@@ -46,7 +48,7 @@ export class ProjectRoutingResolver implements Resolve<Project> {
               project.is_member = true;
               project.role_name = 'MEMBER.SYS_ADMIN';
             } else {
-              project.has_project_admin_role = (project.current_user_role_id === 1);
+              project.has_project_admin_role = (project.current_user_role_id === Roles.PROJECT_ADMIN);
               project.is_member = (project.current_user_role_id > 0);
               project.role_name = RoleInfo[project.current_user_role_id];
             }

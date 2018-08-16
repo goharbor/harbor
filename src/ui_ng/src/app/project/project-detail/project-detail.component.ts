@@ -19,7 +19,6 @@ import { Project } from '../project';
 import { SessionService } from '../../shared/session.service';
 import { ProjectService } from '../../project/project.service';
 
-import { RoleMapping } from '../../shared/shared.const';
 import {AppConfigService} from "../../app-config.service";
 
 @Component({
