@@ -320,6 +320,7 @@ storage_provider_name = rcp.get("configuration", "registry_storage_provider_name
 storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
 # yaml requires 1 or more spaces between the key and value
 storage_provider_config = storage_provider_config.replace(":", ": ", 1)
+registry_custom_ca_bundle_path = rcp.get("configuration", "registry_custom_ca_bundle").strip()
 ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))
 
@@ -469,8 +470,7 @@ render(os.path.join(templates_dir, "ui", "env"),
         chart_cache_driver = chart_cache_driver,
         redis_url_reg = redis_url_reg)
 
-registry_config_file_ha = "config_ha.yml"
-registry_config_file = "config.yml"
+registry_config_file = "config_ha.yml" if args.ha_mode else "config.yml"
 if storage_provider_name == "filesystem":
     if not storage_provider_config:
         storage_provider_config = "rootdirectory: /storage"
@@ -481,16 +481,6 @@ storage_provider_conf_list = [storage_provider_name + ':']
 for c in storage_provider_config.split(","):
     storage_provider_conf_list.append(c.strip())
 storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
-render(os.path.join(templates_dir, "registry", registry_config_file_ha),
-    registry_conf,
-    storage_provider_info=storage_provider_info,
-    public_url=public_url,
-    ui_url=ui_url,
-    redis_host=redis_host,
-    redis_port=redis_port,
-    redis_password=redis_password,
-    redis_db_index_reg=redis_db_index_reg)
-
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
     storage_provider_info=storage_provider_info,
@@ -600,6 +590,10 @@ else:
     shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
     print("Copied configuration file: %s" % registry_config_dir + "root.crt")
     shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
+
+if len(registry_custom_ca_bundle_path) > 0 and os.path.isfile(registry_custom_ca_bundle_path):
+    shutil.copyfile(registry_custom_ca_bundle_path, os.path.join(registry_config_dir, "custom-ca-bundle.crt"))
+    print("Copied custom ca bundle: %s" % os.path.join(registry_config_dir, "custom-ca-bundle.crt"))
 
 if args.notary_mode:
     notary_config_dir = prep_conf_dir(config_dir, "notary")
