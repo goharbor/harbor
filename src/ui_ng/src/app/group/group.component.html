@@ -30,7 +30,10 @@
         </clr-dg-row>
         <clr-dg-footer>
           <clr-dg-pagination #pagination [clrDgPageSize]="15">
-              {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'USER.OF' | translate }} {{pagination.totalItems}} {{'GROUP.GROUPS' | translate}}
+            <span *ngIf="pagination.totalItems">
+              {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'GROUP.OF' | translate}}
+            </span>
+              {{pagination.totalItems}} {{'GROUP.ITEMS' | translate}}
           </clr-dg-pagination>
         </clr-dg-footer>
       </clr-datagrid>

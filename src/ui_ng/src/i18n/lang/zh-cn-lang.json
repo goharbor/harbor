@@ -264,7 +264,9 @@
         "REG_TIME": "注册时间",
         "ADD_GROUP_SUCCESS": "添加组成功",
         "EDIT_GROUP_SUCCESS": "修改组成功",
-        "LDAP_TYPE": "LDAP"
+        "LDAP_TYPE": "LDAP",
+        "OF": "共计",
+        "ITEMS": "条记录"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",
@@ -492,7 +494,7 @@
         "REPO": "仓库",
         "FILTER_FOR_CHARTS": "过滤Chart",
         "DELETE": "删除",
-        "OF": "的",
+        "OF": "共计",
         "VERSIONS": "版本",
         "APP_VERSION": "应用版本",
         "IMAGES": "镜像",
@@ -512,7 +514,7 @@
         "SIGN": "签名",
         "SIGNED": "已签名",
         "UNSIGNED": "未签名",
-        "ITEMS": "项",
+        "ITEMS": "条记录",
         "NO_README": "此Chart未提供README文件",
         "SECURITY": "安全",
         "ACTIVE": "正常",

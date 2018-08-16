@@ -248,7 +248,9 @@
         "REG_TIME": "Registration Time",
         "ADD_GROUP_SUCCESS": "Add group success",
         "EDIT_GROUP_SUCCESS": "Edit group success",
-        "LDAP_TYPE": "LDAP"
+        "LDAP_TYPE": "LDAP",
+        "OF": "of",
+        "ITEMS": "items"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nom d'utilisateur",
