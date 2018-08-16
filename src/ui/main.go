@@ -15,6 +15,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"os"
 	"reflect"
@@ -77,6 +78,7 @@ func main() {
 	//TODO
 	redisURL := os.Getenv("_REDIS_URL")
 	if len(redisURL) > 0 {
+		gob.Register(models.User{})
 		beego.BConfig.WebConfig.Session.SessionProvider = "redis"
 		beego.BConfig.WebConfig.Session.SessionProviderConfig = redisURL
 	}
