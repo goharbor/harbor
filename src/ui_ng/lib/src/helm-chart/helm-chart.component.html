@@ -86,26 +86,35 @@
             <span class="spinner"></span>
         </div>
     </div>
-    <clr-modal [(clrModalOpen)]="isUploadModalOpen" [clrModalStaticBackdrop]="true">
-        <h3 class="modal-title">{{'HELM_CHART.UPLOAD_TITLE' | translate}}</h3>
+    <clr-modal [(clrModalOpen)]="isUploadModalOpen" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
+        <h3 class="modal-title">{{'HELM_CHART.UPLOAD_TITLE' | translate | titlecase}}</h3>
         <div class="modal-body">
             <form #chartUploadForm="ngForm" enctype="multipart/form-data" (ngSubmit)="upload()">
                 <section class="form-block">
                     <div class="form-group">
-                        <label for="chart"> {{'HELM_CHART.CHART_FILE' | translate}} </label>
-                        <input type="file" id="chart" name="chart" ngModel (change)="onChartFileChangeEvent($event)">
+                        <label class="filename-label"> {{'HELM_CHART.CHART_FILE' | translate}} </label>
+                        <input class="filename-input" type="text" placeholder="{{this.chartFile?.name || 'BUTTON.NO_FILE' | translate}}" disabled>
+                        <label for="chart" class="btn btn-secondary btn-sm file-browser-btn">{{'BUTTON.BROWSE' | translate}}</label>
+                        <input class="file-input" type="file" id="chart" name="chart" ngModel (change)="onChartFileChangeEvent($event)">
                     </div>
                     <div class="form-group">
-                        <label for="prov"> {{'HELM_CHART.CHART_PROV' | translate}} </label>
-                        <input type="file" id="prov" name="prov" ngModel (change)="onProvFileChangeEvent($event)">
+                        <label class="filename-label"> {{'HELM_CHART.CHART_PROV' | translate}} </label>
+                        <input class="filename-input" type="text" placeholder="{{this.provFile?.name || 'BUTTON.NO_FILE' | translate}}" disabled>
+                        <label for="prov" class="btn btn-secondary btn-sm file-browser-btn">{{'BUTTON.BROWSE' | translate}}</label>
+                        <input class="file-input" type="file" id="prov" name="prov" ngModel (change)="onProvFileChangeEvent($event)">
                     </div>
                 </section>
-                <button type="submit" class="btn btn-secondary" [disabled]="isUploading">
-                    <span>{{'HELM_CHART.UPLOAD' | translate}}</span>
-                </button>
-                <span *ngIf="isUploading" class="spinner spinner-inline">
-                    Loading...
-                </span>
+                <div class="row flex-items-xs-right">
+                    <button class="btn btn-secondary" [disabled]="isUploading" (click)="cancelUpload()">
+                        <span>{{'BUTTON.CANCEL' | translate}}</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary" [disabled]="isUploading">
+                        <span>{{'HELM_CHART.UPLOAD' | translate}}</span>
+                        <span *ngIf="isUploading" class="spinner spinner-inline">
+                            Loading...
+                        </span>
+                    </button>
+                </div>
             </form>
         </div>
     </clr-modal>

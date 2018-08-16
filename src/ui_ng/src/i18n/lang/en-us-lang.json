@@ -36,7 +36,10 @@
         "EDIT": "EDIT",
         "SWITCH": "SWITCH",
         "REPLICATE": "REPLICATE",
-        "ACTIONS": "Actions"
+        "ACTIONS": "Actions",
+        "BROWSE": "Browse",
+        "UPLOAD": "Upload",
+        "NO_FILE": "No file selected"
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",

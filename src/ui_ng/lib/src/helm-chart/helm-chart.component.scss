@@ -77,3 +77,34 @@ $size60:60px;
 .margin-right-12 {
     margin-right:12px;
 }
+
+.file-input {
+    display: none;
+}
+
+.filename-span {
+    @include text-overflow;
+    display: inline-block;
+    width: 50%;
+    vertical-align: top;
+}
+
+clr-modal {
+    .form-group {
+        padding-left: 6rem;
+
+        .filename-label {
+            padding-top: 9px;
+        }
+
+        .filename-input {
+            margin-top: 12px;
+            width: 68%;
+        }
+    
+        .file-browser-btn {
+            margin-left: 15px;
+            max-width: 25%;
+        }
+    }
+}
