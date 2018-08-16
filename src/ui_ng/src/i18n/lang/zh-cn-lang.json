@@ -36,7 +36,10 @@
         "EDIT": "编辑",
         "SWITCH": "切换",
         "REPLICATE": "复制",
-        "ACTIONS": "操作"
+        "ACTIONS": "操作",
+        "BROWSE": "选择文件",
+        "UPLOAD": "上传",
+        "NO_FILE": "未选择文件"
     },
     "BATCH": {
         "DELETED_SUCCESS": "删除成功",

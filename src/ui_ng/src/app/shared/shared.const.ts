@@ -83,3 +83,10 @@ export const ProjectRoles = [
   { id: 2, value: "MEMBER.DEVELOPER" },
   { id: 3, value: "MEMBER.GUEST" }
 ];
+
+export enum Roles {
+  PROJECT_ADMIN = 1,
+  DEVELOPER = 2,
+  GUEST = 3,
+  OTHER = 0,
+}

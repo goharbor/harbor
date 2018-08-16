@@ -89,6 +89,7 @@ export class AddGroupComponent implements OnInit {
   }
 
   resetModaldata() {
+    this.createGroupMode = false;
     this.group = new UserGroup();
     this.selectedRole = 1;
     this.selectedGroups = [];

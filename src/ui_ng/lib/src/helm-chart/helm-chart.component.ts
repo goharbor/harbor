@@ -17,6 +17,7 @@ import { ErrorHandler } from "../error-handler/error-handler";
 import { toPromise, DEFAULT_PAGE_SIZE } from "../utils";
 import { HelmChartService } from "../service/helm-chart.service";
 import { DefaultHelmIcon} from "../shared/shared.const";
+import { Roles } from './../shared/shared.const';
 
 @Component({
   selector: "hbr-helm-chart",
@@ -30,7 +31,7 @@ export class HelmChartComponent implements OnInit {
   @Input() projectName = "unknown";
   @Input() urlPrefix: string;
   @Input() hasSignedIn: boolean;
-  @Input() projectRoleID = 0;
+  @Input() projectRoleID = Roles.OTHER;
   @Input() hasProjectAdminRole: boolean;
   @Output() chartClickEvt = new EventEmitter<any>();
   @Output() chartDownloadEve = new EventEmitter<string>();
@@ -74,8 +75,7 @@ export class HelmChartComponent implements OnInit {
   }
 
   public get developerRoleOrAbove(): boolean {
-    // 1: admin, 2: developer, 3: guest
-    return this.projectRoleID === 2 || this.hasProjectAdminRole;
+    return this.projectRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
   }
 
   ngOnInit(): void {
@@ -117,11 +117,20 @@ export class HelmChartComponent implements OnInit {
     this.chartClickEvt.emit(item.name);
   }
 
-  onChartUpload() {
+  resetUploadForm() {
     this.chartFile = null;
     this.provFile = null;
     this.uploadForm.reset();
+  }
+
+  onChartUpload() {
+    this.resetUploadForm();
     this.isUploadModalOpen = true;
+  }
+
+  cancelUpload() {
+    this.resetUploadForm();
+    this.isUploadModalOpen = false;
   }
 
   upload() {
