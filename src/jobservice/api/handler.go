@@ -7,14 +7,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/vmware/harbor/src/jobservice/opm"
+	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 
 	"github.com/vmware/harbor/src/jobservice/core"
 	"github.com/vmware/harbor/src/jobservice/errs"
 	"github.com/vmware/harbor/src/jobservice/models"
+	"github.com/vmware/harbor/src/jobservice/opm"
 )
 
 //Handler defines approaches to handle the http requests.
@@ -205,6 +206,11 @@ func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Reque
 
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
+
+	if strings.Contains(jobID, "..") || strings.ContainsRune(jobID, os.PathSeparator) {
+		dh.handleError(w, http.StatusBadRequest, fmt.Errorf("Invalid Job ID: %s", jobID))
+		return
+	}
 
 	logData, err := dh.controller.GetJobLogData(jobID)
 	if err != nil {
