@@ -26,10 +26,13 @@ import { httpStatusCode, AlertType } from './shared.const';
  * @returns {string}
  */
 export const errorHandler = function (error: any): string {
-    let errorObj = error.json();
-    if (errorObj && errorObj.error) {
+    if (error && error._body) {
         // treat as string message
-        return errorObj.error;
+        if (typeof error._body === "string") {
+            return error._body;
+        } else if (error._body.error) {
+            return error._body.error;
+        }
     } else {
         switch (error.statusCode || error.status) {
             case 400:

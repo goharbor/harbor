@@ -3,6 +3,7 @@ import { Http, Response, ResponseContentType } from "@angular/http";
 
 import "rxjs/add/observable/of";
 import { Observable } from "rxjs/Observable";
+import {HttpErrorResponse} from "@angular/common/http";
 
 import { RequestQueryParams } from "./RequestQueryParams";
 import { HelmChartItem, HelmChartVersion, HelmChartDetail } from "./interface";
@@ -131,8 +132,7 @@ export class HelmChartDefaultService extends HelmChartService {
     }
   }
 
-  private handleErrorObservable(error: Response | any) {
-    console.error(error.message || error);
+  private handleErrorObservable(error: HttpErrorResponse) {
     return Observable.throw(error.message || error);
   }
 
@@ -213,6 +213,7 @@ export class HelmChartDefaultService extends HelmChartService {
     .catch(this.handleErrorObservable);
   }
 
+  
   public uploadChart(
     projectName: string,
     chart?: File,
@@ -229,8 +230,10 @@ export class HelmChartDefaultService extends HelmChartService {
         uploadURL = `${this.config.helmChartEndpoint}/${projectName}/prov`;
       }
     }
-    return this.http.post(uploadURL, formData)
-    .map(reponse => this.extractData(reponse))
+    return this.http.post(uploadURL, formData,{
+      responseType: ResponseContentType.Json
+    })
+    .map(response => this.extractData(response))
     .catch(this.handleErrorObservable);
   }
 }

@@ -53,7 +53,7 @@
         </div>
     </div>
     <div *ngIf="isCardView" class="row card-container">
-        <div *ngFor="let item of charts;" class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-xs-12">
+        <div *ngFor="let item of charts;" class="chart-card">
             <a let i=index; class="card clickable" (click)="onChartClick(item)">
                 <div class="card-header">
                     <div class="card-icon">
@@ -63,12 +63,12 @@
                 </div>
                 <div class="card-footer">
                     <div class="row flex-items-xs-between">
-                        <div class="col-xs-6">
+                        <div>
                             <span class="version-text">{{item.total_versions}}</span>
-                            <label *ngIf="item.total_versions !== 1">{{'HELM_CHART.CHARTVERSIONS' | translate}}</label>
-                            <label *ngIf="item.total_versions === 1">{{'HELM_CHART.VERSION' | translate}}</label>
+                            <label class="card-label" *ngIf="item.total_versions !== 1">{{'HELM_CHART.CHARTVERSIONS' | translate}}</label>
+                            <label class="card-label" *ngIf="item.total_versions === 1">{{'HELM_CHART.VERSION' | translate}}</label>
                         </div>
-                        <div class="col-xs-6">
+                        <div>
                             <span class="label"
                             [class.label-danger]="item.deprecated"
                             [class.label-success]="!item.deprecated"
