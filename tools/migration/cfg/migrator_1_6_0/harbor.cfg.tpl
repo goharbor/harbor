@@ -194,3 +194,7 @@ registry_storage_provider_name = $registry_storage_provider_name
 #registry_storage_provider_config is a comma separated "key: value" pairs, e.g. "key1: value, key2: value2".
 #Refer to https://docs.docker.com/registry/configuration/#storage for all available configuration.
 registry_storage_provider_config = $registry_storage_provider_config
+#registry_custom_ca_bundle is the path to the custom root ca certificate, which will be injected into the truststore
+#of registry's container.  This is usually needed when the user hosts a internal storage with self signed certificate.
+registry_custom_ca_bundle =
+

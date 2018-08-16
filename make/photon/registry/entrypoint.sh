@@ -17,6 +17,21 @@ if [ -d /storage ]; then
     fi
 fi
 
+if [ ! -f /etc/pki/tls/certs/ca-bundle.crt.original ]; then
+    cp /etc/pki/tls/certs/ca-bundle.crt /etc/pki/tls/certs/ca-bundle.crt.original
+fi
+
+if [ -f /etc/registry/custom-ca-bundle.crt ]; then
+    if grep -q "Photon" /etc/lsb-release; then
+        echo "Appending custom ca bundle ..."
+        cp /etc/pki/tls/certs/ca-bundle.crt.original /etc/pki/tls/certs/ca-bundle.crt
+        cat /etc/registry/custom-ca-bundle.crt >> /etc/pki/tls/certs/ca-bundle.crt
+        echo "Done."
+    else
+        echo "Current OS is not Photon, skip appending ca bundle"
+    fi
+fi
+
 case "$1" in
     *.yaml|*.yml) set -- registry serve "$@" ;;
     serve|garbage-collect|help|-*) set -- registry "$@" ;;

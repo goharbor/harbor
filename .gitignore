@@ -6,6 +6,8 @@ make/common/config/*
 make/dev/adminserver/harbor_adminserver
 make/dev/ui/harbor_ui
 make/dev/jobservice/harbor_jobservice
+make/photon/*/binary/
+
 src/adminserver/adminserver
 src/ui/ui
 src/jobservice/jobservice
