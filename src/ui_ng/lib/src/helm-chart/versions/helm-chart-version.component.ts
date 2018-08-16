@@ -117,6 +117,7 @@ export class ChartVersionComponent implements OnInit {
         versions => {
           this.chartVersions = versions.filter(x => x.version.includes(this.lastFilteredVersionName));
           this.versionsCopy = versions.map(x => Object.assign({}, x));
+          this.totalCount = versions.length;
         },
         err => {
           this.errorHandler.error(err);

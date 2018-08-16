@@ -105,6 +105,7 @@ export class HelmChartComponent implements OnInit {
       charts => {
         this.charts = charts.filter(x => x.name.includes(this.lastFilteredChartName));
         this.chartsCopy = charts.map(x => Object.assign({}, x));
+        this.totalCount = charts.length;
       },
       err => {
         this.errorHandler.error(err);

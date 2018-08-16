@@ -66,8 +66,11 @@
                     <clr-dg-cell>{{ v.created | date}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
-                    <clr-dg-pagination #pagination [clrDgPageSize]="pageSize">
-                        {{pagination.totalItems}} {{'HELM_CHART.ITEMS' | translate}}
+                    <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount">
+                        <span *ngIf="pagination.totalItems">
+                            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'HELM_CHART.OF' | translate}}
+                        </span>
+                        {{pagination.totalItems}} {{'HELM_CHART.ITEMS'| translate}}
                     </clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>
