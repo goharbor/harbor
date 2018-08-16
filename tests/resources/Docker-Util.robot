@@ -152,3 +152,23 @@ Docker Login Fail
     Should Not Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  unauthorized: authentication required
     Should Not Contain  ${output}  500 Internal Server Error
+
+Docker Login
+    [Arguments]  ${server}  ${username}  ${password}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker login -u ${username} -p ${password} ${server}
+    Should Be Equal As Integers  ${rc}  0
+
+Docker Pull
+    [Arguments]  ${image}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull ${image}
+    Should Be Equal As Integers  ${rc}  0
+
+Docker Tag
+    [Arguments]  ${src_image}   ${dst_image}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker tag ${src_image} ${dst_image}
+    Should Be Equal As Integers  ${rc}  0
+
+Docker Push
+    [Arguments]  ${image}
+    ${rc}  ${output}=  Run And Return Rc And Output  docker push ${image}
+    Should Be Equal As Integers  ${rc}  0
