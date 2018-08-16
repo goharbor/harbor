@@ -19,6 +19,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Pull and push images using Docker client.](#pulling-and-pushing-images-using-docker-client)
 * [Add description to repositories](#add-description-to-repositories)
 * [Delete repositories and images.](#deleting-repositories)
+  * [Automatically with `tagd`](use_tagd.md)
 * [Content trust.  ](#content-trust)
 * [Vulnerability scanning via Clair.](#vulnerability-scanning-via-clair)
 * [Pull image from Harbor in Kubernetes.](#pull-image-from-harbor-in-kubernetes)
@@ -321,7 +322,9 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 ![browse project](img/new_delete_repo.png)
 ![browse project](img/new_delete_tag.png)
 
-**CAUTION: If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted. if you enabled content trust, you need to use notary command line tool to delete the tag's signature before you delete an image.**  
+**CAUTION: If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted. If you enabled content trust, you need to use notary command line tool to delete the tag's signature before you delete an image.**
+
+This process can be automated by [tagd](https://github.com/hylandsoftware/Harbor.Tagd). See the [documentation](use_tagd.md) for details.
 
 Next, delete the actual files of the repository using the registry's garbage collection(GC). Make sure that no one is pushing images or Harbor is not running at all before you perform a GC. If someone were pushing an image while GC is running, there is a risk that the image's layers will be mistakenly deleted which results in a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
 
