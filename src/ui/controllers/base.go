@@ -16,6 +16,7 @@ package controllers
 
 import (
 	"bytes"
+	"encoding/json"
 	"html/template"
 	"net"
 	"net/http"
@@ -69,7 +70,13 @@ func (cc *CommonController) Login() {
 	if user == nil {
 		cc.CustomAbort(http.StatusUnauthorized, "")
 	}
-	cc.SetSession("user", *user)
+	data, err := json.Marshal(user)
+	if err != nil {
+		log.Errorf("failed to marshal user: %v", err)
+		cc.CustomAbort(http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError))
+	}
+	cc.SetSession("user", data)
 }
 
 // LogOut Habor UI

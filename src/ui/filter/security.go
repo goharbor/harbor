@@ -16,6 +16,7 @@ package filter
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -226,25 +227,28 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 type sessionReqCtxModifier struct{}
 
 func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
-	var user models.User
-	userInterface := ctx.Input.Session("user")
-
-	if userInterface == nil {
+	sessionData := ctx.Input.Session("user")
+	if sessionData == nil {
 		log.Debug("can not get user information from session")
 		return false
 	}
 
-	log.Debug("got user information from session")
-	user, ok := userInterface.(models.User)
+	data, ok := sessionData.([]byte)
 	if !ok {
-		log.Info("can not get user information from session")
+		log.Debug("can not get user information from session")
 		return false
 	}
-	log.Debug("Getting user %+v", user)
+	user := &models.User{}
+	if err := json.Unmarshal(data, user); err != nil {
+		log.Errorf("failed to unmarshal data: %v", err)
+		return false
+	}
+
+	log.Debug("got user %s from session", user.Username)
 	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
-	securCtx := local.NewSecurityContext(&user, pm)
+	securCtx := local.NewSecurityContext(user, pm)
 
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 
