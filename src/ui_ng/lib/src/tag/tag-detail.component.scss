@@ -1,3 +1,4 @@
+@import "../mixin";
 .overview-section {
     padding-bottom: 36px;
 }
@@ -103,6 +104,15 @@ margin-left:20px;}
     margin-right: 10px;
     text-align: left;
     font-weight: 600;
+    .detail-row {
+        display: flex;
+        .detail-label {
+            flex:0 0 150px;
+        }
+        .image-details {
+            @include text-overflow-param(200px);
+        }
+    }
 }
 
 .image-detail-value {
