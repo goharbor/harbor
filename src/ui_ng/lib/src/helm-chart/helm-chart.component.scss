@@ -31,6 +31,10 @@ $size60:60px;
 
 .card-container {
     margin-top: 21px;
+    .chart-card {
+        width: 200px;
+        margin: 10px;
+    }
     .card-header {
         .card-icon {
            @include flex-center;
@@ -45,6 +49,11 @@ $size60:60px;
         background-color:#d7d7d7;
          .version-text {
              font-size:1.1rem;
+         }
+
+         .card-label {
+            width: 60px;
+            display: inline-block;
          }
     }
 }
@@ -62,7 +71,7 @@ $size60:60px;
 
 .size-60 {
     height:$size60;
-    max-width:165px;
+    max-width:100%;
 }
 
 .margin-right-12 {

@@ -82,7 +82,7 @@
             <a let i=index; class="card clickable" (click)="onVersionClick(item)">
                 <div class="card-header">
                     <div class="card-media-block">
-                        <img [src]="getImgLink(item)"/>
+                        <img  [src]="item.icon ?item.icon:chartDefaultIcon"  (error)="getDefaultIcon(item);" />
                         <div class="card-media-description">
                             <span class="card-media-title">{{item.name}}</span>
                             <a class="card-media-text">{{item.home}}</a>
