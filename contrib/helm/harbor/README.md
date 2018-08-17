@@ -119,7 +119,7 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `ui.tolerations` | Tolerations for pod assignment | `[]` |
 | `ui.affinity` | Node/Pod affinities | `{}` |
 | **Database** |
-`database.type` | If external database is used, set it to `external` | `internal` |
+| `database.type` | If external database is used, set it to `external` | `internal` |
 | `database.internal.image.repository` | Repository for database image | `vmware/harbor-db` |
 | `database.internal.image.tag` | Tag for database image | `dev` |
 | `database.internal.image.pullPolicy` | Pull Policy for database image | `IfNotPresent` |
