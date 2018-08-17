@@ -2565,6 +2565,148 @@ paths:
           description: Only admin has this authority.
         '500':
           description: Unexpected internal errors.
+  /system/gc:
+    get:
+      summary: Get gc results.
+      description: This endpoint let user get latest ten gc results.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Get gc results successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GCResult'
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of admin role.
+        '500':
+          description: Unexpected internal errors.
+  /system/gc/{id}:
+    get:
+      summary: Get gc status.
+      description: This endpoint let user get gc status filtered by specific ID.
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant job ID
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Get gc results successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GCResult'
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of admin role.
+        '500':
+          description: Unexpected internal errors.
+  /system/gc/{id}/log:
+    get:
+      summary: Get gc job log.
+      description: This endpoint let user get gc job logs filtered by specific ID.
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant job ID
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Get job log successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of admin role.
+        '404':
+          description: The specific gc ID's log does not exist.
+        '500':
+          description: Unexpected internal errors.
+  /system/gc/schedule:
+    get:
+      summary: Get gc's schedule.
+      description: This endpoint is for get schedule of gc job.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Get gc's schedule.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GCSchedule'
+        '401':
+          description: User need to log in first.
+        '403':
+          description: Only admin has this authority.
+        '500':
+          description: Unexpected internal errors.
+    put:
+      summary: Update gc's schedule.
+      description: |
+        This endpoint is for update gc schedule.
+      parameters:
+      - name: schedule
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/GCSchedule'
+        description: Updates of gs's schedule.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Updated replication's target successfully.
+        '400':
+          description: The target is associated with policy which is enabled.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of admin role.
+        '404':
+          description: Target ID does not exist.
+        '500':
+          description: Unexpected internal errors.
+    post:
+      summary: Create a gc schedule.
+      description: |
+        This endpoint is for update gc schedule.
+      parameters:
+      - name: schedule
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/GCSchedule'
+        description: Updates of gs's schedule.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Updated replication's target successfully.
+        '400':
+          description: The target is associated with policy which is enabled.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of admin role.
+        '404':
+          description: Target ID does not exist.
+        '500':
+          description: Unexpected internal errors.
   /configurations:
     get:
       summary: Get system configurations.
@@ -2698,6 +2840,41 @@ paths:
           $ref: '#/definitions/InternalChartAPIError'
         '200':
           $ref: '#/definitions/ChartInfoList'
+    post:
+      summary: Upload a chart file to the specified project.
+      description: Upload a chart file to the specified project. With this API, the corresponding provance file can be uploaded together with chart file at once.
+      tags:
+      - Products
+      - Chart Repository
+      consumes:
+      - multipart/form-data
+      parameters:
+      - name: repo
+        in: path
+        type: string
+        required: true
+        description: The project name
+      - name: chart
+        in: formData
+        type: file
+        required: true
+        description: The chart file
+      - name: prov
+        in: formData
+        type: file
+        required: false
+        description: The provance file
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '507':
+          $ref: '#/definitions/InsufficientStorageChartAPIError'
+        '201':
+          description: The specified chart is successfully uploaded.
   /chartrepo/{repo}/charts/{name}:
     get:
       summary: Get all the versions of the specified chart
@@ -2794,42 +2971,6 @@ paths:
           $ref: '#/definitions/InternalChartAPIError'
         '200':
           description: The specified chart entry is successfully deleted.
-  /chartrepo/{repo}/charts:
-    post:
-      summary: Upload a chart file to the specified project.
-      description: Upload a chart file to the specified project. With this API, the corresponding provance file can be uploaded together with chart file at once.
-      tags:
-        - Products
-        - Chart Repository
-      consumes:
-        - multipart/form-data
-      parameters:
-        - name: repo
-          in: path
-          type: string
-          required: true
-          description: The project name
-        - name: chart
-          in: formData
-          type: file
-          required: true
-          description: The chart file
-        - name: prov
-          in: formData
-          type: file
-          required: false
-          description: The provance file
-      responses:
-        '401':
-          $ref: '#/definitions/UnauthorizedChartAPIError'
-        '403':
-          $ref: '#/definitions/ForbiddenChartAPIError'
-        '500':
-          $ref: '#/definitions/InternalChartAPIError'
-        '507':
-          $ref: '#/definitions/InsufficientStorageChartAPIError'
-        '201':
-          description: The specified chart is successfully uploaded.
   /chartrepo/{repo}/prov:
     post:
       summary: Upload a provance file to the specified project.
@@ -4278,7 +4419,35 @@ definitions:
         type: object
         additionalProperties:
           type: string
-        
+  GCResult:
+    type: object
+    properties:
+      status:
+        type: boolean
+        description: the result of gc job.
+      msg:
+        type: string
+        description: the details of gc job.
+      starttime:
+        type: string
+        description: the start time of gc job.
+      endtime:
+        type: string
+        description: the end time of gc job.
+  GCSchedule:
+    type: object
+    properties:
+      type:
+        type: string
+        description: The schedule type. The valid values are daily， weekly and None. 'None' means to cancel the schedule.
+      weekday:
+        type: integer
+        format: int8
+        description: 'Optional, only used when the type is weekly. The valid values are 1-7.'
+      offtime:
+        type: integer
+        format: int64
+        description: 'The time offset with the UTC 00:00 in seconds.'
         
         
     
