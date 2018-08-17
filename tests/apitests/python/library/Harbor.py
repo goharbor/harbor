@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-
+import site
+reload(site)
 import project
 import label
 import registry
