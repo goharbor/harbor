@@ -2698,6 +2698,41 @@ paths:
           $ref: '#/definitions/InternalChartAPIError'
         '200':
           $ref: '#/definitions/ChartInfoList'
+    post:
+      summary: Upload a chart file to the specified project.
+      description: Upload a chart file to the specified project. With this API, the corresponding provance file can be uploaded together with chart file at once.
+      tags:
+        - Products
+        - Chart Repository
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: chart
+          in: formData
+          type: file
+          required: true
+          description: The chart file
+        - name: prov
+          in: formData
+          type: file
+          required: false
+          description: The provance file
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '507':
+          $ref: '#/definitions/InsufficientStorageChartAPIError'
+        '201':
+          description: The specified chart is successfully uploaded.
   /chartrepo/{repo}/charts/{name}:
     get:
       summary: Get all the versions of the specified chart
@@ -2794,42 +2829,6 @@ paths:
           $ref: '#/definitions/InternalChartAPIError'
         '200':
           description: The specified chart entry is successfully deleted.
-  /chartrepo/{repo}/charts:
-    post:
-      summary: Upload a chart file to the specified project.
-      description: Upload a chart file to the specified project. With this API, the corresponding provance file can be uploaded together with chart file at once.
-      tags:
-        - Products
-        - Chart Repository
-      consumes:
-        - multipart/form-data
-      parameters:
-        - name: repo
-          in: path
-          type: string
-          required: true
-          description: The project name
-        - name: chart
-          in: formData
-          type: file
-          required: true
-          description: The chart file
-        - name: prov
-          in: formData
-          type: file
-          required: false
-          description: The provance file
-      responses:
-        '401':
-          $ref: '#/definitions/UnauthorizedChartAPIError'
-        '403':
-          $ref: '#/definitions/ForbiddenChartAPIError'
-        '500':
-          $ref: '#/definitions/InternalChartAPIError'
-        '507':
-          $ref: '#/definitions/InsufficientStorageChartAPIError'
-        '201':
-          description: The specified chart is successfully uploaded.
   /chartrepo/{repo}/prov:
     post:
       summary: Upload a provance file to the specified project.
