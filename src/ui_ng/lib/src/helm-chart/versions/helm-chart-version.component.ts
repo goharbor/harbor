@@ -8,7 +8,6 @@ import {
   Output,
   EventEmitter
 } from "@angular/core";
-import { NgForm } from "@angular/forms";
 import { Observable } from "rxjs/Observable";
 import "rxjs/add/observable/forkJoin";
 
@@ -72,15 +71,11 @@ export class ChartVersionComponent implements OnInit {
   totalCount = 0;
   currentState: State;
 
-  isUploading = false;
-  isUploadModalOpen = false;
   chartFile: File;
   provFile: File;
 
   @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
-
-  @ViewChild("chartUploadForm") form: NgForm;
 
   constructor(
     private errorHandler: ErrorHandler,
@@ -122,6 +117,7 @@ export class ChartVersionComponent implements OnInit {
         versions => {
           this.chartVersions = versions.filter(x => x.version.includes(this.lastFilteredVersionName));
           this.versionsCopy = versions.map(x => Object.assign({}, x));
+          this.totalCount = versions.length;
         },
         err => {
           this.errorHandler.error(err);
@@ -201,9 +197,6 @@ export class ChartVersionComponent implements OnInit {
       }
     );
   }
-  versionUpload() {
-    this.isUploadModalOpen = true;
-  }
 
   showCard(cardView: boolean) {
     if (this.isCardView === cardView) {
@@ -236,30 +229,6 @@ export class ChartVersionComponent implements OnInit {
     }
   }
 
-  upload() {
-    if (!this.chartFile && !this.provFile) {
-      return;
-    }
-    if (this.isUploading) { return; };
-    this.isUploading = true;
-    this.helmChartService
-      .uploadChart(this.projectName, this.chartFile, this.provFile)
-      .finally(() => {
-        this.isUploading = false;
-        this.isUploadModalOpen = false;
-        this.refresh();
-        let hnd = setInterval(() => this.cdr.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 3000);
-      })
-      .subscribe(
-        () => {
-          this.translateService.get("HELM_CHART.FILE_UPLOADED")
-            .subscribe(res => this.errorHandler.info(res));
-        },
-        err => this.errorHandler.error(err)
-      );
-  }
-
   onChartFileChangeEvent(event) {
     if (event.target.files && event.target.files.length > 0) {
       this.chartFile = event.target.files[0];
@@ -275,21 +244,20 @@ export class ChartVersionComponent implements OnInit {
     env.stopPropagation();
     this.openVersionDeleteModal([version]);
   }
+
   openVersionDeleteModal(versions: HelmChartVersion[]) {
-    let versionNames = versions.map(v => v.name).join(",");
-    this.translateService.get("HELM_CHART.DELETE_CHART_VERSION").subscribe(key => {
-        let message = new ConfirmationMessage(
-          "HELM_CHART.DELETE_CHART_VERSION_TITLE",
-          key,
-          versionNames,
-          versions,
-          ConfirmationTargets.HELM_CHART,
-          ConfirmationButtons.DELETE_CANCEL
-        );
-        this.confirmationDialog.open(message);
-        let hnd = setInterval(() => this.cdr.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 2000);
-      });
+    let versionNames = versions.map(v => v.version).join(",");
+    let message = new ConfirmationMessage(
+      "HELM_CHART.DELETE_CHART_VERSION_TITLE",
+      "HELM_CHART.DELETE_CHART_VERSION",
+      versionNames,
+      versions,
+      ConfirmationTargets.HELM_CHART,
+      ConfirmationButtons.DELETE_CANCEL
+    );
+    this.confirmationDialog.open(message);
+    let hnd = setInterval(() => this.cdr.markForCheck(), 100);
+    setTimeout(() => clearInterval(hnd), 2000);
   }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {

@@ -33,7 +33,10 @@
         "NO": "NON",
         "NEGATIVE": "NEGATIF",
         "COPY": "COPIER",
-        "ACTIONS": "Actions"
+        "ACTIONS": "Actions",
+        "BROWSE": "Browse",
+        "UPLOAD": "Upload",
+        "NO_FILE": "No file selected"
     },
     "TOOLTIP": {
         "EMAIL": "L'email doit être une adresse email valide comme name@example.com.",
@@ -248,7 +251,9 @@
         "REG_TIME": "Registration Time",
         "ADD_GROUP_SUCCESS": "Add group success",
         "EDIT_GROUP_SUCCESS": "Edit group success",
-        "LDAP_TYPE": "LDAP"
+        "LDAP_TYPE": "LDAP",
+        "OF": "of",
+        "ITEMS": "items"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nom d'utilisateur",
@@ -462,6 +467,7 @@
         "MAINTAINERS": "Maintainers",
         "PULLS": "Pull Count",
         "VERSION": "Version",
+        "APP_VERSION": "Application Version",
         "INSTALL": "Install",
         "INSTALL_CHART": "Install Chart",
         "NAME": "Name",

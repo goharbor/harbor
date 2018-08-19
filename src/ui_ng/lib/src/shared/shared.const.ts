@@ -92,3 +92,10 @@ export const LabelColor = [
 export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
 
 export const DefaultHelmIcon = '/static/images/helm-gray.png';
+
+export enum Roles {
+  PROJECT_ADMIN = 1,
+  DEVELOPER = 2,
+  GUEST = 3,
+  OTHER = 0,
+}

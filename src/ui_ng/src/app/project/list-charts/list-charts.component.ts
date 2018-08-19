@@ -18,6 +18,7 @@ export class ListChartsComponent implements OnInit {
   urlPrefix: string;
   hasSignedIn: boolean;
   hasProjectAdminRole: boolean;
+  project_member_role_id: number;
   currentUser: SessionUser;
 
   constructor(
@@ -35,6 +36,8 @@ export class ListChartsComponent implements OnInit {
       let project = <Project>(resolverData["projectResolver"]);
       this.projectName = project.name;
       this.hasProjectAdminRole = project.has_project_admin_role;
+      this.project_member_role_id = project.current_user_role_id;
+      console.log(this.project_member_role_id);
     }
   }
 

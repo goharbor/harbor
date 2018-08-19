@@ -14,6 +14,7 @@
                     [class.invalid]="isDNInvalid">
                         <input type="text" id="ldap_group_dn" name="ldap_group_dn"
                         required
+                        [disabled]="mode !== 'create'"
                         [(ngModel)]="group.ldap_group_dn"
                         #groupDN="ngModel">
                         <span class="tooltip-content">
@@ -26,11 +27,19 @@
                     <label id="type">LDAP</label>
                 </div>
                 <div class="form-group">
-                    <label for="group_name">{{'GROUP.NAME' | translate}}</label>
-                    <label for="group_name">
+                    <label for="group_name" class="required">{{'GROUP.NAME' | translate}}</label>
+                    <label for="group_name"
+                    aria-haspopup="true"
+                    role="tooltip"
+                    class="tooltip tooltip-validation tooltip-sm tooltip-right"
+                    [class.invalid]="isNameInvalid">
                         <input type="text" id="group_name" name="group_name"
+                        required
                         [(ngModel)]="group.group_name"
-                        #groupDN="ngModel">
+                        #groupName="ngModel">
+                        <span class="tooltip-content">
+                            {{dnTooltip | translate}}
+                        </span>
                     </label>
                 </div>
             </section>
