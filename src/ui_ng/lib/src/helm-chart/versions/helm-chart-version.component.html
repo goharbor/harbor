@@ -42,7 +42,7 @@
                     (click)="versionDownload()">
                         <clr-icon shape="download" size="16"></clr-icon>&nbsp;{{'HELM_CHART.DOWNLOAD' | translate}}</button>
                     <button type="button" class="btn btn-sm btn-secondary"
-                    [disabled]="selectedRows.length<=0 || !hasProjectAdminRole"
+                    [disabled]="!canDeleteVersionOnList()"
                     (click)="openVersionDeleteModal(selectedRows)">
                         <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}</button>
                 </clr-dg-action-bar>
@@ -111,7 +111,7 @@
                         <button type="button" class="btn btn-link"
                         (click)="versionDownload($event, item)">{{'HELM_CHART.DOWNLOAD' | translate}}</button>
                         <button type="button" class="btn btn-link"
-                        [disabled]="selectedRows.length<=0 || !hasProjectAdminRole"
+                        [disabled]="!canDeleteVersionOnCard()"
                         (click)="deleteVersionCard($event, item)">{{'BUTTON.DELETE' | translate}}</button>
                     </clr-dropdown>
                 </div>

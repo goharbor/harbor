@@ -290,4 +290,12 @@ export class ChartVersionComponent implements OnInit {
       return "HELM_CHART.ACTIVE";
     }
   }
+
+  canDeleteVersionOnCard() {
+    return this.hasProjectAdminRole;
+  }
+
+  canDeleteVersionOnList() {
+    return this.selectedRows.length > 0 && this.hasProjectAdminRole;
+  }
 }
