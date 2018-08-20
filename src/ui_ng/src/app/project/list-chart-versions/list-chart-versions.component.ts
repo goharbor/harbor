@@ -5,7 +5,6 @@ import { Component, OnInit } from '@angular/core';
 import { Project } from './../project';
 import { SessionUser } from './../../shared/session-user';
 import { SessionService } from './../../shared/session.service';
-import { RoleMapping } from '../../shared/shared.const';
 
 @Component({
   selector: 'list-chart-version',
@@ -40,7 +39,7 @@ export class ListChartVersionsComponent implements OnInit {
     if (resolverData) {
       let project = <Project>(resolverData["projectResolver"]);
       this.hasProjectAdminRole = project.has_project_admin_role;
-      this.roleName = RoleMapping[project.role_name];
+      this.roleName = project.role_name;
       this.projectName = project.name;
     }
   }

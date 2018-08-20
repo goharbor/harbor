@@ -36,7 +36,7 @@ export class ChartDetailComponent implements OnInit {
     let resolverData = this.route.snapshot.data;
     if (resolverData) {
       this.project = <Project>(resolverData["projectResolver"]);
-      this.roleName = RoleMapping[this.project.role_name];
+      this.roleName = this.project.role_name;
       this.hasProjectAdminRole = this.project.has_project_admin_role;
     }
   }

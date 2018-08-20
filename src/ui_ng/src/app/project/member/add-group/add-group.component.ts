@@ -34,6 +34,7 @@ export class AddGroupComponent implements OnInit {
   group = new UserGroup();
   selectedGroups: UserGroup[] = [];
   groups: UserGroup[] = [];
+  totalCount = 0;
 
   dnTooltip = 'TOOLTIP.ITEM_REQUIRED';
 
@@ -76,6 +77,7 @@ export class AddGroupComponent implements OnInit {
         return group.group_name.includes(this.currentTerm)
         && !this.memberList.some(member => member.entity_type === 'g' && member.entity_id === group.id);
       });
+      this.totalCount = groups.length;
       this.onLoading = false;
       this.ref.detectChanges();
     });
@@ -87,6 +89,7 @@ export class AddGroupComponent implements OnInit {
   }
 
   resetModaldata() {
+    this.createGroupMode = false;
     this.group = new UserGroup();
     this.selectedRole = 1;
     this.selectedGroups = [];

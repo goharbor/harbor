@@ -5,8 +5,10 @@ import {
   ChangeDetectionStrategy,
   Output,
   EventEmitter,
+  ViewChild,
   ChangeDetectorRef
 } from "@angular/core";
+import { NgForm } from '@angular/forms';
 import { TranslateService } from "@ngx-translate/core";
 import { State } from "clarity-angular";
 
@@ -15,6 +17,7 @@ import { ErrorHandler } from "../error-handler/error-handler";
 import { toPromise, DEFAULT_PAGE_SIZE } from "../utils";
 import { HelmChartService } from "../service/helm-chart.service";
 import { DefaultHelmIcon} from "../shared/shared.const";
+import { Roles } from './../shared/shared.const';
 
 @Component({
   selector: "hbr-helm-chart",
@@ -28,6 +31,7 @@ export class HelmChartComponent implements OnInit {
   @Input() projectName = "unknown";
   @Input() urlPrefix: string;
   @Input() hasSignedIn: boolean;
+  @Input() projectRoleID = Roles.OTHER;
   @Input() hasProjectAdminRole: boolean;
   @Output() chartClickEvt = new EventEmitter<any>();
   @Output() chartDownloadEve = new EventEmitter<string>();
@@ -56,6 +60,8 @@ export class HelmChartComponent implements OnInit {
   totalCount = 0;
   currentState: State;
 
+  @ViewChild('chartUploadForm') uploadForm: NgForm;
+
   constructor(
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
@@ -66,6 +72,10 @@ export class HelmChartComponent implements OnInit {
 
   public get registryUrl(): string {
     return this.systemInfo ? this.systemInfo.registry_url : "";
+  }
+
+  public get developerRoleOrAbove(): boolean {
+    return this.projectRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
   }
 
   ngOnInit(): void {
@@ -95,6 +105,7 @@ export class HelmChartComponent implements OnInit {
       charts => {
         this.charts = charts.filter(x => x.name.includes(this.lastFilteredChartName));
         this.chartsCopy = charts.map(x => Object.assign({}, x));
+        this.totalCount = charts.length;
       },
       err => {
         this.errorHandler.error(err);
@@ -106,8 +117,20 @@ export class HelmChartComponent implements OnInit {
     this.chartClickEvt.emit(item.name);
   }
 
+  resetUploadForm() {
+    this.chartFile = null;
+    this.provFile = null;
+    this.uploadForm.reset();
+  }
+
   onChartUpload() {
+    this.resetUploadForm();
     this.isUploadModalOpen = true;
+  }
+
+  cancelUpload() {
+    this.resetUploadForm();
+    this.isUploadModalOpen = false;
   }
 
   upload() {

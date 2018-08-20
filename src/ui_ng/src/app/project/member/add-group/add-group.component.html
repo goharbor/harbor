@@ -75,7 +75,10 @@
                         </clr-dg-row>
 
                         <clr-dg-footer>
-                            <clr-dg-pagination #pagination [clrDgPageSize]="5">
+                            <clr-dg-pagination #pagination [clrDgPageSize]="5" [clrDgTotalItems]="totalCount">
+                                <span *ngIf="pagination.totalItems">
+                                        {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'MEMBER.OF' | translate}}
+                                </span>
                                 {{pagination.totalItems}} {{'MEMBER.ITEMS' | translate}}
                             </clr-dg-pagination>
                         </clr-dg-footer>
