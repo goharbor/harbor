@@ -6,7 +6,7 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2095/badge)](https://bestpractices.coreinfrastructure.org/projects/2095)
 
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
-Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get stable binaries.
+Please use [releases](https://github.com/goharbor/harbor/releases) instead of the `master` branch in order to get stable binaries.
 
 <img alt="Harbor" src="docs/img/harbor_logo.png">
 
@@ -33,7 +33,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 
 **On a Linux host:** docker 17.03.0-ce+ and docker-compose 1.10.0+ .
 
-Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
+Download binaries of **[Harbor release](https://github.com/goharbor/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
 
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
@@ -41,28 +41,23 @@ Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Har
 **Twitter:** [@project_harbor](https://twitter.com/project_harbor)  
 **User Group:** Join Harbor user email group: [harbor-users@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback. To subscribe, send an email to [harbor-users+subscribe@googlegroups.com](mailto:harbor-users+subscribe@googlegroups.com) .  
 **Developer Group:** Join Harbor developer group: [harbor-dev@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-dev) for discussion on Harbor development and contribution. To subscribe, send an email to [harbor-dev+subscribe@googlegroups.com](mailto:harbor-dev+subscribe@googlegroups.com).  
-**Slack:** Join Harbor's community for discussion and ask questions: [VMware {code}](https://code.vmware.com/join/), channel: [#harbor](https://vmwarecode.slack.com/messages/harbor).
+**Slack:** Join Harbor's community for discussion and ask questions: [CNCF Slack](https://slack.cncf.io), channel: #harbor and #harbor-dev
 
 **Demo Server:** Harbor provides a demo environment with the latest Harbor stable build installed. If you want to have a try, please refer to **[Demo Server](docs/demo_server.md)** for more details.
 
 More info on [partners and users](partners.md).
 
 ### Contribution
-We welcome contributions from the community. If you wish to contribute code and you have not signed our contributor license agreement (CLA), our bot will update the issue when you open a pull request. For any questions about the CLA process, please refer to our [FAQ](https://cla.vmware.com/faq). Contact us for any questions: <img alt="email" src="docs/img/harbor_email.png" valigin="middle" height="18"/>.
+We welcome contributions from the community. Need help contributing? Please feel free to ping us on Slack on our on harbor-dev@googlegroups.com mailing lists.
 
 ### Demos
 * ![play](docs/img/video.png) **Content Trust** ( [youtube](https://www.youtube.com/watch?v=pPklSTJZY2E) , [Tencent Video](https://v.qq.com/x/page/n0553fzzrnf.html) )
 * ![play](docs/img/video.png) **Role Based Access Control** ( [youtube](https://www.youtube.com/watch?v=2ZIu9XTvsC0) , [Tencent Video](https://v.qq.com/x/page/l0553yw19ek.html) )
 * ![play](docs/img/video.png) **Vulnerability Scanning** ( [youtube](https://www.youtube.com/watch?v=K4tJ6B2cGR4) , [Tencent Video](https://v.qq.com/x/page/s0553k9692d.html) )
 * ![play](docs/img/video.png) **Image Replication** ( [youtube](https://www.youtube.com/watch?v=1NPlzrm5ozE) , [Tencent Video](https://v.qq.com/x/page/a0553wc7fs9.html) )
-* ![play](docs/img/video.png) **VMworld 2017** ( [youtube](https://www.youtube.com/watch?v=tI5xMe24fJ4) )
 
 ### License
-Harbor is available under the [Apache 2 license](LICENSE).
+Harbor is available under the [Apache 2 license](LICENSE). This project uses open source components which have additional licensing terms.
 
-This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
-
-* Photon OS 1.0: [docker image](https://hub.docker.com/_/photon/), [license](https://github.com/vmware/photon/blob/master/COPYING)
-
-### Commercial Support
-If you need commercial support of Harbor, please contact us for more information: <img alt="email" src="docs/img/harbor_email.png" valigin="middle" height="18"/>.
+### Code of Conduct
+Harbor follows the [CNCF Code of Conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md).
