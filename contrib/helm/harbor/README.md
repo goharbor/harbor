@@ -189,4 +189,23 @@ The following tables lists the configurable parameters of the Harbor chart and t
 | `notary.affinity` | Node/Pod affinities | `{}` |
 
 ## Persistence
-TBD
+
+You need to create `StorageClass` before able to persist data in persistent volume.
+
+And set the following values in `values.yaml`
+
+```yaml
+persistence:
+  enabled: true
+
+```
+
+Four PVCs will be created automatically, 
+- adminserver-config
+- chartmuseum-data
+- database-data
+- registry-data
+
+All the created PVCs need to be removed manually after helm delete the Chart. 
+
+When running a cluster without persistence, this Chart will use `emptyDir` as the temporary volumes. Data will not survive during termination of a pod. 
