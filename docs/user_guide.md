@@ -41,8 +41,6 @@ Besides the above three roles, there are two system-wide roles:
 * **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users and set vulnerability scan policy for all images. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects.  
 
-**Video demo:** ![RBAC](img/demos/rbac.png) [youtube](https://www.youtube.com/watch?v=2ZIu9XTvsC0) , [Tencent Video](https://v.qq.com/x/page/l0553yw19ek.html)
-
 ## User account
 Harbor supports two authentication modes:  
 
@@ -112,7 +110,7 @@ You can add members with different roles to an existing project. You can add a L
 ![browse project](img/new_add_member.png)
 
 ### Updating and removing members
-You can check one or more members, then click `MEMBER ACTION`, choose one role to batch switch checked members' roles. You can also click `MEMBER.REMOVE` to batch remove checked members.
+You can check one or more members, then click `ACTION`, choose one role to batch switch checked members' roles or remove them from the project.
 
 ![browse project](img/new_remove_update_member.png)
 
@@ -123,7 +121,7 @@ The function is project-oriented, and once the system administrator has set a ru
 
 There may be a bit of delay during replication based on the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later and the schedule will keep trying until the network issue is resolved.  
 
-**Note:** The replication feature is incompatible between Harbor versions before version 0.3.5 (included) and those versions after 0.3.5. 
+**Note:** Due to API changes, replication between different versions of Harbor may be broken.
 
 ### Creating a replication rule
 Replication can be configured by creating a rule. Click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different image filters and trigger modes according to the different requirements. If there is no endpoint available in the list, you need to create one. Click `SAVE` to create a replication rule for the selected project. If `Replicate existing images immediately` is chosen, the existing images under the project will be replicated to the remote registry immediately.  
@@ -302,11 +300,7 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 
 After pushing an image, an Information can be added by project admin to describe this repository.
 
-First, go into the repository and select the "Info" tab.
-
-![select info tab](img/select_info_tab.png)
-
-Next, click the "EDIT" button, an textarea will appear and enter description here. Click "SAVE" button to save this information.
+Go into the repository and select the "Info" tab, and click the "EDIT" button.  An textarea will appear and enter description here. Click "SAVE" button to save this information.
 
 ![edit info](img/edit_description.png)
 
@@ -363,8 +357,6 @@ If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/
 When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.  
 ![browse project](img/content_trust.png)
 
-**Video demo:** ![content trust](img/demos/content_trust.png) [youtube](https://www.youtube.com/watch?v=pPklSTJZY2E) , [Tencent Video](https://v.qq.com/x/page/n0553fzzrnf.html)
-
 ### Vulnerability scanning via Clair 
 **CAUTION: Clair is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**
 
@@ -383,8 +375,8 @@ Once the database is ready, an overall database updated timestamp will be shown 
 
 **Scanning an image** 
 
-Enter your project and locate the specified repository. Expand the tag list via clicking the arrow icon on the left side. For each tag there will be an 'Vulnerability' column to display vulnerability scanning status and related information. You can click on the vertical ellipsis to open a popup menu and then click on 'Scan' to start the vulnerability analysis process. 
-![browse project](img/scan_menu_item.png)
+Enter your project, select the repository. For each tag there will be an 'Vulnerability' column to display vulnerability scanning status and related information. You can select the image and click the "SCAN" button to trigger the vulnerability scan process. 
+![browse project](img/scan_image.png)
 **NOTES: Only the users with 'Project Admin' role have the privilege to launch the analysis process.**
 
 The analysis process may have the following status that are indicated in the 'Vulnerability' column:
@@ -432,8 +424,6 @@ You can set policies to control the vulnerability analysis process. Currently, t
 ![browse project](img/scan_policy.png)
 
 **NOTES: Once the scheduled job is executed, the completion time of scanning all images will be updated accordingly. Please be aware that the completion time of the images may be different because the execution of analysis for each image may be carried out at different time.**
-
-**Video demo:** ![vulnerability scanning](img/demos/vul_scan.png) [youtube](https://www.youtube.com/watch?v=K4tJ6B2cGR4) , [Tencent Video](https://v.qq.com/x/page/s0553k9692d.html)
 
 ### Pull image from Harbor in Kubernetes
 Kubernetes users can easily deploy pods with images stored in Harbor.  The settings are similar to that of another private registry.  There are two major issues:
