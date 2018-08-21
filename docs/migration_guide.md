@@ -85,6 +85,8 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     docker run -it --rm -v /data/clair-db/:/clair-db -v /data/database:/var/lib/postgresql/data goharbor/harbor-migrator:${tag} --db up
     ```
 
+    **NOTE:** The ${harbor_cfg} will be overwrited, you must move it to your installation directory after migration.
+
     ```
     docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:[tag] --cfg up
     ```
