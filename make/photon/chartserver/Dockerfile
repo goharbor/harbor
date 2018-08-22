@@ -10,6 +10,7 @@ RUN tdnf distro-sync -y \
 COPY ./binary/chartm /chartserver/
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 
+VOLUME ["/chart_storage"]
 EXPOSE 9999
 
 RUN chown -R 10000:10000 /chartserver \
