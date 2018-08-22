@@ -16,6 +16,7 @@ package filesystem
 
 import (
 	"os"
+	"reflect"
 	"syscall"
 
 	storage "github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
@@ -56,8 +57,18 @@ func (d *driver) Cap() (*storage.Capacity, error) {
 		return nil, err
 	}
 
+	bSize := uint64(stat.Bsize)
+	field := reflect.ValueOf(&stat).Elem().FieldByName("Frsize")
+	if field.IsValid() {
+		if field.Kind() == reflect.Uint64 {
+			bSize = field.Uint()
+		} else {
+			bSize = uint64(field.Int())
+		}
+	}
+
 	return &storage.Capacity{
-		Total: stat.Blocks * uint64(stat.Bsize),
-		Free:  stat.Bavail * uint64(stat.Bsize),
+		Total: stat.Blocks * bSize,
+		Free:  stat.Bavail * bSize,
 	}, nil
 }

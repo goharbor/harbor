@@ -17,7 +17,7 @@ package imagestorage
 // GlobalDriver is a global image storage driver
 var GlobalDriver Driver
 
-// Capacity holds information about capaticy of image storage
+// Capacity holds information about capacity of image storage
 type Capacity struct {
 	// total size(byte)
 	Total uint64 `json:"total"`
