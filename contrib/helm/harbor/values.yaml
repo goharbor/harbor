@@ -225,6 +225,10 @@ chartmuseum:
       # storageClass: "-"
       accessMode: ReadWriteOnce
       size: 5Gi
+  env:
+    open: {}
+    secret: {}
+
   # resources:
   #  requests:
   #    memory: 256Mi
