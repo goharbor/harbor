@@ -35,6 +35,8 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 
 Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
 
+If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](https://github.com/goharbor/harbor-helm)**.
+
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
 ### Community
