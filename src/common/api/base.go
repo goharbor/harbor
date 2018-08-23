@@ -21,8 +21,8 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego/validation"
-	http_error "github.com/vmware/harbor/src/common/utils/error"
-	"github.com/vmware/harbor/src/common/utils/log"
+	http_error "github.com/goharbor/harbor/src/common/utils/error"
+	"github.com/goharbor/harbor/src/common/utils/log"
 
 	"github.com/astaxie/beego"
 )

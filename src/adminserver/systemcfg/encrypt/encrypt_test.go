@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	comcfg "github.com/vmware/harbor/src/common/config"
+	comcfg "github.com/goharbor/harbor/src/common/config"
 )
 
 type fakeKeyProvider struct {

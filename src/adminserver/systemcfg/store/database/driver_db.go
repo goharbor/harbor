@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/adminserver/systemcfg/store"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
 )
 
 const (

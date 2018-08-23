@@ -2,7 +2,7 @@
 
 package job
 
-import "github.com/vmware/harbor/src/jobservice/env"
+import "github.com/goharbor/harbor/src/jobservice/env"
 
 //CheckOPCmdFunc is the function to check if the related operation commands
 //like STOP or CANCEL is fired for the specified job. If yes, return the

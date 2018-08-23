@@ -17,11 +17,11 @@ package source
 import (
 	"testing"
 
-	"github.com/vmware/harbor/src/common/utils/test"
-	"github.com/vmware/harbor/src/replication"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/replication"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/models"
 )
 
 func TestInitOfLabelFilter(t *testing.T) {

@@ -4,7 +4,7 @@
 package core
 
 import (
-	"github.com/vmware/harbor/src/jobservice/models"
+	"github.com/goharbor/harbor/src/jobservice/models"
 )
 
 //Interface defines the related main methods of job operation.

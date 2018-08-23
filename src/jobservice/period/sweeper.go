@@ -9,8 +9,8 @@ import (
 	"github.com/gocraft/work"
 
 	"github.com/gomodule/redigo/redis"
-	"github.com/vmware/harbor/src/jobservice/logger"
-	"github.com/vmware/harbor/src/jobservice/utils"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/utils"
 )
 
 //Sweeper take charge of clearing the outdated data such as scheduled jobs etc..

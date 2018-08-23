@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/vmware/harbor/src/jobservice/utils"
+	"github.com/goharbor/harbor/src/jobservice/utils"
 )
 
 const (

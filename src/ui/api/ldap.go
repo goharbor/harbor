@@ -17,10 +17,10 @@ package api
 import (
 	"fmt"
 
-	"github.com/vmware/harbor/src/common/models"
-	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/auth"
+	"github.com/goharbor/harbor/src/common/models"
+	ldapUtils "github.com/goharbor/harbor/src/common/utils/ldap"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/ui/auth"
 
 	goldap "gopkg.in/ldap.v2"
 )

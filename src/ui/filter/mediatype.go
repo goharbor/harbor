@@ -20,7 +20,7 @@ import (
 
 	beegoctx "github.com/astaxie/beego/context"
 
-	hlog "github.com/vmware/harbor/src/common/utils/log"
+	hlog "github.com/goharbor/harbor/src/common/utils/log"
 )
 
 //MediaTypeFilter filters the POST request, it returns 415 if the content type of the request

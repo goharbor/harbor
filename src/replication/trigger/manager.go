@@ -3,9 +3,9 @@ package trigger
 import (
 	"fmt"
 
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/replication"
-	"github.com/vmware/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/models"
 )
 
 //Manager provides unified methods to manage the triggers of policies;

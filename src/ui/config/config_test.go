@@ -20,8 +20,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/utils/test"
 )
 
 // test functions under package ui/config

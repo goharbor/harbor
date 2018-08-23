@@ -20,17 +20,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vmware/harbor/src/common/dao"
-	clairdao "github.com/vmware/harbor/src/common/dao/clair"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/notifier"
-	"github.com/vmware/harbor/src/common/utils"
-	"github.com/vmware/harbor/src/common/utils/log"
-	rep_notification "github.com/vmware/harbor/src/replication/event/notification"
-	"github.com/vmware/harbor/src/replication/event/topic"
-	"github.com/vmware/harbor/src/ui/api"
-	"github.com/vmware/harbor/src/ui/config"
-	uiutils "github.com/vmware/harbor/src/ui/utils"
+	"github.com/goharbor/harbor/src/common/dao"
+	clairdao "github.com/goharbor/harbor/src/common/dao/clair"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/notifier"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	rep_notification "github.com/goharbor/harbor/src/replication/event/notification"
+	"github.com/goharbor/harbor/src/replication/event/topic"
+	"github.com/goharbor/harbor/src/ui/api"
+	"github.com/goharbor/harbor/src/ui/config"
+	uiutils "github.com/goharbor/harbor/src/ui/utils"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.

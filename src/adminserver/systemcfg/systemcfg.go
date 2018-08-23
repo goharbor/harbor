@@ -21,17 +21,17 @@ import (
 	"strconv"
 	"strings"
 
-	enpt "github.com/vmware/harbor/src/adminserver/systemcfg/encrypt"
-	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
-	"github.com/vmware/harbor/src/adminserver/systemcfg/store/database"
-	"github.com/vmware/harbor/src/adminserver/systemcfg/store/encrypt"
-	"github.com/vmware/harbor/src/adminserver/systemcfg/store/json"
-	"github.com/vmware/harbor/src/common"
-	comcfg "github.com/vmware/harbor/src/common/config"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils"
-	"github.com/vmware/harbor/src/common/utils/log"
+	enpt "github.com/goharbor/harbor/src/adminserver/systemcfg/encrypt"
+	"github.com/goharbor/harbor/src/adminserver/systemcfg/store"
+	"github.com/goharbor/harbor/src/adminserver/systemcfg/store/database"
+	"github.com/goharbor/harbor/src/adminserver/systemcfg/store/encrypt"
+	"github.com/goharbor/harbor/src/adminserver/systemcfg/store/json"
+	"github.com/goharbor/harbor/src/common"
+	comcfg "github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 const (

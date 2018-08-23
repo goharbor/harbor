@@ -17,7 +17,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/vmware/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/common/http/modifier"
 )
 
 // Credential ...
@@ -41,7 +41,7 @@ func (b *basicAuthCredential) AddAuthorization(req *http.Request) {
 	req.SetBasicAuth(b.username, b.password)
 }
 
-// implement github.com/vmware/harbor/src/common/http/modifier.Modifier
+// implement github.com/goharbor/harbor/src/common/http/modifier.Modifier
 func (b *basicAuthCredential) Modify(req *http.Request) error {
 	b.AddAuthorization(req)
 	return nil

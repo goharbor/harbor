@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/models"
 )
 
 func TestDeleteUser(t *testing.T) {

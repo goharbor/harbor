@@ -15,7 +15,7 @@
 package security
 
 import (
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/models"
 )
 
 // Context abstracts the operations related with authN and authZ

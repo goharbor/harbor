@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/ui/filter"
-	"github.com/vmware/harbor/src/ui/promgr/metamgr"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/ui/filter"
+	"github.com/goharbor/harbor/src/ui/promgr/metamgr"
 )
 
 //The backend server

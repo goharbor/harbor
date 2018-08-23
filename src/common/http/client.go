@@ -21,7 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/vmware/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/common/http/modifier"
 )
 
 // Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.

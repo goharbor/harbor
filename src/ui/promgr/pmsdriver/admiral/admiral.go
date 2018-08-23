@@ -26,11 +26,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils"
-	er "github.com/vmware/harbor/src/common/utils/error"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	er "github.com/goharbor/harbor/src/common/utils/error"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/ui/promgr/pmsdriver"
 )
 
 const dupProjectPattern = `Project name '\w+' is already used`
