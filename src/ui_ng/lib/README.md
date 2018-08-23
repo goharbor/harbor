@@ -252,7 +252,7 @@ This component provides some options for registry(Harbor) related configurations
 All the related configurations are defined in the **HarborModuleConfig** interface.
 
 **1. config**
-The base configuration for the module. Mainly used to define the relevant endpoints of services which are in charge of retrieving data from backend APIs. It's a 'OpaqueToken' and defined by 'IServiceConfig' interface. If **config** is not set, the default value will be used.
+The base configuration for the module. Mainly used to define the relevant endpoints of services which are in charge of retrieving data from backend APIs. It's a 'InjectionToken' and defined by 'IServiceConfig' interface. If **config** is not set, the default value will be used.
 ```
 export const DefaultServiceConfig: IServiceConfig = {
   systemInfoEndpoint: "/api/systeminfo",

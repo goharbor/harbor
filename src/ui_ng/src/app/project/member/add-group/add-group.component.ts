@@ -3,7 +3,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from "@angular/core";
 import { NgForm } from '@angular/forms';
 
 import { forkJoin } from "rxjs/observable/forkJoin";
-import { Observable } from "rxjs/Observable";
+import { Observable} from "rxjs";
 import "rxjs/observable/of";
 import { TranslateService } from '@ngx-translate/core';
 

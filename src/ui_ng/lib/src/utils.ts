@@ -3,7 +3,7 @@ import 'rxjs/add/operator/toPromise';
 import { RequestOptions, Headers } from '@angular/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';
-import { Comparator, State } from 'clarity-angular';
+import { Comparator, State } from '@clr/angular';
 
 /**
  * Convert the different async channels to the Promise<T> type.

@@ -24,9 +24,9 @@ import {
     SimpleChange,
     SimpleChanges
 } from "@angular/core";
-import { Observable } from "rxjs/Observable";
+import { Observable} from "rxjs";
 import "rxjs/add/observable/forkJoin";
-import { Comparator } from "clarity-angular";
+import { Comparator } from "@clr/angular";
 import { TranslateService } from "@ngx-translate/core";
 
 import {ReplicationService} from "../service/replication.service";
@@ -148,8 +148,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
             });
     }
 
-    replicateRule(rules: ReplicationRule[]): void {
-        this.replicateManual.emit(rules);
+    replicateRule(rule: ReplicationRule): void {
+        this.replicateManual.emit([rule]);
     }
 
     hasDeletedLabel(rule: any) {

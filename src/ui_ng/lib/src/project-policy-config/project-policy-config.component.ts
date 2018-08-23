@@ -3,7 +3,7 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { toPromise, compareValue, clone } from '../utils';
 import { ProjectService } from '../service/project.service';
 import { ErrorHandler } from '../error-handler/error-handler';
-import { State } from 'clarity-angular';
+import { State } from '@clr/angular';
 
 import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';

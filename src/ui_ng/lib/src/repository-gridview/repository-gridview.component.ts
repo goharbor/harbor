@@ -11,10 +11,10 @@ import {
     SimpleChanges
 } from "@angular/core";
 import {Router} from "@angular/router";
-import {Observable} from "rxjs/Observable";
+import {Observable} from "rxjs";
 import "rxjs/add/observable/forkJoin";
 import {TranslateService} from "@ngx-translate/core";
-import {Comparator, State} from "clarity-angular";
+import {Comparator, State} from "@clr/angular";
 
 import {
     Repository,
