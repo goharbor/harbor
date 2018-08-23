@@ -12,7 +12,7 @@ import { Observable } from "rxjs/Observable";
 import "rxjs/add/observable/forkJoin";
 
 import { TranslateService } from "@ngx-translate/core";
-import { State } from "clarity-angular";
+import { State } from "@clr/angular";
 
 import {
   SystemInfo,
