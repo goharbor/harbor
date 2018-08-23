@@ -11,3 +11,4 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for general contribution guideline
 * Qian Deng ([ninjadq](https://github.com/ninjadq))
 * Mia Zhou ([zhoumeina](https://github.com/zhoumeina))
 * James Zabala ([clouderati](https://github.com/clouderati))
+* Steven Zou ([steven-zou](https://github.com/steven-zou))
