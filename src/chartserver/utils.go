@@ -68,22 +68,32 @@ func parseRedisConfig(redisConfigV string) (string, error) {
 	redisConfig := make(map[string]string)
 	redisConfig["key"] = cacheCollectionName
 
-	//The full pattern
-	if strings.Index(redisConfigV, ",") != -1 {
-		//Read only the previous 4 segments
-		configSegments := strings.SplitN(redisConfigV, ",", 4)
-		if len(configSegments) != 4 {
-			return "", errors.New("invalid redis config, it should be address:port[,weight,password,db_index]")
+	//Try best to parse the configuration segments.
+	//If the related parts are missing, assign default value.
+	//The default database index for UI process is 0.
+	configSegments := strings.Split(redisConfigV, ",")
+	for i, segment := range configSegments {
+		if i > 3 {
+			//ignore useless segments
+			break
 		}
 
-		redisConfig["conn"] = configSegments[0]
-		redisConfig["password"] = configSegments[2]
-		redisConfig["dbNum"] = configSegments[3]
-	} else {
-		//The short pattern
-		redisConfig["conn"] = redisConfigV
+		switch i {
+		//address:port
+		case 0:
+			redisConfig["conn"] = segment
+		//password, may not exist
+		case 2:
+			redisConfig["password"] = segment
+		//database index, may not exist
+		case 3:
+			redisConfig["dbNum"] = segment
+		}
+	}
+
+	//Assign default value
+	if len(redisConfig["dbNum"]) == 0 {
 		redisConfig["dbNum"] = "0"
-		redisConfig["password"] = ""
 	}
 
 	//Try to validate the connection address
