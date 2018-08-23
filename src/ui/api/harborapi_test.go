@@ -27,14 +27,14 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/job/test"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils"
-	ldapUtils "github.com/vmware/harbor/src/common/utils/ldap"
-	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/filter"
-	"github.com/vmware/harbor/tests/apitests/apilib"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/job/test"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	ldapUtils "github.com/goharbor/harbor/src/common/utils/ldap"
+	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/ui/filter"
+	"github.com/goharbor/harbor/tests/apitests/apilib"
 	//	"strconv"
 	//	"strings"
 
@@ -42,10 +42,10 @@ import (
 	"github.com/dghubble/sling"
 
 	//for test env prepare
-	"github.com/vmware/harbor/src/replication/core"
-	_ "github.com/vmware/harbor/src/replication/event"
-	_ "github.com/vmware/harbor/src/ui/auth/db"
-	_ "github.com/vmware/harbor/src/ui/auth/ldap"
+	"github.com/goharbor/harbor/src/replication/core"
+	_ "github.com/goharbor/harbor/src/replication/event"
+	_ "github.com/goharbor/harbor/src/ui/auth/db"
+	_ "github.com/goharbor/harbor/src/ui/auth/ldap"
 )
 
 const (

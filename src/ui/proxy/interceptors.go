@@ -3,14 +3,14 @@ package proxy
 import (
 	"encoding/json"
 
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/clair"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/common/utils/notary"
-	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/promgr"
-	uiutils "github.com/vmware/harbor/src/ui/utils"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/clair"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/notary"
+	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/ui/promgr"
+	uiutils "github.com/goharbor/harbor/src/ui/utils"
 
 	"context"
 	"fmt"

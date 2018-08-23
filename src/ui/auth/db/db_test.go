@@ -18,14 +18,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils/test"
 
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/ldap"
-	"github.com/vmware/harbor/src/ui/auth"
-	uiConfig "github.com/vmware/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/ldap"
+	"github.com/goharbor/harbor/src/ui/auth"
+	uiConfig "github.com/goharbor/harbor/src/ui/config"
 )
 
 var adminServerTestConfig = map[string]interface{}{

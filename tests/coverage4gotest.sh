@@ -13,7 +13,7 @@ function listDeps(){
 	ds=$(echo $(go list -f '{{.Imports}}' $pkg) | sed 's/[][]//g')
 	for d in $ds
 	do
-		if echo $d | grep -q "github.com/vmware/harbor" && echo $d | grep -qv "vendor"
+		if echo $d | grep -q "github.com/goharbor/harbor" && echo $d | grep -qv "vendor"
 		then
 			deps="$deps,$d"
 		fi

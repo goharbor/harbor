@@ -1,8 +1,8 @@
 package scheduler
 
 import (
-	"github.com/vmware/harbor/src/common/scheduler/policy"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/scheduler/policy"
+	"github.com/goharbor/harbor/src/common/utils/log"
 
 	"errors"
 	"fmt"

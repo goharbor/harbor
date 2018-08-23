@@ -21,9 +21,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common"
-	utilstest "github.com/vmware/harbor/src/common/utils/test"
-	"github.com/vmware/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/common"
+	utilstest "github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/ui/config"
 )
 
 func TestReadonlyFilter(t *testing.T) {

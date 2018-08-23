@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	commonsecret "github.com/vmware/harbor/src/common/secret"
+	commonsecret "github.com/goharbor/harbor/src/common/secret"
 )
 
 func TestAuthorizeOfSecretAuthorizer(t *testing.T) {

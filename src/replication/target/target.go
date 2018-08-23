@@ -17,10 +17,10 @@ package target
 import (
 	"fmt"
 
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils"
-	"github.com/vmware/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/ui/config"
 )
 
 // Manager defines the methods that a target manager should implement

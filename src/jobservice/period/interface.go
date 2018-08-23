@@ -2,7 +2,7 @@
 
 package period
 
-import "github.com/vmware/harbor/src/jobservice/models"
+import "github.com/goharbor/harbor/src/jobservice/models"
 
 //Interface defines operations the periodic scheduler should have.
 type Interface interface {

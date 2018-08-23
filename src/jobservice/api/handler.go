@@ -12,10 +12,10 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/vmware/harbor/src/jobservice/core"
-	"github.com/vmware/harbor/src/jobservice/errs"
-	"github.com/vmware/harbor/src/jobservice/models"
-	"github.com/vmware/harbor/src/jobservice/opm"
+	"github.com/goharbor/harbor/src/jobservice/core"
+	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/jobservice/models"
+	"github.com/goharbor/harbor/src/jobservice/opm"
 )
 
 //Handler defines approaches to handle the http requests.

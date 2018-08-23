@@ -2,8 +2,8 @@ FROM golang:1.9.2
 
 MAINTAINER jiangd@vmware.com
 
-COPY src/. /go/src/github.com/vmware/harbor/src
-WORKDIR /go/src/github.com/vmware/harbor/src/ui
+COPY src/. /go/src/github.com/goharbor/harbor/src
+WORKDIR /go/src/github.com/goharbor/harbor/src/ui
 
 RUN go build -a -o /go/bin/harbor_ui
 

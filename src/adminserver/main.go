@@ -18,10 +18,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/vmware/harbor/src/adminserver/handlers"
-	syscfg "github.com/vmware/harbor/src/adminserver/systemcfg"
-	sysinfo "github.com/vmware/harbor/src/adminserver/systeminfo"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/adminserver/handlers"
+	syscfg "github.com/goharbor/harbor/src/adminserver/systemcfg"
+	sysinfo "github.com/goharbor/harbor/src/adminserver/systeminfo"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // Server for admin component

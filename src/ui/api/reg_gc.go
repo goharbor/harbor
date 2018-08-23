@@ -20,13 +20,13 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/vmware/harbor/src/common/dao"
-	common_http "github.com/vmware/harbor/src/common/http"
-	common_job "github.com/vmware/harbor/src/common/job"
-	common_models "github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/api/models"
-	utils_ui "github.com/vmware/harbor/src/ui/utils"
+	"github.com/goharbor/harbor/src/common/dao"
+	common_http "github.com/goharbor/harbor/src/common/http"
+	common_job "github.com/goharbor/harbor/src/common/job"
+	common_models "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/ui/api/models"
+	utils_ui "github.com/goharbor/harbor/src/ui/utils"
 )
 
 // GCAPI handles request of harbor admin...

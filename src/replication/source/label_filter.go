@@ -17,11 +17,11 @@ package source
 import (
 	"fmt"
 
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/replication"
-	"github.com/vmware/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/models"
 )
 
 // LabelFilter filter resources according to label

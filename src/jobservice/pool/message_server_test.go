@@ -9,13 +9,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware/harbor/src/jobservice/opm"
+	"github.com/goharbor/harbor/src/jobservice/opm"
 
-	"github.com/vmware/harbor/src/jobservice/models"
-	"github.com/vmware/harbor/src/jobservice/period"
-	"github.com/vmware/harbor/src/jobservice/utils"
+	"github.com/goharbor/harbor/src/jobservice/models"
+	"github.com/goharbor/harbor/src/jobservice/period"
+	"github.com/goharbor/harbor/src/jobservice/utils"
 
-	"github.com/vmware/harbor/src/jobservice/tests"
+	"github.com/goharbor/harbor/src/jobservice/tests"
 )
 
 var redisPool = tests.GiveMeRedisPool()

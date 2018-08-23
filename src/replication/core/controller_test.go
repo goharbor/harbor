@@ -19,12 +19,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common/utils/test"
-	"github.com/vmware/harbor/src/replication"
-	"github.com/vmware/harbor/src/replication/models"
-	"github.com/vmware/harbor/src/replication/source"
-	"github.com/vmware/harbor/src/replication/target"
-	"github.com/vmware/harbor/src/replication/trigger"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/source"
+	"github.com/goharbor/harbor/src/replication/target"
+	"github.com/goharbor/harbor/src/replication/trigger"
 )
 
 func TestMain(m *testing.M) {

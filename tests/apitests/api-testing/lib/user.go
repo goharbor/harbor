@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vmware/harbor/tests/apitests/api-testing/client"
-	"github.com/vmware/harbor/tests/apitests/api-testing/models"
+	"github.com/goharbor/harbor/tests/apitests/api-testing/client"
+	"github.com/goharbor/harbor/tests/apitests/api-testing/models"
 )
 
 //UserUtil : For user related

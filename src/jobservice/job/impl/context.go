@@ -10,15 +10,15 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/vmware/harbor/src/adminserver/client"
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/jobservice/config"
-	"github.com/vmware/harbor/src/jobservice/env"
-	"github.com/vmware/harbor/src/jobservice/job"
-	jlogger "github.com/vmware/harbor/src/jobservice/job/impl/logger"
-	"github.com/vmware/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/adminserver/client"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/jobservice/config"
+	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	jlogger "github.com/goharbor/harbor/src/jobservice/job/impl/logger"
+	"github.com/goharbor/harbor/src/jobservice/logger"
 )
 
 const (

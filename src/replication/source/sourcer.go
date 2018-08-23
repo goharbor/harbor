@@ -1,8 +1,8 @@
 package source
 
 import (
-	"github.com/vmware/harbor/src/replication"
-	"github.com/vmware/harbor/src/replication/registry"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/registry"
 )
 
 //Sourcer is used to manage and/or handle all the artifacts and information related with source registry.

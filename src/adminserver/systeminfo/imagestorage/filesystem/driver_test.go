@@ -18,7 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	storage "github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
+	storage "github.com/goharbor/harbor/src/adminserver/systeminfo/imagestorage"
 )
 
 func TestName(t *testing.T) {

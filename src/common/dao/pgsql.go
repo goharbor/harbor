@@ -24,8 +24,8 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"       // import local file driver for migrator
 
 	_ "github.com/lib/pq" //register pgsql driver
-	"github.com/vmware/harbor/src/common/utils"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 const defaultMigrationPath = "migrations/postgresql/"

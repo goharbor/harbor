@@ -19,11 +19,11 @@ import (
 	"fmt"
 
 	"github.com/astaxie/beego/validation"
-	"github.com/vmware/harbor/src/common/job"
-	"github.com/vmware/harbor/src/common/job/models"
-	"github.com/vmware/harbor/src/common/utils"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/ui/config"
 )
 
 const (
