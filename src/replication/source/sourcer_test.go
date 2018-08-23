@@ -3,7 +3,7 @@ package source
 import (
 	"testing"
 
-	"github.com/vmware/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication"
 )
 
 func TestReplicationSourcer(t *testing.T) {

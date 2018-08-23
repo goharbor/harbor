@@ -15,9 +15,9 @@
 package source
 
 import (
-	"github.com/vmware/harbor/src/replication"
-	"github.com/vmware/harbor/src/replication/models"
-	"github.com/vmware/harbor/src/replication/registry"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/registry"
 )
 
 // RepositoryConvertor implement Convertor interface, convert projects to repositories

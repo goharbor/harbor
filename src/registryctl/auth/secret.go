@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/common/secret"
 )
 
 //HarborSecret is the prefix of the value of Authorization header.

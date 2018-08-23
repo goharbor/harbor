@@ -18,8 +18,8 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/validation"
-	common_models "github.com/vmware/harbor/src/common/models"
-	rep_models "github.com/vmware/harbor/src/replication/models"
+	common_models "github.com/goharbor/harbor/src/common/models"
+	rep_models "github.com/goharbor/harbor/src/replication/models"
 )
 
 // ReplicationPolicy defines the data model used in API level

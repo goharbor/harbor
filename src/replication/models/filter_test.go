@@ -19,7 +19,7 @@ import (
 
 	"github.com/astaxie/beego/validation"
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication"
 )
 
 func TestValid(t *testing.T) {

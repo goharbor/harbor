@@ -19,13 +19,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
-	_ "github.com/vmware/harbor/src/ui/auth/db"
-	_ "github.com/vmware/harbor/src/ui/auth/ldap"
-	cfg "github.com/vmware/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	_ "github.com/goharbor/harbor/src/ui/auth/db"
+	_ "github.com/goharbor/harbor/src/ui/auth/ldap"
+	cfg "github.com/goharbor/harbor/src/ui/config"
 )
 
 func TestMain(m *testing.M) {

@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/registryctl/auth"
+	"github.com/goharbor/harbor/src/registryctl/auth"
 )
 
 type fakeAuthenticator struct {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/Masterminds/semver"
 
-	hlog "github.com/vmware/harbor/src/common/utils/log"
+	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"k8s.io/helm/pkg/chartutil"
 	helm_repo "k8s.io/helm/pkg/repo"
 )

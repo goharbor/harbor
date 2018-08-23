@@ -21,9 +21,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/promgr/metamgr"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/ui/promgr/metamgr"
 )
 
 // MetadataAPI ...

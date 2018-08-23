@@ -18,9 +18,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common/utils/test"
-	"github.com/vmware/harbor/src/replication/core"
-	"github.com/vmware/harbor/src/replication/event/notification"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/replication/core"
+	"github.com/goharbor/harbor/src/replication/event/notification"
 )
 
 func TestHandle(t *testing.T) {

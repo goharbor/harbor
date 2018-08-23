@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/vmware/harbor/src/adminserver/systemcfg/store"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/adminserver/systemcfg/store"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 const (

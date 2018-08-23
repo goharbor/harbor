@@ -15,14 +15,14 @@
 package main
 
 import (
-	"github.com/vmware/harbor/src/ui/api"
-	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/controllers"
-	"github.com/vmware/harbor/src/ui/service/notifications/admin"
-	"github.com/vmware/harbor/src/ui/service/notifications/clair"
-	"github.com/vmware/harbor/src/ui/service/notifications/jobs"
-	"github.com/vmware/harbor/src/ui/service/notifications/registry"
-	"github.com/vmware/harbor/src/ui/service/token"
+	"github.com/goharbor/harbor/src/ui/api"
+	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/ui/controllers"
+	"github.com/goharbor/harbor/src/ui/service/notifications/admin"
+	"github.com/goharbor/harbor/src/ui/service/notifications/clair"
+	"github.com/goharbor/harbor/src/ui/service/notifications/jobs"
+	"github.com/goharbor/harbor/src/ui/service/notifications/registry"
+	"github.com/goharbor/harbor/src/ui/service/token"
 
 	"github.com/astaxie/beego"
 )

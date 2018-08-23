@@ -3,7 +3,7 @@ package logger
 import (
 	"os"
 
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 //ServiceLogger is an implementation of logger.Interface.

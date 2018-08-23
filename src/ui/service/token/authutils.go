@@ -25,11 +25,11 @@ import (
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/docker/libtrust"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/security"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/promgr"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/ui/promgr"
 )
 
 const (

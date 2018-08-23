@@ -18,8 +18,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/vmware/harbor/src/common/http/modifier"
-	"github.com/vmware/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/common/secret"
 )
 
 // Authorizer is a kind of Modifier used to authorize the requests

@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/common/utils/test"
 )
 
 func TestPing(t *testing.T) {

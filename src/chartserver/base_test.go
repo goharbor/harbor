@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/ui/filter"
-	"github.com/vmware/harbor/src/ui/promgr/metamgr"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/ui/filter"
+	"github.com/goharbor/harbor/src/ui/promgr/metamgr"
 )
 
 //The backend server
@@ -229,9 +229,9 @@ func getTheAddrOfFrontServer() string {
 var harborChartV = `
 {
     "name": "harbor",
-    "home": "https://github.com/vmware/harbor",
+    "home": "https://github.com/goharbor/harbor",
     "sources": [
-        "https://github.com/vmware/harbor/tree/master/contrib/helm/harbor"
+        "https://github.com/goharbor/harbor/tree/master/contrib/helm/harbor"
     ],
     "version": "0.2.0",
     "description": "An Enterprise-class Docker Registry by VMware",
@@ -252,7 +252,7 @@ var harborChartV = `
         }
     ],
     "engine": "gotpl",
-    "icon": "https://github.com/vmware/harbor/blob/master/docs/img/harbor_logo.png",
+    "icon": "https://github.com/goharbor/harbor/blob/master/docs/img/harbor_logo.png",
     "appVersion": "1.5.0",
     "urls": [
         "charts/harbor-0.2.0.tgz"
@@ -270,8 +270,8 @@ entries:
     description: An Enterprise-class Docker Registry by VMware
     digest: 758ae429f362200a7941c600c8112cc3122723b99ffa5713a0902902da9949ba
     engine: gotpl
-    home: https://github.com/vmware/harbor
-    icon: https://github.com/vmware/harbor/blob/master/docs/img/harbor_logo.png
+    home: https://github.com/goharbor/harbor
+    icon: https://github.com/goharbor/harbor/blob/master/docs/img/harbor_logo.png
     keywords:
     - vmware
     - docker
@@ -284,7 +284,7 @@ entries:
       name: paulczar
     name: harbor
     sources:
-    - https://github.com/vmware/harbor/tree/master/contrib/helm/harbor
+    - https://github.com/goharbor/harbor/tree/master/contrib/helm/harbor
     urls:
     - charts/harbor-0.2.0.tgz
     version: 0.2.0
@@ -329,8 +329,8 @@ entries:
     description: An Enterprise-class Docker Registry by VMware
     digest: 758ae429f362200a7941c600c8112cc3122723b99ffa5713a0902902da9949ba
     engine: gotpl
-    home: https://github.com/vmware/harbor
-    icon: https://github.com/vmware/harbor/blob/master/docs/img/harbor_logo.png
+    home: https://github.com/goharbor/harbor
+    icon: https://github.com/goharbor/harbor/blob/master/docs/img/harbor_logo.png
     keywords:
     - vmware
     - docker
@@ -343,7 +343,7 @@ entries:
       name: paulczar
     name: harbor
     sources:
-    - https://github.com/vmware/harbor/tree/master/contrib/helm/harbor
+    - https://github.com/goharbor/harbor/tree/master/contrib/helm/harbor
     urls:
     - charts/harbor-0.2.0.tgz
     version: 0.2.0

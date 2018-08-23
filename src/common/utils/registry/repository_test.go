@@ -29,8 +29,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/docker/distribution/manifest/schema2"
-	registry_error "github.com/vmware/harbor/src/common/utils/error"
-	"github.com/vmware/harbor/src/common/utils/test"
+	registry_error "github.com/goharbor/harbor/src/common/utils/error"
+	"github.com/goharbor/harbor/src/common/utils/test"
 )
 
 var (

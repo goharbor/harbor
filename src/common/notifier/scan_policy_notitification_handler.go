@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vmware/harbor/src/common/scheduler"
-	"github.com/vmware/harbor/src/common/scheduler/policy"
-	"github.com/vmware/harbor/src/common/scheduler/task"
+	"github.com/goharbor/harbor/src/common/scheduler"
+	"github.com/goharbor/harbor/src/common/scheduler/policy"
+	"github.com/goharbor/harbor/src/common/scheduler/task"
 )
 
 const (

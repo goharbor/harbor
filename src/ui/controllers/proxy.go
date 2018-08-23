@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/vmware/harbor/src/ui/proxy"
+	"github.com/goharbor/harbor/src/ui/proxy"
 )
 
 // RegistryProxy is the endpoint on UI for a reverse proxy pointing to registry

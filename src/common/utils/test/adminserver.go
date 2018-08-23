@@ -19,8 +19,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
-	"github.com/vmware/harbor/src/common"
+	"github.com/goharbor/harbor/src/adminserver/systeminfo/imagestorage"
+	"github.com/goharbor/harbor/src/common"
 )
 
 var adminServerDefaultConfig = map[string]interface{}{

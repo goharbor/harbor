@@ -23,8 +23,8 @@ import (
 	"strings"
 	// "time"
 
-	"github.com/vmware/harbor/src/common/utils"
-	registry_error "github.com/vmware/harbor/src/common/utils/error"
+	"github.com/goharbor/harbor/src/common/utils"
+	registry_error "github.com/goharbor/harbor/src/common/utils/error"
 )
 
 // Registry holds information of a registry entity

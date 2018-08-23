@@ -6,7 +6,7 @@ import (
 	"time"
 
 	beego_cache "github.com/astaxie/beego/cache"
-	hlog "github.com/vmware/harbor/src/common/utils/log"
+	hlog "github.com/goharbor/harbor/src/common/utils/log"
 
 	//Enable redis cache adaptor
 	_ "github.com/astaxie/beego/cache/redis"

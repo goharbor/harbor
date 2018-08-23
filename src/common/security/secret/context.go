@@ -17,10 +17,10 @@ package secret
 import (
 	"fmt"
 
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/secret"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // SecurityContext implements security.Context interface based on secret store

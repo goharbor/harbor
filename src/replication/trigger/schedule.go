@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/vmware/harbor/src/common/dao"
-	common_http "github.com/vmware/harbor/src/common/http"
-	"github.com/vmware/harbor/src/common/job"
-	job_models "github.com/vmware/harbor/src/common/job/models"
-	"github.com/vmware/harbor/src/common/models"
-	common_utils "github.com/vmware/harbor/src/common/utils"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/replication"
-	"github.com/vmware/harbor/src/ui/config"
-	"github.com/vmware/harbor/src/ui/utils"
+	"github.com/goharbor/harbor/src/common/dao"
+	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/job"
+	job_models "github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/common/models"
+	common_utils "github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/ui/utils"
 )
 
 //ScheduleTrigger will schedule a alternate policy to provide 'daily' and 'weekly' trigger ways.

@@ -12,17 +12,17 @@ import (
 	"time"
 
 	"github.com/gomodule/redigo/redis"
-	"github.com/vmware/harbor/src/common/job"
-	"github.com/vmware/harbor/src/jobservice/api"
-	"github.com/vmware/harbor/src/jobservice/config"
-	"github.com/vmware/harbor/src/jobservice/core"
-	"github.com/vmware/harbor/src/jobservice/env"
-	"github.com/vmware/harbor/src/jobservice/job/impl"
-	"github.com/vmware/harbor/src/jobservice/job/impl/gc"
-	"github.com/vmware/harbor/src/jobservice/job/impl/replication"
-	"github.com/vmware/harbor/src/jobservice/job/impl/scan"
-	"github.com/vmware/harbor/src/jobservice/logger"
-	"github.com/vmware/harbor/src/jobservice/pool"
+	"github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/jobservice/api"
+	"github.com/goharbor/harbor/src/jobservice/config"
+	"github.com/goharbor/harbor/src/jobservice/core"
+	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/scan"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/pool"
 )
 
 const (

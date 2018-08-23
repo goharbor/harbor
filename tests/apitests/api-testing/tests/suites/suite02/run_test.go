@@ -3,7 +3,7 @@ package suite02
 import (
 	"testing"
 
-	"github.com/vmware/harbor/tests/apitests/api-testing/envs"
+	"github.com/goharbor/harbor/tests/apitests/api-testing/envs"
 )
 
 //TestRun : Start to run the case

@@ -18,8 +18,8 @@ import (
 	"os"
 	"syscall"
 
-	storage "github.com/vmware/harbor/src/adminserver/systeminfo/imagestorage"
-	"github.com/vmware/harbor/src/common/utils/log"
+	storage "github.com/goharbor/harbor/src/adminserver/systeminfo/imagestorage"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 const (
