@@ -168,7 +168,7 @@ export class ChartVersionComponent implements OnInit {
     });
   }
 
-  versionDownload(evt: Event, item?: HelmChartVersion) {
+  versionDownload(evt?: Event, item?: HelmChartVersion) {
     if (evt) {
       evt.stopPropagation();
     }
