@@ -1,7 +1,7 @@
 package trigger
 
 import (
-	"github.com/vmware/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication"
 )
 
 //ImmediateTrigger will setup watcher at the image pushing action to fire

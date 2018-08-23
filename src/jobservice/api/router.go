@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/vmware/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 )
 
 const (

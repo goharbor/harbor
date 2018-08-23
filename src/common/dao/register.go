@@ -18,8 +18,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 )
 
 // Register is used for user to register, the password is encrypted before the record is inserted into database.

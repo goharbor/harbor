@@ -12,10 +12,10 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
-	"github.com/vmware/harbor/src/ui/filter"
+	"github.com/goharbor/harbor/src/ui/filter"
 	helm_repo "k8s.io/helm/pkg/repo"
 
-	hlog "github.com/vmware/harbor/src/common/utils/log"
+	hlog "github.com/goharbor/harbor/src/common/utils/log"
 )
 
 const (

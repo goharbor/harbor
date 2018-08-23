@@ -15,8 +15,8 @@
 package encrypt
 
 import (
-	comcfg "github.com/vmware/harbor/src/common/config"
-	"github.com/vmware/harbor/src/common/utils"
+	comcfg "github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/utils"
 )
 
 // Encryptor encrypts or decrypts a strings

@@ -19,7 +19,7 @@ import (
 
 	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/reference"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 var (

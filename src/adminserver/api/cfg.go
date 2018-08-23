@@ -19,8 +19,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/vmware/harbor/src/adminserver/systemcfg"
-	"github.com/vmware/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/adminserver/systemcfg"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // ListCfgs lists configurations

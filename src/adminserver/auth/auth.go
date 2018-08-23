@@ -15,7 +15,7 @@
 package auth
 
 import (
-	"github.com/vmware/harbor/src/common/secret"
+	"github.com/goharbor/harbor/src/common/secret"
 	"net/http"
 )
 

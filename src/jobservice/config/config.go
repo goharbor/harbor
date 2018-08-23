@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vmware/harbor/src/jobservice/utils"
+	"github.com/goharbor/harbor/src/jobservice/utils"
 	yaml "gopkg.in/yaml.v2"
 )
 

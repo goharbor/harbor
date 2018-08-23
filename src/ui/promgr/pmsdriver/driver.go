@@ -15,7 +15,7 @@
 package pmsdriver
 
 import (
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/models"
 )
 
 // PMSDriver defines the operations that a project management service driver

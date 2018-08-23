@@ -18,13 +18,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vmware/harbor/src/common/dao"
-	common_job "github.com/vmware/harbor/src/common/job"
-	job_models "github.com/vmware/harbor/src/common/job/models"
-	common_models "github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/replication/models"
-	"github.com/vmware/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/common/dao"
+	common_job "github.com/goharbor/harbor/src/common/job"
+	job_models "github.com/goharbor/harbor/src/common/job/models"
+	common_models "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/ui/config"
 )
 
 // Replication holds information for a replication

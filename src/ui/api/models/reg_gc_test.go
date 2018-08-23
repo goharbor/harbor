@@ -19,9 +19,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/vmware/harbor/src/common"
-	common_job "github.com/vmware/harbor/src/common/job"
-	"github.com/vmware/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/common"
+	common_job "github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/common/utils/test"
 )
 
 var adminServerTestConfig = map[string]interface{}{

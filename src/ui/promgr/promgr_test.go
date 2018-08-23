@@ -19,8 +19,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/ui/promgr/pmsdriver"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/ui/promgr/pmsdriver"
 )
 
 type fakePMSDriver struct {

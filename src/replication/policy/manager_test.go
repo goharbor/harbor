@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/vmware/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/models"
 )
 
 func TestConvertToPersistModel(t *testing.T) {

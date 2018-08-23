@@ -19,12 +19,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/test"
-	utilstest "github.com/vmware/harbor/src/common/utils/test"
-	"github.com/vmware/harbor/src/common/utils/uaa"
-	"github.com/vmware/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/test"
+	utilstest "github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/common/utils/uaa"
+	"github.com/goharbor/harbor/src/ui/config"
 )
 
 func TestMain(m *testing.M) {

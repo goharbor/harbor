@@ -17,12 +17,12 @@ package jobs
 import (
 	"encoding/json"
 
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/job"
-	jobmodels "github.com/vmware/harbor/src/common/job/models"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/api"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/job"
+	jobmodels "github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/ui/api"
 )
 
 var statusMap = map[string]string{

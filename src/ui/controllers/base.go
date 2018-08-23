@@ -25,14 +25,14 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils"
-	email_util "github.com/vmware/harbor/src/common/utils/email"
-	"github.com/vmware/harbor/src/common/utils/log"
-	"github.com/vmware/harbor/src/ui/auth"
-	"github.com/vmware/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	email_util "github.com/goharbor/harbor/src/common/utils/email"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/ui/auth"
+	"github.com/goharbor/harbor/src/ui/config"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
