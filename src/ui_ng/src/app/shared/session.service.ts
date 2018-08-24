@@ -37,8 +37,8 @@ const langMap = {
 /**
  * Define related methods to handle account and session corresponding things
  *
- * @export
- * @class SessionService
+ **
+ * class SessionService
  */
 @Injectable()
 export class SessionService {
@@ -79,7 +79,7 @@ export class SessionService {
     /**
      * Get the related information of current signed in user from backend
      *
-     * @returns {Promise<SessionUser>}
+     * returns {Promise<SessionUser>}
      *
      * @memberOf SessionService
      */
@@ -112,8 +112,8 @@ export class SessionService {
      *
      * Update accpunt settings
      *
-     * @param {SessionUser} account
-     * @returns {Promise<any>}
+     *  ** deprecated param {SessionUser} account
+     * returns {Promise<any>}
      *
      * @memberOf SessionService
      */
@@ -134,8 +134,8 @@ export class SessionService {
      *
      * Update accpunt settings
      *
-     * @param {SessionUser} account
-     * @returns {Promise<any>}
+     *  ** deprecated param {SessionUser} account
+     * returns {Promise<any>}
      *
      * @memberOf SessionService
      */

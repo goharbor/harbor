@@ -19,7 +19,7 @@
     "src/main-aot.ts"
   ],
   "angularCompilerOptions": {
-    "genDir": "aot",
+    "skipTemplateCodegen": true,
     "skipMetadataEmit" : true
   }
 }

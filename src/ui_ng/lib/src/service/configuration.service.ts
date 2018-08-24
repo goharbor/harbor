@@ -10,16 +10,16 @@ import { Configuration } from "../config/config";
 /**
  * Service used to get and save registry-related configurations.
  *
- * @export
+ **
  * @abstract
- * @class ConfigurationService
+ * class ConfigurationService
  */
 export abstract class ConfigurationService {
   /**
    * Get configurations.
    *
    * @abstract
-   * @returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+   * returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
    *
    * @memberOf ConfigurationService
    */
@@ -32,7 +32,7 @@ export abstract class ConfigurationService {
    * Save configurations.
    *
    * @abstract
-   * @returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+   * returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
    *
    * @memberOf ConfigurationService
    */

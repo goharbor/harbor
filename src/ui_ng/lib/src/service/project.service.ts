@@ -18,17 +18,17 @@ import { RequestQueryParams } from "./RequestQueryParams";
 /**
  * Define the service methods to handle the Prject related things.
  *
- * @export
+ **
  * @abstract
- * @class ProjectService
+ * class ProjectService
  */
 export abstract class ProjectService {
   /**
    * Get Infomations of a specific Project.
    *
    * @abstract
-   * @param {string|number} [projectId]
-   * @returns {(Observable<Project> | Promise<Project> | Project)}
+   *  ** deprecated param {string|number} [projectId]
+   * returns {(Observable<Project> | Promise<Project> | Project)}
    *
    * @memberOf ProjectService
    */
@@ -40,9 +40,9 @@ export abstract class ProjectService {
    * Update the specified project.
    *
    * @abstract
-   * @param {(number | string)} projectId
-   * @param {ProjectPolicy} projectPolicy
-   * @returns {(Observable<any> | Promise<any> | any)}
+   *  ** deprecated param {(number | string)} projectId
+   *  ** deprecated param {ProjectPolicy} projectPolicy
+   * returns {(Observable<any> | Promise<any> | any)}
    *
    * @memberOf EndpointService
    */
@@ -55,11 +55,11 @@ export abstract class ProjectService {
    * Get all projects
    *
    * @abstract
-   * @param {string} name
-   * @param {number} isPublic
-   * @param {number} page
-   * @param {number} pageSize
-   * @returns {(Observable<any> | Promise<any> | any)}
+   *  ** deprecated param {string} name
+   *  ** deprecated param {number} isPublic
+   *  ** deprecated param {number} page
+   *  ** deprecated param {number} pageSize
+   * returns {(Observable<any> | Promise<any> | any)}
    *
    * @memberOf EndpointService
    */
@@ -74,9 +74,9 @@ export abstract class ProjectService {
 /**
  * Implement default service for project.
  *
- * @export
- * @class ProjectDefaultService
- * @extends {ProjectService}
+ **
+ * class ProjectDefaultService
+ * extends {ProjectService}
  */
 @Injectable()
 export class ProjectDefaultService extends ProjectService {

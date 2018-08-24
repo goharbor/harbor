@@ -15,9 +15,9 @@ import { Endpoint, ReplicationRule } from "./interface";
 /**
  * Define the service methods to handle the endpoint related things.
  *
- * @export
+ **
  * @abstract
- * @class EndpointService
+ * class EndpointService
  */
 export abstract class EndpointService {
   /**
@@ -25,9 +25,9 @@ export abstract class EndpointService {
    * Set the argument 'endpointName' to return only the endpoints match the name pattern.
    *
    * @abstract
-   * @param {string} [endpointName]
-   * @param {RequestQueryParams} [queryParams]
-   * @returns {(Observable<Endpoint[]> | Endpoint[])}
+   *  ** deprecated param {string} [endpointName]
+   *  ** deprecated param {RequestQueryParams} [queryParams]
+   * returns {(Observable<Endpoint[]> | Endpoint[])}
    *
    * @memberOf EndpointService
    */
@@ -40,8 +40,8 @@ export abstract class EndpointService {
    * Get the specified endpoint.
    *
    * @abstract
-   * @param {(number | string)} endpointId
-   * @returns {(Observable<Endpoint> | Endpoint)}
+   *  ** deprecated param {(number | string)} endpointId
+   * returns {(Observable<Endpoint> | Endpoint)}
    *
    * @memberOf EndpointService
    */
@@ -53,8 +53,8 @@ export abstract class EndpointService {
    * Create new endpoint.
    *
    * @abstract
-   * @param {Endpoint} endpoint
-   * @returns {(Observable<any> | any)}
+   *  ** deprecated param {Endpoint} endpoint
+   * returns {(Observable<any> | any)}
    *
    * @memberOf EndpointService
    */
@@ -66,9 +66,9 @@ export abstract class EndpointService {
    * Update the specified endpoint.
    *
    * @abstract
-   * @param {(number | string)} endpointId
-   * @param {Endpoint} endpoint
-   * @returns {(Observable<any> | any)}
+   *  ** deprecated param {(number | string)} endpointId
+   *  ** deprecated param {Endpoint} endpoint
+   * returns {(Observable<any> | any)}
    *
    * @memberOf EndpointService
    */
@@ -81,8 +81,8 @@ export abstract class EndpointService {
    * Delete the specified endpoint.
    *
    * @abstract
-   * @param {(number | string)} endpointId
-   * @returns {(Observable<any> | any)}
+   *  ** deprecated param {(number | string)} endpointId
+   * returns {(Observable<any> | any)}
    *
    * @memberOf EndpointService
    */
@@ -94,8 +94,8 @@ export abstract class EndpointService {
    * Ping the specified endpoint.
    *
    * @abstract
-   * @param {Endpoint} endpoint
-   * @returns {(Observable<any> | any)}
+   *  ** deprecated param {Endpoint} endpoint
+   * returns {(Observable<any> | any)}
    *
    * @memberOf EndpointService
    */
@@ -107,8 +107,8 @@ export abstract class EndpointService {
    * Check endpoint whether in used with specific replication rule.
    *
    * @abstract
-   * @param {{number | string}} endpointId
-   * @returns {{Observable<any> | any}}
+   *  ** deprecated param {{number | string}} endpointId
+   * returns {{Observable<any> | any}}
    */
   abstract getEndpointWithReplicationRules(
     endpointId: number | string
@@ -118,9 +118,9 @@ export abstract class EndpointService {
 /**
  * Implement default service for endpoint.
  *
- * @export
- * @class EndpointDefaultService
- * @extends {EndpointService}
+ **
+ * class EndpointDefaultService
+ * extends {EndpointService}
  */
 @Injectable()
 export class EndpointDefaultService extends EndpointService {

@@ -25,8 +25,8 @@ const ldapUserEndpoint = '/api/ldap/users';
 /**
  * Define related methods to handle account and session corresponding things
  *
- * @export
- * @class SessionService
+ **
+ * class SessionService
  */
 @Injectable()
 export class UserService {

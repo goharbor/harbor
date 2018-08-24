@@ -430,7 +430,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * Get the changed fields and return a map
      *
      * @private
-     * @returns {*}
+     * returns {*}
      *
      * @memberOf ConfigurationComponent
      */
@@ -478,8 +478,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * Deep clone the configuration object
      *
      * @private
-     * @param {Configuration} src
-     * @returns {Configuration}
+     *  ** deprecated param {Configuration} src
+     * returns {Configuration}
      *
      * @memberOf ConfigurationComponent
      */
@@ -496,7 +496,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * Reset the configuration form
      *
      * @private
-     * @param {*} changes
+     *  ** deprecated param {*} changes
      *
      * @memberOf ConfigurationComponent
      */

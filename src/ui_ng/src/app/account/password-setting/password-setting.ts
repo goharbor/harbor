@@ -15,8 +15,8 @@
  *
  * Struct for password change
  *
- * @export
- * @class PasswordSetting
+ **
+ * class PasswordSetting
  */
 export class PasswordSetting {
     old_password: string;

@@ -25,8 +25,8 @@ const volumesEndpoint = "/api/systeminfo/volumes";
  * Declare service to handle the top repositories
  *
  *
- * @export
- * @class GlobalSearchService
+ **
+ * class GlobalSearchService
  */
 @Injectable()
 export class StatisticsService {

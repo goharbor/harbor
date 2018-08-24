@@ -35,8 +35,8 @@ export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
  *
  * Module for sharing common modules
  *
- * @export
- * @class SharedModule
+ **
+ * class SharedModule
  */
 @NgModule({
     imports: [

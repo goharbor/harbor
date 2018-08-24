@@ -32,8 +32,8 @@ import {operateChanges, OperateInfo, OperationService, OperationState} from "har
  * NOTES:
  *   Pagination for this component is a temporary workaround solution. It will be replaced in future release.
  *
- * @export
- * @class UserComponent
+ **
+ * class UserComponent
  * @implements {OnInit}
  * @implements {OnDestroy}
  */

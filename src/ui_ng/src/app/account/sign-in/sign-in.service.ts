@@ -23,8 +23,8 @@ const signInUrl = '/login';
  *
  * Define a service to provide sign in methods
  *
- * @export
- * @class SignInService
+ **
+ * class SignInService
  */
 @Injectable()
 export class SignInService {

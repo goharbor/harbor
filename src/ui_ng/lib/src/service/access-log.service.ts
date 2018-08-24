@@ -10,9 +10,9 @@ import { buildHttpRequestOptions, HTTP_GET_OPTIONS } from "../utils";
 /**
  * Define service methods to handle the access log related things.
  *
- * @export
+ **
  * @abstract
- * @class AccessLogService
+ * class AccessLogService
  */
 export abstract class AccessLogService {
   /**
@@ -22,9 +22,9 @@ export abstract class AccessLogService {
    *  - pageSize
    *
    * @abstract
-   * @param {(number | string)} projectId
-   * @param {RequestQueryParams} [queryParams]
-   * @returns {(Observable<AccessLog> | Promise<AccessLog> | AccessLog)}
+   *  ** deprecated param {(number | string)} projectId
+   *  ** deprecated param {RequestQueryParams} [queryParams]
+   * returns {(Observable<AccessLog> | Promise<AccessLog> | AccessLog)}
    *
    * @memberOf AccessLogService
    */
@@ -37,8 +37,8 @@ export abstract class AccessLogService {
    * Get the recent logs.
    *
    * @abstract
-   * @param {RequestQueryParams} [queryParams]
-   * @returns {(Observable<AccessLog> | Promise<AccessLog> | AccessLog)}
+   *  ** deprecated param {RequestQueryParams} [queryParams]
+   * returns {(Observable<AccessLog> | Promise<AccessLog> | AccessLog)}
    *
    * @memberOf AccessLogService
    */
@@ -50,9 +50,9 @@ export abstract class AccessLogService {
 /**
  * Implement a default service for access log.
  *
- * @export
- * @class AccessLogDefaultService
- * @extends {AccessLogService}
+ **
+ * class AccessLogDefaultService
+ * extends {AccessLogService}
  */
 @Injectable()
 export class AccessLogDefaultService extends AccessLogService {

@@ -19,9 +19,9 @@ import { RequestQueryParams } from "./RequestQueryParams";
 /**
  * Define the service methods to handle the replication (rule and job) related things.
  *
- * @export
+ **
  * @abstract
- * @class ReplicationService
+ * class ReplicationService
  */
 export abstract class ReplicationService {
   /**
@@ -31,10 +31,10 @@ export abstract class ReplicationService {
    * if pagination needed, use the queryParams to add query parameters.
    *
    * @abstract
-   * @param {(number | string)} [projectId]
-   * @param {string} [ruleName]
-   * @param {RequestQueryParams} [queryParams]
-   * @returns {(Observable<ReplicationRule[]> | Promise<ReplicationRule[]> | ReplicationRule[])}
+   *  ** deprecated param {(number | string)} [projectId]
+   *  ** deprecated param {string} [ruleName]
+   *  ** deprecated param {RequestQueryParams} [queryParams]
+   * returns {(Observable<ReplicationRule[]> | Promise<ReplicationRule[]> | ReplicationRule[])}
    *
    * @memberOf ReplicationService
    */
@@ -51,8 +51,8 @@ export abstract class ReplicationService {
    * Get the specified replication rule.
    *
    * @abstract
-   * @param {(number | string)} ruleId
-   * @returns {(Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule)}
+   *  ** deprecated param {(number | string)} ruleId
+   * returns {(Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule)}
    *
    * @memberOf ReplicationService
    */
@@ -64,8 +64,8 @@ export abstract class ReplicationService {
    * Create new replication rule.
    *
    * @abstract
-   * @param {ReplicationRule} replicationRule
-   * @returns {(Observable<any> | Promise<any> | any)}
+   *  ** deprecated param {ReplicationRule} replicationRule
+   * returns {(Observable<any> | Promise<any> | any)}
    *
    * @memberOf ReplicationService
    */
@@ -77,8 +77,8 @@ export abstract class ReplicationService {
    * Update the specified replication rule.
    *
    * @abstract
-   * @param {ReplicationRule} replicationRule
-   * @returns {(Observable<any> | Promise<any> | any)}
+   *  ** deprecated param {ReplicationRule} replicationRule
+   * returns {(Observable<any> | Promise<any> | any)}
    *
    * @memberOf ReplicationService
    */
@@ -91,8 +91,8 @@ export abstract class ReplicationService {
    * Delete the specified replication rule.
    *
    * @abstract
-   * @param {(number | string)} ruleId
-   * @returns {(Observable<any> | Promise<any> | any)}
+   *  ** deprecated param {(number | string)} ruleId
+   * returns {(Observable<any> | Promise<any> | any)}
    *
    * @memberOf ReplicationService
    */
@@ -104,8 +104,8 @@ export abstract class ReplicationService {
    * Enable the specified replication rule.
    *
    * @abstract
-   * @param {(number | string)} ruleId
-   * @returns {(Observable<any> | Promise<any> | any)}
+   *  ** deprecated param {(number | string)} ruleId
+   * returns {(Observable<any> | Promise<any> | any)}
    *
    * @memberOf ReplicationService
    */
@@ -118,8 +118,8 @@ export abstract class ReplicationService {
    * Disable the specified replication rule.
    *
    * @abstract
-   * @param {(number | string)} ruleId
-   * @returns {(Observable<any> | Promise<any> | any)}
+   *  ** deprecated param {(number | string)} ruleId
+   * returns {(Observable<any> | Promise<any> | any)}
    *
    * @memberOf ReplicationService
    */
@@ -141,9 +141,9 @@ export abstract class ReplicationService {
    *   - pageSize
    *
    * @abstract
-   * @param {(number | string)} ruleId
-   * @param {RequestQueryParams} [queryParams]
-   * @returns {(Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob)}
+   *  ** deprecated param {(number | string)} ruleId
+   *  ** deprecated param {RequestQueryParams} [queryParams]
+   * returns {(Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob)}
    *
    * @memberOf ReplicationService
    */
@@ -156,8 +156,8 @@ export abstract class ReplicationService {
    * Get the log of the specified job.
    *
    * @abstract
-   * @param {(number | string)} jobId
-   * @returns {(Observable<string> | Promise<string> | string)}
+   *  ** deprecated param {(number | string)} jobId
+   * returns {(Observable<string> | Promise<string> | string)}
    * @memberof ReplicationService
    */
   abstract getJobLog(
@@ -172,9 +172,9 @@ export abstract class ReplicationService {
 /**
  * Implement default service for replication rule and job.
  *
- * @export
- * @class ReplicationDefaultService
- * @extends {ReplicationService}
+ **
+ * class ReplicationDefaultService
+ * extends {ReplicationService}
  */
 @Injectable()
 export class ReplicationDefaultService extends ReplicationService {

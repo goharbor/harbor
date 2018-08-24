@@ -23,8 +23,8 @@ export const topRepoEndpoint = "/api/repositories/top";
  * Declare service to handle the top repositories
  *
  *
- * @export
- * @class GlobalSearchService
+ **
+ * class GlobalSearchService
  */
 @Injectable()
 export class TopRepoService {
@@ -34,8 +34,8 @@ export class TopRepoService {
     /**
      * Get top popular repositories
      *
-     * @param {string} keyword
-     * @returns {Promise<TopRepo>}
+     *  ** deprecated param {string} keyword
+     * returns {Promise<TopRepo>}
      *
      * @memberOf GlobalSearchService
      */

@@ -15,15 +15,15 @@ import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "../utils";
  * Define service methods for handling the helmchart related things.
  * Loose couple with project module.
  *
- * @export
+ **
  * @abstract
- * @class RepositoryService
+ * class RepositoryService
  */
 export abstract class HelmChartService {
   /**
    * Get all helm charts info
-   * @param projectName Id of the project
-   * @param queryParams options params for query data
+   *  ** deprecated param projectName Id of the project
+   *  ** deprecated param queryParams options params for query data
    */
   abstract getHelmCharts(
     projectName: string,
@@ -32,16 +32,16 @@ export abstract class HelmChartService {
 
   /**
    * Delete an helmchart
-   * @param projectId Id of the project
-   * @param chartId ID of helmChart in this specific project
+   *  ** deprecated param projectId Id of the project
+   *  ** deprecated param chartId ID of helmChart in this specific project
    */
   abstract deleteHelmChart(projectId: number | string, chartId: number): Observable<any>;
 
   /**
    * Get all the versions of helmchart
-   * @param projectName Id of the project
-   * @param chartName ID of the helm chart
-   * @param queryParams option params for query
+   *  ** deprecated param projectName Id of the project
+   *  ** deprecated param chartName ID of the helm chart
+   *  ** deprecated param queryParams option params for query
    */
   abstract getChartVersions(
     projectName: string,
@@ -50,18 +50,18 @@ export abstract class HelmChartService {
 
   /**
    * Delete a version of helmchart
-   * @param projectName ID of the project
-   * @param chartName ID of the chart you want to delete
-   * @param version name of the version
+   *  ** deprecated param projectName ID of the project
+   *  ** deprecated param chartName ID of the chart you want to delete
+   *  ** deprecated param version name of the version
    */
   abstract deleteChartVersion(projectName: string, chartName: string, version: string): Observable<any>;
 
   /**
    * Get the all details of an helmchart
-   * @param projectName ID of the project
-   * @param chartname ID of the chart
-   * @param version name of the chart's version
-   * @param queryParams options
+   *  ** deprecated param projectName ID of the project
+   *  ** deprecated param chartname ID of the chart
+   *  ** deprecated param version name of the chart's version
+   *  ** deprecated param queryParams options
    */
   abstract getChartDetail(
     projectName: string,
@@ -71,10 +71,10 @@ export abstract class HelmChartService {
 
   /**
    * Download an specific verison
-   * @param projectName ID of the project
-   * @param filename ID of the helm chart
-   * @param version Name of version
-   * @param queryParams options
+   *  ** deprecated param projectName ID of the project
+   *  ** deprecated param filename ID of the helm chart
+   *  ** deprecated param version Name of version
+   *  ** deprecated param queryParams options
    */
   abstract downloadChart(
     projectName: string,
@@ -83,9 +83,9 @@ export abstract class HelmChartService {
 
   /**
    * Upload chart and prov files to chartmuseam
-   * @param projectName Name of the project
-   * @param chart chart file
-   * @param prov prov file
+   *  ** deprecated param projectName Name of the project
+   *  ** deprecated param chart chart file
+   *  ** deprecated param prov prov file
    */
   abstract uploadChart (
     projectName: string,

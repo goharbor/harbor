@@ -7,13 +7,13 @@ import {HTTP_GET_OPTIONS} from "../utils";
 /**
  * Get System information about current backend server.
  * @abstract
- * @class
+ * class
  */
 export abstract class SystemInfoService {
   /**
    *  Get global system information.
    *  @abstract
-   *  @returns
+   *  returns
    */
   abstract getSystemInfo(): Observable<SystemInfo> | Promise<SystemInfo> | SystemInfo;
 }

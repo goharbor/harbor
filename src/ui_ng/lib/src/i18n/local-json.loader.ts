@@ -7,9 +7,9 @@ import { IServiceConfig } from "../service.config";
 /**
  * Declare a translation loader with local json object
  *
- * @export
- * @class TranslatorJsonLoader
- * @extends {TranslateLoader}
+ **
+ * class TranslatorJsonLoader
+ * extends {TranslateLoader}
  */
 export class TranslatorJsonLoader extends TranslateLoader {
   constructor(private config: IServiceConfig) {

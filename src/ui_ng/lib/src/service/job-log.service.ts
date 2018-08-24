@@ -8,18 +8,18 @@ import { HTTP_GET_OPTIONS } from "../utils";
 /**
  * Define the service methods to handle the job log related things.
  *
- * @export
+ **
  * @abstract
- * @class JobLogService
+ * class JobLogService
  */
 export abstract class JobLogService {
   /**
    * Get the log of the specified job
    *
    * @abstract
-   * @param {string} jobType
-   * @param {(number | string)} jobId
-   * @returns {(Observable<string> | Promise<string> | string)}
+   *  ** deprecated param {string} jobType
+   *  ** deprecated param {(number | string)} jobId
+   * returns {(Observable<string> | Promise<string> | string)}
    * @memberof JobLogService
    */
   abstract getJobLog(
@@ -31,9 +31,9 @@ export abstract class JobLogService {
 /**
  * Implement default service for job log service.
  *
- * @export
- * @class JobLogDefaultService
- * @extends {ReplicationService}
+ **
+ * class JobLogDefaultService
+ * extends {ReplicationService}
  */
 @Injectable()
 export class JobLogDefaultService extends JobLogService {

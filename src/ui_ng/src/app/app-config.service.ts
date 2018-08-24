@@ -25,8 +25,8 @@ export const systemInfoEndpoint = "/api/systeminfo";
  * Declare service to handle the bootstrap options
  *
  *
- * @export
- * @class GlobalSearchService
+ **
+ * class GlobalSearchService
  */
 @Injectable()
 export class AppConfigService {
