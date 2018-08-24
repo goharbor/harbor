@@ -16,6 +16,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
   * [Manage self-registration.](#managing-self-registration)
   * [Manage email settings.](#managing-email-settings)
   * [Manage registry read only.](#managing-registry-read-only)
+  * [Manage role by LDAP group.](#managing-role-by-ldap-group)
 * [Pull and push images using Docker client.](#pulling-and-pushing-images-using-docker-client)
 * [Add description to repositories](#add-description-to-repositories)
 * [Delete repositories and images.](#deleting-repositories)
@@ -235,12 +236,16 @@ You can change Harbor's registry read only settings, read only mode will allow '
 If it set to true, deleting repository, tag and pushing image will be disabled. 
 ![browse project](img/read_only_enable.png)
 
+
 ```
 $ docker push 10.117.169.182/demo/ubuntu:14.04  
 The push refers to a repository [10.117.169.182/demo/ubuntu]
 0271b8eebde3: Preparing 
 denied: The system is in read only mode. Any modification is prohibited.  
 ``` 
+### Managing role by LDAP group
+
+If auth_mode is ldap_auth, you can manage project role by LDAP/AD group. please refer [manage role by ldap group guide](manage_role_by_ldap_group.md).
 
 ## Pulling and pushing images using Docker client  
 
