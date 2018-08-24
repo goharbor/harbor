@@ -10,6 +10,7 @@
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
+    "outDir": "aot",
     "typeRoots": [
       "./node_modules/@types/"
     ]
@@ -20,6 +21,7 @@
   ],
   "angularCompilerOptions": {
     "skipTemplateCodegen": true,
-    "skipMetadataEmit" : true
+    "skipMetadataEmit" : true,
+    "fullTemplateTypeCheck":true
   }
 }
