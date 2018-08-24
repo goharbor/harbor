@@ -17,6 +17,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 [announcement](https://www.cncf.io/blog/2018/07/31/cncf-to-host-harbor-in-the-sandbox/).
 
 ### Features
+
 * **Role based access control**: Users and repositories are organized via 'projects' and a user can have different permission for images under a project.
 * **Policy based image replication**: Images can be replicated (synchronized) between multiple registry instances, with auto-retry on errors. Great for load balancing, high availability, multi-datacenter, hybrid and multi-cloud scenarios.
 * **Vulnerability Scanning**: Harbor scans images regularly and warns users of vulnerabilities.
@@ -41,22 +42,31 @@ If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](http
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
 ### Community
+
 **Twitter:** [@project_harbor](https://twitter.com/project_harbor)  
 **User Group:** Join Harbor user email group: [harbor-users@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback. To subscribe, send an email to [harbor-users+subscribe@googlegroups.com](mailto:harbor-users+subscribe@googlegroups.com) .  
 **Developer Group:** Join Harbor developer group: [harbor-dev@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-dev) for discussion on Harbor development and contribution. To subscribe, send an email to [harbor-dev+subscribe@googlegroups.com](mailto:harbor-dev+subscribe@googlegroups.com).  
 **Slack:** Join Harbor's community for discussion and ask questions: [Cloud Native Computing Foundation](https://slack.cncf.io/), channel: #harbor and #harbor-dev
 
-**Demo Server:** Harbor provides a demo environment with the latest Harbor stable build installed. If you want to have a try, please refer to **[Demo Server](docs/demo_server.md)** for more details.
+### Additional Tools
 
-More info on [partners and users](partners.md).
+Tools layered on top of Harbor and contributed by community.
+
+* **[Harbor.Tagd](https://github.com/HylandSoftware/Harbor.Tagd)**
+  - Automates the process of cleaning up old tags from your Harbor container registries.
+  - Lead by [@nlowe](https://github.com/nlowe) from HylandSoftware.
 
 ### Demos
-* ![play](docs/img/video.png) **Content Trust** ( [youtube](https://www.youtube.com/watch?v=pPklSTJZY2E) , [Tencent Video](https://v.qq.com/x/page/n0553fzzrnf.html) )
-* ![play](docs/img/video.png) **Role Based Access Control** ( [youtube](https://www.youtube.com/watch?v=2ZIu9XTvsC0) , [Tencent Video](https://v.qq.com/x/page/l0553yw19ek.html) )
-* ![play](docs/img/video.png) **Vulnerability Scanning** ( [youtube](https://www.youtube.com/watch?v=K4tJ6B2cGR4) , [Tencent Video](https://v.qq.com/x/page/s0553k9692d.html) )
-* ![play](docs/img/video.png) **Image Replication** ( [youtube](https://www.youtube.com/watch?v=1NPlzrm5ozE) , [Tencent Video](https://v.qq.com/x/page/a0553wc7fs9.html) )
+
+* **[Live Demo](https://demo.goharbor.io)** - A demo environment with the latest Harbor stable build installed. If you want to deeply dive, please refer to **[Demo Server](docs/demo_server.md)** for more details.
+* **[Video Demos](https://github.com/goharbor/harbor/wiki/Video-demos-for-Harbor)** - Demos for Harbor features and continuously updated.
+
+### Partners and Users
+
+If you want to learn Harbor partners and users, please refer to [list of Harbor partners and users](partners.md).
 
 ### License
+
 Harbor is available under the [Apache 2 license](LICENSE).
 
 This project uses open source components which have additional licensing terms.  The official docker images and licensing terms for these open source components can be found at the following locations:
