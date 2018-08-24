@@ -2297,10 +2297,9 @@ paths:
           description: Unexpected internal errors.
   /systeminfo/getcert:
     get:
-      summary: Get default root certificate under OVA deployment.
+      summary: Get default root certificate.
       description: >
-        This endpoint is for downloading a default root certificate that only
-        provides for admin user under OVA deployment.
+        This endpoint is for downloading a default root certificate.
       tags:
         - Products
       responses:
