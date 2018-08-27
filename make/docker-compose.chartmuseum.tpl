@@ -4,7 +4,7 @@ services:
     networks:
       harbor-chartmuseum:
         aliases:
-          - harbor-ui
+          - @harbor/ui
   redis:
     networks:
       harbor-chartmuseum:

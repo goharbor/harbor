@@ -51,8 +51,8 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "adminserver"
   ui:
-    image: goharbor/harbor-ui:__version__
-    container_name: harbor-ui
+    image: goharbor/@harbor/ui:__version__
+    container_name: @harbor/ui
     env_file:
       - ./common/config/ui/env
     restart: always

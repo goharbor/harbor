@@ -13,7 +13,7 @@ Wrap the following Harbor UI components into a sharable library and published as
 
 The Harbor UI library is built on **[Angular ](https://angular.io/)** 6.x and **[Clarity ](https://vmware.github.io/clarity/)** 0.12.x .
 
-The library is published to the public npm repository with name **[@harbor/ui](https://www.npmjs.com/package/harbor-ui)**.
+The library is published to the public npm repository with name **[@harbor/ui](https://www.npmjs.com/package/@harbor/ui)**.
 
 ## Build & Test
 Build library with command:
@@ -36,16 +36,16 @@ npm install @harbor/ui[@version]
 
 Execute install command to add dependency to package.json
 ```
-npm install @harbor/ui --save
+npm install @harbor/ui
 
 //OR
-npm install @harbor/ui@1.0.0 --save
+npm install @harbor/ui@1.0.0
 ```
 The latest version of the library will be installed.
 
 **Import the library module into the root Angular module**
 ```
-import { HarborLibraryModule } from 'harbor-ui';
+import { HarborLibraryModule } from '@harbor/ui';
 
 @NgModule({
     declarations: [...],

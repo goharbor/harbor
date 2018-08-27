@@ -4,7 +4,7 @@ services:
     networks:
       harbor-clair:
         aliases:
-          - harbor-ui
+          - @harbor/ui
   jobservice:
     networks:
       - harbor-clair
