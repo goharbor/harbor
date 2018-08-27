@@ -11,7 +11,7 @@ Wrap the following Harbor UI components into a sharable library and published as
 * Vulnerability scanning result bar chart and list view (Embedded in tag management view)
 * Registry(Harbor) related configuration options
 
-The Harbor UI library is built on **[Angular ](https://angular.io/)** 4.x and **[Clarity ](https://vmware.github.io/clarity/)** 0.9.x .
+The Harbor UI library is built on **[Angular ](https://angular.io/)** 6.x and **[Clarity ](https://vmware.github.io/clarity/)** 0.12.x .
 
 The library is published to the public npm repository with name **[harbor-ui](https://www.npmjs.com/package/harbor-ui)**.
 
