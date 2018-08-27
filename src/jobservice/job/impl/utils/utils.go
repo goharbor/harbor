@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/docker/distribution/registry/auth/token"
-	httpauth "github.com/vmware/harbor/src/common/http/modifier/auth"
-	"github.com/vmware/harbor/src/common/utils/registry"
-	"github.com/vmware/harbor/src/common/utils/registry/auth"
+	httpauth "github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/common/utils/registry"
+	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 )
 
 // NewRepositoryClient creates a repository client with standard token authorizer

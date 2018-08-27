@@ -19,12 +19,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/common/utils"
-	"github.com/vmware/harbor/src/common/utils/log"
-	uiutils "github.com/vmware/harbor/src/ui/utils"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	uiutils "github.com/goharbor/harbor/src/ui/utils"
 )
 
 // SearchAPI handles requesst to /api/search

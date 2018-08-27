@@ -19,10 +19,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/vmware/harbor/src/common/dao"
-	"github.com/vmware/harbor/src/common/models"
-	"github.com/vmware/harbor/src/replication"
-	api_models "github.com/vmware/harbor/src/ui/api/models"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/replication"
+	api_models "github.com/goharbor/harbor/src/ui/api/models"
 )
 
 const (

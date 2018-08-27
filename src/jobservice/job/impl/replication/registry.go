@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	common_http "github.com/vmware/harbor/src/common/http"
-	"github.com/vmware/harbor/src/common/models"
-	reg "github.com/vmware/harbor/src/common/utils/registry"
+	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/models"
+	reg "github.com/goharbor/harbor/src/common/utils/registry"
 )
 
 type repository struct {

@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common"
-	"github.com/vmware/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
 )
 
 func TestCfgStore_Name(t *testing.T) {

@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strings"
 
-	commonhttp "github.com/vmware/harbor/src/common/http"
-	"github.com/vmware/harbor/src/common/http/modifier/auth"
-	"github.com/vmware/harbor/src/common/job/models"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/common/job/models"
 )
 
 // Client wraps interface to access jobservice.

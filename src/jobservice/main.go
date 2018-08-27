@@ -4,14 +4,14 @@ import (
 	"errors"
 	"flag"
 
-	"github.com/vmware/harbor/src/adminserver/client"
-	"github.com/vmware/harbor/src/jobservice/config"
-	"github.com/vmware/harbor/src/jobservice/env"
-	"github.com/vmware/harbor/src/jobservice/job/impl"
-	ilogger "github.com/vmware/harbor/src/jobservice/job/impl/logger"
-	"github.com/vmware/harbor/src/jobservice/logger"
-	"github.com/vmware/harbor/src/jobservice/runtime"
-	"github.com/vmware/harbor/src/jobservice/utils"
+	"github.com/goharbor/harbor/src/adminserver/client"
+	"github.com/goharbor/harbor/src/jobservice/config"
+	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
+	ilogger "github.com/goharbor/harbor/src/jobservice/job/impl/logger"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/runtime"
+	"github.com/goharbor/harbor/src/jobservice/utils"
 )
 
 func main() {

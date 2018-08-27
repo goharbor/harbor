@@ -1,7 +1,7 @@
 package source
 
 import (
-	"github.com/vmware/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/models"
 )
 
 //Filter define the operations of selecting the matched resources from the candidates

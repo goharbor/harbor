@@ -21,9 +21,9 @@ import (
 	"net/url"
 
 	"github.com/docker/distribution/registry/auth/token"
-	"github.com/vmware/harbor/src/common/models"
-	registry_error "github.com/vmware/harbor/src/common/utils/error"
-	"github.com/vmware/harbor/src/common/utils/registry"
+	"github.com/goharbor/harbor/src/common/models"
+	registry_error "github.com/goharbor/harbor/src/common/utils/error"
+	"github.com/goharbor/harbor/src/common/utils/registry"
 )
 
 const (

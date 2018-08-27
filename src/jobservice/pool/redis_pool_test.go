@@ -9,14 +9,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware/harbor/src/jobservice/errs"
-	"github.com/vmware/harbor/src/jobservice/job"
-	"github.com/vmware/harbor/src/jobservice/logger"
-	"github.com/vmware/harbor/src/jobservice/opm"
+	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/opm"
 
-	"github.com/vmware/harbor/src/jobservice/tests"
+	"github.com/goharbor/harbor/src/jobservice/tests"
 
-	"github.com/vmware/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/env"
 )
 
 var rPool = tests.GiveMeRedisPool()

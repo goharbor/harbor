@@ -3,9 +3,9 @@ package suite01
 import (
 	"fmt"
 
-	"github.com/vmware/harbor/tests/apitests/api-testing/envs"
-	"github.com/vmware/harbor/tests/apitests/api-testing/lib"
-	"github.com/vmware/harbor/tests/apitests/api-testing/tests/suites/base"
+	"github.com/goharbor/harbor/tests/apitests/api-testing/envs"
+	"github.com/goharbor/harbor/tests/apitests/api-testing/lib"
+	"github.com/goharbor/harbor/tests/apitests/api-testing/tests/suites/base"
 )
 
 //Steps of suite01:

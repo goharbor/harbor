@@ -160,9 +160,16 @@ export class ChartVersionComponent implements OnInit {
 
   deleteVersions(versions: HelmChartVersion[]) {
     if (versions && versions.length < 1) { return; }
+    let successCount: number;
+    let totalCount = this.chartVersions.length;
     let versionObs = versions.map(v => this.deleteVersion(v));
-    Observable.forkJoin(versionObs).finally(() => this.refresh()).subscribe(res => {
-      if (this.chartVersions.length === versionObs.length) {
+    Observable.forkJoin(versionObs).finally(() => {
+      if (totalCount !== successCount) {
+        this.refresh();
+      }
+    }).subscribe(res => {
+      successCount = res.filter(r => r.state === OperationState.success).length;
+      if (totalCount === successCount) {
         this.backEvt.emit();
       }
     });

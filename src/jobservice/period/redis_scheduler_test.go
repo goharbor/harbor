@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware/harbor/src/jobservice/env"
-	"github.com/vmware/harbor/src/jobservice/tests"
-	"github.com/vmware/harbor/src/jobservice/utils"
+	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/tests"
+	"github.com/goharbor/harbor/src/jobservice/utils"
 )
 
 var redisPool = tests.GiveMeRedisPool()

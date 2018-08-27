@@ -3,8 +3,8 @@ package base
 import (
 	"fmt"
 
-	"github.com/vmware/harbor/tests/apitests/api-testing/envs"
-	"github.com/vmware/harbor/tests/apitests/api-testing/lib"
+	"github.com/goharbor/harbor/tests/apitests/api-testing/envs"
+	"github.com/goharbor/harbor/tests/apitests/api-testing/lib"
 )
 
 //ConcourseCiSuite : Provides some base cases

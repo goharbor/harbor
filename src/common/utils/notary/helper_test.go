@@ -18,10 +18,10 @@ import (
 	"fmt"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vmware/harbor/src/common"
-	notarytest "github.com/vmware/harbor/src/common/utils/notary/test"
-	utilstest "github.com/vmware/harbor/src/common/utils/test"
-	"github.com/vmware/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/common"
+	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
+	utilstest "github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/ui/config"
 
 	"net/http/httptest"
 	"os"

@@ -69,12 +69,12 @@ SRCPATH=./src
 TOOLSPATH=$(BUILDPATH)/tools
 UIPATH=$(BUILDPATH)/src/ui
 UINGPATH=$(BUILDPATH)/src/ui_ng
-GOBASEPATH=/go/src/github.com/vmware
+GOBASEPATH=/go/src/github.com/goharbor
 CHECKENVCMD=checkenv.sh
 
 # parameters
 REGISTRYSERVER=
-REGISTRYPROJECTNAME=vmware
+REGISTRYPROJECTNAME=goharbor
 DEVFLAG=true
 NOTARYFLAG=false
 CLAIRFLAG=false

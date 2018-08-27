@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vmware/harbor/src/common/scheduler/policy"
-	"github.com/vmware/harbor/src/common/scheduler/task"
+	"github.com/goharbor/harbor/src/common/scheduler/policy"
+	"github.com/goharbor/harbor/src/common/scheduler/task"
 )
 
 type fakePolicy struct {
