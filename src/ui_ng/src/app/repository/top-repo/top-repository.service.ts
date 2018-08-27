@@ -14,7 +14,7 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
-import { Repository } from 'harbor-ui';
+import { Repository } from '@harbor/ui';
 
 import {HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 

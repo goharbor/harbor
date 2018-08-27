@@ -8,7 +8,7 @@ import "rxjs/observable/of";
 import { TranslateService } from '@ngx-translate/core';
 
 import "rxjs/observable/timer";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 
 import { UserGroup } from "./../../../group/group";
 import { MemberService } from "./../member.service";

@@ -21,7 +21,7 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/throw';
 import {buildHttpRequestOptions} from '../shared/shared.utils';
-import {RequestQueryParams} from 'harbor-ui';
+import {RequestQueryParams} from '@harbor/ui';
 
 export const logEndpoint = '/api/logs';
 

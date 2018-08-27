@@ -28,7 +28,7 @@ npm run test
 
 Install the package
 ```
-npm install harbor-ui[@version]
+npm install @harbor/ui[@version]
 ```
 
 ## Usage
@@ -36,10 +36,10 @@ npm install harbor-ui[@version]
 
 Execute install command to add dependency to package.json
 ```
-npm install harbor-ui --save
+npm install @harbor/ui --save
 
 //OR
-npm install harbor-ui@0.2.x --save
+npm install @harbor/ui@1.0.0 --save
 ```
 The latest version of the library will be installed.
 

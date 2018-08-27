@@ -36,7 +36,7 @@ import { MessageHandlerService } from "../../shared/message-handler/message-hand
 import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
 import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
 import {AppConfigService} from "../../app-config.service";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 
 import { Project } from "../project";
 import { ProjectService } from "../project.service";

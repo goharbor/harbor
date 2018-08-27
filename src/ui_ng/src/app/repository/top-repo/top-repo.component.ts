@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
-import { Repository } from 'harbor-ui';
+import { Repository } from '@harbor/ui';
 
 import { ListMode } from '../../shared/shared.const';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';

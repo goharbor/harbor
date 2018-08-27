@@ -14,7 +14,7 @@
 import { Component, Input, Output, OnDestroy, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { State } from '@clr/angular';
-import { Repository } from 'harbor-ui';
+import { Repository } from '@harbor/ui';
 import 'rxjs/add/operator/filter';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';

@@ -20,7 +20,7 @@ import "rxjs/add/operator/map";
 import "rxjs/add/observable/throw";
 import { Subscription } from "rxjs/Subscription";
 import {TranslateService} from "@ngx-translate/core";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";

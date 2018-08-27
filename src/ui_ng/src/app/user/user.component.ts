@@ -27,7 +27,7 @@ import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
 import { User } from './user';
 import {ChangePasswordComponent} from "./change-password/change-password.component";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 /**
  * NOTES:
  *   Pagination for this component is a temporary workaround solution. It will be replaced in future release.

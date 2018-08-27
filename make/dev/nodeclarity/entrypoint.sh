@@ -33,7 +33,7 @@ chmod -R +xr /harbor_src/ui_ng/lib/dist
 cd /harbor_src/ui_ng/lib/dist
 npm link
 cd /harbor_src/ui_ng
-npm link harbor-ui
+npm link @harbor/ui
 
 ## Rollup
 ./node_modules/.bin/ngc -p tsconfig.json

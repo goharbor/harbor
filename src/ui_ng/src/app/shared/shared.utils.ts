@@ -14,7 +14,7 @@
 import { NgForm } from '@angular/forms';
 import {RequestOptions, Headers} from "@angular/http";
 import { Comparator, State } from '@clr/angular';
-import {RequestQueryParams} from "harbor-ui";
+import {RequestQueryParams} from "@harbor/ui";
 
 import { MessageService } from '../global-message/message.service';
 import { httpStatusCode, AlertType } from './shared.const';

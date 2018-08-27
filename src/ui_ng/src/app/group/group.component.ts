@@ -3,7 +3,7 @@ import { TranslateService } from "@ngx-translate/core";
 import { Observable} from "rxjs";
 import { Subscription } from "rxjs/Subscription";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 
 import {
   ConfirmationTargets,

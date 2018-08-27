@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent } from 'harbor-ui';
+import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent } from '@harbor/ui';
 
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';

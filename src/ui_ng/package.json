@@ -12,7 +12,8 @@
         "e2e": "protractor",
         "build": "ng build --aot",
         "release": "ng build --aot --prod",
-        "build:lib": "ng-packagr -p ./lib/ng-package.json"
+        "build:lib": "ng-packagr -p ./lib/ng-package.json",
+        "link-lib": "cd lib/dist && npm link && cd ../../ && npm link @harbor/ui"
     },
     "private": true,
     "dependencies": {
@@ -58,7 +59,6 @@
         "bootstrap": "4.0.0-alpha.5",
         "codelyzer": "~4.2.1",
         "enhanced-resolve": "^3.0.0",
-        "harbor-ui": "0.7.19-dev.9",
         "jasmine-core": "~2.99.1",
         "jasmine-spec-reporter": "~4.2.1",
         "karma": "~1.7.1",
