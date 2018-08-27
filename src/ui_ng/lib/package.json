@@ -43,6 +43,8 @@
         "rxjs-compat": "^6.2.2",
         "ts-helpers": "^1.1.1",
         "web-animations-js": "^2.2.1",
-        "zone.js": "^0.8.4"
+        "zone.js": "^0.8.4",
+        "tslib": "^1.9.0"
+    
     }
 }

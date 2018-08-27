@@ -36,7 +36,7 @@ cd /harbor_src/ui_ng
 npm link harbor-ui
 
 ## Rollup
-./node_modules/.bin/ngc -p tsconfig-aot.json
+./node_modules/.bin/ngc -p tsconfig.json
 sed -i 's/* as//g' src/app/shared/gauge/gauge.component.js
 ./node_modules/.bin/rollup -c rollup-config.js
 

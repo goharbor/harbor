@@ -6,14 +6,17 @@
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": ["es2015", "dom"],
+    "lib": [
+      "es2015",
+      "dom"
+    ],
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
-    "outDir": "aot",
     "typeRoots": [
       "./node_modules/@types/"
-    ]
+    ],
+    "baseUrl": "./"
   },
   "files": [
     "src/app/app.module.ts",
@@ -21,7 +24,7 @@
   ],
   "angularCompilerOptions": {
     "skipTemplateCodegen": true,
-    "skipMetadataEmit" : true,
-    "fullTemplateTypeCheck":true
+    "skipMetadataEmit": false,
+    "fullTemplateTypeCheck": false
   }
 }

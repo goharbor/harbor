@@ -10,7 +10,7 @@
         "test": "ng test --single-run",
         "pree2e": "webdriver-manager update",
         "e2e": "protractor",
-        "build": "ngc -p tsconfig-aot.json",
+        "build": "ng build",
         "build:lib": "ng-packagr -p ./lib/ng-package.json"
     },
     "private": true,
@@ -24,7 +24,7 @@
         "@angular/platform-browser": "^6.0.3",
         "@angular/platform-browser-dynamic": "^6.0.3",
         "@angular/router": "^6.0.3",
-        "@clr/angular": "^0.12.0",
+        "@clr/angular": "^0.12.10",
         "@clr/icons": "^0.12.0",
         "@clr/ui": "^0.12.0",
         "@ngx-translate/core": "^10.0.2",
@@ -42,13 +42,13 @@
         "ts-helpers": "^1.1.1",
         "types": "^0.1.1",
         "web-animations-js": "^2.2.1",
-        "yarn": "^1.7.0",
-        "zone.js": "^0.8.26"
+        "zone.js": "^0.8.26",
+        "tslib": "^1.9.0"
     },
     "devDependencies": {
-        "@angular-devkit/build-angular": "~0.6.8",
-        "@angular/cli": "~6.0.8",
-        "@angular/compiler-cli": "^6.0.3",
+        "@angular-devkit/build-angular": "~0.7.0",
+        "@angular/cli": "^6.1.5",
+        "@angular/compiler-cli": "^6.1.4",
         "@angular/language-service": "^6.0.3",
         "@types/core-js": "^0.9.41",
         "@types/jasmine": "~2.8.6",
