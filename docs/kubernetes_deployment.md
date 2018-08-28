@@ -1,4 +1,4 @@
-**IMPORTANT** This guide is deprecated and not updated any more. We strongly recommend using [Harbor Helm Chart](https://github.com/goharbor/harbor/tree/master/contrib/helm/harbor) to deploy latest Harbor release on Kubernetes.
+**IMPORTANT** This guide is deprecated and not updated any more. We strongly recommend using [Harbor Helm Chart](https://github.com/goharbor/harbor-helm) to deploy latest Harbor release on Kubernetes.
 
 ## Integration with Kubernetes
 This Document decribes how to deploy Harbor on Kubernetes. It has been verified on **Kubernetes v1.6.5** and **Harbor v1.2.0**
