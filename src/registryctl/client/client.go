@@ -28,7 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/registryctl/api"
 )
 
-// Client defines methods that an Regsitry client should implement
+// Client defines methods that an Registry client should implement
 type Client interface {
 	// Health tests the connection with registry server
 	Health() error

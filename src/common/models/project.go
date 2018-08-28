@@ -115,7 +115,7 @@ func isTrue(value string) bool {
 // List projects the owner of which is user1: query := &QueryParam{Owner:"user1"}
 // List all public projects the owner of which is user1: query := &QueryParam{Owner:"user1",Public:true}
 // List projects which user1 is member of: query := &QueryParam{Member:&Member{Name:"user1"}}
-// List projects which user1 is the project admin : query := &QueryParam{Memeber:&Member{Name:"user1",Role:1}}
+// List projects which user1 is the project admin : query := &QueryParam{Member:&Member{Name:"user1",Role:1}}
 type ProjectQueryParam struct {
 	Name       string       // the name of project
 	Owner      string       // the username of project owner

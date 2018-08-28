@@ -77,7 +77,7 @@ type TokenService struct {
 
 // SystemCfg holds all configurations of system
 type SystemCfg struct {
-	DomainName                 string          `json:"domain_name"` // Harbor external URL: protocal://host:port
+	DomainName                 string          `json:"domain_name"` // Harbor external URL: protocol://host:port
 	Authentication             *Authentication `json:"authentication"`
 	Database                   *Database       `json:"database"`
 	TokenService               *TokenService   `json:"token_service"`

@@ -156,7 +156,7 @@ func (sia *SystemInfoAPI) GetCert() {
 func (sia *SystemInfoAPI) GetGeneralInfo() {
 	cfg, err := config.GetSystemCfg()
 	if err != nil {
-		log.Errorf("Error occured getting config: %v", err)
+		log.Errorf("Error occurred getting config: %v", err)
 		sia.CustomAbort(http.StatusInternalServerError, "Unexpected error")
 	}
 	var registryURL string
@@ -198,7 +198,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 func (sia *SystemInfoAPI) getVersion() string {
 	version, err := ioutil.ReadFile(harborVersionFile)
 	if err != nil {
-		log.Errorf("Error occured getting harbor version: %v", err)
+		log.Errorf("Error occurred getting harbor version: %v", err)
 		return ""
 	}
 	return string(version[:])

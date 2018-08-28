@@ -28,7 +28,7 @@ func MakeUniquePeriodicID(name, spec string, epoch int64) string {
 	return fmt.Sprintf("periodic:job:%s:%s:%d", name, spec, epoch)
 }
 
-//RedisNamespacePrefix ... Same with 'KeyNamespacePrefix', only for compatiblity.
+//RedisNamespacePrefix ... Same with 'KeyNamespacePrefix', only for compatibility.
 func RedisNamespacePrefix(namespace string) string {
 	return KeyNamespacePrefix(namespace)
 }

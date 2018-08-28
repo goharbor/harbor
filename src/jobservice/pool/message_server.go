@@ -82,7 +82,7 @@ func (ms *MessageServer) Start() error {
 					switch m.Event {
 					case period.EventSchedulePeriodicPolicy,
 						period.EventUnSchedulePeriodicPolicy:
-						//ignore error, actually error should not be happend because we did not change data
+						//ignore error, actually error should not be happened because we did not change data
 						//after the last unmarshal try.
 						policyObject := &period.PeriodicJobPolicy{}
 						dt, _ := json.Marshal(m.Data)

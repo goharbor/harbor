@@ -56,7 +56,7 @@ type Configuration struct {
 
 //Scheduler is designed for scheduling policies.
 type Scheduler struct {
-	//Mutex for sync controling.
+	//Mutex for sync controlling.
 	*sync.RWMutex
 
 	//Related configuration options for scheduler.

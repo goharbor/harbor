@@ -44,7 +44,7 @@ func TestGetRepos(t *testing.T) {
 			assert.Equal(int(1), len(repos), "the length of repositories should be 1")
 			assert.Equal(repos[0].Name, "library/hello-world", "unexpected repository name")
 		} else {
-			t.Error("unexpected reponse")
+			t.Error("unexpected response")
 		}
 	}
 

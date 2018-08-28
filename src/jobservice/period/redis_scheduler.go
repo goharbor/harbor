@@ -255,7 +255,7 @@ func (rps *RedisPeriodicScheduler) Load() error {
 		if pid, ok := keyScoreMap[score]; ok {
 			policy.PolicyID = pid
 		} else {
-			//Something wrong, should not be happended
+			//Something wrong, should not be happened
 			//ignore here
 			continue
 		}

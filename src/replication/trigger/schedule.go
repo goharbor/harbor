@@ -46,7 +46,7 @@ func (st *ScheduleTrigger) Setup() error {
 		h, m, s := common_utils.ParseOfftime(st.params.Offtime)
 		metadata.Cron = fmt.Sprintf("%d %d %d * * %d", s, m, h, st.params.Weekday%7)
 	default:
-		return fmt.Errorf("unsupported schedual trigger type: %s", st.params.Type)
+		return fmt.Errorf("unsupported schedule trigger type: %s", st.params.Type)
 	}
 
 	id, err := dao.AddRepJob(models.RepJob{

@@ -121,7 +121,7 @@ func (c *Client) GetNotification(id string) (*models.ClairNotification, error) {
 	if ne.Error != nil {
 		return nil, fmt.Errorf("Clair error: %s", ne.Error.Message)
 	}
-	log.Debugf("Retrived notification %s from Clair.", id)
+	log.Debugf("Retrieved notification %s from Clair.", id)
 	return ne.Notification, nil
 }
 

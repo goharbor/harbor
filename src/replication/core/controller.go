@@ -142,7 +142,7 @@ func (ctl *DefaultController) UpdatePolicy(updatedPolicy models.ReplicationPolic
 				reset = true
 			}
 		case replication.TriggerKindImmediate:
-			// Always reset immediate trigger as it is relevent with namespaces
+			// Always reset immediate trigger as it is relevant with namespaces
 			reset = true
 		default:
 			// manual trigger, no need to reset

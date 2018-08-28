@@ -30,7 +30,7 @@ func TestGetVolumeInfo(t *testing.T) {
 	CommonAddUser()
 	code, _, err := apiTest.VolumeInfoGet(*testUser)
 	if err != nil {
-		t.Error("Error occured while get system volume info")
+		t.Error("Error occurred while get system volume info")
 		t.Log(err)
 	} else {
 		assert.Equal(403, code, "Get system volume info should be 403")
@@ -38,7 +38,7 @@ func TestGetVolumeInfo(t *testing.T) {
 	//case 2: get volume info with admin role
 	code, info, err := apiTest.VolumeInfoGet(*admin)
 	if err != nil {
-		t.Error("Error occured while get system volume info")
+		t.Error("Error occurred while get system volume info")
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Get system volume info should be 200")
@@ -75,7 +75,7 @@ func TestGetCert(t *testing.T) {
 	//case 1: get cert without admin role
 	code, _, err := apiTest.CertGet(*testUser)
 	if err != nil {
-		t.Error("Error occured while get system cert")
+		t.Error("Error occurred while get system cert")
 		t.Log(err)
 	} else {
 		assert.Equal(403, code, "Get system cert should be 403")
@@ -83,7 +83,7 @@ func TestGetCert(t *testing.T) {
 	//case 2: get cert with admin role
 	code, content, err := apiTest.CertGet(*admin)
 	if err != nil {
-		t.Error("Error occured while get system cert")
+		t.Error("Error occurred while get system cert")
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Get system cert should be 200")
