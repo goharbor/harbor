@@ -10,7 +10,7 @@
       "es2015",
       "dom"
     ],
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
     "typeRoots": [

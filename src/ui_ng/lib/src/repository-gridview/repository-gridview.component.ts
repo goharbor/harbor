@@ -365,6 +365,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                     this.currentState
                 );
                 this.repositories = this.repositories.concat(this.repositoriesCopy);
+                console.log("xxx");
+                console.log(this.repositories);
                 this.loading = false;
             })
             .catch(error => {
@@ -400,6 +402,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
             )
         )
             .then((repo: Repository) => {
+        
                 this.totalCount = repo.metadata.xTotalCount;
                 this.repositories = repo.data;
 
@@ -410,7 +413,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                     state
                 );
                 this.repositories = doSorting<RepositoryItem>(this.repositories, state);
-
+                console.log("xxx");
+                console.log(this.repositories);
                 this.loading = false;
             })
             .catch(error => {
