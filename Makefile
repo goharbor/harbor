@@ -414,6 +414,29 @@ gosec:
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
 
+go_check: misspell golint govet gofmt
+
+gofmt:
+	@echo checking gofmt...
+	@res=$$(gofmt -d -e -s $$(find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print)); \
+	if [ -n "$${res}" ]; then \
+		echo checking gofmt fail... ; \
+		echo "$${res}"; \
+		exit 1; \
+	fi
+
+misspell:
+	@echo checking misspell...
+	@find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
+
+golint:
+	@echo checking golint...
+	@go list ./... | grep -v -E 'vendor|test' | xargs -L1 fgt golint
+
+govet:
+	@echo checking govet...
+	@go list ./... | grep -v -E 'vendor|test' | xargs -L1 go vet
+
 pushimage:
 	@echo "pushing harbor images ..."
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
