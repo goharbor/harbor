@@ -17,31 +17,31 @@ package source
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTagConvert(t *testing.T) {
 	items := []models.FilterItem{
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindRepository,
 			Value: "library/ubuntu",
 		},
-		models.FilterItem{
+		{
 			Kind: replication.FilterItemKindProject,
 		},
 	}
 	expected := []models.FilterItem{
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:14.04",
 		},
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:16.04",
 		},
-		models.FilterItem{
+		{
 			Kind: replication.FilterItemKindProject,
 		},
 	}

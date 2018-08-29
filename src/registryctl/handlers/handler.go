@@ -18,9 +18,9 @@ import (
 	"net/http"
 	"os"
 
-	gorilla_handlers "github.com/gorilla/handlers"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/registryctl/auth"
+	gorilla_handlers "github.com/gorilla/handlers"
 )
 
 // NewHandlerChain returns a gorilla router which is wrapped by  authenticate handler

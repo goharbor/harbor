@@ -56,42 +56,42 @@ func TestMain(m *testing.M) {
 
 func TestGetResourceActions(t *testing.T) {
 	cases := map[string]*token.ResourceActions{
-		"::": &token.ResourceActions{
+		"::": {
 			Type:    "",
 			Name:    "",
 			Actions: []string{},
 		},
-		"repository": &token.ResourceActions{
+		"repository": {
 			Type:    "repository",
 			Name:    "",
 			Actions: []string{},
 		},
-		"repository:": &token.ResourceActions{
+		"repository:": {
 			Type:    "repository",
 			Name:    "",
 			Actions: []string{},
 		},
-		"repository:library/hello-world": &token.ResourceActions{
+		"repository:library/hello-world": {
 			Type:    "repository",
 			Name:    "library/hello-world",
 			Actions: []string{},
 		},
-		"repository:library/hello-world:": &token.ResourceActions{
+		"repository:library/hello-world:": {
 			Type:    "repository",
 			Name:    "library/hello-world",
 			Actions: []string{},
 		},
-		"repository:library/hello-world:pull,push": &token.ResourceActions{
+		"repository:library/hello-world:pull,push": {
 			Type:    "repository",
 			Name:    "library/hello-world",
 			Actions: []string{"pull", "push"},
 		},
-		"registry:catalog:*": &token.ResourceActions{
+		"registry:catalog:*": {
 			Type:    "registry",
 			Name:    "catalog",
 			Actions: []string{"*"},
 		},
-		"repository:192.168.0.1:443/library/hello-world:pull,push": &token.ResourceActions{
+		"repository:192.168.0.1:443/library/hello-world:pull,push": {
 			Type:    "repository",
 			Name:    "192.168.0.1:443/library/hello-world",
 			Actions: []string{"pull", "push"},
@@ -135,7 +135,7 @@ func TestMakeToken(t *testing.T) {
 	pk, crt := getKeyAndCertPath()
 	//overwrite the config values for testing.
 	privateKey = pk
-	ra := []*token.ResourceActions{&token.ResourceActions{
+	ra := []*token.ResourceActions{{
 		Type:    "repository",
 		Name:    "10.117.4.142/notary-test/hello-world-2",
 		Actions: []string{"pull", "push"},
@@ -193,10 +193,10 @@ func TestInit(t *testing.T) {
 }
 
 func TestBasicParser(t *testing.T) {
-	testList := []parserTestRec{parserTestRec{"library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
-		parserTestRec{"test/hello", image{"test", "hello", ""}, false},
-		parserTestRec{"myimage:14.04", image{}, true},
-		parserTestRec{"org/team/img", image{"org", "team/img", ""}, false},
+	testList := []parserTestRec{{"library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
+		{"test/hello", image{"test", "hello", ""}, false},
+		{"myimage:14.04", image{}, true},
+		{"org/team/img", image{"org", "team/img", ""}, false},
 	}
 
 	p := &basicParser{}
@@ -215,12 +215,12 @@ func TestEndpointParser(t *testing.T) {
 	p := &endpointParser{
 		"10.117.4.142:5000",
 	}
-	testList := []parserTestRec{parserTestRec{"10.117.4.142:5000/library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
-		parserTestRec{"myimage:14.04", image{}, true},
-		parserTestRec{"10.117.4.142:80/library/myimage:14.04", image{}, true},
-		parserTestRec{"library/myimage:14.04", image{}, true},
-		parserTestRec{"10.117.4.142:5000/myimage:14.04", image{}, true},
-		parserTestRec{"10.117.4.142:5000/org/team/img", image{"org", "team/img", ""}, false},
+	testList := []parserTestRec{{"10.117.4.142:5000/library/ubuntu:14.04", image{"library", "ubuntu", "14.04"}, false},
+		{"myimage:14.04", image{}, true},
+		{"10.117.4.142:80/library/myimage:14.04", image{}, true},
+		{"library/myimage:14.04", image{}, true},
+		{"10.117.4.142:5000/myimage:14.04", image{}, true},
+		{"10.117.4.142:5000/org/team/img", image{"org", "team/img", ""}, false},
 	}
 	for _, rec := range testList {
 		r, err := p.parse(rec.input)

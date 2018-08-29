@@ -18,8 +18,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	comcfg "github.com/goharbor/harbor/src/common/config"
+	"github.com/stretchr/testify/assert"
 )
 
 type fakeKeyProvider struct {

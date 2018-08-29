@@ -17,10 +17,10 @@ package source
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBuild(t *testing.T) {
@@ -41,11 +41,11 @@ func TestDoFilter(t *testing.T) {
 	filters := []Filter{projectFilter, repositoryFilter}
 
 	items := []models.FilterItem{
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindProject,
 			Value: "library",
 		},
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindProject,
 			Value: "test",
 		},
@@ -53,7 +53,7 @@ func TestDoFilter(t *testing.T) {
 	chain := NewDefaultFilterChain(filters)
 	items = chain.DoFilter(items)
 	assert.EqualValues(t, []models.FilterItem{
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindRepository,
 			Value: "library/ubuntu",
 		},

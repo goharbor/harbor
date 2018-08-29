@@ -28,7 +28,6 @@ import (
 	"github.com/astaxie/beego"
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/session"
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	commonsecret "github.com/goharbor/harbor/src/common/secret"
@@ -40,6 +39,7 @@ import (
 	"github.com/goharbor/harbor/src/ui/config"
 	"github.com/goharbor/harbor/src/ui/promgr"
 	driver_local "github.com/goharbor/harbor/src/ui/promgr/pmsdriver/local"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {

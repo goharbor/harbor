@@ -15,9 +15,9 @@
 package source
 
 import (
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/stretchr/testify/assert"
 
 	"testing"
 )
@@ -34,21 +34,21 @@ func TestPatternFilterGetConvertor(t *testing.T) {
 
 func TestPatternFilterDoFilter(t *testing.T) {
 	items := []models.FilterItem{
-		models.FilterItem{
+		{
 			Kind: replication.FilterItemKindProject,
 		},
-		models.FilterItem{
+		{
 			Kind: replication.FilterItemKindRepository,
 		},
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:release-14.04",
 		},
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:release-16.04",
 		},
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:test",
 		},

@@ -1,8 +1,8 @@
 package api
 
 import (
-	"net/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"net/http"
 )
 
 // Ping monitor the server status

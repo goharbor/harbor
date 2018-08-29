@@ -17,10 +17,10 @@ package promgr
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/ui/promgr/pmsdriver"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type fakePMSDriver struct {

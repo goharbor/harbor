@@ -21,14 +21,14 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao/project"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/replication"
 	rep_models "github.com/goharbor/harbor/src/replication/models"
 	api_models "github.com/goharbor/harbor/src/ui/api/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -63,7 +63,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    repPolicyAPIBasePath,
@@ -71,7 +71,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			code: http.StatusUnauthorized,
 		},
 		// 403
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        repPolicyAPIBasePath,
@@ -81,7 +81,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 		},
 
 		// 400, invalid name
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        repPolicyAPIBasePath,
@@ -91,7 +91,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 400, invalid projects
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    repPolicyAPIBasePath,
@@ -103,14 +103,14 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 400, invalid targets
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    repPolicyAPIBasePath,
 				bodyJSON: &api_models.ReplicationPolicy{
 					Name: policyName,
 					Projects: []*models.Project{
-						&models.Project{
+						{
 							ProjectID: projectID,
 						},
 					},
@@ -120,24 +120,24 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 400, invalid filters
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    repPolicyAPIBasePath,
 				bodyJSON: &api_models.ReplicationPolicy{
 					Name: policyName,
 					Projects: []*models.Project{
-						&models.Project{
+						{
 							ProjectID: projectID,
 						},
 					},
 					Targets: []*models.RepTarget{
-						&models.RepTarget{
+						{
 							ID: targetID,
 						},
 					},
 					Filters: []rep_models.Filter{
-						rep_models.Filter{
+						{
 							Kind:    "invalid_filter_kind",
 							Pattern: "",
 						},
@@ -148,24 +148,24 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 400, invalid trigger
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    repPolicyAPIBasePath,
 				bodyJSON: &api_models.ReplicationPolicy{
 					Name: policyName,
 					Projects: []*models.Project{
-						&models.Project{
+						{
 							ProjectID: projectID,
 						},
 					},
 					Targets: []*models.RepTarget{
-						&models.RepTarget{
+						{
 							ID: targetID,
 						},
 					},
 					Filters: []rep_models.Filter{
-						rep_models.Filter{
+						{
 							Kind:    replication.FilterItemKindRepository,
 							Pattern: "*",
 						},
@@ -179,24 +179,24 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 404, project not found
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    repPolicyAPIBasePath,
 				bodyJSON: &api_models.ReplicationPolicy{
 					Name: policyName,
 					Projects: []*models.Project{
-						&models.Project{
+						{
 							ProjectID: 10000,
 						},
 					},
 					Targets: []*models.RepTarget{
-						&models.RepTarget{
+						{
 							ID: targetID,
 						},
 					},
 					Filters: []rep_models.Filter{
-						rep_models.Filter{
+						{
 							Kind:    replication.FilterItemKindRepository,
 							Pattern: "*",
 						},
@@ -210,24 +210,24 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 404, target not found
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    repPolicyAPIBasePath,
 				bodyJSON: &api_models.ReplicationPolicy{
 					Name: policyName,
 					Projects: []*models.Project{
-						&models.Project{
+						{
 							ProjectID: projectID,
 						},
 					},
 					Targets: []*models.RepTarget{
-						&models.RepTarget{
+						{
 							ID: 10000,
 						},
 					},
 					Filters: []rep_models.Filter{
-						rep_models.Filter{
+						{
 							Kind:    replication.FilterItemKindRepository,
 							Pattern: "*",
 						},
@@ -241,28 +241,28 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 404, label not found
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    repPolicyAPIBasePath,
 				bodyJSON: &api_models.ReplicationPolicy{
 					Name: policyName,
 					Projects: []*models.Project{
-						&models.Project{
+						{
 							ProjectID: projectID,
 						},
 					},
 					Targets: []*models.RepTarget{
-						&models.RepTarget{
+						{
 							ID: targetID,
 						},
 					},
 					Filters: []rep_models.Filter{
-						rep_models.Filter{
+						{
 							Kind:    replication.FilterItemKindRepository,
 							Pattern: "*",
 						},
-						rep_models.Filter{
+						{
 							Kind:  replication.FilterItemKindLabel,
 							Value: 10000,
 						},
@@ -276,28 +276,28 @@ func TestRepPolicyAPIPost(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 201
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    repPolicyAPIBasePath,
 				bodyJSON: &api_models.ReplicationPolicy{
 					Name: policyName,
 					Projects: []*models.Project{
-						&models.Project{
+						{
 							ProjectID: projectID,
 						},
 					},
 					Targets: []*models.RepTarget{
-						&models.RepTarget{
+						{
 							ID: targetID,
 						},
 					},
 					Filters: []rep_models.Filter{
-						rep_models.Filter{
+						{
 							Kind:    replication.FilterItemKindRepository,
 							Pattern: "*",
 						},
-						rep_models.Filter{
+						{
 							Kind:  replication.FilterItemKindLabel,
 							Value: labelID2,
 						},
@@ -320,7 +320,7 @@ func TestRepPolicyAPIGet(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, 10000),
@@ -329,7 +329,7 @@ func TestRepPolicyAPIGet(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
@@ -512,7 +512,7 @@ func TestRepPolicyAPIList(t *testing.T) {
 func TestRepPolicyAPIPut(t *testing.T) {
 	cases := []*codeCheckingCase{
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, 10000),
@@ -521,24 +521,24 @@ func TestRepPolicyAPIPut(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 400, invalid trigger
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
 				bodyJSON: &api_models.ReplicationPolicy{
 					Name: policyName,
 					Projects: []*models.Project{
-						&models.Project{
+						{
 							ProjectID: projectID,
 						},
 					},
 					Targets: []*models.RepTarget{
-						&models.RepTarget{
+						{
 							ID: targetID,
 						},
 					},
 					Filters: []rep_models.Filter{
-						rep_models.Filter{
+						{
 							Kind:    replication.FilterItemKindRepository,
 							Pattern: "*",
 						},
@@ -552,24 +552,24 @@ func TestRepPolicyAPIPut(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
 				bodyJSON: &api_models.ReplicationPolicy{
 					Name: policyName,
 					Projects: []*models.Project{
-						&models.Project{
+						{
 							ProjectID: projectID,
 						},
 					},
 					Targets: []*models.RepTarget{
-						&models.RepTarget{
+						{
 							ID: targetID,
 						},
 					},
 					Filters: []rep_models.Filter{
-						rep_models.Filter{
+						{
 							Kind:    replication.FilterItemKindRepository,
 							Pattern: "*",
 						},
@@ -590,7 +590,7 @@ func TestRepPolicyAPIPut(t *testing.T) {
 func TestRepPolicyAPIDelete(t *testing.T) {
 	cases := []*codeCheckingCase{
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, 10000),
@@ -599,7 +599,7 @@ func TestRepPolicyAPIDelete(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("%s/%d", repPolicyAPIBasePath, policyID),
@@ -627,7 +627,7 @@ func TestConvertToRepPolicy(t *testing.T) {
 				Name:        "policy",
 				Description: "description",
 				Filters: []rep_models.Filter{
-					rep_models.Filter{
+					{
 						Kind:    "filter_kind_01",
 						Pattern: "*",
 					},
@@ -637,13 +637,13 @@ func TestConvertToRepPolicy(t *testing.T) {
 					Kind: "trigger_kind_01",
 				},
 				Projects: []*models.Project{
-					&models.Project{
+					{
 						ProjectID: 1,
 						Name:      "library",
 					},
 				},
 				Targets: []*models.RepTarget{
-					&models.RepTarget{
+					{
 						ID: 1,
 					},
 				},
@@ -653,7 +653,7 @@ func TestConvertToRepPolicy(t *testing.T) {
 				Name:        "policy",
 				Description: "description",
 				Filters: []rep_models.Filter{
-					rep_models.Filter{
+					{
 						Kind:    "filter_kind_01",
 						Pattern: "*",
 					},

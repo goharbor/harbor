@@ -20,8 +20,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/replication"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestInitOfLabelFilter(t *testing.T) {
@@ -38,7 +38,7 @@ func TestDoFilterOfLabelFilter(t *testing.T) {
 	test.InitDatabaseFromEnv()
 	filter := NewLabelFilter(1)
 	items := []models.FilterItem{
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/hello-world:latest",
 		},

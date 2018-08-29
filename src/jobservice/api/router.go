@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/gorilla/mux"
 )
 
 const (

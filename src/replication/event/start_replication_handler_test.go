@@ -17,10 +17,10 @@ package event
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/replication/core"
 	"github.com/goharbor/harbor/src/replication/event/notification"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHandle(t *testing.T) {

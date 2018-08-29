@@ -18,9 +18,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/goharbor/harbor/src/common/models"
 )
 
 func TestValidateProjectMetadata(t *testing.T) {

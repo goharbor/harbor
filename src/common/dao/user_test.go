@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteUser(t *testing.T) {

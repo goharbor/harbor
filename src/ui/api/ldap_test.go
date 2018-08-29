@@ -9,14 +9,14 @@ import (
 
 func TestLDAPPing(t *testing.T) {
 	cases := []*codeCheckingCase{
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/ldap/ping",
 			},
 			code: http.StatusUnauthorized,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        "/api/ldap/ping",
@@ -24,7 +24,7 @@ func TestLDAPPing(t *testing.T) {
 			},
 			code: http.StatusOK,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/ldap/ping",
@@ -47,14 +47,14 @@ func TestLDAPPing(t *testing.T) {
 
 func TestLDAPUserSearch(t *testing.T) {
 	cases := []*codeCheckingCase{
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    "/api/ldap/users/search?username=mike",
 			},
 			code: http.StatusUnauthorized,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/ldap/users/search?username=mike",
@@ -68,14 +68,14 @@ func TestLDAPUserSearch(t *testing.T) {
 
 func TestLDAPGroupSearch(t *testing.T) {
 	cases := []*codeCheckingCase{
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    "/api/ldap/groups/search?groupname=harbor_users",
 			},
 			code: http.StatusUnauthorized,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/ldap/groups/search?groupname=harbor_users",
@@ -89,14 +89,14 @@ func TestLDAPGroupSearch(t *testing.T) {
 
 func TestLDAPGroupSearchWithDN(t *testing.T) {
 	cases := []*codeCheckingCase{
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    "/api/ldap/groups/search?groupdn=cn=harbor_users,ou=groups,dc=example,dc=com",
 			},
 			code: http.StatusUnauthorized,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/ldap/groups/search?groupname=cn=harbor_users,ou=groups,dc=example,dc=com",
@@ -110,7 +110,7 @@ func TestLDAPGroupSearchWithDN(t *testing.T) {
 
 func TestLDAPImportUser(t *testing.T) {
 	cases := []*codeCheckingCase{
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/ldap/users/import",
@@ -120,7 +120,7 @@ func TestLDAPImportUser(t *testing.T) {
 			},
 			code: http.StatusUnauthorized,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/ldap/users/import",

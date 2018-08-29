@@ -2,8 +2,8 @@ package uaa
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common/utils/uaa/test"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http/httptest"
 	"os"

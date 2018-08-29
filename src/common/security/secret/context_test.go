@@ -17,9 +17,9 @@ package secret
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/secret"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIsAuthenticated(t *testing.T) {
