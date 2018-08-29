@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/semver"
@@ -45,6 +47,7 @@ type ChartInfo struct {
 	Name          string
 	TotalVersions uint32 `json:"total_versions"`
 	Created       time.Time
+	Updated       time.Time
 	Icon          string
 	Home          string
 	Deprecated    bool
@@ -134,6 +137,16 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 			chartList = append(chartList, chartInfo)
 		}
 	}
+
+	//Sort the chart list by the updated time which is the create time
+	//of the latest version of the chart.
+	sort.Slice(chartList, func(i, j int) bool {
+		if chartList[i].Updated.Equal(chartList[j].Updated) {
+			return strings.Compare(chartList[i].Name, chartList[j].Name) < 0
+		}
+
+		return chartList[i].Updated.After(chartList[j].Updated)
+	})
 
 	return chartList, nil
 }
