@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -23,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/scan"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/pool"
+	"github.com/gomodule/redigo/redis"
 )
 
 const (

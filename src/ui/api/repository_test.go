@@ -18,11 +18,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetRepos(t *testing.T) {
@@ -256,7 +256,7 @@ func TestPutOfRepository(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:   http.MethodPut,
 				url:      base + "non_exist_repository",
@@ -265,7 +265,7 @@ func TestPutOfRepository(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:   http.MethodPut,
 				url:      base + "library/hello-world",
@@ -274,7 +274,7 @@ func TestPutOfRepository(t *testing.T) {
 			code: http.StatusUnauthorized,
 		},
 		// 403 non-member
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        base + "library/hello-world",
@@ -284,7 +284,7 @@ func TestPutOfRepository(t *testing.T) {
 			code: http.StatusForbidden,
 		},
 		// 403 project guest
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        base + "library/hello-world",
@@ -294,7 +294,7 @@ func TestPutOfRepository(t *testing.T) {
 			code: http.StatusForbidden,
 		},
 		// 200 project developer
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        base + "library/hello-world",
@@ -304,7 +304,7 @@ func TestPutOfRepository(t *testing.T) {
 			code: http.StatusOK,
 		},
 		// 200 project admin
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        base + "library/hello-world",
@@ -314,7 +314,7 @@ func TestPutOfRepository(t *testing.T) {
 			code: http.StatusOK,
 		},
 		// 200 system admin
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        base + "library/hello-world",

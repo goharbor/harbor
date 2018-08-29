@@ -50,7 +50,7 @@ var (
 func TestBlobExist(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
-		dgt := path[strings.LastIndex(path, "/")+1 : len(path)]
+		dgt := path[strings.LastIndex(path, "/")+1:]
 		if dgt == digest {
 			w.Header().Add(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(blob)))
 			w.Header().Add(http.CanonicalHeaderKey("Docker-Content-Digest"), digest)
@@ -205,7 +205,7 @@ func TestDeleteBlob(t *testing.T) {
 func TestManifestExist(t *testing.T) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
-		tg := path[strings.LastIndex(path, "/")+1 : len(path)]
+		tg := path[strings.LastIndex(path, "/")+1:]
 		if tg == tag {
 			w.Header().Add(http.CanonicalHeaderKey("Docker-Content-Digest"), digest)
 			w.Header().Add(http.CanonicalHeaderKey("Content-Type"), mediaType)

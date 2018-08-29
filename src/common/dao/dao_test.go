@@ -20,12 +20,12 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func execUpdate(o orm.Ormer, sql string, params ...interface{}) error {
@@ -1311,7 +1311,7 @@ func TestImgScanOverview(t *testing.T) {
 	comp := &models.ComponentsOverview{
 		Total: 2,
 		Summary: []*models.ComponentsOverviewEntry{
-			&models.ComponentsOverviewEntry{
+			{
 				Sev:   int(models.SevMedium),
 				Count: 2,
 			},

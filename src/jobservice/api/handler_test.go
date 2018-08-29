@@ -424,7 +424,7 @@ func (fc *fakeController) CancelJob(jobID string) error {
 
 func (fc *fakeController) CheckStatus() (models.JobPoolStats, error) {
 	return models.JobPoolStats{
-		Pools: []*models.JobPoolStatsData{&models.JobPoolStatsData{
+		Pools: []*models.JobPoolStatsData{{
 			WorkerPoolID: "fake_pool_ID",
 			Status:       "running",
 			StartedAt:    time.Now().Unix(),

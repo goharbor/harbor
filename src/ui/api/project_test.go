@@ -24,11 +24,11 @@ import (
 
 	"github.com/goharbor/harbor/src/chartserver"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var addProject *apilib.ProjectReq

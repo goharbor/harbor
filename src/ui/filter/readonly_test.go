@@ -20,10 +20,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestReadonlyFilter(t *testing.T) {

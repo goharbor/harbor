@@ -18,13 +18,13 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/stretchr/testify/require"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/astaxie/beego"
 )
@@ -360,7 +360,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		// unauthorized
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    buildChangeUserPasswordURL(user01.UserID),
@@ -368,7 +368,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 			code: http.StatusUnauthorized,
 		},
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    buildChangeUserPasswordURL(10000),
@@ -380,7 +380,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 403, a normal user tries to change password of others
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    buildChangeUserPasswordURL(user02.UserID),
@@ -392,7 +392,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 			code: http.StatusForbidden,
 		},
 		// 400, empty old password
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:   http.MethodPut,
 				url:      buildChangeUserPasswordURL(user01.UserID),
@@ -405,7 +405,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 400, empty new password
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    buildChangeUserPasswordURL(user01.UserID),
@@ -420,7 +420,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 403, incorrect old password
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    buildChangeUserPasswordURL(user01.UserID),
@@ -436,7 +436,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 			code: http.StatusForbidden,
 		},
 		// 200, normal user change own password
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    buildChangeUserPasswordURL(user01.UserID),
@@ -453,7 +453,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 		},
 		// 400, admin user change password of others.
 		// the new password is same with the old one
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    buildChangeUserPasswordURL(user01.UserID),
@@ -465,7 +465,7 @@ func TestUsersUpdatePassword(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 200, admin user change password of others
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    buildChangeUserPasswordURL(user01.UserID),

@@ -26,13 +26,13 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/ui/config"
 	"github.com/goharbor/harbor/src/ui/proxy"
+	"github.com/stretchr/testify/assert"
 )
 
 //const (

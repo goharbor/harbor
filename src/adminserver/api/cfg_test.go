@@ -26,9 +26,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/adminserver/systemcfg"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/stretchr/testify/assert"
 )
 
 type fakeCfgStore struct {

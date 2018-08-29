@@ -20,8 +20,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/registryctl/auth"
+	"github.com/stretchr/testify/assert"
 )
 
 type fakeAuthenticator struct {

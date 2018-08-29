@@ -19,11 +19,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -60,7 +60,7 @@ func TestAddToImage(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
 					repository, tag),
@@ -69,7 +69,7 @@ func TestAddToImage(t *testing.T) {
 			code: http.StatusUnauthorized,
 		},
 		// 403
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
 					repository, tag),
@@ -79,7 +79,7 @@ func TestAddToImage(t *testing.T) {
 			code: http.StatusForbidden,
 		},
 		// 404 repository doesn't exist
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				url:        fmt.Sprintf("%s/library/non-exist-repo/tags/%s/labels", resourceLabelAPIBasePath, tag),
 				method:     http.MethodPost,
@@ -88,7 +88,7 @@ func TestAddToImage(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 404 image doesn't exist
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				url:        fmt.Sprintf("%s/%s/tags/non-exist-tag/labels", resourceLabelAPIBasePath, repository),
 				method:     http.MethodPost,
@@ -97,7 +97,7 @@ func TestAddToImage(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 400
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				url:        fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath, repository, tag),
 				method:     http.MethodPost,
@@ -106,7 +106,7 @@ func TestAddToImage(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 404 label doesn't exist
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
 					repository, tag),
@@ -121,7 +121,7 @@ func TestAddToImage(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 400 system level label
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
 					repository, tag),
@@ -136,7 +136,7 @@ func TestAddToImage(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 400 try to add the label of project1 to the image under project2
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
 					repository, tag),
@@ -151,7 +151,7 @@ func TestAddToImage(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
 					repository, tag),

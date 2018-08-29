@@ -237,7 +237,7 @@ func TestGetProjectMember(t *testing.T) {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
 	var memberList1 = []*models.Member{
-		&models.Member{
+		{
 			ID:         346,
 			Entityname: "admin",
 			Rolename:   "projectAdmin",
@@ -246,7 +246,7 @@ func TestGetProjectMember(t *testing.T) {
 			EntityType: "u"},
 	}
 	var memberList2 = []*models.Member{
-		&models.Member{
+		{
 			ID:         398,
 			Entityname: "test_group_01",
 			Rolename:   "projectAdmin",

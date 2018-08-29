@@ -17,11 +17,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common"
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/stretchr/testify/assert"
 
 	"net/http/httptest"
 	"os"

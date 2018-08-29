@@ -18,11 +18,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/replication"
 	api_models "github.com/goharbor/harbor/src/ui/api/models"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -52,7 +52,7 @@ func TestReplicationAPIPost(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    replicationAPIBaseURL,
@@ -63,7 +63,7 @@ func TestReplicationAPIPost(t *testing.T) {
 			code: http.StatusUnauthorized,
 		},
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    replicationAPIBaseURL,
@@ -75,7 +75,7 @@ func TestReplicationAPIPost(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    replicationAPIBaseURL,

@@ -18,9 +18,9 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/goharbor/harbor/src/replication/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/goharbor/harbor/src/replication/models"
 )
 
 func TestConvertToPersistModel(t *testing.T) {
@@ -31,7 +31,7 @@ func TestConvertToPersistModel(t *testing.T) {
 		Kind: "trigger_kind",
 	}
 	filters := []models.Filter{
-		models.Filter{
+		{
 			Kind:    "filter_kind",
 			Pattern: "filter_pattern",
 		},

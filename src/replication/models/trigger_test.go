@@ -18,20 +18,20 @@ import (
 	"testing"
 
 	"github.com/astaxie/beego/validation"
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/replication"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidOfTrigger(t *testing.T) {
 	cases := map[*Trigger]bool{
-		&Trigger{}: true,
-		&Trigger{
+		{}: true,
+		{
 			Kind: "invalid_kind",
 		}: true,
-		&Trigger{
+		{
 			Kind: replication.TriggerKindImmediate,
 		}: false,
-		&Trigger{
+		{
 			Kind: replication.TriggerKindSchedule,
 		}: true,
 	}
@@ -45,24 +45,24 @@ func TestValidOfTrigger(t *testing.T) {
 
 func TestValidOfScheduleParam(t *testing.T) {
 	cases := map[*ScheduleParam]bool{
-		&ScheduleParam{}: true,
-		&ScheduleParam{
+		{}: true,
+		{
 			Type: "invalid_type",
 		}: true,
-		&ScheduleParam{
+		{
 			Type:    replication.TriggerScheduleDaily,
 			Offtime: 3600*24 + 1,
 		}: true,
-		&ScheduleParam{
+		{
 			Type:    replication.TriggerScheduleDaily,
 			Offtime: 3600 * 2,
 		}: false,
-		&ScheduleParam{
+		{
 			Type:    replication.TriggerScheduleWeekly,
 			Weekday: 0,
 			Offtime: 3600 * 2,
 		}: true,
-		&ScheduleParam{
+		{
 			Type:    replication.TriggerScheduleWeekly,
 			Weekday: 7,
 			Offtime: 3600 * 2,

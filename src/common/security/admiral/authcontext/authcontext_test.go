@@ -41,7 +41,7 @@ func TestIsSysAdmin(t *testing.T) {
 func TestGetProjectRoles(t *testing.T) {
 	ctx := &AuthContext{
 		Projects: []*project{
-			&project{
+			{
 				Name:       "project",
 				Roles:      []string{projectAdminRole, developerRole, guestRole},
 				Properties: map[string]string{"__projectIndex": "9"},
@@ -61,11 +61,11 @@ func TestGetProjectRoles(t *testing.T) {
 func TestGetMyProjects(t *testing.T) {
 	ctx := &AuthContext{
 		Projects: []*project{
-			&project{
+			{
 				Name:  "project1",
 				Roles: []string{projectAdminRole},
 			},
-			&project{
+			{
 				Name:  "project2",
 				Roles: []string{developerRole},
 			},

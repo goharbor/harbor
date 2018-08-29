@@ -68,7 +68,7 @@ func BuildBlobURL(endpoint, repository, digest string) string {
 func GetTokenForRepo(repository, secret, internalTokenServiceURL string) (string, error) {
 	credential := httpauth.NewSecretAuthorizer(secret)
 	t, err := auth.GetToken(internalTokenServiceURL, true, credential,
-		[]*token.ResourceActions{&token.ResourceActions{
+		[]*token.ResourceActions{{
 			Type:    "repository",
 			Name:    repository,
 			Actions: []string{"pull"},

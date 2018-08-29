@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetConfig(t *testing.T) {

@@ -254,7 +254,7 @@ func (f *fakePool) PeriodicallyEnqueue(jobName string, params models.Parameters,
 func (f *fakePool) Stats() (models.JobPoolStats, error) {
 	return models.JobPoolStats{
 		Pools: []*models.JobPoolStatsData{
-			&models.JobPoolStatsData{
+			{
 				Status: "running",
 			},
 		},

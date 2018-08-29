@@ -27,7 +27,7 @@ import (
 func TestProjectMemberAPI_Get(t *testing.T) {
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    "/api/projects/1/members",
@@ -35,7 +35,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 			code: http.StatusUnauthorized,
 		},
 		//200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/projects/1/members",
@@ -44,7 +44,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 			code: http.StatusOK,
 		},
 		//400
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/projects/0/members",
@@ -53,7 +53,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/projects/1/members/121",
@@ -62,7 +62,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/projects/99999/members/121",
@@ -87,7 +87,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/projects/1/members",
@@ -100,7 +100,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 			},
 			code: http.StatusUnauthorized,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/projects/1/members",
@@ -114,7 +114,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 			},
 			code: http.StatusCreated,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/projects/1/members",
@@ -128,7 +128,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 			},
 			code: http.StatusNotFound,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/projects/1/members",
@@ -142,7 +142,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 			},
 			code: http.StatusInternalServerError,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/projects/1/members?entityname=restuser",
@@ -150,7 +150,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 			},
 			code: http.StatusOK,
 		},
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/projects/1/members",
@@ -187,7 +187,7 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 	badURL := fmt.Sprintf("/api/projects/1/members/%v", 0)
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    URL,
@@ -198,7 +198,7 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 			code: http.StatusUnauthorized,
 		},
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    URL,
@@ -210,7 +210,7 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 			code: http.StatusOK,
 		},
 		// 400
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    badURL,
@@ -222,7 +222,7 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 400
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    URL,
@@ -234,7 +234,7 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 			code: http.StatusBadRequest,
 		},
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        URL,

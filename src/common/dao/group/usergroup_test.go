@@ -251,17 +251,17 @@ func TestOnBoardUserGroup(t *testing.T) {
 
 func TestGetGroupDNQueryCondition(t *testing.T) {
 	userGroupList := []*models.UserGroup{
-		&models.UserGroup{
+		{
 			GroupName:   "sample1",
 			GroupType:   1,
 			LdapGroupDN: "cn=sample1_users,ou=groups,dc=example,dc=com",
 		},
-		&models.UserGroup{
+		{
 			GroupName:   "sample2",
 			GroupType:   1,
 			LdapGroupDN: "cn=sample2_users,ou=groups,dc=example,dc=com",
 		},
-		&models.UserGroup{
+		{
 			GroupName:   "sample3",
 			GroupType:   0,
 			LdapGroupDN: "cn=sample3_users,ou=groups,dc=example,dc=com",

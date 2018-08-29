@@ -19,9 +19,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/stretchr/testify/assert"
 )
 
 // test functions under package ui/config

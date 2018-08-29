@@ -15,9 +15,9 @@
 package source
 
 import (
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/stretchr/testify/assert"
 
 	"testing"
 )
@@ -34,25 +34,25 @@ func TestTagCombinationFilterGetConvertor(t *testing.T) {
 
 func TestTagCombinationFilterDoFilter(t *testing.T) {
 	items := []models.FilterItem{
-		models.FilterItem{
+		{
 			Kind: replication.FilterItemKindProject,
 		},
-		models.FilterItem{
+		{
 			Kind: replication.FilterItemKindRepository,
 		},
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:invalid_tag:latest",
 		},
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:14.04",
 		},
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/ubuntu:16.04",
 		},
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/centos:7",
 		},

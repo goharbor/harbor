@@ -19,10 +19,10 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common/models"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (

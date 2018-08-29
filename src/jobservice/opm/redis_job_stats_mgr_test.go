@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/utils"
+	"github.com/gomodule/redigo/redis"
 )
 
 const (

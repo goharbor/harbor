@@ -17,10 +17,10 @@ package source
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
 	"github.com/goharbor/harbor/src/replication/registry"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestInitOfTagFilter(t *testing.T) {
@@ -37,7 +37,7 @@ func TestDoFilterOfTagFilter(t *testing.T) {
 	// invalid filter item type
 	filter := NewTagFilter("", &registry.HarborAdaptor{})
 	items := filter.DoFilter([]models.FilterItem{
-		models.FilterItem{
+		{
 			Kind: "invalid_type",
 		},
 	})
@@ -46,7 +46,7 @@ func TestDoFilterOfTagFilter(t *testing.T) {
 	// empty pattern
 	filter = NewTagFilter("", &registry.HarborAdaptor{})
 	items = filter.DoFilter([]models.FilterItem{
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/hello-world:latest",
 		},
@@ -56,7 +56,7 @@ func TestDoFilterOfTagFilter(t *testing.T) {
 	// non-empty pattern
 	filter = NewTagFilter("l*t", &registry.HarborAdaptor{})
 	items = filter.DoFilter([]models.FilterItem{
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/hello-world:latest",
 		},
@@ -66,7 +66,7 @@ func TestDoFilterOfTagFilter(t *testing.T) {
 	// non-empty pattern
 	filter = NewTagFilter("lates?", &registry.HarborAdaptor{})
 	items = filter.DoFilter([]models.FilterItem{
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/hello-world:latest",
 		},
@@ -76,7 +76,7 @@ func TestDoFilterOfTagFilter(t *testing.T) {
 	// non-empty pattern
 	filter = NewTagFilter("latest?", &registry.HarborAdaptor{})
 	items = filter.DoFilter([]models.FilterItem{
-		models.FilterItem{
+		{
 			Kind:  replication.FilterItemKindTag,
 			Value: "library/hello-world:latest",
 		},

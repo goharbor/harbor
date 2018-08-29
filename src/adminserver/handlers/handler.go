@@ -18,9 +18,9 @@ import (
 	"net/http"
 	"os"
 
-	gorilla_handlers "github.com/gorilla/handlers"
 	"github.com/goharbor/harbor/src/adminserver/auth"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	gorilla_handlers "github.com/gorilla/handlers"
 )
 
 // NewHandler returns a gorilla router which is wrapped by  authenticate handler
@@ -32,7 +32,7 @@ func NewHandler() http.Handler {
 		"jobserviceSecret": os.Getenv("JOBSERVICE_SECRET"),
 	}
 	insecureAPIs := map[string]bool{
-		"/api/ping":true,
+		"/api/ping": true,
 	}
 	h = newAuthHandler(auth.NewSecretAuthenticator(secrets), h, insecureAPIs)
 	h = gorilla_handlers.LoggingHandler(os.Stdout, h)
@@ -49,7 +49,7 @@ func newAuthHandler(authenticator auth.Authenticator, handler http.Handler, inse
 	return &authHandler{
 		authenticator: authenticator,
 		handler:       handler,
-		insecureAPIs:   insecureAPIs,
+		insecureAPIs:  insecureAPIs,
 	}
 }
 
@@ -61,7 +61,7 @@ func (a *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if a.insecureAPIs !=nil && a.insecureAPIs[r.URL.Path] {
+	if a.insecureAPIs != nil && a.insecureAPIs[r.URL.Path] {
 		if a.handler != nil {
 			a.handler.ServeHTTP(w, r)
 		}

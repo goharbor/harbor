@@ -17,8 +17,8 @@ package trigger
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/replication"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestKindOfScheduleTrigger(t *testing.T) {

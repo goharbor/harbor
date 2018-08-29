@@ -13,11 +13,11 @@ import (
 
 	"github.com/robfig/cron"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/utils"
+	"github.com/gomodule/redigo/redis"
 )
 
 const (

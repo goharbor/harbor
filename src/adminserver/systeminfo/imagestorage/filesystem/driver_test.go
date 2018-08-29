@@ -17,8 +17,8 @@ package filesystem
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	storage "github.com/goharbor/harbor/src/adminserver/systeminfo/imagestorage"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestName(t *testing.T) {
