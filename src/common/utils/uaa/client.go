@@ -98,7 +98,7 @@ type SearchUserRes struct {
 	Schemas      []string           `json:"schemas"`
 }
 
-// DefaultClient leverages oauth2 pacakge for oauth features
+// DefaultClient leverages oauth2 package for oauth features
 type defaultClient struct {
 	httpClient *http.Client
 	oauth2Cfg  *oauth2.Config

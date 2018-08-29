@@ -83,15 +83,15 @@ func TestAddProject(t *testing.T) {
 		//t.Log(result)
 	}
 
-	//case 4: reponse code = 400 : Project name is illegal in length
-	fmt.Println("case 4 : reponse code = 400 : Project name is illegal in length ")
+	//case 4: response code = 400 : Project name is illegal in length
+	fmt.Println("case 4 : response code = 400 : Project name is illegal in length ")
 
 	result, err = apiTest.ProjectsPost(*admin, apilib.ProjectReq{"t", map[string]string{models.ProMetaPublic: "true"}})
 	if err != nil {
 		t.Error("Error while creat project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(400), result, "case 4 : reponse code = 400 : Project name is illegal in length ")
+		assert.Equal(int(400), result, "case 4 : response code = 400 : Project name is illegal in length ")
 	}
 
 	fmt.Printf("\n")

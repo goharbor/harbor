@@ -44,7 +44,7 @@ func TestUsersPost(t *testing.T) {
 	fmt.Println("Register user without admin auth")
 	code, err := apiTest.UsersPost(testUser0002)
 	if err != nil {
-		t.Error("Error occured while add a test User", err.Error())
+		t.Error("Error occurred while add a test User", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(400, code, "Add user status should be 400")
@@ -54,7 +54,7 @@ func TestUsersPost(t *testing.T) {
 	fmt.Println("Register user with admin auth, but username is empty")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(400, code, "Add user status should be 400")
@@ -65,7 +65,7 @@ func TestUsersPost(t *testing.T) {
 	fmt.Println("Register user with admin auth, but bad username format")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(400, code, "Add user status should be 400")
@@ -76,7 +76,7 @@ func TestUsersPost(t *testing.T) {
 	fmt.Println("Register user with admin auth, but empty password.")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(400, code, "Add user status should be 400")
@@ -87,7 +87,7 @@ func TestUsersPost(t *testing.T) {
 	fmt.Println("Register user with admin auth, but email is empty")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(400, code, "Add user status should be 400")
@@ -98,7 +98,7 @@ func TestUsersPost(t *testing.T) {
 	fmt.Println("Register user with admin auth, but bad email format")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(400, code, "Add user status should be 400")
@@ -110,7 +110,7 @@ func TestUsersPost(t *testing.T) {
 		fmt.Println("Register user with admin auth, but user realname is empty")
 		code, err = apiTest.UsersPost(testUser0002, *admin)
 		if err != nil {
-			t.Error("Error occured while add a user", err.Error())
+			t.Error("Error occurred while add a user", err.Error())
 			t.Log(err)
 		} else {
 			assert.Equal(400, code, "Add user status should be 400")
@@ -122,7 +122,7 @@ func TestUsersPost(t *testing.T) {
 	fmt.Println("Register user with admin auth, but bad user realname format")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 
 	} else {
@@ -135,7 +135,7 @@ func TestUsersPost(t *testing.T) {
 	fmt.Println("Register user with admin auth, but user comment length is illegal")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(400, code, "Add user status should be 400")
@@ -146,7 +146,7 @@ func TestUsersPost(t *testing.T) {
 	testUser0002.Comment = "test user"
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(201, code, "Add user status should be 201")
@@ -156,7 +156,7 @@ func TestUsersPost(t *testing.T) {
 	fmt.Println("Register duplicate user with admin auth")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(409, code, "Add user status should be 409")
@@ -168,7 +168,7 @@ func TestUsersPost(t *testing.T) {
 	testUser0002.Email = "testUser0002@mydomain.com"
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(409, code, "Add user status should be 409")
@@ -187,7 +187,7 @@ func TestUsersGet(t *testing.T) {
 	testUser0002Auth = &usrInfo{"testUser0002", "testUser0002"}
 	code, users, err := apiTest.UsersGet(testUser0002.Username, *testUser0002Auth)
 	if err != nil {
-		t.Error("Error occured while get users", err.Error())
+		t.Error("Error occurred while get users", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(403, code, "Get users status should be 403")
@@ -195,7 +195,7 @@ func TestUsersGet(t *testing.T) {
 	//case 2: Get user2 with admin auth, expect 200
 	code, users, err = apiTest.UsersGet(testUser0002.Username, *admin)
 	if err != nil {
-		t.Error("Error occured while get users", err.Error())
+		t.Error("Error occurred while get users", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Get users status should be 200")
@@ -213,7 +213,7 @@ func TestUsersGetByID(t *testing.T) {
 	//case 1: Get user2 with userID and his own auth, expect 200
 	code, user, err := apiTest.UsersGetByID(testUser0002.Username, *testUser0002Auth, testUser0002ID)
 	if err != nil {
-		t.Error("Error occured while get users", err.Error())
+		t.Error("Error occurred while get users", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Get users status should be 200")
@@ -227,7 +227,7 @@ func TestUsersGetByID(t *testing.T) {
 	testUser0003.Realname = "testUser0003"
 	code, err = apiTest.UsersPost(testUser0003, *admin)
 	if err != nil {
-		t.Error("Error occured while add a user", err.Error())
+		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(201, code, "Add user status should be 201")
@@ -236,7 +236,7 @@ func TestUsersGetByID(t *testing.T) {
 	testUser0003Auth = &usrInfo{"testUser0003", "testUser0003"}
 	code, user, err = apiTest.UsersGetByID(testUser0002.Username, *testUser0003Auth, testUser0002ID)
 	if err != nil {
-		t.Error("Error occured while get users", err.Error())
+		t.Error("Error occurred while get users", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(403, code, "Get users status should be 403")
@@ -244,7 +244,7 @@ func TestUsersGetByID(t *testing.T) {
 	//case 3: Get user that does not exist with user2 auth, expect 404 not found.
 	code, user, err = apiTest.UsersGetByID(testUser0002.Username, *testUser0002Auth, 1000)
 	if err != nil {
-		t.Error("Error occured while get users", err.Error())
+		t.Error("Error occurred while get users", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(404, code, "Get users status should be 404")
@@ -252,7 +252,7 @@ func TestUsersGetByID(t *testing.T) {
 	// Get user3ID in order to delete at the last of the test
 	code, users, err := apiTest.UsersGet(testUser0003.Username, *admin)
 	if err != nil {
-		t.Error("Error occured while get users", err.Error())
+		t.Error("Error occurred while get users", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Get users status should be 200")
@@ -269,7 +269,7 @@ func TestUsersPut(t *testing.T) {
 	//case 1: change user2 profile with user3 auth
 	code, err := apiTest.UsersPut(testUser0002ID, profile, *testUser0003Auth)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occurred while change user profile", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(403, code, "Change user profile status should be 403")
@@ -277,7 +277,7 @@ func TestUsersPut(t *testing.T) {
 	//case 2: change user2 profile with user2 auth, but bad parameters format.
 	code, err = apiTest.UsersPut(testUser0002ID, profile, *testUser0002Auth)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occurred while change user profile", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(400, code, "Change user profile status should be 400")
@@ -288,7 +288,7 @@ func TestUsersPut(t *testing.T) {
 	profile.Comment = "change profile"
 	code, err = apiTest.UsersPut(testUser0002ID, profile, *testUser0002Auth)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occurred while change user profile", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(409, code, "Change user profile status should be 409")
@@ -299,7 +299,7 @@ func TestUsersPut(t *testing.T) {
 	profile.Comment = "change profile"
 	code, err = apiTest.UsersPut(testUser0002ID, profile, *testUser0002Auth)
 	if err != nil {
-		t.Error("Error occured while change user profile", err.Error())
+		t.Error("Error occurred while change user profile", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Change user profile status should be 200")
@@ -314,7 +314,7 @@ func TestUsersToggleAdminRole(t *testing.T) {
 	//case 1: toggle user2 admin role without admin auth
 	code, err := apiTest.UsersToggleAdminRole(testUser0002ID, *testUser0002Auth, true)
 	if err != nil {
-		t.Error("Error occured while toggle user admin role", err.Error())
+		t.Error("Error occurred while toggle user admin role", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(403, code, "Toggle user admin role status should be 403")
@@ -322,7 +322,7 @@ func TestUsersToggleAdminRole(t *testing.T) {
 	//case 2: toggle user2 admin role with admin auth
 	code, err = apiTest.UsersToggleAdminRole(testUser0002ID, *admin, true)
 	if err != nil {
-		t.Error("Error occured while toggle user admin role", err.Error())
+		t.Error("Error occurred while toggle user admin role", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Toggle user admin role status should be 200")
@@ -491,7 +491,7 @@ func TestUsersDelete(t *testing.T) {
 	//case 1:delete user without admin auth
 	code, err := apiTest.UsersDelete(testUser0002ID, *testUser0003Auth)
 	if err != nil {
-		t.Error("Error occured while delete test user", err.Error())
+		t.Error("Error occurred while delete test user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(403, code, "Delete test user status should be 403")
@@ -500,7 +500,7 @@ func TestUsersDelete(t *testing.T) {
 	t.Log("delete user-case 2")
 	code, err = apiTest.UsersDelete(testUser0002ID, *testUser0002Auth)
 	if err != nil {
-		t.Error("Error occured while delete test user", err.Error())
+		t.Error("Error occurred while delete test user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(403, code, "Delete test user status should be 403")
@@ -509,7 +509,7 @@ func TestUsersDelete(t *testing.T) {
 	t.Log("delete user-case 3")
 	code, err = apiTest.UsersDelete(testUser0002ID, *admin)
 	if err != nil {
-		t.Error("Error occured while delete test user", err.Error())
+		t.Error("Error occurred while delete test user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Delete test user status should be 200")
@@ -517,7 +517,7 @@ func TestUsersDelete(t *testing.T) {
 	//delete user3 with admin auth
 	code, err = apiTest.UsersDelete(testUser0003ID, *admin)
 	if err != nil {
-		t.Error("Error occured while delete test user", err.Error())
+		t.Error("Error occurred while delete test user", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Delete test user status should be 200")

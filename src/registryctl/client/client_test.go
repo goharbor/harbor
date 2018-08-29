@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 
 	server, err := test.NewRegistryCtl(nil)
 	if err != nil {
-		fmt.Printf("failed to create regsitry: %v", err)
+		fmt.Printf("failed to create registry: %v", err)
 		os.Exit(1)
 	}
 

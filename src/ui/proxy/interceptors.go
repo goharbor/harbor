@@ -192,7 +192,7 @@ func (lrh listReposHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		}
 		var entries []string
 		for repo := range ctlg.Repositories {
-			log.Debugf("the repo in the reponse %s", ctlg.Repositories[repo])
+			log.Debugf("the repo in the response %s", ctlg.Repositories[repo])
 			exist := dao.RepositoryExists(ctlg.Repositories[repo])
 			if exist {
 				entries = append(entries, ctlg.Repositories[repo])
