@@ -169,6 +169,12 @@
   version = "v0.5.1"
 
 [[projects]]
+  name = "github.com/goharbor/harbor"
+  packages = ["tests/apitests/apilib"]
+  revision = "8e61deae7c8374aede5bfd03f00a5c4136695e9c"
+  version = "v1.5.2"
+
+[[projects]]
   name = "github.com/golang-migrate/migrate"
   packages = [
     ".",
@@ -276,6 +282,17 @@
   version = "v1.2.0"
 
 [[projects]]
+  name = "github.com/vmware/harbor"
+  packages = [
+    "src/common",
+    "src/common/models",
+    "src/common/utils",
+    "src/common/utils/log"
+  ]
+  revision = "8e61deae7c8374aede5bfd03f00a5c4136695e9c"
+  version = "v1.5.2"
+
+[[projects]]
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
@@ -381,6 +398,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f2bc787303dc9f72125800ed44f5fefed9e832183419e563183e87be26534a1c"
+  inputs-digest = "5ab90e49500a780b5a12d7fde276f77db02b5f697949d8d6ca06b4be34bac75d"
   solver-name = "gps-cdcl"
   solver-version = 1
