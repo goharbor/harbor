@@ -22,16 +22,16 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 )
 
-var orderMap = map[string]string {
-	"name": "name asc",
-	"+name": "name asc",
-	"-name": "name desc",
-	"creation_time": "creation_time asc",
+var orderMap = map[string]string{
+	"name":           "name asc",
+	"+name":          "name asc",
+	"-name":          "name desc",
+	"creation_time":  "creation_time asc",
 	"+creation_time": "creation_time asc",
 	"-creation_time": "creation_time desc",
-	"update_time": "update_time asc",
-	"+update_time": "update_time asc",
-	"-update_time": "update_time desc",
+	"update_time":    "update_time asc",
+	"+update_time":   "update_time asc",
+	"-update_time":   "update_time desc",
 }
 
 // AddRepository adds a repo to the database.
