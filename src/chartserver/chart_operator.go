@@ -46,6 +46,7 @@ type DigitalSignature struct {
 type ChartInfo struct {
 	Name          string
 	TotalVersions uint32 `json:"total_versions"`
+	LatestVersion string `json:"latest_version"`
 	Created       time.Time
 	Updated       time.Time
 	Icon          string
@@ -134,6 +135,7 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 			chartInfo.Home = lVersion.Home
 			chartInfo.Icon = lVersion.Icon
 			chartInfo.Deprecated = lVersion.Deprecated
+			chartInfo.LatestVersion = lVersion.GetVersion()
 			chartList = append(chartList, chartInfo)
 		}
 	}

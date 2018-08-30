@@ -39,4 +39,8 @@ func TestGetChartList(t *testing.T) {
 	if firstInSortedList.Name != "harbor" {
 		t.Fatalf("Expect the fist item of the sorted list to be 'harbor' but got '%s'", firstInSortedList.Name)
 	}
+
+	if firstInSortedList.LatestVersion != "0.2.0" {
+		t.Fatalf("Expect latest version '0.2.0' but got '%s'", firstInSortedList.LatestVersion)
+	}
 }
