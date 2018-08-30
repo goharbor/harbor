@@ -71,9 +71,10 @@ type JobActionRequest struct {
 
 //JobStatusChange is designed for reporting the status change via hook.
 type JobStatusChange struct {
-	JobID   string `json:"job_id"`
-	Status  string `json:"status"`
-	CheckIn string `json:"check_in,omitempty"`
+	JobID    string       `json:"job_id"`
+	Status   string       `json:"status"`
+	CheckIn  string       `json:"check_in,omitempty"`
+	Metadata *JobStatData `json:"metadata,omitempty"`
 }
 
 //Message is designed for sub/pub messages

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -175,6 +176,24 @@ func TestCheckIn(t *testing.T) {
 
 	//Start http server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		data, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		defer r.Body.Close()
+
+		statusReport := &models.JobStatusChange{}
+		if err := json.Unmarshal(data, statusReport); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if statusReport.Metadata == nil || statusReport.Metadata.JobID != "fake_job_ID" {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		fmt.Fprintln(w, "ok")
 	}))
 	defer ts.Close()
@@ -204,7 +223,7 @@ func TestCheckIn(t *testing.T) {
 func getRedisHost() string {
 	redisHost := os.Getenv(testingRedisHost)
 	if redisHost == "" {
-		redisHost = "10.160.178.186" //for local test
+		redisHost = "localhost" //for local test
 	}
 
 	return redisHost
