@@ -153,6 +153,20 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 	return chartList, nil
 }
 
+//GetChartVersions returns the chart versions
+func (cho *ChartOperator) GetChartVersions(content []byte) (helm_repo.ChartVersions, error) {
+	if content == nil || len(content) == 0 {
+		return nil, errors.New("zero content")
+	}
+
+	chartVersions := make(helm_repo.ChartVersions, 0)
+	if err := json.Unmarshal(content, &chartVersions); err != nil {
+		return nil, err
+	}
+
+	return chartVersions, nil
+}
+
 //Get the latest and oldest chart versions
 func getTheTwoCharts(chartVersions helm_repo.ChartVersions) (latestChart *helm_repo.ChartVersion, oldestChart *helm_repo.ChartVersion) {
 	if len(chartVersions) == 1 {

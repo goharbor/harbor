@@ -2911,6 +2911,32 @@ paths:
           $ref: '#/definitions/InternalChartAPIError'
         '200':
           $ref: '#/definitions/ChartVersions'
+    delete:
+      summary: Delete all the versions of the specified chart
+      description: Delete all the versions of the specified chart
+      tags:
+        - Products
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '200':
+          description: The specified chart entry is successfully deleted.
   /chartrepo/{repo}/charts/{name}/{version}:
     get:
       summary: Get the specified chart version
