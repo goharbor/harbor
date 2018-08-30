@@ -125,7 +125,7 @@ type ProjectQueryParam struct {
 	ProjectIDs []int64      // project ID list
 }
 
-// MemberQuery fitler by member's username and role
+// MemberQuery filter by member's username and role
 type MemberQuery struct {
 	Name      string       // the username of member
 	Role      int          // the role of the member has to the project
@@ -136,6 +136,11 @@ type MemberQuery struct {
 type Pagination struct {
 	Page int64
 	Size int64
+}
+
+// Sorting sort by given field, ascending or descending
+type Sorting struct {
+	Sort string // in format [+-]?<FIELD_NAME>, e.g. '+creation_time', '-creation_time'
 }
 
 // BaseProjectCollection contains the query conditions which can be used
