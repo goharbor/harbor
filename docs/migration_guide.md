@@ -47,7 +47,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     docker run -it --rm -e DB_USR=root -e DB_PWD={db_pwd} -v ${harbor_db_path}:/var/lib/mysql -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg -v ${backup_path}:/harbor-migration/backup goharbor/harbor-migrator:[tag] backup
     ```
 
-    **NOTE:** By default, the migrator handles the backup for DB or CFG. If you want to backup DB or CFG only, refer to the following commands.
+    **NOTE:** By default, the migrator handles the backup for DB and CFG. If you want to backup DB or CFG only, refer to the following commands.
     
     ```
     docker run -it --rm -e DB_USR=root -e DB_PWD={db_pwd} -v ${harbor_db_path}:/var/lib/mysql -v ${backup_path}:/harbor-migration/backup goharbor/harbor-migrator:[tag] --db backup
