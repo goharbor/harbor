@@ -22,9 +22,7 @@ services:
     ports:
       - 5432:5432
   adminserver:
-    build:
-      context: ../
-      dockerfile: make/dev/adminserver/Dockerfile
+    image: goharbor/harbor-adminserver:__version__
     env_file:
       - ./common/config/adminserver/env
     restart: always
