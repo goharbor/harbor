@@ -15,23 +15,24 @@
 package models
 
 import (
-	"testing"
 	"reflect"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParseImage(t *testing.T) {
 	cases := []struct {
-		Input  string
+		Input    string
 		Expected *Image
-		Valid  bool
-	} {
+		Valid    bool
+	}{
 		{
 			Input: "library/busybox",
 			Expected: &Image{
 				Project: "library",
-				Repo: "busybox",
-				Tag: "",
+				Repo:    "busybox",
+				Tag:     "",
 			},
 			Valid: true,
 		},
@@ -39,8 +40,8 @@ func TestParseImage(t *testing.T) {
 			Input: "library/busybox:v1.0",
 			Expected: &Image{
 				Project: "library",
-				Repo: "busybox",
-				Tag: "v1.0",
+				Repo:    "busybox",
+				Tag:     "v1.0",
 			},
 			Valid: true,
 		},

@@ -28,6 +28,7 @@ type RetagAPI struct {
 	BaseController
 }
 
+// Retag tags an image to another
 func (r *RetagAPI) Retag() {
 	if !r.SecurityCtx.IsAuthenticated() {
 		r.HandleUnauthorized()

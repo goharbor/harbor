@@ -258,6 +258,7 @@ func (r *Repository) DeleteManifest(digest string) error {
 	}
 }
 
+// MountBlob ...
 func (r *Repository) MountBlob(digest, from string) error {
 	req, err := http.NewRequest("POST", buildMountBlobURL(r.Endpoint.String(), r.Name, digest, from), nil)
 	req.Header.Set(http.CanonicalHeaderKey("Content-Length"), "0")

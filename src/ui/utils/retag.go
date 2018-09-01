@@ -25,13 +25,15 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 )
 
+// Retag tags an image to another
 func Retag(srcImage, destImage *models.Image) error {
+	isSameRepo := getRepoName(srcImage) == getRepoName(destImage)
 	srcClient, err := NewRepositoryClientForUI("harbor-ui", getRepoName(srcImage))
 	if err != nil {
 		return err
 	}
 	destClient := srcClient
-	if getRepoName(srcImage) != getRepoName(destImage) {
+	if !isSameRepo {
 		destClient, err = NewRepositoryClientForUI("harbor-ui", getRepoName(destImage))
 		if err != nil {
 			return err
@@ -70,7 +72,7 @@ func Retag(srcImage, destImage *models.Image) error {
 		return nil
 	}
 
-	if getRepoName(srcImage) != getRepoName(destImage) {
+	if !isSameRepo {
 		for _, descriptor := range manifest.References() {
 			err := destClient.MountBlob(descriptor.Digest.String(), srcClient.Name)
 			if err != nil {
