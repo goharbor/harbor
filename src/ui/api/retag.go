@@ -17,6 +17,7 @@ package api
 import (
 	"fmt"
 
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/ui/utils"
@@ -47,19 +48,31 @@ func (r *RetagAPI) Retag() {
 		return
 	}
 
+	if !dao.RepositoryExists(fmt.Sprintf("%s/%s", srcImage.Project, srcImage.Repo)) {
+		log.Errorf("source repository '%s/%s' not exist", srcImage.Project, srcImage.Repo)
+		r.HandleNotFound(fmt.Sprintf("repository '%s/%s' not found", srcImage.Project, srcImage.Repo))
+		return
+	}
+
+	if !dao.ProjectExistsByName(destImage.Project) {
+		log.Errorf("destination project '%s' not exist", destImage.Project)
+		r.HandleNotFound(fmt.Sprintf("project '%s' not found", destImage.Project))
+		return
+	}
+
 	if !r.SecurityCtx.HasReadPerm(srcImage.Project) {
 		log.Errorf("user has no read permission to project '%s'", srcImage.Project)
 		r.HandleUnauthorized()
+		return
 	}
 
 	if !r.SecurityCtx.HasWritePerm(destImage.Project) {
 		log.Errorf("user has no write permission to project '%s'", destImage.Project)
 		r.HandleUnauthorized()
+		return
 	}
 
 	if err = utils.Retag(srcImage, destImage); err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("%v", err))
 	}
 }
-
-

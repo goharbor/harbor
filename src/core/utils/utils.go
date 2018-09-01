@@ -32,8 +32,11 @@ func NewRepositoryClientForUI(username, repository string) (*registry.Repository
 		return nil, err
 	}
 
+	uam := &auth.UserAgentModifier{
+		UserAgent: "harbor-registry-client",
+	}
 	authorizer := auth.NewRawTokenAuthorizer(username, token.Registry)
-	transport := registry.NewTransport(http.DefaultTransport, authorizer)
+	transport := registry.NewTransport(http.DefaultTransport, authorizer, uam)
 	client := &http.Client{
 		Transport: transport,
 	}
