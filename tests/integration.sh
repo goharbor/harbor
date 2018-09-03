@@ -18,7 +18,7 @@ gsutil version -l
 set +x
 
 ## -------------------------------------------- Pre-condition --------------------------------------------
-if [[ $DRONE_REPO != "vmware/harbor" ]]; then
+if [[ $DRONE_REPO != "goharbor/harbor" ]]; then
     echo "Only run tests again Harbor Repo."
     exit 1
 fi
@@ -70,7 +70,7 @@ container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print 
 echo $container_ip
 
 ## --------------------------------------------- Init Version -----------------------------------------------
-buildinfo=$(drone build info vmware/harbor $DRONE_BUILD_NUMBER)
+buildinfo=$(drone build info goharbor/harbor $DRONE_BUILD_NUMBER)
 echo $buildinfo
 git_commit=$(git rev-parse --short=8 HEAD)
 
