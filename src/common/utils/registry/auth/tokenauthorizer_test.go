@@ -116,10 +116,9 @@ func TestParseScopes(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(scopses))
 	assert.EqualValues(t, &token.ResourceActions{
-		Type: "repository",
-		Name: "library/mysql/5.6",
-		Actions: []string{
-			"push"},
+		Type:    "repository",
+		Name:    "library/mysql/5.6",
+		Actions: []string{"pull", "push"},
 	}, scopses[0])
 
 	// invalid
