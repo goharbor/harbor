@@ -262,10 +262,6 @@ func Init() (err error) {
 		return err
 	}
 	db := GetDatabaseFromCfg(envCfgs)
-	//Initialize the schema, then register the DB.
-	if err := dao.UpgradeSchema(db); err != nil {
-		return err
-	}
 	if err := dao.InitDatabase(db); err != nil {
 		return err
 	}
