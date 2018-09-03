@@ -7,10 +7,10 @@ RUN tdnf distro-sync -y \
     && groupadd -r -g 10000 notary \
     && useradd --no-log-init -r -g 10000 -u 10000 notary
 
-COPY ./binary/notary-server /bin/notary-server
-COPY ./binary/migrate /bin/migrate
-COPY ./binary/migrations/ /migrations/
-COPY ./server-start.sh /bin/server-start.sh
+COPY ./make/photon/notary/binary/notary-server /bin/notary-server
+COPY ./make/photon/notary/binary/migrate /bin/migrate
+COPY ./make/photon/notary/binary/migrations/ /migrations/
+COPY ./make/photon/notary/server-start.sh /bin/server-start.sh
 RUN chmod u+x /bin/notary-server /migrations/migrate.sh /bin/migrate /bin/server-start.sh
 ENV SERVICE_NAME=notary_server
 ENTRYPOINT [ "/bin/server-start.sh" ]

@@ -7,15 +7,15 @@ RUN tdnf distro-sync -y \
     && groupadd -r -g 10000 syslog && useradd --no-log-init -r -g 10000 -u 10000 syslog \
     && tdnf clean all
 
-COPY rsyslog.conf /etc/rsyslog.conf
+COPY ./make/photon/log/rsyslog.conf /etc/rsyslog.conf
 
 # rsyslog configuration file for docker
-COPY rsyslog_docker.conf /etc/rsyslog.d/
+COPY ./make/photon/log/rsyslog_docker.conf /etc/rsyslog.d/
 
 # run logrotate hourly
 RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/logrotate
 
-COPY start.sh /usr/local/bin/
+COPY ./make/photon/log/start.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start.sh && \
     chown -R 10000:10000 /etc/rsyslog.conf /etc/rsyslog.d/ /run 
 

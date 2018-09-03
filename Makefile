@@ -24,7 +24,7 @@
 # package_online:
 #				prepare online install package
 #			for example: make package_online -e DEVFLAG=false\
-#							REGISTRYSERVER=reg-bj.eng.vmware.com \
+#							REGISTRYSERVER=reg-bj.goharbor.io \
 #							REGISTRYPROJECTNAME=harborrelease
 #
 # package_offline:
@@ -33,13 +33,13 @@
 # pushimage:	push Harbor images to specific registry server
 #			for example: make pushimage -e DEVFLAG=false REGISTRYUSER=admin \
 #							REGISTRYPASSWORD=***** \
-#							REGISTRYSERVER=reg-bj.eng.vmware.com/ \
+#							REGISTRYSERVER=reg-bj.goharbor.io/ \
 #							REGISTRYPROJECTNAME=harborrelease
 #				note**: need add "/" on end of REGISTRYSERVER. If not setting \
 #						this value will push images directly to dockerhub.
-#						 make pushimage -e DEVFLAG=false REGISTRYUSER=vmware \
+#						 make pushimage -e DEVFLAG=false REGISTRYUSER=goharbor \
 #							REGISTRYPASSWORD=***** \
-#							REGISTRYPROJECTNAME=vmware
+#							REGISTRYPROJECTNAME=goharbor
 #
 # clean:        remove binary, Harbor images, specific version docker-compose \
 #               file, specific version tag and online/offline install package
@@ -100,7 +100,6 @@ VERSIONFILENAME=UIVERSION
 REGISTRYVERSION=v2.6.2
 NGINXVERSION=$(VERSIONTAG)
 NOTARYVERSION=v0.6.1
-MARIADBVERSION=$(VERSIONTAG)
 CLAIRVERSION=v2.0.5
 CLAIRDBVERSION=$(VERSIONTAG)
 MIGRATORVERSION=$(VERSIONTAG)
@@ -141,11 +140,10 @@ GOBUILDPATH_UI=$(GOBUILDPATH)/src/ui
 GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDPATH_REGISTRYCTL=$(GOBUILDPATH)/src/registryctl
 GOBUILDMAKEPATH=$(GOBUILDPATH)/make
-GOBUILDMAKEPATH_ADMINSERVER=$(GOBUILDMAKEPATH)/dev/adminserver
-GOBUILDMAKEPATH_UI=$(GOBUILDMAKEPATH)/dev/ui
-GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/dev/jobservice
-GOBUILDMAKEPATH_REGISTRYCTL=$(GOBUILDMAKEPATH)/dev/registryctl
-GOLANGDOCKERFILENAME=Dockerfile.golang
+GOBUILDMAKEPATH_ADMINSERVER=$(GOBUILDMAKEPATH)/photon/adminserver
+GOBUILDMAKEPATH_UI=$(GOBUILDMAKEPATH)/photon/ui
+GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/photon/jobservice
+GOBUILDMAKEPATH_REGISTRYCTL=$(GOBUILDMAKEPATH)/photon/registryctl
 
 # binary
 ADMINSERVERBINARYPATH=$(MAKEDEVPATH)/adminserver
@@ -286,7 +284,7 @@ compile_adminserver:
 	@echo "compiling binary for adminserver (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_ADMINSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_ADMINSERVER)/$(ADMINSERVERBINARYNAME)
+	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_ADMINSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_ADMINSERVER)/$(ADMINSERVERBINARYNAME)
 	@echo "Done."
 
 compile_ui:
@@ -313,7 +311,7 @@ prepare:
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
 build:
-	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG) -e MARIADBVERSION=$(MARIADBVERSION) \
+	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG) \
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e NGINXVERSION=$(NGINXVERSION) -e NOTARYVERSION=$(NOTARYVERSION) \
 	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRDBVERSION=$(CLAIRDBVERSION) -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION) -e MIGRATORVERSION=$(MIGRATORVERSION) \
@@ -332,7 +330,6 @@ modify_composefile_notary:
 	@echo "preparing docker-compose notary file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 	@$(SEDCMD) -i 's/__notary_version__/$(NOTARYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
-	@$(SEDCMD) -i 's/__mariadb_version__/$(MARIADBVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 
 modify_composefile_clair:
 	@echo "preparing docker-compose clair file..."

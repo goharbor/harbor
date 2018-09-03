@@ -6,7 +6,7 @@ RUN tdnf erase vim -y \
     && tdnf clean all \
     && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor \
     && mkdir /harbor/
-COPY ./make/dev/adminserver/harbor_adminserver ./make/photon/adminserver/start.sh /harbor/
+COPY ./make/photon/adminserver/harbor_adminserver ./make/photon/adminserver/start.sh /harbor/
 #As UI will be blocked until adminserver is ready, let adminserver do the initialise work for DB
 COPY ./make/migrations /harbor/migrations
 

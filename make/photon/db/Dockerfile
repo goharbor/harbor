@@ -20,15 +20,15 @@ RUN touch /etc/localtime.bak \
 
 VOLUME /var/lib/postgresql/data
 
-ADD docker-entrypoint.sh /entrypoint.sh
-ADD docker-healthcheck.sh /docker-healthcheck.sh
+ADD ./make/photon/db/docker-entrypoint.sh /entrypoint.sh
+ADD ./make/photon/db/docker-healthcheck.sh /docker-healthcheck.sh
 RUN chmod u+x /entrypoint.sh /docker-healthcheck.sh
 ENTRYPOINT ["/entrypoint.sh"]
 HEALTHCHECK CMD ["/docker-healthcheck.sh"]
 
-COPY initial-notaryserver.sql /docker-entrypoint-initdb.d/ 
-COPY initial-notarysigner.sql /docker-entrypoint-initdb.d/
-COPY initial-registry.sql /docker-entrypoint-initdb.d/
+COPY ./make/photon/db/initial-notaryserver.sql /docker-entrypoint-initdb.d/
+COPY ./make/photon/db/initial-notarysigner.sql /docker-entrypoint-initdb.d/
+COPY ./make/photon/db/initial-registry.sql /docker-entrypoint-initdb.d/
 
 EXPOSE 5432
 CMD ["postgres"]

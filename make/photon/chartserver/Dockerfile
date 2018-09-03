@@ -7,8 +7,8 @@ RUN tdnf distro-sync -y \
     && mkdir /chartserver/ \
     && groupadd -r -g 10000 chartuser \
     && useradd --no-log-init -m -r -g 10000 -u 10000 chartuser
-COPY ./binary/chartm /chartserver/
-COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY ./make/photon/chartserver/binary/chartm /chartserver/
+COPY ./make/photon/chartserver/docker-entrypoint.sh /docker-entrypoint.sh
 
 VOLUME ["/chart_storage"]
 EXPOSE 9999
