@@ -81,6 +81,13 @@ func InitDatabase(database *models.Database) error {
 	if err := db.Register(); err != nil {
 		return err
 	}
+
+	log.Info("Register database completed")
+	return nil
+}
+
+// CheckSchemaVersion checks that whether the schema version matches with the expected one
+func CheckSchemaVersion() error {
 	version, err := GetSchemaVersion()
 	if err != nil {
 		return err
@@ -89,8 +96,6 @@ func InitDatabase(database *models.Database) error {
 		return fmt.Errorf("unexpected database schema version, expected %s, got %s",
 			SchemaVersion, version.Version)
 	}
-
-	log.Info("Register database completed")
 	return nil
 }
 
