@@ -110,6 +110,21 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "ui"
+  portal:
+    image: goharbor/harbor-portal:__version__
+    container_name: harbor-portal
+    restart: always
+    networks:
+      - harbor
+    ports:
+      - 8081:80
+      - 4433:443
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "ui"
+
   jobservice:
     image: goharbor/harbor-jobservice:__version__
     container_name: harbor-jobservice
