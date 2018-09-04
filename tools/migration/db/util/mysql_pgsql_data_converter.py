@@ -129,7 +129,7 @@ def write_table(pgsql_dump, table_lines):
 
 def write_insert(pgsql_dump, insert_lines):
     for item in insert_lines:
-        pgsql_dump.write("%s\n" % item)
+        pgsql_dump.write("%s\n" % item.encode('utf-8'))
 
 def write_foreign_key(pgsql_dump):
     pgsql_dump.write('\n')
