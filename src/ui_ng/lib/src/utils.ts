@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable } from "rxjs";
 
 import { RequestOptions, Headers } from '@angular/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
@@ -193,7 +193,7 @@ export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[]
                          return filter['value'] === data[arr[1]];
                     });
                 }
-            }else {
+            } else {
                 return regexpFilter(filter['value'], item[filter['property']]);
             }
         });
@@ -266,8 +266,8 @@ export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], 
  * returns {boolean}
  */
 export function compareValue(a: any, b: any): boolean {
-    if ((a && !b) || (!a && b)) { return false; };
-    if (!a && !b) { return true; } ;
+    if ((a && !b) || (!a && b)) { return false; }
+    if (!a && !b) { return true; }
 
     return JSON.stringify(a) === JSON.stringify(b);
 }
@@ -291,7 +291,7 @@ export function isEmptyObject(obj: any): boolean {
  * returns {*}
  */
 export function clone(srcObj: any): any {
-    if (!srcObj) { return null; };
+    if (!srcObj) { return null; }
     return JSON.parse(JSON.stringify(srcObj));
 }
 
@@ -305,4 +305,4 @@ export function downloadFile(fileData) {
         a.click();
         window.URL.revokeObjectURL(url);
         a.remove();
-};
+}

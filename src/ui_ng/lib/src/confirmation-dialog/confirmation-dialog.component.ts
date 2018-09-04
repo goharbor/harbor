@@ -56,9 +56,9 @@ export class ConfirmationDialogComponent {
     colorChange(list: BatchInfo) {
         if (!list.loading && !list.errorState) {
             return 'green';
-        }else if (!list.loading && list.errorState) {
+        } else if (!list.loading && list.errorState) {
             return 'red';
-        }else {
+        } else {
             return '#666';
         }
     }

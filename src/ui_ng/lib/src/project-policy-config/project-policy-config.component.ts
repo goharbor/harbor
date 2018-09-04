@@ -33,9 +33,9 @@ export class ProjectPolicy {
     this.Public = pro.metadata.public === 'true' ? true : false;
     this.ContentTrust = pro.metadata.enable_content_trust === 'true' ? true : false;
     this.PreventVulImg = pro.metadata.prevent_vul === 'true' ? true : false;
-    if (pro.metadata.severity) { this.PreventVulImgSeverity = pro.metadata.severity; };
+    if (pro.metadata.severity) { this.PreventVulImgSeverity = pro.metadata.severity; }
     this.ScanImgOnPush = pro.metadata.auto_scan === 'true' ? true : false;
-  };
+  }
 }
 
 @Component({

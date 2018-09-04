@@ -1,5 +1,5 @@
 
-import {of as observableOf,  forkJoin ,  Observable} from 'rxjs';
+import {of as observableOf,  forkJoin} from "rxjs";
 
 import {mergeMap, catchError} from 'rxjs/operators';
 import { ChangeDetectorRef, ChangeDetectionStrategy, ViewChild } from "@angular/core";
@@ -63,7 +63,7 @@ export class AddGroupComponent implements OnInit {
     }
   }
   public get isDNInvalid(): boolean {
-    if (!this.groupForm) {return false; };
+    if (!this.groupForm) {return false; }
     let dnControl = this.groupForm.controls['ldap_group_dn'];
     return  dnControl && dnControl.invalid && (dnControl.dirty || dnControl.touched);
   }
@@ -72,7 +72,7 @@ export class AddGroupComponent implements OnInit {
     this.onLoading = true;
     this.groupService.getUserGroups().subscribe(groups => {
       this.groups = groups.filter(group => {
-        if (!group.group_name) {group.group_name = ''; };
+        if (!group.group_name) {group.group_name = ''; }
         return group.group_name.includes(this.currentTerm)
         && !this.memberList.some(member => member.entity_type === 'g' && member.entity_id === group.id);
       });
@@ -141,7 +141,7 @@ export class AddGroupComponent implements OnInit {
               operateChanges(operMessage, OperationState.failure, res);
               return observableOf(res);
             })); }),
-        catchError(error => observableOf(error.status)),);
+        catchError(error => observableOf(error.status)), );
       });
     forkJoin(GroupAdders$)
       .subscribe(results => {

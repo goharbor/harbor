@@ -26,7 +26,7 @@ import {
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
 import {ActivatedRoute} from "@angular/router";
-import { Subject } from 'rxjs';
+import { Subject } from "rxjs";
 
 
 
@@ -101,7 +101,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
 
       this.nameChecker.pipe(
         debounceTime(500),
-        distinctUntilChanged(),)
+        distinctUntilChanged(), )
         .subscribe((name: string) => {
           let cont = this.currentForm.controls['member_name'];
           if (cont) {

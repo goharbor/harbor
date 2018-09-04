@@ -24,7 +24,7 @@ import {
     SimpleChange,
     SimpleChanges
 } from "@angular/core";
-import { Observable,forkJoin} from "rxjs";
+import { forkJoin} from "rxjs";
 import { Comparator } from "@clr/angular";
 import { TranslateService } from "@ngx-translate/core";
 
@@ -161,7 +161,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
             });
             if (count === 0) {
                 return 'enabled';
-            }else { return 'disabled'; }
+            } else { return 'disabled'; }
         }
         return 'enabled';
     }

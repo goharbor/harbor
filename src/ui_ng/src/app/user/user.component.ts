@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
-import { Subscription } from 'rxjs';
+import { Subscription } from "rxjs";
 
 import { TranslateService } from '@ngx-translate/core';
 

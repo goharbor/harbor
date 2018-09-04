@@ -21,7 +21,7 @@ import {
   EventEmitter
 } from "@angular/core";
 import { Comparator, State } from "@clr/angular";
-import { Observable, Subscription, forkJoin, timer} from "rxjs";
+import { Subscription, forkJoin, timer} from "rxjs";
 
 
 import { TranslateService } from "@ngx-translate/core";

@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, Input, ViewChild, OnChanges } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription } from "rxjs";
 
 import { Configuration } from '@harbor/ui';
 

@@ -23,7 +23,7 @@ import {
 } from "@angular/core";
 import { Filter, ReplicationRule, Endpoint, Label } from "../service/interface";
 import { Subject ,  Subscription } from "rxjs";
-import {debounceTime,distinctUntilChanged} from "rxjs/operators";
+import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { clone, compareValue, isEmptyObject, toPromise } from "../utils";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
@@ -622,7 +622,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         } else {
           controlArray.controls[index].get('value').setValue('');
         }
-      };
+      }
     });
 
     // store filter label info
@@ -705,7 +705,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     let copyRuleForm: ReplicationRule = this.ruleForm.value;
     copyRuleForm.trigger = this.setTriggerVaule(copyRuleForm.trigger);
     // rewrite key name of label when filer contain labels.
-    if (copyRuleForm.filters) { this.setFilterLabelVal(copyRuleForm.filters); };
+    if (copyRuleForm.filters) { this.setFilterLabelVal(copyRuleForm.filters); }
 
     if (this.policyId < 0) {
       this.repService

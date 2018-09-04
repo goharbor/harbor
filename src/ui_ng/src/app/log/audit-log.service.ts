@@ -1,5 +1,5 @@
 
-import {throwError as observableThrowError,  Observable } from 'rxjs';
+import {throwError as observableThrowError,  Observable } from "rxjs";
 
 import {map, catchError} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
@@ -52,7 +52,7 @@ export class AuditLogService {
     return this.http
       .get(`/api/projects/${queryParam.project_id}/logs`, buildHttpRequestOptions(params)).pipe(
       map(response => response),
-      catchError(error => observableThrowError(error)),);
+      catchError(error => observableThrowError(error)), );
   }
 
   getRecentLogs(lines: number): Observable<AuditLog[]> {
@@ -60,6 +60,6 @@ export class AuditLogService {
     params.set('page_size', '' + lines);
     return this.http.get(logEndpoint,  buildHttpRequestOptions(params)).pipe(
       map(response => response.json() as AuditLog[]),
-      catchError(error => observableThrowError(error)),);
+      catchError(error => observableThrowError(error)), );
   }
 }

@@ -1,8 +1,8 @@
 
-import {throwError as observableThrowError,  Observable } from 'rxjs';
+import {throwError as observableThrowError,  Observable } from "rxjs";
 import { Injectable, Inject } from "@angular/core";
 import { Http, Response, ResponseContentType } from "@angular/http";
-import { map,catchError } from "rxjs/operators";
+import { map, catchError } from "rxjs/operators";
 import {HttpErrorResponse} from "@angular/common/http";
 
 import { RequestQueryParams } from "./RequestQueryParams";
@@ -91,7 +91,7 @@ export abstract class HelmChartService {
     projectName: string,
     chart: File,
     prov: File
-  ): Observable<any>
+  ): Observable<any>;
 }
 
 /**
@@ -213,7 +213,7 @@ export class HelmChartDefaultService extends HelmChartService {
     .pipe(catchError(this.handleErrorObservable));
   }
 
-  
+
   public uploadChart(
     projectName: string,
     chart?: File,
@@ -230,7 +230,7 @@ export class HelmChartDefaultService extends HelmChartService {
         uploadURL = `${this.config.helmChartEndpoint}/${projectName}/prov`;
       }
     }
-    return this.http.post(uploadURL, formData,{
+    return this.http.post(uploadURL, formData, {
       responseType: ResponseContentType.Json
     })
     .pipe(map(response => this.extractData(response)))

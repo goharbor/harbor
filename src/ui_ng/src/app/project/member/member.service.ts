@@ -1,5 +1,5 @@
 
-import {throwError as observableThrowError,  Observable } from 'rxjs';
+import {throwError as observableThrowError,  Observable } from "rxjs";
 
 import {map, catchError} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
@@ -35,7 +35,7 @@ export class MemberService {
     return this.http
                .get(`/api/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS).pipe(
                map(response => response.json() as Member[]),
-               catchError(error => observableThrowError(error)),);
+               catchError(error => observableThrowError(error)), );
   }
 
   addUserMember(projectId: number, user: User, roleId: number): Observable<any> {
@@ -55,7 +55,7 @@ export class MemberService {
       },
       HTTP_JSON_OPTIONS).pipe(
       map(response => response.status),
-      catchError(error => observableThrowError(error)),);
+      catchError(error => observableThrowError(error)), );
   }
 
   addGroupMember(projectId: number, group: any, roleId: number): Observable<any> {
@@ -64,7 +64,7 @@ export class MemberService {
                { role_id: roleId, member_group: group},
                HTTP_JSON_OPTIONS).pipe(
                map(response => response.status),
-               catchError(error => observableThrowError(error)),);
+               catchError(error => observableThrowError(error)), );
   }
 
   changeMemberRole(projectId: number, userId: number, roleId: number): Promise<any> {

@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable } from "rxjs";
 import { RequestQueryParams } from './RequestQueryParams';
 import { Repository, RepositoryItem } from './interface';
 import { Injectable, Inject } from '@angular/core';

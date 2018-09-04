@@ -15,7 +15,7 @@ import {debounceTime} from 'rxjs/operators';
 // limitations under the License.
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject ,  Subscription } from 'rxjs';
+import { Subject ,  Subscription } from "rxjs";
 
 import { SearchTriggerService } from './search-trigger.service';
 

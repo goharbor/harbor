@@ -21,8 +21,8 @@ import {
   ChangeDetectorRef,
   ElementRef, AfterViewInit
 } from "@angular/core";
-import {Subject, Observable,forkJoin} from "rxjs";
-import { debounceTime ,distinctUntilChanged} from 'rxjs/operators';
+import {Subject, forkJoin} from "rxjs";
+import { debounceTime , distinctUntilChanged} from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
 import { State, Comparator } from "@clr/angular";
 
@@ -190,7 +190,7 @@ export class TagComponent implements OnInit, AfterViewInit {
             this.imageStickLabels.forEach(data => {
               if (data.label.name.indexOf(this.stickName) !== -1) {
                 data.show = true;
-              }else {
+              } else {
                 data.show = false;
               }
             });
@@ -227,7 +227,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
     if (selectedLab) {
       st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: selectedLab.label.id}];
-    }else {
+    } else {
       st.filters = [{property: 'name', value: this.lastFilteredTagName}];
     }
 
@@ -403,7 +403,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.imageFilterLabels.filter(data => {
       if (data.label.id !== labelId) {
         data.iconsShow = false;
-      }else {
+      } else {
         data.iconsShow = true;
       }
     });
@@ -422,7 +422,7 @@ export class TagComponent implements OnInit, AfterViewInit {
       st.page.to = this.pageSize - 1;
       if (this.lastFilteredTagName) {
         st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: labelId}];
-      }else {
+      } else {
         st.filters = [{property: 'labels.id', value: labelId}];
       }
 
@@ -447,7 +447,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     st.page.to = this.pageSize - 1;
     if (this.lastFilteredTagName) {
       st.filters = [{property: 'name', value: this.lastFilteredTagName}];
-    }else {
+    } else {
       st.filters = [];
     }
     this.clrLoad(st);
@@ -466,11 +466,11 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.imageFilterLabels.forEach(data => {
         if (data.label.name.indexOf(this.filterName) !== -1) {
           data.show = true;
-        }else {
+        } else {
           data.show = false;
         }
       });
-    }else  {
+    } else  {
       this.openLabelFilterPanel = false;
       this.openLabelFilterPiece = false;
     }
@@ -480,7 +480,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   handleInputFilter() {
     if (this.filterName.length) {
       this.labelNameFilter.next(this.filterName);
-    }else {
+    } else {
       this.imageFilterLabels.every(data => data.show = true);
     }
   }
@@ -488,7 +488,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   handleStickInputFilter() {
     if (this.stickName.length) {
       this.stickLabelNameFilter.next(this.stickName);
-    }else {
+    } else {
       this.imageStickLabels.every(data => data.show = true);
     }
   }

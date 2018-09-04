@@ -1,5 +1,5 @@
 
-import {of, Observable,  Subscription, forkJoin } from 'rxjs';
+import {of,  Subscription, forkJoin } from "rxjs";
 import { flatMap, catchError } from "rxjs/operators";
 import { SessionService } from "./../shared/session.service";
 import { TranslateService } from "@ngx-translate/core";

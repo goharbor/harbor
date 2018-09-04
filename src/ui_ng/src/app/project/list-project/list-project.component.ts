@@ -1,5 +1,5 @@
 
-import {forkJoin as observableForkJoin, Observable,  Subscription } from 'rxjs';
+import {forkJoin as observableForkJoin,  Subscription } from "rxjs";
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

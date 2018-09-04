@@ -11,7 +11,7 @@ import {
     SimpleChanges
 } from "@angular/core";
 import {Router} from "@angular/router";
-import {Observable,forkJoin} from "rxjs";
+import {forkJoin} from "rxjs";
 import {TranslateService} from "@ngx-translate/core";
 import {Comparator, State} from "@clr/angular";
 
@@ -293,7 +293,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 } else {
                     return false;
                 }
-                ;
+
             })
             .catch(error => Promise.reject(false));
     }
@@ -399,7 +399,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
             )
         )
             .then((repo: Repository) => {
-        
+
                 this.totalCount = repo.metadata.xTotalCount;
                 this.repositories = repo.data;
 

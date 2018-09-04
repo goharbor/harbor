@@ -19,8 +19,8 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from "@angular/core";
-import { Subscription ,  Observable} from "rxjs";
-import {forkJoin} from 'rxjs';
+import { Subscription} from "rxjs";
+import {forkJoin} from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { Comparator } from "@clr/angular";
 

@@ -1,8 +1,12 @@
 
-import {throwError as observableThrowError,  Observable } from "rxjs";
+import {throwError as observableThrowError,  Observable} from "rxjs";
+
+import {map, catchError} from 'rxjs/operators';
 import { Injectable, Inject } from "@angular/core";
 import { Http } from "@angular/http";
-import { map ,  catchError } from "rxjs/operators";
+import { of } from "rxjs";
+
+
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import { Project } from "../project-policy-config/project";
@@ -96,9 +100,9 @@ export class ProjectDefaultService extends ProjectService {
       ? this.config.projectBaseEndpoint
       : "/api/projects";
     return this.http
-      .get(`${baseUrl}/${projectId}`, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json()))
-      .pipe(catchError(error => observableThrowError(error)));
+      .get(`${baseUrl}/${projectId}`, HTTP_GET_OPTIONS).pipe(
+      map(response => response.json()),
+      catchError(error => observableThrowError(error)),);
   }
 
   public listProjects(
@@ -124,9 +128,9 @@ export class ProjectDefaultService extends ProjectService {
 
     // let options = new RequestOptions({ headers: this.getHeaders, search: params });
     return this.http
-      .get(baseUrl, buildHttpRequestOptions(params))
-      .pipe(map(response => response.json()))
-      .pipe(catchError(error => observableThrowError(error)));
+      .get(baseUrl, buildHttpRequestOptions(params)).pipe(
+      map(response => response.json()),
+      catchError(error => observableThrowError(error)),);
   }
 
   public updateProjectPolicy(
@@ -149,8 +153,8 @@ export class ProjectDefaultService extends ProjectService {
           }
         },
         HTTP_JSON_OPTIONS
-      )
-      .pipe(map(response => response.status))
-      .pipe(catchError(error => observableThrowError(error)));
+      ).pipe(
+      map(response => response.status),
+      catchError(error => observableThrowError(error)),);
   }
 }

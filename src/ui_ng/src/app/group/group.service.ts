@@ -1,5 +1,5 @@
 
-import {throwError as observableThrowError,  Observable} from 'rxjs';
+import {throwError as observableThrowError,  Observable} from "rxjs";
 
 import {catchError, map} from 'rxjs/operators';
 import { Injectable } from "@angular/core";
@@ -15,7 +15,7 @@ export class GroupService {
   constructor(private http: Http) {}
 
   private extractData(res: Response) {
-    if (res.text() === '') {return []; };
+    if (res.text() === '') {return []; }
     return res.json() || [];
   }
   private handleErrorObservable(error: Response | any) {
@@ -30,7 +30,7 @@ export class GroupService {
     }),
     catchError(error => {
       return this.handleErrorObservable(error);
-    }),);
+    }), );
   }
 
   createGroup(group: UserGroup): Observable<any> {
@@ -39,7 +39,7 @@ export class GroupService {
       map(response => {
         return this.extractData(response);
       }),
-      catchError(this.handleErrorObservable),);
+      catchError(this.handleErrorObservable), );
   }
 
   getGroup(group_id: number): Observable<UserGroup> {
@@ -48,7 +48,7 @@ export class GroupService {
       map(response => {
         return this.extractData(response);
       }),
-      catchError(this.handleErrorObservable),);
+      catchError(this.handleErrorObservable), );
   }
 
   editGroup(group: UserGroup): Observable<any> {
@@ -57,7 +57,7 @@ export class GroupService {
     map(response => {
       return this.extractData(response);
     }),
-    catchError(this.handleErrorObservable),);
+    catchError(this.handleErrorObservable), );
   }
 
   deleteGroup(group_id: number): Observable<any> {
@@ -66,7 +66,7 @@ export class GroupService {
     map(response => {
       return this.extractData(response);
     }),
-    catchError(this.handleErrorObservable),);
+    catchError(this.handleErrorObservable), );
   }
 
   searchGroup(group_name: string): Observable<UserGroup[]> {
@@ -75,6 +75,6 @@ export class GroupService {
     map(response => {
       return this.extractData(response);
     }),
-    catchError(this.handleErrorObservable),);
+    catchError(this.handleErrorObservable), );
   }
 }

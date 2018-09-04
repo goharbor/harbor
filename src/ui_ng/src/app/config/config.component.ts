@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subscription } from "rxjs";
 import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent } from '@harbor/ui';
 
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
@@ -462,8 +462,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     // private
     compareValue(a: any, b: any): boolean {
-        if ((a && !b) || (!a && b)) { return false; };
-        if (!a && !b) { return true; };
+        if ((a && !b) || (!a && b)) { return false; }
+        if (!a && !b) { return true; }
 
         return JSON.stringify(a) === JSON.stringify(b);
     }

@@ -1,6 +1,6 @@
 import { Http } from "@angular/http";
 import { Injectable, Inject } from "@angular/core";
-import { Observable,  of } from "rxjs";
+import { Observable } from "rxjs";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import {

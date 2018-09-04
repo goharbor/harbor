@@ -96,7 +96,7 @@ export class RecentLogComponent implements OnInit {
     openFilter(isOpen: boolean): void {
         if (isOpen) {
             this.isOpenFilterTag = true;
-        }else {
+        } else {
             this.isOpenFilterTag = false;
         }
     }

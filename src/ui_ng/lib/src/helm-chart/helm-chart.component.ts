@@ -137,7 +137,7 @@ export class HelmChartComponent implements OnInit {
     if (!this.chartFile && !this.provFile) {
       return;
     }
-    if (this.isUploading) { return; };
+    if (this.isUploading) { return; }
     this.isUploading = true;
     this.helmChartService
       .uploadChart(this.projectName, this.chartFile, this.provFile)

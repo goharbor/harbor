@@ -161,7 +161,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
       defaultLang: config.defaultLang,
       langCookieKey: config.langCookieKey
     });
-  };
+  }
 }
 
 @NgModule({

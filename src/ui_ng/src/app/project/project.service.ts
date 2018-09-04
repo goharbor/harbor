@@ -1,5 +1,5 @@
 
-import {throwError as observableThrowError,  Observable } from 'rxjs';
+import {throwError as observableThrowError,  Observable } from "rxjs";
 
 import {catchError, map} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
@@ -32,7 +32,7 @@ export class ProjectService {
     return this.http
                .get(`/api/projects/${projectId}`, HTTP_GET_OPTIONS).pipe(
                map(response => response.json()),
-               catchError(error => observableThrowError(error)),);
+               catchError(error => observableThrowError(error)), );
   }
 
   listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<any> {
@@ -51,7 +51,7 @@ export class ProjectService {
     return this.http
                .get(`/api/projects`, buildHttpRequestOptions(params)).pipe(
                map(response => response),
-               catchError(error => observableThrowError(error)),);
+               catchError(error => observableThrowError(error)), );
   }
 
   createProject(name: string, metadata: any): Observable<any> {
@@ -62,14 +62,14 @@ export class ProjectService {
                 }})
                 , HTTP_JSON_OPTIONS).pipe(
                map(response => response.status),
-               catchError(error => observableThrowError(error)),);
+               catchError(error => observableThrowError(error)), );
   }
 
   toggleProjectPublic(projectId: number, isPublic: string): Observable<any> {
     return this.http
                .put(`/api/projects/${projectId}`, { 'metadata': {'public': isPublic} }, HTTP_JSON_OPTIONS).pipe(
                map(response => response.status),
-               catchError(error => observableThrowError(error)),);
+               catchError(error => observableThrowError(error)), );
   }
 
   deleteProject(projectId: number): Promise<any> {
@@ -83,13 +83,13 @@ export class ProjectService {
     return this.http
                .head(`/api/projects/?project_name=${projectName}`).pipe(
                map(response => response.status),
-               catchError(error => observableThrowError(error)),);
+               catchError(error => observableThrowError(error)), );
   }
 
   checkProjectMember(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(
                map(response => response.json()),
-               catchError(error => observableThrowError(error)),);
+               catchError(error => observableThrowError(error)), );
   }
 }

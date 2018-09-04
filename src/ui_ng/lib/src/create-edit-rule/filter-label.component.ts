@@ -4,7 +4,7 @@ import {toPromise} from "../utils";
 import {Label} from "../service/interface";
 import {ErrorHandler} from "../error-handler/error-handler";
 import {Subject} from "rxjs";
-import {debounceTime,distinctUntilChanged} from "rxjs/operators";
+import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 
 export interface LabelState {
     iconsShow: boolean;
@@ -96,7 +96,7 @@ export class FilterLabelComponent implements OnInit, OnChanges {
     handleInputFilter(): void {
         if (this.filterLabelName.length) {
             this.labelNameFilter.next(this.filterLabelName);
-        }else {
+        } else {
             this.labelLists.every(data => data.show = true);
         }
     }
