@@ -19,11 +19,10 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from "@angular/core";
-import { Subscription } from "rxjs/Subscription";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/observable/forkJoin";
+import { Subscription} from "rxjs";
+import {forkJoin} from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
-import { Comparator } from "clarity-angular";
+import { Comparator } from "@clr/angular";
 
 import { Endpoint } from "../service/interface";
 import { EndpointService } from "../service/endpoint.service";
@@ -211,7 +210,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
                 }).catch(
                 error => {
                     if (error && error.status === 412) {
-                        Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                        forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                             this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')).subscribe(res => {
                             operateChanges(operMessage, OperationState.failure, res[1]);
                         });

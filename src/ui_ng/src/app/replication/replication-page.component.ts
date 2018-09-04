@@ -14,7 +14,7 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 
-import { ReplicationComponent } from 'harbor-ui';
+import { ReplicationComponent } from '@harbor/ui';
 
 import {SessionService} from "../shared/session.service";
 import {Project} from "../project/project";

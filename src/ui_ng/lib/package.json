@@ -1,8 +1,8 @@
 {
-    "name": "harbor-ui",
-    "version": "0.7.19-dev.9",
-    "description": "Harbor shared UI components based on Clarity and Angular4",
-    "author": "VMware",
+    "name": "@harbor/ui",
+    "version": "1.0.0-rc2",
+    "description": "Harbor shared UI components based on Clarity and Angular6",
+    "author": "CNCF",
     "module": "index.js",
     "main": "bundles/harborui.umd.min.js",
     "jsnext:main": "index.js",
@@ -10,7 +10,7 @@
     "keywords": [
         "Harbor",
         "Clarity",
-        "Angular4"
+        "Angular6"
     ],
     "license": "Apache 2.0",
     "repository": {
@@ -19,29 +19,31 @@
     },
     "homepage": "https://github.com/vmware/harbor#readme",
     "peerDependencies": {
-        "@angular/animations": "^4.3.0",
-        "@angular/common": "^4.3.0",
-        "@angular/compiler": "^4.3.0",
-        "@angular/core": "^4.3.0",
-        "@angular/forms": "^4.3.0",
-        "@angular/http": "^4.3.0",
-        "@angular/platform-browser": "^4.3.0",
-        "@angular/platform-browser-dynamic": "^4.3.0",
-        "@angular/router": "^4.3.0",
+        "@angular/animations": "^6.0.0",
+        "@angular/common": "^6.0.0",
+        "@angular/compiler": "^6.0.0",
+        "@angular/core": "^6.0.0",
+        "@angular/forms": "^6.0.0",
+        "@angular/http": "^6.0.0",
+        "@angular/platform-browser": "^6.0.0",
+        "@angular/platform-browser-dynamic": "^6.0.0",
+        "@angular/router": "^6.0.0",
         "@ngx-translate/core": "^6.0.0",
         "@ngx-translate/http-loader": "0.0.3",
         "@webcomponents/custom-elements": "^1.0.0",
-        "clarity-angular": "^0.10.17",
-        "clarity-icons": "^0.10.17",
-        "clarity-ui": "^0.10.17",
+        "@clr/angular": "^0.12.0",
+        "@clr/ui": "^0.12.0",
+        "@clr/icons": "^0.12.0",
         "core-js": "^2.4.1",
         "intl": "^1.2.5",
         "mutationobserver-shim": "^0.3.2",
         "ngx-cookie": "^1.0.0",
         "ngx-markdown": "^1.5.1",
-        "rxjs": "^5.0.1",
+        "rxjs": "^6.2.2",
         "ts-helpers": "^1.1.1",
         "web-animations-js": "^2.2.1",
-        "zone.js": "^0.8.4"
+        "zone.js": "^0.8.4",
+        "tslib": "^1.9.0"
+    
     }
 }

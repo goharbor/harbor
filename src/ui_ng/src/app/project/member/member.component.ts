@@ -1,3 +1,5 @@
+
+import {finalize} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +15,9 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-
-import "rxjs/add/operator/switchMap";
-import "rxjs/add/operator/catch";
-import "rxjs/add/operator/map";
-import "rxjs/add/observable/throw";
-import { Subscription } from "rxjs/Subscription";
+import { Subscription } from "rxjs";
 import {TranslateService} from "@ngx-translate/core";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
@@ -128,8 +125,8 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.selectedRow = [];
     this.memberService
-      .listMembers(projectId, username)
-      .finally(() => this.loading = false)
+      .listMembers(projectId, username).pipe(
+      finalize(() => this.loading = false))
       .subscribe(
       response => {
         this.members = response;

@@ -26,22 +26,22 @@ fi
 cat ./package.json
 npm install
 
-## Build harbor-ui and link it
+## Build @harbor/ui and link it
 rm -rf /harbor_src/ui_ng/lib/dist
 npm run build:lib
 chmod -R +xr /harbor_src/ui_ng/lib/dist
 cd /harbor_src/ui_ng/lib/dist
 npm link
 cd /harbor_src/ui_ng
-npm link harbor-ui
+npm link @harbor/ui
 
 ## Rollup
-./node_modules/.bin/ngc -p tsconfig-aot.json
+./node_modules/.bin/ngc -p tsconfig.json
 sed -i 's/* as//g' src/app/shared/gauge/gauge.component.js
 ./node_modules/.bin/rollup -c rollup-config.js
 
 ## Unlink
-npm unlink harbor-ui
+npm unlink @harbor/ui
 
 #Copy built js to the static folder
 cp ./dist/build.min.js ../ui/static/

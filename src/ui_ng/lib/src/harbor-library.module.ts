@@ -100,8 +100,8 @@ export const DefaultServiceConfig: IServiceConfig = {
 /**
  * Define the configuration for harbor shareable module
  *
- * @export
- * @interface HarborModuleConfig
+ **
+ * interface HarborModuleConfig
  */
 export interface HarborModuleConfig {
   // Service endpoints
@@ -148,9 +148,9 @@ export interface HarborModuleConfig {
 }
 
 /**
- * @export
- * @param {AppConfigService} configService
- * @returns
+ **
+ *  ** deprecated param {AppConfigService} configService
+ * returns
  */
 export function initConfig(translateInitializer: TranslateServiceInitializer, config: IServiceConfig) {
   return (init);
@@ -161,7 +161,7 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
       defaultLang: config.defaultLang,
       langCookieKey: config.langCookieKey
     });
-  };
+  }
 }
 
 @NgModule({

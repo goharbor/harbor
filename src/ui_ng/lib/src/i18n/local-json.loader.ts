@@ -1,15 +1,14 @@
 import { TranslateLoader } from "@ngx-translate/core";
-import "rxjs/add/observable/of";
-import { Observable } from "rxjs/Observable";
+import { of ,  Observable} from "rxjs";
 
 import { IServiceConfig } from "../service.config";
 
 /**
  * Declare a translation loader with local json object
  *
- * @export
- * @class TranslatorJsonLoader
- * @extends {TranslateLoader}
+ **
+ * class TranslatorJsonLoader
+ * extends {TranslateLoader}
  */
 export class TranslatorJsonLoader extends TranslateLoader {
   constructor(private config: IServiceConfig) {
@@ -23,6 +22,6 @@ export class TranslatorJsonLoader extends TranslateLoader {
       this.config.localI18nMessageVariableMap[lang]
         ? this.config.localI18nMessageVariableMap[lang]
         : {};
-    return Observable.of(dict);
+    return of(dict);
   }
 }

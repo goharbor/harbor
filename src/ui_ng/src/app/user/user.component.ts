@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import 'rxjs/add/operator/toPromise';
-import { Subscription } from 'rxjs/Subscription';
+
+import { Subscription } from "rxjs";
 
 import { TranslateService } from '@ngx-translate/core';
 
@@ -27,13 +27,13 @@ import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
 import { User } from './user';
 import {ChangePasswordComponent} from "./change-password/change-password.component";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 /**
  * NOTES:
  *   Pagination for this component is a temporary workaround solution. It will be replaced in future release.
  *
- * @export
- * @class UserComponent
+ **
+ * class UserComponent
  * @implements {OnInit}
  * @implements {OnDestroy}
  */

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, Input } from '@angular/core';
-import { Comparator, State } from 'clarity-angular';
+import { Comparator, State } from '@clr/angular';
 
 import {
     AccessLogService,
@@ -96,7 +96,7 @@ export class RecentLogComponent implements OnInit {
     openFilter(isOpen: boolean): void {
         if (isOpen) {
             this.isOpenFilterTag = true;
-        }else {
+        } else {
             this.isOpenFilterTag = false;
         }
     }

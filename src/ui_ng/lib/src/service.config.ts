@@ -1,6 +1,6 @@
-import { OpaqueToken } from '@angular/core';
+import { InjectionToken } from '@angular/core';
 
-export let SERVICE_CONFIG = new OpaqueToken("service.config");
+export let SERVICE_CONFIG = new InjectionToken("service.config");
 
 export interface IServiceConfig {
     /**
@@ -10,7 +10,7 @@ export interface IServiceConfig {
      *   Registry configuration
      *   Volume information
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     systemInfoEndpoint?: string;
@@ -24,7 +24,7 @@ export interface IServiceConfig {
      *   the tag(s) endpoint will be '/api/repositories/:repo_id/tags[/:tag_id]'.
      *
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     repositoryBaseEndpoint?: string;
@@ -32,7 +32,7 @@ export interface IServiceConfig {
     /**
      * The base endpoint of the service used to handle the recent access logs.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     logBaseEndpoint?: string;
@@ -45,7 +45,7 @@ export interface IServiceConfig {
      *   the endpoint for registry target will be '/api/endpoints/:endpoint_id',
      *   the endpoint for pinging registry target will be '/api/endpoints/:endpoint_id/ping'.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     targetBaseEndpoint?: string;
@@ -62,7 +62,7 @@ export interface IServiceConfig {
      *   If the base endpoint is '/api/replication/rules',
      *   the endpoint for rule will be '/api/replication/rules/:rule_id'.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     replicationRuleEndpoint?: string;
@@ -72,7 +72,7 @@ export interface IServiceConfig {
      * The base endpoint of the service used to handle the replication jobs.
      *
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     replicationJobEndpoint?: string;
@@ -80,7 +80,7 @@ export interface IServiceConfig {
     /**
      * The base endpoint of the service used to handle vulnerability scanning.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     vulnerabilityScanningBaseEndpoint?: string;
@@ -88,14 +88,14 @@ export interface IServiceConfig {
     /**
      * The base endpoint of the service used to handle project policy.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     projectPolicyEndpoint?: string;
 
     /**
      * The base endpoint of service used to handle projects
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     projectBaseEndpoint?: string;
@@ -103,7 +103,7 @@ export interface IServiceConfig {
     /**
      * To determine whether or not to enable the i18 multiple languages supporting.
      *
-     * @type {boolean}
+     * * {boolean}
      * @memberOf IServiceConfig
      */
     enablei18Support?: boolean;
@@ -111,7 +111,7 @@ export interface IServiceConfig {
     /**
      * The cookie key used to store the current used language preference.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     langCookieKey?: string;
@@ -119,7 +119,7 @@ export interface IServiceConfig {
     /**
      * Declare what languages are supported.
      *
-     * @type {string[]}
+     * * {string[]}
      * @memberOf IServiceConfig
      */
     supportedLangs?: string[];
@@ -127,7 +127,7 @@ export interface IServiceConfig {
     /**
      * Define the default language the translate service uses.
      *
-     * @type {string}
+     * * {string}
      * @memberOf I18nConfig
      */
     defaultLang?: string;
@@ -138,7 +138,7 @@ export interface IServiceConfig {
      *   One is 'http', use async http to load json files with the specified url/path.
      *   Another is 'local', use local json variable to store the lang message.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     langMessageLoader?: string;
@@ -147,7 +147,7 @@ export interface IServiceConfig {
      * Define the basic url/path prefix for the loader to find the json files if the 'langMessageLoader' is 'http'.
      * For example, 'src/i18n/langs'.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     langMessagePathForHttpLoader?: string;
@@ -156,7 +156,7 @@ export interface IServiceConfig {
      * Define the suffix of the json file names without lang name if 'langMessageLoader' is 'http'.
      * For example, '-lang.json' is suffix of message file 'en-us-lang.json'.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     langMessageFileSuffixForHttpLoader?: string;
@@ -188,7 +188,7 @@ export interface IServiceConfig {
      *   };
      *
      *
-     * @type {{ [key: string]: any }}
+     * * {{ [key: string]: any }}
      * @memberOf IServiceConfig
      */
     localI18nMessageVariableMap?: { [key: string]: any };
@@ -196,7 +196,7 @@ export interface IServiceConfig {
     /**
      * The base endpoint of configuration service.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     configurationEndpoint?: string;
@@ -204,7 +204,7 @@ export interface IServiceConfig {
     /**
      * The base endpoint of scan job service.
      *
-     * @type {string}
+     * * {string}
      * @memberof IServiceConfig
      */
     scanJobEndpoint?: string;
@@ -216,7 +216,7 @@ export interface IServiceConfig {
      *   If the base endpoint is '/api/labels',
      *   the label endpoint  will be '/api/labels/:id'.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     labelEndpoint?: string;
@@ -228,14 +228,14 @@ export interface IServiceConfig {
      *   If the base endpoint is '/api/helmcharts',
      *   the helm chart endpoint  will be '/api/helmcharts/:id'.
      *
-     * @type {string}
+     * * {string}
      * @memberOf IServiceConfig
      */
     helmChartEndpoint?: string;
 
     /**
      * The base endpoint of the chart download url
-     * @type {string}
+     * * {string}
      */
     downloadChartEndpoint?: string;
 }

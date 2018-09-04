@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
-import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent } from 'harbor-ui';
+import { Subscription } from "rxjs";
+import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent } from '@harbor/ui';
 
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
@@ -430,7 +430,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * Get the changed fields and return a map
      *
      * @private
-     * @returns {*}
+     * returns {*}
      *
      * @memberOf ConfigurationComponent
      */
@@ -462,8 +462,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     // private
     compareValue(a: any, b: any): boolean {
-        if ((a && !b) || (!a && b)) { return false; };
-        if (!a && !b) { return true; };
+        if ((a && !b) || (!a && b)) { return false; }
+        if (!a && !b) { return true; }
 
         return JSON.stringify(a) === JSON.stringify(b);
     }
@@ -478,8 +478,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * Deep clone the configuration object
      *
      * @private
-     * @param {Configuration} src
-     * @returns {Configuration}
+     *  ** deprecated param {Configuration} src
+     * returns {Configuration}
      *
      * @memberOf ConfigurationComponent
      */
@@ -496,7 +496,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
      * Reset the configuration form
      *
      * @private
-     * @param {*} changes
+     *  ** deprecated param {*} changes
      *
      * @memberOf ConfigurationComponent
      */

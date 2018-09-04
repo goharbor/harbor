@@ -1,7 +1,6 @@
 import { Http } from "@angular/http";
 import { Injectable, Inject } from "@angular/core";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/observable/of";
+import { Observable,  of } from "rxjs";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from "../utils";
@@ -11,17 +10,17 @@ import { VulnerabilityItem, VulnerabilitySummary } from "./interface";
 /**
  * Get the vulnerabilities scanning results for the specified tag.
  *
- * @export
+ **
  * @abstract
- * @class ScanningResultService
+ * class ScanningResultService
  */
 export abstract class ScanningResultService {
   /**
    * Get the summary of vulnerability scanning result.
    *
    * @abstract
-   * @param {string} tagId
-   * @returns {(Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary)}
+   *  ** deprecated param {string} tagId
+   * returns {(Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary)}
    *
    * @memberOf ScanningResultService
    */
@@ -38,8 +37,8 @@ export abstract class ScanningResultService {
    * Get the detailed vulnerabilities scanning results.
    *
    * @abstract
-   * @param {string} tagId
-   * @returns {(Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[])}
+   *  ** deprecated param {string} tagId
+   * returns {(Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[])}
    *
    * @memberOf ScanningResultService
    */
@@ -56,9 +55,9 @@ export abstract class ScanningResultService {
    * Start a new vulnerability scanning
    *
    * @abstract
-   * @param {string} repoName
-   * @param {string} tagId
-   * @returns {(Observable<any> | Promise<any> | any)}
+   *  ** deprecated param {string} repoName
+   *  ** deprecated param {string} tagId
+   * returns {(Observable<any> | Promise<any> | any)}
    *
    * @memberOf ScanningResultService
    */
@@ -71,7 +70,7 @@ export abstract class ScanningResultService {
    * Trigger the scanning all action.
    *
    * @abstract
-   * @returns {(Observable<any> | Promise<any> | any)}
+   * returns {(Observable<any> | Promise<any> | any)}
    *
    * @memberOf ScanningResultService
    */
@@ -104,7 +103,7 @@ export class ScanningResultDefaultService extends ScanningResultService {
       return Promise.reject("Bad argument");
     }
 
-    return Observable.of({} as VulnerabilitySummary);
+    return of({} as VulnerabilitySummary);
   }
 
   getVulnerabilityScanningResults(

@@ -2,7 +2,7 @@ export interface I18nConfig {
   /**
    * The cookie key used to store the current used language preference.
    *
-   * @type {string}
+   * * {string}
    * @memberOf IServiceConfig
    */
   langCookieKey?: string;
@@ -10,7 +10,7 @@ export interface I18nConfig {
   /**
    * Declare what languages are supported.
    *
-   * @type {string[]}
+   * * {string[]}
    * @memberOf IServiceConfig
    */
   supportedLangs?: string[];
@@ -18,7 +18,7 @@ export interface I18nConfig {
   /**
    * Define the default language the translate service uses.
    *
-   * @type {string}
+   * * {string}
    * @memberOf I18nConfig
    */
   defaultLang?: string;
@@ -26,7 +26,7 @@ export interface I18nConfig {
   /**
    * To determine whether or not to enable the i18 multiple languages supporting.
    *
-   * @type {boolean}
+   * * {boolean}
    * @memberOf IServiceConfig
    */
   enablei18Support?: boolean;

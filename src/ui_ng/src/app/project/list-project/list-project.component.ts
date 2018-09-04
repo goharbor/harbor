@@ -1,3 +1,5 @@
+
+import {forkJoin as observableForkJoin,  Subscription } from "rxjs";
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,11 +21,8 @@ import {
     OnDestroy, EventEmitter
 } from "@angular/core";
 import { Router } from "@angular/router";
-import {Observable} from "rxjs/Observable";
-import 'rxjs/add/observable/forkJoin';
-import { Subscription } from "rxjs/Subscription";
 
-import { Comparator, State } from "clarity-angular";
+import { Comparator, State } from "@clr/angular";
 import {TranslateService} from "@ngx-translate/core";
 
 import { RoleInfo, ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
@@ -36,7 +35,7 @@ import { MessageHandlerService } from "../../shared/message-handler/message-hand
 import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
 import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
 import {AppConfigService} from "../../app-config.service";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 
 import { Project } from "../project";
 import { ProjectService } from "../project.service";
@@ -266,7 +265,7 @@ export class ListProjectComponent implements OnDestroy {
                 },
                 error => {
                     if (error && error.status === 412) {
-                        Observable.forkJoin(this.translate.get("BATCH.DELETED_FAILURE"),
+                        observableForkJoin(this.translate.get("BATCH.DELETED_FAILURE"),
                             this.translate.get("PROJECT.FAILED_TO_DELETE_PROJECT")).subscribe(res => {
                             operateChanges(operMessage, OperationState.failure, res[1]);
                         });

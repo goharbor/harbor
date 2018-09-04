@@ -11,6 +11,7 @@ import { downloadFile, toPromise } from "../../utils";
 import { SystemInfoService, HelmChartService } from "../../service/index";
 import { HelmChartDetail, SystemInfo } from "./../../service/interface";
 import { ErrorHandler } from "./../../error-handler/error-handler";
+import { finalize } from "rxjs/operators";
 
 @Component({
   selector: "hbr-chart-detail",
@@ -66,11 +67,11 @@ export class ChartDetailComponent implements OnInit {
     this.loading = true;
     this.helmChartService
       .getChartDetail(this.project.name, this.chartName, this.chartVersion)
-      .finally(() => {
+      .pipe(finalize(() => {
         this.loading = false;
         let hnd = setInterval(() => this.cdr.markForCheck(), 100);
         setTimeout(() => clearInterval(hnd), 2000);
-      })
+      }))
       .subscribe(
         chartDetail => {
           this.chartDetail = chartDetail;

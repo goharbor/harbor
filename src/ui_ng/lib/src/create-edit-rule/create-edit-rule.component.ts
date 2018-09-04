@@ -22,8 +22,8 @@ import {
   Output
 } from "@angular/core";
 import { Filter, ReplicationRule, Endpoint, Label } from "../service/interface";
-import { Subject } from "rxjs/Subject";
-import { Subscription } from "rxjs/Subscription";
+import { Subject ,  Subscription } from "rxjs";
+import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { clone, compareValue, isEmptyObject, toPromise } from "../utils";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
@@ -156,8 +156,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
 
     this.nameChecker
-      .debounceTime(300)
-      .distinctUntilChanged()
+      .pipe(debounceTime(300))
+      .pipe(distinctUntilChanged())
       .subscribe((ruleName: string) => {
         let cont = this.ruleForm.controls["name"];
         if (cont) {
@@ -184,8 +184,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       });
 
     this.proNameChecker
-      .debounceTime(500)
-      .distinctUntilChanged()
+      .pipe(debounceTime(500))
+      .pipe(distinctUntilChanged())
       .subscribe((resp: string) => {
         let name = this.ruleForm.controls["projects"].value[0].name;
         this.noProjectInfo = "";
@@ -622,7 +622,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         } else {
           controlArray.controls[index].get('value').setValue('');
         }
-      };
+      }
     });
 
     // store filter label info
@@ -705,7 +705,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     let copyRuleForm: ReplicationRule = this.ruleForm.value;
     copyRuleForm.trigger = this.setTriggerVaule(copyRuleForm.trigger);
     // rewrite key name of label when filer contain labels.
-    if (copyRuleForm.filters) { this.setFilterLabelVal(copyRuleForm.filters); };
+    if (copyRuleForm.filters) { this.setFilterLabelVal(copyRuleForm.filters); }
 
     if (this.policyId < 0) {
       this.repService

@@ -21,7 +21,7 @@ import {
   SERVICE_CONFIG,
   ErrorHandler,
   HarborLibraryModule
-} from "harbor-ui";
+} from "@harbor/ui";
 
 import { SessionService } from "../shared/session.service";
 import { MessageService } from "../global-message/message.service";

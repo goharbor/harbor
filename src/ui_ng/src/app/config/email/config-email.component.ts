@@ -14,7 +14,7 @@
 import { Component, Input, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
-import { Configuration } from 'harbor-ui';
+import { Configuration } from '@harbor/ui';
 
 @Component({
     selector: 'config-email',

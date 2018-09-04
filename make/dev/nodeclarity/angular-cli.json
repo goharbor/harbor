@@ -17,20 +17,21 @@
         "prefix": "app",
         "mobile": false,
         "styles": [
-            "../node_modules/clarity-icons/clarity-icons.min.css",
-            "../node_modules/clarity-ui/clarity-ui.min.css",
             "../node_modules/prismjs/themes/prism-solarizedlight.css",
+            "../node_modules/@clr/icons/clr-icons.min.css",
+            "../node_modules/@clr/ui/clr-ui.min.css",
             "styles.css"
         ],
         "scripts": [
             "../node_modules/core-js/client/shim.min.js",
             "../node_modules/mutationobserver-shim/dist/mutationobserver.min.js",
             "../node_modules/@webcomponents/custom-elements/custom-elements.min.js",
-            "../node_modules/clarity-icons/clarity-icons.min.js",
             "../node_modules/web-animations-js/web-animations.min.js",
             "../node_modules/marked/lib/marked.js",
             "../node_modules/prismjs/prism.js",
-            "../node_modules/prismjs/components/prism-yaml.min.js"
+            "../node_modules/prismjs/components/prism-yaml.min.js",
+            "../node_modules/@clr/icons/clr-icons.min.js",
+            "../node_modules/web-animations-js/web-animations.min.js"
         ],
         "environmentSource": "environments/environment.ts",
         "environments": {
