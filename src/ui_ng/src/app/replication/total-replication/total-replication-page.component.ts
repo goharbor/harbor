@@ -14,7 +14,7 @@
 import { Component } from '@angular/core';
 
 import {Router, ActivatedRoute} from "@angular/router";
-import {ReplicationRule} from "harbor-ui";
+import {ReplicationRule} from "@harbor/ui";
 
 import {SessionService} from "../../shared/session.service";
 import {AppConfigService} from "../../app-config.service";

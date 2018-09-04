@@ -30,7 +30,8 @@ import { toPromise, clone, compareValue } from "../utils";
 import { LabelService } from "../service/label.service";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { NgForm } from "@angular/forms";
-import { Subject } from "rxjs/Subject";
+import { Subject } from "rxjs";
+import { debounceTime } from "rxjs/operators";
 import { LabelColor } from "../shared/shared.const";
 
 @Component({
@@ -64,7 +65,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.nameChecker.debounceTime(500).subscribe((name: string) => {
+    this.nameChecker.pipe(debounceTime(500)).subscribe((name: string) => {
       toPromise<Label[]>(
         this.labelService.getLabels(this.scope, this.projectId, name)
       )

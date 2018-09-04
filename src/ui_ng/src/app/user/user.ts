@@ -14,8 +14,8 @@
 /**
  * For user management
  *
- * @export
- * @class User
+ **
+ * class User
  */
 export class User {
     user_id?: number;

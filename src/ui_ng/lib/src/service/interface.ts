@@ -2,8 +2,8 @@ import { Project } from "../project-policy-config/project";
 /**
  * The base interface contains the general properties
  *
- * @export
- * @interface Base
+ **
+ * interface Base
  */
 export interface Base {
   id?: string | number;
@@ -15,9 +15,9 @@ export interface Base {
 /**
  * Interface for Repository Info
  *
- * @export
- * @interface Repository
- * @extends {Base}
+ **
+ * interface Repository
+ * extends {Base}
  */
 export interface RepositoryItem extends Base {
   [key: string]: any | any[];
@@ -33,8 +33,8 @@ export interface RepositoryItem extends Base {
 /**
  * Interface for repository
  *
- * @export
- * @interface Repository
+ **
+ * interface Repository
  */
 export interface Repository {
   metadata?: Metadata;
@@ -44,9 +44,9 @@ export interface Repository {
 /**
  * Interface for the tag of repository
  *
- * @export
- * @interface Tag
- * @extends {Base}
+ **
+ * interface Tag
+ * extends {Base}
  */
 
 export interface Tag extends Base {
@@ -66,9 +66,9 @@ export interface Tag extends Base {
 /**
  * Interface for registry endpoints.
  *
- * @export
- * @interface Endpoint
- * @extends {Base}
+ **
+ * interface Endpoint
+ * extends {Base}
  */
 export interface Endpoint extends Base {
   endpoint: string;
@@ -83,10 +83,10 @@ export interface Endpoint extends Base {
 /**
  * Interface for replication rule.
  *
- * @export
- * @interface ReplicationRule
- * @interface Filter
- * @interface Trigger
+ **
+ * interface ReplicationRule
+ * interface Filter
+ * interface Trigger
  */
 export interface ReplicationRule extends Base {
   [key: string]: any;
@@ -126,8 +126,8 @@ export class Trigger {
 /**
  * Interface for replication job.
  *
- * @export
- * @interface ReplicationJob
+ **
+ * interface ReplicationJob
  */
 export interface ReplicationJob {
   metadata?: Metadata;
@@ -137,8 +137,8 @@ export interface ReplicationJob {
 /**
  * Interface for replication job item.
  *
- * @export
- * @interface ReplicationJob
+ **
+ * interface ReplicationJob
  */
 export interface ReplicationJobItem extends Base {
   [key: string]: any | any[];
@@ -152,8 +152,8 @@ export interface ReplicationJobItem extends Base {
 /**
  * Interface for storing metadata of response.
  *
- * @export
- * @interface Metadata
+ **
+ * interface Metadata
  */
 export interface Metadata {
   xTotalCount: number;
@@ -162,8 +162,8 @@ export interface Metadata {
 /**
  * Interface for access log.
  *
- * @export
- * @interface AccessLog
+ **
+ * interface AccessLog
  */
 export interface AccessLog {
   metadata?: Metadata;
@@ -173,8 +173,8 @@ export interface AccessLog {
 /**
  * The access log data.
  *
- * @export
- * @interface AccessLogItem
+ **
+ * interface AccessLogItem
  */
 export interface AccessLogItem {
   [key: string]: any | any[];
@@ -193,8 +193,8 @@ export interface AccessLogItem {
 /**
  * Global system info.
  *
- * @export
- * @interface SystemInfo
+ **
+ * interface SystemInfo
  *
  */
 export interface SystemInfo {
@@ -216,8 +216,8 @@ export interface SystemInfo {
 /**
  * Clair database status info.
  *
- * @export
- * @interface ClairDetail
+ **
+ * interface ClairDetail
  */
 export interface ClairDetail {
   namespace: string;

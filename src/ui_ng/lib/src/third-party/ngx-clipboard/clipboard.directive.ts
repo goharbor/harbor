@@ -27,7 +27,7 @@ export class ClipboardDirective implements OnInit, OnDestroy {
 
     @HostListener('click', ['$event.target'])
     // tslint:disable-next-line:no-unused-variable
-    private onClick(button: ElementRef) {
+    public onClick(button: ElementRef) {
         if (!this.clipboardSrv.isSupported) {
             this.handleResult(false, undefined);
         } else if (this.targetElm && this.clipboardSrv.isTargetValid(this.targetElm)) {
@@ -40,7 +40,7 @@ export class ClipboardDirective implements OnInit, OnDestroy {
 
     /**
      * Fires an event based on the copy operation result.
-     * @param {Boolean} succeeded
+     *  ** deprecated param {Boolean} succeeded
      */
     private handleResult(succeeded: Boolean, copiedContent: string) {
         if (succeeded) {

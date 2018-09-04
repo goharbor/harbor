@@ -1,3 +1,7 @@
+
+import {throwError as observableThrowError,  Observable } from "rxjs";
+
+import {map, catchError} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +20,10 @@ import { Http, URLSearchParams } from '@angular/http';
 
 import { AuditLog } from './audit-log';
 
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/observable/throw';
+
+
 import {buildHttpRequestOptions} from '../shared/shared.utils';
-import {RequestQueryParams} from 'harbor-ui';
+import {RequestQueryParams} from '@harbor/ui';
 
 export const logEndpoint = '/api/logs';
 
@@ -48,16 +50,16 @@ export class AuditLogService {
       params.set('page_size', <string>queryParam.page_size);
     }
     return this.http
-      .get(`/api/projects/${queryParam.project_id}/logs`, buildHttpRequestOptions(params))
-      .map(response => response)
-      .catch(error => Observable.throw(error));
+      .get(`/api/projects/${queryParam.project_id}/logs`, buildHttpRequestOptions(params)).pipe(
+      map(response => response),
+      catchError(error => observableThrowError(error)), );
   }
 
   getRecentLogs(lines: number): Observable<AuditLog[]> {
     let params: RequestQueryParams = new RequestQueryParams();
     params.set('page_size', '' + lines);
-    return this.http.get(logEndpoint,  buildHttpRequestOptions(params))
-      .map(response => response.json() as AuditLog[])
-      .catch(error => Observable.throw(error));
+    return this.http.get(logEndpoint,  buildHttpRequestOptions(params)).pipe(
+      map(response => response.json() as AuditLog[]),
+      catchError(error => observableThrowError(error)), );
   }
 }

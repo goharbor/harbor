@@ -14,8 +14,8 @@
 /**
  * To handle the error message body
  *
- * @export
- * @returns {string}
+ **
+ * returns {string}
  */
 export const errorHandler = function (error: any): string {
     if (!error) {

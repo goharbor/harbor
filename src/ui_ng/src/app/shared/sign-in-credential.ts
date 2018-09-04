@@ -18,8 +18,8 @@
  *   principal: The username used to sign in
  *   password: The password used to sign in
  *
- * @export
- * @class SignInCredential
+ **
+ * class SignInCredential
  */
 
 export class SignInCredential {

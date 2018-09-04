@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
-// tslint:disable-next-line:no-unused-variable
-import { Observable } from "rxjs/Observable";
+import { Subject} from "rxjs";
 
 @Injectable()
 export class ChannelService {
