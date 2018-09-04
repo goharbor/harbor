@@ -20,6 +20,7 @@ services:
       - redis
     volumes:
       - /data/chart_storage:/chart_storage:z
+      - ./common/config/chartserver:/etc/chartserver:z
     logging:
       driver: "syslog"
       options:  

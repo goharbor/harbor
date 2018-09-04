@@ -13,11 +13,11 @@ import (
 
 	"github.com/robfig/cron"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/utils"
+	"github.com/gomodule/redigo/redis"
 )
 
 const (
@@ -255,7 +255,7 @@ func (rps *RedisPeriodicScheduler) Load() error {
 		if pid, ok := keyScoreMap[score]; ok {
 			policy.PolicyID = pid
 		} else {
-			//Something wrong, should not be happended
+			//Something wrong, should not be happened
 			//ignore here
 			continue
 		}

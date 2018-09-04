@@ -18,10 +18,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common/models"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {

@@ -78,7 +78,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]Target
 	res := []Target{}
 	t, err := tokenutil.MakeToken(username, tokenutil.Notary,
 		[]*token.ResourceActions{
-			&token.ResourceActions{
+			{
 				Type:    "repository",
 				Name:    fqRepo,
 				Actions: []string{"pull"},

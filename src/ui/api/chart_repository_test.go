@@ -228,7 +228,7 @@ func (msc *mockSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 
 //Get current user's all project
 func (msc *mockSecurityContext) GetMyProjects() ([]*models.Project, error) {
-	return []*models.Project{&models.Project{ProjectID: 0, Name: "repo1"}}, nil
+	return []*models.Project{{ProjectID: 0, Name: "repo1"}}, nil
 }
 
 //Get user's role in provided project

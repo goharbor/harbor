@@ -125,7 +125,7 @@ _build_clair:
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		if [ "$(BUILDBIN)" != "true" ] ; then \
 			rm -rf $(DOCKERFILEPATH_CLAIR)/binary && mkdir -p $(DOCKERFILEPATH_CLAIR)/binary && \
-			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/clair, $(DOCKERFILEPATH_CLAIR)/binary/clair); \
+			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/clair/release2.0-$(CLAIRVERSION)/clair, $(DOCKERFILEPATH_CLAIR)/binary/clair); \
 		else \
 			cd $(DOCKERFILEPATH_CLAIR) && $(DOCKERFILEPATH_CLAIR)/builder $(CLAIRVERSION); \
 		fi ; \
@@ -158,9 +158,9 @@ _build_notary:
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		if [ "$(BUILDBIN)" != "true" ] ; then \
 			rm -rf $(DOCKERFILEPATH_NOTARY)/binary && mkdir -p $(DOCKERFILEPATH_NOTARY)/binary && \
-			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/notary-signer, $(DOCKERFILEPATH_NOTARY)/binary/notary-signer) && \
-			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/notary-server, $(DOCKERFILEPATH_NOTARY)/binary/notary-server) && \
-			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/notary-migrate-postgresql.tgz, $(DOCKERFILEPATH_NOTARY)/binary/notary-migrate.tgz); \
+			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/release-$(NOTARYVERSION)/notary-signer, $(DOCKERFILEPATH_NOTARY)/binary/notary-signer) && \
+			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/release-$(NOTARYVERSION)/notary-server, $(DOCKERFILEPATH_NOTARY)/binary/notary-server) && \
+			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/release-$(NOTARYVERSION)/notary-migrate-postgresql.tgz, $(DOCKERFILEPATH_NOTARY)/binary/notary-migrate.tgz); \
 			cd $(DOCKERFILEPATH_NOTARY)/binary && tar -zvxf notary-migrate.tgz; \
 		else \
 			cd $(DOCKERFILEPATH_NOTARY) && $(DOCKERFILEPATH_NOTARY)/builder_public $(NOTARYVERSION); \

@@ -23,10 +23,10 @@ import (
 	"time"
 
 	"github.com/docker/distribution/registry/auth/token"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFilterReq(t *testing.T) {
@@ -116,10 +116,9 @@ func TestParseScopes(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(scopses))
 	assert.EqualValues(t, &token.ResourceActions{
-		Type: "repository",
-		Name: "library/mysql/5.6",
-		Actions: []string{
-			"push"},
+		Type:    "repository",
+		Name:    "library/mysql/5.6",
+		Actions: []string{"pull", "push"},
 	}, scopses[0])
 
 	// invalid

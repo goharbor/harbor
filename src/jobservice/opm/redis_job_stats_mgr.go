@@ -16,10 +16,10 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/utils"
+	"github.com/gomodule/redigo/redis"
 )
 
 const (
@@ -338,6 +338,20 @@ func (rjs *RedisJobStatsManager) reportStatus(jobID string, hookURL, status, che
 		JobID:   jobID,
 		Status:  status,
 		CheckIn: checkIn,
+	}
+	//Return the whole metadata of the job.
+	//To support forward compatibility, keep the original fields `Status` and `CheckIn`.
+	//TODO: If querying job stats causes performance issues, a two-level cache should be enabled.
+	jobStats, err := rjs.getJobStats(jobID)
+	if err != nil {
+		//Just logged
+		logger.Warningf("Retrieving stats of job %s for hook reporting failed with error: %s", jobID, err)
+	} else {
+		//Override status/check in message
+		//Just double confirmation
+		jobStats.Stats.CheckIn = checkIn
+		jobStats.Stats.Status = status
+		reportingStatus.Metadata = jobStats.Stats
 	}
 
 	return DefaultHookClient.ReportStatus(hookURL, reportingStatus)

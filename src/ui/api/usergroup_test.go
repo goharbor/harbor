@@ -44,7 +44,7 @@ func TestUserGroupAPI_GetAndDelete(t *testing.T) {
 	defer group.DeleteUserGroup(groupID)
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    URL,
@@ -53,7 +53,7 @@ func TestUserGroupAPI_GetAndDelete(t *testing.T) {
 		},
 
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        fmt.Sprintf("/api/usergroups/%d", groupID),
@@ -62,7 +62,7 @@ func TestUserGroupAPI_GetAndDelete(t *testing.T) {
 			code: http.StatusOK,
 		},
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        fmt.Sprintf("/api/usergroups"),
@@ -71,7 +71,7 @@ func TestUserGroupAPI_GetAndDelete(t *testing.T) {
 			code: http.StatusOK,
 		},
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("/api/usergroups/%d", groupID),
@@ -97,7 +97,7 @@ func TestUserGroupAPI_Post(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		//409
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/usergroups",
@@ -127,7 +127,7 @@ func TestUserGroupAPI_Put(t *testing.T) {
 	}
 	cases := []*codeCheckingCase{
 		//401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    fmt.Sprintf("/api/usergroups/%d", groupID),
@@ -138,7 +138,7 @@ func TestUserGroupAPI_Put(t *testing.T) {
 			code: http.StatusUnauthorized,
 		},
 		//200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    fmt.Sprintf("/api/usergroups/%d", groupID),

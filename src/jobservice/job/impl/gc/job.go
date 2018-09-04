@@ -72,7 +72,7 @@ func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{
 	}
 	defer gc.readonly(false)
 	if err := gc.registryCtlClient.Health(); err != nil {
-		gc.logger.Errorf("failed to start gc as regsitry controller is unreachable: %v", err)
+		gc.logger.Errorf("failed to start gc as registry controller is unreachable: %v", err)
 		return err
 	}
 	gc.logger.Infof("start to run gc in job.")

@@ -18,8 +18,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseStringToInt(t *testing.T) {

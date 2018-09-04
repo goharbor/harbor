@@ -35,15 +35,12 @@ func TestGetChartList(t *testing.T) {
 		t.Fatalf("Length of chart list should be 2, but we got %d now", len(infos))
 	}
 
-	foundHarbor := false
-	for _, chart := range infos {
-		if chart.Name == "harbor" {
-			foundHarbor = true
-			break
-		}
+	firstInSortedList := infos[0]
+	if firstInSortedList.Name != "harbor" {
+		t.Fatalf("Expect the fist item of the sorted list to be 'harbor' but got '%s'", firstInSortedList.Name)
 	}
 
-	if !foundHarbor {
-		t.Fatal("Expect chart named with 'harbor' but got nothing")
+	if firstInSortedList.LatestVersion != "0.2.0" {
+		t.Fatalf("Expect latest version '0.2.0' but got '%s'", firstInSortedList.LatestVersion)
 	}
 }

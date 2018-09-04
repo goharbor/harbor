@@ -58,22 +58,22 @@ var (
 	// in the slice
 	basicAuthReqPatterns = []*pathMethod{
 		// create project
-		&pathMethod{
+		{
 			path:   "/api/projects",
 			method: http.MethodPost,
 		},
 		// token service
-		&pathMethod{
+		{
 			path:   "/service/token",
 			method: http.MethodGet,
 		},
 		// delete repository
-		&pathMethod{
+		{
 			path:   "/api/repositories/" + reference.NameRegexp.String(),
 			method: http.MethodDelete,
 		},
 		// delete tag
-		&pathMethod{
+		{
 			path:   "/api/repositories/" + reference.NameRegexp.String() + "/tags/" + reference.TagRegexp.String(),
 			method: http.MethodDelete,
 		},

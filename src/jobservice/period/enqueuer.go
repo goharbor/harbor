@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/gocraft/work"
-	"github.com/gomodule/redigo/redis"
-	"github.com/robfig/cron"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/utils"
+	"github.com/gomodule/redigo/redis"
+	"github.com/robfig/cron"
 )
 
 const (

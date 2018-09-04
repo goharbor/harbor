@@ -19,6 +19,7 @@ import (
 
 const (
 	namespaceParam          = ":repo"
+	nameParam               = ":name"
 	defaultRepo             = "library"
 	rootUploadingEndpoint   = "/api/chartrepo/charts"
 	rootIndexEndpoint       = "/chartrepo/index.yaml"
@@ -213,6 +214,21 @@ func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 	}
 
 	chartController.GetManipulationHandler().UploadProvenanceFile(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+}
+
+//DeleteChart deletes all the chart versions of the specified chart.
+func (cra *ChartRepositoryAPI) DeleteChart() {
+	//Check access
+	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
+		return
+	}
+
+	//Get other parameters from the request
+	chartName := cra.GetStringFromPath(nameParam)
+
+	if err := chartController.GetUtilityHandler().DeleteChart(cra.namespace, chartName); err != nil {
+		chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
+	}
 }
 
 //Rewrite the incoming URL with the right backend URL pattern

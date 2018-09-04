@@ -363,7 +363,7 @@ func (a testapi) ProjectsHead(prjUsr usrInfo, projectName string) (int, error) {
 	return httpStatusCode, err
 }
 
-//Return specific project detail infomation
+//Return specific project detail information
 func (a testapi) ProjectsGetByPID(projectID string) (int, apilib.Project, error) {
 	_sling := sling.New().Get(a.basePath)
 

@@ -894,8 +894,9 @@ paths:
     get:
       summary: Get repositories accompany with relevant project and repo name.
       description: >
-        This endpoint let user search repositories accompanying with relevant
-        project ID and repo name.
+        This endpoint lets user search repositories accompanying with relevant
+        project ID and repo name. Repositories can be sorted by repo name, creation_time,
+        update_time in either ascending or descending order.
       parameters:
         - name: project_id
           in: query
@@ -908,6 +909,13 @@ paths:
           type: string
           required: false
           description: Repo name for filtering results.
+        - name: sort
+          in: query
+          type: string
+          required: false
+          description: >
+            Sort method, valid values include: 'name', '-name', 'creation_time', '-creation_time',
+            'update_time', '-update_time'. Here '-' stands for descending order.
         - name: label_id
           in: query
           type: integer
@@ -2903,6 +2911,32 @@ paths:
           $ref: '#/definitions/InternalChartAPIError'
         '200':
           $ref: '#/definitions/ChartVersions'
+    delete:
+      summary: Delete all the versions of the specified chart
+      description: Delete all the versions of the specified chart
+      tags:
+        - Products
+        - Chart Repository
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+      responses:
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+        '200':
+          description: The specified chart entry is successfully deleted.
   /chartrepo/{repo}/charts/{name}/{version}:
     get:
       summary: Get the specified chart version

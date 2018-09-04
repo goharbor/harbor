@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -49,6 +50,7 @@ type RepositoryAPI struct {
 
 type repoResp struct {
 	ID           int64           `json:"id"`
+	Index        int             `json:"-"`
 	Name         string          `json:"name"`
 	ProjectID    int64           `json:"project_id"`
 	Description  string          `json:"description"`
@@ -58,6 +60,20 @@ type repoResp struct {
 	Labels       []*models.Label `json:"labels"`
 	CreationTime time.Time       `json:"creation_time"`
 	UpdateTime   time.Time       `json:"update_time"`
+}
+
+type reposSorter []*repoResp
+
+func (r reposSorter) Len() int {
+	return len(r)
+}
+
+func (r reposSorter) Swap(i, j int) {
+	r[i], r[j] = r[j], r[i]
+}
+
+func (r reposSorter) Less(i, j int) bool {
+	return r[i].Index < r[j].Index
 }
 
 type tagDetail struct {
@@ -129,6 +145,7 @@ func (ra *RepositoryAPI) Get() {
 		LabelID:    labelID,
 	}
 	query.Page, query.Size = ra.GetPaginationParams()
+	query.Sort = ra.GetString("sort")
 
 	total, err := dao.GetTotalOfRepositories(query)
 	if err != nil {
@@ -159,8 +176,8 @@ func getRepositories(query *models.RepositoryQuery) ([]*repoResp, error) {
 
 func assembleReposInParallel(repositories []*models.RepoRecord) []*repoResp {
 	c := make(chan *repoResp)
-	for _, repository := range repositories {
-		go assembleRepo(c, repository)
+	for i, repository := range repositories {
+		go assembleRepo(c, i, repository)
 	}
 	result := []*repoResp{}
 	var item *repoResp
@@ -171,11 +188,14 @@ func assembleReposInParallel(repositories []*models.RepoRecord) []*repoResp {
 		}
 		result = append(result, item)
 	}
+	sort.Sort(reposSorter(result))
+
 	return result
 }
 
-func assembleRepo(c chan *repoResp, repository *models.RepoRecord) {
+func assembleRepo(c chan *repoResp, index int, repository *models.RepoRecord) {
 	repo := &repoResp{
+		Index:        index,
 		ID:           repository.RepositoryID,
 		Name:         repository.Name,
 		ProjectID:    repository.ProjectID,

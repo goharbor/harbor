@@ -59,7 +59,7 @@ type JobLogRespHandler struct {
 	theAPI *api.BaseAPI
 }
 
-//Handle will consume the response of job service and put the content of the job log in the reponse of the API.
+//Handle will consume the response of job service and put the content of the job log in the response of the API.
 func (h JobLogRespHandler) Handle(resp *http.Response) error {
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
@@ -75,7 +75,7 @@ func (h JobLogRespHandler) Handle(resp *http.Response) error {
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Errorf("failed to read reponse body: %v", err)
+		log.Errorf("failed to read response body: %v", err)
 		return err
 	}
 	h.theAPI.RenderError(resp.StatusCode, fmt.Sprintf("message from jobservice: %s", string(b)))

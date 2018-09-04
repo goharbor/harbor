@@ -17,8 +17,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/goharbor/harbor/src/registryctl/api"
+	"github.com/gorilla/mux"
 )
 
 func newRouter() http.Handler {

@@ -304,7 +304,7 @@ func TestSession_SearchGroup(t *testing.T) {
 		{"normal search",
 			fields{ldapConfig: ldapConfig},
 			args{baseDN: "dc=example,dc=com", filter: "objectClass=groupOfNames", groupName: "harbor_users", groupNameAttribute: "cn"},
-			[]models.LdapGroup{models.LdapGroup{GroupName: "harbor_users", GroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"}}, false},
+			[]models.LdapGroup{{GroupName: "harbor_users", GroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -358,7 +358,7 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 		{"normal search",
 			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
 			args{groupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"},
-			[]models.LdapGroup{models.LdapGroup{GroupName: "harbor_users", GroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"}}, false},
+			[]models.LdapGroup{{GroupName: "harbor_users", GroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com"}}, false},
 		{"search non-exist group",
 			fields{ldapConfig: ldapConfig, ldapGroupConfig: ldapGroupConfig},
 			args{groupDN: "cn=harbor_non_users,ou=groups,dc=example,dc=com"},

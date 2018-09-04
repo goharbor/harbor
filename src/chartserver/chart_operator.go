@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/Masterminds/semver"
@@ -44,7 +46,9 @@ type DigitalSignature struct {
 type ChartInfo struct {
 	Name          string
 	TotalVersions uint32 `json:"total_versions"`
+	LatestVersion string `json:"latest_version"`
 	Created       time.Time
+	Updated       time.Time
 	Icon          string
 	Home          string
 	Deprecated    bool
@@ -131,11 +135,36 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 			chartInfo.Home = lVersion.Home
 			chartInfo.Icon = lVersion.Icon
 			chartInfo.Deprecated = lVersion.Deprecated
+			chartInfo.LatestVersion = lVersion.GetVersion()
 			chartList = append(chartList, chartInfo)
 		}
 	}
 
+	//Sort the chart list by the updated time which is the create time
+	//of the latest version of the chart.
+	sort.Slice(chartList, func(i, j int) bool {
+		if chartList[i].Updated.Equal(chartList[j].Updated) {
+			return strings.Compare(chartList[i].Name, chartList[j].Name) < 0
+		}
+
+		return chartList[i].Updated.After(chartList[j].Updated)
+	})
+
 	return chartList, nil
+}
+
+//GetChartVersions returns the chart versions
+func (cho *ChartOperator) GetChartVersions(content []byte) (helm_repo.ChartVersions, error) {
+	if content == nil || len(content) == 0 {
+		return nil, errors.New("zero content")
+	}
+
+	chartVersions := make(helm_repo.ChartVersions, 0)
+	if err := json.Unmarshal(content, &chartVersions); err != nil {
+		return nil, err
+	}
+
+	return chartVersions, nil
 }
 
 //Get the latest and oldest chart versions

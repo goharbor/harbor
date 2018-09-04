@@ -23,32 +23,6 @@ DATA_VOL = "/data"
 
 def validate(conf, args):
 
-    if args.ha_mode:
-        db_host = rcp.get("configuration", "db_host")
-        if db_host == "mysql":
-            raise Exception("Error: In HA mode, db_host in harbor.cfg needs to point to an external DB address.")
-        registry_storage_provider_name = rcp.get("configuration",
-                                                 "registry_storage_provider_name").strip()
-        if registry_storage_provider_name == "filesystem" and not args.yes:
-            msg = 'Is the Harbor Docker Registry configured to use shared storage (e.g. NFS, Ceph etc.)? [yes/no]:'
-            if raw_input(msg).lower() != "yes":
-                raise Exception("Error: In HA mode, shared storage configuration for Docker Registry in harbor.cfg is required. Refer to HA installation guide for details.")
-        if args.notary_mode:
-            raise Exception("Error: HA mode doesn't support Notary currently")
-        if args.clair_mode:
-            clair_db_host = rcp.get("configuration", "clair_db_host")
-            if "postgres" == clair_db_host:
-                raise Exception("Error: In HA mode, clair_db_host in harbor.cfg needs to point to an external Postgres DB address.")
-
-        cert_path = rcp.get("configuration", "ssl_cert")
-        cert_key_path = rcp.get("configuration", "ssl_cert_key")
-        shared_cert_key = os.path.join(base_dir, "ha", os.path.basename(cert_key_path))
-        shared_cert_path = os.path.join(base_dir, "ha", os.path.basename(cert_path))
-        if os.path.isfile(shared_cert_key):
-            shutil.copy2(shared_cert_key, cert_key_path)
-        if os.path.isfile(shared_cert_path):
-            shutil.copy2(shared_cert_path, cert_path)
-
     protocol = rcp.get("configuration", "ui_url_protocol")
     if protocol != "https" and args.notary_mode:
         raise Exception("Error: the protocol must be https when Harbor is deployed with Notary")
@@ -95,58 +69,6 @@ def validate(conf, args):
 def mark_file(path, mode=0o600, uid=10000, gid=10000):
     os.chmod(path, mode)
     os.chown(path, uid, gid)
-
-def prepare_ha(conf, args):
-    #files under ha folder will have high prority
-    protocol = rcp.get("configuration", "ui_url_protocol")
-    if protocol == "https":
-        #copy nginx certificate
-        cert_path = rcp.get("configuration", "ssl_cert")
-        cert_key_path = rcp.get("configuration", "ssl_cert_key")
-        shared_cert_key = os.path.join(base_dir, "ha", os.path.basename(cert_key_path))
-        shared_cert_path = os.path.join(base_dir, "ha", os.path.basename(cert_path))
-        if os.path.isfile(shared_cert_key):
-            shutil.copy2(shared_cert_key, cert_key_path)
-        else: 
-            if os.path.isfile(cert_key_path):
-                shutil.copy2(cert_key_path, shared_cert_key)
-        if os.path.isfile(shared_cert_path):
-            shutil.copy2(shared_cert_path, cert_path)
-        else:
-            if os.path.isfile(cert_path):
-                shutil.copy2(cert_path, shared_cert_path)
-        #check if ca exsit
-        cert_ca_path = os.path.join(DATA_VOL, 'ca_download', 'ca.crt')
-        shared_ca_path = os.path.join(base_dir, "ha", os.path.basename(cert_ca_path))
-        if os.path.isfile(shared_ca_path):
-            shutil.copy2(shared_ca_path, cert_ca_path)
-        else:
-            if os.path.isfile(cert_ca_path):
-                shutil.copy2(cert_ca_path, shared_ca_path)
-    #check root.crt and priviate_key.pem
-    private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
-    root_crt = os.path.join(config_dir, "registry", "root.crt")
-    shared_private_key_pem = os.path.join(base_dir, "ha", "private_key.pem")
-    shared_root_crt = os.path.join(base_dir, "ha", "root.crt")
-    if os.path.isfile(shared_private_key_pem):
-        shutil.copy2(shared_private_key_pem, private_key_pem)
-    else:
-        if os.path.isfile(private_key_pem):
-            shutil.copy2(private_key_pem, shared_private_key_pem)
-    if os.path.isfile(shared_root_crt):
-        shutil.copy2(shared_root_crt, root_crt)
-    else:
-        if os.path.isfile(root_crt):
-            shutil.copy2(root_crt, shared_root_crt)
-    #secretkey
-    shared_secret_key = os.path.join(base_dir, "ha", "secretkey")
-    secretkey_path = rcp.get("configuration", "secretkey_path") 
-    secret_key = os.path.join(secretkey_path, "secretkey")
-    if os.path.isfile(shared_secret_key):
-        shutil.copy2(shared_secret_key, secret_key)
-    else:
-        if os.path.isfile(secret_key):
-            shutil.copy2(secret_key, shared_secret_key)
 
 def get_secret_key(path):
     secret_key = _get_secret(path, "secretkey") 
@@ -206,8 +128,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',type=str,help="the path of Harbor configuration file")
 parser.add_argument('--with-notary', dest='notary_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with notary")
 parser.add_argument('--with-clair', dest='clair_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with clair")
-parser.add_argument('--ha', dest='ha_mode', default=False, action='store_true', help="the Harbor instance is to be deployed in HA mode")
-parser.add_argument('--yes', dest='yes', default=False, action='store_true', help="Answer yes to all questions")
 parser.add_argument('--with-chartmuseum', dest='chart_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with chart repository supporting")
 args = parser.parse_args()
 
@@ -470,7 +390,7 @@ render(os.path.join(templates_dir, "ui", "env"),
         chart_cache_driver = chart_cache_driver,
         redis_url_reg = redis_url_reg)
 
-registry_config_file = "config_ha.yml" if args.ha_mode else "config.yml"
+registry_config_file = "config.yml"
 if storage_provider_name == "filesystem":
     if not storage_provider_config:
         storage_provider_config = "rootdirectory: /storage"
@@ -479,6 +399,14 @@ if storage_provider_name == "filesystem":
 # generate storage configuration section in yaml format
 storage_provider_conf_list = [storage_provider_name + ':']
 for c in storage_provider_config.split(","):
+    kvs = c.split(": ")
+    if len(kvs) == 2:
+        if kvs[0].strip() == "keyfile":
+            srcKeyFile = kvs[1].strip()
+            if os.path.isfile(srcKeyFile):
+                shutil.copyfile(srcKeyFile, os.path.join(registry_config_dir, "gcs.key"))
+                storage_provider_conf_list.append("keyfile: %s" % "/etc/registry/gcs.key")
+                continue
     storage_provider_conf_list.append(c.strip())
 storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
 render(os.path.join(templates_dir, "registry", registry_config_file),
@@ -682,9 +610,6 @@ if args.clair_mode:
            https_proxy = https_proxy,
            no_proxy = no_proxy)
 
-if args.ha_mode:
-    prepare_ha(rcp, args)
-
 # config chart repository
 if args.chart_mode:
     chartm_temp_dir = os.path.join(templates_dir, "chartserver")
@@ -695,6 +620,11 @@ if args.chart_mode:
         print ("Create config folder: %s" % chartm_config_dir)
         os.makedirs(chartm_config_dir)
 
+    # handle custom ca bundle
+    if len(registry_custom_ca_bundle_path) > 0 and os.path.isfile(registry_custom_ca_bundle_path):
+        shutil.copyfile(registry_custom_ca_bundle_path, os.path.join(chartm_config_dir, "custom-ca-bundle.crt"))
+        print("Copied custom ca bundle: %s" % os.path.join(chartm_config_dir, "custom-ca-bundle.crt"))
+    
     # process redis info
     cache_store = "redis"
     cache_redis_password = redis_password
@@ -726,15 +656,25 @@ if args.chart_mode:
         storage_provider_config_options.append("STORAGE_AMAZON_PREFIX=%s" % storgae_provider_confg_map.get("rootdirectory", ""))
         storage_provider_config_options.append("STORAGE_AMAZON_REGION=%s" % storgae_provider_confg_map.get("region", ""))
         storage_provider_config_options.append("STORAGE_AMAZON_ENDPOINT=%s" % storgae_provider_confg_map.get("regionendpoint", ""))
+        storage_provider_config_options.append("AWS_ACCESS_KEY_ID=%s" % storgae_provider_confg_map.get("accesskey", ""))
+        storage_provider_config_options.append("AWS_SECRET_ACCESS_KEY=%s" % storgae_provider_confg_map.get("secretkey", ""))
     elif storage_provider_name == "gcs":
         # google cloud storage
         storage_driver = "google"
         storage_provider_config_options.append("STORAGE_GOOGLE_BUCKET=%s" % storgae_provider_confg_map.get("bucket", ""))
         storage_provider_config_options.append("STORAGE_GOOGLE_PREFIX=%s" % storgae_provider_confg_map.get("rootdirectory", ""))
+
+        keyFileOnHost = storgae_provider_confg_map.get("keyfile", "")
+        if os.path.isfile(keyFileOnHost):
+            shutil.copyfile(keyFileOnHost, os.path.join(chartm_config_dir, "gcs.key"))
+            targetKeyFile = "/etc/chartserver/gcs.key"
+            storage_provider_config_options.append("GOOGLE_APPLICATION_CREDENTIALS=%s" % targetKeyFile)
     elif storage_provider_name == "azure":
         # azure storage
         storage_driver = "microsoft"
         storage_provider_config_options.append("STORAGE_MICROSOFT_CONTAINER=%s" % storgae_provider_confg_map.get("container", ""))
+        storage_provider_config_options.append("AZURE_STORAGE_ACCOUNT=%s" % storgae_provider_confg_map.get("accountname", ""))
+        storage_provider_config_options.append("AZURE_STORAGE_ACCESS_KEY=%s" % storgae_provider_confg_map.get("accountkey", ""))
         storage_provider_config_options.append("STORAGE_MICROSOFT_PREFIX=/azure/harbor/charts")
     elif storage_provider_name == "swift":
         # open stack swift
@@ -742,12 +682,21 @@ if args.chart_mode:
         storage_provider_config_options.append("STORAGE_OPENSTACK_CONTAINER=%s" % storgae_provider_confg_map.get("container", ""))
         storage_provider_config_options.append("STORAGE_OPENSTACK_PREFIX=%s" % storgae_provider_confg_map.get("rootdirectory", ""))
         storage_provider_config_options.append("STORAGE_OPENSTACK_REGION=%s" % storgae_provider_confg_map.get("region", ""))
+        storage_provider_config_options.append("OS_AUTH_URL=%s" % storgae_provider_confg_map.get("authurl", ""))
+        storage_provider_config_options.append("OS_USERNAME=%s" % storgae_provider_confg_map.get("username", ""))
+        storage_provider_config_options.append("OS_PASSWORD=%s" % storgae_provider_confg_map.get("password", ""))
+        storage_provider_config_options.append("OS_PROJECT_ID=%s" % storgae_provider_confg_map.get("tenantid", ""))
+        storage_provider_config_options.append("OS_PROJECT_NAME=%s" % storgae_provider_confg_map.get("tenant", ""))
+        storage_provider_config_options.append("OS_DOMAIN_ID=%s" % storgae_provider_confg_map.get("domainid", ""))
+        storage_provider_config_options.append("OS_DOMAIN_NAME=%s" % storgae_provider_confg_map.get("domain", ""))
     elif storage_provider_name == "oss":
         # aliyun OSS
         storage_driver = "alibaba"
         storage_provider_config_options.append("STORAGE_ALIBABA_BUCKET=%s" % storgae_provider_confg_map.get("bucket", ""))
         storage_provider_config_options.append("STORAGE_ALIBABA_PREFIX=%s" % storgae_provider_confg_map.get("rootdirectory", ""))
         storage_provider_config_options.append("STORAGE_ALIBABA_ENDPOINT=%s" % storgae_provider_confg_map.get("endpoint", ""))
+        storage_provider_config_options.append("ALIBABA_CLOUD_ACCESS_KEY_ID=%s" % storgae_provider_confg_map.get("accesskeyid", ""))
+        storage_provider_config_options.append("ALIBABA_CLOUD_ACCESS_KEY_SECRET=%s" % storgae_provider_confg_map.get("accesskeysecret", ""))
     else:
         # use local file system
         storage_provider_config_options.append("STORAGE_LOCAL_ROOTDIR=/chart_storage")

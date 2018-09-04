@@ -99,9 +99,9 @@ VERSIONFILENAME=UIVERSION
 #versions
 REGISTRYVERSION=v2.6.2
 NGINXVERSION=$(VERSIONTAG)
-NOTARYVERSION=v0.5.1
+NOTARYVERSION=v0.6.1
 MARIADBVERSION=$(VERSIONTAG)
-CLAIRVERSION=v2.0.4
+CLAIRVERSION=v2.0.5
 CLAIRDBVERSION=$(VERSIONTAG)
 MIGRATORVERSION=$(VERSIONTAG)
 REDISVERSION=$(VERSIONTAG)
@@ -233,13 +233,13 @@ PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/open_source_license $(HARBORPKG)/ha
+				  $(HARBORPKG)/open_source_license 
 
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/ha \
+				  $(HARBORPKG)/harbor.cfg \
 				  $(HARBORPKG)/open_source_license
 				  
 DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
@@ -282,28 +282,31 @@ compile_clarity:
 	fi
 	@echo "Done."
 
-compile_golangimage: compile_clarity
+compile_adminserver:
 	@echo "compiling binary for adminserver (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_ADMINSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_ADMINSERVER)/$(ADMINSERVERBINARYNAME)
 	@echo "Done."
 
+compile_ui:
 	@echo "compiling binary for ui (golang image)..."
 	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_UI) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_UI)/$(UIBINARYNAME)
 	@echo "Done."
 
+compile_jobservice:
 	@echo "compiling binary for jobservice (golang image)..."
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
 	@echo "Done."
 
+compile_registryctl:
 	@echo "compiling binary for harbor registry controller (golang image)..."
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
 	@echo "Done."
 
-compile:check_environment compile_golangimage
+compile:check_environment compile_clarity compile_adminserver compile_ui compile_jobservice compile_registryctl
 	
 prepare:
 	@echo "preparing..."
@@ -319,14 +322,10 @@ build:
 modify_composefile: modify_composefile_notary modify_composefile_clair modify_composefile_chartmuseum
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@cp $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__postgresql_version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__reg_version__/$(REGISTRYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__reg_version__/$(REGISTRYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i 's/__redis_version__/$(REDISVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 modify_composefile_notary:
@@ -340,8 +339,6 @@ modify_composefile_clair:
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
 	@$(SEDCMD) -i 's/__postgresql_version__/$(CLAIRDBVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
 	@$(SEDCMD) -i 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
-	@cp $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSECLAIRTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSECLAIRFILENAME)
-	@$(SEDCMD) -i 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/ha/$(DOCKERCOMPOSECLAIRFILENAME)
 
 modify_composefile_chartmuseum:
 	@echo "preparing docker-compose chartmuseum file..."
@@ -364,8 +361,6 @@ package_online: modify_composefile
 	@if [ -n "$(REGISTRYSERVER)" ] ; then \
 		$(SEDCMD) -i 's/image\: goharbor/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
 		$(HARBORPKG)/docker-compose.yml ; \
-		$(SEDCMD) -i 's/image\: goharbor/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
-		$(HARBORPKG)/ha/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp open_source_license $(HARBORPKG)/open_source_license
@@ -381,7 +376,6 @@ package_offline: compile version build modify_sourcefiles modify_composefile
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp open_source_license $(HARBORPKG)/open_source_license
 	@cp NOTICE $(HARBORPKG)/NOTICE
-	@cp $(HARBORPKG)/photon/db/initial-registry.sql $(HARBORPKG)/ha/
 
 	@echo "saving harbor docker image"
 	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
@@ -422,6 +416,29 @@ gosec:
 	else \
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
+
+go_check: misspell golint govet gofmt
+
+gofmt:
+	@echo checking gofmt...
+	@res=$$(gofmt -d -e -s $$(find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print)); \
+	if [ -n "$${res}" ]; then \
+		echo checking gofmt fail... ; \
+		echo "$${res}"; \
+		exit 1; \
+	fi
+
+misspell:
+	@echo checking misspell...
+	@find . -type d \( -path ./src/vendor -o -path ./tests \) -prune -o -name '*.go' -print | xargs misspell -error
+
+golint:
+	@echo checking golint...
+	@go list ./... | grep -v -E 'vendor|test' | xargs -L1 fgt golint
+
+govet:
+	@echo checking govet...
+	@go list ./... | grep -v -E 'vendor|test' | xargs -L1 go vet
 
 pushimage:
 	@echo "pushing harbor images ..."

@@ -19,8 +19,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/stretchr/testify/assert"
 )
 
 var c Client
@@ -29,7 +29,7 @@ func TestMain(m *testing.M) {
 
 	server, err := test.NewRegistryCtl(nil)
 	if err != nil {
-		fmt.Printf("failed to create regsitry: %v", err)
+		fmt.Printf("failed to create registry: %v", err)
 		os.Exit(1)
 	}
 

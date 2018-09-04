@@ -115,7 +115,7 @@ func isTrue(value string) bool {
 // List projects the owner of which is user1: query := &QueryParam{Owner:"user1"}
 // List all public projects the owner of which is user1: query := &QueryParam{Owner:"user1",Public:true}
 // List projects which user1 is member of: query := &QueryParam{Member:&Member{Name:"user1"}}
-// List projects which user1 is the project admin : query := &QueryParam{Memeber:&Member{Name:"user1",Role:1}}
+// List projects which user1 is the project admin : query := &QueryParam{Member:&Member{Name:"user1",Role:1}}
 type ProjectQueryParam struct {
 	Name       string       // the name of project
 	Owner      string       // the username of project owner
@@ -125,7 +125,7 @@ type ProjectQueryParam struct {
 	ProjectIDs []int64      // project ID list
 }
 
-// MemberQuery fitler by member's username and role
+// MemberQuery filter by member's username and role
 type MemberQuery struct {
 	Name      string       // the username of member
 	Role      int          // the role of the member has to the project
@@ -136,6 +136,11 @@ type MemberQuery struct {
 type Pagination struct {
 	Page int64
 	Size int64
+}
+
+// Sorting sort by given field, ascending or descending
+type Sorting struct {
+	Sort string // in format [+-]?<FIELD_NAME>, e.g. '+creation_time', '-creation_time'
 }
 
 // BaseProjectCollection contains the query conditions which can be used

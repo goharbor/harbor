@@ -59,7 +59,7 @@ func (fc *FakeClient) SearchUser(name string) ([]*SearchUserEntry, error) {
 		ExtID:    "some-external-id-1",
 		ID:       "u-0001",
 		UserName: "one",
-		Emails: []SearchUserEmailEntry{SearchUserEmailEntry{
+		Emails: []SearchUserEmailEntry{{
 			Primary: false,
 			Value:   "one@email.com",
 		}},
@@ -68,7 +68,7 @@ func (fc *FakeClient) SearchUser(name string) ([]*SearchUserEntry, error) {
 		ExtID:    "some-external-id-2-a",
 		ID:       "u-0002a",
 		UserName: "two",
-		Emails: []SearchUserEmailEntry{SearchUserEmailEntry{
+		Emails: []SearchUserEmailEntry{{
 			Primary: false,
 			Value:   "two@email.com",
 		}},

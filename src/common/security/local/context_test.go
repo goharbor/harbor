@@ -19,8 +19,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
@@ -28,6 +26,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/ui/promgr"
 	"github.com/goharbor/harbor/src/ui/promgr/pmsdriver/local"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -283,7 +283,7 @@ func TestHasAllPermWithGroup(t *testing.T) {
 		t.Errorf("Error occurred when GetUser: %v", err)
 	}
 	developer.GroupList = []*models.UserGroup{
-		&models.UserGroup{GroupName: "test_group", GroupType: 1, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"},
+		{GroupName: "test_group", GroupType: 1, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"},
 	}
 	ctx := NewSecurityContext(developer, pm)
 	assert.False(t, ctx.HasAllPerm(project.Name))
@@ -360,7 +360,7 @@ func TestSecurityContext_GetRolesByGroup(t *testing.T) {
 		t.Errorf("Error occurred when GetUser: %v", err)
 	}
 	developer.GroupList = []*models.UserGroup{
-		&models.UserGroup{GroupName: "test_group", GroupType: 1, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"},
+		{GroupName: "test_group", GroupType: 1, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"},
 	}
 	type fields struct {
 		user *models.User

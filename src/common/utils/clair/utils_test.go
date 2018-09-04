@@ -20,8 +20,8 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseServerity(t *testing.T) {

@@ -20,13 +20,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/replication"
 	rep_models "github.com/goharbor/harbor/src/replication/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -46,7 +46,7 @@ func TestLabelAPIPost(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    labelAPIBasePath,
@@ -55,7 +55,7 @@ func TestLabelAPIPost(t *testing.T) {
 		},
 
 		// 400
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        labelAPIBasePath,
@@ -66,7 +66,7 @@ func TestLabelAPIPost(t *testing.T) {
 		},
 
 		// 403 non-sysadmin try to create global label
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    labelAPIBasePath,
@@ -80,7 +80,7 @@ func TestLabelAPIPost(t *testing.T) {
 		},
 
 		// 403 non-member user try to create project label
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    labelAPIBasePath,
@@ -95,7 +95,7 @@ func TestLabelAPIPost(t *testing.T) {
 		},
 
 		// 403 developer try to create project label
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    labelAPIBasePath,
@@ -110,7 +110,7 @@ func TestLabelAPIPost(t *testing.T) {
 		},
 
 		// 404 non-exist project
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    labelAPIBasePath,
@@ -125,7 +125,7 @@ func TestLabelAPIPost(t *testing.T) {
 		},
 
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    labelAPIBasePath,
@@ -141,7 +141,7 @@ func TestLabelAPIPost(t *testing.T) {
 		},
 
 		// 409
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    labelAPIBasePath,
@@ -162,7 +162,7 @@ func TestLabelAPIPost(t *testing.T) {
 func TestLabelAPIGet(t *testing.T) {
 	cases := []*codeCheckingCase{
 		// 400
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    fmt.Sprintf("%s/%d", labelAPIBasePath, 0),
@@ -171,7 +171,7 @@ func TestLabelAPIGet(t *testing.T) {
 		},
 
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    fmt.Sprintf("%s/%d", labelAPIBasePath, 1000),
@@ -180,7 +180,7 @@ func TestLabelAPIGet(t *testing.T) {
 		},
 
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -194,7 +194,7 @@ func TestLabelAPIGet(t *testing.T) {
 func TestLabelAPIList(t *testing.T) {
 	cases := []*codeCheckingCase{
 		// 400 no scope query string
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    labelAPIBasePath,
@@ -203,7 +203,7 @@ func TestLabelAPIList(t *testing.T) {
 		},
 
 		// 400 invalid scope
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    labelAPIBasePath,
@@ -217,7 +217,7 @@ func TestLabelAPIList(t *testing.T) {
 		},
 
 		// 400 invalid project_id
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    labelAPIBasePath,
@@ -272,7 +272,7 @@ func TestLabelAPIList(t *testing.T) {
 func TestLabelAPIPut(t *testing.T) {
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -281,7 +281,7 @@ func TestLabelAPIPut(t *testing.T) {
 		},
 
 		// 400
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, 0),
@@ -291,7 +291,7 @@ func TestLabelAPIPut(t *testing.T) {
 		},
 
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, 10000),
@@ -301,7 +301,7 @@ func TestLabelAPIPut(t *testing.T) {
 		},
 
 		// 403 non-member user
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -311,7 +311,7 @@ func TestLabelAPIPut(t *testing.T) {
 		},
 
 		// 403 developer
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodPut,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -321,7 +321,7 @@ func TestLabelAPIPut(t *testing.T) {
 		},
 
 		// 400
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -336,7 +336,7 @@ func TestLabelAPIPut(t *testing.T) {
 		},
 
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -365,7 +365,7 @@ func TestLabelAPIPut(t *testing.T) {
 func TestLabelAPIDelete(t *testing.T) {
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodDelete,
 				url:    fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -374,7 +374,7 @@ func TestLabelAPIDelete(t *testing.T) {
 		},
 
 		// 400
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, 0),
@@ -384,7 +384,7 @@ func TestLabelAPIDelete(t *testing.T) {
 		},
 
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, 10000),
@@ -394,7 +394,7 @@ func TestLabelAPIDelete(t *testing.T) {
 		},
 
 		// 403 non-member user
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -404,7 +404,7 @@ func TestLabelAPIDelete(t *testing.T) {
 		},
 
 		// 403 developer
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -414,7 +414,7 @@ func TestLabelAPIDelete(t *testing.T) {
 		},
 
 		// 200
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -424,7 +424,7 @@ func TestLabelAPIDelete(t *testing.T) {
 		},
 
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("%s/%d", labelAPIBasePath, labelID),
@@ -477,7 +477,7 @@ func TestListResources(t *testing.T) {
 
 	cases := []*codeCheckingCase{
 		// 401
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method: http.MethodGet,
 				url:    fmt.Sprintf("%s/%d/resources", labelAPIBasePath, globalLabelID),
@@ -485,7 +485,7 @@ func TestListResources(t *testing.T) {
 			code: http.StatusUnauthorized,
 		},
 		// 404
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        fmt.Sprintf("%s/%d/resources", labelAPIBasePath, 10000),
@@ -494,7 +494,7 @@ func TestListResources(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 		// 403: global level label
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        fmt.Sprintf("%s/%d/resources", labelAPIBasePath, globalLabelID),
@@ -503,7 +503,7 @@ func TestListResources(t *testing.T) {
 			code: http.StatusForbidden,
 		},
 		// 403: project level label
-		&codeCheckingCase{
+		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        fmt.Sprintf("%s/%d/resources", labelAPIBasePath, projectLabelID),

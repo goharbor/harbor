@@ -85,7 +85,7 @@ func (gr *GCReq) ToJob() (*models.JobData, error) {
 		metadata.Cron = fmt.Sprintf("%d %d %d * * %d", s, m, h, gr.Schedule.Weekday%7)
 	case ScheduleManual, ScheduleNone:
 	default:
-		return nil, fmt.Errorf("unsupported schedual trigger type: %s", gr.Schedule.Type)
+		return nil, fmt.Errorf("unsupported schedule trigger type: %s", gr.Schedule.Type)
 	}
 
 	jobData := &models.JobData{

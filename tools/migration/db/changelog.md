@@ -78,4 +78,8 @@ Changelog for harbor database schema
 
 ## 1.6.0
 
-  - add `deleted` column to table `harbor_label` 
+  - add `deleted` column to table `harbor_label`
+
+## 1.7.0
+
+  - alter column `v` on table `properties`: varchar(128)->varchar(1024)

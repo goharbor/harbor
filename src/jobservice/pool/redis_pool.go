@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/gocraft/work"
-	"github.com/gomodule/redigo/redis"
-	"github.com/robfig/cron"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -18,6 +16,8 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/opm"
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/goharbor/harbor/src/jobservice/utils"
+	"github.com/gomodule/redigo/redis"
+	"github.com/robfig/cron"
 )
 
 var (

@@ -18,9 +18,9 @@ import (
 	"net/http"
 	"os"
 
-	gorilla_handlers "github.com/gorilla/handlers"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/registryctl/auth"
+	gorilla_handlers "github.com/gorilla/handlers"
 )
 
 // NewHandlerChain returns a gorilla router which is wrapped by  authenticate handler
@@ -54,7 +54,7 @@ func newAuthHandler(authenticator auth.AuthenticationHandler, handler http.Handl
 
 func (a *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if a.authenticator == nil {
-		log.Errorf("No authenticator found in regsitry controller.")
+		log.Errorf("No authenticator found in registry controller.")
 		http.Error(w, http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError)
 		return
