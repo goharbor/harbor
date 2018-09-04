@@ -61,15 +61,6 @@ func InitClairDB(clairDB *models.PostGreSQL) error {
 	return nil
 }
 
-// UpgradeSchema will call the internal migrator to upgrade schema based on the setting of database.
-func UpgradeSchema(database *models.Database) error {
-	db, err := getDatabase(database)
-	if err != nil {
-		return err
-	}
-	return db.UpgradeSchema()
-}
-
 // InitDatabase registers the database
 func InitDatabase(database *models.Database) error {
 	db, err := getDatabase(database)
@@ -81,6 +72,14 @@ func InitDatabase(database *models.Database) error {
 	if err := db.Register(); err != nil {
 		return err
 	}
+	log.Info("Register database completed")
+
+	log.Info("Upgrading schema...")
+	if err = db.UpgradeSchema(); err != nil {
+		return err
+	}
+	log.Info("Upgrade schema completed")
+
 	version, err := GetSchemaVersion()
 	if err != nil {
 		return err
@@ -90,7 +89,6 @@ func InitDatabase(database *models.Database) error {
 			SchemaVersion, version.Version)
 	}
 
-	log.Info("Register database completed")
 	return nil
 }
 

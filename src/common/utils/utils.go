@@ -88,15 +88,17 @@ func TestTCPConn(addr string, timeout, interval int) error {
 	cancel := make(chan int)
 
 	go func() {
+		n := 1
 		for {
 			select {
 			case <-cancel:
 				break
 			default:
-				conn, err := net.DialTimeout("tcp", addr, time.Duration(timeout)*time.Second)
+				conn, err := net.DialTimeout("tcp", addr, time.Duration(n)*time.Second)
 				if err != nil {
 					log.Errorf("failed to connect to tcp://%s, retry after %d seconds :%v",
 						addr, interval, err)
+					n = n * 2
 					time.Sleep(time.Duration(interval) * time.Second)
 					continue
 				}
