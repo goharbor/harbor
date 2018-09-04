@@ -20,11 +20,10 @@ import {
   OnDestroy,
   EventEmitter
 } from "@angular/core";
-import { Comparator, State } from "clarity-angular";
-import { Observable } from "rxjs/Observable";
-import { Subscription } from "rxjs/Subscription";
-import 'rxjs/add/observable/forkJoin';
-import 'rxjs/add/observable/timer';
+import { Comparator, State } from "@clr/angular";
+import { Subscription, forkJoin, timer} from "rxjs";
+
+
 import { TranslateService } from "@ngx-translate/core";
 
 import { ListReplicationRuleComponent } from "../list-replication-rule/list-replication-rule.component";
@@ -245,7 +244,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         this.jobs = response.data;
 
         if (!this.timerDelay) {
-          this.timerDelay = Observable.timer(10000, 10000).subscribe(() => {
+          this.timerDelay = timer(10000, 10000).subscribe(() => {
             let count: number = 0;
             this.jobs.forEach(job => {
               if (
@@ -349,7 +348,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         })
         .catch(error => {
           if (error && error.status === 412) {
-            Observable.forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
+            forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
                 this.translateService.get('REPLICATION.REPLICATE_SUMMARY_FAILURE'))
                 .subscribe(function (res) {
                   operateChanges(operMessage, OperationState.failure, res[1]);

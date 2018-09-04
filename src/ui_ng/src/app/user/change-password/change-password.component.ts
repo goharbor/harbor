@@ -80,7 +80,7 @@ export class ChangePasswordComponent {
             this.inlineAlert.showInlineConfirmation({
                 message: "ALERT.FORM_CHANGE_CONFIRMATION"
             });
-        }else {
+        } else {
             this.opened = false;
         }
 
@@ -111,7 +111,7 @@ export class ChangePasswordComponent {
                 if (error.status === 400) {
                     this.translateService.get("USER.EXISTING_PASSWORD").subscribe(
                         res => {this.inlineAlert.showInlineError(res); });
-                }else {
+                } else {
                     this.inlineAlert.showInlineError(error);
                 }
                 let hnd = setInterval(() => this.ref.markForCheck(), 100);

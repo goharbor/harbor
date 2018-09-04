@@ -1,7 +1,6 @@
 import { Injectable, Inject } from "@angular/core";
 import { Http } from "@angular/http";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/observable/of";
+import { Observable } from "rxjs";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import {
@@ -16,8 +15,8 @@ import { Tag } from "./interface";
  * For getting tag signatures.
  * This is temporary, will be removed in future.
  *
- * @export
- * @class VerifiedSignature
+ **
+ * class VerifiedSignature
  */
 export class VerifiedSignature {
   tag: string;
@@ -29,9 +28,9 @@ export class VerifiedSignature {
 /**
  * Define the service methods to handle the repository tag related things.
  *
- * @export
+ **
  * @abstract
- * @class TagService
+ * class TagService
  */
 export abstract class TagService {
   /**
@@ -39,9 +38,9 @@ export abstract class TagService {
    * NOTES: If the Notary is enabled, the signatures should be included in the returned data.
    *
    * @abstract
-   * @param {string} repositoryName
-   * @param {RequestQueryParams} [queryParams]
-   * @returns {(Observable<Tag[]> | Promise<Tag[]> | Tag[])}
+   *  ** deprecated param {string} repositoryName
+   *  ** deprecated param {RequestQueryParams} [queryParams]
+   * returns {(Observable<Tag[]> | Promise<Tag[]> | Tag[])}
    *
    * @memberOf TagService
    */
@@ -54,9 +53,9 @@ export abstract class TagService {
    * Delete the specified tag.
    *
    * @abstract
-   * @param {string} repositoryName
-   * @param {string} tag
-   * @returns {(Observable<any> | any)}
+   *  ** deprecated param {string} repositoryName
+   *  ** deprecated param {string} tag
+   * returns {(Observable<any> | any)}
    *
    * @memberOf TagService
    */
@@ -69,9 +68,9 @@ export abstract class TagService {
    * Get the specified tag.
    *
    * @abstract
-   * @param {string} repositoryName
-   * @param {string} tag
-   * @returns {(Observable<Tag> | Promise<Tag> | Tag)}
+   *  ** deprecated param {string} repositoryName
+   *  ** deprecated param {string} tag
+   * returns {(Observable<Tag> | Promise<Tag> | Tag)}
    *
    * @memberOf TagService
    */
@@ -96,9 +95,9 @@ export abstract class TagService {
 /**
  * Implement default service for tag.
  *
- * @export
- * @class TagDefaultService
- * @extends {TagService}
+ **
+ * class TagDefaultService
+ * extends {TagService}
  */
 @Injectable()
 export class TagDefaultService extends TagService {

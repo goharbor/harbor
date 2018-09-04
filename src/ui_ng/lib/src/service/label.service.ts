@@ -1,4 +1,4 @@
-import { Observable } from "rxjs/Observable";
+import { Observable} from "rxjs";
 import { Label } from "./interface";
 import { Inject, Injectable } from "@angular/core";
 import { Http } from "@angular/http";

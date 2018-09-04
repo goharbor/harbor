@@ -21,7 +21,7 @@ import { SessionUser } from '../shared/session-user';
 import { AuditLogService } from './audit-log.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
-import { State } from 'clarity-angular';
+import { State } from '@clr/angular';
 
 const optionalSearch: {} = { 0: 'AUDIT_LOG.ADVANCED', 1: 'AUDIT_LOG.SIMPLE' };
 

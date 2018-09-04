@@ -95,7 +95,7 @@ The folder graph below shows the structure of the source code folder `harbor/src
 │   └── views
 ├── ui_ng               # The code of harbor web UI
 │   ├── e2e
-│   ├── lib             # Source code of harbor-ui npm library which includes the main UI components of web UI
+│   ├── lib             # Source code of @harbor/ui npm library which includes the main UI components of web UI
 │   └── src             # General web page UI code of Harbor
 └── vendor              # Go code dependencies
     ├── github.com

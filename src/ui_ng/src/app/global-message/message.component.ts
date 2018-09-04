@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, Input, OnInit, OnDestroy, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from "rxjs";
 import { TranslateService } from '@ngx-translate/core';
 
 import { Message } from './message';

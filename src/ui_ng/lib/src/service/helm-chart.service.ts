@@ -1,8 +1,8 @@
+
+import {throwError as observableThrowError,  Observable } from "rxjs";
 import { Injectable, Inject } from "@angular/core";
 import { Http, Response, ResponseContentType } from "@angular/http";
-
-import "rxjs/add/observable/of";
-import { Observable } from "rxjs/Observable";
+import { map, catchError } from "rxjs/operators";
 import {HttpErrorResponse} from "@angular/common/http";
 
 import { RequestQueryParams } from "./RequestQueryParams";
@@ -15,15 +15,15 @@ import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "../utils";
  * Define service methods for handling the helmchart related things.
  * Loose couple with project module.
  *
- * @export
+ **
  * @abstract
- * @class RepositoryService
+ * class RepositoryService
  */
 export abstract class HelmChartService {
   /**
    * Get all helm charts info
-   * @param projectName Id of the project
-   * @param queryParams options params for query data
+   *  ** deprecated param projectName Id of the project
+   *  ** deprecated param queryParams options params for query data
    */
   abstract getHelmCharts(
     projectName: string,
@@ -32,16 +32,16 @@ export abstract class HelmChartService {
 
   /**
    * Delete an helmchart
-   * @param projectId Id of the project
-   * @param chartId ID of helmChart in this specific project
+   *  ** deprecated param projectId Id of the project
+   *  ** deprecated param chartId ID of helmChart in this specific project
    */
   abstract deleteHelmChart(projectId: number | string, chartId: number): Observable<any>;
 
   /**
    * Get all the versions of helmchart
-   * @param projectName Id of the project
-   * @param chartName ID of the helm chart
-   * @param queryParams option params for query
+   *  ** deprecated param projectName Id of the project
+   *  ** deprecated param chartName ID of the helm chart
+   *  ** deprecated param queryParams option params for query
    */
   abstract getChartVersions(
     projectName: string,
@@ -50,18 +50,18 @@ export abstract class HelmChartService {
 
   /**
    * Delete a version of helmchart
-   * @param projectName ID of the project
-   * @param chartName ID of the chart you want to delete
-   * @param version name of the version
+   *  ** deprecated param projectName ID of the project
+   *  ** deprecated param chartName ID of the chart you want to delete
+   *  ** deprecated param version name of the version
    */
   abstract deleteChartVersion(projectName: string, chartName: string, version: string): Observable<any>;
 
   /**
    * Get the all details of an helmchart
-   * @param projectName ID of the project
-   * @param chartname ID of the chart
-   * @param version name of the chart's version
-   * @param queryParams options
+   *  ** deprecated param projectName ID of the project
+   *  ** deprecated param chartname ID of the chart
+   *  ** deprecated param version name of the chart's version
+   *  ** deprecated param queryParams options
    */
   abstract getChartDetail(
     projectName: string,
@@ -71,10 +71,10 @@ export abstract class HelmChartService {
 
   /**
    * Download an specific verison
-   * @param projectName ID of the project
-   * @param filename ID of the helm chart
-   * @param version Name of version
-   * @param queryParams options
+   *  ** deprecated param projectName ID of the project
+   *  ** deprecated param filename ID of the helm chart
+   *  ** deprecated param version Name of version
+   *  ** deprecated param queryParams options
    */
   abstract downloadChart(
     projectName: string,
@@ -83,15 +83,15 @@ export abstract class HelmChartService {
 
   /**
    * Upload chart and prov files to chartmuseam
-   * @param projectName Name of the project
-   * @param chart chart file
-   * @param prov prov file
+   *  ** deprecated param projectName Name of the project
+   *  ** deprecated param chart chart file
+   *  ** deprecated param prov prov file
    */
   abstract uploadChart (
     projectName: string,
     chart: File,
     prov: File
-  ): Observable<any>
+  ): Observable<any>;
 }
 
 /**
@@ -133,37 +133,37 @@ export class HelmChartDefaultService extends HelmChartService {
   }
 
   private handleErrorObservable(error: HttpErrorResponse) {
-    return Observable.throw(error.message || error);
+    return observableThrowError(error.message || error);
   }
 
   public getHelmCharts(
     projectName: string,
   ): Observable<HelmChartItem[]> {
     if (!projectName) {
-      return Observable.throw("Bad argument, No project id to get helm charts");
+      return observableThrowError("Bad argument, No project id to get helm charts");
     }
 
     return this.http
       .get(`${this.config.helmChartEndpoint}/${projectName}/charts`, HTTP_GET_OPTIONS)
-      .map(response => {
+      .pipe(map(response => {
          return this.extractHelmItems(response);
-      })
-      .catch(error => {
+      }))
+      .pipe(catchError(error => {
         return this.handleErrorObservable(error);
-      });
+      }));
   }
 
   public deleteHelmChart(projectId: number | string, chartId: number): any {
     if (!chartId) {
-      Observable.throw("Bad argument");
+      observableThrowError("Bad argument");
     }
 
     return this.http
       .delete(`${this.config.helmChartEndpoint}/${projectId}/${chartId}`)
-      .map(response => {
+      .pipe(map(response => {
         return this.extractData(response);
-      })
-      .catch(this.handleErrorObservable);
+      }))
+      .pipe(catchError(this.handleErrorObservable));
   }
 
   public getChartVersions(
@@ -171,18 +171,18 @@ export class HelmChartDefaultService extends HelmChartService {
     chartName: string,
   ): Observable<HelmChartVersion[]> {
     return this.http.get(`${this.config.helmChartEndpoint}/${projectName}/charts/${chartName}`, HTTP_GET_OPTIONS)
-    .map(response => {
+    .pipe(map(response => {
       return this.extractData(response);
-    })
-    .catch(this.handleErrorObservable);
+    }))
+    .pipe(catchError(this.handleErrorObservable));
   }
 
   public deleteChartVersion(projectName: string, chartName: string, version: string): any {
     return this.http.delete(`${this.config.helmChartEndpoint}/${projectName}/charts/${chartName}/${version}`, HTTP_JSON_OPTIONS)
-    .map(response => {
+    .pipe(map(response => {
       return this.extractData(response);
-    })
-    .catch(this.handleErrorObservable);
+    }))
+    .pipe(catchError(this.handleErrorObservable));
   }
 
   public getChartDetail (
@@ -191,10 +191,10 @@ export class HelmChartDefaultService extends HelmChartService {
     version: string,
   ): Observable<HelmChartDetail> {
     return this.http.get(`${this.config.helmChartEndpoint}/${projectName}/charts/${chartName}/${version}`)
-    .map(response => {
+    .pipe(map(response => {
       return this.extractData(response);
-    })
-    .catch(this.handleErrorObservable);
+    }))
+    .pipe(catchError(this.handleErrorObservable));
   }
 
   public downloadChart(
@@ -204,16 +204,16 @@ export class HelmChartDefaultService extends HelmChartService {
     return this.http.get(`${this.config.downloadChartEndpoint}/${projectName}/${filename}`, {
       responseType: ResponseContentType.Blob,
     })
-    .map(response => {
+    .pipe(map(response => {
       return {
         filename: filename.split('/')[1],
         data: response.blob()
       };
-    })
-    .catch(this.handleErrorObservable);
+    }))
+    .pipe(catchError(this.handleErrorObservable));
   }
 
-  
+
   public uploadChart(
     projectName: string,
     chart?: File,
@@ -230,10 +230,10 @@ export class HelmChartDefaultService extends HelmChartService {
         uploadURL = `${this.config.helmChartEndpoint}/${projectName}/prov`;
       }
     }
-    return this.http.post(uploadURL, formData,{
+    return this.http.post(uploadURL, formData, {
       responseType: ResponseContentType.Json
     })
-    .map(response => this.extractData(response))
-    .catch(this.handleErrorObservable);
+    .pipe(map(response => this.extractData(response)))
+    .pipe(catchError(this.handleErrorObservable));
   }
 }

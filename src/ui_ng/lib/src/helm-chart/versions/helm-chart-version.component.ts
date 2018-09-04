@@ -8,11 +8,11 @@ import {
   Output,
   EventEmitter
 } from "@angular/core";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/observable/forkJoin";
+import { Observable, forkJoin } from "rxjs";
+import {finalize, map} from "rxjs/operators";
 
 import { TranslateService } from "@ngx-translate/core";
-import { State } from "clarity-angular";
+import { State } from "@clr/angular";
 
 import {
   SystemInfo,
@@ -108,11 +108,11 @@ export class ChartVersionComponent implements OnInit {
     this.loading = true;
     this.helmChartService
       .getChartVersions(this.projectName, this.chartName)
-      .finally(() => {
+      .pipe(finalize(() => {
         this.loading = false;
         let hnd = setInterval(() => this.cdr.markForCheck(), 100);
         setTimeout(() => clearInterval(hnd), 2000);
-      })
+      }))
       .subscribe(
         versions => {
           this.chartVersions = versions.filter(x => x.version.includes(this.lastFilteredVersionName));
@@ -152,10 +152,10 @@ export class ChartVersionComponent implements OnInit {
 
     return this.helmChartService
       .deleteChartVersion(this.projectName, this.chartName, version.version)
-      .map(
+      .pipe(map(
         () => operateChanges(operateMsg, OperationState.success),
         err => operateChanges(operateMsg, OperationState.failure, err)
-      );
+      ));
   }
 
   deleteVersions(versions: HelmChartVersion[]) {
@@ -163,11 +163,11 @@ export class ChartVersionComponent implements OnInit {
     let successCount: number;
     let totalCount = this.chartVersions.length;
     let versionObs = versions.map(v => this.deleteVersion(v));
-    Observable.forkJoin(versionObs).finally(() => {
+    forkJoin(versionObs).pipe(finalize(() => {
       if (totalCount !== successCount) {
         this.refresh();
       }
-    }).subscribe(res => {
+    })).subscribe(res => {
       successCount = res.filter(r => r.state === OperationState.success).length;
       if (totalCount === successCount) {
         this.backEvt.emit();
@@ -175,7 +175,7 @@ export class ChartVersionComponent implements OnInit {
     });
   }
 
-  versionDownload(evt: Event, item?: HelmChartVersion) {
+  versionDownload(evt?: Event, item?: HelmChartVersion) {
     if (evt) {
       evt.stopPropagation();
     }

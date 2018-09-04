@@ -1,7 +1,6 @@
 import { Injectable, Inject } from "@angular/core";
 import { Http } from "@angular/http";
-import { Observable } from "rxjs/Observable";
-import "rxjs/add/observable/of";
+import { Observable } from "rxjs";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "../utils";
@@ -10,16 +9,16 @@ import { Configuration } from "../config/config";
 /**
  * Service used to get and save registry-related configurations.
  *
- * @export
+ **
  * @abstract
- * @class ConfigurationService
+ * class ConfigurationService
  */
 export abstract class ConfigurationService {
   /**
    * Get configurations.
    *
    * @abstract
-   * @returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+   * returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
    *
    * @memberOf ConfigurationService
    */
@@ -32,7 +31,7 @@ export abstract class ConfigurationService {
    * Save configurations.
    *
    * @abstract
-   * @returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+   * returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
    *
    * @memberOf ConfigurationService
    */

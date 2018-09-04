@@ -1,7 +1,8 @@
-import { Subscription } from 'rxjs/Subscription';
+
+import {finalize} from 'rxjs/operators';
+import { Subscription } from "rxjs";
 import { Component, OnInit, EventEmitter, Output, ChangeDetectorRef, OnDestroy, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import "rxjs/add/operator/finally";
 
 import { GroupService } from "../group.service";
 import { MessageHandlerService } from "./../../shared/message-handler/message-handler.service";
@@ -81,8 +82,8 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
   createGroup() {
     let groupCopy = Object.assign({}, this.group);
     this.groupService
-      .createGroup(groupCopy)
-      .finally(() => this.close())
+      .createGroup(groupCopy).pipe(
+      finalize(() => this.close()))
       .subscribe(
         res => {
           this.msgHandler.showSuccess("GROUP.ADD_GROUP_SUCCESS");
@@ -95,8 +96,8 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
   editGroup() {
     let groupCopy = Object.assign({}, this.group);
     this.groupService
-      .editGroup(groupCopy)
-      .finally(() => this.close())
+      .editGroup(groupCopy).pipe(
+      finalize(() => this.close()))
       .subscribe(
         res => {
           this.msgHandler.showSuccess("GROUP.EDIT_GROUP_SUCCESS");

@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from "rxjs";
 import { AppConfigService } from '../..//app-config.service';
 
 import { ModalEvent } from '../modal-event';

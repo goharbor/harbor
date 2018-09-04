@@ -1,8 +1,8 @@
-import { Observable } from 'rxjs/Observable';
+import { Observable } from "rxjs";
 import { RequestQueryParams } from './RequestQueryParams';
 import { Repository, RepositoryItem } from './interface';
 import { Injectable, Inject } from '@angular/core';
-import 'rxjs/add/observable/of';
+
 import { Http } from '@angular/http';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';
@@ -11,9 +11,9 @@ import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';
  * Define service methods for handling the repository related things.
  * Loose couple with project module.
  *
- * @export
+ **
  * @abstract
- * @class RepositoryService
+ * class RepositoryService
  */
 export abstract class RepositoryService {
     /**
@@ -24,10 +24,10 @@ export abstract class RepositoryService {
      *   'page_size': page size.
      *
      * @abstract
-     * @param {(number | string)} projectId
-     * @param {string} repositoryName
-     * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<Repository> | Promise<Repository> | Repository)}
+     *  ** deprecated param {(number | string)} projectId
+     *  ** deprecated param {string} repositoryName
+     *  ** deprecated param {RequestQueryParams} [queryParams]
+     * returns {(Observable<Repository> | Promise<Repository> | Repository)}
      *
      * @memberOf RepositoryService
      */
@@ -38,9 +38,9 @@ export abstract class RepositoryService {
      * Update description of specified repository.
      *
      * @abstract
-     * @param {number | string} projectId
-     * @param {string} repoName
-     * @returns {(Observable<Repository> | Promise<Repository> | Repository)}
+     *  ** deprecated param {number | string} projectId
+     *  ** deprecated param {string} repoName
+     * returns {(Observable<Repository> | Promise<Repository> | Repository)}
      *
      * @memberOf RepositoryService
      */
@@ -50,8 +50,8 @@ export abstract class RepositoryService {
      * DELETE the specified repository.
      *
      * @abstract
-     * @param {string} repositoryName
-     * @returns {(Observable<any> | Promise<any> | any)}
+     *  ** deprecated param {string} repositoryName
+     * returns {(Observable<any> | Promise<any> | any)}
      *
      * @memberOf RepositoryService
      */
@@ -61,9 +61,9 @@ export abstract class RepositoryService {
 /**
  * Implement default service for repository.
  *
- * @export
- * @class RepositoryDefaultService
- * @extends {RepositoryService}
+ **
+ * class RepositoryDefaultService
+ * extends {RepositoryService}
  */
 @Injectable()
 export class RepositoryDefaultService extends RepositoryService {

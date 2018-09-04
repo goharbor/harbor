@@ -1,3 +1,7 @@
+
+import {throwError as observableThrowError,  Observable } from "rxjs";
+
+import {map, catchError} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +18,8 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/observable/throw';
+
+
 
 import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 import { User } from '../../user/user';
@@ -31,9 +33,9 @@ export class MemberService {
 
   listMembers(projectId: number, entity_name: string): Observable<Member[]> {
     return this.http
-               .get(`/api/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS)
-               .map(response => response.json() as Member[])
-               .catch(error => Observable.throw(error));
+               .get(`/api/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS).pipe(
+               map(response => response.json() as Member[]),
+               catchError(error => observableThrowError(error)), );
   }
 
   addUserMember(projectId: number, user: User, roleId: number): Observable<any> {
@@ -51,18 +53,18 @@ export class MemberService {
         role_id: roleId,
         member_user: member_user
       },
-      HTTP_JSON_OPTIONS)
-      .map(response => response.status)
-      .catch(error => Observable.throw(error));
+      HTTP_JSON_OPTIONS).pipe(
+      map(response => response.status),
+      catchError(error => observableThrowError(error)), );
   }
 
   addGroupMember(projectId: number, group: any, roleId: number): Observable<any> {
     return this.http
                .post(`/api/projects/${projectId}/members`,
                { role_id: roleId, member_group: group},
-               HTTP_JSON_OPTIONS)
-               .map(response => response.status)
-               .catch(error => Observable.throw(error));
+               HTTP_JSON_OPTIONS).pipe(
+               map(response => response.status),
+               catchError(error => observableThrowError(error)), );
   }
 
   changeMemberRole(projectId: number, userId: number, roleId: number): Promise<any> {

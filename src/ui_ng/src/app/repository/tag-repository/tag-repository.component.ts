@@ -14,7 +14,7 @@
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RepositoryComponent, TagClickEvent} from 'harbor-ui';
+import { RepositoryComponent, TagClickEvent} from '@harbor/ui';
 
 import { AppConfigService } from '../../app-config.service';
 import { SessionService } from '../../shared/session.service';
