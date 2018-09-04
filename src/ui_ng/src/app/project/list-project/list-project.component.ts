@@ -1,3 +1,5 @@
+
+import {forkJoin as observableForkJoin, Observable,  Subscription } from 'rxjs';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +21,6 @@ import {
     OnDestroy, EventEmitter
 } from "@angular/core";
 import { Router } from "@angular/router";
-import {Observable} from "rxjs";
-import 'rxjs/add/observable/forkJoin';
-import { Subscription } from "rxjs/Subscription";
 
 import { Comparator, State } from "@clr/angular";
 import {TranslateService} from "@ngx-translate/core";
@@ -266,7 +265,7 @@ export class ListProjectComponent implements OnDestroy {
                 },
                 error => {
                     if (error && error.status === 412) {
-                        Observable.forkJoin(this.translate.get("BATCH.DELETED_FAILURE"),
+                        observableForkJoin(this.translate.get("BATCH.DELETED_FAILURE"),
                             this.translate.get("PROJECT.FAILED_TO_DELETE_PROJECT")).subscribe(res => {
                             operateChanges(operMessage, OperationState.failure, res[1]);
                         });

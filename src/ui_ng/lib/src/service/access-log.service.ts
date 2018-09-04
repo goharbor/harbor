@@ -1,8 +1,7 @@
-import { Observable} from "rxjs";
+import { Observable,  of } from "rxjs";
 import { RequestQueryParams } from "./RequestQueryParams";
 import { AccessLog, AccessLogItem } from "./interface";
 import { Injectable, Inject } from "@angular/core";
-import "rxjs/add/observable/of";
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import { Http } from "@angular/http";
 import { buildHttpRequestOptions, HTTP_GET_OPTIONS } from "../utils";
@@ -67,7 +66,7 @@ export class AccessLogDefaultService extends AccessLogService {
     projectId: number | string,
     queryParams?: RequestQueryParams
   ): Observable<AccessLog> | Promise<AccessLog> | AccessLog {
-    return Observable.of({} as AccessLog);
+    return of({} as AccessLog);
   }
 
   public getRecentLogs(

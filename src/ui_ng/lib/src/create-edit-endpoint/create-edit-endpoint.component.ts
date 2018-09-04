@@ -21,7 +21,7 @@ import {
   OnDestroy
 } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { Subscription } from "rxjs/Subscription";
+import { Subscription } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 
 import { EndpointService } from "../service/endpoint.service";

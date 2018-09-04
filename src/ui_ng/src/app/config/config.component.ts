@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent } from '@harbor/ui';
 
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';

@@ -11,7 +11,7 @@ import {
 import { NgForm } from '@angular/forms';
 import { TranslateService } from "@ngx-translate/core";
 import { State } from "@clr/angular";
-
+import { finalize } from "rxjs/operators";
 import { SystemInfo, SystemInfoService, HelmChartItem } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { toPromise, DEFAULT_PAGE_SIZE } from "../utils";
@@ -96,11 +96,11 @@ export class HelmChartComponent implements OnInit {
     this.loading = true;
     this.helmChartService
     .getHelmCharts(this.projectName)
-    .finally(() => {
+    .pipe(finalize(() => {
         let hnd = setInterval(() => this.cdr.markForCheck(), 100);
         setTimeout(() => clearInterval(hnd), 3000);
         this.loading = false;
-    })
+    }))
     .subscribe(
       charts => {
         this.charts = charts.filter(x => x.name.includes(this.lastFilteredChartName));
@@ -141,11 +141,11 @@ export class HelmChartComponent implements OnInit {
     this.isUploading = true;
     this.helmChartService
       .uploadChart(this.projectName, this.chartFile, this.provFile)
-      .finally(() => {
+      .pipe(finalize(() => {
         this.isUploading = false;
         this.isUploadModalOpen = false;
         this.refresh();
-      })
+      }))
       .subscribe(() => {
           this.translateService
             .get("HELM_CHART.FILE_UPLOADED")

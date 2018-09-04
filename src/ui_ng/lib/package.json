@@ -40,7 +40,6 @@
         "ngx-cookie": "^1.0.0",
         "ngx-markdown": "^1.5.1",
         "rxjs": "^6.2.2",
-        "rxjs-compat": "^6.2.2",
         "ts-helpers": "^1.1.1",
         "web-animations-js": "^2.2.1",
         "zone.js": "^0.8.4",

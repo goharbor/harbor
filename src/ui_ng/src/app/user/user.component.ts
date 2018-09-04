@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import 'rxjs/add/operator/toPromise';
-import { Subscription } from 'rxjs/Subscription';
+
+import { Subscription } from 'rxjs';
 
 import { TranslateService } from '@ngx-translate/core';
 

@@ -11,8 +11,7 @@ import {
     SimpleChanges
 } from "@angular/core";
 import {Router} from "@angular/router";
-import {Observable} from "rxjs";
-import "rxjs/add/observable/forkJoin";
+import {Observable,forkJoin} from "rxjs";
 import {TranslateService} from "@ngx-translate/core";
 import {Comparator, State} from "@clr/angular";
 
@@ -169,7 +168,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         this.operationService.publishInfo(operMessage);
 
         if (this.signedCon[repo.name].length !== 0) {
-            Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+            forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                 this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).subscribe(res => {
                 operateChanges(operMessage, OperationState.failure, res[1]);
             });
@@ -183,14 +182,14 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                         });
                     }).catch(error => {
                     if (error.status === "412") {
-                        Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                        forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                             this.translateService.get('REPOSITORY.TAGS_SIGNED')).subscribe(res => {
                             operateChanges(operMessage, OperationState.failure, res[1]);
                         });
                         return;
                     }
                     if (error.status === 503) {
-                        Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                        forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                             this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
                             operateChanges(operMessage, OperationState.failure, res[1]);
                         });

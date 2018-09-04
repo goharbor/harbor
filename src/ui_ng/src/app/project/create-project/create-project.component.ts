@@ -1,3 +1,5 @@
+
+import {debounceTime} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,9 +24,7 @@ import {
 import { Response } from "@angular/http";
 import { NgForm } from "@angular/forms";
 
-import { Subject } from "rxjs/Subject";
-import "rxjs/add/operator/debounceTime";
-import "rxjs/add/operator/distinctUntilChanged";
+import { Subject } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
@@ -72,8 +72,8 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
     private messageHandlerService: MessageHandlerService) { }
 
   ngOnInit(): void {
-    this.proNameChecker
-      .debounceTime(300)
+    this.proNameChecker.pipe(
+      debounceTime(300))
       .subscribe((name: string) => {
         let cont = this.currentForm.controls["create_project_name"];
         if (cont) {

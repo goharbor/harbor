@@ -1,5 +1,5 @@
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/toPromise';
+import { Observable } from 'rxjs';
+
 import { RequestOptions, Headers } from '@angular/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';

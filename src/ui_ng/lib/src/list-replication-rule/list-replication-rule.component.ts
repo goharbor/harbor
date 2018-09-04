@@ -24,8 +24,7 @@ import {
     SimpleChange,
     SimpleChanges
 } from "@angular/core";
-import { Observable} from "rxjs";
-import "rxjs/add/observable/forkJoin";
+import { Observable,forkJoin} from "rxjs";
 import { Comparator } from "@clr/angular";
 import { TranslateService } from "@ngx-translate/core";
 
@@ -257,7 +256,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         this.operationService.publishInfo(operMessage);
 
         if (!this.canDeleteRule) {
-            Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+            forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                 this.translateService.get('REPLICATION.DELETION_SUMMARY_FAILURE')).subscribe(res => {
                 operateChanges(operMessage, OperationState.failure, res[1]);
             });
@@ -272,7 +271,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
             })
             .catch(error => {
                 if (error && error.status === 412) {
-                    Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                    forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                         this.translateService.get('REPLICATION.FAILED_TO_DELETE_POLICY_ENABLED')).subscribe(res => {
                         operateChanges(operMessage, OperationState.failure, res[1]);
                     });

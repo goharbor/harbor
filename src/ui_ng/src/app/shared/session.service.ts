@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http, URLSearchParams } from '@angular/http';
-import 'rxjs/add/operator/toPromise';
+
 
 import { SessionUser } from './session-user';
 import { Member } from '../project/member/member';

@@ -13,8 +13,8 @@
 // limitations under the License.
 import {Component, Input, OnInit, OnChanges} from '@angular/core';
 
-import 'rxjs/add/operator/debounceTime';
-import 'rxjs/add/operator/distinctUntilChanged';
+
+
 
 import {Label} from "../service/interface";
 import {LabelColor} from "../shared/shared.const";

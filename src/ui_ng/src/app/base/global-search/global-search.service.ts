@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-import 'rxjs/add/operator/toPromise';
+
 
 import { SearchResults } from './search-results';
 import { HTTP_GET_OPTIONS } from "../../shared/shared.utils";

@@ -1,8 +1,8 @@
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { RequestQueryParams } from './RequestQueryParams';
 import { Repository, RepositoryItem } from './interface';
 import { Injectable, Inject } from '@angular/core';
-import 'rxjs/add/observable/of';
+
 import { Http } from '@angular/http';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';

@@ -21,9 +21,8 @@ import {
   ChangeDetectorRef,
   ElementRef, AfterViewInit
 } from "@angular/core";
-import {Subject} from "rxjs/Subject";
-import {Observable} from "rxjs";
-import "rxjs/add/observable/forkJoin";
+import {Subject, Observable,forkJoin} from "rxjs";
+import { debounceTime ,distinctUntilChanged} from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
 import { State, Comparator } from "@clr/angular";
 
@@ -162,8 +161,8 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.lastFilteredTagName = '';
 
     this.labelNameFilter
-        .debounceTime(500)
-        .distinctUntilChanged()
+        .pipe(debounceTime(500))
+        .pipe(distinctUntilChanged())
         .subscribe((name: string) => {
           if (this.filterName.length) {
             this.filterOnGoing = true;
@@ -182,8 +181,8 @@ export class TagComponent implements OnInit, AfterViewInit {
         });
 
     this.stickLabelNameFilter
-        .debounceTime(500)
-        .distinctUntilChanged()
+        .pipe(debounceTime(500))
+        .pipe(distinctUntilChanged())
         .subscribe((name: string) => {
           if (this.stickName.length) {
             this.filterOnGoing = true;
@@ -619,7 +618,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.operationService.publishInfo(operMessage);
 
     if (tag.signature) {
-      Observable.forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
+      forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
         this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
         let wrongInfo: string = res[1] + "notary -s https://" + this.registryUrl +
             ":4443 -d ~/.docker/trust remove -p " +
@@ -638,7 +637,7 @@ export class TagComponent implements OnInit, AfterViewInit {
                     });
               }).catch(error => {
             if (error.status === 503) {
-              Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+              forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                   this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
                 operateChanges(operMessage, OperationState.failure, res[1]);
               });

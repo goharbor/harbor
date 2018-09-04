@@ -1,13 +1,12 @@
+
+import {of as observableOf,  forkJoin ,  Observable} from 'rxjs';
+
+import {mergeMap, catchError} from 'rxjs/operators';
 import { ChangeDetectorRef, ChangeDetectionStrategy, ViewChild } from "@angular/core";
 import { Component, OnInit, Input, Output, EventEmitter } from "@angular/core";
 import { NgForm } from '@angular/forms';
 
-import { forkJoin } from "rxjs/observable/forkJoin";
-import { Observable} from "rxjs";
-import "rxjs/observable/of";
 import { TranslateService } from '@ngx-translate/core';
-
-import "rxjs/observable/timer";
 import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 
 import { UserGroup } from "./../../../group/group";
@@ -129,20 +128,20 @@ export class AddGroupComponent implements OnInit {
       operMessage.data.name = group.group_name;
       this.operationService.publishInfo(operMessage);
       return this.memberService
-        .addGroupMember(this.projectId, group, this.selectedRole)
-        .flatMap(response => {
-           return this.translateService.get("BATCH.DELETED_SUCCESS")
-           .flatMap(res => {
+        .addGroupMember(this.projectId, group, this.selectedRole).pipe(
+        mergeMap(response => {
+           return this.translateService.get("BATCH.DELETED_SUCCESS").pipe(
+           mergeMap(res => {
             operateChanges(operMessage, OperationState.success);
-            return Observable.of(res);
-           }); })
-           .catch(error => {
-            return this.translateService.get("BATCH.DELETED_FAILURE")
-            .flatMap(res => {
+            return observableOf(res);
+           })); }),
+           catchError(error => {
+            return this.translateService.get("BATCH.DELETED_FAILURE").pipe(
+            mergeMap(res => {
               operateChanges(operMessage, OperationState.failure, res);
-              return Observable.of(res);
-            }); })
-        .catch(error => Observable.of(error.status));
+              return observableOf(res);
+            })); }),
+        catchError(error => observableOf(error.status)),);
       });
     forkJoin(GroupAdders$)
       .subscribe(results => {

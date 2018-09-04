@@ -1,6 +1,5 @@
 import { TranslateLoader } from "@ngx-translate/core";
-import "rxjs/add/observable/of";
-import { Observable} from "rxjs";
+import { of ,  Observable} from 'rxjs';
 
 import { IServiceConfig } from "../service.config";
 
@@ -23,6 +22,6 @@ export class TranslatorJsonLoader extends TranslateLoader {
       this.config.localI18nMessageVariableMap[lang]
         ? this.config.localI18nMessageVariableMap[lang]
         : {};
-    return Observable.of(dict);
+    return of(dict);
   }
 }

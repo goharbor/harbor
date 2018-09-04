@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpModule, Http } from '@angular/http';
+import { HttpClientModule, HttpClient} from '@angular/common/http';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler } from '@ngx-translate/core';
@@ -21,7 +22,7 @@ export function LocalJsonLoaderFactory() {
     return new TranslatorJsonLoader();
 }*/
 
-export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
+export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig) {
     if (config && config.langMessageLoader === 'http') {
         let prefix: string = config.langMessagePathForHttpLoader ? config.langMessagePathForHttpLoader : "i18n/lang/";
         let suffix: string = config.langMessageFileSuffixForHttpLoader ? config.langMessageFileSuffixForHttpLoader : "-lang.json";
@@ -42,6 +43,7 @@ export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
     imports: [
         CommonModule,
         HttpModule,
+        HttpClientModule,
         FormsModule,
         ReactiveFormsModule,
         ClipboardModule,
@@ -63,6 +65,7 @@ export function GeneralTranslatorLoader(http: Http, config: IServiceConfig) {
     exports: [
         CommonModule,
         HttpModule,
+        HttpClientModule,
         FormsModule,
         ReactiveFormsModule,
         ClipboardModule,
