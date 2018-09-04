@@ -211,7 +211,7 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		vmware/redis-photon:$(REDISVERSION) \
 		vmware/nginx-photon:$(NGINXVERSION) vmware/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG) \
-		vmware/photon:$(PHOTONVERSION)
+		photon:$(PHOTONVERSION)
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
