@@ -1,19 +1,19 @@
 import { Inject, Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from "rxjs";
 import { SystemInfo } from './interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import {HTTP_GET_OPTIONS} from "../utils";
 /**
  * Get System information about current backend server.
  * @abstract
- * @class
+ * class
  */
 export abstract class SystemInfoService {
   /**
    *  Get global system information.
    *  @abstract
-   *  @returns
+   *  returns
    */
   abstract getSystemInfo(): Observable<SystemInfo> | Promise<SystemInfo> | SystemInfo;
 }

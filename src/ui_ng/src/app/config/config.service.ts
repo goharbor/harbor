@@ -13,9 +13,9 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-import 'rxjs/add/operator/toPromise';
 
-import { Configuration } from 'harbor-ui';
+
+import { Configuration } from '@harbor/ui';
 
 import {HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS} from "../shared/shared.utils";
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-import 'rxjs/add/operator/toPromise';
+
 import { CookieService } from 'ngx-cookie';
 
 import { AppConfig } from './app-config';
@@ -25,8 +25,8 @@ export const systemInfoEndpoint = "/api/systeminfo";
  * Declare service to handle the bootstrap options
  *
  *
- * @export
- * @class GlobalSearchService
+ **
+ * class GlobalSearchService
  */
 @Injectable()
 export class AppConfigService {

@@ -1,3 +1,5 @@
+
+import {filter} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +15,12 @@
 // limitations under the License.
 import { Component, Input, Output, OnDestroy, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { State } from 'clarity-angular';
-import { Repository } from 'harbor-ui';
-import 'rxjs/add/operator/filter';
+import { State } from '@clr/angular';
+import { Repository } from '@harbor/ui';
+
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import {Subscription} from "rxjs/Subscription";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'list-repository-ro',
@@ -41,7 +43,7 @@ export class ListRepositoryROComponent implements OnInit, OnDestroy {
     this.router.routeReuseStrategy.shouldReuseRoute = function() {
         return false;
     };
-    this.routerSubscription = this.router.events.filter(event => event instanceof NavigationEnd)
+    this.routerSubscription = this.router.events.pipe(filter(event => event instanceof NavigationEnd))
         .subscribe((event) => {
          // trick the Router into believing it's last link wasn't previously loaded
          this.router.navigated = false;

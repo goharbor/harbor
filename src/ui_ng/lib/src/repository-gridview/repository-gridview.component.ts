@@ -11,10 +11,9 @@ import {
     SimpleChanges
 } from "@angular/core";
 import {Router} from "@angular/router";
-import {Observable} from "rxjs/Observable";
-import "rxjs/add/observable/forkJoin";
+import {forkJoin} from "rxjs";
 import {TranslateService} from "@ngx-translate/core";
-import {Comparator, State} from "clarity-angular";
+import {Comparator, State} from "@clr/angular";
 
 import {
     Repository,
@@ -169,7 +168,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         this.operationService.publishInfo(operMessage);
 
         if (this.signedCon[repo.name].length !== 0) {
-            Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+            forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                 this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).subscribe(res => {
                 operateChanges(operMessage, OperationState.failure, res[1]);
             });
@@ -183,14 +182,14 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                         });
                     }).catch(error => {
                     if (error.status === "412") {
-                        Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                        forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                             this.translateService.get('REPOSITORY.TAGS_SIGNED')).subscribe(res => {
                             operateChanges(operMessage, OperationState.failure, res[1]);
                         });
                         return;
                     }
                     if (error.status === 503) {
-                        Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                        forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                             this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
                             operateChanges(operMessage, OperationState.failure, res[1]);
                         });
@@ -294,7 +293,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 } else {
                     return false;
                 }
-                ;
+
             })
             .catch(error => Promise.reject(false));
     }
@@ -400,6 +399,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
             )
         )
             .then((repo: Repository) => {
+
                 this.totalCount = repo.metadata.xTotalCount;
                 this.repositories = repo.data;
 
@@ -410,7 +410,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                     state
                 );
                 this.repositories = doSorting<RepositoryItem>(this.repositories, state);
-
                 this.loading = false;
             })
             .catch(error => {

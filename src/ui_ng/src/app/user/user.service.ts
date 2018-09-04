@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-import 'rxjs/add/operator/toPromise';
+
 
 import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../shared/shared.utils";
 import { User, LDAPUser } from './user';
@@ -25,8 +25,8 @@ const ldapUserEndpoint = '/api/ldap/users';
 /**
  * Define related methods to handle account and session corresponding things
  *
- * @export
- * @class SessionService
+ **
+ * class SessionService
  */
 @Injectable()
 export class UserService {

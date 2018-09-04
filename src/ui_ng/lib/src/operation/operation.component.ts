@@ -1,6 +1,6 @@
 import {Component, OnInit, OnDestroy, HostListener} from '@angular/core';
 import {OperationService} from "./operation.service";
-import {Subscription} from "rxjs/Subscription";
+import {Subscription} from "rxjs";
 import {OperateInfo, OperationState} from "./operate";
 import {SlideInOutAnimation} from "../_animations/slide-in-out.animation";
 import {TranslateService} from "@ngx-translate/core";
@@ -67,7 +67,7 @@ export class OperationComponent implements OnInit, OnDestroy {
       if (operInfors) {
         if ((new Date().getTime() - operInfors.timp) > 1000 * 60 * 60 * 24) {
           localStorage.removeItem('operaion');
-        }else {
+        } else {
           if (operInfors.data) {
             operInfors.data.forEach(operInfo => {
               if (operInfo.state === OperationState.progressing) {
@@ -113,7 +113,7 @@ export class OperationComponent implements OnInit, OnDestroy {
     let dist = Math.floor(timp / 1000 / 60);  // change to minute;
     if (dist > 0 && dist < 60) {
       return Math.floor(dist) + ' minute(s) ago';
-    }else if (dist >= 60 && Math.floor(dist / 60) < 24) {
+    } else if (dist >= 60 && Math.floor(dist / 60) < 24) {
       return Math.floor(dist / 60) + ' hour(s) ago';
     } else if (Math.floor(dist / 60) >= 24)  {
       return Math.floor(dist / 60 / 24) + ' day ago';

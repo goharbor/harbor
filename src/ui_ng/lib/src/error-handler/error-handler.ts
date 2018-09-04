@@ -3,16 +3,16 @@ import { Injectable } from "@angular/core";
 /**
  * Declare interface for error handling
  *
- * @export
+ **
  * @abstract
- * @class ErrorHandler
+ * class ErrorHandler
  */
 export abstract class ErrorHandler {
   /**
    * Send message with error level
    *
    * @abstract
-   * @param {*} error
+   *  ** deprecated param {*} error
    *
    * @memberOf ErrorHandler
    */
@@ -22,7 +22,7 @@ export abstract class ErrorHandler {
    * Send message with warning level
    *
    * @abstract
-   * @param {*} warning
+   *  ** deprecated param {*} warning
    *
    * @memberOf ErrorHandler
    */
@@ -32,7 +32,7 @@ export abstract class ErrorHandler {
    * Send message with info level
    *
    * @abstract
-   * @param {*} info
+   *  ** deprecated param {*} info
    *
    * @memberOf ErrorHandler
    */
@@ -42,7 +42,7 @@ export abstract class ErrorHandler {
    * Handle log message
    *
    * @abstract
-   * @param {*} log
+   *  ** deprecated param {*} log
    *
    * @memberOf ErrorHandler
    */

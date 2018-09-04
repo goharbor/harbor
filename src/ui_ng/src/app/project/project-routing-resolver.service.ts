@@ -18,9 +18,9 @@ import { Router, Resolve, RouterStateSnapshot, ActivatedRouteSnapshot } from '@a
 import { Project } from './project';
 import { ProjectService } from './project.service';
 import { SessionService } from '../shared/session.service';
-import 'rxjs/add/operator/mergeMap';
 
-import { Roles } from '../shared/shared.const'
+
+import { Roles } from '../shared/shared.const';
 
 @Injectable()
 export class ProjectRoutingResolver implements Resolve<Project> {

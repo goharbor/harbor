@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, Input, Output, OnInit, EventEmitter } from "@angular/core";
-import { Subject } from "rxjs/Subject";
-
-import "rxjs/add/operator/debounceTime";
-import "rxjs/add/operator/distinctUntilChanged";
+import { Subject } from "rxjs";
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: "hbr-filter",
@@ -40,7 +38,7 @@ export class FilterComponent implements OnInit {
 
   ngOnInit(): void {
     this.filterTerms
-      .debounceTime(500)
+      .pipe(debounceTime(500))
       .subscribe(terms => {
         this.filterEvt.emit(terms);
       });

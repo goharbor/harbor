@@ -11,9 +11,9 @@ Wrap the following Harbor UI components into a sharable library and published as
 * Vulnerability scanning result bar chart and list view (Embedded in tag management view)
 * Registry(Harbor) related configuration options
 
-The Harbor UI library is built on **[Angular ](https://angular.io/)** 4.x and **[Clarity ](https://vmware.github.io/clarity/)** 0.9.x .
+The Harbor UI library is built on **[Angular ](https://angular.io/)** 6.x and **[Clarity ](https://vmware.github.io/clarity/)** 0.12.x .
 
-The library is published to the public npm repository with name **[harbor-ui](https://www.npmjs.com/package/harbor-ui)**.
+The library is published to the public npm repository with name **[@harbor/ui](https://www.npmjs.com/package/@harbor/ui)**.
 
 ## Build & Test
 Build library with command:
@@ -28,7 +28,7 @@ npm run test
 
 Install the package
 ```
-npm install harbor-ui[@version]
+npm install @harbor/ui[@version]
 ```
 
 ## Usage
@@ -36,16 +36,16 @@ npm install harbor-ui[@version]
 
 Execute install command to add dependency to package.json
 ```
-npm install harbor-ui --save
+npm install @harbor/ui
 
 //OR
-npm install harbor-ui@0.2.x --save
+npm install @harbor/ui@1.0.0
 ```
 The latest version of the library will be installed.
 
 **Import the library module into the root Angular module**
 ```
-import { HarborLibraryModule } from 'harbor-ui';
+import { HarborLibraryModule } from '@harbor/ui';
 
 @NgModule({
     declarations: [...],
@@ -252,7 +252,7 @@ This component provides some options for registry(Harbor) related configurations
 All the related configurations are defined in the **HarborModuleConfig** interface.
 
 **1. config**
-The base configuration for the module. Mainly used to define the relevant endpoints of services which are in charge of retrieving data from backend APIs. It's a 'OpaqueToken' and defined by 'IServiceConfig' interface. If **config** is not set, the default value will be used.
+The base configuration for the module. Mainly used to define the relevant endpoints of services which are in charge of retrieving data from backend APIs. It's a 'InjectionToken' and defined by 'IServiceConfig' interface. If **config** is not set, the default value will be used.
 ```
 export const DefaultServiceConfig: IServiceConfig = {
   systemInfoEndpoint: "/api/systeminfo",

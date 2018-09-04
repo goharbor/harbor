@@ -1,3 +1,5 @@
+
+import {finalize, debounceTime, distinctUntilChanged} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,9 +26,9 @@ import {
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
 import {ActivatedRoute} from "@angular/router";
-import { Subject } from 'rxjs/Subject';
-import 'rxjs/add/operator/debounceTime';
-import 'rxjs/add/operator/distinctUntilChanged';
+import { Subject } from "rxjs";
+
+
 
 import { TranslateService } from '@ngx-translate/core';
 
@@ -97,9 +99,9 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
           this.userLists = users;
         });
 
-      this.nameChecker
-        .debounceTime(500)
-        .distinctUntilChanged()
+      this.nameChecker.pipe(
+        debounceTime(500),
+        distinctUntilChanged(), )
         .subscribe((name: string) => {
           let cont = this.currentForm.controls['member_name'];
           if (cont) {
@@ -148,15 +150,15 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   onSubmit(): void {
     if (!this.member.entity_name || this.member.entity_name.length === 0) { return; }
     this.memberService
-      .addUserMember(this.projectId, {username: this.member.entity_name}, +this.member.role_id)
-      .finally(() => {
+      .addUserMember(this.projectId, {username: this.member.entity_name}, +this.member.role_id).pipe(
+      finalize(() => {
         this.addMemberOpened = false;
         let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
         setTimeout(() => {
           clearInterval(changeTimer);
         }, 2000);
       }
-    )
+    ))
       .subscribe(
       () => {
         this.messageHandlerService.showSuccess('MEMBER.ADDED_SUCCESS');

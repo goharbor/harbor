@@ -1,9 +1,10 @@
+
+import {of,  Subscription, forkJoin } from "rxjs";
+import { flatMap, catchError } from "rxjs/operators";
 import { SessionService } from "./../shared/session.service";
 import { TranslateService } from "@ngx-translate/core";
-import { Observable } from "rxjs/Observable";
-import { Subscription } from "rxjs/Subscription";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "harbor-ui";
+import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
 
 import {
   ConfirmationTargets,
@@ -121,21 +122,21 @@ export class GroupComponent implements OnInit, OnDestroy {
       this.operationService.publishInfo(operMessage);
       return this.groupService
         .deleteGroup(group.id)
-        .flatMap(response => {
-          return this.translate.get("BATCH.DELETED_SUCCESS").flatMap(res => {
+        .pipe(flatMap(response => {
+          return this.translate.get("BATCH.DELETED_SUCCESS").pipe(flatMap(res => {
             operateChanges(operMessage, OperationState.success);
-            return Observable.of(res);
-          });
-        })
-        .catch(err => {
-          return this.translate.get("BATCH.DELETED_FAILURE").flatMap(res => {
+            return of(res);
+          }));
+        }))
+        .pipe(catchError(err => {
+          return this.translate.get("BATCH.DELETED_FAILURE").pipe(flatMap(res => {
             operateChanges(operMessage, OperationState.failure, res);
-            return Observable.of(res);
-          });
-        });
+            return of(res);
+          }));
+        }));
     });
 
-    Observable.forkJoin(obs).subscribe(
+    forkJoin(obs).subscribe(
       res => {
         this.selectedGroups = [];
         this.batchOps = 'idle';

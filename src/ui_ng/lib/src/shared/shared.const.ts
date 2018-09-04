@@ -21,7 +21,7 @@ export const languageNames = {
 };
 export const enum AlertType {
   DANGER, WARNING, INFO, SUCCESS
-};
+}
 
 export const dismissInterval = 10 * 1000;
 export const httpStatusCode = {
@@ -42,11 +42,11 @@ export const enum ConfirmationTargets {
   CONFIG_ROUTE,
   CONFIG_TAB,
   HELM_CHART
-};
+}
 
 export const enum ActionType {
   ADD_NEW, EDIT
-};
+}
 
 export const ListMode = {
   READONLY: "readonly",
@@ -64,11 +64,11 @@ export const CommonRoutes = {
 
 export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
-};
+}
 
 export const enum ConfirmationButtons {
   CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL
-};
+}
 
 export const LabelColor = [
   { 'color': '#000000', 'textColor': 'white' }, { 'color': '#61717D', 'textColor': 'white' },

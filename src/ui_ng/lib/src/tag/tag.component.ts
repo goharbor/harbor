@@ -21,11 +21,10 @@ import {
   ChangeDetectorRef,
   ElementRef, AfterViewInit
 } from "@angular/core";
-import {Subject} from "rxjs/Subject";
-import {Observable} from "rxjs/Observable";
-import "rxjs/add/observable/forkJoin";
+import {Subject, forkJoin} from "rxjs";
+import { debounceTime , distinctUntilChanged} from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
-import { State, Comparator } from "clarity-angular";
+import { State, Comparator } from "@clr/angular";
 
 import { TagService, VulnerabilitySeverity, RequestQueryParams } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
@@ -162,8 +161,8 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.lastFilteredTagName = '';
 
     this.labelNameFilter
-        .debounceTime(500)
-        .distinctUntilChanged()
+        .pipe(debounceTime(500))
+        .pipe(distinctUntilChanged())
         .subscribe((name: string) => {
           if (this.filterName.length) {
             this.filterOnGoing = true;
@@ -182,8 +181,8 @@ export class TagComponent implements OnInit, AfterViewInit {
         });
 
     this.stickLabelNameFilter
-        .debounceTime(500)
-        .distinctUntilChanged()
+        .pipe(debounceTime(500))
+        .pipe(distinctUntilChanged())
         .subscribe((name: string) => {
           if (this.stickName.length) {
             this.filterOnGoing = true;
@@ -191,7 +190,7 @@ export class TagComponent implements OnInit, AfterViewInit {
             this.imageStickLabels.forEach(data => {
               if (data.label.name.indexOf(this.stickName) !== -1) {
                 data.show = true;
-              }else {
+              } else {
                 data.show = false;
               }
             });
@@ -228,7 +227,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
     if (selectedLab) {
       st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: selectedLab.label.id}];
-    }else {
+    } else {
       st.filters = [{property: 'name', value: this.lastFilteredTagName}];
     }
 
@@ -404,7 +403,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.imageFilterLabels.filter(data => {
       if (data.label.id !== labelId) {
         data.iconsShow = false;
-      }else {
+      } else {
         data.iconsShow = true;
       }
     });
@@ -423,7 +422,7 @@ export class TagComponent implements OnInit, AfterViewInit {
       st.page.to = this.pageSize - 1;
       if (this.lastFilteredTagName) {
         st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: labelId}];
-      }else {
+      } else {
         st.filters = [{property: 'labels.id', value: labelId}];
       }
 
@@ -448,7 +447,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     st.page.to = this.pageSize - 1;
     if (this.lastFilteredTagName) {
       st.filters = [{property: 'name', value: this.lastFilteredTagName}];
-    }else {
+    } else {
       st.filters = [];
     }
     this.clrLoad(st);
@@ -467,11 +466,11 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.imageFilterLabels.forEach(data => {
         if (data.label.name.indexOf(this.filterName) !== -1) {
           data.show = true;
-        }else {
+        } else {
           data.show = false;
         }
       });
-    }else  {
+    } else  {
       this.openLabelFilterPanel = false;
       this.openLabelFilterPiece = false;
     }
@@ -481,7 +480,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   handleInputFilter() {
     if (this.filterName.length) {
       this.labelNameFilter.next(this.filterName);
-    }else {
+    } else {
       this.imageFilterLabels.every(data => data.show = true);
     }
   }
@@ -489,7 +488,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   handleStickInputFilter() {
     if (this.stickName.length) {
       this.stickLabelNameFilter.next(this.stickName);
-    }else {
+    } else {
       this.imageStickLabels.every(data => data.show = true);
     }
   }
@@ -619,7 +618,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.operationService.publishInfo(operMessage);
 
     if (tag.signature) {
-      Observable.forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
+      forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
         this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
         let wrongInfo: string = res[1] + "notary -s https://" + this.registryUrl +
             ":4443 -d ~/.docker/trust remove -p " +
@@ -638,7 +637,7 @@ export class TagComponent implements OnInit, AfterViewInit {
                     });
               }).catch(error => {
             if (error.status === 503) {
-              Observable.forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+              forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                   this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
                 operateChanges(operMessage, OperationState.failure, res[1]);
               });

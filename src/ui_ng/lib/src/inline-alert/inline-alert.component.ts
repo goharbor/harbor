@@ -16,8 +16,7 @@ import { TranslateService } from "@ngx-translate/core";
 
 import { errorHandler } from "../shared/shared.utils";
 // tslint:disable-next-line:no-unused-variable
-import { Observable } from "rxjs/Observable";
-import { Subscription } from 'rxjs/Subscription';
+import { Observable,  Subscription } from "rxjs";
 
 @Component({
   selector: "hbr-inline-alert",

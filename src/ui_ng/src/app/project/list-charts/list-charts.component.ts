@@ -37,7 +37,6 @@ export class ListChartsComponent implements OnInit {
       this.projectName = project.name;
       this.hasProjectAdminRole = project.has_project_admin_role;
       this.project_member_role_id = project.current_user_role_id;
-      console.log(this.project_member_role_id);
     }
   }
 

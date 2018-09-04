@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http, URLSearchParams } from '@angular/http';
-import 'rxjs/add/operator/toPromise';
+
 
 import { PasswordSetting } from './password-setting';
 import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";

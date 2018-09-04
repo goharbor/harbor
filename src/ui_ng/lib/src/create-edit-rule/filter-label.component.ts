@@ -3,7 +3,8 @@ import {LabelService} from "../service/label.service";
 import {toPromise} from "../utils";
 import {Label} from "../service/interface";
 import {ErrorHandler} from "../error-handler/error-handler";
-import {Subject} from "rxjs/Subject";
+import {Subject} from "rxjs";
+import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 
 export interface LabelState {
     iconsShow: boolean;
@@ -43,8 +44,8 @@ export class FilterLabelComponent implements OnInit, OnChanges {
         });
 
         this.labelNameFilter
-            .debounceTime(500)
-            .distinctUntilChanged()
+            .pipe(debounceTime(500))
+            .pipe(distinctUntilChanged())
             .subscribe((name: string) => {
                 if (this.filterLabelName.length) {
 
@@ -95,7 +96,7 @@ export class FilterLabelComponent implements OnInit, OnChanges {
     handleInputFilter(): void {
         if (this.filterLabelName.length) {
             this.labelNameFilter.next(this.filterLabelName);
-        }else {
+        } else {
             this.labelLists.every(data => data.show = true);
         }
     }

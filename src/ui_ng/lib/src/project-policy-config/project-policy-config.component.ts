@@ -3,7 +3,7 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { toPromise, compareValue, clone } from '../utils';
 import { ProjectService } from '../service/project.service';
 import { ErrorHandler } from '../error-handler/error-handler';
-import { State } from 'clarity-angular';
+import { State } from '@clr/angular';
 
 import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
@@ -33,9 +33,9 @@ export class ProjectPolicy {
     this.Public = pro.metadata.public === 'true' ? true : false;
     this.ContentTrust = pro.metadata.enable_content_trust === 'true' ? true : false;
     this.PreventVulImg = pro.metadata.prevent_vul === 'true' ? true : false;
-    if (pro.metadata.severity) { this.PreventVulImgSeverity = pro.metadata.severity; };
+    if (pro.metadata.severity) { this.PreventVulImgSeverity = pro.metadata.severity; }
     this.ScanImgOnPush = pro.metadata.auto_scan === 'true' ? true : false;
-  };
+  }
 }
 
 @Component({
