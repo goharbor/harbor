@@ -29,7 +29,7 @@ const (
 	labelURL = `^/api/repositories/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)tags/([\w][\w.-]{0,127})/labels/[0-9]+$`
 )
 
-//ReadonlyFilter filters the delete repo/tag request and returns 503.
+// ReadonlyFilter filters the delete repo/tag request and returns 503.
 func ReadonlyFilter(ctx *context.Context) {
 	filter(ctx.Request, ctx.ResponseWriter)
 }

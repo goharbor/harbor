@@ -1,7 +1,7 @@
 package job
 
 const (
-	//ImageScanJob is name of scan job it will be used as key to register to job service.
+	// ImageScanJob is name of scan job it will be used as key to register to job service.
 	ImageScanJob = "IMAGE_SCAN"
 	// ImageTransfer : the name of image transfer job in job service
 	ImageTransfer = "IMAGE_TRANSFER"
@@ -12,26 +12,26 @@ const (
 	// ImageGC the name of image garbage collection job in job service
 	ImageGC = "IMAGE_GC"
 
-	//JobKindGeneric : Kind of generic job
+	// JobKindGeneric : Kind of generic job
 	JobKindGeneric = "Generic"
-	//JobKindScheduled : Kind of scheduled job
+	// JobKindScheduled : Kind of scheduled job
 	JobKindScheduled = "Scheduled"
-	//JobKindPeriodic : Kind of periodic job
+	// JobKindPeriodic : Kind of periodic job
 	JobKindPeriodic = "Periodic"
 
-	//JobServiceStatusPending   : job status pending
+	// JobServiceStatusPending   : job status pending
 	JobServiceStatusPending = "Pending"
-	//JobServiceStatusRunning   : job status running
+	// JobServiceStatusRunning   : job status running
 	JobServiceStatusRunning = "Running"
-	//JobServiceStatusStopped   : job status stopped
+	// JobServiceStatusStopped   : job status stopped
 	JobServiceStatusStopped = "Stopped"
-	//JobServiceStatusCancelled : job status cancelled
+	// JobServiceStatusCancelled : job status cancelled
 	JobServiceStatusCancelled = "Cancelled"
-	//JobServiceStatusError     : job status error
+	// JobServiceStatusError     : job status error
 	JobServiceStatusError = "Error"
-	//JobServiceStatusSuccess   : job status success
+	// JobServiceStatusSuccess   : job status success
 	JobServiceStatusSuccess = "Success"
-	//JobServiceStatusScheduled : job status scheduled
+	// JobServiceStatusScheduled : job status scheduled
 	JobServiceStatusScheduled = "Scheduled"
 
 	// JobActionStop : the action to stop the job

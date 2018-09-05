@@ -128,7 +128,7 @@ func TestPublish(t *testing.T) {
 	Publish("topic1", 100)
 	Publish("topic2", 50)
 
-	//Waiting for async is done
+	// Waiting for async is done
 	<-time.After(1 * time.Second)
 
 	finalData := atomic.LoadInt32(&statefulData)
@@ -146,7 +146,7 @@ func TestPublish(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//Clear stateful data.
+	// Clear stateful data.
 	atomic.StoreInt32(&statefulData, 0)
 }
 
@@ -161,12 +161,12 @@ func TestConcurrentPublish(t *testing.T) {
 		t.Fail()
 	}
 
-	//Publish in a short interval.
+	// Publish in a short interval.
 	for i := 0; i < 10; i++ {
 		Publish("topic1", 100)
 	}
 
-	//Waiting for async is done
+	// Waiting for async is done
 	<-time.After(1 * time.Second)
 
 	finalData := atomic.LoadInt32(&statefulData)
@@ -179,7 +179,7 @@ func TestConcurrentPublish(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//Clear stateful data.
+	// Clear stateful data.
 	atomic.StoreInt32(&statefulData, 0)
 }
 
@@ -206,7 +206,7 @@ func TestConcurrentPublishWithScanPolicyHandler(t *testing.T) {
 		}
 	}
 
-	//Wating for everything is ready.
+	// Wating for everything is ready.
 	<-time.After(2 * time.Second)
 
 	if err := UnSubscribe("testing_topic", ""); err != nil {
@@ -218,7 +218,7 @@ func TestConcurrentPublishWithScanPolicyHandler(t *testing.T) {
 	}
 
 	scheduler.DefaultScheduler.Stop()
-	//Wating for everything is ready.
+	// Wating for everything is ready.
 	<-time.After(1 * time.Second)
 	if scheduler.DefaultScheduler.IsRunning() {
 		t.Fatal("Policy scheduler is not stopped")

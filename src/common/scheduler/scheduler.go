@@ -22,72 +22,72 @@ const (
 	statTaskFail         = "Task Fail"
 )
 
-//StatItem is defined for the stat metrics.
+// StatItem is defined for the stat metrics.
 type StatItem struct {
-	//Metrics catalog
+	// Metrics catalog
 	Type string
 
-	//The stat value
+	// The stat value
 	Value uint32
 
-	//Attach some other info
+	// Attach some other info
 	Attachment interface{}
 }
 
-//StatSummary is used to collect some metrics of scheduler.
+// StatSummary is used to collect some metrics of scheduler.
 type StatSummary struct {
-	//Count of scheduled policy
+	// Count of scheduled policy
 	PolicyCount uint32
 
-	//Total count of tasks
+	// Total count of tasks
 	Tasks uint32
 
-	//Count of successfully complete tasks
+	// Count of successfully complete tasks
 	CompletedTasks uint32
 
-	//Count of tasks with errors
+	// Count of tasks with errors
 	TasksWithError uint32
 }
 
-//Configuration defines configuration of Scheduler.
+// Configuration defines configuration of Scheduler.
 type Configuration struct {
 	QueueSize uint8
 }
 
-//Scheduler is designed for scheduling policies.
+// Scheduler is designed for scheduling policies.
 type Scheduler struct {
-	//Mutex for sync controlling.
+	// Mutex for sync controlling.
 	*sync.RWMutex
 
-	//Related configuration options for scheduler.
+	// Related configuration options for scheduler.
 	config *Configuration
 
-	//Store to keep the references of scheduled policies.
+	// Store to keep the references of scheduled policies.
 	policies Store
 
-	//Queue for receiving policy scheduling request
+	// Queue for receiving policy scheduling request
 	scheduleQueue chan *Watcher
 
-	//Queue for receiving policy unscheduling request or complete signal.
+	// Queue for receiving policy unscheduling request or complete signal.
 	unscheduleQueue chan *Watcher
 
-	//Channel for receiving stat metrics.
+	// Channel for receiving stat metrics.
 	statChan chan *StatItem
 
-	//Channel for terminate scheduler damon.
+	// Channel for terminate scheduler damon.
 	terminateChan chan bool
 
-	//The stat metrics of scheduler.
+	// The stat metrics of scheduler.
 	stats *StatSummary
 
-	//To indicate whether scheduler is running or not
+	// To indicate whether scheduler is running or not
 	isRunning bool
 }
 
-//DefaultScheduler is a default scheduler.
+// DefaultScheduler is a default scheduler.
 var DefaultScheduler = NewScheduler(nil)
 
-//NewScheduler is constructor for creating a scheduler.
+// NewScheduler is constructor for creating a scheduler.
 func NewScheduler(config *Configuration) *Scheduler {
 	var qSize uint8 = defaultQueueSize
 	if config != nil && config.QueueSize > 0 {
@@ -118,12 +118,12 @@ func NewScheduler(config *Configuration) *Scheduler {
 	}
 }
 
-//Start the scheduler damon.
+// Start the scheduler damon.
 func (sch *Scheduler) Start() {
 	sch.Lock()
 	defer sch.Unlock()
 
-	//If scheduler is already running
+	// If scheduler is already running
 	if sch.isRunning {
 		return
 	}
@@ -135,32 +135,32 @@ func (sch *Scheduler) Start() {
 			}
 		}()
 		defer func() {
-			//Clear resources
+			// Clear resources
 			sch.policies.Clear()
 			log.Infof("Policy scheduler stop at %s\n", time.Now().UTC().Format(time.RFC3339))
 		}()
 		for {
 			select {
 			case <-sch.terminateChan:
-				//Exit
+				// Exit
 				return
 			case wt := <-sch.scheduleQueue:
-				//If status is stopped, no requests should be served
+				// If status is stopped, no requests should be served
 				if !sch.IsRunning() {
 					continue
 				}
 				go func(watcher *Watcher) {
 					if watcher != nil && watcher.p != nil {
-						//Enable it.
+						// Enable it.
 						watcher.Start()
 
-						//Update stats and log info.
+						// Update stats and log info.
 						log.Infof("Policy %s is scheduled", watcher.p.Name())
 						sch.statChan <- &StatItem{statSchedulePolicy, 1, nil}
 					}
 				}(wt)
 			case wt := <-sch.unscheduleQueue:
-				//If status is stopped, no requests should be served
+				// If status is stopped, no requests should be served
 				if !sch.IsRunning() {
 					continue
 				}
@@ -168,14 +168,14 @@ func (sch *Scheduler) Start() {
 					if watcher != nil && watcher.IsRunning() {
 						watcher.Stop()
 
-						//Update stats and log info.
+						// Update stats and log info.
 						log.Infof("Policy %s is unscheduled", watcher.p.Name())
 						sch.statChan <- &StatItem{statUnSchedulePolicy, 1, nil}
 					}
 				}(wt)
 			case stat := <-sch.statChan:
 				{
-					//If status is stopped, no requests should be served
+					// If status is stopped, no requests should be served
 					if !sch.IsRunning() {
 						continue
 					}
@@ -218,12 +218,12 @@ func (sch *Scheduler) Start() {
 	log.Infof("Policy scheduler start at %s\n", time.Now().UTC().Format(time.RFC3339))
 }
 
-//Stop the scheduler damon.
+// Stop the scheduler damon.
 func (sch *Scheduler) Stop() {
-	//Lock for state changing
+	// Lock for state changing
 	sch.Lock()
 
-	//Check if the scheduler is running
+	// Check if the scheduler is running
 	if !sch.isRunning {
 		sch.Unlock()
 		return
@@ -232,11 +232,11 @@ func (sch *Scheduler) Stop() {
 	sch.isRunning = false
 	sch.Unlock()
 
-	//Terminate damon to stop receiving signals.
+	// Terminate damon to stop receiving signals.
 	sch.terminateChan <- true
 }
 
-//Schedule and enable the policy.
+// Schedule and enable the policy.
 func (sch *Scheduler) Schedule(scheduledPolicy policy.Policy) error {
 	if scheduledPolicy == nil {
 		return errors.New("nil is not Policy object")
@@ -251,38 +251,38 @@ func (sch *Scheduler) Schedule(scheduledPolicy policy.Policy) error {
 		return errors.New("Policy must attach task(s)")
 	}
 
-	//Try to schedule the policy.
-	//Keep the policy for future use after it's successfully scheduled.
+	// Try to schedule the policy.
+	// Keep the policy for future use after it's successfully scheduled.
 	watcher := NewWatcher(scheduledPolicy, sch.statChan, sch.unscheduleQueue)
 	if err := sch.policies.Put(scheduledPolicy.Name(), watcher); err != nil {
 		return err
 	}
 
-	//Schedule the policy
+	// Schedule the policy
 	sch.scheduleQueue <- watcher
 
 	return nil
 }
 
-//UnSchedule the specified policy from the enabled policies list.
+// UnSchedule the specified policy from the enabled policies list.
 func (sch *Scheduler) UnSchedule(policyName string) error {
 	if strings.TrimSpace(policyName) == "" {
 		return errors.New("Empty policy name is invalid")
 	}
 
-	//Find the watcher.
+	// Find the watcher.
 	watcher := sch.policies.Remove(policyName)
 	if watcher == nil {
 		return fmt.Errorf("Policy %s is not existing", policyName)
 	}
 
-	//Unschedule the policy.
+	// Unschedule the policy.
 	sch.unscheduleQueue <- watcher
 
 	return nil
 }
 
-//IsRunning to indicate whether the scheduler is running.
+// IsRunning to indicate whether the scheduler is running.
 func (sch *Scheduler) IsRunning() bool {
 	sch.RLock()
 	defer sch.RUnlock()
@@ -290,12 +290,12 @@ func (sch *Scheduler) IsRunning() bool {
 	return sch.isRunning
 }
 
-//HasScheduled is to check whether the given policy has been scheduled or not.
+// HasScheduled is to check whether the given policy has been scheduled or not.
 func (sch *Scheduler) HasScheduled(policyName string) bool {
 	return sch.policies.Exists(policyName)
 }
 
-//GetPolicy is used to get related policy reference by its name.
+// GetPolicy is used to get related policy reference by its name.
 func (sch *Scheduler) GetPolicy(policyName string) policy.Policy {
 	wk := sch.policies.Get(policyName)
 	if wk != nil {
@@ -305,7 +305,7 @@ func (sch *Scheduler) GetPolicy(policyName string) policy.Policy {
 	return nil
 }
 
-//PolicyCount returns the count of currently scheduled policies in the scheduler.
+// PolicyCount returns the count of currently scheduled policies in the scheduler.
 func (sch *Scheduler) PolicyCount() uint32 {
 	return sch.policies.Size()
 }

@@ -134,7 +134,7 @@ func (d *driver) List(query *models.ProjectQueryParam) (*models.ProjectQueryResu
 	var projects []*models.Project
 	var groupDNCondition string
 
-	//List with LDAP group projects
+	// List with LDAP group projects
 	if query != nil && query.Member != nil {
 		groupDNCondition = group.GetGroupDNQueryCondition(query.Member.GroupList)
 	}

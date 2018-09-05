@@ -37,7 +37,7 @@ var adminServerTestConfig = map[string]interface{}{
 	common.PostGreSQLUsername: "postgres",
 	common.PostGreSQLPassword: "root123",
 	common.PostGreSQLDatabase: "registry",
-	//config.SelfRegistration: true,
+	// config.SelfRegistration: true,
 	common.LDAPURL:       "ldap://127.0.0.1",
 	common.LDAPSearchDN:  "cn=admin,dc=example,dc=com",
 	common.LDAPSearchPwd: "admin",
@@ -102,7 +102,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestSearchUser(t *testing.T) {
-	//insert user first
+	// insert user first
 	user := &models.User{
 		Username: "existuser",
 		Email:    "existuser@placeholder.com",
@@ -163,7 +163,7 @@ func TestLdapConnectionTest(t *testing.T) {
 		LdapConnectionTimeout: 10,
 		LdapVerifyCert:        false,
 	}
-	//Test ldap connection under auth_mod is db_auth
+	// Test ldap connection under auth_mod is db_auth
 	err := ldap.ConnectionTestWithConfig(ldapConfig)
 	if err != nil {
 		t.Fatalf("Failed to test ldap server! error %v", err)

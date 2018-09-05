@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-//RepoTable is the table name for repository
+// RepoTable is the table name for repository
 const RepoTable = "repository"
 
 // RepoRecord holds the record of an repository in DB, all the infors are from the registry notification event.
@@ -33,7 +33,7 @@ type RepoRecord struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
-//TableName is required by by beego orm to map RepoRecord to table repository
+// TableName is required by by beego orm to map RepoRecord to table repository
 func (rp *RepoRecord) TableName() string {
 	return RepoTable
 }

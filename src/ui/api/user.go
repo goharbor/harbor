@@ -341,11 +341,11 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 // modifiable returns whether the modify is allowed based on current auth mode and context
 func (ua *UserAPI) modifiable() bool {
 	if ua.AuthMode == common.DBAuth {
-		//When the auth mode is local DB, admin can modify anyone, non-admin can modify himself.
+		// When the auth mode is local DB, admin can modify anyone, non-admin can modify himself.
 		return ua.IsAdmin || ua.userID == ua.currentUserID
 	}
-	//When the auth mode is external IDM backend, only the super user can modify himself,
-	//because he's the only one whose information is stored in local DB.
+	// When the auth mode is external IDM backend, only the super user can modify himself,
+	// because he's the only one whose information is stored in local DB.
 	return ua.userID == 1 && ua.userID == ua.currentUserID
 
 }
@@ -365,7 +365,7 @@ func validate(user models.User) error {
 	return commonValidate(user)
 }
 
-//commonValidate validates email, realname, comment information when user register or change their profile
+// commonValidate validates email, realname, comment information when user register or change their profile
 func commonValidate(user models.User) error {
 
 	if len(user.Email) > 0 {

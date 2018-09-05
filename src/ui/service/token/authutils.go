@@ -79,7 +79,7 @@ func GetResourceActions(scopes []string) []*token.ResourceActions {
 	return res
 }
 
-//filterAccess iterate a list of resource actions and try to use the filter that matches the resource type to filter the actions.
+// filterAccess iterate a list of resource actions and try to use the filter that matches the resource type to filter the actions.
 func filterAccess(access []*token.ResourceActions, ctx security.Context,
 	pm promgr.ProjectManager, filters map[string]accessFilter) error {
 	var err error
@@ -136,7 +136,7 @@ func permToActions(p string) []string {
 	return res
 }
 
-//make token core
+// make token core
 func makeTokenCore(issuer, subject, audience string, expiration int,
 	access []*token.ResourceActions, signingKey libtrust.PrivateKey) (t *token.Token, expiresIn int, issuedAt *time.Time, err error) {
 

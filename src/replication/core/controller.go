@@ -36,42 +36,42 @@ type Controller interface {
 	Replicate(policyID int64, metadata ...map[string]interface{}) error
 }
 
-//DefaultController is core module to cordinate and control the overall workflow of the
-//replication modules.
+// DefaultController is core module to cordinate and control the overall workflow of the
+// replication modules.
 type DefaultController struct {
-	//Indicate whether the controller has been initialized or not
+	// Indicate whether the controller has been initialized or not
 	initialized bool
 
-	//Manage the policies
+	// Manage the policies
 	policyManager policy.Manager
 
-	//Manage the targets
+	// Manage the targets
 	targetManager target.Manager
 
-	//Handle the things related with source
+	// Handle the things related with source
 	sourcer *source.Sourcer
 
-	//Manage the triggers of policies
+	// Manage the triggers of policies
 	triggerManager *trigger.Manager
 
-	//Handle the replication work
+	// Handle the replication work
 	replicator replicator.Replicator
 }
 
-//Keep controller as singleton instance
+// Keep controller as singleton instance
 var (
 	GlobalController Controller
 )
 
-//ControllerConfig includes related configurations required by the controller
+// ControllerConfig includes related configurations required by the controller
 type ControllerConfig struct {
-	//The capacity of the cache storing enabled triggers
+	// The capacity of the cache storing enabled triggers
 	CacheCapacity int
 }
 
-//NewDefaultController is the constructor of DefaultController.
+// NewDefaultController is the constructor of DefaultController.
 func NewDefaultController(cfg ControllerConfig) *DefaultController {
-	//Controller refer the default instances
+	// Controller refer the default instances
 	ctl := &DefaultController{
 		policyManager:  policy.NewDefaultManager(),
 		targetManager:  target.NewDefaultManager(),
@@ -86,17 +86,17 @@ func NewDefaultController(cfg ControllerConfig) *DefaultController {
 
 // Init creates the GlobalController and inits it
 func Init() error {
-	GlobalController = NewDefaultController(ControllerConfig{}) //Use default data
+	GlobalController = NewDefaultController(ControllerConfig{}) // Use default data
 	return GlobalController.Init()
 }
 
-//Init will initialize the controller and the sub components
+// Init will initialize the controller and the sub components
 func (ctl *DefaultController) Init() error {
 	if ctl.initialized {
 		return nil
 	}
 
-	//Initialize sourcer
+	// Initialize sourcer
 	ctl.sourcer.Init()
 
 	ctl.initialized = true
@@ -104,7 +104,7 @@ func (ctl *DefaultController) Init() error {
 	return nil
 }
 
-//CreatePolicy is used to create a new policy and enable it if necessary
+// CreatePolicy is used to create a new policy and enable it if necessary
 func (ctl *DefaultController) CreatePolicy(newPolicy models.ReplicationPolicy) (int64, error) {
 	id, err := ctl.policyManager.CreatePolicy(newPolicy)
 	if err != nil {
@@ -119,8 +119,8 @@ func (ctl *DefaultController) CreatePolicy(newPolicy models.ReplicationPolicy) (
 	return id, nil
 }
 
-//UpdatePolicy will update the policy with new content.
-//Parameter updatedPolicy must have the ID of the updated policy.
+// UpdatePolicy will update the policy with new content.
+// Parameter updatedPolicy must have the ID of the updated policy.
 func (ctl *DefaultController) UpdatePolicy(updatedPolicy models.ReplicationPolicy) error {
 	id := updatedPolicy.ID
 	originPolicy, err := ctl.policyManager.GetPolicy(id)
@@ -164,7 +164,7 @@ func (ctl *DefaultController) UpdatePolicy(updatedPolicy models.ReplicationPolic
 	return nil
 }
 
-//RemovePolicy will remove the specified policy and clean the related settings
+// RemovePolicy will remove the specified policy and clean the related settings
 func (ctl *DefaultController) RemovePolicy(policyID int64) error {
 	// TODO check pre-conditions
 
@@ -184,18 +184,18 @@ func (ctl *DefaultController) RemovePolicy(policyID int64) error {
 	return ctl.policyManager.RemovePolicy(policyID)
 }
 
-//GetPolicy is delegation of GetPolicy of Policy.Manager
+// GetPolicy is delegation of GetPolicy of Policy.Manager
 func (ctl *DefaultController) GetPolicy(policyID int64) (models.ReplicationPolicy, error) {
 	return ctl.policyManager.GetPolicy(policyID)
 }
 
-//GetPolicies is delegation of GetPoliciemodels.ReplicationPolicy{}s of Policy.Manager
+// GetPolicies is delegation of GetPoliciemodels.ReplicationPolicy{}s of Policy.Manager
 func (ctl *DefaultController) GetPolicies(query models.QueryParameter) (*models.ReplicationPolicyQueryResult, error) {
 	return ctl.policyManager.GetPolicies(query)
 }
 
-//Replicate starts one replication defined in the specified policy;
-//Can be launched by the API layer and related triggers.
+// Replicate starts one replication defined in the specified policy;
+// Can be launched by the API layer and related triggers.
 func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]interface{}) error {
 	policy, err := ctl.GetPolicy(policyID)
 	if err != nil {

@@ -88,7 +88,7 @@ func (ft *fakeTask) Number() int32 {
 	return atomic.LoadInt32(&(ft.number))
 }
 
-//Wacher will be tested together with scheduler.
+// Wacher will be tested together with scheduler.
 func TestScheduler(t *testing.T) {
 	DefaultScheduler.Start()
 	if DefaultScheduler.policies.Size() != 0 {

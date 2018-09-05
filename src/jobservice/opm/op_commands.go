@@ -19,7 +19,7 @@ import (
 const (
 	commandValidTime       = 5 * time.Minute
 	commandSweepTickerTime = 1 * time.Hour
-	//EventFireCommand for firing command event
+	// EventFireCommand for firing command event
 	EventFireCommand = "fire_command"
 )
 
@@ -28,7 +28,7 @@ type oPCommand struct {
 	fireTime int64
 }
 
-//oPCommands maintain commands list
+// oPCommands maintain commands list
 type oPCommands struct {
 	lock      *sync.RWMutex
 	commands  map[string]*oPCommand
@@ -39,7 +39,7 @@ type oPCommands struct {
 	doneChan  chan struct{}
 }
 
-//newOPCommands is constructor of OPCommands
+// newOPCommands is constructor of OPCommands
 func newOPCommands(ctx context.Context, ns string, redisPool *redis.Pool) *oPCommands {
 	return &oPCommands{
 		lock:      new(sync.RWMutex),
@@ -52,19 +52,19 @@ func newOPCommands(ctx context.Context, ns string, redisPool *redis.Pool) *oPCom
 	}
 }
 
-//Start the command sweeper
+// Start the command sweeper
 func (opc *oPCommands) Start() {
 	go opc.loop()
 	logger.Info("OP commands sweeper is started")
 }
 
-//Stop the command sweeper
+// Stop the command sweeper
 func (opc *oPCommands) Stop() {
 	opc.stopChan <- struct{}{}
 	<-opc.doneChan
 }
 
-//Fire command
+// Fire command
 func (opc *oPCommands) Fire(jobID string, command string) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
@@ -92,7 +92,7 @@ func (opc *oPCommands) Fire(jobID string, command string) error {
 	return err
 }
 
-//Push command into the list
+// Push command into the list
 func (opc *oPCommands) Push(jobID string, command string) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
@@ -113,7 +113,7 @@ func (opc *oPCommands) Push(jobID string, command string) error {
 	return nil
 }
 
-//Pop out the command if existing
+// Pop out the command if existing
 func (opc *oPCommands) Pop(jobID string) (string, bool) {
 	if utils.IsEmptyStr(jobID) {
 		return "", false

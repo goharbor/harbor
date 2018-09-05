@@ -20,9 +20,9 @@ import (
 	"github.com/goharbor/harbor/src/replication/event/topic"
 )
 
-//Subscribe related topics
+// Subscribe related topics
 func init() {
-	//Listen the related event topics
+	// Listen the related event topics
 	handlers := map[string]notifier.NotificationHandler{
 		topic.StartReplicationTopic:           &StartReplicationHandler{},
 		topic.ReplicationEventTopicOnPush:     &OnPushHandler{},

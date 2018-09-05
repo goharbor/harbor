@@ -187,7 +187,7 @@ func TestRegister(t *testing.T) {
 		t.Errorf("Error occurred in Register: %v", err)
 	}
 
-	//Check if user registered successfully.
+	// Check if user registered successfully.
 	queryUser := models.User{
 		Username: username,
 	}
@@ -567,7 +567,7 @@ func TestGetUserProjectRoles(t *testing.T) {
 		t.Errorf("Error happened in GetUserProjectRole: %v, userID: %+v, project Id: %d", err, currentUser.UserID, currentProject.ProjectID)
 	}
 
-	//Get the size of current user project role.
+	// Get the size of current user project role.
 	if len(r) != 1 {
 		t.Errorf("The user, id: %d, should only have one role in project, id: %d, but actual: %d", currentUser.UserID, currentProject.ProjectID, len(r))
 	}
@@ -675,7 +675,7 @@ func TestAddRepTarget(t *testing.T) {
 		Username: "admin",
 		Password: "admin",
 	}
-	//_, err := AddRepTarget(target)
+	// _, err := AddRepTarget(target)
 	id, err := AddRepTarget(target)
 	t.Logf("added target, id: %d", id)
 	if err != nil {

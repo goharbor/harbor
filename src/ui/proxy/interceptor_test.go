@@ -168,7 +168,7 @@ func TestPMSPolicyChecker(t *testing.T) {
 
 func TestMatchNotaryDigest(t *testing.T) {
 	assert := assert.New(t)
-	//The data from common/utils/notary/helper_test.go
+	// The data from common/utils/notary/helper_test.go
 	img1 := imageInfo{"notary-demo/busybox", "1.0", "notary-demo", "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"}
 	img2 := imageInfo{"notary-demo/busybox", "2.0", "notary-demo", "sha256:12345678"}
 

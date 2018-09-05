@@ -64,12 +64,12 @@ func New(out io.Writer, fmtter Formatter, lvl Level) *Logger {
 	}
 }
 
-//DefaultLogger returns the default logger within the pkg, i.e. the one used in log.Infof....
+// DefaultLogger returns the default logger within the pkg, i.e. the one used in log.Infof....
 func DefaultLogger() *Logger {
 	return logger
 }
 
-//SetOutput sets the output of Logger l
+// SetOutput sets the output of Logger l
 func (l *Logger) SetOutput(out io.Writer) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -77,7 +77,7 @@ func (l *Logger) SetOutput(out io.Writer) {
 	l.out = out
 }
 
-//SetFormatter sets the formatter of Logger l
+// SetFormatter sets the formatter of Logger l
 func (l *Logger) SetFormatter(fmtter Formatter) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -85,7 +85,7 @@ func (l *Logger) SetFormatter(fmtter Formatter) {
 	l.fmtter = fmtter
 }
 
-//SetLevel sets the level of Logger l
+// SetLevel sets the level of Logger l
 func (l *Logger) SetLevel(lvl Level) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -93,17 +93,17 @@ func (l *Logger) SetLevel(lvl Level) {
 	l.lvl = lvl
 }
 
-//SetOutput sets the output of default Logger
+// SetOutput sets the output of default Logger
 func SetOutput(out io.Writer) {
 	logger.SetOutput(out)
 }
 
-//SetFormatter sets the formatter of default Logger
+// SetFormatter sets the formatter of default Logger
 func SetFormatter(fmtter Formatter) {
 	logger.SetFormatter(fmtter)
 }
 
-//SetLevel sets the level of default Logger
+// SetLevel sets the level of default Logger
 func SetLevel(lvl Level) {
 	logger.SetLevel(lvl)
 }

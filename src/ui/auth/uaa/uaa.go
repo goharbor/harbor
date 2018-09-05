@@ -36,7 +36,7 @@ type Auth struct {
 	auth.DefaultAuthenticateHelper
 }
 
-//Authenticate ...
+// Authenticate ...
 func (u *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if err := u.ensureClient(); err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func fillEmailRealName(user *models.User) {
 		user.Realname = user.Username
 	}
 	if len(user.Email) == 0 {
-		//TODO: handle the case when user.Username itself is an email address.
+		// TODO: handle the case when user.Username itself is an email address.
 		user.Email = user.Username + "@uaa.placeholder"
 	}
 }

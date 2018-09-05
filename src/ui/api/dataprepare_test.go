@@ -36,7 +36,7 @@ import (
 )
 
 const (
-	//Prepare Test info
+	// Prepare Test info
 	TestUserName       = "testUser0001"
 	TestUserPwd        = "testUser0001"
 	TestUserEmail      = "testUser0001@mydomain.com"

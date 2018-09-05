@@ -45,10 +45,10 @@ func TestAddProject(t *testing.T) {
 
 	apiTest := newHarborAPI()
 
-	//prepare for test
+	// prepare for test
 	InitAddPro()
 
-	//case 1: admin not login, expect project creation fail.
+	// case 1: admin not login, expect project creation fail.
 
 	result, err := apiTest.ProjectsPost(*unknownUsr, *addProject)
 	if err != nil {
@@ -56,10 +56,10 @@ func TestAddProject(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(int(401), result, "Case 1: Project creation status should be 401")
-		//t.Log(result)
+		// t.Log(result)
 	}
 
-	//case 2: admin successful login, expect project creation success.
+	// case 2: admin successful login, expect project creation success.
 	fmt.Println("case 2: admin successful login, expect project creation success.")
 
 	result, err = apiTest.ProjectsPost(*admin, *addProject)
@@ -68,10 +68,10 @@ func TestAddProject(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(int(201), result, "Case 2: Project creation status should be 201")
-		//t.Log(result)
+		// t.Log(result)
 	}
 
-	//case 3: duplicate project name, create project fail
+	// case 3: duplicate project name, create project fail
 	fmt.Println("case 3: duplicate project name, create project fail")
 
 	result, err = apiTest.ProjectsPost(*admin, *addProject)
@@ -80,10 +80,10 @@ func TestAddProject(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(int(409), result, "Case 3: Project creation status should be 409")
-		//t.Log(result)
+		// t.Log(result)
 	}
 
-	//case 4: response code = 400 : Project name is illegal in length
+	// case 4: response code = 400 : Project name is illegal in length
 	fmt.Println("case 4 : response code = 400 : Project name is illegal in length ")
 
 	result, err = apiTest.ProjectsPost(*admin, apilib.ProjectReq{"t", map[string]string{models.ProMetaPublic: "true"}})
@@ -105,7 +105,7 @@ func TestListProjects(t *testing.T) {
 	apiTest := newHarborAPI()
 	var result []apilib.Project
 
-	//----------------------------case 1 : Response Code=200----------------------------//
+	// ----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("case 1: respose code:200")
 	httpStatusCode, result, err := apiTest.ProjectsGet(
 		&apilib.ProjectQuery{
@@ -118,10 +118,10 @@ func TestListProjects(t *testing.T) {
 	assert.Equal(addProject.ProjectName, result[0].ProjectName, "Project name is wrong")
 	assert.Equal("true", result[0].Metadata[models.ProMetaPublic], "Public is wrong")
 
-	//find add projectID
+	// find add projectID
 	addPID = int(result[0].ProjectId)
 
-	//-------------------case 3 :  check admin project role------------------------//
+	// -------------------case 3 :  check admin project role------------------------//
 	httpStatusCode, result, err = apiTest.ProjectsGet(
 		&apilib.ProjectQuery{
 			Name:   addProject.ProjectName,
@@ -138,7 +138,7 @@ func TestListProjects(t *testing.T) {
 		assert.Equal(int32(1), result[0].CurrentUserRoleId, "User project role is wrong")
 	}
 
-	//-------------------case 4 : add project member and check his role ------------------------//
+	// -------------------case 4 : add project member and check his role ------------------------//
 	CommonAddUser()
 	member := &models.MemberReq{
 		Role: 2,
@@ -178,7 +178,7 @@ func TestListProjects(t *testing.T) {
 	CommonDelUser()
 }
 
-//Get project by proID
+// Get project by proID
 func TestProGetByID(t *testing.T) {
 	fmt.Println("\nTest for Project GET API by project id")
 	assert := assert.New(t)
@@ -187,7 +187,7 @@ func TestProGetByID(t *testing.T) {
 	var result apilib.Project
 	projectID := strconv.Itoa(addPID)
 
-	//----------------------------case 1 : Response Code=200----------------------------//
+	// ----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("case 1: respose code:200")
 	httpStatusCode, result, err := apiTest.ProjectsGetByPID(projectID)
 	if err != nil {
@@ -209,7 +209,7 @@ func TestDeleteProject(t *testing.T) {
 
 	projectID := strconv.Itoa(addPID)
 
-	//--------------------------case 1: Response Code=401,User need to log in first.-----------------------//
+	// --------------------------case 1: Response Code=401,User need to log in first.-----------------------//
 	fmt.Println("case 1: Response Code=401,User need to log in first.")
 	httpStatusCode, err := apiTest.ProjectsDelete(*unknownUsr, projectID)
 	if err != nil {
@@ -219,7 +219,7 @@ func TestDeleteProject(t *testing.T) {
 		assert.Equal(int(401), httpStatusCode, "Case 1: Project creation status should be 401")
 	}
 
-	//--------------------------case 2: Response Code=200---------------------------------//
+	// --------------------------case 2: Response Code=200---------------------------------//
 	fmt.Println("case2: respose code:200")
 	httpStatusCode, err = apiTest.ProjectsDelete(*admin, projectID)
 	if err != nil {
@@ -229,7 +229,7 @@ func TestDeleteProject(t *testing.T) {
 		assert.Equal(int(200), httpStatusCode, "Case 2: Project creation status should be 200")
 	}
 
-	//--------------------------case 3: Response Code=404,Project does not exist---------------------------------//
+	// --------------------------case 3: Response Code=404,Project does not exist---------------------------------//
 	fmt.Println("case 3: Response Code=404,Project does not exist")
 	projectID = "11"
 	httpStatusCode, err = apiTest.ProjectsDelete(*admin, projectID)
@@ -240,7 +240,7 @@ func TestDeleteProject(t *testing.T) {
 		assert.Equal(int(404), httpStatusCode, "Case 3: Project creation status should be 404")
 	}
 
-	//--------------------------case 4: Response Code=400,Invalid project id.---------------------------------//
+	// --------------------------case 4: Response Code=400,Invalid project id.---------------------------------//
 	fmt.Println("case 4: Response Code=400,Invalid project id.")
 	projectID = "cc"
 	httpStatusCode, err = apiTest.ProjectsDelete(*admin, projectID)
@@ -259,7 +259,7 @@ func TestProHead(t *testing.T) {
 
 	apiTest := newHarborAPI()
 
-	//----------------------------case 1 : Response Code=200----------------------------//
+	// ----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("case 1: respose code:200")
 	httpStatusCode, err := apiTest.ProjectsHead(*admin, "library")
 	if err != nil {
@@ -269,7 +269,7 @@ func TestProHead(t *testing.T) {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
 
-	//----------------------------case 2 : Response Code=404:Project name does not exist.----------------------------//
+	// ----------------------------case 2 : Response Code=404:Project name does not exist.----------------------------//
 	fmt.Println("case 2: respose code:404,Project name does not exist.")
 	httpStatusCode, err = apiTest.ProjectsHead(*admin, "libra")
 	if err != nil {
@@ -331,7 +331,7 @@ func TestProjectLogsFilter(t *testing.T) {
 		EndTimestamp:   time.Now().Unix(),
 	}
 
-	//-------------------case1: Response Code=200------------------------------//
+	// -------------------case1: Response Code=200------------------------------//
 	fmt.Println("case 1: respose code:200")
 	projectID := "1"
 	httpStatusCode, _, err := apiTest.ProjectLogs(*admin, projectID, query)
@@ -341,7 +341,7 @@ func TestProjectLogsFilter(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
-	//-------------------case2: Response Code=401:User need to log in first.------------------------------//
+	// -------------------case2: Response Code=401:User need to log in first.------------------------------//
 	fmt.Println("case 2: respose code:401:User need to log in first.")
 	projectID = "1"
 	httpStatusCode, _, err = apiTest.ProjectLogs(*unknownUsr, projectID, query)
@@ -351,7 +351,7 @@ func TestProjectLogsFilter(t *testing.T) {
 	} else {
 		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 401")
 	}
-	//-------------------case3: Response Code=404:Project does not exist.-------------------------//
+	// -------------------case3: Response Code=404:Project does not exist.-------------------------//
 	fmt.Println("case 3: respose code:404:Illegal format of provided ID value.")
 	projectID = "11111"
 	httpStatusCode, _, err = apiTest.ProjectLogs(*admin, projectID, query)
@@ -410,7 +410,7 @@ func TestDeletable(t *testing.T) {
 	assert.False(t, del)
 }
 
-//Provides a mock chart controller for deletable test cases
+// Provides a mock chart controller for deletable test cases
 func mockChartController() (*httptest.Server, *chartserver.Controller, error) {
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.RequestURI {
@@ -436,7 +436,7 @@ func mockChartController() (*httptest.Server, *chartserver.Controller, error) {
 		return nil, nil, err
 	}
 
-	//Override current controller and keep the old one for restoring
+	// Override current controller and keep the old one for restoring
 	oldController = chartController
 	chartController = newController
 

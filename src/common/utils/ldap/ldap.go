@@ -30,20 +30,20 @@ import (
 	goldap "gopkg.in/ldap.v2"
 )
 
-//ErrNotFound ...
+// ErrNotFound ...
 var ErrNotFound = errors.New("entity not found")
 
-//ErrDNSyntax ...
+// ErrDNSyntax ...
 var ErrDNSyntax = errors.New("Invalid DN syntax")
 
-//Session - define a LDAP session
+// Session - define a LDAP session
 type Session struct {
 	ldapConfig      models.LdapConf
 	ldapGroupConfig models.LdapGroupConf
 	ldapConn        *goldap.Conn
 }
 
-//LoadSystemLdapConfig - load LDAP configure from adminserver
+// LoadSystemLdapConfig - load LDAP configure from adminserver
 func LoadSystemLdapConfig() (*Session, error) {
 
 	authMode, err := config.AuthMode()
@@ -71,7 +71,7 @@ func LoadSystemLdapConfig() (*Session, error) {
 	return CreateWithAllConfig(*ldapConf, *ldapGroupConfig)
 }
 
-//CreateWithConfig -
+// CreateWithConfig -
 func CreateWithConfig(ldapConf models.LdapConf) (*Session, error) {
 	return CreateWithAllConfig(ldapConf, models.LdapGroupConf{})
 }
@@ -140,7 +140,7 @@ func formatURL(ldapURL string) (string, error) {
 
 }
 
-//ConnectionTest - test ldap session connection with system default setting
+// ConnectionTest - test ldap session connection with system default setting
 func (session *Session) ConnectionTest() error {
 	session, err := LoadSystemLdapConfig()
 	if err != nil {
@@ -150,12 +150,12 @@ func (session *Session) ConnectionTest() error {
 	return ConnectionTestWithAllConfig(session.ldapConfig, session.ldapGroupConfig)
 }
 
-//ConnectionTestWithConfig -
+// ConnectionTestWithConfig -
 func ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
 	return ConnectionTestWithAllConfig(ldapConfig, models.LdapGroupConf{})
 }
 
-//ConnectionTestWithAllConfig - test ldap session connection, out of the scope of normal session create/close
+// ConnectionTestWithAllConfig - test ldap session connection, out of the scope of normal session create/close
 func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig models.LdapGroupConf) error {
 
 	authMode, err := config.AuthMode()
@@ -164,7 +164,7 @@ func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig mod
 		return err
 	}
 
-	//If no password present, use the system default password
+	// If no password present, use the system default password
 	if ldapConfig.LdapSearchPassword == "" && authMode == "ldap_auth" {
 
 		session, err := LoadSystemLdapConfig()
@@ -199,7 +199,7 @@ func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig mod
 	return nil
 }
 
-//SearchUser - search LDAP user by name
+// SearchUser - search LDAP user by name
 func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 	var ldapUsers []models.LdapUser
 	ldapFilter := session.createUserFilter(username)
@@ -213,7 +213,7 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 		var u models.LdapUser
 		groupDNList := []string{}
 		for _, attr := range ldapEntry.Attributes {
-			//OpenLdap sometimes contain leading space in useranme
+			// OpenLdap sometimes contain leading space in useranme
 			val := strings.TrimSpace(attr.Values[0])
 			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
 			switch strings.ToLower(attr.Name) {
@@ -249,7 +249,7 @@ func (session *Session) Bind(dn string, password string) error {
 	return session.ldapConn.Bind(dn, password)
 }
 
-//Open - open Session
+// Open - open Session
 func (session *Session) Open() error {
 
 	splitLdapURL := strings.Split(session.ldapConfig.LdapURL, "://")
@@ -305,9 +305,9 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 		baseDN,
 		session.ldapConfig.LdapScope,
 		goldap.NeverDerefAliases,
-		0,     //Unlimited results
-		0,     //Search Timeout
-		false, //Types only
+		0,     // Unlimited results
+		0,     // Search Timeout
+		false, // Types only
 		filter,
 		attributes,
 		nil,
@@ -329,7 +329,7 @@ func (session *Session) SearchLdapAttribute(baseDN, filter string, attributes []
 
 }
 
-//CreateUserFilter - create filter to search user with specified username
+// CreateUserFilter - create filter to search user with specified username
 func (session *Session) createUserFilter(username string) string {
 	var filterTag string
 
@@ -353,14 +353,14 @@ func (session *Session) createUserFilter(username string) string {
 	return ldapFilter
 }
 
-//Close - close current session
+// Close - close current session
 func (session *Session) Close() {
 	if session.ldapConn != nil {
 		session.ldapConn.Close()
 	}
 }
 
-//SearchGroupByName ...
+// SearchGroupByName ...
 func (session *Session) SearchGroupByName(groupName string) ([]models.LdapGroup, error) {
 	return session.searchGroup(session.ldapGroupConfig.LdapGroupBaseDN,
 		session.ldapGroupConfig.LdapGroupFilter,
@@ -368,7 +368,7 @@ func (session *Session) SearchGroupByName(groupName string) ([]models.LdapGroup,
 		session.ldapGroupConfig.LdapGroupNameAttribute)
 }
 
-//SearchGroupByDN ...
+// SearchGroupByDN ...
 func (session *Session) SearchGroupByDN(groupDN string) ([]models.LdapGroup, error) {
 	if _, err := goldap.ParseDN(groupDN); err != nil {
 		return nil, ErrDNSyntax
@@ -396,7 +396,7 @@ func (session *Session) searchGroup(baseDN, filter, groupName, groupNameAttribut
 		var group models.LdapGroup
 		group.GroupDN = ldapEntry.DN
 		for _, attr := range ldapEntry.Attributes {
-			//OpenLdap sometimes contain leading space in useranme
+			// OpenLdap sometimes contain leading space in useranme
 			val := strings.TrimSpace(attr.Values[0])
 			log.Debugf("Current ldap entry attr name: %s\n", attr.Name)
 			switch strings.ToLower(attr.Name) {

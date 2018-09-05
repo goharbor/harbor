@@ -124,7 +124,7 @@ func (l *LdapAPI) ImportUser() {
 	}
 
 	if len(ldapFailedImportUsers) > 0 {
-		//Some user require json format response.
+		// Some user require json format response.
 		l.HandleNotFound("")
 		l.Data["json"] = ldapFailedImportUsers
 		l.ServeJSON()
@@ -203,7 +203,7 @@ func (l *LdapAPI) SearchGroup() {
 	ldapSession.Open()
 	defer ldapSession.Close()
 
-	//Search LDAP group by groupName or group DN
+	// Search LDAP group by groupName or group DN
 	if len(searchName) > 0 {
 		ldapGroups, err = ldapSession.SearchGroupByName(searchName)
 		if err != nil {
@@ -217,7 +217,7 @@ func (l *LdapAPI) SearchGroup() {
 		}
 		ldapGroups, err = ldapSession.SearchGroupByDN(groupDN)
 		if err != nil {
-			//OpenLDAP usually return an error if DN is not found
+			// OpenLDAP usually return an error if DN is not found
 			l.HandleNotFound(fmt.Sprintf("Search LDAP group fail, error: %v", err))
 			return
 		}

@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//These APIs provide services for manipulating Harbor project.
+// These APIs provide services for manipulating Harbor project.
 
 package api
 
@@ -41,7 +41,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
 
-	//for test env prepare
+	// for test env prepare
 	"github.com/goharbor/harbor/src/replication/core"
 	_ "github.com/goharbor/harbor/src/replication/event"
 	_ "github.com/goharbor/harbor/src/ui/auth/db"
@@ -176,17 +176,17 @@ func init() {
 		log.Fatalf("failed to initialize GlobalController: %v", err)
 	}
 
-	//syncRegistry
+	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Fatalf("failed to sync repositories from registry: %v", err)
 	}
 
-	//Init user Info
+	// Init user Info
 	admin = &usrInfo{adminName, adminPwd}
 	unknownUsr = &usrInfo{"unknown", "unknown"}
 	testUser = &usrInfo{TestUserName, TestUserPwd}
 
-	//Init mock jobservice
+	// Init mock jobservice
 	mockServer := test.NewJobServiceServer()
 	defer mockServer.Close()
 }
@@ -206,13 +206,13 @@ func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int
 	return w.Code, body, err
 }
 
-//Search for projects and repositories
-//Implementation Notes
-//The Search endpoint returns information about the projects and repositories
-//offered at public status or related to the current logged in user.
-//The response includes the project and repository list in a proper display order.
-//@param q Search parameter for project and repository name.
-//@return []Search
+// Search for projects and repositories
+// Implementation Notes
+// The Search endpoint returns information about the projects and repositories
+// offered at public status or related to the current logged in user.
+// The response includes the project and repository list in a proper display order.
+// @param q Search parameter for project and repository name.
+// @return []Search
 func (a testapi) SearchGet(q string, authInfo ...usrInfo) (int, apilib.Search, error) {
 	var httpCode int
 	var body []byte
@@ -241,12 +241,12 @@ func (a testapi) SearchGet(q string, authInfo ...usrInfo) (int, apilib.Search, e
 	return httpCode, *successPayload, err
 }
 
-//Create a new project.
-//Implementation Notes
-//This endpoint is for user to create a new project.
-//@param project New created project.
-//@return void
-//func (a testapi) ProjectsPost (prjUsr usrInfo, project apilib.Project) (int, error) {
+// Create a new project.
+// Implementation Notes
+// This endpoint is for user to create a new project.
+// @param project New created project.
+// @return void
+// func (a testapi) ProjectsPost (prjUsr usrInfo, project apilib.Project) (int, error) {
 func (a testapi) ProjectsPost(prjUsr usrInfo, project apilib.ProjectReq) (int, error) {
 
 	_sling := sling.New().Post(a.basePath)
@@ -294,14 +294,14 @@ func (a testapi) LogGet(user usrInfo) (int, []apilib.AccessLog, error) {
 	return code, successPayload, err
 }
 
-////Delete a repository or a tag in a repository.
-////Delete a repository or a tag in a repository.
-////This endpoint let user delete repositories and tags with repo name and tag.\n
-////@param repoName The name of repository which will be deleted.
-////@param tag Tag of a repository.
-////@return void
-////func (a testapi) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
-//func (a testapi) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
+// //Delete a repository or a tag in a repository.
+// //Delete a repository or a tag in a repository.
+// //This endpoint let user delete repositories and tags with repo name and tag.\n
+// //@param repoName The name of repository which will be deleted.
+// //@param tag Tag of a repository.
+// //@return void
+// //func (a testapi) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
+// func (a testapi) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
 //	_sling := sling.New().Delete(a.basePath)
 
 //	// create path and map variables
@@ -324,7 +324,7 @@ func (a testapi) LogGet(user usrInfo) (int, []apilib.AccessLog, error) {
 
 //	req, err := _sling.Request()
 //	req.SetBasicAuth(prjUsr.Name, prjUsr.Passwd)
-//	//fmt.Printf("request %+v", req)
+//	// fmt.Printf("request %+v", req)
 
 //	client := &http.Client{}
 //	httpResponse, err := client.Do(req)
@@ -334,24 +334,24 @@ func (a testapi) LogGet(user usrInfo) (int, []apilib.AccessLog, error) {
 //		// handle error
 //	}
 //	return httpResponse.StatusCode, err
-//}
+// }
 
-//Delete project by projectID
+// Delete project by projectID
 func (a testapi) ProjectsDelete(prjUsr usrInfo, projectID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
 
-	//create api path
+	// create api path
 	path := "api/projects/" + projectID
 	_sling = _sling.Path(path)
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
 	return httpStatusCode, err
 }
 
-//Check if the project name user provided already exists
+// Check if the project name user provided already exists
 func (a testapi) ProjectsHead(prjUsr usrInfo, projectName string) (int, error) {
 	_sling := sling.New().Head(a.basePath)
 
-	//create api path
+	// create api path
 	path := "api/projects"
 	_sling = _sling.Path(path)
 	type QueryParams struct {
@@ -363,11 +363,11 @@ func (a testapi) ProjectsHead(prjUsr usrInfo, projectName string) (int, error) {
 	return httpStatusCode, err
 }
 
-//Return specific project detail information
+// Return specific project detail information
 func (a testapi) ProjectsGetByPID(projectID string) (int, apilib.Project, error) {
 	_sling := sling.New().Get(a.basePath)
 
-	//create api path
+	// create api path
 	path := "api/projects/" + projectID
 	_sling = _sling.Path(path)
 
@@ -380,7 +380,7 @@ func (a testapi) ProjectsGetByPID(projectID string) (int, apilib.Project, error)
 	return httpStatusCode, successPayload, err
 }
 
-//Search projects by projectName and isPublic
+// Search projects by projectName and isPublic
 func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (int, []apilib.Project, error) {
 	_sling := sling.New().Get(a.basePath).
 		Path("api/projects").
@@ -406,7 +406,7 @@ func (a testapi) ProjectsGet(query *apilib.ProjectQuery, authInfo ...usrInfo) (i
 	return httpStatusCode, successPayload, err
 }
 
-//Update properties for a selected project.
+// Update properties for a selected project.
 func (a testapi) ProjectsPut(prjUsr usrInfo, projectID string,
 	project *models.Project) (int, error) {
 	path := "/api/projects/" + projectID
@@ -417,7 +417,7 @@ func (a testapi) ProjectsPut(prjUsr usrInfo, projectID string,
 
 }
 
-//Get access logs accompany with a relevant project.
+// Get access logs accompany with a relevant project.
 func (a testapi) ProjectLogs(prjUsr usrInfo, projectID string, query *apilib.LogQuery) (int, []byte, error) {
 	_sling := sling.New().Get(a.basePath).
 		Path("/api/projects/" + projectID + "/logs").
@@ -450,9 +450,9 @@ func (a testapi) ProjectDeletable(prjUsr usrInfo, projectID int64) (int, bool, e
 	return code, deletable.Deletable, nil
 }
 
-//-------------------------Member Test---------------------------------------//
+// -------------------------Member Test---------------------------------------//
 
-//Return relevant role members of projectID
+// Return relevant role members of projectID
 func (a testapi) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int, []apilib.User, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -469,8 +469,8 @@ func (a testapi) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int
 	return httpStatusCode, successPayload, err
 }
 
-//Add project role member accompany with  projectID
-//func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, error) {
+// Add project role member accompany with  projectID
+// func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, error) {
 func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, member *models.MemberReq) (int, error) {
 	_sling := sling.New().Post(a.basePath)
 
@@ -482,7 +482,7 @@ func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, member *mode
 
 }
 
-//Delete project role member accompany with  projectID
+// Delete project role member accompany with  projectID
 func (a testapi) DeleteProjectMember(authInfo usrInfo, projectID string, userID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
 
@@ -493,7 +493,7 @@ func (a testapi) DeleteProjectMember(authInfo usrInfo, projectID string, userID 
 
 }
 
-//Get role memberInfo by projectId and UserId
+// Get role memberInfo by projectId and UserId
 func (a testapi) GetMemByPIDUID(authInfo usrInfo, projectID string, userID string) (int, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -505,7 +505,7 @@ func (a testapi) GetMemByPIDUID(authInfo usrInfo, projectID string, userID strin
 	return httpStatusCode, err
 }
 
-//Put:update current project role members accompany with relevant project and user
+// Put:update current project role members accompany with relevant project and user
 func (a testapi) PutProjectMember(authInfo usrInfo, projectID string, userID string, roles apilib.RoleParam) (int, error) {
 	_sling := sling.New().Put(a.basePath)
 	path := "/api/projects/" + projectID + "/members/" + userID
@@ -517,8 +517,8 @@ func (a testapi) PutProjectMember(authInfo usrInfo, projectID string, userID str
 	return httpStatusCode, err
 }
 
-//-------------------------Repositories Test---------------------------------------//
-//Return relevant repos of projectID
+// -------------------------Repositories Test---------------------------------------//
+// Return relevant repos of projectID
 func (a testapi) GetRepos(authInfo usrInfo, projectID, keyword string) (
 	int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
@@ -571,7 +571,7 @@ func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *
 	return http.StatusOK, &result, nil
 }
 
-//Get tags of a relevant repository
+// Get tags of a relevant repository
 func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -595,7 +595,7 @@ func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, interface
 	return http.StatusOK, result, nil
 }
 
-//Get manifests of a relevant repository
+// Get manifests of a relevant repository
 func (a testapi) GetReposManifests(authInfo usrInfo, repoName string, tag string) (int, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -607,7 +607,7 @@ func (a testapi) GetReposManifests(authInfo usrInfo, repoName string, tag string
 	return httpStatusCode, err
 }
 
-//Get public repositories which are accessed most
+// Get public repositories which are accessed most
 func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, interface{}, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -638,8 +638,8 @@ func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, interface{}, 
 	return http.StatusOK, result, nil
 }
 
-//-------------------------Targets Test---------------------------------------//
-//Create a new replication target
+// -------------------------Targets Test---------------------------------------//
+// Create a new replication target
 func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (int, string, error) {
 	_sling := sling.New().Post(a.basePath)
 
@@ -652,7 +652,7 @@ func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (i
 	return httpStatusCode, string(body), err
 }
 
-//List filters targets by name
+// List filters targets by name
 func (a testapi) ListTargets(authInfo usrInfo, targetName string) (int, []apilib.RepTarget, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -670,7 +670,7 @@ func (a testapi) ListTargets(authInfo usrInfo, targetName string) (int, []apilib
 	return httpStatusCode, successPayload, err
 }
 
-//Ping target
+// Ping target
 func (a testapi) PingTarget(authInfo usrInfo, body interface{}) (int, error) {
 	_sling := sling.New().Post(a.basePath)
 
@@ -683,7 +683,7 @@ func (a testapi) PingTarget(authInfo usrInfo, body interface{}) (int, error) {
 	return httpStatusCode, err
 }
 
-//Get target by targetID
+// Get target by targetID
 func (a testapi) GetTargetByID(authInfo usrInfo, targetID string) (int, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -696,7 +696,7 @@ func (a testapi) GetTargetByID(authInfo usrInfo, targetID string) (int, error) {
 	return httpStatusCode, err
 }
 
-//Update target by targetID
+// Update target by targetID
 func (a testapi) PutTargetByID(authInfo usrInfo, targetID string, repTarget apilib.RepTargetPost) (int, error) {
 	_sling := sling.New().Put(a.basePath)
 
@@ -710,7 +710,7 @@ func (a testapi) PutTargetByID(authInfo usrInfo, targetID string, repTarget apil
 	return httpStatusCode, err
 }
 
-//List the target relevant policies by targetID
+// List the target relevant policies by targetID
 func (a testapi) GetTargetPoliciesByID(authInfo usrInfo, targetID string) (int, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -723,7 +723,7 @@ func (a testapi) GetTargetPoliciesByID(authInfo usrInfo, targetID string) (int, 
 	return httpStatusCode, err
 }
 
-//Delete target by targetID
+// Delete target by targetID
 func (a testapi) DeleteTargetsByID(authInfo usrInfo, targetID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
 
@@ -735,9 +735,9 @@ func (a testapi) DeleteTargetsByID(authInfo usrInfo, targetID string) (int, erro
 	return httpStatusCode, err
 }
 
-//--------------------Replication_Policy Test--------------------------------//
+// --------------------Replication_Policy Test--------------------------------//
 
-//Create a new replication policy
+// Create a new replication policy
 func (a testapi) AddPolicy(authInfo usrInfo, repPolicy apilib.RepPolicyPost) (int, error) {
 	_sling := sling.New().Post(a.basePath)
 
@@ -753,7 +753,7 @@ func (a testapi) AddPolicy(authInfo usrInfo, repPolicy apilib.RepPolicyPost) (in
 	return httpStatusCode, err
 }
 
-//List policies by policyName and projectID
+// List policies by policyName and projectID
 func (a testapi) ListPolicies(authInfo usrInfo, policyName string, proID string) (int, []apilib.RepPolicy, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -777,7 +777,7 @@ func (a testapi) ListPolicies(authInfo usrInfo, policyName string, proID string)
 	return httpStatusCode, successPayload, err
 }
 
-//Get replication policy by policyID
+// Get replication policy by policyID
 func (a testapi) GetPolicyByID(authInfo usrInfo, policyID string) (int, error) {
 	_sling := sling.New().Get(a.basePath)
 
@@ -790,7 +790,7 @@ func (a testapi) GetPolicyByID(authInfo usrInfo, policyID string) (int, error) {
 	return httpStatusCode, err
 }
 
-//Update policyInfo by policyID
+// Update policyInfo by policyID
 func (a testapi) PutPolicyInfoByID(authInfo usrInfo, policyID string, policyUpdate apilib.RepPolicyUpdate) (int, error) {
 	_sling := sling.New().Put(a.basePath)
 
@@ -803,7 +803,7 @@ func (a testapi) PutPolicyInfoByID(authInfo usrInfo, policyID string, policyUpda
 	return httpStatusCode, err
 }
 
-//Update policy enablement flag by policyID
+// Update policy enablement flag by policyID
 func (a testapi) PutPolicyEnableByID(authInfo usrInfo, policyID string, policyEnable apilib.RepPolicyEnablementReq) (int, error) {
 	_sling := sling.New().Put(a.basePath)
 
@@ -816,7 +816,7 @@ func (a testapi) PutPolicyEnableByID(authInfo usrInfo, policyID string, policyEn
 	return httpStatusCode, err
 }
 
-//Delete policy by policyID
+// Delete policy by policyID
 func (a testapi) DeletePolicyByID(authInfo usrInfo, policyID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
 
@@ -828,55 +828,55 @@ func (a testapi) DeletePolicyByID(authInfo usrInfo, policyID string) (int, error
 	return httpStatusCode, err
 }
 
-//Return projects created by Harbor
-//func (a HarborApi) ProjectsGet (projectName string, isPublic int32) ([]Project, error) {
+// Return projects created by Harbor
+// func (a HarborApi) ProjectsGet (projectName string, isPublic int32) ([]Project, error) {
 //    }
 
-//Check if the project name user provided already exists.
-//func (a HarborApi) ProjectsHead (projectName string) (error) {
-//}
+// Check if the project name user provided already exists.
+// func (a HarborApi) ProjectsHead (projectName string) (error) {
+// }
 
-//Get access logs accompany with a relevant project.
-//func (a HarborApi) ProjectsProjectIdLogsFilterPost (projectID int32, accessLog AccessLog) ([]AccessLog, error) {
-//}
+// Get access logs accompany with a relevant project.
+// func (a HarborApi) ProjectsProjectIdLogsFilterPost (projectID int32, accessLog AccessLog) ([]AccessLog, error) {
+// }
 
-//Return a project&#39;s relevant role members.
-//func (a HarborApi) ProjectsProjectIdMembersGet (projectID int32) ([]Role, error) {
-//}
+// Return a project&#39;s relevant role members.
+// func (a HarborApi) ProjectsProjectIdMembersGet (projectID int32) ([]Role, error) {
+// }
 
-//Add project role member accompany with relevant project and user.
-//func (a HarborApi) ProjectsProjectIdMembersPost (projectID int32, roles RoleParam) (error) {
-//}
+// Add project role member accompany with relevant project and user.
+// func (a HarborApi) ProjectsProjectIdMembersPost (projectID int32, roles RoleParam) (error) {
+// }
 
-//Delete project role members accompany with relevant project and user.
-//func (a HarborApi) ProjectsProjectIdMembersUserIdDelete (projectID int32, userId int32) (error) {
-//}
+// Delete project role members accompany with relevant project and user.
+// func (a HarborApi) ProjectsProjectIdMembersUserIdDelete (projectID int32, userId int32) (error) {
+// }
 
-//Return role members accompany with relevant project and user.
-//func (a HarborApi) ProjectsProjectIdMembersUserIdGet (projectID int32, userId int32) ([]Role, error) {
-//}
+// Return role members accompany with relevant project and user.
+// func (a HarborApi) ProjectsProjectIdMembersUserIdGet (projectID int32, userId int32) ([]Role, error) {
+// }
 
-//Update project role members accompany with relevant project and user.
-//func (a HarborApi) ProjectsProjectIdMembersUserIdPut (projectID int32, userId int32, roles RoleParam) (error) {
-//}
+// Update project role members accompany with relevant project and user.
+// func (a HarborApi) ProjectsProjectIdMembersUserIdPut (projectID int32, userId int32, roles RoleParam) (error) {
+// }
 
-//Update properties for a selected project.
-//func (a HarborApi) ProjectsProjectIdPut (projectID int32, project Project) (error) {
-//}
+// Update properties for a selected project.
+// func (a HarborApi) ProjectsProjectIdPut (projectID int32, project Project) (error) {
+// }
 
-//Get repositories accompany with relevant project and repo name.
-//func (a HarborApi) RepositoriesGet (projectID int32, q string) ([]Repository, error) {
-//}
+// Get repositories accompany with relevant project and repo name.
+// func (a HarborApi) RepositoriesGet (projectID int32, q string) ([]Repository, error) {
+// }
 
-//Get manifests of a relevant repository.
-//func (a HarborApi) RepositoriesManifestGet (repoName string, tag string) (error) {
-//}
+// Get manifests of a relevant repository.
+// func (a HarborApi) RepositoriesManifestGet (repoName string, tag string) (error) {
+// }
 
-//Get tags of a relevant repository.
-//func (a HarborApi) RepositoriesTagsGet (repoName string) (error) {
-//}
+// Get tags of a relevant repository.
+// func (a HarborApi) RepositoriesTagsGet (repoName string) (error) {
+// }
 
-//Get registered users of Harbor.
+// Get registered users of Harbor.
 func (a testapi) UsersGet(userName string, authInfo usrInfo) (int, []apilib.User, error) {
 	_sling := sling.New().Get(a.basePath)
 	// create path and map variables
@@ -895,7 +895,7 @@ func (a testapi) UsersGet(userName string, authInfo usrInfo) (int, []apilib.User
 	return httpStatusCode, successPayLoad, err
 }
 
-//Get registered users by userid.
+// Get registered users by userid.
 func (a testapi) UsersGetByID(userName string, authInfo usrInfo, userID int) (int, apilib.User, error) {
 	_sling := sling.New().Get(a.basePath)
 	// create path and map variables
@@ -914,7 +914,7 @@ func (a testapi) UsersGetByID(userName string, authInfo usrInfo, userID int) (in
 	return httpStatusCode, successPayLoad, err
 }
 
-//Creates a new user account.
+// Creates a new user account.
 func (a testapi) UsersPost(user apilib.User, authInfo ...usrInfo) (int, error) {
 	_sling := sling.New().Post(a.basePath)
 
@@ -936,7 +936,7 @@ func (a testapi) UsersPost(user apilib.User, authInfo ...usrInfo) (int, error) {
 
 }
 
-//Update a registered user to change profile.
+// Update a registered user to change profile.
 func (a testapi) UsersPut(userID int, profile apilib.UserProfile, authInfo usrInfo) (int, error) {
 	_sling := sling.New().Put(a.basePath)
 	// create path and map variables
@@ -949,7 +949,7 @@ func (a testapi) UsersPut(userID int, profile apilib.UserProfile, authInfo usrIn
 	return httpStatusCode, err
 }
 
-//Update a registered user to be an administrator of Harbor.
+// Update a registered user to be an administrator of Harbor.
 func (a testapi) UsersToggleAdminRole(userID int, authInfo usrInfo, hasAdminRole bool) (int, error) {
 	_sling := sling.New().Put(a.basePath)
 	// create path and map variables
@@ -964,7 +964,7 @@ func (a testapi) UsersToggleAdminRole(userID int, authInfo usrInfo, hasAdminRole
 	return httpStatusCode, err
 }
 
-//Update password of a registered user.
+// Update password of a registered user.
 func (a testapi) UsersUpdatePassword(userID int, password apilib.Password, authInfo usrInfo) (int, error) {
 	_sling := sling.New().Put(a.basePath)
 	// create path and map variables
@@ -976,7 +976,7 @@ func (a testapi) UsersUpdatePassword(userID int, password apilib.Password, authI
 	return httpStatusCode, err
 }
 
-//Mark a registered user as be removed.
+// Mark a registered user as be removed.
 func (a testapi) UsersDelete(userID int, authInfo usrInfo) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
 	// create path and map variables
@@ -1007,7 +1007,7 @@ func updateInitPassword(userID int, password string) error {
 	return nil
 }
 
-//Get system volume info
+// Get system volume info
 func (a testapi) VolumeInfoGet(authInfo usrInfo) (int, apilib.SystemInfo, error) {
 	_sling := sling.New().Get(a.basePath)
 	path := "/api/systeminfo/volumes"
@@ -1031,7 +1031,7 @@ func (a testapi) Ping() (int, []byte, error) {
 	return request(_sling, jsonAcceptHeader)
 }
 
-//Get system cert
+// Get system cert
 func (a testapi) CertGet(authInfo usrInfo) (int, []byte, error) {
 	_sling := sling.New().Get(a.basePath)
 	path := "/api/systeminfo/getcert"
@@ -1040,7 +1040,7 @@ func (a testapi) CertGet(authInfo usrInfo) (int, []byte, error) {
 	return httpStatusCode, body, err
 }
 
-//Post ldap test
+// Post ldap test
 func (a testapi) LdapPost(authInfo usrInfo, ldapConf apilib.LdapConf) (int, error) {
 
 	_sling := sling.New().Post(a.basePath)

@@ -1,6 +1,6 @@
 // Copyright 2018 The Harbor Authors. All rights reserved.
 
-//Package tests provide test utilities
+// Package tests provide test utilities
 package tests
 
 import (
@@ -21,7 +21,7 @@ const (
 	testingNamespace      = "testing_job_service_v2"
 )
 
-//GiveMeRedisPool ...
+// GiveMeRedisPool ...
 func GiveMeRedisPool() *redis.Pool {
 	redisHost := getRedisHost()
 	redisPool := &redis.Pool{
@@ -42,12 +42,12 @@ func GiveMeRedisPool() *redis.Pool {
 	return redisPool
 }
 
-//GiveMeTestNamespace ...
+// GiveMeTestNamespace ...
 func GiveMeTestNamespace() string {
 	return testingNamespace
 }
 
-//Clear ...
+// Clear ...
 func Clear(key string, conn redis.Conn) error {
 	if conn != nil {
 		defer conn.Close()
@@ -58,7 +58,7 @@ func Clear(key string, conn redis.Conn) error {
 	return errors.New("failed to clear")
 }
 
-//ClearAll ...
+// ClearAll ...
 func ClearAll(namespace string, conn redis.Conn) error {
 	defer conn.Close()
 
@@ -83,7 +83,7 @@ func ClearAll(namespace string, conn redis.Conn) error {
 func getRedisHost() string {
 	redisHost := os.Getenv(testingRedisHost)
 	if redisHost == "" {
-		redisHost = "10.160.178.186" //for local test
+		redisHost = "10.160.178.186" // for local test
 	}
 
 	return redisHost

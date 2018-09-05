@@ -313,8 +313,8 @@ func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*model
 	return res
 }
 
-//Watch the configuration changes.
-//Wrap the same method in common utils.
+// Watch the configuration changes.
+// Wrap the same method in common utils.
 func watchConfigChanges(cfg map[string]interface{}) error {
 	return notifier.WatchConfigChanges(cfg)
 }

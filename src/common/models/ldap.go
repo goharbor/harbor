@@ -45,7 +45,7 @@ type LdapUser struct {
 	GroupDNList []string `json:"ldap_groupdn"`
 }
 
-//LdapImportUser ...
+// LdapImportUser ...
 type LdapImportUser struct {
 	LdapUIDList []string `json:"ldap_uid_list"`
 }

@@ -16,7 +16,7 @@ package controllers
 import (
 	"net/http"
 	"net/http/httptest"
-	//"net/url"
+	// "net/url"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -35,17 +35,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//const (
+// const (
 //	adminName = "admin"
 //	adminPwd  = "Harbor12345"
-//)
+// )
 
-//type usrInfo struct {
+// type usrInfo struct {
 //	Name   string
 //	Passwd string
-//}
+// }
 
-//var admin *usrInfo
+// var admin *usrInfo
 
 func init() {
 	_, file, _, _ := runtime.Caller(0)
@@ -72,8 +72,8 @@ func TestMain(m *testing.M) {
 	if rc != 0 {
 		os.Exit(rc)
 	}
-	//Init user Info
-	//admin = &usrInfo{adminName, adminPwd}
+	// Init user Info
+	// admin = &usrInfo{adminName, adminPwd}
 }
 
 // TestUserResettable

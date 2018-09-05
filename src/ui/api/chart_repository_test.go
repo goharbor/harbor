@@ -9,7 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/ui/promgr/metamgr"
 )
 
-//Test the URL rewrite function
+// Test the URL rewrite function
 func TestURLRewrite(t *testing.T) {
 	chartAPI := &ChartRepositoryAPI{}
 	req, err := createRequest(http.MethodGet, "/api/chartrepo/health")
@@ -49,7 +49,7 @@ func TestURLRewrite(t *testing.T) {
 	}
 }
 
-//Test access checking
+// Test access checking
 func TestRequireAccess(t *testing.T) {
 	chartAPI := &ChartRepositoryAPI{}
 	chartAPI.SecurityCtx = &mockSecurityContext{}
@@ -88,7 +88,7 @@ func TestIsMultipartFormData(t *testing.T) {
 	}
 }
 
-//Test namespace cheking
+// Test namespace cheking
 func TestRequireNamespace(t *testing.T) {
 	chartAPI := &ChartRepositoryAPI{}
 	chartAPI.ProjectMgr = &mockProjectManager{}
@@ -108,7 +108,7 @@ func createRequest(method string, url string) (*http.Request, error) {
 	return req, nil
 }
 
-//Mock project manager
+// Mock project manager
 type mockProjectManager struct{}
 
 func (mpm *mockProjectManager) Get(projectIDOrName interface{}) (*models.Project, error) {
@@ -168,7 +168,7 @@ func (mpm *mockProjectManager) GetMetadataManager() metamgr.ProjectMetadataManag
 	return nil
 }
 
-//mock security context
+// mock security context
 type mockSecurityContext struct{}
 
 // IsAuthenticated returns whether the context has been authenticated or not
@@ -226,12 +226,12 @@ func (msc *mockSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	return msc.HasReadPerm(projectIDOrName) && msc.HasWritePerm(projectIDOrName)
 }
 
-//Get current user's all project
+// Get current user's all project
 func (msc *mockSecurityContext) GetMyProjects() ([]*models.Project, error) {
 	return []*models.Project{{ProjectID: 0, Name: "repo1"}}, nil
 }
 
-//Get user's role in provided project
+// Get user's role in provided project
 func (msc *mockSecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 	return []int{0, 1, 2, 3}
 }

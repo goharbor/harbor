@@ -23,15 +23,15 @@ const (
 	msgServerRetryTimes = 5
 )
 
-//MessageServer implements the sub/pub mechanism via redis to do async message exchanging.
+// MessageServer implements the sub/pub mechanism via redis to do async message exchanging.
 type MessageServer struct {
 	context   context.Context
 	redisPool *redis.Pool
 	namespace string
-	callbacks map[string]reflect.Value //no need to sync
+	callbacks map[string]reflect.Value // no need to sync
 }
 
-//NewMessageServer creates a new ptr of MessageServer
+// NewMessageServer creates a new ptr of MessageServer
 func NewMessageServer(ctx context.Context, namespace string, redisPool *redis.Pool) *MessageServer {
 	return &MessageServer{
 		context:   ctx,
@@ -41,19 +41,19 @@ func NewMessageServer(ctx context.Context, namespace string, redisPool *redis.Po
 	}
 }
 
-//Start to serve
+// Start to serve
 func (ms *MessageServer) Start() error {
 	defer func() {
 		logger.Info("Message server is stopped")
 	}()
 
-	conn := ms.redisPool.Get() //Get one backend connection!
+	conn := ms.redisPool.Get() // Get one backend connection!
 	psc := redis.PubSubConn{
 		Conn: conn,
 	}
 	defer psc.Close()
 
-	//Subscribe channel
+	// Subscribe channel
 	err := psc.Subscribe(redis.Args{}.AddFlat(utils.KeyPeriodicNotification(ms.namespace))...)
 	if err != nil {
 		return err
@@ -68,41 +68,41 @@ func (ms *MessageServer) Start() error {
 			case redis.Message:
 				m := &models.Message{}
 				if err := json.Unmarshal(res.Data, m); err != nil {
-					//logged
+					// logged
 					logger.Warningf("Read invalid message: %s\n", res.Data)
 				}
 				if callback, ok := ms.callbacks[m.Event]; !ok {
-					//logged
+					// logged
 					logger.Warningf("no handler to handle event %s\n", m.Event)
 				} else {
-					//logged incoming events
+					// logged incoming events
 					logger.Infof("Receive event '%s' with data(unformatted): %+#v\n", m.Event, m.Data)
-					//Try to recover the concrete type
+					// Try to recover the concrete type
 					var converted interface{}
 					switch m.Event {
 					case period.EventSchedulePeriodicPolicy,
 						period.EventUnSchedulePeriodicPolicy:
-						//ignore error, actually error should not be happened because we did not change data
-						//after the last unmarshal try.
+						// ignore error, actually error should not be happened because we did not change data
+						// after the last unmarshal try.
 						policyObject := &period.PeriodicJobPolicy{}
 						dt, _ := json.Marshal(m.Data)
 						json.Unmarshal(dt, policyObject)
 						converted = policyObject
 					case opm.EventRegisterStatusHook:
-						//ignore error
+						// ignore error
 						hookObject := &opm.HookData{}
 						dt, _ := json.Marshal(m.Data)
 						json.Unmarshal(dt, hookObject)
 						converted = hookObject
 					case opm.EventFireCommand:
-						//no need to convert []string
+						// no need to convert []string
 						converted = m.Data
 					}
 					res := callback.Call([]reflect.Value{reflect.ValueOf(converted)})
 					e := res[0].Interface()
 					if e != nil {
 						err := e.(error)
-						//logged
+						// logged
 						logger.Errorf("Failed to fire callback with error: %s\n", err)
 					}
 				}
@@ -112,7 +112,7 @@ func (ms *MessageServer) Start() error {
 					logger.Infof("Subscribe redis channel %s\n", res.Channel)
 					break
 				case "unsubscribe":
-					//Unsubscribe all, means main goroutine is exiting
+					// Unsubscribe all, means main goroutine is exiting
 					logger.Infof("Unsubscribe redis channel %s\n", res.Channel)
 					done <- nil
 					return
@@ -126,7 +126,7 @@ func (ms *MessageServer) Start() error {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 
-	//blocking here
+	// blocking here
 	for err == nil {
 		select {
 		case <-ticker.C:
@@ -137,13 +137,13 @@ func (ms *MessageServer) Start() error {
 		}
 	}
 
-	//Unsubscribe all
+	// Unsubscribe all
 	psc.Unsubscribe()
 
 	return <-done
 }
 
-//Subscribe event with specified callback
+// Subscribe event with specified callback
 func (ms *MessageServer) Subscribe(event string, callback interface{}) error {
 	if utils.IsEmptyStr(event) {
 		return errors.New("empty event is not allowed")

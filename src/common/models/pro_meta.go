@@ -22,7 +22,7 @@ import (
 const (
 	ProMetaPublic             = "public"
 	ProMetaEnableContentTrust = "enable_content_trust"
-	ProMetaPreventVul         = "prevent_vul" //prevent vulnerable images from being pulled
+	ProMetaPreventVul         = "prevent_vul" // prevent vulnerable images from being pulled
 	ProMetaSeverity           = "severity"
 	ProMetaAutoScan           = "auto_scan"
 	SeverityNone              = "negligible"

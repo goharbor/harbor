@@ -3,10 +3,10 @@
 package job
 
 const (
-	//JobKindGeneric : Kind of generic job
+	// JobKindGeneric : Kind of generic job
 	JobKindGeneric = "Generic"
-	//JobKindScheduled : Kind of scheduled job
+	// JobKindScheduled : Kind of scheduled job
 	JobKindScheduled = "Scheduled"
-	//JobKindPeriodic : Kind of periodic job
+	// JobKindPeriodic : Kind of periodic job
 	JobKindPeriodic = "Periodic"
 )

@@ -43,17 +43,17 @@ var ErrDuplicateLDAPGroup = errors.New("An LDAP user group with same DN already 
 // ErrInvalidLDAPGroupDN ...
 var ErrInvalidLDAPGroupDN = errors.New("The LDAP group DN is invalid")
 
-//ErrAuth is the type of error to indicate a failed authentication due to user's error.
+// ErrAuth is the type of error to indicate a failed authentication due to user's error.
 type ErrAuth struct {
 	details string
 }
 
-//Error ...
+// Error ...
 func (ea ErrAuth) Error() string {
 	return fmt.Sprintf("Failed to authenticate user, due to error '%s'", ea.details)
 }
 
-//NewErrAuth ...
+// NewErrAuth ...
 func NewErrAuth(msg string) ErrAuth {
 	return ErrAuth{details: msg}
 }
@@ -94,12 +94,12 @@ func (d *DefaultAuthenticateHelper) OnBoardUser(u *models.User) error {
 	return errors.New("Not supported")
 }
 
-//SearchUser - Get user information from account repository
+// SearchUser - Get user information from account repository
 func (d *DefaultAuthenticateHelper) SearchUser(username string) (*models.User, error) {
 	return nil, errors.New("Not supported")
 }
 
-//PostAuthenticate - Update user information after authenticate, such as OnBoard or sync info etc
+// PostAuthenticate - Update user information after authenticate, such as OnBoard or sync info etc
 func (d *DefaultAuthenticateHelper) PostAuthenticate(u *models.User) error {
 	return nil
 }

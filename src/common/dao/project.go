@@ -292,8 +292,8 @@ func GetRolesByLDAPGroup(projectID int64, groupDNCondition string) ([]int, error
 		return roles, nil
 	}
 	o := GetOrmer()
-	//Because an LDAP user can be memberof multiple groups,
-	//the role is in descent order (1-admin, 2-developer, 3-guest), use min to select the max privilege role.
+	// Because an LDAP user can be memberof multiple groups,
+	// the role is in descent order (1-admin, 2-developer, 3-guest), use min to select the max privilege role.
 	sql := fmt.Sprintf(
 		`select min(pm.role) from project_member pm 
 		left join user_group ug on pm.entity_type = 'g' and pm.entity_id = ug.id 
@@ -304,7 +304,7 @@ func GetRolesByLDAPGroup(projectID int64, groupDNCondition string) ([]int, error
 		log.Warningf("Error in GetRolesByLDAPGroup, error: %v", err)
 		return nil, err
 	}
-	//If there is no row selected, the min returns an empty row, to avoid return 0 as role
+	// If there is no row selected, the min returns an empty row, to avoid return 0 as role
 	if len(roles) == 1 && roles[0] == 0 {
 		return []int{}, nil
 	}

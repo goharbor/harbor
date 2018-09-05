@@ -40,7 +40,7 @@ const (
 	Registry = "harbor-registry"
 )
 
-//InitCreators initialize the token creators for different services
+// InitCreators initialize the token creators for different services
 func InitCreators() {
 	creatorMap = make(map[string]Creator)
 	registryFilterMap = map[string]accessFilter{
@@ -108,7 +108,7 @@ func (e endpointParser) parse(s string) (*image, error) {
 	return parseImg(repo[1])
 }
 
-//build Image accepts a string like library/ubuntu:14.04 and build a image struct
+// build Image accepts a string like library/ubuntu:14.04 and build a image struct
 func parseImg(s string) (*image, error) {
 	repo := strings.SplitN(s, "/", 2)
 	if len(repo) < 2 {
@@ -135,25 +135,25 @@ type registryFilter struct {
 
 func (reg registryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
 	a *token.ResourceActions) error {
-	//Do not filter if the request is to access registry catalog
+	// Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {
 		return fmt.Errorf("Unable to handle, type: %s, name: %s", a.Type, a.Name)
 	}
 	if !ctx.IsSysAdmin() {
-		//Set the actions to empty is the user is not admin
+		// Set the actions to empty is the user is not admin
 		a.Actions = []string{}
 	}
 	return nil
 }
 
-//repositoryFilter filters the access based on Harbor's permission model
+// repositoryFilter filters the access based on Harbor's permission model
 type repositoryFilter struct {
 	parser imageParser
 }
 
 func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
 	a *token.ResourceActions) error {
-	//clear action list to assign to new acess element after perm check.
+	// clear action list to assign to new acess element after perm check.
 	img, err := rep.parser.parse(a.Name)
 	if err != nil {
 		return err

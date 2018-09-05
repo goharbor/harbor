@@ -24,52 +24,52 @@ func TestServiceLogger(t *testing.T) {
 
 type fakeLogger struct{}
 
-//For debuging
+// For debuging
 func (fl *fakeLogger) Debug(v ...interface{}) {
 	fmt.Println(v...)
 }
 
-//For debuging with format
+// For debuging with format
 func (fl *fakeLogger) Debugf(format string, v ...interface{}) {
 	fmt.Printf(format, v...)
 }
 
-//For logging info
+// For logging info
 func (fl *fakeLogger) Info(v ...interface{}) {
 	fmt.Println(v...)
 }
 
-//For logging info with format
+// For logging info with format
 func (fl *fakeLogger) Infof(format string, v ...interface{}) {
 	fmt.Printf(format, v...)
 }
 
-//For warning
+// For warning
 func (fl *fakeLogger) Warning(v ...interface{}) {
 	fmt.Println(v...)
 }
 
-//For warning with format
+// For warning with format
 func (fl *fakeLogger) Warningf(format string, v ...interface{}) {
 	fmt.Printf(format, v...)
 }
 
-//For logging error
+// For logging error
 func (fl *fakeLogger) Error(v ...interface{}) {
 	fmt.Println(v...)
 }
 
-//For logging error with format
+// For logging error with format
 func (fl *fakeLogger) Errorf(format string, v ...interface{}) {
 	fmt.Printf(format, v...)
 }
 
-//For fatal error
+// For fatal error
 func (fl *fakeLogger) Fatal(v ...interface{}) {
 	fmt.Println(v...)
 }
 
-//For fatal error with error
+// For fatal error with error
 func (fl *fakeLogger) Fatalf(format string, v ...interface{}) {
 	fmt.Printf(format, v...)
 }

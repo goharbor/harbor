@@ -37,34 +37,34 @@ const (
 	contentTypeMultipart  = "multipart/form-data"
 )
 
-//chartController is a singleton instance
+// chartController is a singleton instance
 var chartController *chartserver.Controller
 
-//ChartRepositoryAPI provides related API handlers for the chart repository APIs
+// ChartRepositoryAPI provides related API handlers for the chart repository APIs
 type ChartRepositoryAPI struct {
-	//The base controller to provide common utilities
+	// The base controller to provide common utilities
 	BaseController
 
-	//Keep the namespace if existing
+	// Keep the namespace if existing
 	namespace string
 }
 
-//Prepare something for the following actions
+// Prepare something for the following actions
 func (cra *ChartRepositoryAPI) Prepare() {
-	//Call super prepare method
+	// Call super prepare method
 	cra.BaseController.Prepare()
 
-	//Try to extract namespace for parameter of path
-	//It may not exist
+	// Try to extract namespace for parameter of path
+	// It may not exist
 	cra.namespace = strings.TrimSpace(cra.GetStringFromPath(namespaceParam))
 
-	//Check the existence of namespace
-	//Exclude the following URI
+	// Check the existence of namespace
+	// Exclude the following URI
 	// -/index.yaml
 	// -/api/chartserver/health
 	incomingURI := cra.Ctx.Request.RequestURI
 	if incomingURI == rootUploadingEndpoint {
-		//Forward to the default repository
+		// Forward to the default repository
 		cra.namespace = defaultRepo
 	}
 
@@ -75,13 +75,13 @@ func (cra *ChartRepositoryAPI) Prepare() {
 		}
 	}
 
-	//Rewrite URL path
+	// Rewrite URL path
 	cra.rewriteURLPath(cra.Ctx.Request)
 }
 
-//GetHealthStatus handles GET /api/chartserver/health
+// GetHealthStatus handles GET /api/chartserver/health
 func (cra *ChartRepositoryAPI) GetHealthStatus() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelSystem) {
 		return
 	}
@@ -89,9 +89,9 @@ func (cra *ChartRepositoryAPI) GetHealthStatus() {
 	chartController.GetBaseHandler().GetHealthStatus(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
-//GetIndexByRepo handles GET /:repo/index.yaml
+// GetIndexByRepo handles GET /:repo/index.yaml
 func (cra *ChartRepositoryAPI) GetIndexByRepo() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelRead) {
 		return
 	}
@@ -99,9 +99,9 @@ func (cra *ChartRepositoryAPI) GetIndexByRepo() {
 	chartController.GetRepositoryHandler().GetIndexFileWithNS(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
-//GetIndex handles GET /index.yaml
+// GetIndex handles GET /index.yaml
 func (cra *ChartRepositoryAPI) GetIndex() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelSystem) {
 		return
 	}
@@ -109,9 +109,9 @@ func (cra *ChartRepositoryAPI) GetIndex() {
 	chartController.GetRepositoryHandler().GetIndexFile(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
-//DownloadChart handles GET /:repo/charts/:filename
+// DownloadChart handles GET /:repo/charts/:filename
 func (cra *ChartRepositoryAPI) DownloadChart() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelRead) {
 		return
 	}
@@ -119,9 +119,9 @@ func (cra *ChartRepositoryAPI) DownloadChart() {
 	chartController.GetRepositoryHandler().DownloadChartObject(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
-//ListCharts handles GET /api/:repo/charts
+// ListCharts handles GET /api/:repo/charts
 func (cra *ChartRepositoryAPI) ListCharts() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelRead) {
 		return
 	}
@@ -129,9 +129,9 @@ func (cra *ChartRepositoryAPI) ListCharts() {
 	chartController.GetManipulationHandler().ListCharts(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
-//ListChartVersions GET /api/:repo/charts/:name
+// ListChartVersions GET /api/:repo/charts/:name
 func (cra *ChartRepositoryAPI) ListChartVersions() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelRead) {
 		return
 	}
@@ -139,23 +139,23 @@ func (cra *ChartRepositoryAPI) ListChartVersions() {
 	chartController.GetManipulationHandler().GetChart(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
-//GetChartVersion handles GET /api/:repo/charts/:name/:version
+// GetChartVersion handles GET /api/:repo/charts/:name/:version
 func (cra *ChartRepositoryAPI) GetChartVersion() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelRead) {
 		return
 	}
 
-	//Let's pass the namespace via the context of request
+	// Let's pass the namespace via the context of request
 	req := cra.Ctx.Request
 	*req = *(req.WithContext(context.WithValue(req.Context(), chartserver.NamespaceContextKey, cra.namespace)))
 
 	chartController.GetManipulationHandler().GetChartVersion(cra.Ctx.ResponseWriter, req)
 }
 
-//DeleteChartVersion handles DELETE /api/:repo/charts/:name/:version
+// DeleteChartVersion handles DELETE /api/:repo/charts/:name/:version
 func (cra *ChartRepositoryAPI) DeleteChartVersion() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelAll) {
 		return
 	}
@@ -163,16 +163,16 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	chartController.GetManipulationHandler().DeleteChartVersion(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
-//UploadChartVersion handles POST /api/:repo/charts
+// UploadChartVersion handles POST /api/:repo/charts
 func (cra *ChartRepositoryAPI) UploadChartVersion() {
 	hlog.Debugf("Header of request of uploading chart: %#v, content-len=%d", cra.Ctx.Request.Header, cra.Ctx.Request.ContentLength)
 
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
 		return
 	}
 
-	//Rewrite file content if the content type is "multipart/form-data"
+	// Rewrite file content if the content type is "multipart/form-data"
 	if isMultipartFormData(cra.Ctx.Request) {
 		formFiles := make([]formFile, 0)
 		formFiles = append(formFiles,
@@ -192,14 +192,14 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 	chartController.GetManipulationHandler().UploadChartVersion(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
-//UploadChartProvFile handles POST /api/:repo/prov
+// UploadChartProvFile handles POST /api/:repo/prov
 func (cra *ChartRepositoryAPI) UploadChartProvFile() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
 		return
 	}
 
-	//Rewrite file content if the content type is "multipart/form-data"
+	// Rewrite file content if the content type is "multipart/form-data"
 	if isMultipartFormData(cra.Ctx.Request) {
 		formFiles := make([]formFile, 0)
 		formFiles = append(formFiles,
@@ -216,14 +216,14 @@ func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 	chartController.GetManipulationHandler().UploadProvenanceFile(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
-//DeleteChart deletes all the chart versions of the specified chart.
+// DeleteChart deletes all the chart versions of the specified chart.
 func (cra *ChartRepositoryAPI) DeleteChart() {
-	//Check access
+	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
 		return
 	}
 
-	//Get other parameters from the request
+	// Get other parameters from the request
 	chartName := cra.GetStringFromPath(nameParam)
 
 	if err := chartController.GetUtilityHandler().DeleteChart(cra.namespace, chartName); err != nil {
@@ -231,9 +231,9 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	}
 }
 
-//Rewrite the incoming URL with the right backend URL pattern
-//Remove 'chartrepo' from the endpoints of manipulation API
-//Remove 'chartrepo' from the endpoints of repository services
+// Rewrite the incoming URL with the right backend URL pattern
+// Remove 'chartrepo' from the endpoints of manipulation API
+// Remove 'chartrepo' from the endpoints of repository services
 func (cra *ChartRepositoryAPI) rewriteURLPath(req *http.Request) {
 	incomingURLPath := req.RequestURI
 
@@ -241,36 +241,36 @@ func (cra *ChartRepositoryAPI) rewriteURLPath(req *http.Request) {
 		hlog.Debugf("Incoming URL '%s' is rewritten to '%s'", incomingURLPath, req.URL.String())
 	}()
 
-	//Health check endpoint
+	// Health check endpoint
 	if incomingURLPath == chartRepoHealthEndpoint {
 		req.URL.Path = "/health"
 		return
 	}
 
-	//Root uploading endpoint
+	// Root uploading endpoint
 	if incomingURLPath == rootUploadingEndpoint {
 		req.URL.Path = strings.Replace(incomingURLPath, "chartrepo", defaultRepo, 1)
 		return
 	}
 
-	//Repository endpoints
+	// Repository endpoints
 	if strings.HasPrefix(incomingURLPath, "/chartrepo") {
 		req.URL.Path = strings.TrimPrefix(incomingURLPath, "/chartrepo")
 		return
 	}
 
-	//API endpoints
+	// API endpoints
 	if strings.HasPrefix(incomingURLPath, "/api/chartrepo") {
 		req.URL.Path = strings.Replace(incomingURLPath, "/chartrepo", "", 1)
 		return
 	}
 }
 
-//Check if there exists a valid namespace
-//Return true if it does
-//Return false if it does not
+// Check if there exists a valid namespace
+// Return true if it does
+// Return false if it does not
 func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
-	//Actually, never should be like this
+	// Actually, never should be like this
 	if len(namespace) == 0 {
 		cra.HandleBadRequest(":repo should be in the request URL")
 		return false
@@ -278,12 +278,12 @@ func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 
 	existsing, err := cra.ProjectMgr.Exists(namespace)
 	if err != nil {
-		//Check failed with error
+		// Check failed with error
 		cra.renderError(http.StatusInternalServerError, fmt.Sprintf("failed to check existence of namespace %s with error: %s", namespace, err.Error()))
 		return false
 	}
 
-	//Not existing
+	// Not existing
 	if !existsing {
 		cra.renderError(http.StatusBadRequest, fmt.Sprintf("namespace %s is not existing", namespace))
 		return false
@@ -292,16 +292,16 @@ func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 	return true
 }
 
-//Check if the related access match the expected requirement
-//If with right access, return true
-//If without right access, return false
+// Check if the related access match the expected requirement
+// If with right access, return true
+// If without right access, return false
 func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint) bool {
 	if accessLevel == accessLevelPublic {
-		return true //do nothing
+		return true // do nothing
 	}
 
 	theLevel := accessLevel
-	//If repo is empty, system admin role must be required
+	// If repo is empty, system admin role must be required
 	if len(namespace) == 0 {
 		theLevel = accessLevelSystem
 	}
@@ -309,7 +309,7 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 	var err error
 
 	switch theLevel {
-	//Should be system admin role
+	// Should be system admin role
 	case accessLevelSystem:
 		if !cra.SecurityCtx.IsSysAdmin() {
 			err = errors.New("permission denied: system admin role is required")
@@ -327,20 +327,20 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 			err = errors.New("permission denied: guest or higher role is required")
 		}
 	default:
-		//access rejected for invalid scope
+		// access rejected for invalid scope
 		cra.renderError(http.StatusForbidden, "unrecognized access scope")
 		return false
 	}
 
-	//Access is not granted, check if user has authenticated
+	// Access is not granted, check if user has authenticated
 	if err != nil {
-		//Unauthenticated, return 401
+		// Unauthenticated, return 401
 		if !cra.SecurityCtx.IsAuthenticated() {
 			cra.renderError(http.StatusUnauthorized, "Unauthorized")
 			return false
 		}
 
-		//Authenticated, return 403
+		// Authenticated, return 403
 		cra.renderError(http.StatusForbidden, err.Error())
 		return false
 	}
@@ -348,50 +348,50 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 	return true
 }
 
-//write error message with unified format
+// write error message with unified format
 func (cra *ChartRepositoryAPI) renderError(code int, text string) {
 	chartserver.WriteError(cra.Ctx.ResponseWriter, code, errors.New(text))
 }
 
-//formFile is used to represent the uploaded files in the form
+// formFile is used to represent the uploaded files in the form
 type formFile struct {
-	//form field key contains the form file
+	// form field key contains the form file
 	formField string
 
-	//flag to indicate if the file identified by the 'formField'
-	//must exist
+	// flag to indicate if the file identified by the 'formField'
+	// must exist
 	mustHave bool
 }
 
-//If the files are uploaded with multipart/form-data mimetype, beego will extract the data
-//from the request automatically. Then the request passed to the backend server with proxying
-//way will have empty content.
-//This method will refill the requests with file content.
+// If the files are uploaded with multipart/form-data mimetype, beego will extract the data
+// from the request automatically. Then the request passed to the backend server with proxying
+// way will have empty content.
+// This method will refill the requests with file content.
 func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *http.Request) error {
 	if len(files) == 0 {
-		return nil //no files, early return
+		return nil // no files, early return
 	}
 
 	var body bytes.Buffer
 	w := multipart.NewWriter(&body)
 	defer func() {
 		if err := w.Close(); err != nil {
-			//Just log it
+			// Just log it
 			hlog.Errorf("Failed to defer close multipart writer with error: %s", err.Error())
 		}
 	}()
 
-	//Process files by key one by one
+	// Process files by key one by one
 	for _, f := range files {
 		mFile, mHeader, err := cra.GetFile(f.formField)
-		//Handle error case by case
+		// Handle error case by case
 		if err != nil {
 			formatedErr := fmt.Errorf("Get file content with multipart header from key '%s' failed with error: %s", f.formField, err.Error())
 			if f.mustHave || err != http.ErrMissingFile {
 				return formatedErr
 			}
 
-			//Error can be ignored, just log it
+			// Error can be ignored, just log it
 			hlog.Warning(formatedErr.Error())
 			continue
 		}
@@ -414,7 +414,7 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 	return nil
 }
 
-//Initialize the chart service controller
+// Initialize the chart service controller
 func initializeChartController() (*chartserver.Controller, error) {
 	addr, err := config.GetChartMuseumEndpoint()
 	if err != nil {
@@ -438,7 +438,7 @@ func initializeChartController() (*chartserver.Controller, error) {
 	return controller, nil
 }
 
-//Check if the request content type is "multipart/form-data"
+// Check if the request content type is "multipart/form-data"
 func isMultipartFormData(req *http.Request) bool {
 	return strings.Contains(req.Header.Get(headerContentType), contentTypeMultipart)
 }

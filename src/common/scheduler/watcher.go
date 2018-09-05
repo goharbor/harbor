@@ -9,28 +9,28 @@ import (
 	"sync"
 )
 
-//Watcher is an asynchronous runner to provide an evaluation environment for the policy.
+// Watcher is an asynchronous runner to provide an evaluation environment for the policy.
 type Watcher struct {
-	//Locker to sync related operations.
+	// Locker to sync related operations.
 	*sync.RWMutex
 
-	//The target policy.
+	// The target policy.
 	p policy.Policy
 
-	//The channel for receive stop signal.
+	// The channel for receive stop signal.
 	cmdChan chan bool
 
-	//Indicate whether the watcher is started and running.
+	// Indicate whether the watcher is started and running.
 	isRunning bool
 
-	//Report stats to scheduler.
+	// Report stats to scheduler.
 	stats chan *StatItem
 
-	//If policy is automatically completed, report the policy to scheduler.
+	// If policy is automatically completed, report the policy to scheduler.
 	doneChan chan *Watcher
 }
 
-//NewWatcher is used as a constructor.
+// NewWatcher is used as a constructor.
 func NewWatcher(p policy.Policy, st chan *StatItem, done chan *Watcher) *Watcher {
 	return &Watcher{
 		RWMutex:   new(sync.RWMutex),
@@ -42,9 +42,9 @@ func NewWatcher(p policy.Policy, st chan *StatItem, done chan *Watcher) *Watcher
 	}
 }
 
-//Start the running.
+// Start the running.
 func (wc *Watcher) Start() {
-	//Lock for state changing
+	// Lock for state changing
 	wc.Lock()
 	defer wc.Unlock()
 
@@ -74,13 +74,13 @@ func (wc *Watcher) Start() {
 			select {
 			case <-evalChan:
 				{
-					//If worker is not running, should not response any requests.
+					// If worker is not running, should not response any requests.
 					if !wc.IsRunning() {
 						continue
 					}
 
 					log.Infof("Receive evaluation signal from policy '%s'\n", pl.Name())
-					//Start to run the attached tasks.
+					// Start to run the attached tasks.
 					for _, t := range pl.Tasks() {
 						go func(tk task.Task) {
 							defer func() {
@@ -93,7 +93,7 @@ func (wc *Watcher) Start() {
 							}()
 							err := tk.Run()
 
-							//Report task execution stats.
+							// Report task execution stats.
 							st := &StatItem{statTaskComplete, 1, err}
 							if err != nil {
 								st.Type = statTaskFail
@@ -103,7 +103,7 @@ func (wc *Watcher) Start() {
 							}
 						}(t)
 
-						//Report task run stats.
+						// Report task run stats.
 						st := &StatItem{statTaskRun, 1, nil}
 						if wc.stats != nil {
 							wc.stats <- st
@@ -112,8 +112,8 @@ func (wc *Watcher) Start() {
 				}
 			case <-done:
 				{
-					//Policy is automatically completed.
-					//Report policy change stats.
+					// Policy is automatically completed.
+					// Report policy change stats.
 					if wc.doneChan != nil {
 						wc.doneChan <- wc
 					}
@@ -121,7 +121,7 @@ func (wc *Watcher) Start() {
 					return
 				}
 			case <-wc.cmdChan:
-				//Exit goroutine.
+				// Exit goroutine.
 				return
 			}
 		}
@@ -130,9 +130,9 @@ func (wc *Watcher) Start() {
 	wc.isRunning = true
 }
 
-//Stop the running.
+// Stop the running.
 func (wc *Watcher) Stop() {
-	//Lock for state changing
+	// Lock for state changing
 	wc.Lock()
 	if !wc.isRunning {
 		wc.Unlock()
@@ -142,18 +142,18 @@ func (wc *Watcher) Stop() {
 	wc.isRunning = false
 	wc.Unlock()
 
-	//Disable policy.
+	// Disable policy.
 	if wc.p != nil {
 		wc.p.Disable()
 	}
 
-	//Stop watcher.
+	// Stop watcher.
 	wc.cmdChan <- true
 
 	log.Infof("Worker for policy %s is stopped.\n", wc.p.Name())
 }
 
-//IsRunning to indicate if the watcher is still running.
+// IsRunning to indicate if the watcher is still running.
 func (wc *Watcher) IsRunning() bool {
 	wc.RLock()
 	defer wc.RUnlock()

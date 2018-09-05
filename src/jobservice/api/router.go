@@ -15,26 +15,26 @@ const (
 	apiVersion = "v1"
 )
 
-//Router defines the related routes for the job service and directs the request
-//to the right handler method.
+// Router defines the related routes for the job service and directs the request
+// to the right handler method.
 type Router interface {
-	//ServeHTTP used to handle the http requests
+	// ServeHTTP used to handle the http requests
 	ServeHTTP(w http.ResponseWriter, req *http.Request)
 }
 
-//BaseRouter provides the basic routes for the job service based on the golang http server mux.
+// BaseRouter provides the basic routes for the job service based on the golang http server mux.
 type BaseRouter struct {
-	//Use mux to keep the routes mapping.
+	// Use mux to keep the routes mapping.
 	router *mux.Router
 
-	//Handler used to handle the requests
+	// Handler used to handle the requests
 	handler Handler
 
-	//Do auth
+	// Do auth
 	authenticator Authenticator
 }
 
-//NewBaseRouter is the constructor of BaseRouter.
+// NewBaseRouter is the constructor of BaseRouter.
 func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 	br := &BaseRouter{
 		router:        mux.NewRouter(),
@@ -42,15 +42,15 @@ func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 		authenticator: authenticator,
 	}
 
-	//Register routes here
+	// Register routes here
 	br.registerRoutes()
 
 	return br
 }
 
-//ServeHTTP is the implementation of Router interface.
+// ServeHTTP is the implementation of Router interface.
 func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	//Do auth
+	// Do auth
 	if err := br.authenticator.DoAuth(req); err != nil {
 		authErr := errs.UnauthorizedError(err)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -58,11 +58,11 @@ func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//Directly pass requests to the server mux.
+	// Directly pass requests to the server mux.
 	br.router.ServeHTTP(w, req)
 }
 
-//registerRoutes adds routes to the server mux.
+// registerRoutes adds routes to the server mux.
 func (br *BaseRouter) registerRoutes() {
 	subRouter := br.router.PathPrefix(fmt.Sprintf("%s/%s", baseRoute, apiVersion)).Subrouter()
 

@@ -7,46 +7,46 @@ import (
 	"sync"
 )
 
-//Store define the basic operations for storing and managing policy watcher.
+// Store define the basic operations for storing and managing policy watcher.
 type Store interface {
-	//Put a new policy in.
+	// Put a new policy in.
 	Put(key string, value *Watcher) error
 
-	//Get the corresponding policy with the key.
+	// Get the corresponding policy with the key.
 	Get(key string) *Watcher
 
-	//Exists is to check if the key existing in the store.
+	// Exists is to check if the key existing in the store.
 	Exists(key string) bool
 
-	//Remove the specified policy and return its reference.
+	// Remove the specified policy and return its reference.
 	Remove(key string) *Watcher
 
-	//Size return the total count of items in store.
+	// Size return the total count of items in store.
 	Size() uint32
 
-	//GetAll is to get all the items in the store.
+	// GetAll is to get all the items in the store.
 	GetAll() []*Watcher
 
-	//Clear store.
+	// Clear store.
 	Clear()
 }
 
-//DefaultStore implements Store interface to keep the scheduled policies.
-//Not support concurrent sync.
+// DefaultStore implements Store interface to keep the scheduled policies.
+// Not support concurrent sync.
 type DefaultStore struct {
-	//Support sync locking
+	// Support sync locking
 	*sync.RWMutex
 
-	//Map used to keep the policy list.
+	// Map used to keep the policy list.
 	data map[string]*Watcher
 }
 
-//NewDefaultStore is used to create a new store and return the pointer reference.
+// NewDefaultStore is used to create a new store and return the pointer reference.
 func NewDefaultStore() *DefaultStore {
 	return &DefaultStore{new(sync.RWMutex), make(map[string]*Watcher)}
 }
 
-//Put a policy into store.
+// Put a policy into store.
 func (cs *DefaultStore) Put(key string, value *Watcher) error {
 	if strings.TrimSpace(key) == "" || value == nil {
 		return errors.New("Bad arguments")
@@ -64,7 +64,7 @@ func (cs *DefaultStore) Put(key string, value *Watcher) error {
 	return nil
 }
 
-//Get policy via key.
+// Get policy via key.
 func (cs *DefaultStore) Get(key string) *Watcher {
 	if strings.TrimSpace(key) == "" {
 		return nil
@@ -76,7 +76,7 @@ func (cs *DefaultStore) Get(key string) *Watcher {
 	return cs.data[key]
 }
 
-//Exists is used to check whether or not the key exists in store.
+// Exists is used to check whether or not the key exists in store.
 func (cs *DefaultStore) Exists(key string) bool {
 	if strings.TrimSpace(key) == "" {
 		return false
@@ -90,7 +90,7 @@ func (cs *DefaultStore) Exists(key string) bool {
 	return ok
 }
 
-//Remove is to delete the specified policy.
+// Remove is to delete the specified policy.
 func (cs *DefaultStore) Remove(key string) *Watcher {
 	if strings.TrimSpace(key) == "" {
 		return nil
@@ -107,7 +107,7 @@ func (cs *DefaultStore) Remove(key string) *Watcher {
 	return nil
 }
 
-//Size return the total count of items in store.
+// Size return the total count of items in store.
 func (cs *DefaultStore) Size() uint32 {
 	cs.RLock()
 	defer cs.RUnlock()
@@ -115,7 +115,7 @@ func (cs *DefaultStore) Size() uint32 {
 	return (uint32)(len(cs.data))
 }
 
-//GetAll to get all the items of store.
+// GetAll to get all the items of store.
 func (cs *DefaultStore) GetAll() []*Watcher {
 	cs.RLock()
 	defer cs.RUnlock()
@@ -129,7 +129,7 @@ func (cs *DefaultStore) GetAll() []*Watcher {
 	return all
 }
 
-//Clear all the items in store.
+// Clear all the items in store.
 func (cs *DefaultStore) Clear() {
 	cs.Lock()
 	defer cs.Unlock()

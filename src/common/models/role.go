@@ -15,11 +15,11 @@
 package models
 
 const (
-	//PROJECTADMIN project administrator
+	// PROJECTADMIN project administrator
 	PROJECTADMIN = 1
-	//DEVELOPER developer
+	// DEVELOPER developer
 	DEVELOPER = 2
-	//GUEST guest
+	// GUEST guest
 	GUEST = 3
 )
 

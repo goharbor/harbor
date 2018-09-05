@@ -34,7 +34,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 			},
 			code: http.StatusUnauthorized,
 		},
-		//200
+		// 200
 		{
 			request: &testingRequest{
 				method:     http.MethodGet,
@@ -43,7 +43,7 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 			},
 			code: http.StatusOK,
 		},
-		//400
+		// 400
 		{
 			request: &testingRequest{
 				method:     http.MethodGet,

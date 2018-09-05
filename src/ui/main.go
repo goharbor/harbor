@@ -75,7 +75,7 @@ func updateInitPassword(userID int, password string) error {
 
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
-	//TODO
+	// TODO
 	redisURL := os.Getenv("_REDIS_URL")
 	if len(redisURL) > 0 {
 		gob.Register(models.User{})
@@ -106,15 +106,15 @@ func main() {
 		log.Error(err)
 	}
 
-	//Init API handler
+	// Init API handler
 	if err := api.Init(); err != nil {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
 
-	//Enable the policy scheduler here.
+	// Enable the policy scheduler here.
 	scheduler.DefaultScheduler.Start()
 
-	//Subscribe the policy change topic.
+	// Subscribe the policy change topic.
 	if err = notifier.Subscribe(notifier.ScanAllPolicyTopic, &notifier.ScanPolicyNotificationHandler{}); err != nil {
 		log.Errorf("failed to subscribe scan all policy change topic: %v", err)
 	}
@@ -127,7 +127,7 @@ func main() {
 		if err := dao.InitClairDB(clairDB); err != nil {
 			log.Fatalf("failed to initialize clair database: %v", err)
 		}
-		//Get policy configuration.
+		// Get policy configuration.
 		scanAllPolicy := config.ScanAllPolicy()
 		if scanAllPolicy.Type == notifier.PolicyTypeDaily {
 			dailyTime := 0
@@ -137,7 +137,7 @@ func main() {
 				}
 			}
 
-			//Send notification to handle first policy change.
+			// Send notification to handle first policy change.
 			if err = notifier.Publish(notifier.ScanAllPolicyTopic,
 				notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)}); err != nil {
 				log.Errorf("failed to publish scan all policy topic: %v", err)
@@ -160,7 +160,7 @@ func main() {
 	sync, err := strconv.ParseBool(syncRegistry)
 	if err != nil {
 		log.Errorf("Failed to parse SYNC_REGISTRY: %v", err)
-		//if err set it default to false
+		// if err set it default to false
 		sync = false
 	}
 	if sync {
@@ -173,6 +173,6 @@ func main() {
 
 	log.Info("Init proxy")
 	proxy.Init()
-	//go proxy.StartProxy()
+	// go proxy.StartProxy()
 	beego.Run()
 }

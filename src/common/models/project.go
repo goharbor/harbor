@@ -154,7 +154,7 @@ type BaseProjectCollection struct {
 // ProjectRequest holds informations that need for creating project API
 type ProjectRequest struct {
 	Name     string            `json:"project_name"`
-	Public   *int              `json:"public"` //deprecated, reserved for project creation in replication
+	Public   *int              `json:"public"` // deprecated, reserved for project creation in replication
 	Metadata map[string]string `json:"metadata"`
 }
 
@@ -164,7 +164,7 @@ type ProjectQueryResult struct {
 	Projects []*Project
 }
 
-//TableName is required by beego orm to map Project to table project
+// TableName is required by beego orm to map Project to table project
 func (p *Project) TableName() string {
 	return ProjectTable
 }

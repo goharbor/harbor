@@ -175,7 +175,7 @@ func (d *driver) filter(m map[string]string) ([]*project, error) {
 // parse the response of GET /projects?xxx to project list
 func parse(b []byte) ([]*project, error) {
 	documents := &struct {
-		//DocumentCount int64               `json:"documentCount"`
+		// DocumentCount int64               `json:"documentCount"`
 		Projects map[string]*project `json:"documents"`
 	}{}
 	if err := json.Unmarshal(b, documents); err != nil {

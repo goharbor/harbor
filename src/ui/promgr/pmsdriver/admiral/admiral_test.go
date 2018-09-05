@@ -34,18 +34,18 @@ var (
 )
 
 func TestConvert(t *testing.T) {
-	//nil project
+	// nil project
 	pro, err := convert(nil)
 	assert.Nil(t, err)
 	assert.Nil(t, pro)
 
-	//project without property __projectIndex
+	// project without property __projectIndex
 	p := &project{}
 	pro, err = convert(p)
 	assert.NotNil(t, err)
 	assert.Nil(t, pro)
 
-	//project with invalid __projectIndex
+	// project with invalid __projectIndex
 	p = &project{
 		CustomProperties: map[string]string{
 			"__projectIndex": "invalid_value",
@@ -55,7 +55,7 @@ func TestConvert(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, pro)
 
-	//project with invalid __enableContentTrust
+	// project with invalid __enableContentTrust
 	p = &project{
 		CustomProperties: map[string]string{
 			"__enableContentTrust": "invalid_value",
@@ -65,7 +65,7 @@ func TestConvert(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, pro)
 
-	//project with invalid __preventVulnerableImagesFromRunning
+	// project with invalid __preventVulnerableImagesFromRunning
 	p = &project{
 		CustomProperties: map[string]string{
 			"__preventVulnerableImagesFromRunning": "invalid_value",
@@ -75,7 +75,7 @@ func TestConvert(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, pro)
 
-	//project with invalid __automaticallyScanImagesOnPush
+	// project with invalid __automaticallyScanImagesOnPush
 	p = &project{
 		CustomProperties: map[string]string{
 			"__automaticallyScanImagesOnPush": "invalid_value",
@@ -85,7 +85,7 @@ func TestConvert(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, pro)
 
-	//valid project
+	// valid project
 	p = &project{
 		Name:   "test",
 		Public: true,

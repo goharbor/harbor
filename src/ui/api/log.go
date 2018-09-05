@@ -22,14 +22,14 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 )
 
-//LogAPI handles request api/logs
+// LogAPI handles request api/logs
 type LogAPI struct {
 	BaseController
 	username   string
 	isSysAdmin bool
 }
 
-//Prepare validates the URL and the user
+// Prepare validates the URL and the user
 func (l *LogAPI) Prepare() {
 	l.BaseController.Prepare()
 	if !l.SecurityCtx.IsAuthenticated() {
@@ -40,7 +40,7 @@ func (l *LogAPI) Prepare() {
 	l.isSysAdmin = l.SecurityCtx.IsSysAdmin()
 }
 
-//Get returns the recent logs according to parameters
+// Get returns the recent logs according to parameters
 func (l *LogAPI) Get() {
 	page, size := l.GetPaginationParams()
 	query := &models.LogQueryParam{

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-//TestGetChartsByNs tests GetChartsByNs method in UtilityHandler
+// TestGetChartsByNs tests GetChartsByNs method in UtilityHandler
 func TestGetChartsByNs(t *testing.T) {
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.RequestURI {
@@ -43,7 +43,7 @@ func TestGetChartsByNs(t *testing.T) {
 	}
 }
 
-//Test the function DeleteChart
+// Test the function DeleteChart
 func TestDeleteChart(t *testing.T) {
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.RequestURI {

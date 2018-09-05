@@ -31,8 +31,8 @@ type User struct {
 	Comment  string `orm:"column(comment)" json:"comment"`
 	Deleted  bool   `orm:"column(deleted)" json:"deleted"`
 	Rolename string `orm:"-" json:"role_name"`
-	//if this field is named as "RoleID", beego orm can not map role_id
-	//to it.
+	// if this field is named as "RoleID", beego orm can not map role_id
+	// to it.
 	Role int `orm:"-" json:"role_id"`
 	//	RoleList     []Role `json:"role_list"`
 	HasAdminRole bool         `orm:"column(sysadmin_flag)" json:"has_admin_role"`

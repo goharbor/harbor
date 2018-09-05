@@ -28,7 +28,7 @@ func TestGetConfig(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	//case 1: get configurations without admin role
+	// case 1: get configurations without admin role
 	code, _, err := apiTest.GetConfig(*testUser)
 	if err != nil {
 		t.Fatalf("failed to get configurations: %v", err)
@@ -36,7 +36,7 @@ func TestGetConfig(t *testing.T) {
 
 	assert.Equal(401, code, "the status code of getting configurations with non-admin user should be 401")
 
-	//case 2: get configurations with admin role
+	// case 2: get configurations with admin role
 	code, cfg, err := apiTest.GetConfig(*admin)
 	if err != nil {
 		t.Fatalf("failed to get configurations: %v", err)

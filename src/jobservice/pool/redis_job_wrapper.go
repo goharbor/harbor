@@ -14,14 +14,14 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/opm"
 )
 
-//RedisJob is a job wrapper to wrap the job.Interface to the style which can be recognized by the redis pool.
+// RedisJob is a job wrapper to wrap the job.Interface to the style which can be recognized by the redis pool.
 type RedisJob struct {
-	job          interface{}         //the real job implementation
-	context      *env.Context        //context
-	statsManager opm.JobStatsManager //job stats manager
+	job          interface{}         // the real job implementation
+	context      *env.Context        // context
+	statsManager opm.JobStatsManager // job stats manager
 }
 
-//NewRedisJob is constructor of RedisJob
+// NewRedisJob is constructor of RedisJob
 func NewRedisJob(j interface{}, ctx *env.Context, statsManager opm.JobStatsManager) *RedisJob {
 	return &RedisJob{
 		job:          j,
@@ -30,7 +30,7 @@ func NewRedisJob(j interface{}, ctx *env.Context, statsManager opm.JobStatsManag
 	}
 }
 
-//Run the job
+// Run the job
 func (rj *RedisJob) Run(j *work.Job) error {
 	var (
 		cancelled          = false
@@ -43,17 +43,17 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	defer func() {
 		if err == nil {
 			logger.Infof("Job '%s:%s' exit with success", j.Name, j.ID)
-			return //nothing need to do
+			return // nothing need to do
 		}
 
-		//log error
+		// log error
 		logger.Errorf("Job '%s:%s' exit with error: %s\n", j.Name, j.ID, err)
 
 		if buildContextFailed || rj.shouldDisableRetry(runningJob, j, cancelled) {
-			j.Fails = 10000000000 //Make it big enough to avoid retrying
+			j.Fails = 10000000000 // Make it big enough to avoid retrying
 			now := time.Now().Unix()
 			go func() {
-				timer := time.NewTimer(2 * time.Second) //make sure the failed job is already put into the dead queue
+				timer := time.NewTimer(2 * time.Second) // make sure the failed job is already put into the dead queue
 				defer timer.Stop()
 
 				<-timer.C
@@ -66,33 +66,33 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("Runtime error: %s", r)
-			//record runtime error status
+			// record runtime error status
 			rj.jobFailed(j.ID)
 		}
 	}()
 
-	//Wrap job
+	// Wrap job
 	runningJob = Wrap(rj.job)
 
 	execContext, err = rj.buildContext(j)
 	if err != nil {
 		buildContextFailed = true
-		goto FAILED //no need to retry
+		goto FAILED // no need to retry
 	}
 
 	defer func() {
-		//Close open io stream first
+		// Close open io stream first
 		if closer, ok := execContext.GetLogger().(logger.Closer); ok {
 			closer.Close()
 		}
 	}()
 
-	//Start to run
+	// Start to run
 	rj.jobRunning(j.ID)
-	//Inject data
+	// Inject data
 	err = runningJob.Run(execContext, j.Args)
 
-	//update the proper status
+	// update the proper status
 	if err == nil {
 		rj.jobSucceed(j.ID)
 		return nil
@@ -106,7 +106,7 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	if errs.IsJobCancelledError(err) {
 		rj.jobCancelled(j.ID)
 		cancelled = true
-		return err //need to resume
+		return err // need to resume
 	}
 
 FAILED:
@@ -135,7 +135,7 @@ func (rj *RedisJob) jobSucceed(jobID string) {
 }
 
 func (rj *RedisJob) buildContext(j *work.Job) (env.JobContext, error) {
-	//Build job execution context
+	// Build job execution context
 	jData := env.JobData{
 		ID:        j.ID,
 		Name:      j.Name,
@@ -169,10 +169,10 @@ func (rj *RedisJob) buildContext(j *work.Job) (env.JobContext, error) {
 func (rj *RedisJob) shouldDisableRetry(j job.Interface, wj *work.Job, cancelled bool) bool {
 	maxFails := j.MaxFails()
 	if maxFails == 0 {
-		maxFails = 4 //Consistent with backend worker pool
+		maxFails = 4 // Consistent with backend worker pool
 	}
 	fails := wj.Fails
-	fails++ //as the fail is not returned to backend pool yet
+	fails++ // as the fail is not returned to backend pool yet
 
 	if cancelled && fails < int64(maxFails) {
 		return true

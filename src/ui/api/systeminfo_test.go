@@ -26,7 +26,7 @@ func TestGetVolumeInfo(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	//case 1: get volume info without admin role
+	// case 1: get volume info without admin role
 	CommonAddUser()
 	code, _, err := apiTest.VolumeInfoGet(*testUser)
 	if err != nil {
@@ -35,7 +35,7 @@ func TestGetVolumeInfo(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Get system volume info should be 403")
 	}
-	//case 2: get volume info with admin role
+	// case 2: get volume info with admin role
 	code, info, err := apiTest.VolumeInfoGet(*admin)
 	if err != nil {
 		t.Error("Error occurred while get system volume info")
@@ -72,7 +72,7 @@ func TestGetCert(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	//case 1: get cert without admin role
+	// case 1: get cert without admin role
 	code, _, err := apiTest.CertGet(*testUser)
 	if err != nil {
 		t.Error("Error occurred while get system cert")
@@ -80,7 +80,7 @@ func TestGetCert(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Get system cert should be 403")
 	}
-	//case 2: get cert with admin role
+	// case 2: get cert with admin role
 	code, content, err := apiTest.CertGet(*admin)
 	if err != nil {
 		t.Error("Error occurred while get system cert")

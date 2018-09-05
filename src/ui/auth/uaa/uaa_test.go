@@ -132,7 +132,7 @@ func TestPostAuthenticate(t *testing.T) {
 		Username: "test",
 	}
 	err := auth.PostAuthenticate(um)
-	//need a new user model to simulate a login case...
+	// need a new user model to simulate a login case...
 	um2 := &models.User{
 		Username: "test",
 	}
@@ -147,7 +147,7 @@ func TestPostAuthenticate(t *testing.T) {
 	user2, _ := dao.GetUser(models.User{Username: "test"})
 	assert.Equal("newEmail@new.com", user2.Email)
 	assert.Equal("newName", user2.Realname)
-	//need a new user model to simulate a login case...
+	// need a new user model to simulate a login case...
 	um3 := &models.User{
 		Username: "test",
 	}

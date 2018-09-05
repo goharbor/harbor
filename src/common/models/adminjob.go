@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	//AdminJobTable is table name for admin job
+	// AdminJobTable is table name for admin job
 	AdminJobTable = "admin_job"
 )
 
@@ -36,7 +36,7 @@ type AdminJob struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
-//TableName is required by by beego orm to map AdminJob to table AdminJob
+// TableName is required by by beego orm to map AdminJob to table AdminJob
 func (a *AdminJob) TableName() string {
 	return AdminJobTable
 }

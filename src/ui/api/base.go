@@ -36,9 +36,9 @@ type BaseController struct {
 }
 
 const (
-	//ReplicationJobType ...
+	// ReplicationJobType ...
 	ReplicationJobType = "replication"
-	//ScanJobType ...
+	// ScanJobType ...
 	ScanJobType = "scan"
 )
 
@@ -60,9 +60,9 @@ func (b *BaseController) Prepare() {
 	b.ProjectMgr = pm
 }
 
-//Init related objects/configurations for the API controllers
+// Init related objects/configurations for the API controllers
 func Init() error {
-	//If chart repository is not enabled then directly return
+	// If chart repository is not enabled then directly return
 	if !config.WithChartMuseum() {
 		return nil
 	}

@@ -19,17 +19,17 @@ const (
 	contentLengthHeader = "Content-Length"
 )
 
-//ProxyEngine is used to proxy the related traffics
+// ProxyEngine is used to proxy the related traffics
 type ProxyEngine struct {
-	//The backend target server the traffic will be forwarded to
-	//Just in case we'll use it
+	// The backend target server the traffic will be forwarded to
+	// Just in case we'll use it
 	backend *url.URL
 
-	//Use go reverse proxy as engine
+	// Use go reverse proxy as engine
 	engine *httputil.ReverseProxy
 }
 
-//NewProxyEngine is constructor of NewProxyEngine
+// NewProxyEngine is constructor of NewProxyEngine
 func NewProxyEngine(target *url.URL, cred *Credential) *ProxyEngine {
 	return &ProxyEngine{
 		backend: target,
@@ -43,17 +43,17 @@ func NewProxyEngine(target *url.URL, cred *Credential) *ProxyEngine {
 	}
 }
 
-//ServeHTTP serves the incoming http requests
+// ServeHTTP serves the incoming http requests
 func (pe *ProxyEngine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	pe.engine.ServeHTTP(w, req)
 }
 
-//Overwrite the http requests
+// Overwrite the http requests
 func director(target *url.URL, cred *Credential, req *http.Request) {
-	//Closure
+	// Closure
 	targetQuery := target.RawQuery
 
-	//Overwrite the request URL to the target path
+	// Overwrite the request URL to the target path
 	req.URL.Scheme = target.Scheme
 	req.URL.Host = target.Host
 	req.URL.Path = singleJoiningSlash(target.Path, req.URL.Path)
@@ -66,28 +66,28 @@ func director(target *url.URL, cred *Credential, req *http.Request) {
 		req.Header.Set("User-Agent", agentHarbor)
 	}
 
-	//Add authentication header if it is existing
+	// Add authentication header if it is existing
 	if cred != nil {
 		req.SetBasicAuth(cred.Username, cred.Password)
 	}
 }
 
-//Modify the http response
+// Modify the http response
 func modifyResponse(res *http.Response) error {
-	//Accept cases
-	//Success or redirect
+	// Accept cases
+	// Success or redirect
 	if res.StatusCode >= http.StatusOK && res.StatusCode <= http.StatusTemporaryRedirect {
 		return nil
 	}
 
-	//Detect the 401 code, if it is,overwrite it to 500.
-	//We also re-write the error content to structural error object
+	// Detect the 401 code, if it is,overwrite it to 500.
+	// We also re-write the error content to structural error object
 	errorObj := make(map[string]string)
 	if res.StatusCode == http.StatusUnauthorized {
 		errorObj["error"] = "operation request from unauthorized source is rejected"
 		res.StatusCode = http.StatusInternalServerError
 	} else {
-		//Extract the error and wrap it into the error object
+		// Extract the error and wrap it into the error object
 		data, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			errorObj["error"] = fmt.Sprintf("%s: %s", res.Status, err.Error())
@@ -112,8 +112,8 @@ func modifyResponse(res *http.Response) error {
 	return nil
 }
 
-//Join the path
-//Copy from the go reverse proxy
+// Join the path
+// Copy from the go reverse proxy
 func singleJoiningSlash(a, b string) string {
 	aslash := strings.HasSuffix(a, "/")
 	bslash := strings.HasPrefix(b, "/")

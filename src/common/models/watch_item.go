@@ -29,7 +29,7 @@ type WatchItem struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
-//TableName ...
+// TableName ...
 func (w *WatchItem) TableName() string {
 	return "replication_immediate_trigger"
 }

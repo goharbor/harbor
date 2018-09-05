@@ -86,11 +86,11 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		return nil, auth.NewErrAuth(err.Error())
 	}
 
-	//Retrieve ldap related info in login to avoid too many traffic with LDAP server.
-	//Get group admin dn
+	// Retrieve ldap related info in login to avoid too many traffic with LDAP server.
+	// Get group admin dn
 	groupCfg, err := config.LDAPGroupConf()
 	groupAdminDN := strings.TrimSpace(groupCfg.LdapGroupAdminDN)
-	//Attach user group
+	// Attach user group
 	for _, groupDN := range ldapUsers[0].GroupDNList {
 
 		if len(groupAdminDN) > 0 && groupAdminDN == groupDN {
@@ -125,13 +125,13 @@ func (l *Auth) OnBoardUser(u *models.User) error {
 			u.Email = u.Username + "@placeholder.com"
 		}
 	}
-	u.Password = "12345678AbC" //Password is not kept in local db
-	u.Comment = "from LDAP."   //Source is from LDAP
+	u.Password = "12345678AbC" // Password is not kept in local db
+	u.Comment = "from LDAP."   // Source is from LDAP
 
 	return dao.OnBoardUser(u)
 }
 
-//SearchUser -- Search user in ldap
+// SearchUser -- Search user in ldap
 func (l *Auth) SearchUser(username string) (*models.User, error) {
 	var user models.User
 	ldapSession, err := ldapUtils.LoadSystemLdapConfig()
@@ -161,7 +161,7 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 	return &user, nil
 }
 
-//SearchGroup -- Search group in ldap authenticator, groupKey is LDAP group DN.
+// SearchGroup -- Search group in ldap authenticator, groupKey is LDAP group DN.
 func (l *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 	if _, err := goldap.ParseDN(groupKey); err != nil {
 		return nil, auth.ErrInvalidLDAPGroupDN
@@ -203,7 +203,7 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 		u.GroupName = altGroupName
 	}
 	u.GroupType = common.LdapGroupType
-	//Check duplicate LDAP DN in usergroup, if usergroup exist, return error
+	// Check duplicate LDAP DN in usergroup, if usergroup exist, return error
 	userGroupList, err := group.QueryUserGroup(models.UserGroup{LdapGroupDN: u.LdapGroupDN})
 	if err != nil {
 		return err
@@ -214,7 +214,7 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 	return group.OnBoardUserGroup(u, "LdapGroupDN", "GroupType")
 }
 
-//PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
+// PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
 func (l *Auth) PostAuthenticate(u *models.User) error {
 
 	exist, err := dao.UserExists(*u, "username")
@@ -235,7 +235,7 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 			return nil
 		}
 		u.UserID = dbUser.UserID
-		//If user has admin role already, do not overwrite by user info in DB.
+		// If user has admin role already, do not overwrite by user info in DB.
 		u.HasAdminRole = u.HasAdminRole || dbUser.HasAdminRole
 
 		if dbUser.Email != u.Email {

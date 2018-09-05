@@ -55,7 +55,7 @@ func (uga *UserGroupAPI) Prepare() {
 		return
 	}
 	uga.id = int(ugid)
-	//Common user can create/update, only harbor admin can delete user group.
+	// Common user can create/update, only harbor admin can delete user group.
 	if uga.Ctx.Input.IsDelete() && !uga.SecurityCtx.IsSysAdmin() {
 		uga.HandleForbidden(uga.SecurityCtx.GetUsername())
 		return
@@ -67,8 +67,8 @@ func (uga *UserGroupAPI) Get() {
 	ID := uga.id
 	uga.Data["json"] = make([]models.UserGroup, 0)
 	if ID == 0 {
-		//user group id not set, return all user group
-		query := models.UserGroup{GroupType: common.LdapGroupType} //Current query LDAP group only
+		// user group id not set, return all user group
+		query := models.UserGroup{GroupType: common.LdapGroupType} // Current query LDAP group only
 		userGroupList, err := group.QueryUserGroup(query)
 		if err != nil {
 			uga.HandleInternalServerError(fmt.Sprintf("Failed to query database for user group list, error: %v", err))
@@ -78,7 +78,7 @@ func (uga *UserGroupAPI) Get() {
 			uga.Data["json"] = userGroupList
 		}
 	} else {
-		//return a specific user group
+		// return a specific user group
 		userGroup, err := group.GetUserGroup(ID)
 		if userGroup == nil {
 			uga.HandleNotFound("The user group does not exist.")

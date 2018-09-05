@@ -38,7 +38,7 @@ func GetTotalOfAccessLogs(query *models.LogQueryParam) (int64, error) {
 	return logQueryConditions(query).Count()
 }
 
-//GetAccessLogs gets access logs according to different conditions
+// GetAccessLogs gets access logs according to different conditions
 func GetAccessLogs(query *models.LogQueryParam) ([]models.AccessLog, error) {
 	qs := logQueryConditions(query).OrderBy("-op_time")
 

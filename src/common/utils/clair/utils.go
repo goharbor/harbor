@@ -22,7 +22,7 @@ import (
 	"strings"
 )
 
-//var client = NewClient()
+// var client = NewClient()
 
 // ParseClairSev parse the severity of clair to Harbor's Severity type if the string is not recognized the value will be set to unknown.
 func ParseClairSev(clairSev string) models.Severity {
@@ -94,7 +94,7 @@ func transformVuln(clairVuln *models.ClairLayerEnvelope) (*models.ComponentsOver
 	}, overallSev
 }
 
-//TransformVuln is for running scanning job in both job service V1 and V2.
+// TransformVuln is for running scanning job in both job service V1 and V2.
 func TransformVuln(clairVuln *models.ClairLayerEnvelope) (*models.ComponentsOverview, models.Severity) {
 	return transformVuln(clairVuln)
 }

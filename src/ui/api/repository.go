@@ -727,7 +727,7 @@ func getManifest(client *registry.Repository,
 	return result, nil
 }
 
-//GetTopRepos returns the most populor repositories
+// GetTopRepos returns the most populor repositories
 func (ra *RepositoryAPI) GetTopRepos() {
 	count, err := ra.GetInt("count", 10)
 	if err != nil || count <= 0 {
@@ -802,7 +802,7 @@ func (ra *RepositoryAPI) Put() {
 	}
 }
 
-//GetSignatures returns signatures of a repository
+// GetSignatures returns signatures of a repository
 func (ra *RepositoryAPI) GetSignatures() {
 	repoName := ra.GetString(":splat")
 
@@ -838,7 +838,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 	ra.ServeJSON()
 }
 
-//ScanImage handles request POST /api/repository/$repository/tags/$tag/scan to trigger image scan manually.
+// ScanImage handles request POST /api/repository/$repository/tags/$tag/scan to trigger image scan manually.
 func (ra *RepositoryAPI) ScanImage() {
 	if !config.WithClair() {
 		log.Warningf("Harbor is not deployed with Clair, scan is disabled.")
@@ -933,7 +933,7 @@ func (ra *RepositoryAPI) ScanAll() {
 		return
 	}
 	projectIDStr := ra.GetString("project_id")
-	if len(projectIDStr) > 0 { //scan images under the project only.
+	if len(projectIDStr) > 0 { // scan images under the project only.
 		pid, err := strconv.ParseInt(projectIDStr, 10, 64)
 		if err != nil || pid <= 0 {
 			ra.HandleBadRequest(fmt.Sprintf("Invalid project_id %s", projectIDStr))
@@ -948,7 +948,7 @@ func (ra *RepositoryAPI) ScanAll() {
 			ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
 			return
 		}
-	} else { //scan all images in Harbor
+	} else { // scan all images in Harbor
 		if !ra.SecurityCtx.IsSysAdmin() {
 			ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 			return
@@ -1013,7 +1013,7 @@ func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, e
 	return true, digest, nil
 }
 
-//will return nil when it failed to get data.  The parm "tag" is for logging only.
+// will return nil when it failed to get data.  The parm "tag" is for logging only.
 func getScanOverview(digest string, tag string) *models.ImgScanOverview {
 	if len(digest) == 0 {
 		log.Debug("digest is nil")
@@ -1030,7 +1030,7 @@ func getScanOverview(digest string, tag string) *models.ImgScanOverview {
 	if err != nil {
 		log.Errorf("Failed to get scan job for id:%d, error: %v", data.JobID, err)
 		return nil
-	} else if job == nil { //job does not exist
+	} else if job == nil { // job does not exist
 		log.Errorf("The scan job with id: %d does not exist, returning nil", data.JobID)
 		return nil
 	}

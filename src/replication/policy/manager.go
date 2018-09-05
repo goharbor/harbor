@@ -34,15 +34,15 @@ type Manager interface {
 	RemovePolicy(int64) error
 }
 
-//DefaultManager provides replication policy CURD capabilities.
+// DefaultManager provides replication policy CURD capabilities.
 type DefaultManager struct{}
 
-//NewDefaultManager is the constructor of DefaultManager.
+// NewDefaultManager is the constructor of DefaultManager.
 func NewDefaultManager() *DefaultManager {
 	return &DefaultManager{}
 }
 
-//GetPolicies returns all the policies
+// GetPolicies returns all the policies
 func (m *DefaultManager) GetPolicies(query models.QueryParameter) (*models.ReplicationPolicyQueryResult, error) {
 	result := &models.ReplicationPolicyQueryResult{
 		Policies: []*models.ReplicationPolicy{},
@@ -70,7 +70,7 @@ func (m *DefaultManager) GetPolicies(query models.QueryParameter) (*models.Repli
 	return result, nil
 }
 
-//GetPolicy returns the policy with the specified ID
+// GetPolicy returns the policy with the specified ID
 func (m *DefaultManager) GetPolicy(policyID int64) (models.ReplicationPolicy, error) {
 	policy, err := dao.GetRepPolicy(policyID)
 	if err != nil {
@@ -168,9 +168,9 @@ func convertToPersistModel(policy models.ReplicationPolicy) (*persist_models.Rep
 	return ply, nil
 }
 
-//CreatePolicy creates a new policy with the provided data;
-//If creating failed, error will be returned;
-//If creating succeed, ID of the new created policy will be returned.
+// CreatePolicy creates a new policy with the provided data;
+// If creating failed, error will be returned;
+// If creating succeed, ID of the new created policy will be returned.
 func (m *DefaultManager) CreatePolicy(policy models.ReplicationPolicy) (int64, error) {
 	now := time.Now()
 	policy.CreationTime = now
@@ -182,8 +182,8 @@ func (m *DefaultManager) CreatePolicy(policy models.ReplicationPolicy) (int64, e
 	return dao.AddRepPolicy(*ply)
 }
 
-//UpdatePolicy updates the policy;
-//If updating failed, error will be returned.
+// UpdatePolicy updates the policy;
+// If updating failed, error will be returned.
 func (m *DefaultManager) UpdatePolicy(policy models.ReplicationPolicy) error {
 	policy.UpdateTime = time.Now()
 	ply, err := convertToPersistModel(policy)
@@ -193,8 +193,8 @@ func (m *DefaultManager) UpdatePolicy(policy models.ReplicationPolicy) error {
 	return dao.UpdateRepPolicy(ply)
 }
 
-//RemovePolicy removes the specified policy;
-//If removing failed, error will be returned.
+// RemovePolicy removes the specified policy;
+// If removing failed, error will be returned.
 func (m *DefaultManager) RemovePolicy(policyID int64) error {
 	return dao.DeleteRepPolicy(policyID)
 }

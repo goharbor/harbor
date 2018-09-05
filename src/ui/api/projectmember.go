@@ -90,7 +90,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 	pma.id = int(pmid)
 }
 
-//Get ...
+// Get ...
 func (pma *ProjectMemberAPI) Get() {
 	projectID := pma.project.ProjectID
 	queryMember := models.Member{}
@@ -108,7 +108,7 @@ func (pma *ProjectMemberAPI) Get() {
 		}
 
 	} else {
-		//return a specific member
+		// return a specific member
 		queryMember.ID = pma.id
 		memberList, err := project.GetProjectMember(queryMember)
 		if err != nil {
@@ -201,7 +201,7 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 		member.EntityID = userID
 	} else if len(request.MemberGroup.LdapGroupDN) > 0 {
 
-		//If groupname provided, use the provided groupname to name this group
+		// If groupname provided, use the provided groupname to name this group
 		groupID, err := auth.SearchAndOnBoardGroup(request.MemberGroup.LdapGroupDN, request.MemberGroup.GroupName)
 		if err != nil {
 			return 0, err
@@ -213,7 +213,7 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 		return 0, fmt.Errorf("Can not get valid member entity, request: %+v", request)
 	}
 
-	//Check if member already exist in current project
+	// Check if member already exist in current project
 	memberList, err := project.GetProjectMember(models.Member{
 		ProjectID:  member.ProjectID,
 		EntityID:   member.EntityID,
@@ -227,7 +227,7 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 	}
 
 	if member.Role < 1 || member.Role > 3 {
-		//Return invalid role error
+		// Return invalid role error
 		return 0, ErrInvalidRole
 	}
 	return project.AddProjectMember(member)

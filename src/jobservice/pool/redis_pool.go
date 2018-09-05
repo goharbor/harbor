@@ -28,13 +28,13 @@ const (
 	workerPoolStatusHealthy = "Healthy"
 	workerPoolStatusDead    = "Dead"
 
-	//Copy from period.enqueuer
+	// Copy from period.enqueuer
 	periodicEnqueuerHorizon = 4 * time.Minute
 
 	pingRedisMaxTimes = 10
 )
 
-//GoCraftWorkPool is the pool implementation based on gocraft/work powered by redis.
+// GoCraftWorkPool is the pool implementation based on gocraft/work powered by redis.
 type GoCraftWorkPool struct {
 	namespace     string
 	redisPool     *redis.Pool
@@ -47,17 +47,17 @@ type GoCraftWorkPool struct {
 	statsManager  opm.JobStatsManager
 	messageServer *MessageServer
 
-	//no need to sync as write once and then only read
-	//key is name of known job
-	//value is the type of known job
+	// no need to sync as write once and then only read
+	// key is name of known job
+	// value is the type of known job
 	knownJobs map[string]interface{}
 }
 
-//RedisPoolContext ...
-//We did not use this context to pass context info so far, just a placeholder.
+// RedisPoolContext ...
+// We did not use this context to pass context info so far, just a placeholder.
 type RedisPoolContext struct{}
 
-//NewGoCraftWorkPool is constructor of goCraftWorkPool.
+// NewGoCraftWorkPool is constructor of goCraftWorkPool.
 func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, redisPool *redis.Pool) *GoCraftWorkPool {
 	pool := work.NewWorkerPool(RedisPoolContext{}, workerCount, namespace, redisPool)
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
@@ -81,17 +81,17 @@ func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, re
 	}
 }
 
-//Start to serve
-//Unblock action
+// Start to serve
+// Unblock action
 func (gcwp *GoCraftWorkPool) Start() error {
 	if gcwp.redisPool == nil ||
 		gcwp.pool == nil ||
 		gcwp.context.SystemContext == nil {
-		//report and exit
+		// report and exit
 		return errors.New("Redis worker pool can not start as it's not correctly configured")
 	}
 
-	//Test the redis connection
+	// Test the redis connection
 	if err := gcwp.ping(); err != nil {
 		return err
 	}
@@ -105,13 +105,13 @@ func (gcwp *GoCraftWorkPool) Start() error {
 		defer func() {
 			gcwp.context.WG.Done()
 			if err != nil {
-				//report error
+				// report error
 				gcwp.context.ErrorChan <- err
-				done <- struct{}{} //exit immediately
+				done <- struct{}{} // exit immediately
 			}
 		}()
 
-		//Register callbacks
+		// Register callbacks
 		if err = gcwp.messageServer.Subscribe(period.EventSchedulePeriodicPolicy,
 			func(data interface{}) error {
 				return gcwp.handleSchedulePolicy(data)
@@ -139,7 +139,7 @@ func (gcwp *GoCraftWorkPool) Start() error {
 
 		startTimes := 0
 	START_MSG_SERVER:
-		//Start message server
+		// Start message server
 		if err = gcwp.messageServer.Start(); err != nil {
 			logger.Errorf("Message server exits with error: %s\n", err.Error())
 			if startTimes < msgServerRetryTimes {
@@ -159,11 +159,11 @@ func (gcwp *GoCraftWorkPool) Start() error {
 			gcwp.context.WG.Done()
 			gcwp.statsManager.Shutdown()
 		}()
-		//Start stats manager
-		//None-blocking
+		// Start stats manager
+		// None-blocking
 		gcwp.statsManager.Start()
 
-		//blocking call
+		// blocking call
 		gcwp.scheduler.Start()
 	}()
 
@@ -174,19 +174,19 @@ func (gcwp *GoCraftWorkPool) Start() error {
 			logger.Infof("Redis worker pool is stopped")
 		}()
 
-		//Clear dirty data before pool starting
+		// Clear dirty data before pool starting
 		if err := gcwp.sweeper.ClearOutdatedScheduledJobs(); err != nil {
-			//Only logged
+			// Only logged
 			logger.Errorf("Clear outdated data before pool starting failed with error:%s\n", err)
 		}
 
-		//Append middlewares
+		// Append middlewares
 		gcwp.pool.Middleware((*RedisPoolContext).logJob)
 
 		gcwp.pool.Start()
 		logger.Infof("Redis worker pool is started")
 
-		//Block on listening context and done signal
+		// Block on listening context and done signal
 		select {
 		case <-gcwp.context.SystemContext.Done():
 		case <-done:
@@ -198,35 +198,35 @@ func (gcwp *GoCraftWorkPool) Start() error {
 	return nil
 }
 
-//RegisterJob is used to register the job to the pool.
-//j is the type of job
+// RegisterJob is used to register the job to the pool.
+// j is the type of job
 func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 	if utils.IsEmptyStr(name) || j == nil {
 		return errors.New("job can not be registered with empty name or nil interface")
 	}
 
-	//j must be job.Interface
+	// j must be job.Interface
 	if _, ok := j.(job.Interface); !ok {
 		return errors.New("job must implement the job.Interface")
 	}
 
 	redisJob := NewRedisJob(j, gcwp.context, gcwp.statsManager)
 
-	//Get more info from j
+	// Get more info from j
 	theJ := Wrap(j)
 
 	gcwp.pool.JobWithOptions(name,
 		work.JobOptions{MaxFails: theJ.MaxFails()},
 		func(job *work.Job) error {
 			return redisJob.Run(job)
-		}, //Use generic handler to handle as we do not accept context with this way.
+		}, // Use generic handler to handle as we do not accept context with this way.
 	)
-	gcwp.knownJobs[name] = j //keep the name of registered jobs as known jobs for future validation
+	gcwp.knownJobs[name] = j // keep the name of registered jobs as known jobs for future validation
 
 	return nil
 }
 
-//RegisterJobs is used to register multiple jobs to pool.
+// RegisterJobs is used to register multiple jobs to pool.
 func (gcwp *GoCraftWorkPool) RegisterJobs(jobs map[string]interface{}) error {
 	if jobs == nil || len(jobs) == 0 {
 		return nil
@@ -241,14 +241,14 @@ func (gcwp *GoCraftWorkPool) RegisterJobs(jobs map[string]interface{}) error {
 	return nil
 }
 
-//Enqueue job
+// Enqueue job
 func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, isUnique bool) (models.JobStats, error) {
 	var (
 		j   *work.Job
 		err error
 	)
 
-	//Enqueue job
+	// Enqueue job
 	if isUnique {
 		j, err = gcwp.enqueuer.EnqueueUnique(jobName, params)
 	} else {
@@ -259,27 +259,27 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 		return models.JobStats{}, err
 	}
 
-	//avoid backend pool bug
+	// avoid backend pool bug
 	if j == nil {
 		return models.JobStats{}, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
 	}
 
 	res := generateResult(j, job.JobKindGeneric, isUnique)
-	//Save data with async way. Once it fails to do, let it escape
-	//The client method may help if the job is still in progress when get stats of this job
+	// Save data with async way. Once it fails to do, let it escape
+	// The client method may help if the job is still in progress when get stats of this job
 	gcwp.statsManager.Save(res)
 
 	return res, nil
 }
 
-//Schedule job
+// Schedule job
 func (gcwp *GoCraftWorkPool) Schedule(jobName string, params models.Parameters, runAfterSeconds uint64, isUnique bool) (models.JobStats, error) {
 	var (
 		j   *work.ScheduledJob
 		err error
 	)
 
-	//Enqueue job in
+	// Enqueue job in
 	if isUnique {
 		j, err = gcwp.enqueuer.EnqueueUniqueIn(jobName, int64(runAfterSeconds), params)
 	} else {
@@ -290,7 +290,7 @@ func (gcwp *GoCraftWorkPool) Schedule(jobName string, params models.Parameters, 
 		return models.JobStats{}, err
 	}
 
-	//avoid backend pool bug
+	// avoid backend pool bug
 	if j == nil {
 		return models.JobStats{}, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
 	}
@@ -298,14 +298,14 @@ func (gcwp *GoCraftWorkPool) Schedule(jobName string, params models.Parameters, 
 	res := generateResult(j.Job, job.JobKindScheduled, isUnique)
 	res.Stats.RunAt = j.RunAt
 
-	//As job is already scheduled, we should not block this call
-	//Once it fails to do, use client method to help get the status of the escape job
+	// As job is already scheduled, we should not block this call
+	// Once it fails to do, use client method to help get the status of the escape job
 	gcwp.statsManager.Save(res)
 
 	return res, nil
 }
 
-//PeriodicallyEnqueue job
+// PeriodicallyEnqueue job
 func (gcwp *GoCraftWorkPool) PeriodicallyEnqueue(jobName string, params models.Parameters, cronSetting string) (models.JobStats, error) {
 	id, nextRun, err := gcwp.scheduler.Schedule(jobName, params, cronSetting)
 	if err != nil {
@@ -331,7 +331,7 @@ func (gcwp *GoCraftWorkPool) PeriodicallyEnqueue(jobName string, params models.P
 	return res, nil
 }
 
-//GetJobStats return the job stats of the specified enqueued job.
+// GetJobStats return the job stats of the specified enqueued job.
 func (gcwp *GoCraftWorkPool) GetJobStats(jobID string) (models.JobStats, error) {
 	if utils.IsEmptyStr(jobID) {
 		return models.JobStats{}, errors.New("empty job ID")
@@ -340,19 +340,19 @@ func (gcwp *GoCraftWorkPool) GetJobStats(jobID string) (models.JobStats, error) 
 	return gcwp.statsManager.Retrieve(jobID)
 }
 
-//Stats of pool
+// Stats of pool
 func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
-	//Get the status of workerpool via client
+	// Get the status of workerpool via client
 	hbs, err := gcwp.client.WorkerPoolHeartbeats()
 	if err != nil {
 		return models.JobPoolStats{}, err
 	}
 
-	//Find the heartbeat of this pool via pid
+	// Find the heartbeat of this pool via pid
 	stats := make([]*models.JobPoolStatsData, 0)
 	for _, hb := range hbs {
 		if hb.HeartbeatAt == 0 {
-			continue //invalid ones
+			continue // invalid ones
 		}
 
 		wPoolStatus := workerPoolStatusHealthy
@@ -379,7 +379,7 @@ func (gcwp *GoCraftWorkPool) Stats() (models.JobPoolStats, error) {
 	}, nil
 }
 
-//StopJob will stop the job
+// StopJob will stop the job
 func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
@@ -394,13 +394,13 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 
 	switch theJob.Stats.JobKind {
 	case job.JobKindGeneric:
-		//Only running job can be stopped
+		// Only running job can be stopped
 		if theJob.Stats.Status != job.JobStatusRunning {
 			return fmt.Errorf("job '%s' is not a running job", jobID)
 		}
 	case job.JobKindScheduled:
-		//we need to delete the scheduled job in the queue if it is not running yet
-		//otherwise, nothing need to do
+		// we need to delete the scheduled job in the queue if it is not running yet
+		// otherwise, nothing need to do
 		if theJob.Stats.Status == job.JobStatusScheduled {
 			if err := gcwp.client.DeleteScheduledJob(theJob.Stats.RunAt, jobID); err != nil {
 				return err
@@ -408,15 +408,15 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 			needSetStopStatus = true
 		}
 	case job.JobKindPeriodic:
-		//firstly delete the periodic job policy
+		// firstly delete the periodic job policy
 		if err := gcwp.scheduler.UnSchedule(jobID); err != nil {
 			return err
 		}
-		//secondly we need try to delete the job instances scheduled for this periodic job, a try best action
-		gcwp.deleteScheduledJobsOfPeriodicPolicy(theJob.Stats.JobID, theJob.Stats.CronSpec) //ignore error as we have logged
-		//thirdly expire the job stats of this periodic job if exists
+		// secondly we need try to delete the job instances scheduled for this periodic job, a try best action
+		gcwp.deleteScheduledJobsOfPeriodicPolicy(theJob.Stats.JobID, theJob.Stats.CronSpec) // ignore error as we have logged
+		// thirdly expire the job stats of this periodic job if exists
 		if err := gcwp.statsManager.ExpirePeriodicJobStats(theJob.Stats.JobID); err != nil {
-			//only logged
+			// only logged
 			logger.Errorf("Expire the stats of job %s failed with error: %s\n", theJob.Stats.JobID, err)
 		}
 
@@ -425,17 +425,17 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 		break
 	}
 
-	//Check if the job has 'running' instance
+	// Check if the job has 'running' instance
 	if theJob.Stats.Status == job.JobStatusRunning {
-		//Send 'stop' ctl command to the running instance
+		// Send 'stop' ctl command to the running instance
 		if err := gcwp.statsManager.SendCommand(jobID, opm.CtlCommandStop); err != nil {
 			return err
 		}
-		//The job running instance will set the status to 'stopped'
+		// The job running instance will set the status to 'stopped'
 		needSetStopStatus = false
 	}
 
-	//If needed, update the job status to 'stopped'
+	// If needed, update the job status to 'stopped'
 	if needSetStopStatus {
 		gcwp.statsManager.SetJobStatus(jobID, job.JobStatusStopped)
 	}
@@ -443,7 +443,7 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 	return nil
 }
 
-//CancelJob will cancel the job
+// CancelJob will cancel the job
 func (gcwp *GoCraftWorkPool) CancelJob(jobID string) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
@@ -460,7 +460,7 @@ func (gcwp *GoCraftWorkPool) CancelJob(jobID string) error {
 			return fmt.Errorf("only running job can be cancelled, job '%s' seems not running now", theJob.Stats.JobID)
 		}
 
-		//Send 'cancel' ctl command to the running instance
+		// Send 'cancel' ctl command to the running instance
 		if err := gcwp.statsManager.SendCommand(jobID, opm.CtlCommandCancel); err != nil {
 			return err
 		}
@@ -472,7 +472,7 @@ func (gcwp *GoCraftWorkPool) CancelJob(jobID string) error {
 	return nil
 }
 
-//RetryJob retry the job
+// RetryJob retry the job
 func (gcwp *GoCraftWorkPool) RetryJob(jobID string) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
@@ -490,13 +490,13 @@ func (gcwp *GoCraftWorkPool) RetryJob(jobID string) error {
 	return gcwp.client.RetryDeadJob(theJob.Stats.DieAt, jobID)
 }
 
-//IsKnownJob ...
+// IsKnownJob ...
 func (gcwp *GoCraftWorkPool) IsKnownJob(name string) (interface{}, bool) {
 	v, ok := gcwp.knownJobs[name]
 	return v, ok
 }
 
-//ValidateJobParameters ...
+// ValidateJobParameters ...
 func (gcwp *GoCraftWorkPool) ValidateJobParameters(jobType interface{}, params map[string]interface{}) error {
 	if jobType == nil {
 		return errors.New("nil job type")
@@ -506,8 +506,8 @@ func (gcwp *GoCraftWorkPool) ValidateJobParameters(jobType interface{}, params m
 	return theJ.Validate(params)
 }
 
-//RegisterHook registers status hook url
-//sync method
+// RegisterHook registers status hook url
+// sync method
 func (gcwp *GoCraftWorkPool) RegisterHook(jobID string, hookURL string) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
@@ -531,12 +531,12 @@ func (gcwp *GoCraftWorkPool) deleteScheduledJobsOfPeriodicPolicy(policyID string
 	nowTime := time.Unix(now, 0)
 	horizon := nowTime.Add(periodicEnqueuerHorizon)
 
-	//try to delete more
-	//return the last error if occurred
+	// try to delete more
+	// return the last error if occurred
 	for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
 		epoch := t.Unix()
 		if err = gcwp.client.DeleteScheduledJob(epoch, policyID); err != nil {
-			//only logged
+			// only logged
 			logger.Warningf("delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
 		}
 	}
@@ -606,13 +606,13 @@ func (gcwp *GoCraftWorkPool) handleOPCommandFiring(data interface{}) error {
 	return gcwp.statsManager.SendCommand(jobID, command)
 }
 
-//log the job
+// log the job
 func (rpc *RedisPoolContext) logJob(job *work.Job, next work.NextMiddlewareFunc) error {
 	logger.Infof("Job incoming: %s:%s", job.Name, job.ID)
 	return next()
 }
 
-//Ping the redis server
+// Ping the redis server
 func (gcwp *GoCraftWorkPool) ping() error {
 	conn := gcwp.redisPool.Get()
 	defer conn.Close()
@@ -629,7 +629,7 @@ func (gcwp *GoCraftWorkPool) ping() error {
 	return fmt.Errorf("connect to redis server timeout: %s", err.Error())
 }
 
-//generate the job stats data
+// generate the job stats data
 func generateResult(j *work.Job, jobKind string, isUnique bool) models.JobStats {
 	if j == nil {
 		return models.JobStats{}

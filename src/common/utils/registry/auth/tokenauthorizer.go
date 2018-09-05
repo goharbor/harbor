@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	latency int = 10 //second, the network latency when token is received
+	latency int = 10 // second, the network latency when token is received
 	scheme      = "bearer"
 )
 
@@ -51,7 +51,7 @@ type tokenAuthorizer struct {
 
 // add token to the request
 func (t *tokenAuthorizer) Modify(req *http.Request) error {
-	//only handle requests sent to registry
+	// only handle requests sent to registry
 	goon, err := t.filterReq(req)
 	if err != nil {
 		return err

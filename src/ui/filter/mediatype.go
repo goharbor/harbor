@@ -23,8 +23,8 @@ import (
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 )
 
-//MediaTypeFilter filters the POST request, it returns 415 if the content type of the request
-//doesn't match the preset ones.
+// MediaTypeFilter filters the POST request, it returns 415 if the content type of the request
+// doesn't match the preset ones.
 func MediaTypeFilter(mediaType ...string) func(*beegoctx.Context) {
 	return func(ctx *beegoctx.Context) {
 		filterContentType(ctx.Request, ctx.ResponseWriter, mediaType...)

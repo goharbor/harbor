@@ -32,21 +32,21 @@ func initRouters() {
 	beego.SetStaticPath("/static", "./static")
 	beego.SetStaticPath("/i18n", "./static/i18n")
 
-	//Page Controllers:
+	// Page Controllers:
 	beego.Router("/", &controllers.IndexController{})
 	beego.Router("/harbor/*", &controllers.IndexController{})
 	beego.Router("/reset_password", &controllers.IndexController{})
 
 	// standalone
 	if !config.WithAdmiral() {
-		//Controller API:
+		// Controller API:
 		beego.Router("/login", &controllers.CommonController{}, "post:Login")
 		beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
 		beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
 		beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
 		beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
 
-		//API:
+		// API:
 		beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
 		beego.Router("/api/projects/", &api.ProjectAPI{}, "head:Head")
 		beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
@@ -120,7 +120,7 @@ func initRouters() {
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 
-	//external service that hosted on harbor process:
+	// external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})
 	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
 	beego.Router("/service/notifications/jobs/scan/:id([0-9]+)", &jobs.Handler{}, "post:HandleScan")
@@ -130,9 +130,9 @@ func initRouters() {
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 
-	//APIs for chart repository
+	// APIs for chart repository
 	if config.WithChartMuseum() {
-		//Charts are controlled under projects
+		// Charts are controlled under projects
 		chartRepositoryAPIType := &api.ChartRepositoryAPI{}
 		beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
 		beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
@@ -144,13 +144,13 @@ func initRouters() {
 		beego.Router("/api/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
 		beego.Router("/api/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
 
-		//Repository services
+		// Repository services
 		beego.Router("/chartrepo/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
 		beego.Router("/chartrepo/index.yaml", chartRepositoryAPIType, "get:GetIndex")
 		beego.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
 	}
 
-	//Error pages
+	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})
 
 }

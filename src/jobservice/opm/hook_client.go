@@ -22,15 +22,15 @@ const (
 	idleConnectionTimeout = 30 * time.Second
 )
 
-//DefaultHookClient is for default use.
+// DefaultHookClient is for default use.
 var DefaultHookClient = NewHookClient()
 
-//HookClient is used to post the related data to the interested parties.
+// HookClient is used to post the related data to the interested parties.
 type HookClient struct {
 	client *http.Client
 }
 
-//NewHookClient return the ptr of the new HookClient
+// NewHookClient return the ptr of the new HookClient
 func NewHookClient() *HookClient {
 	client := &http.Client{
 		Timeout: clientTimeout,
@@ -45,26 +45,26 @@ func NewHookClient() *HookClient {
 	}
 }
 
-//ReportStatus reports the status change info to the subscribed party.
-//The status includes 'checkin' info with format 'check_in:<message>'
+// ReportStatus reports the status change info to the subscribed party.
+// The status includes 'checkin' info with format 'check_in:<message>'
 func (hc *HookClient) ReportStatus(hookURL string, status models.JobStatusChange) error {
 	if utils.IsEmptyStr(hookURL) {
-		return errors.New("empty hook url") //do nothing
+		return errors.New("empty hook url") // do nothing
 	}
 
-	//Parse and validate URL
+	// Parse and validate URL
 	url, err := url.Parse(hookURL)
 	if err != nil {
 		return err
 	}
 
-	//Marshal data
+	// Marshal data
 	data, err := json.Marshal(&status)
 	if err != nil {
 		return err
 	}
 
-	//New post request
+	// New post request
 	req, err := http.NewRequest(http.MethodPost, url.String(), strings.NewReader(string(data)))
 	if err != nil {
 		return err
@@ -75,12 +75,12 @@ func (hc *HookClient) ReportStatus(hookURL string, status models.JobStatusChange
 		return err
 	}
 
-	defer res.Body.Close() //close connection for reuse
+	defer res.Body.Close() // close connection for reuse
 
-	//Should be 200
+	// Should be 200
 	if res.StatusCode != http.StatusOK {
 		if res.ContentLength > 0 {
-			//read error content and return
+			// read error content and return
 			dt, err := ioutil.ReadAll(res.Body)
 			if err != nil {
 				return err

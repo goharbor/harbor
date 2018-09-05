@@ -22,7 +22,7 @@ var (
 	}
 )
 
-//Test the no cache set scenario
+// Test the no cache set scenario
 func TestNoCache(t *testing.T) {
 	chartCache := NewChartCache(nil)
 	if chartCache == nil {
@@ -34,7 +34,7 @@ func TestNoCache(t *testing.T) {
 	}
 }
 
-//Test the in memory cache
+// Test the in memory cache
 func TestInMemoryCache(t *testing.T) {
 	chartCache := NewChartCache(&ChartCacheConfig{
 		DriverType: cacheDriverMem,
@@ -58,8 +58,8 @@ func TestInMemoryCache(t *testing.T) {
 	}
 }
 
-//Test redis cache
-//Failed to config redis cache and then use in memory instead
+// Test redis cache
+// Failed to config redis cache and then use in memory instead
 func TestRedisCache(t *testing.T) {
 	redisConfigV := make(map[string]string)
 	redisConfigV["key"] = cacheCollectionName

@@ -8,15 +8,15 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 )
 
-//JobLogger is an implementation of logger.Interface.
-//It used in the job to output logs to the logfile.
+// JobLogger is an implementation of logger.Interface.
+// It used in the job to output logs to the logfile.
 type JobLogger struct {
 	backendLogger *log.Logger
 	streamRef     *os.File
 }
 
-//New logger
-//nil might be returned
+// New logger
+// nil might be returned
 func New(logPath string, level string) logger.Interface {
 	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -31,8 +31,8 @@ func New(logPath string, level string) logger.Interface {
 	}
 }
 
-//Close the opened io stream
-//Implements logger.Closer interface
+// Close the opened io stream
+// Implements logger.Closer interface
 func (jl *JobLogger) Close() error {
 	if jl.streamRef != nil {
 		return jl.streamRef.Close()
@@ -41,52 +41,52 @@ func (jl *JobLogger) Close() error {
 	return nil
 }
 
-//Debug ...
+// Debug ...
 func (jl *JobLogger) Debug(v ...interface{}) {
 	jl.backendLogger.Debug(v...)
 }
 
-//Debugf with format
+// Debugf with format
 func (jl *JobLogger) Debugf(format string, v ...interface{}) {
 	jl.backendLogger.Debugf(format, v...)
 }
 
-//Info ...
+// Info ...
 func (jl *JobLogger) Info(v ...interface{}) {
 	jl.backendLogger.Info(v...)
 }
 
-//Infof with format
+// Infof with format
 func (jl *JobLogger) Infof(format string, v ...interface{}) {
 	jl.backendLogger.Infof(format, v...)
 }
 
-//Warning ...
+// Warning ...
 func (jl *JobLogger) Warning(v ...interface{}) {
 	jl.backendLogger.Warning(v...)
 }
 
-//Warningf with format
+// Warningf with format
 func (jl *JobLogger) Warningf(format string, v ...interface{}) {
 	jl.backendLogger.Warningf(format, v...)
 }
 
-//Error ...
+// Error ...
 func (jl *JobLogger) Error(v ...interface{}) {
 	jl.backendLogger.Error(v...)
 }
 
-//Errorf with format
+// Errorf with format
 func (jl *JobLogger) Errorf(format string, v ...interface{}) {
 	jl.backendLogger.Errorf(format, v...)
 }
 
-//Fatal error
+// Fatal error
 func (jl *JobLogger) Fatal(v ...interface{}) {
 	jl.backendLogger.Fatal(v...)
 }
 
-//Fatalf error
+// Fatalf error
 func (jl *JobLogger) Fatalf(format string, v ...interface{}) {
 	jl.backendLogger.Fatalf(format, v...)
 }

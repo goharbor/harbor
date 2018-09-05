@@ -23,10 +23,10 @@ import (
 	"github.com/goharbor/harbor/src/replication/event/notification"
 )
 
-//OnDeletionHandler implements the notification handler interface to handle image on push event.
+// OnDeletionHandler implements the notification handler interface to handle image on push event.
 type OnDeletionHandler struct{}
 
-//Handle implements the same method of notification handler interface
+// Handle implements the same method of notification handler interface
 func (oph *OnDeletionHandler) Handle(value interface{}) error {
 	if value == nil {
 		return errors.New("OnDeletionHandler can not handle nil value")
@@ -41,8 +41,8 @@ func (oph *OnDeletionHandler) Handle(value interface{}) error {
 	return checkAndTriggerReplication(notification.Image, models.RepOpDelete)
 }
 
-//IsStateful implements the same method of notification handler interface
+// IsStateful implements the same method of notification handler interface
 func (oph *OnDeletionHandler) IsStateful() bool {
-	//Statless
+	// Statless
 	return false
 }

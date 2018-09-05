@@ -15,22 +15,22 @@ import (
 )
 
 func main() {
-	//Get parameters
+	// Get parameters
 	configPath := flag.String("c", "", "Specify the yaml config file path")
 	flag.Parse()
 
-	//Missing config file
+	// Missing config file
 	if configPath == nil || utils.IsEmptyStr(*configPath) {
 		flag.Usage()
 		logger.Fatal("Config file should be specified")
 	}
 
-	//Load configurations
+	// Load configurations
 	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
 		logger.Fatalf("Failed to load configurations with error: %s\n", err)
 	}
 
-	//Set job context initializer
+	// Set job context initializer
 	runtime.JobService.SetJobContextInitializer(func(ctx *env.Context) (env.JobContext, error) {
 		secret := config.GetAuthSecret()
 		if utils.IsEmptyStr(secret) {
@@ -47,10 +47,10 @@ func main() {
 		return jobCtx, nil
 	})
 
-	//New logger for job service
+	// New logger for job service
 	sLogger := ilogger.NewServiceLogger(config.GetLogLevel())
 	logger.SetLogger(sLogger)
 
-	//Start
+	// Start
 	runtime.JobService.LoadAndRun()
 }

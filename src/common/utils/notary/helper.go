@@ -46,7 +46,7 @@ var (
 type Target struct {
 	Tag    string      `json:"tag"`
 	Hashes data.Hashes `json:"hashes"`
-	//TODO: update fields as needed.
+	// TODO: update fields as needed.
 }
 
 func init() {
@@ -102,7 +102,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]Target
 	} else if err != nil {
 		return res, err
 	}
-	//Remove root.json such that when remote repository is removed the local cache can't be reused.
+	// Remove root.json such that when remote repository is removed the local cache can't be reused.
 	rootJSON := path.Join(notaryCachePath, "tuf", fqRepo, "metadata/root.json")
 	rmErr := os.Remove(rootJSON)
 	if rmErr != nil {

@@ -17,7 +17,7 @@ type Client interface {
 	SubmitJob(*models.JobData) (string, error)
 	GetJobLog(uuid string) ([]byte, error)
 	PostAction(uuid, action string) error
-	//TODO Redirect joblog when we see there's memory issue.
+	// TODO Redirect joblog when we see there's memory issue.
 }
 
 // DefaultClient is the default implementation of Client interface
@@ -41,7 +41,7 @@ func NewDefaultClient(endpoint, secret string) *DefaultClient {
 	}
 }
 
-//SubmitJob call jobserivce API to submit a job and returns the job's UUID.
+// SubmitJob call jobserivce API to submit a job and returns the job's UUID.
 func (d *DefaultClient) SubmitJob(jd *models.JobData) (string, error) {
 	url := d.endpoint + "/api/v1/jobs"
 	jq := models.JobRequest{
@@ -78,7 +78,7 @@ func (d *DefaultClient) SubmitJob(jd *models.JobData) (string, error) {
 	return stats.Stats.JobID, nil
 }
 
-//GetJobLog call jobserivce API to get the log of a job.  It only accepts the UUID of the job
+// GetJobLog call jobserivce API to get the log of a job.  It only accepts the UUID of the job
 func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 	url := d.endpoint + "/api/v1/jobs/" + uuid + "/log"
 	req, err := http.NewRequest(http.MethodGet, url, nil)

@@ -8,7 +8,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
-//Wrap returns a new job.Interface based on the wrapped job handler reference.
+// Wrap returns a new job.Interface based on the wrapped job handler reference.
 func Wrap(j interface{}) job.Interface {
 	theType := reflect.TypeOf(j)
 
@@ -16,7 +16,7 @@ func Wrap(j interface{}) job.Interface {
 		theType = theType.Elem()
 	}
 
-	//Crate new
+	// Crate new
 	v := reflect.New(theType).Elem()
 	return v.Addr().Interface().(job.Interface)
 }

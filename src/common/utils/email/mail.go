@@ -120,7 +120,7 @@ func newClient(addr, identity, username, password string,
 		return nil, err
 	}
 
-	//try to swith to SSL/TLS
+	// try to swith to SSL/TLS
 	if !tls {
 		if ok, _ := client.Extension("STARTTLS"); ok {
 			log.Debugf("switching the connection with %s to SSL/TLS ...", addr)

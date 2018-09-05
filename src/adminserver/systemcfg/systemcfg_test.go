@@ -199,7 +199,7 @@ func TestLoadFromEnvWithReloadConfigSkipPattern(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to load From env: %v", err)
 	}
-	assert.Equal(t, "ldap_url", cfgsReload[common.LDAPURL]) //env value ignored
+	assert.Equal(t, "ldap_url", cfgsReload[common.LDAPURL]) // env value ignored
 
 	os.Clearenv()
 
