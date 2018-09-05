@@ -268,7 +268,7 @@ PART 2. VIRTUAL APPLIANCE: APPLICATION LAYER
 
 SECTION 1: Apache License, V2.0
 
-   >>> Clair-2.0.4
+   >>> Clair-2.0.5
    >>> docker/distribution-2.6.0
    >>> docker/notary-c04e3e6d05881045def11167c51d4a8baa34899a
    >>> opencontainers/go-digest-aa2ec055abd10d26d539eb630a92241b781ce4bc
@@ -5260,18 +5260,18 @@ History and License
 History of the software
 =======================
 Python was created in the early 1990s by Guido van Rossum at Stichting
-Mathematisch Centrum (CWI, see http:www.cwi.nl/) in the Netherlands as a
+Mathematisch Centrum (CWI, see http://www.cwi.nl/) in the Netherlands as a
 successor of a language called ABC.  Guido remains Python's principal author,
 although it includes many contributions from others.
 
 In 1995, Guido continued his work on Python at the Corporation for National
-Research Initiatives (CNRI, see http:www.cnri.reston.va.us/) in Reston,
+Research Initiatives (CNRI, see http://www.cnri.reston.va.us/) in Reston,
 Virginia where he released several versions of the software.
 
 In May 2000, Guido and the Python core development team moved to BeOpen.com to
 form the BeOpen PythonLabs team.  In October of the same year, the PythonLabs
 team moved to Digital Creations (now Zope Corporation; see
-http:www.zope.com/).  In 2001, the Python Software Foundation (PSF, see
+http://www.zope.com/).  In 2001, the Python Software Foundation (PSF, see
 https:www.python.org/psf/) was formed, a non-profit organization created
 specifically to own Python-related Intellectual Property.  Zope Corporation is a
 sponsoring member of the PSF.
@@ -5405,7 +5405,7 @@ agency, partnership, or joint venture between BeOpen and Licensee.  This License
 Agreement does not grant permission to use BeOpen trademarks or trade names in a
 trademark sense to endorse or promote products or services of Licensee, or any
 third party.  As an exception, the "BeOpen Python" logos available at
-http:www.pythonlabs.com/logos.html may be used according to the permissions
+http://www.pythonlabs.com/logos.html may be used according to the permissions
 granted on that web page.
 
 . By copying, installing or otherwise using the software, Licensee agrees to be
@@ -5505,7 +5505,7 @@ Mersenne Twister
 ----------------
 
 The :mod:`_random` module includes code based on a download from
-http:www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html. The following are
+http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html. The following are
 the verbatim comments from the original code::
 
 A C-program for MT19937, with initialization improved 2002/1/26.
@@ -5545,14 +5545,14 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Any feedback is very welcome.
-http:www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
+http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
 email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 
 Sockets
 -------
 The :mod:`socket` module uses the functions, :func:`getaddrinfo`, and
 :func:`getnameinfo`, which are coded in separate source files from the WIDE
-Project, http:www.wide.ad.jp/. ::
+Project, http://www.wide.ad.jp/. ::
 
 Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
 All rights reserved.
@@ -5650,7 +5650,7 @@ Independent implementation of MD5 (RFC 1321).
 
 This code implements the MD5 Algorithm defined in RFC 1321, whose
 text is available at
-http:www.ietf.org/rfc/rfc1321.txt
+http://www.ietf.org/rfc/rfc1321.txt
 The code is derived from the text of the RFC, including the test suite
 (section A.5) but excluding the rest of Appendix A.  It does not include
 any code or documentation that is identified in the RFC as being
@@ -5867,7 +5867,7 @@ strtod and dtoa
 The file :file:`Python/dtoa.c`, which supplies C functions dtoa and
 strtod for conversion of C doubles to and from strings, is derived
 from the file of the same name by David M. Gay, currently available
-from http:www.netlib.org/fp/.  The original file, as retrieved on
+from http://www.netlib.org/fp/.  The original file, as retrieved on
 March 16, 2009, contains the following copyright and licensing
 notice::
 
@@ -5925,7 +5925,7 @@ distribution.
 3. All advertising materials mentioning features or use of this
 software must display the following acknowledgment:
 "This product includes software developed by the OpenSSL Project
-for use in the OpenSSL Toolkit. (http:www.openssl.org/)"
+for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
 
 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
 endorse or promote products derived from this software without
@@ -5939,7 +5939,7 @@ permission of the OpenSSL Project.
 6. Redistributions of any form whatsoever must retain the following
 acknowledgment:
 "This product includes software developed by the OpenSSL Project
-for use in the OpenSSL Toolkit (http:www.openssl.org/)"
+for use in the OpenSSL Toolkit (http://www.openssl.org/)"
 
 THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
 EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -6114,7 +6114,7 @@ Version: MPL 1.1/GPL 2.0/LGPL 2.1
 The contents of this file are subject to the Mozilla Public License Version
 1.1 (the "License"); you may not use this file except in compliance with
 the License. You may obtain a copy of the License at
-http:www.mozilla.org/MPL/
+http://www.mozilla.org/MPL/
 
 Software distributed under the License is distributed on an "AS IS" basis,
 WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
@@ -6231,7 +6231,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; see the file COPYING3.  If not see
-<http:www.gnu.org/licenses/>.
+<http://www.gnu.org/licenses/>.
 
 > MIT
 
@@ -6240,7 +6240,7 @@ Python-2.7.13.tar.xz\Python-2.7.13.tar\Python-2.7.13\Lib\wsgiref\validate.py
 [PLEASE NOTE:  VMWARE, INC. ELECTS TO USE AND DISTRIBUTE THIS COMPONENT UNDER THE TERMS OF THE MIT LICENSE. THE ORIGINAL LICENSE TERMS ARE REPRODUCED BELOW ONLY AS A REFERENCE.]
 
 (c) 2005 Ian Bicking and contributors; written for Paste (http:pythonpaste.org)
-Licensed under the MIT license: http:www.opensource.org/licenses/mit-license.php
+Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 Also licenced under the Apache License, 2.0: http:opensource.org/licenses/apache2.0.php
 Licensed to PSF under a Contributor Agreement
 
@@ -6290,7 +6290,7 @@ You can choose between two licenses when using this package:
 2) PSF license for Python 2.2
 
 The robots.txt Exclusion Protocol is implemented as specified in
-http:www.robotstxt.org/norobots-rfc.txt
+http://www.robotstxt.org/norobots-rfc.txt
 
 > Apache 2.0
 
@@ -6307,7 +6307,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http:www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -6372,18 +6372,18 @@ History and License
 History of the software
 =======================
 Python was created in the early 1990s by Guido van Rossum at Stichting
-Mathematisch Centrum (CWI, see http:www.cwi.nl/) in the Netherlands as a
+Mathematisch Centrum (CWI, see http://www.cwi.nl/) in the Netherlands as a
 successor of a language called ABC.  Guido remains Python's principal author,
 although it includes many contributions from others.
 
 In 1995, Guido continued his work on Python at the Corporation for National
-Research Initiatives (CNRI, see http:www.cnri.reston.va.us/) in Reston,
+Research Initiatives (CNRI, see http://www.cnri.reston.va.us/) in Reston,
 Virginia where he released several versions of the software.
 
 In May 2000, Guido and the Python core development team moved to BeOpen.com to
 form the BeOpen PythonLabs team.  In October of the same year, the PythonLabs
 team moved to Digital Creations (now Zope Corporation; see
-http:www.zope.com/).  In 2001, the Python Software Foundation (PSF, see
+http://www.zope.com/).  In 2001, the Python Software Foundation (PSF, see
 https:www.python.org/psf/) was formed, a non-profit organization created
 specifically to own Python-related Intellectual Property.  Zope Corporation is a
 sponsoring member of the PSF.
@@ -6517,7 +6517,7 @@ agency, partnership, or joint venture between BeOpen and Licensee.  This License
 Agreement does not grant permission to use BeOpen trademarks or trade names in a
 trademark sense to endorse or promote products or services of Licensee, or any
 third party.  As an exception, the "BeOpen Python" logos available at
-http:www.pythonlabs.com/logos.html may be used according to the permissions
+http://www.pythonlabs.com/logos.html may be used according to the permissions
 granted on that web page.
 
 . By copying, installing or otherwise using the software, Licensee agrees to be
@@ -6617,7 +6617,7 @@ Mersenne Twister
 ----------------
 
 The :mod:`_random` module includes code based on a download from
-http:www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html. The following are
+http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html. The following are
 the verbatim comments from the original code::
 
 A C-program for MT19937, with initialization improved 2002/1/26.
@@ -6657,14 +6657,14 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Any feedback is very welcome.
-http:www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
+http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
 email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 
 Sockets
 -------
 The :mod:`socket` module uses the functions, :func:`getaddrinfo`, and
 :func:`getnameinfo`, which are coded in separate source files from the WIDE
-Project, http:www.wide.ad.jp/. ::
+Project, http://www.wide.ad.jp/. ::
 
 Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
 All rights reserved.
@@ -6762,7 +6762,7 @@ Independent implementation of MD5 (RFC 1321).
 
 This code implements the MD5 Algorithm defined in RFC 1321, whose
 text is available at
-http:www.ietf.org/rfc/rfc1321.txt
+http://www.ietf.org/rfc/rfc1321.txt
 The code is derived from the text of the RFC, including the test suite
 (section A.5) but excluding the rest of Appendix A.  It does not include
 any code or documentation that is identified in the RFC as being
@@ -6979,7 +6979,7 @@ strtod and dtoa
 The file :file:`Python/dtoa.c`, which supplies C functions dtoa and
 strtod for conversion of C doubles to and from strings, is derived
 from the file of the same name by David M. Gay, currently available
-from http:www.netlib.org/fp/.  The original file, as retrieved on
+from http://www.netlib.org/fp/.  The original file, as retrieved on
 March 16, 2009, contains the following copyright and licensing
 notice::
 
@@ -7037,7 +7037,7 @@ distribution.
 3. All advertising materials mentioning features or use of this
 software must display the following acknowledgment:
 "This product includes software developed by the OpenSSL Project
-for use in the OpenSSL Toolkit. (http:www.openssl.org/)"
+for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
 
 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
 endorse or promote products derived from this software without
@@ -7051,7 +7051,7 @@ permission of the OpenSSL Project.
 6. Redistributions of any form whatsoever must retain the following
 acknowledgment:
 "This product includes software developed by the OpenSSL Project
-for use in the OpenSSL Toolkit (http:www.openssl.org/)"
+for use in the OpenSSL Toolkit (http://www.openssl.org/)"
 
 THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
 EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -7226,7 +7226,7 @@ Version: MPL 1.1/GPL 2.0/LGPL 2.1
 The contents of this file are subject to the Mozilla Public License Version
 1.1 (the "License"); you may not use this file except in compliance with
 the License. You may obtain a copy of the License at
-http:www.mozilla.org/MPL/
+http://www.mozilla.org/MPL/
 
 Software distributed under the License is distributed on an "AS IS" basis,
 WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
@@ -7343,7 +7343,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; see the file COPYING3.  If not see
-<http:www.gnu.org/licenses/>.
+<http://www.gnu.org/licenses/>.
 
 > MIT
 
@@ -7352,7 +7352,7 @@ Python-2.7.13.tar.xz\Python-2.7.13.tar\Python-2.7.13\Lib\wsgiref\validate.py
 [PLEASE NOTE:  VMWARE, INC. ELECTS TO USE AND DISTRIBUTE THIS COMPONENT UNDER THE TERMS OF THE MIT LICENSE. THE ORIGINAL LICENSE TERMS ARE REPRODUCED BELOW ONLY AS A REFERENCE.]
 
 (c) 2005 Ian Bicking and contributors; written for Paste (http:pythonpaste.org)
-Licensed under the MIT license: http:www.opensource.org/licenses/mit-license.php
+Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 Also licenced under the Apache License, 2.0: http:opensource.org/licenses/apache2.0.php
 Licensed to PSF under a Contributor Agreement
 
@@ -7402,7 +7402,7 @@ You can choose between two licenses when using this package:
 2) PSF license for Python 2.2
 
 The robots.txt Exclusion Protocol is implemented as specified in
-http:www.robotstxt.org/norobots-rfc.txt
+http://www.robotstxt.org/norobots-rfc.txt
 
 > Apache 2.0
 
@@ -7419,7 +7419,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http:www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -9606,7 +9606,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along
-with this program; if not, see <http:www.gnu.org/licenses/>.
+with this program; if not, see <http://www.gnu.org/licenses/>.
 
 ADDITIONAL LICENSE INFORMATION:
 
@@ -9692,7 +9692,7 @@ Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public
 License along with the GNU C Library; if not, see
-<http:www.gnu.org/licenses/>.
+<http://www.gnu.org/licenses/>.
 
 > ISC (MIT STYLE)
 
@@ -9737,7 +9737,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, see <http:www.gnu.org/licenses/>.
+along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 > APACHE 2.0
 
@@ -9749,7 +9749,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http:www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -9824,7 +9824,7 @@ and other copyright owners as documented in JGit's IP log.
 This program and the accompanying materials are made available
 under the terms of the Eclipse Distribution License v1.0 which
 accompanies this distribution, is reproduced below, and is
-available at http:www.eclipse.org/org/documents/edl-v10.php
+available at http://www.eclipse.org/org/documents/edl-v10.php
 
 All rights reserved.
 
@@ -16873,7 +16873,7 @@ Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http:www.gnu.org/licenses/>.  /
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  /
 
 / As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -17049,7 +17049,7 @@ Copyright (C) 1992-2018 Free Software Foundation, Inc.
    You should have received a copy of the GNU General Public License and
    a copy of the GCC Runtime Library Exception along with this program;
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-   <http:www.gnu.org/licenses/>.  /
+   <http://www.gnu.org/licenses/>.  /
 
 > MIT
 
@@ -17311,7 +17311,7 @@ Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http:www.gnu.org/licenses/>.  /
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  /
 
 / As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -17487,7 +17487,7 @@ Copyright (C) 1992-2018 Free Software Foundation, Inc.
    You should have received a copy of the GNU General Public License and
    a copy of the GCC Runtime Library Exception along with this program;
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-   <http:www.gnu.org/licenses/>.  /
+   <http://www.gnu.org/licenses/>.  /
 
 > MIT
 
@@ -23278,7 +23278,7 @@ Under "MPL/GPL" license.
 Apache License, V2.0 is applicable to the following component(s).
 
 
->>> Clair-2.0.4
+>>> Clair-2.0.5
 
 CoreOS Project
 Copyright 2015 CoreOS, Inc
@@ -23302,9 +23302,9 @@ limitations under the License.
 
 ADDITIONAL LICENSE INFORMATION:
 
-> MIT STYLE
+> MIT-Style
 
-clair-2.0.4.tar.gz\clair-2.0.4.tar\clair-2.0.4\DCO
+clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\DCO
 
 Developer Certificate of Origin
 Version 1.1
@@ -23343,9 +23343,9 @@ personal information I submit with it, including my sign-off) is
 maintained indefinitely and may be redistributed consistent with
 this project or the open source license(s) involved.
 
->MIT
+> MIT
 
-clair-2.0.4.tar.gz\clair-2.0.4.tar\clair-2.0.4\vendor\github.com\beorn7\perks\LICENSE
+clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\vendor\github.com\beorn7\perks\LICENSE
 
 Copyright (C) 2013 Blake Mizerany
 
@@ -23368,9 +23368,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
->BSD-2
+> BSD-2 Clause
 
-clair-2.0.4.tar.gz\clair-2.0.4.tar\clair-2.0.4\vendor\github.com\guregu\null\LICENSE
+clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\vendor\github.com\guregu\null\LICENSE
 
 Copyright (c) 2014, Greg Roseberry
 All rights reserved.
@@ -23383,27 +23383,29 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
->MPL 2.0
 
-clair-2.0.4.tar.gz\clair-2.0.4.tar\clair-2.0.4\vendor\github.com\hashicorp\golang-lru\LICENSE
+> MPL 2.0
 
-LICENSE: MPL 2.0
+clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\vendor\github.com\hashicorp\golang-lru\LICENSE
 
->BSD-3
+LICESNSE : MPL 2.0
 
-clair-2.0.4.tar.gz\clair-2.0.4.tar\clair-2.0.4\vendor\github.com\julienschmidt\httprouter\LICENSE
+
+> BSD-3 Clause
+
+clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\vendor\github.com\julienschmidt\httprouter\LICENSE
 
 Copyright (c) 2013 Julien Schmidt. All rights reserved.
 
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
-Redistributions of source code must retain the above copyright
+* Redistributions of source code must retain the above copyright
 notice, this list of conditions and the following disclaimer.
-Redistributions in binary form must reproduce the above copyright
+* Redistributions in binary form must reproduce the above copyright
 notice, this list of conditions and the following disclaimer in the
 documentation and/or other materials provided with the distribution.
-The names of the contributors may not be used to endorse or promote
+* The names of the contributors may not be used to endorse or promote
 products derived from this software without specific prior written
 permission.
 
@@ -23417,63 +23419,6 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
->BSD-3 Clause with Google patent grant
-
-clair-2.0.4.tar.gz\clair-2.0.4.tar\clair-2.0.4\vendor\golang.org\x\sys\LICENSE
-clair-2.0.4.tar.gz\clair-2.0.4.tar\clair-2.0.4\vendor\golang.org\x\sys\PATENTS
-
-Copyright (c) 2009 The Go Authors. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-Redistributions in binary form must reproduce the above
-copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with the
-distribution.
-Neither the name of Google Inc. nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-Additional IP Rights Grant (Patents)
-
-"This implementation" means the copyrightable works distributed by
-Google as part of the Go project.
-
-Google hereby grants to You a perpetual, worldwide, non-exclusive,
-no-charge, royalty-free, irrevocable (except as stated in this section)
-patent license to make, have made, use, offer to sell, sell, import,
-transfer and otherwise run, modify and propagate the contents of this
-implementation of Go, where such license applies only to those patent
-claims, both currently owned or controlled by Google and acquired in
-the future, licensable by Google that are necessarily infringed by this
-implementation of Go.  This grant does not include claims that would be
-infringed only as a consequence of further modification of this
-implementation.  If you or your agent or exclusive licensee institute or
-order or agree to the institution of patent litigation against any
-entity (including a cross-claim or counterclaim in a lawsuit) alleging
-that this implementation of Go or any code incorporated within this
-implementation of Go constitutes direct or contributory patent
-infringement, or inducement of patent infringement, then any patent
-rights granted to you under this License for this implementation of Go
-shall terminate as of the date such litigation is filed.
-
 
 >>> docker/distribution-2.6.0
 
@@ -23809,7 +23754,7 @@ Copyright 2014 Google Inc. All rights reserved.
  you may not use this file except in compliance with the License.
      You may obtain a copy of the License at
 
- http:www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
@@ -23825,7 +23770,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http:www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -23974,7 +23919,7 @@ Licensed under the Apache License, Version 2.0 (the "License"): you may
 not use this file except in compliance with the License. You may obtain
 a copy of the License at
 
-http:www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -24331,13 +24276,13 @@ Copyright Â© 2014 Graeme Yeates <yeatesgraeme@gmail.com>
 
 This work is free. You can redistribute it and/or modify it under the
 terms of the Do What The Fuck You Want To Public License, Version 2,
-as published by Sam Hocevar. See http:www.wtfpl.net/ for more details.
+as published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
 
 This program is free software. It comes without any warranty, to
 the extent permitted by applicable law. You can redistribute it
 and/or modify it under the terms of the Do What The Fuck You Want
 To Public License, Version 2, as published by Sam Hocevar. See
-http:www.wtfpl.net/ for more details.
+http://www.wtfpl.net/ for more details.
 
 ADDITIONAL LICENSE INFORMATION:
 
@@ -31365,4 +31310,4 @@ All such requests should clearly specify: OPEN SOURCE FILES REQUEST, Attention G
 mail a copy of the Source Files to you on a CD or equivalent physical medium. This offer to obtain a copy of the Source
 Files is valid for three years from the date you acquired this software product.
 
-[HARBOR160GASJ073018]
+[HARBOR160GAVR090518]
