@@ -20,15 +20,28 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"k8s.io/helm/cmd/helm/search"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	member "github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	helm_repo "k8s.io/helm/pkg/repo"
 )
 
 func TestSearch(t *testing.T) {
 	fmt.Println("Testing Search(SearchGet) API")
+	//Use mock chart search handler
+	searchHandler = func(string, []string) ([]*search.Result, error) {
+		results := []*search.Result{}
+		results = append(results, &search.Result{
+			Name:  "library/harbor",
+			Score: 0,
+			Chart: &helm_repo.ChartVersion{},
+		})
+
+		return results, nil
+	}
 	// create a public project named "search"
 	projectID1, err := dao.AddProject(models.Project{
 		Name:    "search",
@@ -164,4 +177,22 @@ func TestSearch(t *testing.T) {
 	assert.True(t, exist)
 	_, exist = repositories["search-2/hello-world"]
 	assert.True(t, exist)
+
+	//Search chart
+	err = handleAndParse(&testingRequest{
+		method: http.MethodGet,
+		url:    "/api/search",
+		queryStruct: struct {
+			Keyword string `url:"q"`
+		}{
+			Keyword: "harbor",
+		},
+		credential: sysAdmin,
+	}, result)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(result.Chart))
+	require.Equal(t, "library/harbor", result.Chart[0].Name)
+
+	//Restore chart search handler
+	searchHandler = nil
 }
