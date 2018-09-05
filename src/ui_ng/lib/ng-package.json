@@ -5,8 +5,7 @@
     "externals": {
       "@ngx-translate/core": "ngx-translate-core",
       "@ngx-translate/core/index": "ngx-translate-core",
-      "ngx-markdown": "ngx-markdown",
-      "rxjs-compat":"rxjs-compat"
+      "ngx-markdown": "ngx-markdown"
      }
   }
 }
