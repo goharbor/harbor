@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/utils"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -33,7 +34,7 @@ func AddUserGroup(userGroup models.UserGroup) (int, error) {
 	var id int
 	now := time.Now()
 
-	err := o.Raw(sql, userGroup.GroupName, userGroup.GroupType, userGroup.LdapGroupDN, now, now).QueryRow(&id)
+	err := o.Raw(sql, userGroup.GroupName, userGroup.GroupType, utils.TrimLower(userGroup.LdapGroupDN), now, now).QueryRow(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -59,7 +60,7 @@ func QueryUserGroup(query models.UserGroup) ([]*models.UserGroup, error) {
 
 	if len(query.LdapGroupDN) != 0 {
 		sql += ` and ldap_group_dn = ? `
-		sqlParam = append(sqlParam, query.LdapGroupDN)
+		sqlParam = append(sqlParam, utils.TrimLower(query.LdapGroupDN))
 	}
 	if query.ID != 0 {
 		sql += ` and id = ? `
