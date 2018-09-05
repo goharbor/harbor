@@ -54,7 +54,7 @@ export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig
             loader: {
                 provide: TranslateLoader,
                 useFactory: (GeneralTranslatorLoader),
-                deps: [Http, SERVICE_CONFIG]
+                deps: [HttpClient, SERVICE_CONFIG]
             },
             missingTranslationHandler: {
                 provide: MissingTranslationHandler,
