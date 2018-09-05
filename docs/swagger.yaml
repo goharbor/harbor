@@ -21,15 +21,11 @@ security:
 paths:
   /search:
     get:
-      summary: Search for projects and repositories
+      summary: Search for projects, repositories and helm charts
       description: >
-        The Search endpoint returns information about the projects and
-        repositories
-
-        offered at public status or related to the current logged in user. The
-
-        response includes the project and repository list in a proper
-
+        The Search endpoint returns information about the projects ,repositories 
+        and helm charts offered at public status or related to the current logged in user. The
+        response includes the project, repository list and charts in a proper
         display order.
       parameters:
         - name: q
@@ -3075,16 +3071,21 @@ definitions:
   Search:
     type: object
     properties:
-      projects:
+      project:
         description: Search results of the projects that matched the filter keywords.
         type: array
         items:
           $ref: '#/definitions/Project'
-      repositories:
+      repository:
         description: Search results of the repositories that matched the filter keywords.
         type: array
         items:
           $ref: '#/definitions/SearchRepository'
+      chart:
+        description: Search results of the charts that macthed the filter keywords.
+        type: array
+        items:
+          $ref: '#/definitions/SearchResult'
   SearchRepository:
     type: object
     properties:
@@ -4481,6 +4482,19 @@ definitions:
         type: integer
         format: int64
         description: 'The time offset with the UTC 00:00 in seconds.'
+  SearchResult:
+    type: object
+    description: The chart search result item
+    properties:
+      name:
+        type: string
+        description: The chart name with repo name
+      score:
+        type: integer
+        description: The matched level
+      chart:
+        $ref: '#/definitions/ChartVersion'
+
         
         
     

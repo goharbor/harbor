@@ -25,7 +25,12 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	uiutils "github.com/goharbor/harbor/src/ui/utils"
+	"k8s.io/helm/cmd/helm/search"
 )
+
+type chartSearchHandler func(string, []string) ([]*search.Result, error)
+
+var searchHandler chartSearchHandler
 
 // SearchAPI handles requesst to /api/search
 type SearchAPI struct {
@@ -35,6 +40,7 @@ type SearchAPI struct {
 type searchResult struct {
 	Project    []*models.Project        `json:"project"`
 	Repository []map[string]interface{} `json:"repository"`
+	Chart      []*search.Result
 }
 
 // Get ...
@@ -80,7 +86,10 @@ func (s *SearchAPI) Get() {
 	}
 
 	projectResult := []*models.Project{}
+	proNames := []string{}
 	for _, p := range projects {
+		proNames = append(proNames, p.Name)
+
 		if len(keyword) > 0 && !strings.Contains(p.Name, keyword) {
 			continue
 		}
@@ -115,7 +124,21 @@ func (s *SearchAPI) Get() {
 		s.CustomAbort(http.StatusInternalServerError, "")
 	}
 
-	result := &searchResult{Project: projectResult, Repository: repositoryResult}
+	if searchHandler == nil {
+		searchHandler = chartController.GetRepositoryHandler().SearchChart
+	}
+
+	chartResults, err := searchHandler(keyword, proNames)
+	if err != nil {
+		log.Errorf("failed to filter charts: %v", err)
+		s.CustomAbort(http.StatusInternalServerError, err.Error())
+	}
+
+	result := &searchResult{
+		Project:    projectResult,
+		Repository: repositoryResult,
+		Chart:      chartResults,
+	}
 	s.Data["json"] = result
 	s.ServeJSON()
 }
