@@ -2,15 +2,15 @@
 
 package models
 
-//Parameters for job execution.
+// Parameters for job execution.
 type Parameters map[string]interface{}
 
-//JobRequest is the request of launching a job.
+// JobRequest is the request of launching a job.
 type JobRequest struct {
 	Job *JobData `json:"job"`
 }
 
-//JobData keeps the basic info.
+// JobData keeps the basic info.
 type JobData struct {
 	Name       string       `json:"name"`
 	Parameters Parameters   `json:"parameters"`
@@ -18,7 +18,7 @@ type JobData struct {
 	StatusHook string       `json:"status_hook"`
 }
 
-//JobMetadata stores the metadata of job.
+// JobMetadata stores the metadata of job.
 type JobMetadata struct {
 	JobKind       string `json:"kind"`
 	ScheduleDelay uint64 `json:"schedule_delay,omitempty"`
@@ -26,12 +26,12 @@ type JobMetadata struct {
 	IsUnique      bool   `json:"unique"`
 }
 
-//JobStats keeps the result of job launching.
+// JobStats keeps the result of job launching.
 type JobStats struct {
 	Stats *JobStatData `json:"job"`
 }
 
-//JobStatData keeps the stats of job
+// JobStatData keeps the stats of job
 type JobStatData struct {
 	JobID       string `json:"id"`
 	Status      string `json:"status"`
@@ -49,12 +49,12 @@ type JobStatData struct {
 	HookStatus  string `json:"hook_status,omitempty"`
 }
 
-//JobPoolStats represents the healthy and status of all the running worker pools.
+// JobPoolStats represents the healthy and status of all the running worker pools.
 type JobPoolStats struct {
 	Pools []*JobPoolStatsData `json:"worker_pools"`
 }
 
-//JobPoolStatsData represent the healthy and status of the worker pool.
+// JobPoolStatsData represent the healthy and status of the worker pool.
 type JobPoolStatsData struct {
 	WorkerPoolID string   `json:"worker_pool_id"`
 	StartedAt    int64    `json:"started_at"`
@@ -64,12 +64,12 @@ type JobPoolStatsData struct {
 	Status       string   `json:"status"`
 }
 
-//JobActionRequest defines for triggering job action like stop/cancel.
+// JobActionRequest defines for triggering job action like stop/cancel.
 type JobActionRequest struct {
 	Action string `json:"action"`
 }
 
-//JobStatusChange is designed for reporting the status change via hook.
+// JobStatusChange is designed for reporting the status change via hook.
 type JobStatusChange struct {
 	JobID    string       `json:"job_id"`
 	Status   string       `json:"status"`
@@ -77,8 +77,8 @@ type JobStatusChange struct {
 	Metadata *JobStatData `json:"metadata,omitempty"`
 }
 
-//Message is designed for sub/pub messages
+// Message is designed for sub/pub messages
 type Message struct {
 	Event string
-	Data  interface{} //generic format
+	Data  interface{} // generic format
 }

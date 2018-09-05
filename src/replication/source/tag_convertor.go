@@ -32,7 +32,7 @@ func NewTagConvertor(registry registry.Adaptor) *TagConvertor {
 	}
 }
 
-//Convert repositories to tags
+// Convert repositories to tags
 func (t *TagConvertor) Convert(items []models.FilterItem) []models.FilterItem {
 	result := []models.FilterItem{}
 	for _, item := range items {

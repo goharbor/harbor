@@ -21,10 +21,10 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-//DefaultConfig ...
+// DefaultConfig ...
 var DefaultConfig = &Configuration{}
 
-//Configuration loads the configuration of registry controller.
+// Configuration loads the configuration of registry controller.
 type Configuration struct {
 	Protocol    string `yaml:"protocol"`
 	Port        string `yaml:"port"`
@@ -35,10 +35,10 @@ type Configuration struct {
 	} `yaml:"https_config,omitempty"`
 }
 
-//Load the configuration options from the specified yaml file.
+// Load the configuration options from the specified yaml file.
 func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	if len(yamlFilePath) != 0 {
-		//Try to load from file first
+		// Try to load from file first
 		data, err := ioutil.ReadFile(yamlFilePath)
 		if err != nil {
 			return err
@@ -55,22 +55,22 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	return nil
 }
 
-//GetLogLevel returns the log level
+// GetLogLevel returns the log level
 func GetLogLevel() string {
 	return DefaultConfig.LogLevel
 }
 
-//GetJobAuthSecret get the auth secret from the env
+// GetJobAuthSecret get the auth secret from the env
 func GetJobAuthSecret() string {
 	return os.Getenv("JOBSERVICE_SECRET")
 }
 
-//GetUIAuthSecret get the auth secret of UI side
+// GetUIAuthSecret get the auth secret of UI side
 func GetUIAuthSecret() string {
 	return os.Getenv("UI_SECRET")
 }
 
-//loadEnvs Load env variables
+// loadEnvs Load env variables
 func (c *Configuration) loadEnvs() {
 	prot := os.Getenv("REGISTRYCTL_PROTOCOL")
 	if len(prot) != 0 {
@@ -82,7 +82,7 @@ func (c *Configuration) loadEnvs() {
 		c.Port = p
 	}
 
-	//Only when protocol is https
+	// Only when protocol is https
 	if c.Protocol == "HTTPS" {
 		cert := os.Getenv("REGISTRYCTL_HTTPS_CERT")
 		if len(cert) != 0 {

@@ -36,7 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/ui/promgr/pmsdriver/admiral"
 )
 
-//ContextValueKey for content value
+// ContextValueKey for content value
 type ContextValueKey string
 
 type pathMethod struct {
@@ -45,10 +45,10 @@ type pathMethod struct {
 }
 
 const (
-	//SecurCtxKey is context value key for security context
+	// SecurCtxKey is context value key for security context
 	SecurCtxKey ContextValueKey = "harbor_security_context"
 
-	//PmKey is context value key for the project manager
+	// PmKey is context value key for the project manager
 	PmKey ContextValueKey = "harbor_project_manager"
 )
 

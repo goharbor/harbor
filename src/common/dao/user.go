@@ -94,7 +94,7 @@ func LoginByDb(auth models.AuthModel) (*models.User, error) {
 		return nil, nil
 	}
 
-	user.Password = "" //do not return the password
+	user.Password = "" // do not return the password
 
 	return &user, nil
 }
@@ -244,7 +244,7 @@ func OnBoardUser(u *models.User) error {
 	return nil
 }
 
-//IsSuperUser checks if the user is super user(conventionally id == 1) of Harbor
+// IsSuperUser checks if the user is super user(conventionally id == 1) of Harbor
 func IsSuperUser(username string) bool {
 	u, err := GetUser(models.User{
 		Username: username,
@@ -257,7 +257,7 @@ func IsSuperUser(username string) bool {
 	return u != nil && u.UserID == 1
 }
 
-//CleanUser - Clean this user information from DB
+// CleanUser - Clean this user information from DB
 func CleanUser(id int64) error {
 	if _, err := GetOrmer().QueryTable(&models.User{}).
 		Filter("UserID", id).Delete(); err != nil {

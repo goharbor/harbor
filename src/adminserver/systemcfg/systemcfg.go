@@ -256,13 +256,13 @@ func parseStringToBool(str string) (interface{}, error) {
 // Init system configurations. If env RESET is set or configurations
 // read from storage driver is null, load all configurations from env
 func Init() (err error) {
-	//init database
+	// init database
 	envCfgs := map[string]interface{}{}
 	if err := LoadFromEnv(envCfgs, true); err != nil {
 		return err
 	}
 	db := GetDatabaseFromCfg(envCfgs)
-	//Initialize the schema, then register the DB.
+	// Initialize the schema, then register the DB.
 	if err := dao.UpgradeSchema(db); err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func Init() (err error) {
 		return err
 	}
 
-	//Use reload key to avoid reset customed setting after restart
+	// Use reload key to avoid reset customed setting after restart
 	curCfgs, err := CfgStore.Read()
 	if err != nil {
 		return err
@@ -282,8 +282,8 @@ func Init() (err error) {
 	if curCfgs == nil {
 		curCfgs = map[string]interface{}{}
 	}
-	//restart: only repeatload envs will be load
-	//reload_config: all envs will be reload except the skiped envs
+	// restart: only repeatload envs will be load
+	// reload_config: all envs will be reload except the skiped envs
 	if err = LoadFromEnv(curCfgs, loadAll); err != nil {
 		return err
 	}
@@ -312,7 +312,7 @@ func initCfgStore() (err error) {
 		if err != nil {
 			return err
 		}
-		//migration check: if no data in the db , then will try to load from path
+		// migration check: if no data in the db , then will try to load from path
 		m, err := CfgStore.Read()
 		if err != nil {
 			return err
@@ -453,7 +453,7 @@ func validLdapScope(cfg map[string]interface{}, isMigrate bool) {
 
 }
 
-//AddMissedKey ... If the configure key is missing in the cfg map, add default value to it
+// AddMissedKey ... If the configure key is missing in the cfg map, add default value to it
 func AddMissedKey(cfg map[string]interface{}) {
 
 	for k, v := range common.HarborStringKeysMap {

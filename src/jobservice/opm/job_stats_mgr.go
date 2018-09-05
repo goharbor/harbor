@@ -4,79 +4,79 @@ package opm
 
 import "github.com/goharbor/harbor/src/jobservice/models"
 
-//JobStatsManager defines the methods to handle stats of job.
+// JobStatsManager defines the methods to handle stats of job.
 type JobStatsManager interface {
-	//Start to serve
+	// Start to serve
 	Start()
 
-	//Shutdown the manager
+	// Shutdown the manager
 	Shutdown()
 
-	//Save the job stats
-	//Async method to retry and improve performance
+	// Save the job stats
+	// Async method to retry and improve performance
 	//
-	//jobStats models.JobStats : the job stats to be saved
+	// jobStats models.JobStats : the job stats to be saved
 	Save(jobStats models.JobStats)
 
-	//Get the job stats from backend store
-	//Sync method as we need the data
+	// Get the job stats from backend store
+	// Sync method as we need the data
 	//
-	//Returns:
+	// Returns:
 	//  models.JobStats : job stats data
 	//  error           : error if meet any problems
 	Retrieve(jobID string) (models.JobStats, error)
 
-	//SetJobStatus will mark the status of job to the specified one
-	//Async method to retry
+	// SetJobStatus will mark the status of job to the specified one
+	// Async method to retry
 	SetJobStatus(jobID string, status string)
 
-	//Send command fro the specified job
+	// Send command fro the specified job
 	//
-	//jobID string   : ID of the being retried job
-	//command string : the command applied to the job like stop/cancel
+	// jobID string   : ID of the being retried job
+	// command string : the command applied to the job like stop/cancel
 	//
-	//Returns:
+	// Returns:
 	//  error if it was not successfully sent
 	SendCommand(jobID string, command string) error
 
-	//CtlCommand checks if control command is fired for the specified job.
+	// CtlCommand checks if control command is fired for the specified job.
 	//
-	//jobID string : ID of the job
+	// jobID string : ID of the job
 	//
-	//Returns:
+	// Returns:
 	//  the command if it was fired
 	//  error if it was not fired yet to meet some other problems
 	CtlCommand(jobID string) (string, error)
 
-	//CheckIn message for the specified job like detailed progress info.
+	// CheckIn message for the specified job like detailed progress info.
 	//
-	//jobID string   : ID of the job
-	//message string : The message being checked in
+	// jobID string   : ID of the job
+	// message string : The message being checked in
 	//
 	CheckIn(jobID string, message string)
 
-	//DieAt marks the failed jobs with the time they put into dead queue.
+	// DieAt marks the failed jobs with the time they put into dead queue.
 	//
-	//jobID string   : ID of the job
-	//message string : The message being checked in
+	// jobID string   : ID of the job
+	// message string : The message being checked in
 	//
 	DieAt(jobID string, dieAt int64)
 
-	//RegisterHook is used to save the hook url or cache the url in memory.
+	// RegisterHook is used to save the hook url or cache the url in memory.
 	//
-	//jobID string   : ID of job
-	//hookURL string : the hook url being registered
-	//isCached bool  :  to indicate if only cache the hook url
+	// jobID string   : ID of job
+	// hookURL string : the hook url being registered
+	// isCached bool  :  to indicate if only cache the hook url
 	//
-	//Returns:
+	// Returns:
 	//  error if meet any problems
 	RegisterHook(jobID string, hookURL string, isCached bool) error
 
-	//Mark the periodic job stats expired
+	// Mark the periodic job stats expired
 	//
-	//jobID string   : ID of job
+	// jobID string   : ID of job
 	//
-	//Returns:
+	// Returns:
 	//  error if meet any problems
 	ExpirePeriodicJobStats(jobID string) error
 }

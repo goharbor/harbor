@@ -24,7 +24,7 @@ type IndexController struct {
 	beego.Controller
 }
 
-//Prepare to check if incoming requests should be served
+// Prepare to check if incoming requests should be served
 func (ic *IndexController) Prepare() {
 	if config.WithAdmiral() {
 		ic.Redirect(config.AdmiralEndpoint(), 302)

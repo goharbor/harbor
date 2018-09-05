@@ -17,22 +17,22 @@ const (
 	authHeader   = "Authorization"
 )
 
-//Authenticator defined behaviors of doing auth checking.
+// Authenticator defined behaviors of doing auth checking.
 type Authenticator interface {
-	//Auth incoming request
+	// Auth incoming request
 	//
-	//req *http.Request: the incoming request
+	// req *http.Request: the incoming request
 	//
-	//Returns:
+	// Returns:
 	// nil returned if successfully done
 	// otherwise an error returned
 	DoAuth(req *http.Request) error
 }
 
-//SecretAuthenticator implements interface 'Authenticator' based on simple secret.
+// SecretAuthenticator implements interface 'Authenticator' based on simple secret.
 type SecretAuthenticator struct{}
 
-//DoAuth implements same method in interface 'Authenticator'.
+// DoAuth implements same method in interface 'Authenticator'.
 func (sa *SecretAuthenticator) DoAuth(req *http.Request) error {
 	if req == nil {
 		return errors.New("nil request")
@@ -48,7 +48,7 @@ func (sa *SecretAuthenticator) DoAuth(req *http.Request) error {
 	}
 
 	secret := strings.TrimSpace(strings.TrimPrefix(h, secretPrefix))
-	//incase both two are empty
+	// incase both two are empty
 	if utils.IsEmptyStr(secret) {
 		return errors.New("empty secret is not allowed")
 	}

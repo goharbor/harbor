@@ -23,10 +23,10 @@ import (
 	"github.com/goharbor/harbor/src/replication/event/notification"
 )
 
-//StartReplicationHandler implements the notification handler interface to handle start replication requests.
+// StartReplicationHandler implements the notification handler interface to handle start replication requests.
 type StartReplicationHandler struct{}
 
-//Handle implements the same method of notification handler interface
+// Handle implements the same method of notification handler interface
 func (srh *StartReplicationHandler) Handle(value interface{}) error {
 	if value == nil {
 		return errors.New("StartReplicationHandler can not handle nil value")
@@ -42,12 +42,12 @@ func (srh *StartReplicationHandler) Handle(value interface{}) error {
 		return errors.New("Invalid policy")
 	}
 
-	//Start replication
+	// Start replication
 	return core.GlobalController.Replicate(notification.PolicyID, notification.Metadata)
 }
 
-//IsStateful implements the same method of notification handler interface
+// IsStateful implements the same method of notification handler interface
 func (srh *StartReplicationHandler) IsStateful() bool {
-	//Stateless
+	// Stateless
 	return false
 }

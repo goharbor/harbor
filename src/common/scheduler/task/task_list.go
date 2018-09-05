@@ -4,30 +4,30 @@ import (
 	"sync"
 )
 
-//Store is designed to keep the tasks.
+// Store is designed to keep the tasks.
 type Store interface {
-	//GetTasks return the current existing list in store.
+	// GetTasks return the current existing list in store.
 	GetTasks() []Task
 
-	//AddTasks is used to append tasks to the list.
+	// AddTasks is used to append tasks to the list.
 	AddTasks(tasks ...Task)
 }
 
-//DefaultStore is the default implemetation of Store interface.
+// DefaultStore is the default implemetation of Store interface.
 type DefaultStore struct {
-	//To sync the related operations.
+	// To sync the related operations.
 	*sync.RWMutex
 
-	//The space to keep the tasks.
+	// The space to keep the tasks.
 	tasks []Task
 }
 
-//NewDefaultStore is constructor method for DefaultStore.
+// NewDefaultStore is constructor method for DefaultStore.
 func NewDefaultStore() *DefaultStore {
 	return &DefaultStore{new(sync.RWMutex), []Task{}}
 }
 
-//GetTasks implements the same method in Store interface.
+// GetTasks implements the same method in Store interface.
 func (ds *DefaultStore) GetTasks() []Task {
 	copyList := []Task{}
 
@@ -41,9 +41,9 @@ func (ds *DefaultStore) GetTasks() []Task {
 	return copyList
 }
 
-//AddTasks implements the same method in Store interface.
+// AddTasks implements the same method in Store interface.
 func (ds *DefaultStore) AddTasks(tasks ...Task) {
-	//Double confirm.
+	// Double confirm.
 	if ds.tasks == nil {
 		ds.tasks = []Task{}
 	}

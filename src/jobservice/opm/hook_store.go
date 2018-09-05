@@ -8,14 +8,14 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/utils"
 )
 
-//HookStore is used to cache the hooks in memory.
-//Use job ID as key to index
+// HookStore is used to cache the hooks in memory.
+// Use job ID as key to index
 type HookStore struct {
 	lock *sync.RWMutex
 	data map[string]string
 }
 
-//NewHookStore is to create a ptr of new HookStore.
+// NewHookStore is to create a ptr of new HookStore.
 func NewHookStore() *HookStore {
 	return &HookStore{
 		lock: new(sync.RWMutex),
@@ -23,10 +23,10 @@ func NewHookStore() *HookStore {
 	}
 }
 
-//Add new record
+// Add new record
 func (hs *HookStore) Add(jobID string, hookURL string) {
 	if utils.IsEmptyStr(jobID) {
-		return //do nothing
+		return // do nothing
 	}
 
 	hs.lock.Lock()
@@ -35,7 +35,7 @@ func (hs *HookStore) Add(jobID string, hookURL string) {
 	hs.data[jobID] = hookURL
 }
 
-//Get one hook url by job ID
+// Get one hook url by job ID
 func (hs *HookStore) Get(jobID string) (string, bool) {
 	hs.lock.RLock()
 	defer hs.lock.RUnlock()
@@ -45,7 +45,7 @@ func (hs *HookStore) Get(jobID string) (string, bool) {
 	return hookURL, ok
 }
 
-//Remove the specified one
+// Remove the specified one
 func (hs *HookStore) Remove(jobID string) (string, bool) {
 	hs.lock.Lock()
 	defer hs.lock.Unlock()

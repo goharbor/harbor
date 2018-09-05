@@ -29,12 +29,12 @@ type ClairVulnTimestamp struct {
 	LastUpdateUTC int64     `orm:"-" json:"last_update"`
 }
 
-//TableName is required by beego to map struct to table.
+// TableName is required by beego to map struct to table.
 func (ct *ClairVulnTimestamp) TableName() string {
 	return ClairVulnTimestampTable
 }
 
-//ClairLayer ...
+// ClairLayer ...
 type ClairLayer struct {
 	Name           string            `json:"Name,omitempty"`
 	NamespaceNames []string          `json:"NamespaceNames,omitempty"`
@@ -45,7 +45,7 @@ type ClairLayer struct {
 	Features       []ClairFeature    `json:"Features,omitempty"`
 }
 
-//ClairFeature ...
+// ClairFeature ...
 type ClairFeature struct {
 	Name            string               `json:"Name,omitempty"`
 	NamespaceName   string               `json:"NamespaceName,omitempty"`
@@ -55,7 +55,7 @@ type ClairFeature struct {
 	AddedBy         string               `json:"AddedBy,omitempty"`
 }
 
-//ClairVulnerability ...
+// ClairVulnerability ...
 type ClairVulnerability struct {
 	Name          string                 `json:"Name,omitempty"`
 	NamespaceName string                 `json:"NamespaceName,omitempty"`
@@ -67,18 +67,18 @@ type ClairVulnerability struct {
 	FixedIn       []ClairFeature         `json:"FixedIn,omitempty"`
 }
 
-//ClairError ...
+// ClairError ...
 type ClairError struct {
 	Message string `json:"Message,omitempty"`
 }
 
-//ClairLayerEnvelope ...
+// ClairLayerEnvelope ...
 type ClairLayerEnvelope struct {
 	Layer *ClairLayer `json:"Layer,omitempty"`
 	Error *ClairError `json:"Error,omitempty"`
 }
 
-//ClairNotification ...
+// ClairNotification ...
 type ClairNotification struct {
 	Name     string                        `json:"Name,omitempty"`
 	Created  string                        `json:"Created,omitempty"`
@@ -91,45 +91,45 @@ type ClairNotification struct {
 	New      *ClairVulnerabilityWithLayers `json:"New,omitempty"`
 }
 
-//ClairNotificationEnvelope ...
+// ClairNotificationEnvelope ...
 type ClairNotificationEnvelope struct {
 	Notification *ClairNotification `json:"Notification,omitempty"`
 	Error        *ClairError        `json:"Error,omitempty"`
 }
 
-//ClairVulnerabilityWithLayers ...
+// ClairVulnerabilityWithLayers ...
 type ClairVulnerabilityWithLayers struct {
 	Vulnerability                         *ClairVulnerability     `json:"Vulnerability,omitempty"`
 	OrderedLayersIntroducingVulnerability []ClairOrderedLayerName `json:"OrderedLayersIntroducingVulnerability,omitempty"`
 }
 
-//ClairOrderedLayerName ...
+// ClairOrderedLayerName ...
 type ClairOrderedLayerName struct {
 	Index     int    `json:"Index"`
 	LayerName string `json:"LayerName"`
 }
 
-//ClairVulnerabilityStatus reflects the readiness and freshness of vulnerability data in Clair,
-//which will be returned in response of systeminfo API.
+// ClairVulnerabilityStatus reflects the readiness and freshness of vulnerability data in Clair,
+// which will be returned in response of systeminfo API.
 type ClairVulnerabilityStatus struct {
 	OverallUTC int64                     `json:"overall_last_update,omitempty"`
 	Details    []ClairNamespaceTimestamp `json:"details,omitempty"`
 }
 
-//ClairNamespaceTimestamp is a record to store the clairname space and the timestamp,
-//in practice different namespace in Clair maybe merged into one, e.g. ubuntu:14.04 and ubuntu:16.4 maybe merged into ubuntu and put into response.
+// ClairNamespaceTimestamp is a record to store the clairname space and the timestamp,
+// in practice different namespace in Clair maybe merged into one, e.g. ubuntu:14.04 and ubuntu:16.4 maybe merged into ubuntu and put into response.
 type ClairNamespaceTimestamp struct {
 	Namespace string `json:"namespace"`
 	Timestamp int64  `json:"last_update"`
 }
 
-//ClairNamespace ...
+// ClairNamespace ...
 type ClairNamespace struct {
 	Name          string `json:"Name,omitempty"`
 	VersionFormat string `json:"VersionFormat,omitempty"`
 }
 
-//ClairNamespaceEnvelope ...
+// ClairNamespaceEnvelope ...
 type ClairNamespaceEnvelope struct {
 	Namespaces *[]ClairNamespace `json:"Namespaces,omitempty"`
 	Error      *ClairError       `json:"Error,omitempty"`

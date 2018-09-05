@@ -29,35 +29,35 @@ var (
 	once sync.Once
 )
 
-//TimeMarker is used to control an action not to be taken frequently within the interval
+// TimeMarker is used to control an action not to be taken frequently within the interval
 type TimeMarker struct {
 	sync.RWMutex
 	next     time.Time
 	interval time.Duration
 }
 
-//Mark tries to mark a future time, which is after the duration of interval from the time it's called.
+// Mark tries to mark a future time, which is after the duration of interval from the time it's called.
 func (t *TimeMarker) Mark() {
 	t.Lock()
 	defer t.Unlock()
 	t.next = time.Now().Add(t.interval)
 }
 
-//Check returns true if the current time is after the mark by this marker, and the caction the mark guards and be taken.
+// Check returns true if the current time is after the mark by this marker, and the caction the mark guards and be taken.
 func (t *TimeMarker) Check() bool {
 	t.RLock()
 	defer t.RUnlock()
 	return time.Now().After(t.next)
 }
 
-//Next returns the time of the next mark.
+// Next returns the time of the next mark.
 func (t *TimeMarker) Next() time.Time {
 	t.RLock()
 	defer t.RUnlock()
 	return t.next
 }
 
-//ScanAllMarker ...
+// ScanAllMarker ...
 func ScanAllMarker() *TimeMarker {
 	once.Do(func() {
 		a := os.Getenv("HARBOR_SCAN_ALL_INTERVAL")
@@ -74,7 +74,7 @@ func ScanAllMarker() *TimeMarker {
 	return scanAllMarker
 }
 
-//ScanOverviewMarker ...
+// ScanOverviewMarker ...
 func ScanOverviewMarker() *TimeMarker {
 	return scanOverviewMarker
 }

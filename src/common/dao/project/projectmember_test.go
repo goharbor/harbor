@@ -30,7 +30,7 @@ import (
 
 func TestMain(m *testing.M) {
 
-	//databases := []string{"mysql", "sqlite"}
+	// databases := []string{"mysql", "sqlite"}
 	databases := []string{"postgresql"}
 	for _, database := range databases {
 		log.Infof("run test cases for database: %s", database)
@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 			log.Fatalf("invalid database: %s", database)
 		}
 
-		//Extract to test utils
+		// Extract to test utils
 		initSqls := []string{
 			"insert into harbor_user (username, email, password, realname)  values ('member_test_01', 'member_test_01@example.com', '123456', 'member_test_01')",
 			"insert into project (name, owner_id) values ('member_test_01', 1)",

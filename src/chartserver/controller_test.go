@@ -12,14 +12,14 @@ import (
 	helm_repo "k8s.io/helm/pkg/repo"
 )
 
-//Prepare, start the mock servers
+// Prepare, start the mock servers
 func TestStartServers(t *testing.T) {
 	if err := startMockServers(); err != nil {
 		t.Fatal(err)
 	}
 }
 
-//Test /health
+// Test /health
 func TestGetHealthOfBaseHandler(t *testing.T) {
 	content, err := httpClient.GetContent(fmt.Sprintf("%s/health", getTheAddrOfFrontServer()))
 	if err != nil {
@@ -36,7 +36,7 @@ func TestGetHealthOfBaseHandler(t *testing.T) {
 	}
 }
 
-//Get /repo1/index.yaml
+// Get /repo1/index.yaml
 func TestGetIndexYamlByRepo(t *testing.T) {
 	indexFile, err := getIndexYaml("/repo1/index.yaml")
 	if err != nil {
@@ -48,7 +48,7 @@ func TestGetIndexYamlByRepo(t *testing.T) {
 	}
 }
 
-//Test get /index.yaml
+// Test get /index.yaml
 func TestGetUnifiedYamlFile(t *testing.T) {
 	indexFile, err := getIndexYaml("/index.yaml")
 	if err != nil {
@@ -70,8 +70,8 @@ func TestGetUnifiedYamlFile(t *testing.T) {
 	}
 }
 
-//Test download /:repo/charts/chart.tar
-//Use this case to test the proxy function
+// Test download /:repo/charts/chart.tar
+// Use this case to test the proxy function
 func TestDownloadChart(t *testing.T) {
 	content, err := httpClient.GetContent(fmt.Sprintf("%s/repo1/charts/harbor-0.2.0.tgz", getTheAddrOfFrontServer()))
 	if err != nil {
@@ -86,7 +86,7 @@ func TestDownloadChart(t *testing.T) {
 	}
 }
 
-//Test get /api/:repo/charts
+// Test get /api/:repo/charts
 func TestRetrieveChartList(t *testing.T) {
 	content, err := httpClient.GetContent(fmt.Sprintf("%s/api/repo1/charts", getTheAddrOfFrontServer()))
 	if err != nil {
@@ -116,7 +116,7 @@ func TestRetrieveChartList(t *testing.T) {
 	}
 }
 
-//Test get /api/:repo/charts/:chart_name/:version
+// Test get /api/:repo/charts/:chart_name/:version
 func TestGetChartVersion(t *testing.T) {
 	content, err := httpClient.GetContent(fmt.Sprintf("%s/api/repo1/charts/harbor/0.2.0", getTheAddrOfFrontServer()))
 	if err != nil {
@@ -145,7 +145,7 @@ func TestGetChartVersion(t *testing.T) {
 	}
 }
 
-//Test get /api/:repo/charts/:chart_name/:version with none-existing version
+// Test get /api/:repo/charts/:chart_name/:version with none-existing version
 func TestGetChartVersionWithError(t *testing.T) {
 	_, err := httpClient.GetContent(fmt.Sprintf("%s/api/repo1/charts/harbor/1.0.0", getTheAddrOfFrontServer()))
 	if err == nil {
@@ -153,8 +153,8 @@ func TestGetChartVersionWithError(t *testing.T) {
 	}
 }
 
-//Get /api/repo1/charts/harbor
-//401 will be rewritten to 500 with specified error
+// Get /api/repo1/charts/harbor
+// 401 will be rewritten to 500 with specified error
 func TestResponseRewrite(t *testing.T) {
 	response, err := http.Get(fmt.Sprintf("%s/api/repo1/charts/harbor", getTheAddrOfFrontServer()))
 	if err != nil {
@@ -185,12 +185,12 @@ func TestResponseRewrite(t *testing.T) {
 	}
 }
 
-//Clear environments
+// Clear environments
 func TestStopServers(t *testing.T) {
 	stopMockServers()
 }
 
-//Utility method for getting index yaml file
+// Utility method for getting index yaml file
 func getIndexYaml(path string) (*helm_repo.IndexFile, error) {
 	content, err := httpClient.GetContent(fmt.Sprintf("%s%s", getTheAddrOfFrontServer(), path))
 	if err != nil {

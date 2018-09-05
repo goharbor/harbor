@@ -121,7 +121,7 @@ func TestReversibleEncrypt(t *testing.T) {
 	if decrypted != password {
 		t.Errorf("decrypted password: %s, is not identical to original", decrypted)
 	}
-	//Test b64 for backward compatibility
+	// Test b64 for backward compatibility
 	b64password := base64.StdEncoding.EncodeToString([]byte(password))
 	decrypted, err = ReversibleDecrypt(b64password, key)
 	if err != nil {

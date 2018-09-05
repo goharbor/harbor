@@ -47,7 +47,7 @@ func (gc *GCAPI) Prepare() {
 	}
 }
 
-//Post ...
+// Post ...
 func (gc *GCAPI) Post() {
 	gr := models.GCReq{}
 	gc.DecodeJSONReqAndValidate(&gr)
@@ -55,7 +55,7 @@ func (gc *GCAPI) Post() {
 	gc.Redirect(http.StatusCreated, strconv.FormatInt(gr.ID, 10))
 }
 
-//Put ...
+// Put ...
 func (gc *GCAPI) Put() {
 	gr := models.GCReq{}
 	gc.DecodeJSONReqAndValidate(&gr)
@@ -146,7 +146,7 @@ func (gc *GCAPI) Get() {
 	gc.ServeJSON()
 }
 
-//GetLog ...
+// GetLog ...
 func (gc *GCAPI) GetLog() {
 	id, err := gc.GetInt64FromPath(":id")
 	if err != nil {

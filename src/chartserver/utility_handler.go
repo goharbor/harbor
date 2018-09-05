@@ -14,19 +14,19 @@ const (
 	maxDeletionThreads = 10
 )
 
-//UtilityHandler provides utility methods
+// UtilityHandler provides utility methods
 type UtilityHandler struct {
-	//Parse and process the chart version to provide required info data
+	// Parse and process the chart version to provide required info data
 	chartOperator *ChartOperator
 
-	//HTTP client used to call the realted APIs of the backend chart repositories
+	// HTTP client used to call the realted APIs of the backend chart repositories
 	apiClient *ChartClient
 
-	//Point to the url of the backend server
+	// Point to the url of the backend server
 	backendServerAddress *url.URL
 }
 
-//GetChartsByNs gets the chart list under the namespace
+// GetChartsByNs gets the chart list under the namespace
 func (uh *UtilityHandler) GetChartsByNs(namespace string) ([]*ChartInfo, error) {
 	if len(strings.TrimSpace(namespace)) == 0 {
 		return nil, errors.New("empty namespace when getting chart list")
@@ -43,7 +43,7 @@ func (uh *UtilityHandler) GetChartsByNs(namespace string) ([]*ChartInfo, error) 
 	return uh.chartOperator.GetChartList(content)
 }
 
-//DeleteChart deletes all the chart versions of the specified chart under the namespace.
+// DeleteChart deletes all the chart versions of the specified chart under the namespace.
 func (uh *UtilityHandler) DeleteChart(namespace, chartName string) error {
 	if len(strings.TrimSpace(namespace)) == 0 {
 		return errors.New("empty namespace when deleting chart")
@@ -66,8 +66,8 @@ func (uh *UtilityHandler) DeleteChart(namespace, chartName string) error {
 		return err
 	}
 
-	//Let's delete the versions in parallel
-	//The number of goroutine is controlled by the const maxDeletionThreads
+	// Let's delete the versions in parallel
+	// The number of goroutine is controlled by the const maxDeletionThreads
 	qSize := len(allVersions)
 	if qSize > maxDeletionThreads {
 		qSize = maxDeletionThreads
@@ -77,17 +77,17 @@ func (uh *UtilityHandler) DeleteChart(namespace, chartName string) error {
 	waitGroup := new(sync.WaitGroup)
 	waitGroup.Add(len(allVersions))
 
-	//Append initial tokens
+	// Append initial tokens
 	for i := 0; i < qSize; i++ {
 		tokenQueue <- struct{}{}
 	}
 
-	//Collect errors
+	// Collect errors
 	errs := make([]error, 0)
 	errWrapper := make(chan error, 1)
 	go func() {
 		defer func() {
-			//pass to the out func
+			// pass to the out func
 			if len(errs) > 0 {
 				errWrapper <- fmt.Errorf("%v", errs)
 			}
@@ -99,19 +99,19 @@ func (uh *UtilityHandler) DeleteChart(namespace, chartName string) error {
 		}
 	}()
 
-	//Schedule deletion tasks
+	// Schedule deletion tasks
 	for _, deletingVersion := range allVersions {
-		//Apply for token first
-		//If no available token, pending here
+		// Apply for token first
+		// If no available token, pending here
 		<-tokenQueue
 
-		//Got one token
+		// Got one token
 		go func(deletingVersion *helm_repo.ChartVersion) {
 			defer func() {
-				//return the token back
+				// return the token back
 				tokenQueue <- struct{}{}
 
-				//done
+				// done
 				waitGroup.Done()
 			}()
 
@@ -121,9 +121,9 @@ func (uh *UtilityHandler) DeleteChart(namespace, chartName string) error {
 		}(deletingVersion)
 	}
 
-	//Wait all goroutines are done
+	// Wait all goroutines are done
 	waitGroup.Wait()
-	//Safe to quit error collection goroutine
+	// Safe to quit error collection goroutine
 	close(errChan)
 
 	err = <-errWrapper
@@ -131,7 +131,7 @@ func (uh *UtilityHandler) DeleteChart(namespace, chartName string) error {
 	return err
 }
 
-//deleteChartVersion deletes the specified chart version
+// deleteChartVersion deletes the specified chart version
 func (uh *UtilityHandler) deleteChartVersion(namespace, chartName, version string) error {
 	path := fmt.Sprintf("/api/%s/charts/%s/%s", namespace, chartName, version)
 	url := fmt.Sprintf("%s%s", uh.backendServerAddress.String(), path)

@@ -62,7 +62,7 @@ func (sj *ScanJobAPI) Prepare() {
 	sj.jobUUID = data.UUID
 }
 
-//GetLog ...
+// GetLog ...
 func (sj *ScanJobAPI) GetLog() {
 	logBytes, err := utils.GetJobServiceClient().GetJobLog(sj.jobUUID)
 	if err != nil {

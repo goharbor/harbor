@@ -154,7 +154,7 @@ var (
 		ReadOnly,
 	}
 
-	//value is default value
+	// value is default value
 	HarborStringKeysMap = map[string]string{
 		AUTHMode:                   "db_auth",
 		LDAPURL:                    "",

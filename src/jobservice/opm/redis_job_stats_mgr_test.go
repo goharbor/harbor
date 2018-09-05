@@ -49,7 +49,7 @@ func TestSetJobStatus(t *testing.T) {
 	mgr.Start()
 	defer mgr.Shutdown()
 	<-time.After(200 * time.Millisecond)
-	//make sure data existing
+	// make sure data existing
 	testingStats := createFakeStats()
 	mgr.Save(testingStats)
 	<-time.After(200 * time.Millisecond)
@@ -148,7 +148,7 @@ func TestExpireJobStats(t *testing.T) {
 	defer mgr.Shutdown()
 	<-time.After(200 * time.Millisecond)
 
-	//make sure data existing
+	// make sure data existing
 	testingStats := createFakeStats()
 	mgr.Save(testingStats)
 	<-time.After(200 * time.Millisecond)
@@ -169,12 +169,12 @@ func TestCheckIn(t *testing.T) {
 	defer mgr.Shutdown()
 	<-time.After(200 * time.Millisecond)
 
-	//make sure data existing
+	// make sure data existing
 	testingStats := createFakeStats()
 	mgr.Save(testingStats)
 	<-time.After(200 * time.Millisecond)
 
-	//Start http server
+	// Start http server
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		data, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -223,7 +223,7 @@ func TestCheckIn(t *testing.T) {
 func getRedisHost() string {
 	redisHost := os.Getenv(testingRedisHost)
 	if redisHost == "" {
-		redisHost = "localhost" //for local test
+		redisHost = "localhost" // for local test
 	}
 
 	return redisHost

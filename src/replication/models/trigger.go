@@ -21,7 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/replication"
 )
 
-//Trigger is replication launching approach definition
+// Trigger is replication launching approach definition
 type Trigger struct {
 	Kind          string         `json:"kind"`           // the type of the trigger
 	ScheduleParam *ScheduleParam `json:"schedule_param"` // optional, only used when kind is 'schedule'
@@ -46,9 +46,9 @@ func (t *Trigger) Valid(v *validation.Validation) {
 
 // ScheduleParam defines the parameters used by schedule trigger
 type ScheduleParam struct {
-	Type    string `json:"type"`    //daily or weekly
-	Weekday int8   `json:"weekday"` //Optional, only used when type is 'weekly'
-	Offtime int64  `json:"offtime"` //The time offset with the UTC 00:00 in seconds
+	Type    string `json:"type"`    // daily or weekly
+	Weekday int8   `json:"weekday"` // Optional, only used when type is 'weekly'
+	Offtime int64  `json:"offtime"` // The time offset with the UTC 00:00 in seconds
 }
 
 // Valid ...

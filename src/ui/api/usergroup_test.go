@@ -96,7 +96,7 @@ func TestUserGroupAPI_Post(t *testing.T) {
 	defer group.DeleteUserGroup(groupID)
 
 	cases := []*codeCheckingCase{
-		//409
+		// 409
 		{
 			request: &testingRequest{
 				method: http.MethodPost,
@@ -126,7 +126,7 @@ func TestUserGroupAPI_Put(t *testing.T) {
 		t.Errorf("Error occurred when AddUserGroup: %v", err)
 	}
 	cases := []*codeCheckingCase{
-		//401
+		// 401
 		{
 			request: &testingRequest{
 				method: http.MethodPut,
@@ -137,7 +137,7 @@ func TestUserGroupAPI_Put(t *testing.T) {
 			},
 			code: http.StatusUnauthorized,
 		},
-		//200
+		// 200
 		{
 			request: &testingRequest{
 				method: http.MethodPut,

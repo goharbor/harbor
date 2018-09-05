@@ -15,8 +15,8 @@ package ldap
 
 import (
 	"github.com/stretchr/testify/assert"
-	//"fmt"
-	//"strings"
+	// "fmt"
+	// "strings"
 	"os"
 	"testing"
 
@@ -41,7 +41,7 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.PostGreSQLUsername: "postgres",
 	common.PostGreSQLPassword: "root123",
 	common.PostGreSQLDatabase: "registry",
-	//config.SelfRegistration: true,
+	// config.SelfRegistration: true,
 	common.LDAPURL:       "ldap://127.0.0.1",
 	common.LDAPSearchDN:  "cn=admin,dc=example,dc=com",
 	common.LDAPSearchPwd: "admin",
@@ -109,7 +109,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
 
-	//Extract to test utils
+	// Extract to test utils
 	initSqls := []string{
 		"insert into harbor_user (username, email, password, realname)  values ('member_test_01', 'member_test_01@example.com', '123456', 'member_test_01')",
 		"insert into project (name, owner_id) values ('member_test_01', 1)",
@@ -156,7 +156,7 @@ func TestAuthenticate(t *testing.T) {
 	if _, ok := err.(auth.ErrAuth); !ok {
 		t.Errorf("Expected an ErrAuth on empty credentials, but got: %v", err)
 	}
-	//authenticate the second time
+	// authenticate the second time
 	person2 := models.AuthModel{
 		Principal: "test",
 		Password:  "123456",

@@ -158,7 +158,7 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 			continue
 		}
 
-		//pull and push manifest by docker-client or vic
+		// pull and push manifest by docker-client or vic
 		if (strings.HasPrefix(event.Request.UserAgent, "docker") || strings.HasPrefix(event.Request.UserAgent, vicPrefix)) &&
 			(event.Action == "pull" || event.Action == "push") {
 			events = append(events, &event)
@@ -166,7 +166,7 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 			continue
 		}
 
-		//push manifest by docker-client or job-service
+		// push manifest by docker-client or job-service
 		if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) == "harbor-registry-client" && event.Action == "push" {
 			events = append(events, &event)
 			log.Debugf("add event to collect: %s", event.ID)

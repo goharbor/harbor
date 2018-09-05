@@ -44,7 +44,7 @@ type StatisticAPI struct {
 	username string
 }
 
-//Prepare validates the URL and the user
+// Prepare validates the URL and the user
 func (s *StatisticAPI) Prepare() {
 	s.BaseController.Prepare()
 	if !s.SecurityCtx.IsAuthenticated() {

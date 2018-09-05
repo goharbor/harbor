@@ -11,25 +11,25 @@ import (
 
 // TODO refacotor the methods of HarborAdaptor by caling Harbor's API
 
-//HarborAdaptor is defined to adapt the Harbor registry
+// HarborAdaptor is defined to adapt the Harbor registry
 type HarborAdaptor struct{}
 
-//Kind returns the unique kind identifier of the adaptor
+// Kind returns the unique kind identifier of the adaptor
 func (ha *HarborAdaptor) Kind() string {
 	return replication.AdaptorKindHarbor
 }
 
-//GetNamespaces is ued to get all the namespaces
+// GetNamespaces is ued to get all the namespaces
 func (ha *HarborAdaptor) GetNamespaces() []models.Namespace {
 	return nil
 }
 
-//GetNamespace is used to get the namespace with the specified name
+// GetNamespace is used to get the namespace with the specified name
 func (ha *HarborAdaptor) GetNamespace(name string) models.Namespace {
 	return models.Namespace{}
 }
 
-//GetRepositories is used to get all the repositories under the specified namespace
+// GetRepositories is used to get all the repositories under the specified namespace
 func (ha *HarborAdaptor) GetRepositories(namespace string) []models.Repository {
 	repos, err := dao.GetRepositories(&common_models.RepositoryQuery{
 		ProjectName: namespace,
@@ -48,12 +48,12 @@ func (ha *HarborAdaptor) GetRepositories(namespace string) []models.Repository {
 	return repositories
 }
 
-//GetRepository is used to get the repository with the specified name under the specified namespace
+// GetRepository is used to get the repository with the specified name under the specified namespace
 func (ha *HarborAdaptor) GetRepository(name string, namespace string) models.Repository {
 	return models.Repository{}
 }
 
-//GetTags is used to get all the tags of the specified repository under the namespace
+// GetTags is used to get all the tags of the specified repository under the namespace
 func (ha *HarborAdaptor) GetTags(repositoryName string, namespace string) []models.Tag {
 	client, err := utils.NewRepositoryClientForUI("harbor-ui", repositoryName)
 	if err != nil {
@@ -77,7 +77,7 @@ func (ha *HarborAdaptor) GetTags(repositoryName string, namespace string) []mode
 	return tags
 }
 
-//GetTag is used to get the tag with the specified name of the repository under the namespace
+// GetTag is used to get the tag with the specified name of the repository under the namespace
 func (ha *HarborAdaptor) GetTag(name string, repositoryName string, namespace string) models.Tag {
 	return models.Tag{}
 }

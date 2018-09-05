@@ -55,7 +55,7 @@ func (h *Handler) Prepare() {
 	id, err := h.GetInt64FromPath(":id")
 	if err != nil {
 		log.Errorf("Failed to get job ID, error: %v", err)
-		//Avoid job service from resending...
+		// Avoid job service from resending...
 		h.Abort("200")
 		return
 	}
@@ -70,7 +70,7 @@ func (h *Handler) Prepare() {
 	h.status = status
 }
 
-//HandleAdminJob handles the webhook of admin jobs
+// HandleAdminJob handles the webhook of admin jobs
 func (h *Handler) HandleAdminJob() {
 	log.Infof("received admin job status update event: job-%d, status-%s", h.id, h.status)
 	// create the mapping relationship between the jobs in database and jobservice

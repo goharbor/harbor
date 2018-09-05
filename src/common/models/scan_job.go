@@ -16,13 +16,13 @@ package models
 
 import "time"
 
-//ScanJobTable is the name of the table whose data is mapped by ScanJob struct.
+// ScanJobTable is the name of the table whose data is mapped by ScanJob struct.
 const ScanJobTable = "img_scan_job"
 
-//ScanOverviewTable is the name of the table whose data is mapped by ImgScanOverview struct.
+// ScanOverviewTable is the name of the table whose data is mapped by ImgScanOverview struct.
 const ScanOverviewTable = "img_scan_overview"
 
-//ScanJob is the model to represent a job for image scan in DB.
+// ScanJob is the model to represent a job for image scan in DB.
 type ScanJob struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	Status       string    `orm:"column(status)" json:"status"`
@@ -47,7 +47,7 @@ const (
 	SevHigh
 )
 
-//String is the output function for sererity variable
+// String is the output function for sererity variable
 func (sev Severity) String() string {
 	name := []string{"negligible", "unknown", "low", "medium", "high"}
 	i := int64(sev)
@@ -59,12 +59,12 @@ func (sev Severity) String() string {
 	}
 }
 
-//TableName is required by by beego orm to map ScanJob to table img_scan_job
+// TableName is required by by beego orm to map ScanJob to table img_scan_job
 func (s *ScanJob) TableName() string {
 	return ScanJobTable
 }
 
-//ImgScanOverview mapped to a record of image scan overview.
+// ImgScanOverview mapped to a record of image scan overview.
 type ImgScanOverview struct {
 	ID              int64               `orm:"pk;auto;column(id)" json:"-"`
 	Digest          string              `orm:"column(image_digest)" json:"image_digest"`
@@ -78,18 +78,18 @@ type ImgScanOverview struct {
 	UpdateTime      time.Time           `orm:"column(update_time);auto_now" json:"update_time,omitempty"`
 }
 
-//TableName ...
+// TableName ...
 func (iso *ImgScanOverview) TableName() string {
 	return ScanOverviewTable
 }
 
-//ComponentsOverview has the total number and a list of components number of different serverity level.
+// ComponentsOverview has the total number and a list of components number of different serverity level.
 type ComponentsOverview struct {
 	Total   int                        `json:"total"`
 	Summary []*ComponentsOverviewEntry `json:"summary"`
 }
 
-//ComponentsOverviewEntry ...
+// ComponentsOverviewEntry ...
 type ComponentsOverviewEntry struct {
 	Sev   int `json:"severity"`
 	Count int `json:"count"`
@@ -129,7 +129,7 @@ const (
 	ScanAllDailyTime = "daily_time"
 )
 
-//DefaultScanAllPolicy ...
+// DefaultScanAllPolicy ...
 var DefaultScanAllPolicy = ScanAllPolicy{
 	Type: ScanAllDaily,
 	Parm: map[string]interface{}{

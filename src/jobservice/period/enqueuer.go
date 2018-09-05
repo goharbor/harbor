@@ -1,4 +1,4 @@
-//Refer github.com/gocraft/work
+// Refer github.com/gocraft/work
 
 package period
 
@@ -103,8 +103,8 @@ func (pe *periodicEnqueuer) enqueue() error {
 	for _, pl := range pe.policyStore.list() {
 		schedule, err := cron.Parse(pl.CronSpec)
 		if err != nil {
-			//The cron spec should be already checked at top components.
-			//Just in cases, if error occurred, ignore it
+			// The cron spec should be already checked at top components.
+			// Just in cases, if error occurred, ignore it
 			continue
 		}
 		pj := &periodicJob{
@@ -116,11 +116,11 @@ func (pe *periodicEnqueuer) enqueue() error {
 			epoch := t.Unix()
 			job := &work.Job{
 				Name: pj.jobName,
-				ID:   pl.PolicyID, //Same with the id of the policy it's being scheduled for
+				ID:   pl.PolicyID, // Same with the id of the policy it's being scheduled for
 
 				// This is technically wrong, but this lets the bytes be identical for the same periodic job instance. If we don't do this, we'd need to use a different approach -- probably giving each periodic job its own history of the past 100 periodic jobs, and only scheduling a job if it's not in the history.
 				EnqueuedAt: epoch,
-				Args:       pl.JobParameters, //Pass parameters to scheduled job here
+				Args:       pl.JobParameters, // Pass parameters to scheduled job here
 			}
 
 			rawJSON, err := utils.SerializeJob(job)
@@ -135,8 +135,8 @@ func (pe *periodicEnqueuer) enqueue() error {
 
 			logger.Infof("Schedule job %s for policy %s at %d\n", pj.jobName, pl.PolicyID, epoch)
 		}
-		//Directly use redis conn to update the periodic job (policy) status
-		//Do not care the result
+		// Directly use redis conn to update the periodic job (policy) status
+		// Do not care the result
 		conn.Do("HMSET", utils.KeyJobStats(pe.namespace, pl.PolicyID), "status", job.JobStatusScheduled, "update_time", time.Now().Unix())
 	}
 

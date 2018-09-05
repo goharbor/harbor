@@ -31,7 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/ui/config"
 )
 
-//SystemInfoAPI handle requests for getting system info /api/systeminfo
+// SystemInfoAPI handle requests for getting system info /api/systeminfo
 type SystemInfoAPI struct {
 	BaseController
 }
@@ -39,18 +39,18 @@ type SystemInfoAPI struct {
 const defaultRootCert = "/etc/ui/ca/ca.crt"
 const harborVersionFile = "/harbor/UIVERSION"
 
-//SystemInfo models for system info.
+// SystemInfo models for system info.
 type SystemInfo struct {
 	HarborStorage Storage `json:"storage"`
 }
 
-//Storage models for storage.
+// Storage models for storage.
 type Storage struct {
 	Total uint64 `json:"total"`
 	Free  uint64 `json:"free"`
 }
 
-//namespaces stores all name spaces on Clair, it should be initialised only once.
+// namespaces stores all name spaces on Clair, it should be initialised only once.
 type clairNamespaces struct {
 	sync.RWMutex
 	l     []string
@@ -84,7 +84,7 @@ var (
 	namespaces = &clairNamespaces{}
 )
 
-//GeneralInfo wraps common systeminfo for anonymous request
+// GeneralInfo wraps common systeminfo for anonymous request
 type GeneralInfo struct {
 	WithNotary                  bool                             `json:"with_notary"`
 	WithClair                   bool                             `json:"with_clair"`
@@ -136,7 +136,7 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 	sia.ServeJSON()
 }
 
-//GetCert gets default self-signed certificate.
+// GetCert gets default self-signed certificate.
 func (sia *SystemInfoAPI) GetCert() {
 	sia.validate()
 	if _, err := os.Stat(defaultRootCert); err == nil {
@@ -224,7 +224,7 @@ func getClairVulnStatus() *models.ClairVulnerabilityStatus {
 		m := make(map[string]int64)
 		for _, e := range l {
 			ns := strings.Split(e.Namespace, ":")
-			//only returns the latest time of one distro, i.e. unbuntu:14.04 and ubuntu:15.4 shares one timestamp
+			// only returns the latest time of one distro, i.e. unbuntu:14.04 and ubuntu:15.4 shares one timestamp
 			el := e.LastUpdate.UTC().Unix()
 			if ts, ok := m[ns[0]]; !ok || ts < el {
 				m[ns[0]] = el
@@ -234,7 +234,7 @@ func getClairVulnStatus() *models.ClairVulnerabilityStatus {
 		if err != nil {
 			log.Errorf("Failed to get namespace list from Clair, error: %v", err)
 		}
-		//For namespaces not reported by notifier, the timestamp will be the overall db timestamp.
+		// For namespaces not reported by notifier, the timestamp will be the overall db timestamp.
 		for _, n := range list {
 			if _, ok := m[n]; !ok {
 				m[n] = res.OverallUTC

@@ -47,7 +47,7 @@ func TestPublishPolicy(t *testing.T) {
 
 	go func() {
 		defer cancel()
-		//wait and then publish
+		// wait and then publish
 		<-time.After(200 * time.Millisecond)
 
 		p := &period.PeriodicJobPolicy{
@@ -82,7 +82,7 @@ func TestPublishPolicy(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		//send quit signal
+		// send quit signal
 		<-time.After(200 * time.Millisecond)
 		err = tests.Clear(utils.KeyPeriodicNotification(tests.GiveMeTestNamespace()), conn)
 		if err != nil {
@@ -131,7 +131,7 @@ func TestPublishHook(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		//send quit signal
+		// send quit signal
 		<-time.After(200 * time.Millisecond)
 		err = tests.Clear(utils.KeyPeriodicNotification(tests.GiveMeTestNamespace()), conn)
 		if err != nil {
@@ -185,7 +185,7 @@ func TestPublishCommands(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		//hold for a while
+		// hold for a while
 		<-time.After(200 * time.Millisecond)
 	}()
 

@@ -32,7 +32,7 @@ var (
 	once  sync.Once
 )
 
-//GetOrmer return the singleton of Ormer for clair DB.
+// GetOrmer return the singleton of Ormer for clair DB.
 func GetOrmer() orm.Ormer {
 	once.Do(func() {
 		dbInstance, err := orm.GetDB(dao.ClairDBAlias)
@@ -47,7 +47,7 @@ func GetOrmer() orm.Ormer {
 	return ormer
 }
 
-//GetLastUpdate query the table `keyvalue` in clair's DB return the value of `updater/last`
+// GetLastUpdate query the table `keyvalue` in clair's DB return the value of `updater/last`
 func GetLastUpdate() (int64, error) {
 	var list orm.ParamsList
 	num, err := GetOrmer().Raw("SELECT value from keyvalue where key=?", updaterLast).ValuesFlat(&list)
@@ -60,7 +60,7 @@ func GetLastUpdate() (int64, error) {
 			return 0, fmt.Errorf("The value: %v, is non-string", list[0])
 		}
 		res, err := strconv.ParseInt(s, 0, 64)
-		if err != nil { //shouldn't be here.
+		if err != nil { // shouldn't be here.
 			return 0, err
 		}
 		return res, nil
@@ -68,6 +68,6 @@ func GetLastUpdate() (int64, error) {
 	if num > 1 {
 		return 0, fmt.Errorf("Multiple entries for %s in Clair DB", updaterLast)
 	}
-	//num is zero, it's not updated yet.
+	// num is zero, it's not updated yet.
 	return 0, nil
 }

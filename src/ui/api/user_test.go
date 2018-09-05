@@ -40,7 +40,7 @@ func TestUsersPost(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	//case 1: register a new user without admin auth, expect 400, because self registration is on
+	// case 1: register a new user without admin auth, expect 400, because self registration is on
 	fmt.Println("Register user without admin auth")
 	code, err := apiTest.UsersPost(testUser0002)
 	if err != nil {
@@ -50,7 +50,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(400, code, "Add user status should be 400")
 	}
 
-	//case 2: register a new user with admin auth, but username is empty, expect 400
+	// case 2: register a new user with admin auth, but username is empty, expect 400
 	fmt.Println("Register user with admin auth, but username is empty")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
@@ -60,7 +60,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(400, code, "Add user status should be 400")
 	}
 
-	//case 3: register a new user with admin auth, but bad username format, expect 400
+	// case 3: register a new user with admin auth, but bad username format, expect 400
 	testUser0002.Username = "test@$"
 	fmt.Println("Register user with admin auth, but bad username format")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
@@ -71,7 +71,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(400, code, "Add user status should be 400")
 	}
 
-	//case 4: register a new user with admin auth, but bad userpassword format, expect 400
+	// case 4: register a new user with admin auth, but bad userpassword format, expect 400
 	testUser0002.Username = "testUser0002"
 	fmt.Println("Register user with admin auth, but empty password.")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
@@ -82,7 +82,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(400, code, "Add user status should be 400")
 	}
 
-	//case 5: register a new user with admin auth, but email is empty, expect 400
+	// case 5: register a new user with admin auth, but email is empty, expect 400
 	testUser0002.Password = "testUser0002"
 	fmt.Println("Register user with admin auth, but email is empty")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
@@ -93,7 +93,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(400, code, "Add user status should be 400")
 	}
 
-	//case 6: register a new user with admin auth, but bad email format, expect 400
+	// case 6: register a new user with admin auth, but bad email format, expect 400
 	testUser0002.Email = "test..."
 	fmt.Println("Register user with admin auth, but bad email format")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
@@ -104,7 +104,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(400, code, "Add user status should be 400")
 	}
 
-	//case 7: register a new user with admin auth, but userrealname is empty, expect 400
+	// case 7: register a new user with admin auth, but userrealname is empty, expect 400
 	/*
 		testUser0002.Email = "testUser0002@mydomain.com"
 		fmt.Println("Register user with admin auth, but user realname is empty")
@@ -116,7 +116,7 @@ func TestUsersPost(t *testing.T) {
 			assert.Equal(400, code, "Add user status should be 400")
 		}
 	*/
-	//case 8: register a new user with admin auth, but bad userrealname format, expect 400
+	// case 8: register a new user with admin auth, but bad userrealname format, expect 400
 	testUser0002.Email = "testUser0002@mydomain.com"
 	testUser0002.Realname = "test$com"
 	fmt.Println("Register user with admin auth, but bad user realname format")
@@ -129,7 +129,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(400, code, "Add user status should be 400")
 	}
 
-	//case 9: register a new user with admin auth, but bad user comment, expect 400
+	// case 9: register a new user with admin auth, but bad user comment, expect 400
 	testUser0002.Realname = "testUser0002"
 	testUser0002.Comment = "vmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
 	fmt.Println("Register user with admin auth, but user comment length is illegal")
@@ -141,7 +141,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(400, code, "Add user status should be 400")
 	}
 
-	//case 10: register a new user with admin auth, expect 201
+	// case 10: register a new user with admin auth, expect 201
 	fmt.Println("Register user with admin auth, right parameters")
 	testUser0002.Comment = "test user"
 	code, err = apiTest.UsersPost(testUser0002, *admin)
@@ -152,7 +152,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(201, code, "Add user status should be 201")
 	}
 
-	//case 11: register duplicate user with admin auth, expect 409
+	// case 11: register duplicate user with admin auth, expect 409
 	fmt.Println("Register duplicate user with admin auth")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
@@ -162,7 +162,7 @@ func TestUsersPost(t *testing.T) {
 		assert.Equal(409, code, "Add user status should be 409")
 	}
 
-	//case 12: register a new user with admin auth, but duplicate email, expect 409
+	// case 12: register a new user with admin auth, but duplicate email, expect 409
 	fmt.Println("Register user with admin auth, but duplicate email")
 	testUser0002.Username = "testUsertest"
 	testUser0002.Email = "testUser0002@mydomain.com"
@@ -182,7 +182,7 @@ func TestUsersGet(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	testUser0002.Username = "testUser0002"
-	//case 1: Get user2 with common auth, but no userid in path, expect 403
+	// case 1: Get user2 with common auth, but no userid in path, expect 403
 
 	testUser0002Auth = &usrInfo{"testUser0002", "testUser0002"}
 	code, users, err := apiTest.UsersGet(testUser0002.Username, *testUser0002Auth)
@@ -192,7 +192,7 @@ func TestUsersGet(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Get users status should be 403")
 	}
-	//case 2: Get user2 with admin auth, expect 200
+	// case 2: Get user2 with admin auth, expect 200
 	code, users, err = apiTest.UsersGet(testUser0002.Username, *admin)
 	if err != nil {
 		t.Error("Error occurred while get users", err.Error())
@@ -210,7 +210,7 @@ func TestUsersGetByID(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	//case 1: Get user2 with userID and his own auth, expect 200
+	// case 1: Get user2 with userID and his own auth, expect 200
 	code, user, err := apiTest.UsersGetByID(testUser0002.Username, *testUser0002Auth, testUser0002ID)
 	if err != nil {
 		t.Error("Error occurred while get users", err.Error())
@@ -220,7 +220,7 @@ func TestUsersGetByID(t *testing.T) {
 		assert.Equal(testUser0002.Username, user.Username, "Get users username should be equal")
 		assert.Equal(testUser0002.Email, user.Email, "Get users email should be equal")
 	}
-	//case 2: Get user2 with user3 auth, expect 403
+	// case 2: Get user2 with user3 auth, expect 403
 	testUser0003.Username = "testUser0003"
 	testUser0003.Email = "testUser0003@mydomain.com"
 	testUser0003.Password = "testUser0003"
@@ -241,7 +241,7 @@ func TestUsersGetByID(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Get users status should be 403")
 	}
-	//case 3: Get user that does not exist with user2 auth, expect 404 not found.
+	// case 3: Get user that does not exist with user2 auth, expect 404 not found.
 	code, user, err = apiTest.UsersGetByID(testUser0002.Username, *testUser0002Auth, 1000)
 	if err != nil {
 		t.Error("Error occurred while get users", err.Error())
@@ -266,7 +266,7 @@ func TestUsersPut(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 	var profile apilib.UserProfile
-	//case 1: change user2 profile with user3 auth
+	// case 1: change user2 profile with user3 auth
 	code, err := apiTest.UsersPut(testUser0002ID, profile, *testUser0003Auth)
 	if err != nil {
 		t.Error("Error occurred while change user profile", err.Error())
@@ -274,7 +274,7 @@ func TestUsersPut(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Change user profile status should be 403")
 	}
-	//case 2: change user2 profile with user2 auth, but bad parameters format.
+	// case 2: change user2 profile with user2 auth, but bad parameters format.
 	code, err = apiTest.UsersPut(testUser0002ID, profile, *testUser0002Auth)
 	if err != nil {
 		t.Error("Error occurred while change user profile", err.Error())
@@ -282,7 +282,7 @@ func TestUsersPut(t *testing.T) {
 	} else {
 		assert.Equal(400, code, "Change user profile status should be 400")
 	}
-	//case 3: change user2 profile with user2 auth, but duplicate email.
+	// case 3: change user2 profile with user2 auth, but duplicate email.
 	profile.Realname = "test user"
 	profile.Email = "testUser0003@mydomain.com"
 	profile.Comment = "change profile"
@@ -293,7 +293,7 @@ func TestUsersPut(t *testing.T) {
 	} else {
 		assert.Equal(409, code, "Change user profile status should be 409")
 	}
-	//case 4: change user2 profile with user2 auth, right parameters format.
+	// case 4: change user2 profile with user2 auth, right parameters format.
 	profile.Realname = "test user"
 	profile.Email = "testUser0002@vmware.com"
 	profile.Comment = "change profile"
@@ -311,7 +311,7 @@ func TestUsersToggleAdminRole(t *testing.T) {
 	fmt.Println("Testing Toggle User Admin Role")
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
-	//case 1: toggle user2 admin role without admin auth
+	// case 1: toggle user2 admin role without admin auth
 	code, err := apiTest.UsersToggleAdminRole(testUser0002ID, *testUser0002Auth, true)
 	if err != nil {
 		t.Error("Error occurred while toggle user admin role", err.Error())
@@ -319,7 +319,7 @@ func TestUsersToggleAdminRole(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Toggle user admin role status should be 403")
 	}
-	//case 2: toggle user2 admin role with admin auth
+	// case 2: toggle user2 admin role with admin auth
 	code, err = apiTest.UsersToggleAdminRole(testUser0002ID, *admin, true)
 	if err != nil {
 		t.Error("Error occurred while toggle user admin role", err.Error())
@@ -488,7 +488,7 @@ func TestUsersDelete(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	t.Log("delete user-case 1")
-	//case 1:delete user without admin auth
+	// case 1:delete user without admin auth
 	code, err := apiTest.UsersDelete(testUser0002ID, *testUser0003Auth)
 	if err != nil {
 		t.Error("Error occurred while delete test user", err.Error())
@@ -496,7 +496,7 @@ func TestUsersDelete(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Delete test user status should be 403")
 	}
-	//case 2: delete user with admin auth, user2 has already been toggled to admin, but can not delete himself
+	// case 2: delete user with admin auth, user2 has already been toggled to admin, but can not delete himself
 	t.Log("delete user-case 2")
 	code, err = apiTest.UsersDelete(testUser0002ID, *testUser0002Auth)
 	if err != nil {
@@ -505,7 +505,7 @@ func TestUsersDelete(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Delete test user status should be 403")
 	}
-	//case 3: delete user with admin auth
+	// case 3: delete user with admin auth
 	t.Log("delete user-case 3")
 	code, err = apiTest.UsersDelete(testUser0002ID, *admin)
 	if err != nil {
@@ -514,7 +514,7 @@ func TestUsersDelete(t *testing.T) {
 	} else {
 		assert.Equal(200, code, "Delete test user status should be 200")
 	}
-	//delete user3 with admin auth
+	// delete user3 with admin auth
 	code, err = apiTest.UsersDelete(testUser0003ID, *admin)
 	if err != nil {
 		t.Error("Error occurred while delete test user", err.Error())

@@ -91,7 +91,7 @@ func DeleteUserGroup(id int) error {
 	o := dao.GetOrmer()
 	_, err := o.Delete(&userGroup)
 	if err == nil {
-		//Delete all related project members
+		// Delete all related project members
 		sql := `delete from project_member where entity_id = ? and entity_type='g'`
 		_, err := o.Raw(sql, id).Exec()
 		if err != nil {
@@ -147,7 +147,7 @@ func GetGroupDNQueryCondition(userGroupList []*models.UserGroup) string {
 			count++
 		}
 	}
-	//No LDAP Group found
+	// No LDAP Group found
 	if count == 0 {
 		return ""
 	}

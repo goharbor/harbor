@@ -240,7 +240,7 @@ func isUserResetable(u *models.User) bool {
 }
 
 func init() {
-	//conf/app.conf -> os.Getenv("config_path")
+	// conf/app.conf -> os.Getenv("config_path")
 	configPath := os.Getenv("CONFIG_PATH")
 	if len(configPath) != 0 {
 		log.Infof("Config path: %s", configPath)

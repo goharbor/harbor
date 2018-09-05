@@ -2,35 +2,35 @@
 
 package logger
 
-//Interface for logger.
+// Interface for logger.
 type Interface interface {
-	//For debuging
+	// For debuging
 	Debug(v ...interface{})
 
-	//For debuging with format
+	// For debuging with format
 	Debugf(format string, v ...interface{})
 
-	//For logging info
+	// For logging info
 	Info(v ...interface{})
 
-	//For logging info with format
+	// For logging info with format
 	Infof(format string, v ...interface{})
 
-	//For warning
+	// For warning
 	Warning(v ...interface{})
 
-	//For warning with format
+	// For warning with format
 	Warningf(format string, v ...interface{})
 
-	//For logging error
+	// For logging error
 	Error(v ...interface{})
 
-	//For logging error with format
+	// For logging error with format
 	Errorf(format string, v ...interface{})
 
-	//For fatal error
+	// For fatal error
 	Fatal(v ...interface{})
 
-	//For fatal error with error
+	// For fatal error with error
 	Fatalf(format string, v ...interface{})
 }

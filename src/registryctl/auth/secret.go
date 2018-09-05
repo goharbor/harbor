@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/secret"
 )
 
-//HarborSecret is the prefix of the value of Authorization header.
+// HarborSecret is the prefix of the value of Authorization header.
 const HarborSecret = secret.HeaderPrefix
 
 var (

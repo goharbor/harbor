@@ -26,7 +26,7 @@ func TestPingEmail(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	//case 1: ping email server without admin role
+	// case 1: ping email server without admin role
 	code, _, err := apiTest.PingEmail(*testUser, nil)
 	if err != nil {
 		t.Errorf("failed to test ping email server: %v", err)
@@ -35,7 +35,7 @@ func TestPingEmail(t *testing.T) {
 
 	assert.Equal(401, code, "the status code of ping email server with non-admin user should be 401")
 
-	//case 2: empty email host
+	// case 2: empty email host
 	settings := `{
 		"email_host":     ""
 	}`
@@ -48,7 +48,7 @@ func TestPingEmail(t *testing.T) {
 
 	assert.Equal(400, code)
 
-	//case 3: secure connection with admin role
+	// case 3: secure connection with admin role
 	settings = `{
 		"email_host":     "smtp.gmail.com",
 		"email_port":     465,
@@ -65,7 +65,7 @@ func TestPingEmail(t *testing.T) {
 
 	assert.Equal(400, code)
 
-	//case 4: ping email server whose settings are read from config
+	// case 4: ping email server whose settings are read from config
 	code, _, err = apiTest.PingEmail(*admin, nil)
 	if err != nil {
 		t.Errorf("failed to test ping email server: %v", err)

@@ -27,7 +27,7 @@ const (
 	manifestURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`
 	catalogURLPattern  = `/v2/_catalog`
 	imageInfoCtxKey    = contextKey("ImageInfo")
-	//TODO: temp solution, remove after vmware/harbor#2242 is resolved.
+	// TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	tokenUsername = "harbor-ui"
 )
 
@@ -39,7 +39,7 @@ var NotaryEndpoint = ""
 
 // MatchPullManifest checks if the request looks like a request to pull manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values
 func MatchPullManifest(req *http.Request) (bool, string, string) {
-	//TODO: add user agent check.
+	// TODO: add user agent check.
 	if req.Method != http.MethodGet {
 		return false, "", ""
 	}
@@ -327,7 +327,7 @@ func matchNotaryDigest(img imageInfo) (bool, error) {
 	return false, nil
 }
 
-//A sha256 is a string with 64 characters.
+// A sha256 is a string with 64 characters.
 func isDigest(ref string) bool {
 	return strings.HasPrefix(ref, "sha256:") && len(ref) == 71
 }

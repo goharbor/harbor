@@ -5,21 +5,21 @@ import (
 	"testing"
 )
 
-//Test the utility function parseRedisConfig
+// Test the utility function parseRedisConfig
 func TestParseRedisConfig(t *testing.T) {
-	//Case 1: empty addr
+	// Case 1: empty addr
 	redisAddr := ""
 	if _, err := parseRedisConfig(redisAddr); err == nil {
 		t.Fatal("expect non nil error but got nil one if addr is empty")
 	}
 
-	//Case 2: short pattern, addr:port
+	// Case 2: short pattern, addr:port
 	redisAddr = "redis:6379"
 	if parsedConnStr, err := parseRedisConfig(redisAddr); err != nil {
 		t.Fatalf("expect nil error but got non nil one if addr is short pattern: %s\n", parsedConnStr)
 	}
 
-	//Case 3: long pattern but miss some parts
+	// Case 3: long pattern but miss some parts
 	redisAddr = "redis:6379,100"
 	if parsedConnStr, err := parseRedisConfig(redisAddr); err != nil {
 		t.Fatalf("expect nil error but got non nil one if addr is long pattern with some parts missing: %s\n", parsedConnStr)
@@ -29,7 +29,7 @@ func TestParseRedisConfig(t *testing.T) {
 		}
 	}
 
-	//Case 4: long pattern
+	// Case 4: long pattern
 	redisAddr = "redis:6379,100,Passw0rd,1"
 	if parsedConnStr, err := parseRedisConfig(redisAddr); err != nil {
 		t.Fatal("expect nil error but got non nil one if addr is long pattern")

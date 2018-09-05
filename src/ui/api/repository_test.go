@@ -33,7 +33,7 @@ func TestGetRepos(t *testing.T) {
 	keyword := "library/hello-world"
 
 	fmt.Println("Testing Repos Get API")
-	//-------------------case 1 : response code = 200------------------------//
+	// -------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
 	code, repositories, err := apiTest.GetRepos(*admin, projectID, keyword)
 	if err != nil {
@@ -48,7 +48,7 @@ func TestGetRepos(t *testing.T) {
 		}
 	}
 
-	//-------------------case 2 : response code = 404------------------------//
+	// -------------------case 2 : response code = 404------------------------//
 	fmt.Println("case 2 : response code = 404:project  not found")
 	projectID = "111"
 	httpStatusCode, _, err := apiTest.GetRepos(*admin, projectID, keyword)
@@ -59,7 +59,7 @@ func TestGetRepos(t *testing.T) {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
 
-	//-------------------case 3 : response code = 400------------------------//
+	// -------------------case 3 : response code = 400------------------------//
 	fmt.Println("case 3 : response code = 400,invalid project_id")
 	projectID = "ccc"
 	httpStatusCode, _, err = apiTest.GetRepos(*admin, projectID, keyword)
@@ -78,7 +78,7 @@ func TestGetReposTags(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	//-------------------case 1 : response code = 404------------------------//
+	// -------------------case 1 : response code = 404------------------------//
 	fmt.Println("case 1 : response code = 404,repo not found")
 	repository := "errorRepos"
 	code, _, err := apiTest.GetReposTags(*admin, repository)
@@ -87,7 +87,7 @@ func TestGetReposTags(t *testing.T) {
 	} else {
 		assert.Equal(int(404), code, "httpStatusCode should be 404")
 	}
-	//-------------------case 2 : response code = 200------------------------//
+	// -------------------case 2 : response code = 200------------------------//
 	fmt.Println("case 2 : response code = 200")
 	repository = "library/hello-world"
 	code, tags, err := apiTest.GetReposTags(*admin, repository)
@@ -103,7 +103,7 @@ func TestGetReposTags(t *testing.T) {
 		}
 	}
 
-	//-------------------case 3 : response code = 404------------------------//
+	// -------------------case 3 : response code = 404------------------------//
 	fmt.Println("case 3 : response code = 404")
 	repository = "library/hello-world"
 	tag := "not_exist_tag"
@@ -111,7 +111,7 @@ func TestGetReposTags(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(http.StatusNotFound, code)
 
-	//-------------------case 4 : response code = 200------------------------//
+	// -------------------case 4 : response code = 200------------------------//
 	fmt.Println("case 4 : response code = 200")
 	repository = "library/hello-world"
 	tag = "latest"
@@ -133,7 +133,7 @@ func TestGetReposManifests(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	fmt.Println("Testing ReposManifests Get API")
-	//-------------------case 1 : response code = 200------------------------//
+	// -------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
 	repoName = "library/hello-world"
 	tag = "latest"
@@ -144,7 +144,7 @@ func TestGetReposManifests(t *testing.T) {
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
-	//-------------------case 2 : response code = 404------------------------//
+	// -------------------case 2 : response code = 404------------------------//
 	fmt.Println("case 2 : response code = 404:tags error,manifest unknown")
 	tag = "l"
 	httpStatusCode, err = apiTest.GetReposManifests(*admin, repoName, tag)
@@ -155,7 +155,7 @@ func TestGetReposManifests(t *testing.T) {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
 
-	//-------------------case 3 : response code = 404------------------------//
+	// -------------------case 3 : response code = 404------------------------//
 	fmt.Println("case 3 : response code = 404,repo not found")
 	repoName = "111"
 	httpStatusCode, err = apiTest.GetReposManifests(*admin, repoName, tag)
@@ -175,7 +175,7 @@ func TestGetReposTop(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	fmt.Println("Testing ReposTop Get API")
-	//-------------------case 1 : response code = 400------------------------//
+	// -------------------case 1 : response code = 400------------------------//
 	fmt.Println("case 1 : response code = 400,invalid count")
 	count := "cc"
 	code, _, err := apiTest.GetReposTop(*admin, count)
@@ -185,7 +185,7 @@ func TestGetReposTop(t *testing.T) {
 		assert.Equal(int(400), code, "response code should be 400")
 	}
 
-	//-------------------case 2 : response code = 200------------------------//
+	// -------------------case 2 : response code = 200------------------------//
 	fmt.Println("case 2 : response code = 200")
 	count = "1"
 	code, repos, err := apiTest.GetReposTop(*admin, count)

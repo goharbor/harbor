@@ -65,7 +65,7 @@ func ReversibleDecrypt(str, key string) (string, error) {
 		str = str[len(EncryptHeaderV1):]
 		return decryptAES(str, key)
 	}
-	//fallback to base64
+	// fallback to base64
 	return decodeB64(str)
 }
 

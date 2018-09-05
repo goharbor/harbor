@@ -7,13 +7,13 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 )
 
-//WatchConfigChanges is used to watch the configuration changes.
+// WatchConfigChanges is used to watch the configuration changes.
 func WatchConfigChanges(cfg map[string]interface{}) error {
 	if cfg == nil {
 		return errors.New("Empty configurations")
 	}
 
-	//Currently only watch the scan all policy change.
+	// Currently only watch the scan all policy change.
 	if v, ok := cfg[ScanAllPolicyTopic]; ok {
 		policyCfg := &models.ScanAllPolicy{}
 		if err := utils.ConvertMapToStruct(policyCfg, v); err != nil {

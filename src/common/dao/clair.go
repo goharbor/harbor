@@ -21,7 +21,7 @@ import (
 	"time"
 )
 
-//SetClairVulnTimestamp update the last_update of a namespace. If there's no record for this namespace, one will be created.
+// SetClairVulnTimestamp update the last_update of a namespace. If there's no record for this namespace, one will be created.
 func SetClairVulnTimestamp(namespace string, timestamp time.Time) error {
 	o := GetOrmer()
 	rec := &models.ClairVulnTimestamp{
@@ -43,7 +43,7 @@ func SetClairVulnTimestamp(namespace string, timestamp time.Time) error {
 	return nil
 }
 
-//ListClairVulnTimestamps return a list of all records in vuln timestamp table.
+// ListClairVulnTimestamps return a list of all records in vuln timestamp table.
 func ListClairVulnTimestamps() ([]*models.ClairVulnTimestamp, error) {
 	var res []*models.ClairVulnTimestamp
 	o := GetOrmer()

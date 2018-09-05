@@ -296,7 +296,7 @@ func (p *ProjectAPI) deletable(projectID int64) (*deletableResp, error) {
 		}, nil
 	}
 
-	//Check helm charts number
+	// Check helm charts number
 	if config.WithChartMuseum() {
 		charts, err := chartController.GetUtilityHandler().GetChartsByNs(p.project.Name)
 		if err != nil {
@@ -370,7 +370,7 @@ func (p *ProjectAPI) List() {
 				projects = append(projects, mps...)
 			}
 		}
-		//Query projects by user group
+		// Query projects by user group
 
 		if projects != nil {
 			projectIDs := []int64{}

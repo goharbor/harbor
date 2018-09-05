@@ -25,28 +25,28 @@ const (
 	maxRetryTimes = 5
 )
 
-//Context ...
+// Context ...
 type Context struct {
-	//System context
+	// System context
 	sysContext context.Context
 
-	//Logger for job
+	// Logger for job
 	logger logger.Interface
 
-	//op command func
+	// op command func
 	opCommandFunc job.CheckOPCmdFunc
 
-	//checkin func
+	// checkin func
 	checkInFunc job.CheckInFunc
 
-	//other required information
+	// other required information
 	properties map[string]interface{}
 
-	//admin server client
+	// admin server client
 	adminClient client.Client
 }
 
-//NewContext ...
+// NewContext ...
 func NewContext(sysCtx context.Context, adminClient client.Client) *Context {
 	return &Context{
 		sysContext:  sysCtx,
@@ -55,7 +55,7 @@ func NewContext(sysCtx context.Context, adminClient client.Client) *Context {
 	}
 }
 
-//Init ...
+// Init ...
 func (c *Context) Init() error {
 	var (
 		counter = 0
@@ -83,8 +83,8 @@ func (c *Context) Init() error {
 	return dao.InitDatabase(db)
 }
 
-//Build implements the same method in env.JobContext interface
-//This func will build the job execution context before running
+// Build implements the same method in env.JobContext interface
+// This func will build the job execution context before running
 func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 	jContext := &Context{
 		sysContext:  c.sysContext,
@@ -92,14 +92,14 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 		properties:  make(map[string]interface{}),
 	}
 
-	//Copy properties
+	// Copy properties
 	if len(c.properties) > 0 {
 		for k, v := range c.properties {
 			jContext.properties[k] = v
 		}
 	}
 
-	//Refresh admin server properties
+	// Refresh admin server properties
 	props, err := c.adminClient.GetCfgs()
 	if err != nil {
 		return nil, err
@@ -108,7 +108,7 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 		jContext.properties[k] = v
 	}
 
-	//Init logger here
+	// Init logger here
 	logPath := fmt.Sprintf("%s/%s.log", config.GetLogBasePath(), dep.ID)
 	jContext.logger = jlogger.New(logPath, config.GetLogLevel())
 	if jContext.logger == nil {
@@ -141,18 +141,18 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 	return jContext, nil
 }
 
-//Get implements the same method in env.JobContext interface
+// Get implements the same method in env.JobContext interface
 func (c *Context) Get(prop string) (interface{}, bool) {
 	v, ok := c.properties[prop]
 	return v, ok
 }
 
-//SystemContext implements the same method in env.JobContext interface
+// SystemContext implements the same method in env.JobContext interface
 func (c *Context) SystemContext() context.Context {
 	return c.sysContext
 }
 
-//Checkin is bridge func for reporting detailed status
+// Checkin is bridge func for reporting detailed status
 func (c *Context) Checkin(status string) error {
 	if c.checkInFunc != nil {
 		c.checkInFunc(status)
@@ -163,7 +163,7 @@ func (c *Context) Checkin(status string) error {
 	return nil
 }
 
-//OPCommand return the control operational command like stop/cancel if have
+// OPCommand return the control operational command like stop/cancel if have
 func (c *Context) OPCommand() (string, bool) {
 	if c.opCommandFunc != nil {
 		return c.opCommandFunc()
@@ -172,7 +172,7 @@ func (c *Context) OPCommand() (string, bool) {
 	return "", false
 }
 
-//GetLogger returns the logger
+// GetLogger returns the logger
 func (c *Context) GetLogger() logger.Interface {
 	return c.logger
 }

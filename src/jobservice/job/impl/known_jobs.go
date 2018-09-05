@@ -2,9 +2,9 @@
 
 package impl
 
-//Define the register name constants of known jobs
+// Define the register name constants of known jobs
 
 const (
-	//KnownJobDemo is name of demo job
+	// KnownJobDemo is name of demo job
 	KnownJobDemo = "DEMO"
 )

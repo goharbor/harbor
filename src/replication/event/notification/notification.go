@@ -14,21 +14,21 @@
 
 package notification
 
-//OnPushNotification contains the data required by this handler
+// OnPushNotification contains the data required by this handler
 type OnPushNotification struct {
-	//The name of the image that is being pushed
+	// The name of the image that is being pushed
 	Image string
 }
 
-//OnDeletionNotification contains the data required by this handler
+// OnDeletionNotification contains the data required by this handler
 type OnDeletionNotification struct {
-	//The name of the image that is being deleted
+	// The name of the image that is being deleted
 	Image string
 }
 
-//StartReplicationNotification contains data required by this handler
+// StartReplicationNotification contains data required by this handler
 type StartReplicationNotification struct {
-	//ID of the policy
+	// ID of the policy
 	PolicyID int64
 	Metadata map[string]interface{}
 }

@@ -30,10 +30,10 @@ import (
 	"github.com/goharbor/harbor/src/replication/trigger"
 )
 
-//OnPushHandler implements the notification handler interface to handle image on push event.
+// OnPushHandler implements the notification handler interface to handle image on push event.
 type OnPushHandler struct{}
 
-//Handle implements the same method of notification handler interface
+// Handle implements the same method of notification handler interface
 func (oph *OnPushHandler) Handle(value interface{}) error {
 	if value == nil {
 		return errors.New("OnPushHandler can not handle nil value")
@@ -49,9 +49,9 @@ func (oph *OnPushHandler) Handle(value interface{}) error {
 	return checkAndTriggerReplication(notification.Image, common_models.RepOpTransfer)
 }
 
-//IsStateful implements the same method of notification handler interface
+// IsStateful implements the same method of notification handler interface
 func (oph *OnPushHandler) IsStateful() bool {
-	//Statless
+	// Statless
 	return false
 }
 

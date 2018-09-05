@@ -22,17 +22,17 @@ import (
 )
 
 const (
-	//RepOpTransfer represents the operation of a job to transfer repository to a remote registry/harbor instance.
+	// RepOpTransfer represents the operation of a job to transfer repository to a remote registry/harbor instance.
 	RepOpTransfer string = "transfer"
-	//RepOpDelete represents the operation of a job to remove repository from a remote registry/harbor instance.
+	// RepOpDelete represents the operation of a job to remove repository from a remote registry/harbor instance.
 	RepOpDelete string = "delete"
-	//RepOpSchedule represents the operation of a job to schedule the real replication process
+	// RepOpSchedule represents the operation of a job to schedule the real replication process
 	RepOpSchedule string = "schedule"
-	//RepTargetTable is the table name for replication targets
+	// RepTargetTable is the table name for replication targets
 	RepTargetTable = "replication_target"
-	//RepJobTable is the table name for replication jobs
+	// RepJobTable is the table name for replication jobs
 	RepJobTable = "replication_job"
-	//RepPolicyTable is table name for replication policies
+	// RepPolicyTable is table name for replication policies
 	RepPolicyTable = "replication_policy"
 )
 
@@ -108,17 +108,17 @@ func (r *RepTarget) Valid(v *validation.Validation) {
 	}
 }
 
-//TableName is required by by beego orm to map RepTarget to table replication_target
+// TableName is required by by beego orm to map RepTarget to table replication_target
 func (r *RepTarget) TableName() string {
 	return RepTargetTable
 }
 
-//TableName is required by by beego orm to map RepJob to table replication_job
+// TableName is required by by beego orm to map RepJob to table replication_job
 func (r *RepJob) TableName() string {
 	return RepJobTable
 }
 
-//TableName is required by by beego orm to map RepPolicy to table replication_policy
+// TableName is required by by beego orm to map RepPolicy to table replication_policy
 func (r *RepPolicy) TableName() string {
 	return RepPolicyTable
 }

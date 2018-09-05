@@ -17,20 +17,20 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/env"
 )
 
-//DemoJob is the job to demostrate the job interface.
+// DemoJob is the job to demostrate the job interface.
 type DemoJob struct{}
 
-//MaxFails is implementation of same method in Interface.
+// MaxFails is implementation of same method in Interface.
 func (dj *DemoJob) MaxFails() uint {
 	return 3
 }
 
-//ShouldRetry ...
+// ShouldRetry ...
 func (dj *DemoJob) ShouldRetry() bool {
 	return true
 }
 
-//Validate is implementation of same method in Interface.
+// Validate is implementation of same method in Interface.
 func (dj *DemoJob) Validate(params map[string]interface{}) error {
 	if params == nil || len(params) == 0 {
 		return errors.New("parameters required for replication job")
@@ -47,7 +47,7 @@ func (dj *DemoJob) Validate(params map[string]interface{}) error {
 	return nil
 }
 
-//Run the replication logic here.
+// Run the replication logic here.
 func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error {
 	logger := ctx.GetLogger()
 
@@ -69,9 +69,9 @@ func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error 
 	/*if 1 != 0 {
 		return errors.New("I suicide")
 	}*/
-	//runtime error
-	//var runtime_err error = nil
-	//fmt.Println(runtime_err.Error())
+	// runtime error
+	// var runtime_err error = nil
+	// fmt.Println(runtime_err.Error())
 
 	logger.Info("check in 30%")
 	ctx.Checkin("30%")
@@ -83,10 +83,10 @@ func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error 
 	ctx.Checkin("100%")
 	time.Sleep(1 * time.Second)
 
-	//HOLD ON FOR A WHILE
+	// HOLD ON FOR A WHILE
 	logger.Error("Holding for 20 sec")
 	<-time.After(15 * time.Second)
-	//logger.Fatal("I'm back, check if I'm stopped/cancelled")
+	// logger.Fatal("I'm back, check if I'm stopped/cancelled")
 
 	if cmd, ok := ctx.OPCommand(); ok {
 		logger.Infof("cmd=%s\n", cmd)

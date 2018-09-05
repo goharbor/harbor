@@ -15,7 +15,7 @@ func TestAdminJobPost(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	//case 1: add a new admin job
+	// case 1: add a new admin job
 	code, err := apiTest.AddGC(*admin, adminJob001)
 	if err != nil {
 		t.Error("Error occurred while add a admin job", err.Error())

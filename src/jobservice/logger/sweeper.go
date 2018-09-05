@@ -14,26 +14,26 @@ const (
 	oneDay = 3600 * 24
 )
 
-//Sweeper takes charge of archive the outdated log files of jobs.
+// Sweeper takes charge of archive the outdated log files of jobs.
 type Sweeper struct {
 	context context.Context
 	workDir string
 	period  uint
 }
 
-//NewSweeper creates new prt of Sweeper
+// NewSweeper creates new prt of Sweeper
 func NewSweeper(ctx context.Context, workDir string, period uint) *Sweeper {
 	return &Sweeper{ctx, workDir, period}
 }
 
-//Start to work
+// Start to work
 func (s *Sweeper) Start() {
 	go s.loop()
 	Info("Logger sweeper is started")
 }
 
 func (s *Sweeper) loop() {
-	//Apply default if needed before starting
+	// Apply default if needed before starting
 	if s.period == 0 {
 		s.period = 1
 	}
@@ -42,7 +42,7 @@ func (s *Sweeper) loop() {
 		Info("Logger sweeper is stopped")
 	}()
 
-	//First run
+	// First run
 	go s.clear()
 
 	ticker := time.NewTicker(time.Duration(s.period*oneDay+5) * time.Second)

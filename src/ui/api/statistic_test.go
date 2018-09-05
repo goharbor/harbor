@@ -18,7 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	//"github.com/goharbor/harbor/tests/apitests/apilib"
+	// "github.com/goharbor/harbor/tests/apitests/apilib"
 )
 
 func TestStatisticGet(t *testing.T) {
@@ -28,13 +28,13 @@ func TestStatisticGet(t *testing.T) {
 
 	apiTest := newHarborAPI()
 
-	//prepare for test
+	// prepare for test
 
 	var privateProjectCount, privateRepoCount int32
 	var priPublicProjectCount, priPublicRepoCount int32
 	var priTotalProjectCount, priTotalRepoCount int32
 
-	//case 1: case 1: user not login, expect fail to get status info.
+	// case 1: case 1: user not login, expect fail to get status info.
 	fmt.Println("case 1: user not login, expect fail to get status info.")
 	httpStatusCode, result, err := apiTest.StatisticGet(*unknownUsr)
 	if err != nil {
@@ -44,7 +44,7 @@ func TestStatisticGet(t *testing.T) {
 		assert.Equal(httpStatusCode, int(401), "Case 1: Get status info without login. (401)")
 	}
 
-	//case 2: admin successful login, expect get status info successful.
+	// case 2: admin successful login, expect get status info successful.
 	fmt.Println("case 2: admin successful login, expect get status info successful.")
 	httpStatusCode, result, err = apiTest.StatisticGet(*admin)
 	if err != nil {
@@ -52,7 +52,7 @@ func TestStatisticGet(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(httpStatusCode, int(200), "Case 2: Get status info with admin login. (200)")
-		//fmt.Println("pri status data %+v", result)
+		// fmt.Println("pri status data %+v", result)
 		privateProjectCount = result.PrivateProjectCount
 		privateRepoCount = result.PrivateRepoCount
 		priPublicProjectCount = result.PublicProjectCount
@@ -61,14 +61,14 @@ func TestStatisticGet(t *testing.T) {
 		priTotalRepoCount = result.TotalRepoCount
 	}
 
-	//case 3: status info increased after add more project and repo.
+	// case 3: status info increased after add more project and repo.
 	fmt.Println("case 3: status info increased after add more project and repo.")
 
 	CommonAddProject()
 	CommonAddRepository()
 
 	httpStatusCode, result, err = apiTest.StatisticGet(*admin)
-	//fmt.Println("new status data %+v", result)
+	// fmt.Println("new status data %+v", result)
 
 	if err != nil {
 		t.Error("Error while get statistic information", err.Error())
@@ -83,7 +83,7 @@ func TestStatisticGet(t *testing.T) {
 
 	}
 
-	//delete the project and repo
+	// delete the project and repo
 	CommonDelProject()
 	CommonDelRepository()
 }

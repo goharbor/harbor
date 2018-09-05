@@ -30,7 +30,7 @@ import (
 // Client communicates with clair endpoint to scan image and get detailed scan result
 type Client struct {
 	endpoint string
-	//need to customize the logger to write output to job log.
+	// need to customize the logger to write output to job log.
 	logger *log.Logger
 	client *http.Client
 }

@@ -18,37 +18,37 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/opm"
 )
 
-//Handler defines approaches to handle the http requests.
+// Handler defines approaches to handle the http requests.
 type Handler interface {
-	//HandleLaunchJobReq is used to handle the job submission request.
+	// HandleLaunchJobReq is used to handle the job submission request.
 	HandleLaunchJobReq(w http.ResponseWriter, req *http.Request)
 
-	//HandleGetJobReq is used to handle the job stats query request.
+	// HandleGetJobReq is used to handle the job stats query request.
 	HandleGetJobReq(w http.ResponseWriter, req *http.Request)
 
-	//HandleJobActionReq is used to handle the job action requests (stop/retry).
+	// HandleJobActionReq is used to handle the job action requests (stop/retry).
 	HandleJobActionReq(w http.ResponseWriter, req *http.Request)
 
-	//HandleCheckStatusReq is used to handle the job service healthy status checking request.
+	// HandleCheckStatusReq is used to handle the job service healthy status checking request.
 	HandleCheckStatusReq(w http.ResponseWriter, req *http.Request)
 
-	//HandleJobLogReq is used to handle the request of getting job logs
+	// HandleJobLogReq is used to handle the request of getting job logs
 	HandleJobLogReq(w http.ResponseWriter, req *http.Request)
 }
 
-//DefaultHandler is the default request handler which implements the Handler interface.
+// DefaultHandler is the default request handler which implements the Handler interface.
 type DefaultHandler struct {
 	controller core.Interface
 }
 
-//NewDefaultHandler is constructor of DefaultHandler.
+// NewDefaultHandler is constructor of DefaultHandler.
 func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
 	return &DefaultHandler{
 		controller: ctl,
 	}
 }
 
-//HandleLaunchJobReq is implementation of method defined in interface 'Handler'
+// HandleLaunchJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Request) {
 	if !dh.preCheck(w) {
 		return
@@ -60,14 +60,14 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 		return
 	}
 
-	//unmarshal data
+	// unmarshal data
 	jobReq := models.JobRequest{}
 	if err = json.Unmarshal(data, &jobReq); err != nil {
 		dh.handleError(w, http.StatusInternalServerError, errs.HandleJSONDataError(err))
 		return
 	}
 
-	//Pass request to the controller for the follow-up.
+	// Pass request to the controller for the follow-up.
 	jobStats, err := dh.controller.LaunchJob(jobReq)
 	if err != nil {
 		dh.handleError(w, http.StatusInternalServerError, errs.LaunchJobError(err))
@@ -83,7 +83,7 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 	w.Write(data)
 }
 
-//HandleGetJobReq is implementation of method defined in interface 'Handler'
+// HandleGetJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Request) {
 	if !dh.preCheck(w) {
 		return
@@ -113,7 +113,7 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 	w.Write(data)
 }
 
-//HandleJobActionReq is implementation of method defined in interface 'Handler'
+// HandleJobActionReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Request) {
 	if !dh.preCheck(w) {
 		return
@@ -128,7 +128,7 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 		return
 	}
 
-	//unmarshal data
+	// unmarshal data
 	jobActionReq := models.JobActionRequest{}
 	if err = json.Unmarshal(data, &jobActionReq); err != nil {
 		dh.handleError(w, http.StatusInternalServerError, errs.HandleJSONDataError(err))
@@ -174,10 +174,10 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent) //only header, no content returned
+	w.WriteHeader(http.StatusNoContent) // only header, no content returned
 }
 
-//HandleCheckStatusReq is implementation of method defined in interface 'Handler'
+// HandleCheckStatusReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.Request) {
 	if !dh.preCheck(w) {
 		return
@@ -198,7 +198,7 @@ func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.
 	w.Write(data)
 }
 
-//HandleJobLogReq is implementation of method defined in interface 'Handler'
+// HandleJobLogReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Request) {
 	if !dh.preCheck(w) {
 		return

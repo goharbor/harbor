@@ -27,13 +27,13 @@ import (
 )
 
 const (
-	//ScheduleDaily : 'Daily'
+	// ScheduleDaily : 'Daily'
 	ScheduleDaily = "Daily"
-	//ScheduleWeekly : 'Weekly'
+	// ScheduleWeekly : 'Weekly'
 	ScheduleWeekly = "Weekly"
-	//ScheduleManual : 'Manual'
+	// ScheduleManual : 'Manual'
 	ScheduleManual = "Manual"
-	//ScheduleNone : 'None'
+	// ScheduleNone : 'None'
 	ScheduleNone = "None"
 )
 
@@ -45,13 +45,13 @@ type GCReq struct {
 	Parameters map[string]interface{} `json:"parameters"`
 }
 
-//ScheduleParam defines the parameter of schedule trigger
+// ScheduleParam defines the parameter of schedule trigger
 type ScheduleParam struct {
-	//Daily, Weekly, Manual, None
+	// Daily, Weekly, Manual, None
 	Type string `json:"type"`
-	//Optional, only used when type is 'weekly'
+	// Optional, only used when type is 'weekly'
 	Weekday int8 `json:"Weekday"`
-	//The time offset with the UTC 00:00 in seconds
+	// The time offset with the UTC 00:00 in seconds
 	Offtime int64 `json:"Offtime"`
 }
 

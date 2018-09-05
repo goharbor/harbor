@@ -91,13 +91,13 @@ func IncreasePullCount(name string) (err error) {
 	return nil
 }
 
-//RepositoryExists returns whether the repository exists according to its name.
+// RepositoryExists returns whether the repository exists according to its name.
 func RepositoryExists(name string) bool {
 	o := GetOrmer()
 	return o.QueryTable("repository").Filter("name", name).Exist()
 }
 
-//GetTopRepos returns the most popular repositories whose project ID is
+// GetTopRepos returns the most popular repositories whose project ID is
 // in projectIDs
 func GetTopRepos(projectIDs []int64, n int) ([]*models.RepoRecord, error) {
 	repositories := []*models.RepoRecord{}

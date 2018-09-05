@@ -133,7 +133,7 @@ type harborClaims struct {
 
 func TestMakeToken(t *testing.T) {
 	pk, crt := getKeyAndCertPath()
-	//overwrite the config values for testing.
+	// overwrite the config values for testing.
 	privateKey = pk
 	ra := []*token.ResourceActions{{
 		Type:    "repository",
@@ -147,7 +147,7 @@ func TestMakeToken(t *testing.T) {
 		t.Errorf("Error while making token: %v", err)
 	}
 	tokenString := tokenJSON.Token
-	//t.Logf("privatekey: %s, crt: %s", tokenString, crt)
+	// t.Logf("privatekey: %s, crt: %s", tokenString, crt)
 	pubKey, err := getPublicKey(crt)
 	if err != nil {
 		t.Errorf("Error while getting public key from cert: %s", crt)
@@ -268,7 +268,7 @@ func (f *fakeSecurityContext) GetProjectRoles(interface{}) []int {
 }
 
 func TestFilterAccess(t *testing.T) {
-	//TODO put initial data in DB to verify repository filter.
+	// TODO put initial data in DB to verify repository filter.
 	var err error
 	s := []string{"registry:catalog:*"}
 	a1 := GetResourceActions(s)

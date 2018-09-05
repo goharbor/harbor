@@ -47,7 +47,7 @@ func (h *Handler) Prepare() {
 	id, err := h.GetInt64FromPath(":id")
 	if err != nil {
 		log.Errorf("Failed to get job ID, error: %v", err)
-		//Avoid job service from resending...
+		// Avoid job service from resending...
 		h.Abort("200")
 		return
 	}
@@ -78,7 +78,7 @@ func (h *Handler) HandleScan() {
 	}
 }
 
-//HandleReplication handles the webhook of replication job
+// HandleReplication handles the webhook of replication job
 func (h *Handler) HandleReplication() {
 	log.Debugf("received replication job status update event: job-%d, status-%s", h.id, h.status)
 	if err := dao.UpdateRepJobStatus(h.id, h.status); err != nil {

@@ -247,4 +247,4 @@ func (ra *RepJobAPI) StopJobs() {
 	}
 }
 
-//TODO:add Post handler to call job service API to submit jobs by policy
+// TODO:add Post handler to call job service API to submit jobs by policy

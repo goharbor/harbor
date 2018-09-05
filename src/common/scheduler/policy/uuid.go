@@ -6,8 +6,8 @@ import (
 	"io"
 )
 
-//NewUUID will generate a new UUID.
-//Code copied from https://play.golang.org/p/4FkNSiUDMg
+// NewUUID will generate a new UUID.
+// Code copied from https://play.golang.org/p/4FkNSiUDMg
 func newUUID() (string, error) {
 	uuid := make([]byte, 16)
 	n, err := io.ReadFull(rand.Reader, uuid)

@@ -11,7 +11,7 @@ import (
 var testingScheduler = scheduler.DefaultScheduler
 
 func TestScanPolicyNotificationHandler(t *testing.T) {
-	//Scheduler should be running.
+	// Scheduler should be running.
 	testingScheduler.Start()
 	if !testingScheduler.IsRunning() {
 		t.Fatal("scheduler should be running")
@@ -32,7 +32,7 @@ func TestScanPolicyNotificationHandler(t *testing.T) {
 		t.Fatal("Handler does not work")
 	}
 
-	//Policy parameter changed.
+	// Policy parameter changed.
 	notification2 := ScanPolicyNotification{"daily", utcTime + 7200}
 	if err := handler.Handle(notification2); err != nil {
 		t.Fatal(err)
@@ -63,9 +63,9 @@ func TestScanPolicyNotificationHandler(t *testing.T) {
 		t.Fail()
 	}
 
-	//Clear
+	// Clear
 	testingScheduler.Stop()
-	//Waiting for everything is ready.
+	// Waiting for everything is ready.
 	<-time.After(1 * time.Second)
 	if testingScheduler.IsRunning() {
 		t.Fatal("scheduler should be stopped")

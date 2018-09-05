@@ -65,7 +65,7 @@ var (
 
 // Init configurations
 func Init() error {
-	//init key provider
+	// init key provider
 	initKeyProvider()
 	adminServerURL := os.Getenv("ADMINSERVER_URL")
 	if len(adminServerURL) == 0 {
@@ -517,7 +517,7 @@ func WithAdmiral() bool {
 	return len(AdmiralEndpoint()) > 0
 }
 
-//UAASettings returns the UAASettings to access UAA service.
+// UAASettings returns the UAASettings to access UAA service.
 func UAASettings() (*models.UAASettings, error) {
 	cfg, err := mg.Get()
 	if err != nil {

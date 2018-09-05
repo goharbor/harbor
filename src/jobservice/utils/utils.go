@@ -1,6 +1,6 @@
 // Copyright 2018 The Harbor Authors. All rights reserved.
 
-//Package utils provides reusable and sharable utilities for other packages and components.
+// Package utils provides reusable and sharable utilities for other packages and components.
 package utils
 
 import (
@@ -14,17 +14,17 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-//IsEmptyStr check if the specified str is empty (len ==0) after triming prefix and suffix spaces.
+// IsEmptyStr check if the specified str is empty (len ==0) after triming prefix and suffix spaces.
 func IsEmptyStr(str string) bool {
 	return len(strings.TrimSpace(str)) == 0
 }
 
-//ReadEnv return the value of env variable.
+// ReadEnv return the value of env variable.
 func ReadEnv(key string) string {
 	return os.Getenv(key)
 }
 
-//FileExists check if the specified exists.
+// FileExists check if the specified exists.
 func FileExists(file string) bool {
 	if !IsEmptyStr(file) {
 		_, err := os.Stat(file)
@@ -41,7 +41,7 @@ func FileExists(file string) bool {
 	return false
 }
 
-//DirExists check if the specified dir exists
+// DirExists check if the specified dir exists
 func DirExists(path string) bool {
 	if IsEmptyStr(path) {
 		return false
@@ -55,12 +55,12 @@ func DirExists(path string) bool {
 	return f.IsDir()
 }
 
-//IsValidPort check if port is valid.
+// IsValidPort check if port is valid.
 func IsValidPort(port uint) bool {
 	return port != 0 && port < 65536
 }
 
-//IsValidURL validates if the url is well-formted
+// IsValidURL validates if the url is well-formted
 func IsValidURL(address string) bool {
 	if IsEmptyStr(address) {
 		return false
@@ -73,7 +73,7 @@ func IsValidURL(address string) bool {
 	return true
 }
 
-//TranslateRedisAddress translates the comma format to redis URL
+// TranslateRedisAddress translates the comma format to redis URL
 func TranslateRedisAddress(commaFormat string) (string, bool) {
 	if IsEmptyStr(commaFormat) {
 		return "", false
@@ -86,14 +86,14 @@ func TranslateRedisAddress(commaFormat string) (string, bool) {
 	}
 
 	urlParts := []string{}
-	//section[0] should be host:port
+	// section[0] should be host:port
 	redisURL := fmt.Sprintf("redis://%s", sections[0])
 	if _, err := url.Parse(redisURL); err != nil {
 		return "", false
 	}
 	urlParts = append(urlParts, "redis://", sections[0])
-	//Ignore weight
-	//Check password
+	// Ignore weight
+	// Check password
 	if totalSections >= 3 && !IsEmptyStr(sections[2]) {
 		urlParts = []string{urlParts[0], fmt.Sprintf("%s:%s@", "arbitrary_username", sections[2]), urlParts[1]}
 	}
@@ -107,13 +107,13 @@ func TranslateRedisAddress(commaFormat string) (string, bool) {
 	return strings.Join(urlParts, ""), true
 }
 
-//JobScore represents the data item with score in the redis db.
+// JobScore represents the data item with score in the redis db.
 type JobScore struct {
 	JobBytes []byte
 	Score    int64
 }
 
-//GetZsetByScore get the items from the zset filtered by the specified score scope.
+// GetZsetByScore get the items from the zset filtered by the specified score scope.
 func GetZsetByScore(pool *redis.Pool, key string, scores []int64) ([]JobScore, error) {
 	if pool == nil || IsEmptyStr(key) || len(scores) < 2 {
 		return nil, errors.New("bad arguments")

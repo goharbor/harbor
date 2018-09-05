@@ -112,9 +112,9 @@ func TestDisablePolicy(t *testing.T) {
 	if tp.Disable() != nil {
 		t.Fatal("Failed to disable policy")
 	}
-	//Waiting for everything is stable
+	// Waiting for everything is stable
 	<-time.After(1 * time.Second)
-	//Copy value
+	// Copy value
 	var copiedCounter int32
 	atomic.StoreInt32(&copiedCounter, atomic.LoadInt32(&counter))
 	time.Sleep(2 * time.Second)

@@ -28,7 +28,7 @@ func TestIsAuthenticated(t *testing.T) {
 	isAuthenticated := context.IsAuthenticated()
 	assert.False(t, isAuthenticated)
 
-	//invalid secret
+	// invalid secret
 	context = NewSecurityContext("invalid_secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
@@ -36,7 +36,7 @@ func TestIsAuthenticated(t *testing.T) {
 	isAuthenticated = context.IsAuthenticated()
 	assert.False(t, isAuthenticated)
 
-	//valid secret
+	// valid secret
 	context = NewSecurityContext("secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
@@ -51,7 +51,7 @@ func TestGetUsername(t *testing.T) {
 	username := context.GetUsername()
 	assert.Equal(t, "", username)
 
-	//invalid secret
+	// invalid secret
 	context = NewSecurityContext("invalid_secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
@@ -59,7 +59,7 @@ func TestGetUsername(t *testing.T) {
 	username = context.GetUsername()
 	assert.Equal(t, "", username)
 
-	//valid secret
+	// valid secret
 	context = NewSecurityContext("secret",
 		secret.NewStore(map[string]string{
 			"secret": "username",
@@ -101,7 +101,7 @@ func TestHasReadPerm(t *testing.T) {
 	hasReadPerm := context.HasReadPerm("project_name")
 	assert.False(t, hasReadPerm)
 
-	//invalid secret
+	// invalid secret
 	context = NewSecurityContext("invalid_secret",
 		secret.NewStore(map[string]string{
 			"jobservice_secret": secret.JobserviceUser,
@@ -109,7 +109,7 @@ func TestHasReadPerm(t *testing.T) {
 	hasReadPerm = context.HasReadPerm("project_name")
 	assert.False(t, hasReadPerm)
 
-	//valid secret, project name
+	// valid secret, project name
 	context = NewSecurityContext("jobservice_secret",
 		secret.NewStore(map[string]string{
 			"jobservice_secret": secret.JobserviceUser,
@@ -117,7 +117,7 @@ func TestHasReadPerm(t *testing.T) {
 	hasReadPerm = context.HasReadPerm("project_name")
 	assert.True(t, hasReadPerm)
 
-	//valid secret, project ID
+	// valid secret, project ID
 	hasReadPerm = context.HasReadPerm(1)
 	assert.True(t, hasReadPerm)
 }
@@ -163,7 +163,7 @@ func TestGetMyProjects(t *testing.T) {
 }
 
 func TestGetProjectRoles(t *testing.T) {
-	//invalid secret
+	// invalid secret
 	context := NewSecurityContext("invalid_secret",
 		secret.NewStore(map[string]string{
 			"jobservice_secret": secret.JobserviceUser,

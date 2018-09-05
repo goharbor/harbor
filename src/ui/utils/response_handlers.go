@@ -24,17 +24,17 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
-//ResponseHandler provides utility to handle http response.
+// ResponseHandler provides utility to handle http response.
 type ResponseHandler interface {
 	Handle(*http.Response) error
 }
 
-//StatusRespHandler handles the response to check if the status is expected, if not returns an error.
+// StatusRespHandler handles the response to check if the status is expected, if not returns an error.
 type StatusRespHandler struct {
 	status int
 }
 
-//Handle ...
+// Handle ...
 func (s StatusRespHandler) Handle(resp *http.Response) error {
 	defer resp.Body.Close()
 	if resp.StatusCode != s.status {
@@ -54,12 +54,12 @@ func NewStatusRespHandler(sc int) ResponseHandler {
 	}
 }
 
-//JobLogRespHandler handles the response from jobservice to show the log of a job
+// JobLogRespHandler handles the response from jobservice to show the log of a job
 type JobLogRespHandler struct {
 	theAPI *api.BaseAPI
 }
 
-//Handle will consume the response of job service and put the content of the job log in the response of the API.
+// Handle will consume the response of job service and put the content of the job log in the response of the API.
 func (h JobLogRespHandler) Handle(resp *http.Response) error {
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
@@ -82,7 +82,7 @@ func (h JobLogRespHandler) Handle(resp *http.Response) error {
 	return nil
 }
 
-//NewJobLogRespHandler ...
+// NewJobLogRespHandler ...
 func NewJobLogRespHandler(apiHandler *api.BaseAPI) ResponseHandler {
 	return &JobLogRespHandler{
 		theAPI: apiHandler,

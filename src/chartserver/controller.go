@@ -15,58 +15,58 @@ const (
 	passwordKey = "UI_SECRET"
 )
 
-//Credential keeps the username and password for the basic auth
+// Credential keeps the username and password for the basic auth
 type Credential struct {
 	Username string
 	Password string
 }
 
-//Controller is used to handle flows of related requests based on the corresponding handlers
-//A reverse proxy will be created and managed to proxy the related traffics between API and
-//backend chart server
+// Controller is used to handle flows of related requests based on the corresponding handlers
+// A reverse proxy will be created and managed to proxy the related traffics between API and
+// backend chart server
 type Controller struct {
-	//The access endpoint of the backend chart repository server
+	// The access endpoint of the backend chart repository server
 	backendServerAddr *url.URL
 
-	//To cover the server info and status requests
+	// To cover the server info and status requests
 	baseHandler *BaseHandler
 
-	//To cover the chart repository requests
+	// To cover the chart repository requests
 	repositoryHandler *RepositoryHandler
 
-	//To cover all the manipulation requests
+	// To cover all the manipulation requests
 	manipulationHandler *ManipulationHandler
 
-	//To cover the other utility requests
+	// To cover the other utility requests
 	utilityHandler *UtilityHandler
 }
 
-//NewController is constructor of the chartserver.Controller
+// NewController is constructor of the chartserver.Controller
 func NewController(backendServer *url.URL) (*Controller, error) {
 	if backendServer == nil {
 		return nil, errors.New("failed to create chartserver.Controller: backend sever address is required")
 	}
 
-	//Try to create credential
+	// Try to create credential
 	cred := &Credential{
 		Username: userName,
 		Password: os.Getenv(passwordKey),
 	}
 
-	//Use customized reverse proxy
+	// Use customized reverse proxy
 	proxy := NewProxyEngine(backendServer, cred)
 
-	//Create http client with customized timeouts
+	// Create http client with customized timeouts
 	client := NewChartClient(cred)
 
-	//Initialize chart operator for use
+	// Initialize chart operator for use
 	operator := &ChartOperator{}
 
-	//Creat cache
+	// Creat cache
 	cacheCfg, err := getCacheConfig()
 	if err != nil {
-		//just log the error
-		//will not break the whole flow if failed to create cache
+		// just log the error
+		// will not break the whole flow if failed to create cache
 		hlog.Errorf("failed to get cache configuration with error: %s", err)
 	}
 	cache := NewChartCache(cacheCfg)
@@ -97,33 +97,33 @@ func NewController(backendServer *url.URL) (*Controller, error) {
 	}, nil
 }
 
-//GetBaseHandler returns the reference of BaseHandler
+// GetBaseHandler returns the reference of BaseHandler
 func (c *Controller) GetBaseHandler() *BaseHandler {
 	return c.baseHandler
 }
 
-//GetRepositoryHandler returns the reference of RepositoryHandler
+// GetRepositoryHandler returns the reference of RepositoryHandler
 func (c *Controller) GetRepositoryHandler() *RepositoryHandler {
 	return c.repositoryHandler
 }
 
-//GetManipulationHandler returns the reference of ManipulationHandler
+// GetManipulationHandler returns the reference of ManipulationHandler
 func (c *Controller) GetManipulationHandler() *ManipulationHandler {
 	return c.manipulationHandler
 }
 
-//GetUtilityHandler returns the reference of UtilityHandler
+// GetUtilityHandler returns the reference of UtilityHandler
 func (c *Controller) GetUtilityHandler() *UtilityHandler {
 	return c.utilityHandler
 }
 
-//What's the cache driver if it is set
+// What's the cache driver if it is set
 func parseCacheDriver() (string, bool) {
 	driver, ok := os.LookupEnv(cacheDriverENVKey)
 	return strings.ToLower(driver), ok
 }
 
-//Get and parse the configuration for the chart cache
+// Get and parse the configuration for the chart cache
 func getCacheConfig() (*ChartCacheConfig, error) {
 	driver, isSet := parseCacheDriver()
 	if !isSet {

@@ -139,8 +139,8 @@ func TestEnqueuePeriodicJob(t *testing.T) {
 		t.Error(err)
 	}
 
-	//cancel()
-	//<-time.After(1 * time.Second)
+	// cancel()
+	// <-time.After(1 * time.Second)
 }
 
 /*func TestCancelAndRetryJobWithHook(t *testing.T) {
@@ -173,7 +173,7 @@ func TestEnqueuePeriodicJob(t *testing.T) {
 	if err := wp.RegisterHook(res.Stats.JobID, ts.URL); err != nil {
 		t.Fatal(err)
 	}
-	//make sure it's running
+	// make sure it's running
 	timer := time.NewTimer(1 * time.Second)
 	defer timer.Stop()
 
@@ -188,7 +188,7 @@ CHECK:
 		}
 	}
 
-	//cancel
+	// cancel
 	if err := wp.CancelJob(res.Stats.JobID); err != nil {
 		t.Fatal(err)
 	}
@@ -204,7 +204,7 @@ CHECK:
 		t.Fatalf("expect none zero 'DieAt' but got 0 value")
 	}
 
-	//retry
+	// retry
 	if err := wp.RetryJob(updatedRes.Stats.JobID); err != nil {
 		t.Fatal(err)
 	}
@@ -315,16 +315,16 @@ func (j *fakeRunnableJob) Run(ctx env.JobContext, params map[string]interface{})
 }
 
 type fakeContext struct {
-	//System context
+	// System context
 	sysContext context.Context
 
-	//op command func
+	// op command func
 	opCommandFunc job.CheckOPCmdFunc
 
-	//checkin func
+	// checkin func
 	checkInFunc job.CheckInFunc
 
-	//other required information
+	// other required information
 	properties map[string]interface{}
 }
 
@@ -335,15 +335,15 @@ func newContext(sysCtx context.Context) *fakeContext {
 	}
 }
 
-//Build implements the same method in env.JobContext interface
-//This func will build the job execution context before running
+// Build implements the same method in env.JobContext interface
+// This func will build the job execution context before running
 func (c *fakeContext) Build(dep env.JobData) (env.JobContext, error) {
 	jContext := &fakeContext{
 		sysContext: c.sysContext,
 		properties: make(map[string]interface{}),
 	}
 
-	//Copy properties
+	// Copy properties
 	if len(c.properties) > 0 {
 		for k, v := range c.properties {
 			jContext.properties[k] = v
@@ -376,18 +376,18 @@ func (c *fakeContext) Build(dep env.JobData) (env.JobContext, error) {
 	return jContext, nil
 }
 
-//Get implements the same method in env.JobContext interface
+// Get implements the same method in env.JobContext interface
 func (c *fakeContext) Get(prop string) (interface{}, bool) {
 	v, ok := c.properties[prop]
 	return v, ok
 }
 
-//SystemContext implements the same method in env.JobContext interface
+// SystemContext implements the same method in env.JobContext interface
 func (c *fakeContext) SystemContext() context.Context {
 	return c.sysContext
 }
 
-//Checkin is bridge func for reporting detailed status
+// Checkin is bridge func for reporting detailed status
 func (c *fakeContext) Checkin(status string) error {
 	if c.checkInFunc != nil {
 		c.checkInFunc(status)
@@ -398,7 +398,7 @@ func (c *fakeContext) Checkin(status string) error {
 	return nil
 }
 
-//OPCommand return the control operational command like stop/cancel if have
+// OPCommand return the control operational command like stop/cancel if have
 func (c *fakeContext) OPCommand() (string, bool) {
 	if c.opCommandFunc != nil {
 		return c.opCommandFunc()
@@ -407,7 +407,7 @@ func (c *fakeContext) OPCommand() (string, bool) {
 	return "", false
 }
 
-//GetLogger returns the logger
+// GetLogger returns the logger
 func (c *fakeContext) GetLogger() logger.Interface {
 	return nil
 }

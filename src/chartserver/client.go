@@ -17,18 +17,18 @@ const (
 	idleConnectionTimeout = 30 * time.Second
 )
 
-//ChartClient is a http client to get the content from the external http server
+// ChartClient is a http client to get the content from the external http server
 type ChartClient struct {
-	//HTTP client
+	// HTTP client
 	httpClient *http.Client
 
-	//Auth info
+	// Auth info
 	credentail *Credential
 }
 
-//NewChartClient is constructor of ChartClient
-//credentail can be nil
-func NewChartClient(credentail *Credential) *ChartClient { //Create http client with customized timeouts
+// NewChartClient is constructor of ChartClient
+// credentail can be nil
+func NewChartClient(credentail *Credential) *ChartClient { // Create http client with customized timeouts
 	client := &http.Client{
 		Timeout: clientTimeout,
 		Transport: &http.Transport{
@@ -43,7 +43,7 @@ func NewChartClient(credentail *Credential) *ChartClient { //Create http client 
 	}
 }
 
-//GetContent get the bytes from the specified url
+// GetContent get the bytes from the specified url
 func (cc *ChartClient) GetContent(addr string) ([]byte, error) {
 	response, err := cc.sendRequest(addr, http.MethodGet, nil, []int{http.StatusOK})
 	if err != nil {
@@ -59,13 +59,13 @@ func (cc *ChartClient) GetContent(addr string) ([]byte, error) {
 	return content, nil
 }
 
-//DeleteContent sends deleting request to the addr to delete content
+// DeleteContent sends deleting request to the addr to delete content
 func (cc *ChartClient) DeleteContent(addr string) error {
 	_, err := cc.sendRequest(addr, http.MethodDelete, nil, []int{http.StatusOK})
 	return err
 }
 
-//sendRequest sends requests to the addr with the specified spec
+// sendRequest sends requests to the addr with the specified spec
 func (cc *ChartClient) sendRequest(addr string, method string, body io.Reader, expectedCodes []int) (*http.Response, error) {
 	if len(strings.TrimSpace(addr)) == 0 {
 		return nil, errors.New("empty url is not allowed")
@@ -81,7 +81,7 @@ func (cc *ChartClient) sendRequest(addr string, method string, body io.Reader, e
 		return nil, err
 	}
 
-	//Set basic auth
+	// Set basic auth
 	if cc.credentail != nil {
 		request.SetBasicAuth(cc.credentail.Username, cc.credentail.Password)
 	}

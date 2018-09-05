@@ -20,12 +20,12 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/golang-migrate/migrate"
-	_ "github.com/golang-migrate/migrate/database/postgres" //import pgsql driver for migrator
+	_ "github.com/golang-migrate/migrate/database/postgres" // import pgsql driver for migrator
 	_ "github.com/golang-migrate/migrate/source/file"       // import local file driver for migrator
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	_ "github.com/lib/pq" //register pgsql driver
+	_ "github.com/lib/pq" // register pgsql driver
 )
 
 const defaultMigrationPath = "migrations/postgresql/"
@@ -71,7 +71,7 @@ func NewPGSQL(host string, port string, usr string, pwd string, database string,
 	}
 }
 
-//Register registers pgSQL to orm with the info wrapped by the instance.
+// Register registers pgSQL to orm with the info wrapped by the instance.
 func (p *pgsql) Register(alias ...string) error {
 	if err := utils.TestTCPConn(fmt.Sprintf("%s:%s", p.host, p.port), 60, 2); err != nil {
 		return err
@@ -91,10 +91,10 @@ func (p *pgsql) Register(alias ...string) error {
 	return orm.RegisterDataBase(an, "postgres", info)
 }
 
-//UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
+// UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
 func (p *pgsql) UpgradeSchema() error {
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", p.usr, p.pwd, p.host, p.port, p.database, pgsqlSSLMode(p.sslmode))
-	//For UT
+	// For UT
 	path := os.Getenv("POSTGRES_MIGRATION_SCRIPTS_PATH")
 	if len(path) == 0 {
 		path = defaultMigrationPath
@@ -114,7 +114,7 @@ func (p *pgsql) UpgradeSchema() error {
 	err = m.Up()
 	if err == migrate.ErrNoChange {
 		log.Infof("No change in schema, skip.")
-	} else if err != nil { //migrate.ErrLockTimeout will be thrown when another process is doing migration and timeout.
+	} else if err != nil { // migrate.ErrLockTimeout will be thrown when another process is doing migration and timeout.
 		log.Errorf("Failed to upgrade schema, error: %q", err)
 		return err
 	}

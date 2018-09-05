@@ -43,7 +43,7 @@ func TestTargetsPost(t *testing.T) {
 
 	fmt.Println("Testing Targets Post API")
 
-	//-------------------case 1 : response code = 201------------------------//
+	// -------------------case 1 : response code = 201------------------------//
 	fmt.Println("case 1 : response code = 201")
 	httpStatusCode, body, err := apiTest.AddTargets(*admin, *repTargets)
 	if err != nil {
@@ -54,7 +54,7 @@ func TestTargetsPost(t *testing.T) {
 		t.Log(body)
 	}
 
-	//-----------case 2 : response code = 409,name is already used-----------//
+	// -----------case 2 : response code = 409,name is already used-----------//
 	fmt.Println("case 2 : response code = 409,name is already used")
 	httpStatusCode, _, err = apiTest.AddTargets(*admin, *repTargets)
 	if err != nil {
@@ -64,7 +64,7 @@ func TestTargetsPost(t *testing.T) {
 		assert.Equal(int(409), httpStatusCode, "httpStatusCode should be 409")
 	}
 
-	//-----------case 3 : response code = 409,name is already used-----------//
+	// -----------case 3 : response code = 409,name is already used-----------//
 	fmt.Println("case 3 : response code = 409,endPoint is already used")
 	repTargets.Username = "errName"
 	httpStatusCode, _, err = apiTest.AddTargets(*admin, *repTargets)
@@ -75,7 +75,7 @@ func TestTargetsPost(t *testing.T) {
 		assert.Equal(int(409), httpStatusCode, "httpStatusCode should be 409")
 	}
 
-	//--------case 4 : response code = 401,User need to log in first.--------//
+	// --------case 4 : response code = 401,User need to log in first.--------//
 	fmt.Println("case 4 : response code = 401,User need to log in first.")
 	httpStatusCode, _, err = apiTest.AddTargets(*unknownUsr, *repTargets)
 	if err != nil {
@@ -99,7 +99,7 @@ func TestTargetsGet(t *testing.T) {
 
 	fmt.Println("Testing Targets Get API")
 
-	//-------------------case 1 : response code = 200------------------------//
+	// -------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
 	httpStatusCode, reslut, err = apiTest.ListTargets(*admin, addTargetName)
 	if err != nil {
@@ -163,7 +163,7 @@ func TestTargetGetByID(t *testing.T) {
 
 	fmt.Println("Testing Targets Get API by Id")
 
-	//-------------------case 1 : response code = 200------------------------//
+	// -------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
 	id := strconv.Itoa(addTargetID)
 	httpStatusCode, err = apiTest.GetTargetByID(*admin, id)
@@ -174,7 +174,7 @@ func TestTargetGetByID(t *testing.T) {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
 
-	//--------------case 2 : response code = 404,target not found------------//
+	// --------------case 2 : response code = 404,target not found------------//
 	fmt.Println("case 2 : response code = 404,target not found")
 	id = "1111"
 	httpStatusCode, err = apiTest.GetTargetByID(*admin, id)
@@ -200,7 +200,7 @@ func TestTargetsPut(t *testing.T) {
 
 	fmt.Println("Testing Target Put API")
 
-	//-------------------case 1 : response code = 200------------------------//
+	// -------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
 	httpStatusCode, err = apiTest.PutTargetByID(*admin, id, *updateRepTargets)
 	if err != nil {
@@ -210,7 +210,7 @@ func TestTargetsPut(t *testing.T) {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
 
-	//--------------case 2 : response code = 404,target not found------------//
+	// --------------case 2 : response code = 404,target not found------------//
 	id = "111"
 	fmt.Println("case 2 : response code = 404,target not found")
 	httpStatusCode, err = apiTest.PutTargetByID(*admin, id, *updateRepTargets)
@@ -231,7 +231,7 @@ func TestTargetGetPolicies(t *testing.T) {
 
 	fmt.Println("Testing Targets Get API to list policies")
 
-	//-------------------case 1 : response code = 200------------------------//
+	// -------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
 	id := strconv.Itoa(addTargetID)
 	httpStatusCode, err = apiTest.GetTargetPoliciesByID(*admin, id)
@@ -242,7 +242,7 @@ func TestTargetGetPolicies(t *testing.T) {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
 
-	//--------------case 2 : response code = 404,target not found------------//
+	// --------------case 2 : response code = 404,target not found------------//
 	fmt.Println("case 2 : response code = 404,target not found")
 	id = "1111"
 	httpStatusCode, err = apiTest.GetTargetPoliciesByID(*admin, id)
@@ -265,7 +265,7 @@ func TestTargetsDelete(t *testing.T) {
 	id := strconv.Itoa(addTargetID)
 	fmt.Println("Testing Targets Delete API")
 
-	//-------------------case 1 : response code = 200------------------------//
+	// -------------------case 1 : response code = 200------------------------//
 	fmt.Println("case 1 : response code = 200")
 	httpStatusCode, err = apiTest.DeleteTargetsByID(*admin, id)
 	if err != nil {
@@ -275,7 +275,7 @@ func TestTargetsDelete(t *testing.T) {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
 
-	//--------------case 2 : response code = 404,target not found------------//
+	// --------------case 2 : response code = 404,target not found------------//
 	fmt.Println("case 2 : response code = 404,target not found")
 	id = "1111"
 	httpStatusCode, err = apiTest.DeleteTargetsByID(*admin, id)

@@ -38,9 +38,9 @@ func TestSend(t *testing.T) {
 	err := Send(addr, identity, username, password,
 		timeout, tls, insecure, from, to,
 		subject, message)
-	//bypass the check due to securty policy change on gmail
-	//TODO
-	//assert.Nil(t, err)
+	// bypass the check due to securty policy change on gmail
+	// TODO
+	// assert.Nil(t, err)
 
 	/*not work on travis
 	// non-tls connection
@@ -52,7 +52,7 @@ func TestSend(t *testing.T) {
 	assert.Nil(t, err)
 	*/
 
-	//invalid username/password
+	// invalid username/password
 	username = "invalid_username"
 	err = Send(addr, identity, username, password,
 		timeout, tls, insecure, from, to,
@@ -78,9 +78,9 @@ func TestPing(t *testing.T) {
 	// tls connection
 	err := Ping(addr, identity, username, password,
 		timeout, tls, insecure)
-	//bypass the check due to securty policy change on gmail
-	//TODO
-	//assert.Nil(t, err)
+	// bypass the check due to securty policy change on gmail
+	// TODO
+	// assert.Nil(t, err)
 
 	/*not work on travis
 	// non-tls connection
@@ -91,7 +91,7 @@ func TestPing(t *testing.T) {
 	assert.Nil(t, err)
 	*/
 
-	//invalid username/password
+	// invalid username/password
 	username = "invalid_username"
 	err = Ping(addr, identity, username, password,
 		timeout, tls, insecure)
