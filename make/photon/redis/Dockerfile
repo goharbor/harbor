@@ -5,8 +5,8 @@ RUN tdnf distro-sync -y \
 
 VOLUME /var/lib/redis
 WORKDIR /var/lib/redis
-COPY docker-entrypoint.sh /usr/bin/
-COPY redis.conf /etc/redis.conf
+COPY ./make/photon/redis/docker-entrypoint.sh /usr/bin/
+COPY ./make/photon/redis/redis.conf /etc/redis.conf
 RUN chmod +x /usr/bin/docker-entrypoint.sh \
     && chown redis:redis /etc/redis.conf
 ENTRYPOINT ["docker-entrypoint.sh"]

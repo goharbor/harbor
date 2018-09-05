@@ -11,7 +11,7 @@ RUN tdnf distro-sync -y \
 
 COPY ./make/photon/registry/binary/registry /usr/bin
 COPY ./make/photon/registryctl/start.sh /harbor/
-COPY ./make/dev/registryctl/harbor_registryctl /harbor/
+COPY ./make/photon/registryctl/harbor_registryctl /harbor/
 
 RUN chmod u+x /harbor/harbor_registryctl \
     && chmod u+x /usr/bin/registry \

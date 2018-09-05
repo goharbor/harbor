@@ -55,7 +55,7 @@ Down Harbor
     Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Offline
-    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=goharbor/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true  ${with_chartmuseum}=true
+    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=goharbor/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=false  ${with_chartmuseum}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
     Log To Console  \n\nmake package_offline VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} UIVERSIONTAG=%{Harbor_UI_Version} GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
@@ -65,7 +65,7 @@ Package Harbor Offline
     Should Be Equal As Integers  ${rc}  0
 
 Package Harbor Online
-    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=goharbor/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=true  ${with_chartmuseum}=true
+    [Arguments]  ${golang_image}=golang:${GOLANG_VERSION}  ${clarity_image}=goharbor/harbor-clarity-ui-builder:${CLAIR_BUILDER}  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=false  ${with_chartmuseum}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
     Log To Console  \nmake package_online VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} UIVERSIONTAG=%{Harbor_UI_Version} GOBUILDIMAGE=${golang_image} COMPILETAG=compile_golangimage CLARITYIMAGE=${clarity_image} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=

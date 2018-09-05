@@ -9,12 +9,12 @@ RUN tdnf distro-sync -y \
     && tdnf clean all \
     && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor
 
-COPY entrypoint.sh /
+COPY ./make/photon/registry/entrypoint.sh /
 RUN chmod u+x /entrypoint.sh
 
 RUN mkdir -p /etc/registry
 
-COPY binary/registry /usr/bin
+COPY ./make/photon/registry/binary/registry /usr/bin
 RUN chmod u+x /usr/bin/registry
 
 HEALTHCHECK CMD curl 127.0.0.1:5000/
