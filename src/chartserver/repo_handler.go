@@ -2,17 +2,16 @@ package chartserver
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"path"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/goharbor/harbor/src/ui/filter"
+	"k8s.io/helm/cmd/helm/search"
 	helm_repo "k8s.io/helm/pkg/repo"
 
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
@@ -20,6 +19,9 @@ import (
 
 const (
 	maxWorkers = 10
+
+	//Keep consistent with 'helm search' command
+	searchMaxScore = 25
 )
 
 // RepositoryHandler defines all the handlers to handle the requests related with chart repository
@@ -34,12 +36,6 @@ type RepositoryHandler struct {
 
 	// Point to the url of the backend server
 	backendServerAddress *url.URL
-}
-
-// Pass work to the workers
-// 'index' is the location of processing namespace/project in the list
-type workload struct {
-	index uint32
 }
 
 // Result returned by worker
@@ -77,120 +73,15 @@ func (rh *RepositoryHandler) GetIndexFile(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	// The final merged index file
-	mergedIndexFile := &helm_repo.IndexFile{
-		APIVersion: "v1",
-		Entries:    make(map[string]helm_repo.ChartVersions),
-		Generated:  time.Now(),
-		PublicKeys: []string{},
+	namespaces := []string{}
+	for _, p := range results.Projects {
+		namespaces = append(namespaces, p.Name)
 	}
 
-	// Retrieve index.yaml for repositories
-	workerPool := make(chan *workload, maxWorkers)
-	// Sync the output results from the retriever
-	resultChan := make(chan *processedResult, 1)
-	// Receive error
-	errorChan := make(chan error, 1)
-	// Signal chan for merging work
-	mergeDone := make(chan struct{}, 1)
-	// Total projects/namespaces
-	total := uint32(results.Total)
-	// Track all the background threads
-	waitGroup := new(sync.WaitGroup)
-
-	// Initialize
-	initialItemCount := maxWorkers
-	if total < maxWorkers {
-		initialItemCount = int(total)
-	}
-	for i := 0; i < initialItemCount; i++ {
-		workerPool <- &workload{uint32(i)}
-	}
-
-	// Atomtic index
-	var indexRef uint32
-	atomic.AddUint32(&indexRef, uint32(initialItemCount-1))
-
-	// Start the index files merging thread
-	go func() {
-		defer func() {
-			mergeDone <- struct{}{}
-		}()
-
-		for res := range resultChan {
-			rh.mergeIndexFile(res.namespace, mergedIndexFile, res.indexFileOfRepo)
-		}
-	}()
-
-	// Retrieve the index files for the repositories
-	// and blocking here
-LOOP:
-	for {
-		select {
-		case work := <-workerPool:
-			if work.index >= total {
-				break LOOP
-			}
-			// Process
-			// New one
-			waitGroup.Add(1)
-			namespace := results.Projects[work.index].Name
-			go func(ns string) {
-				// Return the worker back to the pool
-				defer func() {
-					waitGroup.Done() // done
-
-					// Put one. The invalid index will be treated as a signal to quit loop
-					nextOne := atomic.AddUint32(&indexRef, 1)
-					workerPool <- &workload{nextOne}
-				}()
-
-				indexFile, err := rh.getIndexYamlWithNS(ns)
-				if err != nil {
-					errorChan <- err
-					return
-				}
-
-				// Output
-				resultChan <- &processedResult{
-					namespace:       ns,
-					indexFileOfRepo: indexFile,
-				}
-			}(namespace)
-		case err = <-errorChan:
-			// Quit earlier
-			break LOOP
-		case <-req.Context().Done():
-			// Quit earlier
-			err = errors.New("request of getting index yaml file is aborted")
-			break LOOP
-		}
-	}
-
-	// Hold util all the retrieving work are done
-	waitGroup.Wait()
-
-	// close consumer channel
-	close(resultChan)
-
-	// Wait until merging thread quit
-	<-mergeDone
-
-	// All the threads are done
-	// Met an error
+	mergedIndexFile, err := rh.getIndexYaml(namespaces)
 	if err != nil {
 		WriteInternalError(w, err)
 		return
-	}
-
-	// Remove duplicated keys in public key list
-	hash := make(map[string]string)
-	for _, key := range mergedIndexFile.PublicKeys {
-		hash[key] = key
-	}
-	mergedIndexFile.PublicKeys = []string{}
-	for k := range hash {
-		mergedIndexFile.PublicKeys = append(mergedIndexFile.PublicKeys, k)
 	}
 
 	bytes, err := yaml.Marshal(mergedIndexFile)
@@ -206,6 +97,160 @@ LOOP:
 // e.g: helm install
 func (rh *RepositoryHandler) DownloadChartObject(w http.ResponseWriter, req *http.Request) {
 	rh.trafficProxy.ServeHTTP(w, req)
+}
+
+// SearchChart search charts in the specified namespaces with the keyword q.
+// RegExp mode is enabled as default.
+// For each chart, only the latest version will shown in the result list if matched to avoid duplicated entries.
+// Keep consistent with `helm search` command.
+func (rh *RepositoryHandler) SearchChart(q string, namespaces []string) ([]*search.Result, error) {
+	if len(q) == 0 || len(namespaces) == 0 {
+		// Return empty list
+		return []*search.Result{}, nil
+	}
+
+	// Get the merged index yaml file of the namespaces
+	ind, err := rh.getIndexYaml(namespaces)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the search index
+	index := search.NewIndex()
+	// As the repo name is already merged into the index yaml, we use empty repo name.
+	// Set 'All' to false to return only one version for each chart.
+	index.AddRepo("", ind, false)
+
+	// Search
+	// RegExp is enabled
+	results, err := index.Search(q, searchMaxScore, true)
+	if err != nil {
+		return nil, err
+	}
+
+	// Sort results.
+	search.SortScore(results)
+
+	return results, nil
+}
+
+// getIndexYaml will get the index yaml files for all the namespaces and merge them
+// as one unified index yaml file.
+func (rh *RepositoryHandler) getIndexYaml(namespaces []string) (*helm_repo.IndexFile, error) {
+	// The final merged index file
+	mergedIndexFile := &helm_repo.IndexFile{
+		APIVersion: "v1",
+		Entries:    make(map[string]helm_repo.ChartVersions),
+		Generated:  time.Now(),
+		PublicKeys: []string{},
+	}
+
+	// Sync the output results from the retriever
+	resultChan := make(chan *processedResult, 1)
+	// Receive error
+	errorChan := make(chan error, 1)
+	// Signal chan for merging work
+	mergeDone := make(chan struct{}, 1)
+	// Total projects/namespaces
+	total := len(namespaces)
+	// Initialize
+	initialItemCount := maxWorkers
+	if total < maxWorkers {
+		initialItemCount = total
+	}
+	// Retrieve index.yaml for repositories
+	workerPool := make(chan struct{}, initialItemCount)
+
+	// Add initial tokens to the pool
+	for i := 0; i < initialItemCount; i++ {
+		workerPool <- struct{}{}
+	}
+	// Track all the background threads
+	waitGroup := new(sync.WaitGroup)
+
+	// Start the index files merging thread
+	go func() {
+		defer func() {
+			mergeDone <- struct{}{}
+		}()
+
+		for res := range resultChan {
+			rh.mergeIndexFile(res.namespace, mergedIndexFile, res.indexFileOfRepo)
+		}
+	}()
+
+	// Retrieve the index files for the repositories
+	// and blocking here
+	var err error
+LOOP:
+	for _, ns := range namespaces {
+		// Check if error has occurred in some goroutines
+		select {
+		case err = <-errorChan:
+			break LOOP
+		default:
+			// do nothing
+		}
+
+		// Apply one token before processing
+		<-workerPool
+
+		waitGroup.Add(1)
+		go func(ns string) {
+			defer func() {
+				waitGroup.Done() //done
+				//Return the worker back to the pool
+				workerPool <- struct{}{}
+			}()
+
+			indexFile, err := rh.getIndexYamlWithNS(ns)
+			if err != nil {
+				if len(errorChan) == 0 {
+					//Only need one error as failure signal
+					errorChan <- err
+				}
+				return
+			}
+
+			// Output
+			resultChan <- &processedResult{
+				namespace:       ns,
+				indexFileOfRepo: indexFile,
+			}
+		}(ns)
+	}
+
+	// Hold util all the retrieving work are done
+	waitGroup.Wait()
+
+	// close merge channel
+	close(resultChan)
+
+	// Wait until merging thread quit
+	<-mergeDone
+
+	// All the threads are done
+	// Make sure error in the chan is read
+	if err == nil && len(errorChan) > 0 {
+		err = <-errorChan
+	}
+
+	// Met an error
+	if err != nil {
+		return nil, err
+	}
+
+	// Remove duplicated keys in public key list
+	hash := make(map[string]string)
+	for _, key := range mergedIndexFile.PublicKeys {
+		hash[key] = key
+	}
+	mergedIndexFile.PublicKeys = []string{}
+	for k := range hash {
+		mergedIndexFile.PublicKeys = append(mergedIndexFile.PublicKeys, k)
+	}
+
+	return mergedIndexFile, nil
 }
 
 // Get the index yaml file under the specified namespace from the backend server
