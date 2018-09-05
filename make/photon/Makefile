@@ -39,6 +39,10 @@ DOCKERFILEPATH_ADMINSERVER=$(DOCKERFILEPATH)/adminserver
 DOCKERFILENAME_ADMINSERVER=Dockerfile
 DOCKERIMAGENAME_ADMINSERVER=goharbor/harbor-adminserver
 
+DOCKERFILEPATH_PORTAL=$(DOCKERFILEPATH)/portal
+DOCKERFILENAME_PORTAL=Dockerfile
+DOCKERIMAGENAME_PORTAL=goharbor/harbor-portal
+
 DOCKERFILEPATH_UI=$(DOCKERFILEPATH)/ui
 DOCKERFILENAME_UI=Dockerfile
 DOCKERIMAGENAME_UI=goharbor/harbor-ui
@@ -104,6 +108,11 @@ _build_db:
 _build_adminserver:
 	@echo "building adminserver container for photon..."
 	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_ADMINSERVER)/$(DOCKERFILENAME_ADMINSERVER) -t $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) .
+	@echo "Done."
+
+_build_portal:
+	@echo "building portal container for photon..."
+	$(DOCKERBUILD) -f $(DOCKERFILEPATH_PORTAL)/$(DOCKERFILENAME_PORTAL) -t $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_ui:	
@@ -203,11 +212,12 @@ define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
 endef
 
-build: _build_db _build_adminserver _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_redis _build_chart_server
+build: _build_db _build_adminiserver _build_portal _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_redis _build_migrator _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
+	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)

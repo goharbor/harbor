@@ -41,7 +41,6 @@ src/portal/typings/
 
 src/portal/src/**/*.js
 src/portal/src/**/*.js.map
-src/portal/src/**/*.json
 
 **/npm*.log
 
