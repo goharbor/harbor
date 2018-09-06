@@ -16,7 +16,15 @@
     "typeRoots": [
       "./node_modules/@types/"
     ],
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "paths": {
+      "lib": [
+        "dist/lib"
+      ],
+      "lib/*": [
+        "dist/lib/*"
+      ]
+    }
   },
   "files": [
     "src/app/app.module.ts",
