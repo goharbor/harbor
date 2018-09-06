@@ -68,7 +68,7 @@ MAKEDEVPATH=$(MAKEPATH)/dev
 SRCPATH=./src
 TOOLSPATH=$(BUILDPATH)/tools
 UIPATH=$(BUILDPATH)/src/ui
-UINGPATH=$(BUILDPATH)/src/ui_ng
+UINGPATH=$(BUILDPATH)/src/portal
 GOBASEPATH=/go/src/github.com/goharbor
 CHECKENVCMD=checkenv.sh
 
@@ -110,7 +110,7 @@ CHARTMUSEUMVERSION=v0.7.1
 #clarity parameters
 CLARITYIMAGE=goharbor/harbor-clarity-ui-builder[:tag]
 CLARITYSEEDPATH=/harbor_src
-CLARITYUTPATH=${CLARITYSEEDPATH}/ui_ng/lib
+CLARITYUTPATH=${CLARITYSEEDPATH}/portal/lib
 CLARITYBUILDSCRIPT=/entrypoint.sh
 
 # docker parameters
@@ -306,7 +306,7 @@ compile_registryctl:
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
 	@echo "Done."
 
-compile:check_environment compile_clarity compile_adminserver compile_ui compile_jobservice compile_registryctl
+compile:check_environment compile_adminserver compile_ui compile_jobservice compile_registryctl
 	
 prepare:
 	@echo "preparing..."
