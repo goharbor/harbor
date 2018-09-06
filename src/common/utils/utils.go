@@ -89,10 +89,12 @@ func TestTCPConn(addr string, timeout, interval int) error {
 
 	go func() {
 		n := 1
+
+	loop:
 		for {
 			select {
 			case <-cancel:
-				break
+				break loop
 			default:
 				conn, err := net.DialTimeout("tcp", addr, time.Duration(n)*time.Second)
 				if err != nil {
@@ -106,7 +108,7 @@ func TestTCPConn(addr string, timeout, interval int) error {
 					log.Errorf("failed to close the connection: %v", err)
 				}
 				success <- 1
-				break
+				break loop
 			}
 		}
 	}()
