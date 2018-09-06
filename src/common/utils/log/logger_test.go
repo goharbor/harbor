@@ -25,6 +25,11 @@ var (
 	message = "message"
 )
 
+// contains reports whether the string is contained in the log.
+func contains(t *testing.T, str string, lvl string, line, msg string) bool {
+	return strings.Contains(str, lvl) && strings.Contains(str, line) && strings.Contains(str, msg)
+}
+
 func TestSetx(t *testing.T) {
 	logger := New(nil, nil, WarningLevel)
 	logger.SetOutput(os.Stdout)
@@ -52,7 +57,7 @@ func TestDebug(t *testing.T) {
 	Debug(message)
 
 	str := buf.String()
-	if len(str) != 0 {
+	if str != "" {
 		t.Errorf("unexpected message: %s != %s", str, "")
 	}
 }
@@ -64,80 +69,116 @@ func TestDebugf(t *testing.T) {
 	Debugf("%s", message)
 
 	str := buf.String()
-	if len(str) != 0 {
+	if str != "" {
 		t.Errorf("unexpected message: %s != %s", str, "")
 	}
 }
 
 func TestInfo(t *testing.T) {
+	var (
+		expectedLevel = InfoLevel.string()
+		expectLine    = ""
+		expectMsg     = "message"
+	)
+
 	buf := enter()
 	defer exit()
 
 	Info(message)
 
 	str := buf.String()
-	if strings.HasSuffix(str, "[INFO] message") {
-		t.Errorf("unexpected message: %s != %s", str, "")
+	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
+		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
 	}
 }
 
 func TestInfof(t *testing.T) {
+	var (
+		expectedLevel = InfoLevel.string()
+		expectLine    = ""
+		expectMsg     = "message"
+	)
+
 	buf := enter()
 	defer exit()
 
 	Infof("%s", message)
 
 	str := buf.String()
-	if strings.HasSuffix(str, "[INFO] message") {
-		t.Errorf("unexpected message: %s != %s", str, "")
+	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
+		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
 	}
 }
 
 func TestWarning(t *testing.T) {
+	var (
+		expectedLevel = WarningLevel.string()
+		expectLine    = ""
+		expectMsg     = "message"
+	)
+
 	buf := enter()
 	defer exit()
 
 	Warning(message)
 
 	str := buf.String()
-	if strings.HasSuffix(str, "[WARNING] message") {
-		t.Errorf("unexpected message: %s != %s", str, "")
+	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
+		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
 	}
 }
 
 func TestWarningf(t *testing.T) {
+	var (
+		expectedLevel = WarningLevel.string()
+		expectLine    = ""
+		expectMsg     = "message"
+	)
+
 	buf := enter()
 	defer exit()
 
 	Warningf("%s", message)
 
 	str := buf.String()
-	if strings.HasSuffix(str, "[WARNING] message") {
-		t.Errorf("unexpected message: %s != %s", str, "")
+	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
+		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
 	}
 }
 
 func TestError(t *testing.T) {
+	var (
+		expectedLevel = ErrorLevel.string()
+		expectLine    = "logger_test.go:159"
+		expectMsg     = "message"
+	)
+
 	buf := enter()
 	defer exit()
 
 	Error(message)
 
 	str := buf.String()
-	if strings.HasSuffix(str, "[ERROR] message") {
-		t.Errorf("unexpected message: %s != %s", str, "")
+	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
+		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
 	}
 }
 
 func TestErrorf(t *testing.T) {
+	var (
+		expectedLevel = ErrorLevel.string()
+		expectLine    = "logger_test.go:177"
+		expectMsg     = "message"
+	)
+
 	buf := enter()
 	defer exit()
 
 	Errorf("%s", message)
 
 	str := buf.String()
-	if strings.HasSuffix(str, "[ERROR] message") {
-		t.Errorf("unexpected message: %s != %s", str, "")
+	if !contains(t, str, expectedLevel, expectLine, expectMsg) {
+		t.Errorf("unexpected message: %s, expected level: %s, expected line: %s, expected message: %s", str, expectedLevel, expectLine, expectMsg)
 	}
 }
 
