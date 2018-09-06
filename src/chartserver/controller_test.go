@@ -185,6 +185,21 @@ func TestResponseRewrite(t *testing.T) {
 	}
 }
 
+// Test the chart searching
+func TestChartSearching(t *testing.T) {
+	namespaces := []string{"repo1", "repo2"}
+	q := "harbor"
+
+	results, err := mockController.GetRepositoryHandler().SearchChart(q, namespaces)
+	if err != nil {
+		t.Fatalf("expect nil error but got '%s'", err)
+	}
+
+	if len(results) != 2 {
+		t.Fatalf("expect 2 results but got %d", len(results))
+	}
+}
+
 // Clear environments
 func TestStopServers(t *testing.T) {
 	stopMockServers()
