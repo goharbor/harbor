@@ -147,7 +147,10 @@ LOOP:
 
 				indexFile, err := rh.getIndexYamlWithNS(ns)
 				if err != nil {
-					errorChan <- err
+					if len(errorChan) == 0 {
+						//One error is enough, it will be an exit signal to the worker loop
+						errorChan <- err
+					}
 					return
 				}
 
