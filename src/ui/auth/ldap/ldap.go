@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/utils"
 	goldap "gopkg.in/ldap.v2"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -89,10 +90,11 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	// Retrieve ldap related info in login to avoid too many traffic with LDAP server.
 	// Get group admin dn
 	groupCfg, err := config.LDAPGroupConf()
-	groupAdminDN := strings.TrimSpace(groupCfg.LdapGroupAdminDN)
+	groupAdminDN := utils.TrimLower(groupCfg.LdapGroupAdminDN)
 	// Attach user group
 	for _, groupDN := range ldapUsers[0].GroupDNList {
 
+		groupDN = utils.TrimLower(groupDN)
 		if len(groupAdminDN) > 0 && groupAdminDN == groupDN {
 			u.HasAdminRole = true
 		}

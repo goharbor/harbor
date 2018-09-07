@@ -211,3 +211,8 @@ func ParseOfftime(offtime int64) (hour, minite, second int) {
 	second = int(offtime % 60)
 	return
 }
+
+// TrimLower ...
+func TrimLower(str string) string {
+	return strings.TrimSpace(strings.ToLower(str))
+}
