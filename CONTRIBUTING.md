@@ -93,7 +93,7 @@ The folder graph below shows the structure of the source code folder `harbor/src
 │   ├── static
 │   ├── utils
 │   └── views
-├── ui_ng               # The code of harbor web UI
+├── portal               # The code of harbor web UI
 │   ├── e2e
 │   ├── lib             # Source code of @harbor/ui npm library which includes the main UI components of web UI
 │   └── src             # General web page UI code of Harbor
@@ -134,11 +134,11 @@ Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and
 **Npm Package Dependency:** Run the following commands to restore the package dependencies.
 ```
 #For the web UI
-cd $REPO_DIR/src/ui_ng
+cd $REPO_DIR/src/portal
 npm install
 
 #For the UI library
-cd $REPO_DIR/src/ui_ng/lib
+cd $REPO_DIR/src/portal/lib
 npm install
 ```
 
@@ -213,7 +213,7 @@ go test -v ./...
 
 Run UI library test cases:
 ```
-#cd #working_dir/src/ui_ng/lib
+#cd #working_dir/src/portal/lib
 npm run test
 ```
 

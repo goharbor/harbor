@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /harbor_src/ui_ng
+cd /harbor_src/portal
 rm -rf dist/*
 
 npm_proxy=
@@ -27,12 +27,12 @@ cat ./package.json
 npm install
 
 ## Build harbor-ui and link it
-rm -rf /harbor_src/ui_ng/lib/dist
+rm -rf /harbor_src/portal/lib/dist
 npm run build:lib
-chmod -R +xr /harbor_src/ui_ng/lib/dist
-cd /harbor_src/ui_ng/lib/dist
+chmod -R +xr /harbor_src/portal/lib/dist
+cd /harbor_src/portal/lib/dist
 npm link
-cd /harbor_src/ui_ng
+cd /harbor_src/portal
 npm link harbor-ui
 
 ## Rollup

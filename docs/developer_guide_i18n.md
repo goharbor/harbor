@@ -4,7 +4,7 @@
 
 ### Steps to localize the UI in your language
 
-1. In the folder `src/ui_ng/src/i18n/lang`, copy json file `en-us-lang.json` to a new file and rename it to `<language>-<locale>-lang.json` .
+1. In the folder `src/portal/src/i18n/lang`, copy json file `en-us-lang.json` to a new file and rename it to `<language>-<locale>-lang.json` .
 
     The file contains a JSON object including all the key-value pairs of UI strings:
     ```
@@ -21,7 +21,7 @@
 
 2. After creating your language file, you should add it to the language supporting list.
 
-    Locate the file `src/ui_ng/src/app/shared/shared.const.ts`.
+    Locate the file `src/portal/src/app/shared/shared.const.ts`.
     Append `<language>-<locale>` to the language supporting list:
     ```
     export const supportedLangs = ['en-us', 'zh-cn', '<language>-<locale>'];
@@ -39,7 +39,7 @@
 
 3. Enable the new language in the view.
 
-    Locate the file `src/ui_ng/src/app/base/navigator/navigator.component.html` and then find the following code piece:
+    Locate the file `src/portal/src/app/base/navigator/navigator.component.html` and then find the following code piece:
     ```
     <div class="dropdown-menu">
         <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("en-us")' [class.lang-selected]='matchLang("en-us")'>English</a>

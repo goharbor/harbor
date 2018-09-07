@@ -24,11 +24,11 @@ src/ui/static/styles.css
 src/ui/static/i18n
 src/ui/static/shapes
 
-src/ui_ng/coverage/
-src/ui_ng/dist/
-src/ui_ng/html-report/
-src/ui_ng/node_modules/
-src/ui_ng/typings/
+src/portal/coverage/
+src/portal/dist/
+src/portal/html-report/
+src/portal/node_modules/
+src/portal/typings/
 **/*npm-debug.log.*
 **/*yarn-error.log.*
 .idea/
@@ -39,8 +39,8 @@ src/ui_ng/typings/
 **/ssl/
 **/proxy.config.json
 
-src/ui_ng/src/**/*.js
-src/ui_ng/src/**/*.js.map
+src/portal/src/**/*.js
+src/portal/src/**/*.js.map
 
 **/npm*.log
 

@@ -3,7 +3,7 @@ FROM node:10.7.0
 RUN mkdir -p /harbor_resources
 RUN mkdir -p /harbor_src
 
-COPY src/ui_ng/package.json /harbor_resources
+COPY src/portal/package.json /harbor_resources
 COPY make/dev/nodeclarity/entrypoint.sh /
 
 # Install Chrome

@@ -29,12 +29,6 @@ import (
 
 func initRouters() {
 
-	beego.SetStaticPath("/static", "./static")
-	beego.SetStaticPath("/i18n", "./static/i18n")
-
-	// Page Controllers:
-	beego.Router("/", &controllers.IndexController{})
-	beego.Router("/harbor/*", &controllers.IndexController{})
 	beego.Router("/reset_password", &controllers.IndexController{})
 
 	// standalone
