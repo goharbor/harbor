@@ -28,14 +28,25 @@ env:
   REG_VERSION: v2.6.2
   UI_BUILDER_VERSION: 1.6.0
 
+addons:
+apt:
+  sources:
+    - google-chrome
+  packages:
+    - google-chrome-stable
+    - google-chrome-beta
+
 before_install:
-   - sudo ./tests/hostcfg.sh
-   - sudo ./tests/generateCerts.sh
-   - sudo ./make/prepare
-   - sudo mkdir -p "/data/redis"
-   - sudo mkdir -p /etc/ui/ca/ && sudo mv ./tests/ca.crt /etc/ui/ca/
-   - sudo mkdir -p /harbor && sudo mv ./VERSION /harbor/UIVERSION
-   - sudo ./tests/testprepare.sh
+  - export CHROME_BIN=chromium-browser
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - sudo ./tests/hostcfg.sh
+  - sudo ./tests/generateCerts.sh
+  - sudo ./make/prepare
+  - sudo mkdir -p "/data/redis"
+  - sudo mkdir -p /etc/ui/ca/ && sudo mv ./tests/ca.crt /etc/ui/ca/
+  - sudo mkdir -p /harbor && sudo mv ./VERSION /harbor/UIVERSION
+  - sudo ./tests/testprepare.sh
 
 install: 
   - sudo apt-get update && sudo apt-get install -y libldap2-dev
@@ -58,6 +69,11 @@ install:
   - sudo service postgresql stop
 
 before_script:
+  - cd src/portal
+  - npm install -g -q --no-progress angular-cli
+  - npm install -g -q --no-progress karma
+  - npm install -q --no-progress
+  - npm run build_lib && npm run link_lib && cd ../..
   - export POSTGRESQL_HOST=$IP
   - export REGISTRY_URL=$IP:5000
   - echo $REGISTRY_URL
@@ -70,8 +86,7 @@ before_script:
   - sudo mkdir -p ./make/common/config/registry/ && sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
 
 script:
-  - sudo make run_clarity_ut CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:${UI_BUILDER_VERSION}
-  - cat ./src/portal/npm-ut-test-results
+  - cd src/portal && npm run test && cd ../..
   - sudo docker-compose -f ./make/docker-compose.test.yml up -d
   - make go_check
   - ./tests/pushimage.sh
