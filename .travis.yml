@@ -86,7 +86,7 @@ before_script:
   - sudo mkdir -p ./make/common/config/registry/ && sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
 
 script:
-  - cd src/portal && npm run test && cd ../..
+  - cd src/portal && npm run lint && npm run lint:lib && npm run test && cd ../..
   - sudo docker-compose -f ./make/docker-compose.test.yml up -d
   - make go_check
   - ./tests/pushimage.sh

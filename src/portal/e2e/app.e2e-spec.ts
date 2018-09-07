@@ -13,7 +13,7 @@
 // limitations under the License.
 import {ClaritySeedAppHome} from './app.po';
 
-fdescribe('clarity-seed app', function () {
+fdescribe('harbor-portal app', function () {
 
   let expectedMsg: string = 'This is a Clarity seed application. This is the default page that loads for the application.';
 

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "clarity-seed": {
+    "harbor-portal": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -61,18 +61,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "clarity-seed:build"
+            "browserTarget": "harbor-portal:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "clarity-seed:build:production"
+              "browserTarget": "harbor-portal:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "clarity-seed:build"
+            "browserTarget": "harbor-portal:build"
           }
         },
         "test": {
@@ -111,7 +111,7 @@
             "tsConfig": [
               "src/tsconfig.app.json",
               "src/tsconfig.spec.json",
-              "lib/src/tsconfig.json"
+              "lib/tsconfig.lib.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -121,7 +121,7 @@
         }
       }
     },
-    "clarity-seed-e2e": {
+    "harbor-portal-e2e": {
       "root": "e2e",
       "sourceRoot": "e2e",
       "projectType": "application",
@@ -130,7 +130,7 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "./protractor.config.js",
-            "devServerTarget": "clarity-seed:serve"
+            "devServerTarget": "harbor-portal:serve"
           }
         },
         "lint": {
@@ -164,7 +164,7 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "lib/src/test.ts",
-            "tsConfig": "lib/tsconfig.spec.json",
+            "tsConfig": "lib/tsconfig.lib.json",
             "karmaConfig": "lib/karma.conf.js"
           }
         },
@@ -182,7 +182,7 @@
       }
     }
   },
-  "defaultProject": "clarity-seed",
+  "defaultProject": "harbor-portal",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",

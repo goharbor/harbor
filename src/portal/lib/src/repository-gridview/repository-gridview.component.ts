@@ -10,8 +10,9 @@ import {
     OnChanges,
     SimpleChanges
 } from "@angular/core";
-import {Router} from "@angular/router";
-import {forkJoin} from "rxjs";
+import { Router } from "@angular/router";
+import { forkJoin } from "rxjs";
+import { finalize } from "rxjs/operators";
 import {TranslateService} from "@ngx-translate/core";
 import {Comparator, State} from "@clr/angular";
 
@@ -258,13 +259,16 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     }
 
     confirmationDialogSet(summaryTitle: string, signature: string,
-                          repoName: string, repoLists: RepositoryItem[],
-                          summaryKey: string, button: ConfirmationButtons): void {
+        repoName: string, repoLists: RepositoryItem[],
+        summaryKey: string, button: ConfirmationButtons): void {
         this.translateService.get(summaryKey,
             {
                 repoName: repoName,
                 signedImages: signature,
-            })
+            }).pipe(finalize(() => {
+                let hnd = setInterval(() => this.ref.markForCheck(), 100);
+                setTimeout(() => clearInterval(hnd), 5000);
+            }))
             .subscribe((res: string) => {
                 summaryKey = res;
                 let message = new ConfirmationMessage(
@@ -276,11 +280,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                     button);
                 this.confirmationDialog.open(message);
 
-                let hnd = setInterval(() => this.ref.markForCheck(), 100);
-                setTimeout(() => clearInterval(hnd), 5000);
+
             });
-        let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 5000);
     }
 
     containsLatestTag(repo: RepositoryItem): Promise<boolean> {

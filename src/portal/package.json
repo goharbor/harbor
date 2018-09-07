@@ -7,7 +7,7 @@
         "start": "ng serve --aot --ssl true --ssl-key ssl/server.key --ssl-cert ssl/server.crt --host 0.0.0.0 --proxy-config proxy.config.json",
         "lint": "tslint \"src/**/*.ts\"",
         "lint:lib": "tslint \"lib/**/*.ts\"  -e \"lib/dist/**/*\" ",
-        "test": "ng test",
+        "test": "ng test harbor-portal",
         "pree2e": "webdriver-manager update",
         "e2e": "protractor",
         "build": "ng build --aot",
