@@ -16,6 +16,8 @@ The supported APIs are:
   - [ ] Get project member
   - [ ] Get project and user member
 - [x] Users APIs
+  - [x] Logging in
+  - [x] Logging out
   - [x] [Get users](./examples/get_users.py)
   - [x] [Create user](./examples/create_user.py)
   - [x] [Update user profile](./examples/update_user_profile.py)
@@ -32,6 +34,8 @@ The supported APIs are:
   - [x] [Get statistics](./examples/get_statistics.py)
   - [x] [Get top accessed repositories](./examples/get_top_accessed_repositories.py)
   - [x] [Get logs](./examples/get_logs.py)
+
+Note: _User APIs_ will not work if harbor is connected to an LDAP server.
 
 ## Installation
 
