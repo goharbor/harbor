@@ -11,11 +11,11 @@
         "pree2e": "webdriver-manager update",
         "e2e": "protractor",
         "build": "ng build --aot",
-        "release": "ng build --aot --prod",
+        "release": "ng build --prod",
         "build_lib": "ng build --prod lib",
         "npm_pack": "cd lib/dist && npm pack",
         "package": "npm run build_lib && npm run npm_pack",
-        "link-lib":"cd lib/dist && npm link && cd ../../ && npm link @harbor/ui"
+        "link_lib":"cd lib/dist && npm link && cd ../../ && npm link @harbor/ui"
     },
     "private": true,
     "dependencies": {
