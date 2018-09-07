@@ -1,0 +1,2 @@
+class HarborClientError(Exception):
+    pass

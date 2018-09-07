@@ -4,6 +4,8 @@ import json
 import logging
 import requests
 
+from harborclient.exceptions import HarborClientError
+
 logger = logging.getLogger(__name__)
 
 class HarborClient(object):
@@ -26,7 +28,7 @@ class HarborClient(object):
             logger.debug("Successfully login, session id: {}".format(
                 session_id))
         else:
-            logger.error("Fail to login, please try again")
+            raise HarborClientError("Fail to login")
 
     def logout(self):
         requests.get('%s://%s/log_out' % (self.protocol, self.host),
@@ -44,7 +46,7 @@ class HarborClient(object):
             result = response.json()
             logger.debug("Successfully get search result: {}".format(result))
         else:
-            logger.error("Fail to get search result")
+            raise HarborClientError("Fail to get search result")
         return result
 
     # GET /projects
@@ -58,7 +60,7 @@ class HarborClient(object):
             logger.debug("Successfully get projects result: {}".format(
                 result))
         else:
-            logger.error("Fail to get projects result")
+            raise HarborClientError("Fail to get projects result")
         return result
 
     # HEAD /projects
@@ -77,7 +79,7 @@ class HarborClient(object):
             logger.debug(
                 "Successfully check project exist, result: {}".format(result))
         else:
-            logger.error("Fail to check project exist")
+            raise HarborClientError("Fail to check project exist")
         return result
 
     # POST /projects
@@ -95,7 +97,7 @@ class HarborClient(object):
                 "Successfully create project with project name: {}".format(
                     project_name))
         else:
-            logger.error(
+            raise HarborClientError(
                 "Fail to create project with project name: {}, response code: {}".format(
                     project_name, response.status_code))
         return result
@@ -112,7 +114,7 @@ class HarborClient(object):
                 "Successfully create project with project id: {}".format(
                     project_id))
         else:
-            logger.error(
+            raise HarborClientError(
                 "Fail to create project with project id: {}, response code: {}".format(
                     project_id, response.status_code))
         return result
@@ -132,7 +134,7 @@ class HarborClient(object):
                 "Successfully add project member with project id: {}".format(
                     project_id))
         else:
-            logger.error(
+            raise HarborClientError(
                 "Fail to add project member with project id: {}, response code: {}".format(
                     project_id, response.status_code))
         return result
@@ -149,8 +151,9 @@ class HarborClient(object):
             logger.debug("Successfully delete member with id: {}".format(
                 user_id))
         else:
-            logger.error("Fail to delete member with id: {}, response code: {}"
-            .format(user_id, response.status_code))
+            raise HarborClientError(
+                "Fail to delete member with id: {}, response code: {}".format(
+                    user_id, response.status_code))
         return result
 
     # PUT /projects/{project_id}/publicity
@@ -168,7 +171,7 @@ class HarborClient(object):
                 "Success to set project id: {} with publicity: {}".format(
                     project_id, is_public))
         else:
-            logger.error(
+            raise HarborClientError(
                 "Fail to set publicity to project id: {} with status code: {}".format(
                     project_id, response.status_code))
         return result
@@ -183,8 +186,9 @@ class HarborClient(object):
             result = response.json()
             logger.debug("Successfully get statistics: {}".format(result))
         else:
-            logger.error("Fail to get statistics result with status code: {}"
-            .format(response.status_code))
+            raise HarborClientError(
+                "Fail to get statistics result with status code: {}".format(
+                    response.status_code))
         return result
 
     # GET /users
@@ -198,8 +202,9 @@ class HarborClient(object):
             result = response.json()
             logger.debug("Successfully get users result: {}".format(result))
         else:
-            logger.error("Fail to get users result with status code: {}"
-            .format(response.status_code))
+            raise HarborClientError(
+                "Fail to get users result with status code: {}".format(
+                    response.status_code))
         return result
 
     # GET /users/current
@@ -212,8 +217,9 @@ class HarborClient(object):
             result = response.json()
             logger.debug("Successfully get users result: {}".format(result))
         else:
-            logger.error("Fail to get users result with status code: {}"
-            .format(response.status_code))
+            raise HarborClientError(
+                "Fail to get users result with status code: {}".format(
+                    response.status_code))
         return result
 
     # POST /users
@@ -233,7 +239,7 @@ class HarborClient(object):
             logger.debug("Successfully create user with username: {}".format(
                 username))
         else:
-            logger.error(
+            raise HarborClientError(
                 "Fail to create user with username: {}, response code: {}".format(
                     username, response.status_code))
         return result
@@ -256,7 +262,7 @@ class HarborClient(object):
                 "Successfully update user profile with user id: {}".format(
                     user_id))
         else:
-            logger.error(
+            raise HarborClientError(
                 "Fail to update user profile with user id: {}, response code: {}".format(
                     user_id, response.status_code))
         return result
@@ -273,8 +279,9 @@ class HarborClient(object):
             logger.debug("Successfully delete user with id: {}".format(
                 user_id))
         else:
-            logger.error("Fail to delete user with id: {}, response code: {}"
-            .format(user_id, response.status_code))
+            raise HarborClientError(
+                "Fail to delete user with id: {}, response code: {}".format(
+                    user_id, response.status_code))
         return result
 
     # PUT /users/{user_id}/password
@@ -292,8 +299,8 @@ class HarborClient(object):
             logger.debug(
                 "Successfully change password for user id: {}".format(user_id))
         else:
-            logger.error("Fail to change password for user id: {}".format(
-                user_id))
+            raise HarborClientError(
+                "Fail to change password for user id: {}".format(user_id))
         return result
 
     # PUT /users/{user_id}/sysadmin
@@ -312,7 +319,7 @@ class HarborClient(object):
                 "Successfully promote user as admin with user id: {}".format(
                     user_id))
         else:
-            logger.error(
+            raise HarborClientError(
                 "Fail to promote user as admin with user id: {}, response code: {}".format(
                     user_id, response.status_code))
         return result
@@ -347,8 +354,9 @@ class HarborClient(object):
             logger.debug("Successfully delete a tag of repository: {}".format(
                 repo_name))
         else:
-            logger.error("Fail to delete repository  with name: {}, response code: {}".format(
-                repo_name, response.status_code))
+            raise HarborClientError(
+                "Fail to delete repository  with name: {}, response code: {}".format(
+                    repo_name, response.status_code))
         return result
 
     # DELETE /repositories/{repo_name}/tags
@@ -363,8 +371,9 @@ class HarborClient(object):
             logger.debug("Successfully delete repository: {}".format(
                 repo_name))
         else:
-            logger.error("Fail to delete repository  with name: {}, response code: {}".format(
-                repo_name, response.status_code))
+            raise HarborClientError(
+                "Fail to delete repository  with name: {}, response code: {}".format(
+                    repo_name, response.status_code))
         return result
 
     # Get /repositories/{repo_name}/tags
@@ -397,7 +406,7 @@ class HarborClient(object):
                 "Successfully get manifests with repo name: {}, tag: {}, result: {}".format(
                     repo_name, tag, result))
         else:
-            logger.error(
+            raise HarborClientError(
                 "Fail to get manifests with repo name: {}, tag: {}".format(
                     repo_name, tag))
         return result
@@ -416,7 +425,7 @@ class HarborClient(object):
                 "Successfully get top accessed repositories, result: {}".format(
                     result))
         else:
-            logger.error("Fail to get top accessed repositories")
+            raise HarborClientError("Fail to get top accessed repositories")
         return result
 
     # GET /logs
@@ -429,8 +438,8 @@ class HarborClient(object):
             result = response.json()
             logger.debug("Successfully get logs")
         else:
-            logger.error("Fail to get logs and response code: {}".format(
-                response.status_code))
+            raise HarborClientError(
+                "Fail to get logs and response code: {}".format(response.status_code))
         return result
 
     # Get /systeminfo
@@ -444,7 +453,8 @@ class HarborClient(object):
             logger.debug(
                 "Successfully get systeminfo, result: {}".format(result))
         else:
-            logger.error("Fail to get systeminfo, response code: {}".format(response.status_code))
+            raise HarborClientError(
+                "Fail to get systeminfo, response code: {}".format(response.status_code))
         return result
 
     # Get /configurations
@@ -458,5 +468,6 @@ class HarborClient(object):
             logger.debug(
                 "Successfully get configurations, result: {}".format(result))
         else:
-            logger.error("Fail to get configurations, response code: {}".format(response.status_code))
+            raise HarborClientError(
+                "Fail to get configurations, response code: {}".format(response.status_code))
         return result
