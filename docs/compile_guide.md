@@ -50,19 +50,19 @@ You can compile the code by one of the three approaches:
 *  Build, install and bring up Harbor without Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage
    ```
 
 *  Build, install and bring up Harbor with Notary:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage NOTARYFLAG=true
    ```
 
 *  Build, install and bring up Harbor with Clair:
 
    ```sh
-      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 CLAIRFLAG=true
+      $ make install GOBUILDIMAGE=golang:1.9.2 COMPILETAG=compile_golangimage CLAIRFLAG=true
    ```
 
 #### II. Compile code with your own Golang environment, then build Harbor
@@ -108,7 +108,6 @@ The `Makefile` contains these configurable parameters:
 Variable           | Description
 -------------------|-------------
 BASEIMAGE          | Container base image, default: photon
-CLARITYIMAGE       | Clarity UI builder image, default: harbor-clarity-ui-builder
 DEVFLAG            | Build model flag, default: dev
 COMPILETAG         | Compile model flag, default: compile_normal (local golang build)
 NOTARYFLAG         | Notary mode flag, default: false
@@ -128,9 +127,9 @@ Target              | Description
 all                 | prepare env, compile binaries, build images and install images
 prepare             | prepare env
 compile             | compile ui and jobservice code
+compile_portal      | compile portal code
 compile_ui          | compile ui binary
 compile_jobservice  | compile jobservice binary
-compile_clarity     | compile Clarity binary
 build               | build Harbor docker images (default: using build_photon)
 build_photon        | build Harbor docker images from Photon OS base image
 install             | compile binaries, build images, prepare specific version of compose file and startup Harbor instance

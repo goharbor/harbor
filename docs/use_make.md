@@ -5,10 +5,8 @@ BASEIMAGE          | Container base image, default: photon
 DEVFLAG            | Build model flag, default: dev
 COMPILETAG         | Compile model flag, default: compile_normal (local golang build)
 GOBUILDIMAGE       | Golang image to compile harbor go source code.
-CLARITYIMAGE       | Clarity image that based on Node to compile UI.
 NOTARYFLAG         | Whether to enable notary in harbor, default:false
 HTTPPROXY          | Clarity proxy to build UI.
-
 
 ### Targets
 Target              | Description
@@ -16,9 +14,9 @@ Target              | Description
 all                 | prepare env, compile binaries, build images and install images
 prepare             | prepare env
 compile             | compile ui and jobservice code
+compile_portal      | compile portal code
 compile_ui          | compile ui binary
 compile_jobservice  | compile jobservice binary
-compile_clarity     | compile clarity ui binary
 compile_adminserver | compile admin server binary
 build               | build Harbor docker images (default: using build_photon)
 build_photon        | build Harbor docker images from Photon OS base image
@@ -39,10 +37,10 @@ version				 | set harbor version
 #### EXAMPLE:
 
 #### Build and run harbor from source code.
-make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true HTTPPROXY=
+make install GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage NOTARYFLAG=true
 
 ### Package offline installer
-make package_offline GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage CLARITYIMAGE=goharbor/harbor-clarity-ui-builder:1.6.0 NOTARYFLAG=true HTTPPROXY=
+make package_offline GOBUILDIMAGE=golang:1.7.3 COMPILETAG=compile_golangimage NOTARYFLAG=true
 
 ### Start harbor with notary
 make -e NOTARYFLAG=true start
