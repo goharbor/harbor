@@ -110,6 +110,18 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "ui"
+  portal:
+    image: goharbor/harbor-portal:__version__
+    container_name: harbor-portal
+    restart: always
+    networks:
+      - harbor
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "portal"
+
   jobservice:
     image: goharbor/harbor-jobservice:__version__
     container_name: harbor-jobservice
@@ -146,7 +158,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "redis"
   proxy:
-    image: goharbor/nginx-photon:__nginx_version__
+    image: goharbor/nginx-photon:__version__
     container_name: nginx
     restart: always
     volumes:
@@ -161,6 +173,7 @@ services:
       - postgresql
       - registry
       - ui
+      - portal
       - log
     logging:
       driver: "syslog"

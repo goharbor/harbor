@@ -68,7 +68,7 @@ MAKEDEVPATH=$(MAKEPATH)/dev
 SRCPATH=./src
 TOOLSPATH=$(BUILDPATH)/tools
 UIPATH=$(BUILDPATH)/src/ui
-UINGPATH=$(BUILDPATH)/src/ui_ng
+UINGPATH=$(BUILDPATH)/src/portal
 GOBASEPATH=/go/src/github.com/goharbor
 CHECKENVCMD=checkenv.sh
 
@@ -79,8 +79,6 @@ DEVFLAG=true
 NOTARYFLAG=false
 CLAIRFLAG=false
 HTTPPROXY=
-REBUILDCLARITYFLAG=false
-NEWCLARITYVERSION=
 BUILDBIN=false
 MIGRATORFLAG=false
 # enable/disable chart repo supporting
@@ -104,14 +102,9 @@ CLAIRVERSION=v2.0.5
 CLAIRDBVERSION=$(VERSIONTAG)
 MIGRATORVERSION=$(VERSIONTAG)
 REDISVERSION=$(VERSIONTAG)
+
 # version of chartmuseum
 CHARTMUSEUMVERSION=v0.7.1
-
-#clarity parameters
-CLARITYIMAGE=goharbor/harbor-clarity-ui-builder[:tag]
-CLARITYSEEDPATH=/harbor_src
-CLARITYUTPATH=${CLARITYSEEDPATH}/ui_ng/lib
-CLARITYBUILDSCRIPT=/entrypoint.sh
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -179,15 +172,14 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 
 # common dockerfile
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
-DOCKERFILE_CLARITY=$(MAKEPATH)/dev/nodeclarity/Dockerfile
 
 # docker image name
 DOCKERIMAGENAME_ADMINSERVER=goharbor/harbor-adminserver
+DOCKERIMAGENAME_PORTAL=goharbor/harbor-portal
 DOCKERIMAGENAME_UI=goharbor/harbor-ui
 DOCKERIMAGENAME_JOBSERVICE=goharbor/harbor-jobservice
 DOCKERIMAGENAME_LOG=goharbor/harbor-log
 DOCKERIMAGENAME_DB=goharbor/harbor-db
-DOCKERIMAGENAME_CLARITY=goharbor/harbor-clarity-ui-builder
 DOCKERIMAGENAME_CHART_SERVER=goharbor/chartmuseum-photon
 DOCKERIMAGENAME_REGCTL=goharbor/harbor-registryctl
 
@@ -218,6 +210,7 @@ REGISTRYPASSWORD=default
 
 # cmds
 DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
+		$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
@@ -271,15 +264,6 @@ version:
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
 
-compile_clarity:
-	@echo "compiling binary for clarity ui..."
-	@if [ "$(HTTPPROXY)" != "" ] ; then \
-		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT) -p $(HTTPPROXY); \
-	else \
-		$(DOCKERCMD) run --rm -v $(BUILDPATH)/src:$(CLARITYSEEDPATH) $(CLARITYIMAGE) $(SHELL) $(CLARITYBUILDSCRIPT); \
-	fi
-	@echo "Done."
-
 compile_adminserver:
 	@echo "compiling binary for adminserver (golang image)..."
 	@echo $(GOBASEPATH)
@@ -304,7 +288,7 @@ compile_registryctl:
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
 	@echo "Done."
 
-compile:check_environment compile_clarity compile_adminserver compile_ui compile_jobservice compile_registryctl
+compile:check_environment compile_adminserver compile_ui compile_jobservice compile_registryctl
 	
 prepare:
 	@echo "preparing..."
@@ -382,28 +366,6 @@ package_offline: compile version build modify_sourcefiles modify_composefile
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
-refresh_clarity_builder:
-	@if [ "$(REBUILDCLIATRYFLAG)" = "true" ] ; then \
-		echo "set http proxy.."; \
-		if [ "$(HTTPPROXY)" != "" ] ; then \
-			$(SEDCMD) -i 's/__proxy__/--proxy $(HTTPPROXY)/g' $(DOCKERFILE_CLARITY) ; \
-		else \
-			$(SEDCMD) -i 's/__proxy__/ /g' $(DOCKERFILE_CLARITY) ; \
-		fi ; \
-		echo "build new clarity image.."; \
-		$(DOCKERBUILD) -f $(DOCKERFILE_CLARITY) -t $(DOCKERIMAGENAME_CLARITY):$(NEWCLARITYVERSION) . ; \
-		echo "push clarity image.."; \
-		$(DOCKERTAG) $(DOCKERIMAGENAME_CLARITY):$(NEWCLARITYVERSION) $(DOCKERIMAGENAME_CLARITY):$(NEWCLARITYVERSION); \
-		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_CLARITY):$(NEWCLARITYVERSION) \
-			$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER); \
-		echo "remove local clarity image.."; \
-		$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(NEWCLARITYVERSION); \
-	fi
-
-run_clarity_ut:
-	@echo "run clarity ut ..."
-	@$(DOCKERCMD) run --rm -v $(UINGPATH):$(CLARITYSEEDPATH) -v $(BUILDPATH)/tests:$(CLARITYSEEDPATH)/tests $(CLARITYIMAGE) $(SHELL) $(CLARITYSEEDPATH)/tests/run-clarity-ut.sh
-
 gosec:
 	#go get github.com/securego/gosec/cmd/gosec
 	#go get github.com/dghubble/sling
@@ -443,6 +405,11 @@ pushimage:
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
 	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
+
+	@$(DOCKERTAG) $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
+	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
+		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
+	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
 
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_UI):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_UI):$(VERSIONTAG) \
