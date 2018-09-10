@@ -410,6 +410,7 @@ func Database() (*models.Database, error) {
 	postgresql.Username = utils.SafeCastString(cfg[common.PostGreSQLUsername])
 	postgresql.Password = utils.SafeCastString(cfg[common.PostGreSQLPassword])
 	postgresql.Database = utils.SafeCastString(cfg[common.PostGreSQLDatabase])
+	postgresql.SSLMode = utils.SafeCastString(cfg[common.PostGreSQLSSLMode])
 	database.PostGreSQL = postgresql
 
 	return database, nil
@@ -471,6 +472,7 @@ func ClairDB() (*models.PostGreSQL, error) {
 	clairDB.Username = utils.SafeCastString(cfg[common.ClairDBUsername])
 	clairDB.Password = utils.SafeCastString(cfg[common.ClairDBPassword])
 	clairDB.Database = utils.SafeCastString(cfg[common.ClairDB])
+	clairDB.SSLMode = utils.SafeCastString(cfg[common.ClairDBSSLMode])
 	return clairDB, nil
 }
 

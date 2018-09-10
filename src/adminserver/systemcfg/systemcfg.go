@@ -147,6 +147,7 @@ var (
 			env:   "CLAIR_DB_PORT",
 			parse: parseStringToInt,
 		},
+		common.ClairDBSSLMode:  "CLAIR_DB_SSLMODE",
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
@@ -210,6 +211,7 @@ var (
 			env:   "CLAIR_DB_PORT",
 			parse: parseStringToInt,
 		},
+		common.ClairDBSSLMode:  "CLAIR_DB_SSLMODE",
 		common.UAAEndpoint:     "UAA_ENDPOINT",
 		common.UAAClientID:     "UAA_CLIENTID",
 		common.UAAClientSecret: "UAA_CLIENTSECRET",
@@ -430,6 +432,7 @@ func GetDatabaseFromCfg(cfg map[string]interface{}) *models.Database {
 	postgresql.Username = utils.SafeCastString(cfg[common.PostGreSQLUsername])
 	postgresql.Password = utils.SafeCastString(cfg[common.PostGreSQLPassword])
 	postgresql.Database = utils.SafeCastString(cfg[common.PostGreSQLDatabase])
+	postgresql.SSLMode = utils.SafeCastString(cfg[common.PostGreSQLSSLMode])
 	database.PostGreSQL = postgresql
 	return database
 }

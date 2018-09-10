@@ -88,6 +88,7 @@ const (
 	ClairDBPort                       = "clair_db_port"
 	ClairDB                           = "clair_db"
 	ClairDBUsername                   = "clair_db_username"
+	ClairDBSSLMode                    = "clair_db_sslmode"
 	UAAEndpoint                       = "uaa_endpoint"
 	UAAClientID                       = "uaa_client_id"
 	UAAClientSecret                   = "uaa_client_secret"
