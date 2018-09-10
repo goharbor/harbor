@@ -8,7 +8,7 @@ export class SkinableConfig {
     constructor(private http: Http) {}
 
     public getCustomFile(): Promise<any> {
-       return this.http.get('../static/setting.json')
+       return this.http.get('setting.json')
            .toPromise()
            .then(response => { this.customSkinData = response.json(); return this.customSkinData; })
            .catch(error => {
