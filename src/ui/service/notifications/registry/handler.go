@@ -159,8 +159,8 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 		}
 
 		// pull and push manifest by docker-client or vic
-		if (strings.HasPrefix(event.Request.UserAgent, "docker") || strings.HasPrefix(event.Request.UserAgent, vicPrefix)) &&
-			(event.Action == "pull" || event.Action == "push") {
+		if (strings.HasPrefix(event.Request.UserAgent, "docker") || strings.HasPrefix(event.Request.UserAgent, vicPrefix) ||
+	                strings.HasPrefix(event.Request.UserAgent, "jib")) && (event.Action == "pull" || event.Action == "push") {
 			events = append(events, &event)
 			log.Debugf("add event to collect: %s", event.ID)
 			continue
