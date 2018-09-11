@@ -71,7 +71,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     @Output() hideJobs = new EventEmitter<any>();
     @Output() redirect = new EventEmitter<ReplicationRule>();
     @Output() openNewRule = new EventEmitter<any>();
-    @Output() replicateManual = new EventEmitter<ReplicationRule[]>();
+    @Output() replicateManual = new EventEmitter<ReplicationRule>();
 
     projectScope = false;
 
@@ -148,7 +148,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     }
 
     replicateRule(rule: ReplicationRule): void {
-        this.replicateManual.emit([rule]);
+        this.replicateManual.emit(rule);
     }
 
     hasDeletedLabel(rule: any) {

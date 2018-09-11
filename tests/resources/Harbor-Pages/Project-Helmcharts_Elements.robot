@@ -3,7 +3,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 
 *** Variables ***
 
-${upload_chart_button}  //project-list-charts/hbr-helm-chart//clr-dg-action-bar/button[contains(.,"upload")]
+${upload_chart_button}  //button[contains(.,"Upload")]
 ${chart_file_browse}  //*[@id="chart"]
 ${chart_prov_browse}  //*[@id="prov"]
 ${upload_action_button}  //clr-modal//form/div/button[contains(.,"Upload")]
