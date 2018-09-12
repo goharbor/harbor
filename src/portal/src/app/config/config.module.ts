@@ -19,6 +19,12 @@ import { ConfigurationComponent } from './config.component';
 import { ConfigurationService } from './config.service';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
+import { GcComponent } from './gc/gc.component';
+import { GcRepoService } from './gc/gc.service';
+import { GcApiRepository } from './gc/gc.api.repository';
+import { GcViewModelFactory } from './gc/gc.viewmodel.factory';
+import { GcUtility } from './gc/gc.utility';
+
 
 @NgModule({
   imports: [
@@ -29,8 +35,9 @@ import { ConfigurationEmailComponent } from './email/config-email.component';
     ConfigurationComponent,
     ConfigurationAuthComponent,
     ConfigurationEmailComponent,
+    GcComponent
   ],
   exports: [ConfigurationComponent],
-  providers: [ConfigurationService]
+  providers: [ConfigurationService, GcRepoService, GcApiRepository, GcViewModelFactory, GcUtility ]
 })
 export class ConfigurationModule { }

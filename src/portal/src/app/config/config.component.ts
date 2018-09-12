@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from "rxjs";
-import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent } from '@harbor/ui';
+import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent} from '@harbor/ui';
 
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
@@ -24,6 +24,7 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 import { AppConfigService } from '../app-config.service';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
+import { GcComponent} from './gc/gc.component';
 import { ConfigurationService } from './config.service';
 
 
@@ -34,6 +35,7 @@ const TabLinkContentMap = {
     'config-email': 'email',
     'config-system': 'system_settings',
     'config-vulnerability': 'vulnerability',
+    'config-gc': 'gc',
     'config-label': 'system_label',
 };
 
@@ -53,6 +55,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
     @ViewChild(VulnerabilityConfigComponent) vulnerabilityConfig: VulnerabilityConfigComponent;
+    @ViewChild(GcComponent) gcConfig: GcComponent;
     @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
     @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
 
@@ -201,7 +204,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get hideBtn(): boolean {
-        return this.currentTabId === 'config-label';
+        return this.currentTabId === 'config-label' || this.currentTabId === 'config-gc';
     }
 
     public get hideMailTestingSpinner(): boolean {
