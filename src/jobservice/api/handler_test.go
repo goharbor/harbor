@@ -377,7 +377,7 @@ func getReq(url string) ([]byte, error) {
 }
 
 func exportUISecret(secret string) {
-	os.Setenv("UI_SECRET", secret)
+	os.Setenv("CORE_SECRET", secret)
 }
 
 type fakeController struct{}

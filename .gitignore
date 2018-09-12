@@ -4,25 +4,16 @@ harbor
 make/docker-compose.yml
 make/common/config/*
 make/dev/adminserver/harbor_adminserver
-make/dev/ui/harbor_ui
+make/dev/core/harbor_core
 make/dev/jobservice/harbor_jobservice
 make/photon/*/binary/
 
 src/adminserver/adminserver
-src/ui/ui
+src/core/core
 src/jobservice/jobservice
 src/common/dao/dao.test
 *.pyc
 jobservice/test
-
-src/ui/static/*.html
-src/ui/static/*.bundle.js
-src/ui/static/*.bundle.js.map
-src/ui/static/harbor-logo.*.png
-src/ui/static/*.min.*
-src/ui/static/styles.css
-src/ui/static/i18n
-src/ui/static/shapes
 
 src/portal/coverage/
 src/portal/dist/

@@ -176,11 +176,11 @@ spec:
               configMapKeyRef:
                 name: harbor-adminserver-config
                 key: MAX_JOB_WORKERS
-          - name: UI_SECRET
+          - name: CORE_SECRET
             valueFrom:
               configMapKeyRef:
                 name: harbor-adminserver-config
-                key: UI_SECRET
+                key: CORE_SECRET
           - name: JOBSERVICE_SECRET
             valueFrom:
               configMapKeyRef:

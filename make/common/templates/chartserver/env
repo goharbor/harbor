@@ -9,7 +9,7 @@ CACHE_REDIS_DB=$cache_redis_db_index
 
 # Credential for internal communication
 BASIC_AUTH_USER=chart_controller
-BASIC_AUTH_PASS=$ui_secret
+BASIC_AUTH_PASS=$core_secret
 
 # Multiple tenants
 # Must be set with 1 to support project namespace

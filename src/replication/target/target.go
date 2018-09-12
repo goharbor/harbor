@@ -20,7 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 // Manager defines the methods that a target manager should implement

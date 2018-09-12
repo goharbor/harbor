@@ -1,6 +1,6 @@
 version: '2'
 services:
-  ui:
+  core:
     networks:
       - harbor-notary
   proxy:

@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: harbor-ui-config
+  name: harbor-core-config
 data:
-  CONFIG_PATH: /etc/ui/app.conf
+  CONFIG_PATH: /etc/core/app.conf
   LOG_LEVEL: debug
-  UI_SECRET: "{{ui_secret}}"
+  CORE_SECRET: "{{core_secret}}"
   JOBSERVICE_SECRET: "{{jobservice_secret}}"
   GODEBUG: netdns=cgo
   SECRET_KEY: "{{secret_key}}"

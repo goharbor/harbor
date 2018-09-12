@@ -21,6 +21,10 @@ if sys.version_info[:3][0] == 3:
 
 DATA_VOL = "/data"
 
+base_dir = os.path.dirname(__file__)
+config_dir = os.path.join(base_dir, "common/config")
+templates_dir = os.path.join(base_dir, "common/templates")
+
 def validate(conf, args):
 
     protocol = rcp.get("configuration", "ui_url_protocol")
@@ -109,9 +113,6 @@ def render(src, dest, **kw):
         f.write(t.substitute(**kw))
     print("Generated configuration file: %s" % dest)
 
-base_dir = os.path.dirname(__file__)
-config_dir = os.path.join(base_dir, "common/config")
-templates_dir = os.path.join(base_dir, "common/templates")
 def delfile(src):
     if os.path.isfile(src):
         try:
@@ -241,15 +242,15 @@ storage_provider_config = rcp.get("configuration", "registry_storage_provider_co
 # yaml requires 1 or more spaces between the key and value
 storage_provider_config = storage_provider_config.replace(":", ": ", 1)
 registry_custom_ca_bundle_path = rcp.get("configuration", "registry_custom_ca_bundle").strip()
-ui_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+core_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))
 
 adminserver_config_dir = os.path.join(config_dir,"adminserver")
 if not os.path.exists(adminserver_config_dir):
     os.makedirs(os.path.join(config_dir, "adminserver"))
 
-ui_config_dir = prep_conf_dir(config_dir,"ui")
-ui_certificates_dir =  prep_conf_dir(ui_config_dir,"certificates")
+core_config_dir = prep_conf_dir(config_dir,"core")
+core_certificates_dir =  prep_conf_dir(core_config_dir,"certificates")
 db_config_dir = prep_conf_dir(config_dir, "db")
 job_config_dir = prep_conf_dir(config_dir, "jobservice")
 registry_config_dir = prep_conf_dir(config_dir, "registry")
@@ -259,9 +260,9 @@ nginx_conf_d = prep_conf_dir(nginx_config_dir, "conf.d")
 log_config_dir = prep_conf_dir (config_dir, "log")
 
 adminserver_conf_env = os.path.join(config_dir, "adminserver", "env")
-ui_conf_env = os.path.join(config_dir, "ui", "env")
-ui_conf = os.path.join(config_dir, "ui", "app.conf")
-ui_cert_dir = os.path.join(config_dir, "ui", "certificates")
+core_conf_env = os.path.join(config_dir, "core", "env")
+core_conf = os.path.join(config_dir, "core", "app.conf")
+core_cert_dir = os.path.join(config_dir, "core", "certificates")
 jobservice_conf = os.path.join(config_dir, "jobservice", "config.yml")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
 registryctl_conf_env = os.path.join(config_dir, "registryctl", "env")
@@ -274,8 +275,8 @@ log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf")
 adminserver_url = "http://adminserver:8080"
 registry_url = "http://registry:5000"
 registry_controller_url = "http://registryctl:8080"
-ui_url = "http://ui:8080"
-token_service_url = "http://ui:8080/service/token"
+core_url = "http://core:8080"
+token_service_url = "http://core:8080/service/token"
 
 jobservice_url = "http://jobservice:8080"
 clair_url = "http://clair:6060"
@@ -313,7 +314,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         adminserver_conf_env,
         reload_config=reload_config,
         public_url=public_url,
-        ui_url=ui_url,
+        core_url=core_url,
         auth_mode=auth_mode,
         self_registration=self_registration,
         ldap_url=ldap_url,
@@ -345,7 +346,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         harbor_admin_password=harbor_admin_password,
         project_creation_restriction=proj_cre_restriction,
         max_job_workers=max_job_workers,
-        ui_secret=ui_secret,
+        core_secret=core_secret,
         jobservice_secret=jobservice_secret,
         token_expiration=token_expiration,
         admiral_url=admiral_url,
@@ -379,9 +380,9 @@ chart_cache_driver = "memory"
 if len(redis_host) > 0:
     chart_cache_driver = "redis"
 
-render(os.path.join(templates_dir, "ui", "env"), 
-        ui_conf_env, 
-        ui_secret=ui_secret,
+render(os.path.join(templates_dir, "core", "env"), 
+        core_conf_env, 
+        core_secret=core_secret,
         jobservice_secret=jobservice_secret,
         redis_host=redis_host,
         redis_port=redis_port,
@@ -413,7 +414,7 @@ render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
     storage_provider_info=storage_provider_info,
     public_url=public_url,
-    ui_url=ui_url,
+    core_url=core_url,
     redis_host=redis_host,
     redis_port=redis_port,
     redis_password=redis_password,
@@ -425,7 +426,7 @@ render(os.path.join(templates_dir, "db", "env"),
 
 render(os.path.join(templates_dir, "jobservice", "env"),
         job_conf_env,
-        ui_secret=ui_secret,
+        core_secret=core_secret,
         jobservice_secret=jobservice_secret,
         adminserver_url=adminserver_url)
 
@@ -442,19 +443,19 @@ render(os.path.join(templates_dir, "log", "logrotate.conf"),
 render(os.path.join(templates_dir, "registryctl", "env"),
         registryctl_conf_env,
         jobservice_secret=jobservice_secret,
-        ui_secret=ui_secret)
+        core_secret=core_secret)
 
-shutil.copyfile(os.path.join(templates_dir, "ui", "app.conf"), ui_conf)
+shutil.copyfile(os.path.join(templates_dir, "core", "app.conf"), core_conf)
 shutil.copyfile(os.path.join(templates_dir, "registryctl", "config.yml"), registryctl_conf_yml)
-print("Generated configuration file: %s" % ui_conf)
+print("Generated configuration file: %s" % core_conf)
 
 if auth_mode == "uaa_auth":
     if os.path.isfile(uaa_ca_cert):
-        if not os.path.isdir(ui_cert_dir):
-            os.makedirs(ui_cert_dir)
-        ui_uaa_ca = os.path.join(ui_cert_dir, "uaa_ca.pem")
-        print("Copying UAA CA cert to %s" % ui_uaa_ca)
-        shutil.copyfile(uaa_ca_cert, ui_uaa_ca)
+        if not os.path.isdir(core_cert_dir):
+            os.makedirs(core_cert_dir)
+        core_uaa_ca = os.path.join(core_cert_dir, "uaa_ca.pem")
+        print("Copying UAA CA cert to %s" % core_uaa_ca)
+        shutil.copyfile(uaa_ca_cert, core_uaa_ca)
     else:
         print("Can not find UAA CA cert: %s, skip" % uaa_ca_cert)
 
@@ -508,14 +509,14 @@ def openssl_installed():
 if customize_crt == 'on' and openssl_installed():
     shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
     empty_subj = "/"
-    private_key_pem = os.path.join(config_dir, "ui", "private_key.pem")
+    private_key_pem = os.path.join(config_dir, "core", "private_key.pem")
     root_crt = os.path.join(config_dir, "registry", "root.crt")
     create_root_cert(empty_subj, key_path=private_key_pem, cert_path=root_crt)
     mark_file(private_key_pem)
     mark_file(root_crt)
 else:
-    print("Copied configuration file: %s" % ui_config_dir + "private_key.pem")
-    shutil.copyfile(os.path.join(templates_dir, "ui", "private_key.pem"), os.path.join(ui_config_dir, "private_key.pem"))
+    print("Copied configuration file: %s" % core_config_dir + "private_key.pem")
+    shutil.copyfile(os.path.join(templates_dir, "core", "private_key.pem"), os.path.join(core_config_dir, "private_key.pem"))
     print("Copied configuration file: %s" % registry_config_dir + "root.crt")
     shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
 
@@ -710,10 +711,10 @@ if args.chart_mode:
         cache_redis_addr=cache_redis_addr,
         cache_redis_password=cache_redis_password,
         cache_redis_db_index=cache_redis_db_index,
-        ui_secret=ui_secret,
+        core_secret=core_secret,
         storage_driver=storage_driver,
         all_storage_driver_configs=all_storage_provider_configs)
 
-    
+
 FNULL.close()
 print("The configuration files are ready, please use docker-compose to start the service.")

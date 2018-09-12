@@ -198,7 +198,7 @@ Stopping Harbor:
 $ sudo docker-compose stop
 Stopping nginx ... done
 Stopping harbor-jobservice ... done
-Stopping harbor-ui ... done
+Stopping harbor-core ... done
 Stopping harbor-db ... done
 Stopping registry ... done
 Stopping harbor-log ... done
@@ -375,11 +375,11 @@ By default, Harbor limits the CPU usage of Clair container to 150000 and avoids 
   harbor-db           docker-entrypoint.sh mysqld      Up      3306/tcp                                 
   harbor-jobservice   /harbor/harbor_jobservice        Up                                               
   harbor-log          /bin/sh -c crond && rsyslo ...   Up      127.0.0.1:1514->514/tcp                    
-  harbor-ui           /harbor/harbor_ui                Up                                               
+  harbor-core           /harbor/harbor_core            Up                                               
   nginx               nginx -g daemon off;             Up      0.0.0.0:443->443/tcp, 0.0.0.0:80->80/tcp 
   registry            /entrypoint.sh serve /etc/ ...   Up      5000/tcp                                 
 ```
-If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor-ui``` is not running, you should look at the log file ```ui.log```.  
+If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor-core``` is not running, you should look at the log file ```ui.log```.  
 
 
 2.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `common/templates/nginx/nginx.http.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
