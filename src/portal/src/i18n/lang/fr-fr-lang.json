@@ -553,6 +553,7 @@
         "PRO_CREATION_ADMIN": "Les Administrateurs Seulement",
         "ROOT_CERT": "Enregistrer le Certificat Racine",
         "ROOT_CERT_LINK": "Télécharger",
+        "GC": "Garbage Collection",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activer l'inscription.",
             "SELF_REGISTRATION_DISABLE": "Désactiver l'inscription.",
@@ -566,7 +567,8 @@
             "PRO_CREATION_RESTRICTION": "L'indicateur pour définir quels utilisateurs ont le droit de créer des projets. Par défaut, tout le monde peut créer un projet. Définissez sur 'Administrateur Seulement' pour que seul un administrateur puisse créer un projet.",
             "ROOT_CERT_DOWNLOAD": "Téléchargez le certificat racine du dépôt.",
             "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours.",
-            "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. "
+            "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
+            "GC_POLICY": ""
         },
         "LDAP": {
             "URL": "URL LDAP",
@@ -769,5 +771,32 @@
     "PRECONDITION_FAILED": "Nous ne pouvons pas exécuter votre action en raison d'un échec de conditions préalables.",
     "SERVER_ERROR": "Nous ne sommes pas en mesure d'exécuter votre action parce que des erreurs internes de serveur se sont produites.",
     "INCONRRECT_OLD_PWD": "L'ancien mot de passe est incorrect.",
-    "UNKNOWN": "n. d."
+    "UNKNOWN": "n. d.",
+    "STATUS":"Status",
+    "START_TIME": "Start Time",
+    "END_TIME": "End Time",
+    "DETAILS":"Details",
+    "PENDING":"Pending",
+    "FINISHED":"Finished",
+    "SCHEDULE": {
+        "NONE": "None",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MANUAL": "Manual"
+    }, 
+    "GC": {
+        "CURRENT_SCHEDULE": "Current Schedule",
+        "ON": "on",
+        "AT": "at",
+        "GC_NOW": "GC NOW",
+        "JOB_LIST":"GC Jobs List",
+        "JOB_ID":"Job ID",
+        "TRIGGER_TYPE": "Trigger Type",
+        "LATEST_JOBS": "Latest {{param}} Jobs",
+        "LOG_DETAIL":"Log Details",
+        "MSG_SUCCESS":"Garbage Collection Successful",
+        "MSG_SCHEDULE_SET":"Garbage Collection schedule has been set",
+        "MSG_SCHEDULE_RESET":"Garbage Collection schedule has been reset",
+        "MSG_ERROR":"Can not do Garbase Collection too often,please try again later."
+    }
 }

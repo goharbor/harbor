@@ -554,6 +554,7 @@
         "REPO_READ_ONLY": "Repository Read Only",
         "SYSTEM": "Opciones del Sistema",
         "VULNERABILITY": "Vulnerability",
+        "GC": "Garbage Collection",
         "CONFIRM_TITLE": "Confirma cancelación",
         "CONFIRM_SUMMARY": "Algunos cambios no han sido guardados aún. ¿Quiere descartarlos?",
         "SAVE_SUCCESS": "La configuración ha sido guardada satisfactoriamente.",
@@ -595,7 +596,9 @@
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
-            "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. "
+            "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
+            "GC_POLICY": ""
+
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -805,5 +808,32 @@
     "PRECONDITION_FAILED": "No hemos podido llevar a cabo la acción debido a un error de precondición.",
     "SERVER_ERROR": "No hemos podido llevar a cabo la acción debido a un error interno.",
     "INCONRRECT_OLD_PWD": "La contraseña antigua no es correcta.",
-    "UNKNOWN": "n/a"
+    "UNKNOWN": "n/a",
+    "STATUS":"Status",
+    "START_TIME": "Start Time",
+    "END_TIME": "End Time",
+    "DETAILS":"Details",
+    "PENDING":"Pending",
+    "FINISHED":"Finished",
+    "SCHEDULE": {
+        "NONE": "None",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MANUAL": "Manual"
+    }, 
+    "GC": {
+        "CURRENT_SCHEDULE": "Current Schedule",
+        "ON": "on",
+        "AT": "at",
+        "GC_NOW": "GC NOW",
+        "JOB_LIST":"GC Jobs List",
+        "JOB_ID":"Job ID",
+        "TRIGGER_TYPE": "Trigger Type",
+        "LATEST_JOBS": "Latest {{param}} Jobs",
+        "LOG_DETAIL":"Log Details",
+        "MSG_SUCCESS":"Garbage Collection Successful",
+        "MSG_SCHEDULE_SET":"Garbage Collection schedule has been set",
+        "MSG_SCHEDULE_RESET":"Garbage Collection schedule has been reset",
+        "MSG_ERROR":"Can not do Garbase Collection too often,please try again later."
+    }
 }

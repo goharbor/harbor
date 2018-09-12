@@ -20,11 +20,20 @@ import { HarborRoutingModule } from './harbor-routing.module';
 import { SharedModule } from './shared/shared.module';
 import { AccountModule } from './account/account.module';
 import { ConfigurationModule } from './config/config.module';
+import { registerLocaleData } from '@angular/common';
 
 import { TranslateService } from "@ngx-translate/core";
 import { AppConfigService } from './app-config.service';
-import {SkinableConfig} from "./skinable-config.service";
+import { SkinableConfig } from "./skinable-config.service";
 import { ProjectConfigComponent } from './project/project-config/project-config.component';
+
+import zh from '@angular/common/locales/zh-Hans';
+import es from '@angular/common/locales/es';
+import localeFr from '@angular/common/locales/fr';
+registerLocaleData(zh, 'zh-cn');
+registerLocaleData(es, 'es-es');
+registerLocaleData(localeFr, 'fr-fr');
+
 
 export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
     return () => {
