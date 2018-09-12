@@ -16,12 +16,13 @@ Project Harbor is an an open source trusted cloud native registry project that s
 Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CNCF). If you are an organization that wants to help shape the evolution of cloud native technologies, consider joining the CNCF. For details about who's involved and how Harbor plays a role, read the CNCF
 [announcement](https://www.cncf.io/blog/2018/07/31/cncf-to-host-harbor-in-the-sandbox/).
 
-### Features
+## Features
 
+* **Cloud native registry**: With support for both container images and [Helm](https://helm.sh) charts, Harbor serves as registry for cloud native environments like container runtimes and orchestration platforms.
 * **Role based access control**: Users and repositories are organized via 'projects' and a user can have different permission for images under a project.
-* **Policy based image replication**: Images can be replicated (synchronized) between multiple registry instances, with auto-retry on errors. Great for load balancing, high availability, multi-datacenter, hybrid and multi-cloud scenarios.
+* **Policy based image replication**: Images can be replicated (synchronized) between multiple registry instances based on policies with multiple filters (repository, tag and label). Harbor will auto-retry to replicate if it encounters any errors. Great for load balancing, high availability, multi-datacenter, hybrid and multi-cloud scenarios.
 * **Vulnerability Scanning**: Harbor scans images regularly and warns users of vulnerabilities.
-* **LDAP/AD support**: Harbor integrates with existing enterprise LDAP/AD for user authentication and management.
+* **LDAP/AD support**: Harbor integrates with existing enterprise LDAP/AD for user authentication and management, and supports importing LDAP groups into Harbor and assigning proper project roles to them.  
 * **Image deletion & garbage collection**: Images can be deleted and their space can be recycled.
 * **Notary**: Image authenticity can be ensured.
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
@@ -29,7 +30,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **RESTful API**: RESTful APIs for most administrative operations, easy to integrate with external systems.
 * **Easy deployment**: Provide both an online and offline installer.
 
-### Install & Run
+## Install & Run
 
 **System requirements:**
 
@@ -41,14 +42,14 @@ If you want to deploy Harbor on Kubernetes, please use the **[Harbor chart](http
 
 Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Harbor.
 
-### Community
+## Community
 
 **Twitter:** [@project_harbor](https://twitter.com/project_harbor)  
 **User Group:** Join Harbor user email group: [harbor-users@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback. To subscribe, send an email to [harbor-users+subscribe@googlegroups.com](mailto:harbor-users+subscribe@googlegroups.com) .  
 **Developer Group:** Join Harbor developer group: [harbor-dev@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-dev) for discussion on Harbor development and contribution. To subscribe, send an email to [harbor-dev+subscribe@googlegroups.com](mailto:harbor-dev+subscribe@googlegroups.com).  
 **Slack:** Join Harbor's community for discussion and ask questions: [Cloud Native Computing Foundation](https://slack.cncf.io/), channel: #harbor and #harbor-dev
 
-### Additional Tools
+## Additional Tools
 
 Tools layered on top of Harbor and contributed by community.
 
@@ -56,16 +57,16 @@ Tools layered on top of Harbor and contributed by community.
   - Automates the process of cleaning up old tags from your Harbor container registries.
   - Lead by [@nlowe](https://github.com/nlowe) from HylandSoftware.
 
-### Demos
+## Demos
 
 * **[Live Demo](https://demo.goharbor.io)** - A demo environment with the latest Harbor stable build installed. If you want to deeply dive, please refer to **[Demo Server](docs/demo_server.md)** for more details.
 * **[Video Demos](https://github.com/goharbor/harbor/wiki/Video-demos-for-Harbor)** - Demos for Harbor features and continuously updated.
 
-### Partners and Users
+## Partners and Users
 
 If you want to learn Harbor partners and users, please refer to [list of Harbor partners and users](partners.md).
 
-### License
+## License
 
 Harbor is available under the [Apache 2 license](LICENSE).
 
