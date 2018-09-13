@@ -19,7 +19,7 @@ h4 {
 }
 
 .colorRed {
-    color: red;
+    color:rgb(174, 169, 185);
 }
 
 .colorRed a {
@@ -28,7 +28,7 @@ h4 {
 }
 
 .alertLabel {
-    display: block;
+    // display: block;
     margin-top: 2px;
     line-height: 1em;
     font-size: 12px;
@@ -155,6 +155,7 @@ h4 {
     border-bottom: 1px solid blue;
     line-height: 14px;
     cursor: pointer;
+    margin-left: 12px;
 }
 
 .arrowSet{
@@ -167,7 +168,7 @@ h4 {
 
 clr-modal {
     ::ng-deep div.modal-dialog {
-        width: 25rem;
+        width: 29rem;
     }
 }
 
