@@ -116,6 +116,9 @@ services:
     restart: always
     networks:
       - harbor
+    depends_on:
+      - log
+      - ui
     logging:
       driver: "syslog"
       options:
