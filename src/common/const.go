@@ -37,6 +37,7 @@ const (
 	ResourceTypeProject    = "p"
 	ResourceTypeRepository = "r"
 	ResourceTypeImage      = "i"
+	ResourceTypeChart      = "c"
 
 	ExtEndpoint                       = "ext_endpoint"
 	AUTHMode                          = "auth_mode"

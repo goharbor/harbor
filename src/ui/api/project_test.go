@@ -419,6 +419,11 @@ func mockChartController() (*httptest.Server, *chartserver.Controller, error) {
 				w.Write([]byte("{}"))
 				return
 			}
+		case "/api/library/charts/harbor/0.2.0":
+			if r.Method == http.MethodGet {
+				w.Write([]byte(chartVersionOfHarbor020))
+				return
+			}
 		}
 
 		w.WriteHeader(http.StatusNotImplemented)
@@ -442,3 +447,39 @@ func mockChartController() (*httptest.Server, *chartserver.Controller, error) {
 
 	return mockServer, oldController, nil
 }
+
+var chartVersionOfHarbor020 = `
+{
+    "name": "harbor",
+    "home": "https://github.com/vmware/harbor",
+    "sources": [
+        "https://github.com/vmware/harbor/tree/master/contrib/helm/harbor"
+    ],
+    "version": "0.2.0",
+    "description": "An Enterprise-class Docker Registry by VMware",
+    "keywords": [
+        "vmware",
+        "docker",
+        "registry",
+        "harbor"
+    ],
+    "maintainers": [
+        {
+            "name": "Jesse Hu",
+            "email": "huh@vmware.com"
+        },
+        {
+            "name": "paulczar",
+            "email": "username.taken@gmail.com"
+        }
+    ],
+    "engine": "gotpl",
+    "icon": "https://raw.githubusercontent.com/vmware/harbor/master/docs/img/harbor_logo.png",
+    "appVersion": "1.5.0",
+    "urls": [
+        "charts/harbor-0.2.0.tgz"
+    ],
+    "created": "2018-08-29T10:26:21.141611102Z",
+    "digest": "fc8aae8dade9f0dfca12e9f1085081c49843d30a063a3fa7eb42497e3ceb277c"
+}
+`

@@ -17,8 +17,10 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -27,31 +29,41 @@ import (
 )
 
 var (
-	resourceLabelAPIBasePath = "/api/repositories"
-	repository               = "library/hello-world"
-	tag                      = "latest"
-	proLibraryLabelID        int64
+	resourceLabelAPIPath                = "/api/chartrepo/library/charts/harbor/0.2.0/labels"
+	resourceLabelAPIPathWithFakeProject = "/api/chartrepo/not-exist/charts/harbor/0.2.0/labels"
+	resourceLabelAPIPathWithFakeChart   = "/api/chartrepo/library/charts/not-exist/0.2.0/labels"
+	cProLibraryLabelID                  int64
+	mockChartServer                     *httptest.Server
+	oldChartController                  *chartserver.Controller
 )
 
-func TestAddToImage(t *testing.T) {
-	sysLevelLabelID, err := dao.AddLabel(&models.Label{
-		Name:  "sys_level_label",
+func TestToStartMockChartService(t *testing.T) {
+	var err error
+	mockChartServer, oldChartController, err = mockChartController()
+	if err != nil {
+		t.Fatalf("failed to start the mock chart service: %v", err)
+	}
+}
+
+func TestAddToChart(t *testing.T) {
+	cSysLevelLabelID, err := dao.AddLabel(&models.Label{
+		Name:  "c_sys_level_label",
 		Level: common.LabelLevelSystem,
 	})
 	require.Nil(t, err)
-	defer dao.DeleteLabel(sysLevelLabelID)
+	defer dao.DeleteLabel(cSysLevelLabelID)
 
-	proTestLabelID, err := dao.AddLabel(&models.Label{
-		Name:      "pro_test_label",
+	cProTestLabelID, err := dao.AddLabel(&models.Label{
+		Name:      "c_pro_test_label",
 		Level:     common.LabelLevelUser,
 		Scope:     common.LabelScopeProject,
 		ProjectID: 100,
 	})
 	require.Nil(t, err)
-	defer dao.DeleteLabel(proTestLabelID)
+	defer dao.DeleteLabel(cProTestLabelID)
 
-	proLibraryLabelID, err = dao.AddLabel(&models.Label{
-		Name:      "pro_library_label",
+	cProLibraryLabelID, err = dao.AddLabel(&models.Label{
+		Name:      "c_pro_library_label",
 		Level:     common.LabelLevelUser,
 		Scope:     common.LabelScopeProject,
 		ProjectID: 1,
@@ -62,8 +74,7 @@ func TestAddToImage(t *testing.T) {
 		// 401
 		{
 			request: &testingRequest{
-				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+				url:    resourceLabelAPIPath,
 				method: http.MethodPost,
 			},
 			code: http.StatusUnauthorized,
@@ -71,26 +82,25 @@ func TestAddToImage(t *testing.T) {
 		// 403
 		{
 			request: &testingRequest{
-				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+				url:        resourceLabelAPIPath,
 				method:     http.MethodPost,
 				credential: projGuest,
 			},
 			code: http.StatusForbidden,
 		},
-		// 404 repository doesn't exist
+		// 500 project doesn't exist
 		{
 			request: &testingRequest{
-				url:        fmt.Sprintf("%s/library/non-exist-repo/tags/%s/labels", resourceLabelAPIBasePath, tag),
+				url:        resourceLabelAPIPathWithFakeProject,
 				method:     http.MethodPost,
 				credential: projDeveloper,
 			},
 			code: http.StatusNotFound,
 		},
-		// 404 image doesn't exist
+		// 404 chart doesn't exist
 		{
 			request: &testingRequest{
-				url:        fmt.Sprintf("%s/%s/tags/non-exist-tag/labels", resourceLabelAPIBasePath, repository),
+				url:        resourceLabelAPIPathWithFakeChart,
 				method:     http.MethodPost,
 				credential: projDeveloper,
 			},
@@ -99,7 +109,7 @@ func TestAddToImage(t *testing.T) {
 		// 400
 		{
 			request: &testingRequest{
-				url:        fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath, repository, tag),
+				url:        resourceLabelAPIPath,
 				method:     http.MethodPost,
 				credential: projDeveloper,
 			},
@@ -108,8 +118,7 @@ func TestAddToImage(t *testing.T) {
 		// 404 label doesn't exist
 		{
 			request: &testingRequest{
-				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+				url:        resourceLabelAPIPath,
 				method:     http.MethodPost,
 				credential: projDeveloper,
 				bodyJSON: struct {
@@ -123,14 +132,13 @@ func TestAddToImage(t *testing.T) {
 		// 400 system level label
 		{
 			request: &testingRequest{
-				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+				url:        resourceLabelAPIPath,
 				method:     http.MethodPost,
 				credential: projDeveloper,
 				bodyJSON: struct {
 					ID int64
 				}{
-					ID: sysLevelLabelID,
+					ID: cSysLevelLabelID,
 				},
 			},
 			code: http.StatusBadRequest,
@@ -138,14 +146,13 @@ func TestAddToImage(t *testing.T) {
 		// 400 try to add the label of project1 to the image under project2
 		{
 			request: &testingRequest{
-				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+				url:        resourceLabelAPIPath,
 				method:     http.MethodPost,
 				credential: projDeveloper,
 				bodyJSON: struct {
 					ID int64
 				}{
-					ID: proTestLabelID,
+					ID: cProTestLabelID,
 				},
 			},
 			code: http.StatusBadRequest,
@@ -153,14 +160,13 @@ func TestAddToImage(t *testing.T) {
 		// 200
 		{
 			request: &testingRequest{
-				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+				url:        resourceLabelAPIPath,
 				method:     http.MethodPost,
 				credential: projDeveloper,
 				bodyJSON: struct {
 					ID int64
 				}{
-					ID: proLibraryLabelID,
+					ID: cProLibraryLabelID,
 				},
 			},
 			code: http.StatusOK,
@@ -169,23 +175,22 @@ func TestAddToImage(t *testing.T) {
 	runCodeCheckingCases(t, cases...)
 }
 
-func TestGetOfImage(t *testing.T) {
+func TestGetOfChart(t *testing.T) {
 	labels := []*models.Label{}
 	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath, repository, tag),
+		url:        resourceLabelAPIPath,
 		method:     http.MethodGet,
 		credential: projDeveloper,
 	}, &labels)
 	require.Nil(t, err)
 	require.Equal(t, 1, len(labels))
-	assert.Equal(t, proLibraryLabelID, labels[0].ID)
+	assert.Equal(t, cProLibraryLabelID, labels[0].ID)
 }
 
-func TestRemoveFromImage(t *testing.T) {
+func TestRemoveFromChart(t *testing.T) {
 	runCodeCheckingCases(t, &codeCheckingCase{
 		request: &testingRequest{
-			url: fmt.Sprintf("%s/%s/tags/%s/labels/%d", resourceLabelAPIBasePath,
-				repository, tag, proLibraryLabelID),
+			url:        fmt.Sprintf("%s/%d", resourceLabelAPIPath, cProLibraryLabelID),
 			method:     http.MethodDelete,
 			credential: projDeveloper,
 		},
@@ -194,8 +199,7 @@ func TestRemoveFromImage(t *testing.T) {
 
 	labels := []*models.Label{}
 	err := handleAndParse(&testingRequest{
-		url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-			repository, tag),
+		url:        resourceLabelAPIPath,
 		method:     http.MethodGet,
 		credential: projDeveloper,
 	}, &labels)
@@ -203,53 +207,14 @@ func TestRemoveFromImage(t *testing.T) {
 	require.Equal(t, 0, len(labels))
 }
 
-func TestAddToRepository(t *testing.T) {
-	runCodeCheckingCases(t, &codeCheckingCase{
-		request: &testingRequest{
-			url:    fmt.Sprintf("%s/%s/labels", resourceLabelAPIBasePath, repository),
-			method: http.MethodPost,
-			bodyJSON: struct {
-				ID int64
-			}{
-				ID: proLibraryLabelID,
-			},
-			credential: projDeveloper,
-		},
-		code: http.StatusOK,
-	})
-}
+func TestToStopMockChartService(t *testing.T) {
+	if mockChartServer != nil {
+		mockChartServer.Close()
+	}
 
-func TestGetOfRepository(t *testing.T) {
-	labels := []*models.Label{}
-	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("%s/%s/labels", resourceLabelAPIBasePath, repository),
-		method:     http.MethodGet,
-		credential: projDeveloper,
-	}, &labels)
-	require.Nil(t, err)
-	require.Equal(t, 1, len(labels))
-	assert.Equal(t, proLibraryLabelID, labels[0].ID)
-}
+	if oldChartController != nil {
+		chartController = oldChartController
+	}
 
-func TestRemoveFromRepository(t *testing.T) {
-	runCodeCheckingCases(t, &codeCheckingCase{
-		request: &testingRequest{
-			url: fmt.Sprintf("%s/%s/labels/%d", resourceLabelAPIBasePath,
-				repository, proLibraryLabelID),
-			method:     http.MethodDelete,
-			credential: projDeveloper,
-		},
-		code: http.StatusOK,
-	})
-
-	labels := []*models.Label{}
-	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("%s/%s/labels", resourceLabelAPIBasePath, repository),
-		method:     http.MethodGet,
-		credential: projDeveloper,
-	}, &labels)
-	require.Nil(t, err)
-	require.Equal(t, 0, len(labels))
-
-	dao.DeleteLabel(proLibraryLabelID)
+	dao.DeleteLabel(cProLibraryLabelID)
 }

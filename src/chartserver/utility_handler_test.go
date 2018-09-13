@@ -80,6 +80,82 @@ func TestDeleteChart(t *testing.T) {
 	}
 }
 
+// Test the GetChartVersion in utility handler
+func TestGetChartVersionSummary(t *testing.T) {
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.RequestURI {
+		case "/api/repo1/charts/harbor/0.2.0":
+			if r.Method == http.MethodGet {
+				w.Write([]byte(chartVersionOfHarbor020))
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusNotImplemented)
+		w.Write([]byte("not supported"))
+	}))
+	defer mockServer.Close()
+
+	serverURL, err := url.Parse(mockServer.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	theController, err := NewController(serverURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	chartV, err := theController.GetUtilityHandler().GetChartVersion("repo1", "harbor", "0.2.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if chartV.GetName() != "harbor" {
+		t.Fatalf("expect chart name 'harbor' but got '%s'", chartV.GetName())
+	}
+
+	if chartV.GetVersion() != "0.2.0" {
+		t.Fatalf("expect chart version '0.2.0' but got '%s'", chartV.GetVersion())
+	}
+}
+
+var chartVersionOfHarbor020 = `
+{
+    "name": "harbor",
+    "home": "https://github.com/vmware/harbor",
+    "sources": [
+        "https://github.com/vmware/harbor/tree/master/contrib/helm/harbor"
+    ],
+    "version": "0.2.0",
+    "description": "An Enterprise-class Docker Registry by VMware",
+    "keywords": [
+        "vmware",
+        "docker",
+        "registry",
+        "harbor"
+    ],
+    "maintainers": [
+        {
+            "name": "Jesse Hu",
+            "email": "huh@vmware.com"
+        },
+        {
+            "name": "paulczar",
+            "email": "username.taken@gmail.com"
+        }
+    ],
+    "engine": "gotpl",
+    "icon": "https://raw.githubusercontent.com/vmware/harbor/master/docs/img/harbor_logo.png",
+    "appVersion": "1.5.0",
+    "urls": [
+        "charts/harbor-0.2.0.tgz"
+    ],
+    "created": "2018-08-29T10:26:21.141611102Z",
+    "digest": "fc8aae8dade9f0dfca12e9f1085081c49843d30a063a3fa7eb42497e3ceb277c"
+}
+`
+
 var chartVersionsOfHarbor = `
 [
     {

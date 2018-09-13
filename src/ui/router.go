@@ -148,6 +148,11 @@ func initRouters() {
 		beego.Router("/chartrepo/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
 		beego.Router("/chartrepo/index.yaml", chartRepositoryAPIType, "get:GetIndex")
 		beego.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
+
+		// Labels for chart
+		chartLabelAPIType := &api.ChartLabelAPI{}
+		beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
+		beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 	}
 
 	// Error pages
