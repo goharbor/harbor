@@ -4,7 +4,7 @@
     "description": "Harbor UI with Clarity",
     "angular-cli": {},
     "scripts": {
-        "start": "ng serve --aot --ssl true --ssl-key ssl/server.key --ssl-cert ssl/server.crt --host 0.0.0.0 --proxy-config proxy.config.json",
+        "start": "ng serve --ssl true --ssl-key ssl/server.key --ssl-cert ssl/server.crt --host 0.0.0.0 --proxy-config proxy.config.json",
         "lint": "tslint \"src/**/*.ts\"",
         "lint:lib": "tslint \"lib/**/*.ts\"  -e \"lib/dist/**/*\" ",
         "test": "ng test harbor-portal",
