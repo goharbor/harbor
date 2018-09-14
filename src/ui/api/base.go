@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/ui/config"
 	"github.com/goharbor/harbor/src/ui/filter"
 	"github.com/goharbor/harbor/src/ui/promgr"
+	"github.com/goharbor/harbor/src/ui/utils"
 )
 
 // BaseController ...
@@ -58,6 +59,43 @@ func (b *BaseController) Prepare() {
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
 	b.ProjectMgr = pm
+}
+
+// RenderFormatedError renders errors with well formted style `{"error": "This is an error"}`
+func (b *BaseController) RenderFormatedError(code int, err error) {
+	formatedErr := utils.WrapError(err)
+	log.Errorf("%s %s failed with error: %s", b.Ctx.Request.Method, b.Ctx.Request.URL.String(), formatedErr.Error())
+	b.RenderError(code, formatedErr.Error())
+}
+
+// SendUnAuthorizedError sends unauthorized error to the client.
+func (b *BaseController) SendUnAuthorizedError(err error) {
+	b.RenderFormatedError(http.StatusUnauthorized, err)
+}
+
+// SendConflictError sends conflict error to the client.
+func (b *BaseController) SendConflictError(err error) {
+	b.RenderFormatedError(http.StatusConflict, err)
+}
+
+// SendNotFoundError sends not found error to the client.
+func (b *BaseController) SendNotFoundError(err error) {
+	b.RenderFormatedError(http.StatusNotFound, err)
+}
+
+// SendBadRequestError sends bad request error to the client.
+func (b *BaseController) SendBadRequestError(err error) {
+	b.RenderFormatedError(http.StatusBadRequest, err)
+}
+
+// SendInternalServerError sends internal server error to the client.
+func (b *BaseController) SendInternalServerError(err error) {
+	b.RenderFormatedError(http.StatusInternalServerError, err)
+}
+
+// SendForbiddenError sends forbidden error to the client.
+func (b *BaseController) SendForbiddenError(err error) {
+	b.RenderFormatedError(http.StatusForbidden, err)
 }
 
 // Init related objects/configurations for the API controllers

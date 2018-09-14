@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/ghodss/yaml"
 	helm_repo "k8s.io/helm/pkg/repo"
 )
 
@@ -129,6 +130,28 @@ func (uh *UtilityHandler) DeleteChart(namespace, chartName string) error {
 	err = <-errWrapper
 
 	return err
+}
+
+// GetChartVersion returns the summary of the specified chart version.
+func (uh *UtilityHandler) GetChartVersion(namespace, name, version string) (*helm_repo.ChartVersion, error) {
+	if len(namespace) == 0 || len(name) == 0 || len(version) == 0 {
+		return nil, errors.New("bad arguments to get chart version summary")
+	}
+
+	path := fmt.Sprintf("/api/%s/charts/%s/%s", namespace, name, version)
+	url := fmt.Sprintf("%s%s", uh.backendServerAddress.String(), path)
+
+	content, err := uh.apiClient.GetContent(url)
+	if err != nil {
+		return nil, err
+	}
+
+	chartVersion := &helm_repo.ChartVersion{}
+	if err := yaml.Unmarshal(content, chartVersion); err != nil {
+		return nil, err
+	}
+
+	return chartVersion, nil
 }
 
 // deleteChartVersion deletes the specified chart version
