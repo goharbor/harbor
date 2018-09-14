@@ -36,16 +36,7 @@ type pgsql struct {
 	usr      string
 	pwd      string
 	database string
-	sslmode  bool
-}
-
-type pgsqlSSLMode bool
-
-func (pm pgsqlSSLMode) String() string {
-	if bool(pm) {
-		return "enable"
-	}
-	return "disable"
+	sslmode  string
 }
 
 // Name returns the name of PostgreSQL
@@ -56,11 +47,14 @@ func (p *pgsql) Name() string {
 // String ...
 func (p *pgsql) String() string {
 	return fmt.Sprintf("type-%s host-%s port-%s databse-%s sslmode-%q",
-		p.Name(), p.host, p.port, p.database, pgsqlSSLMode(p.sslmode))
+		p.Name(), p.host, p.port, p.database, p.sslmode)
 }
 
 // NewPGSQL returns an instance of postgres
-func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode bool) Database {
+func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string) Database {
+	if len(sslmode) == 0 {
+		sslmode = "disable"
+	}
 	return &pgsql{
 		host:     host,
 		port:     port,
@@ -86,14 +80,14 @@ func (p *pgsql) Register(alias ...string) error {
 		an = alias[0]
 	}
 	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		p.host, p.port, p.usr, p.pwd, p.database, pgsqlSSLMode(p.sslmode))
+		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
 	return orm.RegisterDataBase(an, "postgres", info)
 }
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
 func (p *pgsql) UpgradeSchema() error {
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", p.usr, p.pwd, p.host, p.port, p.database, pgsqlSSLMode(p.sslmode))
+	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", p.usr, p.pwd, p.host, p.port, p.database, p.sslmode)
 	// For UT
 	path := os.Getenv("POSTGRES_MIGRATION_SCRIPTS_PATH")
 	if len(path) == 0 {

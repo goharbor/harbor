@@ -52,7 +52,7 @@ func InitClairDB(clairDB *models.PostGreSQL) error {
 		usr:      clairDB.Username,
 		pwd:      clairDB.Password,
 		database: clairDB.Database,
-		sslmode:  false,
+		sslmode:  clairDB.SSLMode,
 	}
 	if err := p.Register(ClairDBAlias); err != nil {
 		return err
@@ -108,7 +108,7 @@ func getDatabase(database *models.Database) (db Database, err error) {
 			database.PostGreSQL.Username,
 			database.PostGreSQL.Password,
 			database.PostGreSQL.Database,
-			false)
+			database.PostGreSQL.SSLMode)
 	default:
 		err = fmt.Errorf("invalid database: %s", database.Type)
 	}

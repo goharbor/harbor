@@ -50,6 +50,7 @@ type PostGreSQL struct {
 	Username string `json:"username"`
 	Password string `json:"password,omitempty"`
 	Database string `json:"database"`
+	SSLMode  string `json:"sslmode"`
 }
 
 // Email ...
