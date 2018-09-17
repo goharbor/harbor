@@ -26,7 +26,7 @@ def _create_client(server, credential, debug):
     return swagger_client.ProductsApi(swagger_client.ApiClient(cfg))
 
 def _random_name(prefix):
-    return "%s-%d" % (prefix, time.time())
+    return "%s-%d" % (prefix, int(round(time.time() * 1000)))
 
 def _get_id_from_header(header):
     location = header["Location"]
