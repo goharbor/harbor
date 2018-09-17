@@ -1,4 +1,4 @@
-<div class="row" style="margin-top: 4px;position: relative;">
+<div class="row" style="margin-top: 12px;position: relative;">
     <div>
         <div class="row flex-items-xs-between rightPos">
             <div class="flex-xs-middle option-left" style="position: relative; top: 10px;">
@@ -31,7 +31,7 @@
                 </clr-dropdown-menu>
             </clr-dropdown>
         </clr-dg-action-bar>
-        <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="loading">
+        <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="loading" style="padding-top: 0px">
             <clr-dg-column>{{'MEMBER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'MEMBER.MEMBER_TYPE'| translate}}</clr-dg-column>
             <clr-dg-column>{{'MEMBER.ROLE' | translate}}</clr-dg-column>
