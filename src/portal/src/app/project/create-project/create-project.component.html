@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="createProjectOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
     <h3 class="modal-title">{{'PROJECT.NEW_PROJECT' | translate}}</h3>
     <inline-alert class="modal-title"></inline-alert>
-    <div class="modal-body" style="height: 12.8em; overflow-y: hidden;">
+    <div class="modal-body" style="height: 15.3em; overflow-y: hidden;">
         <form #projectForm="ngForm">
             <section class="form-block">
                 <div class="form-group" style="padding-left: 135px;">
@@ -29,7 +29,7 @@
                         <span class="access-level-label">{{ 'PROJECT.PUBLIC' | translate}}</span>
                         <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-md tooltip-bottom-right" style="top:-8px; left:-8px;">
                             <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                            <span class="tooltip-content" style="margin-left: 5px;">{{'PROJECT.INLINE_HELP_PUBLIC' | translate }}</span>
+                            <span class="tooltip-content tooltip-right" style="margin-left: 5px;">{{'PROJECT.INLINE_HELP_PUBLIC' | translate }}</span>
                         </a>
                     </div>
                 </div>
