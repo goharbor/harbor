@@ -3,6 +3,8 @@ package api
 import (
 	"testing"
 
+	common_models "github.com/goharbor/harbor/src/common/models"
+	api_modes "github.com/goharbor/harbor/src/ui/api/models"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
 	"github.com/stretchr/testify/assert"
 )
@@ -35,5 +37,44 @@ func TestAdminJobGet(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(200, code, "Get adminjob status should be 200")
+	}
+}
+
+func TestConvertToGCRep(t *testing.T) {
+	cases := []struct {
+		input    *common_models.AdminJob
+		expected api_modes.GCRep
+	}{
+		{
+			input:    nil,
+			expected: api_modes.GCRep{},
+		},
+		{
+			input: &common_models.AdminJob{
+				ID:      1,
+				Name:    "IMAGE_GC",
+				Kind:    "Generic",
+				Cron:    "{\"Type\":\"Manual\",\"Weekday\":0,\"Offtime\":0}",
+				Status:  "pending",
+				Deleted: false,
+			},
+			expected: api_modes.GCRep{
+				ID:   1,
+				Name: "IMAGE_GC",
+				Kind: "Generic",
+				Schedule: &api_modes.ScheduleParam{
+					Type:    "Manual",
+					Weekday: 0,
+					Offtime: 0,
+				},
+				Status:  "pending",
+				Deleted: false,
+			},
+		},
+	}
+
+	for _, c := range cases {
+		actual, _ := convertToGCRep(c.input)
+		assert.EqualValues(t, c.expected, actual)
 	}
 }
