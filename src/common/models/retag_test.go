@@ -46,6 +46,15 @@ func TestParseImage(t *testing.T) {
 			Valid: true,
 		},
 		{
+			Input: "library/busybox:sha256:9e2c9d5f44efbb6ee83aecd17a120c513047d289d142ec5738c9f02f9b24ad07",
+			Expected: &Image{
+				Project: "library",
+				Repo:    "busybox",
+				Tag:     "sha256:9e2c9d5f44efbb6ee83aecd17a120c513047d289d142ec5738c9f02f9b24ad07",
+			},
+			Valid: true,
+		},
+		{
 			Input: "busybox/v1.0",
 			Valid: false,
 		},

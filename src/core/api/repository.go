@@ -424,6 +424,82 @@ func (ra *RepositoryAPI) GetTag() {
 	ra.ServeJSON()
 }
 
+// Retag tags an existing image to another tag in this repo, the source image is specified by request body.
+func (ra *RepositoryAPI) Retag() {
+	if !ra.SecurityCtx.IsAuthenticated() {
+		ra.HandleUnauthorized()
+		return
+	}
+
+	repoName := ra.GetString(":splat")
+	request := models.RetagRequest{}
+	ra.DecodeJSONReq(&request)
+	srcImage, err := models.ParseImage(request.SrcImage)
+	if err != nil {
+		ra.HandleBadRequest(fmt.Sprintf("invalid src image string '%s', should in format '<project>/<repo>:<tag>'", request.SrcImage))
+		return
+	}
+
+	// Check whether source image exists
+	exist, _, err := ra.checkExistence(fmt.Sprintf("%s/%s", srcImage.Project, srcImage.Repo), srcImage.Tag)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("check existence of %s error: %v", request.SrcImage, err))
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("image %s not exist", request.SrcImage))
+		return
+	}
+
+	// Check whether target project exists
+	project, repo := utils.ParseRepository(repoName)
+	exist, err = ra.ProjectMgr.Exists(project)
+	if err != nil {
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s", project), err)
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("project %s not found", project))
+		return
+	}
+
+	// If override not allowed, check whether target tag already exists
+	if !request.Override {
+		exist, _, err := ra.checkExistence(repoName, request.Tag)
+		if err != nil {
+			ra.HandleInternalServerError(fmt.Sprintf("check existence of %s:%s error: %v", repoName, request.Tag, err))
+			return
+		}
+		if exist {
+			ra.HandleConflict(fmt.Sprintf("tag '%s' already existed for '%s'", request.Tag, repoName))
+			return
+		}
+	}
+
+	// Check whether use has read permission to source project
+	if !ra.SecurityCtx.HasReadPerm(srcImage.Project) {
+		log.Errorf("user has no read permission to project '%s'", srcImage.Project)
+		ra.HandleUnauthorized()
+		return
+	}
+
+	// Check whether user has write permission to target project
+	if !ra.SecurityCtx.HasWritePerm(project) {
+		log.Errorf("user has no write permission to project '%s'", project)
+		ra.HandleUnauthorized()
+		return
+	}
+
+	// Retag the image
+	if err = uiutils.Retag(srcImage, &models.Image{
+		Project: project,
+		Repo:    repo,
+		Tag:     request.Tag,
+	}); err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("%v", err))
+	}
+}
+
 // GetTags returns tags of a repository
 func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString(":splat")

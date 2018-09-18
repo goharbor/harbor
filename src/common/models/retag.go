@@ -21,8 +21,9 @@ import (
 
 // RetagRequest gives the source image and target image of retag
 type RetagRequest struct {
-	SrcImage  string `json:"src_image"`
-	DestImage string `json:"dest_image"`
+	Tag      string `json:"tag"`       // The new tag
+	SrcImage string `json:"src_image"` // Source images in format <project>/<repo>:<reference>
+	Override bool   `json:"override"`  // If target tag exists, whether override it
 }
 
 // Image holds each part (project, repo, tag) of an image name
