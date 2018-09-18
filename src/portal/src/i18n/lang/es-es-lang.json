@@ -67,7 +67,8 @@
         "EMAIL_EXISTING": "Esa dirección de email ya existe.",
         "USER_EXISTING": "Ese nombre de usuario ya existe.",
         "RULE_USER_EXISTING": "Name is already in use.",
-        "EMPTY": "Name is required"
+        "EMPTY": "Name is required",
+        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Introduzca la contraseña actual",
