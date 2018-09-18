@@ -4,15 +4,14 @@
 
 Welcome to Harbor! This guide provides information on filing issues and guidelines for open source contributors. **Please leave comments / suggestions if you find something is missing or incorrect.**
 
-Contributors are encouraged to collaborate using the following resources in addition to the GitHub [issue tacker](https://github.com/vmware/harbor/issues):
-* [Slack](https://vmwarecode.slack.com/messages/harbor): If you don't have an @vmware.com or @emc.com email, please sign up at [VMware {code}](https://code.vmware.com/join/) to get a Slack invite.
-* Mail group: Use harbor-dev@googlegroups.com for discussion on Harbor development and contribution. To subscribe, send an email to harbor-dev+subscribe@googlegroups.com .
+Contributors are encouraged to collaborate using the following resources in addition to the GitHub [issue tacker](https://github.com/goharbor/harbor/issues):
+
+**Twitter:** [@project_harbor](https://twitter.com/project_harbor)  
+**User Group:** Join Harbor user email group: [harbor-users@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback. To subscribe, send an email to [harbor-users+subscribe@googlegroups.com](mailto:harbor-users+subscribe@googlegroups.com) .  
+**Developer Group:** Join Harbor developer group: [harbor-dev@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-dev) for discussion on Harbor development and contribution. To subscribe, send an email to [harbor-dev+subscribe@googlegroups.com](mailto:harbor-dev+subscribe@googlegroups.com).  
+**Slack:** Join Harbor's community for discussion and ask questions: [Cloud Native Computing Foundation](https://slack.cncf.io/), channel: #harbor and #harbor-dev
 
 ## Getting Started
-
-### Sign the CLA
-
-Before doing contributions, you must sign the CLA. If it is the first time you're making a Pull Requests(PR), please make sure to sign the contributor license agreement (CLA) online. A bot will automatically update the PR for the CLA process.
 
 ### Fork Repository
 
