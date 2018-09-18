@@ -8,9 +8,9 @@
     </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'projects'" *ngIf="!projectScope">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
+    <clr-dg-column *ngIf="!projectScope">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'targets'">{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
+    <clr-dg-column >{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.TRIGGER_MODE' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p"  (click)="selectRule(p)" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
