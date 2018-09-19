@@ -22,13 +22,13 @@ import { SignInCredential } from './sign-in-credential';
 import { enLang } from '../shared/shared.const';
 import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "./shared.utils";
 
-const signInUrl = '/login';
+const signInUrl = '/c/login';
 const currentUserEndpint = "/api/users/current";
-const signOffEndpoint = "/log_out";
+const signOffEndpoint = "/c/log_out";
 const accountEndpoint = "/api/users/:id";
 const langEndpoint = "/language";
-const userExistsEndpoint = "/userExists";
-const renameAdminEndpoint = 'api/internal/renameadmin';
+const userExistsEndpoint = "/c/userExists";
+const renameAdminEndpoint = '/api/internal/renameadmin';
 const langMap = {
     "zh": "zh-CN",
     "en": "en-US"

@@ -29,16 +29,14 @@ import (
 
 func initRouters() {
 
-	beego.Router("/reset_password", &controllers.IndexController{})
-
 	// standalone
 	if !config.WithAdmiral() {
 		// Controller API:
-		beego.Router("/login", &controllers.CommonController{}, "post:Login")
-		beego.Router("/log_out", &controllers.CommonController{}, "get:LogOut")
-		beego.Router("/reset", &controllers.CommonController{}, "post:ResetPassword")
-		beego.Router("/userExists", &controllers.CommonController{}, "post:UserExists")
-		beego.Router("/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
+		beego.Router("/c/login", &controllers.CommonController{}, "post:Login")
+		beego.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
+		beego.Router("/c/reset", &controllers.CommonController{}, "post:ResetPassword")
+		beego.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
+		beego.Router("/c/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
 
 		// API:
 		beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
