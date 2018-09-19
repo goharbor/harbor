@@ -2,13 +2,13 @@ sudo: true
 
 language: go
 
-go: 
-  - 1.9.2
+go:
+- 1.9.2
 
 go_import_path: github.com/goharbor/harbor
 
-services: 
-  - docker
+services:
+- docker
 
 dist: trusty
 
@@ -35,7 +35,7 @@ env:
     - DOCKER_COMPOSE_VERSION: 1.22.0
     - HARBOR_ADMIN: admin
     - HARBOR_ADMIN_PASSWD: Harbor12345
-    - UI_SECRET: tempString
+    - CORE_SECRET: tempString
     - KEY_PATH: /data/secretkey
     - REDIS_HOST: localhost
     - REG_VERSION: v2.6.2
@@ -50,18 +50,18 @@ apt:
     - google-chrome-beta
 
 before_install:
-   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-   - chmod +x docker-compose
-   - sudo mv docker-compose /usr/local/bin
-   - IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
-   - sudo sed -i '$a DOCKER_OPTS=\"--insecure-registry '$IP':5000\"' /etc/default/docker
-   - export IP=$IP
-   - sudo service docker restart
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
+  - sudo sed -i '$a DOCKER_OPTS=\"--insecure-registry '$IP':5000\"' /etc/default/docker
+  - export IP=$IP
+  - sudo service docker restart
 
 install:
-   - if [ "$UTTEST" == true ]; then bash ./tests/travis/ut_install.sh ; fi
-   - if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_common_install.sh $IP DB; fi
-   - if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_common_install.sh $IP LDAP; fi
+  - if [ "$UTTEST" == true ]; then bash ./tests/travis/ut_install.sh ; fi
+  - if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_common_install.sh $IP DB; fi
+  - if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_common_install.sh $IP LDAP; fi
 
 script:
   - if [ "$UTTEST" == true ]; then bash ./tests/travis/ut_run.sh $IP; fi

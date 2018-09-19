@@ -25,7 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/core/config"
 
 	goldap "gopkg.in/ldap.v2"
 )

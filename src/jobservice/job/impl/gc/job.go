@@ -42,7 +42,7 @@ type GarbageCollector struct {
 	registryCtlClient client.Client
 	logger            logger.Interface
 	uiclient          *common_http.Client
-	UIURL             string
+	CoreURL           string
 	insecure          bool
 	redisURL          string
 }
@@ -99,22 +99,22 @@ func (gc *GarbageCollector) init(ctx env.JobContext, params map[string]interface
 		Transport: reg.GetHTTPTransport(gc.insecure),
 	}, cred)
 	errTpl := "Failed to get required property: %s"
-	if v, ok := ctx.Get(common.UIURL); ok && len(v.(string)) > 0 {
-		gc.UIURL = v.(string)
+	if v, ok := ctx.Get(common.CoreURL); ok && len(v.(string)) > 0 {
+		gc.CoreURL = v.(string)
 	} else {
-		return fmt.Errorf(errTpl, common.UIURL)
+		return fmt.Errorf(errTpl, common.CoreURL)
 	}
 	gc.redisURL = params["redis_url_reg"].(string)
 	return nil
 }
 
 func (gc *GarbageCollector) readonly(switcher bool) error {
-	if err := gc.uiclient.Put(fmt.Sprintf("%s/api/configurations", gc.UIURL), struct {
+	if err := gc.uiclient.Put(fmt.Sprintf("%s/api/configurations", gc.CoreURL), struct {
 		ReadOnly bool `json:"read_only"`
 	}{
 		ReadOnly: switcher,
 	}); err != nil {
-		gc.logger.Errorf("failed to send readonly request to %s: %v", gc.UIURL, err)
+		gc.logger.Errorf("failed to send readonly request to %s: %v", gc.CoreURL, err)
 		return err
 	}
 	gc.logger.Info("the readonly request has been sent successfully")

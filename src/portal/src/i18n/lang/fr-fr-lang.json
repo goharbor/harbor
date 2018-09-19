@@ -54,7 +54,8 @@
         "NUMBER_REQUIRED": "Le champ est obligatoire et doit être numérique.",
         "PORT_REQUIRED": "Le champ est obligatoire et doit être un numéro de port valide.",
         "EMAIL_EXISTING": "L'adresse e-mail existe déjà.",
-        "USER_EXISTING": "Le nom d'utilisateur est déjà utilisé."
+        "USER_EXISTING": "Le nom d'utilisateur est déjà utilisé.",
+        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",

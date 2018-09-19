@@ -27,7 +27,7 @@ sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
 sudo ./make/prepare
 sudo mkdir -p "/data/redis"
-sudo mkdir -p /etc/ui/ca/ && sudo mv ./tests/ca.crt /etc/ui/ca/
+sudo mkdir -p /etc/core/ca/ && sudo mv ./tests/ca.crt /etc/core/ca/
 sudo mkdir -p /harbor && sudo mv ./VERSION /harbor/UIVERSION
 sudo ./tests/testprepare.sh
 

@@ -19,6 +19,7 @@ import (
 
 	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
 	"github.com/goharbor/harbor/src/replication/policy"
@@ -26,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/replication/source"
 	"github.com/goharbor/harbor/src/replication/target"
 	"github.com/goharbor/harbor/src/replication/trigger"
-	"github.com/goharbor/harbor/src/ui/utils"
 )
 
 // Controller defines the methods that a replicatoin controllter should implement

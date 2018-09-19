@@ -4,9 +4,9 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
-	"github.com/goharbor/harbor/src/ui/utils"
 )
 
 // TODO refacotor the methods of HarborAdaptor by caling Harbor's API
@@ -55,7 +55,7 @@ func (ha *HarborAdaptor) GetRepository(name string, namespace string) models.Rep
 
 // GetTags is used to get all the tags of the specified repository under the namespace
 func (ha *HarborAdaptor) GetTags(repositoryName string, namespace string) []models.Tag {
-	client, err := utils.NewRepositoryClientForUI("harbor-ui", repositoryName)
+	client, err := utils.NewRepositoryClientForUI("harbor-core", repositoryName)
 	if err != nil {
 		log.Errorf("failed to create registry client: %v", err)
 		return nil

@@ -20,9 +20,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	persist_models "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
-	"github.com/goharbor/harbor/src/ui/config"
 )
 
 // Manager defines the method a policy manger should implement

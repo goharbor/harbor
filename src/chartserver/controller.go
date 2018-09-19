@@ -12,7 +12,7 @@ import (
 
 const (
 	userName    = "chart_controller"
-	passwordKey = "UI_SECRET"
+	passwordKey = "CORE_SECRET"
 )
 
 // Credential keeps the username and password for the basic auth

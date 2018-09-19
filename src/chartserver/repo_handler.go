@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
-	"github.com/goharbor/harbor/src/ui/filter"
+	"github.com/goharbor/harbor/src/core/filter"
 	"k8s.io/helm/cmd/helm/search"
 	helm_repo "k8s.io/helm/pkg/repo"
 

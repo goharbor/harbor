@@ -67,7 +67,7 @@ func GetJobAuthSecret() string {
 
 // GetUIAuthSecret get the auth secret of UI side
 func GetUIAuthSecret() string {
-	return os.Getenv("UI_SECRET")
+	return os.Getenv("CORE_SECRET")
 }
 
 // loadEnvs Load env variables

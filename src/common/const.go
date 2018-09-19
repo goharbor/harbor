@@ -49,7 +49,7 @@ const (
 	PostGreSQLDatabase                = "postgresql_database"
 	PostGreSQLSSLMode                 = "postgresql_sslmode"
 	SelfRegistration                  = "self_registration"
-	UIURL                             = "ui_url"
+	CoreURL                           = "core_url"
 	JobServiceURL                     = "jobservice_url"
 	LDAPURL                           = "ldap_url"
 	LDAPSearchDN                      = "ldap_search_dn"
@@ -106,7 +106,7 @@ const (
 	NotaryURL                         = "notary_url"
 	DefaultAdminserverEndpoint        = "http://adminserver:8080"
 	DefaultJobserviceEndpoint         = "http://jobservice:8080"
-	DefaultUIEndpoint                 = "http://ui:8080"
+	DefaultCoreEndpoint               = "http://core:8080"
 	DefaultNotaryEndpoint             = "http://notary-server:4443"
 	LdapGroupType                     = 1
 	ReloadKey                         = "reload_key"
