@@ -90,7 +90,7 @@ func SetAdminJobUUID(id int64, uuid string) error {
 // GetTop10AdminJobs ...
 func GetTop10AdminJobs() ([]*models.AdminJob, error) {
 	sql := `select * from admin_job 
-	where deleted = false order by update_time limit 10`
+	where deleted = false order by update_time desc limit 10`
 	jobs := []*models.AdminJob{}
 	_, err := GetOrmer().Raw(sql).QueryRows(&jobs)
 	return jobs, err

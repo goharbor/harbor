@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/ui/config"
+	"time"
 )
 
 const (
@@ -50,9 +51,22 @@ type ScheduleParam struct {
 	// Daily, Weekly, Manual, None
 	Type string `json:"type"`
 	// Optional, only used when type is 'weekly'
-	Weekday int8 `json:"Weekday"`
+	Weekday int8 `json:"weekday"`
 	// The time offset with the UTC 00:00 in seconds
-	Offtime int64 `json:"Offtime"`
+	Offtime int64 `json:"offtime"`
+}
+
+// GCRep holds the response of query gc
+type GCRep struct {
+	ID           int64          `json:"id"`
+	Name         string         `json:"job_name"`
+	Kind         string         `json:"job_kind"`
+	Schedule     *ScheduleParam `json:"schedule"`
+	Status       string         `json:"job_status"`
+	UUID         string         `json:"-"`
+	Deleted      bool           `json:"deleted"`
+	CreationTime time.Time      `json:"creation_time"`
+	UpdateTime   time.Time      `json:"update_time"`
 }
 
 // Valid validates the gc request

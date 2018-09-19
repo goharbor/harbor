@@ -20,6 +20,7 @@ import (
 	"os"
 	"strconv"
 
+	"encoding/json"
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	common_job "github.com/goharbor/harbor/src/common/job"
@@ -109,11 +110,22 @@ func (gc *GCAPI) GetGC() {
 	jobs, err := dao.GetAdminJobs(&common_models.AdminJobQuery{
 		ID: id,
 	})
+
+	gcreps := []*models.GCRep{}
+	for _, job := range jobs {
+		gcrep, err := convertToGCRep(job)
+		if err != nil {
+			gc.HandleInternalServerError(fmt.Sprintf("failed to convert gc response: %v", err))
+			return
+		}
+		gcreps = append(gcreps, &gcrep)
+	}
+
 	if err != nil {
 		gc.HandleInternalServerError(fmt.Sprintf("failed to get admin jobs: %v", err))
 		return
 	}
-	gc.Data["json"] = jobs
+	gc.Data["json"] = gcreps
 	gc.ServeJSON()
 }
 
@@ -124,7 +136,16 @@ func (gc *GCAPI) List() {
 		gc.HandleInternalServerError(fmt.Sprintf("failed to get admin jobs: %v", err))
 		return
 	}
-	gc.Data["json"] = jobs
+	gcreps := []*models.GCRep{}
+	for _, job := range jobs {
+		gcrep, err := convertToGCRep(job)
+		if err != nil {
+			gc.HandleInternalServerError(fmt.Sprintf("failed to convert gc response: %v", err))
+			return
+		}
+		gcreps = append(gcreps, &gcrep)
+	}
+	gc.Data["json"] = gcreps
 	gc.ServeJSON()
 }
 
@@ -142,7 +163,16 @@ func (gc *GCAPI) Get() {
 		gc.HandleInternalServerError("Get more than one GC scheduled job, make sure there has only one.")
 		return
 	}
-	gc.Data["json"] = jobs
+	gcreps := []*models.GCRep{}
+	for _, job := range jobs {
+		gcrep, err := convertToGCRep(job)
+		if err != nil {
+			gc.HandleInternalServerError(fmt.Sprintf("failed to convert gc response: %v", err))
+			return
+		}
+		gcreps = append(gcreps, &gcrep)
+	}
+	gc.Data["json"] = gcreps
 	gc.ServeJSON()
 }
 
@@ -229,4 +259,28 @@ func (gc *GCAPI) submitJob(gr *models.GCReq) {
 		gc.HandleInternalServerError(fmt.Sprintf("%v", err))
 		return
 	}
+}
+
+func convertToGCRep(job *common_models.AdminJob) (models.GCRep, error) {
+	if job == nil {
+		return models.GCRep{}, nil
+	}
+
+	gcrep := models.GCRep{
+		ID:           job.ID,
+		Name:         job.Name,
+		Kind:         job.Kind,
+		Status:       job.Status,
+		Deleted:      job.Deleted,
+		CreationTime: job.CreationTime,
+		UpdateTime:   job.UpdateTime,
+	}
+	if len(job.Cron) > 0 {
+		schedule := &models.ScheduleParam{}
+		if err := json.Unmarshal([]byte(job.Cron), &schedule); err != nil {
+			return models.GCRep{}, err
+		}
+		gcrep.Schedule = schedule
+	}
+	return gcrep, nil
 }
