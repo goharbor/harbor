@@ -1,4 +1,4 @@
-// Copyright 2018 The Harbor Authors. All rights reserved.
+// Copyright Project Harbor Authors. All rights reserved.
 
 // Package config provides functions to handle the configurations of job service.
 package config
