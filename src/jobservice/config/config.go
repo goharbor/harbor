@@ -39,7 +39,7 @@ const (
 	JobServicePoolBackendRedis = "redis"
 
 	// secret of UI
-	uiAuthSecret = "UI_SECRET"
+	uiAuthSecret = "CORE_SECRET"
 
 	// redis protocol schema
 	redisSchema = "redis://"

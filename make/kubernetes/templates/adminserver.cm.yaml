@@ -21,7 +21,7 @@ data:
   MYSQL_PWD: "{{db_password}}"
   MYSQL_DATABASE: registry
   REGISTRY_URL: http://registry:5000
-  TOKEN_SERVICE_URL: http://ui/service/token
+  TOKEN_SERVICE_URL: http://core/service/token
   EMAIL_HOST: smtp.mydomain.com
   EMAIL_PORT: "25"
   EMAIL_USR: sample_admin@mydomain.com
@@ -33,7 +33,7 @@ data:
   PROJECT_CREATION_RESTRICTION: everyone
   VERIFY_REMOTE_CERT: "on"
   MAX_JOB_WORKERS: "{{max_job_workers}}"
-  UI_SECRET: "{{ui_secret}}"
+  CORE_SECRET: "{{core_secret}}"
   JOBSERVICE_SECRET: "{{jobservice_secret}}"
   TOKEN_EXPIRATION: "30"
   CFG_EXPIRATION: "5"
@@ -41,7 +41,7 @@ data:
   ADMIRAL_URL: NA
   WITH_NOTARY: "False"
   RESET: "false"
-  EXT_ENDPOINT: "{{ui_url}}"
-  TOKEN_URL: http://ui
+  EXT_ENDPOINT: "{{core_url}}"
+  TOKEN_URL: http://core
   JSON_CFG_STORE_PATH: "/etc/config/config.json"
   SECRET_KEY: "{{secret_key}}"

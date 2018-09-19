@@ -1,10 +1,10 @@
 version: '2'
 services:
-  ui:
+  core:
     networks:
       harbor-clair:
         aliases:
-          - harbor-ui
+          - harbor-core
   jobservice:
     networks:
       - harbor-clair

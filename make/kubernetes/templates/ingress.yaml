@@ -9,7 +9,7 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: ui
+          serviceName: core
           servicePort: 80
       - path: /v2
         backend:
@@ -17,6 +17,6 @@ spec:
           servicePort: repo
       - path: /service
         backend:
-          serviceName: ui
+          serviceName: core
           servicePort: 80
 

@@ -76,7 +76,7 @@ func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	if s.store == nil {
 		return false
 	}
-	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.UIUser
+	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.CoreUser
 }
 
 // HasWritePerm always returns false

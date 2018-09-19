@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: harbor-jobservice-config
 data:
-  UI_SECRET: "{{ui_secret}}"
+  CORE_SECRET: "{{core_secret}}"
   JOBSERVICE_SECRET: "{{jobservice_secret}}"
   SECRET_KEY: "{{secret_key}}"
   MAX_JOB_WORKERS: "{{max_job_workers}}"

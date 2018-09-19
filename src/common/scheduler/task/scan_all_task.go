@@ -1,7 +1,7 @@
 package task
 
 import (
-	"github.com/goharbor/harbor/src/ui/utils"
+	"github.com/goharbor/harbor/src/core/utils"
 )
 
 // ScanAllTask is task of scanning all tags.

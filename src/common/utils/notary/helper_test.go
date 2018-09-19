@@ -20,7 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/ui/config"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 
 	"net/http/httptest"
