@@ -58,11 +58,11 @@ func init() {
 
 	beego.Router("/", &IndexController{})
 
-	beego.Router("/login", &CommonController{}, "post:Login")
-	beego.Router("/log_out", &CommonController{}, "get:LogOut")
-	beego.Router("/reset", &CommonController{}, "post:ResetPassword")
-	beego.Router("/userExists", &CommonController{}, "post:UserExists")
-	beego.Router("/sendEmail", &CommonController{}, "get:SendResetEmail")
+	beego.Router("/c/login", &CommonController{}, "post:Login")
+	beego.Router("/c/log_out", &CommonController{}, "get:LogOut")
+	beego.Router("/c/reset", &CommonController{}, "post:ResetPassword")
+	beego.Router("/c/userExists", &CommonController{}, "post:UserExists")
+	beego.Router("/c/sendEmail", &CommonController{}, "get:SendResetEmail")
 	beego.Router("/v2/*", &RegistryProxy{}, "*:Handle")
 }
 
@@ -143,31 +143,31 @@ func TestAll(t *testing.T) {
 	//	v.Set("principal", "admin")
 	//	v.Add("password", "Harbor12345")
 
-	r, _ := http.NewRequest("POST", "/login", nil)
+	r, _ := http.NewRequest("POST", "/c/login", nil)
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(401), w.Code, "'/login' httpStatusCode should be 401")
+	assert.Equal(int(401), w.Code, "'/c/login' httpStatusCode should be 401")
 
-	r, _ = http.NewRequest("GET", "/log_out", nil)
+	r, _ = http.NewRequest("GET", "/c/log_out", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(200), w.Code, "'/log_out' httpStatusCode should be 200")
+	assert.Equal(int(200), w.Code, "'/c/log_out' httpStatusCode should be 200")
 	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), ""), "http respond should be empty")
 
-	r, _ = http.NewRequest("POST", "/reset", nil)
+	r, _ = http.NewRequest("POST", "/c/reset", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(400), w.Code, "'/reset' httpStatusCode should be 400")
+	assert.Equal(int(400), w.Code, "'/c/reset' httpStatusCode should be 400")
 
-	r, _ = http.NewRequest("POST", "/userExists", nil)
+	r, _ = http.NewRequest("POST", "/c/userExists", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(500), w.Code, "'/userExists' httpStatusCode should be 500")
+	assert.Equal(int(500), w.Code, "'/c/userExists' httpStatusCode should be 500")
 
-	r, _ = http.NewRequest("GET", "/sendEmail", nil)
+	r, _ = http.NewRequest("GET", "/c/sendEmail", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(400), w.Code, "'/sendEmail' httpStatusCode should be 400")
+	assert.Equal(int(400), w.Code, "'/c/sendEmail' httpStatusCode should be 400")
 
 	r, _ = http.NewRequest("GET", "/v2/", nil)
 	w = httptest.NewRecorder()

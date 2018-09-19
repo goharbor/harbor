@@ -19,8 +19,8 @@ import { PasswordSetting } from './password-setting';
 import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 
 const passwordChangeEndpoint = "/api/users/:user_id/password";
-const sendEmailEndpoint = "/sendEmail";
-const resetPasswordEndpoint = "/reset";
+const sendEmailEndpoint = "/c/sendEmail";
+const resetPasswordEndpoint = "/c/reset";
 
 @Injectable()
 export class PasswordSettingService {
