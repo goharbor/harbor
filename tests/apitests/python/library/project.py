@@ -5,8 +5,10 @@ import base
 import swagger_client
 
 class Project(base.Base):
-    def create_project(self, name=base._random_name("project"), 
+    def create_project(self, name=None,
         metadata = {}, **kwargs):
+        if name is None:
+            name = base._random_name("project")
         client = self._get_client(**kwargs)
         _, _, header = client.projects_post_with_http_info(
             swagger_client.ProjectReq(name, metadata))

@@ -2,31 +2,44 @@ sudo: true
 
 language: go
 
-go: 
-  - 1.9.2
+go:
+- 1.9.2
 
 go_import_path: github.com/goharbor/harbor
 
-services: 
-  - docker
+services:
+- docker
 
 dist: trusty
 
+matrix:
+  include:
+  - go: "1.9.2"
+    env:
+    - UTTEST=true
+  - go: "1.9.2"
+    env:
+    - APITEST_DB=true
+  - go: "1.9.2"
+    env:
+    - APITEST_LDAP=true
+
 env:
-  POSTGRESQL_HOST: localhost
-  POSTGRESQL_PORT: 5432 
-  POSTGRESQL_USR: postgres 
-  POSTGRESQL_PWD: root123
-  POSTGRESQL_DATABASE: registry
-  ADMINSERVER_URL: http://127.0.0.1:8888
-  DOCKER_COMPOSE_VERSION: 1.7.1
-  HARBOR_ADMIN: admin
-  HARBOR_ADMIN_PASSWD: Harbor12345
-  CORE_SECRET: tempString
-  KEY_PATH: /data/secretkey
-  REDIS_HOST: localhost
-  REG_VERSION: v2.6.2
-  UI_BUILDER_VERSION: 1.6.0
+  global:
+    - POSTGRESQL_HOST: localhost
+    - POSTGRESQL_PORT: 5432
+    - POSTGRESQL_USR: postgres
+    - POSTGRESQL_PWD: root123
+    - POSTGRESQL_DATABASE: registry
+    - ADMINSERVER_URL: http://127.0.0.1:8888
+    - DOCKER_COMPOSE_VERSION: 1.22.0
+    - HARBOR_ADMIN: admin
+    - HARBOR_ADMIN_PASSWD: Harbor12345
+    - CORE_SECRET: tempString
+    - KEY_PATH: /data/secretkey
+    - REDIS_HOST: localhost
+    - REG_VERSION: v2.6.2
+    - UI_BUILDER_VERSION: 1.6.0
 
 addons:
 apt:
@@ -37,59 +50,20 @@ apt:
     - google-chrome-beta
 
 before_install:
-  - export CHROME_BIN=chromium-browser
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - sudo ./tests/hostcfg.sh
-  - sudo ./tests/generateCerts.sh
-  - sudo ./make/prepare
-  - sudo mkdir -p "/data/redis"
-  - sudo mkdir -p /etc/core/ca/ && sudo mv ./tests/ca.crt /etc/core/ca/
-  - sudo mkdir -p /harbor && sudo mv ./VERSION /harbor/UIVERSION
-  - sudo ./tests/testprepare.sh
-
-install: 
-  - sudo apt-get update && sudo apt-get install -y libldap2-dev
-  - go get -d github.com/docker/distribution
-  - go get -d github.com/docker/libtrust
-  - go get -d github.com/lib/pq
-  - go get github.com/golang/lint/golint
-  - go get github.com/GeertJohan/fgt
-  - go get github.com/dghubble/sling
-  - go get github.com/stretchr/testify
-  - go get golang.org/x/tools/cmd/cover
-  - go get github.com/mattn/goveralls
-  - go get -u github.com/client9/misspell/cmd/misspell
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
   - sudo sed -i '$a DOCKER_OPTS=\"--insecure-registry '$IP':5000\"' /etc/default/docker
+  - export IP=$IP
   - sudo service docker restart
-  - sudo service postgresql stop
 
-before_script:
-  - cd src/portal
-  - npm install -g -q --no-progress angular-cli
-  - npm install -g -q --no-progress karma
-  - npm install -q --no-progress
-  - npm run build_lib && npm run link_lib && cd ../..
-  - export POSTGRESQL_HOST=$IP
-  - export REGISTRY_URL=$IP:5000
-  - echo $REGISTRY_URL
-  - cd tests && sudo ./ldapprepare.sh && cd ..
-  - sudo ./tests/admiral.sh
-  - sudo make compile_adminserver
-  - sudo make -f make/photon/Makefile _build_adminserver _build_db _build_registry -e VERSIONTAG=dev -e CLAIRDBVERSION=dev -e REGISTRYVERSION=${REG_VERSION}
-  - sudo sed -i 's/__reg_version__/${REG_VERSION}-dev/g' ./make/docker-compose.test.yml
-  - sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
-  - sudo mkdir -p ./make/common/config/registry/ && sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
+install:
+  - if [ "$UTTEST" == true ]; then bash ./tests/travis/ut_install.sh ; fi
+  - if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_common_install.sh $IP DB; fi
+  - if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_common_install.sh $IP LDAP; fi
 
 script:
-  - cd src/portal && npm run lint && npm run lint:lib && npm run test && cd ../..
-  - sudo docker-compose -f ./make/docker-compose.test.yml up -d
-  - make go_check
-  - ./tests/pushimage.sh
-  - go test -race -i ./src/core ./src/adminserver ./src/jobservice
-  - sudo -E env "PATH=$PATH" "POSTGRES_MIGRATION_SCRIPTS_PATH=/home/travis/gopath/src/github.com/goharbor/harbor/make/migrations/postgresql/" ./tests/coverage4gotest.sh
-  - goveralls -coverprofile=profile.cov -service=travis-ci
+  - if [ "$UTTEST" == true ]; then bash ./tests/travis/ut_run.sh $IP; fi
+  - if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_run.sh DB $IP; fi
+  - if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_run.sh LDAP $IP; fi
