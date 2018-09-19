@@ -28,7 +28,7 @@ import (
 func NewHandler() http.Handler {
 	h := newRouter()
 	secrets := map[string]string{
-		"uiSecret":         os.Getenv("UI_SECRET"),
+		"uiSecret":         os.Getenv("CORE_SECRET"),
 		"jobserviceSecret": os.Getenv("JOBSERVICE_SECRET"),
 	}
 	insecureAPIs := map[string]bool{

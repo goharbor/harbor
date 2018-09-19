@@ -25,9 +25,9 @@ DOCKERIMASES=$(DOCKERCMD) images
 ADMINSERVERSOURCECODE=$(SRCPATH)/adminserver
 ADMINSERVERBINARYPATH=$(MAKEDEVPATH)/adminserver
 ADMINSERVERBINARYNAME=harbor_adminserver
-UISOURCECODE=$(SRCPATH)/ui
-UIBINARYPATH=$(MAKEDEVPATH)/ui
-UIBINARYNAME=harbor_ui
+CORE_SOURCECODE=$(SRCPATH)/core
+CORE_BINARYPATH=$(MAKEDEVPATH)/core
+CORE_BINARYNAME=harbor_core
 JOBSERVICESOURCECODE=$(SRCPATH)/jobservice
 JOBSERVICEBINARYPATH=$(MAKEDEVPATH)/jobservice
 JOBSERVICEBINARYNAME=harbor_jobservice
@@ -43,9 +43,9 @@ DOCKERFILEPATH_PORTAL=$(DOCKERFILEPATH)/portal
 DOCKERFILENAME_PORTAL=Dockerfile
 DOCKERIMAGENAME_PORTAL=goharbor/harbor-portal
 
-DOCKERFILEPATH_UI=$(DOCKERFILEPATH)/ui
-DOCKERFILENAME_UI=Dockerfile
-DOCKERIMAGENAME_UI=goharbor/harbor-ui
+DOCKERFILEPATH_CORE=$(DOCKERFILEPATH)/core
+DOCKERFILENAME_CORE=Dockerfile
+DOCKERIMAGENAME_CORE=goharbor/harbor-core
 
 DOCKERFILEPATH_JOBSERVICE=$(DOCKERFILEPATH)/jobservice
 DOCKERFILENAME_JOBSERVICE=Dockerfile
@@ -115,9 +115,9 @@ _build_portal:
 	$(DOCKERBUILD) -f $(DOCKERFILEPATH_PORTAL)/$(DOCKERFILENAME_PORTAL) -t $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) .
 	@echo "Done."
 
-_build_ui:	
-	@echo "building ui container for photon..."
-	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_UI)/$(DOCKERFILENAME_UI) -t $(DOCKERIMAGENAME_UI):$(VERSIONTAG) .
+_build_core:	
+	@echo "building core container for photon..."
+	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_CORE)/$(DOCKERFILENAME_CORE) -t $(DOCKERIMAGENAME_CORE):$(VERSIONTAG) .
 	@echo "Done."
 	
 _build_jobservice:		
@@ -212,13 +212,13 @@ define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
 endef
 
-build: _build_db _build_adminserver _build_portal _build_ui _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_redis _build_migrator _build_chart_server
+build: _build_db _build_adminserver _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_redis _build_migrator _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
-	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_UI):$(VERSIONTAG)
+	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_CORE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
 	

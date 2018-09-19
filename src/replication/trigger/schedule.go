@@ -11,9 +11,9 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	common_utils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/ui/config"
-	"github.com/goharbor/harbor/src/ui/utils"
 )
 
 // ScheduleTrigger will schedule a alternate policy to provide 'daily' and 'weekly' trigger ways.
@@ -61,12 +61,12 @@ func (st *ScheduleTrigger) Setup() error {
 		Name: job.ImageReplicate,
 		Parameters: map[string]interface{}{
 			"policy_id": st.params.PolicyID,
-			"url":       config.InternalUIURL(),
+			"url":       config.InternalCoreURL(),
 			"insecure":  true,
 		},
 		Metadata: metadata,
 		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/replication/%d",
-			config.InternalUIURL(), id),
+			config.InternalCoreURL(), id),
 	})
 	if err != nil {
 		// clean up the job record in database

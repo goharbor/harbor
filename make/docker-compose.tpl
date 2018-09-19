@@ -86,19 +86,19 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "adminserver"
-  ui:
-    image: goharbor/harbor-ui:__version__
-    container_name: harbor-ui
+  core:
+    image: goharbor/harbor-core:__version__
+    container_name: harbor-core
     env_file:
-      - ./common/config/ui/env
+      - ./common/config/core/env
     restart: always
     volumes:
-      - ./common/config/ui/app.conf:/etc/ui/app.conf:z
-      - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
-      - ./common/config/ui/certificates/:/etc/ui/certificates/:z
-      - /data/secretkey:/etc/ui/key:z
-      - /data/ca_download/:/etc/ui/ca/:z
-      - /data/psc/:/etc/ui/token/:z
+      - ./common/config/core/app.conf:/etc/core/app.conf:z
+      - ./common/config/core/private_key.pem:/etc/core/private_key.pem:z
+      - ./common/config/core/certificates/:/etc/core/certificates/:z
+      - /data/secretkey:/etc/core/key:z
+      - /data/ca_download/:/etc/core/ca/:z
+      - /data/psc/:/etc/core/token/:z
     networks:
       - harbor
     depends_on:
@@ -109,7 +109,7 @@ services:
       driver: "syslog"
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
-        tag: "ui"
+        tag: "core"
   portal:
     image: goharbor/harbor-portal:__version__
     container_name: harbor-portal
@@ -118,7 +118,7 @@ services:
       - harbor
     depends_on:
       - log
-      - ui
+      - core
     logging:
       driver: "syslog"
       options:
@@ -138,11 +138,11 @@ services:
       - harbor
     depends_on:
       - redis
-      - ui
+      - core
       - adminserver
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
   redis:
@@ -157,7 +157,7 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "redis"
   proxy:
@@ -175,7 +175,7 @@ services:
     depends_on:
       - postgresql
       - registry
-      - ui
+      - core
       - portal
       - log
     logging:

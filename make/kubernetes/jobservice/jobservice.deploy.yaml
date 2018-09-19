@@ -16,11 +16,11 @@ spec:
         image: vmware/harbor-jobservice:v1.2.0
         imagePullPolicy: IfNotPresent
         env:
-          - name: UI_SECRET
+          - name: CORE_SECRET
             valueFrom: 
               configMapKeyRef: 
                name: harbor-jobservice-config
-               key: UI_SECRET
+               key: CORE_SECRET
           - name: JOBSERVICE_SECRET
             valueFrom: 
               configMapKeyRef: 

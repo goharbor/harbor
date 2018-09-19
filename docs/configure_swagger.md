@@ -46,10 +46,10 @@ From time to time, you may need to mannually test Harbor REST API. You can deplo
 ui:
   ... 
   volumes:
-    - ./common/config/ui/app.conf:/etc/ui/app.conf:z
-    - ./common/config/ui/private_key.pem:/etc/ui/private_key.pem:z
-    - /data/secretkey:/etc/ui/key:z
-    - /data/ca_download/:/etc/ui/ca/:z
+    - ./common/config/ui/app.conf:/etc/core/app.conf:z
+    - ./common/config/ui/private_key.pem:/etc/core/private_key.pem:z
+    - /data/secretkey:/etc/core/key:z
+    - /data/ca_download/:/etc/core/ca/:z
     ## add two lines as below ##
     - ../src/ui/static/vendors/swagger-ui-2.1.4/dist:/harbor/static/vendors/swagger
     - ../src/ui/static/resources/yaml/swagger.yaml:/harbor/static/resources/yaml/swagger.yaml

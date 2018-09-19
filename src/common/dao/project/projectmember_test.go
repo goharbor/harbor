@@ -23,9 +23,9 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	_ "github.com/goharbor/harbor/src/ui/auth/db"
-	_ "github.com/goharbor/harbor/src/ui/auth/ldap"
-	cfg "github.com/goharbor/harbor/src/ui/config"
+	_ "github.com/goharbor/harbor/src/core/auth/db"
+	_ "github.com/goharbor/harbor/src/core/auth/ldap"
+	cfg "github.com/goharbor/harbor/src/core/config"
 )
 
 func TestMain(m *testing.M) {

@@ -61,6 +61,6 @@ func TestGetJobAuthSecret(t *testing.T) {
 }
 
 func TestGetUIAuthSecret(t *testing.T) {
-	os.Setenv("UI_SECRET", "test_ui_secret")
-	assert.Equal(t, "test_ui_secret", GetUIAuthSecret())
+	os.Setenv("CORE_SECRET", "test_core_secret")
+	assert.Equal(t, "test_core_secret", GetUIAuthSecret())
 }

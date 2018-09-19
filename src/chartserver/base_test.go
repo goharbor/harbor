@@ -11,8 +11,8 @@ import (
 	"regexp"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/ui/filter"
-	"github.com/goharbor/harbor/src/ui/promgr/metamgr"
+	"github.com/goharbor/harbor/src/core/filter"
+	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 )
 
 // The backend server

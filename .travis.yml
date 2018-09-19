@@ -22,7 +22,7 @@ env:
   DOCKER_COMPOSE_VERSION: 1.7.1
   HARBOR_ADMIN: admin
   HARBOR_ADMIN_PASSWD: Harbor12345
-  UI_SECRET: tempString
+  CORE_SECRET: tempString
   KEY_PATH: /data/secretkey
   REDIS_HOST: localhost
   REG_VERSION: v2.6.2
@@ -44,7 +44,7 @@ before_install:
   - sudo ./tests/generateCerts.sh
   - sudo ./make/prepare
   - sudo mkdir -p "/data/redis"
-  - sudo mkdir -p /etc/ui/ca/ && sudo mv ./tests/ca.crt /etc/ui/ca/
+  - sudo mkdir -p /etc/core/ca/ && sudo mv ./tests/ca.crt /etc/core/ca/
   - sudo mkdir -p /harbor && sudo mv ./VERSION /harbor/UIVERSION
   - sudo ./tests/testprepare.sh
 
@@ -90,6 +90,6 @@ script:
   - sudo docker-compose -f ./make/docker-compose.test.yml up -d
   - make go_check
   - ./tests/pushimage.sh
-  - go test -race -i ./src/ui ./src/adminserver ./src/jobservice
+  - go test -race -i ./src/core ./src/adminserver ./src/jobservice
   - sudo -E env "PATH=$PATH" "POSTGRES_MIGRATION_SCRIPTS_PATH=/home/travis/gopath/src/github.com/goharbor/harbor/make/migrations/postgresql/" ./tests/coverage4gotest.sh
   - goveralls -coverprofile=profile.cov -service=travis-ci

@@ -29,8 +29,8 @@ import (
 	"github.com/docker/notary/tuf/data"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry"
-	"github.com/goharbor/harbor/src/ui/config"
-	tokenutil "github.com/goharbor/harbor/src/ui/service/token"
+	"github.com/goharbor/harbor/src/core/config"
+	tokenutil "github.com/goharbor/harbor/src/core/service/token"
 
 	"github.com/opencontainers/go-digest"
 )

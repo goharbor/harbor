@@ -1,10 +1,10 @@
 version: '2'
 services:
-  ui:
+  core:
     networks:
       harbor-chartmuseum:
         aliases:
-          - harbor-ui
+          - harbor-core
   redis:
     networks:
       harbor-chartmuseum:
