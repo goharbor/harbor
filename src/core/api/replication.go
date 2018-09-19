@@ -65,7 +65,7 @@ func (r *ReplicationAPI) Post() {
 
 	count, err := dao.GetTotalCountOfRepJobs(&models.RepJobQuery{
 		PolicyID: replication.PolicyID,
-		Statuses: []string{models.RepOpTransfer, models.RepOpDelete},
+		Statuses: []string{models.JobPending, models.JobRunning},
 	})
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to filter jobs of policy %d: %v",
