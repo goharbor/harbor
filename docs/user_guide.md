@@ -437,7 +437,7 @@ Kubernetes users can easily deploy pods with images stored in Harbor.  The setti
 2. If your pod references an image under private project, you need to create a secret with the credentials of user who has permission to pull image from this project, for details refer to: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 
 ## Manage Helm Charts
-Helm charts is a good way to package, share and use software built for Kubernetes. From version 1.6.0, Harbor is upgraded to be a composite cloud-native registry, which supports both image management and helm charts management. The charts are also isolated by projects and controlled by RBAC access control system.
+[Helm](https://helm.sh) is a package manager for [Kubernetes](https://kubernetes.io). Helm uses a packaging format called [charts](https://docs.helm.sh/developing_charts). Since version 1.6.0 Harbor is now a composite cloud-native registry which supports both container image management and Helm charts management. Access to Helm charts in Harbor is controlled by [role-based access controls (RBAC)](https://en.wikipedia.org/wiki/Role-based_access_control) and is restricted by projects.
 
 ### Manage Helm Charts via portal
 #### List charts
@@ -505,7 +505,7 @@ helm version
 Before working, Harbor should be added into the repository list with `helm repo add` command. Two different modes are supported.
 * Add Harbor as a unified single index entry point
 
-With this mode, helm can aware all the charts located in the different projects which are accessable by the current authenticated user.
+With this mode Helm can be made aware of all the charts located in different projects and which are accessible by the currently authenticated user.
 ```
 helm repo add --ca-file ca.crt --cert-file server.crt --key-file server.key --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo
 ```
