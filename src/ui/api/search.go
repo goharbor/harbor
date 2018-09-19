@@ -125,7 +125,7 @@ func (s *SearchAPI) Get() {
 	}
 
 	if searchHandler == nil {
-		searchHandler = chartController.GetRepositoryHandler().SearchChart
+		searchHandler = chartController.SearchChart
 	}
 
 	chartResults, err := searchHandler(keyword, proNames)

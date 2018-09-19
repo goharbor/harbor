@@ -1,22 +1,14 @@
 package chartserver
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"regexp"
-
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/ui/filter"
-	"github.com/goharbor/harbor/src/ui/promgr/metamgr"
 )
 
-// The backend server
-var mockServer = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// The backend server handler
+var mockHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	switch r.RequestURI {
 	case "/health":
 		if r.Method == http.MethodGet {
@@ -52,13 +44,27 @@ var mockServer = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.Respon
 			w.Write([]byte(harborChartV))
 			return
 		}
+		if r.Method == http.MethodDelete {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
 	case "/api/repo1/charts/harbor/1.0.0":
 		if r.Method == http.MethodGet {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Internal error"))
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("Not found"))
+			return
+		}
+	case "/api/repo1/charts/harbor/0.2.1":
+		if r.Method == http.MethodDelete {
+			w.WriteHeader(http.StatusOK)
 			return
 		}
 	case "/api/repo1/charts/harbor":
+		if r.Method == http.MethodGet {
+			w.Write([]byte(chartVersionsOfHarbor))
+			return
+		}
+	case "/repo3/charts/harbor-0.8.1.tgz":
 		if r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("Unauthorized"))
@@ -68,164 +74,99 @@ var mockServer = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.Respon
 
 	w.WriteHeader(http.StatusNotImplemented)
 	w.Write([]byte("not supported"))
-}))
+})
 
-// Chart controller reference
-var mockController *Controller
-
-// The frontend server
-var frontServer = httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	if r.RequestURI == "/health" && r.Method == http.MethodGet {
-		mockController.GetBaseHandler().GetHealthStatus(w, r)
-		return
+func createMockObjects() (*httptest.Server, *Controller, error) {
+	s := httptest.NewServer(mockHandler)
+	backendURL, err := url.Parse(s.URL)
+	if err != nil {
+		s.Close()
+		return nil, nil, err
 	}
 
-	if r.RequestURI == "/index.yaml" && r.Method == http.MethodGet {
-		mockProjectMgr := &mockProjectManager{}
-		*r = *(r.WithContext(context.WithValue(r.Context(), filter.PmKey, mockProjectMgr)))
-		mockController.GetRepositoryHandler().GetIndexFile(w, r)
-		return
+	mockController, err := NewController(backendURL)
+	if err != nil {
+		s.Close()
+		return nil, nil, err
 	}
 
-	var indexYaml = regexp.MustCompile(`^/\w+/index.yaml$`)
-	if r.Method == http.MethodGet && indexYaml.MatchString(r.RequestURI) {
-		mockController.GetRepositoryHandler().GetIndexFileWithNS(w, r)
-		return
-	}
-
-	var downloadFile = regexp.MustCompile(`^/\w+/charts/.+$`)
-	if r.Method == http.MethodGet && downloadFile.MatchString(r.RequestURI) {
-		mockController.GetRepositoryHandler().DownloadChartObject(w, r)
-		return
-	}
-
-	var listCharts = regexp.MustCompile(`^/api/\w+/charts$`)
-	if r.Method == http.MethodGet && listCharts.MatchString(r.RequestURI) {
-		mockController.GetManipulationHandler().ListCharts(w, r)
-		return
-	}
-
-	var getChart = regexp.MustCompile(`^/api/\w+/charts/[\w-]+$`)
-	if r.Method == http.MethodGet && getChart.MatchString(r.RequestURI) {
-		mockController.GetManipulationHandler().GetChart(w, r)
-		return
-	}
-
-	var getChartV = regexp.MustCompile(`^/api/\w+/charts/.+/.+$`)
-	if r.Method == http.MethodGet && getChartV.MatchString(r.RequestURI) {
-		*r = *(r.WithContext(context.WithValue(r.Context(), NamespaceContextKey, "repo1")))
-		mockController.GetManipulationHandler().GetChartVersion(w, r)
-		return
-	}
-
-	var postCharts = regexp.MustCompile(`^/api/\w+/charts$`)
-	if r.Method == http.MethodPost && postCharts.MatchString(r.RequestURI) {
-		mockController.GetManipulationHandler().UploadChartVersion(w, r)
-		return
-	}
-
-	var postProv = regexp.MustCompile(`^/api/\w+/prov$`)
-	if r.Method == http.MethodPost && postProv.MatchString(r.RequestURI) {
-		mockController.GetManipulationHandler().UploadProvenanceFile(w, r)
-		return
-	}
-
-	var deleteChartV = regexp.MustCompile(`^/api/\w+/charts/.+/.+$`)
-	if r.Method == http.MethodDelete && deleteChartV.MatchString(r.RequestURI) {
-		mockController.GetManipulationHandler().DeleteChartVersion(w, r)
-		return
-	}
-
-	w.WriteHeader(http.StatusNotImplemented)
-	w.Write([]byte(fmt.Sprintf("no handler to handle %s", r.RequestURI)))
-}))
+	return s, mockController, nil
+}
 
 // Http client
 var httpClient = NewChartClient(nil)
 
-// Mock project manager
-type mockProjectManager struct{}
-
-func (mpm *mockProjectManager) Get(projectIDOrName interface{}) (*models.Project, error) {
-	return nil, errors.New("Not implemented")
-}
-
-func (mpm *mockProjectManager) Create(*models.Project) (int64, error) {
-	return -1, errors.New("Not implemented")
-}
-
-func (mpm *mockProjectManager) Delete(projectIDOrName interface{}) error {
-	return errors.New("Not implemented")
-}
-
-func (mpm *mockProjectManager) Update(projectIDOrName interface{}, project *models.Project) error {
-	return errors.New("Not implemented")
-}
-func (mpm *mockProjectManager) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
-	results := &models.ProjectQueryResult{
-		Total:    2,
-		Projects: make([]*models.Project, 0),
-	}
-
-	results.Projects = append(results.Projects, &models.Project{ProjectID: 0, Name: "repo1"})
-	results.Projects = append(results.Projects, &models.Project{ProjectID: 1, Name: "repo2"})
-
-	return results, nil
-}
-
-func (mpm *mockProjectManager) IsPublic(projectIDOrName interface{}) (bool, error) {
-	return false, errors.New("Not implemented")
-}
-
-func (mpm *mockProjectManager) Exists(projectIDOrName interface{}) (bool, error) {
-	return false, errors.New("Not implemented")
-}
-
-// get all public project
-func (mpm *mockProjectManager) GetPublic() ([]*models.Project, error) {
-	return nil, errors.New("Not implemented")
-}
-
-// if the project manager uses a metadata manager, return it, otherwise return nil
-func (mpm *mockProjectManager) GetMetadataManager() metamgr.ProjectMetadataManager {
-	return nil
-}
-
-// Utility methods
-// Start the mock frontend and backend servers
-func startMockServers() error {
-	mockServer.Start()
-	backendURL, err := url.Parse(getTheAddrOfMockServer())
-	if err != nil {
-		return err
-	}
-
-	mockController, err = NewController(backendURL)
-	if err != nil {
-		return err
-	}
-
-	frontServer.Start()
-	return nil
-}
-
-// Stop the mock frontend and backend servers
-func stopMockServers() {
-	frontServer.Close()
-	mockServer.Close()
-}
-
-// Get the address of the backend mock server
-func getTheAddrOfMockServer() string {
-	return mockServer.URL
-}
-
-// Get the address of the frontend server
-func getTheAddrOfFrontServer() string {
-	return frontServer.URL
-}
-
 // Mock content
+var chartVersionsOfHarbor = `
+[
+    {
+        "name": "harbor",
+        "home": "https://github.com/vmware/harbor",
+        "sources": [
+            "https://github.com/vmware/harbor/tree/master/contrib/helm/harbor"
+        ],
+        "version": "0.2.1",
+        "description": "An Enterprise-class Docker Registry by VMware",
+        "keywords": [
+            "vmware",
+            "docker",
+            "registry",
+            "harbor"
+        ],
+        "maintainers": [
+            {
+                "name": "Jesse Hu",
+                "email": "huh@vmware.com"
+            },
+            {
+                "name": "paulczar",
+                "email": "username.taken@gmail.com"
+            }
+        ],
+        "engine": "gotpl",
+        "icon": "https://raw.githubusercontent.com/vmware/harbor/master/docs/img/harbor_logo.png",
+        "appVersion": "1.5.0",
+        "urls": [
+            "charts/harbor-0.2.1.tgz"
+        ],
+        "created": "2018-08-29T10:26:29.625749155Z",
+        "digest": "2538edf4ddb797af8e025f3bd6226270440110bbdb689bad48656a519a154236"
+    },
+    {
+        "name": "harbor",
+        "home": "https://github.com/vmware/harbor",
+        "sources": [
+            "https://github.com/vmware/harbor/tree/master/contrib/helm/harbor"
+        ],
+        "version": "0.2.0",
+        "description": "An Enterprise-class Docker Registry by VMware",
+        "keywords": [
+            "vmware",
+            "docker",
+            "registry",
+            "harbor"
+        ],
+        "maintainers": [
+            {
+                "name": "Jesse Hu",
+                "email": "huh@vmware.com"
+            },
+            {
+                "name": "paulczar",
+                "email": "username.taken@gmail.com"
+            }
+        ],
+        "engine": "gotpl",
+        "icon": "https://raw.githubusercontent.com/vmware/harbor/master/docs/img/harbor_logo.png",
+        "appVersion": "1.5.0",
+        "urls": [
+            "charts/harbor-0.2.0.tgz"
+        ],
+        "created": "2018-08-29T10:26:21.141611102Z",
+        "digest": "fc8aae8dade9f0dfca12e9f1085081c49843d30a063a3fa7eb42497e3ceb277c"
+    }
+]
+`
 var harborChartV = `
 {
     "name": "harbor",

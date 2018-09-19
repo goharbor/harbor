@@ -298,7 +298,7 @@ func (p *ProjectAPI) deletable(projectID int64) (*deletableResp, error) {
 
 	// Check helm charts number
 	if config.WithChartMuseum() {
-		charts, err := chartController.GetUtilityHandler().GetChartsByNs(p.project.Name)
+		charts, err := chartController.ListCharts(p.project.Name)
 		if err != nil {
 			return nil, err
 		}

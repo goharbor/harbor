@@ -17,6 +17,11 @@ import (
 const (
 	agentHarbor         = "HARBOR"
 	contentLengthHeader = "Content-Length"
+
+	defaultRepo             = "library"
+	rootUploadingEndpoint   = "/api/chartrepo/charts"
+	rootIndexEndpoint       = "/chartrepo/index.yaml"
+	chartRepoHealthEndpoint = "/api/chartrepo/health"
 )
 
 // ProxyEngine is used to proxy the related traffics
@@ -56,6 +61,7 @@ func director(target *url.URL, cred *Credential, req *http.Request) {
 	// Overwrite the request URL to the target path
 	req.URL.Scheme = target.Scheme
 	req.URL.Host = target.Host
+	rewriteURLPath(req)
 	req.URL.Path = singleJoiningSlash(target.Path, req.URL.Path)
 	if targetQuery == "" || req.URL.RawQuery == "" {
 		req.URL.RawQuery = targetQuery + req.URL.RawQuery
@@ -124,4 +130,35 @@ func singleJoiningSlash(a, b string) string {
 		return a + "/" + b
 	}
 	return a + b
+}
+
+// Rewrite the incoming URL with the right backend URL pattern
+// Remove 'chartrepo' from the endpoints of manipulation API
+// Remove 'chartrepo' from the endpoints of repository services
+func rewriteURLPath(req *http.Request) {
+	incomingURLPath := req.RequestURI
+
+	// Health check endpoint
+	if incomingURLPath == chartRepoHealthEndpoint {
+		req.URL.Path = "/health"
+		return
+	}
+
+	// Root uploading endpoint
+	if incomingURLPath == rootUploadingEndpoint {
+		req.URL.Path = strings.Replace(incomingURLPath, "chartrepo", defaultRepo, 1)
+		return
+	}
+
+	// Repository endpoints
+	if strings.HasPrefix(incomingURLPath, "/chartrepo") {
+		req.URL.Path = strings.TrimPrefix(incomingURLPath, "/chartrepo")
+		return
+	}
+
+	// API endpoints
+	if strings.HasPrefix(incomingURLPath, "/api/chartrepo") {
+		req.URL.Path = strings.Replace(incomingURLPath, "/chartrepo", "", 1)
+		return
+	}
 }

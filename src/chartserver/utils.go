@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -13,30 +13,6 @@ const (
 	contentTypeHeader = "content-type"
 	contentTypeJSON   = "application/json"
 )
-
-// WriteError writes error to http client
-func WriteError(w http.ResponseWriter, code int, err error) {
-	errorObj := make(map[string]string)
-	errorObj["error"] = err.Error()
-	errorContent, errorMarshal := json.Marshal(errorObj)
-	if errorMarshal != nil {
-		errorContent = []byte(err.Error())
-	}
-	w.WriteHeader(code)
-	w.Write(errorContent)
-}
-
-// WriteInternalError writes error with statusCode == 500
-func WriteInternalError(w http.ResponseWriter, err error) {
-	WriteError(w, http.StatusInternalServerError, err)
-}
-
-// Write JSON data to http client
-func writeJSONData(w http.ResponseWriter, data []byte) {
-	w.Header().Set(contentTypeHeader, contentTypeJSON)
-	w.WriteHeader(http.StatusOK)
-	w.Write(data)
-}
 
 // Extract error object '{"error": "****---***"}' from the content if existing
 // nil error will be returned if it does exist
@@ -115,4 +91,39 @@ func parseRedisConfig(redisConfigV string) (string, error) {
 	}
 
 	return string(cfgData), nil
+}
+
+// What's the cache driver if it is set
+func parseCacheDriver() (string, bool) {
+	driver, ok := os.LookupEnv(cacheDriverENVKey)
+	return strings.ToLower(driver), ok
+}
+
+// Get and parse the configuration for the chart cache
+func getCacheConfig() (*ChartCacheConfig, error) {
+	driver, isSet := parseCacheDriver()
+	if !isSet {
+		return nil, nil
+	}
+
+	if driver != cacheDriverMem && driver != cacheDriverRedis {
+		return nil, fmt.Errorf("cache driver '%s' is not supported, only support 'memory' and 'redis'", driver)
+	}
+
+	if driver == cacheDriverMem {
+		return &ChartCacheConfig{
+			DriverType: driver,
+		}, nil
+	}
+
+	redisConfigV := os.Getenv(redisENVKey)
+	redisCfg, err := parseRedisConfig(redisConfigV)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse redis configurations from '%s' with error: %s", redisCfg, err)
+	}
+
+	return &ChartCacheConfig{
+		DriverType: driver,
+		Config:     redisCfg,
+	}, nil
 }

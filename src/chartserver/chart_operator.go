@@ -11,6 +11,7 @@ import (
 
 	"github.com/Masterminds/semver"
 
+	"github.com/goharbor/harbor/src/common/models"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"k8s.io/helm/pkg/chartutil"
 	helm_repo "k8s.io/helm/pkg/repo"
@@ -21,6 +22,15 @@ const (
 	valuesFileName = "values.yaml"
 )
 
+// ChartVersion extends the helm ChartVersion with additional labels
+type ChartVersion struct {
+	helm_repo.ChartVersion
+	Labels []*models.Label `json:"labels"`
+}
+
+// ChartVersions is an array of extended ChartVersion
+type ChartVersions []*ChartVersion
+
 // ChartVersionDetails keeps the detailed data info of the chart version
 type ChartVersionDetails struct {
 	Metadata     *helm_repo.ChartVersion `json:"metadata"`
@@ -28,6 +38,7 @@ type ChartVersionDetails struct {
 	Values       map[string]interface{}  `json:"values"`
 	Files        map[string]string       `json:"files"`
 	Security     *SecurityReport         `json:"security"`
+	Labels       []*models.Label         `json:"labels"`
 }
 
 // SecurityReport keeps the info related with security
@@ -154,12 +165,12 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 }
 
 // GetChartVersions returns the chart versions
-func (cho *ChartOperator) GetChartVersions(content []byte) (helm_repo.ChartVersions, error) {
+func (cho *ChartOperator) GetChartVersions(content []byte) (ChartVersions, error) {
 	if content == nil || len(content) == 0 {
 		return nil, errors.New("zero content")
 	}
 
-	chartVersions := make(helm_repo.ChartVersions, 0)
+	chartVersions := make(ChartVersions, 0)
 	if err := json.Unmarshal(content, &chartVersions); err != nil {
 		return nil, err
 	}

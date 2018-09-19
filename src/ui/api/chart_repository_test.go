@@ -9,46 +9,6 @@ import (
 	"github.com/goharbor/harbor/src/ui/promgr/metamgr"
 )
 
-// Test the URL rewrite function
-func TestURLRewrite(t *testing.T) {
-	chartAPI := &ChartRepositoryAPI{}
-	req, err := createRequest(http.MethodGet, "/api/chartrepo/health")
-	if err != nil {
-		t.Fatal(err)
-	}
-	chartAPI.rewriteURLPath(req)
-	if req.URL.Path != "/health" {
-		t.Fatalf("Expect url format %s but got %s", "/health", req.URL.Path)
-	}
-
-	req, err = createRequest(http.MethodGet, "/api/chartrepo/library/charts")
-	if err != nil {
-		t.Fatal(err)
-	}
-	chartAPI.rewriteURLPath(req)
-	if req.URL.Path != "/api/library/charts" {
-		t.Fatalf("Expect url format %s but got %s", "/api/library/charts", req.URL.Path)
-	}
-
-	req, err = createRequest(http.MethodPost, "/api/chartrepo/charts")
-	if err != nil {
-		t.Fatal(err)
-	}
-	chartAPI.rewriteURLPath(req)
-	if req.URL.Path != "/api/library/charts" {
-		t.Fatalf("Expect url format %s but got %s", "/api/library/charts", req.URL.Path)
-	}
-
-	req, err = createRequest(http.MethodGet, "/chartrepo/library/index.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	chartAPI.rewriteURLPath(req)
-	if req.URL.Path != "/library/index.yaml" {
-		t.Fatalf("Expect url format %s but got %s", "/library/index.yaml", req.URL.Path)
-	}
-}
-
 // Test access checking
 func TestRequireAccess(t *testing.T) {
 	chartAPI := &ChartRepositoryAPI{}
