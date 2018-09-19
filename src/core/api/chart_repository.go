@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/ui/label"
+	"github.com/goharbor/harbor/src/core/label"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
