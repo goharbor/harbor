@@ -299,13 +299,13 @@ func (a testapi) LogGet(user usrInfo) (int, []apilib.AccessLog, error) {
 	return code, successPayload, err
 }
 
-// //Delete a repository or a tag in a repository.
-// //Delete a repository or a tag in a repository.
-// //This endpoint let user delete repositories and tags with repo name and tag.\n
-// //@param repoName The name of repository which will be deleted.
-// //@param tag Tag of a repository.
-// //@return void
-// //func (a testapi) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
+// // Delete a repository or a tag in a repository.
+// // Delete a repository or a tag in a repository.
+// // This endpoint let user delete repositories and tags with repo name and tag.\n
+// // @param repoName The name of repository which will be deleted.
+// // @param tag Tag of a repository.
+// // @return void
+// // func (a testapi) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
 // func (a testapi) RepositoriesDelete(prjUsr UsrInfo, repoName string, tag string) (int, error) {
 //	_sling := sling.New().Delete(a.basePath)
 

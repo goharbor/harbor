@@ -31,7 +31,7 @@ import (
 
 func TestSearch(t *testing.T) {
 	fmt.Println("Testing Search(SearchGet) API")
-	//Use mock chart search handler
+	// Use mock chart search handler
 	searchHandler = func(string, []string) ([]*search.Result, error) {
 		results := []*search.Result{}
 		results = append(results, &search.Result{
@@ -178,7 +178,7 @@ func TestSearch(t *testing.T) {
 	_, exist = repositories["search-2/hello-world"]
 	assert.True(t, exist)
 
-	//Search chart
+	// Search chart
 	err = handleAndParse(&testingRequest{
 		method: http.MethodGet,
 		url:    "/api/search",
@@ -193,6 +193,6 @@ func TestSearch(t *testing.T) {
 	require.Equal(t, 1, len(result.Chart))
 	require.Equal(t, "library/harbor", result.Chart[0].Name)
 
-	//Restore chart search handler
+	// Restore chart search handler
 	searchHandler = nil
 }
