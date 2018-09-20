@@ -14,10 +14,8 @@
             </label>
             <label>
                 <label for="color">{{'LABEL.COLOR' | translate}}</label>
-                <clr-dropdown [clrCloseMenuOnItemClick]="false">
-                    <button type="button" class="btn btn-outline btnColor btn-sm" clrDropdownTrigger>
-                        <clr-icon shape="angle down"></clr-icon>
-                    </button>
+                <clr-dropdown [clrCloseMenuOnItemClick]="false" clrDropdownTrigger>
+                    <clr-icon shape="caret down" class="btn btn-outline btnColor btn-sm"></clr-icon>
                     <clr-dropdown-menu *clrIfOpen>
                         <label class="dropdown-item" (click)="labelModel.color=i.color" *ngFor="let i of labelColor"
                             [class.borderSty]="i.color == '#FFFFFF'"   [ngStyle]="{'background-color': i.color, 'color': i.textColor }">Aa</label>

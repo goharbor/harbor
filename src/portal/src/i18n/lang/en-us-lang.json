@@ -555,6 +555,7 @@
         "REPO_READ_ONLY": "Repository Read Only",
         "SYSTEM": "System Settings",
         "VULNERABILITY": "Vulnerability",
+        "GC": "Garbage Collection",
         "CONFIRM_TITLE": "Confirm to cancel",
         "CONFIRM_SUMMARY": "Some changes have not been saved. Do you want to discard them?",
         "SAVE_SUCCESS": "Configuration has been successfully saved.",
@@ -810,5 +811,33 @@
     "PRECONDITION_FAILED": "We are unable to perform your action because of a precondition failure.",
     "SERVER_ERROR": "We are unable to perform your action because internal server errors have occurred.",
     "INCONRRECT_OLD_PWD": "The old password is incorrect.",
-    "UNKNOWN": "n/a"
+    "UNKNOWN": "n/a",
+    "STATUS":"Status",
+    "START_TIME": "Start Time",
+    "END_TIME": "End Time",
+    "DETAILS":"Details",
+    "PENDING":"Pending",
+    "FINISHED":"Finished",
+    "SCHEDULE": {
+        "NONE": "None",
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MANUAL": "Manual"
+    }, 
+    "GC": {
+        "CURRENT_SCHEDULE": "Current Schedule",
+        "ON": "on",
+        "AT": "at",
+        "GC_NOW": "GC NOW",
+        "JOB_LIST":"GC Jobs List",
+        "JOB_ID":"Job ID",
+        "TRIGGER_TYPE": "Trigger Type",
+        "LATEST_JOBS": "Latest {{param}} Jobs",
+        "LOG_DETAIL":"Log Details",
+        "MSG_SUCCESS":"Garbage Collection Successful",
+        "MSG_SCHEDULE_SET":"Garbage Collection schedule has been set",
+        "MSG_SCHEDULE_RESET":"Garbage Collection schedule has been reset",
+        "MSG_ERROR":"Can not do Garbase Collection too often,please try again later."
+    }
+    
 }

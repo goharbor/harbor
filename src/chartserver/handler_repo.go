@@ -15,7 +15,7 @@ import (
 const (
 	maxWorkers = 10
 
-	//Keep consistent with 'helm search' command
+	// Keep consistent with 'helm search' command
 	searchMaxScore = 25
 )
 
@@ -102,15 +102,15 @@ LOOP:
 		waitGroup.Add(1)
 		go func(ns string) {
 			defer func() {
-				waitGroup.Done() //done
-				//Return the worker back to the pool
+				waitGroup.Done() // done
+				// Return the worker back to the pool
 				workerPool <- struct{}{}
 			}()
 
 			indexFile, err := c.getIndexYamlWithNS(ns)
 			if err != nil {
 				if len(errorChan) == 0 {
-					//Only need one error as failure signal
+					// Only need one error as failure signal
 					errorChan <- err
 				}
 				return

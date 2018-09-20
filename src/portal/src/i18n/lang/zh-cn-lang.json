@@ -554,6 +554,7 @@
         "REPO_READ_ONLY": "仓库只读",
         "SYSTEM": "系统设置",
         "VULNERABILITY": "漏洞",
+        "GC": "垃圾清理",
         "CONFIRM_TITLE": "确认取消",
         "CONFIRM_SUMMARY": "配置项有改动, 确定取消?",
         "SAVE_SUCCESS": "变更的配置项成功保存。",
@@ -806,5 +807,32 @@
     "PRECONDITION_FAILED": "验证前置条件失败, 无法执行操作。",
     "SERVER_ERROR": "服务器出现内部错误，请求无法完成。",
     "INCONRRECT_OLD_PWD": "旧密码不正确。",
-    "UNKNOWN": "未知"
+    "UNKNOWN": "未知",
+    "STATUS":"状态",
+    "START_TIME": "开始时间",
+    "END_TIME": "结束时间",
+    "DETAILS":"详情",
+    "PENDING":"未开始",
+    "FINISHED":"已完成",
+    "SCHEDULE": {
+        "NONE": "无",
+        "DAILY": "每天",
+        "WEEKLY": "每周",
+        "MANUAL": "手动"
+    }, 
+    "GC": {
+        "CURRENT_SCHEDULE": "当前定时任务",
+        "ON": " ",
+        "AT": " ",
+        "GC_NOW": "立即清理垃圾",
+        "JOB_LIST":"任务列表",
+        "JOB_ID":"任务ID",
+        "TRIGGER_TYPE": "触发类型",
+        "LATEST_JOBS": "最新的 {{param}} 个任务",
+        "LOG_DETAIL":"日志详情",
+        "MSG_SUCCESS":"垃圾回收成功",
+        "MSG_SCHEDULE_SET":"垃圾回收定时任务设置成功",
+        "MSG_SCHEDULE_RESET":"垃圾回收定时任务已被重置",
+        "MSG_ERROR":"您的垃圾回收请求提交过于频繁，请稍候重试"
+    }
 }

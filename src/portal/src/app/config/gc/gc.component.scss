@@ -1,0 +1,20 @@
+.flex-layout {
+    display: flex;
+    align-items: center;
+    margin:20px 0;
+    > * {
+        margin-right:35px;
+    }
+}
+
+.gc-start-btn {
+    width:150px;
+}
+
+.job-header {
+    margin:20px 0 -10px 0;
+}
+
+.day-selector-wrapper {
+    display: flex;
+}
