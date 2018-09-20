@@ -136,7 +136,7 @@ func singleJoiningSlash(a, b string) string {
 // Remove 'chartrepo' from the endpoints of manipulation API
 // Remove 'chartrepo' from the endpoints of repository services
 func rewriteURLPath(req *http.Request) {
-	incomingURLPath := req.RequestURI
+	incomingURLPath := req.URL.Path
 
 	// Health check endpoint
 	if incomingURLPath == chartRepoHealthEndpoint {

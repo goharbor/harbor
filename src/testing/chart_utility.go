@@ -7,10 +7,14 @@ package testing
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
+
+	hlog "github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // MockChartRepoHandler is the backend chart server handler
 var MockChartRepoHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	hlog.Infof("Incoming testing request: %s", r.RequestURI)
 	switch r.RequestURI {
 	case "/health":
 		if r.Method == http.MethodGet {
@@ -87,6 +91,13 @@ var MockChartRepoHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 		if r.Method == http.MethodGet {
 			w.Write([]byte("{}"))
 			return
+		}
+	default:
+		if r.Method == http.MethodGet {
+			if strings.HasSuffix(r.RequestURI, "/index.yaml") {
+				w.Write([]byte(repo2IndexYaml))
+				return
+			}
 		}
 	}
 

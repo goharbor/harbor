@@ -67,7 +67,7 @@ func (cra *ChartRepositoryAPI) Prepare() {
 	// Exclude the following URI
 	// -/index.yaml
 	// -/api/chartserver/health
-	incomingURI := cra.Ctx.Request.RequestURI
+	incomingURI := cra.Ctx.Request.URL.Path
 	if incomingURI == rootUploadingEndpoint {
 		// Forward to the default repository
 		cra.namespace = defaultRepo

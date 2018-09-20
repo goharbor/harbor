@@ -170,6 +170,23 @@ func init() {
 	beego.Router("/api/system/gc/:id", &GCAPI{}, "get:GetGC")
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &GCAPI{}, "get:GetLog")
 	beego.Router("/api/system/gc/schedule", &GCAPI{}, "get:Get;put:Put;post:Post")
+
+	// Charts are controlled under projects
+	chartRepositoryAPIType := &ChartRepositoryAPI{}
+	beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
+	beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
+	beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
+	beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
+	beego.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
+	beego.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
+	beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
+	beego.Router("/api/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
+	beego.Router("/api/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
+
+	// Repository services
+	beego.Router("/chartrepo/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
+	beego.Router("/chartrepo/index.yaml", chartRepositoryAPIType, "get:GetIndex")
+	beego.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
 	// Labels for chart
 	chartLabelAPIType := &ChartLabelAPI{}
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")

@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/utils"
 )
@@ -50,7 +51,7 @@ const (
 // Prepare inits security context and project manager from request
 // context
 func (b *BaseController) Prepare() {
-	/*ctx, err := filter.GetSecurityContext(b.Ctx.Request)
+	ctx, err := filter.GetSecurityContext(b.Ctx.Request)
 	if err != nil {
 		log.Errorf("failed to get security context: %v", err)
 		b.CustomAbort(http.StatusInternalServerError, "")
@@ -62,7 +63,7 @@ func (b *BaseController) Prepare() {
 		log.Errorf("failed to get project manager: %v", err)
 		b.CustomAbort(http.StatusInternalServerError, "")
 	}
-	b.ProjectMgr = pm*/
+	b.ProjectMgr = pm
 }
 
 // RenderFormatedError renders errors with well formted style `{"error": "This is an error"}`

@@ -80,17 +80,15 @@ func TestGetHealthStatus(t *testing.T) {
 	err := handleAndParse(&testingRequest{
 		url:        "/api/chartrepo/health",
 		method:     http.MethodGet,
-		credential: projAdmin,
+		credential: sysAdmin,
 	}, &status)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if v, ok := status["healthy"]; !ok {
-		t.Fatal("expect 'healthy' but got nil")
-	} else {
-		t.Fatalf("expect 'healthy' but got %v", v)
+	if _, ok := status["health"]; !ok {
+		t.Fatal("expect 'health' but got nil")
 	}
 }
 
@@ -112,7 +110,7 @@ func TestGetIndex(t *testing.T) {
 		request: &testingRequest{
 			url:        "/chartrepo/index.yaml",
 			method:     http.MethodGet,
-			credential: projAdmin,
+			credential: sysAdmin,
 		},
 		code: http.StatusOK,
 	})
@@ -152,7 +150,7 @@ func TesListCharts(t *testing.T) {
 func TestListChartVersions(t *testing.T) {
 	chartVersions := make(chartserver.ChartVersions, 0)
 	err := handleAndParse(&testingRequest{
-		url:        "/api/chartrepo/library/chart/harbor",
+		url:        "/api/chartrepo/library/charts/harbor",
 		method:     http.MethodGet,
 		credential: projAdmin,
 	}, &chartVersions)
@@ -170,7 +168,7 @@ func TestListChartVersions(t *testing.T) {
 func TestGetChartVersion(t *testing.T) {
 	chartV := &chartserver.ChartVersionDetails{}
 	err := handleAndParse(&testingRequest{
-		url:        "/api/chartrepo/library/chart/harbor/0.2.0",
+		url:        "/api/chartrepo/library/charts/harbor/0.2.0",
 		method:     http.MethodGet,
 		credential: projAdmin,
 	}, chartV)
@@ -194,7 +192,7 @@ func TestDeleteChartVersion(t *testing.T) {
 		request: &testingRequest{
 			url:        "/api/chartrepo/library/charts/harbor/0.2.1",
 			method:     http.MethodDelete,
-			credential: projDeveloper,
+			credential: projAdmin,
 		},
 		code: http.StatusOK,
 	})
