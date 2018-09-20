@@ -156,7 +156,7 @@ fi
 #                                     harbor-offline-installer-latest.tgz
 #
 set -e
-if [ $upload_build == true ] && [ $rc -eq 0 ]; then
+if [ $upload_build == true ]; then
     cp $harbor_build_bundle harbor-offline-installer-latest.tgz
     uploader $harbor_build_bundle $harbor_target_bucket
     uploader harbor-offline-installer-latest.tgz $harbor_target_bucket
@@ -168,13 +168,13 @@ fi
 #
 # latest.build file holds the latest offline installer url, it must be sure that the installer has been uploaded successfull.
 #
-if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ] && [ $rc -eq 0 ]; then
+if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ]; then
     echo 'https://storage.googleapis.com/'$harbor_target_bucket/$harbor_build_bundle > $latest_build_file
     uploader $latest_build_file $harbor_target_bucket
 fi
 
 ## --------------------------------------------- Upload securego results ------------------------------------------
-if [ $DRONE_BUILD_EVENT == "push" ] && [ $rc -eq 0 ]; then
+if [ $DRONE_BUILD_EVENT == "push" ]; then
     go get github.com/securego/gosec/cmd/gosec
     go get github.com/dghubble/sling
     make gosec -e GOSECRESULTS=harbor-gosec-results-latest.json
