@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/ghodss/yaml"
+	htesting "github.com/goharbor/harbor/src/testing"
 	helm_repo "k8s.io/helm/pkg/repo"
 )
 
@@ -71,7 +72,7 @@ func TestDownloadChart(t *testing.T) {
 	}
 
 	gotSize := len(content)
-	expectSize := len(helmChartContent)
+	expectSize := len(htesting.HelmChartContent)
 
 	if gotSize != expectSize {
 		t.Fatalf("Expect %d bytes data but got %d bytes", expectSize, gotSize)

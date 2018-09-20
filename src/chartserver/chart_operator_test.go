@@ -2,11 +2,13 @@ package chartserver
 
 import (
 	"testing"
+
+	htesting "github.com/goharbor/harbor/src/testing"
 )
 
 func TestGetChartDetails(t *testing.T) {
 	chartOpr := ChartOperator{}
-	chartDetails, err := chartOpr.GetChartDetails(helmChartContent)
+	chartDetails, err := chartOpr.GetChartDetails(htesting.HelmChartContent)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +28,7 @@ func TestGetChartDetails(t *testing.T) {
 
 func TestGetChartList(t *testing.T) {
 	chartOpr := ChartOperator{}
-	infos, err := chartOpr.GetChartList(chartListContent)
+	infos, err := chartOpr.GetChartList(htesting.ChartListContent)
 	if err != nil {
 		t.Fatal(err)
 	}

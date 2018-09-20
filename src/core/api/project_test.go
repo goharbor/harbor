@@ -16,13 +16,9 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"strconv"
 	"testing"
 	"time"
-
-	"github.com/goharbor/harbor/src/chartserver"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -409,77 +405,3 @@ func TestDeletable(t *testing.T) {
 	assert.Equal(t, http.StatusOK, code)
 	assert.False(t, del)
 }
-
-// Provides a mock chart controller for deletable test cases
-func mockChartController() (*httptest.Server, *chartserver.Controller, error) {
-	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.RequestURI {
-		case "/api/project_for_test_deletable/charts":
-			if r.Method == http.MethodGet {
-				w.Write([]byte("{}"))
-				return
-			}
-		case "/api/library/charts/harbor/0.2.0":
-			if r.Method == http.MethodGet {
-				w.Write([]byte(chartVersionOfHarbor020))
-				return
-			}
-		}
-
-		w.WriteHeader(http.StatusNotImplemented)
-		w.Write([]byte("not supported"))
-	}))
-
-	var oldController, newController *chartserver.Controller
-	url, err := url.Parse(mockServer.URL)
-	if err == nil {
-		newController, err = chartserver.NewController(url)
-	}
-
-	if err != nil {
-		mockServer.Close()
-		return nil, nil, err
-	}
-
-	// Override current controller and keep the old one for restoring
-	oldController = chartController
-	chartController = newController
-
-	return mockServer, oldController, nil
-}
-
-var chartVersionOfHarbor020 = `
-{
-    "name": "harbor",
-    "home": "https://github.com/vmware/harbor",
-    "sources": [
-        "https://github.com/vmware/harbor/tree/master/contrib/helm/harbor"
-    ],
-    "version": "0.2.0",
-    "description": "An Enterprise-class Docker Registry by VMware",
-    "keywords": [
-        "vmware",
-        "docker",
-        "registry",
-        "harbor"
-    ],
-    "maintainers": [
-        {
-            "name": "Jesse Hu",
-            "email": "huh@vmware.com"
-        },
-        {
-            "name": "paulczar",
-            "email": "username.taken@gmail.com"
-        }
-    ],
-    "engine": "gotpl",
-    "icon": "https://raw.githubusercontent.com/vmware/harbor/master/docs/img/harbor_logo.png",
-    "appVersion": "1.5.0",
-    "urls": [
-        "charts/harbor-0.2.0.tgz"
-    ],
-    "created": "2018-08-29T10:26:21.141611102Z",
-    "digest": "fc8aae8dade9f0dfca12e9f1085081c49843d30a063a3fa7eb42497e3ceb277c"
-}
-`
