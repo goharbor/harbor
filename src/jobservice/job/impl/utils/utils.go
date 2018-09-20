@@ -3,12 +3,17 @@ package utils
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"sync"
 
 	"github.com/docker/distribution/registry/auth/token"
 	httpauth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 )
+
+var coreClient *http.Client
+var mutex = &sync.Mutex{}
 
 // NewRepositoryClient creates a repository client with standard token authorizer
 func NewRepositoryClient(endpoint string, insecure bool, credential auth.Credential,
@@ -78,4 +83,21 @@ func GetTokenForRepo(repository, secret, internalTokenServiceURL string) (string
 	}
 
 	return t.Token, nil
+}
+
+// GetClient returns the HTTP client that will attach jobservce secret to the request, which can be used for
+// accessing Harbor's Core Service.
+// This function returns error if the secret of Job service is not set.
+func GetClient() (*http.Client, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	if coreClient == nil {
+		secret := os.Getenv("JOBSERVICE_SECRET")
+		if len(secret) == 0 {
+			return nil, fmt.Errorf("unable to load secret for job service")
+		}
+		modifier := httpauth.NewSecretAuthorizer(secret)
+		coreClient = &http.Client{Transport: registry.NewTransport(&http.Transport{}, modifier)}
+	}
+	return coreClient, nil
 }

@@ -71,7 +71,7 @@ func (s *SecurityContext) IsSolutionUser() bool {
 }
 
 // HasReadPerm returns true if the corresponding user of the secret
-// is jobservice, otherwise returns false
+// is jobservice or core service, otherwise returns false
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	if s.store == nil {
 		return false
@@ -79,14 +79,22 @@ func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.CoreUser
 }
 
-// HasWritePerm always returns false
+// HasWritePerm returns true if the corresponding user of the secret
+// is jobservice or core service, otherwise returns false
 func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	return false
+	if s.store == nil {
+		return false
+	}
+	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.CoreUser
 }
 
-// HasAllPerm always returns false
+// HasAllPerm returns true if the corresponding user of the secret
+// is jobservice or core service, otherwise returns false
 func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
-	return false
+	if s.store == nil {
+		return false
+	}
+	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.CoreUser
 }
 
 // GetMyProjects ...
