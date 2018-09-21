@@ -365,12 +365,18 @@ hostname = 192.168.0.2:8888
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 7b576469... Fixing Typo - Add style
+=======
+>>>>>>> b846d079... adding sections about db configuration
 ## Configuring Harbor DB when changing default values
 
 By default, your harbor.cfg is using the default username and password in order to let __clair-db__ and __adminserver__ connection thought the __postgresql__ container.
 If you change the values as it's advised on the **Required Parameter** section and **Optional Parameters** you have to keep in mind that you would have to create theses users manually by connecting using the postgresql client in order to connect yourself as root to the __postgesql(db)__ container.
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 ## Configuring Harbor DB when changing default values
@@ -378,11 +384,26 @@ If you change the values as it's advised on the **Required Parameter** section a
 =======
 ### Configuring Harbor DB when changing default values
 >>>>>>> 9cd215b1... Fixing Typo
+=======
+### Configuring Harbor DB when changing default values
+>>>>>>> 627193f2... Fixing Typo
 By default, your harbor.cfg is using the default username and password in order to let clair-db and adminserver connection throught the postgresql container.
 If you change the values as it's adviced on the **Required Parameter** section and **Optionnal Parameters** you have to keep in mind that you would have to create theses users manualy by connecting using the postgresql client in order to connect yourself as root to the postgesql(db) container.
 >>>>>>> 0a3b8450... add section Configure harbor-db when changing default values
 =======
 >>>>>>> 7b576469... Fixing Typo - Add style
+=======
+>>>>>>> b846d079... adding sections about db configuration
+=======
+## Configuring Harbor DB when changing default values
+
+By default, your harbor.cfg is using the default username and password in order to let clair-db and adminserver connection throught the postgresql container.
+If you change the values as it's adviced on the **Required Parameter** section and **Optionnal Parameters** you have to keep in mind that you would have to create theses users manualy by connecting using the postgresql client in order to connect yourself as root to the postgesql(db) container.
+<<<<<<< HEAD
+>>>>>>> 1832b036... add section Configure harbor-db when changing default values
+=======
+>>>>>>> add section Configure harbor-db when changing default values
+>>>>>>> b846d079... adding sections about db configuration
 
 For example:
 ```
