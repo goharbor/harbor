@@ -18,7 +18,7 @@ import 'rxjs/add/operator/toPromise';
 import { SignInCredential } from '../../shared/sign-in-credential';
 import {HTTP_FORM_OPTIONS} from "../../shared/shared.utils";
 
-const signInUrl = '/login';
+const signInUrl = '/c/login';
 /**
  *
  * Define a service to provide sign in methods
