@@ -55,7 +55,7 @@ func (cla *ChartLabelAPI) Prepare() {
 	chartName := cla.GetStringFromPath(nameParam)
 	version := cla.GetStringFromPath(versionParam)
 
-	if _, err = chartController.GetUtilityHandler().GetChartVersion(project, chartName, version); err != nil {
+	if _, err = chartController.GetChartVersion(project, chartName, version); err != nil {
 		cla.SendNotFoundError(err)
 		return
 	}

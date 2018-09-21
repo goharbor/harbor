@@ -17,6 +17,7 @@ package api
 import (
 	"net/http"
 
+	yaml "github.com/ghodss/yaml"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -24,6 +25,10 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/utils"
+)
+
+const (
+	yamlFileContentType = "application/x-yaml"
 )
 
 // BaseController ...
@@ -96,6 +101,26 @@ func (b *BaseController) SendInternalServerError(err error) {
 // SendForbiddenError sends forbidden error to the client.
 func (b *BaseController) SendForbiddenError(err error) {
 	b.RenderFormatedError(http.StatusForbidden, err)
+}
+
+// WriteJSONData writes the JSON data to the client.
+func (b *BaseController) WriteJSONData(object interface{}) {
+	b.Data["json"] = object
+	b.ServeJSON()
+}
+
+// WriteYamlData writes the yaml data to the client.
+func (b *BaseController) WriteYamlData(object interface{}) {
+	yData, err := yaml.Marshal(object)
+	if err != nil {
+		b.SendInternalServerError(err)
+		return
+	}
+
+	w := b.Ctx.ResponseWriter
+	w.Header().Set("Content-Type", yamlFileContentType)
+	w.WriteHeader(http.StatusOK)
+	w.Write(yData)
 }
 
 // Init related objects/configurations for the API controllers

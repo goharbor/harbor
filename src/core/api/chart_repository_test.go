@@ -3,51 +3,18 @@ package api
 import (
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 )
 
-// Test the URL rewrite function
-func TestURLRewrite(t *testing.T) {
-	chartAPI := &ChartRepositoryAPI{}
-	req, err := createRequest(http.MethodGet, "/api/chartrepo/health")
-	if err != nil {
-		t.Fatal(err)
-	}
-	chartAPI.rewriteURLPath(req)
-	if req.URL.Path != "/health" {
-		t.Fatalf("Expect url format %s but got %s", "/health", req.URL.Path)
-	}
-
-	req, err = createRequest(http.MethodGet, "/api/chartrepo/library/charts")
-	if err != nil {
-		t.Fatal(err)
-	}
-	chartAPI.rewriteURLPath(req)
-	if req.URL.Path != "/api/library/charts" {
-		t.Fatalf("Expect url format %s but got %s", "/api/library/charts", req.URL.Path)
-	}
-
-	req, err = createRequest(http.MethodPost, "/api/chartrepo/charts")
-	if err != nil {
-		t.Fatal(err)
-	}
-	chartAPI.rewriteURLPath(req)
-	if req.URL.Path != "/api/library/charts" {
-		t.Fatalf("Expect url format %s but got %s", "/api/library/charts", req.URL.Path)
-	}
-
-	req, err = createRequest(http.MethodGet, "/chartrepo/library/index.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	chartAPI.rewriteURLPath(req)
-	if req.URL.Path != "/library/index.yaml" {
-		t.Fatalf("Expect url format %s but got %s", "/library/index.yaml", req.URL.Path)
-	}
-}
+var (
+	crOldController *chartserver.Controller
+	crMockServer    *httptest.Server
+)
 
 // Test access checking
 func TestRequireAccess(t *testing.T) {
@@ -98,6 +65,157 @@ func TestRequireNamespace(t *testing.T) {
 	}
 }
 
+// Prepare
+func TestPrepareEnv(t *testing.T) {
+	var err error
+	crMockServer, crOldController, err = mockChartController()
+	if err != nil {
+		t.Fatalf("Failed to start mock chart service with error: %s", err)
+	}
+}
+
+// Test get health
+func TestGetHealthStatus(t *testing.T) {
+	status := make(map[string]interface{})
+	err := handleAndParse(&testingRequest{
+		url:        "/api/chartrepo/health",
+		method:     http.MethodGet,
+		credential: sysAdmin,
+	}, &status)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, ok := status["health"]; !ok {
+		t.Fatal("expect 'health' but got nil")
+	}
+}
+
+// Test get index by repo
+func TestGetIndexByRepo(t *testing.T) {
+	runCodeCheckingCases(t, &codeCheckingCase{
+		request: &testingRequest{
+			url:        "/chartrepo/library/index.yaml",
+			method:     http.MethodGet,
+			credential: projDeveloper,
+		},
+		code: http.StatusOK,
+	})
+}
+
+// Test get index
+func TestGetIndex(t *testing.T) {
+	runCodeCheckingCases(t, &codeCheckingCase{
+		request: &testingRequest{
+			url:        "/chartrepo/index.yaml",
+			method:     http.MethodGet,
+			credential: sysAdmin,
+		},
+		code: http.StatusOK,
+	})
+}
+
+// Test download chart
+func TestDownloadChart(t *testing.T) {
+	runCodeCheckingCases(t, &codeCheckingCase{
+		request: &testingRequest{
+			url:        "/chartrepo/library/charts/harbor-0.2.0.tgz",
+			method:     http.MethodGet,
+			credential: projDeveloper,
+		},
+		code: http.StatusOK,
+	})
+}
+
+// Test get charts
+func TesListCharts(t *testing.T) {
+	charts := make([]*chartserver.ChartInfo, 0)
+	err := handleAndParse(&testingRequest{
+		url:        "/api/chartrepo/library/charts",
+		method:     http.MethodGet,
+		credential: projAdmin,
+	}, &charts)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(charts) != 2 {
+		t.Fatalf("expect 2 charts but got %d", len(charts))
+	}
+}
+
+// Test get chart versions
+func TestListChartVersions(t *testing.T) {
+	chartVersions := make(chartserver.ChartVersions, 0)
+	err := handleAndParse(&testingRequest{
+		url:        "/api/chartrepo/library/charts/harbor",
+		method:     http.MethodGet,
+		credential: projAdmin,
+	}, &chartVersions)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(chartVersions) != 2 {
+		t.Fatalf("expect 2 chart versions but got %d", len(chartVersions))
+	}
+}
+
+// Test get chart version details
+func TestGetChartVersion(t *testing.T) {
+	chartV := &chartserver.ChartVersionDetails{}
+	err := handleAndParse(&testingRequest{
+		url:        "/api/chartrepo/library/charts/harbor/0.2.0",
+		method:     http.MethodGet,
+		credential: projAdmin,
+	}, chartV)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if chartV.Metadata.GetName() != "harbor" {
+		t.Fatalf("expect get chart 'harbor' but got %s", chartV.Metadata.GetName())
+	}
+
+	if chartV.Metadata.GetVersion() != "0.2.0" {
+		t.Fatalf("expect get chart version '0.2.0' but got %s", chartV.Metadata.GetVersion())
+	}
+}
+
+// Test delete chart version
+func TestDeleteChartVersion(t *testing.T) {
+	runCodeCheckingCases(t, &codeCheckingCase{
+		request: &testingRequest{
+			url:        "/api/chartrepo/library/charts/harbor/0.2.1",
+			method:     http.MethodDelete,
+			credential: projAdmin,
+		},
+		code: http.StatusOK,
+	})
+}
+
+// Test delete chart
+func TestDeleteChart(t *testing.T) {
+	runCodeCheckingCases(t, &codeCheckingCase{
+		request: &testingRequest{
+			url:        "/api/chartrepo/library/charts/harbor",
+			method:     http.MethodDelete,
+			credential: projDeveloper,
+		},
+		code: http.StatusOK,
+	})
+}
+
+// Clear
+func TestClearEnv(t *testing.T) {
+	crMockServer.Close()
+	chartController = crOldController
+}
+
 func createRequest(method string, url string) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
@@ -132,7 +250,7 @@ func (mpm *mockProjectManager) List(query *models.ProjectQueryParam) (*models.Pr
 		Projects: make([]*models.Project, 0),
 	}
 
-	results.Projects = append(results.Projects, &models.Project{ProjectID: 0, Name: "repo1"})
+	results.Projects = append(results.Projects, &models.Project{ProjectID: 0, Name: "library"})
 	results.Projects = append(results.Projects, &models.Project{ProjectID: 1, Name: "repo2"})
 
 	return results, nil
@@ -228,7 +346,7 @@ func (msc *mockSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 
 // Get current user's all project
 func (msc *mockSecurityContext) GetMyProjects() ([]*models.Project, error) {
-	return []*models.Project{{ProjectID: 0, Name: "repo1"}}, nil
+	return []*models.Project{{ProjectID: 0, Name: "library"}}, nil
 }
 
 // Get user's role in provided project

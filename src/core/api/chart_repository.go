@@ -2,7 +2,6 @@ package api
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +10,9 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/core/label"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
@@ -45,6 +47,9 @@ type ChartRepositoryAPI struct {
 	// The base controller to provide common utilities
 	BaseController
 
+	// For label management
+	labelManager *label.BaseManager
+
 	// Keep the namespace if existing
 	namespace string
 }
@@ -62,7 +67,7 @@ func (cra *ChartRepositoryAPI) Prepare() {
 	// Exclude the following URI
 	// -/index.yaml
 	// -/api/chartserver/health
-	incomingURI := cra.Ctx.Request.RequestURI
+	incomingURI := cra.Ctx.Request.URL.Path
 	if incomingURI == rootUploadingEndpoint {
 		// Forward to the default repository
 		cra.namespace = defaultRepo
@@ -75,18 +80,19 @@ func (cra *ChartRepositoryAPI) Prepare() {
 		}
 	}
 
-	// Rewrite URL path
-	cra.rewriteURLPath(cra.Ctx.Request)
+	// Init label manager
+	cra.labelManager = &label.BaseManager{}
 }
 
-// GetHealthStatus handles GET /api/chartserver/health
+// GetHealthStatus handles GET /api/chartrepo/health
 func (cra *ChartRepositoryAPI) GetHealthStatus() {
 	// Check access
 	if !cra.requireAccess(cra.namespace, accessLevelSystem) {
 		return
 	}
 
-	chartController.GetBaseHandler().GetHealthStatus(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	// Directly proxy to the backend
+	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
 // GetIndexByRepo handles GET /:repo/index.yaml
@@ -96,7 +102,8 @@ func (cra *ChartRepositoryAPI) GetIndexByRepo() {
 		return
 	}
 
-	chartController.GetRepositoryHandler().GetIndexFileWithNS(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	// Directly proxy to the backend
+	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
 // GetIndex handles GET /index.yaml
@@ -106,7 +113,24 @@ func (cra *ChartRepositoryAPI) GetIndex() {
 		return
 	}
 
-	chartController.GetRepositoryHandler().GetIndexFile(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	results, err := cra.ProjectMgr.List(nil)
+	if err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+
+	namespaces := []string{}
+	for _, r := range results.Projects {
+		namespaces = append(namespaces, r.Name)
+	}
+
+	indexFile, err := chartController.GetIndexFile(namespaces)
+	if err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+
+	cra.WriteYamlData(indexFile)
 }
 
 // DownloadChart handles GET /:repo/charts/:filename
@@ -116,7 +140,8 @@ func (cra *ChartRepositoryAPI) DownloadChart() {
 		return
 	}
 
-	chartController.GetRepositoryHandler().DownloadChartObject(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	// Directly proxy to the backend
+	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
 // ListCharts handles GET /api/:repo/charts
@@ -126,7 +151,13 @@ func (cra *ChartRepositoryAPI) ListCharts() {
 		return
 	}
 
-	chartController.GetManipulationHandler().ListCharts(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	charts, err := chartController.ListCharts(cra.namespace)
+	if err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+
+	cra.WriteJSONData(charts)
 }
 
 // ListChartVersions GET /api/:repo/charts/:name
@@ -136,7 +167,25 @@ func (cra *ChartRepositoryAPI) ListChartVersions() {
 		return
 	}
 
-	chartController.GetManipulationHandler().GetChart(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	chartName := cra.GetStringFromPath(nameParam)
+
+	versions, err := chartController.GetChart(cra.namespace, chartName)
+	if err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+
+	// Append labels
+	for _, chartVersion := range versions {
+		labels, err := cra.labelManager.GetLabelsOfResource(common.ResourceTypeChart, chartFullName(cra.namespace, chartVersion.Name, chartVersion.Version))
+		if err != nil {
+			cra.SendInternalServerError(err)
+			return
+		}
+		chartVersion.Labels = labels
+	}
+
+	cra.WriteJSONData(versions)
 }
 
 // GetChartVersion handles GET /api/:repo/charts/:name/:version
@@ -146,11 +195,25 @@ func (cra *ChartRepositoryAPI) GetChartVersion() {
 		return
 	}
 
-	// Let's pass the namespace via the context of request
-	req := cra.Ctx.Request
-	*req = *(req.WithContext(context.WithValue(req.Context(), chartserver.NamespaceContextKey, cra.namespace)))
+	// Get other parameters
+	chartName := cra.GetStringFromPath(nameParam)
+	version := cra.GetStringFromPath(versionParam)
 
-	chartController.GetManipulationHandler().GetChartVersion(cra.Ctx.ResponseWriter, req)
+	chartVersion, err := chartController.GetChartVersionDetails(cra.namespace, chartName, version)
+	if err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+
+	// Append labels
+	labels, err := cra.labelManager.GetLabelsOfResource(common.ResourceTypeChart, chartFullName(cra.namespace, chartName, version))
+	if err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+	chartVersion.Labels = labels
+
+	cra.WriteJSONData(chartVersion)
 }
 
 // DeleteChartVersion handles DELETE /api/:repo/charts/:name/:version
@@ -160,7 +223,20 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 		return
 	}
 
-	chartController.GetManipulationHandler().DeleteChartVersion(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	// Get other parameters
+	chartName := cra.GetStringFromPath(nameParam)
+	version := cra.GetStringFromPath(versionParam)
+
+	// Try to remove labels from deleting chart if exitsing
+	if err := cra.removeLabelsFromChart(chartName, version); err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+
+	if err := chartController.DeleteChartVersion(cra.namespace, chartName, version); err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
 }
 
 // UploadChartVersion handles POST /api/:repo/charts
@@ -184,12 +260,13 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 				formField: formFiledNameForProv,
 			})
 		if err := cra.rewriteFileContent(formFiles, cra.Ctx.Request); err != nil {
-			chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
+			cra.SendInternalServerError(err)
 			return
 		}
 	}
 
-	chartController.GetManipulationHandler().UploadChartVersion(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	// Directly proxy to the backend
+	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
 // UploadChartProvFile handles POST /api/:repo/prov
@@ -208,12 +285,13 @@ func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 				mustHave:  true,
 			})
 		if err := cra.rewriteFileContent(formFiles, cra.Ctx.Request); err != nil {
-			chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
+			cra.SendInternalServerError(err)
 			return
 		}
 	}
 
-	chartController.GetManipulationHandler().UploadProvenanceFile(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	// Directly proxy to the backend
+	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
 // DeleteChart deletes all the chart versions of the specified chart.
@@ -226,44 +304,39 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	// Get other parameters from the request
 	chartName := cra.GetStringFromPath(nameParam)
 
-	if err := chartController.GetUtilityHandler().DeleteChart(cra.namespace, chartName); err != nil {
-		chartserver.WriteInternalError(cra.Ctx.ResponseWriter, err)
+	// Remove labels from all the deleting chart versions under the chart
+	chartVersions, err := chartController.GetChart(cra.namespace, chartName)
+	if err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+
+	for _, chartVersion := range chartVersions {
+		if err := cra.removeLabelsFromChart(chartName, chartVersion.GetVersion()); err != nil {
+			cra.SendInternalServerError(err)
+			return
+		}
+	}
+
+	if err := chartController.DeleteChart(cra.namespace, chartName); err != nil {
+		cra.SendInternalServerError(err)
+		return
 	}
 }
 
-// Rewrite the incoming URL with the right backend URL pattern
-// Remove 'chartrepo' from the endpoints of manipulation API
-// Remove 'chartrepo' from the endpoints of repository services
-func (cra *ChartRepositoryAPI) rewriteURLPath(req *http.Request) {
-	incomingURLPath := req.RequestURI
-
-	defer func() {
-		hlog.Debugf("Incoming URL '%s' is rewritten to '%s'", incomingURLPath, req.URL.String())
-	}()
-
-	// Health check endpoint
-	if incomingURLPath == chartRepoHealthEndpoint {
-		req.URL.Path = "/health"
-		return
+func (cra *ChartRepositoryAPI) removeLabelsFromChart(chartName, version string) error {
+	// Try to remove labels from deleting chart if exitsing
+	resourceID := chartFullName(cra.namespace, chartName, version)
+	labels, err := cra.labelManager.GetLabelsOfResource(common.ResourceTypeChart, resourceID)
+	if err == nil && len(labels) > 0 {
+		for _, l := range labels {
+			if err := cra.labelManager.RemoveLabelFromResource(common.ResourceTypeChart, resourceID, l.ID); err != nil {
+				return err
+			}
+		}
 	}
 
-	// Root uploading endpoint
-	if incomingURLPath == rootUploadingEndpoint {
-		req.URL.Path = strings.Replace(incomingURLPath, "chartrepo", defaultRepo, 1)
-		return
-	}
-
-	// Repository endpoints
-	if strings.HasPrefix(incomingURLPath, "/chartrepo") {
-		req.URL.Path = strings.TrimPrefix(incomingURLPath, "/chartrepo")
-		return
-	}
-
-	// API endpoints
-	if strings.HasPrefix(incomingURLPath, "/api/chartrepo") {
-		req.URL.Path = strings.Replace(incomingURLPath, "/chartrepo", "", 1)
-		return
-	}
+	return nil
 }
 
 // Check if there exists a valid namespace
@@ -272,20 +345,20 @@ func (cra *ChartRepositoryAPI) rewriteURLPath(req *http.Request) {
 func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 	// Actually, never should be like this
 	if len(namespace) == 0 {
-		cra.HandleBadRequest(":repo should be in the request URL")
+		cra.SendBadRequestError(errors.New(":repo should be in the request URL"))
 		return false
 	}
 
 	existsing, err := cra.ProjectMgr.Exists(namespace)
 	if err != nil {
 		// Check failed with error
-		cra.renderError(http.StatusInternalServerError, fmt.Sprintf("failed to check existence of namespace %s with error: %s", namespace, err.Error()))
+		cra.SendInternalServerError(fmt.Errorf("failed to check existence of namespace %s with error: %s", namespace, err.Error()))
 		return false
 	}
 
 	// Not existing
 	if !existsing {
-		cra.renderError(http.StatusBadRequest, fmt.Sprintf("namespace %s is not existing", namespace))
+		cra.SendBadRequestError(fmt.Errorf("namespace %s is not existing", namespace))
 		return false
 	}
 
@@ -328,7 +401,7 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 		}
 	default:
 		// access rejected for invalid scope
-		cra.renderError(http.StatusForbidden, "unrecognized access scope")
+		cra.SendForbiddenError(errors.New("unrecognized access scope"))
 		return false
 	}
 
@@ -336,21 +409,16 @@ func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint)
 	if err != nil {
 		// Unauthenticated, return 401
 		if !cra.SecurityCtx.IsAuthenticated() {
-			cra.renderError(http.StatusUnauthorized, "Unauthorized")
+			cra.SendUnAuthorizedError(errors.New("Unauthorized"))
 			return false
 		}
 
 		// Authenticated, return 403
-		cra.renderError(http.StatusForbidden, err.Error())
+		cra.SendForbiddenError(err)
 		return false
 	}
 
 	return true
-}
-
-// write error message with unified format
-func (cra *ChartRepositoryAPI) renderError(code int, text string) {
-	chartserver.WriteError(cra.Ctx.ResponseWriter, code, errors.New(text))
 }
 
 // formFile is used to represent the uploaded files in the form
@@ -441,4 +509,9 @@ func initializeChartController() (*chartserver.Controller, error) {
 // Check if the request content type is "multipart/form-data"
 func isMultipartFormData(req *http.Request) bool {
 	return strings.Contains(req.Header.Get(headerContentType), contentTypeMultipart)
+}
+
+// Return the chart full name
+func chartFullName(namespace, chartName, version string) string {
+	return fmt.Sprintf("%s/%s:%s", namespace, chartName, version)
 }

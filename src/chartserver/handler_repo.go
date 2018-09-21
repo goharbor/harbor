@@ -1,17 +1,12 @@
 package chartserver
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
 	"path"
 	"sync"
 	"time"
 
 	"github.com/ghodss/yaml"
-	"github.com/goharbor/harbor/src/core/filter"
-	"k8s.io/helm/cmd/helm/search"
 	helm_repo "k8s.io/helm/pkg/repo"
 
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
@@ -24,124 +19,33 @@ const (
 	searchMaxScore = 25
 )
 
-// RepositoryHandler defines all the handlers to handle the requests related with chart repository
-// e.g: index.yaml and downloading chart objects
-type RepositoryHandler struct {
-	// Proxy used to to transfer the traffic of requests
-	// It's mainly used to talk to the backend chart server
-	trafficProxy *ProxyEngine
-
-	// HTTP client used to call the realted APIs of the backend chart repositories
-	apiClient *ChartClient
-
-	// Point to the url of the backend server
-	backendServerAddress *url.URL
-}
-
 // Result returned by worker
 type processedResult struct {
 	namespace       string
 	indexFileOfRepo *helm_repo.IndexFile
 }
 
-// GetIndexFileWithNS will read the index.yaml data under the specified namespace
-func (rh *RepositoryHandler) GetIndexFileWithNS(w http.ResponseWriter, req *http.Request) {
-	rh.trafficProxy.ServeHTTP(w, req)
-}
-
 // GetIndexFile will read the index.yaml under all namespaces and merge them as a single one
 // Please be aware that, to support this function, the backend chart repository server should
 // enable multi-tenancies
-func (rh *RepositoryHandler) GetIndexFile(w http.ResponseWriter, req *http.Request) {
-	// Get project manager references
-	projectMgr, err := filter.GetProjectManager(req)
-	if err != nil {
-		WriteInternalError(w, err)
-		return
+//
+// See @ServiceHandler.GetIndexFile
+func (c *Controller) GetIndexFile(namespaces []string) (*helm_repo.IndexFile, error) {
+	if namespaces == nil || len(namespaces) == 0 {
+		return emptyIndexFile(), nil
 	}
 
-	// Get all the projects
-	results, err := projectMgr.List(nil)
-	if err != nil {
-		WriteInternalError(w, err)
-		return
-	}
-
-	// If no projects existing, return empty index.yaml content immediately
-	if results.Total == 0 {
-		w.Write(emptyIndexFile())
-		return
-	}
-
-	namespaces := []string{}
-	for _, p := range results.Projects {
-		namespaces = append(namespaces, p.Name)
-	}
-
-	mergedIndexFile, err := rh.getIndexYaml(namespaces)
-	if err != nil {
-		WriteInternalError(w, err)
-		return
-	}
-
-	bytes, err := yaml.Marshal(mergedIndexFile)
-	if err != nil {
-		WriteInternalError(w, err)
-		return
-	}
-
-	w.Write(bytes)
-}
-
-// DownloadChartObject will download the stored chart object to the client
-// e.g: helm install
-func (rh *RepositoryHandler) DownloadChartObject(w http.ResponseWriter, req *http.Request) {
-	rh.trafficProxy.ServeHTTP(w, req)
-}
-
-// SearchChart search charts in the specified namespaces with the keyword q.
-// RegExp mode is enabled as default.
-// For each chart, only the latest version will shown in the result list if matched to avoid duplicated entries.
-// Keep consistent with `helm search` command.
-func (rh *RepositoryHandler) SearchChart(q string, namespaces []string) ([]*search.Result, error) {
-	if len(q) == 0 || len(namespaces) == 0 {
-		// Return empty list
-		return []*search.Result{}, nil
-	}
-
-	// Get the merged index yaml file of the namespaces
-	ind, err := rh.getIndexYaml(namespaces)
-	if err != nil {
-		return nil, err
-	}
-
-	// Build the search index
-	index := search.NewIndex()
-	// As the repo name is already merged into the index yaml, we use empty repo name.
-	// Set 'All' to false to return only one version for each chart.
-	index.AddRepo("", ind, false)
-
-	// Search
-	// RegExp is enabled
-	results, err := index.Search(q, searchMaxScore, true)
-	if err != nil {
-		return nil, err
-	}
-
-	// Sort results.
-	search.SortScore(results)
-
-	return results, nil
+	return c.getIndexYaml(namespaces)
 }
 
 // getIndexYaml will get the index yaml files for all the namespaces and merge them
 // as one unified index yaml file.
-func (rh *RepositoryHandler) getIndexYaml(namespaces []string) (*helm_repo.IndexFile, error) {
+func (c *Controller) getIndexYaml(namespaces []string) (*helm_repo.IndexFile, error) {
 	// The final merged index file
 	mergedIndexFile := &helm_repo.IndexFile{
 		APIVersion: "v1",
 		Entries:    make(map[string]helm_repo.ChartVersions),
-		Generated:  time.Now(),
+		Generated:  time.Now().Round(time.Second),
 		PublicKeys: []string{},
 	}
 
@@ -175,7 +79,7 @@ func (rh *RepositoryHandler) getIndexYaml(namespaces []string) (*helm_repo.Index
 		}()
 
 		for res := range resultChan {
-			rh.mergeIndexFile(res.namespace, mergedIndexFile, res.indexFileOfRepo)
+			c.mergeIndexFile(res.namespace, mergedIndexFile, res.indexFileOfRepo)
 		}
 	}()
 
@@ -203,7 +107,7 @@ LOOP:
 				workerPool <- struct{}{}
 			}()
 
-			indexFile, err := rh.getIndexYamlWithNS(ns)
+			indexFile, err := c.getIndexYamlWithNS(ns)
 			if err != nil {
 				if len(errorChan) == 0 {
 					// Only need one error as failure signal
@@ -254,13 +158,13 @@ LOOP:
 }
 
 // Get the index yaml file under the specified namespace from the backend server
-func (rh *RepositoryHandler) getIndexYamlWithNS(namespace string) (*helm_repo.IndexFile, error) {
+func (c *Controller) getIndexYamlWithNS(namespace string) (*helm_repo.IndexFile, error) {
 	// Join url path
 	url := path.Join(namespace, "index.yaml")
-	url = fmt.Sprintf("%s/%s", rh.backendServerAddress.String(), url)
+	url = fmt.Sprintf("%s/%s", c.backendServerAddress.String(), url)
 	hlog.Debugf("Getting index.yaml from '%s'", url)
 
-	content, err := rh.apiClient.GetContent(url)
+	content, err := c.apiClient.GetContent(url)
 	if err != nil {
 		return nil, err
 	}
@@ -276,7 +180,7 @@ func (rh *RepositoryHandler) getIndexYamlWithNS(namespace string) (*helm_repo.In
 
 // Merge the content of mergingIndexFile to the baseIndex
 // The chart url should be without --chart-url prefix
-func (rh *RepositoryHandler) mergeIndexFile(namespace string,
+func (c *Controller) mergeIndexFile(namespace string,
 	baseIndex *helm_repo.IndexFile,
 	mergingIndexFile *helm_repo.IndexFile) {
 	// Append entries
@@ -304,12 +208,9 @@ func (rh *RepositoryHandler) mergeIndexFile(namespace string,
 }
 
 // Generate empty index file
-func emptyIndexFile() []byte {
+func emptyIndexFile() *helm_repo.IndexFile {
 	emptyIndexFile := &helm_repo.IndexFile{}
-	emptyIndexFile.Generated = time.Now()
+	emptyIndexFile.Generated = time.Now().Round(time.Second)
 
-	// Ignore the error
-	rawData, _ := json.Marshal(emptyIndexFile)
-
-	return rawData
+	return emptyIndexFile
 }

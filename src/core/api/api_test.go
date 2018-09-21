@@ -19,11 +19,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 
 	"github.com/astaxie/beego"
@@ -32,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao/project"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
+	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -291,4 +294,26 @@ func clean() {
 			fmt.Printf("failed to clean up user %d: %v \n", id, err)
 		}
 	}
+}
+
+// Provides a mock chart controller for deletable test cases
+func mockChartController() (*httptest.Server, *chartserver.Controller, error) {
+	mockServer := httptest.NewServer(htesting.MockChartRepoHandler)
+
+	var oldController, newController *chartserver.Controller
+	url, err := url.Parse(mockServer.URL)
+	if err == nil {
+		newController, err = chartserver.NewController(url)
+	}
+
+	if err != nil {
+		mockServer.Close()
+		return nil, nil, err
+	}
+
+	// Override current controller and keep the old one for restoring
+	oldController = chartController
+	chartController = newController
+
+	return mockServer, oldController, nil
 }
