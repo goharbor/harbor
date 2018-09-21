@@ -11,7 +11,7 @@ export class GcViewModelFactory {
             let updateTime = new Date(job.update_time);
             gcViewModels.push({
                 id: job.id,
-                type: job.schedule.type,
+                type: job.schedule ? job.schedule.type : null,
                 status: job.job_status,
                 createTime: createTime,
                 updateTime: updateTime,

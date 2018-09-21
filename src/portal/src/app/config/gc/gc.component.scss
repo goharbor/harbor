@@ -2,8 +2,17 @@
     display: flex;
     align-items: center;
     margin:20px 0;
+}
+
+.setting-wrapper {
     > * {
         margin-right:35px;
+    }
+}
+
+.normal-wrapper {
+    > * {
+        margin-right: 90px;
     }
 }
 

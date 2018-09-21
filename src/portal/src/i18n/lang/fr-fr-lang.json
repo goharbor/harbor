@@ -778,6 +778,8 @@
     "DETAILS":"Details",
     "PENDING":"Pending",
     "FINISHED":"Finished",
+    "STOPPED":"Stopped",
+    "ERROR":"Error",
     "SCHEDULE": {
         "NONE": "None",
         "DAILY": "Daily",
@@ -796,7 +798,6 @@
         "LOG_DETAIL":"Log Details",
         "MSG_SUCCESS":"Garbage Collection Successful",
         "MSG_SCHEDULE_SET":"Garbage Collection schedule has been set",
-        "MSG_SCHEDULE_RESET":"Garbage Collection schedule has been reset",
-        "MSG_ERROR":"Can not do Garbase Collection too often,please try again later."
+        "MSG_SCHEDULE_RESET":"Garbage Collection schedule has been reset"
     }
 }
