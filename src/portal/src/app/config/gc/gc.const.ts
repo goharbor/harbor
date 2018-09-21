@@ -14,6 +14,8 @@ export const SCHEDULE_TYPE = {
     WEEKLY: "Weekly"
 };
 
+export const ONE_MINITUE = 60000;
+
 
 
 

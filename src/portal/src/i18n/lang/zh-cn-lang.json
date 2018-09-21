@@ -814,6 +814,8 @@
     "DETAILS":"详情",
     "PENDING":"未开始",
     "FINISHED":"已完成",
+    "STOPPED":"已停止",
+    "ERROR":"错误",
     "SCHEDULE": {
         "NONE": "无",
         "DAILY": "每天",
@@ -832,7 +834,6 @@
         "LOG_DETAIL":"日志详情",
         "MSG_SUCCESS":"垃圾回收成功",
         "MSG_SCHEDULE_SET":"垃圾回收定时任务设置成功",
-        "MSG_SCHEDULE_RESET":"垃圾回收定时任务已被重置",
-        "MSG_ERROR":"您的垃圾回收请求提交过于频繁，请稍候重试"
+        "MSG_SCHEDULE_RESET":"垃圾回收定时任务已被重置"
     }
 }

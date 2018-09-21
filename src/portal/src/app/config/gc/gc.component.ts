@@ -3,9 +3,10 @@ import { TranslateService } from '@ngx-translate/core';
 import { GcJobViewModel, WeekDay } from "./gcLog";
 import { GcViewModelFactory } from "./gc.viewmodel.factory";
 import { GcRepoService } from "./gc.service";
-import { WEEKDAYS, SCHEDULE_TYPE } from './gc.const';
+import { WEEKDAYS, SCHEDULE_TYPE, ONE_MINITUE} from './gc.const';
 import { GcUtility } from './gc.utility';
 import { ErrorHandler } from '@harbor/ui';
+
 @Component({
   selector: 'gc-config',
   templateUrl: './gc.component.html',
@@ -23,6 +24,7 @@ export class GcComponent implements OnInit {
   SCHEDULE_TYPE = SCHEDULE_TYPE;
   weekDay: WeekDay = WEEKDAYS[0];
   dailyTime: string;
+  disableGC: boolean = false;
 
   constructor(private gcRepoService: GcRepoService,
     private gcViewModelFactory: GcViewModelFactory,
@@ -80,6 +82,9 @@ export class GcComponent implements OnInit {
   }
 
   gcNow(): void {
+    this.disableGC = true;
+    setTimeout(() => {this.enableGc(); }, ONE_MINITUE);
+
     this.gcRepoService.manualGc().subscribe(response => {
       this.translate.get('GC.MSG_SUCCESS').subscribe((res: string) => {
         this.errorHandler.info(res);
@@ -88,6 +93,10 @@ export class GcComponent implements OnInit {
     }, error => {
       this.errorHandler.error(error);
     });
+  }
+
+  private enableGc () {
+    this.disableGC = false;
   }
 
   scheduleGc(): void {
@@ -103,9 +112,7 @@ export class GcComponent implements OnInit {
         this.isEditMode = false;
         this.getJobs();
       }, error => {
-        this.translate.get('GC.MSG_ERROR').subscribe((res: string) => {
-          this.errorHandler.info(res);
-        });
+        this.errorHandler.error(error);
       });
     } else {
       this.gcRepoService.postScheduleGc(this.scheduleType, offTime, this.weekDay.value).subscribe(response => {
@@ -125,9 +132,7 @@ export class GcComponent implements OnInit {
         this.isEditMode = false;
         this.getJobs();
       }, error => {
-        this.translate.get('GC.MSG_ERROR').subscribe((res: string) => {
-          this.errorHandler.info(res);
-        });
+        this.errorHandler.error(error);
       });
     }
   }
