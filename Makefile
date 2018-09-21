@@ -221,14 +221,14 @@ DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
 
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
-				  $(HARBORPKG)/prepare $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/open_source_license 
 
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
-				  $(HARBORPKG)/LICENSE $(HARBORPKG)/NOTICE \
+				  $(HARBORPKG)/LICENSE \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
 				  $(HARBORPKG)/harbor.cfg \
 				  $(HARBORPKG)/open_source_license
@@ -345,7 +345,6 @@ package_online: modify_composefile
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp open_source_license $(HARBORPKG)/open_source_license
-	@cp NOTICE $(HARBORPKG)/NOTICE
 	
 	@$(TARCMD) $(PACKAGE_ONLINE_PARA)
 	@rm -rf $(HARBORPKG)
@@ -356,7 +355,6 @@ package_offline: compile version build modify_sourcefiles modify_composefile
 	@cp -r make $(HARBORPKG)
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp open_source_license $(HARBORPKG)/open_source_license
-	@cp NOTICE $(HARBORPKG)/NOTICE
 
 	@echo "saving harbor docker image"
 	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
