@@ -3,6 +3,8 @@ package job
 const (
 	// ImageScanJob is name of scan job it will be used as key to register to job service.
 	ImageScanJob = "IMAGE_SCAN"
+	// ImageScanAllJob is the name of "scanall" job in job service
+	ImageScanAllJob = "IMAGE_SCAN_ALL"
 	// ImageTransfer : the name of image transfer job in job service
 	ImageTransfer = "IMAGE_TRANSFER"
 	// ImageDelete : the name of image delete job in job service
