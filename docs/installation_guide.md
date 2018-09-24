@@ -362,8 +362,7 @@ hostname = 192.168.0.2:8888
 
 4.Re-deploy Harbor refering to previous section "Managing Harbor's lifecycle".
 
-## Configuring Harbor DB when changing default values
-
+### Configuring Harbor DB when changing default values
 By default, your harbor.cfg is using the default username and password in order to let clair-db and adminserver connection throught the postgresql container.
 If you change the values as it's adviced on the **Required Parameter** section and **Optionnal Parameters** you have to keep in mind that you would have to create theses users manualy by connecting using the postgresql client in order to connect yourself as root to the postgesql(db) container.
 
