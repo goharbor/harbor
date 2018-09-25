@@ -2,7 +2,7 @@
 #
 # Targets:
 #
-# all:			prepare env, compile binarys, build images and install images
+# all:			prepare env, compile binaries, build images and install images
 # prepare: 		prepare env
 # compile: 		compile adminserver, ui and jobservice code
 #
@@ -258,7 +258,7 @@ ifeq ($(CHARTFLAG), true)
 	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
 endif
 
-version:
+ui_version:
 	@printf $(UIVERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
 
 check_environment:
@@ -304,27 +304,27 @@ build:
 modify_composefile: modify_composefile_notary modify_composefile_clair modify_composefile_chartmuseum
 	@echo "preparing docker-compose file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__postgresql_version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__reg_version__/$(REGISTRYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i 's/__redis_version__/$(REDISVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i -e 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i -e 's/__postgresql_version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i -e 's/__reg_version__/$(REGISTRYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i -e 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+	@$(SEDCMD) -i -e 's/__redis_version__/$(REDISVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 modify_composefile_notary:
 	@echo "preparing docker-compose notary file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
-	@$(SEDCMD) -i 's/__notary_version__/$(NOTARYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
+	@$(SEDCMD) -i -e 's/__notary_version__/$(NOTARYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 
 modify_composefile_clair:
 	@echo "preparing docker-compose clair file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
-	@$(SEDCMD) -i 's/__postgresql_version__/$(CLAIRDBVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
-	@$(SEDCMD) -i 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
+	@$(SEDCMD) -i -e 's/__postgresql_version__/$(CLAIRDBVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
+	@$(SEDCMD) -i -e 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
 
 modify_composefile_chartmuseum:
 	@echo "preparing docker-compose chartmuseum file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
-	@$(SEDCMD) -i 's/__chartmuseum_version__/$(CHARTMUSEUMVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
+	@$(SEDCMD) -i -e 's/__chartmuseum_version__/$(CHARTMUSEUMVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
 
 modify_sourcefiles:
 	@echo "change mode of source files."
@@ -334,13 +334,13 @@ modify_sourcefiles:
 	@chmod 600 $(MAKEPATH)/common/templates/core/private_key.pem
 	@chmod 600 $(MAKEPATH)/common/templates/registry/root.crt
 
-install: compile version build modify_sourcefiles prepare modify_composefile start
+install: compile ui_version build modify_sourcefiles prepare modify_composefile start
 
 package_online: modify_composefile
 	@echo "packing online package ..."
 	@cp -r make $(HARBORPKG)
 	@if [ -n "$(REGISTRYSERVER)" ] ; then \
-		$(SEDCMD) -i 's/image\: goharbor/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
+		$(SEDCMD) -i -e 's/image\: goharbor/image\: $(REGISTRYSERVER)\/$(REGISTRYPROJECTNAME)/' \
 		$(HARBORPKG)/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
@@ -351,7 +351,7 @@ package_online: modify_composefile
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 	
-package_offline: compile version build modify_sourcefiles modify_composefile
+package_offline: compile ui_version build modify_sourcefiles modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	@cp LICENSE $(HARBORPKG)/LICENSE
@@ -481,8 +481,9 @@ cleanimage:
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_LOG):$(VERSIONTAG)
 
 cleandockercomposefile:
-	@echo "cleaning $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml"
-	@if [ -f $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml ] ; then rm $(DOCKERCOMPOSEFILEPATH)/docker-compose.yml ; fi
+	@echo "cleaning docker-compose files in $(DOCKERCOMPOSEFILEPATH)"
+	@find $(DOCKERCOMPOSEFILEPATH) -maxdepth 1 -name "docker-compose*.yml" -exec rm -f {} \;
+	@find $(DOCKERCOMPOSEFILEPATH) -maxdepth 1 -name "docker-compose*.yml-e" -exec rm -f {} \;
 
 cleanversiontag:
 	@echo "cleaning version TAG"

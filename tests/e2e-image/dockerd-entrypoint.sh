@@ -17,7 +17,7 @@
 set -e
 
 # Only give socker support by default, use bash arguments to add dockerd parameters
-# Use unix:///var/run/docker-local.sock to avoid collison with /var/run/docker.sock
+# Use unix:///var/run/docker-local.sock to avoid collision with /var/run/docker.sock
 
 # no arguments passed
 # or first arg is `-f` or `--some-option`
