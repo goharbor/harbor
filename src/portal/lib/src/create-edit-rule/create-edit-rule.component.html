@@ -88,26 +88,24 @@
               </select>
             </div>
           </div>
-          <div>
             <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
             <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
-          </div>
         </div>
 
         <!--Trigger-->
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
           <div formGroupName="trigger">
+            <!--on trigger-->
+            <div class="select floatSetPar">
+              <select id="ruleTrigger" formControlName="kind" (change)="selectTrigger($event)">
+                <option value="Manual">{{'REPLICATION.MANUAL' | translate}}</option>
+                <option value="Immediate">{{'REPLICATION.IMMEDIATE' | translate}}</option>
+                <option value="Scheduled">{{'REPLICATION.SCHEDULE' | translate}}</option>
+              </select>
+            </div>
             <!--on push-->
             <div formGroupName="schedule_param">
-              <!--on trigger-->
-              <div class="select floatSetPar">
-                <select id="ruleTrigger" formControlName="kind" (change)="selectTrigger($event)">
-                  <option value="Manual">{{'REPLICATION.MANUAL' | translate}}</option>
-                  <option value="Immediate">{{'REPLICATION.IMMEDIATE' | translate}}</option>
-                  <option value="Scheduled">{{'REPLICATION.SCHEDULE' | translate}}</option>
-                </select>
-              </div>
               <div class="select floatSet" [hidden]="!isScheduleOpt">
                 <select name="scheduleType" formControlName="type" (change)="selectSchedule($event)">
                   <option value="Daily">{{'REPLICATION.DAILY' | translate}}</option>
