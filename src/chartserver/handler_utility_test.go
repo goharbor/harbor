@@ -4,6 +4,38 @@ import (
 	"testing"
 )
 
+// Test the function GetCountOfCharts
+func TestGetCountOfCharts(t *testing.T) {
+	s, c, err := createMockObjects()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+
+	count, err := c.GetCountOfCharts([]string{})
+	if err != nil {
+		t.Fatalf("expect nil error but got %s", err)
+	}
+	if count != 0 {
+		t.Fatalf("expect 0 but got %d", count)
+	}
+
+	namespaces := []string{"repo1", "repo2"}
+	count, err = c.GetCountOfCharts(namespaces)
+	if err != nil {
+		t.Fatalf("expect nil error but got %s", err)
+	}
+
+	if count != 5 {
+		t.Fatalf("expect 5 but got %d", count)
+	}
+
+	_, err = c.GetCountOfCharts([]string{"not-existing-ns"})
+	if err == nil {
+		t.Fatal("expect non-nil error but got nil one")
+	}
+}
+
 // Test the function DeleteChart
 func TestDeleteChart(t *testing.T) {
 	s, c, err := createMockObjects()

@@ -418,6 +418,15 @@ func (p *ProjectAPI) populateProperties(project *models.Project) {
 	}
 
 	project.RepoCount = total
+
+	// Populate chart count property
+	count, err := chartController.GetCountOfCharts([]string{project.Name})
+	if err != nil {
+		log.Errorf("Failed to get total of charts under project %s: %v", project.Name, err)
+		p.CustomAbort(http.StatusInternalServerError, "")
+	}
+
+	project.ChartCount = count
 }
 
 // Put ...

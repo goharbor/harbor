@@ -3031,6 +3031,9 @@ definitions:
       repo_count:
         type: integer
         description: The number of the repositories under this project.
+      chart_count:
+        type: integer
+        description: The total number of charts under this project.
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'

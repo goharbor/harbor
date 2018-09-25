@@ -15,6 +15,21 @@ const (
 	maxDeletionThreads = 10
 )
 
+// GetCountOfCharts calculates and returns the total count of charts under the specified namespaces.
+// See @ServiceHandler.GetCountOfCharts
+func (c *Controller) GetCountOfCharts(namespaces []string) (uint64, error) {
+	if namespaces == nil || len(namespaces) == 0 {
+		return 0, nil // Directly return 0 instead of non-nil error
+	}
+
+	indexFile, err := c.getIndexYaml(namespaces)
+	if err != nil {
+		return 0, err
+	}
+
+	return (uint64)(len(indexFile.Entries)), nil
+}
+
 // DeleteChart deletes all the chart versions of the specified chart under the namespace.
 // See @ServiceHandler.DeleteChart
 func (c *Controller) DeleteChart(namespace, chartName string) error {

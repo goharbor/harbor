@@ -34,6 +34,7 @@ type Project struct {
 	Togglable    bool              `orm:"-" json:"togglable"`
 	Role         int               `orm:"-" json:"current_user_role_id"`
 	RepoCount    int64             `orm:"-" json:"repo_count"`
+	ChartCount   uint64            `orm:"-" json:"chart_count"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
 }
 
