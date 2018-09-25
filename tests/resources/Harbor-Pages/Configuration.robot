@@ -246,7 +246,7 @@ Create New Labels
     Sleep  1
     Input Text  xpath=//*[@id="name"]  ${labelname}
     Sleep  1
-    Click Element  xpath=//hbr-create-edit-label//clr-dropdown/button/clr-icon
+    Click Element  xpath=//hbr-create-edit-label//clr-dropdown/clr-icon
     Sleep  1
     Click Element  xpath=//hbr-create-edit-label//clr-dropdown-menu/label[1]
     Sleep  1
