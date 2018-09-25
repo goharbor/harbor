@@ -35,6 +35,11 @@ var MockChartRepoHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 			w.Write([]byte(repo2IndexYaml))
 			return
 		}
+	case "/not-existing-ns/index.yaml":
+		if r.Method == http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 	case "/repo1/charts/harbor-0.2.0.tgz",
 		"/library/charts/harbor-0.2.0.tgz":
 		if r.Method == http.MethodGet {

@@ -77,6 +77,14 @@ type ServiceHandler interface {
 	// If succeed, a nil error will be returned;
 	// otherwise, a non-nil error will be got.
 	DeleteChart(namespace, chartName string) error
+
+	// GetCountOfCharts calculates and returns the total count of charts under the specified namespaces.
+	//
+	// namespaces []string : the namespaces to count charts
+	//
+	// If succeed, a unsigned integer with nil error will be returned;
+	// otherwise, a non-nil error will be got.
+	GetCountOfCharts(namespaces []string) (uint64, error)
 }
 
 // ProxyTrafficHandler defines the handler methods to handle the proxy traffic.

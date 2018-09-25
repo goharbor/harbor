@@ -101,6 +101,15 @@ func TestListProjects(t *testing.T) {
 	apiTest := newHarborAPI()
 	var result []apilib.Project
 
+	cMockServer, oldCtrl, err := mockChartController()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		cMockServer.Close()
+		chartController = oldCtrl
+	}()
+
 	// ----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("case 1: respose code:200")
 	httpStatusCode, result, err := apiTest.ProjectsGet(
@@ -182,6 +191,15 @@ func TestProGetByID(t *testing.T) {
 	apiTest := newHarborAPI()
 	var result apilib.Project
 	projectID := strconv.Itoa(addPID)
+
+	cMockServer, oldCtrl, err := mockChartController()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		cMockServer.Close()
+		chartController = oldCtrl
+	}()
 
 	// ----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("case 1: respose code:200")
