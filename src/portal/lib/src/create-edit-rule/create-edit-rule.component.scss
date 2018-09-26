@@ -28,11 +28,9 @@ h4 {
 }
 
 .alertLabel {
-    display: block;
     margin-top: 2px;
     line-height: 1em;
     font-size: 12px;
-    margin-left: 2px !important;
 }
 
 .inputWidth {
@@ -160,6 +158,7 @@ h4 {
     border-bottom: 1px solid blue;
     line-height: 14px;
     cursor: pointer;
+    margin-left: 12px;
 }
 
 .arrowSet{
