@@ -5,8 +5,6 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
-
-	"github.com/goharbor/harbor/src/common/scheduler"
 )
 
 var statefulData int32
@@ -181,47 +179,4 @@ func TestConcurrentPublish(t *testing.T) {
 
 	// Clear stateful data.
 	atomic.StoreInt32(&statefulData, 0)
-}
-
-func TestConcurrentPublishWithScanPolicyHandler(t *testing.T) {
-	scheduler.DefaultScheduler.Start()
-	if !scheduler.DefaultScheduler.IsRunning() {
-		t.Fatal("Policy scheduler is not started")
-	}
-
-	count := len(notificationWatcher.handlers)
-	if err := Subscribe("testing_topic", &ScanPolicyNotificationHandler{}); err != nil {
-		t.Fatal(err.Error())
-	}
-	if len(notificationWatcher.handlers) != (count + 1) {
-		t.Fatalf("Handler is not registered")
-	}
-
-	utcTime := time.Now().UTC().Unix()
-	notification := ScanPolicyNotification{"daily", utcTime + 3600}
-	for i := 1; i <= 10; i++ {
-		notification.DailyTime += (int64)(i)
-		if err := Publish("testing_topic", notification); err != nil {
-			t.Fatalf("index=%d, error=%s", i, err.Error())
-		}
-	}
-
-	// Wating for everything is ready.
-	<-time.After(2 * time.Second)
-
-	if err := UnSubscribe("testing_topic", ""); err != nil {
-		t.Fatal(err.Error())
-	}
-
-	if len(notificationWatcher.handlers) != count {
-		t.Fatal("Handler is not unregistered")
-	}
-
-	scheduler.DefaultScheduler.Stop()
-	// Wating for everything is ready.
-	<-time.After(1 * time.Second)
-	if scheduler.DefaultScheduler.IsRunning() {
-		t.Fatal("Policy scheduler is not stopped")
-	}
-
 }

@@ -14,8 +14,18 @@
 package utils
 
 import (
+	"os"
 	"testing"
+
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 func TestMain(m *testing.M) {
+	err := config.Init()
+	if err != nil {
+		panic(err)
+	}
+	rc := m.Run()
+	os.Exit(rc)
+
 }

@@ -1,7 +1,7 @@
 package replication
 
 import (
-	"github.com/goharbor/harbor/src/common/notifier"
+	"github.com/goharbor/harbor/src/core/notifier"
 	"github.com/goharbor/harbor/src/replication/event/notification"
 	"github.com/goharbor/harbor/src/replication/event/topic"
 )

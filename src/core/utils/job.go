@@ -21,7 +21,6 @@ import (
 	jobmodels "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
 
 	"encoding/json"
@@ -34,56 +33,49 @@ var (
 	jobServiceClient job.Client
 )
 
-// ScanAllImages scans all images of Harbor by submiting jobs to jobservice, the whole process will move on if failed to submit any job of a single image.
+// ScanAllImages scans all images of Harbor by submiting a scan all job to jobservice, and the job handler will call API
+// on the "core" service
 func ScanAllImages() error {
-	repos, err := dao.GetRepositories()
-	if err != nil {
-		log.Errorf("Failed to list all repositories, error: %v", err)
-		return err
-	}
-	log.Infof("Scanning all images on Harbor.")
-
-	go scanRepos(repos)
-	return nil
+	_, err := scanAll("")
+	return err
 }
 
-// ScanImagesByProjectID scans all images under a projet, the whole process will move on if failed to submit any job of a single image.
-func ScanImagesByProjectID(id int64) error {
-	repos, err := dao.GetRepositories(&models.RepositoryQuery{
-		ProjectIDs: []int64{id},
+// ScheduleScanAllImages will schedule a scan all job based on the cron string, add append a record in admin job table.
+func ScheduleScanAllImages(cron string) error {
+	_, err := scanAll(cron)
+	return err
+}
+
+func scanAll(cron string, c ...job.Client) (string, error) {
+	var client job.Client
+	if c == nil || len(c) == 0 {
+		client = GetJobServiceClient()
+	} else {
+		client = c[0]
+	}
+	kind := job.JobKindGeneric
+	if len(cron) > 0 {
+		kind = job.JobKindPeriodic
+	}
+	meta := &jobmodels.JobMetadata{
+		JobKind:  kind,
+		IsUnique: true,
+		Cron:     cron,
+	}
+	id, err := dao.AddAdminJob(&models.AdminJob{
+		Name: job.ImageScanAllJob,
+		Kind: kind,
 	})
 	if err != nil {
-		log.Errorf("Failed list repositories in project %d, error: %v", id, err)
-		return err
+		return "", err
 	}
-	log.Infof("Scanning all images in project: %d ", id)
-	go scanRepos(repos)
-	return nil
-}
-
-func scanRepos(repos []*models.RepoRecord) {
-	var repoClient *registry.Repository
-	var err error
-	var tags []string
-	for _, r := range repos {
-		repoClient, err = NewRepositoryClientForUI("harbor-core", r.Name)
-		if err != nil {
-			log.Errorf("Failed to initialize client for repository: %s, error: %v, skip scanning", r.Name, err)
-			continue
-		}
-		tags, err = repoClient.ListTag()
-		if err != nil {
-			log.Errorf("Failed to get tags for repository: %s, error: %v, skip scanning.", r.Name, err)
-			continue
-		}
-		for _, t := range tags {
-			if err = TriggerImageScan(r.Name, t); err != nil {
-				log.Errorf("Failed to scan image with repository: %s, tag: %s, error: %v.", r.Name, t, err)
-			} else {
-				log.Debugf("Triggered scan for image with repository: %s, tag: %s", r.Name, t)
-			}
-		}
+	data := &jobmodels.JobData{
+		Name:       job.ImageScanAllJob,
+		Metadata:   meta,
+		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/adminjob/%d", config.InternalCoreURL(), id),
 	}
+	log.Infof("scan_all job scheduled/triggered, cron string: '%s'", cron)
+	return client.SubmitJob(data)
 }
 
 // GetJobServiceClient returns the job service client instance.
@@ -134,7 +126,7 @@ func triggerImageScan(repository, tag, digest string, client job.Client) error {
 	}
 	err = dao.SetScanJobUUID(id, uuid)
 	if err != nil {
-		log.Warningf("Failed to set UUID for scan job, ID: %d, repository: %s, tag: %s")
+		log.Warningf("Failed to set UUID for scan job, ID: %d, repository: %s, tag: %s", id, uuid, repository, tag)
 	}
 	return nil
 }

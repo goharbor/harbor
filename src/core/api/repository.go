@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/notifier"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/clair"
 	registry_error "github.com/goharbor/harbor/src/common/utils/error"
@@ -37,6 +36,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/notifier"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication/event/notification"
 	"github.com/goharbor/harbor/src/replication/event/topic"
@@ -932,40 +932,22 @@ func (ra *RepositoryAPI) ScanAll() {
 		ra.HandleUnauthorized()
 		return
 	}
-	projectIDStr := ra.GetString("project_id")
-	if len(projectIDStr) > 0 { // scan images under the project only.
-		pid, err := strconv.ParseInt(projectIDStr, 10, 64)
-		if err != nil || pid <= 0 {
-			ra.HandleBadRequest(fmt.Sprintf("Invalid project_id %s", projectIDStr))
-			return
-		}
-		if !ra.SecurityCtx.HasAllPerm(pid) {
-			ra.HandleForbidden(ra.SecurityCtx.GetUsername())
-			return
-		}
-		if err := coreutils.ScanImagesByProjectID(pid); err != nil {
-			log.Errorf("Failed triggering scan images in project: %d, error: %v", pid, err)
-			ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
-			return
-		}
-	} else { // scan all images in Harbor
-		if !ra.SecurityCtx.IsSysAdmin() {
-			ra.HandleForbidden(ra.SecurityCtx.GetUsername())
-			return
-		}
-		if !utils.ScanAllMarker().Check() {
-			log.Warningf("There is a scan all scheduled at: %v, the request will not be processed.", utils.ScanAllMarker().Next())
-			ra.RenderError(http.StatusPreconditionFailed, "Unable handle frequent scan all requests")
-			return
-		}
-
-		if err := coreutils.ScanAllImages(); err != nil {
-			log.Errorf("Failed triggering scan all images, error: %v", err)
-			ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
-			return
-		}
-		utils.ScanAllMarker().Mark()
+	if !ra.SecurityCtx.IsSysAdmin() {
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
 	}
+	if !utils.ScanAllMarker().Check() {
+		log.Warningf("There is a scan all scheduled at: %v, the request will not be processed.", utils.ScanAllMarker().Next())
+		ra.RenderError(http.StatusPreconditionFailed, "Unable handle frequent scan all requests")
+		return
+	}
+
+	if err := coreutils.ScanAllImages(); err != nil {
+		log.Errorf("Failed triggering scan all images, error: %v", err)
+		ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
+		return
+	}
+	utils.ScanAllMarker().Mark()
 	ra.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
 }
 
