@@ -105,7 +105,7 @@
               </select>
             </div>
             <!--on push-->
-            <div formGroupName="schedule_param">
+            <div formGroupName="schedule_param" class="schedule_style">
               <div class="select floatSet" [hidden]="!isScheduleOpt">
                 <select name="scheduleType" formControlName="type" (change)="selectSchedule($event)">
                   <option value="Daily">{{'REPLICATION.DAILY' | translate}}</option>
