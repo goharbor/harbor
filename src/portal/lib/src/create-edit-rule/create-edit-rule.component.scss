@@ -28,6 +28,7 @@ h4 {
 }
 
 .alertLabel {
+    display: block;
     margin-top: 2px;
     line-height: 1em;
     font-size: 12px;
@@ -153,12 +154,15 @@ h4 {
     width: 6.5rem;
 }
 
+.form-select {
+    margin-right: 30px;
+}
+
 .goLink {
     color: blue;
     border-bottom: 1px solid blue;
     line-height: 14px;
     cursor: pointer;
-    margin-left: 12px;
 }
 
 .arrowSet{

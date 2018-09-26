@@ -81,17 +81,15 @@
         <!--Targets-->
         <div class="form-group form-group-override">
           <label class="form-group-label-override  required">{{'DESTINATION.ENDPOINT' | translate}}</label>
-          <div formArrayName="targets">
+          <div formArrayName="targets" class="form-select">
             <div class="select endpointSelect pull-left" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
               <select id="ruleTarget" (change)="targetChange($event)" formControlName="id">
                 <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}-{{target.endpoint}}</option>
               </select>
             </div>
           </div>
-            <div>
-              <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
-              <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
-            </div>
+            <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
+            <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
         </div>
 
         <!--Trigger-->
