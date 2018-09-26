@@ -779,6 +779,7 @@
     "PENDING":"Pending",
     "FINISHED":"Finished",
     "STOPPED":"Stopped",
+    "RUNNING":"Running",
     "ERROR":"Error",
     "SCHEDULE": {
         "NONE": "None",

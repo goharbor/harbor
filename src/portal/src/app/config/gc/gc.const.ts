@@ -15,6 +15,7 @@ export const SCHEDULE_TYPE = {
 };
 
 export const ONE_MINITUE = 60000;
+export const THREE_SECONDS = 3000;
 
 
 

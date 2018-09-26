@@ -815,6 +815,7 @@
     "PENDING":"未开始",
     "FINISHED":"已完成",
     "STOPPED":"已停止",
+    "RUNNING":"执行中",
     "ERROR":"错误",
     "SCHEDULE": {
         "NONE": "无",

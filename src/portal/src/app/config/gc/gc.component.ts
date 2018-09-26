@@ -3,7 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { GcJobViewModel, WeekDay } from "./gcLog";
 import { GcViewModelFactory } from "./gc.viewmodel.factory";
 import { GcRepoService } from "./gc.service";
-import { WEEKDAYS, SCHEDULE_TYPE, ONE_MINITUE} from './gc.const';
+import { WEEKDAYS, SCHEDULE_TYPE, ONE_MINITUE, THREE_SECONDS} from './gc.const';
 import { GcUtility } from './gc.utility';
 import { ErrorHandler } from '@harbor/ui';
 
@@ -90,6 +90,7 @@ export class GcComponent implements OnInit {
         this.errorHandler.info(res);
       });
       this.getJobs();
+      setTimeout(() => {this.getJobs(); }, THREE_SECONDS); // to avoid some jobs not finished.
     }, error => {
       this.errorHandler.error(error);
     });
