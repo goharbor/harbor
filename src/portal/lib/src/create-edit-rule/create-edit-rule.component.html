@@ -81,7 +81,7 @@
         <!--Targets-->
         <div class="form-group form-group-override">
           <label class="form-group-label-override  required">{{'DESTINATION.ENDPOINT' | translate}}</label>
-          <div formArrayName="targets">
+          <div formArrayName="targets" class="form-select">
             <div class="select endpointSelect pull-left" *ngFor="let target of targets.controls; let i= index" [formGroupName]="i">
               <select id="ruleTarget" (change)="targetChange($event)" formControlName="id">
                 <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}-{{target.endpoint}}</option>
@@ -105,7 +105,7 @@
               </select>
             </div>
             <!--on push-->
-            <div formGroupName="schedule_param">
+            <div formGroupName="schedule_param" class="schedule-style">
               <div class="select floatSet" [hidden]="!isScheduleOpt">
                 <select name="scheduleType" formControlName="type" (change)="selectSchedule($event)">
                   <option value="Daily">{{'REPLICATION.DAILY' | translate}}</option>
