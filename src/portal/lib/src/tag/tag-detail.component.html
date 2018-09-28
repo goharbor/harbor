@@ -41,18 +41,18 @@
                 </div>
                 <div class="flex-block vulnerabilities-info">
                     <div class="second-column">
-                        <div>
-                            <clr-icon shape="error" size="24" class="is-error"></clr-icon> {{highCount}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }}&nbsp;{{'TAG.LEVEL_VULNERABILITIES'
-                            | translate }}</div>
-                        <div class="second-row">
-                            <clr-icon shape="exclamation-triangle" size="24" class="tip-icon-medium"></clr-icon>{{mediumCount}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }}&nbsp;{{'TAG.LEVEL_VULNERABILITIES'
-                            | translate }}</div>
-                        <div>
-                            <clr-icon shape="play" size="20" class="tip-icon-low rotate-90"></clr-icon>{{lowCount}} {{'VULNERABILITY.SEVERITY.LOW' | translate }}&nbsp;{{'TAG.LEVEL_VULNERABILITIES'
-                            | translate }}</div>
-                        <div class="second-row">
-                            <clr-icon shape="help" size="18"></clr-icon>{{unknownCount}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }}&nbsp;{{'TAG.LEVEL_VULNERABILITIES'
-                            | translate }}</div>
+                        <div class="row-flex">
+                            <div class="icon-position"><clr-icon shape="error" size="24" class="is-error"></clr-icon></div> 
+                            <span class="detail-count">{{highCount}}</span> {{packageText(highCount) | translate}} {{haveText(highCount) | translate}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}</div>
+                        <div class="second-row row-flex">
+                            <div class="icon-position"><clr-icon shape="exclamation-triangle" size="24" class="tip-icon-medium"></clr-icon></div>
+                            <span class="detail-count">{{mediumCount}}</span> {{packageText(mediumCount) | translate}} {{haveText(mediumCount) | translate}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}</div>
+                        <div class="second-row row-flex">
+                            <div class="icon-position"><clr-icon shape="play" size="22" class="tip-icon-low rotate-90"></clr-icon></div>
+                            <span class="detail-count">{{lowCount}}</span> {{packageText(lowCount) | translate}} {{haveText(lowCount) | translate}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}</div>
+                        <div class="second-row row-flex">
+                            <div class="icon-position"><clr-icon shape="help" size="20"></clr-icon></div>
+                            <span class="detail-count">{{unknownCount}}</span> {{packageText(unknownCount) | translate}} {{haveText(unknownCount) | translate}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}</div>
                     </div>
                 </div>
 

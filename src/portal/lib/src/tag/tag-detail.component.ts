@@ -82,6 +82,14 @@ export class TagDetailComponent implements OnInit {
         return count > 1 ? "VULNERABILITY.PACKAGES" : "VULNERABILITY.PACKAGE";
     }
 
+    packageText(count: number): string {
+        return count > 1 ? "VULNERABILITY.GRID.COLUMN_PACKAGES" : "VULNERABILITY.GRID.COLUMN_PACKAGE";
+    }
+
+    haveText(count: number): string {
+        return count > 1 ? "TAG.HAVE" : "TAG.HAS";
+    }
+
     public get author(): string {
         return this.tagDetails && this.tagDetails.author ? this.tagDetails.author : 'TAG.ANONYMITY';
     }
