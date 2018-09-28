@@ -6,6 +6,13 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/2095/badge)](https://bestpractices.coreinfrastructure.org/projects/2095)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c8d726c9cfd047ffaf681449d673f246)](https://www.codacy.com/app/goharbor/harbor?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=goharbor/harbor&amp;utm_campaign=Badge_Grade)
 
+<div style="border: 1px solid #49afd9; background-color: #e1f1f6; color: #565656; margin: 10px 0px 25px 0px; padding: 10px;" markdown="1">
+<span><img src="docs/img/bell-outline-badged.svg" style="width: 36px; height: 36px;" /></span>
+<span>
+The Harbor Project holds bi-weekly community calls, to join them and watch previous meeting notes and recordings, please see <a href="https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md">meeting schedule</a>.
+</span>
+</div>
+
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get stable binaries.
 
