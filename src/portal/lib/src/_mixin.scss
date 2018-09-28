@@ -29,3 +29,9 @@
     width: $width !important;
     height: $width !important;
 }
+
+@mixin flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
