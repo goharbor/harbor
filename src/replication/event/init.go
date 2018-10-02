@@ -15,8 +15,8 @@
 package event
 
 import (
-	"github.com/goharbor/harbor/src/common/notifier"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/notifier"
 	"github.com/goharbor/harbor/src/replication/event/topic"
 )
 

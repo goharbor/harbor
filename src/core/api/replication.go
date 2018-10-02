@@ -20,9 +20,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/notifier"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	api_models "github.com/goharbor/harbor/src/core/api/models"
+	"github.com/goharbor/harbor/src/core/notifier"
 	"github.com/goharbor/harbor/src/replication/core"
 	"github.com/goharbor/harbor/src/replication/event/notification"
 	"github.com/goharbor/harbor/src/replication/event/topic"
