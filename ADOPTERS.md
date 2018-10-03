@@ -1,7 +1,13 @@
-# Community of Harbor
-Below are some of the partners and users of Harbor projects. If you wish to be listed on this page as reference partners or users, please open a GitHub issue.
+# Harbor Adopters
+Below is a list of adopters of Harbor in **production environments** that have
+publicly shared the details of their usage as well as the benefits provided by
+Harbor that their business relies on. There are some unreferenceable users that
+are leveraging Harbor that are not yet able to share details of their usage
+publicly at this time.
 
-## Users
+There are many additional adopters of Harbor in the evaluating phase that will
+be added to this list as they transition to production deployments.
+
 <a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="docs/img/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.onstar.com.cn" border="0" target="_blank"><img alt="OnStar" src="docs/img/onstar.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.datayes.com" border="0" target="_blank"><img alt="DataYes" src="docs/img/datayes.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
@@ -16,8 +22,6 @@ Below are some of the partners and users of Harbor projects. If you wish to be l
 <a href="http://www.cloud-star.com.cn/" border="0" target="_blank"><img alt="CloudStar" src="docs/img/cloudstar.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.beyondsoft.com/" border="0" target="_blank"><img alt="BeyondSoft" src="docs/img/beyondsoft.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.chinamobileltd.com/" border="0" target="_blank"><img alt="ChinaMobile" src="docs/img/china-mobile.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-
-## Partners
 <a href="https://www.caicloud.io" target="_blank" border="0"><img alt="CaiCloud" src="docs/img/caicloud.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://rancher.com/" target="_blank" border="0"><img alt="Rancher" src="docs/img/rancher.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.tenxcloud.com/" target="_blank" border="0"><img alt="TenxCloud" src="docs/img/tenxcloud.png" height="70"></a>&nbsp; &nbsp; &nbsp; &nbsp;
