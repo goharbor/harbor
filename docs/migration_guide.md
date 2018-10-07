@@ -28,7 +28,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     mv harbor /my_backup_dir/harbor
     ```
 
-3. Get the lastest Harbor release package from Github:
+3. Get the latest Harbor release package from Github:
    https://github.com/goharbor/harbor/releases
 
 4. Before upgrading Harbor, perform migration first.  The migration tool is delivered as a docker image, so you should pull the image from docker hub. Replace [tag] with the release version of Harbor (e.g. v1.5.0) in the below command:
@@ -83,7 +83,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     docker run -it --rm -v /data/clair-db/:/clair-db -v /data/database:/var/lib/postgresql/data goharbor/harbor-migrator:${tag} --db up
     ```
 
-    **NOTE:** The ${harbor_cfg} will be overwrited, you must move it to your installation directory after migration.
+    **NOTE:** The ${harbor_cfg} will be overwritten, you must move it to your installation directory after migration.
 
     ```
     docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:[tag] --cfg up

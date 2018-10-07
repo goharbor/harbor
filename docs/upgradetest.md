@@ -10,13 +10,13 @@ This guide is for Harbor upgrade test
 4. Login harbor as usera, push an unsigned image into projecta, then push a signed image to projecta. 
 5. Login harbor as userc, push an unsigned image into projecta, then push a signed image to projeca.
 6. Login harbor as userd, push each image one time.   
-7. Repeate 4 5 6 to projectb and projectc.  
+7. Repeat 4 5 6 to projectb and projectc.
 8. Add one endpoint to harbor.  
 9. Add an immediate replication rule to projeca, a schedule rule to projectb, a manual rule to projectc, trigger each rule one time.  
 10. Add 5 system label syslabel1 to syslabel5 and tag syslabel1 and syslabel2 to all unsigned image.    
 11. In each project add 5 project label projlabela to projlabele, add projlabela projlabelb and projlabelc to signed image. 
 12. Trigger one scan all job to scan all images.(For clair enabled instance)  
-13. Update project publicly, content trust, severity and scaning settings.  
+13. Update project publicly, content trust, severity and scanning settings.
 14. Update Harbor email, token expire read only and scan settings.  
 15. Update repository info.   
 **NOTE**: Create user step is not needed if auth mode is LDAP.  

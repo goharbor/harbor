@@ -18,16 +18,16 @@ Harbor is deployed as several Docker containers, and, therefore, can be deployed
 ### Hardware
 |Resource|Capacity|Description|
 |---|---|---|
-|CPU|minimal 2 CPU|4 CPU is prefered|
-|Mem|minimal 4GB|8GB is prefered|
-|Disk|minimal 40GB|160GB is prefered|
+|CPU|minimal 2 CPU|4 CPU is preferred|
+|Mem|minimal 4GB|8GB is preferred|
+|Disk|minimal 40GB|160GB is preferred|
 ### Software
 |Software|Version|Description|
 |---|---|---|
 |Python|version 2.7 or higher|Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default|
 |Docker engine|version 1.10 or higher|For installation instructions, please refer to: https://docs.docker.com/engine/installation/|
 |Docker Compose|version 1.6.0 or higher|For installation instructions, please refer to: https://docs.docker.com/compose/install/|
-|Openssl|latest is prefered|Generate certificate and keys for Harbor|
+|Openssl|latest is preferred|Generate certificate and keys for Harbor|
 ### Network ports 
 |Port|Protocol|Description|
 |---|---|---|
@@ -327,7 +327,7 @@ proxy:
 hostname = 192.168.0.2:8888
 ```
 
-3.Re-deploy Harbor refering to previous section "Managing Harbor's lifecycle".
+3.Re-deploy Harbor referring to previous section "Managing Harbor's lifecycle".
 ### For HTTPS protocol
 1.Enable HTTPS in Harbor by following this [guide](https://github.com/goharbor/harbor/blob/master/docs/configure_https.md).  
 2.Modify docker-compose.yml  
@@ -360,7 +360,7 @@ proxy:
 hostname = 192.168.0.2:8888
 ```
 
-4.Re-deploy Harbor refering to previous section "Managing Harbor's lifecycle". 
+4.Re-deploy Harbor referring to previous section "Managing Harbor's lifecycle".
 
 
 ## Performance tuning

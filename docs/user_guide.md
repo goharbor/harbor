@@ -82,7 +82,7 @@ After the project is created, you can browse repositories, members, logs, replic
 
 ![browse project](img/new_browse_project.png)
 
-There are two views to show repositories, listview and card view, you can switch between them by clicking the corresponding icon.
+There are two views to show repositories, list view and card view, you can switch between them by clicking the corresponding icon.
 
 ![browse repositories](img/browse_project_repositories.png)
 

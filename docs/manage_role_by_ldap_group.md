@@ -15,7 +15,7 @@ This guide provides instructions to manage roles by LDAP/AD group. You can impor
 
 ## Configure LDAP group settings
 
-Besides **[basic LDAP configure paremters](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md#optional-parameters)** , LDAP group related configure parameters should be configured, they can be configured before or after installation
+Besides **[basic LDAP configure parameters](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md#optional-parameters)** , LDAP group related configure parameters should be configured, they can be configured before or after installation
 
   1. Configure parameters in harbor.cfg before installation
 
