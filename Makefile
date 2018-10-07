@@ -194,6 +194,10 @@ DOCKERCOMPOSECLAIRFILENAME=docker-compose.clair.yml
 DOCKERCOMPOSECHARTMUSEUMTPLFILENAME=docker-compose.chartmuseum.tpl
 DOCKERCOMPOSECHARTMUSEUMFILENAME=docker-compose.chartmuseum.yml
 
+# docker swarm files
+DOCKERSTACKTPLFILENAME=harbor-stack.tpl
+DOCKERSTACKFILENAME=harbor-stack.yml
+
 SEDCMD=$(shell which sed)
 
 # package
@@ -224,15 +228,16 @@ PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 				  $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
 				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/open_source_license 
+					$(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERSTACKFILENAME)\
+				  $(HARBORPKG)/open_source_license
 
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/harbor.cfg \
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERSTACKFILENAME)\
 				  $(HARBORPKG)/open_source_license
-				  
+
 DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
@@ -289,7 +294,7 @@ compile_registryctl:
 	@echo "Done."
 
 compile:check_environment compile_adminserver compile_core compile_jobservice compile_registryctl
-	
+
 prepare:
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
@@ -309,6 +314,16 @@ modify_composefile: modify_composefile_notary modify_composefile_clair modify_co
 	@$(SEDCMD) -i -e 's/__reg_version__/$(REGISTRYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i -e 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 	@$(SEDCMD) -i -e 's/__redis_version__/$(REDISVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+
+modify_stackfile:
+	@echo "preparing docker swarm file..."
+	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERSTACKTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERSTACKFILENAME)
+	@$(SEDCMD) -i -e 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERSTACKFILENAME)
+	@$(SEDCMD) -i -e 's/__postgresql_version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERSTACKFILENAME)
+	@$(SEDCMD) -i -e 's/__reg_version__/$(REGISTRYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERSTACKFILENAME)
+	@$(SEDCMD) -i -e 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERSTACKFILENAME)
+	@$(SEDCMD) -i -e 's/__redis_version__/$(REDISVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERSTACKFILENAME)
+	@$(SEDCMD) -i -e 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERSTACKFILENAME)
 
 modify_composefile_notary:
 	@echo "preparing docker-compose notary file..."
@@ -334,9 +349,9 @@ modify_sourcefiles:
 	@chmod 600 $(MAKEPATH)/common/templates/core/private_key.pem
 	@chmod 600 $(MAKEPATH)/common/templates/registry/root.crt
 
-install: compile ui_version build modify_sourcefiles prepare modify_composefile start
+install: compile ui_version build modify_sourcefiles prepare modify_composefile modify_stackfile start
 
-package_online: modify_composefile
+package_online: modify_composefile modify_stackfile
 	@echo "packing online package ..."
 	@cp -r make $(HARBORPKG)
 	@if [ -n "$(REGISTRYSERVER)" ] ; then \
@@ -345,12 +360,12 @@ package_online: modify_composefile
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
 	@cp open_source_license $(HARBORPKG)/open_source_license
-	
+
 	@$(TARCMD) $(PACKAGE_ONLINE_PARA)
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
-	
-package_offline: compile ui_version build modify_sourcefiles modify_composefile
+
+package_offline: compile ui_version build modify_sourcefiles modify_composefile modify_stackfile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	@cp LICENSE $(HARBORPKG)/LICENSE
@@ -461,7 +476,7 @@ swagger_client:
 	mkdir harborclient
 	java -jar swagger-codegen-cli.jar generate -i docs/swagger.yaml -l python -o harborclient
 	cd harborclient; python ./setup.py install
-	pip install docker -q 
+	pip install docker -q
 	pip freeze
 
 cleanbinary:

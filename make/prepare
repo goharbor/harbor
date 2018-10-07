@@ -71,11 +71,13 @@ def validate(conf, args):
 #To meet security requirement
 #By default it will change file mode to 0600, and make the owner of the file to 10000:10000
 def mark_file(path, mode=0o600, uid=10000, gid=10000):
+    global args
     os.chmod(path, mode)
-    os.chown(path, uid, gid)
+    if not args.swarm_mode:
+        os.chown(path, uid, gid)
 
 def get_secret_key(path):
-    secret_key = _get_secret(path, "secretkey") 
+    secret_key = _get_secret(path, "secretkey")
     if len(secret_key) != 16:
         raise Exception("secret key's length has to be 16 chars, current length: %d" % len(secret_key))
     return secret_key
@@ -130,8 +132,11 @@ parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/harbor.cfg',typ
 parser.add_argument('--with-notary', dest='notary_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with notary")
 parser.add_argument('--with-clair', dest='clair_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with clair")
 parser.add_argument('--with-chartmuseum', dest='chart_mode', default=False, action='store_true', help="the Harbor instance is to be deployed with chart repository supporting")
+parser.add_argument('--experimental-swarm', dest='swarm_mode', default=False, action='store_true', help="the Harbor instance is to be deployed on docker swarm")
 args = parser.parse_args()
-
+if args.swarm_mode:
+    # Config files are stored in swarm configs
+    DATA_VOL = "./data"
 delfile(config_dir)
 #Read configurations
 conf = StringIO.StringIO()
@@ -192,6 +197,9 @@ max_job_workers = rcp.get("configuration", "max_job_workers")
 token_expiration = rcp.get("configuration", "token_expiration")
 proj_cre_restriction = rcp.get("configuration", "project_creation_restriction")
 secretkey_path = rcp.get("configuration", "secretkey_path")
+if args.swarm_mode:
+    # In swarm mode keys are store as swarm secrets
+    secretkey_path = DATA_VOL
 if rcp.has_option("configuration", "admiral_url"):
     admiral_url = rcp.get("configuration", "admiral_url")
 else:
@@ -717,4 +725,7 @@ if args.chart_mode:
 
 
 FNULL.close()
-print("The configuration files are ready, please use docker-compose to start the service.")
+if args.swarm_mode:
+    print("The configuration files are ready.")
+else:
+    print("The configuration files are ready, please use docker-compose to start the service.")
