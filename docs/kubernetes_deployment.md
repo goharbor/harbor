@@ -93,7 +93,7 @@ If Basic Configuration was not covering your requirements, you can read this sec
 You can find all configs of Harbor in `make/kubernetes/templates/`. There are specifications of these files:
 
 - `jobservice.cm.yaml`: ENV and web config of jobservice
-- `mysql.cm.yaml`: Root passowrd of MySQL
+- `mysql.cm.yaml`: Root password of MySQL
 - `ingress.yaml`: Https certification and ingress config. If you are fimiliar with ingress, you can modify it.
 - `registry.cm.yaml`: Token service certification and registry config
   Registry use filesystem to store data of images. You can find it like:

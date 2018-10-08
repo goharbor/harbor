@@ -3,10 +3,10 @@ In harbor.cfg, make sure the attribute ```ui_url_protocol``` is set to ```https`
 
 ### Copy Root Certificate
 Suppose the Harbor instance is hosted on a machine ```192.168.0.5```
-If you are using a self-signed cetificate, make sure to copy the CA root cert to ```/etc/docker/certs.d/192.168.0.5/``` and ```~/.docker/tls/192.168.0.5:4443/```
+If you are using a self-signed certificate, make sure to copy the CA root cert to ```/etc/docker/certs.d/192.168.0.5/``` and ```~/.docker/tls/192.168.0.5:4443/```
 
 ### Enable Docker Content Trust
-It can be done via setting envrironment variables:
+It can be done via setting environment variables:
 
 ```
 export DOCKER_CONTENT_TRUST=1

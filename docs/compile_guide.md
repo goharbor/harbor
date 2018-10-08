@@ -39,9 +39,9 @@ Edit the file **make/harbor.cfg** and make necessary configuration changes such 
 
 You can compile the code by one of the three approaches:
 
-#### I. Build with offical Golang image
+#### I. Build with official Golang image
 
-* Get offcial Golang image from docker hub:
+* Get official Golang image from docker hub:
 
    ```sh
       $ docker pull golang:1.9.2
