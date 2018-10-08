@@ -19,11 +19,11 @@ Fork the Harbor repository on GitHub to your personal account.
 ```
 #Set golang environment
 export GOPATH=$HOME/go
-mkdir -p $GOPATH/src/github.com/vmware
+mkdir -p $GOPATH/src/github.com/goharbor
 
 #Get code
-go get github.com/vmware/harbor
-cd $GOPATH/src/github.com/vmware/harbor
+go get github.com/goharbor/harbor
+cd $GOPATH/src/github.com/goharbor/harbor
 
 #Track repository under your personal account
 git config push.default nothing # Anything to avoid pushing to vmware/harbor by default
@@ -159,7 +159,7 @@ Fork the Harbor repository and clone the code to your local workspace. Per Go's 
 
 Define a local working directory:
 ```
-working_dir=$GOPATH/src/github.com/vmware
+working_dir=$GOPATH/src/github.com/goharbor
 ```
 
 Set user to match your github profile name:
