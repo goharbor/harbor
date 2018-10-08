@@ -257,7 +257,7 @@ func ping(client *http.Client, endpoint string) (string, string, error) {
 		}
 	}
 
-	log.Warningf("schemas %v are unsupported", challenges)
+	log.Warningf("Schemas %v are unsupported", challenges)
 	return "", "", nil
 }
 

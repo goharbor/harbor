@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ type Image struct {
 func ParseImage(image string) (*Image, error) {
 	repo := strings.SplitN(image, "/", 2)
 	if len(repo) < 2 {
-		return nil, fmt.Errorf("unable to parse image from string: %s", image)
+		return nil, fmt.Errorf("Unable to parse image from string: %s", image)
 	}
 	i := strings.SplitN(repo[1], ":", 2)
 	res := &Image{

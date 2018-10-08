@@ -1,4 +1,4 @@
-// Copyright (c) 2017 VMware, Inc. All Rights Reserved.
+// Copyright Project Harbor Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ func TestParseImage(t *testing.T) {
 			}
 		} else {
 			if err != nil {
-				t.Errorf("expect to parse %s fail, but not", c.Input)
+				t.Errorf("failed to parse image %s", c.Input)
 			}
 		}
 	}

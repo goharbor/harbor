@@ -1139,7 +1139,7 @@ paths:
       parameters:
         - name: request
           in: body
-          description: reqeust to given source image and target tag
+          description: Request to give source image and target tag.
           required: true
           schema:
             $ref: '#/definitions/RetagReq'
@@ -1149,7 +1149,7 @@ paths:
         '200':
           description: Image retag successfully.
         '400':
-          description: Invalid image values provided
+          description: Invalid image values provided.
         '401':
           description: User has no permission to the source project or destination project.
         '404':

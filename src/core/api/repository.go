@@ -491,7 +491,7 @@ func (ra *RepositoryAPI) Retag() {
 	}
 
 	// Retag the image
-	if err = uiutils.Retag(srcImage, &models.Image{
+	if err = coreutils.Retag(srcImage, &models.Image{
 		Project: project,
 		Repo:    repo,
 		Tag:     request.Tag,
