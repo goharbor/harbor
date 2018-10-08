@@ -1,8 +1,8 @@
-**IMPORTANT** This deployment method is experimental, Docker Swarm experience is still required for volumes and container placement constraints!
+**IMPORTANT** This deployment method is very experimental, Docker Swarm expertise is still required for volumes and container placement constraints!
 
 ## Docker Swarm
 
-This document describes how to deploy **harbor** with **Docker Swarm**.
+This document describes how to deploy **Harbor** with **Docker Swarm**.
 * You should have domain knowledge about **Docker Swarm** (distributed volumes, placement constraints)
 * Tested with `master` branch
 
@@ -14,9 +14,9 @@ Change your settings in `harbor.cfg` as usual. For the deployment with swarm the
 ./prepare --experimental-swarm
 ```
 
-### clair
+### Clair
 
-When using **clair**  comment the according lines in `harbor-stack.yml` and enable **clair**:
+When using **Clair**  comment the according lines in `harbor-stack.yml` and enable **Clair**:
 
 ```
 ./prepare --with-clair --experimental-swarm
@@ -37,10 +37,10 @@ ssl_cert_key = ./data/cert/server.key
 
 Then place your cert and key files in `./data/cert/`.
 
-#### traefik
-If you are using SSL with **traefik**, you have to change the realm property in `./common/config/registry/config.yml`: Go to `auth` -> `token` -> `realm` and replace "http" with "https". See: https://github.com/goharbor/harbor/issues/1097
+#### Traefik
+If you are using SSL with **Traefik**, you have to change the realm property in `./common/config/registry/config.yml`: Go to `auth` -> `token` -> `realm` and replace "http" with "https". See: https://github.com/goharbor/harbor/issues/1097
 
-Afterwards remove the `nginx`-service section in `./harbor-stack.yml` and add your traefik labels to the `portal`-service
+Afterwards remove the `nginx`-service section in `./harbor-stack.yml` and add your **Traefik** labels to the `portal`-service
 
 
 ### Deploy stack
@@ -49,7 +49,7 @@ Afterwards remove the `nginx`-service section in `./harbor-stack.yml` and add yo
 * **Take care of the volume locations!**
 * **Modify the placement constraints!**
 
-Afterwards deploy **harbor** to you swarm:
+Afterwards deploy **Harbor** to you swarm:
 
 ```
 docker stack deploy -c ./harbor-stack.yml harbor
