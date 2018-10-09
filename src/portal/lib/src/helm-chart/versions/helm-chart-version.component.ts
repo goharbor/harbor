@@ -259,7 +259,7 @@ export class ChartVersionComponent implements OnInit {
       "HELM_CHART.DELETE_CHART_VERSION",
       versionNames,
       versions,
-      ConfirmationTargets.HELM_CHART,
+      ConfirmationTargets.HELM_CHART_VERSION,
       ConfirmationButtons.DELETE_CANCEL
     );
     this.confirmationDialog.open(message);
@@ -270,7 +270,7 @@ export class ChartVersionComponent implements OnInit {
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (
       message &&
-      message.source === ConfirmationTargets.HELM_CHART &&
+      message.source === ConfirmationTargets.HELM_CHART_VERSION &&
       message.state === ConfirmationState.CONFIRMED
     ) {
       let versions = message.data;

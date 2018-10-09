@@ -41,7 +41,8 @@ export const enum ConfirmationTargets {
   CONFIG,
   CONFIG_ROUTE,
   CONFIG_TAB,
-  HELM_CHART
+  HELM_CHART,
+  HELM_CHART_VERSION
 }
 
 export const enum ActionType {
