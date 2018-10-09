@@ -11,11 +11,11 @@ import {
 import { NgForm } from '@angular/forms';
 import { TranslateService } from "@ngx-translate/core";
 import { State } from "@clr/angular";
-import { forkJoin, throwError } from "rxjs";
+import { forkJoin, throwError, Observable } from "rxjs";
 import { finalize, map, catchError } from "rxjs/operators";
 import { SystemInfo, SystemInfoService, HelmChartItem } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
-import { toPromise, DEFAULT_PAGE_SIZE } from "../utils";
+import { toPromise, DEFAULT_PAGE_SIZE, downloadFile } from "../utils";
 import { HelmChartService } from "../service/helm-chart.service";
 import { DefaultHelmIcon} from "../shared/shared.const";
 import { Roles } from './../shared/shared.const';
@@ -183,7 +183,7 @@ export class HelmChartComponent implements OnInit {
   }
 
 
-  deleteChart(chartName: string) {
+  deleteChart(chartName: string): Observable<any> {
     let operateMsg = new OperateInfo();
     operateMsg.name = "OPERATION.DELETE_CHART";
     operateMsg.data.id = chartName;
@@ -209,6 +209,35 @@ export class HelmChartComponent implements OnInit {
         this.selectedRows = [];
       }))
     .subscribe(() => {});
+  }
+
+  downloadLatestVersion(evt?: Event, item?: HelmChartItem) {
+    if (evt) {
+      evt.stopPropagation();
+    }
+    let selectedChart: HelmChartItem;
+
+    if (item) {
+      selectedChart = item;
+    } else {
+      // return if selected version less then 1
+      if (this.selectedRows.length < 1) {
+        return;
+      }
+      selectedChart = this.selectedRows[0];
+    }
+    if (!selectedChart) {
+      return;
+    }
+    let filename = `charts/${selectedChart.name}-${selectedChart.latest_version}.tgz`;
+    this.helmChartService.downloadChart(this.projectName, filename).subscribe(
+      res => {
+        downloadFile(res);
+      },
+      error => {
+        this.errorHandler.error(error);
+      }
+    );
   }
 
   openChartDeleteModal(charts: HelmChartItem[]) {

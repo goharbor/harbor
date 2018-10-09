@@ -123,6 +123,7 @@ export class HelmChartDefaultService extends HelmChartService {
         return {
           name: chart.Name,
           total_versions: chart.total_versions,
+          latest_version: chart.latest_version,
           created: chart.Created,
           icon: chart.Icon,
           home: chart.Home};

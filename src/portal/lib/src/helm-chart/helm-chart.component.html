@@ -25,10 +25,13 @@
             <clr-datagrid (clrDgRefresh)="refresh()" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
                 <clr-dg-action-bar>
                     <button type="button" class="btn btn-sm btn-secondary" [disabled]="!developerRoleOrAbove" (click)="onChartUpload()">
-                            <clr-icon shape="upload" size="16"></clr-icon>&nbsp;{{'HELM_CHART.UPLOAD' | translate}}
+                            <clr-icon shape="upload" size="16"></clr-icon>{{'HELM_CHART.UPLOAD' | translate}}
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!hasProjectAdminRole" (click)="openChartDeleteModal(selectedRows)">
-                        <clr-icon shape="delete" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}
+                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!hasProjectAdminRole || selectedRows.length<1" (click)="openChartDeleteModal(selectedRows)">
+                        <clr-icon shape="trash" size="16"></clr-icon>{{'BUTTON.DELETE' | translate}}
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="selectedRows.length!==1" (click)="downloadLatestVersion()">
+                        <clr-icon shape="download" size="16"></clr-icon>{{'HELM_CHART.DOWNLOAD' | translate}}
                     </button>
                 </clr-dg-action-bar>
                 <clr-dg-column >{{'HELM_CHART.NAME' | translate}}</clr-dg-column>
