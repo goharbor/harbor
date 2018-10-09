@@ -30,3 +30,16 @@ be added to this list as they transition to production deployments.
 <a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="docs/img/slamtec.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.cloudchef.io/" target="_blank" border="0"><img alt="CloudChef" src="docs/img/cloudchef.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://pivotal.io/" target="_blank" border="0"><img alt="Pivotal" src="docs/img/pivotal.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+
+## Success Stories
+**JD:** Harbor is the registry service of JD.com’s JDOS
+platform. Harbor has been used for over 2 years in production with tens of
+thousands of nodes and managing millions of container images
+
+**China Mobile:** Harbor has been used in production for more than year,
+serving images to a container environment with over 1,000 nodes
+
+**Slamtec:** Harbor is being used in external production systems as well as
+internal dev/test environments. All services are deployed using container
+images stored and managed by Harbor, making Harbor an important part of
+Slamtec's CI/CD workflow
