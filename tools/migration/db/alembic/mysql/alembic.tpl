@@ -30,7 +30,7 @@ script_location = /harbor-migration/db/alembic/mysql/migration_harbor
 # are written from script.py.mako
 # output_encoding = utf-8
 
-sqlalchemy.url = mysql://$DB_USR:$DB_PWD@localhost:3306/registry?unix_socket=/var/run/mysqld/mysqld.sock
+sqlalchemy.url = mysql://$DB_USR:$DB_PWD@$MY_DB_HOST:$MY_DB_PORT/registry?unix_socket=/var/run/mysqld/mysqld.sock
 
 # Logging configuration
 [loggers]

@@ -24,40 +24,62 @@ ISMYSQL=false
 ISPGSQL=false
 ISNOTARY=false
 ISCLAIR=false
+USEREMOTEDB=${USEREMOTEDB:-false}
 
 cur_version=""
 PGSQL_USR="postgres" 
 
 function init {
-    if [ "$(ls -A /var/lib/mysql)" ]; then
-        # As after the first success run, the data will be migrated to pgsql,
-        # the PG_VERSION should be in /var/lib/mysql if user repeats the UP command.
-        if [ -e '/var/lib/mysql/PG_VERSION' ]; then
-            ISPGSQL=true
-        elif [ -d '/var/lib/mysql/mysql' ]; then
-            ISMYSQL=true
-            if [ -d '/var/lib/mysql/notaryserver' ]; then
-                ISNOTARY=true
+    if [ ${USEREMOTEDB} == false ]; then
+        if [ "$(ls -A /var/lib/mysql)" ]; then
+            # As after the first success run, the data will be migrated to pgsql,
+            # the PG_VERSION should be in /var/lib/mysql if user repeats the UP command.
+            if [ -e '/var/lib/mysql/PG_VERSION' ]; then
+                ISPGSQL=true
+            elif [ -d '/var/lib/mysql/mysql' ]; then
+                ISMYSQL=true
+                if [ -d '/var/lib/mysql/notaryserver' ]; then
+                    ISNOTARY=true
+                fi
             fi
         fi
-    fi
 
-    if [ "$(ls -A /var/lib/postgresql/data)" ]; then
-        ISPGSQL=true
-    fi
+        if [ "$(ls -A /var/lib/postgresql/data)" ]; then
+            ISPGSQL=true
+        fi
 
-    if [ -d "/clair-db" ]; then
-        ISCLAIR=true
-    fi
+        if [ -d "/clair-db" ]; then
+            ISCLAIR=true
+        fi
 
-    if [ $ISMYSQL == false ] && [ $ISPGSQL == false ]; then
-        echo "No database has been mounted for the migration. Use '-v' to set it in 'docker run'."
-        exit 1
-    fi
+        if [ $ISMYSQL == false ] && [ $ISPGSQL == false ]; then
+            echo "No database has been mounted for the migration. Use '-v' to set it in 'docker run'."
+            exit 1
+        fi
 
-    if [ $ISMYSQL == true ]; then
-        # as for UP notary, user does not need to provide username and pwd.
-        # the check works for harbor DB only.
+        if [ $ISMYSQL == true ]; then
+            # as for UP notary, user does not need to provide username and pwd.
+            # the check works for harbor DB only.
+            if [ $ISNOTARY == false ]; then
+                if [ -z "$DB_USR" -o -z "$DB_PWD" ]; then
+                    echo "DB_USR or DB_PWD not set, exiting..."
+                    exit 1
+                fi
+                launch_mysql $DB_USR $DB_PWD
+            else
+                launch_mysql root
+            fi
+        fi
+
+        if [ $ISPGSQL == true ]; then
+            if [ $ISCLAIR == true ]; then
+                launch_pgsql $PGSQL_USR "/clair-db"
+            else
+                launch_pgsql $PGSQL_USR
+            fi
+        fi
+    else
+        echo "Using Remote config...."
         if [ $ISNOTARY == false ]; then
             if [ -z "$DB_USR" -o -z "$DB_PWD" ]; then
                 echo "DB_USR or DB_PWD not set, exiting..."
@@ -67,9 +89,6 @@ function init {
         else
             launch_mysql root
         fi
-    fi
-
-    if [ $ISPGSQL == true ]; then
         if [ $ISCLAIR == true ]; then
             launch_pgsql $PGSQL_USR "/clair-db"
         else
@@ -183,6 +202,15 @@ function up_harbor {
 
     # $cur_version <='1.5.0', $target_version >'1.5.0', it needs to upgrade to $cur_version.mysql => 1.5.0.mysql => 1.5.0.pgsql => target_version.pgsql.
     if version_le $cur_version '1.5.0' && ! version_le $target_version '1.5.0'; then
+        
+        if [ ${USEREMOTEDB} == true ]; then
+            echo "Starting remote db migration....."
+            launch_pgsql $PGSQL_USR
+            mysql_2_pgsql_1_5_0 $PGSQL_USR
+            alembic_up pgsql $target_version
+            return 0
+        fi 
+
         if [ $ISMYSQL != true ]; then
             echo "Please make sure to mount the correct the data volume."
             return 1
@@ -228,11 +256,8 @@ function main {
         echo "h,    help            usage help"
         exit 0
     fi
-
     init
-
     local key="$1"
-
     case $key in
     up|upgrade)
         upgrade $2

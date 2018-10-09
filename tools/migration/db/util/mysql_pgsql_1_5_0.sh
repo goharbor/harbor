@@ -19,21 +19,35 @@ source $PWD/db/util/alembic.sh
 
 set -e
 
-DBCNF="-hlocalhost -u${DB_USR}"
+MY_DB_PORT=${MY_DB_PORT:-"3306"}
+PG_DB_PORT=${PG_DB_PORT:-"5432"}
+
+if [ -n ${MY_DB_HOST} ]; then
+    DBCNF="-h${MY_DB_HOST} -P${MY_DB_PORT} -u${DB_USR}"
+else
+    DBCNF="-hlocalhost -u${DB_USR}"
+    MY_DB_HOST="localhost"
+fi
+
+if [ -n "${PG_DB_HOST}" ]; then
+    PGDBCNF="-h${PG_DB_HOST} -p${PG_DB_PORT}"
+else
+    PGDBCNF=""
+fi
 
 function mysql_2_pgsql_1_5_0 {
     
     alembic_up mysql '1.5.0'
 
     ## dump 1.5.0-mysql
-    mysqldump --compatible=postgresql --no-create-info --complete-insert --default-character-set=utf8 --databases registry > /harbor-migration/db/schema/registry.mysql
+    mysqldump ${DBCNF} --compatible=postgresql --no-create-info --complete-insert --default-character-set=utf8 --databases registry > /harbor-migration/db/schema/registry.mysql
 
     ## migrate 1.5.0-mysql to 1.5.0-pqsql.
     python /harbor-migration/db/util/mysql_pgsql_data_converter.py /harbor-migration/db/schema/registry.mysql /harbor-migration/db/schema/registry_insert_data.pgsql
 
     ## import 1.5.0-pgsql into pgsql.
-    psql -U $1 -f /harbor-migration/db/schema/registry_create_tables.pgsql
-    psql -U $1 -f /harbor-migration/db/schema/registry_insert_data.pgsql
+    psql -U $1 ${PGDBCNF} -f /harbor-migration/db/schema/registry_create_tables.pgsql
+    psql -U $1 ${PGDBCNF} -f /harbor-migration/db/schema/registry_insert_data.pgsql
 
 }
 
@@ -62,19 +76,19 @@ EOF
         fi
 
         set -e
-        mysqldump --skip-triggers --compact --no-create-info --skip-quote-names --hex-blob --compatible=postgresql --default-character-set=utf8 --databases notaryserver > /harbor-migration/db/schema/notaryserver.mysql.tmp
+        mysqldump ${DBCNF} --skip-triggers --compact --no-create-info --skip-quote-names --hex-blob --compatible=postgresql --default-character-set=utf8 --databases notaryserver > /harbor-migration/db/schema/notaryserver.mysql.tmp
         sed "s/0x\([0-9A-F]*\)/decode('\1','hex')/g" /harbor-migration/db/schema/notaryserver.mysql.tmp > /harbor-migration/db/schema/notaryserver_insert_data.mysql
-        mysqldump --skip-triggers --compact --no-create-info --skip-quote-names --hex-blob --compatible=postgresql --default-character-set=utf8 --databases notarysigner > /harbor-migration/db/schema/notarysigner.mysql.tmp    
+        mysqldump ${DBCNF} --skip-triggers --compact --no-create-info --skip-quote-names --hex-blob --compatible=postgresql --default-character-set=utf8 --databases notarysigner > /harbor-migration/db/schema/notarysigner.mysql.tmp    
         sed "s/0x\([0-9A-F]*\)/decode('\1','hex')/g" /harbor-migration/db/schema/notarysigner.mysql.tmp > /harbor-migration/db/schema/notarysigner_insert_data.mysql
 
         python /harbor-migration/db/util/mysql_pgsql_data_converter.py /harbor-migration/db/schema/notaryserver_insert_data.mysql /harbor-migration/db/schema/notaryserver_insert_data.pgsql
         python /harbor-migration/db/util/mysql_pgsql_data_converter.py /harbor-migration/db/schema/notarysigner_insert_data.mysql /harbor-migration/db/schema/notarysigner_insert_data.pgsql
 
         # launch_pgsql $PGSQL_USR
-        psql -U $1 -f /harbor-migration/db/schema/notaryserver_create_tables.pgsql
-        psql -U $1 -f /harbor-migration/db/schema/notaryserver_insert_data.pgsql
-        psql -U $1 -f /harbor-migration/db/schema/notarysigner_create_tables.pgsql
-        psql -U $1 -f /harbor-migration/db/schema/notarysigner_insert_data.pgsql
+        psql -U $1 ${PGDBCNF} -f /harbor-migration/db/schema/notaryserver_create_tables.pgsql
+        psql -U $1 ${PGDBCNF} -f /harbor-migration/db/schema/notaryserver_insert_data.pgsql
+        psql -U $1 ${PGDBCNF} -f /harbor-migration/db/schema/notarysigner_create_tables.pgsql
+        psql -U $1 ${PGDBCNF} -f /harbor-migration/db/schema/notarysigner_insert_data.pgsql
 
         stop_mysql root
         stop_pgsql $1 
@@ -85,7 +99,7 @@ function up_clair {
     # clair DB info: user: 'postgres' database: 'postgres'
 
     set +e
-    if [[ $(psql -U $1 -d postgres -t -c "select count(*) from vulnerability;") -eq 0 ]]; then
+    if [[ $(psql -U $1 ${PGDBCNF} -d postgres -t -c "select count(*) from vulnerability;") -eq 0 ]]; then
         echo "no vulnerability data needs to be updated."
         return 0
     else        
@@ -108,7 +122,7 @@ EOF
             exit 0           
         fi
         set -e
-        psql -U $1 -f /harbor-migration/db/schema/clair.pgsql
+        psql -U $1 ${PGDBCNF} -f /harbor-migration/db/schema/clair.pgsql
         stop_pgsql $1
     fi
 }

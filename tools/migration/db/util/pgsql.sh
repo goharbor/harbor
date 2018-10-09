@@ -16,7 +16,17 @@
 
 set -e
 
-POSTGRES_PASSWORD=${DB_PWD}
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-${DB_PWD}}
+PG_DB_PORT=${PG_DB_PORT:-"5432"}
+
+if [ -n ${PG_DB_HOST} ]; then
+    PGDBCNF="-h ${PG_DB_HOST} -p ${PG_DB_PORT}"
+    echo "${PG_DB_HOST}:${PG_DB_PORT}:*:*:${POSTGRES_PASSWORD}" > ~/.pgpass
+    chmod 0600 ~/.pgpass
+else
+    PGDBCNF=""
+fi
+
 
 function file_env {
         local var="$1"
@@ -41,85 +51,120 @@ if [ "${1:0:1}" = '-' ]; then
 fi
 
 function launch_pgsql {
-    local pg_data=$2
-    if [ -z $2 ]; then
-        pg_data=$PGDATA
-    fi
+        if [ -z ${PG_DB_HOST} ]; then
+                local pg_data=$2
+                if [ -z $2 ]; then
+                        pg_data=$PGDATA
+                fi
 
-    if [ "$1" = 'postgres' ]; then
-            chown -R postgres:postgres $pg_data
-            # look specifically for PG_VERSION, as it is expected in the DB dir
-            if [ ! -s "$pg_data/PG_VERSION" ]; then
-                    file_env 'POSTGRES_INITDB_ARGS'
-                    if [ "$POSTGRES_INITDB_XLOGDIR" ]; then
-                            export POSTGRES_INITDB_ARGS="$POSTGRES_INITDB_ARGS --xlogdir $POSTGRES_INITDB_XLOGDIR"
-                    fi
-                    su - $1 -c "initdb -D $pg_data  -U postgres -E UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8 $POSTGRES_INITDB_ARGS"
-                    # check password first so we can output the warning before postgres
-                    # messes it up
-                    file_env 'POSTGRES_PASSWORD'
-                    if [ "$POSTGRES_PASSWORD" ]; then
-                            pass="PASSWORD '$POSTGRES_PASSWORD'"
-                            authMethod=md5
-                    else
-                            # The - option suppresses leading tabs but *not* spaces. :)
-                            echo "Use \"-e POSTGRES_PASSWORD=password\" to set the password in \"docker run\"."
-                            exit 1
-                    fi
+                if [ "$1" = 'postgres' ]; then
+                        chown -R postgres:postgres $pg_data
+                        # look specifically for PG_VERSION, as it is expected in the DB dir
+                        if [ ! -s "$pg_data/PG_VERSION" ]; then
+                                file_env 'POSTGRES_INITDB_ARGS'
+                                if [ "$POSTGRES_INITDB_XLOGDIR" ]; then
+                                        export POSTGRES_INITDB_ARGS="$POSTGRES_INITDB_ARGS --xlogdir $POSTGRES_INITDB_XLOGDIR"
+                                fi
+                                su - $1 -c "initdb -D $pg_data  -U postgres -E UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8 $POSTGRES_INITDB_ARGS"
+                                # check password first so we can output the warning before postgres
+                                # messes it up
+                                file_env 'POSTGRES_PASSWORD'
+                                if [ "$POSTGRES_PASSWORD" ]; then
+                                        pass="PASSWORD '$POSTGRES_PASSWORD'"
+                                        authMethod=md5
+                                else
+                                        # The - option suppresses leading tabs but *not* spaces. :)
+                                        echo "Use \"-e POSTGRES_PASSWORD=password\" to set the password in \"docker run\"."
+                                        exit 1
+                                fi
 
-                    {
-                            echo
-                            echo "host all all all $authMethod"
-                    } >> "$pg_data/pg_hba.conf"
-                    # internal start of server in order to allow set-up using psql-client
-                    # does not listen on external TCP/IP and waits until start finishes
-                    su - $1 -c "pg_ctl -D \"$pg_data\" -o \"-c listen_addresses='localhost'\" -w start"
+                                {
+                                        echo
+                                        echo "host all all all $authMethod"
+                                } >> "$pg_data/pg_hba.conf"
+                                # internal start of server in order to allow set-up using psql-client
+                                # does not listen on external TCP/IP and waits until start finishes
+                                su - $1 -c "pg_ctl -D \"$pg_data\" -o \"-c listen_addresses='localhost'\" -w start"
 
-                    file_env 'POSTGRES_USER' 'postgres'
-                    file_env 'POSTGRES_DB' "$POSTGRES_USER"
+                                file_env 'POSTGRES_USER' 'postgres'
+                                file_env 'POSTGRES_DB' "$POSTGRES_USER"
 
-                    psql=( psql -v ON_ERROR_STOP=1 )
+                                psql=( psql -v ON_ERROR_STOP=1 )
 
-                    if [ "$POSTGRES_DB" != 'postgres' ]; then
-                            "${psql[@]}" --username postgres <<-EOSQL
-                                    CREATE DATABASE "$POSTGRES_DB" ;
+                                if [ "$POSTGRES_DB" != 'postgres' ]; then
+                                        "${psql[@]}" --username postgres <<-EOSQL
+                                                CREATE DATABASE "$POSTGRES_DB" ;
 EOSQL
-                            echo
-                    fi
+                                        echo
+                                fi
 
-                    if [ "$POSTGRES_USER" = 'postgres' ]; then
-                            op='ALTER'
-                    else
-                            op='CREATE'
-                    fi
-                    "${psql[@]}" --username postgres <<-EOSQL
-                            $op USER "$POSTGRES_USER" WITH SUPERUSER $pass ;
+                                if [ "$POSTGRES_USER" = 'postgres' ]; then
+                                        op='ALTER'
+                                else
+                                        op='CREATE'
+                                fi
+                                "${psql[@]}" --username postgres <<-EOSQL
+                                        $op USER "$POSTGRES_USER" WITH SUPERUSER $pass ;
 EOSQL
-                    echo
+                                echo
 
-                    psql+=( --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" )
+                                psql+=( --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" )
 
-                    echo
-                    for f in /docker-entrypoint-initdb.d/*; do
-                            case "$f" in
-                                    *.sh)     echo "$0: running $f"; . "$f" ;;
-                                    *.sql)    echo "$0: running $f"; "${psql[@]}" -f "$f"; echo ;;
-                                    *.sql.gz) echo "$0: running $f"; gunzip -c "$f" | "${psql[@]}"; echo ;;
-                                    *)        echo "$0: ignoring $f" ;;
-                            esac
-                            echo
-                    done
+                                echo
+                                for f in /docker-entrypoint-initdb.d/*; do
+                                        case "$f" in
+                                                *.sh)     echo "$0: running $f"; . "$f" ;;
+                                                *.sql)    echo "$0: running $f"; "${psql[@]}" -f "$f"; echo ;;
+                                                *.sql.gz) echo "$0: running $f"; gunzip -c "$f" | "${psql[@]}"; echo ;;
+                                                *)        echo "$0: ignoring $f" ;;
+                                        esac
+                                        echo
+                                done
 
-                    #PGUSER="${PGUSER:-postgres}" \
-                    #su - $1 -c "pg_ctl -D \"$pg_data\" -m fast -w stop"
+                                #PGUSER="${PGUSER:-postgres}" \
+                                #su - $1 -c "pg_ctl -D \"$pg_data\" -m fast -w stop"
 
-                    echo
-                    echo 'PostgreSQL init process complete; ready for start up.'
-                    echo
-            else
-                su - $PGSQL_USR -c "pg_ctl -D \"$pg_data\" -o \"-c listen_addresses='localhost'\" -w start"
-            fi
-    fi
+                                echo
+                                echo 'PostgreSQL init process complete; ready for start up.'
+                                echo
+                        else
+                                su - $PGSQL_USR -c "pg_ctl -D \"$pg_data\" -o \"-c listen_addresses='localhost'\" -w start"
+                        fi
+                fi
+        else
+                echo "Using remote PostgreSQL Config....."
+                file_env 'POSTGRES_USER' 'postgres'
+                file_env 'POSTGRES_DB' "$POSTGRES_USER"
+
+                psql=( psql -v ON_ERROR_STOP=1 ${PGDBCNF} )
+
+                if [ "$POSTGRES_DB" != 'postgres' ]; then
+                        "${psql[@]}" --username postgres <<-EOSQL
+                                CREATE DATABASE "$POSTGRES_DB" ;
+EOSQL
+                        echo
+                fi
+                if [ "$POSTGRES_USER" = 'postgres' ]; then
+                        op='ALTER'
+                else
+                        op='CREATE'
+                fi
+                "${psql[@]}" --username postgres <<-EOSQL
+                        $op USER "$POSTGRES_USER" WITH SUPERUSER $pass ;
+EOSQL
+                echo
+                psql+=( --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" )
+                echo
+                for f in /docker-entrypoint-initdb.d/*; do
+                        case "$f" in
+                                *.sh)     echo "$0: running $f"; . "$f" ;;
+                                *.sql)    echo "$0: running $f"; "${psql[@]}" -f "$f"; echo ;;
+                                *.sql.gz) echo "$0: running $f"; gunzip -c "$f" | "${psql[@]}"; echo ;;
+                                *)        echo "$0: ignoring $f" ;;
+                        esac
+                        echo
+                done
+        fi
 }
 
 function stop_pgsql {
@@ -131,7 +176,7 @@ function stop_pgsql {
 }
 
 function get_version_pgsql {
-    version=$(psql -U $1 -d registry -t -c "select * from alembic_version;")
+    version=$(psql -U $1 ${PGDBCNF} -d registry -t -c "select * from alembic_version;")
     echo $version   
 }
 

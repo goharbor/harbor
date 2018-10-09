@@ -36,7 +36,7 @@ script_location = /harbor-migration/db/alembic/postgres/migration_harbor
 # are written from script.py.mako
 # output_encoding = utf-8
 
-sqlalchemy.url = postgresql://$PGSQL_USR:$DB_PWD@localhost:5432/registry
+sqlalchemy.url = postgresql://$PGSQL_USR:$DB_PWD@$PG_DB_HOST:$PG_DB_PORT/registry
 
 
 # Logging configuration

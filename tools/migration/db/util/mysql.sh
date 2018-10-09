@@ -15,8 +15,16 @@
 #
 
 set -e
+export MY_DB_PORT=${MY_DB_PORT:-"3306"}
 
-DBCNF="-hlocalhost -u${DB_USR}"
+if [ -n ${MY_DB_HOST} ]; then
+    DBCNF="-h${MY_DB_HOST} -P${MY_DB_PORT} -u${DB_USR} -p${DB_PWD}"
+else
+    DBCNF="-hlocalhost -u${DB_USR}"
+    MY_DB_HOST="localhost"
+fi
+
+echo ${MY_DB_HOST}
 
 function launch_mysql {
     set +e
@@ -25,27 +33,40 @@ function launch_mysql {
     if [ ! -z "$pwd" ]; then
         export MYSQL_PWD="${DB_PWD}"
     fi
-    echo 'Trying to start mysql server...'
-    chown -R 10000:10000 /var/lib/mysql
-    mysqld &
-    echo 'Waiting for MySQL start...'
-    for i in {60..0}; do
+    if [ "${MY_DB_HOST}" == "localhost" ]; then
+        echo 'Trying to start mysql server...'
+        chown -R 10000:10000 /var/lib/mysql
+        mysqld &
+        echo 'Waiting for MySQL start...'
+        for i in {60..0}; do
+            if [ -z "$pwd" ]; then
+                mysqladmin -u$usr processlist >/dev/null 2>&1
+            else
+                mysqladmin -u$usr -p$pwd processlist >/dev/null 2>&1   
+            fi
+            if [ $? -eq 0 ]; then
+                break
+            fi
+            sleep 1
+        done
+        set -e
+        if [ "$i" -eq 0 ]; then
+            echo "timeout. Can't run mysql server."
+            return 1
+        fi
+        return 0
+    else
+        echo "Remote mysql... skiping local db config"
         if [ -z "$pwd" ]; then
-            mysqladmin -u$usr processlist >/dev/null 2>&1
+            mysqladmin -u${usr} -h${MY_DB_HOST} -P${MY_DB_PORT} processlist >/dev/null 2>&1
         else
-            mysqladmin -u$usr -p$pwd processlist >/dev/null 2>&1   
+            mysqladmin -u${usr} -p${pwd} -h${MY_DB_HOST} -P${MY_DB_PORT} processlist >/dev/null 2>&1   
         fi
         if [ $? -eq 0 ]; then
-            break
+            return 0
         fi
-        sleep 1
-    done
-    set -e
-    if [ "$i" -eq 0 ]; then
-        echo "timeout. Can't run mysql server."
         return 1
     fi
-    return 0
 }
 
 function test_mysql {
