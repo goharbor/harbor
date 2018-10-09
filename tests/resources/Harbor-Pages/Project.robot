@@ -84,6 +84,7 @@ Make Project Private
     Go Into Project  ${project name}    
     Sleep  1
     Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
+    Sleep  1
     Checkbox Should Be Selected  xpath=//input[@name='public']
     Click Element  //clr-checkbox[@name='public']//label
     Click Element  //button[contains(.,'SAVE')]
