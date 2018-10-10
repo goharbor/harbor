@@ -68,6 +68,7 @@ Test Case - Read Only Mode
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
 
     Disable Read Only
+    Sleep  5
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
     Close Browser
 
@@ -264,6 +265,8 @@ Test Case - User View Logs
 
     Go Into Project  project${d}
     Delete Repo  project${d}
+
+    Sleep  1
 
     Go To Project Log
     Advanced Search Should Display
