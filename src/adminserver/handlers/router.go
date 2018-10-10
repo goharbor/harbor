@@ -23,8 +23,8 @@ import (
 
 func newRouter() http.Handler {
 	r := mux.NewRouter()
-	r.HandleFunc("/api/configurations", api.ListCfgs).Methods("GET")
 	r.HandleFunc("/api/configurations", api.UpdateCfgs).Methods("PUT")
+	r.HandleFunc("/api/configs", api.ListCfgs).Methods("GET")
 	r.HandleFunc("/api/configurations/reset", api.ResetCfgs).Methods("POST")
 	r.HandleFunc("/api/systeminfo/capacity", api.Capacity).Methods("GET")
 	r.HandleFunc("/api/ping", api.Ping).Methods("GET")

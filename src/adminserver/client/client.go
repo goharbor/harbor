@@ -74,7 +74,7 @@ func (c *client) Ping() error {
 
 // GetCfgs ...
 func (c *client) GetCfgs() (map[string]interface{}, error) {
-	url := c.baseURL + "/api/configurations"
+	url := c.baseURL + "/api/configs"
 	cfgs := map[string]interface{}{}
 	if err := c.client.Get(url, &cfgs); err != nil {
 		return nil, err

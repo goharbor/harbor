@@ -74,6 +74,17 @@ func (c *ConfigAPI) Get() {
 	c.ServeJSON()
 }
 
+// GetInternalConfig returns internal configurations
+func (c *ConfigAPI) GetInternalConfig() {
+	configs, err := config.GetSystemCfg()
+	if err != nil {
+		log.Errorf("failed to get configurations: %v", err)
+		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+	c.Data["json"] = configs
+	c.ServeJSON()
+}
+
 // Put updates configurations
 func (c *ConfigAPI) Put() {
 	m := map[string]interface{}{}

@@ -102,7 +102,7 @@ func NewAdminserver(config map[string]interface{}) (*httptest.Server, error) {
 
 	m = append(m, &RequestHandlerMapping{
 		Method:  "GET",
-		Pattern: "/api/configurations",
+		Pattern: "/api/configs",
 		Handler: Handler(resp),
 	})
 

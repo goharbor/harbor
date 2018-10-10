@@ -97,6 +97,7 @@ func initRouters() {
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &api.TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
 	beego.Router("/api/logs", &api.LogAPI{})
+	beego.Router("/api/configs", &api.ConfigAPI{}, "get:GetInternalConfig")
 	beego.Router("/api/configurations", &api.ConfigAPI{})
 	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
 	beego.Router("/api/statistics", &api.StatisticAPI{})

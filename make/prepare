@@ -428,7 +428,7 @@ render(os.path.join(templates_dir, "jobservice", "env"),
         job_conf_env,
         core_secret=core_secret,
         jobservice_secret=jobservice_secret,
-        adminserver_url=adminserver_url)
+        core_url=core_url)
 
 render(os.path.join(templates_dir, "jobservice", "config.yml"),
         jobservice_conf,

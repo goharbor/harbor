@@ -1,4 +1,4 @@
 CORE_SECRET=$core_secret
 JOBSERVICE_SECRET=$jobservice_secret
-ADMINSERVER_URL=$adminserver_url
+CORE_URL=$core_url
 GODEBUG=netdns=cgo
