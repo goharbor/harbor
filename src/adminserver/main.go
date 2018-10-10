@@ -20,7 +20,6 @@ import (
 
 	"github.com/goharbor/harbor/src/adminserver/handlers"
 	syscfg "github.com/goharbor/harbor/src/adminserver/systemcfg"
-	sysinfo "github.com/goharbor/harbor/src/adminserver/systeminfo"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
@@ -46,8 +45,6 @@ func main() {
 		log.Fatalf("failed to initialize the system: %v", err)
 	}
 	log.Info("system initialization completed")
-
-	sysinfo.Init()
 
 	port := os.Getenv("PORT")
 	if len(port) == 0 {

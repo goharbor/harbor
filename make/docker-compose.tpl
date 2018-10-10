@@ -99,6 +99,7 @@ services:
       - /data/secretkey:/etc/core/key:z
       - /data/ca_download/:/etc/core/ca/:z
       - /data/psc/:/etc/core/token/:z
+      - /data/:/data/:z
     networks:
       - harbor
     depends_on:

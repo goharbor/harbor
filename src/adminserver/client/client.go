@@ -17,10 +17,10 @@ package client
 import (
 	"strings"
 
-	"github.com/goharbor/harbor/src/adminserver/systeminfo/imagestorage"
 	"github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/core/systeminfo/imagestorage"
 )
 
 // Client defines methods that an Adminserver client should implement

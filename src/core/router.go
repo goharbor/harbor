@@ -112,6 +112,7 @@ func initRouters() {
 
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
+	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig")
 
 	// external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})
