@@ -470,10 +470,12 @@
         "LABELS": "标签",
         "ADD_TO_IMAGE": "添加标签到此镜像",
         "ADD_LABELS": "添加标签",
+        "RETAG": "复制镜像",
         "FILTER_BY_LABEL": "过滤标签",
         "ACTION": "操作",
         "DEPLOY": "部署",
-        "ADDITIONAL_INFO": "添加信息"
+        "ADDITIONAL_INFO": "添加信息",
+        "TARGET_PROJECT": "目标项目"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",

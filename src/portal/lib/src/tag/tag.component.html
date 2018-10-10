@@ -11,6 +11,17 @@
     <button type="button" class="btn btn-primary" [ngxClipboard]="digestTarget" (cbOnSuccess)="onSuccess($event)" (cbOnError)="onError($event)">{{'BUTTON.COPY' | translate}}</button>
   </div>
 </clr-modal>
+<clr-modal class="hidden-tag" [(clrModalOpen)]="retagDialogOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="retagDialogClosable">
+    <h3 class="modal-title">{{ 'REPOSITORY.RETAG' | translate }}</h3>
+    <div class="modal-body">
+        <div class="row col-md-12">
+            <hbr-image-name-input #imageNameInput style="width:100%;"></hbr-image-name-input>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" [disabled]="imageNameInput.projectName.invalid||imageNameInput.repoName.invalid||imageNameInput.tagName.invalid" class="btn btn-primary" (click)="onRetag()">{{'BUTTON.CONFIRM' | translate}}</button>
+    </div>
+</clr-modal>
 <div class="row" style="position:relative;">
   <div>
     <div class="row flex-items-xs-right rightPos">
@@ -58,6 +69,7 @@
             </div>
             </clr-dropdown-menu>
           </clr-dropdown>
+          <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="retag(selectedRow)"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}</button>
           <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-bar>
         <clr-dg-column style="width: 120px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>

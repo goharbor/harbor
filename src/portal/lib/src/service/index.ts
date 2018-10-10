@@ -12,3 +12,4 @@ export * from './job-log.service';
 export * from './project.service';
 export * from './label.service';
 export * from './helm-chart.service';
+export * from './retag.service';

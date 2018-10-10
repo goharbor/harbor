@@ -449,9 +449,11 @@
         "ADD_TO_IMAGE": "Add labels to this image",
         "FILTER_BY_LABEL": "Filter images by label",
         "ADD_LABELS": "Add labels",
+        "RETAG": "Retag",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
-        "ADDITIONAL_INFO": "Add Additional Info"
+        "ADDITIONAL_INFO": "Add Additional Info",
+        "TARGET_PROJECT": "Projet Cible"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
