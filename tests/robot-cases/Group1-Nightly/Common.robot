@@ -79,7 +79,7 @@ Test Case - Repo Size
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  alpine  2.6  2.6
     Go Into Project  library
     Go Into Repo  alpine
-    Page Should Contain  1.92MB 
+    Wait Until Page Contains  1.92MB
     Close Browser
 
 Test Case - Staticsinfo
@@ -97,6 +97,7 @@ Test Case - Staticsinfo
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  private${d}  hello-world
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  public${d}  hello-world
     Reload Page
+    Wait Until Page Contains  //statistics-panel
     ${privaterepocount2}=  Get Statics Private Repo
     ${privateprojcount2}=  get statics private project
     ${publicrepocount2}=  get statics public repo
@@ -266,7 +267,7 @@ Test Case - User View Logs
     Go Into Project  project${d}
     Delete Repo  project${d}
 
-    Sleep  1
+    Sleep  3
 
     Go To Project Log
     Advanced Search Should Display
