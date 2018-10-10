@@ -19,8 +19,6 @@ import {
       ElementRef
 } from '@angular/core';
 
-import * as $ from 'jquery';
-
 const RESOURCE_COLOR_GREEN_NORMAL: string = '#5DB700';
 const RESOURCE_COLOR_ORANGE_NORMAL: string = '#FBBF00';
 const RESOURCE_COLOR_RED_NORMAL: string = '#EA400D';
@@ -43,6 +41,9 @@ export class GaugeComponent implements AfterViewInit {
       _title: string = "UNKNOWN"; // Lang key
       _free: number = 0;
       _threasHold: number = 0;
+      posOne = 0;
+      posTwo = 0;
+      transition = '';
 
       /**
        * Background color of the component. Default is white.
@@ -195,7 +196,6 @@ export class GaugeComponent implements AfterViewInit {
 
             this._positionOne = percent;
             this.setBars();
-            this.setColors();
             this.setAnimate();
       }
 
@@ -204,58 +204,12 @@ export class GaugeComponent implements AfterViewInit {
                   return;
             }
 
-            let barOne = $(this.barOne.nativeElement);
-            let barTwo = $(this.barTwo.nativeElement);
-
-            if (!barOne || !barTwo) {
-                  return;
-            }
-
-            let posOne, posTwo;
-
             if (isNaN(this.positionOne)) {
-                  posOne = posTwo = 0;
+                  this.posOne = this.posTwo = 0;
             } else {
-                  posOne = (this.positionOne / 100) * 180;
-                  posTwo = (this.positionTwo / 100) * 180;
+                  this.posOne = (this.positionOne / 100) * 180;
+                  this.posTwo = (this.positionTwo / 100) * 180;
             }
-
-            barOne.css({
-                  '-webkit-transform': 'rotate(' + posOne + 'deg)',
-                  '-moz-transform': 'rotate(' + posOne + 'deg)',
-                  '-ms-transform': 'rotate(' + posOne + 'deg)',
-                  '-o-transform': 'rotate(' + posOne + 'deg)',
-                  'transform': 'rotate(' + posOne + 'deg)'
-            });
-
-            barTwo.css({
-                  '-webkit-transform': 'rotate(' + posTwo + 'deg)',
-                  '-moz-transform': 'rotate(' + posTwo + 'deg)',
-                  '-ms-transform': 'rotate(' + posTwo + 'deg)',
-                  '-o-transform': 'rotate(' + posTwo + 'deg)',
-                  'transform': 'rotate(' + posTwo + 'deg)'
-            });
-      }
-
-      setColors() {
-            if (!this.barOne || !this.barTwo) {
-                  return;
-            }
-
-            let barOne = $(this.barOne.nativeElement);
-            let barTwo = $(this.barTwo.nativeElement);
-
-            if (!barOne || !barTwo) {
-                  return;
-            }
-
-            barOne.css({
-                  'background-color': this._colorOne
-            });
-
-            barTwo.css({
-                  'background-color': this._colorTwo
-            });
       }
 
       setAnimate() {
@@ -263,29 +217,11 @@ export class GaugeComponent implements AfterViewInit {
                   return;
             }
 
-            let barOne = $(this.barOne.nativeElement);
-            let barTwo = $(this.barTwo.nativeElement);
-
-            if (!barOne || !barTwo) {
-                  return;
-            }
-
-            let transition = 'transform 1s ease';
-            let prefixes = ['webkit', 'moz', 'ms', 'o'];
-            let css = {
-                  'transition': transition
-            };
-
             if (!this._animate) {
-                  transition = 'none';
+              this.transition = 'none';
+            } else {
+              this.transition = 'transform 1s ease';
             }
-
-            for (let prefix of prefixes) {
-                  css['-' + prefix + '-transition'] = transition;
-            }
-
-            barOne.css(css);
-            barTwo.css(css);
       }
 
 }
