@@ -98,7 +98,7 @@ func (d *DefaultReplicator) Replicate(replication *Replication) error {
 					"repository":            repository,
 					"tags":                  tags,
 					"src_registry_url":      url,
-					"src_registry_insecure": true,
+					"src_registry_insecure": false,
 					// "src_token_service_url":"",
 					"dst_registry_url":      target.URL,
 					"dst_registry_insecure": target.Insecure,

@@ -89,7 +89,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]Target
 	authorizer := &notaryAuthorizer{
 		token: t.Token,
 	}
-	tr := registry.NewTransport(registry.GetHTTPTransport(true), authorizer)
+	tr := registry.NewTransport(registry.GetHTTPTransport(), authorizer)
 	gun := data.GUN(fqRepo)
 	notaryRepo, err := client.NewFileCachedNotaryRepository(notaryCachePath, gun, notaryEndpoint, tr, mockRetriever, trustPin)
 	if err != nil {
