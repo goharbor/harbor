@@ -11,13 +11,26 @@ import {
 import { NgForm } from '@angular/forms';
 import { TranslateService } from "@ngx-translate/core";
 import { State } from "@clr/angular";
-import { finalize } from "rxjs/operators";
+import { forkJoin, throwError, Observable } from "rxjs";
+import { finalize, map, catchError } from "rxjs/operators";
 import { SystemInfo, SystemInfoService, HelmChartItem } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
-import { toPromise, DEFAULT_PAGE_SIZE } from "../utils";
+import { toPromise, DEFAULT_PAGE_SIZE, downloadFile } from "../utils";
 import { HelmChartService } from "../service/helm-chart.service";
 import { DefaultHelmIcon} from "../shared/shared.const";
 import { Roles } from './../shared/shared.const';
+import { OperationService } from "./../operation/operation.service";
+import {
+  OperateInfo,
+  OperationState,
+  operateChanges
+} from "./../operation/operate";
+import { ConfirmationAcknowledgement, ConfirmationDialogComponent, ConfirmationMessage } from "./../confirmation-dialog";
+import {
+  ConfirmationButtons,
+  ConfirmationTargets,
+  ConfirmationState,
+} from "./../shared/shared.const";
 
 @Component({
   selector: "hbr-helm-chart",
@@ -62,11 +75,14 @@ export class HelmChartComponent implements OnInit {
 
   @ViewChild('chartUploadForm') uploadForm: NgForm;
 
+  @ViewChild("confirmationDialog") confirmationDialog: ConfirmationDialogComponent;
+
   constructor(
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
     private systemInfoService: SystemInfoService,
     private helmChartService: HelmChartService,
+    private operationService: OperationService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -166,6 +182,87 @@ export class HelmChartComponent implements OnInit {
     }
   }
 
+
+  deleteChart(chartName: string): Observable<any> {
+    let operateMsg = new OperateInfo();
+    operateMsg.name = "OPERATION.DELETE_CHART";
+    operateMsg.data.id = chartName;
+    operateMsg.state = OperationState.progressing;
+    operateMsg.data.name = chartName;
+    this.operationService.publishInfo(operateMsg);
+
+    return this.helmChartService.deleteHelmChart(this.projectName, chartName)
+    .pipe(map(
+      () => operateChanges(operateMsg, OperationState.success),
+      err => operateChanges(operateMsg, OperationState.failure, err)
+    ));
+  }
+
+  deleteCharts(charts: HelmChartItem[]) {
+    if (charts && charts.length < 1) { return; }
+    let chartsDelete$ = charts.map(chart => this.deleteChart(chart.name));
+    forkJoin(chartsDelete$)
+    .pipe(
+      catchError(err => throwError(err)),
+      finalize(() => {
+        this.refresh();
+        this.selectedRows = [];
+      }))
+    .subscribe(() => {});
+  }
+
+  downloadLatestVersion(evt?: Event, item?: HelmChartItem) {
+    if (evt) {
+      evt.stopPropagation();
+    }
+    let selectedChart: HelmChartItem;
+
+    if (item) {
+      selectedChart = item;
+    } else {
+      // return if selected version less then 1
+      if (this.selectedRows.length < 1) {
+        return;
+      }
+      selectedChart = this.selectedRows[0];
+    }
+    if (!selectedChart) {
+      return;
+    }
+    let filename = `charts/${selectedChart.name}-${selectedChart.latest_version}.tgz`;
+    this.helmChartService.downloadChart(this.projectName, filename).subscribe(
+      res => {
+        downloadFile(res);
+      },
+      error => {
+        this.errorHandler.error(error);
+      }
+    );
+  }
+
+  openChartDeleteModal(charts: HelmChartItem[]) {
+    let chartNames = charts.map(chart => chart.name).join(",");
+    let message = new ConfirmationMessage(
+      "HELM_CHART.DELETE_CHART_VERSION_TITLE",
+      "HELM_CHART.DELETE_CHART_VERSION",
+      chartNames,
+      charts,
+      ConfirmationTargets.HELM_CHART,
+      ConfirmationButtons.DELETE_CANCEL
+    );
+    this.confirmationDialog.open(message);
+  }
+
+  confirmDeletion(message: ConfirmationAcknowledgement) {
+    if (
+      message &&
+      message.source === ConfirmationTargets.HELM_CHART &&
+      message.state === ConfirmationState.CONFIRMED
+    ) {
+      let charts = message.data;
+      this.deleteCharts(charts);
+    }
+  }
 
   showCard(cardView: boolean) {
     if (this.isCardView === cardView) {

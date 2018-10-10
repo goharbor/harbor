@@ -301,6 +301,7 @@ export interface ScrollPosition {
 export interface HelmChartItem {
   name: string;
   total_versions: number;
+  latest_version: string;
   created: string;
   icon: string;
   home: string;

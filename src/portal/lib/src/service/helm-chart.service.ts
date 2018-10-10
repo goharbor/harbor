@@ -35,7 +35,7 @@ export abstract class HelmChartService {
    *  ** deprecated param projectId Id of the project
    *  ** deprecated param chartId ID of helmChart in this specific project
    */
-  abstract deleteHelmChart(projectId: number | string, chartId: number): Observable<any>;
+  abstract deleteHelmChart(projectId: number | string, chartName: string): Observable<any>;
 
   /**
    * Get all the versions of helmchart
@@ -123,6 +123,7 @@ export class HelmChartDefaultService extends HelmChartService {
         return {
           name: chart.Name,
           total_versions: chart.total_versions,
+          latest_version: chart.latest_version,
           created: chart.Created,
           icon: chart.Icon,
           home: chart.Home};
@@ -153,13 +154,13 @@ export class HelmChartDefaultService extends HelmChartService {
       }));
   }
 
-  public deleteHelmChart(projectId: number | string, chartId: number): any {
-    if (!chartId) {
+  public deleteHelmChart(projectId: number | string, chartName: string): Observable<any> {
+    if (!chartName) {
       observableThrowError("Bad argument");
     }
 
     return this.http
-      .delete(`${this.config.helmChartEndpoint}/${projectId}/${chartId}`)
+      .delete(`${this.config.helmChartEndpoint}/${projectId}/charts/${chartName}`)
       .pipe(map(response => {
         return this.extractData(response);
       }))
