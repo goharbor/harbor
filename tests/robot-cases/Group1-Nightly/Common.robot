@@ -86,6 +86,7 @@ Test Case - Staticsinfo
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Wait Until Element Is Visible  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
     ${privaterepocount1}=  Get Statics Private Repo
     ${privateprojcount1}=  Get Statics Private Project
     ${publicrepocount1}=  Get Statics Public Repo
@@ -97,19 +98,21 @@ Test Case - Staticsinfo
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  private${d}  hello-world
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  public${d}  hello-world
     Reload Page
-    Wait Until Page Contains  //statistics-panel
-    ${privaterepocount2}=  Get Statics Private Repo
-    ${privateprojcount2}=  get statics private project
-    ${publicrepocount2}=  get statics public repo
-    ${publicprojcount2}=  get statics public project
-    ${totalrepocount2}=  get statics total repo
-    ${totalprojcount2}=  get statics total project
     ${privateprojcount}=  evaluate  ${privateprojcount1}+1
     ${privaterepocount}=  evaluate  ${privaterepocount1}+1
     ${publicprojcount}=  evaluate  ${publicprojcount1}+1
     ${publicrepocount}=  evaluate  ${publicrepocount1}+1
     ${totalrepocount}=  evaluate  ${totalrepocount1}+2
     ${totalprojcount}=  evaluate  ${totalprojcount1}+2
+    Wait Until Element Is Visible  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+    ${privaterepocountStr}=  Convert To String  ${privaterepocount}
+    Wait Until Element Contains  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]  ${privaterepocountStr}
+    ${privaterepocount2}=  Get Statics Private Repo
+    ${privateprojcount2}=  get statics private project
+    ${publicrepocount2}=  get statics public repo
+    ${publicprojcount2}=  get statics public project
+    ${totalrepocount2}=  get statics total repo
+    ${totalprojcount2}=  get statics total project
     Should Be Equal As Integers  ${privateprojcount2}  ${privateprojcount}
     Should be equal as integers  ${privaterepocount2}  ${privaterepocount}
     Should be equal as integers  ${publicprojcount2}  ${publicprojcount}
