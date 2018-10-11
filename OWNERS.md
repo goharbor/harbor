@@ -1,5 +1,7 @@
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for general contribution guidelines.
-[GOVERNANCE.md](GOVERNANCE.md) describes governance guidelines and maintainer responsibilities.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for general contribution
+guidelines.
+[GOVERNANCE.md](https://github.com/goharbor/community/blob/master/GOVERNANCE.md)
+describes governance guidelines and maintainer responsibilities.
 
 # Core Maintainers
 
