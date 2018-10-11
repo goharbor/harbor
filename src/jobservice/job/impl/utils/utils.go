@@ -72,7 +72,7 @@ func BuildBlobURL(endpoint, repository, digest string) string {
 // GetTokenForRepo is used for job handler to get a token for clair.
 func GetTokenForRepo(repository, secret, internalTokenServiceURL string) (string, error) {
 	credential := httpauth.NewSecretAuthorizer(secret)
-	t, err := auth.GetToken(internalTokenServiceURL, true, credential,
+	t, err := auth.GetToken(internalTokenServiceURL, false, credential,
 		[]*token.ResourceActions{{
 			Type:    "repository",
 			Name:    repository,
