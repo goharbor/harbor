@@ -34,12 +34,18 @@ be added to this list as they transition to production deployments.
 ## Success Stories
 **JD:** Harbor is the registry service of JD.com’s JDOS
 platform. Harbor has been used for over 2 years in production with tens of
-thousands of nodes and managing millions of container images
+thousands of nodes and managing millions of container images.
 
 **China Mobile:** Harbor has been used in production for more than year,
-serving images to a container environment with over 1,000 nodes
+serving images to a container environment with over 1,000 nodes.
+
+**360 Total Security:** Harbor is used to distribute images and manage access
+to project images at 360 Total Security. The image replication functions is
+heavily leveraged in their environment. Harbor supports approximately 800
+compute nodes in a production environments across different regions and manages
+about 20,000 container images.
 
 **Slamtec:** Harbor is being used in external production systems as well as
 internal dev/test environments. All services are deployed using container
 images stored and managed by Harbor, making Harbor an important part of
-Slamtec's CI/CD workflow
+Slamtec's CI/CD workflow.
