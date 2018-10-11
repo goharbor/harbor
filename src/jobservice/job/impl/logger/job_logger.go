@@ -20,6 +20,7 @@ type JobLogger struct {
 func New(logPath string, level string) logger.Interface {
 	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
+		logger.Errorf("Failed to create job logger: %s", err)
 		return nil
 	}
 	logLevel := parseLevel(level)
