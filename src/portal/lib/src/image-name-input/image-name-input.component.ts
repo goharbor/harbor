@@ -1,11 +1,10 @@
-import {Component, OnDestroy, OnInit} from "@angular/core";
-import {Project} from "../project-policy-config/project";
-import {Subject} from "rxjs/index";
-import {debounceTime, distinctUntilChanged} from "rxjs/operators";
-import {toPromise} from "../utils";
-import {ProjectService} from "../service/project.service";
-import {AbstractControl, FormBuilder, FormGroup, Validators} from "@angular/forms";
-import {ErrorHandler} from "../error-handler/error-handler";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Project } from "../project-policy-config/project";
+import { Observable, Subject } from "rxjs/index";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { ProjectService } from "../service/project.service";
+import { AbstractControl, FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { ErrorHandler } from "../error-handler/error-handler";
 
 @Component({
     selector: "hbr-image-name-input",
@@ -31,18 +30,18 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
     }
     ngOnInit(): void {
         this.proNameChecker
-            .pipe(debounceTime(500))
+            .pipe(debounceTime(200))
             .pipe(distinctUntilChanged())
-            .subscribe((resp: string) => {
-                let name = this.imageNameForm.controls["projectName"].value;
+            .subscribe((name: string) => {
                 this.noProjectInfo = "";
                 this.selectedProjectList = [];
-                toPromise<Project[]>(this.proService.listProjects(name, undefined))
-                    .then((res: any) => {
-                        if (res) {
-                            this.selectedProjectList = res.slice(0, 10);
+                const prolist: any = this.proService.listProjects(name, undefined);
+                if (prolist.subscribe) {
+                    prolist.subscribe(response => {
+                        if (response) {
+                            this.selectedProjectList = response.slice(0, 10);
                             // if input project name exist in the project list
-                            let exist = res.find((data: any) => data.name === name);
+                            let exist = response.find((data: any) => data.name === name);
                             if (!exist) {
                                 this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
                             } else {
@@ -51,11 +50,13 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
                         } else {
                             this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
                         }
-                    })
-                    .catch((error: any) => {
+                    }, (error: any) => {
                         this.errorHandler.error(error);
                         this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
                     });
+                } else {
+                    this.errorHandler.error("not Observable type");
+                }
             });
     }
 
@@ -84,6 +85,14 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
         } else {
             this.noProjectInfo = "PROJECT.NAME_TOOLTIP";
         }
+    }
+
+    blurProjectInput(): void {
+        this.validateProjectName();
+    }
+
+    leaveProjectInput(): void {
+        this.selectedProjectList = [];
     }
 
     selectedProjectName(projectName: string) {

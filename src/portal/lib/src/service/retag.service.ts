@@ -1,8 +1,10 @@
 import { Observable } from "rxjs";
 import { Http } from "@angular/http";
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 import { RetagRequest } from "./interface";
 import { HTTP_JSON_OPTIONS } from "../utils";
+import { catchError } from "rxjs/operators";
+import { throwError as observableThrowError } from "rxjs/index";
 
 /**
  * Define the service methods to perform images retag.
@@ -17,11 +19,11 @@ export abstract class RetagService {
      *
      * @abstract
      * param {RetagRequest} request
-     * returns {(Observable<any> | Promise<any> | any)}
+     * returns {Observable<any>}
      *
      * @memberOf RetagService
      */
-    abstract retag(request: RetagRequest): Observable<any> | Promise<any> | any;
+    abstract retag(request: RetagRequest): Observable<any>;
 }
 
 /**
@@ -39,7 +41,7 @@ export class RetagDefaultService extends RetagService {
         super();
     }
 
-    retag(request: RetagRequest): Observable<any> | Promise<any> | any {
+    retag(request: RetagRequest): Observable<any> {
         return this.http
             .post(`/api/repositories/${request.targetProject}/${request.targetRepo}/tags`,
                 {
@@ -48,8 +50,6 @@ export class RetagDefaultService extends RetagService {
                     "override": request.override
                 },
                 HTTP_JSON_OPTIONS)
-            .toPromise()
-            .then(response => response.status)
-            .catch(error => Promise.reject(error));
-    };
+            .pipe(catchError(error => observableThrowError(error)));
+    }
 }

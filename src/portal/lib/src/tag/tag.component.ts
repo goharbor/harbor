@@ -129,10 +129,10 @@ export class TagComponent implements OnInit, AfterViewInit {
   };
   filterOneLabel: Label = this.initFilter;
 
-  @ViewChild('confirmationDialog')
+  @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild('imageNameInput')
+  @ViewChild("imageNameInput")
   imageNameInput: ImageNameInputComponent;
 
   @ViewChild("digestTarget") textInput: ElementRef;
@@ -574,20 +574,24 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   retag(tags: Tag[]) {
-    this.retagDialogOpened = true;
-    this.retagSrcImage = this.repoName + ":" + tags[0].digest;
+    if (tags && tags.length) {
+        this.retagDialogOpened = true;
+        this.retagSrcImage = this.repoName + ":" + tags[0].digest;
+    } else {
+      this.errorHandler.error("One tag should be selected before retag.");
+    }
   }
 
   onRetag() {
     this.retagDialogOpened = false;
-    toPromise<any>(this.retagService.retag({
+    this.retagService.retag({
         targetProject: this.imageNameInput.projectName.value,
         targetRepo: this.imageNameInput.repoName.value,
         targetTag: this.imageNameInput.tagName.value,
         srcImage: this.retagSrcImage,
         override: true
-      })).then(rsp => {
-      }).catch(error => {
+     }).subscribe(response => {
+    }, error => {
         this.errorHandler.error(error);
     });
   }

@@ -67,7 +67,9 @@
         "EMAIL_EXISTING": "Email address already exists.",
         "USER_EXISTING": "Username is already in use.",
         "RULE_USER_EXISTING": "Name is already in use.",
-        "EMPTY": "Name is required"
+        "EMPTY": "Name is required",
+        "NONEMPTY": "Can't be empty",
+        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -476,7 +478,7 @@
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info",
-        "TARGET_PROJECT": "Target Project"
+        "REPO_NAME": "Repository"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
