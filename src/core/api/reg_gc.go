@@ -131,7 +131,7 @@ func (gc *GCAPI) GetGC() {
 
 // List ...
 func (gc *GCAPI) List() {
-	jobs, err := dao.GetTop10AdminJobs()
+	jobs, err := dao.GetTop10AdminJobsOfName(common_job.ImageGC)
 	if err != nil {
 		gc.HandleInternalServerError(fmt.Sprintf("failed to get admin jobs: %v", err))
 		return
@@ -251,11 +251,15 @@ func (gc *GCAPI) submitJob(gr *models.GCReq) {
 
 	// submit job to jobservice
 	log.Debugf("submiting GC admin job to jobservice")
-	_, err = utils_core.GetJobServiceClient().SubmitJob(job)
+	uuid, err := utils_core.GetJobServiceClient().SubmitJob(job)
 	if err != nil {
 		if err := dao.DeleteAdminJob(id); err != nil {
 			log.Debugf("Failed to delete admin job, err: %v", err)
 		}
+		gc.HandleInternalServerError(fmt.Sprintf("%v", err))
+		return
+	}
+	if err := dao.SetAdminJobUUID(id, uuid); err != nil {
 		gc.HandleInternalServerError(fmt.Sprintf("%v", err))
 		return
 	}

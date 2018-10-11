@@ -70,6 +70,6 @@ func TestAddAdminJob(t *testing.T) {
 	_, err = AddAdminJob(job)
 	require.Nil(t, err)
 
-	jobs, _ = GetTop10AdminJobs()
-	assert.Equal(t, len(jobs), 3)
+	jobs, _ = GetTop10AdminJobsOfName("job")
+	assert.Equal(t, len(jobs), 2)
 }
