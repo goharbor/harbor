@@ -541,10 +541,10 @@ Test Case - Scan As An Unprivileged User
 
 Test Case - Scan Image With Empty Vul
     Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  busybox
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Go Into Project  library
-    Go Into Repo  hello-world
+    Go Into Repo  busybox
     Scan Repo  latest  Succeed
     Move To Summary Chart
     Wait Until Page Contains  Unknow
