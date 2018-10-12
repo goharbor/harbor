@@ -22,3 +22,6 @@ ${test_ldap_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/di
 ${config_save_button_xpath}  //config//div/button[contains(.,'SAVE')]
 ${configuration_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Configuration')]
 ${system_config_xpath}  //*[@id="config-system"]
+${garbage_collection_xpath}  //*[@id="config-gc"]
+${gc_now_xpath}  //*[@id="gc"]/gc-config/button
+${gc_log_details_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/section[6]/gc-config/clr-datagrid/div/div/div/clr-dg-table-wrapper/div[2]/clr-dg-row/div/clr-dg-cell[6]/a
