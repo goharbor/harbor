@@ -87,7 +87,9 @@ Make Project Private
     Sleep  1
     Checkbox Should Be Selected  xpath=//input[@name='public']
     Click Element  //clr-checkbox[@name='public']//label
+    Wait Until Element Is Enabled  //button[contains(.,'SAVE')]
     Click Element  //button[contains(.,'SAVE')]
+    Wait Until Page Contains  Configuration has been successfully saved
 
 Make Project Public
     [Arguments]  ${projectname}
@@ -96,7 +98,9 @@ Make Project Public
     Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
     Checkbox Should Not Be Selected  xpath=//input[@name='public']
     Click Element  //clr-checkbox[@name='public']//label
+    Wait Until Element Is Enabled  //button[contains(.,'SAVE')]
     Click Element  //button[contains(.,'SAVE')]
+    Wait Until Page Contains  Configuration has been successfully saved
 
 Delete Repo
     [Arguments]  ${projectname}
