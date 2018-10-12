@@ -71,7 +71,7 @@ Tools layered on top of Harbor and contributed by community.
 
 ## Partners and Users
 
-If you want to learn Harbor partners and users, please refer to [list of Harbor partners and users](partners.md).
+For a list of users, please refer to [ADOPTERS.md](ADOPTERS.md).
 
 ## License
 
