@@ -11,13 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-export const supportedLangs = ['en-us', 'zh-cn', 'es-es', 'fr-fr'];
+export const supportedLangs = ['en-us', 'zh-cn', 'es-es', 'fr-fr', 'pt-br'];
 export const enLang = "en-us";
 export const languageNames = {
   "en-us": "English",
   "zh-cn": "中文简体",
   "es-es": "Español",
-  "fr-fr": "Français"
+  "fr-fr": "Français",
+  "pt-br": "Português do Brasil"
 };
 export const enum AlertType {
   DANGER, WARNING, INFO, SUCCESS
