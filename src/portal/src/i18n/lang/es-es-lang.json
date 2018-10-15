@@ -821,8 +821,8 @@
     "UNKNOWN": "n/a",
     "STATUS": "Status",
     "START_TIME": "Start Time",
-    "END_TIME": "End Time",
-    "DETAILS": "Details",
+    "UPDATE_TIME": "Update Time",
+    "LOGS": "Logs",
     "PENDING": "Pending",
     "FINISHED": "Finished",
     "STOPPED": "Stopped",
@@ -832,16 +832,17 @@
         "NONE": "None",
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
-        "MANUAL": "Manual"
+        "MANUAL": "Manual",
+        "ON": "on",
+        "AT": "at"
     },
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",
         "GC_NOW": "GC NOW",
-        "JOB_LIST": "GC Jobs List",
+        "JOB_HISTORY": "GC Jobs History",
         "JOB_ID": "Job ID",
         "TRIGGER_TYPE": "Trigger Type",
         "LATEST_JOBS": "Latest {{param}} Jobs",
-        "LOG_DETAIL": "Log Details",
         "MSG_SUCCESS": "Garbage Collection Successful",
         "MSG_SCHEDULE_SET": "Garbage Collection schedule has been set",
         "MSG_SCHEDULE_RESET": "Garbage Collection schedule has been reset"

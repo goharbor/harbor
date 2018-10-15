@@ -1,5 +1,5 @@
 <clr-datagrid [clrDgLoading]="loading">
-    <clr-dg-column style="width: 160px;">{{ 'TAG.CREATION' | translate }}</clr-dg-column>
+    <clr-dg-column class="history-time">{{ 'TAG.CREATION' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'TAG.COMMAND' | translate }}</clr-dg-column>
 
     <clr-dg-row *clrDgItems="let h of history" [clrDgItem]='h' class="history-item">

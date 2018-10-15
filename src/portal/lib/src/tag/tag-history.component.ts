@@ -6,6 +6,7 @@ import { ErrorHandler } from "../error-handler/index";
 @Component({
   selector: "hbr-tag-history",
   templateUrl: "./tag-history.component.html",
+  styleUrls: ["./tag-history.component.scss"],
 
   providers: []
 })
