@@ -27,7 +27,7 @@ const (
 	jobServiceLoggerBasePath      = "JOB_SERVICE_LOGGER_BASE_PATH"
 	jobServiceLoggerLevel         = "JOB_SERVICE_LOGGER_LEVEL"
 	jobServiceLoggerArchivePeriod = "JOB_SERVICE_LOGGER_ARCHIVE_PERIOD"
-	jobServiceAdminServerEndpoint = "ADMINSERVER_URL"
+	jobServiceCoreServerEndpoint  = "CORE_URL"
 	jobServiceAuthSecret          = "JOBSERVICE_SECRET"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
@@ -282,8 +282,8 @@ func (c *Configuration) loadEnvs() {
 	}
 
 	// admin server
-	if adminServer := utils.ReadEnv(jobServiceAdminServerEndpoint); !utils.IsEmptyStr(adminServer) {
-		c.AdminServer = adminServer
+	if coreServer := utils.ReadEnv(jobServiceCoreServerEndpoint); !utils.IsEmptyStr(coreServer) {
+		c.AdminServer = coreServer
 	}
 
 }
