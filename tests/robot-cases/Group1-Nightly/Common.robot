@@ -605,15 +605,17 @@ Test Case - View Scan Error
 
 Test Case - Project Level Image Serverity Policy
     Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  haproxy
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
+    ${d}=  get current date  result_format=%m%s
+    Create An New Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
+    Go Into Project  project${d}
     Go Into Repo  haproxy
     Scan Repo  latest  Succeed
     Back To Projects
-    Go Into Project  library
+    Go Into Project  project${d}
     Set Vulnerabilty Serverity  0
-    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  haproxy
+    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
     Close Browser
 
 Test Case - Admin Push Signed Image
