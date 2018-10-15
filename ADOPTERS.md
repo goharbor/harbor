@@ -8,10 +8,12 @@ publicly at this time.
 There are many additional adopters of Harbor in the evaluating phase that will
 be added to this list as they transition to production deployments.
 
+<a href="https://www.jd.com" border="0" target="_blank"><img alt="JD.com" src="docs/img/jd.png" height="50"></a>&nbsp; &nbsp; &nbsp; 
 <a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="docs/img/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.onstar.com.cn" border="0" target="_blank"><img alt="OnStar" src="docs/img/onstar.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.datayes.com" border="0" target="_blank"><img alt="DataYes" src="docs/img/datayes.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.axatp.com" border="0" target="_blank"><img alt="axatp" src="docs/img/axatp.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; <br/><br/>
+<a href="https://www.360totalsecurity.com/en/" target="_blank" border="0"><img alt="360 Total Security" src="docs/img/360.png" height="50"></a>&nbsp; &nbsp; &nbsp;
 <a href="https://www.talkingdata.com" border="0" target="_blank"><img alt="talkingdata" src="docs/img/talkingdata.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.boericasa.com/index.html" border="0" target="_blank"><img alt="BoerSmart" src="docs/img/boer.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.open.com.cn" border="0" target="_blank"><img alt="OpenEdutainment" src="docs/img/openedutainment.png" height="70"></a>&nbsp; &nbsp; &nbsp; &nbsp;
@@ -26,7 +28,7 @@ be added to this list as they transition to production deployments.
 <a href="https://rancher.com/" target="_blank" border="0"><img alt="Rancher" src="docs/img/rancher.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.tenxcloud.com/" target="_blank" border="0"><img alt="TenxCloud" src="docs/img/tenxcloud.png" height="70"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.bingocc.com/" target="_blank" border="0"><img alt="BingoCloud" src="docs/img/bingocloud.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://www.shurenyun.com/" target="_blank" border="0"><img alt="DataMan" src="docs/img/dataman.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; <br/><br/>
+<br/><br/>
 <a href="http://www.slamtec.com" target="_blank" border="0"><img alt="SlamTec" src="docs/img/slamtec.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.cloudchef.io/" target="_blank" border="0"><img alt="CloudChef" src="docs/img/cloudchef.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://pivotal.io/" target="_blank" border="0"><img alt="Pivotal" src="docs/img/pivotal.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
@@ -36,16 +38,28 @@ be added to this list as they transition to production deployments.
 platform. Harbor has been used for over 2 years in production with tens of
 thousands of nodes and managing millions of container images.
 
-**China Mobile:** Harbor has been used in production for more than year,
-serving images to a container environment with over 1,000 nodes.
+**China Mobile:** Harbor has been used in production for more than a year,
+serving images to a container environment with over 1,000 nodes and about 20,000 images.
 
 **360 Total Security:** Harbor is used to distribute images and manage access
-to project images at 360 Total Security. The image replication functions is
+to project images at 360 Total Security. The image replication function is
 heavily leveraged in their environment. Harbor supports approximately 800
-compute nodes in a production environments across different regions and manages
+compute nodes in production environments across different regions and manages
 about 20,000 container images.
 
 **Slamtec:** Harbor is being used in external production systems as well as
 internal dev/test environments. All services are deployed using container
 images stored and managed by Harbor, making Harbor an important part of
 Slamtec's CI/CD workflow.
+
+**Bingo Cloud:** Bingo cloud OS uses Harbor as their ECR (Elastic Container Registry) component. Harbor allows them to have project-based image management in private cloud environment of large enterprises. Harbor has been deployed in some large state-owned or province-owned enterprises. 
+
+**Union Pay:** Union Pay adopts Harbor to manage container images for more than 200 nodes. Harbor enforces RBAC and vulnerability scanning on images used in the production environment.
+
+**Minsheng Life Insurance:** Harbor is used to build a private image registry. It manages base images of all application services and the container images created in project development. Harbor is integrated with the container cloud platform through its RESTful API. Harbor supports about 40 nodes in a cluster and manages more than 3,000 images.
+
+
+
+
+
+
