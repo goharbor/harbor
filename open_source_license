@@ -1,6 +1,6 @@
 open_source_licenses.txt
 
-Harbor 1.5.3 GA
+Harbor 1.5.4 GA
 
 Copyright (c) 2016-2018 VMware, Inc.  All rights reserved.
 
@@ -88,7 +88,7 @@ limitations under the License.
 
 ======================================================================
 
-Harbor version 1.5.3 includes a number of components with separate 
+Harbor version 1.5.4 includes a number of components with separate 
 copyright notices and license terms.  This product does not necessarily 
 use all the open source components referred to below. Your use of the 
 source code for these components is subject to the terms and conditions 
@@ -250,7 +250,7 @@ PART 2. VIRTUAL APPLIANCE: APPLICATION LAYER
 
 SECTION 1: Apache License, V2.0
 
-   >>> Clair-2.0.5
+   >>> Clair-2.0.6
    >>> beego-1.9.0
    >>> docker-17.06.2
    >>> docker-compose-1.16.1
@@ -17227,13 +17227,13 @@ Under "MPL/GPL" license.
 Apache License, V2.0 is applicable to the following component(s).
 
 
->>> Clair-2.0.5
+>>> Clair-2.0.6
 
 CoreOS Project
 Copyright 2015 CoreOS, Inc
 
 This product includes software developed at CoreOS, Inc.
-(http://www.coreos.com/).
+(http:www.coreos.com/).
 
 Copyright 2017 clair authors
 
@@ -17251,50 +17251,10 @@ limitations under the License.
 
 ADDITIONAL LICENSE INFORMATION:
 
-> MIT-Style
-
-clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\DCO
-
-Developer Certificate of Origin
-Version 1.1
-
-Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
-660 York Street, Suite 102,
-San Francisco, CA 94110 USA
-
-Everyone is permitted to copy and distribute verbatim copies of this
-license document, but changing it is not allowed.
-
-
-Developer's Certificate of Origin 1.1
-
-By making a contribution to this project, I certify that:
-
-(a) The contribution was created in whole or in part by me and I
-have the right to submit it under the open source license
-indicated in the file; or
-
-(b) The contribution is based upon previous work that, to the best
-of my knowledge, is covered under an appropriate open source
-license and I have the right under that license to submit that
-work with modifications, whether created in whole or in part
-by me, under the same open source license (unless I am
-permitted to submit under a different license), as indicated
-in the file; or
-
-(c) The contribution was provided directly to me by some other
-person who certified (a), (b) or (c) and I have not modified
-it.
-
-(d) I understand and agree that this project and the contribution
-are public and that a record of the contribution (including all
-personal information I submit with it, including my sign-off) is
-maintained indefinitely and may be redistributed consistent with
-this project or the open source license(s) involved.
-
 > MIT
 
-clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\vendor\github.com\beorn7\perks\LICENSE
+clair-2.0.6.tar.gz\clair-2.0.6.tar\clair-2.0.6\vendor\github.com\beorn7\perks\LICENSE
+
 
 Copyright (C) 2013 Blake Mizerany
 
@@ -17317,9 +17277,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-> BSD-2 Clause
+> BSD-2 CLAUSE
 
-clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\vendor\github.com\guregu\null\LICENSE
+clair-2.0.6.tar.gz\clair-2.0.6.tar\clair-2.0.6\vendor\github.com\guregu\null\LICENSE
 
 Copyright (c) 2014, Greg Roseberry
 All rights reserved.
@@ -17332,17 +17292,15 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 > MPL 2.0
+clair-2.0.6.tar.gz\clair-2.0.6.tar\clair-2.0.6\vendor\github.com\hashicorp\golang-lru\ LICENSE
 
-clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\vendor\github.com\hashicorp\golang-lru\LICENSE
 
-LICESNSE : MPL 2.0
-
+LICENSE : MPL 2.0
 
 > BSD-3 Clause
 
-clair-2.0.5.tar.gz\clair-2.0.5.tar\clair-2.0.5\vendor\github.com\julienschmidt\httprouter\LICENSE
+clair-2.0.6.tar.gz\clair-2.0.6.tar\clair-2.0.6\vendor\github.com\julienschmidt\httprouter\LICENSE
 
 Copyright (c) 2013 Julien Schmidt. All rights reserved.
 
@@ -25051,4 +25009,4 @@ All such requests should clearly specify: OPEN SOURCE FILES REQUEST, Attention G
 mail a copy of the Source Files to you on a CD or equivalent physical medium. This offer to obtain a copy of the Source
 Files is valid for three years from the date you acquired this software product.
 
-[HARBOR153GASR091118]
+[HARBOR154GASJ101218]
