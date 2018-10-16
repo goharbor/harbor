@@ -16,6 +16,7 @@ services:
     restart: always
     networks:
       - harbor-chartmuseum
+    dns_search: ""
     depends_on:
       - redis
     volumes:
