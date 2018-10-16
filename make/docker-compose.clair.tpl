@@ -23,6 +23,7 @@ services:
     image: goharbor/clair-photon:__clair_version__
     restart: always
     cpu_quota: 50000
+    dns_search: ""
     depends_on:
       - postgresql
     volumes:
