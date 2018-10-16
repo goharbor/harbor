@@ -17,7 +17,7 @@ WGET=$(shell which wget)
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build
+DOCKERBUILD=$(DOCKERCMD) build --pull
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMASES=$(DOCKERCMD) images
 

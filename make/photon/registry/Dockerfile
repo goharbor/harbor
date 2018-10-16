@@ -1,11 +1,9 @@
-FROM photon:1.0
+FROM photon:2.0
 
 MAINTAINER wangyan@vmware.com
 
 # The original script in the docker offical registry image.
-RUN tdnf distro-sync -y \
-    && tdnf erase vim -y \
-    && tdnf install sudo -y >> /dev/null\
+RUN tdnf install sudo -y >> /dev/null\
     && tdnf clean all \
     && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor
 

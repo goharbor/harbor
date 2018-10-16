@@ -29,16 +29,13 @@ fi
 
 if [ "$1" = 'postgres' ]; then
         chown -R postgres:postgres $PGDATA
-        echo here1
         # look specifically for PG_VERSION, as it is expected in the DB dir
         if [ ! -s "$PGDATA/PG_VERSION" ]; then
                 file_env 'POSTGRES_INITDB_ARGS'
                 if [ "$POSTGRES_INITDB_XLOGDIR" ]; then
                         export POSTGRES_INITDB_ARGS="$POSTGRES_INITDB_ARGS --xlogdir $POSTGRES_INITDB_XLOGDIR"
                 fi
-                echo hehe2
                 su - $1 -c "initdb -D $PGDATA  -U postgres -E UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8 $POSTGRES_INITDB_ARGS"
-                echo hehe3
                 # check password first so we can output the warning before postgres
                 # messes it up
                 file_env 'POSTGRES_PASSWORD'

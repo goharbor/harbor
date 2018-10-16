@@ -1,9 +1,6 @@
-FROM photon:1.0
+FROM photon:2.0
 
-
-RUN tdnf distro-sync -y \
-    && tdnf erase vim -y \
-    && tdnf install -y git shadow sudo bzr rpm xz python-xml >>/dev/null\
+RUN tdnf install -y git shadow sudo rpm xz python-xml >>/dev/null\
     && tdnf clean all \
     && mkdir /clair/ \
     && groupadd -r -g 10000 clair \
@@ -20,7 +17,6 @@ RUN chown -R 10000:10000 /clair \
     && chmod u+x /clair/clair \
     && chmod u+x /docker-entrypoint.sh \
     && chmod +x /dumb-init
-
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1:6061/health || exit 1
 
