@@ -37,6 +37,35 @@ Test Case - Vulnerability Data Not Ready
     Switch To Configure
     Go To Vulnerability Config
     Vulnerability Not Ready Config Hint
+
+Test Case - Garbage Collection
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world
+    Sleep  2
+    Go Into Project  project${d}
+    Delete Repo  project${d}
+
+    Switch To Garbage Collection
+    Click GC Now
+    Logout Harbor
+    Sleep  2
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Garbage Collection
+    Sleep  1
+    Wait Until Page Contains  Finished
+
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/system/gc/2/log"
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    Should Contain  ${output}  3 blobs eligible for deletion
+    Should Contain  ${output}  Deleting blob:
+    Should Contain  ${output}  success to run gc in job.
+
+    Close Browser
     
 Test Case - Create An New Project
     Init Chrome Driver
@@ -618,22 +647,6 @@ Test Case - Project Level Image Serverity Policy
     Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
     Close Browser
 
-Test Case - Admin Push Signed Image
-    Enable Notary Client
-
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
-    Log  ${output}
-
-    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${notaryServerEndpoint}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
-
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  sha256
-
 Test Case - List Helm Charts
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
@@ -665,3 +678,19 @@ Test Case - List Helm Charts
 
     Go Back To Versions And Delete
     Close Browser
+
+Test Case - Admin Push Signed Image
+    Enable Notary Client
+
+    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
+    Log  ${output}
+
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${notaryServerEndpoint}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
+    Log To Console  ${output}
+    Should Be Equal As Integers  ${rc}  0
+    Should Contain  ${output}  sha256

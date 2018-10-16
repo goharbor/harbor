@@ -276,3 +276,19 @@ Delete A Label
     Capture Page Screenshot
     Click Element  xpath=//clr-modal//div//button[contains(.,'DELETE')]
     Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${labelname}')]/../div/clr-icon[@shape="success-standard"]
+
+## Garbage Collection	
+Switch To Garbage Collection
+    Sleep  1
+    Click Element  xpath=${configuration_xpath}
+    Wait Until Page Contains Element  ${garbage_collection_xpath} 
+    Click Element  xpath=${garbage_collection_xpath}
+
+Click GC Now
+    Sleep  1
+    Click Element  xpath=${gc_now_xpath}
+    Sleep  2
+
+View GC Details
+    Click Element  xpath=${gc_log_details_xpath}
+    Sleep  2
