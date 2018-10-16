@@ -161,6 +161,9 @@ if [ $upload_build == true ]; then
     uploader $harbor_build_bundle $harbor_target_bucket
     uploader harbor-offline-installer-latest.tgz $harbor_target_bucket
     upload_bundle_success=true
+fi
+
+if [ $DRONE_BRANCH = "master" ] && [ $DRONE_BUILD_EVENT = "push" ]; then
     publishImage
 fi
 
