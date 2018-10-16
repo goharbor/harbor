@@ -8,7 +8,7 @@ publicly at this time.
 There are many additional adopters of Harbor in the evaluating phase that will
 be added to this list as they transition to production deployments.
 
-<a href="https://www.jd.com" border="0" target="_blank"><img alt="JD.com" src="docs/img/jd.png" height="50"></a>&nbsp; &nbsp; &nbsp; 
+<a href="https://www.jd.com" border="0" target="_blank"><img alt="JD.com" src="docs/img/jd.png" height="50"></a>&nbsp; &nbsp; &nbsp;
 <a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="docs/img/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.onstar.com.cn" border="0" target="_blank"><img alt="OnStar" src="docs/img/onstar.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.datayes.com" border="0" target="_blank"><img alt="DataYes" src="docs/img/datayes.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
@@ -52,14 +52,30 @@ internal dev/test environments. All services are deployed using container
 images stored and managed by Harbor, making Harbor an important part of
 Slamtec's CI/CD workflow.
 
-**Bingo Cloud:** Bingo cloud OS uses Harbor as their ECR (Elastic Container Registry) component. Harbor allows them to have project-based image management in private cloud environment of large enterprises. Harbor has been deployed in some large state-owned or province-owned enterprises. 
+**Bingo Cloud:** Bingo cloud OS uses Harbor as their ECR (Elastic Container
+Registry) component. Harbor allows them to have project-based image management
+in private cloud environment of large enterprises. Harbor has been deployed in
+some large state-owned or province-owned enterprises.
 
-**Union Pay:** Union Pay adopts Harbor to manage container images for more than 200 nodes. Harbor enforces RBAC and vulnerability scanning on images used in the production environment.
+**Union Pay:** Union Pay adopts Harbor to manage container images for more than
+200 nodes. Harbor enforces RBAC and vulnerability scanning on images used in
+the production environment.
 
-**Minsheng Life Insurance:** Harbor is used to build a private image registry. It manages base images of all application services and the container images created in project development. Harbor is integrated with the container cloud platform through its RESTful API. Harbor supports about 40 nodes in a cluster and manages more than 3,000 images.
+**Minsheng Life Insurance:** Harbor is used to build a private image registry.
+It manages base images of all application services and the container images
+created in project development. Harbor is integrated with the container cloud
+platform through its RESTful API. Harbor supports about 40 nodes in a cluster
+and manages more than 3,000 images.
 
+**Priority Payment Systems:** Harbor has been an integral component in our
+CI/CD pipeline for more than a year housing hundreds of images for various
+environments.
 
+**AWN:** Utilizes Harbor as a secure image repository for all of internal
+container-based workloads. Harbor provides developers and sysadmins a secure
+and easy-to-use repository. AWN leverages the image vulnerability scanning
+feature within Harbor before deploying images into production.
 
-
-
-
+**Allegis:** Harbor is used at Allegis as a secure private registry to store
+and scan customized container images for different business applications, like
+ELK stack, as part of their CI/CD pipeline.
