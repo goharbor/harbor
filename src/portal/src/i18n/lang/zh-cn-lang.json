@@ -171,7 +171,7 @@
         "UNKNOWN_ERROR": "创建项目时发生未知错误。",
         "OF": "共计",
         "ITEMS": "条记录",
-        "DELETION_TITLE": "删除项目确认",
+        "DELETION_TITLE": "移除项目成员确认",
         "DELETION_SUMMARY": "你确认删除项目 {{param}}？",
         "FILTER_PLACEHOLDER": "过滤项目",
         "REPLICATION_RULE": "复制规则",
