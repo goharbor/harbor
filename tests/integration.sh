@@ -197,9 +197,12 @@ set -e
 if [ $upload_build == true ] && [ $rc -eq 0 ]; then
     cp $harbor_build_bundle harbor-offline-installer-latest.tgz
     uploader $harbor_build_bundle $harbor_target_bucket
-    uploader harbor-offline-installer-latest.tgz $harbor_target_bucket 
-    upload_bundle_success=true 
-    publishImage 
+    uploader harbor-offline-installer-latest.tgz $harbor_target_bucket
+    upload_bundle_success=true
+fi
+
+if [ $DRONE_BRANCH = "master" ] && [ $DRONE_BUILD_EVENT = "push" ]; then
+    publishImage
 fi
 
 ## --------------------------------------------- Upload Harbor Latest Build File ----------------------------------
