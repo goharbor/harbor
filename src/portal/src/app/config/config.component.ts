@@ -204,7 +204,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get hideBtn(): boolean {
-        return this.currentTabId === 'config-label' || this.currentTabId === 'config-gc';
+        return this.currentTabId === 'config-label' || this.currentTabId === 'config-gc' || this.currentTabId === 'config-vulnerability';
     }
 
     public get hideMailTestingSpinner(): boolean {

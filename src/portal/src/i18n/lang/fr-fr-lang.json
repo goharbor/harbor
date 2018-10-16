@@ -788,12 +788,12 @@
         "NONE": "None",
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
-        "MANUAL": "Manual"
+        "MANUAL": "Manual",
+        "ON": "on",
+        "AT": "at"
     }, 
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",
-        "ON": "on",
-        "AT": "at",
         "GC_NOW": "GC NOW",
         "JOB_LIST":"GC Jobs List",
         "JOB_ID":"Job ID",

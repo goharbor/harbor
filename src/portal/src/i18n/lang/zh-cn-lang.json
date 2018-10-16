@@ -824,12 +824,12 @@
         "NONE": "无",
         "DAILY": "每天",
         "WEEKLY": "每周",
-        "MANUAL": "手动"
+        "MANUAL": "手动",
+        "ON": " ",
+        "AT": " "
     }, 
     "GC": {
         "CURRENT_SCHEDULE": "当前定时任务",
-        "ON": " ",
-        "AT": " ",
         "GC_NOW": "立即清理垃圾",
         "JOB_LIST":"任务列表",
         "JOB_ID":"任务ID",

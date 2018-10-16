@@ -2,17 +2,29 @@
     display: flex;
     align-items: center;
     margin:20px 0;
+    font-size: .541667rem;
+}
+
+.font-style {
+    color: #000;
+    font-size: .541667rem;
 }
 
 .setting-wrapper {
-    > * {
-        margin-right:35px;
+    label {
+        width: 228px;
+    }
+    *:not(:first-child), span {
+        margin-right: 18px;
     }
 }
 
 .normal-wrapper {
-    > * {
-        margin-right: 90px;
+    > span:first-child {
+        width: 228px;
+    }
+    > span:not(:first-child){
+        margin-right: 18px;
     }
 }
 

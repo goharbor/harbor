@@ -1,12 +1,14 @@
 <div class="normal-wrapper flex-layout" *ngIf="!isEditMode">
-  <span>{{'GC.CURRENT_SCHEDULE' | translate}}</span>
+  <span class="font-style">{{'GC.CURRENT_SCHEDULE' | translate}}</span>
   <span>{{(originScheduleType ? 'SCHEDULE.'+ originScheduleType.toUpperCase(): "") | translate}}</span>
-  <span [hidden]="originScheduleType!==SCHEDULE_TYPE.WEEKLY">{{'GC.ON' | translate}} {{originWeekDay.text | translate}}</span>
-  <span [hidden]="originScheduleType===SCHEDULE_TYPE.NONE">{{'GC.AT' | translate}} {{originOffTime.text}}</span>
+  <span [hidden]="originScheduleType!==SCHEDULE_TYPE.WEEKLY">{{'SCHEDULE.ON' | translate}}</span>
+  <span [hidden]="originScheduleType!==SCHEDULE_TYPE.WEEKLY">{{originWeekDay.text | translate}}</span>
+  <span [hidden]="originScheduleType===SCHEDULE_TYPE.NONE">{{'SCHEDULE.AT' | translate}}</span>
+  <span [hidden]="originScheduleType===SCHEDULE_TYPE.NONE">{{originOffTime.text}}</span>
   <button class="btn btn-outline btn-sm"  (click)="editSchedule()">{{'BUTTON.EDIT' | translate}}</button>
 </div>
 <div class="setting-wrapper flex-layout" *ngIf="isEditMode">
-  <label for="gcPolicy">{{'CONFIG.GC' | translate}}</label>
+  <label for="gcPolicy"  class="font-style">{{'CONFIG.GC' | translate}}</label>
   <div class="select">
     <select id="gcPolicy" name="gcPolicy" [(ngModel)]="scheduleType">
       <option [value]="SCHEDULE_TYPE.NONE">{{'SCHEDULE.NONE' | translate}}</option>
@@ -15,20 +17,20 @@
     </select>
   </div>
   <section [hidden]="scheduleType!== SCHEDULE_TYPE.WEEKLY" class="select day-selector-wrapper">
-    <span>{{'GC.ON' | translate}}</span>
+    <span>{{'SCHEDULE.ON' | translate}}</span>
     <select id="daySelector" name="daySelector" [(ngModel)]="weekDay">
         <option *ngFor="let d of weekDays" [ngValue]="d">{{d.text | translate}}</option>
     </select>
   </section>
   <section [hidden]="scheduleType===SCHEDULE_TYPE.NONE">
-    <span>{{'GC.AT' | translate}}</span>
+    <span>{{'SCHEDULE.AT' | translate}}</span>
     <input type="time" name="dailyTimePicker" required [(ngModel)]="dailyTime" />
   </section>
   <button class="btn btn-primary btn-sm" (click)="scheduleGc()">{{'BUTTON.SAVE' | translate}}</button>
   <button class="btn btn-primary btn-sm" (click)="isEditMode = false" >{{'BUTTON.CANCEL' | translate}}</button>
 </div>
 <button class="btn btn-primary btn-sm gc-start-btn" (click)="gcNow()" [disabled]="disableGC">{{'GC.GC_NOW' | translate}}</button>
-<div class="job-header">{{'GC.JOB_LIST' | translate}}</div>
+<div class="job-header font-style">{{'GC.JOB_LIST' | translate}}</div>
 <clr-datagrid>
   <clr-dg-column>{{'GC.JOB_ID' | translate}}</clr-dg-column>
   <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
