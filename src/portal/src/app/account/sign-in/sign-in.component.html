@@ -1,4 +1,4 @@
-<div class="login-wrapper login-wrapper-override"  [ngStyle]="{'background-image': customLoginBgImg? 'url(static/images/' + customLoginBgImg + ')': ''}">
+<div class="login-wrapper" [ngStyle]="{'background-image': customLoginBgImg? 'url(static/images/' + customLoginBgImg + ')': ''}">
     <form #signInForm="ngForm" class="login">
         <label class="title"> {{customAppTitle? customAppTitle:(appTitle | translate)}}
     </label>
@@ -36,7 +36,7 @@
             <a href="https://github.com/goharbor/harbor" target="_blank" class="more-info-link">{{ 'BUTTON.MORE_INFO' | translate }}</a>
         </div>
     </form>
-    <div id="pop_repo" class="popular-repo-wrapper">
+    <div *ngIf="appConfig.show_popular_repo" id="pop_repo" class="popular-repo-wrapper" >
         <top-repo class="repo-container"></top-repo>
     </div>
 </div>

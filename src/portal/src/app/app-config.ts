@@ -29,6 +29,7 @@ export class AppConfig {
     registry_storage_provider_name: string;
     read_only: boolean;
     with_chartmuseum: boolean;
+    show_popular_repo: boolean;
 
     constructor() {
         // Set default value
@@ -50,5 +51,6 @@ export class AppConfig {
         this.registry_storage_provider_name = "";
         this.read_only = false;
         this.with_chartmuseum = false;
+        this.show_popular_repo = false;
     }
 }
