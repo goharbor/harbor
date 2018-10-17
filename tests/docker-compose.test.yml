@@ -6,8 +6,6 @@ services:
     volumes:
       - /data/registry:/storage
       - ./common/config/registry/:/etc/registry/
-    environment:
-      - GODEBUG=netdns=cgo
     ports:
       - 5000:5000
     command:

@@ -22,8 +22,6 @@ services:
     networks:
       - harbor
     dns_search: .
-    environment:
-      - GODEBUG=netdns=cgo
     depends_on:
       - log
     logging:
@@ -44,8 +42,6 @@ services:
     networks:
       - harbor
     dns_search: .
-    environment:
-      - GODEBUG=netdns=cgo
     depends_on:
       - log
     logging:

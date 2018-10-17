@@ -40,7 +40,6 @@ CORE_SECRET=$core_secret
 JOBSERVICE_SECRET=$jobservice_secret
 TOKEN_EXPIRATION=$token_expiration
 CFG_EXPIRATION=5
-GODEBUG=netdns=cgo
 ADMIRAL_URL=$admiral_url
 WITH_NOTARY=$with_notary
 WITH_CLAIR=$with_clair
