@@ -582,6 +582,7 @@
         "PRO_CREATION_ADMIN": "Solo Administradores",
         "ROOT_CERT": "Registro Certificado Raíz",
         "ROOT_CERT_LINK": "Descargar",
+        "REGISTRY_CERTIFICATE": "Certificado de registro",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activar registro.",
             "SELF_REGISTRATION_DISABLE": "Disable sign up.",

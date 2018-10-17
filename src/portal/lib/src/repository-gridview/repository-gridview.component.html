@@ -3,6 +3,10 @@
         <div class="toolbar">
             <div class="row flex-items-xs-right option-right rightPos">
                 <div class="flex-xs-middle">
+                    <a #certDownloadLink [href]="downloadLink" target="_blank" class="btn btn-link btn-font download-link">
+                        <clr-icon shape="download"></clr-icon>
+                        {{'CONFIG.REGISTRY_CERTIFICATE' | translate | uppercase}}
+                    </a>
                     <hbr-push-image-button style="display: inline-block;" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
                     <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filterEvt)="doSearchRepoNames($event)" [currentValue]="lastFilteredRepoName"></hbr-filter>
                     <span class="card-btn" (click)="showCard(true)" (mouseenter) ="mouseEnter('card') "  (mouseleave) ="mouseLeave('card')">
