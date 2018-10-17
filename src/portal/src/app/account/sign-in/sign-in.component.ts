@@ -28,7 +28,7 @@ import { AppConfig } from '../../app-config';
 import { User } from '../../user/user';
 
 import { CookieService, CookieOptions } from 'ngx-cookie';
-import {SkinableConfig} from "../../skinable-config.service";
+import { SkinableConfig } from "../../skinable-config.service";
 
 // Define status flags for signing in states
 export const signInStatusNormal = 0;
