@@ -1,4 +1,4 @@
-FROM golang:1.7.3
+FROM golang:1.9.4
 
 ENV NOTARYPKG github.com/theupdateframework/notary
 

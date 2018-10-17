@@ -23,7 +23,7 @@ cur=$PWD
 TEMP=`mktemp -d /$TMPDIR/notary.XXXXXX`
 git clone -b $VERSION https://github.com/theupdateframework/notary.git $TEMP
 
-echo 'build the notary binary bases on the golang:1.7.3...'
+echo 'build the notary binary bases on the golang:1.9.4...'
 cp binary.Dockerfile $TEMP 
 cd $TEMP
 docker build -f binary.Dockerfile -t notary-golang $TEMP
