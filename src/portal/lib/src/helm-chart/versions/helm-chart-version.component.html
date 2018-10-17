@@ -38,13 +38,29 @@
             <clr-datagrid (clrDgRefresh)="refresh()" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
                 <clr-dg-action-bar>
                     <button type="button" class="btn btn-sm btn-secondary"
-                    [disabled]="!(selectedRows.length===1)"
-                    (click)="versionDownload()">
-                        <clr-icon shape="download" size="16"></clr-icon>&nbsp;{{'HELM_CHART.DOWNLOAD' | translate}}</button>
+                        [disabled]="!(selectedRows.length===1)"
+                        (click)="versionDownload()">
+                        <clr-icon shape="download" size="16"></clr-icon>&nbsp;{{'HELM_CHART.DOWNLOAD' | translate}}
+                    </button>
                     <button type="button" class="btn btn-sm btn-secondary"
-                    [disabled]="selectedRows.length<=0 || !hasProjectAdminRole"
-                    (click)="openVersionDeleteModal(selectedRows)">
-                        <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}</button>
+                        [disabled]="selectedRows.length<=0 || !hasProjectAdminRole"
+                        (click)="openVersionDeleteModal(selectedRows)">
+                        <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}
+                    </button>
+                    <clr-dropdown>
+                        <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger 
+                            [disabled]="!(selectedRows.length==1)">
+                            <clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}
+                        </button>
+                        <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+                            <hbr-resource-label-marker
+                                [labels]="projectLabels"
+                                [projectName]="projectName"
+                                [resource]="selectedRows[0]"
+                                [resourceType]="resourceType">
+                            </hbr-resource-label-marker>
+                        </clr-dropdown-menu>
+                    </clr-dropdown>
                 </clr-dg-action-bar>
                 <clr-dg-column>{{'HELM_CHART.VERSION' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.STATUS' | translate }}</clr-dg-column>
@@ -52,6 +68,7 @@
 
                 <clr-dg-column>{{'HELM_CHART.MAINTAINERS' | translate }}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate }}</clr-dg-column>
+                <clr-dg-column style="width: 140px;">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'HELM_CHART.NO_VERSION_PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let v of chartVersions" [clrDgItem]="v">
                     <clr-dg-cell>
@@ -64,6 +81,21 @@
                     <clr-dg-cell>{{ v.engine }}</clr-dg-cell>
                     <clr-dg-cell>{{ getMaintainerString(v.maintainers) }}</clr-dg-cell>
                     <clr-dg-cell>{{ v.created | date}}</clr-dg-cell>
+                    <clr-dg-cell style="width: 140px;">
+                        <hbr-label-piece *ngIf="v.labels?.length" [label]="v.labels[0]"> </hbr-label-piece>
+                        <div class="signpost-item" [hidden]="v.labels?.length<=1">
+                            <div class="trigger-item">
+                                <clr-signpost>
+                                <button class="btn btn-link" clrSignpostTrigger>...</button>
+                                    <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
+                                        <div>
+                                            <hbr-label-piece *ngFor="let label of v.labels" [label]="label"></hbr-label-piece>
+                                        </div>
+                                    </clr-signpost-content>
+                                </clr-signpost>
+                            </div>
+                        </div>
+                    </clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount">

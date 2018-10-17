@@ -35,3 +35,7 @@
     justify-content: center;
     align-items: center;
 }
+
+@mixin dropdown-as-action-button {
+    margin: .25rem .5rem .25rem 0;
+}

@@ -100,3 +100,8 @@ export enum Roles {
   GUEST = 3,
   OTHER = 0,
 }
+
+export enum ResourceType {
+  REPOSITORY = 1,
+  CHART_VERSION = 2,
+}

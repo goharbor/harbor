@@ -1,0 +1,22 @@
+<div>
+    <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
+    <div class="form-group filter-div">
+        <input #filterInput type="text" placeholder="Filter labels" [(ngModel)]="labelFilter">
+    </div>
+    <div class="label-items-container">
+        <div class="dropdown-item" *ngFor='let label of sortedLabels'>
+            <span *ngIf="!isMarkOngoing(label)" class="mark-label-span">
+                <clr-icon *ngIf="isMarked(label)" shape="check" ></clr-icon>
+            </span>
+            <span *ngIf="isMarkOngoing(label)" class="spinner spinner-sm">
+                    Loading...
+            </span>
+            <span (click)="markLabel(label)">
+                <hbr-label-piece [label]="label" [labelWidth]="130"></hbr-label-piece>
+            </span>
+            <span class="unmark-label-span" (click)="unmarkLabel(label)">
+                <clr-icon *ngIf="isMarked(label)" shape="times-circle"></clr-icon>
+            </span>
+        </div>
+    </div>
+</div>

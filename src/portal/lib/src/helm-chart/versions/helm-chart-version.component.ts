@@ -1,3 +1,4 @@
+import { Label } from './../../service/interface';
 import {
   Component,
   Input,
@@ -18,7 +19,8 @@ import {
   SystemInfo,
   SystemInfoService,
   HelmChartVersion,
-  HelmChartMaintainer
+  HelmChartMaintainer,
+  LabelService
 } from "./../../service/index";
 import { ErrorHandler } from "./../../error-handler/error-handler";
 import { toPromise, DEFAULT_PAGE_SIZE, downloadFile } from "../../utils";
@@ -34,7 +36,8 @@ import {
   ConfirmationButtons,
   ConfirmationTargets,
   ConfirmationState,
-  DefaultHelmIcon
+  DefaultHelmIcon,
+  ResourceType
 } from "../../shared/shared.const";
 
 @Component({
@@ -45,6 +48,7 @@ import {
 })
 export class ChartVersionComponent implements OnInit {
   signedCon: { [key: string]: any | string[] } = {};
+  @Input() projectId: number;
   @Input() projectName: string;
   @Input() chartName: string;
   @Input() roleName: string;
@@ -60,7 +64,9 @@ export class ChartVersionComponent implements OnInit {
   versionsCopy: HelmChartVersion[] = [];
   systemInfo: SystemInfo;
   selectedRows: HelmChartVersion[] = [];
+  projectLabels: Label[] = [];
   loading = true;
+  resourceType = ResourceType.CHART_VERSION;
 
   isCardView: boolean;
   cardHover = false;
@@ -82,6 +88,7 @@ export class ChartVersionComponent implements OnInit {
     private translateService: TranslateService,
     private systemInfoService: SystemInfoService,
     private helmChartService: HelmChartService,
+    private resrouceLabelService: LabelService,
     private cdr: ChangeDetectorRef,
     private operationService: OperationService,
   ) {}
@@ -96,12 +103,22 @@ export class ChartVersionComponent implements OnInit {
       .then(systemInfo => (this.systemInfo = systemInfo))
       .catch(error => this.errorHandler.error(error));
     this.refresh();
+    this.getProjectLabels();
     this.lastFilteredVersionName = "";
   }
 
   updateFilterValue(value: string) {
     this.lastFilteredVersionName = value;
     this.refresh();
+  }
+
+  getProjectLabels() {
+    this.resrouceLabelService.getProjectLabels(this.projectId).subscribe(
+      (labels: Label[]) => {
+        this.projectLabels = labels;
+        console.log('chart version project labels', this.projectLabels);
+      }
+      );
   }
 
   refresh() {

@@ -33,6 +33,12 @@
     }
 }
 
+clr-dg-action-bar {
+    clr-dropdown{
+        @include dropdown-as-action-button;
+    }
+}
+
 .card-container {
     margin-top: 21px;
     .card-header {
