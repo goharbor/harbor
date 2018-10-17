@@ -48,3 +48,16 @@ type Repository struct {
 	// OS of the image.
 	Os string `json:"os,omitempty"`
 }
+
+// Retag describes a retag request
+type Retag struct {
+
+	// The new tag
+	Tag string `json:"tag"`
+
+	// Source images in format <project>/<repo>:<reference>
+	SrcImage string `json:"src_image"`
+
+	// If target tag exists, whether override it
+	Override bool `json:"override"`
+}

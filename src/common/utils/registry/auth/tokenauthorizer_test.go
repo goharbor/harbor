@@ -206,3 +206,17 @@ func TestModifyOfStandardTokenAuthorizer(t *testing.T) {
 	tk := req.Header.Get("Authorization")
 	assert.Equal(t, strings.ToLower("Bearer "+token.Token), strings.ToLower(tk))
 }
+
+func TestUserAgentModifier(t *testing.T) {
+	agent := "harbor-registry-client"
+	modifier := &UserAgentModifier{
+		UserAgent: agent,
+	}
+	req, err := http.NewRequest(http.MethodGet, "http://registry/v2/", nil)
+	require.Nil(t, err)
+	modifier.Modify(req)
+	actual := req.Header.Get("User-Agent")
+	if actual != agent {
+		t.Errorf("expect request to have header User-Agent=%s, but got User-Agent=%s", agent, actual)
+	}
+}

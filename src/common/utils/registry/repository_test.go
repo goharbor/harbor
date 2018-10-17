@@ -422,3 +422,37 @@ func TestBuildMonolithicBlobUploadURL(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, expected, url)
 }
+
+func TestBuildMountBlobURL(t *testing.T) {
+	endpoint := "http://192.169.0.1"
+	repoName := "library/hello-world"
+	digest := "sha256:ef15416724f6e2d5d5b422dc5105add931c1f2a45959cd4993e75e47957b3b55"
+	from := "library/hi-world"
+	expected := fmt.Sprintf("%s/v2/%s/blobs/uploads/?mount=%s&from=%s", endpoint, repoName, digest, from)
+
+	actual := buildMountBlobURL(endpoint, repoName, digest, from)
+	assert.Equal(t, expected, actual)
+}
+
+func TestMountBlob(t *testing.T) {
+	mountHandler := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+	}
+
+	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  "POST",
+			Pattern: fmt.Sprintf("/v2/%s/blobs/uploads/", repository),
+			Handler: mountHandler,
+		})
+	defer server.Close()
+
+	client, err := newRepository(server.URL)
+	if err != nil {
+		t.Fatalf("failed to create client for repository: %v", err)
+	}
+
+	if err = client.MountBlob(digest, "library/hi-world"); err != nil {
+		t.Fatalf("failed to mount blob: %v", err)
+	}
+}
