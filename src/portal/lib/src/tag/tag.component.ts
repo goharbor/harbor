@@ -56,6 +56,7 @@ import {CopyInputComponent} from "../push-image/copy-input.component";
 import {LabelService} from "../service/label.service";
 import {operateChanges, OperateInfo, OperationState} from "../operation/operate";
 import {OperationService} from "../operation/operation.service";
+import {SystemInfo} from "../service/index";
 
 export interface LabelState {
   iconsShow: boolean;
@@ -124,6 +125,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     project_id: 0,
   };
   filterOneLabel: Label = this.initFilter;
+  systemInfo: SystemInfo;
 
 
   @ViewChild('confirmationDialog')
@@ -212,6 +214,12 @@ export class TagComponent implements OnInit, AfterViewInit {
     let len = this.lastFilteredTagName.length ? this.lastFilteredTagName.length * 6 + 60 : 115;
     return len > 210 ? 210 : len;
 }
+
+  get isClairDBFullyReady(): boolean {
+    return this.systemInfo &&
+        this.systemInfo.clair_vulnerability_status &&
+        this.systemInfo.clair_vulnerability_status.overall_last_update > 0;
+  }
 
   doSearchTagNames(tagName: string) {
     this.lastFilteredTagName = tagName;
