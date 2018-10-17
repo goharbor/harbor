@@ -36,7 +36,10 @@ env:
   - REDIS_HOST: localhost
   - REG_VERSION: v2.6.2
   - UI_BUILDER_VERSION: 1.6.0
-addons: 
+  - secure: Oh2flJHmW52oyS1ou8Hu7gntp2bCYqzGXvBv7mzZ+P53GsEtM4eOp2rhQyV/ekpaXZ6NoJlyOXSeJfNZVl8XrhjZOu2mmJcw+W8aU1AyillaI4rdJb82J2do38DXwU1LxogTPUoJSbies5jK8lznS8HLkzCj8eCfd02EM6XrxeMMJJGBfB7B/nNloAtJ4D3YFUa6f9BkkBHD0b/RJqIJj5A49PZRqjiDTcO07AftZbuESU8ZHr6WRNRwmqJvMp5FvtB7F4RbYLBu7BAieGgVBeSkjCSYatYOAB5xOcmOEKjIalwOifULsmzW5Qc5Vl6NCsLnh4KDQp5yEGS9cD7WCcrG+Divo24U79ixhQIr7eDxjAkwjZYpqhTK15zqlmcOk0N5I2g8tHQSpzrxxEE4vA2JZrM4334hZgfYWTDAd7NslbDz334mikg4Ch3Xh2GkO+2mZ5k45TIe1l9XrXRS12NzupsdQHfli8m3umfn7qQEmTDIsPyYqzVXn8EN5+sZ/Ocp7JKqw+39CAZifHwAI2Z6vvTenJAmhnNrEbJorFn+ttdCaDHfFtFLGObYidiTnuKvTHPqF5aSCMSZ7bE9BbUQlBgJ8zGh3mlXv2p63iAS2IBsFfrUwqmeq0I5PCYseoi+m286RzUzrtQKdZ0W4VRlNY46p+dlk90zcmed1aA=
+  - secure: EycmQLN6FjE8IADs5GmOP+suanXAupPQXcXveDLURd7DYZthKL/V24OqQGXBmEJL4XmXzTXmXSW9wHKWPrxsk7QWvV2QfdoXXeDWNLg63yhfq7AHcjJWv+lTC/xbJP80iVc6gu45r6GdEXGP3bgrFJOHM7dNE/qv3M8T8gK6AqQM7uyH1234K4CheaHosd6SQpJWd0TMUSq88A44e7ewb1eRbRdgL3rySYe8nm1Yu4LML1+GBsgdIR/pdtW1FZuN/U0YSxrFbbD/MnKPhCa4xiG2VmEie77kDrZ5Wm64DOYaGrJss05FyrZpjGcOvs5meuGFP8PQ1mWPTXn8R5K44fpEtr3qGTRRXnnE//TswYPGmP4iyFm3Y0txfBT8CAJ9utmRnEBerF+YAzEN4qTRkmphi5uNnh8pfC9iUQJ4/bjVN6dYbUUSmbXhZ5yukSW/E3qTewzCrVFEPY6upHT2Ob224iIi0rWpIMuJ1MzcBlhyUEwcaqvdMwemN3rFJgIP927pEfp8Esb9UPK+n3zerFRzv6Mj0Ludb+SIei4jYqmLPbHnqSQcfE/e8wugbaq6J9hPpM64nnW0njjKL0NSo3oX+IAe2s0YpHGx96e0bjN9TwSTOtQQkygUBaZvw6AQS1MHIMQI0BDCmpN+/9wnM8YEVRQy+0fb7BuJjM9nTPA=
+  - secure: aQ1vMqHJP/U+g9GPvf58d3nhBjWFa/m03xiu2vX3BH05cyoNcVpJ5kMYIOP2tbuE8bkJ0JtT5qDyYUoE6WvqfXaNyzajxCYDuUaSBD6N/kfKW6Iqyi7DYEsl/LdceH3gCM4XYxFgWXeOFEnq3P2deLegnzZ6/P/8VUQBXca/hP77UN8tfPrJ2JdVPH/8HVYjEOeeyGsEwkbP8XUkGm7YRTAtGguKaJNgTt1YGucXQ1Gig+kJ3wy9dJhDk8ZKmMmXhlLvXlthJt4aXcP0aTKHAJ2jMI2zoLkGuqTukinVenIQChoxbe1bSLNKt74qpbv+y8v/iyAeLdrspDxaOaTXLQ/bDCR6ZcAiHHwQv/C7RqiKTleRVln/dZwbX2lxQYFcxr4RB5+AlKg+HnAxSkV5HmzsyfEprVo/I++VYgECEBQpN3yATxVdr5vFE6UX0JExRHxMb6bYrHmHJDi5B5w2jw/+aKa5PvjjYpSz4bhs/jYZALBdsB0LdS64u+LePNziCni206boAmDwMTn8CbcN4qvAMrA/UFvuReToYH8+nl9V5txoZJhuCrR19nCsjblCLJ6pgPdCbpoDMkV7gAEJXWgwAmzvxeCt2W4vv1i9WdZ2b/kJGqPWgNaRzLiOL94Mh0I3uTtP9ymjCjhLeTY3JZcI0MoKhyUz6WCCDZDjZvA=
+addons:
 apt:
   sources:
   - google-chrome
@@ -44,8 +47,7 @@ apt:
   - google-chrome-stable
   - google-chrome-beta
 before_install:
-#- openssl aes-256-cbc -K $encrypted_ed2284a9ecc3_key -iv $encrypted_ed2284a9ecc3_iv
-#  -in gskey.sh.enc -out ./gskey.sh -d
+- sudo rm -f /etc/boto.cfg
 - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname
   -s`-`uname -m` > docker-compose
 - chmod +x docker-compose
