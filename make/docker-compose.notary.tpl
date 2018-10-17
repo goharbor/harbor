@@ -18,7 +18,7 @@ services:
     networks:
       - notary-sig
       - harbor-notary
-    dns_search: ""
+    dns_search: .
     volumes:
       - ./common/config/notary:/etc/notary:z
     env_file:
@@ -40,7 +40,7 @@ services:
       notary-sig:
         aliases:
           - notarysigner
-    dns_search: ""
+    dns_search: .
     volumes:
       - ./common/config/notary:/etc/notary:z
     env_file:

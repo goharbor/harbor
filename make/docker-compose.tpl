@@ -4,7 +4,7 @@ services:
     image: goharbor/harbor-log:__version__
     container_name: harbor-log 
     restart: always
-    dns_search: ""
+    dns_search: .
     volumes:
       - /var/log/harbor/:/var/log/docker/:z
       - ./common/config/log/:/etc/logrotate.d/:z
@@ -21,9 +21,7 @@ services:
       - ./common/config/registry/:/etc/registry/:z
     networks:
       - harbor
-    dns_search: ""
-    environment:
-      - GODEBUG=netdns=cgo
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -43,9 +41,7 @@ services:
       - ./common/config/registryctl/config.yml:/etc/registryctl/config.yml:z
     networks:
       - harbor
-    dns_search: ""
-    environment:
-      - GODEBUG=netdns=cgo
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -61,7 +57,7 @@ services:
       - /data/database:/var/lib/postgresql/data:z
     networks:
       - harbor
-    dns_search: ""
+    dns_search: .
     env_file:
       - ./common/config/db/env
     depends_on:
@@ -83,7 +79,7 @@ services:
       - /data/:/data/:z
     networks:
       - harbor
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -106,7 +102,7 @@ services:
       - /data/psc/:/etc/core/token/:z
     networks:
       - harbor
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
       - adminserver
@@ -122,7 +118,7 @@ services:
     restart: always
     networks:
       - harbor
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
       - core
@@ -143,7 +139,7 @@ services:
       - ./common/config/jobservice/config.yml:/etc/jobservice/config.yml:z
     networks:
       - harbor
-    dns_search: ""
+    dns_search: .
     depends_on:
       - redis
       - core
@@ -161,7 +157,7 @@ services:
       - /data/redis:/var/lib/redis
     networks:
       - harbor
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -177,7 +173,7 @@ services:
       - ./common/config/nginx:/etc/nginx:z
     networks:
       - harbor
-    dns_search: ""
+    dns_search: .
     ports:
       - 80:80
       - 443:443
