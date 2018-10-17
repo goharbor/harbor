@@ -102,7 +102,7 @@ describe('RegistryConfigComponent (inline template)', () => {
 
 
       fixture.detectChanges();
-      let el3: HTMLInputElement = fixture.nativeElement.querySelector('input[type="time"]');
+      let el3: HTMLInputElement = fixture.nativeElement.querySelector('.btn-scan');
       expect(el3).toBeTruthy();
       expect(el3).not.toBeFalsy();
     });
