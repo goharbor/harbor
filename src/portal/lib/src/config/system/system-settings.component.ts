@@ -1,8 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, Inject } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Configuration } from '../config';
-import { SERVICE_CONFIG, IServiceConfig } from '../../service.config';
-
+import { SERVICE_CONFIG, IServiceConfig, downloadUrl } from '../../service.config';
 @Component({
     selector: 'system-settings',
     templateUrl: './system-settings.component.html',
@@ -10,7 +9,7 @@ import { SERVICE_CONFIG, IServiceConfig } from '../../service.config';
 })
 export class SystemSettingsComponent {
     config: Configuration;
-    downloadLink: string = "/api/systeminfo/getcert";
+    downloadLink: string = downloadUrl;
     @Output() configChange: EventEmitter<Configuration> = new EventEmitter<Configuration>();
 
     @Input()

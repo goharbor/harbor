@@ -35,7 +35,7 @@ import {Tag} from '../service/interface';
 import {GridViewComponent} from '../gridview/grid-view.component';
 import {OperationService} from "../operation/operation.service";
 import {OperateInfo, OperationState, operateChanges} from "../operation/operate";
-
+import { downloadUrl } from '../service.config';
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
@@ -44,6 +44,7 @@ import {OperateInfo, OperationState, operateChanges} from "../operation/operate"
 })
 export class RepositoryGridviewComponent implements OnChanges, OnInit {
     signedCon: { [key: string]: any | string[] } = {};
+    downloadLink: string = downloadUrl;
     @Input() projectId: number;
     @Input() projectName = "unknown";
     @Input() urlPrefix: string;

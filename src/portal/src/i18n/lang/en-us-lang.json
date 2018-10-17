@@ -583,6 +583,7 @@
         "PRO_CREATION_ADMIN": "Admin Only",
         "ROOT_CERT": "Registry Root Certificate",
         "ROOT_CERT_LINK": "Download",
+        "REGISTRY_CERTIFICATE": "Registry certificate",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Enable sign up.",
             "SELF_REGISTRATION_DISABLE": "Disable sign up.",

@@ -582,6 +582,7 @@
         "PRO_CREATION_ADMIN": "仅管理员",
         "ROOT_CERT": "镜像库根证书",
         "ROOT_CERT_LINK": "下载",
+        "REGISTRY_CERTIFICATE": "注册证书",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "激活注册功能。",
             "SELF_REGISTRATION_DISABLE": "禁用注册功能。",

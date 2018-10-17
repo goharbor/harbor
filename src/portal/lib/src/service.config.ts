@@ -1,7 +1,7 @@
 import { InjectionToken } from '@angular/core';
 
 export let SERVICE_CONFIG = new InjectionToken("service.config");
-
+export const downloadUrl = "/api/systeminfo/getcert";
 export interface IServiceConfig {
     /**
      * The base endpoint of service used to retrieve the system configuration information.

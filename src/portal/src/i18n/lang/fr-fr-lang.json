@@ -554,6 +554,7 @@
         "ROOT_CERT": "Enregistrer le Certificat Racine",
         "ROOT_CERT_LINK": "Télécharger",
         "GC": "Garbage Collection",
+        "REGISTRY_CERTIFICATE": "certificat d'enregistrement",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Activer l'inscription.",
             "SELF_REGISTRATION_DISABLE": "Désactiver l'inscription.",
