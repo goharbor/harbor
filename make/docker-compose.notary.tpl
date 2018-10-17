@@ -14,6 +14,7 @@ services:
       - notary-mdb
       - notary-sig
       - harbor-notary
+    dns_search: .
     volumes:
       - ./common/config/notary:/config:z
     depends_on:
@@ -33,6 +34,7 @@ services:
       notary-sig:
         aliases:
           - notarysigner
+    dns_search: .
     volumes:
       - ./common/config/notary:/config:z
     env_file:
@@ -52,6 +54,7 @@ services:
       notary-mdb:
         aliases:
           - mysql
+    dns_search: .
     volumes:
       - ./common/config/notary/mysql-initdb.d:/docker-entrypoint-initdb.d:z
       - /data/notary-db:/var/lib/mysql:z

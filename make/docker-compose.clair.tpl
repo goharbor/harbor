@@ -19,6 +19,7 @@ services:
     container_name: clair-db
     image: vmware/postgresql-photon:__postgresql_version__
     restart: always
+    dns_search: .
     depends_on:
       - log
     env_file:
@@ -38,6 +39,7 @@ services:
     image: vmware/clair-photon:__clair_version__
     restart: always
     cpu_quota: 150000
+    dns_search: .
     depends_on:
       - postgres
     volumes:

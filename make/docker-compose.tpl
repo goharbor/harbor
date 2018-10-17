@@ -11,6 +11,7 @@ services:
       - 127.0.0.1:1514:10514
     networks:
       - harbor
+    dns_search: .
   registry:
     image: vmware/registry-photon:__reg_version__
     container_name: registry
@@ -20,6 +21,7 @@ services:
       - ./common/config/registry/:/etc/registry/:z
     networks:
       - harbor
+    dns_search: .
     environment:
       - GODEBUG=netdns=cgo
     command:
@@ -39,6 +41,7 @@ services:
       - /data/database:/var/lib/mysql:z
     networks:
       - harbor
+    dns_search: .
     env_file:
       - ./common/config/db/env
     depends_on:
@@ -60,6 +63,7 @@ services:
       - /data/:/data/:z
     networks:
       - harbor
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -82,6 +86,7 @@ services:
       - /data/psc/:/etc/ui/token/:z
     networks:
       - harbor
+    dns_search: .
     depends_on:
       - log
       - adminserver
@@ -102,6 +107,7 @@ services:
       - ./common/config/jobservice/config.yml:/etc/jobservice/config.yml:z
     networks:
       - harbor
+    dns_search: .
     depends_on:
       - redis
       - ui
@@ -119,6 +125,7 @@ services:
       - /data/redis:/data
     networks:
       - harbor
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -134,6 +141,7 @@ services:
       - ./common/config/nginx:/etc/nginx:z
     networks:
       - harbor
+    dns_search: .
     ports:
       - 80:80
       - 443:443
