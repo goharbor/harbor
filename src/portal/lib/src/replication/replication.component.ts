@@ -47,8 +47,6 @@ import {
   calculatePage
 } from "../utils";
 
-import { JobLogViewerComponent } from "../job-log-viewer/index";
-
 import {
   ConfirmationTargets,
   ConfirmationButtons,
@@ -138,8 +136,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @ViewChild(CreateEditRuleComponent)
   createEditPolicyComponent: CreateEditRuleComponent;
 
-  @ViewChild("replicationLogViewer")
-  replicationLogViewer: JobLogViewerComponent;
 
   @ViewChild("replicationConfirmDialog")
   replicationConfirmDialog: ConfirmationDialogComponent;
@@ -454,9 +450,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.loadFirstPage();
   }
 
-  viewLog(jobId: number | string): void {
-    if (this.replicationLogViewer) {
-      this.replicationLogViewer.open(jobId);
-    }
+  viewLog(jobId: number | string): string {
+    return this.replicationService.getJobBaseUrl() + "/" + jobId + "/log";
   }
 }

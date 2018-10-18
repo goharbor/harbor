@@ -166,6 +166,8 @@ export abstract class ReplicationService {
   abstract stopJobs(
     jobId: number | string
   ): Observable<string> | Promise<string> | string;
+
+  abstract getJobBaseUrl(): string;
 }
 
 /**
@@ -207,6 +209,10 @@ export class ReplicationDefaultService extends ReplicationService {
       rule.name.trim() !== "" &&
       rule.targets.length !== 0
     );
+  }
+
+  public getJobBaseUrl() {
+    return this._jobBaseUrl;
   }
 
   public getReplicationRules(
