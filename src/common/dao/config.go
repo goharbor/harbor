@@ -18,6 +18,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // AuthModeCanBeModified determines whether auth mode can be
@@ -60,7 +61,8 @@ func SaveConfigEntries(entries []models.ConfigEntry) error {
 		tempEntry.Key = entry.Key
 		tempEntry.Value = entry.Value
 		created, _, err := o.ReadOrCreate(&tempEntry, "k")
-		if err != nil {
+		if err != nil && !isDupRecErr(err) {
+			log.Errorf("Error create configuration entry: %v", err)
 			return err
 		}
 		if !created {
