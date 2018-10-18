@@ -242,7 +242,7 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 The push refers to a repository [10.117.169.182/demo/ubuntu]
 0271b8eebde3: Preparing 
 denied: The system is in read only mode. Any modification is prohibited.  
-``` 
+```
 ### Managing role by LDAP group
 
 If auth_mode is ldap_auth, you can manage project role by LDAP/AD group. please refer [manage role by ldap group guide](manage_role_by_ldap_group.md).
@@ -252,14 +252,13 @@ If auth_mode is ldap_auth, you can manage project role by LDAP/AD group. please 
 **NOTE: Harbor only supports Registry V2 API. You need to use Docker client 1.6.0 or higher.**  
 
 Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to configure insecure registry. Please, read [this document](https://docs.docker.com/registry/insecure/) in order to understand how to do this. 
-  
+
 
 ```Error response from daemon: Get https://myregistrydomain.com/v1/users/: dial tcp myregistrydomain.com:443 getsockopt: connection refused.```   
-  
 
 If this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add   
 `--insecure-registry myregistrydomain.com` to the daemon's start up arguments.  
-  
+
 
 In the case of HTTPS, if you have access to the registry's CA certificate, simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com/ca.crt .   
 
@@ -269,7 +268,7 @@ If the project that the image belongs to is private, you should sign in first:
 ```sh
 $ docker login 10.117.169.182  
 ```
-  
+
 You can now pull the image:  
 
 ```sh
@@ -286,18 +285,18 @@ First, log in from Docker client:
 ```sh
 $ docker login 10.117.169.182  
 ```
-  
+
 Tag the image:  
 
 ```sh
 $ docker tag ubuntu:14.04 10.117.169.182/demo/ubuntu:14.04  
-``` 
+```
 
 Push the image:
 
 ```sh
 $ docker push 10.117.169.182/demo/ubuntu:14.04  
-```  
+```
 
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node.**
 
@@ -309,6 +308,11 @@ Go into the repository and select the "Info" tab, and click the "EDIT" button.  
 
 ![edit info](img/edit_description.png)
 
+### Download the harbor certs
+
+Users  can click the "registry certificate" link to download the registry certificate.
+
+![browse project](img\download_harbor_certs.png)
 
 ###  Deleting repositories  
 
@@ -331,7 +335,7 @@ $ docker-compose stop
 
 $ docker run -it --name gc --rm --volumes-from registry goharbor/registry:2.6.2-photon garbage-collect --dry-run /etc/registry/config.yml
 
-```  
+```
 **NOTE:** The above option "--dry-run" will print the progress without removing any data.  
 
 Verify the result of the above test, then use the below commands to perform garbage collection and restart Harbor. 
@@ -341,7 +345,7 @@ Verify the result of the above test, then use the below commands to perform garb
 $ docker run -it --name gc --rm --volumes-from registry goharbor/registry:2.6.2-photon garbage-collect  /etc/registry/config.yml
 
 $ docker-compose start
-```  
+```
 
 For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
 
@@ -357,7 +361,7 @@ The root key is generated at: ``/root/.docker/trust/private/root_keys``
 You will also be asked to enter a new passphrase for the image. This is generated at ``/root/.docker/trust/private/tuf_keys/[registry name] /[imagepath]``.  
 If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/docker/certs.d/10.117.169.182``` and ```$HOME/.docker/tls/10.117.169.182:4443/```. When an image is signed, it is indicated in the Web UI.  
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. In order to use content trust, HTTPS must be enabled in Harbor.**  
-  
+
 
 When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.  
 ![browse project](img/content_trust.png)
