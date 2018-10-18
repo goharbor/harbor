@@ -1,8 +1,6 @@
-FROM photon:1.0
+FROM photon:2.0
 
-RUN tdnf distro-sync -y \
-    && tdnf erase vim -y \
-    && tdnf install -y shadow sudo \
+RUN tdnf install -y shadow sudo \
     && tdnf clean all \
     && groupadd -r -g 10000 notary \
     && useradd --no-log-init -r -g 10000 -u 10000 notary
