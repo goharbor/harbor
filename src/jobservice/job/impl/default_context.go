@@ -18,14 +18,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 	"reflect"
-	"time"
 
-	"github.com/goharbor/harbor/src/adminserver/client"
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -34,12 +28,8 @@ import (
 	jmodel "github.com/goharbor/harbor/src/jobservice/models"
 )
 
-const (
-	maxRetryTimes = 5
-)
-
-// Context ...
-type Context struct {
+// DefaultContext provides a basic job context
+type DefaultContext struct {
 	// System context
 	sysContext context.Context
 
@@ -57,55 +47,22 @@ type Context struct {
 
 	// other required information
 	properties map[string]interface{}
-
-	// admin server client
-	adminClient client.Client
 }
 
-// NewContext ...
-func NewContext(sysCtx context.Context, adminClient client.Client) *Context {
-	return &Context{
-		sysContext:  sysCtx,
-		adminClient: adminClient,
-		properties:  make(map[string]interface{}),
+// NewDefaultContext is constructor of building DefaultContext
+func NewDefaultContext(sysCtx context.Context) env.JobContext {
+	return &DefaultContext{
+		sysContext: sysCtx,
+		properties: make(map[string]interface{}),
 	}
-}
-
-// Init ...
-func (c *Context) Init() error {
-	var (
-		counter = 0
-		err     error
-		configs map[string]interface{}
-	)
-
-	for counter == 0 || err != nil {
-		counter++
-		configs, err = c.adminClient.GetCfgs()
-		if err != nil {
-			logger.Errorf("Job context initialization error: %s\n", err.Error())
-			if counter < maxRetryTimes {
-				backoff := (int)(math.Pow(2, (float64)(counter))) + 2*counter + 5
-				logger.Infof("Retry in %d seconds", backoff)
-				time.Sleep(time.Duration(backoff) * time.Second)
-			} else {
-				return fmt.Errorf("job context initialization error: %s (%d times tried)", err.Error(), counter)
-			}
-		}
-	}
-
-	db := getDBFromConfig(configs)
-
-	return dao.InitDatabase(db)
 }
 
 // Build implements the same method in env.JobContext interface
 // This func will build the job execution context before running
-func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
-	jContext := &Context{
-		sysContext:  c.sysContext,
-		adminClient: c.adminClient,
-		properties:  make(map[string]interface{}),
+func (c *DefaultContext) Build(dep env.JobData) (env.JobContext, error) {
+	jContext := &DefaultContext{
+		sysContext: c.sysContext,
+		properties: make(map[string]interface{}),
 	}
 
 	// Copy properties
@@ -113,15 +70,6 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 		for k, v := range c.properties {
 			jContext.properties[k] = v
 		}
-	}
-
-	// Refresh admin server properties
-	props, err := c.adminClient.GetCfgs()
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range props {
-		jContext.properties[k] = v
 	}
 
 	// Init logger here
@@ -170,18 +118,18 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 }
 
 // Get implements the same method in env.JobContext interface
-func (c *Context) Get(prop string) (interface{}, bool) {
+func (c *DefaultContext) Get(prop string) (interface{}, bool) {
 	v, ok := c.properties[prop]
 	return v, ok
 }
 
 // SystemContext implements the same method in env.JobContext interface
-func (c *Context) SystemContext() context.Context {
+func (c *DefaultContext) SystemContext() context.Context {
 	return c.sysContext
 }
 
 // Checkin is bridge func for reporting detailed status
-func (c *Context) Checkin(status string) error {
+func (c *DefaultContext) Checkin(status string) error {
 	if c.checkInFunc != nil {
 		c.checkInFunc(status)
 	} else {
@@ -192,7 +140,7 @@ func (c *Context) Checkin(status string) error {
 }
 
 // OPCommand return the control operational command like stop/cancel if have
-func (c *Context) OPCommand() (string, bool) {
+func (c *DefaultContext) OPCommand() (string, bool) {
 	if c.opCommandFunc != nil {
 		return c.opCommandFunc()
 	}
@@ -201,29 +149,15 @@ func (c *Context) OPCommand() (string, bool) {
 }
 
 // GetLogger returns the logger
-func (c *Context) GetLogger() logger.Interface {
+func (c *DefaultContext) GetLogger() logger.Interface {
 	return c.logger
 }
 
 // LaunchJob launches sub jobs
-func (c *Context) LaunchJob(req jmodel.JobRequest) (jmodel.JobStats, error) {
+func (c *DefaultContext) LaunchJob(req jmodel.JobRequest) (jmodel.JobStats, error) {
 	if c.launchJobFunc == nil {
 		return jmodel.JobStats{}, errors.New("nil launch job function")
 	}
 
 	return c.launchJobFunc(req)
-}
-
-func getDBFromConfig(cfg map[string]interface{}) *models.Database {
-	database := &models.Database{}
-	database.Type = cfg[common.DatabaseType].(string)
-	postgresql := &models.PostGreSQL{}
-	postgresql.Host = cfg[common.PostGreSQLHOST].(string)
-	postgresql.Port = int(cfg[common.PostGreSQLPort].(float64))
-	postgresql.Username = cfg[common.PostGreSQLUsername].(string)
-	postgresql.Password = cfg[common.PostGreSQLPassword].(string)
-	postgresql.Database = cfg[common.PostGreSQLDatabase].(string)
-	database.PostGreSQL = postgresql
-
-	return database
 }

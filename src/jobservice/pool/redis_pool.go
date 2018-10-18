@@ -1,4 +1,16 @@
-// Copyright Project Harbor Authors. All rights reserved.
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package pool
 
@@ -6,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"reflect"
 	"time"
 
 	"github.com/gocraft/work"
@@ -62,9 +75,9 @@ func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, re
 	pool := work.NewWorkerPool(RedisPoolContext{}, workerCount, namespace, redisPool)
 	enqueuer := work.NewEnqueuer(namespace, redisPool)
 	client := work.NewClient(namespace, redisPool)
-	scheduler := period.NewRedisPeriodicScheduler(ctx, namespace, redisPool)
-	sweeper := period.NewSweeper(namespace, redisPool, client)
 	statsMgr := opm.NewRedisJobStatsManager(ctx.SystemContext, namespace, redisPool)
+	scheduler := period.NewRedisPeriodicScheduler(ctx, namespace, redisPool, statsMgr)
+	sweeper := period.NewSweeper(namespace, redisPool, client)
 	msgServer := NewMessageServer(ctx.SystemContext, namespace, redisPool)
 	return &GoCraftWorkPool{
 		namespace:     namespace,
@@ -210,6 +223,19 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 		return errors.New("job must implement the job.Interface")
 	}
 
+	// 1:1 constraint
+	if jInList, ok := gcwp.knownJobs[name]; ok {
+		return fmt.Errorf("Job name %s has been already registered with %s", name, reflect.TypeOf(jInList).String())
+	}
+
+	// Same job implementation can be only registered with one name
+	for jName, jInList := range gcwp.knownJobs {
+		jobImpl := reflect.TypeOf(j).String()
+		if reflect.TypeOf(jInList).String() == jobImpl {
+			return fmt.Errorf("Job %s has been already registered with name %s", jobImpl, jName)
+		}
+	}
+
 	redisJob := NewRedisJob(j, gcwp.context, gcwp.statsManager)
 
 	// Get more info from j
@@ -222,6 +248,8 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 		}, // Use generic handler to handle as we do not accept context with this way.
 	)
 	gcwp.knownJobs[name] = j // keep the name of registered jobs as known jobs for future validation
+
+	logger.Infof("Register job %s with name %s", reflect.TypeOf(j).String(), name)
 
 	return nil
 }
@@ -314,15 +342,16 @@ func (gcwp *GoCraftWorkPool) PeriodicallyEnqueue(jobName string, params models.P
 
 	res := models.JobStats{
 		Stats: &models.JobStatData{
-			JobID:       id,
-			JobName:     jobName,
-			Status:      job.JobStatusPending,
-			JobKind:     job.JobKindPeriodic,
-			CronSpec:    cronSetting,
-			EnqueueTime: time.Now().Unix(),
-			UpdateTime:  time.Now().Unix(),
-			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", id),
-			RunAt:       nextRun,
+			JobID:                id,
+			JobName:              jobName,
+			Status:               job.JobStatusPending,
+			JobKind:              job.JobKindPeriodic,
+			CronSpec:             cronSetting,
+			EnqueueTime:          time.Now().Unix(),
+			UpdateTime:           time.Now().Unix(),
+			RefLink:              fmt.Sprintf("/api/v1/jobs/%s", id),
+			RunAt:                nextRun,
+			IsMultipleExecutions: true, // True for periodic job
 		},
 	}
 
@@ -412,6 +441,9 @@ func (gcwp *GoCraftWorkPool) StopJob(jobID string) error {
 		if err := gcwp.scheduler.UnSchedule(jobID); err != nil {
 			return err
 		}
+
+		logger.Infof("Periodic job policy %s is removed", jobID)
+
 		// secondly we need try to delete the job instances scheduled for this periodic job, a try best action
 		gcwp.deleteScheduledJobsOfPeriodicPolicy(theJob.Stats.JobID, theJob.Stats.CronSpec) // ignore error as we have logged
 		// thirdly expire the job stats of this periodic job if exists
@@ -527,7 +559,7 @@ func (gcwp *GoCraftWorkPool) deleteScheduledJobsOfPeriodicPolicy(policyID string
 		return err
 	}
 
-	now := utils.NowEpochSeconds()
+	now := time.Now().Unix()
 	nowTime := time.Unix(now, 0)
 	horizon := nowTime.Add(periodicEnqueuerHorizon)
 
@@ -537,7 +569,9 @@ func (gcwp *GoCraftWorkPool) deleteScheduledJobsOfPeriodicPolicy(policyID string
 		epoch := t.Unix()
 		if err = gcwp.client.DeleteScheduledJob(epoch, policyID); err != nil {
 			// only logged
-			logger.Warningf("delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
+			logger.Warningf("Delete scheduled instance for periodic job %s failed with error: %s\n", policyID, err)
+		} else {
+			logger.Infof("Delete scheduled job for periodic job policy %s: runat = %d", policyID, epoch)
 		}
 	}
 

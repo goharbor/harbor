@@ -1,4 +1,16 @@
-// Copyright Project Harbor Authors. All rights reserved.
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package period
 
 import (
@@ -6,6 +18,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/jobservice/opm"
 
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/tests"
@@ -15,7 +29,11 @@ import (
 var redisPool = tests.GiveMeRedisPool()
 
 func TestScheduler(t *testing.T) {
-	scheduler := myPeriodicScheduler()
+	statsManager := opm.NewRedisJobStatsManager(context.Background(), tests.GiveMeTestNamespace(), redisPool)
+	statsManager.Start()
+	defer statsManager.Shutdown()
+
+	scheduler := myPeriodicScheduler(statsManager)
 	params := make(map[string]interface{})
 	params["image"] = "testing:v1"
 	id, runAt, err := scheduler.Schedule("fake_job", params, "5 * * * * *")
@@ -51,7 +69,11 @@ func TestScheduler(t *testing.T) {
 }
 
 func TestPubFunc(t *testing.T) {
-	scheduler := myPeriodicScheduler()
+	statsManager := opm.NewRedisJobStatsManager(context.Background(), tests.GiveMeTestNamespace(), redisPool)
+	statsManager.Start()
+	defer statsManager.Shutdown()
+
+	scheduler := myPeriodicScheduler(statsManager)
 	p := &PeriodicJobPolicy{
 		PolicyID: "fake_ID",
 		JobName:  "fake_job",
@@ -71,7 +93,7 @@ func TestPubFunc(t *testing.T) {
 	}
 }
 
-func myPeriodicScheduler() *RedisPeriodicScheduler {
+func myPeriodicScheduler(statsManager opm.JobStatsManager) *RedisPeriodicScheduler {
 	sysCtx := context.Background()
 	ctx := &env.Context{
 		SystemContext: sysCtx,
@@ -79,5 +101,5 @@ func myPeriodicScheduler() *RedisPeriodicScheduler {
 		ErrorChan:     make(chan error, 1),
 	}
 
-	return NewRedisPeriodicScheduler(ctx, tests.GiveMeTestNamespace(), redisPool)
+	return NewRedisPeriodicScheduler(ctx, tests.GiveMeTestNamespace(), redisPool, statsManager)
 }

@@ -1,4 +1,16 @@
-// Copyright Project Harbor Authors. All rights reserved.
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package period
 
@@ -10,6 +22,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/jobservice/opm"
 
 	"github.com/robfig/cron"
 
@@ -37,12 +50,12 @@ type RedisPeriodicScheduler struct {
 }
 
 // NewRedisPeriodicScheduler is constructor of RedisPeriodicScheduler
-func NewRedisPeriodicScheduler(ctx *env.Context, namespace string, redisPool *redis.Pool) *RedisPeriodicScheduler {
+func NewRedisPeriodicScheduler(ctx *env.Context, namespace string, redisPool *redis.Pool, statsManager opm.JobStatsManager) *RedisPeriodicScheduler {
 	pstore := &periodicJobPolicyStore{
 		lock:     new(sync.RWMutex),
 		policies: make(map[string]*PeriodicJobPolicy),
 	}
-	enqueuer := newPeriodicEnqueuer(namespace, redisPool, pstore)
+	enqueuer := newPeriodicEnqueuer(namespace, redisPool, pstore, statsManager)
 
 	return &RedisPeriodicScheduler{
 		context:   ctx,
@@ -261,6 +274,8 @@ func (rps *RedisPeriodicScheduler) Load() error {
 		}
 
 		allPeriodicPolicies = append(allPeriodicPolicies, policy)
+
+		logger.Infof("Load periodic job policy %s for job %s: %s", policy.PolicyID, policy.JobName, policy.CronSpec)
 	}
 
 	if len(allPeriodicPolicies) > 0 {

@@ -1,4 +1,16 @@
-// Copyright Project Harbor Authors. All rights reserved.
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package api
 
@@ -14,6 +26,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/core"
 	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/opm"
 )
@@ -50,42 +63,36 @@ func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
 
 // HandleLaunchJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w) {
+	if !dh.preCheck(w, req) {
 		return
 	}
 
 	data, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
 		return
 	}
 
 	// unmarshal data
 	jobReq := models.JobRequest{}
 	if err = json.Unmarshal(data, &jobReq); err != nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.HandleJSONDataError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
 		return
 	}
 
 	// Pass request to the controller for the follow-up.
 	jobStats, err := dh.controller.LaunchJob(jobReq)
 	if err != nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.LaunchJobError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, errs.LaunchJobError(err))
 		return
 	}
 
-	data, ok := dh.handleJSONData(w, jobStats)
-	if !ok {
-		return
-	}
-
-	w.WriteHeader(http.StatusAccepted)
-	w.Write(data)
+	dh.handleJSONData(w, req, http.StatusAccepted, jobStats)
 }
 
 // HandleGetJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w) {
+	if !dh.preCheck(w, req) {
 		return
 	}
 
@@ -100,22 +107,16 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 			code = http.StatusNotFound
 			backErr = err
 		}
-		dh.handleError(w, code, backErr)
+		dh.handleError(w, req, code, backErr)
 		return
 	}
 
-	data, ok := dh.handleJSONData(w, jobStats)
-	if !ok {
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write(data)
+	dh.handleJSONData(w, req, http.StatusOK, jobStats)
 }
 
 // HandleJobActionReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w) {
+	if !dh.preCheck(w, req) {
 		return
 	}
 
@@ -124,14 +125,14 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 
 	data, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
 		return
 	}
 
 	// unmarshal data
 	jobActionReq := models.JobActionRequest{}
 	if err = json.Unmarshal(data, &jobActionReq); err != nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.HandleJSONDataError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
 		return
 	}
 
@@ -144,7 +145,7 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 				code = http.StatusNotFound
 				backErr = err
 			}
-			dh.handleError(w, code, backErr)
+			dh.handleError(w, req, code, backErr)
 			return
 		}
 	case opm.CtlCommandCancel:
@@ -155,7 +156,7 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 				code = http.StatusNotFound
 				backErr = err
 			}
-			dh.handleError(w, code, backErr)
+			dh.handleError(w, req, code, backErr)
 			return
 		}
 	case opm.CtlCommandRetry:
@@ -166,41 +167,37 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 				code = http.StatusNotFound
 				backErr = err
 			}
-			dh.handleError(w, code, backErr)
+			dh.handleError(w, req, code, backErr)
 			return
 		}
 	default:
-		dh.handleError(w, http.StatusNotImplemented, errs.UnknownActionNameError(fmt.Errorf("%s", jobID)))
+		dh.handleError(w, req, http.StatusNotImplemented, errs.UnknownActionNameError(fmt.Errorf("%s", jobID)))
 		return
 	}
+
+	dh.log(req, http.StatusNoContent, string(data))
 
 	w.WriteHeader(http.StatusNoContent) // only header, no content returned
 }
 
 // HandleCheckStatusReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w) {
+	if !dh.preCheck(w, req) {
 		return
 	}
 
 	stats, err := dh.controller.CheckStatus()
 	if err != nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.CheckStatsError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, errs.CheckStatsError(err))
 		return
 	}
 
-	data, ok := dh.handleJSONData(w, stats)
-	if !ok {
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write(data)
+	dh.handleJSONData(w, req, http.StatusOK, stats)
 }
 
 // HandleJobLogReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w) {
+	if !dh.preCheck(w, req) {
 		return
 	}
 
@@ -208,7 +205,7 @@ func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Reque
 	jobID := vars["job_id"]
 
 	if strings.Contains(jobID, "..") || strings.ContainsRune(jobID, os.PathSeparator) {
-		dh.handleError(w, http.StatusBadRequest, fmt.Errorf("Invalid Job ID: %s", jobID))
+		dh.handleError(w, req, http.StatusBadRequest, fmt.Errorf("Invalid Job ID: %s", jobID))
 		return
 	}
 
@@ -220,34 +217,48 @@ func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Reque
 			code = http.StatusNotFound
 			backErr = err
 		}
-		dh.handleError(w, code, backErr)
+		dh.handleError(w, req, code, backErr)
 		return
 	}
+
+	dh.log(req, http.StatusOK, "")
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(logData)
 }
 
-func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, object interface{}) ([]byte, bool) {
+func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Request, code int, object interface{}) {
 	data, err := json.Marshal(object)
 	if err != nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.HandleJSONDataError(err))
-		return nil, false
+		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
+		return
 	}
 
-	return data, true
+	logger.Debugf("Serve http request '%s %s': %d %s", req.Method, req.URL.String(), code, data)
+
+	w.Header().Set(http.CanonicalHeaderKey("Accept"), "application/json")
+	w.Header().Set(http.CanonicalHeaderKey("content-type"), "application/json")
+	w.WriteHeader(code)
+	w.Write(data)
 }
 
-func (dh *DefaultHandler) handleError(w http.ResponseWriter, code int, err error) {
+func (dh *DefaultHandler) handleError(w http.ResponseWriter, req *http.Request, code int, err error) {
+	// Log all errors
+	logger.Errorf("Serve http request '%s %s' error: %d %s", req.Method, req.URL.String(), code, err.Error())
+
 	w.WriteHeader(code)
 	w.Write([]byte(err.Error()))
 }
 
-func (dh *DefaultHandler) preCheck(w http.ResponseWriter) bool {
+func (dh *DefaultHandler) preCheck(w http.ResponseWriter, req *http.Request) bool {
 	if dh.controller == nil {
-		dh.handleError(w, http.StatusInternalServerError, errs.MissingBackendHandlerError(fmt.Errorf("nil controller")))
+		dh.handleError(w, req, http.StatusInternalServerError, errs.MissingBackendHandlerError(fmt.Errorf("nil controller")))
 		return false
 	}
 
 	return true
+}
+
+func (dh *DefaultHandler) log(req *http.Request, code int, text string) {
+	logger.Debugf("Serve http request '%s %s': %d %s", req.Method, req.URL.String(), code, text)
 }
