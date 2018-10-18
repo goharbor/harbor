@@ -33,7 +33,7 @@ fi
 
 ## --------------------------------------------- Upload Harbor CI Logs -------------------------------------------
 outfile="integration_logs_$TRAVIS_BUILD_NUMBER_$TRAVIS_COMMIT.tar.gz"
-sudo tar -zcvf $outfile output.xml log.html /var/log/harbor/*
+sudo tar -zcvf $outfile /home/travis/gopath/src/github.com/goharbor/harbor/output.xml /home/travis/gopath/src/github.com/goharbor/harbor/log.html /var/log/harbor/*
 if [ -f "$outfile" ]; then
     uploader $outfile $harbor_logs_bucket
     echo "----------------------------------------------"
