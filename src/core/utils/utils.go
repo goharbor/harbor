@@ -16,12 +16,12 @@
 package utils
 
 import (
+	"net/http"
+
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/service/token"
-
-	"net/http"
 )
 
 // NewRepositoryClientForUI creates a repository client that can only be used to
@@ -32,8 +32,11 @@ func NewRepositoryClientForUI(username, repository string) (*registry.Repository
 		return nil, err
 	}
 
+	uam := &auth.UserAgentModifier{
+		UserAgent: "harbor-registry-client",
+	}
 	authorizer := auth.NewRawTokenAuthorizer(username, token.Registry)
-	transport := registry.NewTransport(http.DefaultTransport, authorizer)
+	transport := registry.NewTransport(http.DefaultTransport, authorizer, uam)
 	client := &http.Client{
 		Transport: transport,
 	}

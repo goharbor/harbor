@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/tests/apitests/apilib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -347,4 +348,97 @@ func TestPutOfRepository(t *testing.T) {
 	}
 	require.NotNil(t, repository)
 	assert.Equal(t, desc.Description, repository.Description)
+}
+
+func TestRetag(t *testing.T) {
+	assert := assert.New(t)
+	apiTest := newHarborAPI()
+	repo := "library/hello-world"
+
+	fmt.Println("Testing Image Retag API")
+	// -------------------case 1 : response code = 200------------------------//
+	fmt.Println("case 1 : response code = 200")
+	retagReq := &apilib.Retag{
+		Tag:      "prd",
+		SrcImage: "library/hello-world:latest",
+		Override: true,
+	}
+	code, err := apiTest.RetagImage(*admin, repo, retagReq)
+	if err != nil {
+		t.Errorf("failed to retag: %v", err)
+	} else {
+		assert.Equal(int(200), code, "response code should be 200")
+	}
+
+	// -------------------case 2 : response code = 400------------------------//
+	fmt.Println("case 2 : response code = 400: invalid image value provided")
+	retagReq = &apilib.Retag{
+		Tag:      "prd",
+		SrcImage: "hello-world:latest",
+		Override: true,
+	}
+	httpStatusCode, err := apiTest.RetagImage(*admin, repo, retagReq)
+	if err != nil {
+		t.Errorf("failed to retag: %v", err)
+	} else {
+		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
+	}
+
+	// -------------------case 3 : response code = 404------------------------//
+	fmt.Println("case 3 : response code = 404: source image not exist")
+	retagReq = &apilib.Retag{
+		Tag:      "prd",
+		SrcImage: "release/hello-world:notexist",
+		Override: true,
+	}
+	httpStatusCode, err = apiTest.RetagImage(*admin, repo, retagReq)
+	if err != nil {
+		t.Errorf("failed to retag: %v", err)
+	} else {
+		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
+	}
+
+	// -------------------case 4 : response code = 404------------------------//
+	fmt.Println("case 4 : response code = 404: target project not exist")
+	retagReq = &apilib.Retag{
+		Tag:      "prd",
+		SrcImage: "library/hello-world:latest",
+		Override: true,
+	}
+	httpStatusCode, err = apiTest.RetagImage(*admin, "nonexist/hello-world", retagReq)
+	if err != nil {
+		t.Errorf("failed to retag: %v", err)
+	} else {
+		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
+	}
+
+	// -------------------case 5 : response code = 401------------------------//
+	fmt.Println("case 5 : response code = 401, unathorized")
+	retagReq = &apilib.Retag{
+		Tag:      "prd",
+		SrcImage: "library/hello-world:latest",
+		Override: true,
+	}
+	httpStatusCode, err = apiTest.RetagImage(*unknownUsr, repo, retagReq)
+	if err != nil {
+		t.Errorf("failed to retag: %v", err)
+	} else {
+		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 401")
+	}
+
+	// -------------------case 6 : response code = 409------------------------//
+	fmt.Println("case 6 : response code = 409, conflict")
+	retagReq = &apilib.Retag{
+		Tag:      "latest",
+		SrcImage: "library/hello-world:latest",
+		Override: false,
+	}
+	httpStatusCode, err = apiTest.RetagImage(*admin, repo, retagReq)
+	if err != nil {
+		t.Errorf("failed to retag: %v", err)
+	} else {
+		assert.Equal(int(409), httpStatusCode, "httpStatusCode should be 409")
+	}
+
+	fmt.Printf("\n")
 }

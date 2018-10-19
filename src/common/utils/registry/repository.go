@@ -258,6 +258,28 @@ func (r *Repository) DeleteManifest(digest string) error {
 	}
 }
 
+// MountBlob ...
+func (r *Repository) MountBlob(digest, from string) error {
+	req, err := http.NewRequest("POST", buildMountBlobURL(r.Endpoint.String(), r.Name, digest, from), nil)
+	req.Header.Set(http.CanonicalHeaderKey("Content-Length"), "0")
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode/100 != 2 {
+		defer resp.Body.Close()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		return fmt.Errorf("status %d, body: %s", resp.StatusCode, string(b))
+	}
+
+	return nil
+}
+
 // DeleteTag ...
 func (r *Repository) DeleteTag(tag string) error {
 	digest, exist, err := r.ManifestExist(tag)
@@ -460,6 +482,10 @@ func buildManifestURL(endpoint, repoName, reference string) string {
 
 func buildBlobURL(endpoint, repoName, reference string) string {
 	return fmt.Sprintf("%s/v2/%s/blobs/%s", endpoint, repoName, reference)
+}
+
+func buildMountBlobURL(endpoint, repoName, digest, from string) string {
+	return fmt.Sprintf("%s/v2/%s/blobs/uploads/?mount=%s&from=%s", endpoint, repoName, digest, from)
 }
 
 func buildInitiateBlobUploadURL(endpoint, repoName string) string {

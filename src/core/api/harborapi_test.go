@@ -140,7 +140,7 @@ func init() {
 	beego.Router("/api/repositories/*/tags/:tag/labels", &RepositoryLabelAPI{}, "get:GetOfImage;post:AddToImage")
 	beego.Router("/api/repositories/*/tags/:tag/labels/:id([0-9]+", &RepositoryLabelAPI{}, "delete:RemoveFromImage")
 	beego.Router("/api/repositories/*/tags/:tag", &RepositoryAPI{}, "delete:Delete;get:GetTag")
-	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags")
+	beego.Router("/api/repositories/*/tags", &RepositoryAPI{}, "get:GetTags;post:Retag")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/repositories/top", &RepositoryAPI{}, "get:GetTopRepos")
@@ -616,6 +616,19 @@ func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, interface
 		return 0, nil, err
 	}
 	return http.StatusOK, result, nil
+}
+
+// RetagImage retag image to another tag
+func (a testapi) RetagImage(authInfo usrInfo, repoName string, retag *apilib.Retag) (int, error) {
+	_sling := sling.New().Post(a.basePath)
+
+	path := fmt.Sprintf("/api/repositories/%s/tags", repoName)
+
+	_sling = _sling.Path(path)
+	_sling = _sling.BodyJSON(retag)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
 }
 
 // Get manifests of a relevant repository

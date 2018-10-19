@@ -113,6 +113,12 @@ func GetProjectByName(name string) (*models.Project, error) {
 	return &p[0], nil
 }
 
+// ProjectExistsByName returns whether the project exists according to its name.
+func ProjectExistsByName(name string) bool {
+	o := GetOrmer()
+	return o.QueryTable("project").Filter("name", name).Exist()
+}
+
 // GetTotalOfProjects returns the total count of projects
 // according to the query conditions
 func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {

@@ -1131,6 +1131,33 @@ paths:
               $ref: '#/definitions/DetailedTag'
         '500':
           description: Unexpected internal errors.
+    post:
+      summary: Retag an image
+      description: >
+        This endpoint tags an existing image with another tag in this repo, source images
+        can be in different repos or projects.
+      parameters:
+        - name: request
+          in: body
+          description: Request to give source image and target tag.
+          required: true
+          schema:
+            $ref: '#/definitions/RetagReq'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Image retag successfully.
+        '400':
+          description: Invalid image values provided.
+        '401':
+          description: User has no permission to the source project or destination project.
+        '404':
+          description: Project or repository not found.
+        '409':
+          description: Target tag already exists.
+        '500':
+          description: Unexpected internal errors.
   '/repositories/{repo_name}/tags/{tag}/labels':
     get:
       summary: Get labels of an image.
@@ -2966,6 +2993,18 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/SearchResult'
+  RetagReq:
+    type: object
+    properties:
+      tag:
+        description: new tag to be created
+        type: string
+      src_image:
+        description: Source image to be retagged, e.g. 'stage/app:v1.0'
+        type: string
+      override:
+        description: If target tag already exists, whether to override it
+        type: boolean
   SearchRepository:
     type: object
     properties:
