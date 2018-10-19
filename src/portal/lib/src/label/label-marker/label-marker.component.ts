@@ -1,28 +1,11 @@
-
-// Copyright (c) 2018 VMware, Inc. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
-import { Observable, fromEvent } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
-import { finalize } from 'rxjs/operators';
+import { fromEvent, Subject } from 'rxjs';
+import { debounceTime, finalize } from 'rxjs/operators';
 
 import { RepositoryItem, HelmChartVersion } from './../../service/interface';
 import {Label} from "../../service/interface";
 import { ResourceType } from '../../shared/shared.const';
 import { LabelService } from '../../service/label.service';
-import { TranslateService } from '@ngx-translate/core';
 import { ErrorHandler } from '../../error-handler/error-handler';
 
 @Component({
@@ -37,6 +20,7 @@ export class LabelMarkerComponent implements OnInit {
     @Input() projectName: string;
     @Input() resource: RepositoryItem | HelmChartVersion;
     @Input() resourceType: ResourceType;
+    @Output() changeEvt = new EventEmitter<any>();
 
     labelFilter = '';
     markedMap: Map<number, boolean> = new Map<number, boolean>();
@@ -44,6 +28,8 @@ export class LabelMarkerComponent implements OnInit {
     sortedLabels: Label[] = [];
 
     loading = false;
+
+    labelChangeDebouncer: Subject<any> = new Subject();
 
     @ViewChild('filterInput') filterInputRef: ElementRef;
 
@@ -53,12 +39,13 @@ export class LabelMarkerComponent implements OnInit {
         fromEvent(this.filterInputRef.nativeElement, 'keyup')
         .pipe(debounceTime(500))
         .subscribe(() => this.refresh());
+
+        this.labelChangeDebouncer.pipe(debounceTime(1000)).subscribe(() => this.changeEvt.emit());
     }
 
     constructor(
         private labelService: LabelService,
         private errorHandler: ErrorHandler,
-        private translateService: TranslateService,
         private cdr: ChangeDetectorRef) {}
 
     refresh() {
@@ -75,7 +62,6 @@ export class LabelMarkerComponent implements OnInit {
                   }))
             .subscribe( chartVersionLabels => {
                 for (let label of chartVersionLabels) {
-                    console.log('marked label', label);
                     this.markedMap.set(label.id, true);
                 }
                 this.sortedLabels = this.getSortedLabels();
@@ -102,6 +88,7 @@ export class LabelMarkerComponent implements OnInit {
                 () => {
                     this.markedMap.set(label.id, true);
                     this.refresh();
+                    this.labelChangeDebouncer.next();
                     let hnd = setInterval(() => this.cdr.markForCheck(), 100);
                     setTimeout(() => clearInterval(hnd), 5000);
                 },
@@ -128,6 +115,7 @@ export class LabelMarkerComponent implements OnInit {
                 () => {
                     this.markedMap.set(label.id, false);
                     this.refresh();
+                    this.labelChangeDebouncer.next();
                     let hnd = setInterval(() => this.cdr.markForCheck(), 100);
                     setTimeout(() => clearInterval(hnd), 5000);
                 },

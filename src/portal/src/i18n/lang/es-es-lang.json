@@ -527,6 +527,7 @@
         "PROV_FILE": "Prov File",
         "READY": "Ready",
         "NOT_READY": "Not Ready",
+        "LABELS": "labels",
         "STATUS": "Status"
     },
     "ALERT": {

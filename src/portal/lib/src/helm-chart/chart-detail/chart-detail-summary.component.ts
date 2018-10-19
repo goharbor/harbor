@@ -5,7 +5,7 @@ import {
   Input
 } from "@angular/core";
 
-import { HelmChartMetaData, HelmChartSecurity } from "./../../service/interface";
+import { HelmChartMetaData, HelmChartSecurity, Label } from "./../../service/interface";
 import { downloadFile } from './../../utils';
 import { HelmChartService } from "../../service/index";
 import { ErrorHandler } from "./../../error-handler/error-handler";
@@ -24,6 +24,7 @@ export class ChartDetailSummaryComponent implements OnInit {
   @Input() chartName: string;
   @Input() chartVersion: string;
   @Input() readme: string;
+  @Input() labels: Label[];
 
   copiedCMD = '';
   addCMD: string;

@@ -1,4 +1,3 @@
-import { Label } from './../../service/interface';
 import {
   Component,
   Input,
@@ -22,6 +21,7 @@ import {
   HelmChartMaintainer,
   LabelService
 } from "./../../service/index";
+import { Label } from './../../service/interface';
 import { ErrorHandler } from "./../../error-handler/error-handler";
 import { toPromise, DEFAULT_PAGE_SIZE, downloadFile } from "../../utils";
 import { OperationService } from "./../../operation/operation.service";
@@ -61,7 +61,6 @@ export class ChartVersionComponent implements OnInit {
 
   lastFilteredVersionName: string;
   chartVersions: HelmChartVersion[] = [];
-  versionsCopy: HelmChartVersion[] = [];
   systemInfo: SystemInfo;
   selectedRows: HelmChartVersion[] = [];
   projectLabels: Label[] = [];
@@ -85,7 +84,6 @@ export class ChartVersionComponent implements OnInit {
 
   constructor(
     private errorHandler: ErrorHandler,
-    private translateService: TranslateService,
     private systemInfoService: SystemInfoService,
     private helmChartService: HelmChartService,
     private resrouceLabelService: LabelService,
@@ -116,7 +114,6 @@ export class ChartVersionComponent implements OnInit {
     this.resrouceLabelService.getProjectLabels(this.projectId).subscribe(
       (labels: Label[]) => {
         this.projectLabels = labels;
-        console.log('chart version project labels', this.projectLabels);
       }
       );
   }
@@ -126,6 +123,7 @@ export class ChartVersionComponent implements OnInit {
     this.helmChartService
       .getChartVersions(this.projectName, this.chartName)
       .pipe(finalize(() => {
+        this.selectedRows = [];
         this.loading = false;
         let hnd = setInterval(() => this.cdr.markForCheck(), 100);
         setTimeout(() => clearInterval(hnd), 2000);
@@ -133,7 +131,6 @@ export class ChartVersionComponent implements OnInit {
       .subscribe(
         versions => {
           this.chartVersions = versions.filter(x => x.version.includes(this.lastFilteredVersionName));
-          this.versionsCopy = versions.map(x => Object.assign({}, x));
           this.totalCount = versions.length;
         },
         err => {
@@ -313,5 +310,15 @@ export class ChartVersionComponent implements OnInit {
     } else {
       return "HELM_CHART.ACTIVE";
     }
+  }
+
+  onLabelChange(version: HelmChartVersion) {
+    this.resrouceLabelService.getChartVersionLabels(this.projectName, this.chartName, version.version)
+    .subscribe(labels => {
+        let versionIdx = this.chartVersions.findIndex(v => v.name === version.name);
+        this.chartVersions[versionIdx].labels = labels;
+        let hnd = setInterval(() => this.cdr.markForCheck(), 100);
+        setTimeout(() => clearInterval(hnd), 2000);
+    });
   }
 }

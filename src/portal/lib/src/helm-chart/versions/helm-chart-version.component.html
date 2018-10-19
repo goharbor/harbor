@@ -57,7 +57,8 @@
                                 [labels]="projectLabels"
                                 [projectName]="projectName"
                                 [resource]="selectedRows[0]"
-                                [resourceType]="resourceType">
+                                [resourceType]="resourceType"
+                                (changeEvt)="onLabelChange(selectedRows[0])">
                             </hbr-resource-label-marker>
                         </clr-dropdown-menu>
                     </clr-dropdown>
@@ -68,7 +69,7 @@
 
                 <clr-dg-column>{{'HELM_CHART.MAINTAINERS' | translate }}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate }}</clr-dg-column>
-                <clr-dg-column style="width: 140px;">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'HELM_CHART.NO_VERSION_PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let v of chartVersions" [clrDgItem]="v">
                     <clr-dg-cell>
@@ -81,20 +82,9 @@
                     <clr-dg-cell>{{ v.engine }}</clr-dg-cell>
                     <clr-dg-cell>{{ getMaintainerString(v.maintainers) }}</clr-dg-cell>
                     <clr-dg-cell>{{ v.created | date}}</clr-dg-cell>
-                    <clr-dg-cell style="width: 140px;">
+                    <clr-dg-cell>
                         <hbr-label-piece *ngIf="v.labels?.length" [label]="v.labels[0]"> </hbr-label-piece>
-                        <div class="signpost-item" [hidden]="v.labels?.length<=1">
-                            <div class="trigger-item">
-                                <clr-signpost>
-                                <button class="btn btn-link" clrSignpostTrigger>...</button>
-                                    <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
-                                        <div>
-                                            <hbr-label-piece *ngFor="let label of v.labels" [label]="label"></hbr-label-piece>
-                                        </div>
-                                    </clr-signpost-content>
-                                </clr-signpost>
-                            </div>
-                        </div>
+                        <hbr-resource-label-signpost *ngIf="v.labels?.length>1" [labels]="v.labels"></hbr-resource-label-signpost>
                     </clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
