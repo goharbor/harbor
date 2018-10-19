@@ -105,11 +105,10 @@ Make Project Public
 Delete Repo
     [Arguments]  ${projectname}
     Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox//label
-    Sleep  1
+    Wait Until Element Is Enabled  //button[contains(.,"Delete")]
     Click Element  xpath=//button[contains(.,"Delete")]
-    Sleep  1
+    Wait Until Element Is Visible  //clr-modal//button[2]
     Click Element  xpath=//clr-modal//button[2]
-    Sleep  1
 
 Delete Repo on CardView
     [Arguments]  ${reponame}
