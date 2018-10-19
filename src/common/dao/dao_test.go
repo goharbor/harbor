@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -1486,5 +1487,9 @@ func TestSaveConfigEntries(t *testing.T) {
 	if findItem != 3 {
 		t.Fatalf("Should update 3 configuration but only update %d", findItem)
 	}
+}
 
+func TestIsDupRecError(t *testing.T) {
+	assert.True(t, isDupRecErr(fmt.Errorf("pq: duplicate key value violates unique constraint \"properties_k_key\"")))
+	assert.False(t, isDupRecErr(fmt.Errorf("other error")))
 }

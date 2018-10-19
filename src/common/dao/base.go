@@ -126,6 +126,12 @@ func GetOrmer() orm.Ormer {
 	return globalOrm
 }
 
+// isDupRecErr checks if the error is due to a duplication of record, currently this
+// works only for pgSQL
+func isDupRecErr(e error) bool {
+	return strings.Contains(e.Error(), "duplicate key value violates unique constraint")
+}
+
 // ClearTable is the shortcut for test cases, it should be called only in test cases.
 func ClearTable(table string) error {
 	o := GetOrmer()
