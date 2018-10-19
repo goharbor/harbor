@@ -38,13 +38,30 @@
             <clr-datagrid (clrDgRefresh)="refresh()" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
                 <clr-dg-action-bar>
                     <button type="button" class="btn btn-sm btn-secondary"
-                    [disabled]="!(selectedRows.length===1)"
-                    (click)="versionDownload()">
-                        <clr-icon shape="download" size="16"></clr-icon>&nbsp;{{'HELM_CHART.DOWNLOAD' | translate}}</button>
+                        [disabled]="!(selectedRows.length===1)"
+                        (click)="versionDownload()">
+                        <clr-icon shape="download" size="16"></clr-icon>&nbsp;{{'HELM_CHART.DOWNLOAD' | translate}}
+                    </button>
                     <button type="button" class="btn btn-sm btn-secondary"
-                    [disabled]="selectedRows.length<=0 || !hasProjectAdminRole"
-                    (click)="openVersionDeleteModal(selectedRows)">
-                        <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}</button>
+                        [disabled]="selectedRows.length<=0 || !hasProjectAdminRole"
+                        (click)="openVersionDeleteModal(selectedRows)">
+                        <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}
+                    </button>
+                    <clr-dropdown>
+                        <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger 
+                            [disabled]="!(selectedRows.length==1)">
+                            <clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}
+                        </button>
+                        <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
+                            <hbr-resource-label-marker
+                                [labels]="projectLabels"
+                                [projectName]="projectName"
+                                [resource]="selectedRows[0]"
+                                [resourceType]="resourceType"
+                                (changeEvt)="onLabelChange(selectedRows[0])">
+                            </hbr-resource-label-marker>
+                        </clr-dropdown-menu>
+                    </clr-dropdown>
                 </clr-dg-action-bar>
                 <clr-dg-column>{{'HELM_CHART.VERSION' | translate}}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.STATUS' | translate }}</clr-dg-column>
@@ -52,6 +69,7 @@
 
                 <clr-dg-column>{{'HELM_CHART.MAINTAINERS' | translate }}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate }}</clr-dg-column>
+                <clr-dg-column>{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'HELM_CHART.NO_VERSION_PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let v of chartVersions" [clrDgItem]="v">
                     <clr-dg-cell>
@@ -64,6 +82,10 @@
                     <clr-dg-cell>{{ v.engine }}</clr-dg-cell>
                     <clr-dg-cell>{{ getMaintainerString(v.maintainers) }}</clr-dg-cell>
                     <clr-dg-cell>{{ v.created | date}}</clr-dg-cell>
+                    <clr-dg-cell>
+                        <hbr-label-piece *ngIf="v.labels?.length" [label]="v.labels[0]"> </hbr-label-piece>
+                        <hbr-resource-label-signpost *ngIf="v.labels?.length>1" [labels]="v.labels"></hbr-resource-label-signpost>
+                    </clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount">

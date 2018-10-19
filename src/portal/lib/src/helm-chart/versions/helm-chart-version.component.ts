@@ -18,8 +18,10 @@ import {
   SystemInfo,
   SystemInfoService,
   HelmChartVersion,
-  HelmChartMaintainer
+  HelmChartMaintainer,
+  LabelService
 } from "./../../service/index";
+import { Label } from './../../service/interface';
 import { ErrorHandler } from "./../../error-handler/error-handler";
 import { toPromise, DEFAULT_PAGE_SIZE, downloadFile } from "../../utils";
 import { OperationService } from "./../../operation/operation.service";
@@ -34,7 +36,8 @@ import {
   ConfirmationButtons,
   ConfirmationTargets,
   ConfirmationState,
-  DefaultHelmIcon
+  DefaultHelmIcon,
+  ResourceType
 } from "../../shared/shared.const";
 
 @Component({
@@ -45,6 +48,7 @@ import {
 })
 export class ChartVersionComponent implements OnInit {
   signedCon: { [key: string]: any | string[] } = {};
+  @Input() projectId: number;
   @Input() projectName: string;
   @Input() chartName: string;
   @Input() roleName: string;
@@ -57,10 +61,11 @@ export class ChartVersionComponent implements OnInit {
 
   lastFilteredVersionName: string;
   chartVersions: HelmChartVersion[] = [];
-  versionsCopy: HelmChartVersion[] = [];
   systemInfo: SystemInfo;
   selectedRows: HelmChartVersion[] = [];
+  projectLabels: Label[] = [];
   loading = true;
+  resourceType = ResourceType.CHART_VERSION;
 
   isCardView: boolean;
   cardHover = false;
@@ -79,9 +84,9 @@ export class ChartVersionComponent implements OnInit {
 
   constructor(
     private errorHandler: ErrorHandler,
-    private translateService: TranslateService,
     private systemInfoService: SystemInfoService,
     private helmChartService: HelmChartService,
+    private resrouceLabelService: LabelService,
     private cdr: ChangeDetectorRef,
     private operationService: OperationService,
   ) {}
@@ -96,6 +101,7 @@ export class ChartVersionComponent implements OnInit {
       .then(systemInfo => (this.systemInfo = systemInfo))
       .catch(error => this.errorHandler.error(error));
     this.refresh();
+    this.getProjectLabels();
     this.lastFilteredVersionName = "";
   }
 
@@ -104,11 +110,20 @@ export class ChartVersionComponent implements OnInit {
     this.refresh();
   }
 
+  getProjectLabels() {
+    this.resrouceLabelService.getProjectLabels(this.projectId).subscribe(
+      (labels: Label[]) => {
+        this.projectLabels = labels;
+      }
+      );
+  }
+
   refresh() {
     this.loading = true;
     this.helmChartService
       .getChartVersions(this.projectName, this.chartName)
       .pipe(finalize(() => {
+        this.selectedRows = [];
         this.loading = false;
         let hnd = setInterval(() => this.cdr.markForCheck(), 100);
         setTimeout(() => clearInterval(hnd), 2000);
@@ -116,7 +131,6 @@ export class ChartVersionComponent implements OnInit {
       .subscribe(
         versions => {
           this.chartVersions = versions.filter(x => x.version.includes(this.lastFilteredVersionName));
-          this.versionsCopy = versions.map(x => Object.assign({}, x));
           this.totalCount = versions.length;
         },
         err => {
@@ -296,5 +310,15 @@ export class ChartVersionComponent implements OnInit {
     } else {
       return "HELM_CHART.ACTIVE";
     }
+  }
+
+  onLabelChange(version: HelmChartVersion) {
+    this.resrouceLabelService.getChartVersionLabels(this.projectName, this.chartName, version.version)
+    .subscribe(labels => {
+        let versionIdx = this.chartVersions.findIndex(v => v.name === version.name);
+        this.chartVersions[versionIdx].labels = labels;
+        let hnd = setInterval(() => this.cdr.markForCheck(), 100);
+        setTimeout(() => clearInterval(hnd), 2000);
+    });
   }
 }

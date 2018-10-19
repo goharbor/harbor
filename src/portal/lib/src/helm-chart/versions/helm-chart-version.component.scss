@@ -33,6 +33,16 @@
     }
 }
 
+clr-dg-action-bar {
+    clr-dropdown{
+        @include dropdown-as-action-button;
+    }
+}
+
+hbr-resource-label-signpost {
+    display: inline-block;
+}
+
 .card-container {
     margin-top: 21px;
     .card-header {

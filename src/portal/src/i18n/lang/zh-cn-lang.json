@@ -527,6 +527,7 @@
         "PROV_FILE": "Prov 文件",
         "READY": "就绪",
         "NOT_READY": "未就绪",
+        "LABELS": "标签",
         "STATUS": "状态"
     },
     "ALERT": {

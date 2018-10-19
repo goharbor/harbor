@@ -146,12 +146,10 @@ export class HelmChartDefaultService extends HelmChartService {
 
     return this.http
       .get(`${this.config.helmChartEndpoint}/${projectName}/charts`, HTTP_GET_OPTIONS)
-      .pipe(map(response => {
-         return this.extractHelmItems(response);
-      }))
-      .pipe(catchError(error => {
-        return this.handleErrorObservable(error);
-      }));
+      .pipe(
+        map(response => this.extractHelmItems(response),
+        catchError(error => this.handleErrorObservable(error))
+      ));
   }
 
   public deleteHelmChart(projectId: number | string, chartName: string): Observable<any> {
@@ -172,10 +170,10 @@ export class HelmChartDefaultService extends HelmChartService {
     chartName: string,
   ): Observable<HelmChartVersion[]> {
     return this.http.get(`${this.config.helmChartEndpoint}/${projectName}/charts/${chartName}`, HTTP_GET_OPTIONS)
-    .pipe(map(response => {
-      return this.extractData(response);
-    }))
-    .pipe(catchError(this.handleErrorObservable));
+    .pipe(
+      map(response => this.extractData(response)),
+      catchError(this.handleErrorObservable)
+    );
   }
 
   public deleteChartVersion(projectName: string, chartName: string, version: string): any {

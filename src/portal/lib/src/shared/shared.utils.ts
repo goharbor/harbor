@@ -17,6 +17,8 @@
  **
  * returns {string}
  */
+import { Response } from "@angular/http";
+
 export const errorHandler = function (error: any): string {
     if (!error) {
         return "UNKNOWN_ERROR";
@@ -44,4 +46,11 @@ export const errorHandler = function (error: any): string {
                 return "UNKNOWN_ERROR";
         }
     }
+};
+
+export const extractJson = (res: Response) => {
+    if (res.text() === '') {
+        return [];
+    }
+    return (res.json() || []);
 };

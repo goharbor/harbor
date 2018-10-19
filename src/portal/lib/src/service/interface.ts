@@ -285,7 +285,6 @@ export interface Label {
   scope: string;
   project_id: number;
 }
-
 export interface CardItemEvent {
   event_type: string;
   item: any;
@@ -322,9 +321,11 @@ export interface HelmChartVersion {
   engine: string;
   icon: string;
   appVersion: string;
+  apiVersion: string;
   urls: string[];
   created: string;
   digest: string;
+  labels: Label[];
   deprecated?: boolean;
 }
 
@@ -334,6 +335,7 @@ export interface HelmChartDetail {
   values: any;
   files: HelmchartFile;
   security: HelmChartSecurity;
+  labels: Label[];
 }
 
 export interface HelmChartMetaData {

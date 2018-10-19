@@ -1,0 +1,34 @@
+@mixin icon-span {
+    width: 12px;
+    min-height: 12px;
+
+    clr-icon {
+        margin-bottom: 12px;
+    }
+}
+
+.filter-div {
+    margin-left: 9px;
+}
+
+.label-items-container {
+    max-height: 300px;
+    overflow-y: auto;
+
+    .dropdown-item {
+        padding-left: 12px;
+        padding-right: 12px;
+
+        .unmark-label-span {
+            @include icon-span();
+            float: right;
+        }
+
+        .mark-label-span {
+            @include icon-span();
+            float: left;
+            margin-right: 9px;
+        }
+    }
+
+}

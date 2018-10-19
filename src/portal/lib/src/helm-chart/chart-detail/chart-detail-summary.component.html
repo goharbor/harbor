@@ -130,6 +130,26 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="col-md-12 content-group">
+            <div>
+                <label>{{'HELM_CHART.LABELS' | translate }}</label>
+            </div>
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th class="left">{{'HELM_CHART.LABELS' | translate }}</th>
+                        <th class="left">{{labels?.length}}</th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td class="left">
+                            <hbr-label-piece *ngFor="let label of labels"  [label]="label" [labelWidth]="90"> </hbr-label-piece>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>
