@@ -17,6 +17,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -26,6 +27,8 @@ import (
 	"github.com/goharbor/harbor/src/replication/core"
 	"github.com/goharbor/harbor/src/replication/event/notification"
 	"github.com/goharbor/harbor/src/replication/event/topic"
+
+	"github.com/docker/distribution/uuid"
 )
 
 // ReplicationAPI handles API calls for replication
@@ -78,16 +81,27 @@ func (r *ReplicationAPI) Post() {
 		return
 	}
 
-	if err = startReplication(replication.PolicyID); err != nil {
+	opUUID, err := startReplication(replication.PolicyID)
+	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to publish replication topic for policy %d: %v", replication.PolicyID, err))
 		return
 	}
 	log.Infof("replication signal for policy %d sent", replication.PolicyID)
+
+	r.Data["json"] = api_models.ReplicationResponse{
+		UUID: opUUID,
+	}
+	r.ServeJSON()
 }
 
-func startReplication(policyID int64) error {
-	return notifier.Publish(topic.StartReplicationTopic,
+// startReplication triggers a replication and return the uuid of this replication.
+func startReplication(policyID int64) (string, error) {
+	opUUID := strings.Replace(uuid.Generate().String(), "-", "", -1)
+	return opUUID, notifier.Publish(topic.StartReplicationTopic,
 		notification.StartReplicationNotification{
 			PolicyID: policyID,
+			Metadata: map[string]interface{}{
+				"op_uuid": opUUID,
+			},
 		})
 }

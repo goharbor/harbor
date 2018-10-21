@@ -16,6 +16,8 @@ package core
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
 
 	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -27,6 +29,8 @@ import (
 	"github.com/goharbor/harbor/src/replication/source"
 	"github.com/goharbor/harbor/src/replication/target"
 	"github.com/goharbor/harbor/src/replication/trigger"
+
+	"github.com/docker/distribution/uuid"
 )
 
 // Controller defines the methods that a replicatoin controllter should implement
@@ -220,9 +224,16 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 		targets = append(targets, target)
 	}
 
+	// Get operation uuid from metadata, if none provided, generate one.
+	opUUID, err := getOpUUID(metadata...)
+	if err != nil {
+		return err
+	}
+
 	// submit the replication
 	return ctl.replicator.Replicate(&replicator.Replication{
 		PolicyID:   policyID,
+		OpUUID:     opUUID,
 		Candidates: candidates,
 		Targets:    targets,
 	})
@@ -289,4 +300,27 @@ func buildFilterChain(policy *models.ReplicationPolicy, sourcer *source.Sourcer)
 	}
 
 	return source.NewDefaultFilterChain(filters)
+}
+
+// getOpUUID get operation uuid from metadata or generate one if none found.
+func getOpUUID(metadata ...map[string]interface{}) (string, error) {
+	if len(metadata) <= 0 {
+		return strings.Replace(uuid.Generate().String(), "-", "", -1), nil
+	}
+
+	opUUID, ok := metadata[0]["op_uuid"]
+	if !ok {
+		return strings.Replace(uuid.Generate().String(), "-", "", -1), nil
+	}
+
+	id, ok := opUUID.(string)
+	if !ok {
+		return "", fmt.Errorf("operation uuid should have type 'string', but got '%s'", reflect.TypeOf(opUUID).Name())
+	}
+
+	if id == "" {
+		return "", fmt.Errorf("provided operation uuid is empty")
+	}
+
+	return id, nil
 }

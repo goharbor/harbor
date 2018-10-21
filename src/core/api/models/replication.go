@@ -23,6 +23,11 @@ type Replication struct {
 	PolicyID int64 `json:"policy_id"`
 }
 
+// ReplicationResponse describes response of a replication request, it gives
+type ReplicationResponse struct {
+	UUID string `json:"uuid"`
+}
+
 // Valid ...
 func (r *Replication) Valid(v *validation.Validation) {
 	if r.PolicyID <= 0 {

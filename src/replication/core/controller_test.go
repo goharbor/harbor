@@ -156,3 +156,26 @@ func TestBuildFilterChain(t *testing.T) {
 	chain := buildFilterChain(policy, sourcer)
 	assert.Equal(t, 3, len(chain.Filters()))
 }
+
+func TestGetOpUUID(t *testing.T) {
+	uuid, err := getOpUUID()
+	assert.Nil(t, err)
+	assert.NotEmpty(t, uuid)
+
+	uuid, err = getOpUUID(map[string]interface{}{
+		"name": "test",
+	})
+	assert.Nil(t, err)
+	assert.NotEmpty(t, uuid)
+
+	uuid, err = getOpUUID(map[string]interface{}{
+		"op_uuid": 0,
+	})
+	assert.NotNil(t, err)
+
+	uuid, err = getOpUUID(map[string]interface{}{
+		"op_uuid": "0",
+	})
+	assert.Nil(t, err)
+	assert.Equal(t, uuid, "0")
+}

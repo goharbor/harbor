@@ -356,6 +356,9 @@ func repJobQueryConditions(query ...*models.RepJobQuery) orm.QuerySeter {
 	if q.PolicyID != 0 {
 		qs = qs.Filter("PolicyID", q.PolicyID)
 	}
+	if len(q.OpUUID) > 0 {
+		qs = qs.Filter("OpUUID__exact", q.OpUUID)
+	}
 	if len(q.Repository) > 0 {
 		qs = qs.Filter("Repository__icontains", q.Repository)
 	}
