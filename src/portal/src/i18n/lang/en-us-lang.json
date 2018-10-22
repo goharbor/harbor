@@ -465,7 +465,7 @@
         "NOTARY_IS_UNDETERMINED": "Cannot determine the signature of this tag.",
         "PLACEHOLDER": "We couldn't find any repositories!",
         "INFO": "Info",
-        "NO_INFO": "No description info for this repository",
+        "NO_INFO": "No description for this repo. You can add it to this repository.",
         "IMAGE": "Images",
         "LABELS": "Labels",
         "ADD_TO_IMAGE": "Add labels to this image",

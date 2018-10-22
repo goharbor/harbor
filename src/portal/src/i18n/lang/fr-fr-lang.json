@@ -442,6 +442,7 @@
         "COPY": "Copier",
         "NOTARY_IS_UNDETERMINED": "Ne peut pas déterminer la signature de ce tag.",
         "PLACEHOLDER": "Nous ne trouvons aucun dépôt !",
+        "NO_INFO": "No description for this repo. You can add it to this repository.",
         "IMAGE": "Images",
         "LABELS": "Labels",
         "ADD_TO_IMAGE": "Add labels to this image",
