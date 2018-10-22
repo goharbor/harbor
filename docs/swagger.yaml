@@ -722,6 +722,8 @@ paths:
       responses:
         '200':
           description: Get user's profile successfully.
+          schema:
+            $ref: '#/definitions/User'
         '400':
           description: Invalid user ID.
         '401':
@@ -3206,13 +3208,13 @@ definitions:
       enable_content_trust:
         type: string
         description: 'Whether content trust is enabled or not. If it is enabled, user cann''t pull unsigned images from this project. The valid values are "true", "false".'
-      prevent_vulnerable_images_from_running:
+      prevent_vul:
         type: string
         description: 'Whether prevent the vulnerable images from running. The valid values are "true", "false".'
-      prevent_vulnerable_images_from_running_severity:
+      severity:
         type: string
         description: 'If the vulnerability is high than severity defined here, the images cann''t be pulled. The valid values are "negligible", "low", "medium", "high", "critical".'
-      automatically_scan_images_on_push:
+      auto_scan:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
   Manifest:
@@ -3249,8 +3251,7 @@ definitions:
         type: integer
         format: int
       has_admin_role:
-        type: integer
-        format: int
+        type: boolean
       reset_uuid:
         type: string
       Salt:
@@ -3553,7 +3554,7 @@ definitions:
     type: object
     properties:
       has_admin_role:
-        type: integer
+        type: boolean
         description: '1-has admin, 0-not.'
   UserProfile:
     type: object
