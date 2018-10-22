@@ -2730,7 +2730,7 @@ paths:
           $ref: '#/definitions/UnauthorizedChartAPIError'
         '403':
           $ref: '#/definitions/ForbiddenChartAPIError'
-  '/chartrepo/{repo}/charts':
+  /chartrepo/{repo}/charts:
     get:
       summary: Get all the charts under the specified project
       description: Get all the charts under the specified project
@@ -2787,7 +2787,7 @@ paths:
           $ref: '#/definitions/InternalChartAPIError'
         '507':
           $ref: '#/definitions/InsufficientStorageChartAPIError'
-  '/chartrepo/{repo}/charts/{name}':
+  /chartrepo/{repo}/charts/{name}:
     get:
       summary: Get all the versions of the specified chart
       description: Get all the versions of the specified chart
@@ -2842,7 +2842,7 @@ paths:
           $ref: '#/definitions/ForbiddenChartAPIError'
         '500':
           $ref: '#/definitions/InternalChartAPIError'
-  '/chartrepo/{repo}/charts/{name}/{version}':
+  /chartrepo/{repo}/charts/{name}/{version}:
     get:
       summary: Get the specified chart version
       description: Get the specified chart version
@@ -2909,7 +2909,7 @@ paths:
           $ref: '#/definitions/NotFoundChartAPIError'
         '500':
           $ref: '#/definitions/InternalChartAPIError'
-  '/chartrepo/{repo}/prov':
+  /chartrepo/{repo}/prov:
     post:
       summary: Upload a provance file to the specified project.
       description: Upload a provance file to the specified project. The provance file should be targeted for an existing chart file.
@@ -2971,6 +2971,127 @@ paths:
           $ref: '#/definitions/InternalChartAPIError'
         '507':
           $ref: '#/definitions/InsufficientStorageChartAPIError'
+  /chartrepo/:repo/charts/:name/:version/labels:
+    get:
+      summary: Return the attahced labels of chart.
+      description: Return the attahced labels of the specified chart version.
+      tags:
+        - Products
+        - Chart Repository
+        - Label
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+        - name: version
+          in: path
+          type: string
+          required: true
+          description: The chart version
+      responses:
+        '200':
+          $ref: '#/definitions/Labels'
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '404':
+          $ref: '#/definitions/NotFoundChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+    post:
+      summary: Mark label to chart.
+      description: Mark label to the specified chart version.
+      tags:
+        - Products
+        - Chart Repository
+        - Label
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+        - name: version
+          in: path
+          type: string
+          required: true
+          description: The chart version
+        - name: label
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+          description: 'The label being marked to the chart version'
+      responses:
+        '200':
+          description: The label is successfully marked to the chart version.
+        '400':
+          $ref: '#/definitions/BadRequestFormatedError'
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '404':
+          $ref: '#/definitions/NotFoundChartAPIError'
+        '409':
+          $ref: '#/definitions/ConflictFormatedError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
+  /chartrepo/:repo/charts/:name/:version/labels/:id:
+    delete:
+      summary: Remove label from chart.
+      description: Remove label from the specified chart version.
+      tags:
+        - Products
+        - Chart Repository
+        - Label
+      parameters:
+        - name: repo
+          in: path
+          type: string
+          required: true
+          description: The project name
+        - name: name
+          in: path
+          type: string
+          required: true
+          description: The chart name
+        - name: version
+          in: path
+          type: string
+          required: true
+          description: The chart version
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: The label ID
+      responses:
+        '200':
+          description: The label is successfully unmarked from the chart version.
+        '400':
+          $ref: '#/definitions/BadRequestFormatedError'
+        '401':
+          $ref: '#/definitions/UnauthorizedChartAPIError'
+        '403':
+          $ref: '#/definitions/ForbiddenChartAPIError'
+        '404':
+          $ref: '#/definitions/NotFoundChartAPIError'
+        '500':
+          $ref: '#/definitions/InternalChartAPIError'
 responses:
   UnsupportedMediaType:
     description: 'The Media Type of the request is not supported, it has to be "application/json"'
@@ -4104,6 +4225,16 @@ definitions:
     type: object
     allOf:
       - $ref: '#/definitions/ChartAPIError'
+  BadRequestFormatedError:
+    description: Bad request
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
+  ConflictFormatedError:
+    description: Conflicts
+    type: object
+    allOf:
+      - $ref: '#/definitions/ChartAPIError'
   ChartInfoEntry:
     type: object
     description: The object contains basic chart information
@@ -4204,6 +4335,9 @@ definitions:
             description: The urls of the chart entry
             items:
               type: string
+    properties:
+      labels:
+        $ref: '#/definitions/Labels'
   ChartVersions:
     type: array
     description: A list of chart entry
@@ -4250,7 +4384,9 @@ definitions:
       security:
         $ref: '#/definitions/SecurityReport'
       dependencies:
-        $ref: '#/definitions/Dependency'
+        type: array
+        items:
+          $ref: '#/definitions/Dependency'
       values:
         type: object
         additionalProperties:
@@ -4259,6 +4395,8 @@ definitions:
         type: object
         additionalProperties:
           type: string
+      labels:
+        $ref: '#/definitions/Labels'
   GCResult:
     type: object
     properties:
@@ -4300,3 +4438,8 @@ definitions:
         description: The matched level
       chart:
         $ref: '#/definitions/ChartVersion'
+  Labels:
+    type: array
+    description: A list of label
+    items:
+      $ref: '#/definitions/Label'
