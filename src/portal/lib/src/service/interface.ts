@@ -296,7 +296,11 @@ export interface ScrollPosition {
   sT: number;
   cH: number;
 }
-
+export interface HelmChartSearchResultItem {
+  Name: string;
+  Score: number;
+  Chart: HelmChartVersion;
+}
 export interface HelmChartItem {
   name: string;
   total_versions: number;

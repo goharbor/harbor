@@ -76,7 +76,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         if (src) {
             src.project.forEach(pro => res.project.push(Object.assign({}, pro)));
             src.repository.forEach(repo => res.repository.push(Object.assign({}, repo)));
-
+            src.Chart.forEach(chart => res.Chart.push(JSON.parse(JSON.stringify(chart))));
             return res;
         }
 
@@ -135,7 +135,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         this.search.doSearch(term)
             .then(searchResults => {
                 this.onGoing = false;
-                this.originalCopy = searchResults; // Keeo the original data
+                this.originalCopy = searchResults; // Keep the original data
                 this.searchResults = this.clone(searchResults);
             })
             .catch(error => {

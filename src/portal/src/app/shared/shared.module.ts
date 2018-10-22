@@ -52,6 +52,7 @@ import { GaugeComponent } from "./gauge/gauge.component";
 import { ConfirmationDialogComponent } from "./confirmation-dialog/confirmation-dialog.component";
 import { ConfirmationDialogService } from "./confirmation-dialog/confirmation-dialog.service";
 import { MessageHandlerService } from "./message-handler/message-handler.service";
+import { ListChartVersionRoComponent } from './list-chart-version-ro/list-chart-version-ro.component';
 
 const uiLibConfig: IServiceConfig = {
   enablei18Support: true,
@@ -103,7 +104,8 @@ const uiLibConfig: IServiceConfig = {
     ListProjectROComponent,
     ListRepositoryROComponent,
     GaugeComponent,
-    DateValidatorDirective
+    DateValidatorDirective,
+    ListChartVersionRoComponent
   ],
   exports: [
     CoreModule,
@@ -124,7 +126,8 @@ const uiLibConfig: IServiceConfig = {
     GaugeComponent,
     DateValidatorDirective,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    ListChartVersionRoComponent
   ],
   providers: [
     SessionService,

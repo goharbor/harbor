@@ -10,5 +10,7 @@
         <list-project-ro [projects]="searchResults.project"></list-project-ro>
         <h2>{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</h2>
         <list-repository-ro [repositories]="searchResults.repository"></list-repository-ro>
+        <h2>{{'HELM_CHART.HELMCHARTS' | translate}}</h2>
+        <list-chart-version-ro [charts]="searchResults.Chart"></list-chart-version-ro>
     </div>
 </div>

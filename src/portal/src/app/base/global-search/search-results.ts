@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Project } from "../../project/project";
-import { Repository } from "@harbor/ui";
+import { Repository, HelmChartSearchResultItem } from "@harbor/ui";
 
 export class SearchResults {
   constructor() {
     this.project = [];
     this.repository = [];
+    this.Chart = [];
   }
 
   project: Project[];
   repository: Repository[];
+  Chart: HelmChartSearchResultItem[];
 }

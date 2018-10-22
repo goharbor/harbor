@@ -466,6 +466,7 @@
         "SRC_REPO": "Source Repository",
         "CREATED": "Created Time",
         "MAINTAINERS": "Maintainers",
+        "OTHER_MAINTAINERS": "{{ name }} and {{ number }} others",
         "PULLS": "Pull Count",
         "VERSION": "Version",
         "APP_VERSION": "Application Version",

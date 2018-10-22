@@ -30,11 +30,7 @@ export class ListProjectROComponent {
 
   constructor(
     private searchTrigger: SearchTriggerService,
-    private router: Router,
-    private ref: ChangeDetectorRef) {
-    let hnd = setInterval(() => ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 1000);
-  }
+    private router: Router) {}
 
   goToLink(proId: number): void {
     this.searchTrigger.closeSearch(true);

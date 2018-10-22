@@ -489,6 +489,7 @@
         "SRC_REPO": "源仓库",
         "CREATED": "创建时间",
         "MAINTAINERS": "维护者",
+        "OTHER_MAINTAINERS": "{{ name }} 与其他 {{ number }} 位",
         "PULLS": "拉取数",
         "VERSION": "版本",
         "INSTALL": "安装",
