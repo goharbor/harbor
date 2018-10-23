@@ -25,12 +25,14 @@ Delete Success
     :For  ${obj}  in  @{obj}
     \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape="success-standard"]
     Sleep  1
+    Capture Page Screenshot
 
 Delete Fail
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
     \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape="error-standard"]
     Sleep  1
+    Capture Page Screenshot
 
 Filter Object
 #Filter project repo user tag.
@@ -50,10 +52,13 @@ Multi-delete Object
     :For  ${obj}  in  @{obj}
     \    Click Element  //clr-dg-row[contains(.,'${obj}')]//label
     Sleep  1
+    Capture Page Screenshot
     Click Element  //button[contains(.,'Delete')]
     Sleep  2
+    Capture Page Screenshot
     Click Element  //clr-modal//button[contains(.,'DELETE')]
     Sleep  3
+    Capture Page Screenshot
 
 Multi-delete User
     [Arguments]    @{obj}
