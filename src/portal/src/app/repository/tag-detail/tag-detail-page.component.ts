@@ -14,6 +14,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {AppConfigService} from "../../app-config.service";
+import { SessionService } from '../../shared/session.service';
 
 @Component({
   selector: 'repository',
@@ -28,7 +29,8 @@ export class TagDetailPageComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private appConfigService: AppConfigService,
-    private router: Router
+    private router: Router,
+    private session: SessionService
   ) {
   }
 
@@ -44,6 +46,10 @@ export class TagDetailPageComponent implements OnInit {
 
   get withClair(): boolean {
     return this.appConfigService.getConfig().with_clair;
+  }
+
+  get withAdminRole(): boolean {
+    return this.session.getCurrentUser().has_admin_role;
   }
 
   goBack(tag: string): void {

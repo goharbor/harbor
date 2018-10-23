@@ -4,5 +4,10 @@
         <a (click)="goBackRep()">< {{'REPOSITORY.REPOSITORIES'| translate}}</a>
         <a (click)="goBack(repositoryId)">< {{repositoryId}}</a>
     </div>
-    <hbr-tag-detail (backEvt)="goBack($event)" [tagId]="tagId" [withClair]="withClair"  [withAdmiral]="withAdmiral" [repositoryId]="repositoryId"></hbr-tag-detail>
+    <hbr-tag-detail (backEvt)="goBack($event)" 
+    [tagId]="tagId" 
+    [withClair]="withClair"  
+    [withAdmiral]="withAdmiral" 
+    [repositoryId]="repositoryId"
+    [withAdminRole]="withAdminRole"></hbr-tag-detail>
 </div>
