@@ -23,6 +23,7 @@ export class TagDetailComponent implements OnInit {
     @Input() repositoryId: string;
     @Input() withAdmiral: boolean;
     @Input() withClair: boolean;
+    @Input() withAdminRole: boolean;
     tagDetails: Tag = {
         name: "--",
         size: "--",
