@@ -35,7 +35,7 @@ export class ProjectService {
                catchError(error => observableThrowError(error)), );
   }
 
-  listProjects(name: string, isPublic: number, page?: number, pageSize?: number): Observable<any> {
+  listProjects(name: string, isPublic?: number, page?: number, pageSize?: number): Observable<any> {
     let params = new URLSearchParams();
     if (page && pageSize) {
       params.set('page', page + '');
@@ -47,7 +47,6 @@ export class ProjectService {
     if (isPublic !== undefined) {
       params.set('public', '' + isPublic);
     }
-
     return this.http
                .get(`/api/projects`, buildHttpRequestOptions(params)).pipe(
                map(response => response),

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { NgForm } from '@angular/forms';
-import {RequestOptions, Headers} from "@angular/http";
+import {RequestOptions, Headers, Response} from "@angular/http";
 import { Comparator, State } from '@clr/angular';
 import {RequestQueryParams} from "@harbor/ui";
 
@@ -301,3 +301,10 @@ export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], 
         return comp;
     });
 }
+
+export const extractJson = (res: Response) => {
+    if (res.text() === '') {
+        return [];
+    }
+    return (res.json() || []);
+};
