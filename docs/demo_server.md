@@ -7,7 +7,7 @@
  - You can only experience the non-admin functionalities on this server. Please follow the **[Installation Guide](installation_guide.md)** to set up a Harbor server to try more advanced features.
  - Please do not push large images(>100MB) as the server has limited storage.
 
-If you encounter any problems during using the demo server, please contact us at <img alt="email" src="img/harbor_email.png" valigin="middle" height="18"/>.
+If you encounter any problems during using the demo server, please open an issue or ping us on [Slack](https://github.com/goharbor/harbor#community).
 
 **Usage**
 
