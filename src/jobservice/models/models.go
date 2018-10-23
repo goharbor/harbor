@@ -1,4 +1,16 @@
-// Copyright Project Harbor Authors. All rights reserved.
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package models
 
@@ -33,20 +45,23 @@ type JobStats struct {
 
 // JobStatData keeps the stats of job
 type JobStatData struct {
-	JobID       string `json:"id"`
-	Status      string `json:"status"`
-	JobName     string `json:"name"`
-	JobKind     string `json:"kind"`
-	IsUnique    bool   `json:"unique"`
-	RefLink     string `json:"ref_link,omitempty"`
-	CronSpec    string `json:"cron_spec,omitempty"`
-	EnqueueTime int64  `json:"enqueue_time"`
-	UpdateTime  int64  `json:"update_time"`
-	RunAt       int64  `json:"run_at,omitempty"`
-	CheckIn     string `json:"check_in,omitempty"`
-	CheckInAt   int64  `json:"check_in_at,omitempty"`
-	DieAt       int64  `json:"die_at,omitempty"`
-	HookStatus  string `json:"hook_status,omitempty"`
+	JobID                string   `json:"id"`
+	Status               string   `json:"status"`
+	JobName              string   `json:"name"`
+	JobKind              string   `json:"kind"`
+	IsUnique             bool     `json:"unique"`
+	RefLink              string   `json:"ref_link,omitempty"`
+	CronSpec             string   `json:"cron_spec,omitempty"`
+	EnqueueTime          int64    `json:"enqueue_time"`
+	UpdateTime           int64    `json:"update_time"`
+	RunAt                int64    `json:"run_at,omitempty"`
+	CheckIn              string   `json:"check_in,omitempty"`
+	CheckInAt            int64    `json:"check_in_at,omitempty"`
+	DieAt                int64    `json:"die_at,omitempty"`
+	HookStatus           string   `json:"hook_status,omitempty"`
+	Executions           []string `json:"executions,omitempty"`      // For the jobs like periodic jobs, which may execute multiple times
+	UpstreamJobID        string   `json:"upstream_job_id,omitempty"` // Ref the upstream job if existing
+	IsMultipleExecutions bool     `json:"multiple_executions"`       // Indicate if the job has subsequent executions
 }
 
 // JobPoolStats represents the healthy and status of all the running worker pools.

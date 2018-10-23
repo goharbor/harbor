@@ -1,4 +1,16 @@
-// Copyright Project Harbor Authors. All rights reserved.
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package pool
 
 import (
@@ -12,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/opm"
 
 	"github.com/goharbor/harbor/src/jobservice/tests"
@@ -33,15 +46,16 @@ func TestRegisterJob(t *testing.T) {
 		t.Error(err)
 	}
 
-	jobs := make(map[string]interface{})
-	jobs["fake_job_1st"] = (*fakeJob)(nil)
-	jobs["fake_job_2nd"] = (*fakeJob)(nil)
-	if err := wp.RegisterJobs(jobs); err != nil {
-		t.Error(err)
+	if _, ok := wp.IsKnownJob("fake_job"); !ok {
+		t.Error("expected known job but registering 'fake_job' appears to have failed")
 	}
 
-	if _, ok := wp.IsKnownJob("fake_job"); !ok {
-		t.Error("expect known job but seems failed to register job 'fake_job'")
+	delete(wp.knownJobs, "fake_job")
+
+	jobs := make(map[string]interface{})
+	jobs["fake_job_1st"] = (*fakeJob)(nil)
+	if err := wp.RegisterJobs(jobs); err != nil {
+		t.Error(err)
 	}
 
 	params := make(map[string]interface{})
@@ -141,6 +155,122 @@ func TestEnqueuePeriodicJob(t *testing.T) {
 
 	// cancel()
 	// <-time.After(1 * time.Second)
+}
+
+func TestPoolStats(t *testing.T) {
+	wp, _, cancel := createRedisWorkerPool()
+	defer func() {
+		if err := tests.ClearAll(tests.GiveMeTestNamespace(), redisPool.Get()); err != nil {
+			t.Error(err)
+		}
+	}()
+	defer cancel()
+
+	go wp.Start()
+	time.Sleep(1 * time.Second)
+
+	_, err := wp.Stats()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestStopJob(t *testing.T) {
+	wp, _, cancel := createRedisWorkerPool()
+	defer func() {
+		if err := tests.ClearAll(tests.GiveMeTestNamespace(), redisPool.Get()); err != nil {
+			t.Error(err)
+		}
+	}()
+	defer cancel()
+
+	if err := wp.RegisterJob("fake_long_run_job", (*fakeRunnableJob)(nil)); err != nil {
+		t.Error(err)
+	}
+
+	go wp.Start()
+	time.Sleep(1 * time.Second)
+
+	// Stop generic job
+	params := make(map[string]interface{})
+	params["name"] = "testing:v1"
+
+	genericJob, err := wp.Enqueue("fake_long_run_job", params, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(200 * time.Millisecond)
+	stats, err := wp.GetJobStats(genericJob.Stats.JobID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stats.Stats.Status != job.JobStatusRunning {
+		t.Fatalf("expect job running but got %s", stats.Stats.Status)
+	}
+	if err := wp.StopJob(genericJob.Stats.JobID); err != nil {
+		t.Fatal(err)
+	}
+
+	// Stop scheduled job
+	scheduledJob, err := wp.Schedule("fake_long_run_job", params, 120, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(200 * time.Millisecond)
+	if err := wp.StopJob(scheduledJob.Stats.JobID); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCancelJob(t *testing.T) {
+	wp, _, cancel := createRedisWorkerPool()
+	defer func() {
+		if err := tests.ClearAll(tests.GiveMeTestNamespace(), redisPool.Get()); err != nil {
+			t.Error(err)
+		}
+	}()
+	defer cancel()
+
+	if err := wp.RegisterJob("fake_long_run_job", (*fakeRunnableJob)(nil)); err != nil {
+		t.Error(err)
+	}
+
+	go wp.Start()
+	time.Sleep(1 * time.Second)
+
+	// Cancel job
+	params := make(map[string]interface{})
+	params["name"] = "testing:v1"
+
+	genericJob, err := wp.Enqueue("fake_long_run_job", params, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(200 * time.Millisecond)
+	stats, err := wp.GetJobStats(genericJob.Stats.JobID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stats.Stats.Status != job.JobStatusRunning {
+		t.Fatalf("expect job running but got %s", stats.Stats.Status)
+	}
+
+	if err := wp.CancelJob(genericJob.Stats.JobID); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(3 * time.Second)
+
+	stats, err = wp.GetJobStats(genericJob.Stats.JobID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stats.Stats.Status != job.JobStatusCancelled {
+		t.Fatalf("expect job cancelled but got %s", stats.Stats.Status)
+	}
+
+	if err := wp.RetryJob(genericJob.Stats.JobID); err != nil {
+		t.Fatal(err)
+	}
 }
 
 /*func TestCancelAndRetryJobWithHook(t *testing.T) {
@@ -292,7 +422,7 @@ func (j *fakeRunnableJob) Validate(params map[string]interface{}) error {
 }
 
 func (j *fakeRunnableJob) Run(ctx env.JobContext, params map[string]interface{}) error {
-	tk := time.NewTicker(1 * time.Second)
+	tk := time.NewTicker(200 * time.Millisecond)
 	defer tk.Stop()
 
 	for {
@@ -323,6 +453,9 @@ type fakeContext struct {
 
 	// checkin func
 	checkInFunc job.CheckInFunc
+
+	// launch job
+	launchJobFunc job.LaunchJobFunc
 
 	// other required information
 	properties map[string]interface{}
@@ -373,6 +506,18 @@ func (c *fakeContext) Build(dep env.JobData) (env.JobContext, error) {
 		return nil, errors.New("failed to inject checkInFunc")
 	}
 
+	if launchJobFunc, ok := dep.ExtraData["launchJobFunc"]; ok {
+		if reflect.TypeOf(launchJobFunc).Kind() == reflect.Func {
+			if funcRef, ok := launchJobFunc.(job.LaunchJobFunc); ok {
+				jContext.launchJobFunc = funcRef
+			}
+		}
+	}
+
+	if jContext.launchJobFunc == nil {
+		return nil, errors.New("failed to inject launchJobFunc")
+	}
+
 	return jContext, nil
 }
 
@@ -410,4 +555,13 @@ func (c *fakeContext) OPCommand() (string, bool) {
 // GetLogger returns the logger
 func (c *fakeContext) GetLogger() logger.Interface {
 	return nil
+}
+
+// LaunchJob launches sub jobs
+func (c *fakeContext) LaunchJob(req models.JobRequest) (models.JobStats, error) {
+	if c.launchJobFunc == nil {
+		return models.JobStats{}, errors.New("nil launch job function")
+	}
+
+	return c.launchJobFunc(req)
 }

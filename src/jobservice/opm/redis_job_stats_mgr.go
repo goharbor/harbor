@@ -1,4 +1,16 @@
-// Copyright Project Harbor Authors. All rights reserved.
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package opm
 
@@ -23,13 +35,16 @@ import (
 )
 
 const (
-	processBufferSize = 1024
-	opSaveStats       = "save_job_stats"
-	opUpdateStatus    = "update_job_status"
-	opCheckIn         = "check_in"
-	opDieAt           = "mark_die_at"
-	opReportStatus    = "report_status"
-	maxFails          = 3
+	processBufferSize      = 1024
+	opSaveStats            = "save_job_stats"
+	opUpdateStatus         = "update_job_status"
+	opCheckIn              = "check_in"
+	opDieAt                = "mark_die_at"
+	opReportStatus         = "report_status"
+	opPersistExecutions    = "persist_executions"
+	opUpdateStats          = "update_job_stats"
+	maxFails               = 3
+	jobStatsDataExpireTime = 60 * 60 * 24 * 7 // one week
 
 	// CtlCommandStop : command stop
 	CtlCommandStop = "stop"
@@ -43,9 +58,18 @@ const (
 )
 
 type queueItem struct {
-	op    string
-	fails uint
-	data  interface{}
+	Op    string
+	Fails uint
+	Data  interface{}
+}
+
+func (qi *queueItem) string() string {
+	data, err := json.Marshal(qi)
+	if err != nil {
+		return fmt.Sprintf("%v", qi)
+	}
+
+	return string(data)
 }
 
 // RedisJobStatsManager implements JobStatsManager based on redis.
@@ -62,7 +86,7 @@ type RedisJobStatsManager struct {
 }
 
 // NewRedisJobStatsManager is constructor of RedisJobStatsManager
-func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *redis.Pool) *RedisJobStatsManager {
+func NewRedisJobStatsManager(ctx context.Context, namespace string, redisPool *redis.Pool) JobStatsManager {
 	isRunning := &atomic.Value{}
 	isRunning.Store(false)
 
@@ -110,8 +134,8 @@ func (rjs *RedisJobStatsManager) Shutdown() {
 // Async method
 func (rjs *RedisJobStatsManager) Save(jobStats models.JobStats) {
 	item := &queueItem{
-		op:   opSaveStats,
-		data: jobStats,
+		Op:   opSaveStats,
+		Data: jobStats,
 	}
 
 	rjs.processChan <- item
@@ -124,7 +148,21 @@ func (rjs *RedisJobStatsManager) Retrieve(jobID string) (models.JobStats, error)
 		return models.JobStats{}, errors.New("empty job ID")
 	}
 
-	return rjs.getJobStats(jobID)
+	res, err := rjs.getJobStats(jobID)
+	if err != nil {
+		return models.JobStats{}, err
+	}
+
+	if res.Stats.IsMultipleExecutions {
+		executions, err := rjs.GetExecutions(jobID)
+		if err != nil {
+			return models.JobStats{}, err
+		}
+
+		res.Stats.Executions = executions
+	}
+
+	return res, nil
 }
 
 // SetJobStatus is implementation of same method in JobStatsManager interface.
@@ -135,8 +173,8 @@ func (rjs *RedisJobStatsManager) SetJobStatus(jobID string, status string) {
 	}
 
 	item := &queueItem{
-		op:   opUpdateStatus,
-		data: []string{jobID, status},
+		Op:   opUpdateStatus,
+		Data: []string{jobID, status},
 	}
 
 	rjs.processChan <- item
@@ -161,13 +199,13 @@ func (rjs *RedisJobStatsManager) loop() {
 			go func(item *queueItem) {
 				clearHookCache := false
 				if err := rjs.process(item); err != nil {
-					item.fails++
-					if item.fails < maxFails {
-						logger.Warningf("Failed to process '%s' request with error: %s\n", item.op, err)
+					item.Fails++
+					if item.Fails < maxFails {
+						logger.Warningf("Failed to process '%s' request with error: %s\n", item.Op, err)
 
 						// Retry after a random interval
 						go func() {
-							timer := time.NewTimer(time.Duration(backoff(item.fails)) * time.Second)
+							timer := time.NewTimer(time.Duration(backoff(item.Fails)) * time.Second)
 							defer timer.Stop()
 
 							select {
@@ -178,20 +216,22 @@ func (rjs *RedisJobStatsManager) loop() {
 							}
 						}()
 					} else {
-						logger.Errorf("Failed to process '%s' request with error: %s (%d times tried)\n", item.op, err, maxFails)
-						if item.op == opReportStatus {
+						logger.Errorf("Failed to process '%s' request with error: %s (%d times tried)\n", item.Op, err, maxFails)
+						if item.Op == opReportStatus {
 							clearHookCache = true
 						}
 					}
 				} else {
-					if item.op == opReportStatus {
+					logger.Debugf("Operation is successfully processed: %s", item.string())
+
+					if item.Op == opReportStatus {
 						clearHookCache = true
 					}
 				}
 
 				if clearHookCache {
 					// Clear cache to save memory if job status is success or stopped.
-					data := item.data.([]string)
+					data := item.Data.([]string)
 					status := data[2]
 					if status == job.JobStatusSuccess || status == job.JobStatusStopped {
 						rjs.hookStore.Remove(data[0])
@@ -233,8 +273,8 @@ func (rjs *RedisJobStatsManager) CheckIn(jobID string, message string) {
 	}
 
 	item := &queueItem{
-		op:   opCheckIn,
-		data: []string{jobID, message},
+		Op:   opCheckIn,
+		Data: []string{jobID, message},
 	}
 
 	rjs.processChan <- item
@@ -264,8 +304,8 @@ func (rjs *RedisJobStatsManager) DieAt(jobID string, dieAt int64) {
 	}
 
 	item := &queueItem{
-		op:   opDieAt,
-		data: []interface{}{jobID, dieAt},
+		Op:   opDieAt,
+		Data: []interface{}{jobID, dieAt},
 	}
 
 	rjs.processChan <- item
@@ -298,10 +338,76 @@ func (rjs *RedisJobStatsManager) ExpirePeriodicJobStats(jobID string) error {
 	// The periodic job (policy) is stopped/unscheduled and then
 	// the stats of periodic job now can be expired
 	key := utils.KeyJobStats(rjs.namespace, jobID)
-	expireTime := 24 * 60 * 60 // 1 day
-	_, err := conn.Do("EXPIRE", key, expireTime)
+	_, err := conn.Do("EXPIRE", key, jobStatsDataExpireTime)
 
 	return err
+}
+
+// AttachExecution persist the links between upstream jobs and the related executions (jobs).
+func (rjs *RedisJobStatsManager) AttachExecution(upstreamJobID string, executions ...string) error {
+	if len(upstreamJobID) == 0 {
+		return errors.New("empty upstream job ID is not allowed")
+	}
+
+	if len(executions) == 0 {
+		return errors.New("no executions existing to persist")
+	}
+
+	// Send to process channel
+	item := &queueItem{
+		Op:   opPersistExecutions,
+		Data: []interface{}{upstreamJobID, executions},
+	}
+
+	rjs.processChan <- item
+
+	return nil
+}
+
+// GetExecutions returns the existing executions (IDs) for the specified job.
+func (rjs *RedisJobStatsManager) GetExecutions(upstreamJobID string) ([]string, error) {
+	if len(upstreamJobID) == 0 {
+		return nil, errors.New("no upstream ID specified")
+	}
+
+	conn := rjs.redisPool.Get()
+	defer conn.Close()
+
+	key := utils.KeyUpstreamJobAndExecutions(rjs.namespace, upstreamJobID)
+	ids, err := redis.Strings(conn.Do("ZRANGE", key, 0, -1))
+	if err != nil {
+		if err == redis.ErrNil {
+			return []string{}, nil
+		}
+
+		return nil, err
+	}
+
+	return ids, nil
+}
+
+// Update the properties of job stats
+func (rjs *RedisJobStatsManager) Update(jobID string, fieldAndValues ...interface{}) error {
+	if len(jobID) == 0 {
+		return errors.New("no updating job")
+	}
+
+	if len(fieldAndValues) == 0 || len(fieldAndValues)%2 != 0 {
+		return errors.New("filed and its value should be pair")
+	}
+
+	data := []interface{}{}
+	data = append(data, jobID)
+	data = append(data, fieldAndValues...)
+
+	item := &queueItem{
+		Op:   opUpdateStats,
+		Data: data,
+	}
+
+	rjs.processChan <- item
+
+	return nil
 }
 
 func (rjs *RedisJobStatsManager) submitStatusReportingItem(jobID string, status, checkIn string) {
@@ -325,8 +431,8 @@ func (rjs *RedisJobStatsManager) submitStatusReportingItem(jobID string, status,
 		}
 
 		item := &queueItem{
-			op:   opReportStatus,
-			data: []string{jobID, hookURL, status, checkIn},
+			Op:   opReportStatus,
+			Data: []string{jobID, hookURL, status, checkIn},
 		}
 
 		rjs.processChan <- item
@@ -345,7 +451,7 @@ func (rjs *RedisJobStatsManager) reportStatus(jobID string, hookURL, status, che
 	jobStats, err := rjs.getJobStats(jobID)
 	if err != nil {
 		// Just logged
-		logger.Warningf("Retrieving stats of job %s for hook reporting failed with error: %s", jobID, err)
+		logger.Errorf("Retrieving stats of job %s for hook reporting failed with error: %s", jobID, err)
 	} else {
 		// Override status/check in message
 		// Just double confirmation
@@ -357,33 +463,40 @@ func (rjs *RedisJobStatsManager) reportStatus(jobID string, hookURL, status, che
 	return DefaultHookClient.ReportStatus(hookURL, reportingStatus)
 }
 
-func (rjs *RedisJobStatsManager) updateJobStatus(jobID string, status string) error {
+func (rjs *RedisJobStatsManager) updateJobStats(jobID string, fieldAndValues ...interface{}) error {
 	conn := rjs.redisPool.Get()
 	defer conn.Close()
 
 	key := utils.KeyJobStats(rjs.namespace, jobID)
-	args := make([]interface{}, 0, 6)
-	args = append(args, key, "status", status, "update_time", time.Now().Unix())
-	if status == job.JobStatusSuccess {
-		// make sure the 'die_at' is reset in case it's a retrying job
-		args = append(args, "die_at", 0)
-	}
+	args := make([]interface{}, 0, len(fieldAndValues)+1)
+
+	args = append(args, key)
+	args = append(args, fieldAndValues...)
+	args = append(args, "update_time", time.Now().Unix())
+
 	_, err := conn.Do("HMSET", args...)
 
 	return err
 }
 
+func (rjs *RedisJobStatsManager) updateJobStatus(jobID string, status string) error {
+	args := make([]interface{}, 0, 4)
+	args = append(args, "status", status)
+	if status == job.JobStatusSuccess {
+		// make sure the 'die_at' is reset in case it's a retrying job
+		args = append(args, "die_at", 0)
+	}
+
+	return rjs.updateJobStats(jobID, args...)
+}
+
 func (rjs *RedisJobStatsManager) checkIn(jobID string, message string) error {
-	conn := rjs.redisPool.Get()
-	defer conn.Close()
 
 	now := time.Now().Unix()
-	key := utils.KeyJobStats(rjs.namespace, jobID)
-	args := make([]interface{}, 0, 7)
-	args = append(args, key, "check_in", message, "check_in_at", now, "update_time", now)
-	_, err := conn.Do("HMSET", args...)
+	args := make([]interface{}, 0, 4)
+	args = append(args, "check_in", message, "check_in_at", now)
 
-	return err
+	return rjs.updateJobStats(jobID, args...)
 }
 
 func (rjs *RedisJobStatsManager) dieAt(jobID string, baseTime int64) error {
@@ -401,11 +514,9 @@ func (rjs *RedisJobStatsManager) dieAt(jobID string, baseTime int64) error {
 		if j, err := utils.DeSerializeJob(jws.JobBytes); err == nil {
 			if j.ID == jobID {
 				// Found
-				statsKey := utils.KeyJobStats(rjs.namespace, jobID)
-				args := make([]interface{}, 0, 7)
-				args = append(args, statsKey, "die_at", jws.Score, "update_time", time.Now().Unix())
-				_, err := conn.Do("HMSET", args...)
-				return err
+				args := make([]interface{}, 0, 6)
+				args = append(args, "die_at", jws.Score)
+				return rjs.updateJobStats(jobID, args...)
 			}
 		}
 	}
@@ -479,6 +590,16 @@ func (rjs *RedisJobStatsManager) getJobStats(jobID string) (models.JobStats, err
 		case "die_at":
 			v, _ := strconv.ParseInt(value, 10, 64)
 			res.Stats.DieAt = v
+		case "upstream_job_id":
+			res.Stats.UpstreamJobID = value
+			break
+		case "multiple_executions":
+			v, err := strconv.ParseBool(value)
+			if err != nil {
+				v = false
+			}
+			res.Stats.IsMultipleExecutions = v
+			break
 		default:
 			break
 		}
@@ -509,6 +630,7 @@ func (rjs *RedisJobStatsManager) saveJobStats(jobStats models.JobStats) error {
 		"update_time", jobStats.Stats.UpdateTime,
 		"run_at", jobStats.Stats.RunAt,
 		"cron_spec", jobStats.Stats.CronSpec,
+		"multiple_executions", jobStats.Stats.IsMultipleExecutions,
 	)
 	if jobStats.Stats.CheckInAt > 0 && !utils.IsEmptyStr(jobStats.Stats.CheckIn) {
 		args = append(args,
@@ -520,11 +642,15 @@ func (rjs *RedisJobStatsManager) saveJobStats(jobStats models.JobStats) error {
 		args = append(args, "die_at", jobStats.Stats.DieAt)
 	}
 
+	if len(jobStats.Stats.UpstreamJobID) > 0 {
+		args = append(args, "upstream_job_id", jobStats.Stats.UpstreamJobID)
+	}
+
 	conn.Send("HMSET", args...)
 	// If job kind is periodic job, expire time should not be set
 	// If job kind is scheduled job, expire time should be runAt+1day
 	if jobStats.Stats.JobKind != job.JobKindPeriodic {
-		var expireTime int64 = 60 * 60 * 24
+		var expireTime int64 = jobStatsDataExpireTime
 		if jobStats.Stats.JobKind == job.JobKindScheduled {
 			nowTime := time.Now().Unix()
 			future := jobStats.Stats.RunAt - nowTime
@@ -539,23 +665,60 @@ func (rjs *RedisJobStatsManager) saveJobStats(jobStats models.JobStats) error {
 	return conn.Flush()
 }
 
+func (rjs *RedisJobStatsManager) saveExecutions(upstreamJobID string, executions []string) error {
+	key := utils.KeyUpstreamJobAndExecutions(rjs.namespace, upstreamJobID)
+
+	conn := rjs.redisPool.Get()
+	defer conn.Close()
+
+	err := conn.Send("MULTI")
+	if err != nil {
+		return err
+	}
+
+	args := []interface{}{key}
+	baseScore := time.Now().Unix()
+	for index, execution := range executions {
+		args = append(args, baseScore+int64(index), execution)
+	}
+
+	if err := conn.Send("ZADD", args...); err != nil {
+		return err
+	}
+
+	// add expire time
+	if err := conn.Send("EXPIRE", key, jobStatsDataExpireTime); err != nil {
+		return err
+	}
+
+	_, err = conn.Do("EXEC")
+
+	return err
+}
+
 func (rjs *RedisJobStatsManager) process(item *queueItem) error {
-	switch item.op {
+	switch item.Op {
 	case opSaveStats:
-		jobStats := item.data.(models.JobStats)
+		jobStats := item.Data.(models.JobStats)
 		return rjs.saveJobStats(jobStats)
 	case opUpdateStatus:
-		data := item.data.([]string)
+		data := item.Data.([]string)
 		return rjs.updateJobStatus(data[0], data[1])
 	case opCheckIn:
-		data := item.data.([]string)
+		data := item.Data.([]string)
 		return rjs.checkIn(data[0], data[1])
 	case opDieAt:
-		data := item.data.([]interface{})
+		data := item.Data.([]interface{})
 		return rjs.dieAt(data[0].(string), data[1].(int64))
 	case opReportStatus:
-		data := item.data.([]string)
+		data := item.Data.([]string)
 		return rjs.reportStatus(data[0], data[1], data[2], data[3])
+	case opPersistExecutions:
+		data := item.Data.([]interface{})
+		return rjs.saveExecutions(data[0].(string), data[1].([]string))
+	case opUpdateStats:
+		data := item.Data.([]interface{})
+		return rjs.updateJobStats(data[0].(string), data[1:]...)
 	default:
 		break
 	}

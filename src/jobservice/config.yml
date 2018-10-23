@@ -19,15 +19,15 @@ worker_pool:
   redis_pool:
     #redis://[arbitrary_username:password@]ipaddress:port/database_index
     #or ipaddress:port[,weight,password,database_index]
-    redis_url: "redis:6379"
+    redis_url: "localhost:6379"
     namespace: "harbor_job_service"
 
 #Logger for job
 logger:
-  path: "/Users/szou/tmp/job_logs"
-  level: "INFO"
+  path: "~/tmp/job_logs"
+  level: "DEBUG"
   archive_period: 1 #days
 
 #Admin server endpoint
-admin_server: "http://10.160.178.186:9010/"
+admin_server: "http://adminserver:9010/"
 

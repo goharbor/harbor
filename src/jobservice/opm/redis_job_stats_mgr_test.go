@@ -1,4 +1,16 @@
-// Copyright Project Harbor Authors. All rights reserved.
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 package opm
 
 import (
@@ -10,6 +22,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -217,6 +230,52 @@ func TestCheckIn(t *testing.T) {
 	key := utils.KeyJobStats(testingNamespace, "fake_job_ID")
 	if err := clear(key, redisPool.Get()); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestExecutionRelated(t *testing.T) {
+	mgr := createStatsManager(redisPool)
+	mgr.Start()
+	defer mgr.Shutdown()
+	<-time.After(200 * time.Millisecond)
+
+	if err := mgr.AttachExecution("upstream_id", "id1", "id2", "id3"); err != nil {
+		t.Fatal(err)
+	}
+
+	// Wait for data is stable
+	<-time.After(200 * time.Millisecond)
+	ids, err := mgr.GetExecutions("upstream_id")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if strings.Join(ids, "/") != "id1/id2/id3" {
+		t.Fatalf("expect 'id1/id2/id3' but got %s", strings.Join(ids, " / "))
+	}
+}
+
+func TestUpdateJobStats(t *testing.T) {
+	mgr := createStatsManager(redisPool)
+	mgr.Start()
+	defer mgr.Shutdown()
+	<-time.After(200 * time.Millisecond)
+
+	// make sure data existing
+	testingStats := createFakeStats()
+	mgr.Save(testingStats)
+	<-time.After(200 * time.Millisecond)
+
+	mgr.Update("fake_job_ID", "status", "Error")
+	<-time.After(200 * time.Millisecond)
+
+	updatedStats, err := mgr.Retrieve("fake_job_ID")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if updatedStats.Stats.Status != "Error" {
+		t.Fatalf("expect status to be '%s' but got '%s'", "Error", updatedStats.Stats.Status)
 	}
 }
 

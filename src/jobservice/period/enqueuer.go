@@ -1,14 +1,29 @@
-// Refer github.com/gocraft/work
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package period
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/models"
+	"github.com/goharbor/harbor/src/jobservice/opm"
 	"github.com/goharbor/harbor/src/jobservice/utils"
 	"github.com/gomodule/redigo/redis"
 	"github.com/robfig/cron"
@@ -20,31 +35,20 @@ const (
 )
 
 type periodicEnqueuer struct {
-	namespace             string
-	pool                  *redis.Pool
-	policyStore           *periodicJobPolicyStore
-	scheduledPeriodicJobs []*scheduledPeriodicJob
-	stopChan              chan struct{}
-	doneStoppingChan      chan struct{}
+	namespace        string
+	pool             *redis.Pool
+	policyStore      *periodicJobPolicyStore
+	stopChan         chan struct{}
+	doneStoppingChan chan struct{}
+	statsManager     opm.JobStatsManager
 }
 
-type periodicJob struct {
-	jobName  string
-	spec     string
-	schedule cron.Schedule
-}
-
-type scheduledPeriodicJob struct {
-	scheduledAt      time.Time
-	scheduledAtEpoch int64
-	*periodicJob
-}
-
-func newPeriodicEnqueuer(namespace string, pool *redis.Pool, policyStore *periodicJobPolicyStore) *periodicEnqueuer {
+func newPeriodicEnqueuer(namespace string, pool *redis.Pool, policyStore *periodicJobPolicyStore, statsManager opm.JobStatsManager) *periodicEnqueuer {
 	return &periodicEnqueuer{
 		namespace:        namespace,
 		pool:             pool,
 		policyStore:      policyStore,
+		statsManager:     statsManager,
 		stopChan:         make(chan struct{}),
 		doneStoppingChan: make(chan struct{}),
 	}
@@ -93,7 +97,7 @@ func (pe *periodicEnqueuer) loop() {
 }
 
 func (pe *periodicEnqueuer) enqueue() error {
-	now := utils.NowEpochSeconds()
+	now := time.Now().Unix()
 	nowTime := time.Unix(now, 0)
 	horizon := nowTime.Add(periodicEnqueuerHorizon)
 
@@ -105,20 +109,24 @@ func (pe *periodicEnqueuer) enqueue() error {
 		if err != nil {
 			// The cron spec should be already checked at top components.
 			// Just in cases, if error occurred, ignore it
+			logger.Errorf("[Ignore] Invalid corn spec in periodic policy %s %s: %s", pl.JobName, pl.PolicyID, err)
 			continue
 		}
-		pj := &periodicJob{
-			jobName:  pl.JobName,
-			spec:     pl.CronSpec,
-			schedule: schedule,
-		}
-		for t := pj.schedule.Next(nowTime); t.Before(horizon); t = pj.schedule.Next(t) {
-			epoch := t.Unix()
-			job := &work.Job{
-				Name: pj.jobName,
-				ID:   pl.PolicyID, // Same with the id of the policy it's being scheduled for
 
-				// This is technically wrong, but this lets the bytes be identical for the same periodic job instance. If we don't do this, we'd need to use a different approach -- probably giving each periodic job its own history of the past 100 periodic jobs, and only scheduling a job if it's not in the history.
+		executions := []string{}
+		for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
+			epoch := t.Unix()
+			scheduledExecutionID := utils.MakeIdentifier()
+			executions = append(executions, scheduledExecutionID)
+
+			// Create an execution (job) based on the periodic job template (policy)
+			job := &work.Job{
+				Name: pl.JobName,
+				ID:   scheduledExecutionID,
+
+				// This is technically wrong, but this lets the bytes be identical for the same periodic job instance.
+				// If we don't do this, we'd need to use a different approach -- probably giving each periodic job its own
+				// history of the past 100 periodic jobs, and only scheduling a job if it's not in the history.
 				EnqueuedAt: epoch,
 				Args:       pl.JobParameters, // Pass parameters to scheduled job here
 			}
@@ -133,7 +141,17 @@ func (pe *periodicEnqueuer) enqueue() error {
 				return err
 			}
 
-			logger.Infof("Schedule job %s for policy %s at %d\n", pj.jobName, pl.PolicyID, epoch)
+			logger.Infof("Schedule job %s:%s for policy %s at %d\n", job.Name, job.ID, pl.PolicyID, epoch)
+
+			// Try to save the stats of new scheduled execution (job).
+			pe.createExecution(pl.PolicyID, pl.JobName, scheduledExecutionID, epoch)
+		}
+		// Link the upstream job (policy) with the created executions
+		if len(executions) > 0 {
+			if err := pe.statsManager.AttachExecution(pl.PolicyID, executions...); err != nil {
+				// Just logged it
+				logger.Errorf("Link upstream job with executions failed: %s", err)
+			}
 		}
 		// Directly use redis conn to update the periodic job (policy) status
 		// Do not care the result
@@ -143,6 +161,24 @@ func (pe *periodicEnqueuer) enqueue() error {
 	_, err := conn.Do("SET", utils.RedisKeyLastPeriodicEnqueue(pe.namespace), now)
 
 	return err
+}
+
+func (pe *periodicEnqueuer) createExecution(upstreamJobID, upstreamJobName, executionID string, runAt int64) {
+	execution := models.JobStats{
+		Stats: &models.JobStatData{
+			JobID:         executionID,
+			JobName:       upstreamJobName,
+			Status:        job.JobStatusPending,
+			JobKind:       job.JobKindScheduled,
+			EnqueueTime:   time.Now().Unix(),
+			UpdateTime:    time.Now().Unix(),
+			RefLink:       fmt.Sprintf("/api/v1/jobs/%s", executionID),
+			RunAt:         runAt,
+			UpstreamJobID: upstreamJobID,
+		},
+	}
+
+	pe.statsManager.Save(execution)
 }
 
 func (pe *periodicEnqueuer) shouldEnqueue() bool {
@@ -157,5 +193,5 @@ func (pe *periodicEnqueuer) shouldEnqueue() bool {
 		return true
 	}
 
-	return lastEnqueue < (utils.NowEpochSeconds() - int64(periodicEnqueuerSleep/time.Minute))
+	return lastEnqueue < (time.Now().Unix() - int64(periodicEnqueuerSleep/time.Minute))
 }
