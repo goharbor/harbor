@@ -84,7 +84,7 @@ workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
 
 # The hostname in harbor.cfg has not been modified
-if grep 'hostname = reg.mydomain.com' &> /dev/null harbor.cfg
+if grep '^[[:blank:]]*hostname = reg.mydomain.com' &> /dev/null harbor.cfg
 then
 	warn "$usage"
 	exit 1
@@ -212,7 +212,7 @@ then
 protocol=${BASH_REMATCH[1]}
 fi
 
-if [[ $(grep 'hostname[[:blank:]]*=' ./harbor.cfg) =~ hostname[[:blank:]]*=[[:blank:]]*(.*) ]]
+if [[ $(grep '^[[:blank:]]*hostname[[:blank:]]*=' ./harbor.cfg) =~ hostname[[:blank:]]*=[[:blank:]]*(.*) ]]
 then
 hostname=${BASH_REMATCH[1]}
 fi
