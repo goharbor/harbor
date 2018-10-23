@@ -456,13 +456,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         return "/container-image-icons?container-image=" + repo.name;
     }
 
-    getRepoDescrition(repo: RepositoryItem): string {
-        if (repo && repo.description) {
-            return repo.description;
-        }
-        return "No description for this repo. You can add it to this repository.";
-    }
-
     showCard(cardView: boolean) {
         if (this.isCardView === cardView) {
             return;
