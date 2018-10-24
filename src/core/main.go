@@ -18,7 +18,6 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
-	"reflect"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -121,22 +120,6 @@ func main() {
 		}
 		if err := dao.InitClairDB(clairDB); err != nil {
 			log.Fatalf("failed to initialize clair database: %v", err)
-		}
-		// Get policy configuration.
-		scanAllPolicy := config.ScanAllPolicy()
-		if scanAllPolicy.Type == notifier.PolicyTypeDaily {
-			dailyTime := 0
-			if t, ok := scanAllPolicy.Parm["daily_time"]; ok {
-				if reflect.TypeOf(t).Kind() == reflect.Int {
-					dailyTime = t.(int)
-				}
-			}
-
-			// Send notification to handle first policy change.
-			if err = notifier.Publish(notifier.ScanAllPolicyTopic,
-				notifier.ScanPolicyNotification{Type: scanAllPolicy.Type, DailyTime: (int64)(dailyTime)}); err != nil {
-				log.Errorf("failed to publish scan all policy topic: %v", err)
-			}
 		}
 	}
 

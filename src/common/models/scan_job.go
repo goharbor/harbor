@@ -131,8 +131,5 @@ const (
 
 // DefaultScanAllPolicy ...
 var DefaultScanAllPolicy = ScanAllPolicy{
-	Type: ScanAllDaily,
-	Parm: map[string]interface{}{
-		ScanAllDailyTime: 0,
-	},
+	Type: ScanAllNone,
 }
