@@ -34,13 +34,15 @@
 }
 
 clr-dg-action-bar {
-    clr-dropdown{
+    clr-dropdown {
         @include dropdown-as-action-button;
     }
 }
 
 hbr-resource-label-signpost {
     display: inline-block;
+    max-height: 24px;
+    margin-left: 3px;
 }
 
 .card-container {

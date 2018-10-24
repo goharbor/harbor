@@ -317,8 +317,8 @@ export class ChartVersionComponent implements OnInit {
     .subscribe(labels => {
         let versionIdx = this.chartVersions.findIndex(v => v.name === version.name);
         this.chartVersions[versionIdx].labels = labels;
-        let hnd = setInterval(() => this.cdr.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 2000);
+        let hnd = setInterval(() => this.cdr.markForCheck(), 200);
+        setTimeout(() => clearInterval(hnd), 5000);
     });
   }
 }

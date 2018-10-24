@@ -21,8 +21,7 @@ export class ListChartVersionRoComponent implements OnInit {
     private projectService: ProjectService,
     private router: Router) { }
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   getStatusString(chart: HelmChartVersion) {
     if (chart.deprecated) {

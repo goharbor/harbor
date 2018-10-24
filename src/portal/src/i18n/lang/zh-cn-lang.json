@@ -762,7 +762,7 @@
         "DELETE": "删除",
         "LABEL_NAME": "标签名字",
         "COLOR": "颜色",
-        "FILTER_Label_PLACEHOLDER": "过滤标签",
+        "FILTER_LABEL_PLACEHOLDER": "过滤标签",
         "NO_LABELS": "无标签",
         "DELETION_TITLE_TARGET":"删除标签确认",
         "DELETION_SUMMARY_TARGET": "确认删除标签 {{param}}?",
