@@ -390,6 +390,14 @@ export interface HelmChartSignature {
  * interface Manifest
  */
 export interface Manifest {
-  manifset: Object;
-  config: string;
+    manifset: Object;
+    config: string;
+}
+
+export interface RetagRequest {
+  targetProject: string;
+  targetRepo: string;
+  targetTag: string;
+  srcImage: string;
+  override: boolean;
 }

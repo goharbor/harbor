@@ -67,7 +67,8 @@
         "EMAIL_EXISTING": "邮件地址已经存在。",
         "USER_EXISTING": "用户名已经存在。",
         "RULE_USER_EXISTING": "名称已经存在。",
-        "EMPTY": "名称为必填项"
+        "EMPTY": "名称为必填项",
+        "NONEMPTY": "不能为空"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -470,10 +471,12 @@
         "LABELS": "标签",
         "ADD_TO_IMAGE": "添加标签到此镜像",
         "ADD_LABELS": "添加标签",
+        "RETAG": "复制镜像",
         "FILTER_BY_LABEL": "过滤标签",
         "ACTION": "操作",
         "DEPLOY": "部署",
-        "ADDITIONAL_INFO": "添加信息"
+        "ADDITIONAL_INFO": "添加信息",
+        "REPO_NAME": "镜像仓库"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",

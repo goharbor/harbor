@@ -68,6 +68,7 @@
         "USER_EXISTING": "Ese nombre de usuario ya existe.",
         "RULE_USER_EXISTING": "Name is already in use.",
         "EMPTY": "Name is required",
+        "NONEMPTY": "Can't be empty",
         "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
     },
     "PLACEHOLDER": {
@@ -471,9 +472,11 @@
         "ADD_TO_IMAGE": "Add labels to this image",
         "FILTER_BY_LABEL": "Filter images by label",
         "ADD_LABELS": "Add labels",
+        "RETAG": "Retag",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
-        "ADDITIONAL_INFO": "Add Additional Info"
+        "ADDITIONAL_INFO": "Add Additional Info",
+        "REPO_NAME": "Repository"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",

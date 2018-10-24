@@ -6,6 +6,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { RepositoryGridviewComponent } from './repository-gridview.component';
 import { TagComponent } from '../tag/tag.component';
 import { FilterComponent } from '../filter/filter.component';
@@ -21,8 +22,9 @@ import { HBR_GRIDVIEW_DIRECTIVES } from '../gridview/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from '../push-image/index';
 import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
 import { JobLogViewerComponent } from '../job-log-viewer/index';
-import {LabelPieceComponent} from "../label-piece/label-piece.component";
-import {OperationService} from "../operation/operation.service";
+import { LabelPieceComponent } from "../label-piece/label-piece.component";
+import { OperationService } from "../operation/operation.service";
+import {ProjectDefaultService, ProjectService, RetagDefaultService, RetagService} from "../service";
 
 describe('RepositoryComponentGridview (inline template)', () => {
 
@@ -104,6 +106,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
         TagComponent,
         LabelPieceComponent,
         ConfirmationDialogComponent,
+        ImageNameInputComponent,
         FilterComponent,
         VULNERABILITY_DIRECTIVES,
         PUSH_IMAGE_BUTTON_DIRECTIVES,
@@ -116,6 +119,8 @@ describe('RepositoryComponentGridview (inline template)', () => {
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: RepositoryService, useClass: RepositoryDefaultService },
         { provide: TagService, useClass: TagDefaultService },
+        { provide: ProjectService, useClass: ProjectDefaultService },
+        { provide: RetagService, useClass: RetagDefaultService },
         { provide: SystemInfoService, useClass: SystemInfoDefaultService },
         { provide: OperationService }
       ]

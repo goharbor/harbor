@@ -29,6 +29,8 @@ import { LABEL_DIRECTIVES } from "./label/index";
 import { CREATE_EDIT_LABEL_DIRECTIVES } from "./create-edit-label/index";
 import { LABEL_PIECE_DIRECTIVES } from "./label-piece/index";
 import { HELMCHART_DIRECTIVE } from "./helm-chart/index";
+import { IMAGE_NAME_INPUT_DIRECTIVES } from "./image-name-input/index";
+
 import {
   SystemInfoService,
   SystemInfoDefaultService,
@@ -53,7 +55,9 @@ import {
   LabelService,
   LabelDefaultService,
   HelmChartService,
-  HelmChartDefaultService
+  HelmChartDefaultService,
+  RetagService,
+  RetagDefaultService
 } from './service/index';
 import {
   ErrorHandler,
@@ -128,6 +132,9 @@ export interface HarborModuleConfig {
   // Service implementation for tag
   tagService?: Provider;
 
+  // Service implementation for retag
+  retagService?: Provider;
+
   // Service implementation for vulnerability scanning
   scanningService?: Provider;
 
@@ -192,7 +199,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     HBR_GRIDVIEW_DIRECTIVES,
     REPOSITORY_GRIDVIEW_DIRECTIVES,
     OPERATION_DIRECTIVES,
-    HELMCHART_DIRECTIVE
+    HELMCHART_DIRECTIVE,
+    IMAGE_NAME_INPUT_DIRECTIVES
   ],
   exports: [
     LOG_DIRECTIVES,
@@ -219,7 +227,8 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     HBR_GRIDVIEW_DIRECTIVES,
     REPOSITORY_GRIDVIEW_DIRECTIVES,
     OPERATION_DIRECTIVES,
-    HELMCHART_DIRECTIVE
+    HELMCHART_DIRECTIVE,
+    IMAGE_NAME_INPUT_DIRECTIVES
   ],
   providers: []
 })
@@ -237,6 +246,7 @@ export class HarborLibraryModule {
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
+        config.retagService || { provide: RetagService, useClass: RetagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
@@ -269,6 +279,7 @@ export class HarborLibraryModule {
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
+        config.retagService || { provide: RetagService, useClass: RetagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },

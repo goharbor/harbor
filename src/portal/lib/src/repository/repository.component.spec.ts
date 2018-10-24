@@ -5,6 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { RepositoryComponent } from './repository.component';
 import { RepositoryGridviewComponent } from '../repository-gridview/repository-gridview.component';
 import { GridViewComponent } from '../gridview/grid-view.component';
@@ -17,15 +18,16 @@ import { JobLogViewerComponent } from '../job-log-viewer/index';
 
 
 import { ErrorHandler } from '../error-handler/error-handler';
-import {Repository, RepositoryItem, Tag, SystemInfo, Label} from '../service/interface';
+import { Repository, RepositoryItem, Tag, SystemInfo, Label } from '../service/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { RepositoryService, RepositoryDefaultService } from '../service/repository.service';
 import { SystemInfoService, SystemInfoDefaultService } from '../service/system-info.service';
 import { TagService, TagDefaultService } from '../service/tag.service';
 import { ChannelService } from '../channel/index';
-import {LabelPieceComponent} from "../label-piece/label-piece.component";
-import {LabelDefaultService, LabelService} from "../service/label.service";
-import {OperationService} from "../operation/operation.service";
+import { LabelPieceComponent } from "../label-piece/label-piece.component";
+import { LabelDefaultService, LabelService } from "../service/label.service";
+import { OperationService } from "../operation/operation.service";
+import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagService } from "../service";
 
 
 class RouterStub {
@@ -159,6 +161,7 @@ describe('RepositoryComponent (inline template)', () => {
         GridViewComponent,
         RepositoryGridviewComponent,
         ConfirmationDialogComponent,
+        ImageNameInputComponent,
         FilterComponent,
         TagComponent,
         LabelPieceComponent,
@@ -173,6 +176,8 @@ describe('RepositoryComponent (inline template)', () => {
         { provide: RepositoryService, useClass: RepositoryDefaultService },
         { provide: SystemInfoService, useClass: SystemInfoDefaultService },
         { provide: TagService, useClass: TagDefaultService },
+        { provide: ProjectService, useClass: ProjectDefaultService },
+        { provide: RetagService, useClass: RetagDefaultService },
         { provide: LabelService, useClass: LabelDefaultService},
         { provide: ChannelService},
         { provide: OperationService }

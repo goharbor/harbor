@@ -1,0 +1,40 @@
+<form [formGroup]="imageNameForm" class="clr-form clr-form-compact">
+    <div class="clr-form-control clr-row">
+        <label for="project-name" class="required clr-control-label clr-col-xs-12 clr-col-md-4">{{ 'PROJECT.NAME' | translate }}</label>
+        <div class="clr-control-container clr-col-xs-12 clr-col-md-8">
+            <div class="clr-input-wrapper" (mouseleave)="leaveProjectInput()">
+                <label aria-haspopup="true" role="tooltip" class="wrap-label tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='noProjectInfo'>
+                    <input type="text" id="project-name" (keyup)='validateProjectName()' (blur)='blurProjectInput()' class="clr-input" formControlName="projectName" required minlength="2" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" />
+                    <span class="tooltip-content">{{noProjectInfo | translate}}</span>
+                </label>
+                <div class="select-box" [style.display]="selectedProjectList.length ? 'block' : 'none'">
+                    <ul>
+                        <li *ngFor="let project of selectedProjectList" (click)="selectedProjectName(project?.name)">{{project?.name}}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="clr-form-control clr-row">
+        <label for="repo-name" class="required clr-control-label clr-col-xs-12 clr-col-md-4">{{ 'REPOSITORY.REPO_NAME' | translate }}</label>
+        <div class="clr-control-container clr-col-xs-12 clr-col-md-8">
+            <div class="clr-input-wrapper">
+                <label aria-haspopup="true" role="tooltip" class="wrap-label tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='repoName.invalid && (repoName.dirty || repoName.touched)'>
+                    <input type="text" id="repo-name" class="clr-input" formControlName="repoName" required />
+                    <span *ngIf="repoName.invalid && (repoName.dirty || repoName.touched)" class="tooltip-content">{{ 'TOOLTIP.NONEMPTY' | translate }}</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="clr-form-control clr-row">
+        <label for="tag-name" class="required clr-control-label clr-col-xs-12 clr-col-md-4">{{ 'REPOSITORY.TAG' | translate }}</label>
+        <div class="clr-control-container clr-col-xs-12 clr-col-md-8">
+            <div class="clr-input-wrapper">
+                <label aria-haspopup="true" role="tooltip" class="wrap-label tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='tagName.invalid && (tagName.dirty || tagName.touched)'>
+                    <input type="text" id="tag-name" class="clr-input" formControlName="tagName" required />
+                    <span *ngIf="repoName.invalid && (repoName.dirty || repoName.touched)" class="tooltip-content">{{ 'TOOLTIP.NONEMPTY' | translate }}</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</form>

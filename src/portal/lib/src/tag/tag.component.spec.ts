@@ -1,26 +1,29 @@
-import { ComponentFixture, TestBed, async } from '@angular/core/testing';
-import { DebugElement } from '@angular/core';
+import { ComponentFixture, TestBed, async } from "@angular/core/testing";
+import { DebugElement } from "@angular/core";
 
-import { SharedModule } from '../shared/shared.module';
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
-import { TagComponent } from './tag.component';
+import { SharedModule } from "../shared/shared.module";
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
+import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
+import { TagComponent } from "./tag.component";
 
-import { ErrorHandler } from '../error-handler/error-handler';
-import {Label, Tag} from '../service/interface';
-import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
-import { TagService, TagDefaultService, ScanningResultService, ScanningResultDefaultService } from '../service/index';
-import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
-import { FILTER_DIRECTIVES } from '../filter/index';
+import { ErrorHandler } from "../error-handler/error-handler";
+import { Label, Tag } from "../service/interface";
+import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
+import {
+    TagService, TagDefaultService, ScanningResultService, ScanningResultDefaultService,
+    RetagService, RetagDefaultService, ProjectService, ProjectDefaultService
+} from "../service/index";
+import { VULNERABILITY_DIRECTIVES } from "../vulnerability-scanning/index";
+import { FILTER_DIRECTIVES } from "../filter/index";
+import { ChannelService } from "../channel/index";
 
-import { ChannelService } from '../channel/index';
+import { JobLogViewerComponent } from "../job-log-viewer/index";
+import { CopyInputComponent } from "../push-image/copy-input.component";
+import { LabelPieceComponent } from "../label-piece/label-piece.component";
+import { LabelDefaultService, LabelService } from "../service/label.service";
+import { OperationService } from "../operation/operation.service";
 
-import { JobLogViewerComponent } from '../job-log-viewer/index';
-import {CopyInputComponent} from "../push-image/copy-input.component";
-import {LabelPieceComponent} from "../label-piece/label-piece.component";
-import {LabelDefaultService, LabelService} from "../service/label.service";
-import {OperationService} from "../operation/operation.service";
-
-describe('TagComponent (inline template)', () => {
+describe("TagComponent (inline template)", () => {
 
   let comp: TagComponent;
   let fixture: ComponentFixture<TagComponent>;
@@ -90,7 +93,7 @@ describe('TagComponent (inline template)', () => {
   ];
 
   let config: IServiceConfig = {
-    repositoryBaseEndpoint: '/api/repositories/testing'
+    repositoryBaseEndpoint: "/api/repositories/testing"
   };
 
   beforeEach(async(() => {
@@ -102,18 +105,21 @@ describe('TagComponent (inline template)', () => {
         TagComponent,
         LabelPieceComponent,
         ConfirmationDialogComponent,
+        ImageNameInputComponent,
         VULNERABILITY_DIRECTIVES,
         FILTER_DIRECTIVES,
         JobLogViewerComponent,
-          CopyInputComponent
+        CopyInputComponent
       ],
       providers: [
         ErrorHandler,
         ChannelService,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: TagService, useClass: TagDefaultService },
+        { provide: ProjectService, useClass: ProjectDefaultService },
+        { provide: RetagService, useClass: RetagDefaultService },
         { provide: ScanningResultService, useClass: ScanningResultDefaultService },
-        {provide: LabelService, useClass: LabelDefaultService},
+        { provide: LabelService, useClass: LabelDefaultService },
         { provide: OperationService }
       ]
     });
@@ -124,10 +130,10 @@ describe('TagComponent (inline template)', () => {
     comp = fixture.componentInstance;
 
     comp.projectId = 1;
-    comp.repoName = 'library/nginx';
+    comp.repoName = "library/nginx";
     comp.hasProjectAdminRole = true;
     comp.hasSignedIn = true;
-    comp.registryUrl = 'http://registry.testing.com';
+    comp.registryUrl = "http://registry.testing.com";
     comp.withNotary = false;
 
 
@@ -135,31 +141,31 @@ describe('TagComponent (inline template)', () => {
 
 
     tagService = fixture.debugElement.injector.get(TagService);
-    spy = spyOn(tagService, 'getTags').and.returnValues(Promise.resolve(mockTags));
+    spy = spyOn(tagService, "getTags").and.returnValues(Promise.resolve(mockTags));
 
     labelService = fixture.debugElement.injector.get(LabelService);
 
-    spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(Promise.resolve(mockLabels));
-    spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(Promise.resolve(mockLabels1));
+    spyLabels = spyOn(labelService, "getGLabels").and.returnValues(Promise.resolve(mockLabels));
+    spyLabels1 = spyOn(labelService, "getPLabels").and.returnValues(Promise.resolve(mockLabels1));
 
     fixture.detectChanges();
   });
 
-  it('should load data', async(() => {
+  it("should load data", async(() => {
     expect(spy.calls.any).toBeTruthy();
   }));
 
   // fail after upgrade to angular 6.
-  xit('should load and render data', async(() => {
+  xit("should load and render data", async(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-      let de: DebugElement = fixture.debugElement.query(del => del.classes['datagrid-cell']);
+      let de: DebugElement = fixture.debugElement.query(del => del.classes["datagrid-cell"]);
       fixture.detectChanges();
       expect(de).toBeTruthy();
       let el: HTMLElement = de.nativeElement;
       expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual('1.11.5');
+      expect(el.textContent.trim()).toEqual("1.11.5");
     });
   }));
 
