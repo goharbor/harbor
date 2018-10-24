@@ -419,6 +419,7 @@ Test Case - Delete Multi Project
     Create An New Project  projectb${d}
     Push Image  ${ip}  user012  Test1@34  projecta${d}  hello-world
     Filter Object  project
+    Wait Until Element Is Not Visible  //clr-datagrid/div/div[2]
     Multi-delete Object  projecta  projectb
     # Verify delete project with image should not be deleted directly
     Delete Fail  projecta${d}
