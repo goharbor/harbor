@@ -382,3 +382,14 @@ export interface HelmChartSignature {
   signed: boolean;
   prov_file: string;
 }
+
+/**
+ * The manifest of image.
+ *
+ **
+ * interface Manifest
+ */
+export interface Manifest {
+  manifset: Object;
+  config: string;
+}

@@ -9,7 +9,7 @@ import {
   HTTP_GET_OPTIONS
 } from "../utils";
 import { RequestQueryParams } from "./RequestQueryParams";
-import { Tag } from "./interface";
+import { Tag, Manifest } from "./interface";
 
 /**
  * For getting tag signatures.
@@ -90,6 +90,19 @@ export abstract class TagService {
     tagName: string,
     labelId: number
   ): Observable<any> | Promise<any> | any;
+
+  /**
+   * Get manifest of tag under the specified repository.
+   *
+   * @abstract
+   * returns {(Observable<Manifest> | Promise<Manifest> | Manifest)}
+   *
+   * @memberOf TagService
+   */
+  abstract getManifest(
+    repositoryName: string,
+    tag: string
+  ): Observable<Manifest> | Promise<Manifest> | Manifest;
 }
 
 /**
@@ -223,6 +236,21 @@ export class TagDefaultService extends TagService {
       .delete(_addLabelToImageUrl)
       .toPromise()
       .then(response => response.status)
+      .catch(error => Promise.reject(error));
+  }
+
+  public getManifest(
+    repositoryName: string,
+    tag: string
+  ): Observable<Manifest> | Promise<Manifest> | Manifest {
+    if (!repositoryName || !tag) {
+      return Promise.reject("Bad argument");
+    }
+    let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}/manifest`;
+    return this.http
+      .get(url, HTTP_GET_OPTIONS)
+      .toPromise()
+      .then(response => response.json() as Manifest)
       .catch(error => Promise.reject(error));
   }
 }

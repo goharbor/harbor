@@ -16,7 +16,7 @@
         "npm_pack": "cd lib/dist && npm pack",
         "package": "npm run build_lib && npm run npm_pack",
         "link_lib": "cd lib/dist && npm link && cd ../../ && npm link @harbor/ui",
-        "build_all":"npm run build_lib && npm run link_lib && npm run build"
+        "build_all": "npm run build_lib && npm run link_lib && npm run build"
     },
     "private": true,
     "dependencies": {

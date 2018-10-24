@@ -20,7 +20,7 @@
                             <label class="detail-label">{{'TAG.ARCHITECTURE' | translate }}</label>
                             <div class="image-details" [title]="tagDetails.architecture">{{tagDetails.architecture}}</div>
                         </section>
-                        <section class="detail-row"> 
+                        <section class="detail-row">
                             <label class="detail-label">{{'TAG.OS' | translate }}</label>
                             <div class="image-details" [title]="tagDetails.os">{{tagDetails.os}}</div>
                         </section>
@@ -42,17 +42,29 @@
                 <div class="flex-block vulnerabilities-info">
                     <div class="second-column">
                         <div class="row-flex">
-                            <div class="icon-position"><clr-icon shape="error" size="24" class="is-error"></clr-icon></div> 
-                            <span class="detail-count">{{highCount}}</span> {{packageText(highCount) | translate}} {{haveText(highCount) | translate}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}</div>
+                            <div class="icon-position">
+                                <clr-icon shape="error" size="24" class="is-error"></clr-icon>
+                            </div>
+                            <span class="detail-count">{{highCount}}</span> {{packageText(highCount) | translate}} {{haveText(highCount) | translate}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}
+                        </div>
                         <div class="second-row row-flex">
-                            <div class="icon-position"><clr-icon shape="exclamation-triangle" size="24" class="tip-icon-medium"></clr-icon></div>
-                            <span class="detail-count">{{mediumCount}}</span> {{packageText(mediumCount) | translate}} {{haveText(mediumCount) | translate}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}</div>
+                            <div class="icon-position">
+                                <clr-icon shape="exclamation-triangle" size="24" class="tip-icon-medium"></clr-icon>
+                            </div>
+                            <span class="detail-count">{{mediumCount}}</span> {{packageText(mediumCount) | translate}} {{haveText(mediumCount) | translate}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}
+                        </div>
                         <div class="second-row row-flex">
-                            <div class="icon-position"><clr-icon shape="play" size="22" class="tip-icon-low rotate-90"></clr-icon></div>
-                            <span class="detail-count">{{lowCount}}</span> {{packageText(lowCount) | translate}} {{haveText(lowCount) | translate}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}</div>
+                            <div class="icon-position">
+                                <clr-icon shape="play" size="22" class="tip-icon-low rotate-90"></clr-icon>
+                            </div>
+                            <span class="detail-count">{{lowCount}}</span> {{packageText(lowCount) | translate}} {{haveText(lowCount) | translate}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}
+                        </div>
                         <div class="second-row row-flex">
-                            <div class="icon-position"><clr-icon shape="help" size="20"></clr-icon></div>
-                            <span class="detail-count">{{unknownCount}}</span> {{packageText(unknownCount) | translate}} {{haveText(unknownCount) | translate}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}</div>
+                            <div class="icon-position">
+                                <clr-icon shape="help" size="20"></clr-icon>
+                            </div>
+                            <span class="detail-count">{{unknownCount}}</span> {{packageText(unknownCount) | translate}} {{haveText(unknownCount) | translate}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}
+                        </div>
                     </div>
                 </div>
 
@@ -67,12 +79,23 @@
             </div>
         </div>
     </section>
-    <section class="detail-section">
+    <ul id="configTabs" class="nav" role="tablist">
+        <li *ngIf="withClair" role="presentation" class="nav-item">
+            <button id="tag-vulnerability" class="btn btn-link nav-link" aria-controls="vulnerability" [class.active]='isCurrentTabLink("tag-vulnerability")' type="button" (click)='tabLinkClick("tag-vulnerability")'>{{'REPOSITORY.VULNERABILITY' | translate}}</button>
+        </li>
+        <li role="presentation" class="nav-item">
+            <button id="tag-history" class="btn btn-link nav-link" aria-controls="history" [class.active]='isCurrentTabLink("tag-history")' type="button" (click)='tabLinkClick("tag-history")'>{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
+        </li>
+    </ul>
+    <section class="detail-section" id="vulnerability" role="tabpanel" aria-labelledby="tag-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
         <div class="vulnerability-block">
             <hbr-vulnerabilities-grid [repositoryId]="repositoryId" [tagId]="tagId" [withAdminRole]="withAdminRole"></hbr-vulnerabilities-grid>
         </div>
         <div>
             <ng-content></ng-content>
         </div>
+    </section>
+    <section class="detail-section" id="history" role="tabpanel" aria-labelledby="tag-history" [hidden]='!isCurrentTabContent("history")'>
+        <hbr-tag-history [repositoryId]="repositoryId" [tagId]="tagId"></hbr-tag-history>
     </section>
 </div>
