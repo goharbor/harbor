@@ -26,8 +26,8 @@ go get github.com/goharbor/harbor
 cd $GOPATH/src/github.com/goharbor/harbor
 
 #Track repository under your personal account
-git config push.default nothing # Anything to avoid pushing to vmware/harbor by default
-git remote rename origin vmware
+git config push.default nothing # Anything to avoid pushing to goharbor/harbor by default
+git remote rename origin goharbor
 git remote add $USER git@github.com:$USER/harbor.git
 git fetch $USER
 
@@ -42,14 +42,14 @@ Here is the basic structure of the harbor code base. Some of the key folders / f
 ```
 .
 ...
-├── Makefile      #Make file for compile and build code
-├── contrib       #Contain documents, scripts, and other helpful things which are contributed by the community
-├── docs          #Keep documents here
-├── make          #Resource for building and setting up Harbor environment
+├── Makefile      # Make file for compile and build code
+├── contrib       # Contain documents, scripts, and other helpful things which are contributed by the community
+├── docs          # Keep documents here
+├── make          # Resource for building and setting up Harbor environment
 ...
-├── src           #Source code folder
-├── tests         #Test cases for API / e2e testings
-└── tools         #Keep supporting tools
+├── src           # Source code folder
+├── tests         # Test cases for API / e2e testings
+└── tools         # Keep supporting tools
 ...
 ```
 
@@ -173,12 +173,12 @@ Both `$working_dir` and `$user` are mentioned in the figure above.
 Changes should be made on your own fork in a new branch. The branch should be named  `XXX-description` where XXX is the number of the issue. PR should be rebased on top of master without multiple branches mixed into the PR. If your PR do not merge cleanly, use commands listed below to get it up to date.
 
 ```
-#vmware is the origin upstream
+#goharbor is the origin upstream
 
 cd $working_dir/kubernetes
-git fetch vmware
+git fetch goharbor
 git checkout master
-git rebase vmware/master
+git rebase goharbor/master
 ```
 
 Branch from the updated `master` branch:
@@ -220,11 +220,11 @@ To build code, please refer to [build](docs/compile_guide.md) guideline.
 
 ###  Keep sync with upstream
 
-Once your branch gets out of sync with the vmware/master branch, use the following commands to update:
+Once your branch gets out of sync with the goharbor/master branch, use the following commands to update:
 ```
 git checkout my_feature
 git fetch -a
-git rebase vmware/master
+git rebase goharbor/master
 
 ```
 
@@ -275,7 +275,7 @@ Commit changes made in response to review comments to the same branch on your fo
 
 It is a great way to contribute to Harbor by reporting an issue. Well-written and complete bug reports are always welcome! Please open an issue on Github and follow the template to fill in required information.
 
-Before opening any issue, please look up the existing [issues](https://github.com/vmware/harbor/issues) to avoid submitting a duplication.
+Before opening any issue, please look up the existing [issues](https://github.com/goharbor/harbor/issues) to avoid submitting a duplication.
 If you find a match, you can "subscribe" to it to get notified on updates. If you have additional helpful information about the issue, please leave a comment.
 
 When reporting issues, always include:
