@@ -103,3 +103,7 @@ ignored = ["github.com/vmware/harbor/tests*"]
 [[constraint]]
   name = "github.com/gocraft/work"
   version = "=0.5.1"
+
+[[constraint]]
+  name = "github.com/op/go-logging"
+  version = "1.0.0"

@@ -19,7 +19,7 @@ import (
 )
 
 func TestConfigLoadingFailed(t *testing.T) {
-	cfg := &Configuration{}
+	cfg := NewConfiguration()
 	if err := cfg.Load("./config.not-existing.yaml", false); err == nil {
 		t.Fatalf("Load config from none-existing document, expect none nil error but got '%s'\n", err)
 	}
@@ -30,7 +30,7 @@ func TestConfigLoadingSucceed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cfg := &Configuration{}
+	cfg := NewConfiguration()
 	if err := cfg.Load("../config_test.yml", false); err != nil {
 		t.Fatalf("Load config from yaml file, expect nil error but got error '%s'\n", err)
 	}
@@ -46,7 +46,7 @@ func TestConfigLoadingWithEnv(t *testing.T) {
 	}
 	setENV()
 
-	cfg := &Configuration{}
+	cfg := NewConfiguration()
 	if err := cfg.Load("../config_test.yml", true); err != nil {
 		t.Fatalf("Load config from yaml file, expect nil error but got error '%s'\n", err)
 	}
@@ -66,14 +66,8 @@ func TestConfigLoadingWithEnv(t *testing.T) {
 	if cfg.PoolConfig.RedisPoolCfg.Namespace != "ut_namespace" {
 		t.Fatalf("expect redis namespace 'ut_namespace' but got '%s'\n", cfg.PoolConfig.RedisPoolCfg.Namespace)
 	}
-	if cfg.LoggerConfig.BasePath != "/tmp" {
-		t.Fatalf("expect log base path '/tmp' but got '%s'\n", cfg.LoggerConfig.BasePath)
-	}
-	if cfg.LoggerConfig.LogLevel != "DEBUG" {
-		t.Fatalf("expect log level 'DEBUG' but got '%s'\n", cfg.LoggerConfig.LogLevel)
-	}
-	if cfg.LoggerConfig.ArchivePeriod != 5 {
-		t.Fatalf("expect log archive period 5 but got '%d'\n", cfg.LoggerConfig.ArchivePeriod)
+	if cfg.ServiceLogger == nil || cfg.ServiceLogger.LogLevel != "ERROR" {
+		t.Fatal("expect 'ERROR' log level of service logger but got invalid one")
 	}
 
 	unsetENV()
@@ -95,21 +89,48 @@ func TestDefaultConfig(t *testing.T) {
 		t.Fatalf("expect default admin server endpoint 'http://127.0.0.1:8888' but got '%s'\n", endpoint)
 	}
 
-	if basePath := GetLogBasePath(); basePath != "/tmp/job_logs" {
-		t.Fatalf("expect default logger base path '/tmp/job_logs' but got '%s'\n", basePath)
-	}
-
-	if lvl := GetLogLevel(); lvl != "INFO" {
-		t.Fatalf("expect default logger level 'INFO' but got '%s'\n", lvl)
-	}
-
-	if period := GetLogArchivePeriod(); period != 1 {
-		t.Fatalf("expect default log archive period 1 but got '%d'\n", period)
-	}
-
 	redisURL := DefaultConfig.PoolConfig.RedisPoolCfg.RedisURL
 	if redisURL != "redis://redis:6379" {
 		t.Fatalf("expect redisURL '%s' but got '%s'\n", "redis://redis:6379", redisURL)
+	}
+
+	if len(DefaultConfig.LoggerConfig) != 2 {
+		t.Fatalf("expect stdout and file 2 loggers but got %d", len(DefaultConfig.LoggerConfig))
+	}
+
+	found := 0
+	for _, logger := range DefaultConfig.LoggerConfig {
+		switch logger.Kind {
+		case "stderr":
+			found++
+			if logger.LogLevel != "ERROR" {
+				t.Fatalf("expect log level 'ERROR' of '%s' logger but got '%s'\n", logger.Kind, logger.LogLevel)
+			}
+		case "file":
+			found++
+			if logger.LogLevel != "INFO" {
+				t.Fatalf("expect log level 'INFO' of '%s' logger but got '%s'\n", logger.Kind, logger.LogLevel)
+			}
+			if logger.BasePath != "/tmp/job_logs" {
+				t.Fatalf("expect log base path '/tmp/job_logs' of '%s' logger but got '%s'\n", logger.Kind, logger.BasePath)
+			}
+			if logger.ArchivePeriod != 5 {
+				t.Fatalf("expect log archive period 5 of '%s' logger but got '%d'\n", logger.Kind, logger.ArchivePeriod)
+			}
+		}
+	}
+
+	if found != 2 {
+		t.Fatalf("expect stderr and file 2 loggers but got %d", found)
+	}
+
+	// Utility functions
+	if GetServiceLogLevel() != "INFO" {
+		t.Fatalf("expect default service logger level is 'INFO' but got '%s'", GetServiceLogLevel())
+	}
+
+	if _, _, ok := GetFileLoggerSettings(); !ok {
+		t.Fatal("failed to get file logger settings")
 	}
 
 	if err := RemoveLogDir(); err != nil {
@@ -126,9 +147,7 @@ func setENV() {
 	os.Setenv("JOB_SERVICE_POOL_WORKERS", "8")
 	os.Setenv("JOB_SERVICE_POOL_REDIS_URL", "8.8.8.8:6379,100,password,0")
 	os.Setenv("JOB_SERVICE_POOL_REDIS_NAMESPACE", "ut_namespace")
-	os.Setenv("JOB_SERVICE_LOGGER_BASE_PATH", "/tmp")
-	os.Setenv("JOB_SERVICE_LOGGER_LEVEL", "DEBUG")
-	os.Setenv("JOB_SERVICE_LOGGER_ARCHIVE_PERIOD", "5")
+	os.Setenv("JOB_SERVICE_LOGGER_LEVEL", "ERROR")
 }
 
 func unsetENV() {
@@ -140,9 +159,7 @@ func unsetENV() {
 	os.Unsetenv("JOB_SERVICE_POOL_WORKERS")
 	os.Unsetenv("JOB_SERVICE_POOL_REDIS_URL")
 	os.Unsetenv("JOB_SERVICE_POOL_REDIS_NAMESPACE")
-	os.Unsetenv("JOB_SERVICE_LOGGER_BASE_PATH")
 	os.Unsetenv("JOB_SERVICE_LOGGER_LEVEL")
-	os.Unsetenv("JOB_SERVICE_LOGGER_ARCHIVE_PERIOD")
 }
 
 func CreateLogDir() error {

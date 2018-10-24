@@ -22,11 +22,18 @@ worker_pool:
     redis_url: "localhost:6379"
     namespace: "harbor_job_service"
 
-#Logger for job
+#Logger for running jobs
+job_loggers:
+  - kind: "stdout"
+    level: "ERROR"
+  - kind: "file"
+    path: "~/tmp/job_logs"
+    level: "ERROR"
+    archive_period: 5 #days
+
+#Logger for job service itself
 logger:
-  path: "~/tmp/job_logs"
-  level: "DEBUG"
-  archive_period: 1 #days
+  level: "ERROR"
 
 #Admin server endpoint
 admin_server: "http://adminserver:9010/"

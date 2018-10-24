@@ -141,7 +141,12 @@ func (c *Controller) GetJobLogData(jobID string) ([]byte, error) {
 		return nil, errors.New("empty job ID")
 	}
 
-	logPath := fmt.Sprintf("%s/%s.log", config.GetLogBasePath(), jobID)
+	logBasePath, _, ok := config.GetFileLoggerSettings()
+	if !ok {
+		return nil, errs.New(500, "retrieving file logger settings failed", "the file logger may not be configured")
+	}
+
+	logPath := fmt.Sprintf("%s/%s.log", logBasePath, jobID)
 	if !utils.FileExists(logPath) {
 		return nil, errs.NoObjectFoundError(fmt.Sprintf("%s.log", jobID))
 	}

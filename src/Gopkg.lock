@@ -169,6 +169,12 @@
   version = "v0.5.1"
 
 [[projects]]
+  name = "github.com/goharbor/harbor"
+  packages = ["tests/apitests/apilib"]
+  revision = "98bcac6c8e093bcb90702c0f218133172c870a7a"
+  version = "v1.6.1"
+
+[[projects]]
   name = "github.com/golang-migrate/migrate"
   packages = [
     ".",
@@ -243,6 +249,12 @@
   revision = "7283ca79f35edb89bc1b4ecae7f86a3680ce737f"
 
 [[projects]]
+  name = "github.com/op/go-logging"
+  packages = ["."]
+  revision = "b2cb9fa56473e98db8caba80237377e83fe44db5"
+  version = "v1"
+
+[[projects]]
   name = "github.com/opencontainers/go-digest"
   packages = ["."]
   revision = "aa2ec055abd10d26d539eb630a92241b781ce4bc"
@@ -274,6 +286,17 @@
   ]
   revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
   version = "v1.2.0"
+
+[[projects]]
+  name = "github.com/vmware/harbor"
+  packages = [
+    "src/common",
+    "src/common/models",
+    "src/common/utils",
+    "src/common/utils/log"
+  ]
+  revision = "98bcac6c8e093bcb90702c0f218133172c870a7a"
+  version = "v1.6.1"
 
 [[projects]]
   name = "golang.org/x/crypto"
@@ -360,6 +383,7 @@
 [[projects]]
   name = "k8s.io/helm"
   packages = [
+    "cmd/helm/search",
     "pkg/chartutil",
     "pkg/getter",
     "pkg/helm/environment",
@@ -381,6 +405,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f2bc787303dc9f72125800ed44f5fefed9e832183419e563183e87be26534a1c"
+  inputs-digest = "aecbd5aa389f38c30a46aef4f2e7fffc51b9e07a3ffa6553cc2fb533df0f0343"
   solver-name = "gps-cdcl"
   solver-version = 1

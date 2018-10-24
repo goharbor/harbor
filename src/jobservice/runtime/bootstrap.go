@@ -111,8 +111,12 @@ func (bs *Bootstrap) LoadAndRun() {
 	logger.Infof("Server is started at %s:%d with %s", "", config.DefaultConfig.Port, config.DefaultConfig.Protocol)
 
 	// Start outdated log files sweeper
-	logSweeper := logger.NewSweeper(ctx, config.GetLogBasePath(), config.GetLogArchivePeriod())
-	logSweeper.Start()
+	// Only file logger is set
+	baseLogPath, archivePeriod, isSet := config.GetFileLoggerSettings()
+	if isSet {
+		logSweeper := logger.NewSweeper(ctx, baseLogPath, archivePeriod)
+		logSweeper.Start()
+	}
 
 	// To indicate if any errors occurred
 	var err error

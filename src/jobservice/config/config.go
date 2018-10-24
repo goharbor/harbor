@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os/user"
 	"strconv"
 	"strings"
 
@@ -28,19 +29,17 @@ import (
 )
 
 const (
-	jobServiceProtocol            = "JOB_SERVICE_PROTOCOL"
-	jobServicePort                = "JOB_SERVICE_PORT"
-	jobServiceHTTPCert            = "JOB_SERVICE_HTTPS_CERT"
-	jobServiceHTTPKey             = "JOB_SERVICE_HTTPS_KEY"
-	jobServiceWorkerPoolBackend   = "JOB_SERVICE_POOL_BACKEND"
-	jobServiceWorkers             = "JOB_SERVICE_POOL_WORKERS"
-	jobServiceRedisURL            = "JOB_SERVICE_POOL_REDIS_URL"
-	jobServiceRedisNamespace      = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
-	jobServiceLoggerBasePath      = "JOB_SERVICE_LOGGER_BASE_PATH"
-	jobServiceLoggerLevel         = "JOB_SERVICE_LOGGER_LEVEL"
-	jobServiceLoggerArchivePeriod = "JOB_SERVICE_LOGGER_ARCHIVE_PERIOD"
-	jobServiceCoreServerEndpoint  = "CORE_URL"
-	jobServiceAuthSecret          = "JOBSERVICE_SECRET"
+	jobServiceProtocol           = "JOB_SERVICE_PROTOCOL"
+	jobServicePort               = "JOB_SERVICE_PORT"
+	jobServiceHTTPCert           = "JOB_SERVICE_HTTPS_CERT"
+	jobServiceHTTPKey            = "JOB_SERVICE_HTTPS_KEY"
+	jobServiceWorkerPoolBackend  = "JOB_SERVICE_POOL_BACKEND"
+	jobServiceWorkers            = "JOB_SERVICE_POOL_WORKERS"
+	jobServiceRedisURL           = "JOB_SERVICE_POOL_REDIS_URL"
+	jobServiceRedisNamespace     = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
+	jobServiceLoggerLevel        = "JOB_SERVICE_LOGGER_LEVEL"
+	jobServiceCoreServerEndpoint = "CORE_URL"
+	jobServiceAuthSecret         = "JOBSERVICE_SECRET"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -50,15 +49,25 @@ const (
 	// JobServicePoolBackendRedis represents redis backend
 	JobServicePoolBackendRedis = "redis"
 
-	// secret of UI
+	// Secret of UI
 	uiAuthSecret = "CORE_SECRET"
 
-	// redis protocol schema
+	// Redis protocol schema
 	redisSchema = "redis://"
+
+	// All levels
+	validLogLevels = "DEBUG,INFO,WARNING,ERROR,FATAL"
+
+	// LoggerKindStdOut : STDOUT logger
+	LoggerKindStdOut = "stdout"
+	// LoggerKindStdError : STDERR logger
+	LoggerKindStdError = "stderr"
+	// LoggerKindFile : FILE logger
+	LoggerKindFile = "file"
 )
 
 // DefaultConfig is the default configuration reference
-var DefaultConfig = &Configuration{}
+var DefaultConfig = NewConfiguration()
 
 // Configuration loads and keeps the related configuration items of job service.
 type Configuration struct {
@@ -77,7 +86,10 @@ type Configuration struct {
 	PoolConfig *PoolConfig `yaml:"worker_pool,omitempty"`
 
 	// Logger configurations
-	LoggerConfig *LoggerConfig `yaml:"logger,omitempty"`
+	LoggerConfig []*LoggerConfig `yaml:"job_loggers,omitempty"`
+
+	// Logger of job service itself
+	ServiceLogger *ServiceLoggerConfig `yaml:"logger"`
 }
 
 // HTTPSConfig keeps additional configurations when using https protocol
@@ -102,9 +114,22 @@ type PoolConfig struct {
 
 // LoggerConfig keeps logger configurations.
 type LoggerConfig struct {
-	BasePath      string `yaml:"path"`
+	Kind          string `yaml:"kind"`
+	BasePath      string `yaml:"path,omitempty"`
 	LogLevel      string `yaml:"level"`
-	ArchivePeriod uint   `yaml:"archive_period"`
+	ArchivePeriod uint   `yaml:"archive_period,omitempty"`
+}
+
+// ServiceLoggerConfig is logger settings of job service.
+type ServiceLoggerConfig struct {
+	LogLevel string `yaml:"level"`
+}
+
+// NewConfiguration is constructor of Configuration
+func NewConfiguration() *Configuration {
+	return &Configuration{
+		LoggerConfig: make([]*LoggerConfig, 0),
+	}
 }
 
 // Load the configuration options from the specified yaml file.
@@ -151,33 +176,6 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 	return c.validate()
 }
 
-// GetLogBasePath returns the log base path config
-func GetLogBasePath() string {
-	if DefaultConfig.LoggerConfig != nil {
-		return DefaultConfig.LoggerConfig.BasePath
-	}
-
-	return ""
-}
-
-// GetLogLevel returns the log level
-func GetLogLevel() string {
-	if DefaultConfig.LoggerConfig != nil {
-		return DefaultConfig.LoggerConfig.LogLevel
-	}
-
-	return ""
-}
-
-// GetLogArchivePeriod returns the archive period
-func GetLogArchivePeriod() uint {
-	if DefaultConfig.LoggerConfig != nil {
-		return DefaultConfig.LoggerConfig.ArchivePeriod
-	}
-
-	return 1 // return default
-}
-
 // GetAuthSecret get the auth secret from the env
 func GetAuthSecret() string {
 	return utils.ReadEnv(jobServiceAuthSecret)
@@ -191,6 +189,24 @@ func GetUIAuthSecret() string {
 // GetAdminServerEndpoint return the admin server endpoint
 func GetAdminServerEndpoint() string {
 	return DefaultConfig.AdminServer
+}
+
+// GetFileLoggerSettings returns the settings of the file logger
+func GetFileLoggerSettings() (string, uint, bool) {
+	if len(DefaultConfig.LoggerConfig) > 0 {
+		for _, logger := range DefaultConfig.LoggerConfig {
+			if logger.Kind == LoggerKindFile {
+				return logger.BasePath, logger.ArchivePeriod, true
+			}
+		}
+	}
+
+	return "", 0, false
+}
+
+// GetServiceLogLevel returns the log level of service logger
+func GetServiceLogLevel() string {
+	return DefaultConfig.ServiceLogger.LogLevel
 }
 
 // Load env variables
@@ -268,36 +284,17 @@ func (c *Configuration) loadEnvs() {
 		}
 	}
 
-	// logger
-	loggerPath := utils.ReadEnv(jobServiceLoggerBasePath)
-	if !utils.IsEmptyStr(loggerPath) {
-		if c.LoggerConfig == nil {
-			c.LoggerConfig = &LoggerConfig{}
-		}
-		c.LoggerConfig.BasePath = loggerPath
-	}
-	loggerLevel := utils.ReadEnv(jobServiceLoggerLevel)
-	if !utils.IsEmptyStr(loggerLevel) {
-		if c.LoggerConfig == nil {
-			c.LoggerConfig = &LoggerConfig{}
-		}
-		c.LoggerConfig.LogLevel = loggerLevel
-	}
-	archivePeriod := utils.ReadEnv(jobServiceLoggerArchivePeriod)
-	if !utils.IsEmptyStr(archivePeriod) {
-		if period, err := strconv.Atoi(archivePeriod); err == nil {
-			if c.LoggerConfig == nil {
-				c.LoggerConfig = &LoggerConfig{}
-			}
-			c.LoggerConfig.ArchivePeriod = uint(period)
-		}
-	}
-
 	// admin server
 	if coreServer := utils.ReadEnv(jobServiceCoreServerEndpoint); !utils.IsEmptyStr(coreServer) {
 		c.AdminServer = coreServer
 	}
 
+	if jsLoggerLevel := utils.ReadEnv(jobServiceLoggerLevel); !utils.IsEmptyStr(jsLoggerLevel) {
+		if c.ServiceLogger == nil {
+			c.ServiceLogger = &ServiceLoggerConfig{}
+		}
+		c.ServiceLogger.LogLevel = jsLoggerLevel
+	}
 }
 
 // Check if the configurations are valid settings.
@@ -357,26 +354,52 @@ func (c *Configuration) validate() error {
 		}
 	}
 
-	if c.LoggerConfig == nil {
+	if len(c.LoggerConfig) == 0 {
 		return errors.New("missing logger config")
 	}
 
-	if !utils.DirExists(c.LoggerConfig.BasePath) {
-		return errors.New("logger path should be an existing dir")
-	}
+	for _, loggerCfg := range c.LoggerConfig {
+		validLoggerKinds := []string{LoggerKindFile, LoggerKindStdError, LoggerKindStdOut}
+		if !strings.Contains(strings.Join(validLoggerKinds, ","), strings.Replace(loggerCfg.Kind, ",", "", -1)) {
+			return fmt.Errorf("'%s' logger is not supported, only '%v' support", loggerCfg.Kind, validLoggerKinds)
+		}
+		if !strings.Contains(validLogLevels, strings.Replace(loggerCfg.LogLevel, ",", "", -1)) {
+			return fmt.Errorf("logger level '%s' is invalid for '%s' logger, levels can only be one of: %s", loggerCfg.LogLevel, loggerCfg.Kind, validLogLevels)
+		}
 
-	validLevels := "DEBUG,INFO,WARNING,ERROR,FATAL"
-	if !strings.Contains(validLevels, c.LoggerConfig.LogLevel) {
-		return fmt.Errorf("logger level can only be one of: %s", validLevels)
-	}
+		// Extra checking for file logger
+		if loggerCfg.Kind == LoggerKindFile {
+			if strings.Contains(loggerCfg.BasePath, "~") {
+				loggerCfg.BasePath = strings.Replace(loggerCfg.BasePath, "~", userHome(), 1)
+			}
 
-	if c.LoggerConfig.ArchivePeriod == 0 {
-		return fmt.Errorf("logger archive period should be greater than 0")
+			if !utils.DirExists(loggerCfg.BasePath) {
+				return fmt.Errorf("logger path '%s' of '%s' logger should be an existing dir", loggerCfg.BasePath, loggerCfg.Kind)
+			}
+
+			if loggerCfg.ArchivePeriod == 0 {
+				return fmt.Errorf("logger archive period of '%s' logger should be greater than 0", loggerCfg.Kind)
+			}
+		}
 	}
 
 	if _, err := url.Parse(c.AdminServer); err != nil {
 		return fmt.Errorf("invalid admin server endpoint: %s", err)
 	}
 
+	if c.ServiceLogger == nil || !strings.Contains(validLogLevels, strings.Replace(c.ServiceLogger.LogLevel, ",", "", -1)) {
+		return fmt.Errorf("logger level '%s' is invalid for service logger, levels can only be one of: %s", c.ServiceLogger.LogLevel, validLogLevels)
+	}
+
 	return nil // valid
+}
+
+func userHome() string {
+	u, err := user.Current()
+	if err != nil {
+		// return the pattern
+		return "~"
+	}
+
+	return u.HomeDir
 }

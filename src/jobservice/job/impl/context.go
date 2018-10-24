@@ -26,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	jlogger "github.com/goharbor/harbor/src/jobservice/job/impl/logger"
@@ -125,11 +124,11 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 	}
 
 	// Init logger here
-	logPath := fmt.Sprintf("%s/%s.log", config.GetLogBasePath(), dep.ID)
-	jContext.logger = jlogger.New(logPath, config.GetLogLevel())
-	if jContext.logger == nil {
-		return nil, errors.New("failed to initialize job logger")
+	jobLogger, err := jlogger.New(dep.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize job logger when building job context: %s", err)
 	}
+	jContext.logger = jobLogger
 
 	if opCommandFunc, ok := dep.ExtraData["opCommandFunc"]; ok {
 		if reflect.TypeOf(opCommandFunc).Kind() == reflect.Func {

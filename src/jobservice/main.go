@@ -62,7 +62,7 @@ func main() {
 	})
 
 	// New logger for job service
-	sLogger := ilogger.NewServiceLogger(config.GetLogLevel())
+	sLogger := ilogger.NewServiceLogger(config.GetServiceLogLevel())
 	logger.SetLogger(sLogger)
 
 	// Start

@@ -17,29 +17,32 @@ package logger
 import (
 	"os"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/op/go-logging"
 )
 
 // ServiceLogger is an implementation of logger.Interface.
 // It used to log info in workerpool components.
 type ServiceLogger struct {
-	backendLogger *log.Logger
+	backendLogger *logging.Logger
 }
 
 // NewServiceLogger to create new logger for job service
 // nil might be returned
 func NewServiceLogger(level string) *ServiceLogger {
-	logLevel := parseLevel(level)
-	backendLogger := log.New(os.Stdout, log.NewTextFormatter(), logLevel)
+	stdBackend := logging.NewLogBackend(os.Stdout, "[JobService]", 0)
+	stdFormatter := logging.NewBackendFormatter(stdBackend, format)
+	stdLeveledBackend := logging.AddModuleLevel(stdFormatter)
+	stdLeveledBackend.SetLevel(parseLevel(level), moduleName)
+	logging.SetBackend(stdLeveledBackend)
 
 	return &ServiceLogger{
-		backendLogger: backendLogger,
+		backendLogger: logging.MustGetLogger(moduleName),
 	}
 }
 
 // Debug ...
 func (sl *ServiceLogger) Debug(v ...interface{}) {
-	sl.backendLogger.Debug(v...)
+	sl.backendLogger.Debug(createValueFormat(len(v)), v...)
 }
 
 // Debugf with format
@@ -49,7 +52,7 @@ func (sl *ServiceLogger) Debugf(format string, v ...interface{}) {
 
 // Info ...
 func (sl *ServiceLogger) Info(v ...interface{}) {
-	sl.backendLogger.Info(v...)
+	sl.backendLogger.Info(createValueFormat(len(v)), v...)
 }
 
 // Infof with format
@@ -59,7 +62,7 @@ func (sl *ServiceLogger) Infof(format string, v ...interface{}) {
 
 // Warning ...
 func (sl *ServiceLogger) Warning(v ...interface{}) {
-	sl.backendLogger.Warning(v...)
+	sl.backendLogger.Warning(createValueFormat(len(v)), v...)
 }
 
 // Warningf with format
@@ -69,7 +72,7 @@ func (sl *ServiceLogger) Warningf(format string, v ...interface{}) {
 
 // Error ...
 func (sl *ServiceLogger) Error(v ...interface{}) {
-	sl.backendLogger.Error(v...)
+	sl.backendLogger.Error(createValueFormat(len(v)), v...)
 }
 
 // Errorf with format
@@ -79,10 +82,10 @@ func (sl *ServiceLogger) Errorf(format string, v ...interface{}) {
 
 // Fatal error
 func (sl *ServiceLogger) Fatal(v ...interface{}) {
-	sl.backendLogger.Fatal(v...)
+	sl.backendLogger.Critical(createValueFormat(len(v)), v...)
 }
 
 // Fatalf error
 func (sl *ServiceLogger) Fatalf(format string, v ...interface{}) {
-	sl.backendLogger.Fatalf(format, v...)
+	sl.backendLogger.Critical(format, v...)
 }
