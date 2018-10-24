@@ -25,12 +25,23 @@ def _create_client(server, credential, debug):
     cfg.debug = debug
     return swagger_client.ProductsApi(swagger_client.ApiClient(cfg))
 
+def _assert_status_code(expect_code, return_code):
+    if str(return_code) != str(expect_code):
+        raise Exception(r"HTTPS status code is not {} but {}".format(expect_code, return_code))
+
 def _random_name(prefix):
     return "%s-%d" % (prefix, int(round(time.time() * 1000)))
 
 def _get_id_from_header(header):
     location = header["Location"]
     return location.split("/")[-1]
+
+def _get_string_from_unicode(udata):
+    result=''
+    for u in udata:
+        tmp = u.encode('utf8')
+        result = result + tmp.strip('\n\r\t')
+    return result
 
 class Base:
     def __init__(self, 

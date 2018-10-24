@@ -20,7 +20,7 @@ harbor_logs_bucket="harbor-ci-logs"
 # GS util
 function uploader {
    sudo gsutil cp $1 gs://$2/$1
-   sudo gsutil acl ch -u AllUsers:R gs://$2/$1 &> /dev/null
+   sudo gsutil acl ch -u AllUsers:R gs://$2/$1
 }
 
 set +e
@@ -39,7 +39,8 @@ rc=$?
 echo $rc
 
 ## --------------------------------------------- Upload Harbor CI Logs -------------------------------------------
-outfile="integration_logs_$TRAVIS_BUILD_NUMBER_$TRAVIS_COMMIT.tar.gz"
+timestamp=$(date +%s)
+outfile="integration_logs_$timestamp$TRAVIS_COMMIT.tar.gz"
 sudo tar -zcvf $outfile output.xml log.html /var/log/harbor/*
 if [ -f "$outfile" ]; then
    uploader $outfile $harbor_logs_bucket

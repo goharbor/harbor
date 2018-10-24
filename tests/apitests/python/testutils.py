@@ -1,10 +1,15 @@
 import time
 import os
 import sys
+
 sys.path.append(os.environ["SWAGGER_CLIENT_PATH"])
 from swagger_client.rest import ApiException
 import swagger_client.models
 from pprint import pprint
+
+harbor_server = os.environ["HARBOR_HOST"]
+CLIENT=dict(endpoint="https://"+harbor_server+"/api")
+
 
 def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
     
