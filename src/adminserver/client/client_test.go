@@ -69,13 +69,3 @@ func TestResetCfgs(t *testing.T) {
 		return
 	}
 }
-
-func TestCapacity(t *testing.T) {
-	capacity, err := c.Capacity()
-	if !assert.Nil(t, err, "unexpected error") {
-		return
-	}
-
-	assert.Equal(t, uint64(100), capacity.Total)
-	assert.Equal(t, uint64(90), capacity.Free)
-}

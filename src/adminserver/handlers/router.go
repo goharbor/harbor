@@ -26,7 +26,6 @@ func newRouter() http.Handler {
 	r.HandleFunc("/api/configurations", api.UpdateCfgs).Methods("PUT")
 	r.HandleFunc("/api/configs", api.ListCfgs).Methods("GET")
 	r.HandleFunc("/api/configurations/reset", api.ResetCfgs).Methods("POST")
-	r.HandleFunc("/api/systeminfo/capacity", api.Capacity).Methods("GET")
 	r.HandleFunc("/api/ping", api.Ping).Methods("GET")
 	return r
 }
