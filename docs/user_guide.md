@@ -312,7 +312,7 @@ Go into the repository and select the "Info" tab, and click the "EDIT" button.  
 
 Users  can click the "registry certificate" link to download the registry certificate.
 
-![browse project](img\download_harbor_certs.png)
+![browse project](img/download_harbor_certs.png)
 
 ###  Deleting repositories  
 
