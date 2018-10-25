@@ -104,4 +104,5 @@ export enum Roles {
 export enum ResourceType {
   REPOSITORY = 1,
   CHART_VERSION = 2,
+  REPOSITORY_TAG = 3,
 }

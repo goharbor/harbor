@@ -733,7 +733,7 @@
         "DELETE": "Delete",
         "LABEL_NAME": "Label Name",
         "COLOR": "Color",
-        "FILTER_Label_PLACEHOLDER": "Filter Labels",
+        "FILTER_LABEL_PLACEHOLDER": "Filter Labels",
         "NO_LABELS": "No labels",
         "DELETION_TITLE_TARGET": "Confirm Label Deletion",
         "DELETION_SUMMARY_TARGET": "Do you want to delete {{param}}?",

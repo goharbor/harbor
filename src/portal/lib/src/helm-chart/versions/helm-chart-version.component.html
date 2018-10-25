@@ -49,7 +49,7 @@
                     </button>
                     <clr-dropdown>
                         <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger 
-                            [disabled]="!(selectedRows.length==1)">
+                            [disabled]="!(selectedRows.length===1)">
                             <clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}
                         </button>
                         <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
@@ -69,9 +69,17 @@
 
                 <clr-dg-column>{{'HELM_CHART.MAINTAINERS' | translate }}</clr-dg-column>
                 <clr-dg-column>{{'HELM_CHART.CREATED' | translate }}</clr-dg-column>
-                <clr-dg-column>{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
+                <clr-dg-column>
+                    {{'REPOSITORY.LABELS' | translate}}
+                    <clr-dg-filter [clrDgFilter]="labelFilter">
+                        <hbr-chart-version-label-filter #labelFilter class="label-filter"
+                        [labels]="projectLabels"
+                        [resourceType]="resourceType">
+                        </hbr-chart-version-label-filter>
+                    </clr-dg-filter>
+                </clr-dg-column>
                 <clr-dg-placeholder>{{'HELM_CHART.NO_VERSION_PLACEHOLDER' | translate }}</clr-dg-placeholder>
-                <clr-dg-row *ngFor="let v of chartVersions" [clrDgItem]="v">
+                <clr-dg-row *clrDgItems="let v of chartVersions" [clrDgItem]="v">
                     <clr-dg-cell>
                         <span class="list-img">
                             <img  [src]="v.icon ?v.icon:chartDefaultIcon"  (error)="getDefaultIcon(v);" />
@@ -83,8 +91,10 @@
                     <clr-dg-cell>{{ getMaintainerString(v.maintainers) }}</clr-dg-cell>
                     <clr-dg-cell>{{ v.created | date}}</clr-dg-cell>
                     <clr-dg-cell>
-                        <hbr-label-piece *ngIf="v.labels?.length" [label]="v.labels[0]"> </hbr-label-piece>
-                        <hbr-resource-label-signpost *ngIf="v.labels?.length>1" [labels]="v.labels"></hbr-resource-label-signpost>
+                        <div>
+                            <hbr-label-piece *ngIf="v.labels?.length" [label]="v.labels[0]" [labelWidth]="130"> </hbr-label-piece>
+                            <hbr-resource-label-signpost *ngIf="v.labels?.length>1" [labels]="v.labels"></hbr-resource-label-signpost>
+                        </div>
                     </clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
