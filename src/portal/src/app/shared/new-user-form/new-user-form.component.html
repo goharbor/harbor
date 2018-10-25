@@ -4,7 +4,7 @@
             <div class="form-group form-group-override">
                 <label for="username" class="required form-group-label-override">{{'PROFILE.USER_NAME' | translate}}</label>
                 <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("username")'>
-                    <input type="text" required pattern='[^"~#$%]+' maxLengthExt="20" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="30" 
+                    <input type="text" required pattern='[^"~#$%]+' maxLengthExt="255" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="30" 
                     (input)='handleValidation("username", false)' 
                     (blur)='handleValidation("username", true)'>
                     <span class="tooltip-content">
