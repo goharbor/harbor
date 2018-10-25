@@ -28,8 +28,8 @@ func TestPatternFilterInit(t *testing.T) {
 	assert.Nil(t, pfilter.Init())
 }
 
-func TestPatternFilterGetConvertor(t *testing.T) {
-	assert.Nil(t, pfilter.GetConvertor())
+func TestPatternFilterGetConverter(t *testing.T) {
+	assert.Nil(t, pfilter.GetConverter())
 }
 
 func TestPatternFilterDoFilter(t *testing.T) {

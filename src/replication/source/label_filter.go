@@ -34,8 +34,8 @@ func (l *LabelFilter) Init() error {
 	return nil
 }
 
-// GetConvertor ...
-func (l *LabelFilter) GetConvertor() Convertor {
+// GetConverter ...
+func (l *LabelFilter) GetConverter() Converter {
 	return nil
 }
 

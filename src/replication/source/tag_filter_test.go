@@ -28,9 +28,9 @@ func TestInitOfTagFilter(t *testing.T) {
 	assert.Nil(t, filter.Init())
 }
 
-func TestGetConvertorOfTagFilter(t *testing.T) {
+func TestGetConverterOfTagFilter(t *testing.T) {
 	filter := NewTagFilter("", &registry.HarborAdaptor{})
-	assert.NotNil(t, filter.GetConvertor())
+	assert.NotNil(t, filter.GetConverter())
 }
 
 func TestDoFilterOfTagFilter(t *testing.T) {

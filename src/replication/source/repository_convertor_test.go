@@ -46,8 +46,8 @@ func TestRepositoryConvert(t *testing.T) {
 		},
 	}
 
-	convertor := NewRepositoryConvertor(&fakeRegistryAdaptor{})
-	assert.EqualValues(t, expected, convertor.Convert(items))
+	converter := NewRepositoryConverter(&fakeRegistryAdaptor{})
+	assert.EqualValues(t, expected, converter.Convert(items))
 }
 
 type fakeRegistryAdaptor struct{}

@@ -20,20 +20,20 @@ import (
 	"github.com/goharbor/harbor/src/replication/registry"
 )
 
-// RepositoryConvertor implement Convertor interface, convert projects to repositories
-type RepositoryConvertor struct {
+// RepositoryConverter implement Converter interface, convert projects to repositories
+type RepositoryConverter struct {
 	registry registry.Adaptor
 }
 
-// NewRepositoryConvertor returns an instance of RepositoryConvertor
-func NewRepositoryConvertor(registry registry.Adaptor) *RepositoryConvertor {
-	return &RepositoryConvertor{
+// NewRepositoryConverter returns an instance of RepositoryConverter
+func NewRepositoryConverter(registry registry.Adaptor) *RepositoryConverter {
+	return &RepositoryConverter{
 		registry: registry,
 	}
 }
 
 // Convert projects to repositories
-func (r *RepositoryConvertor) Convert(items []models.FilterItem) []models.FilterItem {
+func (r *RepositoryConverter) Convert(items []models.FilterItem) []models.FilterItem {
 	result := []models.FilterItem{}
 	for _, item := range items {
 		// just put it to the result list if the item is not a project

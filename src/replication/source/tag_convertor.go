@@ -20,20 +20,20 @@ import (
 	"github.com/goharbor/harbor/src/replication/registry"
 )
 
-// TagConvertor implement Convertor interface, convert repositories to tags
-type TagConvertor struct {
+// TagConverter implement Converter interface, convert repositories to tags
+type TagConverter struct {
 	registry registry.Adaptor
 }
 
-// NewTagConvertor returns an instance of TagConvertor
-func NewTagConvertor(registry registry.Adaptor) *TagConvertor {
-	return &TagConvertor{
+// NewTagConverter returns an instance of TagConverter
+func NewTagConverter(registry registry.Adaptor) *TagConverter {
+	return &TagConverter{
 		registry: registry,
 	}
 }
 
 // Convert repositories to tags
-func (t *TagConvertor) Convert(items []models.FilterItem) []models.FilterItem {
+func (t *TagConverter) Convert(items []models.FilterItem) []models.FilterItem {
 	result := []models.FilterItem{}
 	for _, item := range items {
 		if item.Kind != replication.FilterItemKindRepository {

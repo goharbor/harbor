@@ -28,9 +28,9 @@ func TestInitOfRepositoryFilter(t *testing.T) {
 	assert.Nil(t, filter.Init())
 }
 
-func TestGetConvertorOfRepositoryFilter(t *testing.T) {
+func TestGetConverterOfRepositoryFilter(t *testing.T) {
 	filter := NewRepositoryFilter("", &registry.HarborAdaptor{})
-	assert.NotNil(t, filter.GetConvertor())
+	assert.NotNil(t, filter.GetConverter())
 }
 
 func TestDoFilterOfRepositoryFilter(t *testing.T) {

@@ -27,14 +27,14 @@ import (
 // RepositoryFilter implement Filter interface to filter repository
 type RepositoryFilter struct {
 	pattern   string
-	convertor Convertor
+	converter Converter
 }
 
 // NewRepositoryFilter returns an instance of RepositoryFilter
 func NewRepositoryFilter(pattern string, registry registry.Adaptor) *RepositoryFilter {
 	return &RepositoryFilter{
 		pattern:   pattern,
-		convertor: NewRepositoryConvertor(registry),
+		converter: NewRepositoryConverter(registry),
 	}
 }
 
@@ -43,9 +43,9 @@ func (r *RepositoryFilter) Init() error {
 	return nil
 }
 
-// GetConvertor ...
-func (r *RepositoryFilter) GetConvertor() Convertor {
-	return r.convertor
+// GetConverter ...
+func (r *RepositoryFilter) GetConverter() Converter {
+	return r.converter
 }
 
 // DoFilter filters repository and image(according to the repository part) and drops any other resource types

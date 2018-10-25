@@ -37,7 +37,7 @@ func TestFilters(t *testing.T) {
 func TestDoFilter(t *testing.T) {
 	projectFilter := NewPatternFilter(replication.FilterItemKindProject, "library*")
 	repositoryFilter := NewPatternFilter(replication.FilterItemKindRepository,
-		"library/ubuntu*", &fakeRepositoryConvertor{})
+		"library/ubuntu*", &fakeRepositoryConverter{})
 	filters := []Filter{projectFilter, repositoryFilter}
 
 	items := []models.FilterItem{
@@ -61,9 +61,9 @@ func TestDoFilter(t *testing.T) {
 
 }
 
-type fakeRepositoryConvertor struct{}
+type fakeRepositoryConverter struct{}
 
-func (f *fakeRepositoryConvertor) Convert(items []models.FilterItem) []models.FilterItem {
+func (f *fakeRepositoryConverter) Convert(items []models.FilterItem) []models.FilterItem {
 	result := []models.FilterItem{}
 	for _, item := range items {
 		result = append(result, models.FilterItem{
