@@ -44,6 +44,7 @@ func StartGC(w http.ResponseWriter, r *http.Request) {
 	cmd.Stderr = &errBuf
 
 	start := time.Now()
+	log.Debugf("Start to execute garbage collection...")
 	if err := cmd.Run(); err != nil {
 		log.Errorf("Fail to execute GC: %v, command err: %s", err, errBuf.String())
 		handleInternalServerError(w)
@@ -55,4 +56,5 @@ func StartGC(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("failed to write response: %v", err)
 		return
 	}
+	log.Debugf("Successful to execute garbage collection...")
 }
