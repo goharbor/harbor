@@ -20,10 +20,19 @@ worker_pool:
     #redis://[arbitrary_username:password@]ipaddress:port/database_index
     redis_url: $redis_url
     namespace: "harbor_job_service_namespace"
-#Logger for job
+
+#Logger for running jobs
+job_loggers:
+  - kind: "stdout"
+    level: "INFO"
+  - kind: "file"
+    path: "/var/log/jobs"
+    level: "INFO"
+    archive_period: 14 #days
+
+#Logger for job service itself
 logger:
-  path: "/var/log/jobs"
   level: "INFO"
-  archive_period: 14 #days
+
 #Admin server endpoint
 admin_server: "http://adminserver:8080/"

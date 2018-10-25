@@ -61,11 +61,13 @@ func TestJobWrapper(t *testing.T) {
 		config.DefaultConfig.LoggerConfig = oldLogConfig
 	}()
 
-	config.DefaultConfig.LoggerConfig = &config.LoggerConfig{
-		LogLevel:      "debug",
+	fileLogger := &config.LoggerConfig{
+		Kind:          config.LoggerKindFile,
+		LogLevel:      "DEBUG",
 		ArchivePeriod: 1,
 		BasePath:      os.TempDir(),
 	}
+	config.DefaultConfig.LoggerConfig = []*config.LoggerConfig{fileLogger}
 	if err := wrapper.Run(j); err != nil {
 		t.Fatal(err)
 	}

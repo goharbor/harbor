@@ -62,11 +62,13 @@ func TestDefaultContext(t *testing.T) {
 		config.DefaultConfig.LoggerConfig = oldLogConfig
 	}()
 
-	config.DefaultConfig.LoggerConfig = &config.LoggerConfig{
+	fileLogger := &config.LoggerConfig{
+		Kind:          "file",
 		LogLevel:      "debug",
 		ArchivePeriod: 1,
 		BasePath:      os.TempDir(),
 	}
+	config.DefaultConfig.LoggerConfig = []*config.LoggerConfig{fileLogger}
 
 	newJobContext, err := defaultContext.Build(jobData)
 	if err != nil {

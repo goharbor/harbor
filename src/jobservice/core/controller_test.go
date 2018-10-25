@@ -15,8 +15,10 @@ package core
 
 import (
 	"errors"
+	"os"
 	"testing"
 
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 
 	"github.com/goharbor/harbor/src/jobservice/env"
@@ -140,6 +142,19 @@ func TestJobActions(t *testing.T) {
 func TestGetJobLogData(t *testing.T) {
 	pool := &fakePool{}
 	c := NewController(pool)
+
+	oldConfig := config.DefaultConfig.LoggerConfig
+	defer func() {
+		config.DefaultConfig.LoggerConfig = oldConfig
+	}()
+
+	fileLogger := &config.LoggerConfig{
+		Kind:          config.LoggerKindFile,
+		LogLevel:      "ERROR",
+		BasePath:      os.TempDir(),
+		ArchivePeriod: 5,
+	}
+	config.DefaultConfig.LoggerConfig = []*config.LoggerConfig{fileLogger}
 
 	if _, err := c.GetJobLogData("fake_ID"); err != nil {
 		if !errs.IsObjectNotFoundError(err) {
