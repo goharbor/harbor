@@ -29,9 +29,9 @@ func TestInitOfLabelFilter(t *testing.T) {
 	assert.Nil(t, filter.Init())
 }
 
-func TestGetConvertorOfLabelFilter(t *testing.T) {
+func TestGetConverterOfLabelFilter(t *testing.T) {
 	filter := NewLabelFilter(1)
-	assert.Nil(t, filter.GetConvertor())
+	assert.Nil(t, filter.GetConverter())
 }
 
 func TestDoFilterOfLabelFilter(t *testing.T) {

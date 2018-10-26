@@ -47,9 +47,9 @@ func (d *DefaultFilterChain) DoFilter(filterItems []models.FilterItem) []models.
 	}
 
 	for _, filter := range d.filters {
-		convertor := filter.GetConvertor()
-		if convertor != nil {
-			filterItems = convertor.Convert(filterItems)
+		converter := filter.GetConverter()
+		if converter != nil {
+			filterItems = converter.Convert(filterItems)
 		}
 		filterItems = filter.DoFilter(filterItems)
 	}

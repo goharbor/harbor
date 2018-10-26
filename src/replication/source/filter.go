@@ -10,8 +10,8 @@ type Filter interface {
 	// Initialize the filter
 	Init() error
 
-	// Return the convertor if existing or nil if never set
-	GetConvertor() Convertor
+	// Return the converter if existing or nil if never set
+	GetConverter() Converter
 
 	// Filter the items
 	DoFilter(filterItems []models.FilterItem) []models.FilterItem

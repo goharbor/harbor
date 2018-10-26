@@ -36,8 +36,8 @@ func (t *TagCombinationFilter) Init() error {
 	return nil
 }
 
-// GetConvertor returns the convertor
-func (t *TagCombinationFilter) GetConvertor() Convertor {
+// GetConverter returns the converter
+func (t *TagCombinationFilter) GetConverter() Converter {
 	return nil
 }
 

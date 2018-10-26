@@ -46,6 +46,6 @@ func TestTagConvert(t *testing.T) {
 		},
 	}
 
-	convertor := NewTagConvertor(&fakeRegistryAdaptor{})
-	assert.EqualValues(t, expected, convertor.Convert(items))
+	converter := NewTagConverter(&fakeRegistryAdaptor{})
+	assert.EqualValues(t, expected, converter.Convert(items))
 }

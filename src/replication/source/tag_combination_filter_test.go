@@ -28,8 +28,8 @@ func TestTagCombinationFilterInit(t *testing.T) {
 	assert.Nil(t, tcfilter.Init())
 }
 
-func TestTagCombinationFilterGetConvertor(t *testing.T) {
-	assert.Nil(t, tcfilter.GetConvertor())
+func TestTagCombinationFilterGetConverter(t *testing.T) {
+	assert.Nil(t, tcfilter.GetConverter())
 }
 
 func TestTagCombinationFilterDoFilter(t *testing.T) {

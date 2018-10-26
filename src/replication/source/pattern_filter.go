@@ -25,18 +25,18 @@ import (
 type PatternFilter struct {
 	kind      string
 	pattern   string
-	convertor Convertor
+	converter Converter
 }
 
 // NewPatternFilter returns an instance of PatternFilter
-func NewPatternFilter(kind, pattern string, convertor ...Convertor) *PatternFilter {
+func NewPatternFilter(kind, pattern string, converter ...Converter) *PatternFilter {
 	filer := &PatternFilter{
 		kind:    kind,
 		pattern: pattern,
 	}
 
-	if len(convertor) > 0 {
-		filer.convertor = convertor[0]
+	if len(converter) > 0 {
+		filer.converter = converter[0]
 	}
 
 	return filer
@@ -47,9 +47,9 @@ func (p *PatternFilter) Init() error {
 	return nil
 }
 
-// GetConvertor returns the convertor
-func (p *PatternFilter) GetConvertor() Convertor {
-	return p.convertor
+// GetConverter returns the converter
+func (p *PatternFilter) GetConverter() Converter {
+	return p.converter
 }
 
 // DoFilter filters resources
