@@ -353,7 +353,7 @@ func (ua *UserAPI) modifiable() bool {
 // validate only validate when user register
 func validate(user models.User) error {
 
-	if isIllegalLength(user.Username, 1, 20) {
+	if isIllegalLength(user.Username, 1, 255) {
 		return fmt.Errorf("username with illegal length")
 	}
 	if isContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
