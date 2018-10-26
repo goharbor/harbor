@@ -145,6 +145,19 @@ func (pe *periodicEnqueuer) enqueue() error {
 
 			// Try to save the stats of new scheduled execution (job).
 			pe.createExecution(pl.PolicyID, pl.JobName, scheduledExecutionID, epoch)
+
+			// Get web hook from the periodic job (policy)
+			webHookURL, err := pe.statsManager.GetHook(pl.PolicyID)
+			if err == nil {
+				// Register hook for the execution
+				if err := pe.statsManager.RegisterHook(scheduledExecutionID, webHookURL, false); err != nil {
+					// Just logged
+					logger.Errorf("Failed to register web hook '%s' for periodic job (execution) '%s' with error: %s", webHookURL, scheduledExecutionID, err)
+				}
+			} else {
+				// Just a warning
+				logger.Warningf("Failed to retrieve web hook for periodic job (policy) %s: %s", pl.PolicyID, err)
+			}
 		}
 		// Link the upstream job (policy) with the created executions
 		if len(executions) > 0 {
