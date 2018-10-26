@@ -35,7 +35,9 @@
 
 clr-dg-action-bar {
     clr-dropdown {
-        @include dropdown-as-action-button;
+        .btn {
+            @include dropdown-as-action-button;
+        }
     }
 }
 
