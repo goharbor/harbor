@@ -190,10 +190,7 @@ View Job Log
     [arguments]  ${job}
     Click Element  ${job_filter_search}
     Input Text  ${job_filter_input}  ${job}
-    Click Element  //clr-dg-row[contains(.,'${job}')]//a
-    Wait Until Page Contains  View Replication Job Log
-    Click Element  ${dialog_close}
-    Sleep  1
+    Click Link  //clr-dg-row[contains(.,'${job}')]//a
 
 Rename Endpoint
     [arguments]  ${name}  ${newname}
