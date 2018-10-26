@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, ViewChild, OnChanges } from '@angular/core';
+import { Component, Input, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Subscription } from "rxjs";
 
@@ -22,7 +22,7 @@ import { Configuration } from '@harbor/ui';
     templateUrl: 'config-auth.component.html',
     styleUrls: ['./config-auth.component.scss', '../config.component.scss']
 })
-export class ConfigurationAuthComponent implements OnChanges {
+export class ConfigurationAuthComponent {
     changeSub: Subscription;
     // tslint:disable-next-line:no-input-rename
     @Input('allConfig') currentConfig: Configuration = new Configuration();
@@ -30,13 +30,6 @@ export class ConfigurationAuthComponent implements OnChanges {
     @ViewChild('authConfigFrom') authForm: NgForm;
 
     constructor() { }
-    ngOnChanges(): void {
-        if ( this.currentConfig &&
-            this.currentConfig.auth_mode &&
-            this.currentConfig.auth_mode.value === 'uaa_auth') {
-            this.currentConfig.auth_mode.editable = false;
-        }
-    }
 
     get checkable() {
         return this.currentConfig &&
