@@ -29,6 +29,8 @@ import (
 	"github.com/goharbor/harbor/src/adminserver/client"
 	"github.com/goharbor/harbor/src/common"
 	comcfg "github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/config/client/db"
+	"github.com/goharbor/harbor/src/common/config/encrypt"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -52,8 +54,9 @@ var (
 	AdminserverClient client.Client
 	// GlobalProjectMgr is initialized based on the deploy mode
 	GlobalProjectMgr promgr.ProjectManager
-	mg               *comcfg.Manager
-	keyProvider      comcfg.KeyProvider
+	// mg               *comcfg.Manager
+	mg          comcfg.ManagerInterface
+	keyProvider encrypt.KeyProvider
 	// AdmiralClient is initialized only under integration deploy mode
 	// and can be passed to project manager as a parameter
 	AdmiralClient *http.Client
@@ -71,9 +74,29 @@ func Init() error {
 	if len(adminServerURL) == 0 {
 		adminServerURL = common.DefaultAdminserverEndpoint
 	}
+	return InitDBConfigManager()
+	//return InitByURL(adminServerURL)
 
-	return InitByURL(adminServerURL)
+}
 
+// InitDBConfigManager ...
+func InitDBConfigManager() error {
+	mg = db.NewCoreConfigManager()
+
+	_, err := mg.Load()
+	if err != nil {
+		return err
+	}
+	// init secret store
+	initSecretStore()
+
+	// init project manager based on deploy mode
+	if err := initProjectManager(); err != nil {
+		log.Errorf("Failed to initialise project manager, error: %v", err)
+		return err
+	}
+
+	return err
 }
 
 // InitByURL Init configurations with given url
@@ -112,7 +135,7 @@ func initKeyProvider() {
 	}
 	log.Infof("key path: %s", path)
 
-	keyProvider = comcfg.NewFileKeyProvider(path)
+	keyProvider = encrypt.NewFileKeyProvider(path)
 }
 
 func initSecretStore() {

@@ -23,6 +23,7 @@ import (
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -87,13 +88,8 @@ func main() {
 	}
 	log.Info("configurations initialization completed")
 	token.InitCreators()
-	database, err := config.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configuration: %v", err)
-	}
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
+
+	db.InitDatabaseAndConfigure()
 
 	password, err := config.InitialAdminPassword()
 	if err != nil {

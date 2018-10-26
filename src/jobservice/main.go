@@ -20,7 +20,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/adminserver/client"
+	"github.com/goharbor/harbor/src/common/config/client/remote"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
@@ -60,9 +60,11 @@ func main() {
 		if utils.IsEmptyStr(secret) {
 			return nil, errors.New("empty auth secret")
 		}
-
-		adminClient := client.NewClient(config.GetAdminServerEndpoint(), &client.Config{Secret: secret})
-		jobCtx := impl.NewContext(ctx.SystemContext, adminClient)
+		remoteClient, err := remote.NewRemoteConfigDriver(config.GetAdminServerEndpoint(), &remote.Config{Secret: secret})
+		if err != nil {
+			return nil, err
+		}
+		jobCtx := impl.NewContext(ctx.SystemContext, remoteClient)
 
 		if err := jobCtx.Init(); err != nil {
 			return nil, err
