@@ -93,6 +93,15 @@ type JobStatsManager interface {
 	//  error if meet any problems
 	RegisterHook(jobID string, hookURL string, isCached bool) error
 
+	// Get hook returns the web hook url for the specified job if it is registered
+	//
+	// jobID string   : ID of job
+	//
+	// Returns:
+	//  the web hook url if existing
+	//  non-nil error if meet any problems
+	GetHook(jobID string) (string, error)
+
 	// Mark the periodic job stats expired
 	//
 	// jobID string   : ID of job

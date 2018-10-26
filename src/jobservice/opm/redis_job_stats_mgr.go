@@ -330,6 +330,20 @@ func (rjs *RedisJobStatsManager) RegisterHook(jobID string, hookURL string, isCa
 	return nil
 }
 
+// GetHook returns the status web hook url for the specified job if existing
+func (rjs *RedisJobStatsManager) GetHook(jobID string) (string, error) {
+	if utils.IsEmptyStr(jobID) {
+		return "", errors.New("empty job ID")
+	}
+
+	// First retrieve from the cache
+	if hookURL, ok := rjs.hookStore.Get(jobID); ok {
+		return hookURL, nil
+	}
+
+	return rjs.getHook(jobID)
+}
+
 // ExpirePeriodicJobStats marks the periodic job stats expired
 func (rjs *RedisJobStatsManager) ExpirePeriodicJobStats(jobID string) error {
 	conn := rjs.redisPool.Get()
@@ -772,23 +786,15 @@ func (rjs *RedisJobStatsManager) getHook(jobID string) (string, error) {
 	defer conn.Close()
 
 	key := utils.KeyJobStats(rjs.namespace, jobID)
-	vals, err := redis.Strings(conn.Do("HGETALL", key))
+	hookURL, err := redis.String(conn.Do("HMGET", key, "status_hook"))
 	if err != nil {
+		if err == redis.ErrNil {
+			return "", fmt.Errorf("no registered web hook found for job '%s'", jobID)
+		}
 		return "", err
 	}
 
-	for i, l := 0, len(vals); i < l; i = i + 2 {
-		prop := vals[i]
-		value := vals[i+1]
-		switch prop {
-		case "status_hook":
-			return value, nil
-		default:
-			break
-		}
-	}
-
-	return "", fmt.Errorf("no hook found for job '%s'", jobID)
+	return hookURL, nil
 }
 
 func backoff(seed uint) int {
