@@ -1,5 +1,5 @@
 PORT=8080
-LOG_LEVEL=info
+LOG_LEVEL=debug
 EXT_ENDPOINT=$public_url
 AUTH_MODE=$auth_mode
 SELF_REGISTRATION=$self_registration
@@ -23,6 +23,7 @@ LDAP_GROUP_BASEDN=$ldap_group_basedn
 LDAP_GROUP_FILTER=$ldap_group_filter
 LDAP_GROUP_GID=$ldap_group_gid
 LDAP_GROUP_SCOPE=$ldap_group_scope
+LDAP_GROUP_MEMBERSHIP_ATTRIBUTE=$ldap_group_membership_attribute
 REGISTRY_URL=$registry_url
 TOKEN_SERVICE_URL=$token_service_url
 EMAIL_HOST=$email_host

@@ -94,6 +94,7 @@ var (
 		common.LDAPGroupBaseDN:        "LDAP_GROUP_BASEDN",
 		common.LDAPGroupSearchFilter:  "LDAP_GROUP_FILTER",
 		common.LDAPGroupAttributeName: "LDAP_GROUP_GID",
+                common.LDAPGroupMembershipAttribute: "LDAP_GROUP_MEMBERSHIP_ATTRIBUTE",
 		common.LDAPGroupSearchScope: &parser{
 			env:   "LDAP_GROUP_SCOPE",
 			parse: parseStringToInt,

@@ -179,6 +179,7 @@ ldap_group_basedn = rcp.get("configuration", "ldap_group_basedn")
 ldap_group_filter = rcp.get("configuration", "ldap_group_filter")
 ldap_group_gid = rcp.get("configuration", "ldap_group_gid")
 ldap_group_scope = rcp.get("configuration", "ldap_group_scope")
+ldap_group_membership_attribute =  rcp.get("configuration", "ldap_group_membership_attribute")
 db_password = rcp.get("configuration", "db_password")
 db_host = rcp.get("configuration", "db_host")
 db_user = rcp.get("configuration", "db_user")
@@ -328,6 +329,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         ldap_timeout=ldap_timeout,
         ldap_group_basedn=ldap_group_basedn,
         ldap_group_filter=ldap_group_filter,
+        ldap_group_membership_attribute=ldap_group_membership_attribute,
         ldap_group_gid=ldap_group_gid,
         ldap_group_scope=ldap_group_scope,
         ldap_group_admin_dn=ldap_group_admin_dn,

@@ -243,6 +243,10 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 	if _, ok := cfg[common.LDAPGroupAttributeName]; ok {
 		ldapGroupConf.LdapGroupNameAttribute = utils.SafeCastString(cfg[common.LDAPGroupAttributeName])
 	}
+        if _, ok := cfg[common.LDAPGroupMembershipAttribute]; ok {
+                ldapGroupConf.LdapGroupMembershipAttribute = utils.SafeCastString(cfg[common.LDAPGroupMembershipAttribute])
+        }
+
 	if _, ok := cfg[common.LDAPGroupSearchScope]; ok {
 		if scopeStr, ok := cfg[common.LDAPGroupSearchScope].(string); ok {
 			ldapGroupConf.LdapGroupSearchScope, err = strconv.Atoi(scopeStr)
