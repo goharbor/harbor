@@ -83,7 +83,13 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 	// Pass request to the controller for the follow-up.
 	jobStats, err := dh.controller.LaunchJob(jobReq)
 	if err != nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.LaunchJobError(err))
+		if errs.IsConflictError(err) {
+			// Conflict error
+			dh.handleError(w, req, http.StatusConflict, err)
+		} else {
+			// General error
+			dh.handleError(w, req, http.StatusInternalServerError, errs.LaunchJobError(err))
+		}
 		return
 	}
 

@@ -17,6 +17,7 @@ package errs
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 const (
@@ -50,6 +51,8 @@ const (
 	NoObjectFoundErrorCode
 	// UnAuthorizedErrorCode is code for the error of unauthorized accessing
 	UnAuthorizedErrorCode
+	// ResourceConflictsErrorCode is code for the error of resource conflicting
+	ResourceConflictsErrorCode
 )
 
 // baseError ...
@@ -183,6 +186,22 @@ func NoObjectFoundError(object string) error {
 	}
 }
 
+// conflictError is designed for the case of resource conflicting
+type conflictError struct {
+	baseError
+}
+
+// ConflictError is error for the case of resource conflicting
+func ConflictError(object string) error {
+	return conflictError{
+		baseError{
+			Code:        ResourceConflictsErrorCode,
+			Err:         "conflict",
+			Description: fmt.Sprintf("the submitting resource is conflicted with existing one %s", object),
+		},
+	}
+}
+
 // IsJobStoppedError return true if the error is jobStoppedError
 func IsJobStoppedError(err error) bool {
 	_, ok := err.(jobStoppedError)
@@ -198,5 +217,11 @@ func IsJobCancelledError(err error) bool {
 // IsObjectNotFoundError return true if the error is objectNotFoundError
 func IsObjectNotFoundError(err error) bool {
 	_, ok := err.(objectNotFoundError)
+	return ok
+}
+
+// IsConflictError returns true if the error is conflictError
+func IsConflictError(err error) bool {
+	_, ok := err.(conflictError)
 	return ok
 }
