@@ -4,7 +4,7 @@
   <span [hidden]="originScheduleType!==SCHEDULE_TYPE.WEEKLY">{{'SCHEDULE.ON' | translate}}</span>
   <span [hidden]="originScheduleType!==SCHEDULE_TYPE.WEEKLY">{{originWeekDay.text | translate}}</span>
   <span [hidden]="originScheduleType===SCHEDULE_TYPE.NONE">{{'SCHEDULE.AT' | translate}}</span>
-  <span [hidden]="originScheduleType===SCHEDULE_TYPE.NONE">{{originOffTime.text}}</span>
+  <span [hidden]="originScheduleType===SCHEDULE_TYPE.NONE">{{originOffTime.text}} AM</span>
   <button class="btn btn-outline btn-sm"  (click)="editSchedule()">{{'BUTTON.EDIT' | translate}}</button>
 </div>
 <div class="setting-wrapper flex-layout" *ngIf="isEditMode">
