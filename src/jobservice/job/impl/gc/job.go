@@ -25,6 +25,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/registryctl"
+	"github.com/goharbor/harbor/src/common/utils"
 	reg "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -35,13 +36,15 @@ const (
 	dialConnectionTimeout = 30 * time.Second
 	dialReadTimeout       = time.Minute + 10*time.Second
 	dialWriteTimeout      = 10 * time.Second
+	blobPrefix            = "blobs::*"
+	repoPrefix            = "repository::*"
 )
 
 // GarbageCollector is the struct to run registry's garbage collection
 type GarbageCollector struct {
 	registryCtlClient client.Client
 	logger            logger.Interface
-	uiclient          *common_http.Client
+	coreclient        *common_http.Client
 	CoreURL           string
 	insecure          bool
 	redisURL          string
@@ -67,10 +70,16 @@ func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{
 	if err := gc.init(ctx, params); err != nil {
 		return err
 	}
-	if err := gc.readonly(true); err != nil {
+	readOnlyCur, err := gc.getReadOnly()
+	if err != nil {
 		return err
 	}
-	defer gc.readonly(false)
+	if readOnlyCur != true {
+		if err := gc.setReadOnly(true); err != nil {
+			return err
+		}
+		defer gc.setReadOnly(readOnlyCur)
+	}
 	if err := gc.registryCtlClient.Health(); err != nil {
 		gc.logger.Errorf("failed to start gc as registry controller is unreachable: %v", err)
 		return err
@@ -95,7 +104,7 @@ func (gc *GarbageCollector) init(ctx env.JobContext, params map[string]interface
 	gc.logger = ctx.GetLogger()
 	cred := auth.NewSecretAuthorizer(os.Getenv("JOBSERVICE_SECRET"))
 	gc.insecure = false
-	gc.uiclient = common_http.NewClient(&http.Client{
+	gc.coreclient = common_http.NewClient(&http.Client{
 		Transport: reg.GetHTTPTransport(gc.insecure),
 	}, cred)
 	errTpl := "Failed to get required property: %s"
@@ -108,8 +117,16 @@ func (gc *GarbageCollector) init(ctx env.JobContext, params map[string]interface
 	return nil
 }
 
-func (gc *GarbageCollector) readonly(switcher bool) error {
-	if err := gc.uiclient.Put(fmt.Sprintf("%s/api/configurations", gc.CoreURL), struct {
+func (gc *GarbageCollector) getReadOnly() (bool, error) {
+	cfgs := map[string]interface{}{}
+	if err := gc.coreclient.Get(fmt.Sprintf("%s/api/configs", gc.CoreURL), &cfgs); err != nil {
+		return false, err
+	}
+	return utils.SafeCastBool(cfgs[common.ReadOnly]), nil
+}
+
+func (gc *GarbageCollector) setReadOnly(switcher bool) error {
+	if err := gc.coreclient.Put(fmt.Sprintf("%s/api/configurations", gc.CoreURL), struct {
 		ReadOnly bool `json:"read_only"`
 	}{
 		ReadOnly: switcher,
@@ -139,11 +156,51 @@ func (gc *GarbageCollector) cleanCache() error {
 	defer con.Close()
 
 	// clean all keys in registry redis DB.
-	_, err = con.Do("FLUSHDB")
+
+	// sample of keys in registry redis:
+	// 1) "blobs::sha256:1a6fd470b9ce10849be79e99529a88371dff60c60aab424c077007f6979b4812"
+	// 2) "repository::library/hello-world::blobs::sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f"
+	err = delKeys(con, blobPrefix)
 	if err != nil {
-		gc.logger.Errorf("failed to clean registry cache %v", err)
+		gc.logger.Errorf("failed to clean registry cache %v, pattern blobs::*", err)
+		return err
+	}
+	err = delKeys(con, repoPrefix)
+	if err != nil {
+		gc.logger.Errorf("failed to clean registry cache %v, pattern repository::*", err)
 		return err
 	}
 
+	return nil
+}
+
+func delKeys(con redis.Conn, pattern string) error {
+	iter := 0
+	keys := []string{}
+	for {
+		arr, err := redis.Values(con.Do("SCAN", iter, "MATCH", pattern))
+		if err != nil {
+			return fmt.Errorf("error retrieving '%s' keys", pattern)
+		}
+		iter, err = redis.Int(arr[0], nil)
+		if err != nil {
+			return fmt.Errorf("unexpected type for Int, got type %T", err)
+		}
+		k, err := redis.Strings(arr[1], nil)
+		if err != nil {
+			return fmt.Errorf("converts an array command reply to a []string %v", err)
+		}
+		keys = append(keys, k...)
+
+		if iter == 0 {
+			break
+		}
+	}
+	for _, key := range keys {
+		_, err := con.Do("DEL", key)
+		if err != nil {
+			return fmt.Errorf("failed to clean registry cache %v", err)
+		}
+	}
 	return nil
 }
