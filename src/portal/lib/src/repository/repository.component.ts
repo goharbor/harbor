@@ -36,6 +36,7 @@ const TabLinkContentMap: {[index: string]: string} = {
 export class RepositoryComponent implements OnInit {
   signedCon: {[key: string]: any | string[]} = {};
   @Input() projectId: number;
+  @Input() memberRoleID: number;
   @Input() repoName: string;
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
