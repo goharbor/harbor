@@ -1,10 +1,14 @@
 @mixin icon-span {
-    width: 12px;
-    min-height: 12px;
+    width: 16px;
+    height: 16px;
 
     clr-icon {
-        margin-bottom: 12px;
+        margin-bottom: 3px;
     }
+}
+
+@mixin flex-item {
+    display: inline-block;
 }
 
 .filter-div {
@@ -21,16 +25,27 @@
         padding-left: 12px;
         padding-right: 12px;
 
-        .unmark-label-span {
+        .mark-label-div {
             @include icon-span();
-            float: right;
-        }
-
-        .mark-label-span {
-            @include icon-span();
+            @include flex-item();
             float: left;
             margin-right: 9px;
         }
-    }
 
+        .spinner {
+            @include flex-item();
+        }
+
+        .label-div {
+            @include flex-item();
+
+            margin-top: 4px;
+        }
+
+        .unmark-label-div {
+            @include icon-span();
+            @include flex-item();
+            float: right;
+        }
+    }
 }
