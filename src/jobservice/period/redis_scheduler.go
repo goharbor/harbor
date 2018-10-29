@@ -120,8 +120,9 @@ func (rps *RedisPeriodicScheduler) Schedule(jobName string, params models.Parame
 	// Check existing
 	// If existing, treat as a succeed submitting and return the exitsing id
 	if score, ok := rps.exists(string(rawJSON)); ok {
-		id, err := rps.getIDByScore(score)
-		return id, 0, err
+		// Ignore error
+		id, _ := rps.getIDByScore(score)
+		return "", 0, errs.ConflictError(id)
 	}
 
 	uuid, score := utils.MakePeriodicPolicyUUID()
