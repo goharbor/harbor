@@ -51,7 +51,7 @@
     },
     "TOOLTIP": {
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
-        "USER_NAME": "不能包含特殊字符且长度不能超过80。",
+        "USER_NAME": "不能包含特殊字符且长度不能超过255。",
         "FULL_NAME": "长度不能超过20。",
         "COMMENT": "长度不能超过20。",
         "CURRENT_PWD": "当前密码为必填项。",

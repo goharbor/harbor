@@ -51,7 +51,7 @@
     },
     "TOOLTIP": {
         "EMAIL": "Email should be a valid email address like name@example.com.",
-        "USER_NAME": "Cannot contain special characters and maximum length should be 80 characters.",
+        "USER_NAME": "Cannot contain special characters and maximum length should be 255 characters.",
         "FULL_NAME": "Maximum length should be 20 characters.",
         "COMMENT": "Length of comment should be less than 20 characters.",
         "CURRENT_PWD": "Current password is required.",

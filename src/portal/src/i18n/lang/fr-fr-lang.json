@@ -40,7 +40,7 @@
     },
     "TOOLTIP": {
         "EMAIL": "L'email doit être une adresse email valide comme name@example.com.",
-        "USER_NAME": "Ne peut pas contenir de caractères spéciaux et la longueur maximale doit être de 20 caractères.",
+        "USER_NAME": "Ne peut pas contenir de caractères spéciaux et la longueur maximale doit être de 255 caractères.",
         "FULL_NAME": "La longueur maximale doit être de 20 caractères.",
         "COMMENT": "La longueur des commentaires doit être inférieure à 20 caractères.",
         "CURRENT_PWD": "Le mot de passe actuel est requis.",
