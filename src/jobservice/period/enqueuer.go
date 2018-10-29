@@ -15,6 +15,7 @@
 package period
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"time"
@@ -77,6 +78,8 @@ func (pe *periodicEnqueuer) loop() {
 		if err != nil {
 			logger.Errorf("periodic_enqueuer.loop.enqueue:%s\n", err)
 		}
+	} else {
+		logger.Debug("Enqueue condition not matched, do nothing.")
 	}
 
 	for {
@@ -91,6 +94,8 @@ func (pe *periodicEnqueuer) loop() {
 				if err != nil {
 					logger.Errorf("periodic_enqueuer.loop.enqueue:%s\n", err)
 				}
+			} else {
+				logger.Debug("Enqueue condition not matched, do nothing.")
 			}
 		}
 	}
@@ -98,11 +103,31 @@ func (pe *periodicEnqueuer) loop() {
 
 func (pe *periodicEnqueuer) enqueue() error {
 	now := time.Now().Unix()
-	nowTime := time.Unix(now, 0)
-	horizon := nowTime.Add(periodicEnqueuerHorizon)
 
 	conn := pe.pool.Get()
 	defer conn.Close()
+
+	// Set last periodic enqueue timestamp in advance to avoid duplicated enqueue actions
+	if _, err := conn.Do("SET", utils.RedisKeyLastPeriodicEnqueue(pe.namespace), now); err != nil {
+		return err
+	}
+
+	// Avoid schedule in the same time.
+	lockerKey := fmt.Sprintf("%s:%s", utils.KeyPeriod(pe.namespace), "lock")
+	lockerID := utils.MakeIdentifier()
+
+	// Acquire a locker with 30s expiring time
+	if err := acquireLock(conn, lockerKey, lockerID, 30); err != nil {
+		return err
+	}
+	defer func() {
+		if err := releaseLock(conn, lockerKey, lockerID); err != nil {
+			logger.Errorf("release enqueue locker failed: %s", err)
+		}
+	}()
+
+	nowTime := time.Unix(now, 0)
+	horizon := nowTime.Add(periodicEnqueuerHorizon)
 
 	for _, pl := range pe.policyStore.list() {
 		schedule, err := cron.Parse(pl.CronSpec)
@@ -134,6 +159,16 @@ func (pe *periodicEnqueuer) enqueue() error {
 			rawJSON, err := utils.SerializeJob(job)
 			if err != nil {
 				return err
+			}
+
+			// Place the time slots for the job (policy)
+			// If the slot is already there, error will be returned.
+			expireTime := (epoch - nowTime.Unix()) + 5
+			slot := fmt.Sprintf("%s:%s@%d", utils.KeyPeriodicJobTimeSlots(pe.namespace), pl.PolicyID, epoch)
+			if err := placeSlot(conn, slot, epoch, expireTime); err != nil {
+				// Logged and continue
+				logger.Errorf("Failed to place time slot '%s@%d': %s", pl.PolicyID, epoch, err)
+				continue
 			}
 
 			_, err = conn.Do("ZADD", utils.RedisKeyScheduled(pe.namespace), epoch, rawJSON)
@@ -171,9 +206,7 @@ func (pe *periodicEnqueuer) enqueue() error {
 		conn.Do("HMSET", utils.KeyJobStats(pe.namespace, pl.PolicyID), "status", job.JobStatusScheduled, "update_time", time.Now().Unix())
 	}
 
-	_, err := conn.Do("SET", utils.RedisKeyLastPeriodicEnqueue(pe.namespace), now)
-
-	return err
+	return nil
 }
 
 func (pe *periodicEnqueuer) createExecution(upstreamJobID, upstreamJobName, executionID string, runAt int64) {
@@ -207,4 +240,36 @@ func (pe *periodicEnqueuer) shouldEnqueue() bool {
 	}
 
 	return lastEnqueue < (time.Now().Unix() - int64(periodicEnqueuerSleep/time.Minute))
+}
+
+func placeSlot(conn redis.Conn, key string, value interface{}, expireTime int64) error {
+	args := []interface{}{key, value, "NX", "EX", expireTime}
+	res, err := conn.Do("SET", args...)
+	if err != nil {
+		return err
+	}
+	// Existing, the value can not be overrid
+	if res == nil {
+		return fmt.Errorf("key %s is already set with value %v", key, value)
+	}
+
+	return nil
+}
+
+func acquireLock(conn redis.Conn, lockerKey string, lockerID string, expireTime int64) error {
+	return placeSlot(conn, lockerKey, lockerID, expireTime)
+}
+
+func releaseLock(conn redis.Conn, lockerKey string, lockerID string) error {
+	theID, err := redis.String(conn.Do("GET", lockerKey))
+	if err != nil {
+		return err
+	}
+
+	if theID == lockerID {
+		_, err := conn.Do("DEL", lockerKey)
+		return err
+	}
+
+	return errors.New("locker ID mismatch")
 }

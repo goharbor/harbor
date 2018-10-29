@@ -60,10 +60,18 @@ func TestEnqueue(t *testing.T) {
 		t.Error(err)
 	}
 
+	if err := clear(ns); err != nil {
+		t.Error(err)
+	}
+}
+
+func clear(ns string) error {
 	err := tests.Clear(utils.RedisKeyScheduled(ns), redisPool.Get())
 	err = tests.Clear(utils.KeyJobStats(ns, "fake_ID"), redisPool.Get())
 	err = tests.Clear(utils.RedisKeyLastPeriodicEnqueue(ns), redisPool.Get())
 	if err != nil {
-		t.Error(err)
+		return err
 	}
+
+	return nil
 }

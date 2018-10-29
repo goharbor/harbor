@@ -58,6 +58,11 @@ func KeyPeriodicPolicyScore(namespace string) string {
 	return fmt.Sprintf("%s:%s", KeyPeriod(namespace), "key_score")
 }
 
+// KeyPeriodicJobTimeSlots returns the key of the time slots of scheduled jobs.
+func KeyPeriodicJobTimeSlots(namespace string) string {
+	return fmt.Sprintf("%s:%s", KeyPeriod(namespace), "scheduled_slots")
+}
+
 // KeyPeriodicNotification returns the key of periodic pub/sub channel.
 func KeyPeriodicNotification(namespace string) string {
 	return fmt.Sprintf("%s:%s", KeyPeriodicPolicy(namespace), "notifications")

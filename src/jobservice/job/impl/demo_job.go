@@ -20,11 +20,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/job"
-
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/errs"
-	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/opm"
 )
 
@@ -102,7 +99,7 @@ func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error 
 		return errs.JobStoppedError()
 	}
 
-	fmt.Println("Launch sub job")
+	/*fmt.Println("Launch sub job")
 	jobParams := make(map[string]interface{})
 	jobParams["image"] = "demo:1.7"
 	subDemoJob := models.JobRequest{
@@ -115,15 +112,14 @@ func (dj *DemoJob) Run(ctx env.JobContext, params map[string]interface{}) error 
 		},
 	}
 
-	for i := 0; i < 5; i++ {
-		subJob, err := ctx.LaunchJob(subDemoJob)
-		if err != nil {
-			fmt.Printf("Create sub job failed with error: %s\n", err)
-			logger.Error(err)
-		}
-
-		fmt.Printf("Sub job: %v", subJob)
+	subJob, err := ctx.LaunchJob(subDemoJob)
+	if err != nil {
+		fmt.Printf("Create sub job failed with error: %s\n", err)
+		logger.Error(err)
+		return
 	}
+
+	fmt.Printf("Sub job: %v", subJob)*/
 
 	fmt.Println("I'm close to end")
 
