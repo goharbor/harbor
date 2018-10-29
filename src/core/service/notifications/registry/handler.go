@@ -158,23 +158,27 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 			continue
 		}
 
-		// pull and push manifest by docker-client or vic
-		if (strings.HasPrefix(event.Request.UserAgent, "docker") || strings.HasPrefix(event.Request.UserAgent, vicPrefix)) &&
-			(event.Action == "pull" || event.Action == "push") {
+		if checkEvent(&event) {
 			events = append(events, &event)
-			log.Debugf("add event to collect: %s", event.ID)
-			continue
-		}
-
-		// push manifest by docker-client or job-service
-		if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) == "harbor-registry-client" && event.Action == "push" {
-			events = append(events, &event)
-			log.Debugf("add event to collect: %s", event.ID)
+			log.Debugf("add event to collection: %s", event.ID)
 			continue
 		}
 	}
 
 	return events, nil
+}
+
+func checkEvent(event *models.Event) bool {
+	// pull and push manifest by docker-client or vic or jib
+	if (strings.HasPrefix(event.Request.UserAgent, "docker") || strings.HasPrefix(event.Request.UserAgent, vicPrefix) || strings.HasPrefix(event.Request.UserAgent, "jib")) &&
+		(event.Action == "pull" || event.Action == "push") {
+		return true
+	}
+	// push manifest by docker-client or job-service
+	if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) == "harbor-registry-client" && event.Action == "push" {
+		return true
+	}
+	return false
 }
 
 func autoScanEnabled(project *models.Project) bool {
