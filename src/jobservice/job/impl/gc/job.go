@@ -78,8 +78,8 @@ func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{
 		if err := gc.setReadOnly(true); err != nil {
 			return err
 		}
+		defer gc.setReadOnly(readOnlyCur)
 	}
-	defer gc.setReadOnly(readOnlyCur)
 	if err := gc.registryCtlClient.Health(); err != nil {
 		gc.logger.Errorf("failed to start gc as registry controller is unreachable: %v", err)
 		return err
@@ -182,7 +182,7 @@ func delKeys(con redis.Conn, pattern string) error {
 		if err != nil {
 			return fmt.Errorf("error retrieving '%s' keys", pattern)
 		}
-		iter, err := redis.Int(arr[0], nil)
+		iter, err = redis.Int(arr[0], nil)
 		if err != nil {
 			return fmt.Errorf("unexpected type for Int, got type %T", err)
 		}
