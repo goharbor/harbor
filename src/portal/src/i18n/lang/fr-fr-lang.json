@@ -449,7 +449,8 @@
         "ADD_LABELS": "Add labels",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
-        "ADDITIONAL_INFO": "Add Additional Info"
+        "ADDITIONAL_INFO": "Add Additional Info",
+        "MARKDOWN": "Styling with Markdown is supported"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",

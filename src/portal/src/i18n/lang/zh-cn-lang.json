@@ -472,7 +472,8 @@
         "FILTER_BY_LABEL": "过滤标签",
         "ACTION": "操作",
         "DEPLOY": "部署",
-        "ADDITIONAL_INFO": "添加信息"
+        "ADDITIONAL_INFO": "添加信息",
+        "MARKDOWN": "支持使用Markdown进行样式设置"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
