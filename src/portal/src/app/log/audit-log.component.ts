@@ -41,13 +41,18 @@ class FilterOption {
   }
 }
 
+export class SearchOption {
+  startTime: string = "";
+  endTime: string = "";
+}
+
 @Component({
   selector: 'audit-log',
   templateUrl: './audit-log.component.html',
   styleUrls: ['./audit-log.component.scss']
 })
 export class AuditLogComponent implements OnInit {
-
+  search: SearchOption = new SearchOption();
   currentUser: SessionUser;
   projectId: number;
   queryParam: AuditLog = new AuditLog();
@@ -69,17 +74,6 @@ export class AuditLogComponent implements OnInit {
   totalRecordCount = 0;
   currentPage = 1;
   totalPage = 0;
-
-  @ViewChild('fromTime') fromTimeInput: NgModel;
-  @ViewChild('toTime') toTimeInput: NgModel;
-
-  get fromTimeInvalid(): boolean {
-    return this.fromTimeInput.errors && this.fromTimeInput.errors.dateValidator && (this.fromTimeInput.dirty || this.fromTimeInput.touched);
-  }
-
-  get toTimeInvalid(): boolean {
-    return this.toTimeInput.errors && this.toTimeInput.errors.dateValidator && (this.toTimeInput.dirty || this.toTimeInput.touched);
-  }
 
   get showPaginationIndex(): boolean {
     return this.totalRecordCount > 0;
@@ -125,30 +119,13 @@ export class AuditLogComponent implements OnInit {
     this.retrieve();
   }
 
-  convertDate(strDate: string): string {
-    if (/^(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d$/.test(strDate)) {
-      let parts = strDate.split(/[-\/]/);
-      strDate = parts[2] /*Year*/ + '-' + parts[1] /*Month*/ + '-' + parts[0] /*Date*/;
-    }
-    return strDate;
-  }
-
-  doSearchByStartTime(strDate: string): void {
-    this.queryParam.begin_timestamp = 0;
-    if (this.fromTimeInput.valid && strDate) {
-      strDate = this.convertDate(strDate);
-      this.queryParam.begin_timestamp = new Date(strDate).getTime() / 1000;
-    }
+doSearchByStartTime(fromTimestamp: string): void {
+    this.queryParam.begin_timestamp = fromTimestamp;
     this.retrieve();
   }
 
-  doSearchByEndTime(strDate: string): void {
-    this.queryParam.end_timestamp = 0;
-    if (this.toTimeInput.valid && strDate) {
-      strDate = this.convertDate(strDate);
-      let oneDayOffset = 3600 * 24;
-      this.queryParam.end_timestamp = new Date(strDate).getTime() / 1000 + oneDayOffset;
-    }
+  doSearchByEndTime(toTimestamp: string): void {
+    this.queryParam.end_timestamp = toTimestamp;
     this.retrieve();
   }
 

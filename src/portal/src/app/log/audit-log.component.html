@@ -9,7 +9,7 @@
                 </span>
             </div>
         </div>
-        <div class="row flex-items-xs-right option-right" [hidden]="currentOption === 0">
+        <div class="row flex-items-xs-right row-right" [hidden]="currentOption === 0">
             <clr-dropdown>
                 <button class="btn btn-link" clrDropdownToggle>
                     {{'AUDIT_LOG.OPERATIONS' | translate}}
@@ -24,20 +24,8 @@
                 </clr-dropdown-menu>
             </clr-dropdown>
             <div class="flex-xs-middle">
-                <clr-icon shape="date"></clr-icon>
-                <label for="fromDateInput" aria-haspopup="true" role="tooltip" [class.invalid]="fromTimeInvalid" class="tooltip tooltip-validation invalid tooltip-sm">
-            <input id="fromDateInput" type="date" #fromTime="ngModel" name="from" [(ngModel)]="queryParam.fromTime" dateValidator placeholder="dd/mm/yyyy" (change)="doSearchByStartTime(fromTime.value)">
-            <span *ngIf="fromTimeInvalid" class="tooltip-content">
-               {{'AUDIT_LOG.INVALID_DATE' | translate }}
-            </span>
-          </label>
-                <clr-icon shape="date"></clr-icon>
-                <label for="toDateInput" aria-haspopup="true" role="tooltip" [class.invalid]="toTimeInvalid" class="tooltip tooltip-validation invalid tooltip-sm">
-            <input id="toDateInput" type="date" #toTime="ngModel" name="to" [(ngModel)]="queryParam.toTime" dateValidator placeholder="dd/mm/yyyy" (change)="doSearchByEndTime(toTime.value)">
-            <span *ngIf="toTimeInvalid" class="tooltip-content">
-               {{'AUDIT_LOG.INVALID_DATE' | translate }}
-            </span>
-          </label>
+                <hbr-datetime [dateInput]="search.startTime" (search)="doSearchByStartTime($event)"></hbr-datetime>
+                <hbr-datetime [dateInput]="search.endTime" [oneDayOffset]="true" (search)="doSearchByEndTime($event)"></hbr-datetime>
             </div>
         </div>
     </div>
