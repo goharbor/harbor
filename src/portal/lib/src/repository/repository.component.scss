@@ -47,6 +47,12 @@
 #info-edit-button {
   margin-top: 0px;
   margin-bottom: 12px;
+  font-size: 12px;
+  .markdown {
+    width: 20px;
+    margin-right: 10px;
+    margin-left: 10px;
+  }
 }
 
 #images-container {
