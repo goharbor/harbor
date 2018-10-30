@@ -11,23 +11,31 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, Input, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
-import { Configuration } from '@harbor/ui';
-
+import { Configuration, clone, isEmpty, getChanges, StringValueItem} from '@harbor/ui';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import { confirmUnsavedChanges} from '../config.msg.utils';
+import { ConfigurationService } from '../config.service';
+const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 @Component({
     selector: 'config-email',
     templateUrl: "config-email.component.html",
     styleUrls: ['./config-email.component.scss', '../config.component.scss']
 })
-export class ConfigurationEmailComponent {
+export class ConfigurationEmailComponent implements OnChanges {
     // tslint:disable-next-line:no-input-rename
     @Input("mailConfig") currentConfig: Configuration = new Configuration();
-
+    private originalConfig: Configuration;
+    testingMailOnGoing = false;
+    onGoing = false;
     @ViewChild("mailConfigFrom") mailForm: NgForm;
 
-    constructor() { }
+    constructor(
+        private msgHandler: MessageHandlerService,
+        private configService: ConfigurationService) {
+    }
 
     disabled(prop: any): boolean {
         return !(prop && prop.editable);
@@ -39,5 +47,147 @@ export class ConfigurationEmailComponent {
 
     public isValid(): boolean {
         return this.mailForm && this.mailForm.valid;
+    }
+
+    public hasChanges(): boolean {
+        return  !isEmpty(this.getChanges());
+    }
+
+    public hasUnsavedChanges(allChanges: any) {
+        for (let prop in allChanges) {
+            if (prop.startsWith('email_')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public getChanges() {
+        let allChanges = getChanges(this.originalConfig, this.currentConfig);
+        let changes = {};
+        for (let prop in allChanges) {
+            if (prop.startsWith('email_')) {
+                changes[prop] = allChanges[prop];
+            }
+        }
+        return changes;
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes && changes["currentConfig"]) {
+            this.originalConfig = clone(this.currentConfig);
+        }
+    }
+
+       /**
+     *
+     * Test the connection of specified mail server
+     *
+     *
+     * @memberOf ConfigurationComponent
+     */
+    public testMailServer(): void {
+        if (this.testingMailOnGoing) {
+            return; // Should not come here
+        }
+        let mailSettings = {};
+        for (let prop in this.currentConfig) {
+            if (prop.startsWith('email_')) {
+                mailSettings[prop] = this.currentConfig[prop].value;
+            }
+        }
+        // Confirm port is number
+        mailSettings['email_port'] = +mailSettings['email_port'];
+        let allChanges = this.getChanges();
+        let password = allChanges['email_password'];
+        if (password) {
+            mailSettings['email_password'] = password;
+        } else {
+            delete mailSettings['email_password'];
+        }
+
+        this.testingMailOnGoing = true;
+        this.configService.testMailServer(mailSettings)
+            .then(response => {
+                this.testingMailOnGoing = false;
+                this.msgHandler.showSuccess('CONFIG.TEST_MAIL_SUCCESS');
+            })
+            .catch(error => {
+                this.testingMailOnGoing = false;
+                let err = error._body;
+                if (!err) {
+                    err = 'UNKNOWN';
+                }
+                this.msgHandler.showError('CONFIG.TEST_MAIL_FAILED', { 'param': err });
+            });
+    }
+
+    public get hideMailTestingSpinner(): boolean {
+        return !this.testingMailOnGoing;
+    }
+
+    public isMailConfigValid(): boolean {
+        return this.isValid() &&
+            !this.testingMailOnGoing;
+    }
+
+    /**
+     *
+     * Save the changed values
+     *
+     * @memberOf ConfigurationComponent
+     */
+    public save(): void {
+        let changes = this.getChanges();
+        if (!isEmpty(changes)) {
+            this.onGoing = true;
+            this.configService.saveConfiguration(changes)
+                .then(response => {
+                    this.onGoing = false;
+                    this.retrieveConfig();
+                    this.msgHandler.showSuccess('CONFIG.SAVE_SUCCESS');
+                })
+                .catch(error => {
+                    this.onGoing = false;
+                    this.msgHandler.handleError(error);
+                });
+        } else {
+            // Inprop situation, should not come here
+            console.error('Save abort because nothing changed');
+        }
+    }
+
+    retrieveConfig(): void {
+        this.onGoing = true;
+        this.configService.getConfiguration()
+            .then((configurations: Configuration) => {
+                this.onGoing = false;
+
+                // Add two password fields
+                configurations.email_password = new StringValueItem(fakePass, true);
+                this.currentConfig = configurations;
+                // Keep the original copy of the data
+                this.originalConfig = clone(configurations);
+            })
+            .catch(error => {
+                this.onGoing = false;
+                this.msgHandler.handleError(error);
+            });
+    }
+
+    /**
+     *
+     * Discard current changes if have and reset
+     *
+     * @memberOf ConfigurationComponent
+     */
+    public cancel(): void {
+        let changes = this.getChanges();
+        if (!isEmpty(changes)) {
+            confirmUnsavedChanges(changes);
+        } else {
+            // Invalid situation, should not come here
+            console.error('Nothing changed');
+        }
     }
 }

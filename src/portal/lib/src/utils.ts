@@ -295,6 +295,10 @@ export function clone(srcObj: any): any {
     return JSON.parse(JSON.stringify(srcObj));
 }
 
+export function isEmpty(obj: any): boolean {
+    return !obj || JSON.stringify(obj) === '{}';
+}
+
 export function downloadFile(fileData) {
     let url = window.URL.createObjectURL(fileData.data);
         let a = document.createElement("a");
@@ -305,4 +309,29 @@ export function downloadFile(fileData) {
         a.click();
         window.URL.revokeObjectURL(url);
         a.remove();
+}
+
+export function getChanges(original: any, afterChange: any): { [key: string]: any | any[] } {
+    let changes: { [key: string]: any | any[] } = {};
+    if (!afterChange || !original) {
+        return changes;
+    }
+    for (let prop of Object.keys(afterChange)) {
+        let field = original[prop];
+        if (field && field.editable) {
+            if (!compareValue(field.value, afterChange[prop].value)) {
+                changes[prop] = afterChange[prop].value;
+                // Number
+                if (typeof field.value === 'number') {
+                    changes[prop] = +changes[prop];
+                }
+
+                // Trim string value
+                if (typeof field.value === 'string') {
+                    changes[prop] = ('' + changes[prop]).trim();
+                }
+            }
+        }
+    }
+    return changes;
 }
