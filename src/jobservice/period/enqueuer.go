@@ -101,6 +101,8 @@ func (pe *periodicEnqueuer) enqueue() error {
 	nowTime := time.Unix(now, 0)
 	horizon := nowTime.Add(periodicEnqueuerHorizon)
 
+	logger.Debugf("Periodic enqueuing loop: %d", now)
+
 	conn := pe.pool.Get()
 	defer conn.Close()
 

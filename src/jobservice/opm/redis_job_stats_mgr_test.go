@@ -90,7 +90,7 @@ func TestCommand(t *testing.T) {
 	defer mgr.Shutdown()
 	<-time.After(200 * time.Millisecond)
 
-	if err := mgr.SendCommand("fake_job_ID", CtlCommandStop); err != nil {
+	if err := mgr.SendCommand("fake_job_ID", CtlCommandStop, true); err != nil {
 		t.Fatal(err)
 	}
 
