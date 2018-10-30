@@ -28,8 +28,8 @@
           </span>
         </div>
       </div>
-      <div class="row flex-items-xs-right option-right" [hidden]="currentJobSearchOption === 0">
-        <div class="select" style="float: left;">
+      <div class="row flex-items-xs-right row-right" [hidden]="currentJobSearchOption === 0">
+        <div class="select select-status">
           <select (change)="doFilterJobStatus($event)">
             <option *ngFor="let j of jobStatus" value="{{j.key}}" [selected]="currentJobStatus.key === j.key">{{j.description | translate}}</option>
           </select>

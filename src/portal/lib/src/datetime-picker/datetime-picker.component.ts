@@ -10,7 +10,8 @@ import { NgModel } from "@angular/forms";
 
 @Component({
   selector: "hbr-datetime",
-  templateUrl: "./datetime-picker.component.html"
+  templateUrl: "./datetime-picker.component.html",
+  styleUrls: ["./datetime-picker.component.scss"]
 })
 export class DatePickerComponent implements OnChanges {
   @Input() dateInput: string;
@@ -41,7 +42,7 @@ export class DatePickerComponent implements OnChanges {
     ) {
       let parts = strDate.split(/[-\/]/);
       strDate =
-        parts[2] /*Year*/ + "-" + parts[1] /*Month*/ + "-" + parts[0] /*Date*/;
+        parts[2] /*Year*/ + "-" + parts[0] /*Month*/+ "-" + parts[1] /*Date*/;
     }
     return strDate;
   }
