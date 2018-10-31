@@ -478,7 +478,8 @@
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info",
-        "REPO_NAME": "Repository"
+        "REPO_NAME": "Repository",
+        "MARKDOWN": "Styling with Markdown is supported"
     },
     "HELM_CHART": {
         "HELMCHARTS": "Charts",
