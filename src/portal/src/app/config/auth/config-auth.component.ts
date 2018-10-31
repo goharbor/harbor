@@ -196,19 +196,6 @@ export class ConfigurationAuthComponent implements OnChanges {
         }
     }
 
-    public hasUnsavedChanges(allChanges: any) {
-        for (let prop in allChanges) {
-            if (prop.startsWith('ldap_')
-            || prop.startsWith('uaa_')
-            || prop === 'auth_mode'
-            || prop === 'project_creattion_restriction'
-            || prop === 'self_registration') {
-                return true;
-            }
-        }
-        return false;
-    }
-
     retrieveConfig(): void {
         this.onGoing = true;
         this.configService.getConfiguration()

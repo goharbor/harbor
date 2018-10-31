@@ -20,7 +20,6 @@ import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
 import { confirmUnsavedChanges} from './config.msg.utils';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
-import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
 import { AppConfigService } from '../app-config.service';
@@ -91,33 +90,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return TabLinkContentMap[this.currentTabId] === contentId;
     }
 
-    hasUnsavedChangesOfCurrentTab(allChanges: any): boolean {
-        if (isEmpty(allChanges)) {
-            return false;
-        }
-
-        let properties = [];
-        switch (this.currentTabId) {
-            case 'config-auth':
-                return this.authConfig.hasUnsavedChanges(allChanges);
-            case 'config-email':
-                return this.mailConfig.hasUnsavedChanges(allChanges);
-            case 'config-replication':
-                properties = ['verify_remote_cert'];
-                break;
-            case 'config-system':
-                return this.systemSettingsConfig.hasUnsavedChanges(allChanges);
-        }
-
-        for (let prop in allChanges) {
-            if (properties.indexOf(prop) !== -1) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     ngOnInit(): void {
         // First load
         // Double confirm the current use has admin role
@@ -159,15 +131,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
 
     public tabLinkClick(tabLink: string) {
-        let allChanges = getChanges(this.originalCopy, this.allConfig);
-        // Whether has unsaved changes in current tab
-        let hasChanges = this.hasUnsavedChangesOfCurrentTab(allChanges);
-        if (!hasChanges) {
-            this.currentTabId = tabLink;
-            return;
-        }
-
-        this.confirmUnsavedTabChanges(allChanges, tabLink);
+        this.currentTabId = tabLink;
     }
 
     public getSystemChanges() {
@@ -239,21 +203,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     public get hideBtn(): boolean {
         return this.currentTabId !== 'config-system';
-    }
-
-    confirmUnsavedTabChanges(changes: any, tabId: string) {
-        let msg = new ConfirmationMessage(
-            'CONFIG.CONFIRM_TITLE',
-            'CONFIG.CONFIRM_SUMMARY',
-            '',
-            {
-                'changes': changes,
-                'tabId': tabId
-            },
-            ConfirmationTargets.CONFIG_TAB
-        );
-
-        this.confirmService.openComfirmDialog(msg);
     }
 
     retrieveConfig(): void {
