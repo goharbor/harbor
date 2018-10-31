@@ -38,6 +38,25 @@ export class SystemSettingsComponent {
         return this.systemSettingsForm && this.systemSettingsForm.valid;
     }
 
+    public hasUnsavedChanges(allChanges: any): boolean {
+        for (let prop in allChanges) {
+            if (prop === 'token_expiration' || prop === 'read_only') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public getSystemChanges(allChanges: any) {
+        let changes = {};
+        for (let prop in allChanges) {
+            if (prop === 'token_expiration' || prop === 'read_only') {
+                changes[prop] = allChanges[prop];
+            }
+        }
+        return changes;
+    }
+
     setRepoReadOnlyValue($event: any) {
         this.systemSettings.read_only.value = $event;
     }
