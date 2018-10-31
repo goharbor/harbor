@@ -28,6 +28,7 @@ import { Project } from '../../project/project';
 export class TagRepositoryComponent implements OnInit {
 
   projectId: number;
+  projectMemberRoleId: number;
   repoName: string;
   hasProjectAdminRole: boolean = false;
   isGuest: boolean;
@@ -54,6 +55,7 @@ export class TagRepositoryComponent implements OnInit {
     if (resolverData) {
       this.hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
       this.isGuest = (<Project>resolverData['projectResolver']).current_user_role_id === 3;
+      this.projectMemberRoleId = (<Project>resolverData['projectResolver']).current_user_role_id;
     }
     this.repoName = this.route.snapshot.params['repo'];
 

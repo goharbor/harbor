@@ -30,9 +30,9 @@ import { TagService, RetagService, VulnerabilitySeverity, RequestQueryParams } f
 import { ErrorHandler } from "../error-handler/error-handler";
 import { ChannelService } from "../channel/index";
 import {
-  ConfirmationTargets,
-  ConfirmationState,
-  ConfirmationButtons
+    ConfirmationTargets,
+    ConfirmationState,
+    ConfirmationButtons, Roles
 } from "../shared/shared.const";
 
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
@@ -73,6 +73,7 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   signedCon: {[key: string]: any | string[]} = {};
   @Input() projectId: number;
+  @Input() memberRoleID: number;
   @Input() repoName: string;
   @Input() isEmbedded: boolean;
 
@@ -754,5 +755,9 @@ export class TagComponent implements OnInit, AfterViewInit {
   // pull command
   onCpError($event: any): void {
       this.copyInput.setPullCommendShow();
+  }
+
+  public get developerRoleOrAbove(): boolean {
+      return this.memberRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
   }
 }
