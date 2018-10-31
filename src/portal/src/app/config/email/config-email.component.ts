@@ -53,15 +53,6 @@ export class ConfigurationEmailComponent implements OnChanges {
         return  !isEmpty(this.getChanges());
     }
 
-    public hasUnsavedChanges(allChanges: any) {
-        for (let prop in allChanges) {
-            if (prop.startsWith('email_')) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public getChanges() {
         let allChanges = getChanges(this.originalConfig, this.currentConfig);
         let changes = {};
