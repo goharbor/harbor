@@ -29,7 +29,7 @@ docker build -f $TEMP/Dockerfile.binary -t clair-golang $TEMP
 
 echo 'copy the clair binary to local...'
 ID=$(docker create clair-golang)
-docker cp $ID:/go/bin/clair binary
+docker cp $ID:/go/src/github.com/coreos/clair/clair binary
 
 docker rm -f $ID
 docker rmi -f clair-golang
