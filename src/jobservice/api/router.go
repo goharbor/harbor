@@ -63,13 +63,16 @@ func NewBaseRouter(handler Handler, authenticator Authenticator) Router {
 
 // ServeHTTP is the implementation of Router interface.
 func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	// Do auth
-	if err := br.authenticator.DoAuth(req); err != nil {
-		authErr := errs.UnauthorizedError(err)
-		logger.Errorf("Serve http request '%s %s' failed with error: %s", req.Method, req.URL.String(), authErr.Error())
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(authErr.Error()))
-		return
+	// No auth required for /stats as it is a health check endpoint
+	// Do auth for other services
+	if req.URL.String() != fmt.Sprintf("%s/%s/stats", baseRoute, apiVersion) {
+		if err := br.authenticator.DoAuth(req); err != nil {
+			authErr := errs.UnauthorizedError(err)
+			logger.Errorf("Serve http request '%s %s' failed with error: %s", req.Method, req.URL.String(), authErr.Error())
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte(authErr.Error()))
+			return
+		}
 	}
 
 	// Directly pass requests to the server mux.
