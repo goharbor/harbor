@@ -16,6 +16,9 @@ package opm
 
 import "github.com/goharbor/harbor/src/jobservice/models"
 
+// Range for list scope defining
+type Range int
+
 // JobStatsManager defines the methods to handle stats of job.
 type JobStatsManager interface {
 	// Start to serve
@@ -55,10 +58,11 @@ type JobStatsManager interface {
 	//
 	// jobID string   : ID of the being retried job
 	// command string : the command applied to the job like stop/cancel
+	// isCached bool  : to indicate if only cache the op command
 	//
 	// Returns:
 	//  error if it was not successfully sent
-	SendCommand(jobID string, command string) error
+	SendCommand(jobID string, command string, isCached bool) error
 
 	// CtlCommand checks if control command is fired for the specified job.
 	//
@@ -122,9 +126,12 @@ type JobStatsManager interface {
 	// Get all the executions (IDs) fro the specified upstream Job.
 	//
 	// upstreamJobID string: ID of the upstream job
-	//
+	// ranges      ...Range: Define the start and end for the list, e.g:
+	//   0, 10 means [0:10]
+	//   10 means [10:]
+	//   empty means [0:-1]==all
 	// Returns:
 	//  the ID list of the executions if no error occurred
 	//  or a non-nil error is returned
-	GetExecutions(upstreamJobID string) ([]string, error)
+	GetExecutions(upstreamJobID string, ranges ...Range) ([]string, error)
 }

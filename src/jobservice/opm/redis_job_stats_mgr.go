@@ -44,7 +44,7 @@ const (
 	opPersistExecutions    = "persist_executions"
 	opUpdateStats          = "update_job_stats"
 	maxFails               = 3
-	jobStatsDataExpireTime = 60 * 60 * 24 * 7 // one week
+	jobStatsDataExpireTime = 60 * 60 * 24 * 5 // 5 days
 
 	// CtlCommandStop : command stop
 	CtlCommandStop = "stop"
@@ -249,7 +249,7 @@ func (rjs *RedisJobStatsManager) loop() {
 }
 
 // SendCommand for the specified job
-func (rjs *RedisJobStatsManager) SendCommand(jobID string, command string) error {
+func (rjs *RedisJobStatsManager) SendCommand(jobID string, command string, isCached bool) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
 	}
@@ -258,8 +258,11 @@ func (rjs *RedisJobStatsManager) SendCommand(jobID string, command string) error
 		return errors.New("unknown command")
 	}
 
-	if err := rjs.opCommands.Fire(jobID, command); err != nil {
-		return err
+	if !isCached {
+		// Let other interested parties awareness
+		if err := rjs.opCommands.Fire(jobID, command); err != nil {
+			return err
+		}
 	}
 
 	// Directly add to op commands maintaining list
@@ -341,7 +344,16 @@ func (rjs *RedisJobStatsManager) GetHook(jobID string) (string, error) {
 		return hookURL, nil
 	}
 
-	return rjs.getHook(jobID)
+	// Not hit in cache! Get it from the backend.
+	hookURL, err := rjs.getHook(jobID)
+	if err != nil {
+		return "", err
+	}
+
+	// Cache and return
+	rjs.hookStore.Add(jobID, hookURL)
+
+	return hookURL, nil
 }
 
 // ExpirePeriodicJobStats marks the periodic job stats expired
@@ -379,7 +391,7 @@ func (rjs *RedisJobStatsManager) AttachExecution(upstreamJobID string, execution
 }
 
 // GetExecutions returns the existing executions (IDs) for the specified job.
-func (rjs *RedisJobStatsManager) GetExecutions(upstreamJobID string) ([]string, error) {
+func (rjs *RedisJobStatsManager) GetExecutions(upstreamJobID string, ranges ...Range) ([]string, error) {
 	if len(upstreamJobID) == 0 {
 		return nil, errors.New("no upstream ID specified")
 	}
@@ -387,8 +399,16 @@ func (rjs *RedisJobStatsManager) GetExecutions(upstreamJobID string) ([]string, 
 	conn := rjs.redisPool.Get()
 	defer conn.Close()
 
+	var start, end interface{} = "-inf", "+inf"
+	if len(ranges) >= 1 {
+		start = int(ranges[0])
+	}
+	if len(ranges) > 1 {
+		end = int(ranges[1])
+	}
+
 	key := utils.KeyUpstreamJobAndExecutions(rjs.namespace, upstreamJobID)
-	ids, err := redis.Strings(conn.Do("ZRANGE", key, 0, -1))
+	ids, err := redis.Strings(conn.Do("ZRANGEBYSCORE", key, start, end))
 	if err != nil {
 		if err == redis.ErrNil {
 			return []string{}, nil
@@ -786,7 +806,7 @@ func (rjs *RedisJobStatsManager) getHook(jobID string) (string, error) {
 	defer conn.Close()
 
 	key := utils.KeyJobStats(rjs.namespace, jobID)
-	hookURL, err := redis.String(conn.Do("HMGET", key, "status_hook"))
+	hookURL, err := redis.String(conn.Do("HGET", key, "status_hook"))
 	if err != nil {
 		if err == redis.ErrNil {
 			return "", fmt.Errorf("no registered web hook found for job '%s'", jobID)
