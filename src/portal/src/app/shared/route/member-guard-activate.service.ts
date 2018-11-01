@@ -35,9 +35,12 @@ export class MemberGuard implements CanActivate, CanActivateChild {
     return new Promise((resolve, reject) => {
       let user = this.sessionService.getCurrentUser();
       if (user === null) {
-        this.sessionService.retrieveUser().then(currentUser => {
-          return resolve(this.checkMemberStatus(state.url, projectId));
-        }).catch(err => resolve(true));
+        this.sessionService.retrieveUser()
+        .then(() => resolve(this.checkMemberStatus(state.url, projectId)))
+        .catch(() => {
+          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+          resolve(false);
+        });
       } else {
         return resolve(this.checkMemberStatus(state.url, projectId));
       }
@@ -47,25 +50,24 @@ export class MemberGuard implements CanActivate, CanActivateChild {
   checkMemberStatus(url: string, projectId: number): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       this.projectService.checkProjectMember(projectId)
-          .subscribe(
-          res => {
-            this.sessionService.setProjectMembers(res);
+      .subscribe(res => {
+        this.sessionService.setProjectMembers(res);
+        return resolve(true);
+      },
+      () => {
+        // Add exception for repository in project detail router activation.
+        this.projectService.getProject(projectId).subscribe(project => {
+          if (project.public === 1) {
             return resolve(true);
-          },
-          error => {
-            // Add exception for repository in project detail router activation.
-            if (url.endsWith('repository')) {
-              return resolve(true);
-            }
-            this.projectService.getProject(projectId)
-                .subscribe(project => {
-                  if (project.public === 1) {
-                    return resolve(true);
-                  }
-                  this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-                  return resolve(false);
-                });
-          });
+          }
+          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+          return resolve(false);
+        },
+        () => {
+          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+          return resolve(false);
+        });
+      });
     });
   }
 
