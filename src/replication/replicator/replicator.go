@@ -89,17 +89,13 @@ func (d *DefaultReplicator) Replicate(replication *Replication) error {
 			}
 
 			if operation == common_models.RepOpTransfer {
-				url, err := config.ExtEndpoint()
-				if err != nil {
-					return err
-				}
 				job.Name = common_job.ImageTransfer
 				job.Parameters = map[string]interface{}{
 					"repository":            repository,
 					"tags":                  tags,
-					"src_registry_url":      url,
-					"src_registry_insecure": true,
-					// "src_token_service_url":"",
+					"src_registry_url":      config.InternalCoreURL(),
+					"src_registry_insecure": false,
+					"src_token_service_url": config.InternalTokenServiceEndpoint(),
 					"dst_registry_url":      target.URL,
 					"dst_registry_insecure": target.Insecure,
 					"dst_registry_username": target.Username,
