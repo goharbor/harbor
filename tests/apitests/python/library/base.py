@@ -33,8 +33,11 @@ def _random_name(prefix):
     return "%s-%d" % (prefix, int(round(time.time() * 1000)))
 
 def _get_id_from_header(header):
-    location = header["Location"]
-    return location.split("/")[-1]
+    try:
+        location = header["Location"]
+        return location.split("/")[-1]
+    except Exception:
+        return None
 
 def _get_string_from_unicode(udata):
     result=''

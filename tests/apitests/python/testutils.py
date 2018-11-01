@@ -9,7 +9,8 @@ from pprint import pprint
 
 harbor_server = os.environ["HARBOR_HOST"]
 CLIENT=dict(endpoint="https://"+harbor_server+"/api")
-
+USER_ROLE=dict(admin=0,normal=1)
+TEARDOWN = True
 
 def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
     
