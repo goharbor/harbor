@@ -38,7 +38,7 @@ Init LDAP
     Sleep  1
     Capture Page Screenshot
     Disable Ldap Verify Cert Checkbox
-    Click Element  xpath=${config_save_button_xpath}
+    Click Element  xpath=${config_auth_save_button_xpath}
     Sleep  2
     Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[3]
     Sleep  1
@@ -99,7 +99,7 @@ Set Pro Create Admin Only
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="adminonly"]
     Sleep  1
-    Click Element  xpath=${config_save_button_xpath}
+    Click Element  xpath=${config_system_button_xpath}
     Capture Page Screenshot  AdminCreateOnly.png
 
 Set Pro Create Every One
@@ -111,7 +111,7 @@ Set Pro Create Every One
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="everyone"]
     Sleep  1	
-    Click Element  xpath=${config_save_button_xpath}
+    Click Element  xpath=${config_system_save_button_xpath}
     Sleep  2
     Capture Page Screenshot  EveryoneCreate.png
 
@@ -121,7 +121,7 @@ Disable Self Reg
     Mouse Up  xpath=${self_reg_xpath}
     Sleep  1
     Self Reg Should Be Disabled
-    Click Element  xpath=${config_save_button_xpath}
+    Click Element  xpath=${config_auth_save_button_xpath}
     Capture Page Screenshot  DisableSelfReg.png
     Sleep  1
 
@@ -130,7 +130,7 @@ Enable Self Reg
     Mouse Up  xpath=${self_reg_xpath}
     Sleep  1
     Self Reg Should Be Enabled
-    Click Element  xpath=${config_save_button_xpath}
+    Click Element  xpath=${config_auth_save_button_xpath}
     Capture Page Screenshot  EnableSelfReg.png
     Sleep  1
 
@@ -154,7 +154,7 @@ Switch To System Settings
 Modify Token Expiration
     [Arguments]  ${minutes}
     Input Text  xpath=//*[@id="tokenExpiration"]  ${minutes}
-    Click Button  xpath=${config_save_button_xpath} 
+    Click Button  xpath=${config_system_save_button_xpath} 
     Sleep  1
 
 Token Must Be Match
@@ -197,7 +197,7 @@ Config Email
     Mouse Down  xpath=//*[@id="clr-checkbox-emailInsecure"]
     Mouse Up  xpath=//*[@id="clr-checkbox-emailInsecure"]
     Sleep  1
-    Click Element  xpath=${config_save_button_xpath}
+    Click Element  xpath=${config_email_save_button_xpath}
     Sleep  6
 
 Verify Email
@@ -212,13 +212,13 @@ Set Scan All To None
     click element  //vulnerability-config//select
     click element  //vulnerability-config//select/option[@value='none']
     sleep  1
-    click element  ${config_save_button_xpath}
+    click element  ${vulnerbility_save_button_xpath}
 
 Set Scan All To Daily
     click element  //vulnerability-config//select
     click element  //vulnerability-config//select/option[@value='daily']
     sleep  1
-    click element  ${config_save_button_xpath}
+    click element  ${vulnerbility_save_button_xpath}
 
 Click Scan Now
     click element  //vulnerability-config//button[contains(.,'SCAN')]

@@ -50,7 +50,7 @@
     </div>
 </div>
 <div>
-    <button type="button" class="btn btn-primary" (click)="save()" [hidden]="hideBtn" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
+    <button type="button" id="config_system_save" class="btn btn-primary" (click)="save()" [hidden]="hideBtn" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
     <button type="button" class="btn btn-outline" (click)="cancel()" [hidden]="hideBtn" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
 
 </div>
