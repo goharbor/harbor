@@ -23,7 +23,7 @@ import { enLang } from '../shared/shared.const';
 import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "./shared.utils";
 
 const signInUrl = '/c/login';
-const currentUserEndpint = "/api/users/current";
+const currentUserEndpoint = "/api/users/current";
 const signOffEndpoint = "/c/log_out";
 const accountEndpoint = "/api/users/:id";
 const langEndpoint = "/language";
@@ -84,7 +84,7 @@ export class SessionService {
      * @memberOf SessionService
      */
     retrieveUser(): Promise<SessionUser> {
-        return this.http.get(currentUserEndpint, HTTP_GET_OPTIONS).toPromise()
+        return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS).toPromise()
             .then(response => this.currentUser = response.json() as SessionUser)
             .catch(error => this.handleError(error));
     }
