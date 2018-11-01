@@ -60,7 +60,7 @@
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(canScanNow(selectedRow) && selectedRow.length==1)" (click)="scanNow(selectedRow)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)" ><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
           <clr-dropdown *ngIf="!withAdmiral">
-            <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1) || isGuest" (click)="addLabels(selectedRow)" ><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
+            <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1 && developerRoleOrAbove)" (click)="addLabels(selectedRow)" ><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
             <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
             <div style='display:grid'>
               <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
