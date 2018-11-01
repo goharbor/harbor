@@ -1,12 +1,12 @@
 from __future__ import absolute_import
-import os
-import sys
+
+
 import unittest
 
 from library.base import _assert_status_code
 from testutils import CLIENT
 from testutils import harbor_server
-from testutils import USER_ROLE
+
 from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
@@ -20,17 +20,17 @@ class TestProjects(unittest.TestCase):
 
         user = User()
         self.user= user
-          
+
         repo = Repository()
         self.repo= repo
-        pass
+
 
     @classmethod
     def tearDownClass(self):
-        pass
+
 
     @unittest.skipIf(TEARDOWN == False, "Test data should be remain in the harbor.")
-    def test02ClearData(self):
+    def test_ClearData(self):
         #1. Delete project(PA);
         self.project.delete_project(TestProjects.project_001_id, **TestProjects.USER_001_CLIENT)
 
@@ -38,9 +38,9 @@ class TestProjects(unittest.TestCase):
         self.user.delete_user(TestProjects.user_001_id, **TestProjects.ADMIN_CLIENT)
         pass
 
-    def test01DelRepo(self):
+    def testDelRepo(self):
         """
-        Test case: 
+        Test case:
             Delete a repository
         Test step & Expectation:
             1. Create a new user(UA);
@@ -68,7 +68,7 @@ class TestProjects(unittest.TestCase):
         project_001_name, TestProjects.project_001_id = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_001_CLIENT)
 
         #3. Create a new repository(RA) in project(PA) by user(UA);
-        repo_name, tag = self.repo.create_repository(project_001_name, registry = harbor_server)
+        repo_name, _ = self.repo.create_repository(project_001_name, registry = harbor_server)
 
         #4. Get repository in project(PA), there should be one repository which was created by user(UA);
         repo_data = self.repo.get_repository(TestProjects.project_001_id, **TestProjects.USER_001_CLIENT)

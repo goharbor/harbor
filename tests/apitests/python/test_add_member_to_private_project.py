@@ -40,7 +40,7 @@ class TestProjects(unittest.TestCase):
         #1. Create user-001
         user_001_id, user_001_name = self.user.create_user(user_password = user_001_password, **ADMIN_CLIENT)
         self.assertNotEqual(user_001_id, None, msg="Failed to create user, return user is {}".format(user_001_id))
-        
+
         USER_001_CLIENT=dict(endpoint = url, username = user_001_name, password = user_001_password)
 
         #2. Create private project-001

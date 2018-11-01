@@ -45,15 +45,15 @@ class Repository(base.Base):
         client = self._get_client(**kwargs)
         data, status_code, _ = client.repositories_get_with_http_info(project_id)
         base._assert_status_code(200, status_code)
-        return data       
+        return data
 
     def add_label_to_tag(self, repo_name, tag, label_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         label = swagger_client.Label(id=label_id)
-        data, status_code, _ = client.repositories_repo_name_tags_tag_labels_post_with_http_info(repo_name, tag, label)
+        _, status_code, _ = client.repositories_repo_name_tags_tag_labels_post_with_http_info(repo_name, tag, label)
         base._assert_status_code(expect_status_code, status_code)
 
-    def create_repository(self, project_name, registry = None, username = None, password = None, tag = None, image = None):      
+    def create_repository(self, project_name, registry = None, username = None, password = None, tag = None, image = None):
         _registry = '127.0.0.1'
         _username = 'admin'
         _password ='Harbor12345'
@@ -84,13 +84,15 @@ class Repository(base.Base):
 
         return r'{}/{}'.format(project_name, _image), new_tag
 
-    def docker_login(self, registry, username, password):
+    @classmethod
+    def docker_login(registry, username, password):
         try:
             Repository.DCLIENT.login(registry = registry, username=username, password=password)
         except docker.errors.APIError, e:
-            raise Exception(r" Docker login failed, error is [{}]".format (e.message))        
+            raise Exception(r" Docker login failed, error is [{}]".format (e.message))
 
-    def docker_image_pull(self, image, tag = None):
+    @classmethod
+    def docker_image_pull(image, tag = None):
         _tag = "latest"
         if tag is not None:
             _tag = tag
@@ -101,10 +103,11 @@ class Repository(base.Base):
         except docker.errors.APIError, e:
             raise Exception(r" Docker pull image {} failed, error is [{}]".format (image, e.message))
 
-    def docker_image_tag(self, image, harbor_registry, tag = None):
+    @classmethod
+    def docker_image_tag(image, harbor_registry, tag = None):
         _tag = base._random_name("tag")
         if tag is not None:
-            _tag = tag        
+            _tag = tag
         try:
             tag_ret = Repository.DCLIENT.tag(image, harbor_registry, _tag, force=True)
             print "tag_ret:", tag_ret
@@ -112,7 +115,8 @@ class Repository(base.Base):
         except docker.errors.APIError, e:
             raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, e.message))
 
-    def docker_image_push(self, harbor_registry, tag):
+    @classmethod
+    def docker_image_push(harbor_registry, tag):
         try:
             push_ret = base._get_string_from_unicode(Repository.DCLIENT.push(harbor_registry, tag, stream=True))
             print "push_ret:", push_ret

@@ -1,12 +1,8 @@
 from __future__ import absolute_import
-import os
-import sys
 import unittest
 
-from library.base import _assert_status_code
 from testutils import CLIENT
 from testutils import harbor_server
-from testutils import USER_ROLE
 from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
@@ -27,10 +23,9 @@ class TestProjects(unittest.TestCase):
 
         label = Label()
         self.label= label
-        pass
+
     @classmethod
     def tearDown(self):
-        pass
 
     @unittest.skipIf(TEARDOWN == False, "Test data should be remain in the harbor.")
     def test_ClearData(self):
@@ -44,12 +39,12 @@ class TestProjects(unittest.TestCase):
         self.user.delete_user(TestProjects.user_001_id, **TestProjects.ADMIN_CLIENT)
 
         #4. Delete label(LA).
-        self.label.delete_label(TestProjects.label_id, **TestProjects.ADMIN_CLIENT)        
+        self.label.delete_label(TestProjects.label_id, **TestProjects.ADMIN_CLIENT)
         pass
 
     def testAddSysLabelToRepo(self):
         """
-        Test case: 
+        Test case:
             Delete a repository
         Test step & Expectation:
             1. Create a new user(UA);
@@ -73,7 +68,7 @@ class TestProjects(unittest.TestCase):
 
         #1. Create user-001
         TestProjects.user_001_id, user_001_name = self.user.create_user_success(user_password = user_001_password, **TestProjects.ADMIN_CLIENT)
-        
+
         TestProjects.USER_001_CLIENT=dict(endpoint = url, username = user_001_name, password = user_001_password)
 
         #2. Create private project-001
@@ -83,7 +78,7 @@ class TestProjects(unittest.TestCase):
         self.project.add_project_members(TestProjects.project_001_id, TestProjects.user_001_id, **TestProjects.ADMIN_CLIENT)
 
         #4. Get private project of uesr-001, uesr-001 can see only one private project which is project-001
-        self.project.projects_should_exist(dict(public=False), expected_count = 1, 
+        self.project.projects_should_exist(dict(public=False), expected_count = 1,
             expected_project_id = TestProjects.project_001_id, **TestProjects.USER_001_CLIENT)
 
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
