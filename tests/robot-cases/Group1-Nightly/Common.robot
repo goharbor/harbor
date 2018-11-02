@@ -593,19 +593,6 @@ Test Case - Manual Scan All
     Summary Chart Should Display  latest
     Close Browser
 
-Test Case - Scan Image On Push
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Goto Project Config
-    Enable Scan On Push
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
-    Back To Projects
-    Go Into Project  library
-    Go Into Repo  memcached
-    Summary Chart Should Display  latest
-    Close Browser
-
 Test Case - View Scan Results
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
@@ -695,3 +682,17 @@ Test Case - Admin Push Signed Image
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  sha256
+
+Test Case - Admin Push Signed Image
+    Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Goto Project Config
+    Enable Scan On Push
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
+    Back To Projects
+    Go Into Project  library
+    Go Into Repo  memcached
+    Summary Chart Should Display  latest
+    Close Browser
