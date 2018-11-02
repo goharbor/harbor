@@ -99,7 +99,7 @@ Set Pro Create Admin Only
     Click Element  xpath=//select[@id="proCreation"]
     Click Element  xpath=//select[@id="proCreation"]//option[@value="adminonly"]
     Sleep  1
-    Click Element  xpath=${config_system_button_xpath}
+    Click Element  xpath=${config_system_save_button_xpath}
     Capture Page Screenshot  AdminCreateOnly.png
 
 Set Pro Create Every One
