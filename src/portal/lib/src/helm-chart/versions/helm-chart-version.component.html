@@ -49,7 +49,7 @@
                     </button>
                     <clr-dropdown>
                         <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger 
-                            [disabled]="!(selectedRows.length===1)">
+                            [disabled]="!(selectedRows.length===1 && developerRoleOrAbove)">
                             <clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}
                         </button>
                         <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
