@@ -683,7 +683,7 @@ Test Case - Admin Push Signed Image
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  sha256
 
-Test Case - Admin Push Signed Image
+Test Case - Scan Image On Push
     Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
