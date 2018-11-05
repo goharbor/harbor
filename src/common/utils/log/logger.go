@@ -60,7 +60,7 @@ func New(out io.Writer, fmtter Formatter, lvl Level) *Logger {
 		out:       out,
 		fmtter:    fmtter,
 		lvl:       lvl,
-		callDepth: 3,
+		callDepth: 6,
 	}
 }
 

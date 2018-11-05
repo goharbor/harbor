@@ -17,13 +17,10 @@ package impl
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
-	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	jlogger "github.com/goharbor/harbor/src/jobservice/job/impl/logger"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	jmodel "github.com/goharbor/harbor/src/jobservice/models"
 )
@@ -72,11 +69,11 @@ func (c *DefaultContext) Build(dep env.JobData) (env.JobContext, error) {
 		}
 	}
 
-	// Init logger here
-	logPath := fmt.Sprintf("%s/%s.log", config.GetLogBasePath(), dep.ID)
-	jContext.logger = jlogger.New(logPath, config.GetLogLevel())
-	if jContext.logger == nil {
-		return nil, errors.New("failed to initialize job logger")
+	// Set loggers for job
+	if err := setLoggers(func(lg logger.Interface) {
+		jContext.logger = lg
+	}, dep.ID); err != nil {
+		return nil, err
 	}
 
 	if opCommandFunc, ok := dep.ExtraData["opCommandFunc"]; ok {

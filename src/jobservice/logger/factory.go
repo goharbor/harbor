@@ -1,0 +1,54 @@
+package logger
+
+import (
+	"errors"
+	"path"
+
+	"github.com/goharbor/harbor/src/jobservice/logger/backend"
+)
+
+// Factory creates a new logger based on the settings.
+type Factory func(options ...OptionItem) (Interface, error)
+
+// FileFactory is factory of file logger
+func FileFactory(options ...OptionItem) (Interface, error) {
+	var level, baseDir, fileName string
+	for _, op := range options {
+		switch op.Field() {
+		case "level":
+			level = op.String()
+		case "base_dir":
+			baseDir = op.String()
+		case "filename":
+			fileName = op.String()
+		default:
+
+		}
+	}
+
+	if len(baseDir) == 0 {
+		return nil, errors.New("missing base dir option of the file logger")
+	}
+
+	if len(fileName) == 0 {
+		return nil, errors.New("missing file name option of the file logger")
+	}
+
+	return backend.NewFileLogger(level, path.Join(baseDir, fileName))
+}
+
+// StdFactory is factory of std output logger.
+func StdFactory(options ...OptionItem) (Interface, error) {
+	var level, output string
+	for _, op := range options {
+		switch op.Field() {
+		case "level":
+			level = op.String()
+		case "output":
+			output = op.String()
+		default:
+		}
+	}
+
+	return backend.NewStdOutputLogger(level, output), nil
+}

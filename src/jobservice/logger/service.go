@@ -18,18 +18,13 @@ import (
 	"log"
 )
 
-// sLogger is used to log for workerpool itself
-var sLogger Interface
-
-// SetLogger sets the logger implementation
-func SetLogger(logger Interface) {
-	sLogger = logger
-}
+// jobServiceLogger is used to log for job service itself
+var jobServiceLogger Interface
 
 // Debug ...
 func Debug(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Debug(v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Debug(v...)
 		return
 	}
 
@@ -38,8 +33,8 @@ func Debug(v ...interface{}) {
 
 // Debugf for debuging with format
 func Debugf(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Debugf(format, v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Debugf(format, v...)
 		return
 	}
 
@@ -48,8 +43,8 @@ func Debugf(format string, v ...interface{}) {
 
 // Info ...
 func Info(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Info(v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Info(v...)
 		return
 	}
 
@@ -58,8 +53,8 @@ func Info(v ...interface{}) {
 
 // Infof for logging info with format
 func Infof(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Infof(format, v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Infof(format, v...)
 		return
 	}
 
@@ -68,8 +63,8 @@ func Infof(format string, v ...interface{}) {
 
 // Warning ...
 func Warning(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Warning(v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Warning(v...)
 		return
 	}
 
@@ -78,8 +73,8 @@ func Warning(v ...interface{}) {
 
 // Warningf for warning with format
 func Warningf(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Warningf(format, v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Warningf(format, v...)
 		return
 	}
 
@@ -88,8 +83,8 @@ func Warningf(format string, v ...interface{}) {
 
 // Error for logging error
 func Error(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Error(v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Error(v...)
 		return
 	}
 
@@ -98,8 +93,8 @@ func Error(v ...interface{}) {
 
 // Errorf for logging error with format
 func Errorf(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Errorf(format, v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Errorf(format, v...)
 		return
 	}
 
@@ -108,8 +103,8 @@ func Errorf(format string, v ...interface{}) {
 
 // Fatal ...
 func Fatal(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Fatal(v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Fatal(v...)
 		return
 	}
 
@@ -118,8 +113,8 @@ func Fatal(v ...interface{}) {
 
 // Fatalf for fatal error with error
 func Fatalf(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Fatalf(format, v...)
+	if jobServiceLogger != nil {
+		jobServiceLogger.Fatalf(format, v...)
 		return
 	}
 
