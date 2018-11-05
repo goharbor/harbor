@@ -16,7 +16,7 @@ import { NgForm } from '@angular/forms';
 
 import { Configuration, clone, isEmpty, getChanges, StringValueItem} from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { confirmUnsavedChanges} from '../config.msg.utils';
+import { ConfirmMessageHandler } from '../config.msg.utils';
 import { ConfigurationService } from '../config.service';
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 @Component({
@@ -34,7 +34,8 @@ export class ConfigurationEmailComponent implements OnChanges {
 
     constructor(
         private msgHandler: MessageHandlerService,
-        private configService: ConfigurationService) {
+        private configService: ConfigurationService,
+        private confirmMessageHandler: ConfirmMessageHandler) {
     }
 
     disabled(prop: any): boolean {
@@ -175,7 +176,7 @@ export class ConfigurationEmailComponent implements OnChanges {
     public cancel(): void {
         let changes = this.getChanges();
         if (!isEmpty(changes)) {
-            confirmUnsavedChanges(changes);
+            this.confirmMessageHandler.confirmUnsavedChanges(changes);
         } else {
             // Invalid situation, should not come here
             console.error('Nothing changed');

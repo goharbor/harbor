@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
-
 import { Configuration } from '../config';
 
 @Component({
