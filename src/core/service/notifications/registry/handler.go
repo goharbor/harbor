@@ -106,6 +106,10 @@ func (n *NotificationHandler) Post() {
 					log.Errorf("Error happens when adding repository: %v", err)
 				}
 			}()
+			if !coreutils.WaitForManifestReady(repository, tag, 5) {
+				log.Errorf("Manifest for image %s:%s is not ready, skip the follow up actions.", repository, tag)
+				return
+			}
 
 			go func() {
 				image := repository + ":" + tag

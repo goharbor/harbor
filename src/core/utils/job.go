@@ -94,7 +94,10 @@ func TriggerImageScan(repository string, tag string) error {
 	if err != nil {
 		return err
 	}
-	digest, _, err := repoClient.ManifestExist(tag)
+	digest, exist, err := repoClient.ManifestExist(tag)
+	if !exist {
+		return fmt.Errorf("unable to perform scan: the manifest of image %s:%s does not exist", repository, tag)
+	}
 	if err != nil {
 		log.Errorf("Failed to get Manifest for %s:%s", repository, tag)
 		return err
