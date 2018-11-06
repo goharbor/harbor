@@ -34,11 +34,10 @@
         <section id="email" role="tabpanel" aria-labelledby="config-email" [hidden]='!isCurrentTabContent("email")'>
             <config-email [mailConfig]="allConfig"></config-email>
         </section>
-        <section id="system_settings" role="tabpanel" aria-labelledby="config-system" [hidden]='!isCurrentTabContent("system_settings")'>
-            <system-settings [(systemSettings)]="allConfig" [hasAdminRole]="hasAdminRole" [hasCAFile]="hasCAFile"></system-settings>
+        <section id="system_settings" role="tabpanel" aria-labelledby="config-system"  [hidden]='!isCurrentTabContent("system_settings")'>
+            <system-settings [(systemSettings)]="allConfig" [hasAdminRole]="hasAdminRole" (reloadSystemConfig)="handleAppConfig($event)" (readOnlyChange)="handleReadyOnlyChange($event)" [hasCAFile]="hasCAFile"></system-settings>
         </section>
-        <section id="system_label" role="tabpanel" aria-labelledby="config-label" *ngIf="!withAdmiral" [hidden]='!isCurrentTabContent("system_label")'
-            style="padding-top: 16px;">
+        <section id="system_label" role="tabpanel" aria-labelledby="config-label" *ngIf="!withAdmiral" [hidden]='!isCurrentTabContent("system_label")'>
             <hbr-label [scope]="'g'"></hbr-label>
         </section>
         <section id="vulnerability" *ngIf="withClair" role="tabpanel" aria-labelledby="config-vulnerability" [hidden]='!isCurrentTabContent("vulnerability")'>
@@ -48,9 +47,4 @@
             <gc-config></gc-config>
         </section>
     </div>
-</div>
-<div>
-    <button type="button" id="config_system_save" class="btn btn-primary" (click)="save()" [hidden]="hideBtn" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="cancel()" [hidden]="hideBtn" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
-
 </div>

@@ -17,7 +17,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
 import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
-import { LeavingConfigRouteDeactivate } from './shared/route/leaving-config-deactivate.service';
 import { MemberGuard } from './shared/route/member-guard-activate.service';
 
 import { PageNotFoundComponent } from './shared/not-found/not-found.component';
@@ -180,8 +179,7 @@ const harborRoutes: Routes = [
       {
         path: 'configs',
         component: ConfigurationComponent,
-        canActivate: [SystemAdminGuard],
-        canDeactivate: [LeavingConfigRouteDeactivate]
+        canActivate: [SystemAdminGuard]
       },
       {
         path: 'registry',

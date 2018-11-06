@@ -13,12 +13,13 @@
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from "rxjs";
-import { Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent,
-    isEmpty, clone, getChanges } from '@harbor/ui';
+import {
+    Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent,
+    isEmpty, clone, getChanges
+} from '@harbor/ui';
 
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
-import { confirmUnsavedChanges} from './config.msg.utils';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 
@@ -46,8 +47,8 @@ const TabLinkContentMap = {
     styleUrls: ['config.component.scss']
 })
 export class ConfigurationComponent implements OnInit, OnDestroy {
-    onGoing = false;
     allConfig: Configuration = new Configuration();
+    onGoing = false;
     currentTabId = 'config-auth'; // default tab
     originalCopy: Configuration = new Configuration();
     confirmSub: Subscription;
@@ -121,88 +122,20 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.onGoing;
     }
 
-    public isValid(): boolean {
-        return this.systemSettingsConfig.isValid;
+    handleReadyOnlyChange(event) {
+        this.msgHandler.handleReadOnly();
+        if (!event) {
+            this.msgHandler.clear();
+        }
     }
 
-    public hasChanges(): boolean {
-        return !isEmpty(this.getSystemChanges());
+    handleAppConfig(event) {
+        // Reload bootstrap option
+        this.appConfigService.load().catch(error => console.error('Failed to reload bootstrap option with error: ', error));
     }
-
 
     public tabLinkClick(tabLink: string) {
         this.currentTabId = tabLink;
-    }
-
-    public getSystemChanges() {
-        let allChanges = getChanges(this.originalCopy, this.allConfig);
-        if (allChanges) {
-            return this.systemSettingsConfig.getSystemChanges(allChanges);
-        }
-        return null;
-    }
-
-    /**
-     *
-     * Save the changed values
-     *
-     * @memberOf ConfigurationComponent
-     */
-    public save(): void {
-        let changes = this.getSystemChanges();
-        if (!isEmpty(changes)) {
-            this.onGoing = true;
-            this.configService.saveConfiguration(changes)
-                .then(response => {
-                    this.onGoing = false;
-                    // API should return the updated configurations here
-                    // Unfortunately API does not do that
-                    // To refresh the view, we can clone the original data copy
-                    // or force refresh by calling service.
-                    // HERE we choose force way
-                    this.retrieveConfig();
-
-                    if (changes['read_only']) {
-                        this.msgHandler.handleReadOnly();
-                    }
-
-                    if (changes && changes['read_only'] === false) {
-                        this.msgHandler.clear();
-                    }
-
-                    // Reload bootstrap option
-                    this.appConfigService.load().catch(error => console.error('Failed to reload bootstrap option with error: ', error));
-
-                    this.msgHandler.showSuccess('CONFIG.SAVE_SUCCESS');
-                })
-                .catch(error => {
-                    this.onGoing = false;
-                    this.msgHandler.handleError(error);
-                });
-        } else {
-            // Inprop situation, should not come here
-            console.error('Save abort because nothing changed');
-        }
-    }
-
-    /**
-     *
-     * Discard current changes if have and reset
-     *
-     * @memberOf ConfigurationComponent
-     */
-    public cancel(): void {
-        let changes = this.getSystemChanges();
-        if (!isEmpty(changes)) {
-            confirmUnsavedChanges(changes);
-        } else {
-            // Invalid situation, should not come here
-            console.error('Nothing changed');
-        }
-    }
-
-    public get hideBtn(): boolean {
-        return this.currentTabId !== 'config-system';
     }
 
     retrieveConfig(): void {
