@@ -6,18 +6,18 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger/getter"
 )
 
-var logDataGetter getter.Interface
-
 // Retrieve is wrapper func for getter.Retrieve
 func Retrieve(logID string) ([]byte, error) {
-	if logDataGetter == nil {
+	val, ok := singletons.Load(systemKeyLogDataGetter)
+	if !ok {
 		return nil, errors.New("no log data getter is configured")
 	}
 
-	return logDataGetter.Retrieve(logID)
+	return val.(getter.Interface).Retrieve(logID)
 }
 
 // HasLogGetterConfigured checks if a log data getter is there for using
 func HasLogGetterConfigured() bool {
-	return logDataGetter != nil
+	_, ok := singletons.Load(systemKeyLogDataGetter)
+	return ok
 }

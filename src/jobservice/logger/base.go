@@ -12,6 +12,11 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
 )
 
+const (
+	systemKeyServiceLogger = "system.jobServiceLogger"
+	systemKeyLogDataGetter = "system.logDataGetter"
+)
+
 var singletons sync.Map
 
 // GetLogger gets an unified logger entry for logging per the passed settings.
@@ -186,7 +191,8 @@ func Init(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	jobServiceLogger = lg
+	// Avoid data race issue
+	singletons.Store(systemKeyServiceLogger, lg)
 
 	jOptions := []Option{}
 	// Append configured sweepers in job loggers if existing
@@ -203,7 +209,8 @@ func Init(ctx context.Context) error {
 		return err
 	}
 	if g != nil {
-		logDataGetter = g
+		// Avoid data race issue
+		singletons.Store(systemKeyLogDataGetter, g)
 	}
 
 	// If sweepers configured
