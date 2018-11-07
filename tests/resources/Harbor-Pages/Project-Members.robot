@@ -143,6 +143,7 @@ Manage Project Member
 Change User Role In Project
     [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${role}
     Sign In Harbor  ${HARBOR_URL}  ${admin}  ${pwd}
+    Wait Until Element Is Visible  //clr-dg-cell//a[contains(.,"${project}")]
     Change Project Member Role  ${project}  ${user}  ${role}
     Logout Harbor
 
