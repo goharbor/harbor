@@ -12,7 +12,10 @@ type Factory func(options ...OptionItem) (Interface, error)
 
 // FileFactory is factory of file logger
 func FileFactory(options ...OptionItem) (Interface, error) {
-	var level, baseDir, fileName string
+	var (
+		level, baseDir, fileName string
+		depth                    int
+	)
 	for _, op := range options {
 		switch op.Field() {
 		case "level":
@@ -21,6 +24,8 @@ func FileFactory(options ...OptionItem) (Interface, error) {
 			baseDir = op.String()
 		case "filename":
 			fileName = op.String()
+		case "depth":
+			depth = op.Int()
 		default:
 
 		}
@@ -34,21 +39,26 @@ func FileFactory(options ...OptionItem) (Interface, error) {
 		return nil, errors.New("missing file name option of the file logger")
 	}
 
-	return backend.NewFileLogger(level, path.Join(baseDir, fileName))
+	return backend.NewFileLogger(level, path.Join(baseDir, fileName), depth)
 }
 
 // StdFactory is factory of std output logger.
 func StdFactory(options ...OptionItem) (Interface, error) {
-	var level, output string
+	var (
+		level, output string
+		depth         int
+	)
 	for _, op := range options {
 		switch op.Field() {
 		case "level":
 			level = op.String()
 		case "output":
 			output = op.String()
+		case "depth":
+			depth = op.Int()
 		default:
 		}
 	}
 
-	return backend.NewStdOutputLogger(level, output), nil
+	return backend.NewStdOutputLogger(level, output, depth), nil
 }

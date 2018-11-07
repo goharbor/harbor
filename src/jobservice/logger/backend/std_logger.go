@@ -20,13 +20,13 @@ type StdOutputLogger struct {
 }
 
 // NewStdOutputLogger creates a new std output logger
-func NewStdOutputLogger(level string, output string) *StdOutputLogger {
+func NewStdOutputLogger(level string, output string, depth int) *StdOutputLogger {
 	logLevel := parseLevel(level)
 	logStream := os.Stdout
 	if output == StdErr {
 		logStream = os.Stderr
 	}
-	backendLogger := log.New(logStream, log.NewTextFormatter(), logLevel)
+	backendLogger := log.New(logStream, log.NewTextFormatter(), logLevel, depth)
 
 	return &StdOutputLogger{
 		backendLogger: backendLogger,

@@ -15,13 +15,13 @@ type FileLogger struct {
 
 // NewFileLogger crates a new file logger
 // nil might be returned
-func NewFileLogger(level string, logPath string) (*FileLogger, error) {
+func NewFileLogger(level string, logPath string, depth int) (*FileLogger, error) {
 	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
 	logLevel := parseLevel(level)
-	backendLogger := log.New(f, log.NewTextFormatter(), logLevel)
+	backendLogger := log.New(f, log.NewTextFormatter(), logLevel, depth)
 
 	return &FileLogger{
 		backendLogger: backendLogger,

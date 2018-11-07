@@ -180,6 +180,14 @@ func Init(ctx context.Context) error {
 	sOptions := []Option{}
 
 	for _, lc := range config.DefaultConfig.LoggerConfigs {
+		// Inject logger depth here for FILE and STD logger to avoid configuring it in the yaml
+		// For logger of job service itself, the depth should be 6
+		if lc.Name == LoggerNameFile || lc.Name == LoggerNameStdOutput {
+			if lc.Settings == nil {
+				lc.Settings = map[string]interface{}{}
+			}
+			lc.Settings["depth"] = 6
+		}
 		options = append(options, BackendOption(lc.Name, lc.Level, lc.Settings))
 		if lc.Sweeper != nil {
 			sOptions = append(sOptions, SweeperOption(lc.Name, lc.Sweeper.Duration, lc.Sweeper.Settings))

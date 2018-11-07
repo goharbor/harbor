@@ -236,6 +236,13 @@ func setLoggers(setter func(lg logger.Interface), jobID string) error {
 	// Init job loggers here
 	lOptions := []logger.Option{}
 	for _, lc := range config.DefaultConfig.JobLoggerConfigs {
+		// For running job, the depth should be 5
+		if lc.Name == logger.LoggerNameFile || lc.Name == logger.LoggerNameStdOutput {
+			if lc.Settings == nil {
+				lc.Settings = map[string]interface{}{}
+			}
+			lc.Settings["depth"] = 5
+		}
 		if lc.Name == logger.LoggerNameFile {
 			// Need extra param
 			fSettings := map[string]interface{}{}
