@@ -30,9 +30,11 @@ class Replication(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return base._get_id_from_header(header), name
 
-    def get_replication_rule(self, param = dict(), rule_id = None, expect_status_code = 200, **kwargs):
+    def get_replication_rule(self, param = None, rule_id = None, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         if rule_id is None:
+            if param is None:
+                param = dict()
             data, status_code, _ = client.policies_replication_get_with_http_info(param)
         else:
             data, status_code, _ = client.policies_replication_id_get_with_http_info(rule_id)
@@ -50,7 +52,7 @@ class Replication(base.Base):
                 print r"Check Replication rule trigger passed, trigger name <{}>.".format(get_trigger)
             else:
                 raise Exception(r"Check replication rule trigger failed, expect <{}> actual <{}>.".format(expect_trigger, get_trigger))
-                
+
 
     def start_replication(self, rule_id, **kwargs):
         client = self._get_client(**kwargs)

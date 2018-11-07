@@ -2,7 +2,6 @@ from __future__ import absolute_import
 import unittest
 
 from testutils import CLIENT
-from testutils import harbor_server
 from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
@@ -32,8 +31,8 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data should be remain in the harbor.")
     def test_ClearData(self):
         #1. Delete rule(RA);
-        for i in range(len(TestProjects.rule_id_list)):
-            self.replication.delete_replication_rule(TestProjects.rule_id_list[i], **TestProjects.ADMIN_CLIENT)
+        for rule_id in TestProjects.rule_id_list:
+            self.replication.delete_replication_rule(rule_id, **TestProjects.ADMIN_CLIENT)
 
         #2. Delete target(TA);
         self.target.delete_target(TestProjects.target_id, **TestProjects.ADMIN_CLIENT)
@@ -72,7 +71,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.USER_add_rule_CLIENT=dict(endpoint = url, username = user_add_rule_name, password = user_add_rule_password)
 
         #2.1. Create private project(PA) by user(UA)
-        project_add_rule_name, TestProjects.project_add_rule_id = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_add_rule_CLIENT)
+        _, TestProjects.project_add_rule_id = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_add_rule_CLIENT)
 
         #2.2. Get private project of uesr-001, uesr-001 can see only one private project which is project-001
         self.project.projects_should_exist(dict(public=False), expected_count = 1,
@@ -87,10 +86,10 @@ class TestProjects(unittest.TestCase):
         trigger_values_to_set = ["Manual", "Immediate"]
         for i in range(len(trigger_values_to_set)):
             #4. Create a new rule for project(PA) and target(TA)
-            rule_id, rule_name = self.replication.create_replication_rule([TestProjects.project_add_rule_id], 
+            rule_id, rule_name = self.replication.create_replication_rule([TestProjects.project_add_rule_id],
                 [TestProjects.target_id], trigger=swagger_client.RepTrigger(kind=trigger_values_to_set[i]), **TestProjects.ADMIN_CLIENT)
             TestProjects.rule_id_list.append(rule_id)
-        
+
             #5. Check rule should be exist
             self.replication.check_replication_rule_should_exist(rule_id, rule_name, expect_trigger = trigger_values_to_set[i], **TestProjects.ADMIN_CLIENT)
         
