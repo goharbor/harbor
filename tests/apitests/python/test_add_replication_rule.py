@@ -84,15 +84,15 @@ class TestProjects(unittest.TestCase):
         TestProjects.rule_id_list = []
 
         trigger_values_to_set = ["Manual", "Immediate"]
-        for i in range(len(trigger_values_to_set)):
+        for value in trigger_values_to_set:
             #4. Create a new rule for project(PA) and target(TA)
             rule_id, rule_name = self.replication.create_replication_rule([TestProjects.project_add_rule_id],
-                [TestProjects.target_id], trigger=swagger_client.RepTrigger(kind=trigger_values_to_set[i]), **TestProjects.ADMIN_CLIENT)
+                [TestProjects.target_id], trigger=swagger_client.RepTrigger(kind=value), **TestProjects.ADMIN_CLIENT)
             TestProjects.rule_id_list.append(rule_id)
 
             #5. Check rule should be exist
-            self.replication.check_replication_rule_should_exist(rule_id, rule_name, expect_trigger = trigger_values_to_set[i], **TestProjects.ADMIN_CLIENT)
-        
+            self.replication.check_replication_rule_should_exist(rule_id, rule_name, expect_trigger = value, **TestProjects.ADMIN_CLIENT)
+
 
 if __name__ == '__main__':
     unittest.main()
