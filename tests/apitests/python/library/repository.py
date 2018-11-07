@@ -64,4 +64,5 @@ class Repository(base.Base):
         client = self._get_client(**kwargs)
         data, status_code, _ = client.repositories_repo_name_signatures_get_with_http_info(repo_name)
         base._assert_status_code(expect_status_code, status_code)
+        return data
       
