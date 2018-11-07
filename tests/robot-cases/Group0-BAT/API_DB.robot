@@ -23,4 +23,5 @@ Test Case - Delete a Repository of a Certain Project Created by Normal User
     Harbor API Test  ./tests/apitests/python/test_del_repo.py
 Test Case - Add a System Global Label to a Certain Tag
     Harbor API Test  ./tests/apitests/python/test_add_sys_label_to_tag.py
-
+Test Case - Add a System Global Label to a Certain Tag
+    Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
