@@ -60,4 +60,8 @@ class Repository(base.Base):
         _, status_code, _ = client.repositories_repo_name_tags_tag_labels_post_with_http_info(repo_name, tag, label)
         base._assert_status_code(expect_status_code, status_code)
 
-        
+    def get_repo_signatures(self, repo_name, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        data, status_code, _ = client.repositories_repo_name_signatures_get_with_http_info(repo_name)
+        base._assert_status_code(expect_status_code, status_code)
+      
