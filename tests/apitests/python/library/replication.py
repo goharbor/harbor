@@ -75,7 +75,7 @@ class Replication(base.Base):
                 time.sleep(interval)
         if not finished:
             raise Exception("The jobs not finished")
-    
+
     def delete_replication_rule(self, rule_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         _, status_code, _ = client.policies_replication_id_delete_with_http_info(rule_id)
