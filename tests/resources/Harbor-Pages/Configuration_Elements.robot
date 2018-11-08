@@ -18,7 +18,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 *** Variables ***
 ${project_create_xpath}  //clr-dg-action-bar//button[contains(.,'New')]
 ${self_reg_xpath}  //input[@id="clr-checkbox-selfReg"]
-${test_ldap_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[3]
+${test_ldap_xpath}  //*[@id="authentication"]/config-auth/div/button[3]
 ${config_save_button_xpath}  //config//div/button[contains(.,'SAVE')]
 ${config_email_save_button_xpath}  //*[@id="config_email_save"]
 ${config_auth_save_button_xpath}  //*[@id="config_auth_save"]
@@ -28,4 +28,4 @@ ${configuration_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Configur
 ${system_config_xpath}  //*[@id="config-system"]
 ${garbage_collection_xpath}  //*[@id="config-gc"]
 ${gc_now_xpath}  //*[@id="gc"]/gc-config/button
-${gc_log_details_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/section[6]/gc-config/clr-datagrid/div/div/div/clr-dg-table-wrapper/div[2]/clr-dg-row/div/clr-dg-cell[6]/a
+${gc_log_details_xpath}  //*[@id="clr-dg-row26"]/clr-dg-cell[6]/a
