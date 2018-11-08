@@ -73,7 +73,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.USER_add_g_lbl_CLIENT=dict(endpoint = url, username = user_add_g_lbl_name, password = user_001_password)
 
         #2. Create private project-001
-        project_add_g_lbl_name, TestProjects.project_add_g_lbl_id = self.project.create_project(metadata = {"public": "false"}, **TestProjects.ADMIN_CLIENT)
+        TestProjects.project_add_g_lbl_id, project_add_g_lbl_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.ADMIN_CLIENT)
 
         #3. Add user-001 as a member of project-001 with project-admin role
         self.project.add_project_members(TestProjects.project_add_g_lbl_id, TestProjects.user_add_g_lbl_id, **TestProjects.ADMIN_CLIENT)

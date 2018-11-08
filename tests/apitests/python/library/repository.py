@@ -65,4 +65,11 @@ class Repository(base.Base):
         data, status_code, _ = client.repositories_repo_name_signatures_get_with_http_info(repo_name)
         base._assert_status_code(expect_status_code, status_code)
         return data
-      
+    
+    def signature_should_exist(self, repo_name, tag, **kwargs):
+        signatures = self.get_repo_signatures(repo_name, **kwargs)
+        for each_sign in signatures:
+            if each_sign.tag == tag and len(each_sign.hashes["sha256"]) == 44:
+                print "sha256:", len(each_sign.hashes["sha256"])
+                return
+        raise Exception(r"Signature of {}:{} is not exist!".format(repo_name, tag))
