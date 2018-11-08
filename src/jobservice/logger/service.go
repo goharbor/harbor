@@ -18,110 +18,102 @@ import (
 	"log"
 )
 
-// sLogger is used to log for workerpool itself
-var sLogger Interface
+// jobServiceLogger is used to log for job service itself
+func jobServiceLogger() (Interface, bool) {
+	val, ok := singletons.Load(systemKeyServiceLogger)
+	if ok {
+		return val.(Interface), ok
+	}
 
-// SetLogger sets the logger implementation
-func SetLogger(logger Interface) {
-	sLogger = logger
+	return nil, false
 }
 
 // Debug ...
 func Debug(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Debug(v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Debug(v...)
+	} else {
+		log.Println(v...)
 	}
-
-	log.Println(v...)
 }
 
 // Debugf for debuging with format
 func Debugf(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Debugf(format, v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Debugf(format, v...)
+	} else {
+		log.Printf(format, v...)
 	}
-
-	log.Printf(format, v...)
 }
 
 // Info ...
 func Info(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Info(v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Info(v...)
+	} else {
+		log.Println(v...)
 	}
-
-	log.Println(v...)
 }
 
 // Infof for logging info with format
 func Infof(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Infof(format, v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Infof(format, v...)
+	} else {
+		log.Printf(format, v...)
 	}
-
-	log.Printf(format, v...)
 }
 
 // Warning ...
 func Warning(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Warning(v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Warning(v...)
+	} else {
+		log.Println(v...)
 	}
-
-	log.Println(v...)
 }
 
 // Warningf for warning with format
 func Warningf(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Warningf(format, v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Warningf(format, v...)
+	} else {
+		log.Printf(format, v...)
 	}
-
-	log.Printf(format, v...)
 }
 
 // Error for logging error
 func Error(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Error(v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Error(v...)
+	} else {
+		log.Println(v...)
 	}
-
-	log.Println(v...)
 }
 
 // Errorf for logging error with format
 func Errorf(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Errorf(format, v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Errorf(format, v...)
+	} else {
+		log.Printf(format, v...)
 	}
-
-	log.Printf(format, v...)
 }
 
 // Fatal ...
 func Fatal(v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Fatal(v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Fatal(v...)
+	} else {
+		log.Fatalln(v...)
 	}
-
-	log.Fatal(v...)
 }
 
 // Fatalf for fatal error with error
 func Fatalf(format string, v ...interface{}) {
-	if sLogger != nil {
-		sLogger.Fatalf(format, v...)
-		return
+	if jLogger, ok := jobServiceLogger(); ok {
+		jLogger.Fatalf(format, v...)
+	} else {
+		log.Fatalf(format, v...)
 	}
-
-	log.Fatalf(format, v...)
 }

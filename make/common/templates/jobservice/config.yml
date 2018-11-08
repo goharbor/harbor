@@ -20,10 +20,22 @@ worker_pool:
     #redis://[arbitrary_username:password@]ipaddress:port/database_index
     redis_url: $redis_url
     namespace: "harbor_job_service_namespace"
-#Logger for job
-logger:
-  path: "/var/log/jobs"
-  level: "INFO"
-  archive_period: 14 #days
+#Loggers for the running job
+job_loggers:
+  - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"
+    level: "INFO" # INFO/DEBUG/WARNING/ERROR/FATAL
+  - name: "FILE"
+    level: "INFO"
+    settings: # Customized settings of logger
+      base_dir: "/var/log/jobs"
+    sweeper:
+      duration: 1 #days
+      settings: # Customized settings of sweeper
+        work_dir: "/var/log/jobs"
+
+#Loggers for the job service
+loggers:
+  - name: "STD_OUTPUT" # Same with above
+    level: "INFO"
 #Admin server endpoint
 admin_server: "http://adminserver:8080/"
