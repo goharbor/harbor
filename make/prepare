@@ -531,9 +531,14 @@ else:
     print("Copied configuration file: %s" % registry_config_dir + "root.crt")
     shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
 
+# Create os trusted certificate for registry, clair, chartmuseum
+common_cert_path = os.path.join(config_dir, "ca-bundle.crt")
+version_output = subprocess.check_output("grep  goharbor/registry-photon docker-compose.yml  |grep image", shell=True)
+registry_version = version_output.split(":")[2].strip()
+os.system("docker run -i --rm goharbor/registry-photon:"+registry_version+" cat  /etc/pki/tls/certs/ca-bundle.crt > " + common_cert_path)
+
 if len(registry_custom_ca_bundle_path) > 0 and os.path.isfile(registry_custom_ca_bundle_path):
-    shutil.copyfile(registry_custom_ca_bundle_path, os.path.join(registry_config_dir, "custom-ca-bundle.crt"))
-    print("Copied custom ca bundle: %s" % os.path.join(registry_config_dir, "custom-ca-bundle.crt"))
+    os.system("cat  "+registry_custom_ca_bundle_path+" >> " + common_cert_path )
 
 if args.notary_mode:
     notary_config_dir = prep_conf_dir(config_dir, "notary")
@@ -638,11 +643,6 @@ if args.chart_mode:
     if not os.path.isdir(chartm_config_dir):
         print ("Create config folder: %s" % chartm_config_dir)
         os.makedirs(chartm_config_dir)
-
-    # handle custom ca bundle
-    if len(registry_custom_ca_bundle_path) > 0 and os.path.isfile(registry_custom_ca_bundle_path):
-        shutil.copyfile(registry_custom_ca_bundle_path, os.path.join(chartm_config_dir, "custom-ca-bundle.crt"))
-        print("Copied custom ca bundle: %s" % os.path.join(chartm_config_dir, "custom-ca-bundle.crt"))
     
     # process redis info
     cache_store = "redis"

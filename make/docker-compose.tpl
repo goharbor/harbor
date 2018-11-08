@@ -19,6 +19,7 @@ services:
     volumes:
       - /data/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z
+      - ./common/config/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:z
     networks:
       - harbor
     dns_search: .

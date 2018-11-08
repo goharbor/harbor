@@ -22,6 +22,7 @@ services:
     volumes:
       - /data/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
+      - ./common/config/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:z
     logging:
       driver: "syslog"
       options:  

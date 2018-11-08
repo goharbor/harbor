@@ -28,6 +28,7 @@ services:
       - postgresql
     volumes:
       - ./common/config/clair/config.yaml:/etc/clair/config.yaml:z
+      - ./common/config/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:z
     logging:
       driver: "syslog"
       options:  
