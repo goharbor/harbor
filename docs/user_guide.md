@@ -480,6 +480,17 @@ Check the checkbox at the 1st column to select the specified chart versions:
 * Click the `DOWNLOAD` button to download the chart artifact file. Batch operation is not supported.
 * Click the `UPLOAD` button to upload the new chart version for the current chart
 
+#### Adding labels to/remove labels from chart versions
+Users who have system administrator, project administrator or project developer role can click the `ADD LABELS` button to add labels to or remove labels from chart versions.
+
+![add labels to chart versions](img/chartrepo/add_labesl_to_chart_versions.png)
+
+
+#### Filtering chart versions by labels
+The chart versions can be filtered by labels:
+
+![filter chart versions by labels](img/chartrepo/filter_chart_versions_by_label.png)
+
 #### View chart version details
 Clicking the chart version number link will open the chart version details view. You can see more details about the specified chart version here. There are three content sections:
 * **Summary:**
