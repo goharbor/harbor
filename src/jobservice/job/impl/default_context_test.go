@@ -57,15 +57,19 @@ func TestDefaultContext(t *testing.T) {
 	jobData.ExtraData["checkInFunc"] = checkInFunc
 	jobData.ExtraData["launchJobFunc"] = launchJobFunc
 
-	oldLogConfig := config.DefaultConfig.LoggerConfig
+	oldLogConfig := config.DefaultConfig.JobLoggerConfigs
 	defer func() {
-		config.DefaultConfig.LoggerConfig = oldLogConfig
+		config.DefaultConfig.JobLoggerConfigs = oldLogConfig
 	}()
 
-	config.DefaultConfig.LoggerConfig = &config.LoggerConfig{
-		LogLevel:      "debug",
-		ArchivePeriod: 1,
-		BasePath:      os.TempDir(),
+	logSettings := map[string]interface{}{}
+	logSettings["base_dir"] = os.TempDir()
+	config.DefaultConfig.JobLoggerConfigs = []*config.LoggerConfig{
+		{
+			Level:    "DEBUG",
+			Name:     "FILE",
+			Settings: logSettings,
+		},
 	}
 
 	newJobContext, err := defaultContext.Build(jobData)

@@ -58,3 +58,16 @@ Resource  Cert-Util.robot
 Resource  SeleniumUtil.robot
 Resource  Nightly-Util.robot
 Resource  APITest-Util.robot
+
+*** Keywords ***
+Wait Unitl Vul Data Ready
+    [Arguments]  ${url}  ${timeout}  ${interval}
+    ${n}=  Evaluate  ${timeout}/${interval}
+    :FOR  ${i}  IN RANGE  ${n}
+    \    Log  Checking the vul data: ${i} ...  console=True
+    \    ${rc}  ${output}=  Run And Return Rc And Output  curl -k ${url}/api/systeminfo
+    \    Should Be Equal As Integers  ${rc}  0
+    \    ${contains}=  Run Keyword And Return Status  Should Contain  ${output}  overall_last_update
+    \    Exit For Loop If  ${contains}
+    \    Sleep  ${interval}
+    Run Keyword If  ${i+1}==${n}  Fail  The vul data is not ready

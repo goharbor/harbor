@@ -15,14 +15,15 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
+	"fmt"
 
 	"github.com/goharbor/harbor/src/adminserver/client"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
-	ilogger "github.com/goharbor/harbor/src/jobservice/job/impl/logger"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/runtime"
 	"github.com/goharbor/harbor/src/jobservice/utils"
@@ -36,12 +37,21 @@ func main() {
 	// Missing config file
 	if configPath == nil || utils.IsEmptyStr(*configPath) {
 		flag.Usage()
-		logger.Fatal("Config file should be specified")
+		panic("no config file is specified")
 	}
 
 	// Load configurations
 	if err := config.DefaultConfig.Load(*configPath, true); err != nil {
-		logger.Fatalf("Failed to load configurations with error: %s\n", err)
+		panic(fmt.Sprintf("load configurations error: %s\n", err))
+	}
+
+	// Create the root context
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Initialize logger
+	if err := logger.Init(ctx); err != nil {
+		panic(err)
 	}
 
 	// Set job context initializer
@@ -61,10 +71,6 @@ func main() {
 		return jobCtx, nil
 	})
 
-	// New logger for job service
-	sLogger := ilogger.NewServiceLogger(config.GetLogLevel())
-	logger.SetLogger(sLogger)
-
 	// Start
-	runtime.JobService.LoadAndRun()
+	runtime.JobService.LoadAndRun(ctx, cancel)
 }

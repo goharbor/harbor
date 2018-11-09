@@ -17,10 +17,9 @@ package core
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 
-	"github.com/goharbor/harbor/src/jobservice/config"
-	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/pool"
@@ -141,12 +140,7 @@ func (c *Controller) GetJobLogData(jobID string) ([]byte, error) {
 		return nil, errors.New("empty job ID")
 	}
 
-	logPath := fmt.Sprintf("%s/%s.log", config.GetLogBasePath(), jobID)
-	if !utils.FileExists(logPath) {
-		return nil, errs.NoObjectFoundError(fmt.Sprintf("%s.log", jobID))
-	}
-
-	logData, err := ioutil.ReadFile(logPath)
+	logData, err := logger.Retrieve(jobID)
 	if err != nil {
 		return nil, err
 	}

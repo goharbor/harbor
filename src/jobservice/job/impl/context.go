@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	jlogger "github.com/goharbor/harbor/src/jobservice/job/impl/logger"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	jmodel "github.com/goharbor/harbor/src/jobservice/models"
 )
@@ -124,11 +123,11 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 		jContext.properties[k] = v
 	}
 
-	// Init logger here
-	logPath := fmt.Sprintf("%s/%s.log", config.GetLogBasePath(), dep.ID)
-	jContext.logger = jlogger.New(logPath, config.GetLogLevel())
-	if jContext.logger == nil {
-		return nil, errors.New("failed to initialize job logger")
+	// Set loggers for job
+	if err := setLoggers(func(lg logger.Interface) {
+		jContext.logger = lg
+	}, dep.ID); err != nil {
+		return nil, err
 	}
 
 	if opCommandFunc, ok := dep.ExtraData["opCommandFunc"]; ok {
@@ -226,4 +225,45 @@ func getDBFromConfig(cfg map[string]interface{}) *models.Database {
 	database.PostGreSQL = postgresql
 
 	return database
+}
+
+// create loggers based on the configurations and set it to the job executing context.
+func setLoggers(setter func(lg logger.Interface), jobID string) error {
+	if setter == nil {
+		return errors.New("missing setter func")
+	}
+
+	// Init job loggers here
+	lOptions := []logger.Option{}
+	for _, lc := range config.DefaultConfig.JobLoggerConfigs {
+		// For running job, the depth should be 5
+		if lc.Name == logger.LoggerNameFile || lc.Name == logger.LoggerNameStdOutput {
+			if lc.Settings == nil {
+				lc.Settings = map[string]interface{}{}
+			}
+			lc.Settings["depth"] = 5
+		}
+		if lc.Name == logger.LoggerNameFile {
+			// Need extra param
+			fSettings := map[string]interface{}{}
+			for k, v := range lc.Settings {
+				// Copy settings
+				fSettings[k] = v
+			}
+			// Append file name param
+			fSettings["filename"] = fmt.Sprintf("%s.log", jobID)
+			lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, fSettings))
+		} else {
+			lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, lc.Settings))
+		}
+	}
+	// Get logger for the job
+	lg, err := logger.GetLogger(lOptions...)
+	if err != nil {
+		return fmt.Errorf("initialize job logger error: %s", err)
+	}
+
+	setter(lg)
+
+	return nil
 }

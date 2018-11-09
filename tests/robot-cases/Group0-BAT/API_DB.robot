@@ -27,3 +27,4 @@ Test Case - Add Replication Rule
     Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
 Test Case - Sign A Image
     Harbor API Test  ./tests/apitests/python/test_sign_image.py
+

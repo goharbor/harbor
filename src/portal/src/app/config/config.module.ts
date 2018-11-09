@@ -17,6 +17,7 @@ import { SharedModule } from '../shared/shared.module';
 
 import { ConfigurationComponent } from './config.component';
 import { ConfigurationService } from './config.service';
+import { ConfirmMessageHandler } from './config.msg.utils';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
 import { GcComponent } from './gc/gc.component';
@@ -38,6 +39,6 @@ import { GcUtility } from './gc/gc.utility';
     GcComponent
   ],
   exports: [ConfigurationComponent],
-  providers: [ConfigurationService, GcRepoService, GcApiRepository, GcViewModelFactory, GcUtility ]
+  providers: [ConfigurationService, GcRepoService, GcApiRepository, GcViewModelFactory, GcUtility, ConfirmMessageHandler]
 })
 export class ConfigurationModule { }

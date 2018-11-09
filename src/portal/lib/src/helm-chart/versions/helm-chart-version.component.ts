@@ -37,7 +37,8 @@ import {
   ConfirmationTargets,
   ConfirmationState,
   DefaultHelmIcon,
-  ResourceType
+  ResourceType,
+  Roles
 } from "../../shared/shared.const";
 
 @Component({
@@ -48,6 +49,7 @@ import {
 })
 export class ChartVersionComponent implements OnInit {
   signedCon: { [key: string]: any | string[] } = {};
+  @Input() projectRoleID: number;
   @Input() projectId: number;
   @Input() projectName: string;
   @Input() chartName: string;
@@ -320,5 +322,9 @@ export class ChartVersionComponent implements OnInit {
         let hnd = setInterval(() => this.cdr.markForCheck(), 200);
         setTimeout(() => clearInterval(hnd), 5000);
     });
+  }
+
+  public get developerRoleOrAbove(): boolean {
+    return this.projectRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
   }
 }

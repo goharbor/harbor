@@ -20,6 +20,8 @@ if sys.version_info[:3][0] == 3:
     import io as StringIO
 
 DATA_VOL = "/data"
+DEFAULT_UID = 10000
+DEFAULT_GID = 10000
 
 base_dir = os.path.dirname(__file__)
 config_dir = os.path.join(base_dir, "common/config")
@@ -70,9 +72,11 @@ def validate(conf, args):
 
 #To meet security requirement
 #By default it will change file mode to 0600, and make the owner of the file to 10000:10000
-def mark_file(path, mode=0o600, uid=10000, gid=10000):
-    os.chmod(path, mode)
-    os.chown(path, uid, gid)
+def mark_file(path, mode=0o600, uid=DEFAULT_UID, gid=DEFAULT_GID):
+    if mode > 0:
+        os.chmod(path, mode)
+    if uid > 0 and gid > 0:
+        os.chown(path, uid, gid)
 
 def get_secret_key(path):
     secret_key = _get_secret(path, "secretkey") 
@@ -107,10 +111,11 @@ def prep_conf_dir(root, *name):
         os.makedirs(absolute_path)
     return absolute_path
 
-def render(src, dest, **kw):
+def render(src, dest, mode=0o640, uid=0, gid=0, **kw):
     t = Template(open(src, 'r').read())
     with open(dest, 'w') as f:
         f.write(t.substitute(**kw))
+    mark_file(dest, mode, uid, gid)
     print("Generated configuration file: %s" % dest)
 
 def delfile(src):
@@ -412,6 +417,8 @@ for c in storage_provider_config.split(","):
 storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
+    uid=DEFAULT_UID, 
+    gid=DEFAULT_GID,
     storage_provider_info=storage_provider_info,
     public_url=public_url,
     core_url=core_url,
@@ -432,11 +439,15 @@ render(os.path.join(templates_dir, "jobservice", "env"),
 
 render(os.path.join(templates_dir, "jobservice", "config.yml"),
         jobservice_conf,
+        uid=DEFAULT_UID, 
+        gid=DEFAULT_GID,
         max_job_workers=max_job_workers,
         redis_url=redis_url_js)
 
 render(os.path.join(templates_dir, "log", "logrotate.conf"),
         log_rotate_config,
+        uid=DEFAULT_UID, 
+        gid=DEFAULT_GID,
         log_rotate_count=log_rotate_count,
 		log_rotate_size=log_rotate_size)
 
@@ -565,11 +576,16 @@ if args.notary_mode:
     mark_file(os.path.join(notary_config_dir, "notary-signer-ca.crt"))
     mark_file(os.path.join(notary_config_dir, "root.crt"))
     print("Copying notary signer configuration file")
-    #Call render instead of copy so the umask will take effect to mark the file as 0644
     render(os.path.join(notary_temp_dir, "signer-config.postgres.json"), 
-        os.path.join(notary_config_dir, "signer-config.postgres.json"))
+        os.path.join(notary_config_dir, "signer-config.postgres.json"),
+        uid=DEFAULT_UID, 
+        gid=DEFAULT_GID
+        )
+
     render(os.path.join(notary_temp_dir, "server-config.postgres.json"),
         os.path.join(notary_config_dir, "server-config.postgres.json"),
+        uid=DEFAULT_UID, 
+        gid=DEFAULT_GID,
         token_endpoint=public_url)
     print("Copying nginx configuration file for notary")
     shutil.copy2(os.path.join(templates_dir, "nginx", "notary.upstream.conf"), nginx_conf_d)
@@ -594,6 +610,8 @@ if args.clair_mode:
     clair_conf = os.path.join(clair_config_dir, "config.yaml")
     render(os.path.join(clair_temp_dir, "config.yaml"),
             clair_conf,
+            uid=DEFAULT_UID, 
+            gid=DEFAULT_GID,
             password = clair_db_password,
             username = clair_db_username,
             host = clair_db_host,
