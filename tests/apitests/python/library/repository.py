@@ -65,7 +65,7 @@ class Repository(base.Base):
         data, status_code, _ = client.repositories_repo_name_signatures_get_with_http_info(repo_name)
         base._assert_status_code(expect_status_code, status_code)
         return data
-      
+
     def signature_should_exist(self, repo_name, tag, **kwargs):
         signatures = self.get_repo_signatures(repo_name, **kwargs)
         for each_sign in signatures:
