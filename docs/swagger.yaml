@@ -1139,6 +1139,11 @@ paths:
         This endpoint tags an existing image with another tag in this repo, source images
         can be in different repos or projects.
       parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Relevant repository name.
         - name: request
           in: body
           description: Request to give source image and target tag.
@@ -1787,6 +1792,30 @@ paths:
           description: The specific repository ID's policy does not exist.
         '409':
           description: Policy name already used or policy already exists with the same project and target.
+        '500':
+          description: Unexpected internal errors.
+    delete:
+      summary: Delete the replication policy specified by ID.
+      description: |
+        Delete the replication policy specified by ID.
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Replication policy ID
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Delete successfully.
+        '400':
+          description: Invalid parameters.
+        '401':
+          description: User need to log in first.
+        '404':
+          description: The resource does not exist.
         '500':
           description: Unexpected internal errors.
   /labels:

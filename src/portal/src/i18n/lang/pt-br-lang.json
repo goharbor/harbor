@@ -51,7 +51,7 @@
     },
     "TOOLTIP": {
         "EMAIL": "Email deve ser um  endereço de email válido como nome@exemplo.com.",
-        "USER_NAME": "Não pode conter caracteres especiais e o tamanho máximo deve ser de 20 caracteres.",
+        "USER_NAME": "Não pode conter caracteres especiais e o tamanho máximo deve ser de 255 caracteres.",
         "FULL_NAME": "Tamanho máximo deve ser de 20 caracteres.",
         "COMMENT": "Tamanho do comentário deve ser menor que 20 caracteres.",
         "CURRENT_PWD": "A senha atual é obrigatória.",

@@ -23,11 +23,9 @@ import (
 	"time"
 )
 
-var logger = New(os.Stdout, NewTextFormatter(), WarningLevel)
+var logger = New(os.Stdout, NewTextFormatter(), WarningLevel, 4)
 
 func init() {
-	logger.callDepth = 4
-
 	lvl := os.Getenv("LOG_LEVEL")
 	if len(lvl) == 0 {
 		logger.SetLevel(InfoLevel)
@@ -41,7 +39,6 @@ func init() {
 	}
 
 	logger.SetLevel(level)
-
 }
 
 // Logger provides a struct with fields that describe the details of logger.
@@ -55,12 +52,22 @@ type Logger struct {
 }
 
 // New returns a customized Logger
-func New(out io.Writer, fmtter Formatter, lvl Level) *Logger {
+func New(out io.Writer, fmtter Formatter, lvl Level, options ...interface{}) *Logger {
+	// Default set to be 3
+	depth := 3
+	// If passed in as option, then reset depth
+	// Use index 0
+	if len(options) > 0 {
+		d, ok := options[0].(int)
+		if ok && d > 0 {
+			depth = d
+		}
+	}
 	return &Logger{
 		out:       out,
 		fmtter:    fmtter,
 		lvl:       lvl,
-		callDepth: 3,
+		callDepth: depth,
 	}
 }
 

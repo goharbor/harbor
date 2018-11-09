@@ -22,11 +22,23 @@ worker_pool:
     redis_url: "localhost:6379"
     namespace: "harbor_job_service"
 
-#Logger for job
-logger:
-  path: "~/tmp/job_logs"
-  level: "DEBUG"
-  archive_period: 1 #days
+#Loggers for the running job
+job_loggers:
+  - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"
+    level: "DEBUG" # INFO/DEBUG/WARNING/ERROR/FATAL
+  - name: "FILE"
+    level: "DEBUG"
+    settings: # Customized settings of logger
+      base_dir: "tmp/job_logs"
+    sweeper:
+      duration: 1 #days
+      settings: # Customized settings of sweeper
+        work_dir: "/tmp/job_logs"
+
+#Loggers for the job service
+loggers:
+  - name: "STD_OUTPUT" # Same with above
+    level: "DEBUG"
 
 #Admin server endpoint
 admin_server: "http://adminserver:9010/"

@@ -64,11 +64,7 @@ func (bs *Bootstrap) SetJobContextInitializer(initializer env.JobContextInitiali
 
 // LoadAndRun will load configurations, initialize components and then start the related process to serve requests.
 // Return error if meet any problems.
-func (bs *Bootstrap) LoadAndRun() {
-	// Create the root context
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
+func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) {
 	rootContext := &env.Context{
 		SystemContext: ctx,
 		WG:            &sync.WaitGroup{},
@@ -109,10 +105,6 @@ func (bs *Bootstrap) LoadAndRun() {
 	// Start the API server
 	apiServer := bs.loadAndRunAPIServer(rootContext, config.DefaultConfig, ctl)
 	logger.Infof("Server is started at %s:%d with %s", "", config.DefaultConfig.Port, config.DefaultConfig.Protocol)
-
-	// Start outdated log files sweeper
-	logSweeper := logger.NewSweeper(ctx, config.GetLogBasePath(), config.GetLogArchivePeriod())
-	logSweeper.Start()
 
 	// To indicate if any errors occurred
 	var err error

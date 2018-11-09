@@ -17,7 +17,7 @@ import { Subscription } from "rxjs";
 
 import { Configuration, clone, isEmpty, getChanges, StringValueItem} from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import { confirmUnsavedChanges} from '../config.msg.utils';
+import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../app-config.service';
 import { ConfigurationService } from '../config.service';
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
@@ -39,7 +39,8 @@ export class ConfigurationAuthComponent implements OnChanges {
     constructor(
         private msgHandler: MessageHandlerService,
         private configService: ConfigurationService,
-        private appConfigService: AppConfigService
+        private appConfigService: AppConfigService,
+        private confirmMessageHandler: ConfirmMessageHandler
         ) {
     }
 
@@ -224,7 +225,7 @@ export class ConfigurationAuthComponent implements OnChanges {
     public cancel(): void {
         let changes = this.getChanges();
         if (!isEmpty(changes)) {
-            confirmUnsavedChanges(changes);
+            this.confirmMessageHandler.confirmUnsavedChanges(changes);
         } else {
             // Invalid situation, should not come here
             console.error('Nothing changed');

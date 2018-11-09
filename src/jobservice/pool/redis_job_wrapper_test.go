@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/logger/backend"
 	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/utils"
 
@@ -56,16 +57,34 @@ func TestJobWrapper(t *testing.T) {
 		EnqueuedAt: time.Now().Add(5 * time.Minute).Unix(),
 	}
 
-	oldLogConfig := config.DefaultConfig.LoggerConfig
+	oldJobLoggerCfg := config.DefaultConfig.JobLoggerConfigs
 	defer func() {
-		config.DefaultConfig.LoggerConfig = oldLogConfig
+		config.DefaultConfig.JobLoggerConfigs = oldJobLoggerCfg
 	}()
 
-	config.DefaultConfig.LoggerConfig = &config.LoggerConfig{
-		LogLevel:      "debug",
-		ArchivePeriod: 1,
-		BasePath:      os.TempDir(),
+	config.DefaultConfig.JobLoggerConfigs = []*config.LoggerConfig{
+		{
+			Name:  "STD_OUTPUT",
+			Level: "DEBUG",
+			Settings: map[string]interface{}{
+				"output": backend.StdErr,
+			},
+		},
+		{
+			Name:  "FILE",
+			Level: "ERROR",
+			Settings: map[string]interface{}{
+				"base_dir": os.TempDir(),
+			},
+			Sweeper: &config.LogSweeperConfig{
+				Duration: 5,
+				Settings: map[string]interface{}{
+					"work_dir": os.TempDir(),
+				},
+			},
+		},
 	}
+
 	if err := wrapper.Run(j); err != nil {
 		t.Fatal(err)
 	}

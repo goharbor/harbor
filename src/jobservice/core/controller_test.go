@@ -17,8 +17,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
-
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/models"
 )
@@ -141,11 +139,7 @@ func TestGetJobLogData(t *testing.T) {
 	pool := &fakePool{}
 	c := NewController(pool)
 
-	if _, err := c.GetJobLogData("fake_ID"); err != nil {
-		if !errs.IsObjectNotFoundError(err) {
-			t.Errorf("expect object not found error but got '%s'\n", err)
-		}
-	} else {
+	if _, err := c.GetJobLogData("fake_ID"); err == nil {
 		t.Fatal("expect error but got nil")
 	}
 }
