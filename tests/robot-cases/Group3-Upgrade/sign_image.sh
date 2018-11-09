@@ -12,7 +12,7 @@ echo $IP
 
 #cp /harbor/ca/ca.crt /etc/docker/certs.d/$IP/
 #cp /harbor/ca/ca.crt ~/.docker/tls/$IP:4443/
-
+sudo chmod 777 ~/.docker/config.json
 export DOCKER_CONTENT_TRUST=1
 export DOCKER_CONTENT_TRUST_SERVER=https://$IP:4443
 
@@ -25,5 +25,5 @@ export DOCKER_CONTENT_TRUST_OFFLINE_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_TAGGING_PASSPHRASE=$PASSHRASE
 
 docker login -u admin -p Harbor12345 $IP
-docker tag $3:$4 $IP/$2/$3:$4
+#docker tag $3:$4 $IP/$2/$3:$4
 docker push $IP/$2/$3:$4
