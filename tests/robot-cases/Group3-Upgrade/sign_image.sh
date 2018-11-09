@@ -12,7 +12,7 @@ echo $IP
 
 #cp /harbor/ca/ca.crt /etc/docker/certs.d/$IP/
 #cp /harbor/ca/ca.crt ~/.docker/tls/$IP:4443/
-sudo chmod 777 ~/.docker/config.json
+#sudo chmod 777 ~/.docker/config.json
 export DOCKER_CONTENT_TRUST=1
 export DOCKER_CONTENT_TRUST_SERVER=https://$IP:4443
 
