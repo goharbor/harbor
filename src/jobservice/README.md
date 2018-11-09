@@ -340,6 +340,7 @@ So far, only the following two backends are supported:
 ### Configure loggers
 
 Logger configuration options:
+
 |     Option   |         Description       |
 |--------------|---------------------------|
 | loggers[x].name | The unique name of the logger backend |
