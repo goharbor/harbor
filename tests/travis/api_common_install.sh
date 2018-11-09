@@ -10,7 +10,7 @@ sudo sed "s/127.0.0.1/$1/" -i tests/generateCerts.sh
 sudo ./tests/generateCerts.sh
 sudo mkdir -p /etc/docker/certs.d/$1 && sudo cp ./harbor_ca.crt /etc/docker/certs.d/$1/
 ## config cert for notary
-sudo mkdir -p ~/.docker/tls/$I1 && sudo cp ./harbor_ca.crt  ~/.docker/tls/$I1/
+sudo mkdir -p ~/.docker/tls/$1 && sudo cp ./harbor_ca.crt  ~/.docker/tls/$1/
 
 if [ "$2" = 'LDAP' ]; then
     sudo ./tests/hostcfg.sh LDAP
