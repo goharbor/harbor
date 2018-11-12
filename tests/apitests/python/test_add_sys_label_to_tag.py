@@ -46,12 +46,12 @@ class TestProjects(unittest.TestCase):
     def testAddSysLabelToRepo(self):
         """
         Test case:
-            Delete a repository
+            Add Global Label To Tag
         Test step & Expectation:
             1. Create a new user(UA);
             2. Create a new private project(PA) by user(UA);
             3. Add user(UA) as a member of project(PA) with project-admin role;
-            4. Get private project of uesr-001, uesr-001 can see only one private project which is project-001;
+            4. Get private project of user(UA), user(UA) can see only one private project which is project(PA);
             5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
             6. Create a new label(LA) in project(PA) by admin;;
             7. Add this system global label to repository(RA)/tag(TA);
@@ -73,12 +73,12 @@ class TestProjects(unittest.TestCase):
         TestProjects.USER_add_g_lbl_CLIENT=dict(endpoint = url, username = user_add_g_lbl_name, password = user_001_password)
 
         #2. Create private project-001
-        project_add_g_lbl_name, TestProjects.project_add_g_lbl_id = self.project.create_project(metadata = {"public": "false"}, **TestProjects.ADMIN_CLIENT)
+        TestProjects.project_add_g_lbl_id, project_add_g_lbl_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.ADMIN_CLIENT)
 
         #3. Add user-001 as a member of project-001 with project-admin role
         self.project.add_project_members(TestProjects.project_add_g_lbl_id, TestProjects.user_add_g_lbl_id, **TestProjects.ADMIN_CLIENT)
 
-        #4. Get private project of uesr-001, uesr-001 can see only one private project which is project-001
+        #4. Get private project of user(UA), user(UA) can see only one private project which is project(PA);
         self.project.projects_should_exist(dict(public=False), expected_count = 1,
             expected_project_id = TestProjects.project_add_g_lbl_id, **TestProjects.USER_add_g_lbl_CLIENT)
 

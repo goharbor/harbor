@@ -65,7 +65,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.USER_del_repo_CLIENT=dict(endpoint = url, username = user_del_repo_name, password = user_del_repo_password)
 
         #2. Create a new project(PA) by user(UA);
-        project_del_repo_name, TestProjects.project_del_repo_id = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_del_repo_CLIENT)
+        TestProjects.project_del_repo_id, project_del_repo_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_del_repo_CLIENT)
 
         #3. Create a new repository(RA) in project(PA) by user(UA);
         repo_name, _ = create_repository(project_del_repo_name, harbor_server, 'admin', 'Harbor12345', "hello-world", "latest")

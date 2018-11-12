@@ -44,7 +44,7 @@ class TestProjects(unittest.TestCase):
         USER_001_CLIENT=dict(endpoint = url, username = user_001_name, password = user_001_password)
 
         #2. Create private project-001
-        project_001_name, project_001_id = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
+        project_001_id, project_001_name = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
         self.assertNotEqual(project_001_name, None, msg="Project was created failed, return project name is  {} and  id is {}.".format(project_001_name, project_001_id))
 
         #3.1 Get private projects of user-001
