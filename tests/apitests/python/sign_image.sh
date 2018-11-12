@@ -5,7 +5,6 @@ PASSHRASE='Harbor12345'
 
 echo $IP
 
-
 export DOCKER_CONTENT_TRUST=1
 export DOCKER_CONTENT_TRUST_SERVER=https://$IP:4443
 
