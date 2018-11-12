@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 
-from library.sign import set_sign_env
+from library.sign import sign_image
 from testutils import CLIENT
 from testutils import harbor_server
 from testutils import TEARDOWN
