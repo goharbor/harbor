@@ -15,7 +15,7 @@ class Project(base.Base):
             swagger_client.ProjectReq(name, metadata))
         base._assert_status_code(201, status_code)
         project_id = base._get_id_from_header(header)
-        return name, project_id
+        return project_id, name
 
     def get_projects(self, params, **kwargs):
         client = self._get_client(**kwargs)
