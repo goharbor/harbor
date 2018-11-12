@@ -40,20 +40,17 @@ class TestProjects(unittest.TestCase):
     def testSignImage(self):
         """
         Test case:
-            Delete a repository
+            Sign A Image
         Test step & Expectation:
             1. Create a new user(UA);
             2. Create a new private project(PA) by user(UA);
             3. Add user(UA) as a member of project(PA) with project-admin role;
-            4. Get private project of uesr-001, uesr-001 can see only one private project which is project-001;
+            4. Get private project of user(UA), user(UA) can see only one private project which is project(PA);
             5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-            6. Create a new label(LA) in project(PA) by admin;;
-            7. Add this system global label to repository(RA)/tag(TA);
+            6. Sign image with tag(TA) which was tagged by step #5;
+            7. Get signature of image with tag(TA), it should be exist.
         Tear down:
-            1. Delete repository(RA) by user(UA);
-            2. Delete project(PA);
-            3. Delete user(UA);
-            4. Delete label(LA).
+            NA
         """
         admin_user = "admin"
         admin_pwd = "Harbor12345"
@@ -66,13 +63,13 @@ class TestProjects(unittest.TestCase):
 
         TestProjects.USER_sign_image_CLIENT=dict(endpoint = url, username = user_sign_image_name, password = user_001_password)
 
-        #2. Create private project-001
+        #2. Create a new private project(PA) by user(UA);
         TestProjects.project_sign_image_id, project_sign_image_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.ADMIN_CLIENT)
 
-        #3. Add user-001 as a member of project-001 with project-admin role
+        #3. Add user(UA) as a member of project(PA) with project-admin role;
         self.project.add_project_members(TestProjects.project_sign_image_id, TestProjects.user_sign_image_id, **TestProjects.ADMIN_CLIENT)
 
-        #4. Get private project of uesr-001, uesr-001 can see only one private project which is project-001
+        #4. Get private project of user(UA), user(UA) can see only one private project which is project(PA);
         self.project.projects_should_exist(dict(public=False), expected_count = 1,
             expected_project_id = TestProjects.project_sign_image_id, **TestProjects.USER_sign_image_CLIENT)
 
@@ -80,8 +77,12 @@ class TestProjects(unittest.TestCase):
         src_tag = "latest"
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
         TestProjects.repo_name, tag = create_repository(project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, image, src_tag)
+        
+        #6. Sign image with tag(TA) which was tagged by step #5;
         sign_image(harbor_server, project_sign_image_name, image, tag)
 
+        #7. Get signature of image with tag(TA), it should be exist.
         self.repo.signature_should_exist(TestProjects.repo_name, tag, **TestProjects.USER_sign_image_CLIENT)
+
 if __name__ == '__main__':
     unittest.main()

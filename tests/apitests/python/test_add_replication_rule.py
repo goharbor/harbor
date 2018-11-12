@@ -46,7 +46,7 @@ class TestProjects(unittest.TestCase):
     def testAddSysLabelToRepo(self):
         """
         Test case:
-            Delete a repository
+            Add Replication Rule
         Test step & Expectation:
             1. Create a new user(UA);
             2. Create a new private project(PA) by user(UA);
