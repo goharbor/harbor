@@ -7,3 +7,4 @@ def sign_image(registry_ip, project_name, image, tag):
     if result_code != 0:
         raise Exception("Failed to sign image error code is {}.".format(result_code))
 
+
