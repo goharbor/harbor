@@ -5,10 +5,12 @@ RUN tdnf distro-sync -y \
     && tdnf install -y git shadow sudo bzr rpm xz python-xml >>/dev/null\
     && tdnf clean all \
     && mkdir /chartserver/ \
+    && mkdir /harbor/ \
     && groupadd -r -g 10000 chartuser \
     && useradd --no-log-init -m -r -g 10000 -u 10000 chartuser
 COPY ./binary/chartm /chartserver/
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY install_cert.sh /harbor
 
 VOLUME ["/chart_storage"]
 EXPOSE 9999

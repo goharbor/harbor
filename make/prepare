@@ -597,8 +597,8 @@ else:
     shutil.copyfile(os.path.join(templates_dir, "registry", "root.crt"), os.path.join(registry_config_dir, "root.crt"))
 
 if len(registry_custom_ca_bundle_path) > 0 and os.path.isfile(registry_custom_ca_bundle_path):
-    shutil.copyfile(registry_custom_ca_bundle_path, os.path.join(registry_config_dir, "custom-ca-bundle.crt"))
-    print("Copied custom ca bundle: %s" % os.path.join(registry_config_dir, "custom-ca-bundle.crt"))
+    shutil.copyfile(registry_custom_ca_bundle_path, os.path.join(config_dir, "custom-ca-bundle.crt"))
+    print("Copied custom ca bundle: %s" % os.path.join(config_dir, "custom-ca-bundle.crt"))
 
 if args.notary_mode:
     notary_config_dir = prep_conf_dir(config_dir, "notary")
@@ -699,11 +699,6 @@ if args.chart_mode:
     if not os.path.isdir(chartm_config_dir):
         print ("Create config folder: %s" % chartm_config_dir)
         os.makedirs(chartm_config_dir)
-
-    # handle custom ca bundle
-    if len(registry_custom_ca_bundle_path) > 0 and os.path.isfile(registry_custom_ca_bundle_path):
-        shutil.copyfile(registry_custom_ca_bundle_path, os.path.join(chartm_config_dir, "custom-ca-bundle.crt"))
-        print("Copied custom ca bundle: %s" % os.path.join(chartm_config_dir, "custom-ca-bundle.crt"))
     
     # process redis info
     cache_store = "redis"

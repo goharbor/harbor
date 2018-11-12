@@ -6,11 +6,13 @@ RUN tdnf distro-sync -y \
     && tdnf install -y git shadow sudo bzr rpm xz python-xml >>/dev/null\
     && tdnf clean all \
     && mkdir /clair/ \
+    && mkdir /harbor \
     && groupadd -r -g 10000 clair \
     && useradd --no-log-init -m -r -g 10000 -u 10000 clair
 COPY ./binary/clair /clair/
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY dumb-init /dumb-init 
+COPY install_cert.sh /harbor 
 
 VOLUME /config
 

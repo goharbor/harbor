@@ -18,6 +18,7 @@ services:
     volumes:
       - /data/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z
+      - ./common/config/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
     networks:
       - harbor
     environment:
