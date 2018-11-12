@@ -1,17 +1,10 @@
 #!/bin/bash
 
-docker pull $3:$4
-
 IP=$1
 PASSHRASE='Harbor12345'
 
 echo $IP
 
-mkdir -p /etc/docker/certs.d/$IP/
-mkdir -p ~/.docker/tls/$IP:4443/
-
-#cp /harbor/code/harbor/harbor_ca.crt /etc/docker/certs.d/$IP/ca.crt
-#cp /harbor/code/harbor/harbor_ca.crt ~/.docker/tls/$IP:4443/
 
 export DOCKER_CONTENT_TRUST=1
 export DOCKER_CONTENT_TRUST_SERVER=https://$IP:4443
@@ -24,6 +17,5 @@ export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_OFFLINE_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_TAGGING_PASSPHRASE=$PASSHRASE
 
-docker login -u admin -p Harbor12345 $IP
-docker tag $3:$4 $IP/$2/$3:$4
-docker push $IP/$2/$3:$4
+sudo docker login -u admin -p Harbor12345 $IP
+sudo docker push $IP/$2/$3:$4
