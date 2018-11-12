@@ -80,7 +80,7 @@ class TestProjects(unittest.TestCase):
         src_tag = "latest"
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
         TestProjects.repo_name, tag = create_repository(project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, image, src_tag)
-        set_sign_env(harbor_server, project_sign_image_name, image, tag)
+        sign_image(harbor_server, project_sign_image_name, image, tag)
 
         self.repo.signature_should_exist(TestProjects.repo_name, tag, **TestProjects.USER_sign_image_CLIENT)
 if __name__ == '__main__':
