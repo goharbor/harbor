@@ -24,8 +24,8 @@ class Repository(base.Base):
 
     def list_tags(self, repository, **kwargs):
         client = self._get_client(**kwargs)
-        return client.repositories_repo_name_tags_get_with_http_info(repository)
-
+        return client.repositories_repo_name_tags_get(repository)
+    
     def image_exists(self, repository, tag, **kwargs):
         tags = self.list_tags(repository, **kwargs)
         exist = False
