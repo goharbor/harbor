@@ -14,6 +14,8 @@ RUN tdnf install -y shadow gzip postgresql >> /dev/null\
     && sed -i "s|#unix_socket_directories = '/tmp'.*|unix_socket_directories = '/run/postgresql'|g" /usr/share/postgresql/postgresql.conf.sample \
     && tdnf clean all
 
+RUN tdnf erase -y toybox && tdnf install -y util-linux
+
 VOLUME /var/lib/postgresql/data
 
 ADD ./make/photon/db/docker-entrypoint.sh /entrypoint.sh

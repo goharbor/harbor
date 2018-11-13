@@ -27,7 +27,6 @@ describe('RegistryConfigComponent (inline template)', () => {
   let cfgService: ConfigurationService;
   let systemInfoService: SystemInfoService;
   let spy: jasmine.Spy;
-  let saveSpy: jasmine.Spy;
   let spySystemInfo: jasmine.Spy;
   let mockConfig: Configuration = new Configuration();
   mockConfig.token_expiration.value = 90;
@@ -82,7 +81,6 @@ describe('RegistryConfigComponent (inline template)', () => {
     cfgService = fixture.debugElement.injector.get(ConfigurationService);
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
     spy = spyOn(cfgService, 'getConfigurations').and.returnValue(Promise.resolve(mockConfig));
-    saveSpy = spyOn(cfgService, 'saveConfigurations').and.returnValue(Promise.resolve(true));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValue(Promise.resolve(mockSystemInfo));
 
     fixture.detectChanges();
@@ -102,16 +100,8 @@ describe('RegistryConfigComponent (inline template)', () => {
 
 
       fixture.detectChanges();
-      let el3: HTMLInputElement = fixture.nativeElement.querySelector('.btn-scan');
+      let el3: HTMLElement = fixture.nativeElement.querySelector('#config-vulnerability');
       expect(el3).toBeTruthy();
-      expect(el3).not.toBeFalsy();
     });
-  }));
-
-  it('should save the configuration changes', async(() => {
-    comp.save();
-    fixture.detectChanges();
-
-    expect(saveSpy.calls.any).toBeTruthy();
   }));
 });
