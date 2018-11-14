@@ -25,3 +25,5 @@ Test Case - Add a System Global Label to a Certain Tag
     Harbor API Test  ./tests/apitests/python/test_add_sys_label_to_tag.py
 Test Case - Add Replication Rule
     Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
+Test Case - Edit Project Creation
+    Harbor API Test  ./tests/apitests/python/test_edit_project_creation.py
