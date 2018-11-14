@@ -7,7 +7,10 @@ RUN tdnf distro-sync -y \
     && tdnf erase vim -y \
     && tdnf install sudo -y >> /dev/null\
     && tdnf clean all \
-    && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor
+    && mkdir /harbor/ \
+    && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor  
+
+COPY  install_cert.sh /harbor 
 
 COPY entrypoint.sh /
 RUN chmod u+x /entrypoint.sh

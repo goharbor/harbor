@@ -129,6 +129,7 @@ _build_clair:
 		else \
 			cd $(DOCKERFILEPATH_CLAIR) && $(DOCKERFILEPATH_CLAIR)/builder $(CLAIRVERSION); \
 		fi ; \
+		cp $(DOCKERFILEPATH)/common/install_cert.sh $(DOCKERFILEPATH_CLAIR); \
 		echo "building clair container for photon..." ; \
 		cd $(DOCKERFILEPATH_CLAIR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_CLAIR)/$(DOCKERFILENAME_CLAIR) -t $(DOCKERIMAGENAME_CLAIR):$(CLAIRVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_CLAIR)/binary; \
@@ -143,6 +144,7 @@ _build_chart_server:
 		else \
 			cd $(DOCKERFILEPATH_CHART_SERVER) && $(DOCKERFILEPATH_CHART_SERVER)/builder $(GOBUILDIMAGE) $(CHART_SERVER_CODE_BASE) $(CHARTMUSEUMVERSION) $(CHART_SERVER_MAIN_PATH) $(CHART_SERVER_BIN_NAME); \
 		fi ; \
+		cp $(DOCKERFILEPATH)/common/install_cert.sh $(DOCKERFILEPATH_CHART_SERVER); \
 		echo "building chartmuseum container for photon..." ; \
 		cd $(DOCKERFILEPATH_CHART_SERVER) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_CHART_SERVER)/$(DOCKERFILENAME_CHART_SERVER) -t $(DOCKERIMAGENAME_CHART_SERVER):$(CHARTMUSEUMVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_CHART_SERVER)/binary; \
@@ -179,6 +181,7 @@ _build_registry:
 	else \
 		cd $(DOCKERFILEPATH_REG) && $(DOCKERFILEPATH_REG)/builder $(REGISTRYVERSION); \
 	fi
+	cp $(DOCKERFILEPATH)/common/install_cert.sh $(DOCKERFILEPATH_REG) 
 	@echo "building registry container for photon..."
 	@cd $(DOCKERFILEPATH_REG) && chmod 655 $(DOCKERFILEPATH_REG)/binary/registry && $(DOCKERBUILD) -f $(DOCKERFILEPATH_REG)/$(DOCKERFILENAME_REG) -t $(DOCKERIMAGENAME_REG):$(REGISTRYVERSION)-$(VERSIONTAG) .
 	@echo "Done."
