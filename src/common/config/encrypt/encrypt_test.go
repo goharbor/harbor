@@ -21,7 +21,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 type fakeKeyProvider struct {
 	key string
 	err error

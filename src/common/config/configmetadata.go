@@ -30,8 +30,6 @@ const (
 // ValidateFunc - function to validate configure items
 type ValidateFunc func(key, value string) error
 
-
-
 // ConfigureMetaData ...
 type ConfigureMetaData struct {
 	sync.RWMutex
