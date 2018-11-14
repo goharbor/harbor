@@ -10,6 +10,7 @@
     <clr-dg-column [clrDgSortBy]="accessLevelComparator">{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>
     <clr-dg-column *ngIf="showRoleInfo" [clrDgSortBy]="roleComparator">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="repoCountComparator">{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="chartCountComparator">{{'PROJECT.CHART_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="timeComparator">{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
     <clr-dg-row *ngFor="let p of projects" [clrDgItem]="p">
         <clr-dg-cell>
@@ -18,6 +19,7 @@
         <clr-dg-cell>{{ (p.metadata.public === 'true' ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
         <clr-dg-cell *ngIf="showRoleInfo">{{roleInfo[p.current_user_role_id] | translate}}</clr-dg-cell>
         <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
+        <clr-dg-cell>{{p.chart_count}}</clr-dg-cell>
         <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>

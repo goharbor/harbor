@@ -139,6 +139,7 @@
         "ROLE": "Rôle",
         "PUBLIC_OR_PRIVATE": "Niveau d'Accès",
         "REPO_COUNT": "Nombre de dépôts",
+        "CHART_COUNT": "Chart Count",
         "CREATION_TIME": "Heure de création",
         "ACCESS_LEVEL": "Niveau d'Accès",
         "PUBLIC": "Public",
