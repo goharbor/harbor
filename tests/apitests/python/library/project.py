@@ -1,21 +1,30 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import base
 import swagger_client
+from swagger_client.rest import ApiException
 
 class Project(base.Base):
-    def create_project(self, name=None, metadata=None, **kwargs):
+    def create_project(self, name=None, metadata=None, expect_status_code = 201, expect_response_body = None, **kwargs):
         if name is None:
             name = base._random_name("project")
         if metadata is None:
             metadata = {}
         client = self._get_client(**kwargs)
-        _, status_code, header = client.projects_post_with_http_info(
-            swagger_client.ProjectReq(name, metadata))
-        base._assert_status_code(201, status_code)
-        project_id = base._get_id_from_header(header)
-        return project_id, name
+
+        try:
+            _, status_code, header = client.projects_post_with_http_info(swagger_client.ProjectReq(name, metadata))
+        except ApiException as e:
+            if e.status == expect_status_code:
+                if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
+                    raise Exception(r"Create project result body is not as expected {} actual status is {}.".format(expect_response_body.strip(), e.body.strip()))
+                else:
+                    return e.reason, e.body
+            else:
+                raise Exception(r"Create project result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
+
+        base._assert_status_code(expect_status_code, status_code)
+        return base._get_id_from_header(header), name
 
     def get_projects(self, params, **kwargs):
         client = self._get_client(**kwargs)
@@ -39,7 +48,6 @@ class Project(base.Base):
             200: True,
             404: False,
         }.get(status_code,'error')
-
 
     def get_project(self, project_id, **kwargs):
         client = self._get_client(**kwargs)
