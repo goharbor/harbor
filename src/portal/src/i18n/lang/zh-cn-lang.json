@@ -152,6 +152,7 @@
         "ROLE": "角色",
         "PUBLIC_OR_PRIVATE": "访问级别",
         "REPO_COUNT": "镜像仓库数",
+        "CHART_COUNT": "Helm Chart 数目",
         "CREATION_TIME": "创建时间",
         "ACCESS_LEVEL": "访问级别",
         "PUBLIC": "公开",
