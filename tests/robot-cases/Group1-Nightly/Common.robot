@@ -696,3 +696,28 @@ Test Case - Scan Image On Push
     Go Into Repo  memcached
     Summary Chart Should Display  latest
     Close Browser
+
+Test Case - Retag A Image Tag
+    Init Chrome Driver
+    ${random_num1}=   Get Current Date    result_format=%m%s
+    ${random_num2}=   Evaluate  str(random.randint(1000,9999))  modules=random
+
+    Sign In Harbor  ${HARBOR_URL}  user028  Test1@34
+    Create An New Project  project${random_num1}
+    Create An New Project  project${random_num2}
+    
+    Go Into Project  project${random_num1}
+    Sleep  1
+    Push Image With Tag  ${ip}  user028  Test1@34  project${random_num1}  redis  ${image_tag}
+    Sleep  1
+    Go Into Repo  project${random_num1}/redis
+    Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
+
+    Back To projects
+    Go Into Project  project${random_num2}
+    Sleep  1
+    Page Should Contain  ${target_image_name}
+    Go Into Repo  project${random_num2}/${target_image_name}
+    Sleep  1
+    Page Should Contain Element  xpath=${tag_value_xpath}
+    Close Browser
