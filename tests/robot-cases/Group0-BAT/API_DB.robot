@@ -27,3 +27,5 @@ Test Case - Add Replication Rule
     Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
 Test Case - Edit Project Creation
     Harbor API Test  ./tests/apitests/python/test_edit_project_creation.py
+Test Case - Scan Image
+    Harbor API Test  ./tests/apitests/python/test_scan_image.py
