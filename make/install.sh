@@ -179,30 +179,15 @@ fi
 ./prepare $prepare_para
 echo ""
 
-h2 "[Step $item]: checking existing instance of Harbor ..."; let item+=1
-docker_compose_list='-f docker-compose.yml'
-if [ $with_notary ] 
-then
-	docker_compose_list="${docker_compose_list} -f docker-compose.notary.yml"
-fi
-if [ $with_clair ]
-then
-	docker_compose_list="${docker_compose_list} -f docker-compose.clair.yml"
-fi
-if [ $with_chartmuseum ]
-then
-    docker_compose_list="${docker_compose_list} -f docker-compose.chartmuseum.yml"
-fi
-
-if [ -n "$(docker-compose $docker_compose_list ps -q)"  ]
+if [ -n "$(docker-compose ps -q)"  ]
 then
 	note "stopping existing Harbor instance ..." 
-	docker-compose $docker_compose_list down -v
+	docker-compose down -v
 fi
 echo ""
 
 h2 "[Step $item]: starting Harbor ..."
-docker-compose $docker_compose_list up -d
+docker-compose up -d
 
 protocol=http
 hostname=reg.mydomain.com
