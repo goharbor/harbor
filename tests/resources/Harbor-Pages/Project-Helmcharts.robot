@@ -48,5 +48,4 @@ Go Back To Versions And Delete
     Click Element  xpath=${version_checkbox}
     Click Element  xpath=${version_delete}
     Click Element  xpath=${version_confirm_delete}
-    Sleep  2
-    Page Should Contain Element  xpath=${helmchart_content}
+    Wait Until Page Contains Element  xpath=${helmchart_content}

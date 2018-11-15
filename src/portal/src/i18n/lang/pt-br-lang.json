@@ -151,6 +151,7 @@
         "ROLE": "Função",
         "PUBLIC_OR_PRIVATE": "Nível de acesso",
         "REPO_COUNT": "Quantidade de repositórios",
+        "CHART_COUNT": "Chart Count",
         "CREATION_TIME": "Data de criação",
         "ACCESS_LEVEL": "Nível de acesso",
         "PUBLIC": "Público",
