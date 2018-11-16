@@ -69,7 +69,7 @@ func NewConfigureValue(key, value string) *ConfigureValue {
 
 // GetString - Get the string value of current configure
 func (c *ConfigureValue) GetString() string {
-	//Any type has the string value
+	// Any type has the string value
 	_, err := MetaData.GetConfigMetaData(c.Key)
 	if err == nil {
 		return c.Value
@@ -157,7 +157,7 @@ func (c *ConfigureValue) GetMap() map[string]interface{} {
 // Validate - to validate configure items, if passed, return true, else return false and return error
 func (c *ConfigureValue) Validate() error {
 	if item, err := MetaData.GetConfigMetaData(c.Key); err == nil {
-		//Validate based on data type first
+		// Validate based on data type first
 		if item.Type == BoolType {
 			if strings.EqualFold(c.Value, "on") {
 				c.Value = "true"
