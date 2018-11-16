@@ -75,8 +75,6 @@ func Init() error {
 		adminServerURL = common.DefaultAdminserverEndpoint
 	}
 	return InitDBConfigManager()
-	//return InitByURL(adminServerURL)
-
 }
 
 // InitDBConfigManager ...

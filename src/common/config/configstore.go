@@ -183,7 +183,6 @@ func (s *ConfigureStore) GetAllSettings() ([]Value, error) {
 		}
 		return true
 	})
-	//fmt.Printf("total entries: %v", len(resultValues))
 	return resultValues, nil
 }
 

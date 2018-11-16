@@ -4,28 +4,28 @@ import "github.com/goharbor/harbor/src/common"
 
 // Item - Configure item include default value, type, env name
 type Item struct {
-	//The Scope of this configuration item: eg: SystemScope, UserScope
+	// The Scope of this configuration item: eg: SystemScope, UserScope
 	Scope string `json:"scope,omitempty"`
-	//email, ldapbasic, ldapgroup, uaa settings, used to retieve configure items by group, for example GetLDAPBasicSetting, GetLDAPGroupSetting settings
+	// email, ldapbasic, ldapgroup, uaa settings, used to retieve configure items by group, for example GetLDAPBasicSetting, GetLDAPGroupSetting settings
 	Group string `json:"group,omitempty"`
-	//environment key to retrieves this value when initialize, for example: POSTGRESQL_HOST, only used for system settings, for user settings no EnvironmentKey
+	// environment key to retrieves this value when initialize, for example: POSTGRESQL_HOST, only used for system settings, for user settings no EnvironmentKey
 	EnvironmentKey string `json:"environment_key,omitempty"`
-	//The default string value for this key
+	// The default string value for this key
 	DefaultValue string `json:"default_value,omitempty"`
-	//The key for current configure settings in database and rerest api
+	// The key for current configure settings in database and rerest api
 	Name string `json:"name,omitempty"`
-	//It can be integer, string, bool, password, map
+	// It can be integer, string, bool, password, map
 	Type string `json:"type,omitempty"`
-	//The validation function for this field.
+	// The validation function for this field.
 	Validator ValidateFunc `json:"validator,omitempty"`
-	//Is this settign can be modified after configure
+	// Is this settign can be modified after configure
 	Editable bool `json:"editable,omitempty"`
-	//Reloadable - reload config from env after restart, if it is true, the setting is only reload from env
+	// Reloadable - reload config from env after restart, if it is true, the setting is only reload from env
 	Reloadable bool `json:"reloadable,omitempty"`
 }
 
 var (
-	//ConfigList - All configure items used in harbor
+	// ConfigList - All configure items used in harbor
 	// Steps to onboard a new setting
 	// 1. Add configure item in configlist.go
 	// 2. Get settings by config.Client

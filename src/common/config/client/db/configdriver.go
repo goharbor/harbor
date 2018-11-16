@@ -34,7 +34,7 @@ func (cd *ConfigureDriver) Load() error {
 		return err
 	}
 	for _, item := range configEntries {
-		//ignore item can be relead from env
+		// ignore item can be relead from env
 		itemMetadata, err := config.MetaData.GetConfigMetaData(item.Key)
 		if err != nil {
 			log.Errorf("failed to GetConfigMetaData, key:%v, error:%v", item.Key, err)

@@ -6,10 +6,10 @@ import (
 
 // Constant for configure item
 const (
-	//Scope
+	// Scope
 	UserScope   = "user"
 	SystemScope = "system"
-	//Group
+	// Group
 	LdapBasicGroup = "ldapbasic"
 	LdapGroupGroup = "ldapgroup"
 	EmailGroup     = "email"
@@ -18,7 +18,7 @@ const (
 	BasicGroup     = "basic"
 	ClairGroup     = "clair"
 
-	//Type
+	// Type
 	IntType      = "int"
 	Int64Type    = "int64"
 	StringType   = "string"
