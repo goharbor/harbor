@@ -422,12 +422,14 @@ func Database() (*models.Database, error) {
 		return nil, err
 	}
 
+	log.Infof("database connections = %+v", cfg)
+
 	database := &models.Database{}
 	database.Type = utils.SafeCastString(cfg[common.DatabaseType])
 
 	postgresql := &models.PostGreSQL{}
 	postgresql.Host = utils.SafeCastString(cfg[common.PostGreSQLHOST])
-	postgresql.Port = int(utils.SafeCastFloat64(cfg[common.PostGreSQLPort]))
+	postgresql.Port = utils.SafeCastInt(cfg[common.PostGreSQLPort])
 	postgresql.Username = utils.SafeCastString(cfg[common.PostGreSQLUsername])
 	postgresql.Password = utils.SafeCastString(cfg[common.PostGreSQLPassword])
 	postgresql.Database = utils.SafeCastString(cfg[common.PostGreSQLDatabase])
