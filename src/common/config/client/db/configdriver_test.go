@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/config/encrypt"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
@@ -109,7 +110,9 @@ func TestDBDriver_Save(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when : %v", err)
 	}
-	if value.GetPassword() != "zhu88jie" {
+	fmt.Printf("message need to print,%v\n", value.GetPassword())
+	plainPasswd, err := encrypt.GetInstance().Decrypt(value.GetPassword())
+	if plainPasswd != "zhu88jie" {
 		t.Error("Failed to get password")
 	}
 }
