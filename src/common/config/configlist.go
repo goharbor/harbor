@@ -79,7 +79,7 @@ var (
 		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_DATABASE", DefaultValue: "", Name: "postgresql_database", Type: StringType, Editable: false, Reloadable: true},
 		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_HOST", DefaultValue: "", Name: "postgresql_host", Type: StringType, Editable: false, Reloadable: true},
 		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_PASSWORD", DefaultValue: "", Name: "postgresql_password", Type: PasswordType, Editable: false, Reloadable: true},
-		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_PORT", DefaultValue: "", Name: "postgresql_port", Type: IntType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_PORT", DefaultValue: "5432", Name: "postgresql_port", Type: IntType, Editable: false, Reloadable: true},
 		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_SSLMODE", DefaultValue: "disabled", Name: "postgresql_sslmode", Type: StringType, Editable: false, Reloadable: true},
 		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_USERNAME", DefaultValue: "", Name: "postgresql_username", Type: StringType, Editable: false, Reloadable: true},
 
