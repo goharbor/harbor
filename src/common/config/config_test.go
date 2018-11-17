@@ -21,14 +21,14 @@ import "testing"
 func TestInitMetaData(t *testing.T) {
 
 	MetaData.InitMetaData()
-	if item, err := MetaData.GetConfigMetaData("ldap_search_base_dn"); err != nil {
+	if item, err := MetaData.GetConfigMetaData("ldap_base_dn"); err != nil {
 		t.Error("Failed to find key ldap_search_base_dn after initial")
 	} else {
 		if item.Type != StringType {
 			t.Error("Wrong Type for this item!")
 		}
 	}
-	if item, err := MetaData.GetConfigMetaData("ldap_search_scope"); err != nil {
+	if item, err := MetaData.GetConfigMetaData("ldap_scope"); err != nil {
 		t.Error("Failed to find key ldap_search_scope after initial")
 	} else {
 		if item.Type != IntType {
