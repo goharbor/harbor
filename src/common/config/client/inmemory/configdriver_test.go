@@ -92,8 +92,8 @@ func TestSetSystemSettings(t *testing.T) {
 		{Name: "sample_map_setting", Type: "map", Scope: "user", Group: "ldapbasic"},
 		{Name: "auth_mode", Type: "map", Scope: "system", Group: "basic", EnvironmentKey: "AUTH_MODE", DefaultValue: "ldap_auth"},
 	}
-	cfg := NewConfigInMemoryFromArray(testingMetaDataArray)
 	os.Setenv("AUTH_MODE", "db_auth")
+	cfg := NewConfigInMemoryFromArray(testingMetaDataArray)
 	value, err := cfg.GetSetting("auth_mode")
 	if err != nil {
 		t.Errorf("Error occurred when GetSetting: %v", err)
