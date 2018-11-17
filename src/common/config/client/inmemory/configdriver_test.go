@@ -90,7 +90,7 @@ func TestSetSystemSettings(t *testing.T) {
 		{Name: "ulimit", Type: "int64", Scope: "user", Group: "ldapbasic", DefaultValue: "99999"},
 		{Name: "ldap_verify_cert", Type: "bool", Scope: "user", Group: "ldapbasic", DefaultValue: "true"},
 		{Name: "sample_map_setting", Type: "map", Scope: "user", Group: "ldapbasic"},
-		{Name: "auth_mode", Type: "map", Scope: "system", Group: "basic", EnvironmentKey: "AUTH_MODE", DefaultValue: "ldap_auth"},
+		{Name: "auth_mode", Type: "string", Scope: "system", Group: "basic", EnvironmentKey: "AUTH_MODE", DefaultValue: "ldap_auth"},
 	}
 	os.Setenv("AUTH_MODE", "db_auth")
 	cfg := NewConfigInMemoryFromArray(testingMetaDataArray)
