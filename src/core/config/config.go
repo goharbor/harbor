@@ -423,7 +423,7 @@ func Database() (*models.Database, error) {
 	}
 
 	database := &models.Database{}
-	database.Type = cfg[common.DatabaseType].(string)
+	database.Type = utils.SafeCastString(cfg[common.DatabaseType])
 
 	postgresql := &models.PostGreSQL{}
 	postgresql.Host = utils.SafeCastString(cfg[common.PostGreSQLHOST])
