@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/test"
@@ -100,16 +100,9 @@ func TestMain(m *testing.M) {
 	if err := uiConfig.Init(); err != nil {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
-
-	database, err := uiConfig.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configuration: %v", err)
-	}
-
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
-
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(adminServerLdapTestConfig)
 	os.Exit(m.Run())
 
 }

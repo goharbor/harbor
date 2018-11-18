@@ -15,7 +15,7 @@ type CoreConfigManager struct {
 
 // NewCoreConfigManager ...
 func NewCoreConfigManager() *CoreConfigManager {
-	return &CoreConfigManager{Driver: NewDBConfigureStore()}
+	return &CoreConfigManager{Driver: GetConfigureDriverInstance()}
 }
 
 // NewCoreConfigManagerFromArray ...

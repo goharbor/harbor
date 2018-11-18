@@ -1,6 +1,8 @@
 package db
 
 import (
+	"sync"
+
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -23,6 +25,19 @@ func NewDBConfigureStoreFromArray(items []config.Item) *ConfigureDriver {
 	config.MetaData.InitMetaDataFromArray(items)
 	cd.InitFromArray(items)
 	return cd
+}
+
+var instance *ConfigureDriver
+var once sync.Once
+
+// GetConfigureDriverInstance - get instance of DB ConfigureDriver
+func GetConfigureDriverInstance() *ConfigureDriver {
+	once.Do(func() {
+		instance = &ConfigureDriver{*config.NewConfigureStore()}
+		config.MetaData.InitMetaDataFromArray(config.ConfigList)
+		instance.InitFromArray(config.ConfigList)
+	})
+	return instance
 }
 
 // Load ...

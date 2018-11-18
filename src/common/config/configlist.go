@@ -45,7 +45,7 @@ var (
 		{Scope: SystemScope, Group: ClairGroup, EnvironmentKey: "CLAIR_URL", DefaultValue: "", Name: "clair_url", Type: StringType, Editable: false, Reloadable: true},
 
 		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "CORE_URL", DefaultValue: "", Name: "core_url", Type: StringType, Editable: false, Reloadable: true},
-		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "DATABASE_TYPE", DefaultValue: "", Name: "database_type", Type: StringType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "DATABASE_TYPE", DefaultValue: "postgresql", Name: "database_type", Type: StringType, Editable: false, Reloadable: true},
 
 		{Scope: UserScope, Group: EmailGroup, EnvironmentKey: "EMAIL_FROM", DefaultValue: "admin <sample_admin@mydomain.com>", Name: "email_from", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: EmailGroup, EnvironmentKey: "EMAIL_HOST", DefaultValue: "smtp.mydomain.com", Name: "email_host", Type: StringType, Editable: false},
@@ -69,19 +69,19 @@ var (
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_SEARCH_DN", DefaultValue: "", Name: "ldap_search_dn", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_SEARCH_PWD", DefaultValue: "", Name: "ldap_search_password", Type: PasswordType, Editable: false},
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_TIMEOUT", DefaultValue: "5", Name: "ldap_timeout", Type: IntType, Editable: false},
-		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_UID", DefaultValue: "", Name: "ldap_uid", Type: StringType, Editable: false},
-		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_URL", DefaultValue: "", Name: "ldap_url", Type: StringType, Editable: false},
+		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_UID", DefaultValue: "", Name: "ldap_uid", Type: StringType, Editable: true},
+		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_URL", DefaultValue: "", Name: "ldap_url", Type: StringType, Editable: true},
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_VERIFY_CERT", DefaultValue: "true", Name: "ldap_verify_cert", Type: BoolType, Editable: false},
 
 		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "MAX_JOB_WORKERS", DefaultValue: "", Name: "max_job_workers", Type: IntType, Editable: false, Reloadable: true},
 		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "NOTARY_URL", DefaultValue: "", Name: "notary_url", Type: StringType, Editable: false, Reloadable: true},
 
-		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_DATABASE", DefaultValue: "", Name: "postgresql_database", Type: StringType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_DATABASE", DefaultValue: "registry", Name: "postgresql_database", Type: StringType, Editable: false, Reloadable: true},
 		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_HOST", DefaultValue: "", Name: "postgresql_host", Type: StringType, Editable: false, Reloadable: true},
-		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_PASSWORD", DefaultValue: "", Name: "postgresql_password", Type: PasswordType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_PASSWORD", DefaultValue: "root123", Name: "postgresql_password", Type: PasswordType, Editable: false, Reloadable: true},
 		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_PORT", DefaultValue: "5432", Name: "postgresql_port", Type: IntType, Editable: false, Reloadable: true},
-		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_SSLMODE", DefaultValue: "disabled", Name: "postgresql_sslmode", Type: StringType, Editable: false, Reloadable: true},
-		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_USERNAME", DefaultValue: "", Name: "postgresql_username", Type: StringType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_SSLMODE", DefaultValue: "disable", Name: "postgresql_sslmode", Type: StringType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: DatabaseGroup, EnvironmentKey: "POSTGRESQL_USERNAME", DefaultValue: "postgres", Name: "postgresql_username", Type: StringType, Editable: false, Reloadable: true},
 
 		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "PROJECT_CREATION_RESTRICTION", DefaultValue: common.ProCrtRestrEveryone, Name: "project_creation_restriction", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "READ_ONLY", DefaultValue: "false", Name: "read_only", Type: BoolType, Editable: false},
