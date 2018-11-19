@@ -29,13 +29,15 @@ docker ps
 # run db auth api cases
 if [ "$1" = 'DB' ]; then
     pybot -v ip:$2 -v HARBOR_PASSWORD:Harbor12345 /home/travis/gopath/src/github.com/goharbor/harbor/tests/robot-cases/Group0-BAT/API_DB.robot
-elif [ "$1" = 'LDAP' ]; then
-    # run ldap api cases
-    pybot -v ip:$2 -v HARBOR_PASSWORD:Harbor12345 /home/travis/gopath/src/github.com/goharbor/harbor/tests/robot-cases/Group0-BAT/API_LDAP.robot
-else
-    rc=999
 fi
+# run ldap api cases
+if [ "$1" = 'LDAP' ]; then
+    pybot -v ip:$2 -v HARBOR_PASSWORD:Harbor12345 /home/travis/gopath/src/github.com/goharbor/harbor/tests/robot-cases/Group0-BAT/API_LDAP.robot
+fi
+
 rc=$?
+echo $rc
+
 ## --------------------------------------------- Upload Harbor CI Logs -------------------------------------------
 timestamp=$(date +%s)
 outfile="integration_logs_$timestamp$TRAVIS_COMMIT.tar.gz"
