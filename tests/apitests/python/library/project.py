@@ -4,6 +4,17 @@ import base
 import swagger_client
 from swagger_client.rest import ApiException
 
+def is_member_exist_in_project(members, member_user_name, expected_member_role_id = None):
+    result = False
+    for member in members:
+        if member.entity_name == member_user_name:
+            if expected_member_role_id != None:
+                if member.role_id == expected_member_role_id:
+                    return True
+            else:
+                return True
+    return result
+
 class Project(base.Base):
     def create_project(self, name=None, metadata=None, expect_status_code = 201, expect_response_body = None, **kwargs):
         if name is None:
@@ -49,10 +60,16 @@ class Project(base.Base):
             404: False,
         }.get(status_code,'error')
 
-    def get_project(self, project_id, **kwargs):
+    def get_project(self, project_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
-        data, status_code, _ = client.projects_project_id_get_with_http_info(project_id)
-        base._assert_status_code(200, status_code)
+        try:
+            data, status_code, _ = client.projects_project_id_get_with_http_info(project_id)
+        except ApiException as e:
+            if e.status == expect_status_code:
+                return e.reason, e.body
+            else:
+                raise Exception(r"Get project result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
+        base._assert_status_code(expect_status_code, status_code)
         return data
 
     def update_project(self, project_id, metadata, **kwargs):
@@ -81,10 +98,45 @@ class Project(base.Base):
 
     def get_project_members(self, project_id, **kwargs):
         client = self._get_client(**kwargs)
+        return client.projects_project_id_members_get(project_id)
+
+    def get_project_member(self, project_id, member_id, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
         data = []
-        data, status_code, _ = client.projects_project_id_members_get_with_http_info(project_id)
-        base._assert_status_code(200, status_code)
+        try:
+            data, status_code, _ = client.projects_project_id_members_mid_get_with_http_info(project_id, member_id,)
+        except ApiException as e:
+            if e.status == expect_status_code:
+                return e.reason, e.body
+            else:
+                raise Exception(r"Get project member result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
+        base._assert_status_code(expect_status_code, status_code)
         return data
+
+    def check_project_member_not_exist(self, project_id, member_user_name, **kwargs):
+        members = self.get_project_members(project_id, **kwargs)
+        result = is_member_exist_in_project(list(members), member_user_name)
+        if result == True:
+            raise Exception(r"User {} should not be a member of project with ID {}.".format(member_user_name, project_id))
+
+    def check_project_members_exist(self, project_id, member_user_name, expected_member_role_id = None, **kwargs):
+        members = self.get_project_members(project_id, **kwargs)
+        result = is_member_exist_in_project(members, member_user_name, expected_member_role_id = expected_member_role_id)
+        if result == False:
+            raise Exception(r"User {} should be a member of project with ID {}.".format(member_user_name, project_id))
+
+    def update_project_member_role(self, project_id, member_id, member_role_id, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        role = swagger_client.Role(role_id = member_role_id)
+        data = []
+        data, status_code, _ = client.projects_project_id_members_mid_put_with_http_info(project_id, member_id, role = role)
+        base._assert_status_code(expect_status_code, status_code)
+        return data
+
+    def delete_project_member(self, project_id, member_id, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        _, status_code, _ = client.projects_project_id_members_mid_delete_with_http_info(project_id, member_id)
+        base._assert_status_code(expect_status_code, status_code)
 
     def add_project_members(self, project_id, user_id, member_role_id = None, expect_status_code = 201, **kwargs):
         if member_role_id is None:
@@ -93,6 +145,7 @@ class Project(base.Base):
         projectMember = swagger_client.ProjectMember(member_role_id, member_user = _member_user)
         client = self._get_client(**kwargs)
         data = []
-        data, status_code, _ = client.projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)
+        data, status_code, header = client.projects_project_id_members_post_with_http_info(project_id, project_member = projectMember)
         base._assert_status_code(201, status_code)
-        return data
+        return base._get_id_from_header(header)
+

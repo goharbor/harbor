@@ -4,14 +4,14 @@ from __future__ import absolute_import
 import unittest
 
 from library.base import _assert_status_code
-from testutils import CLIENT
+from testutils import ADMIN_CLIENT
 from testutils import harbor_server
 
 from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import create_repository
+from library.repository import push_image_to_project
 
 class TestProjects(unittest.TestCase):
     @classmethod
@@ -36,7 +36,7 @@ class TestProjects(unittest.TestCase):
         self.project.delete_project(TestProjects.project_del_repo_id, **TestProjects.USER_del_repo_CLIENT)
 
         #2. Delete user(UA).
-        self.user.delete_user(TestProjects.user_del_repo_id, **TestProjects.ADMIN_CLIENT)
+        self.user.delete_user(TestProjects.user_del_repo_id, **ADMIN_CLIENT)
 
     def testDelRepo(self):
         """
@@ -53,14 +53,11 @@ class TestProjects(unittest.TestCase):
             1. Delete project(PA);
             2. Delete user(UA).
         """
-        admin_user = "admin"
-        admin_pwd = "Harbor12345"
-        url = CLIENT["endpoint"]
+        url = ADMIN_CLIENT["endpoint"]
         user_del_repo_password = "Aa123456"
-        TestProjects.ADMIN_CLIENT=dict(endpoint = url, username = admin_user, password =  admin_pwd)
 
         #1. Create a new user(UA);
-        TestProjects.user_del_repo_id, user_del_repo_name = self.user.create_user_success(user_password = user_del_repo_password, **TestProjects.ADMIN_CLIENT)
+        TestProjects.user_del_repo_id, user_del_repo_name = self.user.create_user_success(user_password = user_del_repo_password, **ADMIN_CLIENT)
 
         TestProjects.USER_del_repo_CLIENT=dict(endpoint = url, username = user_del_repo_name, password = user_del_repo_password)
 
@@ -68,7 +65,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.project_del_repo_id, project_del_repo_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_del_repo_CLIENT)
 
         #3. Create a new repository(RA) in project(PA) by user(UA);
-        repo_name, _ = create_repository(project_del_repo_name, harbor_server, 'admin', 'Harbor12345', "hello-world", "latest")
+        repo_name, _ = push_image_to_project(project_del_repo_name, harbor_server, 'admin', 'Harbor12345', "hello-world", "latest")
 
         #4. Get repository in project(PA), there should be one repository which was created by user(UA);
         repo_data = self.repo.get_repository(TestProjects.project_del_repo_id, **TestProjects.USER_del_repo_CLIENT)
