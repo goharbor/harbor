@@ -57,7 +57,7 @@ func NewConfigureValue(key, value string) *ConfigureValue {
 	result := &ConfigureValue{}
 	if metaData, err := MetaData.GetConfigMetaData(key); err != nil {
 		if metaData.Type == PasswordType {
-			result.SetPassword(key, value)
+			result.Set(key, value)
 		} else {
 			result.Set(key, value)
 		}

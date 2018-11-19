@@ -62,7 +62,7 @@ func (ccm *CoreConfigManager) Upload(cfgs map[string]interface{}) error {
 	for key, value := range cfgs {
 		err := ccm.Driver.UpdateConfigValue(key, fmt.Sprintf("%v", value))
 		if err != nil {
-			log.Errorf("Failed to update configure key %v, value %v", key, value)
+			log.Errorf("Failed to update configure key %v, value %v, error %v", key, value, err)
 		}
 	}
 	return ccm.Driver.Save()

@@ -61,6 +61,7 @@ var (
 
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_BASE_DN", DefaultValue: "", Name: "ldap_base_dn", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_FILTER", DefaultValue: "", Name: "ldap_filter", Type: StringType, Editable: false},
+		{Scope: UserScope, Group: LdapGroupGroup, EnvironmentKey: "LDAP_GROUP_BASE_DN", DefaultValue: "", Name: "ldap_group_base_dn", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: LdapGroupGroup, EnvironmentKey: "LDAP_GROUP_ADMIN_DN", DefaultValue: "", Name: "ldap_group_admin_dn", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: LdapGroupGroup, EnvironmentKey: "LDAP_GROUP_GID", DefaultValue: "", Name: "ldap_group_attribute_name", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: LdapGroupGroup, EnvironmentKey: "LDAP_GROUP_FILTER", DefaultValue: "", Name: "ldap_group_search_filter", Type: StringType, Editable: false},

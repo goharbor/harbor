@@ -310,7 +310,7 @@ func (s *ConfigureStore) UpdateConfigValue(keyName string, value string) error {
 	c := &ConfigureValue{Key: keyName, Value: value}
 	if err == nil {
 		if itemMetadata.Type == PasswordType {
-			err := c.SetPassword(keyName, value)
+			err := c.Set(keyName, value)
 			if err != nil {
 				return err
 			}
