@@ -27,7 +27,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
@@ -129,13 +129,15 @@ func TestAll(t *testing.T) {
 	if err := proxy.Init(); err != nil {
 		panic(err)
 	}
-	database, err := config.Database()
-	if err != nil {
-		panic(err)
-	}
-	if err := dao.InitDatabase(database); err != nil {
-		panic(err)
-	}
+	db.InitDatabaseAndConfigure()
+
+	// database, err := config.Database()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// if err := dao.InitDatabase(database); err != nil {
+	// 	panic(err)
+	// }
 
 	assert := assert.New(t)
 

@@ -14,11 +14,13 @@
 package db
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/utils/test"
 
@@ -91,14 +93,11 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
 
-	database, err := coreConfig.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configuration: %v", err)
-	}
-
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(adminServerTestConfig)
+	cfg, err := cfgManager.Get()
+	fmt.Printf("config settings,cfg:%v\n", cfg)
 }
 
 func TestSearchUser(t *testing.T) {
