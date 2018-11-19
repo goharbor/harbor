@@ -235,8 +235,8 @@ func LDAPConf() (*models.LdapConf, error) {
 	ldapConf.LdapBaseDn = utils.SafeCastString(cfg[common.LDAPBaseDN])
 	ldapConf.LdapUID = utils.SafeCastString(cfg[common.LDAPUID])
 	ldapConf.LdapFilter = utils.SafeCastString(cfg[common.LDAPFilter])
-	ldapConf.LdapScope = int(utils.SafeCastFloat64(cfg[common.LDAPScope]))
-	ldapConf.LdapConnectionTimeout = int(utils.SafeCastFloat64(cfg[common.LDAPTimeout]))
+	ldapConf.LdapScope = utils.SafeCastInt(cfg[common.LDAPScope])
+	ldapConf.LdapConnectionTimeout = utils.SafeCastInt(cfg[common.LDAPTimeout])
 	if cfg[common.LDAPVerifyCert] != nil {
 		ldapConf.LdapVerifyCert = cfg[common.LDAPVerifyCert].(bool)
 	} else {

@@ -1,6 +1,7 @@
 package ldap
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -30,9 +31,10 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.LDAPBaseDN:           "dc=example,dc=com",
 	common.LDAPUID:              "uid",
 	common.LDAPFilter:           "",
-	common.LDAPScope:            3,
+	common.LDAPScope:            2,
 	common.LDAPTimeout:          30,
 	common.CfgExpiration:        5,
+	common.LDAPVerifyCert:       false,
 	common.AdminInitialPassword: "password",
 }
 
@@ -103,6 +105,8 @@ func TestMain(m *testing.M) {
 	db.InitDatabaseAndConfigure()
 	cfgManager := db.NewCoreConfigManager()
 	cfgManager.Upload(adminServerLdapTestConfig)
+	cfg, err := cfgManager.Get()
+	fmt.Printf("config settings,cfg:%v\n", cfg)
 	os.Exit(m.Run())
 
 }

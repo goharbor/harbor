@@ -66,7 +66,7 @@ var (
 		{Scope: UserScope, Group: LdapGroupGroup, EnvironmentKey: "LDAP_GROUP_GID", DefaultValue: "", Name: "ldap_group_attribute_name", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: LdapGroupGroup, EnvironmentKey: "LDAP_GROUP_FILTER", DefaultValue: "", Name: "ldap_group_search_filter", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: LdapGroupGroup, EnvironmentKey: "LDAP_GROUP_SCOPE", DefaultValue: "2", Name: "ldap_group_search_scope", Type: IntType, Editable: false},
-		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_SCOPE", DefaultValue: "2", Name: "ldap_scope", Type: IntType, Editable: false},
+		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_SCOPE", DefaultValue: "2", Name: "ldap_scope", Type: IntType, Editable: true},
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_SEARCH_DN", DefaultValue: "", Name: "ldap_search_dn", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_SEARCH_PWD", DefaultValue: "", Name: "ldap_search_password", Type: PasswordType, Editable: false},
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_TIMEOUT", DefaultValue: "5", Name: "ldap_timeout", Type: IntType, Editable: false},
@@ -98,8 +98,8 @@ var (
 		{Scope: UserScope, Group: UAAGroup, EnvironmentKey: "UAA_ENDPOINT", DefaultValue: "", Name: "uaa_endpoint", Type: StringType, Editable: false, Reloadable: true},
 		{Scope: UserScope, Group: UAAGroup, EnvironmentKey: "UAA_VERIFY_CERT", DefaultValue: "true", Name: "uaa_verify_cert", Type: BoolType, Editable: false, Reloadable: true},
 
-		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "WITH_CHARTMUSEUM", DefaultValue: "", Name: "with_chartmuseum", Type: BoolType, Editable: true, Reloadable: true},
-		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "WITH_CLAIR", DefaultValue: "", Name: "with_clair", Type: BoolType, Editable: true, Reloadable: true},
-		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "WITH_NOTARY", DefaultValue: "", Name: "with_notary", Type: BoolType, Editable: true, Reloadable: true},
+		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "WITH_CHARTMUSEUM", DefaultValue: "", Name: "with_chartmuseum", Type: BoolType, Editable: true, Reloadable: true},
+		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "WITH_CLAIR", DefaultValue: "", Name: "with_clair", Type: BoolType, Editable: true, Reloadable: true},
+		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "WITH_NOTARY", DefaultValue: "", Name: "with_notary", Type: BoolType, Editable: true, Reloadable: true},
 	}
 )
