@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
@@ -53,6 +54,13 @@ func TestMain(m *testing.M) {
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
+
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(defaultConfig)
+	cfg, err := cfgManager.Get()
+	fmt.Printf("config settings,cfg:%v\n", cfg)
+
 	notaryCachePath = "/tmp/notary"
 	result := m.Run()
 	if result != 0 {
