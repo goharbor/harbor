@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/config"
-	"github.com/goharbor/harbor/src/common/config/encrypt"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
@@ -110,8 +109,7 @@ func TestDBDriver_Save(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when : %v", err)
 	}
-	fmt.Printf("message need to print,%v\n", value.GetPassword())
-	plainPasswd, err := encrypt.GetInstance().Decrypt(value.GetPassword())
+	plainPasswd := value.GetPassword()
 	if plainPasswd != "zhu88jie" {
 		t.Error("Failed to get password")
 	}
@@ -126,7 +124,6 @@ func TestCoreConfigManager_Load(t *testing.T) {
 	if len(cfgMap) < 1 {
 		t.Error("Can not find any item in map")
 	}
-	fmt.Printf("message need to print, configMap=%v\n", cfgMap)
 }
 
 func TestCoreConfigManager_Upload(t *testing.T) {
