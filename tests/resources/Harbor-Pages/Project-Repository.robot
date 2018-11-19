@@ -25,6 +25,10 @@ View Repo Scan Details
     Wait Until Page Contains  high
     Wait Until Page Contains  medium
     Page Should Contain  CVE
+    Sleep  2
+    Click Element  xpath=${build_history_btn}
+    Sleep  1
+    Page Should Contain Element  xpath=${build_history_data}
 
 View Scan Error Log
     Page Should Contain  View Log
