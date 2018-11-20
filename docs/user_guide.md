@@ -26,6 +26,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Manage Helm Charts](#manage-helm-charts)
   * [Manage Helm Charts via portal](#manage-helm-charts-via-portal)
   * [Working with Helm CLI](#working-with-helm-cli)
+* [Online Garbage Collection.](#online-gc)
 
 ## Role Based Access Control(RBAC)  
 
@@ -551,4 +552,31 @@ helm install --ca-file=ca.crt --key-file=server.key --cert-file=server.crt --use
 ```
 
 For other more helm commands like how to sign a chart, please refer to the [helm doc](https://docs.helm.sh/helm/#helm).
+
+## Online Garbage Collection
+Online Garbage Collection is to let user to trigger docker registry garbage collection by clicking button in UI.
+
+**NOTES:** GC is not stoppable, and it deletes unused image layers.
+
+### Setting up garbage collection
+If you are a system admin, you can trigger garbage collection by clicking "GC Now" in the **'Garbage Collection'** tab of **'Configuration'** section under **'Administration'**.
+
+![browse project](img/gc_now.png)
+**NOTES:** Harbor is put into read-only mode when to execute GC, and any modification on docker registry is prohibited.
+
+To avoid frequently triggering the gc process, the availability of the button is restricted. It can be only triggered once in one minute.
+![browse project](img/gc_now2.png)
+
+**Scheduled GC by Policy**
+* **None:** No policy is selected.
+* **Daily:** Policy is activated daily. It means an analysis job is scheduled to be executed at the specified time everyday. The scheduled job will do GC in Harbor.
+Once the policy has been configured, you have the option to save the schedule.
+![browse project](img/gc_policy.png)
+
+### GC history
+If you are a system admin, you can view the latest 10 records of GC execution.
+![browse project](img/gc_history.png)
+
+You can click on the 'details' link to view the related logs.
+![browse project](img/gc_details.png)
 
