@@ -25,62 +25,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// test functions under package core/config
-var adminServerDefaultConfig = map[string]interface{}{
-	common.ExtEndpoint:                "https://host01.com",
-	common.AUTHMode:                   common.DBAuth,
-	common.DatabaseType:               "postgresql",
-	common.PostGreSQLHOST:             "127.0.0.1",
-	common.PostGreSQLPort:             5432,
-	common.PostGreSQLUsername:         "postgres",
-	common.PostGreSQLPassword:         "root123",
-	common.PostGreSQLDatabase:         "registry",
-	common.SelfRegistration:           true,
-	common.LDAPURL:                    "ldap://127.0.0.1",
-	common.LDAPSearchDN:               "uid=searchuser,ou=people,dc=mydomain,dc=com",
-	common.LDAPSearchPwd:              "password",
-	common.LDAPBaseDN:                 "ou=people,dc=mydomain,dc=com",
-	common.LDAPUID:                    "uid",
-	common.LDAPFilter:                 "",
-	common.LDAPScope:                  3,
-	common.LDAPTimeout:                30,
-	common.LDAPGroupBaseDN:            "dc=example,dc=com",
-	common.LDAPGroupSearchFilter:      "objectClass=groupOfNames",
-	common.LDAPGroupSearchScope:       2,
-	common.LDAPGroupAttributeName:     "cn",
-	common.TokenServiceURL:            "http://token_service",
-	common.RegistryURL:                "http://registry",
-	common.EmailHost:                  "127.0.0.1",
-	common.EmailPort:                  25,
-	common.EmailUsername:              "user01",
-	common.EmailPassword:              "password",
-	common.EmailFrom:                  "from",
-	common.EmailSSL:                   true,
-	common.EmailInsecure:              false,
-	common.EmailIdentity:              "",
-	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
-	common.MaxJobWorkers:              3,
-	common.TokenExpiration:            30,
-	common.CfgExpiration:              5,
-	common.AdminInitialPassword:       "password",
-	common.AdmiralEndpoint:            "http://www.vmware.com",
-	common.WithNotary:                 false,
-	common.WithClair:                  false,
-	common.ClairDBUsername:            "postgres",
-	common.ClairDBHost:                "postgresql",
-	common.ClairDB:                    "postgres",
-	common.ClairDBPort:                5432,
-	common.ClairDBPassword:            "root123",
-	common.UAAClientID:                "testid",
-	common.UAAClientSecret:            "testsecret",
-	common.UAAEndpoint:                "10.192.168.5",
-	common.UAAVerifyCert:              false,
-	common.CoreURL:                    "http://myui:8888/",
-	common.JobServiceURL:              "http://myjob:8888/",
-	common.ReadOnly:                   false,
-	common.NotaryURL:                  "http://notary-server:4443",
-}
-
 func TestConfig(t *testing.T) {
 
 	defaultCACertPath = path.Join(currPath(), "test", "ca.crt")
@@ -112,7 +56,7 @@ func TestConfig(t *testing.T) {
 
 	db.InitDatabaseAndConfigure()
 	cfgManager := db.NewCoreConfigManager()
-	cfgManager.Upload(adminServerDefaultConfig)
+	cfgManager.Upload(common.TestServerDefaultConfig)
 
 	if err := Init(); err != nil {
 		t.Fatalf("failed to initialize configurations: %v", err)

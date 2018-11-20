@@ -67,6 +67,14 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(common.TestServerDefaultConfig)
+	cfg, err := cfgManager.Get()
+	if err != nil {
+		fmt.Printf("Error occurred when get config: %v", err)
+	}
+	fmt.Printf("config settings,cfg:%v\n", cfg)
 
 	rc := m.Run()
 	if rc != 0 {
@@ -129,13 +137,7 @@ func TestAll(t *testing.T) {
 	if err := proxy.Init(); err != nil {
 		panic(err)
 	}
-	db.InitDatabaseAndConfigure()
-	cfgManager := db.NewCoreConfigManager()
-	cfg, err := cfgManager.Get()
-	if err != nil {
-		t.Errorf("Error occurred when get config: %v", err)
-	}
-	fmt.Printf("config settings,cfg:%v\n", cfg)
+
 	// database, err := config.Database()
 	// if err != nil {
 	// 	panic(err)
