@@ -59,6 +59,8 @@ func TestConfig(t *testing.T) {
 	cfgManager.Upload(common.TestServerDefaultConfig)
 	admiralSettingMap := map[string]interface{}{
 		common.AdmiralEndpoint: "http://www.vmware.com",
+		common.JobServiceURL:   "http://myjob:8888",
+		common.CoreURL:         "http://myui:8888",
 	}
 	cfgManager.Upload(admiralSettingMap)
 
