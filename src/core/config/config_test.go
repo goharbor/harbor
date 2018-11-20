@@ -26,6 +26,44 @@ import (
 )
 
 // test functions under package core/config
+var adminServerDefaultConfig = map[string]interface{}{
+	common.ExtEndpoint:                "https://host01.com",
+	common.AUTHMode:                   common.DBAuth,
+	common.DatabaseType:               "postgresql",
+	common.PostGreSQLHOST:             "127.0.0.1",
+	common.PostGreSQLPort:             5432,
+	common.PostGreSQLUsername:         "postgres",
+	common.PostGreSQLPassword:         "root123",
+	common.PostGreSQLDatabase:         "registry",
+	common.SelfRegistration:           true,
+	common.LDAPURL:                    "ldap://127.0.0.1:389",
+	common.LDAPSearchDN:               "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:              "admin",
+	common.LDAPBaseDN:                 "dc=example,dc=com",
+	common.LDAPUID:                    "uid",
+	common.LDAPFilter:                 "",
+	common.LDAPScope:                  3,
+	common.LDAPTimeout:                30,
+	common.LDAPVerifyCert:             true,
+	common.TokenServiceURL:            "http://token_service",
+	common.RegistryURL:                "http://registry",
+	common.EmailHost:                  "127.0.0.1",
+	common.EmailPort:                  25,
+	common.EmailUsername:              "user01",
+	common.EmailPassword:              "password",
+	common.EmailFrom:                  "from",
+	common.EmailSSL:                   true,
+	common.EmailIdentity:              "",
+	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
+	common.MaxJobWorkers:              3,
+	common.TokenExpiration:            30,
+	common.CfgExpiration:              5,
+	common.AdminInitialPassword:       "password",
+	common.AdmiralEndpoint:            "http://www.vmware.com",
+	common.WithNotary:                 false,
+	common.WithClair:                  false,
+}
+
 func TestConfig(t *testing.T) {
 
 	defaultCACertPath = path.Join(currPath(), "test", "ca.crt")
@@ -56,6 +94,9 @@ func TestConfig(t *testing.T) {
 	}
 
 	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(adminServerDefaultConfig)
+
 	if err := Init(); err != nil {
 		t.Fatalf("failed to initialize configurations: %v", err)
 	}
