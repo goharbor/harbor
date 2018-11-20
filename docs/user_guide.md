@@ -27,8 +27,12 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Manage Helm Charts](#manage-helm-charts)
   * [Manage Helm Charts via portal](#manage-helm-charts-via-portal)
   * [Working with Helm CLI](#working-with-helm-cli)
+<<<<<<< HEAD
 * [Online Garbage Collection.](#online-garbage-collection)
 * [View build history.](#build-history)
+=======
+* [Online Garbage Collection.](#online-gc)
+>>>>>>> add document for gc
 
 ## Role Based Access Control(RBAC)  
 
