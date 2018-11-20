@@ -26,11 +26,11 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
-	_ "github.com/core/auth/db"
-	_ "github.com/core/auth/ldap"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/models"
+	_ "github.com/goharbor/harbor/src/core/auth/db"
+	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/stretchr/testify/assert"
