@@ -82,7 +82,7 @@ type usrInfo struct {
 
 var adminServerAPITestConfig = map[string]interface{}{
 	common.ExtEndpoint:        "host01.com",
-	common.AUTHMode:           "ldap_auth",
+	common.AUTHMode:           "db_auth",
 	common.DatabaseType:       "postgresql",
 	common.PostGreSQLHOST:     "127.0.0.1",
 	common.PostGreSQLPort:     5432,
