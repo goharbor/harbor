@@ -130,7 +130,12 @@ func TestAll(t *testing.T) {
 		panic(err)
 	}
 	db.InitDatabaseAndConfigure()
-
+	cfgManager := db.NewCoreConfigManager()
+	cfg, err := cfgManager.Get()
+	if err != nil {
+		t.Errorf("Error occurred when get config: %v", err)
+	}
+	fmt.Printf("config settings,cfg:%v\n", cfg)
 	// database, err := config.Database()
 	// if err != nil {
 	// 	panic(err)
