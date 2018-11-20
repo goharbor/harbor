@@ -57,6 +57,10 @@ func TestConfig(t *testing.T) {
 	db.InitDatabaseAndConfigure()
 	cfgManager := db.NewCoreConfigManager()
 	cfgManager.Upload(common.TestServerDefaultConfig)
+	admiralSettingMap := map[string]interface{}{
+		common.AdmiralEndpoint: "http://www.vmware.com",
+	}
+	cfgManager.Upload(admiralSettingMap)
 
 	if err := Init(); err != nil {
 		t.Fatalf("failed to initialize configurations: %v", err)
