@@ -203,6 +203,7 @@ func TestMain(m *testing.M) {
 	if err := prepare(); err != nil {
 		panic(err)
 	}
+	fmt.Printf("Test env prepared")
 
 	ret := m.Run()
 	clean()
