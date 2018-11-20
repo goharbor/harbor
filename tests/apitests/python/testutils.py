@@ -7,8 +7,12 @@ from swagger_client.rest import ApiException
 import swagger_client.models
 from pprint import pprint
 
+admin_user = "admin"
+admin_pwd = "Harbor12345"
+
 harbor_server = os.environ["HARBOR_HOST"]
-CLIENT=dict(endpoint="https://"+harbor_server+"/api")
+#CLIENT=dict(endpoint="https://"+harbor_server+"/api")
+ADMIN_CLIENT=dict(endpoint = "https://"+harbor_server+"/api", username = admin_user, password =  admin_pwd)
 USER_ROLE=dict(admin=0,normal=1)
 TEARDOWN = True
 

@@ -29,3 +29,5 @@ Test Case - Edit Project Creation
     Harbor API Test  ./tests/apitests/python/test_edit_project_creation.py
 Test Case - Scan Image
     Harbor API Test  ./tests/apitests/python/test_scan_image.py
+Test Case - Manage Project Member
+    Harbor API Test  ./tests/apitests/python/test_manage_project_member.py

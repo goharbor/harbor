@@ -1,13 +1,13 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import CLIENT
 from testutils import harbor_server
 from testutils import TEARDOWN
+from testutils import ADMIN_CLIENT
 from library.project import Project
 from library.user import User
 from library.repository import Repository
-from library.repository import create_repository
+from library.repository import push_image_to_project
 
 class TestProjects(unittest.TestCase):
     @classmethod
@@ -34,7 +34,7 @@ class TestProjects(unittest.TestCase):
         self.project.delete_project(TestProjects.project_scan_image_id, **TestProjects.USER_scan_image_CLIENT)
 
         #3. Delete user(UA);
-        self.user.delete_user(TestProjects.user_scan_image_id, **TestProjects.ADMIN_CLIENT)
+        self.user.delete_user(TestProjects.user_scan_image_id, **ADMIN_CLIENT)
 
     def testScanImage(self):
         """
@@ -52,22 +52,19 @@ class TestProjects(unittest.TestCase):
             2. Delete project(PA);
             3. Delete user(UA);
         """
-        admin_user = "admin"
-        admin_pwd = "Harbor12345"
-        url = CLIENT["endpoint"]
+        url = ADMIN_CLIENT["endpoint"]
         user_001_password = "Aa123456"
-        TestProjects.ADMIN_CLIENT=dict(endpoint = url, username = admin_user, password =  admin_pwd)
 
         #1. Create user-001
-        TestProjects.user_scan_image_id, user_scan_image_name = self.user.create_user_success(user_password = user_001_password, **TestProjects.ADMIN_CLIENT)
+        TestProjects.user_scan_image_id, user_scan_image_name = self.user.create_user_success(user_password = user_001_password, **ADMIN_CLIENT)
 
         TestProjects.USER_scan_image_CLIENT=dict(endpoint = url, username = user_scan_image_name, password = user_001_password)
 
         #2. Create a new private project(PA) by user(UA);
-        TestProjects.project_scan_image_id, project_scan_image_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.ADMIN_CLIENT)
+        TestProjects.project_scan_image_id, project_scan_image_name = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
 
         #3. Add user(UA) as a member of project(PA) with project-admin role;
-        self.project.add_project_members(TestProjects.project_scan_image_id, TestProjects.user_scan_image_id, **TestProjects.ADMIN_CLIENT)
+        self.project.add_project_members(TestProjects.project_scan_image_id, TestProjects.user_scan_image_id, **ADMIN_CLIENT)
 
         #4. Get private project of user(UA), user(UA) can see only one private project which is project(PA);
         self.project.projects_should_exist(dict(public=False), expected_count = 1,
@@ -79,7 +76,7 @@ class TestProjects(unittest.TestCase):
         image = "pypy"
         src_tag = "latest"
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-        TestProjects.repo_name, tag = create_repository(project_scan_image_name, harbor_server, user_scan_image_name, user_001_password, image, src_tag)
+        TestProjects.repo_name, tag = push_image_to_project(project_scan_image_name, harbor_server, user_scan_image_name, user_001_password, image, src_tag)
 
         #6. Send scan image command and get tag(TA) infomation to check scan result, it should be finished;
         self.repo.scan_not_scanned_image_success(TestProjects.repo_name, tag, **TestProjects.USER_scan_image_CLIENT)

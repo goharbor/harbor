@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from testutils import CLIENT
+from testutils import ADMIN_CLIENT
 from library.project import Project
 from library.user import User
 
@@ -31,12 +31,9 @@ class TestProjects(unittest.TestCase):
             4. Login harbor as admin, then to add user(UA) in project(PA);
             5. Login harbor as user(UA), then to get all private project, there must be project(PA) only.
         """
-        url = CLIENT["endpoint"]
+        url = ADMIN_CLIENT["endpoint"]
         user_001_password = "Aa123456"
 
-        admin_user = "admin"
-        admin_pwd = "Harbor12345"
-        ADMIN_CLIENT=dict(endpoint = url, username = admin_user, password =  admin_pwd)
         #1. Create user-001
         user_001_id, user_001_name = self.user.create_user(user_password = user_001_password, **ADMIN_CLIENT)
         self.assertNotEqual(user_001_id, None, msg="Failed to create user, return user is {}".format(user_001_id))

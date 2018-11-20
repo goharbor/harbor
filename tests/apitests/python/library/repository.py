@@ -5,7 +5,7 @@ import base
 import swagger_client
 from docker_api import DockerAPI
 
-def create_repository(project_name, registry, username, password, image, tag):
+def push_image_to_project(project_name, registry, username, password, image, tag):
     _docker_api = DockerAPI()
     _docker_api.docker_login(registry, username, password)
     time.sleep(2)

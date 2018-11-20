@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import unittest
 
-from testutils import CLIENT
+from testutils import ADMIN_CLIENT
 from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
@@ -30,7 +30,7 @@ class TestProjects(unittest.TestCase):
         self.project.delete_project(TestProjects.project_edit_project_creation_id, **TestProjects.USER_edit_project_creation_CLIENT)
 
         #2. Delete user(UA);
-        self.user.delete_user(TestProjects.user_edit_project_creation_id, **TestProjects.ADMIN_CLIENT)
+        self.user.delete_user(TestProjects.user_edit_project_creation_id, **ADMIN_CLIENT)
 
     def testEditProjectCreation(self):
         """
@@ -46,26 +46,23 @@ class TestProjects(unittest.TestCase):
             1. Delete project(PA);
             2. Delete user(UA);
         """
-        admin_user = "admin"
-        admin_pwd = "Harbor12345"
-        url = CLIENT["endpoint"]
+        url = ADMIN_CLIENT["endpoint"]
         user_edit_project_creation_password = "Aa123456"
-        TestProjects.ADMIN_CLIENT=dict(endpoint = url, username = admin_user, password =  admin_pwd)
 
         #1. Create a new user(UA);
-        TestProjects.user_edit_project_creation_id, user_edit_project_creation_name = self.user.create_user_success(user_password = user_edit_project_creation_password, **TestProjects.ADMIN_CLIENT)
+        TestProjects.user_edit_project_creation_id, user_edit_project_creation_name = self.user.create_user_success(user_password = user_edit_project_creation_password, **ADMIN_CLIENT)
 
         TestProjects.USER_edit_project_creation_CLIENT=dict(endpoint = url, username = user_edit_project_creation_name, password = user_edit_project_creation_password)
 
         #2. Set project creation to "admin only";
-        self.conf.set_configurations_of_project_creation_restriction_success("adminonly", **TestProjects.ADMIN_CLIENT)
+        self.conf.set_configurations_of_project_creation_restriction_success("adminonly", **ADMIN_CLIENT)
 
         #3. Create a new project(PA) by user(UA), and fail to create a new project;
         self.project.create_project(metadata = {"public": "false"}, expect_status_code = 403,
             expect_response_body = "Only system admin can create project", **TestProjects.USER_edit_project_creation_CLIENT)
 
         #4. Set project creation to "everyone";
-        self.conf.set_configurations_of_project_creation_restriction_success("everyone", **TestProjects.ADMIN_CLIENT)
+        self.conf.set_configurations_of_project_creation_restriction_success("everyone", **ADMIN_CLIENT)
 
         #5. Create a new project(PA) by user(UA), success to create a project.
         TestProjects.project_edit_project_creation_id, _ = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_edit_project_creation_CLIENT)
