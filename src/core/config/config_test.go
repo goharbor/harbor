@@ -36,15 +36,18 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.PostGreSQLPassword:         "root123",
 	common.PostGreSQLDatabase:         "registry",
 	common.SelfRegistration:           true,
-	common.LDAPURL:                    "ldap://127.0.0.1:389",
-	common.LDAPSearchDN:               "cn=admin,dc=example,dc=com",
-	common.LDAPSearchPwd:              "admin",
-	common.LDAPBaseDN:                 "dc=example,dc=com",
+	common.LDAPURL:                    "ldap://127.0.0.1",
+	common.LDAPSearchDN:               "uid=searchuser,ou=people,dc=mydomain,dc=com",
+	common.LDAPSearchPwd:              "password",
+	common.LDAPBaseDN:                 "ou=people,dc=mydomain,dc=com",
 	common.LDAPUID:                    "uid",
 	common.LDAPFilter:                 "",
 	common.LDAPScope:                  3,
 	common.LDAPTimeout:                30,
-	common.LDAPVerifyCert:             true,
+	common.LDAPGroupBaseDN:            "dc=example,dc=com",
+	common.LDAPGroupSearchFilter:      "objectClass=groupOfNames",
+	common.LDAPGroupSearchScope:       2,
+	common.LDAPGroupAttributeName:     "cn",
 	common.TokenServiceURL:            "http://token_service",
 	common.RegistryURL:                "http://registry",
 	common.EmailHost:                  "127.0.0.1",
@@ -53,6 +56,7 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.EmailPassword:              "password",
 	common.EmailFrom:                  "from",
 	common.EmailSSL:                   true,
+	common.EmailInsecure:              false,
 	common.EmailIdentity:              "",
 	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
 	common.MaxJobWorkers:              3,
@@ -62,6 +66,19 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.AdmiralEndpoint:            "http://www.vmware.com",
 	common.WithNotary:                 false,
 	common.WithClair:                  false,
+	common.ClairDBUsername:            "postgres",
+	common.ClairDBHost:                "postgresql",
+	common.ClairDB:                    "postgres",
+	common.ClairDBPort:                5432,
+	common.ClairDBPassword:            "root123",
+	common.UAAClientID:                "testid",
+	common.UAAClientSecret:            "testsecret",
+	common.UAAEndpoint:                "10.192.168.5",
+	common.UAAVerifyCert:              false,
+	common.CoreURL:                    "http://myui:8888/",
+	common.JobServiceURL:              "http://myjob:8888/",
+	common.ReadOnly:                   false,
+	common.NotaryURL:                  "http://notary-server:4443",
 }
 
 func TestConfig(t *testing.T) {
@@ -236,7 +253,6 @@ func TestConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to get UAA setting, error: %v", err)
 	}
-
 	if us.ClientID != "testid" || us.ClientSecret != "testsecret" || us.Endpoint != "10.192.168.5" || us.VerifyCert {
 		t.Errorf("Unexpected UAA setting: %+v", *us)
 	}

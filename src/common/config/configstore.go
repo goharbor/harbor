@@ -145,17 +145,18 @@ func (s *ConfigureStore) InitFromArray(testingMetaDataArray []Item) error {
 
 // Load ...
 func (s *ConfigureStore) Load() error {
-	panic("not implemented")
+	panic("Load not implemented")
 }
 
 // Save ...
 func (s *ConfigureStore) Save() error {
-	panic("not implemented")
+	panic("Save not implemented")
 }
 
 // UpdateAll ...
 func (s *ConfigureStore) UpdateAll() error {
-	panic("not implemented")
+	log.Info("UpdateAll not implemented")
+	return nil
 }
 
 // Reset ...

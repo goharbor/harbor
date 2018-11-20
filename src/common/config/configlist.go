@@ -96,7 +96,7 @@ var (
 		{Scope: UserScope, Group: UAAGroup, EnvironmentKey: "UAA_CLIENTID", DefaultValue: "", Name: "uaa_client_id", Type: StringType, Editable: false, Reloadable: true},
 		{Scope: UserScope, Group: UAAGroup, EnvironmentKey: "UAA_CLIENTSECRET", DefaultValue: "", Name: "uaa_client_secret", Type: StringType, Editable: false, Reloadable: true},
 		{Scope: UserScope, Group: UAAGroup, EnvironmentKey: "UAA_ENDPOINT", DefaultValue: "", Name: "uaa_endpoint", Type: StringType, Editable: false, Reloadable: true},
-		{Scope: UserScope, Group: UAAGroup, EnvironmentKey: "UAA_VERIFY_CERT", DefaultValue: "true", Name: "uaa_verify_cert", Type: BoolType, Editable: false, Reloadable: true},
+		{Scope: UserScope, Group: UAAGroup, EnvironmentKey: "UAA_VERIFY_CERT", DefaultValue: "false", Name: "uaa_verify_cert", Type: BoolType, Editable: false, Reloadable: true},
 
 		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "WITH_CHARTMUSEUM", DefaultValue: "", Name: "with_chartmuseum", Type: BoolType, Editable: true, Reloadable: true},
 		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "WITH_CLAIR", DefaultValue: "", Name: "with_clair", Type: BoolType, Editable: true, Reloadable: true},

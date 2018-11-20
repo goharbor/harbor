@@ -337,7 +337,7 @@ func RegistryURL() (string, error) {
 func InternalJobServiceURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.")
+		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.", err)
 		return common.DefaultJobserviceEndpoint
 	}
 
@@ -351,7 +351,7 @@ func InternalJobServiceURL() string {
 func InternalCoreURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to Get job service Core URL from backend, error: %v, will return default value.")
+		log.Warningf("Failed to Get job service Core URL from backend, error: %v, will return default value.", err)
 		return common.DefaultCoreEndpoint
 	}
 	return strings.TrimSuffix(utils.SafeCastString(cfg[common.CoreURL]), "/")
@@ -368,7 +368,7 @@ func InternalTokenServiceEndpoint() string {
 func InternalNotaryEndpoint() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to get Notary endpoint from backend, error: %v, will use default value.")
+		log.Warningf("Failed to get Notary endpoint from backend, error: %v, will use default value.", err)
 		return common.DefaultNotaryEndpoint
 	}
 	if cfg[common.NotaryURL] == nil {
@@ -491,7 +491,7 @@ func ClairDB() (*models.PostGreSQL, error) {
 	}
 	clairDB := &models.PostGreSQL{}
 	clairDB.Host = utils.SafeCastString(cfg[common.ClairDBHost])
-	clairDB.Port = int(utils.SafeCastFloat64(cfg[common.ClairDBPort]))
+	clairDB.Port = utils.SafeCastInt(cfg[common.ClairDBPort])
 	clairDB.Username = utils.SafeCastString(cfg[common.ClairDBUsername])
 	clairDB.Password = utils.SafeCastString(cfg[common.ClairDBPassword])
 	clairDB.Database = utils.SafeCastString(cfg[common.ClairDB])
