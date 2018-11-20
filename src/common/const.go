@@ -240,7 +240,7 @@ var (
 		TokenExpiration:            30,
 		CfgExpiration:              5,
 		AdminInitialPassword:       "password",
-		AdmiralEndpoint:            "http://www.vmware.com",
+		AdmiralEndpoint:            "",
 		WithNotary:                 false,
 		WithClair:                  false,
 		ClairDBUsername:            "postgres",
