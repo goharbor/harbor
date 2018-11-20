@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -54,6 +55,7 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
+	db.InitDatabaseAndConfigure()
 	if err := Init(); err != nil {
 		t.Fatalf("failed to initialize configurations: %v", err)
 	}
