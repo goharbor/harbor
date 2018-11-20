@@ -70,10 +70,10 @@ var (
 func Init() error {
 	// init key provider
 	initKeyProvider()
-	adminServerURL := os.Getenv("ADMINSERVER_URL")
-	if len(adminServerURL) == 0 {
-		adminServerURL = common.DefaultAdminserverEndpoint
-	}
+	// adminServerURL := os.Getenv("ADMINSERVER_URL")
+	// if len(adminServerURL) == 0 {
+	// 	adminServerURL = common.DefaultAdminserverEndpoint
+	// }
 	return InitDBConfigManager()
 }
 

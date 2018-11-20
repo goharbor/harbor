@@ -26,10 +26,11 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego"
+	_ "github.com/core/auth/db"
+	_ "github.com/core/auth/ldap"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/stretchr/testify/assert"
@@ -98,17 +99,8 @@ func TestUserResettable(t *testing.T) {
 		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
-	DBAuthAdminsvr, err := test.NewAdminserver(DBAuthConfig)
-	if err != nil {
-		panic(err)
-	}
-	LDAPAuthAdminsvr, err := test.NewAdminserver(LDAPAuthConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer DBAuthAdminsvr.Close()
-	defer LDAPAuthAdminsvr.Close()
-	if err := config.InitByURL(LDAPAuthAdminsvr.URL); err != nil {
+
+	if err := config.Init(); err != nil {
 		panic(err)
 	}
 	u1 := &models.User{
@@ -123,10 +115,7 @@ func TestUserResettable(t *testing.T) {
 	}
 	assert.False(isUserResetable(u1))
 	assert.True(isUserResetable(u2))
-	if err := config.InitByURL(DBAuthAdminsvr.URL); err != nil {
-		panic(err)
-	}
-	assert.True(isUserResetable(u1))
+
 }
 
 // TestMain is a sample to run an endpoint test
