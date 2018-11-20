@@ -27,6 +27,7 @@ func Init(urls ...string) error {
 	}
 	if len(urls) == 0 {
 		registryURL, err = config.RegistryURL()
+		fmt.Printf("registry URL:%v\n", registryURL)
 		if err != nil {
 			return err
 		}

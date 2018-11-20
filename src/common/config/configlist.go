@@ -87,8 +87,9 @@ var (
 		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "PROJECT_CREATION_RESTRICTION", DefaultValue: common.ProCrtRestrEveryone, Name: "project_creation_restriction", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "READ_ONLY", DefaultValue: "false", Name: "read_only", Type: BoolType, Editable: false},
 
-		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "REGISTRY_STORAGE_PROVIDER_NAME", DefaultValue: "", Name: "registry_storage_provider_name", Type: StringType, Editable: false, Reloadable: true},
-		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "REGISTRY_URL", DefaultValue: "", Name: "registry_url", Type: StringType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "REGISTRY_STORAGE_PROVIDER_NAME", DefaultValue: "filesystem", Name: "registry_storage_provider_name", Type: StringType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "REGISTRY_URL", DefaultValue: "http://registry:5000", Name: "registry_url", Type: StringType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "REGISTRY_CONTROLLER_URL", DefaultValue: "http://registryctl:8080", Name: "registry_controller_url", Type: StringType, Editable: false, Reloadable: true},
 		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "SELF_REGISTRATION", DefaultValue: "true", Name: "self_registration", Type: BoolType, Editable: false},
 		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "TOKEN_EXPIRATION", DefaultValue: "30", Name: "token_expiration", Type: IntType, Editable: false},
 		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "TOKEN_SERVICE_URL", DefaultValue: "", Name: "token_service_url", Type: StringType, Editable: false, Reloadable: true},
