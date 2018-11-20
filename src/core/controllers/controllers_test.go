@@ -93,13 +93,13 @@ func TestUserResettable(t *testing.T) {
 		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
-
+	cfgManager := db.NewCoreConfigManager()
 	LDAPAuthConfig := map[string]interface{}{
 		common.AUTHMode:        common.LDAPAuth,
 		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
-
+	cfgManager.Upload(LDAPAuthConfig)
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
@@ -114,6 +114,7 @@ func TestUserResettable(t *testing.T) {
 		Email:    "jack@test.com",
 	}
 	assert.False(isUserResetable(u1))
+	cfgManager.Upload(DBAuthConfig)
 	assert.True(isUserResetable(u2))
 
 }
