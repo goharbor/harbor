@@ -24,7 +24,7 @@ class TestProjects(unittest.TestCase):
         """
         Test case:
             Add a new user to a certain private project as member
-        Test step and Expectation:
+        Test step and expected result:
             1. Login harbor as admin, then to create a user(UA) with non-admin role;
             2. Login harbor as admin, then to create a private project(PA);
             3. Login harbor as user(UA), then to get all private projects, projects count must be zero;

@@ -26,7 +26,7 @@ class TestProjects(unittest.TestCase):
     def tearDown(self):
         print "Case completed"
 
-    @unittest.skipIf(TEARDOWN == False, "Test data should be remain in the harbor.")
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(TestProjects.repo_name, **ADMIN_CLIENT)
@@ -43,7 +43,7 @@ class TestProjects(unittest.TestCase):
         """
         Test case:
             Manage Project members
-        Test step and Expectation:
+        Test step and expected result:
             1. Create user Alice, Bob, Carol;
             2. Create private project(PA) by Alice, Add a repository to project(PA) by Alice;
             3. Bob is not a member of project(PA);
@@ -54,6 +54,10 @@ class TestProjects(unittest.TestCase):
             8. Alice delete Bob from project(PA),
                Bob is no longer a member of project(PA) and Bob can see project(PA),
                Carol is still a member of project(PA) as a guest.
+        Tear down:
+            1. Delete repository(RA) by user(UA);
+            2. Delete project(PA);
+            3. Delete user(UA);               
         """
         url = ADMIN_CLIENT["endpoint"]
         user_alice_password = "Aa123456"

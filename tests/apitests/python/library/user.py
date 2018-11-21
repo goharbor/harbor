@@ -91,4 +91,9 @@ class User(base.Base):
         print "has_admin_role:", has_admin_role
         _, status_code, _ = client.users_user_id_sysadmin_put_with_http_info(user_id, has_admin_role)
         base._assert_status_code(200, status_code)
-        return user_id
+
+    def update_uesr_role_as_sysadmin_success(self, user_id, IsAdmin, **kwargs):
+        self.update_uesr_role_as_sysadmin(user_id, IsAdmin, **kwargs)
+        user = self.get_user(user_id, **kwargs)
+        if user.has_admin_role != IsAdmin:
+            raise Exception(r"Update user role as sysadmin failed.")
