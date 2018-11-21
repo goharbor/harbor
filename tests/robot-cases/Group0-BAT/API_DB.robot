@@ -31,3 +31,5 @@ Test Case - Scan Image
     Harbor API Test  ./tests/apitests/python/test_scan_image.py
 Test Case - Manage Project Member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
+Test Case - Project Level Policy Content Trust
+    Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
