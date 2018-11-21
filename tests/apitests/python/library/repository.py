@@ -5,12 +5,24 @@ import base
 import swagger_client
 from docker_api import DockerAPI
 
+def pull_harbor_image(registry, username, password, image, tag, expected_error_message = None):
+    _docker_api = DockerAPI()
+    _docker_api.docker_login(registry, username, password)
+    time.sleep(2)
+    _docker_api.docker_image_pull(r'{}/{}'.format(registry, image), tag = tag, expected_error_message = expected_error_message)
+
+def pull_harbor_image_successfully(registry, username, password, image, tag):
+    pull_harbor_image(registry, username, password, image, tag)
+
+def pull_harbor_image_unsuccessfully(registry, username, password, image, tag, expected_error_message):
+    pull_harbor_image(registry, username, password, image, tag, expected_error_message = expected_error_message)
+
 def push_image_to_project(project_name, registry, username, password, image, tag):
     _docker_api = DockerAPI()
     _docker_api.docker_login(registry, username, password)
     time.sleep(2)
 
-    _docker_api.docker_image_pull(image, tag)
+    _docker_api.docker_image_pull(image, tag = tag)
     time.sleep(2)
 
     new_harbor_registry, new_tag = _docker_api.docker_image_tag(image, r'{}/{}/{}'.format(registry, project_name, image))
@@ -19,6 +31,13 @@ def push_image_to_project(project_name, registry, username, password, image, tag
     _docker_api.docker_image_push(new_harbor_registry, new_tag)
 
     return r'{}/{}'.format(project_name, image), new_tag
+
+def is_repo_exist_in_project(repositories, repo_name):
+    result = False
+    for reop in repositories:
+        if reop.name == repo_name:
+            return True
+    return result
 
 class Repository(base.Base):
 
@@ -107,4 +126,10 @@ class Repository(base.Base):
         self.get_not_scanned_image_init_state_success(repo_name, tag, **kwargs)
         self.scan_image(repo_name, tag, **kwargs)
         self.check_image_scan_result(repo_name, tag, **kwargs)
+
+    def repository_should_exist(self, project_id, repo_name, **kwargs):
+        repositories = self.get_repository(project_id, **kwargs)
+        if is_repo_exist_in_project(repositories, repo_name) == False:
+            raise Exception("Repository {} is not exist.".format(repo_name))
+
 

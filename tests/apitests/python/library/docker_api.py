@@ -19,16 +19,20 @@ class DockerAPI(object):
         except docker.errors.APIError, e:
             raise Exception(r" Docker login failed, error is [{}]".format (e.message))
 
-    def docker_image_pull(self, image, tag = None):
-        _tag = "latest"
+    def docker_image_pull(self, image, tag = None, expected_error_message = None):
         if tag is not None:
             _tag = tag
+        else:
+            _tag = "latest"
         try:
-            tag = base._random_name("tag")
-            pull_ret = base._get_string_from_unicode(self.DCLIENT.pull('{}:{}'.format(image, _tag)))
-            print "pull_ret:", pull_ret
-        except docker.errors.APIError, e:
-            raise Exception(r" Docker pull image {} failed, error is [{}]".format (image, e.message))
+            base._get_string_from_unicode(self.DCLIENT.pull(r'{}:{}'.format(image, _tag)))
+        except Exception, err:
+            if expected_error_message is not None:
+                print "docker image pull error:", str(err)
+                if str(err).lower().find(expected_error_message.lower()) < 0:
+                    raise Exception(r"Pull image: Return message {} is not as expected {}".format(return_message, expected_error_message))
+            else:
+                raise Exception(r" Docker pull image {} failed, error is [{}]".format (image, e.message))
 
     def docker_image_tag(self, image, harbor_registry, tag = None):
         _tag = base._random_name("tag")
