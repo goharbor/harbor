@@ -56,7 +56,7 @@ var (
 		{Scope: UserScope, Group: EmailGroup, EnvironmentKey: "EMAIL_SSL", DefaultValue: "false", Name: "email_ssl", Type: BoolType, Editable: false},
 		{Scope: UserScope, Group: EmailGroup, EnvironmentKey: "EMAIL_USR", DefaultValue: "sample_admin@mydomain.com", Name: "email_username", Type: StringType, Editable: false},
 
-		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "EXT_ENDPOINT", DefaultValue: "", Name: "ext_endpoint", Type: StringType, Editable: false, Reloadable: true},
+		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "EXT_ENDPOINT", DefaultValue: "https://host01.com", Name: "ext_endpoint", Type: StringType, Editable: false, Reloadable: true},
 		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "JOBSERVICE_URL", DefaultValue: "", Name: "jobservice_url", Type: StringType, Editable: false, Reloadable: true},
 
 		{Scope: UserScope, Group: LdapBasicGroup, EnvironmentKey: "LDAP_BASE_DN", DefaultValue: "", Name: "ldap_base_dn", Type: StringType, Editable: false},
