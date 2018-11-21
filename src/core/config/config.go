@@ -97,35 +97,6 @@ func InitDBConfigManager() error {
 	return err
 }
 
-// InitByURL Init configurations with given url
-func InitByURL(adminServerURL string) error {
-	log.Infof("initializing client for adminserver %s ...", adminServerURL)
-	cfg := &client.Config{
-		Secret: CoreSecret(),
-	}
-	AdminserverClient = client.NewClient(adminServerURL, cfg)
-	if err := AdminserverClient.Ping(); err != nil {
-		return fmt.Errorf("failed to ping adminserver: %v", err)
-	}
-
-	mg = comcfg.NewManager(AdminserverClient, true)
-
-	if err := Load(); err != nil {
-		return err
-	}
-
-	// init secret store
-	initSecretStore()
-
-	// init project manager based on deploy mode
-	if err := initProjectManager(); err != nil {
-		log.Errorf("Failed to initialise project manager, error: %v", err)
-		return err
-	}
-
-	return nil
-}
-
 func initKeyProvider() {
 	path := os.Getenv("KEY_PATH")
 	if len(path) == 0 {

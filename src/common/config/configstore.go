@@ -237,7 +237,7 @@ func (s *ConfigureStore) GetInt(keyName string) int {
 	if err == nil {
 		value, err := s.readMap(keyName)
 		if err != nil {
-			log.Errorf("Error while geting %v, error: %+v", keyName, err)
+			log.Errorf("Error while getting %v, error: %+v", keyName, err)
 			return 0
 		}
 		if itemMetadata.Type == IntType {
@@ -254,7 +254,7 @@ func (s *ConfigureStore) GetString(keyName string) string {
 	if err == nil {
 		value, err := s.readMap(keyName)
 		if err != nil {
-			log.Errorf("Error while geting %v, error: %+v", keyName, err)
+			log.Errorf("Error while getting %v, error: %+v", keyName, err)
 			return ""
 		}
 		return value.GetString()
