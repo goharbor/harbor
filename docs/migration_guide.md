@@ -1,45 +1,36 @@
 # Harbor upgrade and database migration guide
 
-When upgrading your existing Habor instance to a newer version, you may need to migrate the data in your database and the settings in harbor.cfg. Refer to [change log](../tools/migration/changelog.md) to find out whether there is any change in the database. If there is, you should go through the database migration process. Since the migration may alter the database schema and the settings of harbor.cfg, you should **always** back up your data before any migration.
-
-*If your install Harbor for the first time, or the database version is the same as that of the lastest version, you do not need any database migration.*
+Refer to [change log](../tools/migration/changelog.md) to find out whether there is any change in the database. If there is, you should go through the database migration process. 
 
 **NOTE:**
-- From v1.6.0 on, Harbor migrates DB from MariaDB to Postgresql, and combines Harbor, Notary and Clair DB into one. 
+- From v1.6.0 onwards, Harbor migrated from MariaDB to Postgresql, combining Harbor, Notary and Clair databases into one. 
 
-- From v1.5.0 on, the migration tool add support for the harbor.cfg migration, which supports upgrade from v1.2.x, v1.3.x and v1.4.x.
+- From v1.5.0 onwards, the migration tool adds support for harbor.cfg migration, which supports upgrading from v1.2.x, v1.3.x and v1.4.x.
 
-- From v1.2 on, you need to use the release version as the tag of the migrator image. 'latest' is no longer used for new release.
+- From v1.2 onwards, you need to use the release version as the tag of the migrator image. 'latest' is no longer used for new releases.
 
-- You must back up your data before any data migration.
+- Migrations may alter the database schema and harbor.cfg therefore, **always** back up your data before any migration.
 
-### Upgrading Harbor and migrating data
+- If you install Harbor for the first time, or the database version is the same as that of the lastest version, you do not need any database migration.
 
-1. Log in to the host that Harbor runs on, stop and remove existing Harbor instance if it is still running:
+## Upgrading Harbor
 
-    ```
+1. Login to the host that Harbor runs on, and stop all Harbor related containers
+    ```sh
     cd harbor
     docker-compose down
     ```
 
-2.  Back up Harbor's current files so that you can roll back to the current version when it is necessary.
-    ```sh
-    cd ..
-    mv harbor /my_backup_dir/harbor
-    ```
+2. Pull the migration tool docker image, replace [tag] to the version of Harbor that you are upgrading to
 
-3. Get the latest Harbor release package from Github:
-   https://github.com/goharbor/harbor/releases
-
-4. Before upgrading Harbor, perform migration first.  The migration tool is delivered as a docker image, so you should pull the image from docker hub. Replace [tag] with the release version of Harbor (e.g. v1.5.0) in the below command:
-
-    **NOTE:** Before harbor 1.5 , image name of the migration tool is `goharbor/harbor-db-migrator:[tag]`
+    **NOTE:** Before Harbor 1.5 , the image name is `goharbor/harbor-db-migrator:[tag]`
 
     ```
     docker pull goharbor/harbor-migrator:[tag]
+    docker pull goharbor/harbor-migrator:v1.6.0
     ```
 
-5. Back up database/harbor.cfg to a directory such as `/path/to/backup`. You need to create the directory if it does not exist.  Also, note that the username and password to access the db are provided via environment variable "DB_USR" and "DB_PWD". 
+3. Back up database/harbor.cfg to a directory such as `/path/to/backup`. You need to create the directory if it does not exist.  Also, note that the username and password to access the db are provided via environment variable "DB_USR" and "DB_PWD". 
 
     **NOTE:** Upgrade from harbor 1.2 or older to harbor 1.3 must use `goharbor/harbor-db-migrator:1.2`. Because DB engine replaced by MariaDB in harbor 1.3
 
@@ -57,7 +48,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg -v ${backup_path}:/harbor-migration/backup goharbor/harbor-migrator:[tag] --cfg backup
     ```    
 
-6.  Upgrade database schema, harbor.cfg and migrate data.
+4.  Upgrade database schema, harbor.cfg and migrate data.
 
     **NOTE:** In v1.6.0, you needs to DO three sequential steps to fully migrate Harbor, Notary and Clair's DB. The migration of Notary and Clair's DB depends on Harbor's DB, you need to first upgrade Harbor's DB, then upgrade Notary and Clair's DB. The following command handles the upgrade for Harbor DB and CFG, not include Notary and Clair DB. 
 
@@ -104,7 +95,9 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     ```
     will be occurred during upgrading from harbor <= v1.5.0 to harbor v1.6.0, just ignore them if harbor can start successfully.
 
-7. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance. If you choose to install Harbor with components like Notary and/or Clair, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.
+4. Download either the online/offline release of the version of Harbor that you are upgrading to, and extract the contents into the original Harbor directory
+
+5. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance. If you choose to install Harbor with components like Notary and/or Clair, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.
 
 ### Roll back from an upgrade
 For any reason, if you want to roll back to the previous version of Harbor, follow the below steps:
