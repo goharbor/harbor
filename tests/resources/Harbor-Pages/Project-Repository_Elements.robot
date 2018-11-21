@@ -19,3 +19,5 @@ Documentation  This resource provides any keywords related to the Harbor private
 ${first_repo_xpath}  //clr-dg-row//clr-dg-cell[2]//a
 ${first_cve_xpath}  //clr-dg-row[1]//clr-dg-cell//a
 ${view_log_xpath}  //clr-dg-row[1]//clr-dg-cell[5]//a
+${build_history_btn}  //button[contains(.,'Build History')]
+${build_history_data}  //clr-dg-row
