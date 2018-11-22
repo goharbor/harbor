@@ -5,6 +5,13 @@ services:
     container_name: harbor-log 
     restart: always
     dns_search: .
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
     volumes:
       - /var/log/harbor/:/var/log/docker/:z
       - ./common/config/log/:/etc/logrotate.d/:z
@@ -16,6 +23,12 @@ services:
     image: goharbor/registry-photon:__reg_version__
     container_name: registry
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
     volumes:
       - /data/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z
@@ -36,6 +49,12 @@ services:
     env_file:
       - ./common/config/registryctl/env
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
     volumes:
       - /data/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z
@@ -54,6 +73,13 @@ services:
     image: goharbor/harbor-db:__version__
     container_name: harbor-db
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
     volumes:
       - /data/database:/var/lib/postgresql/data:z
     networks:
@@ -74,6 +100,12 @@ services:
     env_file:
       - ./common/config/adminserver/env
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
     volumes:
       - /data/config/:/etc/adminserver/config/:z
       - /data/secretkey:/etc/adminserver/key:z
@@ -94,6 +126,11 @@ services:
     env_file:
       - ./common/config/core/env
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
     volumes:
       - ./common/config/core/app.conf:/etc/core/app.conf:z
       - ./common/config/core/private_key.pem:/etc/core/private_key.pem:z
@@ -118,6 +155,13 @@ services:
     image: goharbor/harbor-portal:__version__
     container_name: harbor-portal
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
     networks:
       - harbor
     dns_search: .
@@ -136,6 +180,12 @@ services:
     env_file:
       - ./common/config/jobservice/env
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
     volumes:
       - /data/job_logs:/var/log/jobs:z
       - ./common/config/jobservice/config.yml:/etc/jobservice/config.yml:z
@@ -155,6 +205,12 @@ services:
     image: goharbor/redis-photon:__redis_version__
     container_name: redis
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
     volumes:
       - /data/redis:/var/lib/redis
     networks:
@@ -171,6 +227,13 @@ services:
     image: goharbor/nginx-photon:__version__
     container_name: nginx
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - NET_BIND_SERVICE
     volumes:
       - ./common/config/nginx:/etc/nginx:z
     networks:
