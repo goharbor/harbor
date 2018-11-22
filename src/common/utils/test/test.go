@@ -50,11 +50,11 @@ type Response struct {
 	StatusCode int
 	// Headers are the headers of the response
 	Headers map[string]string
-	// Boby is the body of the response
+	// Body is the body of the response
 	Body []byte
 }
 
-// Handler returns a handler function which handle requst according to
+// Handler returns a handler function which handle request according to
 // the response provided
 func Handler(resp *Response) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {

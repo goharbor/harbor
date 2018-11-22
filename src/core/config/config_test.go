@@ -168,11 +168,26 @@ func TestConfig(t *testing.T) {
 		t.Errorf(`extURL should be "host01.com".`)
 	}
 
+	// Test ExtURL with empty string
+	adminServerDefaultConfig[common.ExtEndpoint] = ""
+	if err := Load(); err != nil {
+		t.Fatalf("failed to load configurations: %v", err)
+	}
+	extURL, err = ExtURL()
+	if err != nil {
+		t.Errorf("Unexpected error getting external URL: %v", err)
+	}
+
+	if extURL != "" {
+		t.Errorf(`extURL expected "", got "%s".`, extURL)
+	}
+
 	// reset configurations
 	if err = Reset(); err != nil {
 		t.Errorf("failed to reset configurations: %v", err)
 		return
 	}
+
 	mode, err = AuthMode()
 	if err != nil {
 		t.Fatalf("failed to get auth mode: %v", err)

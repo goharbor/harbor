@@ -15,7 +15,10 @@
 package test
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 
@@ -80,29 +83,11 @@ var adminServerDefaultConfig = map[string]interface{}{
 // NewAdminserver returns a mock admin server
 func NewAdminserver(config map[string]interface{}) (*httptest.Server, error) {
 	m := []*RequestHandlerMapping{}
-	if config == nil {
-		config = adminServerDefaultConfig
-	} else {
-		for k, v := range adminServerDefaultConfig {
-			if _, ok := config[k]; !ok {
-				config[k] = v
-			}
-		}
-	}
-	b, err := json.Marshal(config)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := &Response{
-		StatusCode: http.StatusOK,
-		Body:       b,
-	}
 
 	m = append(m, &RequestHandlerMapping{
 		Method:  "GET",
 		Pattern: "/api/configs",
-		Handler: Handler(resp),
+		Handler: HandlerConfigGet(config),
 	})
 
 	m = append(m, &RequestHandlerMapping{
@@ -124,7 +109,51 @@ func NewAdminserver(config map[string]interface{}) (*httptest.Server, error) {
 	return NewServer(m...), nil
 }
 
-// GetDefaultConfigMap returns the defailt config map for easier modification.
+func HandlerConfigGet(config map[string]interface{}) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		newConfig := make(map[string]interface{})
+		for k, v := range config {
+			newConfig[k] = v
+		}
+		if newConfig == nil {
+			newConfig = adminServerDefaultConfig
+		} else {
+			for k, v := range adminServerDefaultConfig {
+				if _, ok := newConfig[k]; !ok {
+					newConfig[k] = v
+				}
+			}
+		}
+		fmt.Printf("=== new %+v\n", adminServerDefaultConfig)
+		b, err := json.Marshal(newConfig)
+		if err != nil {
+			return
+		}
+
+		resp := &Response{
+			StatusCode: http.StatusOK,
+			Body:       b,
+		}
+		if resp == nil {
+			return
+		}
+
+		for k, v := range resp.Headers {
+			w.Header().Add(http.CanonicalHeaderKey(k), v)
+		}
+
+		if resp.StatusCode == 0 {
+			resp.StatusCode = http.StatusOK
+		}
+		w.WriteHeader(resp.StatusCode)
+
+		if len(resp.Body) != 0 {
+			io.Copy(w, bytes.NewReader(resp.Body))
+		}
+	}
+}
+
+// GetDefaultConfigMap returns the default config map for easier modification.
 func GetDefaultConfigMap() map[string]interface{} {
 	return adminServerDefaultConfig
 }
