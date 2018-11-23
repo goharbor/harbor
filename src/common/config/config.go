@@ -32,6 +32,15 @@ type Manager struct {
 	key    string
 }
 
+// ManagerInterface api for configure
+type ManagerInterface interface {
+	Load() (map[string]interface{}, error)
+	Get() (map[string]interface{}, error)
+	Upload(cfgs map[string]interface{}) error
+	Reset() error
+	// Init() error
+}
+
 // NewManager returns an instance of Manager
 func NewManager(client client.Client, enableCache bool) *Manager {
 	m := &Manager{

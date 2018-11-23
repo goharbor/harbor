@@ -29,6 +29,8 @@ import (
 	"github.com/goharbor/harbor/src/adminserver/client"
 	"github.com/goharbor/harbor/src/common"
 	comcfg "github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/config/client/db"
+	"github.com/goharbor/harbor/src/common/config/encrypt"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -52,8 +54,8 @@ var (
 	AdminserverClient client.Client
 	// GlobalProjectMgr is initialized based on the deploy mode
 	GlobalProjectMgr promgr.ProjectManager
-	mg               *comcfg.Manager
-	keyProvider      comcfg.KeyProvider
+	mg               comcfg.ManagerInterface
+	keyProvider      encrypt.KeyProvider
 	// AdmiralClient is initialized only under integration deploy mode
 	// and can be passed to project manager as a parameter
 	AdmiralClient *http.Client
@@ -67,32 +69,17 @@ var (
 func Init() error {
 	// init key provider
 	initKeyProvider()
-	adminServerURL := os.Getenv("ADMINSERVER_URL")
-	if len(adminServerURL) == 0 {
-		adminServerURL = common.DefaultAdminserverEndpoint
-	}
-
-	return InitByURL(adminServerURL)
-
+	return InitDBConfigManager()
 }
 
-// InitByURL Init configurations with given url
-func InitByURL(adminServerURL string) error {
-	log.Infof("initializing client for adminserver %s ...", adminServerURL)
-	cfg := &client.Config{
-		Secret: CoreSecret(),
-	}
-	AdminserverClient = client.NewClient(adminServerURL, cfg)
-	if err := AdminserverClient.Ping(); err != nil {
-		return fmt.Errorf("failed to ping adminserver: %v", err)
-	}
+// InitDBConfigManager ...
+func InitDBConfigManager() error {
+	mg = db.NewCoreConfigManager()
 
-	mg = comcfg.NewManager(AdminserverClient, true)
-
-	if err := Load(); err != nil {
+	_, err := mg.Load()
+	if err != nil {
 		return err
 	}
-
 	// init secret store
 	initSecretStore()
 
@@ -112,7 +99,7 @@ func initKeyProvider() {
 	}
 	log.Infof("key path: %s", path)
 
-	keyProvider = comcfg.NewFileKeyProvider(path)
+	keyProvider = encrypt.NewFileKeyProvider(path)
 }
 
 func initSecretStore() {
@@ -214,8 +201,8 @@ func LDAPConf() (*models.LdapConf, error) {
 	ldapConf.LdapBaseDn = utils.SafeCastString(cfg[common.LDAPBaseDN])
 	ldapConf.LdapUID = utils.SafeCastString(cfg[common.LDAPUID])
 	ldapConf.LdapFilter = utils.SafeCastString(cfg[common.LDAPFilter])
-	ldapConf.LdapScope = int(utils.SafeCastFloat64(cfg[common.LDAPScope]))
-	ldapConf.LdapConnectionTimeout = int(utils.SafeCastFloat64(cfg[common.LDAPTimeout]))
+	ldapConf.LdapScope = utils.SafeCastInt(cfg[common.LDAPScope])
+	ldapConf.LdapConnectionTimeout = utils.SafeCastInt(cfg[common.LDAPTimeout])
 	if cfg[common.LDAPVerifyCert] != nil {
 		ldapConf.LdapVerifyCert = cfg[common.LDAPVerifyCert].(bool)
 	} else {
@@ -316,7 +303,7 @@ func RegistryURL() (string, error) {
 func InternalJobServiceURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.")
+		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.", err)
 		return common.DefaultJobserviceEndpoint
 	}
 
@@ -330,7 +317,7 @@ func InternalJobServiceURL() string {
 func InternalCoreURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to Get job service Core URL from backend, error: %v, will return default value.")
+		log.Warningf("Failed to Get job service Core URL from backend, error: %v, will return default value.", err)
 		return common.DefaultCoreEndpoint
 	}
 	return strings.TrimSuffix(utils.SafeCastString(cfg[common.CoreURL]), "/")
@@ -347,7 +334,7 @@ func InternalTokenServiceEndpoint() string {
 func InternalNotaryEndpoint() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to get Notary endpoint from backend, error: %v, will use default value.")
+		log.Warningf("Failed to get Notary endpoint from backend, error: %v, will use default value.", err)
 		return common.DefaultNotaryEndpoint
 	}
 	if cfg[common.NotaryURL] == nil {
@@ -401,12 +388,14 @@ func Database() (*models.Database, error) {
 		return nil, err
 	}
 
+	log.Infof("database connections = %+v", cfg)
+
 	database := &models.Database{}
-	database.Type = cfg[common.DatabaseType].(string)
+	database.Type = utils.SafeCastString(cfg[common.DatabaseType])
 
 	postgresql := &models.PostGreSQL{}
 	postgresql.Host = utils.SafeCastString(cfg[common.PostGreSQLHOST])
-	postgresql.Port = int(utils.SafeCastFloat64(cfg[common.PostGreSQLPort]))
+	postgresql.Port = utils.SafeCastInt(cfg[common.PostGreSQLPort])
 	postgresql.Username = utils.SafeCastString(cfg[common.PostGreSQLUsername])
 	postgresql.Password = utils.SafeCastString(cfg[common.PostGreSQLPassword])
 	postgresql.Database = utils.SafeCastString(cfg[common.PostGreSQLDatabase])
@@ -468,7 +457,7 @@ func ClairDB() (*models.PostGreSQL, error) {
 	}
 	clairDB := &models.PostGreSQL{}
 	clairDB.Host = utils.SafeCastString(cfg[common.ClairDBHost])
-	clairDB.Port = int(utils.SafeCastFloat64(cfg[common.ClairDBPort]))
+	clairDB.Port = utils.SafeCastInt(cfg[common.ClairDBPort])
 	clairDB.Username = utils.SafeCastString(cfg[common.ClairDBUsername])
 	clairDB.Password = utils.SafeCastString(cfg[common.ClairDBPassword])
 	clairDB.Database = utils.SafeCastString(cfg[common.ClairDB])

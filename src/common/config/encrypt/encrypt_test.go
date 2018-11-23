@@ -18,7 +18,6 @@ import (
 	"errors"
 	"testing"
 
-	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -35,7 +34,7 @@ func (f *fakeKeyProvider) Get(params map[string]interface{}) (
 func TestEncrypt(t *testing.T) {
 	cases := []struct {
 		plaintext   string
-		keyProvider comcfg.KeyProvider
+		keyProvider KeyProvider
 		err         bool
 	}{
 		{"", &fakeKeyProvider{"", errors.New("error")}, true},
@@ -72,7 +71,7 @@ func TestDecrypt(t *testing.T) {
 
 	cases := []struct {
 		ciphertext  string
-		keyProvider comcfg.KeyProvider
+		keyProvider KeyProvider
 		err         bool
 	}{
 		{"", &fakeKeyProvider{"", errors.New("error")}, true},

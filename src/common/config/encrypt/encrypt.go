@@ -15,8 +15,15 @@
 package encrypt
 
 import (
-	"github.com/goharbor/harbor/src/common/config/encrypt"
+	"os"
+	"sync"
+
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
+)
+
+var (
+	defaultKeyPath = "/etc/adminserver/key"
 )
 
 // Encryptor encrypts or decrypts a strings
@@ -29,16 +36,33 @@ type Encryptor interface {
 
 // AESEncryptor uses AES to encrypt or decrypt string
 type AESEncryptor struct {
-	keyProvider encrypt.KeyProvider
+	keyProvider KeyProvider
 	keyParams   map[string]interface{}
 }
 
 // NewAESEncryptor returns an instance of an AESEncryptor
-func NewAESEncryptor(keyProvider encrypt.KeyProvider,
+func NewAESEncryptor(keyProvider KeyProvider,
 	keyParams map[string]interface{}) Encryptor {
 	return &AESEncryptor{
 		keyProvider: keyProvider,
 	}
+}
+
+var instance Encryptor
+var once sync.Once
+
+// GetInstance ...
+func GetInstance() Encryptor {
+	once.Do(func() {
+		kp := os.Getenv("KEY_PATH")
+		if len(kp) == 0 {
+			kp = defaultKeyPath
+		}
+		log.Infof("The path of key used by key provider: %s", kp)
+		instance = NewAESEncryptor(NewFileKeyProvider(kp), nil)
+
+	})
+	return instance
 }
 
 // Encrypt ...

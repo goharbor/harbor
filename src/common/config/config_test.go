@@ -13,5 +13,48 @@
 // limitations under the License.
 package config
 
+import "testing"
+
 // the functions in common/config/config.go have been tested
 // by cases in UI and Jobservice
+
+func TestInitMetaData(t *testing.T) {
+
+	MetaData.InitMetaData()
+	if item, err := MetaData.GetConfigMetaData("ldap_base_dn"); err != nil {
+		t.Error("Failed to find key ldap_search_base_dn after initial")
+	} else {
+		if item.Type != StringType {
+			t.Error("Wrong Type for this item!")
+		}
+	}
+	if item, err := MetaData.GetConfigMetaData("ldap_url"); err != nil {
+		t.Error("Failed to find key ldap_search_base_dn after initial")
+	} else {
+		if item.Type != StringType {
+			t.Error("Wrong Type for this item!")
+		}
+	}
+	if item, err := MetaData.GetConfigMetaData("ldap_scope"); err != nil {
+		t.Error("Failed to find key ldap_search_scope after initial")
+	} else {
+		if item.Type != IntType {
+			t.Error("Wrong Type for this item!")
+		}
+	}
+	if item, err := MetaData.GetConfigMetaData("ldap_search_password"); err != nil {
+		t.Error("Failed to find key ldap_search_password after initial")
+	} else {
+		if item.Type != PasswordType {
+			t.Error("Wrong Type for this item!")
+		}
+	}
+	if item, err := MetaData.GetConfigMetaData("ldap_verify_cert"); err != nil {
+		t.Error("Failed to find key ldap_verify_cert after initial")
+	} else {
+		if item.Type != BoolType {
+			t.Error("Wrong Type for this item!")
+		}
+	}
+
+}

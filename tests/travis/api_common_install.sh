@@ -11,13 +11,10 @@ sudo ./tests/generateCerts.sh
 sudo mkdir -p /etc/docker/certs.d/$1 && sudo cp ./harbor_ca.crt /etc/docker/certs.d/$1/
 
 if [ "$2" = 'LDAP' ]; then
-    sudo ./tests/hostcfg.sh LDAP
     cd tests && sudo ./ldapprepare.sh && cd ..
 fi
 
-if [ "$2" = 'DB' ]; then
-    sudo ./tests/hostcfg.sh
-fi
+sudo ./tests/hostcfg.sh
 
 sudo apt-get update && sudo apt-get install -y --no-install-recommends python-dev openjdk-7-jdk libssl-dev && sudo apt-get autoremove -y && sudo rm -rf /var/lib/apt/lists/*
 sudo wget https://bootstrap.pypa.io/get-pip.py && sudo python ./get-pip.py && sudo pip install --ignore-installed urllib3 chardet requests && sudo pip install robotframework robotframework-httplibrary requests dbbot robotframework-pabot --upgrade

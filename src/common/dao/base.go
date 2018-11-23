@@ -169,3 +169,16 @@ func Escape(str string) string {
 	str = strings.Replace(str, `_`, `\_`, -1)
 	return str
 }
+
+// PrepareDatabase ... create table or upgrade
+func PrepareDatabase(database *models.Database) {
+	if err := InitDatabase(database); err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
+	if err := UpgradeSchema(database); err != nil {
+		log.Fatalf("failed to upgrade database schema: %v", err)
+	}
+	if err := CheckSchemaVersion(); err != nil {
+		log.Fatalf("failed to check database schema version: %v", err)
+	}
+}

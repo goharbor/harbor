@@ -18,14 +18,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/models"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
-	test.InitDatabaseFromEnv()
+	db.InitDatabaseAndConfigure()
 	os.Exit(m.Run())
 }
 
