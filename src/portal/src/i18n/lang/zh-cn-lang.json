@@ -470,7 +470,7 @@
         "NO_INFO": "此镜像仓库没有描述信息",
         "IMAGE": "镜像",
         "LABELS": "标签",
-        "ADD_TO_IMAGE": "添加标签到此镜像",
+        "ADD_LABEL_TO_IMAGE": "添加标签到此镜像",
         "ADD_LABELS": "添加标签",
         "RETAG": "复制镜像",
         "FILTER_BY_LABEL": "过滤标签",
@@ -535,6 +535,7 @@
         "READY": "就绪",
         "NOT_READY": "未就绪",
         "LABELS": "标签",
+        "ADD_LABEL_TO_CHART_VERSION": "添加标签到此 Chart Version",
         "STATUS": "状态"
     },
     "ALERT": {

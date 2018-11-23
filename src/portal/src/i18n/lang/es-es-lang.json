@@ -470,7 +470,7 @@
         "NO_INFO": "Sin información de descripción para este repositorio",
         "IMAGE": "Imágenes",
         "LABELS": "Labels",
-        "ADD_TO_IMAGE": "Add labels to this image",
+        "ADD_LABEL_TO_IMAGE": "Add labels to this image",
         "FILTER_BY_LABEL": "Filter images by label",
         "ADD_LABELS": "Add labels",
         "RETAG": "Retag",
@@ -535,6 +535,7 @@
         "READY": "Ready",
         "NOT_READY": "Not Ready",
         "LABELS": "labels",
+        "ADD_LABEL_TO_CHART_VERSION": "Add labels to this chart version",
         "STATUS": "Status"
     },
     "ALERT": {
