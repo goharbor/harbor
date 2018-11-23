@@ -534,7 +534,7 @@
         "PROV_FILE": "Prov File",
         "READY": "Ready",
         "NOT_READY": "Not Ready",
-        "LABELS": "labels",
+        "LABELS": "Labels",
         "ADD_LABEL_TO_CHART_VERSION": "Add labels to this chart version",
         "STATUS": "Status"
     },
