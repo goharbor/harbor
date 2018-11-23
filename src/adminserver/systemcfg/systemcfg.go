@@ -27,7 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/adminserver/systemcfg/store/encrypt"
 	"github.com/goharbor/harbor/src/adminserver/systemcfg/store/json"
 	"github.com/goharbor/harbor/src/common"
-	comcfg "github.com/goharbor/harbor/src/common/config"
+	commonencrypt "github.com/goharbor/harbor/src/common/config/encrypt"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -358,7 +358,7 @@ func initCfgStore() (err error) {
 	log.Infof("the path of key used by key provider: %s", kp)
 
 	encryptor := enpt.NewAESEncryptor(
-		comcfg.NewFileKeyProvider(kp), nil)
+		commonencrypt.NewFileKeyProvider(kp), nil)
 
 	CfgStore = encrypt.NewCfgStore(encryptor, attrs, CfgStore)
 	return nil

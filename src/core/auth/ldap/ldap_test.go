@@ -14,6 +14,8 @@
 package ldap
 
 import (
+	"fmt"
+
 	"github.com/stretchr/testify/assert"
 	// "fmt"
 	// "strings"
@@ -21,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
@@ -100,14 +103,11 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
 
-	database, err := coreConfig.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configuration: %v", err)
-	}
-
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(adminServerLdapTestConfig)
+	cfg, err := cfgManager.Get()
+	fmt.Printf("config settings,cfg:%v\n", cfg)
 
 	// Extract to test utils
 	initSqls := []string{

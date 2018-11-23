@@ -20,11 +20,11 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/stretchr/testify/assert"
 )
 
-// test functions under package core/config
 func TestConfig(t *testing.T) {
 
 	defaultCACertPath = path.Join(currPath(), "test", "ca.crt")
@@ -53,6 +53,16 @@ func TestConfig(t *testing.T) {
 	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
 		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
+
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(common.TestServerDefaultConfig)
+	admiralSettingMap := map[string]interface{}{
+		common.AdmiralEndpoint: "http://www.vmware.com",
+		common.JobServiceURL:   "http://myjob:8888",
+		common.CoreURL:         "http://myui:8888",
+	}
+	cfgManager.Upload(admiralSettingMap)
 
 	if err := Init(); err != nil {
 		t.Fatalf("failed to initialize configurations: %v", err)
@@ -167,7 +177,15 @@ func TestConfig(t *testing.T) {
 	if extURL != "host01.com" {
 		t.Errorf(`extURL should be "host01.com".`)
 	}
-
+	assert.Equal("http://myjob:8888", InternalJobServiceURL())
+	assert.Equal("http://myui:8888/service/token", InternalTokenServiceEndpoint())
+	us, err := UAASettings()
+	if err != nil {
+		t.Fatalf("failed to get UAA setting, error: %v", err)
+	}
+	if us.ClientID != "testid" || us.ClientSecret != "testsecret" || us.Endpoint != "10.192.168.5" || us.VerifyCert {
+		t.Errorf("Unexpected UAA setting: %+v", *us)
+	}
 	// reset configurations
 	if err = Reset(); err != nil {
 		t.Errorf("failed to reset configurations: %v", err)
@@ -189,17 +207,8 @@ func TestConfig(t *testing.T) {
 		t.Errorf("Unexpected token private key path: %s, expected: %s", tokenKeyPath, "/etc/core/private_key.pem")
 	}
 
-	us, err := UAASettings()
-	if err != nil {
-		t.Fatalf("failed to get UAA setting, error: %v", err)
-	}
-
-	if us.ClientID != "testid" || us.ClientSecret != "testsecret" || us.Endpoint != "10.192.168.5" || us.VerifyCert {
-		t.Errorf("Unexpected UAA setting: %+v", *us)
-	}
-	assert.Equal("http://myjob:8888", InternalJobServiceURL())
-	assert.Equal("http://myui:8888/service/token", InternalTokenServiceEndpoint())
-
+	assert.Equal("http://jobservice:8080", InternalJobServiceURL())
+	assert.Equal("http://core:8080/service/token", InternalTokenServiceEndpoint())
 }
 
 func currPath() string {

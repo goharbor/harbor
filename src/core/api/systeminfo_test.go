@@ -59,6 +59,7 @@ func TestGetGeneralInfo(t *testing.T) {
 	assert.Nil(err, fmt.Sprintf("Unexpected Error: %v", err))
 	assert.Equal(200, code, fmt.Sprintf("Unexpected status code: %d", code))
 	g := &GeneralInfo{}
+	fmt.Printf("Response body:%v\n", string(body))
 	err = json.Unmarshal(body, g)
 	assert.Nil(err, fmt.Sprintf("Unexpected Error: %v", err))
 	assert.Equal(false, g.WithNotary, "with notary should be false")

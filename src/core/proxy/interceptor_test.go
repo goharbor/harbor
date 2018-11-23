@@ -3,7 +3,7 @@ package proxy
 import (
 	"github.com/goharbor/harbor/src/adminserver/client"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/models"
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
@@ -134,13 +134,10 @@ func TestPMSPolicyChecker(t *testing.T) {
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
-	database, err := config.Database()
-	if err != nil {
-		panic(err)
-	}
-	if err := dao.InitDatabase(database); err != nil {
-		panic(err)
-	}
+
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(defaultConfigAdmiral)
 
 	name := "project_for_test_get_sev_low"
 	id, err := config.GlobalProjectMgr.Create(&models.Project{

@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/systeminfo/imagestorage"
 )
 
@@ -68,13 +69,13 @@ func (c *client) Ping() error {
 	if !strings.Contains(addr, ":") {
 		addr = addr + ":80"
 	}
-
 	return utils.TestTCPConn(addr, 60, 2)
 }
 
 // GetCfgs ...
 func (c *client) GetCfgs() (map[string]interface{}, error) {
 	url := c.baseURL + "/api/configs"
+	log.Infof("Create config from: url:%v", url)
 	cfgs := map[string]interface{}{}
 	if err := c.client.Get(url, &cfgs); err != nil {
 		return nil, err

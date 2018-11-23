@@ -16,6 +16,7 @@ package filter
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -28,7 +29,8 @@ import (
 	"github.com/astaxie/beego"
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/session"
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/models"
 	commonsecret "github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
@@ -41,6 +43,33 @@ import (
 	driver_local "github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
 	"github.com/stretchr/testify/assert"
 )
+
+var adminServerSecurityTestConfig = map[string]interface{}{
+	common.ExtEndpoint:        "host01.com",
+	common.AUTHMode:           "db_auth",
+	common.DatabaseType:       "postgresql",
+	common.PostGreSQLHOST:     "127.0.0.1",
+	common.PostGreSQLPort:     5432,
+	common.PostGreSQLUsername: "postgres",
+	common.PostGreSQLPassword: "root123",
+	common.PostGreSQLDatabase: "registry",
+	// config.SelfRegistration: true,
+	common.LDAPURL:                "ldap://127.0.0.1",
+	common.LDAPSearchDN:           "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:          "admin",
+	common.LDAPBaseDN:             "dc=example,dc=com",
+	common.LDAPUID:                "uid",
+	common.LDAPFilter:             "",
+	common.LDAPScope:              2,
+	common.LDAPTimeout:            30,
+	common.CfgExpiration:          5,
+	common.AdminInitialPassword:   "password",
+	common.LDAPGroupSearchFilter:  "objectclass=groupOfNames",
+	common.LDAPGroupBaseDN:        "dc=example,dc=com",
+	common.LDAPGroupAttributeName: "cn",
+	common.LDAPGroupSearchScope:   2,
+	common.LdapGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
+}
 
 func TestMain(m *testing.M) {
 	// initialize beego session manager
@@ -63,13 +92,12 @@ func TestMain(m *testing.M) {
 	if err := config.Init(); err != nil {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
-	database, err := config.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configurations: %v", err)
-	}
-	if err = dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
+
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(adminServerSecurityTestConfig)
+	cfg, err := cfgManager.Get()
+	fmt.Printf("config settings,cfg:%v\n", cfg)
 
 	Init()
 

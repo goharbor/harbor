@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/goharbor/harbor/src/adminserver/client"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config/client/remote"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -57,16 +57,15 @@ type Context struct {
 	// other required information
 	properties map[string]interface{}
 
-	// admin server client
-	adminClient client.Client
+	remoteClient remote.Client
 }
 
 // NewContext ...
-func NewContext(sysCtx context.Context, adminClient client.Client) *Context {
+func NewContext(sysCtx context.Context, remoteClient remote.Client) *Context {
 	return &Context{
-		sysContext:  sysCtx,
-		adminClient: adminClient,
-		properties:  make(map[string]interface{}),
+		sysContext:   sysCtx,
+		remoteClient: remoteClient,
+		properties:   make(map[string]interface{}),
 	}
 }
 
@@ -75,12 +74,11 @@ func (c *Context) Init() error {
 	var (
 		counter = 0
 		err     error
-		configs map[string]interface{}
 	)
-
+	var db *models.Database
 	for counter == 0 || err != nil {
 		counter++
-		configs, err = c.adminClient.GetCfgs()
+		db, err = c.remoteClient.GetDatabaseCfg()
 		if err != nil {
 			logger.Errorf("Job context initialization error: %s\n", err.Error())
 			if counter < maxRetryTimes {
@@ -92,9 +90,6 @@ func (c *Context) Init() error {
 			}
 		}
 	}
-
-	db := getDBFromConfig(configs)
-
 	return dao.InitDatabase(db)
 }
 
@@ -102,9 +97,9 @@ func (c *Context) Init() error {
 // This func will build the job execution context before running
 func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 	jContext := &Context{
-		sysContext:  c.sysContext,
-		adminClient: c.adminClient,
-		properties:  make(map[string]interface{}),
+		sysContext:   c.sysContext,
+		remoteClient: c.remoteClient,
+		properties:   make(map[string]interface{}),
 	}
 
 	// Copy properties
@@ -115,7 +110,7 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 	}
 
 	// Refresh admin server properties
-	props, err := c.adminClient.GetCfgs()
+	props, err := c.remoteClient.GetCfgs()
 	if err != nil {
 		return nil, err
 	}

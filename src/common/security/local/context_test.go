@@ -16,10 +16,10 @@ package local
 
 import (
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
@@ -53,45 +53,8 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	dbHost := os.Getenv("POSTGRESQL_HOST")
-	if len(dbHost) == 0 {
-		log.Fatalf("environment variable POSTGRES_HOST is not set")
-	}
-	dbUser := os.Getenv("POSTGRESQL_USR")
-	if len(dbUser) == 0 {
-		log.Fatalf("environment variable POSTGRES_USR is not set")
-	}
-	dbPortStr := os.Getenv("POSTGRESQL_PORT")
-	if len(dbPortStr) == 0 {
-		log.Fatalf("environment variable POSTGRES_PORT is not set")
-	}
-	dbPort, err := strconv.Atoi(dbPortStr)
-	if err != nil {
-		log.Fatalf("invalid POSTGRESQL_PORT: %v", err)
-	}
 
-	dbPassword := os.Getenv("POSTGRESQL_PWD")
-	dbDatabase := os.Getenv("POSTGRESQL_DATABASE")
-	if len(dbDatabase) == 0 {
-		log.Fatalf("environment variable POSTGRESQL_DATABASE is not set")
-	}
-
-	database := &models.Database{
-		Type: "postgresql",
-		PostGreSQL: &models.PostGreSQL{
-			Host:     dbHost,
-			Port:     dbPort,
-			Username: dbUser,
-			Password: dbPassword,
-			Database: dbDatabase,
-		},
-	}
-
-	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
-
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
+	db.InitDatabaseAndConfigure()
 
 	// regiser users
 	id, err := dao.Register(*projectAdminUser)

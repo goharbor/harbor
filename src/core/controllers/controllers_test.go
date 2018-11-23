@@ -27,25 +27,14 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/test"
+	_ "github.com/goharbor/harbor/src/core/auth/db"
+	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/stretchr/testify/assert"
 )
-
-// const (
-//	adminName = "admin"
-//	adminPwd  = "Harbor12345"
-// )
-
-// type usrInfo struct {
-//	Name   string
-//	Passwd string
-// }
-
-// var admin *usrInfo
 
 func init() {
 	_, file, _, _ := runtime.Caller(0)
@@ -67,6 +56,14 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(common.TestServerDefaultConfig)
+	cfg, err := cfgManager.Get()
+	if err != nil {
+		fmt.Printf("Error occurred when get config: %v", err)
+	}
+	fmt.Printf("config settings,cfg:%v\n", cfg)
 
 	rc := m.Run()
 	if rc != 0 {
@@ -84,23 +81,14 @@ func TestUserResettable(t *testing.T) {
 		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
-
+	cfgManager := db.NewCoreConfigManager()
 	LDAPAuthConfig := map[string]interface{}{
 		common.AUTHMode:        common.LDAPAuth,
 		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
-	DBAuthAdminsvr, err := test.NewAdminserver(DBAuthConfig)
-	if err != nil {
-		panic(err)
-	}
-	LDAPAuthAdminsvr, err := test.NewAdminserver(LDAPAuthConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer DBAuthAdminsvr.Close()
-	defer LDAPAuthAdminsvr.Close()
-	if err := config.InitByURL(LDAPAuthAdminsvr.URL); err != nil {
+	cfgManager.Upload(LDAPAuthConfig)
+	if err := config.Init(); err != nil {
 		panic(err)
 	}
 	u1 := &models.User{
@@ -114,26 +102,23 @@ func TestUserResettable(t *testing.T) {
 		Email:    "jack@test.com",
 	}
 	assert.False(isUserResetable(u1))
+	cfgManager.Upload(DBAuthConfig)
 	assert.True(isUserResetable(u2))
-	if err := config.InitByURL(DBAuthAdminsvr.URL); err != nil {
-		panic(err)
-	}
-	assert.True(isUserResetable(u1))
+
 }
 
 // TestMain is a sample to run an endpoint test
 func TestAll(t *testing.T) {
+	cfgManager := db.NewCoreConfigManager()
+	TestConfig := map[string]interface{}{
+		common.RegistryURL: "http://" + os.Getenv("REGISTRY_URL"),
+	}
+	cfgManager.Upload(TestConfig)
+
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
 	if err := proxy.Init(); err != nil {
-		panic(err)
-	}
-	database, err := config.Database()
-	if err != nil {
-		panic(err)
-	}
-	if err := dao.InitDatabase(database); err != nil {
 		panic(err)
 	}
 

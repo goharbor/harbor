@@ -1,12 +1,13 @@
 package ldap
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/test"
@@ -30,9 +31,10 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.LDAPBaseDN:           "dc=example,dc=com",
 	common.LDAPUID:              "uid",
 	common.LDAPFilter:           "",
-	common.LDAPScope:            3,
+	common.LDAPScope:            2,
 	common.LDAPTimeout:          30,
 	common.CfgExpiration:        5,
+	common.LDAPVerifyCert:       false,
 	common.AdminInitialPassword: "password",
 }
 
@@ -100,16 +102,11 @@ func TestMain(m *testing.M) {
 	if err := uiConfig.Init(); err != nil {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
-
-	database, err := uiConfig.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configuration: %v", err)
-	}
-
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
-
+	db.InitDatabaseAndConfigure()
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(adminServerLdapTestConfig)
+	cfg, err := cfgManager.Get()
+	fmt.Printf("config settings,cfg:%v\n", cfg)
 	os.Exit(m.Run())
 
 }

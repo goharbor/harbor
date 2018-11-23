@@ -17,11 +17,10 @@ package filter
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	utilstest "github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/common/config/client/db"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -41,14 +40,10 @@ func TestReadonlyFilter(t *testing.T) {
 		common.PostGreSQLUsername: "postgres",
 		common.ReadOnly:           true,
 	}
-	adminServer, err := utilstest.NewAdminserver(defaultConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer adminServer.Close()
-	if err := os.Setenv("ADMINSERVER_URL", adminServer.URL); err != nil {
-		panic(err)
-	}
+
+	cfgManager := db.NewCoreConfigManager()
+	cfgManager.Upload(defaultConfig)
+
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
