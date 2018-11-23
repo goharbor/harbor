@@ -144,4 +144,12 @@ export class LabelMarkerComponent implements OnInit {
             }
         });
     }
+
+    get addLabelHeaders(): string {
+        if (this.resourceType === ResourceType.CHART_VERSION) {
+            return 'HELM_CHART.ADD_LABEL_TO_CHART_VERSION';
+        } else {
+            return 'REPOSITORY.ADD_LABEL_TO_IMAGE';
+        }
+    }
 }
