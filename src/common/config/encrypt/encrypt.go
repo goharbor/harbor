@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	defaultKeyPath = "/etc/adminserver/key"
+	defaultKeyPath = "/etc/core/key"
 )
 
 // Encryptor encrypts or decrypts a strings
