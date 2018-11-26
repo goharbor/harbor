@@ -82,13 +82,13 @@ func main() {
 	}
 	beego.AddTemplateExt("htm")
 
+	log.Info("configurations initialization completed")
+	token.InitCreators()
+	db.InitDatabaseAndConfigure()
 	log.Info("initializing configurations...")
 	if err := config.Init(); err != nil {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
-	log.Info("configurations initialization completed")
-	token.InitCreators()
-	db.InitDatabaseAndConfigure()
 	password, err := config.InitialAdminPassword()
 	if err != nil {
 		log.Fatalf("failed to get admin's initia password: %v", err)

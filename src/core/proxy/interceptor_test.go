@@ -131,14 +131,14 @@ func TestPMSPolicyChecker(t *testing.T) {
 	if err := os.Setenv("ADMINSERVER_URL", adminServer.URL); err != nil {
 		panic(err)
 	}
+
+	db.InitDatabaseAndConfigure()
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
-
-	db.InitDatabaseAndConfigure()
 	cfgManager := db.NewCoreConfigManager()
 	cfgManager.Upload(defaultConfigAdmiral)
-
+	db.DumpConfigureTrace()
 	name := "project_for_test_get_sev_low"
 	id, err := config.GlobalProjectMgr.Create(&models.Project{
 		Name:    name,

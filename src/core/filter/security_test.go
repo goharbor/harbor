@@ -16,7 +16,6 @@ package filter
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -89,15 +88,13 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to create session manager: %v", err)
 	}
 
+	db.InitDatabaseAndConfigure()
 	if err := config.Init(); err != nil {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
-
-	db.InitDatabaseAndConfigure()
 	cfgManager := db.NewCoreConfigManager()
 	cfgManager.Upload(adminServerSecurityTestConfig)
-	cfg, err := cfgManager.Get()
-	fmt.Printf("config settings,cfg:%v\n", cfg)
+	db.DumpConfigureTrace()
 
 	Init()
 

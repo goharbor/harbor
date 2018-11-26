@@ -51,15 +51,14 @@ func TestMain(m *testing.M) {
 	if err := os.Setenv("ADMINSERVER_URL", adminServer.URL); err != nil {
 		panic(err)
 	}
+
+	db.InitDatabaseAndConfigure()
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
-
-	db.InitDatabaseAndConfigure()
 	cfgManager := db.NewCoreConfigManager()
 	cfgManager.Upload(defaultConfig)
-	cfg, err := cfgManager.Get()
-	fmt.Printf("config settings,cfg:%v\n", cfg)
+	db.DumpConfigureTrace()
 
 	notaryCachePath = "/tmp/notary"
 	result := m.Run()

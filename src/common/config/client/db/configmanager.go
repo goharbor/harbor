@@ -26,6 +26,7 @@ func NewCoreConfigManagerFromArray(items []config.Item) *CoreConfigManager {
 // Load ...
 func (ccm *CoreConfigManager) Load() (map[string]interface{}, error) {
 	resultMap := map[string]interface{}{}
+	ccm.Driver.Load()
 	values, err := ccm.Driver.GetAllSettings()
 	if err != nil {
 		return resultMap, err
@@ -83,4 +84,15 @@ func InitDatabaseAndConfigure() {
 		log.Fatalf("failed to save configuration: %v", err)
 	}
 	GetConfigureDriverInstance().Load()
+}
+
+// DumpConfigureTrace - Used to Dump config trace information
+func DumpConfigureTrace() {
+	cfgManager := NewCoreConfigManager()
+	if cfg, err := cfgManager.Get(); err != nil {
+		fmt.Printf("config settings,cfg:%v\n", cfg)
+	} else {
+		fmt.Printf("Failed to DumpConfigTrace, error: %v", err)
+	}
+
 }
