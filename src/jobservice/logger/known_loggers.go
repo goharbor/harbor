@@ -7,6 +7,8 @@ const (
 	LoggerNameFile = "FILE"
 	// LoggerNameStdOutput is the unique name of the std logger.
 	LoggerNameStdOutput = "STD_OUTPUT"
+	// LoggerNameDB is the unique name of the DB logger.
+	LoggerNameDB = "DB"
 )
 
 // Declaration is used to declare a supported logger.
@@ -28,6 +30,8 @@ var knownLoggers = map[string]*Declaration{
 	LoggerNameFile: {FileFactory, FileSweeperFactory, FileGetterFactory, false},
 	// STD output(both stdout and stderr) logger
 	LoggerNameStdOutput: {StdFactory, nil, nil, true},
+	// DB logger
+	LoggerNameDB: {DBFactory, DBSweeperFactory, DBGetterFactory, false},
 }
 
 // IsKnownLogger checks if the logger is supported with name.

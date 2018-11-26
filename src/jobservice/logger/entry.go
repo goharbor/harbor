@@ -82,3 +82,13 @@ func (e *Entry) Fatalf(format string, v ...interface{}) {
 		l.Fatalf(format, v...)
 	}
 }
+
+// Close logger
+func (e *Entry) Close() error {
+	for _, l := range e.loggers {
+		if closer, ok := l.(Closer); ok {
+			closer.Close()
+		}
+	}
+	return nil
+}
