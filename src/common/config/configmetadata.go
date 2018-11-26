@@ -79,11 +79,11 @@ func (cm *ConfigureMetaData) InitMetaDataFromArray(items []Item) {
 func (cm *ConfigureMetaData) GetAllConfigureItems() (items []Item) {
 	cm.RLock()
 	defer cm.RUnlock()
-	result := make([]Item, 0)
+	results := make([]Item, 0)
 	for _, item := range cm.metaMap {
-		result = append(result, item)
+		results = append(results, item)
 	}
-	return result
+	return results
 }
 
 // GetConfigMetaData - Get single configuration item
