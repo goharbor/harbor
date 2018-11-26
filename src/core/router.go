@@ -102,7 +102,6 @@ func initRouters() {
 	beego.Router("/api/config/:group", &api.ConfigSettingAPI{}, "get:GetConfigByGroup")
 
 	beego.Router("/api/configurations", &api.ConfigAPI{})
-	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
 	beego.Router("/api/replications", &api.ReplicationAPI{})
 	beego.Router("/api/labels", &api.LabelAPI{}, "post:Post;get:List")
