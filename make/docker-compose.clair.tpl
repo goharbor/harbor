@@ -22,6 +22,12 @@ services:
     container_name: clair
     image: goharbor/clair-photon:__clair_version__
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
     cpu_quota: 50000
     dns_search: .
     depends_on:

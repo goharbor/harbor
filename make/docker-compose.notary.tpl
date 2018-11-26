@@ -15,6 +15,11 @@ services:
     image: goharbor/notary-server-photon:__notary_version__
     container_name: notary-server
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
     networks:
       - notary-sig
       - harbor-notary
@@ -35,6 +40,11 @@ services:
     image: goharbor/notary-signer-photon:__notary_version__
     container_name: notary-signer
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
     networks:
       harbor-notary:
       notary-sig:

@@ -14,6 +14,13 @@ services:
     container_name: chartmuseum
     image: goharbor/chartmuseum-photon:__chartmuseum_version__
     restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
     networks:
       - harbor-chartmuseum
     dns_search: .
