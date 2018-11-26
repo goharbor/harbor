@@ -103,3 +103,11 @@ ignored = ["github.com/vmware/harbor/tests*"]
 [[constraint]]
   name = "github.com/gocraft/work"
   version = "=0.5.1"
+
+[[constraint]]
+  name = "github.com/robfig/cron"
+  version = "=1.0"
+
+[[constraint]]
+  name = "gopkg.in/yaml.v2"
+  version = "=2.1.1"
