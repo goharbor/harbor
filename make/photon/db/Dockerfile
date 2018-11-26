@@ -16,8 +16,6 @@ RUN tdnf install -y shadow gzip postgresql >> /dev/null\
     
 RUN tdnf erase -y toybox && tdnf install -y util-linux
 
-RUN tdnf erase -y toybox && tdnf install -y util-linux
-
 VOLUME /var/lib/postgresql/data
 
 ADD ./make/photon/db/docker-entrypoint.sh /entrypoint.sh
