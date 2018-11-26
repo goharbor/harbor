@@ -528,47 +528,47 @@ func TestModifiable(t *testing.T) {
 	t.Log("Test modifiable.")
 	assert := assert.New(t)
 	base := BaseController{
-		api.BaseAPI{
-			beego.Controller{},
+		BaseAPI: api.BaseAPI{
+			Controller: beego.Controller{},
 		},
-		nil,
-		nil,
+		SecurityCtx: nil,
+		ProjectMgr:  nil,
 	}
 
 	ua1 := &UserAPI{
-		base,
-		3,
-		4,
-		false,
-		false,
-		"db_auth",
+		BaseController:   base,
+		currentUserID:    3,
+		userID:           4,
+		SelfRegistration: false,
+		IsAdmin:          false,
+		AuthMode:         "db_auth",
 	}
 	assert.False(ua1.modifiable())
 	ua2 := &UserAPI{
-		base,
-		3,
-		4,
-		false,
-		true,
-		"db_auth",
+		BaseController:   base,
+		currentUserID:    3,
+		userID:           4,
+		SelfRegistration: false,
+		IsAdmin:          true,
+		AuthMode:         "db_auth",
 	}
 	assert.True(ua2.modifiable())
 	ua3 := &UserAPI{
-		base,
-		3,
-		4,
-		false,
-		true,
-		"ldap_auth",
+		BaseController:   base,
+		currentUserID:    3,
+		userID:           4,
+		SelfRegistration: false,
+		IsAdmin:          true,
+		AuthMode:         "ldap_auth",
 	}
 	assert.False(ua3.modifiable())
 	ua4 := &UserAPI{
-		base,
-		1,
-		1,
-		false,
-		true,
-		"ldap_auth",
+		BaseController:   base,
+		currentUserID:    1,
+		userID:           1,
+		SelfRegistration: false,
+		IsAdmin:          true,
+		AuthMode:         "ldap_auth",
 	}
 	assert.True(ua4.modifiable())
 }

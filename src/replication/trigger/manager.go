@@ -20,7 +20,7 @@ type Manager struct {
 // capacity is the max number of trigger references manager can keep in memory
 func NewManager(capacity int) *Manager {
 	return &Manager{
-	// cache: NewCache(capacity),
+		// cache: NewCache(capacity),
 	}
 }
 
