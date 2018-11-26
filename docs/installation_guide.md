@@ -31,9 +31,9 @@ Harbor is deployed as several Docker containers, and, therefore, can be deployed
 ### Network ports 
 |Port|Protocol|Description|
 |---|---|---|
-|443|HTTPS|Harbor Core and API will accept requests on this port for https protocol|
+|443|HTTPS|Harbor portal and core API will accept requests on this port for https protocol|
 |4443|HTTPS|Connections to the Docker Content Trust service for Harbor, only needed when Notary is enabled|
-|80|HTTP|Harbor Core and API will accept requests on this port for http protocol|
+|80|HTTP|Harbor portal and core API will accept requests on this port for http protocol|
 
 ## Installation Steps
 
@@ -63,10 +63,10 @@ Configuration parameters are located in the file **harbor.cfg**.
 There are two categories of parameters in harbor.cfg, **required parameters** and **optional parameters**.  
 
 * **required parameters**: These parameters are required to be set in the configuration file. They will take effect if a user updates them in ```harbor.cfg``` and run the ```install.sh``` script to reinstall Harbor.
-* **optional parameters**: These parameters are optional for updating, i.e. user can leave them as default and update them on Web UI after Harbor is started.  If they are set in ```harbor.cfg```, they only take effect in the first launch of Harbor. 
+* **optional parameters**: These parameters are optional for updating, i.e. user can leave them as default and update them on Web Portal after Harbor is started.  If they are set in ```harbor.cfg```, they only take effect in the first launch of Harbor. 
 Subsequent update to these parameters in ```harbor.cfg``` will be ignored. 
 
-    **Note:** If you choose to set these parameters via the UI, be sure to do so right after Harbor
+    **Note:** If you choose to set these parameters via the Portal, be sure to do so right after Harbor
 is started. In particular, you must set the desired **auth_mode** before registering or creating any new users in Harbor. When there are users in the system (besides the default admin user), 
 **auth_mode** cannot be changed.
 
@@ -74,8 +74,8 @@ The parameters are described below - note that at the very least, you will need 
 
 ##### Required parameters:
 
-* **hostname**: The target host's hostname, which is used to access the UI and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
-* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  If Notary is enabled, this parameter has to be _https_.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
+* **hostname**: The target host's hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
+* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the Portal and the token/notification service.  If Notary is enabled, this parameter has to be _https_.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
 * **db_password**: The root password for the PostgreSQL database used for **db_auth**. _Change this password for any production use!_ 
 * **max_job_workers**: (default value is **10**) The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. 
 * **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the registry's token. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.
@@ -100,7 +100,7 @@ The parameters are described below - note that at the very least, you will need 
   * email_ssl = false
   * email_insecure = false
 
-* **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/Harbor12345** ._   
+* **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the Portal. _Note that the default username/password are **admin/Harbor12345** ._   
 * **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. 
 For LDAP authentication, set this to **ldap_auth**.  
 
