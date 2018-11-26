@@ -80,7 +80,6 @@ services:
       - ./common/config/core/private_key.pem:/etc/core/private_key.pem:z
       - ./common/config/core/certificates/:/etc/core/certificates/:z
       - /data/secretkey:/etc/core/key:z
-      - /data/secretkey:/etc/adminserver/key:z
       - /data/ca_download/:/etc/core/ca/:z
       - /data/psc/:/etc/core/token/:z
       - /data/:/data/:z
