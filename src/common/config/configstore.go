@@ -126,7 +126,8 @@ func (s *ConfigureStore) InitFromArray(testingMetaDataArray []Item) error {
 	itemArray := MetaData.GetAllConfigureItems()
 	// Init Default Value
 	for _, item := range itemArray {
-		if len(item.DefaultValue) > 0 {
+		// Every string type should be init, other types should have a default value
+		if item.Type == StringType || len(item.DefaultValue) > 0 {
 			c := &ConfigureValue{item.Name, item.DefaultValue}
 			err := c.Validate()
 			if err == nil {
