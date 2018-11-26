@@ -317,7 +317,7 @@ func RegistryURL() (string, error) {
 func InternalJobServiceURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.")
+		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.", err)
 		return common.DefaultJobserviceEndpoint
 	}
 
@@ -331,7 +331,7 @@ func InternalJobServiceURL() string {
 func InternalCoreURL() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to Get job service Core URL from backend, error: %v, will return default value.")
+		log.Warningf("Failed to Get job service Core URL from backend, error: %v, will return default value.", err)
 		return common.DefaultCoreEndpoint
 	}
 	return strings.TrimSuffix(utils.SafeCastString(cfg[common.CoreURL]), "/")
@@ -348,7 +348,7 @@ func InternalTokenServiceEndpoint() string {
 func InternalNotaryEndpoint() string {
 	cfg, err := mg.Get()
 	if err != nil {
-		log.Warningf("Failed to get Notary endpoint from backend, error: %v, will use default value.")
+		log.Warningf("Failed to get Notary endpoint from backend, error: %v, will use default value.", err)
 		return common.DefaultNotaryEndpoint
 	}
 	if cfg[common.NotaryURL] == nil {

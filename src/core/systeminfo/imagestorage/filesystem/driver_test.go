@@ -39,5 +39,5 @@ func TestCapNonExistPath(t *testing.T) {
 	driver := NewDriver(path)
 	c, err := driver.Cap()
 	assert.Nil(t, err, "unexpected error")
-	assert.Equal(t, storage.Capacity{0, 0}, *c)
+	assert.Equal(t, storage.Capacity{Total: 0, Free: 0}, *c)
 }
