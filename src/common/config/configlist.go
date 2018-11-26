@@ -99,8 +99,8 @@ var (
 		{Scope: UserScope, Group: UAAGroup, EnvironmentKey: "UAA_ENDPOINT", DefaultValue: " ", Name: "uaa_endpoint", Type: StringType, Editable: false},
 		{Scope: UserScope, Group: UAAGroup, EnvironmentKey: "UAA_VERIFY_CERT", DefaultValue: "false", Name: "uaa_verify_cert", Type: BoolType, Editable: false},
 
-		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "WITH_CHARTMUSEUM", DefaultValue: "false", Name: "with_chartmuseum", Type: BoolType, Editable: true, Reloadable: true},
-		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "WITH_CLAIR", DefaultValue: "true", Name: "with_clair", Type: BoolType, Editable: true, Reloadable: true},
-		{Scope: UserScope, Group: BasicGroup, EnvironmentKey: "WITH_NOTARY", DefaultValue: "false", Name: "with_notary", Type: BoolType, Editable: true, Reloadable: true},
+		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "WITH_CHARTMUSEUM", DefaultValue: "false", Name: "with_chartmuseum", Type: BoolType, Editable: true, Reloadable: true},
+		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "WITH_CLAIR", DefaultValue: "true", Name: "with_clair", Type: BoolType, Editable: true, Reloadable: true},
+		{Scope: SystemScope, Group: BasicGroup, EnvironmentKey: "WITH_NOTARY", DefaultValue: "false", Name: "with_notary", Type: BoolType, Editable: true, Reloadable: true},
 	}
 )
