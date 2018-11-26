@@ -49,9 +49,13 @@
   margin-bottom: 12px;
   font-size: 12px;
   .markdown {
+    position: relative;
     width: 20px;
+    height: 20px;
     margin-right: 10px;
     margin-left: 10px;
+    top: 6px;
+    fill: gray;
   }
 }
 
