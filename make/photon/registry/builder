@@ -22,7 +22,7 @@ cur=$PWD
 TEMP=`mktemp -d /$TMPDIR/distribution.XXXXXX`
 git clone -b $VERSION https://github.com/docker/distribution.git $TEMP
 
-echo 'build the registry binary bases on the golang:1.7.3...'
+echo 'build the registry binary bases on the golang:1.11.2...'
 cp Dockerfile.binary $TEMP
 docker build -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
 

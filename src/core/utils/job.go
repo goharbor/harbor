@@ -129,7 +129,7 @@ func triggerImageScan(repository, tag, digest string, client job.Client) error {
 	}
 	err = dao.SetScanJobUUID(id, uuid)
 	if err != nil {
-		log.Warningf("Failed to set UUID for scan job, ID: %d, repository: %s, tag: %s", id, uuid, repository, tag)
+		log.Warningf("Failed to set UUID for scan job, ID: %d, repository: %s, tag: %s", id, repository, tag)
 	}
 	return nil
 }

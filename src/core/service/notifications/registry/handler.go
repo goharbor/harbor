@@ -128,7 +128,7 @@ func (n *NotificationHandler) Post() {
 				if err != nil {
 					log.Errorf("Failed to get last update from Clair DB, error: %v, the auto scan will be skipped.", err)
 				} else if last == 0 {
-					log.Infof("The Vulnerability data is not ready in Clair DB, the auto scan will be skipped.", err)
+					log.Infof("The Vulnerability data is not ready in Clair DB, the auto scan will be skipped.")
 				} else if err := coreutils.TriggerImageScan(repository, tag); err != nil {
 					log.Warningf("Failed to scan image, repository: %s, tag: %s, error: %v", repository, tag, err)
 				}
