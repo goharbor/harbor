@@ -1,7 +1,6 @@
 package ldap
 
 import (
-	"fmt"
 	"os"
 	"reflect"
 	"testing"
@@ -99,14 +98,14 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
+	db.InitDatabaseAndConfigure()
 	if err := uiConfig.Init(); err != nil {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
-	db.InitDatabaseAndConfigure()
 	cfgManager := db.NewCoreConfigManager()
 	cfgManager.Upload(adminServerLdapTestConfig)
-	cfg, err := cfgManager.Get()
-	fmt.Printf("config settings,cfg:%v\n", cfg)
+	db.DumpConfigureTrace()
+
 	os.Exit(m.Run())
 
 }

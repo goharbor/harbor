@@ -14,7 +14,6 @@
 package db
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -96,8 +95,7 @@ func TestMain(m *testing.M) {
 	db.InitDatabaseAndConfigure()
 	cfgManager := db.NewCoreConfigManager()
 	cfgManager.Upload(adminServerTestConfig)
-	cfg, err := cfgManager.Get()
-	fmt.Printf("config settings,cfg:%v\n", cfg)
+	db.DumpConfigureTrace()
 }
 
 func TestSearchUser(t *testing.T) {

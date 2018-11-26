@@ -14,8 +14,6 @@
 package ldap
 
 import (
-	"fmt"
-
 	"github.com/stretchr/testify/assert"
 	// "fmt"
 	// "strings"
@@ -99,15 +97,13 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
+	db.InitDatabaseAndConfigure()
 	if err := coreConfig.Init(); err != nil {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
-
-	db.InitDatabaseAndConfigure()
 	cfgManager := db.NewCoreConfigManager()
 	cfgManager.Upload(adminServerLdapTestConfig)
-	cfg, err := cfgManager.Get()
-	fmt.Printf("config settings,cfg:%v\n", cfg)
+	db.DumpConfigureTrace()
 
 	// Extract to test utils
 	initSqls := []string{

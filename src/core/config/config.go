@@ -76,10 +76,6 @@ func Init() error {
 func InitDBConfigManager() error {
 	mg = db.NewCoreConfigManager()
 
-	_, err := mg.Load()
-	if err != nil {
-		return err
-	}
 	// init secret store
 	initSecretStore()
 
