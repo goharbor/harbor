@@ -20,6 +20,7 @@ export class LabelMarkerComponent implements OnInit {
     @Input() projectName: string;
     @Input() resource: RepositoryItem | HelmChartVersion;
     @Input() resourceType: ResourceType;
+    @Input() addLabelHeaders: string;
     @Output() changeEvt = new EventEmitter<any>();
 
     labelFilter = '';
@@ -142,13 +143,5 @@ export class LabelMarkerComponent implements OnInit {
                 return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
             }
         });
-    }
-
-    get addLabelHeaders(): string {
-        if (this.resourceType === ResourceType.CHART_VERSION) {
-            return 'HELM_CHART.ADD_LABEL_TO_CHART_VERSION';
-        } else {
-            return 'REPOSITORY.ADD_LABEL_TO_IMAGE';
-        }
     }
 }
