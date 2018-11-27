@@ -33,6 +33,14 @@
                         </a>
                     </div>
                 </div>
+		 <div class="form-group" style="padding-left: 135px;">
+                    <label for="create_project_quota" class="col-md-3 form-group-label-override required">{{'PROJECT.QUOTA' | translate}}(M)
+                    </label>
+                    <input type="text" id="creat_project_quota"  [(ngModel)]="project.quota"
+                         name="create_project_quota" size="10" type="number" style="width: 80px;"
+                         required pattern="^[0-9]+$" minlength="1" #projectQuota="ngModel" autocomplete="off">
+		 </div>
+
             </section>
         </form>
     </div>

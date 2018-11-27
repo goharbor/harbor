@@ -49,6 +49,8 @@ type user struct {
 type project struct {
 	ID               string            `json:"id"`
 	Name             string            `json:"name"`
+	Quota            int               `json:"quota"`
+	Usage            float32           `json:"usage"`
 	Public           bool              `json:"isPublic"`
 	OwnerID          string            `json:"documentOwner"`
 	CustomProperties map[string]string `json:"customProperties"`
@@ -199,6 +201,8 @@ func convert(p *project) (*models.Project, error) {
 
 	project := &models.Project{
 		Name: p.Name,
+		Quota: p.Quota,
+		Usage: p.Usage,
 	}
 	if p.Public {
 		project.SetMetadata(models.ProMetaPublic, "true")

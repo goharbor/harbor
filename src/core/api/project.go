@@ -123,6 +123,11 @@ func (p *ProjectAPI) Post() {
 	if pro.Metadata == nil {
 		pro.Metadata = map[string]string{}
 	}
+
+	if int(pro.Quota) == 0 {
+		pro.Quota = 1024
+	}
+
 	// accept the "public" property to make replication work well with old versions(<=1.2.0)
 	if pro.Public != nil && len(pro.Metadata[models.ProMetaPublic]) == 0 {
 		pro.Metadata[models.ProMetaPublic] = strconv.FormatBool(*pro.Public == 1)
@@ -136,6 +141,7 @@ func (p *ProjectAPI) Post() {
 	projectID, err := p.ProjectMgr.Create(&models.Project{
 		Name:      pro.Name,
 		OwnerName: p.SecurityCtx.GetUsername(),
+		Quota:     pro.Quota,
 		Metadata:  pro.Metadata,
 	})
 	if err != nil {
@@ -446,8 +452,24 @@ func (p *ProjectAPI) Put() {
 	var req *models.ProjectRequest
 	p.DecodeJSONReq(&req)
 
-	if err := p.ProjectMgr.Update(p.project.ProjectID,
+        old_project, err := p.ProjectMgr.Get(p.project.ProjectID)
+        if err != nil || old_project == nil {
+                p.HandleInternalServerError(fmt.Sprintf("failed to get projects: %v %s", err,  p.project.ProjectID))
+                return
+        }
+
+        if old_project.Usage > float32(req.Quota) {
+            p.HandleBadRequest(fmt.Sprintf("resize less than usage is not allowed, usage: %.2f", old_project.Usage))
+            return
+        } else {
+            log.Debugf("update project %s: quota %d", p.project.Name, req.Quota)
+        }
+
+	if err = p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
+                        Name: old_project.Name,
+                        Quota: req.Quota,
+                        Usage: old_project.Usage,
 			Metadata: req.Metadata,
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",

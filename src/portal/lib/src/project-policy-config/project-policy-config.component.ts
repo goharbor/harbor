@@ -20,6 +20,7 @@ export class ProjectPolicy {
   PreventVulImg: boolean;
   PreventVulImgSeverity: string;
   ScanImgOnPush: boolean;
+  Quota: number;
 
   constructor() {
     this.Public = false;
@@ -33,7 +34,8 @@ export class ProjectPolicy {
     this.Public = pro.metadata.public === 'true' ? true : false;
     this.ContentTrust = pro.metadata.enable_content_trust === 'true' ? true : false;
     this.PreventVulImg = pro.metadata.prevent_vul === 'true' ? true : false;
-    if (pro.metadata.severity) { this.PreventVulImgSeverity = pro.metadata.severity; }
+    if (pro.metadata.severity) { this.PreventVulImgSeverity = pro.metadata.severity; };
+    this.Quota = pro.quota;
     this.ScanImgOnPush = pro.metadata.auto_scan === 'true' ? true : false;
   }
 }

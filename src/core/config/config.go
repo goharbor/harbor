@@ -531,6 +531,7 @@ func UAASettings() (*models.UAASettings, error) {
 		ClientID:     utils.SafeCastString(cfg[common.UAAClientID]),
 		ClientSecret: utils.SafeCastString(cfg[common.UAAClientSecret]),
 		VerifyCert:   utils.SafeCastBool(cfg[common.UAAVerifyCert]),
+		Realm:        utils.SafeCastString(cfg[common.Realm]),
 	}
 	return us, nil
 }

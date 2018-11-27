@@ -86,6 +86,8 @@ func (d *driver) Create(project *models.Project) (int64, error) {
 		OwnerID:      project.OwnerID,
 		CreationTime: t,
 		UpdateTime:   t,
+		Quota:        project.Quota,
+		Usage:        0,
 	}
 
 	id, err := dao.AddProject(*pro)
@@ -124,7 +126,19 @@ func (d *driver) Delete(projectIDOrName interface{}) error {
 // Update ...
 func (d *driver) Update(projectIDOrName interface{},
 	project *models.Project) error {
-	// nil implement
+
+        pro := &models.Project{
+                Name:         project.Name,
+                Quota:        project.Quota,
+                Usage:        project.Usage,
+        }
+
+        log.Debugf("update project %s: quota %d usage %d", project.Name, project.Quota, project.Usage)
+        err := dao.UpdateProject(pro)
+        if err != nil {
+            log.Errorf("failed to match duplicate project pattern: %v", err)
+            return err
+        }
 	return nil
 }
 

@@ -10,6 +10,16 @@
             </div>
           </div>
         </div>
+        <div class="form-group">
+          <label for="projectPolicyForm">{{'PROJECT.QUOTA' | translate}}(M)
+                    </label>
+          <div class="form-content">
+          <input clrInput id="project_quota"  [(ngModel)]="projectPolicy.Quota"
+                         name="project_quota" size="10" type="number" style="width: 80px;"
+                         [disabled]="!hasProjectAdminRole"
+                         required pattern="^[0-9]+$" minlength="1"  autocomplete="off">
+          </div>
+        </div>
         <div class="form-group" *ngIf="withNotary || withClair">
           <label for="projectPolicyForm">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</label>
           <div class="form-content">

@@ -31,14 +31,10 @@ import (
 )
 
 const (
-	// TokenURLSuffix ...
-	TokenURLSuffix = "/oauth/token"
-	// AuthURLSuffix ...
-	AuthURLSuffix = "/oauth/authorize"
-	// UserInfoURLSuffix ...
-	UserInfoURLSuffix = "/userinfo"
-	// UsersURLSuffix ...
-	UsersURLSuffix = "/Users"
+	AuthURLSuffix =     1
+	TokenURLSuffix =    2
+	UserInfoURLSuffix = 3
+	UsersURLSuffix =    4
 )
 
 var uaaTransport = &http.Transport{Proxy: http.ProxyFromEnvironment}
@@ -60,6 +56,7 @@ type ClientConfig struct {
 	ClientID      string
 	ClientSecret  string
 	Endpoint      string
+	Realm         string
 	SkipTLSVerify bool
 	// Absolut path for CA root used to communicate with UAA, only effective when skipTLSVerify set to false.
 	CARootPath string
@@ -91,7 +88,6 @@ type SearchUserEntry struct {
 	Groups   []interface{}
 }
 
-// SearchUserRes is the struct to parse the result of search user API of UAA
 type SearchUserRes struct {
 	Resources    []*SearchUserEntry `json:"resources"`
 	TotalResults int                `json:"totalResults"`
@@ -104,7 +100,8 @@ type defaultClient struct {
 	oauth2Cfg  *oauth2.Config
 	twoLegCfg  *clientcredentials.Config
 	endpoint   string
-	// TODO: add public key, etc...
+        Realm      string
+	//TODO: add public key, etc...
 }
 
 func (dc *defaultClient) PasswordAuth(username, password string) (*oauth2.Token, error) {
@@ -112,7 +109,7 @@ func (dc *defaultClient) PasswordAuth(username, password string) (*oauth2.Token,
 }
 
 func (dc *defaultClient) GetUserInfo(token string) (*UserInfo, error) {
-	userInfoURL := dc.endpoint + UserInfoURLSuffix
+	userInfoURL := dc.endpoint + dc.GetPrefix(UserInfoURLSuffix)
 	req, err := http.NewRequest(http.MethodGet, userInfoURL, nil)
 	if err != nil {
 		return nil, err
@@ -135,18 +132,22 @@ func (dc *defaultClient) GetUserInfo(token string) (*UserInfo, error) {
 }
 
 func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error) {
+
 	token, err := dc.twoLegCfg.Token(dc.prepareCtx())
 	if err != nil {
+	        log.Debugf("erro dc.twoLegCfg.Token %s %v", username, err)
 		return nil, err
 	}
-	url := dc.endpoint + UsersURLSuffix
+	url := dc.endpoint + dc.GetPrefix(UsersURLSuffix)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
+	log.Debugf("erro SearchUser %s %v", username, err)
 	if err != nil {
 		return nil, err
 	}
 	q := req.URL.Query()
-	q.Add("filter", fmt.Sprintf("Username eq '%s'", username))
+	//q.Add("filter", fmt.Sprintf("Username eq '%s'", username))
+	q.Add("username", username)
 	req.URL.RawQuery = q.Encode()
 	token.SetAuthHeader(req)
 	log.Debugf("request URL: %s", req.URL)
@@ -160,8 +161,14 @@ func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
+		log.Debugf("Unexpected status code for searching user in UAA: %d, response: %s", resp.StatusCode, string(bytes))
 		return nil, fmt.Errorf("Unexpected status code for searching user in UAA: %d, response: %s", resp.StatusCode, string(bytes))
 	}
+
+        if dc.Realm !="" {
+            return Parse_rsp_on_realm(bytes)
+        }
+
 	res := &SearchUserRes{}
 	if err := json.Unmarshal(bytes, res); err != nil {
 		return nil, err
@@ -180,6 +187,7 @@ func (dc *defaultClient) UpdateConfig(cfg *ClientConfig) error {
 	}
 	url = strings.TrimSuffix(url, "/")
 	dc.endpoint = url
+        dc.Realm = cfg.Realm
 	tc := &tls.Config{
 		InsecureSkipVerify: cfg.SkipTLSVerify,
 	}
@@ -208,15 +216,15 @@ func (dc *defaultClient) UpdateConfig(cfg *ClientConfig) error {
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
 		Endpoint: oauth2.Endpoint{
-			TokenURL: url + TokenURLSuffix,
-			AuthURL:  url + AuthURLSuffix,
+			TokenURL: url + dc.GetPrefix(TokenURLSuffix),
+			AuthURL:  url + dc.GetPrefix(AuthURLSuffix),
 		},
 	}
 
 	cc := &clientcredentials.Config{
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
-		TokenURL:     url + TokenURLSuffix,
+		TokenURL:     url + dc.GetPrefix(TokenURLSuffix),
 	}
 	dc.oauth2Cfg = oc
 	dc.twoLegCfg = cc
@@ -232,3 +240,49 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 	}
 	return c, nil
 }
+
+func (dc *defaultClient) GetPrefix(prefix_type int) (string) {
+
+    if dc.Realm !="" {
+        switch prefix_type {
+        case AuthURLSuffix:
+            return "/realms/"+dc.Realm +"/protocol/openid-connect/auth"
+        case TokenURLSuffix:
+            return "/realms/"+dc.Realm +"/protocol/openid-connect/token"
+        case UserInfoURLSuffix:
+            return "/realms/"+dc.Realm +"/protocol/openid-connect/userinfo"
+        case UsersURLSuffix:
+            return "/admin/realms/"+dc.Realm +"/users"
+        }
+   } else {
+      switch prefix_type {
+      case AuthURLSuffix:
+            return "/oauth/authorize"
+      case TokenURLSuffix:
+            return "/oauth/token"
+      case UserInfoURLSuffix:
+            return "/userinfo"
+      case UsersURLSuffix:
+            return "/Users"
+     }
+   }
+   return ""
+
+}
+
+func Parse_rsp_on_realm(in_buff []byte) ([]*SearchUserEntry, error) {
+
+        var res [] SearchUserEntry
+        if err := json.Unmarshal(in_buff, &res); err != nil {
+                log.Debugf("SearchUser error: erro %s %v", string(in_buff), err)
+                return nil, err
+        }
+
+        var ret_val []*SearchUserEntry
+        for index, _ := range res {
+                ret_val = append(ret_val, &res[index])
+        }
+        return ret_val, nil
+
+}
+

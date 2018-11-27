@@ -15,6 +15,7 @@
 package api
 
 import (
+        "errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -317,4 +318,76 @@ func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*model
 // Wrap the same method in common utils.
 func watchConfigChanges(cfg map[string]interface{}) error {
 	return notifier.WatchConfigChanges(cfg)
+}
+func Update_Project_usage(project_name string, tokenUsername string ) (float32, error) {
+
+    //var item *tagResp
+    var usage = int64(0)
+    var client *registry.Repository
+
+    log.Debugf("Start Update_Project_usage %s ",project_name)
+    if project_name == ""{
+        log.Errorf("project name is empty ")
+        return 0, errors.New("can't work with 42")
+    }
+
+    query := &models.RepositoryQuery{
+        ProjectName: project_name,
+    }
+
+    var repositories, err = dao.GetRepositories(query)
+
+    if err != nil {
+        log.Errorf("Error get repositorys for %s %v", project_name, err)
+        return 0, err
+    }
+
+    for _, repository := range repositories {
+        client, err = coreutils.NewRepositoryClientForUI(tokenUsername, repository.Name)
+        if err != nil {
+            log.Errorf("Error creating repository Client: %v", err)
+            return 0, err
+        }
+
+        tags, listerr := client.ListTag()
+        log.Debugf("get tags %v ", tags)
+        if listerr != nil {
+            log.Errorf("Error lst tag repository %s %v", repository.Name, listerr)
+            continue
+        }
+        //c := make(chan *tagResp)
+        for _, tag := range tags {
+
+            log.Debugf("assemble tag %v ", tag)
+            //assembleTag(c, client, repository.Name, tag, false, false, nil, size)
+            detail, err := getTagDetail(client, tag, true)
+            if err != nil {
+                log.Errorf("Error get detail: %v", err)
+            } else {
+              usage += detail.Size
+            }
+        }
+
+        //for i := 0; i < len(tags); i++ {
+        //   item = <-c
+        //    if item == nil {
+        //        continue
+        //    }
+        //        usage += item.tagDetail.Size
+        //}
+
+    }
+
+    log.Debugf("done assemble ")
+    currentProject, err := dao.GetProjectByName(project_name)
+    if err != nil {
+        log.Errorf("Error get project for %s %v", project_name, err)
+        return 0, err
+    }
+    //usage is bit unit, change to M byte unit
+    currentProject.Usage = float32(usage) / (1024*1024)
+    err = dao.UpdateProject(currentProject)
+    log.Debugf("done update %v",err)
+
+    return currentProject.Usage, err
 }

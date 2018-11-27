@@ -25,6 +25,7 @@
         "togglable": true,
         "update_time": "2017-02-10T07:57:56Z",
         "current_user_role_id": 1,
+        "quota": 1024,
         "repo_count": 0
     }
   ]
@@ -40,6 +41,7 @@ export class Project {
     togglable: boolean;
     update_time: Date;
     current_user_role_id: number;
+    quota: number;
     repo_count: number;
     chart_count: number;
     has_project_admin_role: boolean;

@@ -109,7 +109,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
 
     this.isSubmitOnGoing = true;
     this.projectService
-      .createProject(this.project.name, this.project.metadata)
+      .createProject(this.project.name, this.project.quota, this.project.metadata)
       .subscribe(
       status => {
         this.isSubmitOnGoing = false;

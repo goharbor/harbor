@@ -39,12 +39,15 @@ type Auth struct {
 // Authenticate ...
 func (u *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if err := u.ensureClient(); err != nil {
+		log.Debugf("error to authenticate, error: %v", err)
 		return nil, err
 	}
 	t, err := u.client.PasswordAuth(m.Principal, m.Password)
 	if err != nil {
+		log.Debugf("error to PasswordAuth, error: %v", err)
 		return nil, auth.NewErrAuth(err.Error())
 	}
+	log.Debugf("PasswordAuth ok, for : %v", m)
 	user := &models.User{
 		Username: m.Principal,
 	}
@@ -55,6 +58,7 @@ func (u *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		user.Email = info.Email
 		user.Realname = info.Name
 	}
+	log.Debugf("Authenticate ok, for : %v %v", m, user)
 	return user, nil
 }
 
@@ -131,7 +135,7 @@ func (u *Auth) SearchUser(username string) (*models.User, error) {
 func (u *Auth) ensureClient() error {
 	var cfg *uaa.ClientConfig
 	UAASettings, err := config.UAASettings()
-	//	log.Debugf("Uaa settings: %+v", UAASettings)
+	log.Debugf("Uaa settings: %+v", UAASettings)
 	if err != nil {
 		log.Warningf("Failed to get UAA setting from Admin Server, error: %v", err)
 	} else {
@@ -139,10 +143,13 @@ func (u *Auth) ensureClient() error {
 			ClientID:      UAASettings.ClientID,
 			ClientSecret:  UAASettings.ClientSecret,
 			Endpoint:      UAASettings.Endpoint,
+			Realm:         UAASettings.Realm,
 			SkipTLSVerify: !UAASettings.VerifyCert,
 			CARootPath:    os.Getenv("UAA_CA_ROOT"),
 		}
 	}
+	log.Debugf("Uaa ensureClient : cfg: %v \n  u.client :%v", cfg,u.client)
+
 	if u.client != nil && cfg != nil {
 		return u.client.UpdateConfig(cfg)
 	}

@@ -140,6 +140,7 @@ export class ProjectDefaultService extends ProjectService {
       .put(
         `${baseUrl}/${projectId}`,
         {
+          Quota: projectPolicy.Quota,
           metadata: {
             public: projectPolicy.Public ? "true" : "false",
             enable_content_trust: projectPolicy.ContentTrust ? "true" : "false",

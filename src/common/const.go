@@ -94,6 +94,7 @@ const (
 	UAAClientID                       = "uaa_client_id"
 	UAAClientSecret                   = "uaa_client_secret"
 	UAAVerifyCert                     = "uaa_verify_cert"
+	Realm                             = "realm"
 	DefaultClairEndpoint              = "http://clair:6060"
 	CfgDriverDB                       = "db"
 	CfgDriverJSON                     = "json"
@@ -152,6 +153,7 @@ var (
 		UAAClientID,
 		UAAClientSecret,
 		UAAEndpoint,
+		Realm,
 		UAAVerifyCert,
 		ReadOnly,
 	}
@@ -177,6 +179,7 @@ var (
 		ProjectCreationRestriction: ProCrtRestrEveryone,
 		UAAClientID:                "",
 		UAAEndpoint:                "",
+		Realm:                      "",
 	}
 
 	HarborNumKeysMap = map[string]int{

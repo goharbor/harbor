@@ -19,5 +19,6 @@ type UAASettings struct {
 	Endpoint     string
 	ClientID     string
 	ClientSecret string
+	Realm        string
 	VerifyCert   bool
 }

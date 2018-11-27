@@ -156,6 +156,8 @@
         "REPO_COUNT": "Repositories Count",
         "CHART_COUNT": "Chart Count",
         "CREATION_TIME": "Creation Time",
+        "QUOTA": "Quota",
+        "USAGE": "Usage",
         "ACCESS_LEVEL": "Access Level",
         "PUBLIC": "Public",
         "PRIVATE": "Private",

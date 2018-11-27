@@ -35,6 +35,8 @@ type Project struct {
 	Role         int               `orm:"-" json:"current_user_role_id"`
 	RepoCount    int64             `orm:"-" json:"repo_count"`
 	ChartCount   uint64            `orm:"-" json:"chart_count"`
+	Quota        int               `orm:"column(quota)" json:"quota"`
+	Usage        float32           `orm:"column(usage)" json:"usage"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
 }
 
@@ -156,6 +158,7 @@ type BaseProjectCollection struct {
 type ProjectRequest struct {
 	Name     string            `json:"project_name"`
 	Public   *int              `json:"public"` // deprecated, reserved for project creation in replication
+	Quota    int               `json:"quota"`
 	Metadata map[string]string `json:"metadata"`
 }
 

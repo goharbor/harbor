@@ -58,6 +58,8 @@ export class ListProjectComponent implements OnDestroy {
     repoCountComparator: Comparator<Project> = new CustomComparator<Project>("repo_count", "number");
     chartCountComparator: Comparator<Project> = new CustomComparator<Project>("chart_count", "number");
     timeComparator: Comparator<Project> = new CustomComparator<Project>("creation_time", "date");
+    quotaComparator: Comparator<Project> = new CustomComparator<Project>("quota", "number");
+    usageComparator: Comparator<Project> = new CustomComparator<Project>("usage", "number");
     accessLevelComparator: Comparator<Project> = new CustomComparator<Project>("public", "string");
     roleComparator: Comparator<Project> = new CustomComparator<Project>("current_user_role_id", "number");
     currentPage = 1;

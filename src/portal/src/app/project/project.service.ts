@@ -53,10 +53,10 @@ export class ProjectService {
                catchError(error => observableThrowError(error)), );
   }
 
-  createProject(name: string, metadata: any): Observable<any> {
+  createProject(name: string, quota: number, metadata: any): Observable<any> {
     return this.http
                .post(`/api/projects`,
-                JSON.stringify({'project_name': name, 'metadata': {
+                JSON.stringify({'project_name': name, 'quota': quota, 'metadata': {
                   public: metadata.public ? 'true' : 'false',
                 }})
                 , HTTP_JSON_OPTIONS).pipe(

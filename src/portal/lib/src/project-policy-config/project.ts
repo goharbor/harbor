@@ -9,6 +9,7 @@ export class Project {
     update_time?: Date | string;
     current_user_role_id?: number;
     repo_count?: number;
+    quota?: number;
     has_project_admin_role?: boolean;
     is_member?: boolean;
     role_name?: string;

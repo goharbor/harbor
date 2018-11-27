@@ -377,6 +377,15 @@ func (ra *RepositoryAPI) Delete() {
 			ra.CustomAbort(http.StatusInternalServerError, "")
 		}
 	}
+
+        usage, err := Update_Project_usage(projectName, ra.SecurityCtx.GetUsername())
+        if err != nil {
+            log.Errorf("failed to update project usage for %s: %v", projectName, err)
+	    ra.CustomAbort(http.StatusInternalServerError, "")
+            return
+        } else {
+            log.Debugf("usage after delete topic is %f ", usage)
+        }
 }
 
 // GetTag returns the tag of a repository
@@ -617,7 +626,7 @@ func assembleTag(c chan *tagResp, client *registry.Repository,
 	}
 
 	// the detail information of tag
-	tagDetail, err := getTagDetail(client, tag)
+	tagDetail, err := getTagDetail(client, tag, false)
 	if err != nil {
 		log.Errorf("failed to get v2 manifest of %s:%s: %v", repository, tag, err)
 	}
@@ -645,7 +654,7 @@ func assembleTag(c chan *tagResp, client *registry.Repository,
 
 // getTagDetail returns the detail information for v2 manifest image
 // The information contains architecture, os, author, size, etc.
-func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
+func getTagDetail(client *registry.Repository, tag string, size_only bool) (*tagDetail, error) {
 	detail := &tagDetail{
 		Name: tag,
 	}
@@ -666,6 +675,11 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 	for _, ref := range manifest.References() {
 		detail.Size += ref.Size
 	}
+
+        // size only?
+        if size_only {
+            return detail, nil
+        }
 
 	_, reader, err := client.PullBlob(manifest.Target().Digest.String())
 	if err != nil {

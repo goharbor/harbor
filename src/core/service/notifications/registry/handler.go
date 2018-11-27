@@ -44,7 +44,9 @@ const vicPrefix = "vic/"
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
-	err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
+	//err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
+	tmp_buff :=n.Ctx.Input.CopyBody(1<<32)
+	err := json.Unmarshal(tmp_buff, &notification)
 
 	if err != nil {
 		log.Errorf("failed to decode notification: %v", err)
@@ -91,12 +93,11 @@ func (n *NotificationHandler) Post() {
 			}
 		}()
 
+		log.Debugf("Notification: action %s", action)
 		if action == "push" {
-			go func() {
-				exist := dao.RepositoryExists(repository)
-				if exist {
-					return
-				}
+                        //ensure RepositoryExists
+			exist := dao.RepositoryExists(repository)
+			if !exist {
 				log.Debugf("Add repository %s into DB.", repository)
 				repoRecord := models.RepoRecord{
 					Name:      repository,
@@ -105,11 +106,21 @@ func (n *NotificationHandler) Post() {
 				if err := dao.AddRepository(repoRecord); err != nil {
 					log.Errorf("Error happens when adding repository: %v", err)
 				}
-			}()
+			}
 			if !coreutils.WaitForManifestReady(repository, tag, 5) {
 				log.Errorf("Manifest for image %s:%s is not ready, skip the follow up actions.", repository, tag)
 				return
 			}
+
+                        go func(to_project *models.Project, tokenUsername string) {
+                            usage, err := api.Update_Project_usage(to_project.Name, tokenUsername)
+			    if err != nil {
+				log.Errorf("failed to update project usage for %s: %v", to_project.Name, err)
+				return
+                            } else {
+				log.Debugf("usage after push topic is %f ", usage)
+                            }
+                        }(pro, "harbor_ui")
 
 			go func() {
 				image := repository + ":" + tag
@@ -149,7 +160,7 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 	events := []*models.Event{}
 
 	for _, event := range notification.Events {
-		log.Debugf("receive an event: \n----ID: %s \n----target: %s:%s \n----digest: %s \n----action: %s \n----mediatype: %s \n----user-agent: %s", event.ID, event.Target.Repository,
+		log.Debugf("receive an event: \n----ID: %s \n----target: %s:%s \n----digest: %s \n----action: %s \n----mediatype: %s \n----user-agent: %s\n", event.ID, event.Target.Repository,
 			event.Target.Tag, event.Target.Digest, event.Action, event.Target.MediaType, event.Request.UserAgent)
 
 		isManifest, err := regexp.MatchString(manifestPattern, event.Target.MediaType)
