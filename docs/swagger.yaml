@@ -2575,7 +2575,9 @@ paths:
         - Products
       responses:
         '200':
-          description: Get job log successfully.
+          description: Get successfully.
+          schema:
+            type: string        
         '400':
           description: Illegal format of provided ID value.
         '401':
@@ -2776,7 +2778,11 @@ paths:
           description: The project name
       responses:
         '200':
-          $ref: '#/definitions/ChartInfoList'
+          description: Searched for charts of project in Harbor successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ChartInfoEntry'        
         '401':
           $ref: '#/definitions/UnauthorizedChartAPIError'
         '403':
@@ -4279,9 +4285,15 @@ definitions:
       total_versions:
         type: integer
         description: Total count of chart versions
+      latest_version:
+        type: string
+        description: latest version of chart      
       created:
         type: string
         description: The created time of chart
+      updated:
+        type: string
+        description: The created time of chart        
       icon:
         type: string
         description: The icon path of chart
@@ -4430,19 +4442,35 @@ definitions:
   GCResult:
     type: object
     properties:
-      status:
+      id:
+        type: integer
+        description: the id of gc job.
+      job_name:
+        type: string
+        description: the job name of gc job.
+      job_kind:
+        type: string
+        description: the job kind of gc job.
+      schedule:
+        $ref: '#/definitions/GCScheduleSchedule'
+      job_status:
+        type: string
+        description: the status of gc job.
+      deleted:
         type: boolean
-        description: the result of gc job.
-      msg:
+        description: if gc job was deleted.
+      creation_time:
         type: string
-        description: the details of gc job.
-      starttime:
+        description: the creation time of gc job.
+      update_time:
         type: string
-        description: the start time of gc job.
-      endtime:
-        type: string
-        description: the end time of gc job.
+        description: the update time of gc job.        
   GCSchedule:
+    type: object
+    properties:
+      schedule:
+        $ref: '#/definitions/GCScheduleSchedule'
+  GCScheduleSchedule:
     type: object
     properties:
       type:
