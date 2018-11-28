@@ -82,7 +82,6 @@ The parameters are described below - note that at the very least, you will need 
 * **ssl_cert**: The path of SSL certificate, it's applied only when the protocol is set to https.
 * **ssl_cert_key**: The path of SSL key, it's applied only when the protocol is set to https.
 * **secretkey_path**: The path of key for encrypt or decrypt the password of a remote registry in a replication policy.
-* **admiral_url**: Admiral's url, comment this attribute, or set its value to NA when Harbor is standalone.
 * **log_rotate_count**: Log files are rotated **log_rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
 * **log_rotate_size**: Log files are rotated only if they grow bigger than **log_rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
 * **http_proxy**: Config http proxy for Clair, e.g. `http://my.proxy.com:3128`.
