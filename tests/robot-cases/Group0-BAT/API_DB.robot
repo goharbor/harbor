@@ -35,3 +35,5 @@ Test Case - Project Level Policy Content Trust
     Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
 Test Case - Garbage Collection
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
+Test Case - User View Logs
+    Harbor API Test  ./tests/apitests/python/test_user_view_logs.py

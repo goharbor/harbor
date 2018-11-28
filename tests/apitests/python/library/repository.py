@@ -132,4 +132,10 @@ class Repository(base.Base):
         if is_repo_exist_in_project(repositories, repo_name) == False:
             raise Exception("Repository {} is not exist.".format(repo_name))
 
-
+    def signature_should_exist(self, repo_name, tag, **kwargs):
+        signatures = self.get_repo_signatures(repo_name, **kwargs)
+        for each_sign in signatures:
+            if each_sign.tag == tag and len(each_sign.hashes["sha256"]) == 44:
+                print "sha256:", len(each_sign.hashes["sha256"])
+                return
+        raise Exception(r"Signature of {}:{} is not exist!".format(repo_name, tag))

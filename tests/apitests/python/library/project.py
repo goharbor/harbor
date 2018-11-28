@@ -26,16 +26,14 @@ class Project(base.Base):
         try:
             _, status_code, header = client.projects_post_with_http_info(swagger_client.ProjectReq(name, metadata))
         except ApiException as e:
-            if e.status == expect_status_code:
-                if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
-                    raise Exception(r"Create project result body is not as expected {} actual status is {}.".format(expect_response_body.strip(), e.body.strip()))
-                else:
-                    return e.reason, e.body
-            else:
-                raise Exception(r"Create project result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
-
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
         base._assert_status_code(expect_status_code, status_code)
+        base._assert_status_code(201, status_code)
         return base._get_id_from_header(header), name
+
 
     def get_projects(self, params, **kwargs):
         client = self._get_client(**kwargs)
@@ -60,16 +58,18 @@ class Project(base.Base):
             404: False,
         }.get(status_code,'error')
 
-    def get_project(self, project_id, expect_status_code = 200, **kwargs):
+    def get_project(self, project_id, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
         try:
             data, status_code, _ = client.projects_project_id_get_with_http_info(project_id)
         except ApiException as e:
-            if e.status == expect_status_code:
-                return e.reason, e.body
-            else:
-                raise Exception(r"Get project result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+
         base._assert_status_code(expect_status_code, status_code)
+        base._assert_status_code(200, status_code)
         return data
 
     def update_project(self, project_id, metadata, **kwargs):
@@ -83,11 +83,11 @@ class Project(base.Base):
         _, status_code, _ = client.projects_project_id_delete_with_http_info(project_id)
         base._assert_status_code(expect_status_code, status_code)
 
-    def get_project_metadata_by_name(self, project_id, meta_name, **kwargs):
+    def get_project_metadata_by_name(self, project_id, meta_name, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         ProjectMetadata = swagger_client.ProjectMetadata()
         ProjectMetadata, status_code, _ = client.projects_project_id_metadatas_meta_name_get_with_http_info(project_id, meta_name)
-        base._assert_status_code(200, status_code)
+        base._assert_status_code(expect_status_code, status_code)
         return {
             'public': ProjectMetadata.public,
             'enable_content_trust': ProjectMetadata.enable_content_trust,
@@ -96,21 +96,40 @@ class Project(base.Base):
             'severity': ProjectMetadata.severity,
         }.get(meta_name,'error')
 
+    def get_project_log(self, project_id, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+        body, status_code, _ = client.projects_project_id_logs_get_with_http_info(project_id)
+        base._assert_status_code(expect_status_code, status_code)
+        return body
+
+    def filter_project_logs(self, project_id, operator, repository, tag, operation_type, **kwargs):
+        access_logs = self.get_project_log(project_id, **kwargs)
+        count = 0
+        for each_access_log in list(access_logs):
+            if each_access_log.username == operator and \
+               each_access_log.repo_name.strip(r'/') == repository and \
+               each_access_log.repo_tag == tag and \
+               each_access_log.operation == operation_type:
+                count = count + 1
+        return count
+
     def get_project_members(self, project_id, **kwargs):
         client = self._get_client(**kwargs)
         return client.projects_project_id_members_get(project_id)
 
-    def get_project_member(self, project_id, member_id, expect_status_code = 200, **kwargs):
+    def get_project_member(self, project_id, member_id, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
         data = []
         try:
             data, status_code, _ = client.projects_project_id_members_mid_get_with_http_info(project_id, member_id,)
         except ApiException as e:
-            if e.status == expect_status_code:
-                return e.reason, e.body
-            else:
-                raise Exception(r"Get project member result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+
         base._assert_status_code(expect_status_code, status_code)
+        base._assert_status_code(200, status_code)
         return data
 
     def check_project_member_not_exist(self, project_id, member_user_name, **kwargs):

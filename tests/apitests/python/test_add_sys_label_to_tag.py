@@ -66,7 +66,7 @@ class TestProjects(unittest.TestCase):
         user_001_password = "Aa123456"
 
         #1. Create user-001
-        TestProjects.user_add_g_lbl_id, user_add_g_lbl_name = self.user.create_user_success(user_password = user_001_password, **ADMIN_CLIENT)
+        TestProjects.user_add_g_lbl_id, user_add_g_lbl_name = self.user.create_user(user_password = user_001_password, **ADMIN_CLIENT)
 
         TestProjects.USER_add_g_lbl_CLIENT=dict(endpoint = url, username = user_add_g_lbl_name, password = user_001_password)
 
