@@ -1,11 +1,11 @@
 package backend
 
 import (
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"bufio"
 	"bytes"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // DBLogger is an implementation of logger.Interface.
@@ -27,10 +27,10 @@ func NewDBLogger(key string, level string, depth int) (*DBLogger, error) {
 	backendLogger := log.New(bw, log.NewTextFormatter(), logLevel, depth)
 
 	return &DBLogger{
-		backendLogger:  backendLogger,
-		bw:             bw,
-		buffer:         buffer,
-		key:            key,
+		backendLogger: backendLogger,
+		bw:            bw,
+		buffer:        buffer,
+		key:           key,
 	}, nil
 }
 

@@ -66,8 +66,8 @@ func StdFactory(options ...OptionItem) (Interface, error) {
 // DBFactory is factory of file logger
 func DBFactory(options ...OptionItem) (Interface, error) {
 	var (
-		level, key    string
-		depth         int
+		level, key string
+		depth      int
 	)
 	for _, op := range options {
 		switch op.Field() {

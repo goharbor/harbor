@@ -19,5 +19,3 @@ type JobLog struct {
 func (a *JobLog) TableName() string {
 	return JobLogTable
 }
-
-

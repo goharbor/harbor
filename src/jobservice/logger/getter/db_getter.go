@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/goharbor/harbor/src/common/dao"
 )
+
 // DBGetter is responsible for retrieving DB log data
 type DBGetter struct {
 }

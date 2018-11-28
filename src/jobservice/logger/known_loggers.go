@@ -1,6 +1,10 @@
 package logger
 
-import "strings"
+import (
+	"github.com/goharbor/harbor/src/jobservice/logger/backend"
+	"reflect"
+	"strings"
+)
 
 const (
 	// LoggerNameFile is unique name of the file logger.
@@ -82,4 +86,25 @@ func IsKnownLevel(level string) bool {
 	}
 
 	return false
+}
+
+// GetLoggerName return a logger name by Interface
+func GetLoggerName(l Interface) string {
+	var name string
+	if l == nil {
+		return name
+	}
+
+	switch l.(type) {
+	case *backend.DBLogger:
+		name = LoggerNameDB
+	case *backend.StdOutputLogger:
+		name = LoggerNameStdOutput
+	case *backend.FileLogger:
+		name = LoggerNameFile
+	default:
+		name = reflect.TypeOf(l).String()
+	}
+
+	return name
 }

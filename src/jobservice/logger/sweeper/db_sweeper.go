@@ -1,12 +1,13 @@
 package sweeper
 
 import (
-	"time"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/dao"
+	"time"
 )
 
 var dbInit = make(chan int, 1)
+var isDBInit = false
 
 // DBSweeper is used to sweep the DB logs
 type DBSweeper struct {
@@ -23,7 +24,7 @@ func NewDBSweeper(duration int) *DBSweeper {
 // Sweep logs
 func (dbs *DBSweeper) Sweep() (int, error) {
 	// DB initialization not completed, waiting
-	<-dbInit
+	WaitingDBInit()
 
 	// Start to sweep logs
 	before := time.Now().Add(time.Duration(dbs.duration) * oneDay * -1)
@@ -41,8 +42,16 @@ func (dbs *DBSweeper) Duration() int {
 	return dbs.duration
 }
 
-// prepare sweeping
+// WaitingDBInit waiting DB init
+func WaitingDBInit() {
+	if !isDBInit {
+		<-dbInit
+	}
+}
+
+// PrepareDBSweep invoked after DB init
 func PrepareDBSweep() error {
+	isDBInit = true
 	dbInit <- 1
 	return nil
 }
