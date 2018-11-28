@@ -16,10 +16,14 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"testing"
+
+	"github.com/goharbor/harbor/src/core/config"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/test"
 	"k8s.io/helm/cmd/helm/search"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -178,21 +182,43 @@ func TestSearch(t *testing.T) {
 	_, exist = repositories["search-2/hello-world"]
 	assert.True(t, exist)
 
-	// Search chart
-	err = handleAndParse(&testingRequest{
-		method: http.MethodGet,
-		url:    "/api/search",
-		queryStruct: struct {
-			Keyword string `url:"q"`
-		}{
-			Keyword: "harbor",
-		},
-		credential: sysAdmin,
-	}, result)
-	require.Nil(t, err)
-	require.Equal(t, 1, len(result.Chart))
-	require.Equal(t, "library/harbor", result.Chart[0].Name)
+	currentAdminServerURL, ok := os.LookupEnv("ADMINSERVER_URL")
+	if ok {
+		chartSettings := map[string]interface{}{
+			common.WithChartMuseum: true,
+		}
+		adminServer, err := test.NewAdminserver(chartSettings)
+		if err != nil {
+			t.Fatal(nil)
+		}
+		defer adminServer.Close()
 
-	// Restore chart search handler
-	searchHandler = nil
+		if err := config.InitByURL(adminServer.URL); err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			// reset config
+			if err := config.InitByURL(currentAdminServerURL); err != nil {
+				t.Error(err)
+			}
+		}()
+
+		// Search chart
+		err = handleAndParse(&testingRequest{
+			method: http.MethodGet,
+			url:    "/api/search",
+			queryStruct: struct {
+				Keyword string `url:"q"`
+			}{
+				Keyword: "harbor",
+			},
+			credential: sysAdmin,
+		}, result)
+		require.Nil(t, err)
+		require.Equal(t, 1, len(result.Chart))
+		require.Equal(t, "library/harbor", result.Chart[0].Name)
+
+		// Restore chart search handler
+		searchHandler = nil
+	}
 }
