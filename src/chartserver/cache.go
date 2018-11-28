@@ -3,6 +3,7 @@ package chartserver
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"time"
 
 	beego_cache "github.com/astaxie/beego/cache"
@@ -19,6 +20,7 @@ const (
 	cacheDriverMem      = "memory"
 	cacheDriverRedis    = "redis"
 	cacheCollectionName = "helm_chart_cache"
+	maxTry              = 10
 )
 
 // ChartCache is designed to cache some processed data for repeated accessing
@@ -162,15 +164,26 @@ func initCacheDriver(cacheConfig *ChartCacheConfig) beego_cache.Cache {
 		hlog.Info("Enable memory cache for chart caching")
 		return beego_cache.NewMemoryCache()
 	case cacheDriverRedis:
-		redisCache, err := beego_cache.NewCache(cacheDriverRedis, cacheConfig.Config)
-		if err != nil {
-			// Just logged
-			hlog.Errorf("Failed to initialize redis cache: %s", err)
-			return nil
-		}
+		// New with retry
+		count := 0
+		for {
+			count++
+			redisCache, err := beego_cache.NewCache(cacheDriverRedis, cacheConfig.Config)
+			if err != nil {
+				// Just logged
+				hlog.Errorf("Failed to initialize redis cache: %s", err)
 
-		hlog.Info("Enable redis cache for chart caching")
-		return redisCache
+				if count < maxTry {
+					<-time.After(time.Duration(backoff(count)) * time.Second)
+					continue
+				}
+
+				return nil
+			}
+
+			hlog.Info("Enable redis cache for chart caching")
+			return redisCache
+		}
 	default:
 		break
 	}
@@ -178,4 +191,10 @@ func initCacheDriver(cacheConfig *ChartCacheConfig) beego_cache.Cache {
 	// Any other cases
 	hlog.Info("No cache is enabled for chart caching")
 	return nil
+}
+
+// backoff: fast->slow->fast
+func backoff(count int) int {
+	f := 5 - math.Abs((float64)(count)-5)
+	return (int)(math.Pow(2, f))
 }
