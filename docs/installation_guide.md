@@ -82,7 +82,6 @@ The parameters are described below - note that at the very least, you will need 
 * **ssl_cert**: The path of SSL certificate, it's applied only when the protocol is set to https.
 * **ssl_cert_key**: The path of SSL key, it's applied only when the protocol is set to https.
 * **secretkey_path**: The path of key for encrypt or decrypt the password of a remote registry in a replication policy.
-* **admiral_url**: Admiral's url, comment this attribute, or set its value to NA when Harbor is standalone.
 * **log_rotate_count**: Log files are rotated **log_rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
 * **log_rotate_size**: Log files are rotated only if they grow bigger than **log_rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
 * **http_proxy**: Config http proxy for Clair, e.g. `http://my.proxy.com:3128`.
@@ -126,20 +125,17 @@ may not be able to log in after the upgrade.
 #### Configuring storage backend (optional)
 
 By default, Harbor stores images on your local filesystem. In a production environment, you may consider 
-using other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. 
-What you need to update is the section of `storage` in the file `common/config/registry/config.yml`. 
-For example, if you use Openstack Swift as your storage backend, the section may look like this:
+using other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc.
+These parameters are configurations for registry.
 
-```
-storage:
-  swift:
-    username: admin
-    password: ADMIN_PASS
-    authurl: http://keystone_addr:35357/v3/auth
-    tenant: admin
-    domain: default
-    region: regionOne
-    container: docker_images
+* **registry_storage_provider_name**:  Storage provider name of registry, it can be filesystem, s3, gcs, azure, etc. Default is filesystem.
+* **registry_storage_provider_config**: Comma separated "key: value" pairs for storage provider config, e.g. "key1: value, key2: value2". Default is empty string.
+* **registry_custom_ca_bundle**:  The path to the custom root ca certificate, which will be injected into the truststore of registry's and chart repository's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
+
+For example, if you use Openstack Swift as your storage backend, the parameters may look like this:
+```ini
+registry_storage_provider_name=swift
+registry_storage_provider_config="username: admin, password: ADMIN_PASS, authurl: http://keystone_addr:35357/v3/auth, tenant: admin, domain: default, region: regionOne, container: docker_images"
 ```
 
 _NOTE: For detailed information on storage backend of a registry, refer to [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) ._
