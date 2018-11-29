@@ -1333,6 +1333,8 @@ paths:
           in: query
           type: integer
           description: When this parm is set only the images under the project identified by the project_id will be scanned.
+      tags:
+        - Products          
       responses:
         '202':
           description: The action is successully taken in the background.  If some images are failed to scan it will only be reflected in the job status.
