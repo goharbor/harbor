@@ -63,7 +63,7 @@
             <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1 && developerRoleOrAbove)" (click)="addLabels(selectedRow)" ><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
             <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
             <div style='display:grid'>
-              <label class="dropdown-header">{{'REPOSITORY.ADD_TO_IMAGE' | translate}}</label>
+              <label class="dropdown-header">{{'REPOSITORY.ADD_LABEL_TO_IMAGE' | translate}}</label>
               <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
               <div [hidden]='imageStickLabels.length' style="padding-left:10px;">{{'LABEL.NO_LABELS' | translate }}</div>
               <div [hidden]='!imageStickLabels.length' style='max-height:300px;overflow-y: auto;'>
