@@ -1,4 +1,4 @@
-FROM node:10.7.0
+FROM node:10.7.0 as nodeportal
 
 RUN mkdir -p /portal_src
 RUN mkdir -p /build_dir
@@ -24,7 +24,7 @@ RUN tdnf install -y nginx >> /dev/null \
 EXPOSE 80
 VOLUME /var/cache/nginx /var/log/nginx /run
 
-COPY --from=0 /build_dir/dist /usr/share/nginx/html
+COPY --from=nodeportal /build_dir/dist /usr/share/nginx/html
 COPY make/photon/portal/nginx.conf /etc/nginx/nginx.conf
 
 STOPSIGNAL SIGQUIT
