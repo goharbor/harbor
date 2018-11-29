@@ -36,6 +36,7 @@ Test Case - Project Level Policy Content Trust
 Test Case - Garbage Collection
     Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 Test Case - User View Logs
+<<<<<<< HEAD
     Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
 Test Case - Scan All Images
     Harbor API Test  ./tests/apitests/python/test_scan_all_images.py
@@ -43,3 +44,6 @@ Test Case - List Helm Charts
     Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 Test Case - Assign Sys Admin
     Harbor API Test  ./tests/apitests/python/test_assign_sys_admin.py
+=======
+    Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
+>>>>>>> Add API test case for user view logs. (#6370)
