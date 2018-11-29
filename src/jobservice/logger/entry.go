@@ -1,5 +1,7 @@
 package logger
 
+import "fmt"
+
 // Entry provides unique interfaces on top of multiple logger backends.
 // Entry also implements @Interface.
 type Entry struct {
@@ -81,4 +83,25 @@ func (e *Entry) Fatalf(format string, v ...interface{}) {
 	for _, l := range e.loggers {
 		l.Fatalf(format, v...)
 	}
+}
+
+// Close logger
+func (e *Entry) Close() error {
+	var errMsg string
+	for _, l := range e.loggers {
+		if closer, ok := l.(Closer); ok {
+			err := closer.Close()
+			if err != nil {
+				if errMsg == "" {
+					errMsg = fmt.Sprintf("logger: %s, err: %s", GetLoggerName(l), err)
+				} else {
+					errMsg = fmt.Sprintf("%s; logger: %s, err: %s", errMsg, GetLoggerName(l), err)
+				}
+			}
+		}
+	}
+	if errMsg != "" {
+		return fmt.Errorf(errMsg)
+	}
+	return nil
 }

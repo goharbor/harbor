@@ -107,7 +107,10 @@ func (rj *RedisJob) Run(j *work.Job) error {
 	defer func() {
 		// Close open io stream first
 		if closer, ok := execContext.GetLogger().(logger.Closer); ok {
-			closer.Close()
+			err := closer.Close()
+			if err != nil {
+				logger.Errorf("Close job logger failed: %s", err)
+			}
 		}
 	}()
 

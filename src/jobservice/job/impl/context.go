@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
 	jmodel "github.com/goharbor/harbor/src/jobservice/models"
 )
 
@@ -95,7 +96,14 @@ func (c *Context) Init() error {
 
 	db := getDBFromConfig(configs)
 
-	return dao.InitDatabase(db)
+	err = dao.InitDatabase(db)
+	if err != nil {
+		return err
+	}
+
+	// Initialize DB finished
+	initDBCompleted()
+	return nil
 }
 
 // Build implements the same method in env.JobContext interface
@@ -237,22 +245,28 @@ func setLoggers(setter func(lg logger.Interface), jobID string) error {
 	lOptions := []logger.Option{}
 	for _, lc := range config.DefaultConfig.JobLoggerConfigs {
 		// For running job, the depth should be 5
-		if lc.Name == logger.LoggerNameFile || lc.Name == logger.LoggerNameStdOutput {
+		if lc.Name == logger.LoggerNameFile || lc.Name == logger.LoggerNameStdOutput || lc.Name == logger.LoggerNameDB {
 			if lc.Settings == nil {
 				lc.Settings = map[string]interface{}{}
 			}
 			lc.Settings["depth"] = 5
 		}
-		if lc.Name == logger.LoggerNameFile {
+		if lc.Name == logger.LoggerNameFile || lc.Name == logger.LoggerNameDB {
 			// Need extra param
 			fSettings := map[string]interface{}{}
 			for k, v := range lc.Settings {
 				// Copy settings
 				fSettings[k] = v
 			}
-			// Append file name param
-			fSettings["filename"] = fmt.Sprintf("%s.log", jobID)
-			lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, fSettings))
+			if lc.Name == logger.LoggerNameFile {
+				// Append file name param
+				fSettings["filename"] = fmt.Sprintf("%s.log", jobID)
+				lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, fSettings))
+			} else { // DB Logger
+				// Append DB key
+				fSettings["key"] = jobID
+				lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, fSettings))
+			}
 		} else {
 			lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, lc.Settings))
 		}
@@ -265,5 +279,10 @@ func setLoggers(setter func(lg logger.Interface), jobID string) error {
 
 	setter(lg)
 
+	return nil
+}
+
+func initDBCompleted() error {
+	sweeper.PrepareDBSweep()
 	return nil
 }

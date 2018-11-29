@@ -30,3 +30,19 @@ func FileSweeperFactory(options ...OptionItem) (sweeper.Interface, error) {
 
 	return sweeper.NewFileSweeper(workDir, duration), nil
 }
+
+// DBSweeperFactory creates DB sweeper.
+func DBSweeperFactory(options ...OptionItem) (sweeper.Interface, error) {
+	var duration = 1
+	for _, op := range options {
+		switch op.Field() {
+		case "duration":
+			if op.Int() > 0 {
+				duration = op.Int()
+			}
+		default:
+		}
+	}
+
+	return sweeper.NewDBSweeper(duration), nil
+}

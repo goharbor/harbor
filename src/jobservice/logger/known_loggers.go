@@ -1,12 +1,18 @@
 package logger
 
-import "strings"
+import (
+	"github.com/goharbor/harbor/src/jobservice/logger/backend"
+	"reflect"
+	"strings"
+)
 
 const (
 	// LoggerNameFile is unique name of the file logger.
 	LoggerNameFile = "FILE"
 	// LoggerNameStdOutput is the unique name of the std logger.
 	LoggerNameStdOutput = "STD_OUTPUT"
+	// LoggerNameDB is the unique name of the DB logger.
+	LoggerNameDB = "DB"
 )
 
 // Declaration is used to declare a supported logger.
@@ -28,6 +34,8 @@ var knownLoggers = map[string]*Declaration{
 	LoggerNameFile: {FileFactory, FileSweeperFactory, FileGetterFactory, false},
 	// STD output(both stdout and stderr) logger
 	LoggerNameStdOutput: {StdFactory, nil, nil, true},
+	// DB logger
+	LoggerNameDB: {DBFactory, DBSweeperFactory, DBGetterFactory, false},
 }
 
 // IsKnownLogger checks if the logger is supported with name.
@@ -78,4 +86,25 @@ func IsKnownLevel(level string) bool {
 	}
 
 	return false
+}
+
+// GetLoggerName return a logger name by Interface
+func GetLoggerName(l Interface) string {
+	var name string
+	if l == nil {
+		return name
+	}
+
+	switch l.(type) {
+	case *backend.DBLogger:
+		name = LoggerNameDB
+	case *backend.StdOutputLogger:
+		name = LoggerNameStdOutput
+	case *backend.FileLogger:
+		name = LoggerNameFile
+	default:
+		name = reflect.TypeOf(l).String()
+	}
+
+	return name
 }
