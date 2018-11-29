@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"k8s.io/helm/cmd/helm/search"
 )
@@ -124,21 +125,26 @@ func (s *SearchAPI) Get() {
 		s.CustomAbort(http.StatusInternalServerError, "")
 	}
 
-	if searchHandler == nil {
-		searchHandler = chartController.SearchChart
-	}
-
-	chartResults, err := searchHandler(keyword, proNames)
-	if err != nil {
-		log.Errorf("failed to filter charts: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, err.Error())
-	}
-
 	result := &searchResult{
 		Project:    projectResult,
 		Repository: repositoryResult,
-		Chart:      chartResults,
 	}
+
+	// If enable chart repository
+	if config.WithChartMuseum() {
+		if searchHandler == nil {
+			searchHandler = chartController.SearchChart
+		}
+
+		chartResults, err := searchHandler(keyword, proNames)
+		if err != nil {
+			log.Errorf("failed to filter charts: %v", err)
+			s.CustomAbort(http.StatusInternalServerError, err.Error())
+		}
+
+		result.Chart = chartResults
+	}
+
 	s.Data["json"] = result
 	s.ServeJSON()
 }
