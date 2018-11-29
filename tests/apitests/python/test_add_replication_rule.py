@@ -43,7 +43,7 @@ class TestProjects(unittest.TestCase):
         #4. Delete user(UA);
         self.user.delete_user(TestProjects.user_add_rule_id, **ADMIN_CLIENT)
 
-    def testAddSysLabelToRepo(self):
+    def testAddReplicationRule(self):
         """
         Test case:
             Add Replication Rule
