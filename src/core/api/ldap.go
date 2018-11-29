@@ -28,8 +28,7 @@ import (
 // LdapAPI handles requesst to /api/ldap/ping /api/ldap/user/search /api/ldap/user/import
 type LdapAPI struct {
 	BaseController
-	ldapConfig    *ldapUtils.Session
-	useTestConfig bool // Only used for unit test
+	ldapConfig *ldapUtils.Session
 }
 
 const (
@@ -51,14 +50,14 @@ func (l *LdapAPI) Prepare() {
 		l.HandleForbidden(l.SecurityCtx.GetUsername())
 		return
 	}
-	if l.useTestConfig {
-		ldapCfg, err := ldapUtils.LoadSystemLdapConfig()
-		if err != nil {
-			l.HandleInternalServerError(fmt.Sprintf("Can't load system configuration, error: %v", err))
-			return
-		}
-		l.ldapConfig = ldapCfg
+
+	ldapCfg, err := ldapUtils.LoadSystemLdapConfig()
+	if err != nil {
+		l.HandleInternalServerError(fmt.Sprintf("Can't load system configuration, error: %v", err))
+		return
 	}
+	l.ldapConfig = ldapCfg
+
 }
 
 // Ping ...

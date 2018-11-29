@@ -31,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	ldapUtils "github.com/goharbor/harbor/src/common/utils/ldap"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
@@ -79,25 +78,6 @@ type usrInfo struct {
 }
 
 func init() {
-	ldapConfig := models.LdapConf{
-		LdapURL:               "ldap://127.0.0.1:389",
-		LdapSearchDn:          "cn=admin,dc=example,dc=com",
-		LdapSearchPassword:    "admin",
-		LdapBaseDn:            "dc=example,dc=com",
-		LdapUID:               "cn",
-		LdapScope:             2,
-		LdapConnectionTimeout: 5,
-	}
-	ldapGroupConfig := models.LdapGroupConf{
-		LdapGroupBaseDN:        "ou=groups,dc=example,dc=com",
-		LdapGroupFilter:        "objectclass=groupOfNames",
-		LdapGroupSearchScope:   2,
-		LdapGroupNameAttribute: "cn",
-	}
-	ldapTestConfig, err := ldapUtils.CreateWithAllConfig(ldapConfig, ldapGroupConfig)
-	if err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
 	if err := config.Init(); err != nil {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
@@ -155,10 +135,10 @@ func init() {
 	beego.Router("/api/systeminfo", &SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
-	beego.Router("/api/ldap/ping", &LdapAPI{ldapConfig: ldapTestConfig, useTestConfig: true}, "post:Ping")
-	beego.Router("/api/ldap/users/search", &LdapAPI{ldapConfig: ldapTestConfig, useTestConfig: true}, "get:Search")
-	beego.Router("/api/ldap/groups/search", &LdapAPI{ldapConfig: ldapTestConfig, useTestConfig: true}, "get:SearchGroup")
-	beego.Router("/api/ldap/users/import", &LdapAPI{ldapConfig: ldapTestConfig, useTestConfig: true}, "post:ImportUser")
+	beego.Router("/api/ldap/ping", &LdapAPI{}, "post:Ping")
+	beego.Router("/api/ldap/users/search", &LdapAPI{}, "get:Search")
+	beego.Router("/api/ldap/groups/search", &LdapAPI{}, "get:SearchGroup")
+	beego.Router("/api/ldap/users/import", &LdapAPI{}, "post:ImportUser")
 	beego.Router("/api/configurations", &ConfigAPI{})
 	beego.Router("/api/configurations/reset", &ConfigAPI{}, "post:Reset")
 	beego.Router("/api/configs", &ConfigAPI{}, "get:GetInternalConfig")
