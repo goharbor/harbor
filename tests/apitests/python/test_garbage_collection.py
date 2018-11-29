@@ -62,7 +62,7 @@ class TestProjects(unittest.TestCase):
         user_gc_password = "Aa123456"
 
         #1. Create a new user(UA);
-        TestProjects.user_gc_id, user_gc_name = self.user.create_user_success(user_password = user_gc_password, **ADMIN_CLIENT)
+        TestProjects.user_gc_id, user_gc_name = self.user.create_user(user_password = user_gc_password, **ADMIN_CLIENT)
 
         TestProjects.USER_GC_CLIENT=dict(endpoint = url, username = user_gc_name, password = user_gc_password)
 

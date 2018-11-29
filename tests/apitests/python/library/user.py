@@ -26,14 +26,6 @@ class User(base.Base):
 
         return base._get_id_from_header(header), name
 
-    def create_user_success(self, name=None,
-        email = None, user_password=None, realname = None, role_id = None, **kwargs):
-        user_id, user_name = self.create_user(name, email, user_password, realname, role_id, **kwargs)
-        if user_id != None:
-            return user_id, user_name
-        else:
-            raise Exception("user id is not exist, please contact developer to solve this problem")
-
     def get_users(self, username=None, email=None, page=None, page_size=None, **kwargs):
         client = self._get_client(**kwargs)
         params={}

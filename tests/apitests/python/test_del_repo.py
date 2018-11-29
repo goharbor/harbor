@@ -57,7 +57,7 @@ class TestProjects(unittest.TestCase):
         user_del_repo_password = "Aa123456"
 
         #1. Create a new user(UA);
-        TestProjects.user_del_repo_id, user_del_repo_name = self.user.create_user_success(user_password = user_del_repo_password, **ADMIN_CLIENT)
+        TestProjects.user_del_repo_id, user_del_repo_name = self.user.create_user(user_password = user_del_repo_password, **ADMIN_CLIENT)
 
         TestProjects.USER_del_repo_CLIENT=dict(endpoint = url, username = user_del_repo_name, password = user_del_repo_password)
 

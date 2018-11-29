@@ -63,7 +63,7 @@ class TestProjects(unittest.TestCase):
         user_content_trust_password = "Aa123456"
 
         #1. Create a new user(UA);
-        TestProjects.user_content_trust_id, user_content_trust_name = self.user.create_user_success(user_password = user_content_trust_password, **ADMIN_CLIENT)
+        TestProjects.user_content_trust_id, user_content_trust_name = self.user.create_user(user_password = user_content_trust_password, **ADMIN_CLIENT)
 
         TestProjects.USER_CONTENT_TRUST_CLIENT=dict(endpoint = url, username = user_content_trust_name, password = user_content_trust_password)
 
