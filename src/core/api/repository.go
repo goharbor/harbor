@@ -479,14 +479,14 @@ func (ra *RepositoryAPI) Retag() {
 	// Check whether use has read permission to source project
 	if !ra.SecurityCtx.HasReadPerm(srcImage.Project) {
 		log.Errorf("user has no read permission to project '%s'", srcImage.Project)
-		ra.HandleUnauthorized()
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
 
 	// Check whether user has write permission to target project
 	if !ra.SecurityCtx.HasWritePerm(project) {
 		log.Errorf("user has no write permission to project '%s'", project)
-		ra.HandleUnauthorized()
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
 
