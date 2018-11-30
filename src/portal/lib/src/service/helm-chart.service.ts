@@ -113,26 +113,6 @@ export class HelmChartDefaultService extends HelmChartService {
     return res.json() || [];
   }
 
-  private extractHelmItems(res: Response) {
-    if (res.text() === "") {
-      return [];
-    }
-    let charts = res.json();
-    if (charts) {
-      return charts.map( chart => {
-        return {
-          name: chart.Name,
-          total_versions: chart.total_versions,
-          latest_version: chart.latest_version,
-          created: chart.Created,
-          icon: chart.Icon,
-          home: chart.Home};
-      });
-    } else {
-      return [];
-    }
-  }
-
   private handleErrorObservable(error: HttpErrorResponse) {
     return observableThrowError(error.message || error);
   }
@@ -147,7 +127,7 @@ export class HelmChartDefaultService extends HelmChartService {
     return this.http
       .get(`${this.config.helmChartEndpoint}/${projectName}/charts`, HTTP_GET_OPTIONS)
       .pipe(
-        map(response => this.extractHelmItems(response),
+        map(response => this.extractData(response),
         catchError(error => this.handleErrorObservable(error))
       ));
   }
