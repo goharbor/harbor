@@ -10,3 +10,6 @@ create table job_log (
 );
 
 CREATE UNIQUE INDEX job_log_uuid ON job_log (job_uuid);
+
+ALTER TABLE replication_policy ADD CONSTRAINT unique_policy_name UNIQUE (name);
+ALTER TABLE replication_target ADD CONSTRAINT unique_target_name UNIQUE (name);

@@ -5,8 +5,10 @@ import base
 import swagger_client
 
 class Label(base.Base):
-    def create_label(self, name=base._random_name("label"), desc="",
+    def create_label(self, name=None, desc="",
         color="", scope="g", project_id=0, **kwargs):
+        if name is None:
+            name = base._random_name("label")
         label = swagger_client.Label(name=name, 
             description=desc, color=color, 
             scope=scope, project_id=project_id)

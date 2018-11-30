@@ -128,6 +128,18 @@ func (pa *RepPolicyAPI) Post() {
 	policy := &api_models.ReplicationPolicy{}
 	pa.DecodeJSONReqAndValidate(policy)
 
+	// check the name
+	exist, err := exist(policy.Name)
+	if err != nil {
+		pa.HandleInternalServerError(fmt.Sprintf("failed to check the existence of policy %s: %v", policy.Name, err))
+		return
+	}
+
+	if exist {
+		pa.HandleConflict(fmt.Sprintf("name %s is already used", policy.Name))
+		return
+	}
+
 	// check the existence of projects
 	for _, project := range policy.Projects {
 		pro, err := pa.ProjectMgr.Get(project.ProjectID)
@@ -191,6 +203,22 @@ func (pa *RepPolicyAPI) Post() {
 	pa.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 }
 
+func exist(name string) (bool, error) {
+	result, err := core.GlobalController.GetPolicies(rep_models.QueryParameter{
+		Name: name,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	for _, policy := range result.Policies {
+		if policy.Name == name {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // Put updates the replication policy
 func (pa *RepPolicyAPI) Put() {
 	id := pa.GetIDFromURL()
@@ -210,6 +238,20 @@ func (pa *RepPolicyAPI) Put() {
 	pa.DecodeJSONReqAndValidate(policy)
 
 	policy.ID = id
+
+	// check the name
+	if policy.Name != originalPolicy.Name {
+		exist, err := exist(policy.Name)
+		if err != nil {
+			pa.HandleInternalServerError(fmt.Sprintf("failed to check the existence of policy %s: %v", policy.Name, err))
+			return
+		}
+
+		if exist {
+			pa.HandleConflict(fmt.Sprintf("name %s is already used", policy.Name))
+			return
+		}
+	}
 
 	// check the existence of projects
 	for _, project := range policy.Projects {
