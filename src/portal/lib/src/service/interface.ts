@@ -306,12 +306,13 @@ export interface HelmChartItem {
   total_versions: number;
   latest_version: string;
   created: string;
+  updated: string;
   icon: string;
   home: string;
+  deprecated?: boolean;
   status?: string;
   pulls?: number;
   maintainer?: string;
-  deprecated?: boolean;
 }
 
 export interface HelmChartVersion {
