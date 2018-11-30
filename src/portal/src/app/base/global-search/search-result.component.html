@@ -6,15 +6,15 @@
     <!-- spinner -->
     <div class="spinner spinner-lg search-spinner" [hidden]="done">{{'SEARCH.IN_PROGRESS' | translate}}</div>
     <div id="results">
-        <div class="project-results">
+        <div id="project-results">
             <h2>{{'PROJECT.PROJECTS' | translate}}</h2>
             <list-project-ro [projects]="searchResults.project"></list-project-ro>
         </div>
-        <div class="repo-results">
+        <div id="repo-results">
             <h2>{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</h2>
             <list-repository-ro [repositories]="searchResults.repository"></list-repository-ro>
         </div>
-        <div *ngIf="withHelmChart" class="chart-results">
+        <div *ngIf="withHelmChart" id="chart-results">
             <h2>{{'HELM_CHART.HELMCHARTS' | translate}}</h2>
             <list-chart-version-ro [charts]="searchResults.Chart"></list-chart-version-ro>
         </div>
