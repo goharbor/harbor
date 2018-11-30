@@ -50,7 +50,8 @@ func TestJobWrapper(t *testing.T) {
 		WG:            &sync.WaitGroup{},
 		ErrorChan:     make(chan error, 1), // with 1 buffer
 	}
-	wrapper := NewRedisJob((*fakeParentJob)(nil), envContext, mgr)
+	deDuplicator := NewRedisDeDuplicator(tests.GiveMeTestNamespace(), rPool)
+	wrapper := NewRedisJob((*fakeParentJob)(nil), envContext, mgr, deDuplicator)
 	j := &work.Job{
 		ID:         "FAKE",
 		Name:       "DEMO",
