@@ -37,14 +37,16 @@ type RedisJob struct {
 	job          interface{}         // the real job implementation
 	context      *env.Context        // context
 	statsManager opm.JobStatsManager // job stats manager
+	deDuplicator *DeDuplicator       // handle unique job
 }
 
 // NewRedisJob is constructor of RedisJob
-func NewRedisJob(j interface{}, ctx *env.Context, statsManager opm.JobStatsManager) *RedisJob {
+func NewRedisJob(j interface{}, ctx *env.Context, statsManager opm.JobStatsManager, deDuplicator *DeDuplicator) *RedisJob {
 	return &RedisJob{
 		job:          j,
 		context:      ctx,
 		statsManager: statsManager,
+		deDuplicator: deDuplicator,
 	}
 }
 
@@ -113,6 +115,14 @@ func (rj *RedisJob) Run(j *work.Job) error {
 			}
 		}
 	}()
+
+	if j.Unique {
+		defer func() {
+			if err := rj.deDuplicator.DelUniqueSign(j.Name, j.Args); err != nil {
+				logger.Errorf("delete job unique sign error: %s", err)
+			}
+		}()
+	}
 
 	// Start to run
 	rj.jobRunning(j.ID)

@@ -59,6 +59,7 @@ type GoCraftWorkPool struct {
 	scheduler     period.Interface
 	statsManager  opm.JobStatsManager
 	messageServer *MessageServer
+	deDuplicator  *DeDuplicator
 
 	// no need to sync as write once and then only read
 	// key is name of known job
@@ -79,6 +80,7 @@ func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, re
 	scheduler := period.NewRedisPeriodicScheduler(ctx, namespace, redisPool, statsMgr)
 	sweeper := period.NewSweeper(namespace, redisPool, client)
 	msgServer := NewMessageServer(ctx.SystemContext, namespace, redisPool)
+	deDepulicator := NewDeDuplicator(namespace, redisPool)
 	return &GoCraftWorkPool{
 		namespace:     namespace,
 		redisPool:     redisPool,
@@ -91,6 +93,7 @@ func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, re
 		statsManager:  statsMgr,
 		knownJobs:     make(map[string]interface{}),
 		messageServer: msgServer,
+		deDuplicator:  deDepulicator,
 	}
 }
 
@@ -236,7 +239,7 @@ func (gcwp *GoCraftWorkPool) RegisterJob(name string, j interface{}) error {
 		}
 	}
 
-	redisJob := NewRedisJob(j, gcwp.context, gcwp.statsManager)
+	redisJob := NewRedisJob(j, gcwp.context, gcwp.statsManager, gcwp.deDuplicator)
 
 	// Get more info from j
 	theJ := Wrap(j)
@@ -276,15 +279,23 @@ func (gcwp *GoCraftWorkPool) Enqueue(jobName string, params models.Parameters, i
 		err error
 	)
 
-	// Enqueue job
+	// As the job is declared to be unique,
+	// check the uniqueness of the job,
+	// if no duplicated job existing (including the running jobs),
+	// set the unique flag.
 	if isUnique {
-		j, err = gcwp.enqueuer.EnqueueUnique(jobName, params)
-	} else {
-		j, err = gcwp.enqueuer.Enqueue(jobName, params)
-	}
+		if err = gcwp.deDuplicator.Unique(jobName, params); err != nil {
+			return models.JobStats{}, err
+		}
 
-	if err != nil {
-		return models.JobStats{}, err
+		if j, err = gcwp.enqueuer.EnqueueUnique(jobName, params); err != nil {
+			return models.JobStats{}, err
+		}
+	} else {
+		// Enqueue job
+		if j, err = gcwp.enqueuer.Enqueue(jobName, params); err != nil {
+			return models.JobStats{}, err
+		}
 	}
 
 	// avoid backend pool bug
@@ -307,15 +318,23 @@ func (gcwp *GoCraftWorkPool) Schedule(jobName string, params models.Parameters, 
 		err error
 	)
 
-	// Enqueue job in
+	// As the job is declared to be unique,
+	// check the uniqueness of the job,
+	// if no duplicated job existing (including the running jobs),
+	// set the unique flag.
 	if isUnique {
-		j, err = gcwp.enqueuer.EnqueueUniqueIn(jobName, int64(runAfterSeconds), params)
-	} else {
-		j, err = gcwp.enqueuer.EnqueueIn(jobName, int64(runAfterSeconds), params)
-	}
+		if err = gcwp.deDuplicator.Unique(jobName, params); err != nil {
+			return models.JobStats{}, err
+		}
 
-	if err != nil {
-		return models.JobStats{}, err
+		if j, err = gcwp.enqueuer.EnqueueUniqueIn(jobName, int64(runAfterSeconds), params); err != nil {
+			return models.JobStats{}, err
+		}
+	} else {
+		// Enqueue job in
+		if j, err = gcwp.enqueuer.EnqueueIn(jobName, int64(runAfterSeconds), params); err != nil {
+			return models.JobStats{}, err
+		}
 	}
 
 	// avoid backend pool bug
