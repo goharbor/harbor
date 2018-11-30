@@ -26,6 +26,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Manage Helm Charts](#manage-helm-charts)
   * [Manage Helm Charts via portal](#manage-helm-charts-via-portal)
   * [Working with Helm CLI](#working-with-helm-cli)
+* [Online Garbage Collection.](#online-gc)
 
 ## Role Based Access Control(RBAC)  
 
@@ -326,28 +327,7 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 **CAUTION: If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted. if you enabled content trust, you need to use notary command line tool to delete the tag's signature before you delete an image.**  
 
-Next, delete the actual files of the repository using the registry's garbage collection(GC). Make sure that no one is pushing images or Harbor is not running at all before you perform a GC. If someone were pushing an image while GC is running, there is a risk that the image's layers will be mistakenly deleted which results in a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
-
-Run the below commands on the host which Harbor is deployed on to preview what files/images will be affected: 
-
-```sh
-$ docker-compose stop
-
-$ docker run -it --name gc --rm --volumes-from registry goharbor/registry:2.6.2-photon garbage-collect --dry-run /etc/registry/config.yml
-
-```
-**NOTE:** The above option "--dry-run" will print the progress without removing any data.  
-
-Verify the result of the above test, then use the below commands to perform garbage collection and restart Harbor. 
-
-```sh
-
-$ docker run -it --name gc --rm --volumes-from registry goharbor/registry:2.6.2-photon garbage-collect  /etc/registry/config.yml
-
-$ docker-compose start
-```
-
-For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
+Next, delete the actual files of the repository using the [garbage collection](#online-gc) in Harbor's UI. 
 
 ### Content trust  
 **NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**  
@@ -551,4 +531,34 @@ helm install --ca-file=ca.crt --key-file=server.key --cert-file=server.crt --use
 ```
 
 For other more helm commands like how to sign a chart, please refer to the [helm doc](https://docs.helm.sh/helm/#helm).
+
+## Online Garbage Collection
+Online Garbage Collection enables user to trigger docker registry garbage collection by clicking button on UI.
+
+**NOTES:** The space is not freed when the images are deleted from Harbor, Garbage Collection is the task to free up the space by removing blobs from the filesystem when they are no longer referenced by a manifest.
+
+For more information about Garbage Collection, please see [Garbage Collection](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
+
+### Setting up Garbage Collection
+If you are a system admin, you can trigger garbage collection by clicking "GC Now" in the **'Garbage Collection'** tab of **'Configuration'** section under **'Administration'**.
+
+![browse project](img/gc_now.png)
+**NOTES:** Harbor is put into read-only mode when to execute Garbage Collection, and any modification on docker registry is prohibited.
+
+To avoid frequently triggering the garbage collection process, the availability of the button is restricted. It can be only triggered once in one minute.
+![browse project](img/gc_now2.png)
+
+**Scheduled Garbage Collection by Policy**
+* **None:** No policy is selected.
+* **Daily:** Policy is activated daily. It means an analysis job is scheduled to be executed at the specified time everyday. The scheduled job will do garbage collection in Harbor.
+* **Weekly:** Policy is activated weekly. It means an analysis job is scheduled to be executed at the specified time every week. The scheduled job will do garbage collection in Harbor.
+Once the policy has been configured, you have the option to save the schedule.
+![browse project](img/gc_policy.png)
+
+### Garbage Collection history
+If you are a system admin, you can view the latest 10 records of garbage collection execution.
+![browse project](img/gc_history.png)
+
+You can click on the 'details' link to view the related logs.
+![browse project](img/gc_details.png)
 
