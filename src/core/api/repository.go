@@ -1012,18 +1012,11 @@ func (ra *RepositoryAPI) ScanAll() {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
-	if !utils.ScanAllMarker().Check() {
-		log.Warningf("There is a scan all scheduled at: %v, the request will not be processed.", utils.ScanAllMarker().Next())
-		ra.RenderError(http.StatusPreconditionFailed, "Unable handle frequent scan all requests")
-		return
-	}
-
 	if err := coreutils.ScanAllImages(); err != nil {
 		log.Errorf("Failed triggering scan all images, error: %v", err)
 		ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
 		return
 	}
-	utils.ScanAllMarker().Mark()
 	ra.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
 }
 

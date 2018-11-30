@@ -15,8 +15,6 @@
 package utils
 
 import (
-	"os"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -55,23 +53,6 @@ func (t *TimeMarker) Next() time.Time {
 	t.RLock()
 	defer t.RUnlock()
 	return t.next
-}
-
-// ScanAllMarker ...
-func ScanAllMarker() *TimeMarker {
-	once.Do(func() {
-		a := os.Getenv("HARBOR_SCAN_ALL_INTERVAL")
-		if m, err := strconv.Atoi(a); err == nil {
-			scanAllMarker = &TimeMarker{
-				interval: time.Duration(m) * time.Minute,
-			}
-		} else {
-			scanAllMarker = &TimeMarker{
-				interval: 2 * time.Hour,
-			}
-		}
-	})
-	return scanAllMarker
 }
 
 // ScanOverviewMarker ...
