@@ -1506,6 +1506,11 @@ paths:
           format: int
           required: true
           description: The ID of the policy that triggered this job.
+        - name: op_uuid
+          in: query
+          type: string
+          required: false
+          description: The UUID of one trigger of replication policy.
         - name: num
           in: query
           type: integer
@@ -2018,6 +2023,8 @@ paths:
       responses:
         '200':
           description: Trigger the replication successfully.
+          schema:
+            $ref: '#/definitions/ReplicationResponse'
         '401':
           description: User need to log in first.
         '404':
@@ -4083,6 +4090,12 @@ definitions:
       policy_id:
         type: integer
         description: The ID of replication policy
+  ReplicationResponse:
+    type: object
+    properties:
+      uuid:
+        type: string
+        description: UUID of the replication
   RepositoryDescription:
     type: object
     properties:

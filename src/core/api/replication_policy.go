@@ -192,7 +192,7 @@ func (pa *RepPolicyAPI) Post() {
 
 	if policy.ReplicateExistingImageNow {
 		go func() {
-			if err = startReplication(id); err != nil {
+			if _, err = startReplication(id); err != nil {
 				log.Errorf("failed to send replication signal for policy %d: %v", id, err)
 				return
 			}
@@ -304,7 +304,7 @@ func (pa *RepPolicyAPI) Put() {
 
 	if policy.ReplicateExistingImageNow {
 		go func() {
-			if err = startReplication(id); err != nil {
+			if _, err = startReplication(id); err != nil {
 				log.Errorf("failed to send replication signal for policy %d: %v", id, err)
 				return
 			}
