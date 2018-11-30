@@ -59,7 +59,7 @@ type GoCraftWorkPool struct {
 	scheduler     period.Interface
 	statsManager  opm.JobStatsManager
 	messageServer *MessageServer
-	deDuplicator  *DeDuplicator
+	deDuplicator  DeDuplicator
 
 	// no need to sync as write once and then only read
 	// key is name of known job
@@ -80,7 +80,7 @@ func NewGoCraftWorkPool(ctx *env.Context, namespace string, workerCount uint, re
 	scheduler := period.NewRedisPeriodicScheduler(ctx, namespace, redisPool, statsMgr)
 	sweeper := period.NewSweeper(namespace, redisPool, client)
 	msgServer := NewMessageServer(ctx.SystemContext, namespace, redisPool)
-	deDepulicator := NewDeDuplicator(namespace, redisPool)
+	deDepulicator := NewRedisDeDuplicator(namespace, redisPool)
 	return &GoCraftWorkPool{
 		namespace:     namespace,
 		redisPool:     redisPool,

@@ -37,11 +37,11 @@ type RedisJob struct {
 	job          interface{}         // the real job implementation
 	context      *env.Context        // context
 	statsManager opm.JobStatsManager // job stats manager
-	deDuplicator *DeDuplicator       // handle unique job
+	deDuplicator DeDuplicator        // handle unique job
 }
 
 // NewRedisJob is constructor of RedisJob
-func NewRedisJob(j interface{}, ctx *env.Context, statsManager opm.JobStatsManager, deDuplicator *DeDuplicator) *RedisJob {
+func NewRedisJob(j interface{}, ctx *env.Context, statsManager opm.JobStatsManager, deDuplicator DeDuplicator) *RedisJob {
 	return &RedisJob{
 		job:          j,
 		context:      ctx,
