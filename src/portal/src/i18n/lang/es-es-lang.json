@@ -180,7 +180,7 @@
         "CREATED_SUCCESS": "Proyecto creado satisfactoriamente.",
         "DELETED_SUCCESS": "Proyecto eliminado satisfactoriamente.",
         "TOGGLED_SUCCESS": "Proyecto alternado satisfactoriamente.",
-        "FAILED_TO_DELETE_PROJECT": "Los proyectos que contienen repositorios o reglas de replicación no pueden eliminarse.",
+        "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "Cuando un proyecto se marca como público, todo el mundo tiene permisos de lectura sobre los repositorio de dicho proyecto, y no hace falta hacer \"docker login\" antes de subir imágenes a ellos.",
         "OF": "of"
     },

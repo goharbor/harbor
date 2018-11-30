@@ -180,7 +180,7 @@
         "CREATED_SUCCESS": "成功创建项目。",
         "DELETED_SUCCESS": "成功删除项目。",
         "TOGGLED_SUCCESS": "切换状态成功。",
-        "FAILED_TO_DELETE_PROJECT": "项目包含镜像仓库或复制规则，无法删除。",
+        "FAILED_TO_DELETE_PROJECT": "项目包含镜像仓库或复制规则或Helm Charts，无法删除。",
         "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。"
     },
     "PROJECT_DETAIL": {
