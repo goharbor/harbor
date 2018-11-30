@@ -327,28 +327,7 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 **CAUTION: If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted. if you enabled content trust, you need to use notary command line tool to delete the tag's signature before you delete an image.**  
 
-Next, delete the actual files of the repository using the registry's garbage collection(GC). Make sure that no one is pushing images or Harbor is not running at all before you perform a GC. If someone were pushing an image while GC is running, there is a risk that the image's layers will be mistakenly deleted which results in a corrupted image. So before running GC, a preferred approach is to stop Harbor first.  
-
-Run the below commands on the host which Harbor is deployed on to preview what files/images will be affected: 
-
-```sh
-$ docker-compose stop
-
-$ docker run -it --name gc --rm --volumes-from registry goharbor/registry:2.6.2-photon garbage-collect --dry-run /etc/registry/config.yml
-
-```
-**NOTE:** The above option "--dry-run" will print the progress without removing any data.  
-
-Verify the result of the above test, then use the below commands to perform garbage collection and restart Harbor. 
-
-```sh
-
-$ docker run -it --name gc --rm --volumes-from registry goharbor/registry:2.6.2-photon garbage-collect  /etc/registry/config.yml
-
-$ docker-compose start
-```
-
-For more information about GC, please see [GC](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
+Next, delete the actual files of the repository using the [garbage collection](#online-gc) in Harbor's UI. 
 
 ### Content trust  
 **NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**  
@@ -557,6 +536,8 @@ For other more helm commands like how to sign a chart, please refer to the [helm
 Online Garbage Collection enables user to trigger docker registry garbage collection by clicking button on UI.
 
 **NOTES:** The space is not freed when the images are deleted from Harbor, Garbage Collection is the task to free up the space by removing blobs from the filesystem when they are no longer referenced by a manifest.
+
+For more information about Garbage Collection, please see [Garbage Collection](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
 
 ### Setting up Garbage Collection
 If you are a system admin, you can trigger garbage collection by clicking "GC Now" in the **'Garbage Collection'** tab of **'Configuration'** section under **'Administration'**.
