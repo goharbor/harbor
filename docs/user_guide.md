@@ -26,7 +26,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Manage Helm Charts](#manage-helm-charts)
   * [Manage Helm Charts via portal](#manage-helm-charts-via-portal)
   * [Working with Helm CLI](#working-with-helm-cli)
-* [Online Garbage Collection.](#online-gc)
+* [Online Garbage Collection.](#online-garbage-collection)
 
 ## Role Based Access Control(RBAC)  
 
@@ -327,7 +327,7 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 **CAUTION: If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted. if you enabled content trust, you need to use notary command line tool to delete the tag's signature before you delete an image.**  
 
-Next, delete the actual files of the repository using the [garbage collection](#online-gc) in Harbor's UI. 
+Next, delete the actual files of the repository using the [garbage collection](#online-garbage-collection) in Harbor's UI. 
 
 ### Content trust  
 **NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**  
