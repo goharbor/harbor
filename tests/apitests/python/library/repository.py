@@ -89,32 +89,23 @@ class Repository(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return data
 
-    def get_not_scanned_image_init_state_success(self, repo_name, tag, **kwargs):
+    def check_image_not_scanned(self, repo_name, tag, **kwargs):
         tag = self.get_tag(repo_name, tag, **kwargs)
         if tag.scan_overview != None:
             raise Exception("Image should be <Not Scanned> state!")
 
     def check_image_scan_result(self, repo_name, tag, expected_scan_status = "finished", **kwargs):
-        scan_finish = False
         timeout_count = 20
-        actual_scan_status = "NULL"
-        while not (scan_finish):
+        while True:
             time.sleep(5)
-            _tag = self.get_tag(repo_name, tag, **kwargs)
-            scan_result = False
-            print "t.name:{}  tag:{}, t.scan_overview.scan_status:{}".format(_tag.name, tag, _tag.scan_overview.scan_status)
-            if _tag.name == tag and _tag.scan_overview !=None:
-                if _tag.scan_overview.scan_status == expected_scan_status:
-                    scan_finish = True
-                    scan_result = True
-                    break
-                else:
-                    actual_scan_status = _tag.scan_overview.scan_status
             timeout_count = timeout_count - 1
             if (timeout_count == 0):
-                scan_finish = True
-        if not (scan_result):
-            raise Exception("Scan image result is not as expected {} actual scan status is {}".format(expected_scan_status, actual_scan_status))
+                break            
+            _tag = self.get_tag(repo_name, tag, **kwargs)
+            if _tag.name == tag and _tag.scan_overview !=None:
+                if _tag.scan_overview.scan_status == expected_scan_status:
+                    return
+        raise Exception("Scan image result is not as expected {}.".format(expected_scan_status))
 
     def scan_image(self, repo_name, tag, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
@@ -122,10 +113,10 @@ class Repository(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return data
 
-    def scan_not_scanned_image_success(self, repo_name, tag, **kwargs):
-        self.get_not_scanned_image_init_state_success(repo_name, tag, **kwargs)
-        self.scan_image(repo_name, tag, **kwargs)
-        self.check_image_scan_result(repo_name, tag, **kwargs)
+    def scan_all_image_now(self, expect_status_code = 202, **kwargs):
+        client = self._get_client(**kwargs)
+        _, status_code, _ = client.repositories_scan_all_post_with_http_info()
+        base._assert_status_code(expect_status_code, status_code)
 
     def repository_should_exist(self, project_id, repo_name, **kwargs):
         repositories = self.get_repository(project_id, **kwargs)
