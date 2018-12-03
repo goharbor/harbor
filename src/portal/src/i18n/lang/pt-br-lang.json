@@ -178,7 +178,7 @@
         "CREATED_SUCCESS": "Projeto criado com sucesso.",
         "DELETED_SUCCESS": "Projeto removido com sucesso.",
         "TOGGLED_SUCCESS": "Projeto alterado com sucesso.",
-        "FAILED_TO_DELETE_PROJECT": "Projeto contém repositórios ou regras de replicação que não podem ser removidos.",
+        "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "Quando um projeto é marcado como público, qualquer um tem permissões de leitura aos repositórios desse projeto, e o usuário não precisa executar \"docker login\" antes de baixar imagens desse projeto.",
         "OF": "de"
     },
@@ -469,7 +469,7 @@
         "NO_INFO": "Nenhuma descrição de informação para esse repositório",
         "IMAGE": "Imagens",
         "LABELS": "Labels",
-        "ADD_TO_IMAGE": "Adicionar labels a essa imagem",
+        "ADD_LABEL_TO_IMAGE": "Adicionar labels a essa imagem",
         "FILTER_BY_LABEL": "Filtrar imagens por label",
         "ADD_LABELS": "Adicionar labels",
         "ACTION": "AÇÃO",
@@ -530,6 +530,7 @@
         "PROV_FILE": "Arquivo Prov",
         "READY": "Pronto",
         "NOT_READY": "Não Pronto",
+        "ADD_LABEL_TO_CHART_VERSION": "Add labels to this chart version",
         "STATUS": "Status"
     },
     "ALERT": {

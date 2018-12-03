@@ -7,12 +7,14 @@ import swagger_client
 
 class Replication(base.Base):
     def create_replication_rule(self, 
-        projectIDList, targetIDList, name=base._random_name("rule"), desc="", 
+        projectIDList, targetIDList, name=None, desc="", 
         filters=[], trigger=swagger_client.RepTrigger(kind="Manual"), 
         replicate_deletion=True,
         replicate_existing_image_now=False,
         expect_status_code = 201,
         **kwargs):
+        if name is None:
+            name = base._random_name("rule")
         projects = []
         for projectID in projectIDList:
             projects.append(swagger_client.Project(project_id=int(projectID)))

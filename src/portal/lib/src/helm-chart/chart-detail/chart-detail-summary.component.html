@@ -138,10 +138,10 @@
             <table class="table">
                 <tbody>
                     <tr>
-                        <th class="left">{{'HELM_CHART.LABELS' | translate }}</th>
-                        <th class="left">{{labels?.length}}</th>
+                        <td class="left">{{'HELM_CHART.LABELS' | translate }}</td>
+                        <td class="left">{{labels?.length}}</td>
                     </tr>
-                    <tr>
+                    <tr *ngIf="labels?.length > 0">
                         <td></td>
                         <td class="left">
                             <hbr-label-piece *ngFor="let label of labels"  [label]="label" [labelWidth]="90"> </hbr-label-piece>

@@ -72,6 +72,7 @@ func updateInitPassword(userID int, password string) error {
 
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
+	beego.BConfig.WebConfig.Session.SessionName = "sid"
 	// TODO
 	redisURL := os.Getenv("_REDIS_URL")
 	if len(redisURL) > 0 {

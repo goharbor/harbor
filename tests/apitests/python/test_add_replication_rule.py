@@ -43,7 +43,7 @@ class TestProjects(unittest.TestCase):
         #4. Delete user(UA);
         self.user.delete_user(TestProjects.user_add_rule_id, **ADMIN_CLIENT)
 
-    def testAddSysLabelToRepo(self):
+    def testAddReplicationRule(self):
         """
         Test case:
             Add Replication Rule
@@ -63,7 +63,7 @@ class TestProjects(unittest.TestCase):
         user_add_rule_password = "Aa123456"
 
         #1. Create user(UA)
-        TestProjects.user_add_rule_id, user_add_rule_name = self.user.create_user_success(user_password = user_add_rule_password, **ADMIN_CLIENT)
+        TestProjects.user_add_rule_id, user_add_rule_name = self.user.create_user(user_password = user_add_rule_password, **ADMIN_CLIENT)
 
         TestProjects.USER_add_rule_CLIENT=dict(endpoint = url, username = user_add_rule_name, password = user_add_rule_password)
 

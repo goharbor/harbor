@@ -81,6 +81,8 @@ export class ChartVersionComponent implements OnInit {
   chartFile: File;
   provFile: File;
 
+  addLabelHeaders = 'HELM_CHART.ADD_LABEL_TO_CHART_VERSION';
+
   @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
 

@@ -5,8 +5,10 @@ import base
 import swagger_client
 
 class Registry(base.Base):
-    def create_registry(self, endpoint, name = base._random_name("registry"), username="", 
+    def create_registry(self, endpoint, name=None, username="", 
         password="", insecure=True, **kwargs):
+        if name is None:
+            name = base._random_name("registry")
         client = self._get_client(**kwargs)
         registry = swagger_client.RepTargetPost(name=name, endpoint=endpoint, 
             username=username, password=password, insecure=insecure)

@@ -54,15 +54,15 @@ type RepPolicy struct {
 // RepJob is the model for a replication job, which is the execution unit on job service, currently it is used to transfer/remove
 // a repository to/from a remote registry instance.
 type RepJob struct {
-	ID         int64    `orm:"pk;auto;column(id)" json:"id"`
-	Status     string   `orm:"column(status)" json:"status"`
-	Repository string   `orm:"column(repository)" json:"repository"`
-	PolicyID   int64    `orm:"column(policy_id)" json:"policy_id"`
-	Operation  string   `orm:"column(operation)" json:"operation"`
-	Tags       string   `orm:"column(tags)" json:"-"`
-	TagList    []string `orm:"-" json:"tags"`
-	UUID       string   `orm:"column(job_uuid)" json:"-"`
-	//	Policy       RepPolicy `orm:"-" json:"policy"`
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	Status       string    `orm:"column(status)" json:"status"`
+	Repository   string    `orm:"column(repository)" json:"repository"`
+	PolicyID     int64     `orm:"column(policy_id)" json:"policy_id"`
+	OpUUID       string    `orm:"column(op_uuid)" json:"op_uuid"`
+	Operation    string    `orm:"column(operation)" json:"operation"`
+	Tags         string    `orm:"column(tags)" json:"-"`
+	TagList      []string  `orm:"-" json:"tags"`
+	UUID         string    `orm:"column(job_uuid)" json:"-"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
@@ -126,6 +126,7 @@ func (r *RepPolicy) TableName() string {
 // RepJobQuery holds query conditions for replication job
 type RepJobQuery struct {
 	PolicyID   int64
+	OpUUID     string
 	Repository string
 	Statuses   []string
 	Operations []string

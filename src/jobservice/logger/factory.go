@@ -62,3 +62,28 @@ func StdFactory(options ...OptionItem) (Interface, error) {
 
 	return backend.NewStdOutputLogger(level, output, depth), nil
 }
+
+// DBFactory is factory of file logger
+func DBFactory(options ...OptionItem) (Interface, error) {
+	var (
+		level, key string
+		depth      int
+	)
+	for _, op := range options {
+		switch op.Field() {
+		case "level":
+			level = op.String()
+		case "key":
+			key = op.String()
+		case "depth":
+			depth = op.Int()
+		default:
+		}
+	}
+
+	if len(key) == 0 {
+		return nil, errors.New("missing key option of the db logger")
+	}
+
+	return backend.NewDBLogger(key, level, depth)
+}

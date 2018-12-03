@@ -39,15 +39,13 @@ class DockerAPI(object):
         if tag is not None:
             _tag = tag
         try:
-            tag_ret = self.DCLIENT.tag(image, harbor_registry, _tag, force=True)
-            print "tag_ret:", tag_ret
+            self.DCLIENT.tag(image, harbor_registry, _tag, force=True)
             return harbor_registry, _tag
         except docker.errors.APIError, e:
             raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, e.message))
 
     def docker_image_push(self, harbor_registry, tag):
         try:
-            push_ret = base._get_string_from_unicode(self.DCLIENT.push(harbor_registry, tag, stream=True))
-            print "push_ret:", push_ret
+            base._get_string_from_unicode(self.DCLIENT.push(harbor_registry, tag, stream=True))
         except docker.errors.APIError, e:
-            raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, e.message))    
+            raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, e.message))

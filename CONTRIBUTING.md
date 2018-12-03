@@ -196,6 +196,11 @@ Try to limit column width to 120 characters for both code and markdown documents
 Always run [golint](https://github.com/golang/lint) on source code before
 committing your changes.
 ```
+#Install fgt and golint
+
+go get -u golang.org/x/lint/golint
+go get github.com/GeertJohan/fgt
+
 #In the #working_dir/harbor, run
 
 go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint

@@ -94,6 +94,7 @@ func (ra *RepJobAPI) List() {
 
 	query.Repository = ra.GetString("repository")
 	query.Statuses = ra.GetStrings("status")
+	query.OpUUID = ra.GetString("op_uuid")
 
 	startTimeStr := ra.GetString("start_time")
 	if len(startTimeStr) != 0 {

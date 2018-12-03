@@ -20,6 +20,7 @@ export class LabelMarkerComponent implements OnInit {
     @Input() projectName: string;
     @Input() resource: RepositoryItem | HelmChartVersion;
     @Input() resourceType: ResourceType;
+    @Input() addLabelHeaders: string;
     @Output() changeEvt = new EventEmitter<any>();
 
     labelFilter = '';

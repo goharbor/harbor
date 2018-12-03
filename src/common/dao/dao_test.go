@@ -875,27 +875,6 @@ func TestGetRepPolicyByName(t *testing.T) {
 
 }
 
-func TestAddRepPolicy2(t *testing.T) {
-	policy2 := models.RepPolicy{
-		ProjectID:   3,
-		TargetID:    3,
-		Description: "whatever",
-		Name:        "mypolicy",
-	}
-	policyID2, err := AddRepPolicy(policy2)
-	t.Logf("added policy, id: %d", policyID2)
-	if err != nil {
-		t.Errorf("Error occurred in AddRepPolicy: %v", err)
-	}
-	p, err := GetRepPolicy(policyID2)
-	if err != nil {
-		t.Errorf("Error occurred in GetPolicy: %v, id: %d", err, policyID2)
-	}
-	if p == nil {
-		t.Errorf("Unable to find a policy with id: %d", policyID2)
-	}
-}
-
 func TestAddRepJob(t *testing.T) {
 	job := models.RepJob{
 		Repository: "library/ubuntu",

@@ -31,9 +31,9 @@ Harbor is deployed as several Docker containers, and, therefore, can be deployed
 ### Network ports 
 |Port|Protocol|Description|
 |---|---|---|
-|443|HTTPS|Harbor UI and API will accept requests on this port for https protocol|
+|443|HTTPS|Harbor portal and core API will accept requests on this port for https protocol|
 |4443|HTTPS|Connections to the Docker Content Trust service for Harbor, only needed when Notary is enabled|
-|80|HTTP|Harbor UI and API will accept requests on this port for http protocol|
+|80|HTTP|Harbor portal and core API will accept requests on this port for http protocol|
 
 ## Installation Steps
 
@@ -63,10 +63,10 @@ Configuration parameters are located in the file **harbor.cfg**.
 There are two categories of parameters in harbor.cfg, **required parameters** and **optional parameters**.  
 
 * **required parameters**: These parameters are required to be set in the configuration file. They will take effect if a user updates them in ```harbor.cfg``` and run the ```install.sh``` script to reinstall Harbor.
-* **optional parameters**: These parameters are optional for updating, i.e. user can leave them as default and update them on Web UI after Harbor is started.  If they are set in ```harbor.cfg```, they only take effect in the first launch of Harbor. 
+* **optional parameters**: These parameters are optional for updating, i.e. user can leave them as default and update them on Web Portal after Harbor is started.  If they are set in ```harbor.cfg```, they only take effect in the first launch of Harbor. 
 Subsequent update to these parameters in ```harbor.cfg``` will be ignored. 
 
-    **Note:** If you choose to set these parameters via the UI, be sure to do so right after Harbor
+    **Note:** If you choose to set these parameters via the Portal, be sure to do so right after Harbor
 is started. In particular, you must set the desired **auth_mode** before registering or creating any new users in Harbor. When there are users in the system (besides the default admin user), 
 **auth_mode** cannot be changed.
 
@@ -74,16 +74,19 @@ The parameters are described below - note that at the very least, you will need 
 
 ##### Required parameters:
 
-* **hostname**: The target host's hostname, which is used to access the UI and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
-* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the UI and the token/notification service.  If Notary is enabled, this parameter has to be _https_.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
-* **db_password**: The root password for the MySQL database used for **db_auth**. _Change this password for any production use!_ 
-* **max_job_workers**: (default value is **3**) The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. 
+* **hostname**: The target host's hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
+* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the Portal and the token/notification service.  If Notary is enabled, this parameter has to be _https_.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
+* **db_password**: The root password for the PostgreSQL database used for **db_auth**. _Change this password for any production use!_ 
+* **max_job_workers**: (default value is **10**) The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. 
 * **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the registry's token. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.
-* **ssl_cert**: The path of SSL certificate, it's applied only when the protocol is set to https
-* **ssl_cert_key**: The path of SSL key, it's applied only when the protocol is set to https 
+* **ssl_cert**: The path of SSL certificate, it's applied only when the protocol is set to https.
+* **ssl_cert_key**: The path of SSL key, it's applied only when the protocol is set to https.
 * **secretkey_path**: The path of key for encrypt or decrypt the password of a remote registry in a replication policy.
 * **log_rotate_count**: Log files are rotated **log_rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
 * **log_rotate_size**: Log files are rotated only if they grow bigger than **log_rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
+* **http_proxy**: Config http proxy for Clair, e.g. `http://my.proxy.com:3128`.
+* **https_proxy**: Config https proxy for Clair, e.g. `http://my.proxy.com:3128`.
+* **no_proxy**: Config no proxy for Clair, e.g. `127.0.0.1,localhost,core,registry`.
 
 ##### Optional parameters
 * **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**. Setting **email_insecure = true** if the email server uses a self-signed or untrusted certificate. For a detailed description about "email_identity" please refer to [rfc2595](https://tools.ietf.org/rfc/rfc2595.txt)
@@ -96,7 +99,7 @@ The parameters are described below - note that at the very least, you will need 
   * email_ssl = false
   * email_insecure = false
 
-* **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/Harbor12345** ._   
+* **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the Portal. _Note that the default username/password are **admin/Harbor12345** ._   
 * **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. 
 For LDAP authentication, set this to **ldap_auth**.  
 
@@ -106,9 +109,15 @@ may not be able to log in after the upgrade.
 * **ldap_searchdn**: The DN of a user who has the permission to search an LDAP/AD server (e.g. `uid=admin,ou=people,dc=mydomain,dc=com`).
 * **ldap_search_pwd**: The password of the user specified by *ldap_searchdn*.
 * **ldap_basedn**: The base DN to look up a user, e.g. `ou=people,dc=mydomain,dc=com`.  _Only used when **auth_mode** is set to *ldap_auth* ._ 
-* **ldap_filter**:The search filter for looking up a user, e.g. `(objectClass=person)`.
+* **ldap_filter**: The search filter for looking up a user, e.g. `(objectClass=person)`.
 * **ldap_uid**: The attribute used to match a user during a LDAP search, it could be uid, cn, email or other attributes.
 * **ldap_scope**: The scope to search for a user, 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE. Default is 2. 
+* **ldap_timeout**: Timeout (in seconds)  when connecting to an LDAP Server. Default is 5.
+* **ldap_verify_cert**: Verify certificate from LDAP server. Default is true.
+* **ldap_group_basedn**: The base dn from which to lookup a group in LDAP/AD, e.g. `ou=group,dc=mydomain,dc=com`.
+* **ldap_group_filter**: The filter to search LDAP/AD group, e.g. `objectclass=group`.
+* **ldap_group_gid**: The attribute used to name a LDAP/AD group, it could be cn, name.
+* **ldap_group_scope**: The scope to search for ldap groups. 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE. Default is 2.
 * **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
 * **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
 * **project_creation_restriction**: The flag to control what users have permission to create projects.  By default everyone can create a project, set to "adminonly" such that only admin can create project.
@@ -116,20 +125,17 @@ may not be able to log in after the upgrade.
 #### Configuring storage backend (optional)
 
 By default, Harbor stores images on your local filesystem. In a production environment, you may consider 
-using other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. 
-What you need to update is the section of `storage` in the file `common/templates/registry/config.yml`. 
-For example, if you use Openstack Swift as your storage backend, the section may look like this:
+using other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc.
+These parameters are configurations for registry.
 
-```
-storage:
-  swift:
-    username: admin
-    password: ADMIN_PASS
-    authurl: http://keystone_addr:35357/v3/auth
-    tenant: admin
-    domain: default
-    region: regionOne
-    container: docker_images
+* **registry_storage_provider_name**:  Storage provider name of registry, it can be filesystem, s3, gcs, azure, etc. Default is filesystem.
+* **registry_storage_provider_config**: Comma separated "key: value" pairs for storage provider config, e.g. "key1: value, key2: value2". Default is empty string.
+* **registry_custom_ca_bundle**:  The path to the custom root ca certificate, which will be injected into the truststore of registry's and chart repository's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
+
+For example, if you use Openstack Swift as your storage backend, the parameters may look like this:
+```ini
+registry_storage_provider_name=swift
+registry_storage_provider_config="username: admin, password: ADMIN_PASS, authurl: http://keystone_addr:35357/v3/auth, tenant: admin, domain: default, region: regionOne, container: docker_images"
 ```
 
 _NOTE: For detailed information on storage backend of a registry, refer to [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) ._
@@ -196,22 +202,30 @@ You can use docker-compose to manage the lifecycle of Harbor. Some useful comman
 Stopping Harbor:
 ```
 $ sudo docker-compose stop
-Stopping nginx ... done
-Stopping harbor-jobservice ... done
-Stopping harbor-core ... done
-Stopping harbor-db ... done
-Stopping registry ... done
-Stopping harbor-log ... done
+Stopping nginx              ... done
+Stopping harbor-portal      ... done
+Stopping harbor-jobservice  ... done
+Stopping harbor-core        ... done
+Stopping registry           ... done
+Stopping redis              ... done
+Stopping registryctl        ... done
+Stopping harbor-db          ... done
+Stopping harbor-adminserver ... done
+Stopping harbor-log         ... done
 ```  
 Restarting Harbor after stopping:
 ```
 $ sudo docker-compose start
-Starting log ... done
-Starting ui ... done
-Starting mysql ... done
-Starting jobservice ... done
-Starting registry ... done
-Starting proxy ... done
+Starting log         ... done
+Starting registry    ... done
+Starting registryctl ... done
+Starting postgresql  ... done
+Starting adminserver ... done
+Starting core        ... done
+Starting portal      ... done
+Starting redis       ... done
+Starting jobservice  ... done
+Starting proxy       ... done
 ```  
 
 To change Harbor's configuration, first stop existing Harbor instance and update ```harbor.cfg```. Then run ```prepare``` script to populate the configuration. Finally re-create and start Harbor's instance:
@@ -302,17 +316,19 @@ Replace the first "80" to a customized port, e.g. 8888:80.
 
 ```
 proxy:
-    image: library/nginx:1.11.5
+    image: goharbor/nginx-photon:v1.6.0
+    container_name: nginx
     restart: always
     volumes:
-      - ./config/nginx:/etc/nginx
+      - ./common/config/nginx:/etc/nginx:z
     ports:
       - 8888:80
       - 443:443
     depends_on:
-      - mysql
+      - postgresql
       - registry
-      - ui
+      - core
+      - portal
       - log
     logging:
       driver: "syslog"
@@ -335,17 +351,19 @@ Replace the first "443" to a customized port, e.g. 8888:443.
 
 ```
 proxy:
-    image: library/nginx:1.11.5
+    image: goharbor/nginx-photon:v1.6.0
+    container_name: nginx
     restart: always
     volumes:
-      - ./config/nginx:/etc/nginx
+      - ./common/config/nginx:/etc/nginx:z
     ports:
       - 80:80
       - 8888:443
     depends_on:
-      - mysql
+      - postgresql
       - registry
-      - ui
+      - core
+      - portal
       - log
     logging:
       driver: "syslog"
@@ -371,15 +389,19 @@ By default, Harbor limits the CPU usage of Clair container to 150000 and avoids 
 ```
     $ sudo docker-compose ps
         Name                     Command               State                    Ports                   
-  -----------------------------------------------------------------------------------------------------
-  harbor-db           docker-entrypoint.sh mysqld      Up      3306/tcp                                 
-  harbor-jobservice   /harbor/harbor_jobservice        Up                                               
-  harbor-log          /bin/sh -c crond && rsyslo ...   Up      127.0.0.1:1514->514/tcp                    
-  harbor-core           /harbor/harbor_core            Up                                               
-  nginx               nginx -g daemon off;             Up      0.0.0.0:443->443/tcp, 0.0.0.0:80->80/tcp 
-  registry            /entrypoint.sh serve /etc/ ...   Up      5000/tcp                                 
+  -----------------------------------------------------------------------------------------------------------------------------
+  harbor-adminserver  /harbor/start.sh                 Up
+  harbor-core         /harbor/start.sh                 Up
+  harbor-db           /entrypoint.sh postgres          Up      5432/tcp
+  harbor-jobservice   /harbor/start.sh                 Up
+  harbor-log          /bin/sh -c /usr/local/bin/ ...   Up      127.0.0.1:1514->10514/tcp
+  harbor-portal       nginx -g daemon off;             Up      80/tcp
+  nginx               nginx -g daemon off;             Up      0.0.0.0:443->443/tcp, 0.0.0.0:4443->4443/tcp, 0.0.0.0:80->80/tcp
+  redis               docker-entrypoint.sh redis ...   Up      6379/tcp
+  registry            /entrypoint.sh /etc/regist ...   Up      5000/tcp
+  registryctl         /harbor/start.sh                 Up
 ```
-If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor-core``` is not running, you should look at the log file ```ui.log```.  
+If a container is not in **UP** state, check the log file of that container in directory ```/var/log/harbor```. For example, if the container ```harbor-core``` is not running, you should look at the log file ```core.log```.  
 
 
 2.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `common/templates/nginx/nginx.http.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.

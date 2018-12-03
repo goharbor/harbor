@@ -479,14 +479,14 @@ func (ra *RepositoryAPI) Retag() {
 	// Check whether use has read permission to source project
 	if !ra.SecurityCtx.HasReadPerm(srcImage.Project) {
 		log.Errorf("user has no read permission to project '%s'", srcImage.Project)
-		ra.HandleUnauthorized()
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
 
 	// Check whether user has write permission to target project
 	if !ra.SecurityCtx.HasWritePerm(project) {
 		log.Errorf("user has no write permission to project '%s'", project)
-		ra.HandleUnauthorized()
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
 
@@ -1012,18 +1012,11 @@ func (ra *RepositoryAPI) ScanAll() {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
-	if !utils.ScanAllMarker().Check() {
-		log.Warningf("There is a scan all scheduled at: %v, the request will not be processed.", utils.ScanAllMarker().Next())
-		ra.RenderError(http.StatusPreconditionFailed, "Unable handle frequent scan all requests")
-		return
-	}
-
 	if err := coreutils.ScanAllImages(); err != nil {
 		log.Errorf("Failed triggering scan all images, error: %v", err)
 		ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
 		return
 	}
-	utils.ScanAllMarker().Mark()
 	ra.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
 }
 

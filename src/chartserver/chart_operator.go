@@ -55,14 +55,14 @@ type DigitalSignature struct {
 
 // ChartInfo keeps the information of the chart
 type ChartInfo struct {
-	Name          string
-	TotalVersions uint32 `json:"total_versions"`
-	LatestVersion string `json:"latest_version"`
-	Created       time.Time
-	Updated       time.Time
-	Icon          string
-	Home          string
-	Deprecated    bool
+	Name          string    `json:"name"`
+	TotalVersions uint32    `json:"total_versions"`
+	LatestVersion string    `json:"latest_version"`
+	Created       time.Time `json:"created"`
+	Updated       time.Time `json:"updated"`
+	Icon          string    `json:"icon"`
+	Home          string    `json:"home"`
+	Deprecated    bool      `json:"deprecated"`
 }
 
 // ChartOperator is designed to process the contents of

@@ -25,3 +25,8 @@ func FileGetterFactory(options ...OptionItem) (getter.Interface, error) {
 
 	return getter.NewFileGetter(baseDir), nil
 }
+
+// DBGetterFactory creates a getter for the DB logger
+func DBGetterFactory(options ...OptionItem) (getter.Interface, error) {
+	return getter.NewDBGetter(), nil
+}
