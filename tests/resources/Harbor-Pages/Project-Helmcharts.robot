@@ -19,7 +19,7 @@ Upload Chart files
     ${prometheus_file_path}  Set Variable  ${current_dir}/${prometheus_chart_filename}
     Choose File  xpath=${chart_file_browse}  ${prometheus_file_path}
     Click Element  xpath=${upload_action_button}
-    Wait Until Element Does Not Contain  xpath=${upload_action_button}
+    Wait Until Page Does Not Contain Element  xpath=${upload_action_button}
 
     Click Element  xpath=${upload_chart_button}
     ${harbor_file_path}  Set Variable  ${current_dir}/${harbor_chart_filename}
