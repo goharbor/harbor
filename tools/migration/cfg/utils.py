@@ -43,9 +43,3 @@ def render(src, dest, **kw):
     t = Template(open(src, 'r').read())
     with open(dest, 'w') as f:
         f.write(t.substitute(**kw))
-
-    
-    
-    
-
-    
