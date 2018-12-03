@@ -51,7 +51,9 @@ func WaitingDBInit() {
 
 // PrepareDBSweep invoked after DB init
 func PrepareDBSweep() error {
-	isDBInit = true
-	dbInit <- 1
+	if !isDBInit {
+		isDBInit = true
+		dbInit <- 1
+	}
 	return nil
 }
