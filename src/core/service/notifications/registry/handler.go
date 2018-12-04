@@ -45,8 +45,8 @@ const vicPrefix = "vic/"
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
 	//err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
-	tmp_buff :=n.Ctx.Input.CopyBody(1<<32)
-	err := json.Unmarshal(tmp_buff, &notification)
+	tmpBuff :=n.Ctx.Input.CopyBody(1<<32)
+	err := json.Unmarshal(tmpBuff, &notification)
 
 	if err != nil {
 		log.Errorf("failed to decode notification: %v", err)
@@ -113,13 +113,12 @@ func (n *NotificationHandler) Post() {
 			}
 
                         go func(to_project *models.Project, tokenUsername string) {
-                            usage, err := api.Update_Project_usage(to_project.Name, tokenUsername)
+                            usage, err := api.UpdateProjectUsage(to_project.Name, tokenUsername)
 			    if err != nil {
 				log.Errorf("failed to update project usage for %s: %v", to_project.Name, err)
 				return
-                            } else {
-				log.Debugf("usage after push topic is %f ", usage)
                             }
+			    log.Debugf("usage after push topic is %f ", usage)
                         }(pro, "harbor_ui")
 
 			go func() {

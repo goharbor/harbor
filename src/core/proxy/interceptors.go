@@ -66,7 +66,7 @@ func MatchListRepos(req *http.Request) bool {
 	return false
 }
 
-//Checks if the request is post request with content great than zero, if it's return the Content-Length as the second return value, and project name as the third value.
+// MatchPushNoneZero ... Checks if the request is post request with content great than zero, if it's return the Content-Length as the second return value, and project name as the third value.
 func MatchPushNoneZero(req *http.Request) (bool, int64, string ) {
 
         // ContentLength records the length of the associated content.
@@ -82,13 +82,13 @@ func MatchPushNoneZero(req *http.Request) (bool, int64, string ) {
                 return false, 0, ""
         }
 
-        split_result := strings.Split(req.URL.Path, "/")
-        if len(split_result) < 3 {
+        splitResult := strings.Split(req.URL.Path, "/")
+        if len(splitResult) < 3 {
             return false, 0, ""
         }
 
         //[ v2 test_project1 docker.io ..]
-        return true, req.ContentLength, split_result[2]
+        return true, req.ContentLength, splitResult[2]
 }
 
 // policyChecker checks the policy of a project by project name, to determine if it's needed to check the image's status under this project.
@@ -137,34 +137,34 @@ type imageInfo struct {
 	projectName string
 	digest      string
 }
-
+// PushRepoHandler ...
 type PushRepoHandler struct {
         next http.Handler
 }
 func (pushh PushRepoHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
-	flag, content_size, project_name := MatchPushNoneZero(req)
+	flag, contentSize, projectName := MatchPushNoneZero(req)
         if flag {
-            project_data, err := dao.GetProjectByName(project_name)
-            log.Debugf("PushRepoHandler, upload size %d to project %s with quota %d", content_size, project_name, project_data.Quota)
+            projectData, err := dao.GetProjectByName(projectName)
+            log.Debugf("PushRepoHandler, upload size %d to project %s with quota %d", contentSize, projectName, projectData.Quota)
 	    if err != nil {
-	        http.Error(rw, marshalError("PROJECT_QUERY_ERROR", fmt.Sprintf("Bad project name: %s", project_name)), http.StatusBadRequest)
+	        http.Error(rw, marshalError("PROJECT_QUERY_ERROR", fmt.Sprintf("Bad project name: %s", projectName)), http.StatusBadRequest)
 	        return
             }
 
-            log.Debugf("Project %s quota %d usage %.2f",project_name, project_data.Quota, project_data.Usage)
+            log.Debugf("Project %s quota %d usage %.2f",projectName, projectData.Quota, projectData.Usage)
             //quota unit is M, content size is byte unit
-            if project_data.Usage >= float32(project_data.Quota) || content_size >int64((float32(project_data.Quota) - project_data.Usage) * (1024 * 1024)) {
-	        http.Error(rw, marshalError("QUOTA_ERROR", fmt.Sprintf("Quota exceeded: Project %s Quota %dM, Usage %.2fM, upload %d byte", project_name, project_data.Quota, project_data.Usage, content_size )), http.StatusBadRequest)
+            if projectData.Usage >= float32(projectData.Quota) || contentSize >int64((float32(projectData.Quota) - projectData.Usage) * (1024 * 1024)) {
+	        http.Error(rw, marshalError("QUOTA_ERROR", fmt.Sprintf("Quota exceeded: Project %s Quota %dM, Usage %.2fM, upload %d byte", projectName, projectData.Quota, projectData.Usage, contentSize )), http.StatusBadRequest)
 	        return
-            } else {
-                //update the usage at this time, and after get upload notification, will resize again
-                project_data.Usage += float32(content_size) / (1024*1024)
-                err = dao.UpdateProject(project_data)
-                if err != nil {
-                    http.Error(rw, marshalError("QUOTA_ERROR", fmt.Sprintf("Quota update failure: Project %s error %v", project_name, err)), http.StatusBadRequest)
-                    return
-                }
+            }
+
+            //update the usage at this time, and after get upload notification, will resize again
+            projectData.Usage += float32(contentSize) / (1024*1024)
+            err = dao.UpdateProject(projectData)
+            if err != nil {
+                http.Error(rw, marshalError("QUOTA_ERROR", fmt.Sprintf("Quota update failure: Project %s error %v", projectName, err)), http.StatusBadRequest)
+                return
             }
         }
 

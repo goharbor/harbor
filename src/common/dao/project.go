@@ -290,6 +290,7 @@ func DeleteProject(id int64) error {
 	return err
 }
 
+// UpdateProject ...
 func UpdateProject(project *models.Project ) error {
 
         sql := `update project set quota = ?, usage = ? where name =?`

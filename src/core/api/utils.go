@@ -319,26 +319,27 @@ func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*model
 func watchConfigChanges(cfg map[string]interface{}) error {
 	return notifier.WatchConfigChanges(cfg)
 }
-func Update_Project_usage(project_name string, tokenUsername string ) (float32, error) {
+// UpdateProjectUsage ...
+func UpdateProjectUsage(projectName string, tokenUsername string ) (float32, error) {
 
     //var item *tagResp
     var usage = int64(0)
     var client *registry.Repository
 
-    log.Debugf("Start Update_Project_usage %s ",project_name)
-    if project_name == ""{
+    log.Debugf("Start UpdateProjectUsage %s ",projectName)
+    if projectName == ""{
         log.Errorf("project name is empty ")
         return 0, errors.New("can't work with 42")
     }
 
     query := &models.RepositoryQuery{
-        ProjectName: project_name,
+        ProjectName: projectName,
     }
 
     var repositories, err = dao.GetRepositories(query)
 
     if err != nil {
-        log.Errorf("Error get repositorys for %s %v", project_name, err)
+        log.Errorf("Error get repositorys for %s %v", projectName, err)
         return 0, err
     }
 
@@ -379,9 +380,9 @@ func Update_Project_usage(project_name string, tokenUsername string ) (float32, 
     }
 
     log.Debugf("done assemble ")
-    currentProject, err := dao.GetProjectByName(project_name)
+    currentProject, err := dao.GetProjectByName(projectName)
     if err != nil {
-        log.Errorf("Error get project for %s %v", project_name, err)
+        log.Errorf("Error get project for %s %v", projectName, err)
         return 0, err
     }
     //usage is bit unit, change to M byte unit

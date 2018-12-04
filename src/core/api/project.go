@@ -452,24 +452,24 @@ func (p *ProjectAPI) Put() {
 	var req *models.ProjectRequest
 	p.DecodeJSONReq(&req)
 
-        old_project, err := p.ProjectMgr.Get(p.project.ProjectID)
-        if err != nil || old_project == nil {
+        oldProject, err := p.ProjectMgr.Get(p.project.ProjectID)
+        if err != nil || oldProject == nil {
                 p.HandleInternalServerError(fmt.Sprintf("failed to get projects: %v %s", err,  p.project.ProjectID))
                 return
         }
 
-        if old_project.Usage > float32(req.Quota) {
-            p.HandleBadRequest(fmt.Sprintf("resize less than usage is not allowed, usage: %.2f", old_project.Usage))
+        if oldProject.Usage > float32(req.Quota) {
+            p.HandleBadRequest(fmt.Sprintf("resize less than usage is not allowed, usage: %.2f", oldProject.Usage))
             return
-        } else {
-            log.Debugf("update project %s: quota %d", p.project.Name, req.Quota)
-        }
+        } 
+
+        log.Debugf("update project %s: quota %d", p.project.Name, req.Quota)
 
 	if err = p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
-                        Name: old_project.Name,
+                        Name: oldProject.Name,
                         Quota: req.Quota,
-                        Usage: old_project.Usage,
+                        Usage: oldProject.Usage,
 			Metadata: req.Metadata,
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",

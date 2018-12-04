@@ -378,14 +378,14 @@ func (ra *RepositoryAPI) Delete() {
 		}
 	}
 
-        usage, err := Update_Project_usage(projectName, ra.SecurityCtx.GetUsername())
+        usage, err := UpdateProjectUsage(projectName, ra.SecurityCtx.GetUsername())
         if err != nil {
             log.Errorf("failed to update project usage for %s: %v", projectName, err)
 	    ra.CustomAbort(http.StatusInternalServerError, "")
             return
-        } else {
-            log.Debugf("usage after delete topic is %f ", usage)
         }
+
+        log.Debugf("usage after delete topic is %f ", usage)
 }
 
 // GetTag returns the tag of a repository
@@ -654,7 +654,7 @@ func assembleTag(c chan *tagResp, client *registry.Repository,
 
 // getTagDetail returns the detail information for v2 manifest image
 // The information contains architecture, os, author, size, etc.
-func getTagDetail(client *registry.Repository, tag string, size_only bool) (*tagDetail, error) {
+func getTagDetail(client *registry.Repository, tag string, sizeOnly bool) (*tagDetail, error) {
 	detail := &tagDetail{
 		Name: tag,
 	}
@@ -677,7 +677,7 @@ func getTagDetail(client *registry.Repository, tag string, size_only bool) (*tag
 	}
 
         // size only?
-        if size_only {
+        if sizeOnly {
             return detail, nil
         }
 

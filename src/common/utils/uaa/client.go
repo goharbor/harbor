@@ -29,7 +29,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
-
+// prefix type...
 const (
 	AuthURLSuffix =     1
 	TokenURLSuffix =    2
@@ -87,7 +87,7 @@ type SearchUserEntry struct {
 	Emails   []SearchUserEmailEntry `json:"emails"`
 	Groups   []interface{}
 }
-
+// SearchUserRes is the struct of an user within search result.
 type SearchUserRes struct {
 	Resources    []*SearchUserEntry `json:"resources"`
 	TotalResults int                `json:"totalResults"`
@@ -166,7 +166,7 @@ func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error)
 	}
 
         if dc.Realm !="" {
-            return Parse_rsp_on_realm(bytes)
+            return ParseRspOnRealm(bytes)
         }
 
 	res := &SearchUserRes{}
@@ -241,10 +241,10 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 	return c, nil
 }
 
-func (dc *defaultClient) GetPrefix(prefix_type int) (string) {
+func (dc *defaultClient) GetPrefix(prefixType int) (string) {
 
     if dc.Realm !="" {
-        switch prefix_type {
+        switch prefixType {
         case AuthURLSuffix:
             return "/realms/"+dc.Realm +"/protocol/openid-connect/auth"
         case TokenURLSuffix:
@@ -255,7 +255,7 @@ func (dc *defaultClient) GetPrefix(prefix_type int) (string) {
             return "/admin/realms/"+dc.Realm +"/users"
         }
    } else {
-      switch prefix_type {
+      switch prefixType {
       case AuthURLSuffix:
             return "/oauth/authorize"
       case TokenURLSuffix:
@@ -269,20 +269,20 @@ func (dc *defaultClient) GetPrefix(prefix_type int) (string) {
    return ""
 
 }
-
-func Parse_rsp_on_realm(in_buff []byte) ([]*SearchUserEntry, error) {
+// ParseRspOnRealm ...
+func ParseRspOnRealm(inBuff []byte) ([]*SearchUserEntry, error) {
 
         var res [] SearchUserEntry
-        if err := json.Unmarshal(in_buff, &res); err != nil {
-                log.Debugf("SearchUser error: erro %s %v", string(in_buff), err)
+        if err := json.Unmarshal(inBuff, &res); err != nil {
+                log.Debugf("SearchUser error: erro %s %v", string(inBuff), err)
                 return nil, err
         }
 
-        var ret_val []*SearchUserEntry
-        for index, _ := range res {
-                ret_val = append(ret_val, &res[index])
+        var retVal []*SearchUserEntry
+        for index := range res {
+                retVal = append(retVal, &res[index])
         }
-        return ret_val, nil
+        return retVal, nil
 
 }
 

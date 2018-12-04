@@ -71,6 +71,8 @@ create table project (
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp  default CURRENT_TIMESTAMP,
  deleted boolean DEFAULT false NOT NULL,
+ quota int DEFAULT 1024,
+ usage float DEFAULT 0.0,
  FOREIGN KEY (owner_id) REFERENCES harbor_user(user_id),
  UNIQUE (name)
 );
