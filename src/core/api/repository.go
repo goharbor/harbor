@@ -28,6 +28,7 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/clair"
@@ -1014,6 +1015,10 @@ func (ra *RepositoryAPI) ScanAll() {
 	}
 	if err := coreutils.ScanAllImages(); err != nil {
 		log.Errorf("Failed triggering scan all images, error: %v", err)
+		if httpErr, ok := err.(*commonhttp.Error); ok && httpErr.Code == http.StatusConflict {
+			ra.HandleConflict("Conflict when triggering scan all images, please try again later.")
+			return
+		}
 		ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
 		return
 	}
