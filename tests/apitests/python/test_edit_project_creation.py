@@ -23,7 +23,7 @@ class TestProjects(unittest.TestCase):
     def tearDown(self):
         print "Case completed"
 
-    @unittest.skipIf(TEARDOWN == False, "Test data should be remain in the harbor.")
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         print "Clear trace"
         #1. Delete project(PA);
@@ -36,7 +36,7 @@ class TestProjects(unittest.TestCase):
         """
         Test case:
             Edit Project Creation
-        Test step & Expectation:
+        Test step and expected result:
             1. Create a new user(UA);
             2. Set project creation to "admin only";
             3. Create a new project(PA) by user(UA), and fail to create a new project;

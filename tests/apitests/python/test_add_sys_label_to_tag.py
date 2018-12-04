@@ -30,7 +30,7 @@ class TestProjects(unittest.TestCase):
     def tearDown(self):
         print "Case completed"
 
-    @unittest.skipIf(TEARDOWN == False, "Test data should be remain in the harbor.")
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(TestProjects.repo_name, **TestProjects.USER_add_g_lbl_CLIENT)
@@ -48,7 +48,7 @@ class TestProjects(unittest.TestCase):
         """
         Test case:
             Add Global Label To Tag
-        Test step & Expectation:
+        Test step and expected result:
             1. Create a new user(UA);
             2. Create a new private project(PA) by user(UA);
             3. Add user(UA) as a member of project(PA) with project-admin role;
