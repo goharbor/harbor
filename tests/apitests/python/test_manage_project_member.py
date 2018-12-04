@@ -26,15 +26,15 @@ class TestProjects(unittest.TestCase):
     def tearDown(self):
         print "Case completed"
 
-    @unittest.skipIf(TEARDOWN == False, "Test data should be remain in the harbor.")
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
-        #1. Delete repository(RA) by user(UA);
+        #1. Delete repository(RA) by admin;
         self.repo.delete_repoitory(TestProjects.repo_name, **ADMIN_CLIENT)
 
-        #3. Delete project(PA);
+        #2. Delete project(Alice);
         self.project.delete_project(TestProjects.project_alice_id, **ADMIN_CLIENT)
 
-        #4. Delete user(UA);
+        #3. Delete user Alice, Bob and Carol.
         self.user.delete_user(TestProjects.user_alice_id, **ADMIN_CLIENT)
         self.user.delete_user(TestProjects.user_bob_id, **ADMIN_CLIENT)
         self.user.delete_user(TestProjects.user_carol_id, **ADMIN_CLIENT)
@@ -43,17 +43,21 @@ class TestProjects(unittest.TestCase):
         """
         Test case:
             Manage Project members
-        Test step and Expectation:
+        Test step and expected result:
             1. Create user Alice, Bob, Carol;
-            2. Create private project(PA) by Alice, Add a repository to project(PA) by Alice;
-            3. Bob is not a member of project(PA);
-            4. Alice Add Bob as a guest member of project(PA), Check Bob is a guest member of project(PA);
-            5. Update role of Bob to developer of project(PA), Check Bob is developer member of project(PA);
-            6. Update role of Bob to admin member of project(PA), Check Bob is admin member of project(PA);
-            7. Bob add Carol to project(PA) as a guest member, Carol is a member of project(PA) as a guest;
-            8. Alice delete Bob from project(PA),
-               Bob is no longer a member of project(PA) and Bob can see project(PA),
-               Carol is still a member of project(PA) as a guest.
+            2. Create private project(Alice) by Alice, Add a repository to project(Alice) by Alice;
+            3. Bob is not a member of project(Alice);
+            4. Alice Add Bob as a guest member of project(Alice), Check Bob is a guest member of project(Alice);
+            5. Update role of Bob to developer of project(Alice), Check Bob is developer member of project(Alice);
+            6. Update role of Bob to admin member of project(Alice), Check Bob is admin member of project(Alice);
+            7. Bob add Carol to project(Alice) as a guest member, Carol is a member of project(Alice) as a guest;
+            8. Alice delete Bob from project(Alice),
+               Bob is no longer a member of project(Alice) and Bob can see project(Alice),
+               Carol is still a member of project(Alice) as a guest.
+        Tear down:
+            1. Delete repository(RA) by admin;
+            2. Delete project(Alice);
+            3. Delete user Alice, Bob and Carol.               
         """
         url = ADMIN_CLIENT["endpoint"]
         user_alice_password = "Aa123456"

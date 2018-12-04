@@ -45,14 +45,14 @@ class Configurations(base.Base):
 
         return data
 
-    def set_configurations_of_project_creation_restriction(self, project_creation_restriction, **kwargs):
+    def set_configurations_of_project_creation_restriction(self, project_creation_restriction, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
 
         config=dict(project_creation_restriction=project_creation_restriction)
-        set_configurations(client, **config)
+        set_configurations(client, expect_status_code = expect_status_code, **config)
 
-    def set_configurations_of_token_expiration(self, token_expiration, **kwargs):
+    def set_configurations_of_token_expiration(self, token_expiration, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
 
         config=dict(token_expiration=token_expiration)
-        set_configurations(client, **config)
+        set_configurations(client, expect_status_code = expect_status_code, **config)
