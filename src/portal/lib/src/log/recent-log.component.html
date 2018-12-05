@@ -1,8 +1,7 @@
 <div>
-    <h2 class="h2-log-override" *ngIf="withTitle">{{'SIDE_NAV.LOGS' | translate}}</h2>
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
-        <div class="action-head-pos rightPos">
+        <div class="action-head-pos">
             <div class="select filterTag" [hidden]="!isOpenFilterTag">
                 <select id="selectKey" (change)="selectFilterKey($event)">
                     <option value="username">{{"AUDIT_LOG.USERNAME" | translate | lowercase}}</option>
