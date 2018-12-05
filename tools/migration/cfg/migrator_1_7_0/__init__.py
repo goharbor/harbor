@@ -40,7 +40,7 @@ def migrate(input_cfg, output_cfg):
         val[k] = d.get(k,'')
     #append registry to no_proxy
     np_list = d.get('no_proxy','').split(',')
-    new_np_list = ['portal' if x=='ui' else x for x in np_list]
+    new_np_list = ['core' if x=='ui' else x for x in np_list]
     val['no_proxy'] = ','.join(new_np_list)
     tpl_path = os.path.join(os.path.dirname(__file__), 'harbor.cfg.tpl')
     utils.render(tpl_path, output_cfg, **val)
