@@ -26,6 +26,9 @@ import { httpStatusCode, AlertType } from './shared.const';
  * returns {string}
  */
 export const errorHandler = function (error: any): string {
+    if (typeof error === "string") {
+        return error;
+    }
     if (error && error._body) {
         // treat as string message
         if (typeof error._body === "string") {
