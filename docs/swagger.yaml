@@ -2279,10 +2279,6 @@ paths:
       responses:
         '200':
           description: Get default root certificate successfully.
-        '401':
-          description: User need to log in first.
-        '403':
-          description: User does not have permission of admin role.
         '404':
           description: Not found the default root certificate.
         '500':
