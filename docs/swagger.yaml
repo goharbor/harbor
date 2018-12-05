@@ -1342,6 +1342,8 @@ paths:
           description: User needs to login or call the API with correct credentials.
         '403':
           description: User doesn't have permission to perform the action.
+        '409':
+          description: There is a "scanall" job in progress, so the request cannot be served.
         '415':
           $ref: '#/responses/UnsupportedMediaType'
         '500':
