@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-//        "net/http/httputil"
+	//        "net/http/httputil"
 	"regexp"
 	"strconv"
 	"strings"
@@ -67,28 +67,28 @@ func MatchListRepos(req *http.Request) bool {
 }
 
 // MatchPushNoneZero ... Checks if the request is post request with content great than zero, if it's return the Content-Length as the second return value, and project name as the third value.
-func MatchPushNoneZero(req *http.Request) (bool, int64, string ) {
+func MatchPushNoneZero(req *http.Request) (bool, int64, string) {
 
-        // ContentLength records the length of the associated content.
-        // The value -1 indicates that the length is unknown.
-        // Values >= 0 indicate that the given number of bytes may
-        // be read from Body.
-        if req.ContentLength == 0 {
-                return false, 0, ""
-        }
+	// ContentLength records the length of the associated content.
+	// The value -1 indicates that the length is unknown.
+	// Values >= 0 indicate that the given number of bytes may
+	// be read from Body.
+	if req.ContentLength == 0 {
+		return false, 0, ""
+	}
 
-        if req.Method != http.MethodPost && req.Method != http.MethodPut && req.Method != http.MethodPatch {
-	        log.Debugf("MatchPushNoneZero method %s", req.Method)
-                return false, 0, ""
-        }
+	if req.Method != http.MethodPost && req.Method != http.MethodPut && req.Method != http.MethodPatch {
+		log.Debugf("MatchPushNoneZero method %s", req.Method)
+		return false, 0, ""
+	}
 
-        splitResult := strings.Split(req.URL.Path, "/")
-        if len(splitResult) < 3 {
-            return false, 0, ""
-        }
+	splitResult := strings.Split(req.URL.Path, "/")
+	if len(splitResult) < 3 {
+		return false, 0, ""
+	}
 
-        //[ v2 test_project1 docker.io ..]
-        return true, req.ContentLength, splitResult[2]
+	//[ v2 test_project1 docker.io ..]
+	return true, req.ContentLength, splitResult[2]
 }
 
 // policyChecker checks the policy of a project by project name, to determine if it's needed to check the image's status under this project.
@@ -137,40 +137,41 @@ type imageInfo struct {
 	projectName string
 	digest      string
 }
+
 // PushRepoHandler ...
 type PushRepoHandler struct {
-        next http.Handler
+	next http.Handler
 }
+
 func (pushh PushRepoHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	flag, contentSize, projectName := MatchPushNoneZero(req)
-        if flag {
-            projectData, err := dao.GetProjectByName(projectName)
-            log.Debugf("PushRepoHandler, upload size %d to project %s with quota %d", contentSize, projectName, projectData.Quota)
-	    if err != nil {
-	        http.Error(rw, marshalError("PROJECT_QUERY_ERROR", fmt.Sprintf("Bad project name: %s", projectName)), http.StatusBadRequest)
-	        return
-            }
+	if flag {
+		projectData, err := dao.GetProjectByName(projectName)
+		log.Debugf("PushRepoHandler, upload size %d to project %s with quota %d", contentSize, projectName, projectData.Quota)
+		if err != nil {
+			http.Error(rw, marshalError("PROJECT_QUERY_ERROR", fmt.Sprintf("Bad project name: %s", projectName)), http.StatusBadRequest)
+			return
+		}
 
-            log.Debugf("Project %s quota %d usage %.2f",projectName, projectData.Quota, projectData.Usage)
-            //quota unit is M, content size is byte unit
-            if projectData.Usage >= float32(projectData.Quota) || contentSize >int64((float32(projectData.Quota) - projectData.Usage) * (1024 * 1024)) {
-	        http.Error(rw, marshalError("QUOTA_ERROR", fmt.Sprintf("Quota exceeded: Project %s Quota %dM, Usage %.2fM, upload %d byte", projectName, projectData.Quota, projectData.Usage, contentSize )), http.StatusBadRequest)
-	        return
-            }
+		log.Debugf("Project %s quota %d usage %.2f", projectName, projectData.Quota, projectData.Usage)
+		//quota unit is M, content size is byte unit
+		if projectData.Usage >= float32(projectData.Quota) || contentSize > int64((float32(projectData.Quota)-projectData.Usage)*(1024*1024)) {
+			http.Error(rw, marshalError("QUOTA_ERROR", fmt.Sprintf("Quota exceeded: Project %s Quota %dM, Usage %.2fM, upload %d byte", projectName, projectData.Quota, projectData.Usage, contentSize)), http.StatusBadRequest)
+			return
+		}
 
-            //update the usage at this time, and after get upload notification, will resize again
-            projectData.Usage += float32(contentSize) / (1024*1024)
-            err = dao.UpdateProject(projectData)
-            if err != nil {
-                http.Error(rw, marshalError("QUOTA_ERROR", fmt.Sprintf("Quota update failure: Project %s error %v", projectName, err)), http.StatusBadRequest)
-                return
-            }
-        }
+		//update the usage at this time, and after get upload notification, will resize again
+		projectData.Usage += float32(contentSize) / (1024 * 1024)
+		err = dao.UpdateProject(projectData)
+		if err != nil {
+			http.Error(rw, marshalError("QUOTA_ERROR", fmt.Sprintf("Quota update failure: Project %s error %v", projectName, err)), http.StatusBadRequest)
+			return
+		}
+	}
 
-        pushh.next.ServeHTTP(rw, req)
+	pushh.next.ServeHTTP(rw, req)
 }
-
 
 type urlHandler struct {
 	next http.Handler

@@ -200,7 +200,7 @@ func convert(p *project) (*models.Project, error) {
 	}
 
 	project := &models.Project{
-		Name: p.Name,
+		Name:  p.Name,
 		Quota: p.Quota,
 		Usage: p.Usage,
 	}

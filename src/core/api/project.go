@@ -452,24 +452,24 @@ func (p *ProjectAPI) Put() {
 	var req *models.ProjectRequest
 	p.DecodeJSONReq(&req)
 
-        oldProject, err := p.ProjectMgr.Get(p.project.ProjectID)
-        if err != nil || oldProject == nil {
-                p.HandleInternalServerError(fmt.Sprintf("failed to get projects: %v %s", err,  p.project.ProjectID))
-                return
-        }
+	oldProject, err := p.ProjectMgr.Get(p.project.ProjectID)
+	if err != nil || oldProject == nil {
+		p.HandleInternalServerError(fmt.Sprintf("failed to get projects: %v %s", err, p.project.ProjectID))
+		return
+	}
 
-        if oldProject.Usage > float32(req.Quota) {
-            p.HandleBadRequest(fmt.Sprintf("resize less than usage is not allowed, usage: %.2f", oldProject.Usage))
-            return
-        } 
+	if oldProject.Usage > float32(req.Quota) {
+		p.HandleBadRequest(fmt.Sprintf("resize less than usage is not allowed, usage: %.2f", oldProject.Usage))
+		return
+	}
 
-        log.Debugf("update project %s: quota %d", p.project.Name, req.Quota)
+	log.Debugf("update project %s: quota %d", p.project.Name, req.Quota)
 
 	if err = p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
-                        Name: oldProject.Name,
-                        Quota: req.Quota,
-                        Usage: oldProject.Usage,
+			Name:     oldProject.Name,
+			Quota:    req.Quota,
+			Usage:    oldProject.Usage,
 			Metadata: req.Metadata,
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",

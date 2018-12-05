@@ -127,18 +127,18 @@ func (d *driver) Delete(projectIDOrName interface{}) error {
 func (d *driver) Update(projectIDOrName interface{},
 	project *models.Project) error {
 
-        pro := &models.Project{
-                Name:         project.Name,
-                Quota:        project.Quota,
-                Usage:        project.Usage,
-        }
+	pro := &models.Project{
+		Name:  project.Name,
+		Quota: project.Quota,
+		Usage: project.Usage,
+	}
 
-        log.Debugf("update project %s: quota %d usage %d", project.Name, project.Quota, project.Usage)
-        err := dao.UpdateProject(pro)
-        if err != nil {
-            log.Errorf("failed to match duplicate project pattern: %v", err)
-            return err
-        }
+	log.Debugf("update project %s: quota %d usage %d", project.Name, project.Quota, project.Usage)
+	err := dao.UpdateProject(pro)
+	if err != nil {
+		log.Errorf("failed to match duplicate project pattern: %v", err)
+		return err
+	}
 	return nil
 }
 

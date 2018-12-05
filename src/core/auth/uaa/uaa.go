@@ -148,7 +148,7 @@ func (u *Auth) ensureClient() error {
 			CARootPath:    os.Getenv("UAA_CA_ROOT"),
 		}
 	}
-	log.Debugf("Uaa ensureClient : cfg: %v \n  u.client :%v", cfg,u.client)
+	log.Debugf("Uaa ensureClient : cfg: %v \n  u.client :%v", cfg, u.client)
 
 	if u.client != nil && cfg != nil {
 		return u.client.UpdateConfig(cfg)

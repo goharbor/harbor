@@ -291,11 +291,11 @@ func DeleteProject(id int64) error {
 }
 
 // UpdateProject ...
-func UpdateProject(project *models.Project ) error {
+func UpdateProject(project *models.Project) error {
 
-        sql := `update project set quota = ?, usage = ? where name =?`
-        _, err := GetOrmer().Raw(sql, project.Quota, project.Usage, project.Name).Exec()
-        return err
+	sql := `update project set quota = ?, usage = ? where name =?`
+	_, err := GetOrmer().Raw(sql, project.Quota, project.Usage, project.Name).Exec()
+	return err
 }
 
 // GetRolesByLDAPGroup - Get Project roles of the

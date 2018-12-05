@@ -2679,7 +2679,8 @@ paths:
           schema:
             $ref: '#/definitions/ConfigurationsResponse'
         '401':
-          description: User need to log in first.ß        '403':
+          description: User need to log in first.ß
+        '403':
           description: User does not have permission of admin role.
         '500':
           description: Unexpected internal errors.
@@ -4487,7 +4488,7 @@ definitions:
     properties:
       type:
         type: string
-        description: The schedule type. The valid values are daily. weekly and None. 'None' means to cancel the schedule.
+        description: The schedule type. The valid values are daily， weekly and None. 'None' means to cancel the schedule.
       weekday:
         type: integer
         format: int8

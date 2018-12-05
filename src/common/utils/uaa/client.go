@@ -29,12 +29,13 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
+
 // prefix type...
 const (
-	AuthURLSuffix =     1
-	TokenURLSuffix =    2
+	AuthURLSuffix     = 1
+	TokenURLSuffix    = 2
 	UserInfoURLSuffix = 3
-	UsersURLSuffix =    4
+	UsersURLSuffix    = 4
 )
 
 var uaaTransport = &http.Transport{Proxy: http.ProxyFromEnvironment}
@@ -87,6 +88,7 @@ type SearchUserEntry struct {
 	Emails   []SearchUserEmailEntry `json:"emails"`
 	Groups   []interface{}
 }
+
 // SearchUserRes is the struct of an user within search result.
 type SearchUserRes struct {
 	Resources    []*SearchUserEntry `json:"resources"`
@@ -100,7 +102,7 @@ type defaultClient struct {
 	oauth2Cfg  *oauth2.Config
 	twoLegCfg  *clientcredentials.Config
 	endpoint   string
-        Realm      string
+	Realm      string
 	//TODO: add public key, etc...
 }
 
@@ -135,7 +137,7 @@ func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error)
 
 	token, err := dc.twoLegCfg.Token(dc.prepareCtx())
 	if err != nil {
-	        log.Debugf("erro dc.twoLegCfg.Token %s %v", username, err)
+		log.Debugf("erro dc.twoLegCfg.Token %s %v", username, err)
 		return nil, err
 	}
 	url := dc.endpoint + dc.GetPrefix(UsersURLSuffix)
@@ -165,9 +167,9 @@ func (dc *defaultClient) SearchUser(username string) ([]*SearchUserEntry, error)
 		return nil, fmt.Errorf("Unexpected status code for searching user in UAA: %d, response: %s", resp.StatusCode, string(bytes))
 	}
 
-        if dc.Realm !="" {
-            return ParseRspOnRealm(bytes)
-        }
+	if dc.Realm != "" {
+		return ParseRspOnRealm(bytes)
+	}
 
 	res := &SearchUserRes{}
 	if err := json.Unmarshal(bytes, res); err != nil {
@@ -187,7 +189,7 @@ func (dc *defaultClient) UpdateConfig(cfg *ClientConfig) error {
 	}
 	url = strings.TrimSuffix(url, "/")
 	dc.endpoint = url
-        dc.Realm = cfg.Realm
+	dc.Realm = cfg.Realm
 	tc := &tls.Config{
 		InsecureSkipVerify: cfg.SkipTLSVerify,
 	}
@@ -241,48 +243,48 @@ func NewDefaultClient(cfg *ClientConfig) (Client, error) {
 	return c, nil
 }
 
-func (dc *defaultClient) GetPrefix(prefixType int) (string) {
+func (dc *defaultClient) GetPrefix(prefixType int) string {
 
-    if dc.Realm !="" {
-        switch prefixType {
-        case AuthURLSuffix:
-            return "/realms/"+dc.Realm +"/protocol/openid-connect/auth"
-        case TokenURLSuffix:
-            return "/realms/"+dc.Realm +"/protocol/openid-connect/token"
-        case UserInfoURLSuffix:
-            return "/realms/"+dc.Realm +"/protocol/openid-connect/userinfo"
-        case UsersURLSuffix:
-            return "/admin/realms/"+dc.Realm +"/users"
-        }
-   } else {
-      switch prefixType {
-      case AuthURLSuffix:
-            return "/oauth/authorize"
-      case TokenURLSuffix:
-            return "/oauth/token"
-      case UserInfoURLSuffix:
-            return "/userinfo"
-      case UsersURLSuffix:
-            return "/Users"
-     }
-   }
-   return ""
+	if dc.Realm != "" {
+		switch prefixType {
+		case AuthURLSuffix:
+			return "/realms/" + dc.Realm + "/protocol/openid-connect/auth"
+		case TokenURLSuffix:
+			return "/realms/" + dc.Realm + "/protocol/openid-connect/token"
+		case UserInfoURLSuffix:
+			return "/realms/" + dc.Realm + "/protocol/openid-connect/userinfo"
+		case UsersURLSuffix:
+			return "/admin/realms/" + dc.Realm + "/users"
+		}
+	} else {
+		switch prefixType {
+		case AuthURLSuffix:
+			return "/oauth/authorize"
+		case TokenURLSuffix:
+			return "/oauth/token"
+		case UserInfoURLSuffix:
+			return "/userinfo"
+		case UsersURLSuffix:
+			return "/Users"
+		}
+	}
+	return ""
 
 }
+
 // ParseRspOnRealm ...
 func ParseRspOnRealm(inBuff []byte) ([]*SearchUserEntry, error) {
 
-        var res [] SearchUserEntry
-        if err := json.Unmarshal(inBuff, &res); err != nil {
-                log.Debugf("SearchUser error: erro %s %v", string(inBuff), err)
-                return nil, err
-        }
+	var res []SearchUserEntry
+	if err := json.Unmarshal(inBuff, &res); err != nil {
+		log.Debugf("SearchUser error: erro %s %v", string(inBuff), err)
+		return nil, err
+	}
 
-        var retVal []*SearchUserEntry
-        for index := range res {
-                retVal = append(retVal, &res[index])
-        }
-        return retVal, nil
+	var retVal []*SearchUserEntry
+	for index := range res {
+		retVal = append(retVal, &res[index])
+	}
+	return retVal, nil
 
 }
-

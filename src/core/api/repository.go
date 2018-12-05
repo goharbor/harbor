@@ -378,14 +378,14 @@ func (ra *RepositoryAPI) Delete() {
 		}
 	}
 
-        usage, err := UpdateProjectUsage(projectName, ra.SecurityCtx.GetUsername())
-        if err != nil {
-            log.Errorf("failed to update project usage for %s: %v", projectName, err)
-	    ra.CustomAbort(http.StatusInternalServerError, "")
-            return
-        }
+	usage, err := UpdateProjectUsage(projectName, ra.SecurityCtx.GetUsername())
+	if err != nil {
+		log.Errorf("failed to update project usage for %s: %v", projectName, err)
+		ra.CustomAbort(http.StatusInternalServerError, "")
+		return
+	}
 
-        log.Debugf("usage after delete topic is %f ", usage)
+	log.Debugf("usage after delete topic is %f ", usage)
 }
 
 // GetTag returns the tag of a repository
@@ -676,10 +676,10 @@ func getTagDetail(client *registry.Repository, tag string, sizeOnly bool) (*tagD
 		detail.Size += ref.Size
 	}
 
-        // size only?
-        if sizeOnly {
-            return detail, nil
-        }
+	// size only?
+	if sizeOnly {
+		return detail, nil
+	}
 
 	_, reader, err := client.PullBlob(manifest.Target().Digest.String())
 	if err != nil {

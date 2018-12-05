@@ -45,7 +45,7 @@ const vicPrefix = "vic/"
 func (n *NotificationHandler) Post() {
 	var notification models.Notification
 	//err := json.Unmarshal(n.Ctx.Input.CopyBody(1<<32), &notification)
-	tmpBuff :=n.Ctx.Input.CopyBody(1<<32)
+	tmpBuff := n.Ctx.Input.CopyBody(1 << 32)
 	err := json.Unmarshal(tmpBuff, &notification)
 
 	if err != nil {
@@ -95,7 +95,7 @@ func (n *NotificationHandler) Post() {
 
 		log.Debugf("Notification: action %s", action)
 		if action == "push" {
-                        //ensure RepositoryExists
+			//ensure RepositoryExists
 			exist := dao.RepositoryExists(repository)
 			if !exist {
 				log.Debugf("Add repository %s into DB.", repository)
@@ -112,14 +112,14 @@ func (n *NotificationHandler) Post() {
 				return
 			}
 
-                        go func(to_project *models.Project, tokenUsername string) {
-                            usage, err := api.UpdateProjectUsage(to_project.Name, tokenUsername)
-			    if err != nil {
-				log.Errorf("failed to update project usage for %s: %v", to_project.Name, err)
-				return
-                            }
-			    log.Debugf("usage after push topic is %f ", usage)
-                        }(pro, "harbor_ui")
+			go func(to_project *models.Project, tokenUsername string) {
+				usage, err := api.UpdateProjectUsage(to_project.Name, tokenUsername)
+				if err != nil {
+					log.Errorf("failed to update project usage for %s: %v", to_project.Name, err)
+					return
+				}
+				log.Debugf("usage after push topic is %f ", usage)
+			}(pro, "harbor_ui")
 
 			go func() {
 				image := repository + ":" + tag
