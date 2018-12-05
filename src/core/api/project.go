@@ -458,8 +458,12 @@ func (p *ProjectAPI) Put() {
 		return
 	}
 
-	if oldProject.Usage > float32(req.Quota) {
-		p.HandleBadRequest(fmt.Sprintf("resize less than usage is not allowed, usage: %.2f", oldProject.Usage))
+	if req.Quota == 0 {
+		// in this case, won't change the quota.
+		req.Quota = oldProject.Quota
+	}
+	if (float32(req.Quota) - oldProject.Usage) < 0.01 {
+		p.HandleBadRequest(fmt.Sprintf("resize less than usage is not allowed, usage: %.2f quota: %.2f", oldProject.Usage, float32(req.Quota)))
 		return
 	}
 
