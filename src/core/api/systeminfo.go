@@ -140,7 +140,6 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 
 // GetCert gets default self-signed certificate.
 func (sia *SystemInfoAPI) GetCert() {
-	sia.validate()
 	if _, err := os.Stat(defaultRootCert); err == nil {
 		sia.Ctx.Output.Header("Content-Type", "application/octet-stream")
 		sia.Ctx.Output.Header("Content-Disposition", "attachment; filename=ca.crt")
