@@ -46,7 +46,7 @@ export class FilterComponent implements OnInit {
 
   valueChange(): void {
     // Send out filter terms
-    this.filterTerms.next(this.currentValue.trim());
+    this.filterTerms.next(this.currentValue && this.currentValue.trim());
   }
 
   inputFocus(): void {
