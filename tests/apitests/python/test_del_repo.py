@@ -30,7 +30,7 @@ class TestProjects(unittest.TestCase):
     def tearDownClass(self):
         print "Case completed"
 
-    @unittest.skipIf(TEARDOWN == False, "Test data should be remain in the harbor.")
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete project(PA);
         self.project.delete_project(TestProjects.project_del_repo_id, **TestProjects.USER_del_repo_CLIENT)
@@ -42,7 +42,7 @@ class TestProjects(unittest.TestCase):
         """
         Test case:
             Delete a repository
-        Test step & Expectation:
+        Test step and expected result:
             1. Create a new user(UA);
             2. Create a new project(PA) by user(UA);
             3. Create a new repository(RA) in project(PA) by user(UA);

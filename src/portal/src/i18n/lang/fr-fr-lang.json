@@ -166,7 +166,7 @@
         "CREATED_SUCCESS": "Projet créé avec succès.",
         "DELETED_SUCCESS": "Projet supprimé avec succès.",
         "TOGGLED_SUCCESS": "Projet basculé avec succès.",
-        "FAILED_TO_DELETE_PROJECT": "Le projet contient des dépôts ou des règles de réplication ne peuvent pas être supprimées.",
+        "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "Lorsqu'un projet est mis en public, n'importe qui a l'autorisation de lire les dépôts sous ce projet, et l'utilisateur n' a pas besoin d'exécuter \"docker login\" avant de prendre des images de ce projet.",
         "OF": "de"
     },

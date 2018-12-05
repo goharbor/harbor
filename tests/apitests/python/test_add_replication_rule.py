@@ -28,7 +28,7 @@ class TestProjects(unittest.TestCase):
     def tearDown(self):
         print "Case completed"
 
-    @unittest.skipIf(TEARDOWN == False, "Test data should be remain in the harbor.")
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete rule(RA);
         for rule_id in TestProjects.rule_id_list:
@@ -47,7 +47,7 @@ class TestProjects(unittest.TestCase):
         """
         Test case:
             Add Replication Rule
-        Test step & Expectation:
+        Test step and expected result:
             1. Create a new user(UA);
             2. Create a new private project(PA) by user(UA);
             3. Create a new target(TA)/registry;

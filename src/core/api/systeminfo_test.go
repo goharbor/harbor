@@ -73,15 +73,16 @@ func TestGetCert(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	// case 1: get cert without admin role
-	code, _, err := apiTest.CertGet(*testUser)
+	code, content, err := apiTest.CertGet(*testUser)
 	if err != nil {
 		t.Error("Error occurred while get system cert")
 		t.Log(err)
 	} else {
-		assert.Equal(403, code, "Get system cert should be 403")
+		assert.Equal(200, code, "Get system cert should be 200")
+		assert.Equal("test for ca.crt.\n", string(content), "Get system cert content should be equal")
 	}
 	// case 2: get cert with admin role
-	code, content, err := apiTest.CertGet(*admin)
+	code, content, err = apiTest.CertGet(*admin)
 	if err != nil {
 		t.Error("Error occurred while get system cert")
 		t.Log(err)

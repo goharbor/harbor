@@ -28,7 +28,7 @@ Go Into Project
     Input Text  xpath=//*[@id="search_input"]  ${project}
     Sleep  8
     Wait Until Page Contains  ${project}
-    Click Element  xpath=//*[@id="results"]/list-project-ro//clr-dg-cell[contains(.,"${project}")]/a
+    Click Element  xpath=//*[@id="project-results"]//clr-dg-cell[contains(.,"${project}")]/a
     Sleep  2
     Capture Page Screenshot  gointo_${project}.png
 

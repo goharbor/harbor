@@ -16,7 +16,6 @@ package utils
 
 import (
 	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 	"time"
 )
@@ -35,15 +34,4 @@ func TestTimeMarker(t *testing.T) {
 	time.Sleep(2 * time.Second)
 	r3 := m.Check()
 	assert.True(r3)
-}
-
-func TestScanMarkers(t *testing.T) {
-	assert := assert.New(t)
-	os.Setenv("HARBOR_SCAN_ALL_INTERVAL", "5")
-	sm := ScanAllMarker()
-	d := sm.Next().Sub(time.Now())
-	assert.True(d <= 5*time.Minute)
-	som := ScanOverviewMarker()
-	d = som.Next().Sub(time.Now())
-	assert.True(d <= 15*time.Second)
 }
