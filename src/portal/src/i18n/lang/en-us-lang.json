@@ -121,7 +121,8 @@
             "GROUP": "Groups",
             "REGISTRY": "Registries",
             "REPLICATION": "Replications",
-            "CONFIG": "Configuration"
+            "CONFIG": "Configuration",
+            "DEVCENTER": "Developer Center"
         },
         "LOGS": "Logs"
     },

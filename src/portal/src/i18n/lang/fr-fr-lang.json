@@ -107,7 +107,8 @@
             "USER": "Utilisateurs",
             "GROUP": "Groups",
             "REPLICATION": "Réplication",
-            "CONFIG": "Configuration"
+            "CONFIG": "Configuration",
+            "DEVCENTER": "Developer Center"
         },
         "LOGS": "Logs"
     },

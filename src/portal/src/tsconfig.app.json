@@ -8,6 +8,10 @@
             "es6",
             "dom"
         ],
+        "types": [
+            "node",
+            "jasmine"
+        ],
         "mapRoot": "./",
         "module": "commonjs",
         "moduleResolution": "node",

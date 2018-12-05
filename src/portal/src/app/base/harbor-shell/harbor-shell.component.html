@@ -2,7 +2,8 @@
     <global-message [isAppLevel]="true"></global-message>
     <navigator (showAccountSettingsModal)="openModal($event)" (showPwdChangeModal)="openModal($event)"></navigator>
     <div class="content-container">
-        <div class="content-area" [class.container-override]="showSearch" [class.content-area-override]="!shouldOverrideContent" [class.start-content-padding]="shouldOverrideContent">
+        <div class="content-area" [class.container-override]="showSearch" [class.content-area-override]="!shouldOverrideContent"
+            [class.start-content-padding]="shouldOverrideContent">
             <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
@@ -17,46 +18,39 @@
                 <clr-icon shape="list" clrVerticalNavIcon></clr-icon>
                 {{'SIDE_NAV.LOGS' | translate}}
             </a>
-            <clr-vertical-nav-group  *ngIf="isSystemAdmin" routerLinkActive="active">
+            <a clrVerticalNavLink target="_blank" routerLink="/devcenter" routerLinkActive="active">
+                <clr-icon shape="terminal" clrVerticalNavIcon></clr-icon>
+                {{'SIDE_NAV.SYSTEM_MGMT.DEVCENTER' | translate}}
+            </a>
+            <clr-vertical-nav-group *ngIf="isSystemAdmin" routerLinkActive="active">
                 <clr-icon shape="administrator" clrVerticalNavIcon></clr-icon>
                 {{'SIDE_NAV.SYSTEM_MGMT.NAME' | translate}}
                 <a routerLink="#" hidden aria-hidden="true"></a>
                 <clr-vertical-nav-group-children *clrIfExpanded="true">
-                    <a clrVerticalNavLink
-                       routerLink="/harbor/users"
-                       routerLinkActive="active">
-                       <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
-                       {{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}
+                    <a clrVerticalNavLink routerLink="/harbor/users" routerLinkActive="active">
+                        <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
+                        {{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}
                     </a>
-                    <a *ngIf='isLdapMode'
-                       clrVerticalNavLink
-                       routerLink="/harbor/groups"
-                       routerLinkActive="active">
-                       <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
+                    <a *ngIf='isLdapMode' clrVerticalNavLink routerLink="/harbor/groups" routerLinkActive="active">
+                        <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
                         {{'SIDE_NAV.SYSTEM_MGMT.GROUP' | translate}}
                     </a>
-                    <a clrVerticalNavLink
-                       routerLink="/harbor/registries"
-                       routerLinkActive="active">
-                       <clr-icon shape="block" clrVerticalNavIcon></clr-icon>
-                       {{'SIDE_NAV.SYSTEM_MGMT.REGISTRY' | translate}}
+                    <a clrVerticalNavLink routerLink="/harbor/registries" routerLinkActive="active">
+                        <clr-icon shape="block" clrVerticalNavIcon></clr-icon>
+                        {{'SIDE_NAV.SYSTEM_MGMT.REGISTRY' | translate}}
                     </a>
-                    <a clrVerticalNavLink
-                       routerLink="/harbor/replications"
-                       routerLinkActive="active">
-                       <clr-icon shape="cloud-traffic" clrVerticalNavIcon></clr-icon>
-                       {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}
+                    <a clrVerticalNavLink routerLink="/harbor/replications" routerLinkActive="active">
+                        <clr-icon shape="cloud-traffic" clrVerticalNavIcon></clr-icon>
+                        {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}
                     </a>
-                    <a clrVerticalNavLink
-                       routerLink="/harbor/configs"
-                       routerLinkActive="active">
-                       <clr-icon shape="cog" clrVerticalNavIcon></clr-icon>
-                       {{'SIDE_NAV.SYSTEM_MGMT.CONFIG' | translate}}
+                    <a clrVerticalNavLink routerLink="/harbor/configs" routerLinkActive="active">
+                        <clr-icon shape="cog" clrVerticalNavIcon></clr-icon>
+                        {{'SIDE_NAV.SYSTEM_MGMT.CONFIG' | translate}}
                     </a>
                 </clr-vertical-nav-group-children>
             </clr-vertical-nav-group>
         </clr-vertical-nav>
-        <hbr-operation-model  *ngIf="isUserExisting"></hbr-operation-model>
+        <hbr-operation-model *ngIf="isUserExisting"></hbr-operation-model>
     </div>
 </clr-main-container>
 <account-settings-modal></account-settings-modal>

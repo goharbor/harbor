@@ -5,6 +5,7 @@ RUN mkdir -p /build_dir
 
 COPY make/photon/portal/entrypoint.sh /
 COPY src/portal /portal_src
+COPY ./docs/swagger.yaml   /portal_src
 
 WORKDIR /portal_src
 
@@ -24,7 +25,11 @@ RUN tdnf install -y nginx >> /dev/null \
 EXPOSE 80
 VOLUME /var/cache/nginx /var/log/nginx /run
 
+
 COPY --from=nodeportal /build_dir/dist /usr/share/nginx/html
+COPY --from=nodeportal /build_dir/swagger.yaml /usr/share/nginx/html
+COPY --from=nodeportal /build_dir/swagger.json /usr/share/nginx/html
+
 COPY make/photon/portal/nginx.conf /etc/nginx/nginx.conf
 
 STOPSIGNAL SIGQUIT
