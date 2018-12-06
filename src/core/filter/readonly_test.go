@@ -79,4 +79,22 @@ func TestReadonlyFilter(t *testing.T) {
 	filter(req5, rec)
 	assert.Equal(http.StatusServiceUnavailable, rec.Code)
 
+	req6, _ := http.NewRequest("POST", "http://127.0.0.1:5000/api/repositories/library/hello-world/tags", nil)
+	rec = httptest.NewRecorder()
+	filter(req6, rec)
+	assert.Equal(http.StatusServiceUnavailable, rec.Code)
+}
+
+func TestMatchRetag(t *testing.T) {
+	req1, _ := http.NewRequest("POST", "http://127.0.0.1:5000/api/repositories/library/hello-world/tags", nil)
+	assert.True(t, matchRetag(req1))
+
+	req2, _ := http.NewRequest("POST", "http://127.0.0.1:5000/api/repositories/library/hello-world/tags/v1.0", nil)
+	assert.False(t, matchRetag(req2))
+
+	req3, _ := http.NewRequest("GET", "http://127.0.0.1:5000/api/repositories/library/hello-world/tags", nil)
+	assert.False(t, matchRetag(req3))
+
+	req4, _ := http.NewRequest("POST", "http://127.0.0.1:5000/api/repositories/library/hello-world", nil)
+	assert.False(t, matchRetag(req4))
 }
