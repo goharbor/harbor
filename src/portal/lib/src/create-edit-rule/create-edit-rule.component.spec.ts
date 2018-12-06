@@ -36,7 +36,6 @@ import {
   ProjectDefaultService,
   ProjectService
 } from "../service/project.service";
-import { JobLogViewerComponent } from "../job-log-viewer/job-log-viewer.component";
 import { OperationService } from "../operation/operation.service";
 import {FilterLabelComponent} from "./filter-label.component";
 import {LabelService} from "../service/label.service";
@@ -242,7 +241,6 @@ describe("CreateEditRuleComponent (inline template)", () => {
         DatePickerComponent,
         FilterComponent,
         InlineAlertComponent,
-        JobLogViewerComponent,
         FilterLabelComponent,
         LabelPieceComponent
       ],

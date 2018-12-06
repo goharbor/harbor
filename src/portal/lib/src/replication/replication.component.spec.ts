@@ -17,7 +17,6 @@ import { ErrorHandler } from '../error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { ReplicationService, ReplicationDefaultService } from '../service/replication.service';
 import { EndpointService, EndpointDefaultService } from '../service/endpoint.service';
-import { JobLogViewerComponent } from '../job-log-viewer/job-log-viewer.component';
 import { JobLogService, JobLogDefaultService, ReplicationJobItem } from '../service/index';
 import {ProjectDefaultService, ProjectService} from "../service/project.service";
 import {OperationService} from "../operation/operation.service";
@@ -226,7 +225,6 @@ describe('Replication Component (inline template)', () => {
         DatePickerComponent,
         FilterComponent,
         InlineAlertComponent,
-        JobLogViewerComponent,
         FilterLabelComponent,
         LabelPieceComponent
       ],
