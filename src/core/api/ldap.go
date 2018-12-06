@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/core/auth"
 
 	goldap "gopkg.in/ldap.v2"
+	"strings"
 )
 
 // LdapAPI handles requesst to /api/ldap/ping /api/ldap/user/search /api/ldap/user/import
@@ -51,7 +52,7 @@ func (l *LdapAPI) Prepare() {
 		return
 	}
 
-	ldapCfg, err := ldapUtils.LoadSystemLdapConfig()
+	ldapCfg, err := ldapUtils.LoadSystemLdapConfig(strings.EqualFold("ping", l.Ctx.Request.URL.Path))
 	if err != nil {
 		l.HandleInternalServerError(fmt.Sprintf("Can't load system configuration, error: %v", err))
 		return

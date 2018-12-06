@@ -44,16 +44,18 @@ type Session struct {
 }
 
 // LoadSystemLdapConfig - load LDAP configure from adminserver
-func LoadSystemLdapConfig() (*Session, error) {
+func LoadSystemLdapConfig(skipModeCheck ...bool) (*Session, error) {
+	// skip auth_mode check for skipModeCheck
+	if !(len(skipModeCheck) > 0 && skipModeCheck[0]) {
+		authMode, err := config.AuthMode()
+		if err != nil {
+			log.Errorf("can't load auth mode from system, error: %v", err)
+			return nil, err
+		}
 
-	authMode, err := config.AuthMode()
-	if err != nil {
-		log.Errorf("can't load auth mode from system, error: %v", err)
-		return nil, err
-	}
-
-	if authMode != "ldap_auth" {
-		return nil, fmt.Errorf("system auth_mode isn't ldap_auth, please check configuration")
+		if authMode != "ldap_auth" {
+			return nil, fmt.Errorf("system auth_mode isn't ldap_auth, please check configuration")
+		}
 	}
 
 	ldapConf, err := config.LDAPConf()
@@ -117,8 +119,8 @@ func formatURL(ldapURL string) (string, error) {
 
 	if strings.Contains(hostport, ":") {
 		splitHostPort := strings.Split(hostport, ":")
-		port, error := strconv.Atoi(splitHostPort[1])
-		if error != nil {
+		port, err := strconv.Atoi(splitHostPort[1])
+		if err != nil {
 			return "", fmt.Errorf("illegal url port")
 		}
 		if port == 636 {
@@ -142,7 +144,7 @@ func formatURL(ldapURL string) (string, error) {
 
 // ConnectionTest - test ldap session connection with system default setting
 func (session *Session) ConnectionTest() error {
-	session, err := LoadSystemLdapConfig()
+	session, err := LoadSystemLdapConfig(true)
 	if err != nil {
 		return fmt.Errorf("Failed to load system ldap config")
 	}
@@ -158,16 +160,10 @@ func ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
 // ConnectionTestWithAllConfig - test ldap session connection, out of the scope of normal session create/close
 func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig models.LdapGroupConf) error {
 
-	authMode, err := config.AuthMode()
-	if err != nil {
-		log.Errorf("Connection test failed %v", err)
-		return err
-	}
-
 	// If no password present, use the system default password
-	if ldapConfig.LdapSearchPassword == "" && authMode == "ldap_auth" {
+	if ldapConfig.LdapSearchPassword == "" {
 
-		session, err := LoadSystemLdapConfig()
+		session, err := LoadSystemLdapConfig(true)
 
 		if err != nil {
 			return fmt.Errorf("Failed to load system ldap config")
