@@ -100,18 +100,30 @@ export class GcComponent implements OnInit {
     this.disableGC = false;
   }
 
+  private resetSchedule(offTime) {
+    this.schedule = {
+      schedule: {
+        type: this.scheduleType,
+        offTime: offTime,
+        weekDay: this.weekDay.value
+      }
+    };
+    this.originScheduleType = this.scheduleType;
+    this.originWeekDay = this.weekDay;
+    this.originOffTime = { value: offTime, text: this.dailyTime };
+    this.isEditMode = false;
+    this.getJobs();
+  }
+
   scheduleGc(): void {
     let offTime = this.gcUtility.getOffTime(this.dailyTime);
-    if (this.schedule) {
+    let schedule = this.schedule;
+    if (schedule && schedule.schedule && schedule.schedule.type !== SCHEDULE_TYPE.NONE) {
       this.gcRepoService.putScheduleGc(this.scheduleType, offTime, this.weekDay.value).subscribe(response => {
         this.translate.get('GC.MSG_SCHEDULE_RESET').subscribe((res: string) => {
           this.errorHandler.info(res);
         });
-        this.originScheduleType = this.scheduleType;
-        this.originWeekDay = this.weekDay;
-        this.originOffTime = { value: offTime, text: this.dailyTime };
-        this.isEditMode = false;
-        this.getJobs();
+        this.resetSchedule(offTime);
       }, error => {
         this.errorHandler.error(error);
       });
@@ -120,18 +132,7 @@ export class GcComponent implements OnInit {
         this.translate.get('GC.MSG_SCHEDULE_SET').subscribe((res: string) => {
           this.errorHandler.info(res);
         });
-        this.schedule = {
-          schedule: {
-            type: this.scheduleType,
-            offTime: offTime,
-            weekDay: this.weekDay.value
-          }
-        };
-        this.originScheduleType = this.scheduleType;
-        this.originWeekDay = this.weekDay;
-        this.originOffTime = { value: offTime, text: this.dailyTime };
-        this.isEditMode = false;
-        this.getJobs();
+        this.resetSchedule(offTime);
       }, error => {
         this.errorHandler.error(error);
       });
