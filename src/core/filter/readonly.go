@@ -25,11 +25,12 @@ import (
 
 const (
 	repoURL  = `^/api/repositories/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)(?:[a-z0-9]+(?:[._-][a-z0-9]+)*)$`
+	tagsURL  = `^/api/repositories/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)tags$`
 	tagURL   = `^/api/repositories/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)tags/([\w][\w.-]{0,127})$`
 	labelURL = `^/api/repositories/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)tags/([\w][\w.-]{0,127})/labels/[0-9]+$`
 )
 
-// ReadonlyFilter filters the delete repo/tag request and returns 503.
+// ReadonlyFilter filters the deletion or creation (e.g. retag) of repo/tag requests and returns 503.
 func ReadonlyFilter(ctx *context.Context) {
 	filter(ctx.Request, ctx.ResponseWriter)
 }
@@ -38,10 +39,8 @@ func filter(req *http.Request, resp http.ResponseWriter) {
 	if !config.ReadOnly() {
 		return
 	}
-	if req.Method != http.MethodDelete {
-		return
-	}
-	if matchRepoTagDelete(req) {
+
+	if matchRepoTagDelete(req) || matchRetag(req) {
 		resp.WriteHeader(http.StatusServiceUnavailable)
 		_, err := resp.Write([]byte("The system is in read only mode. Any modification is prohibited."))
 		if err != nil {
@@ -50,8 +49,13 @@ func filter(req *http.Request, resp http.ResponseWriter) {
 	}
 }
 
-// Only block repository and tag deletion
+// matchRepoTagDelete checks whether a request is a repository or tag deletion request,
+// it should be blocked in read-only mode.
 func matchRepoTagDelete(req *http.Request) bool {
+	if req.Method != http.MethodDelete {
+		return false
+	}
+
 	if inWhiteList(req) {
 		return false
 	}
@@ -69,6 +73,16 @@ func matchRepoTagDelete(req *http.Request) bool {
 	}
 
 	return false
+}
+
+// matchRetag checks whether a request is a retag request, it should be blocked in read-only mode.
+func matchRetag(req *http.Request) bool {
+	if req.Method != http.MethodPost {
+		return false
+	}
+
+	re := regexp.MustCompile(tagsURL)
+	return re.MatchString(req.URL.Path)
 }
 
 func inWhiteList(req *http.Request) bool {
