@@ -21,7 +21,6 @@ import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
 import { HBR_GRIDVIEW_DIRECTIVES } from '../gridview/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from '../push-image/index';
 import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
-import { JobLogViewerComponent } from '../job-log-viewer/index';
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { OperationService } from "../operation/operation.service";
 import {ProjectDefaultService, ProjectService, RetagDefaultService, RetagService} from "../service";
@@ -112,7 +111,6 @@ describe('RepositoryComponentGridview (inline template)', () => {
         PUSH_IMAGE_BUTTON_DIRECTIVES,
         INLINE_ALERT_DIRECTIVES,
         HBR_GRIDVIEW_DIRECTIVES,
-        JobLogViewerComponent
       ],
       providers: [
         ErrorHandler,

@@ -14,7 +14,6 @@ import { TagComponent } from '../tag/tag.component';
 import { VULNERABILITY_DIRECTIVES } from '../vulnerability-scanning/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from '../push-image/index';
 import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
-import { JobLogViewerComponent } from '../job-log-viewer/index';
 
 
 import { ErrorHandler } from '../error-handler/error-handler';
@@ -168,7 +167,6 @@ describe('RepositoryComponent (inline template)', () => {
         VULNERABILITY_DIRECTIVES,
         PUSH_IMAGE_BUTTON_DIRECTIVES,
         INLINE_ALERT_DIRECTIVES,
-        JobLogViewerComponent,
       ],
       providers: [
         ErrorHandler,
