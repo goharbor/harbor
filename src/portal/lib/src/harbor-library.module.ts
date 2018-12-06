@@ -20,7 +20,6 @@ import { DATETIME_PICKER_DIRECTIVES } from './datetime-picker/index';
 import { VULNERABILITY_DIRECTIVES } from './vulnerability-scanning/index';
 import { PUSH_IMAGE_BUTTON_DIRECTIVES } from './push-image/index';
 import { CONFIGURATION_DIRECTIVES } from './config/index';
-import { JOB_LOG_VIEWER_DIRECTIVES } from './job-log-viewer/index';
 import { PROJECT_POLICY_CONFIG_DIRECTIVES } from './project-policy-config/index';
 import { HBR_GRIDVIEW_DIRECTIVES } from './gridview/index';
 import { REPOSITORY_GRIDVIEW_DIRECTIVES } from './repository-gridview/index';
@@ -191,7 +190,6 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     VULNERABILITY_DIRECTIVES,
     PUSH_IMAGE_BUTTON_DIRECTIVES,
     CONFIGURATION_DIRECTIVES,
-    JOB_LOG_VIEWER_DIRECTIVES,
     PROJECT_POLICY_CONFIG_DIRECTIVES,
     LABEL_DIRECTIVES,
     CREATE_EDIT_LABEL_DIRECTIVES,
@@ -218,7 +216,6 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     VULNERABILITY_DIRECTIVES,
     PUSH_IMAGE_BUTTON_DIRECTIVES,
     CONFIGURATION_DIRECTIVES,
-    JOB_LOG_VIEWER_DIRECTIVES,
     TranslateModule,
     PROJECT_POLICY_CONFIG_DIRECTIVES,
     LABEL_DIRECTIVES,

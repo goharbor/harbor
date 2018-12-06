@@ -17,7 +17,6 @@ import { VULNERABILITY_DIRECTIVES } from "../vulnerability-scanning/index";
 import { FILTER_DIRECTIVES } from "../filter/index";
 import { ChannelService } from "../channel/index";
 
-import { JobLogViewerComponent } from "../job-log-viewer/index";
 import { CopyInputComponent } from "../push-image/copy-input.component";
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { LabelDefaultService, LabelService } from "../service/label.service";
@@ -108,7 +107,6 @@ describe("TagComponent (inline template)", () => {
         ImageNameInputComponent,
         VULNERABILITY_DIRECTIVES,
         FILTER_DIRECTIVES,
-        JobLogViewerComponent,
         CopyInputComponent
       ],
       providers: [
