@@ -21,6 +21,8 @@ export abstract class JobLogService {
    * returns {(Observable<string> | Promise<string> | string)}
    * @memberof JobLogService
    */
+
+  abstract getScanJobBaseUrl(): string;
   abstract getJobLog(
     jobType: string,
     jobId: number | string
@@ -68,6 +70,10 @@ export class JobLogDefaultService extends JobLogService {
     }
 
     return false;
+  }
+
+  public getScanJobBaseUrl() {
+    return this._scanningJobBaseUrl;
   }
 
   public getJobLog(

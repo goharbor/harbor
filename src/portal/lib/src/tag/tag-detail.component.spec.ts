@@ -24,7 +24,6 @@ import { FilterComponent } from "../filter/index";
 import { VULNERABILITY_SCAN_STATUS } from "../utils";
 import { VULNERABILITY_DIRECTIVES } from "../vulnerability-scanning/index";
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
-import { JobLogViewerComponent } from "../job-log-viewer/job-log-viewer.component";
 import { ChannelService } from "../channel/channel.service";
 import {
   JobLogService,
@@ -99,7 +98,6 @@ describe("TagDetailComponent (inline template)", () => {
         ResultGridComponent,
         VULNERABILITY_DIRECTIVES,
         LabelPieceComponent,
-        JobLogViewerComponent,
         FilterComponent
       ],
       providers: [
