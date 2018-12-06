@@ -204,7 +204,7 @@ describe('RecentLogComponent (inline template)', () => {
 
           els = fixture.nativeElement.querySelectorAll('.datagrid-row');
           expect(els).toBeTruthy();
-          expect(els.length).toEqual(16);
+          expect(els.length).toEqual(4);
         });
 
       });
