@@ -304,7 +304,8 @@ func (ua *UserAPI) ChangePassword() {
 	}
 	if changePwdOfOwn {
 		if user.Password != utils.Encrypt(req.OldPassword, user.Salt) {
-			ua.HandleForbidden("incorrect old_password")
+			log.Info("incorrect old_password")
+			ua.RenderError(http.StatusForbidden, "incorrect old_password")
 			return
 		}
 	}
