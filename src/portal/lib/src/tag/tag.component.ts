@@ -103,6 +103,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   openLabelFilterPanel: boolean;
   openLabelFilterPiece: boolean;
   retagSrcImage: string;
+  showlabel: boolean;
 
   createdComparator: Comparator<Tag> = new CustomComparator<Tag>("created", "date");
 
@@ -394,8 +395,10 @@ export class TagComponent implements OnInit, AfterViewInit {
     if (labelInfo) {
       if (!labelInfo.iconsShow) {
         this.filterLabel(labelInfo);
+        this.showlabel = true;
       } else {
         this.unFilterLabel(labelInfo);
+        this.showlabel = false;
       }
     }
   }
