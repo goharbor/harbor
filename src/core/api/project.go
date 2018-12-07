@@ -535,7 +535,7 @@ func validateProjectReq(req *models.ProjectRequest) error {
 	validProjectName = regexp.MustCompile(`api(?:[._-][a-z0-9]+)*`)
 	legal = validProjectName.MatchString(pn)
 	if legal {
-		return fmt.Errorf("project name is not started with /'api/'")
+		return fmt.Errorf("project name is not started with 'api'")
 	}
 
 	metas, err := validateProjectMetadata(req.Metadata)
