@@ -42,7 +42,7 @@ export class AppConfig {
         this.project_creation_restriction = "everyone";
         this.self_registration = true;
         this.has_ca_root = false;
-        this.harbor_version = "1.2.0";
+        this.harbor_version = "unknown";
         this.clair_vulnerability_status = {
             overall_last_update: 0,
             details: []
