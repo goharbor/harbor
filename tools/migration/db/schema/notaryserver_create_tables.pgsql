@@ -1,7 +1,7 @@
 \c notaryserver;
 
 CREATE TABLE "tuf_files" (
-  "id" int PRIMARY KEY,
+  "id" serial PRIMARY KEY,
   "created_at" timestamp NULL DEFAULT NULL,
   "updated_at" timestamp NULL DEFAULT NULL,
   "deleted_at" timestamp NULL DEFAULT NULL,

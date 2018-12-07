@@ -94,7 +94,8 @@ def convert_notary_server_db(mysql_dump_file, pgsql_dump_file):
     
     write_database(pgsql_dump, "notaryserver")
     write_insert(pgsql_dump, insert_lines)
-    write_sequence(pgsql_dump, "tuf_files", "id")
+    alter_sequence(pgsql_dump, "tuf_files", "id")
+    alter_sequence(pgsql_dump, "changefeed", "id")
 
 def convert_notary_signer_db(mysql_dump_file, pgsql_dump_file):
     mysql_dump = open(mysql_dump_file)
@@ -115,7 +116,7 @@ def convert_notary_signer_db(mysql_dump_file, pgsql_dump_file):
     
     write_database(pgsql_dump, "notarysigner")
     write_insert(pgsql_dump, insert_lines)
-    write_sequence(pgsql_dump, "private_keys", "id")
+    alter_sequence(pgsql_dump, "private_keys", "id")
 
 def write_database(pgsql_dump, db_name):
     pgsql_dump.write("\\c %s;\n" % db_name)
@@ -147,6 +148,12 @@ def write_sequence(pgsql_dump, table_name, table_columnn):
     pgsql_dump.write("CREATE SEQUENCE %s_%s_seq;\n" % (table_name, table_columnn))
     pgsql_dump.write("SELECT setval('%s_%s_seq', max(%s)) FROM %s;\n" % (table_name, table_columnn, table_columnn, table_name))
     pgsql_dump.write("ALTER TABLE \"%s\" ALTER COLUMN \"%s\" SET DEFAULT nextval('%s_%s_seq');\n" % (table_name, table_columnn, table_name, table_columnn))
+
+def alter_sequence(pgsql_dump, table_name, table_columnn):
+    pgsql_dump.write('\n')
+    pgsql_dump.write("SELECT setval('%s_%s_seq', max(%s)) FROM %s;\n" % (table_name, table_columnn, table_columnn, table_name))
+    pgsql_dump.write("ALTER TABLE \"%s\" ALTER COLUMN \"%s\" SET DEFAULT nextval('%s_%s_seq');\n" % (table_name, table_columnn, table_name, table_columnn))
+
 
 if __name__ == "__main__":
     if sys.argv[1].find("registry") != -1:
