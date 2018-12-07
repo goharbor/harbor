@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@angular/core";
 import { Http } from "@angular/http";
 import { Observable} from "rxjs";
-import { map } from "rxjs/operators";
+import { map, catchError} from "rxjs/operators";
 
 import { RequestQueryParams } from "./RequestQueryParams";
 import { Label } from "./interface";
@@ -33,7 +33,7 @@ export abstract class LabelService {
     projectId?: number,
     name?: string,
     queryParams?: RequestQueryParams
-  ): Observable<Label[]> | Promise<Label[]>;
+  ): Observable<Label[]>;
 
   abstract createLabel(
     label: Label
@@ -149,7 +149,7 @@ export class LabelDefaultService extends LabelService {
     projectId?: number,
     name?: string,
     queryParams?: RequestQueryParams
-  ): Observable<Label[]> | Promise<Label[]> {
+  ): Observable<Label[]> {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
@@ -164,9 +164,8 @@ export class LabelDefaultService extends LabelService {
     }
     return this.http
       .get(this.labelUrl, buildHttpRequestOptions(queryParams))
-      .toPromise()
-      .then(response => response.json())
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json()))
+      .pipe(catchError(error => Promise.reject(error)));
   }
 
   createLabel(label: Label): Observable<any> | Promise<any> | any {
