@@ -54,7 +54,7 @@
                         </button>
                         <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
                             <hbr-resource-label-marker
-                                [labels]="projectLabels"
+                                [labels]="labels"
                                 [projectName]="projectName"
                                 [resource]="selectedRows[0]"
                                 [resourceType]="resourceType"
@@ -74,7 +74,7 @@
                     {{'REPOSITORY.LABELS' | translate}}
                     <clr-dg-filter [clrDgFilter]="labelFilter">
                         <hbr-chart-version-label-filter #labelFilter class="label-filter"
-                        [labels]="projectLabels"
+                        [labels]="labels"
                         [resourceType]="resourceType">
                         </hbr-chart-version-label-filter>
                     </clr-dg-filter>
