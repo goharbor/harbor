@@ -27,7 +27,7 @@
     <div class="row flex-items-xs-right rightPos">
       <div id="filterArea">
         <div class='filterLabelPiece' *ngIf="!withAdmiral" [hidden]="!openLabelFilterPiece" [style.left.px]='filterLabelPieceWidth'>
-          <hbr-label-piece [hidden]='!filterOneLabel' [label]="filterOneLabel" [labelWidth]="130"></hbr-label-piece>
+          <hbr-label-piece *ngIf="showlabel" [hidden]='!filterOneLabel' [label]="filterOneLabel" [labelWidth]="130"></hbr-label-piece>
         </div>
         <div class="flex-xs-middle">
           <hbr-filter [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filterEvt)="doSearchTagNames($event)"
