@@ -9,7 +9,7 @@ import {
   EventEmitter
 } from "@angular/core";
 import { Observable, forkJoin } from "rxjs";
-import {finalize, map} from "rxjs/operators";
+import { finalize, map } from "rxjs/operators";
 
 import { TranslateService } from "@ngx-translate/core";
 import { State } from "@clr/angular";
@@ -65,7 +65,7 @@ export class ChartVersionComponent implements OnInit {
   chartVersions: HelmChartVersion[] = [];
   systemInfo: SystemInfo;
   selectedRows: HelmChartVersion[] = [];
-  projectLabels: Label[] = [];
+  labels: Label[] = [];
   loading = true;
   resourceType = ResourceType.CHART_VERSION;
 
@@ -93,7 +93,7 @@ export class ChartVersionComponent implements OnInit {
     private resrouceLabelService: LabelService,
     private cdr: ChangeDetectorRef,
     private operationService: OperationService,
-  ) {}
+  ) { }
 
   public get registryUrl(): string {
     return this.systemInfo ? this.systemInfo.registry_url : "";
@@ -105,7 +105,7 @@ export class ChartVersionComponent implements OnInit {
       .then(systemInfo => (this.systemInfo = systemInfo))
       .catch(error => this.errorHandler.error(error));
     this.refresh();
-    this.getProjectLabels();
+    this.getLabels();
     this.lastFilteredVersionName = "";
   }
 
@@ -114,12 +114,12 @@ export class ChartVersionComponent implements OnInit {
     this.refresh();
   }
 
-  getProjectLabels() {
-    this.resrouceLabelService.getProjectLabels(this.projectId).subscribe(
-      (labels: Label[]) => {
-        this.projectLabels = labels;
-      }
-      );
+  getLabels() {
+    forkJoin(this.resrouceLabelService.getLabels("g"), this.resrouceLabelService.getProjectLabels(this.projectId))
+      .subscribe(
+        (labels) => {
+          this.labels = [].concat(...labels);
+        });
   }
 
   refresh() {
@@ -318,12 +318,12 @@ export class ChartVersionComponent implements OnInit {
 
   onLabelChange(version: HelmChartVersion) {
     this.resrouceLabelService.getChartVersionLabels(this.projectName, this.chartName, version.version)
-    .subscribe(labels => {
+      .subscribe(labels => {
         let versionIdx = this.chartVersions.findIndex(v => v.name === version.name);
         this.chartVersions[versionIdx].labels = labels;
         let hnd = setInterval(() => this.cdr.markForCheck(), 200);
         setTimeout(() => clearInterval(hnd), 5000);
-    });
+      });
   }
 
   public get developerRoleOrAbove(): boolean {
