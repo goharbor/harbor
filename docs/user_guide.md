@@ -28,6 +28,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
   * [Manage Helm Charts via portal](#manage-helm-charts-via-portal)
   * [Working with Helm CLI](#working-with-helm-cli)
 * [Online Garbage Collection.](#online-garbage-collection)
+* [View build history.](#build-history)
 
 ## Role Based Access Control(RBAC)  
 
@@ -589,3 +590,10 @@ If you are a system admin, you can view the latest 10 records of garbage collect
 You can click on the 'details' link to view the related logs.
 ![browse project](img/gc_details.png)
 
+## Build history
+
+Build history make it easy to see the contents of a container image, find the code which bulids an image, or locate the image for a source repository.
+
+In Harbor portal, enter your project, select the repository, click on the link of tag name you'd like to see its build history, the detail page will be opened. Then switch to `Build History` tab, you can see the build history information.
+
+![build_ history](img/build_history.png)
