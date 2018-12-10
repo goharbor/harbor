@@ -7,11 +7,11 @@
                 <div class="form-group" style="padding-left: 135px;">
                     <label for="create_project_name" class="col-md-3 form-group-label-override required">{{'PROJECT.NAME' | translate}}</label>
                     <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="!isNameValid" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left">
-            <input type="text" id="create_project_name"  [(ngModel)]="project.name" 
+            <input type="text" id="create_project_name"  [(ngModel)]="project.name"
             name="create_project_name" size="255"  style="width: 296px;"
             required
-            pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
-            minlength="2" 
+            pattern="^(?!api)[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+            minlength="2"
             #projectName="ngModel"
                    autocomplete="off"
             (keyup)='handleValidation()'>
