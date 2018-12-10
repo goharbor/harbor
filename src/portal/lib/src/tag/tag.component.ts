@@ -761,6 +761,10 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   public get developerRoleOrAbove(): boolean {
-      return this.memberRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
+    return this.memberRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
+  }
+
+  public get guestRoleOrAbove(): boolean {
+      return this.memberRoleID === Roles.GUEST || this.memberRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
   }
 }
