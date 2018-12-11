@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalClosable]="false" [clrModalStaticBackdrop]="false">
     <div class="modal-body dialog-body">
         <div class="harbor-logo-black">
-            <img [src]="'images/harbor-black-logo.png'">
+            <img [src]="'images/harbor-logo.svg'" class="harbor-icon">
         </div>
         <div class="content">
             <div>{{customName?.projectName? customName?.projectName : ('APP_TITLE.HARBOR' | translate)}}</div>
