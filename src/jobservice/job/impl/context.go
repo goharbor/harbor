@@ -230,6 +230,7 @@ func getDBFromConfig(cfg map[string]interface{}) *models.Database {
 	postgresql.Username = cfg[common.PostGreSQLUsername].(string)
 	postgresql.Password = cfg[common.PostGreSQLPassword].(string)
 	postgresql.Database = cfg[common.PostGreSQLDatabase].(string)
+	postgresql.SSLMode = cfg[common.PostGreSQLSSLMode].(string)
 	database.PostGreSQL = postgresql
 
 	return database
