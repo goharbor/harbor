@@ -3,7 +3,7 @@
         <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
             <!-- <clr-icon shape="vm-bug"  *ngIf="!customStyle?.headerLogo"></clr-icon> -->
             <img [src]="'images/harbor-logo.svg'" class="harbor-logo" />
-            <img [attr.src]="'static/images/'+customStyle?.headerLogo" *ngIf="customStyle?.headerLogo" style="width: 36px;height: 36px; object-fit: fill;">
+            <img [attr.src]="'static/images/'+customStyle?.headerLogo" *ngIf="customStyle?.headerLogo" class="headerLogo">
             <span class="title">{{customProjectName?.projectName? customProjectName?.projectName:(appTitle | translate)}}</span>
         </a>
     </div>
@@ -14,9 +14,9 @@
     <global-search></global-search>
     <div class="header-actions">
         <clr-dropdown class="dropdown bottom-left" *ngIf="!isIntegrationMode">
-            <button class="nav-icon" clrDropdownToggle style="width: 98px;">
-                <clr-icon shape="world" style="left:-8px;"></clr-icon>
-                <span style="padding-right: 8px;">{{currentLang}}</span>
+            <button class="nav-icon nav-icon-width" clrDropdownToggle>
+                <clr-icon shape="world" class="icon-left"></clr-icon>
+                <span class="currentLang">{{currentLang}}</span>
                 <clr-icon shape="caret down"></clr-icon>
             </button>
             <clr-dropdown-menu *clrIfOpen>
@@ -29,7 +29,7 @@
         </clr-dropdown>
         <clr-dropdown class="dropdown" *ngIf="isSessionValid">
             <button class="nav-text" clrDropdownToggle>
-              <clr-icon shape="user" class="is-inverse" size="24" style="left: -2px;"></clr-icon>
+              <clr-icon shape="user" class="is-inverse user-icon" size="24"></clr-icon>
               <span>{{accountName}}</span>
               <clr-icon shape="caret down"></clr-icon>
             </button>

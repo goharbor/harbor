@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="createEditRuleOpened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
   <h3 class="modal-title">{{headerTitle | translate}}</h3>
   <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
-  <div class="modal-body" style="max-height: 85vh;">
+  <div class="modal-body modal-body-height">
     <clr-alert [hidden]='!deletedLabelCount' [clrAlertType]="'alert-warning'" [clrAlertSizeSmall]="true" [clrAlertClosable]="false"
       [(clrAlertClosed)]="alertClosed">
       <div class="alert-item">
@@ -65,7 +65,7 @@
                 <div class="arrowSet" [hidden]="!(filterListData[i]?.name=='label')" (click)="openLabelList(selectedValue.value, i, $event)">
                   <clr-icon shape="angle"></clr-icon>
                 </div>
-                <clr-icon shape="warning-standard" class="is-solid is-warning" size="14" style="margin-left: -15px;" [hidden]="!deletedLabelCount || !(filterListData[i]?.name=='label')"></clr-icon>
+                <clr-icon shape="warning-standard" class="is-solid is-warning warning-icon" size="14" [hidden]="!deletedLabelCount || !(filterListData[i]?.name=='label')"></clr-icon>
                 <clr-icon shape="times-circle" class="is-solid" (click)="deleteFilter(i)"></clr-icon>
                 <div *ngIf="!withAdmiral">
                   <hbr-filter-label [projectId]="projectId" [selectedLabelInfo]="filterLabelInfo"
@@ -75,7 +75,7 @@
             </div>
 
           </div>
-          <clr-icon shape="plus-circle" class="is-solid" [hidden]="isFilterHide" (click)="addNewFilter()" style="margin-top: 11px;"></clr-icon>
+          <clr-icon shape="plus-circle" class="is-solid plus-position" [hidden]="isFilterHide" (click)="addNewFilter()"></clr-icon>
 
         </div>
         <!--Targets-->
@@ -114,7 +114,7 @@
               </div>
               <!--weekly-->
               <span [hidden]="!weeklySchedule || !isScheduleOpt">on &nbsp;</span>
-              <div [hidden]="!weeklySchedule || !isScheduleOpt" class="select floatSet" style="width:104px">
+              <div [hidden]="!weeklySchedule || !isScheduleOpt" class="select floatSet weekday-width">
                 <select name="scheduleDay" formControlName="weekday">
                   <option value="1">{{'WEEKLY.MONDAY' | translate}}</option>
                   <option value="2">{{'WEEKLY.TUESDAY' | translate}}</option>
@@ -130,18 +130,18 @@
               <input [hidden]="!isScheduleOpt" type="time" formControlName="offtime" required value="08:00" />
             </div>
           </div>
-          <div style="width: 100%;" [hidden]="!isImmediate">
+          <div class="rule-width" [hidden]="!isImmediate">
             <clr-checkbox [clrChecked]="false" id="ruleDeletion" formControlName="replicate_deletion">
               {{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}
             </clr-checkbox>
           </div>
-          <div style="width: 100%;">
+          <div class="rule-width">
             <clr-checkbox [clrChecked]="true" id="ruleExit" formControlName="replicate_existing_image_now">
               {{'REPLICATION.REPLICATE_IMMEDIATE' | translate}}
             </clr-checkbox>
           </div>
         </div>
-        <div style="display:block;text-align:center">
+        <div class="loading-center">
           <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
         </div>
       </section>

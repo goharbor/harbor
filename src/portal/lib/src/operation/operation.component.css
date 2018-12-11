@@ -41,3 +41,27 @@
     width: 100%;
     overflow-y: auto;
 }
+
+.event-text {
+    margin-left: 34px;
+}
+
+.color-red {
+    color: red;
+}
+
+.color-green {
+    color: green;
+}
+
+.color-orange {
+    color: orange;
+}
+
+.tab-top {
+    margin-top: 10px;
+}
+
+.hidden-info {
+    display: none;
+}

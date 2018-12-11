@@ -89,7 +89,7 @@ export class OperationComponent implements OnInit, OnDestroy {
   }
 
   toggleTitle(errorSpan: any) {
-    errorSpan.style.display = (errorSpan.style.display === 'none') ? 'block' : 'none';
+    errorSpan.style.display = (errorSpan.style.display === 'block') ? 'none' : 'block';
   }
 
   slideOut(): void {

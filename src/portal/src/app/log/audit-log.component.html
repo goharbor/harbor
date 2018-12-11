@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="top:12px;">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 log-top">
         <div class="row flex-items-xs-right option-right">
             <div class="flex-xs-middle">
                 <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
@@ -18,7 +18,7 @@
                 <clr-dropdown-menu [clrPosition]="'bottom-left'" *clrIfOpen>
                     <a href="javascript:void(0)" clrDropdownItem *ngFor="let f of filterOptions" (click)="toggleFilterOption(f.key)">
                         <clr-icon shape="check" [hidden]="!f.checked"></clr-icon>
-                        <ng-template [ngIf]="!f.checked"><span style="display: inline-block;width: 16px;"></span></ng-template>
+                        <ng-template [ngIf]="!f.checked"><span class="check-span"></span></ng-template>
                         {{f.description | translate}}
                     </a>
                 </clr-dropdown-menu>
