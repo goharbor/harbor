@@ -22,7 +22,8 @@ import { MessageService } from '../../global-message/message.service';
 
 @Component({
     selector: 'sign-up-page',
-    templateUrl: "sign-up-page.component.html"
+    templateUrl: "sign-up-page.component.html",
+    styleUrls: ['../../common.scss']
 })
 export class SignUpPageComponent implements OnInit {
     error: any;

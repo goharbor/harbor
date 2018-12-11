@@ -1,6 +1,6 @@
 <form #systemConfigFrom="ngForm" class="compact">
-    <section class="form-block" style="margin-top:0px;margin-bottom:0px;">
-        <label style="font-size:14px;font-weight:600;" *ngIf="showSubTitle">{{'CONFIG.SYSTEM' | translate}}</label>
+    <section class="form-block">
+        <label class="subtitle" *ngIf="showSubTitle">{{'CONFIG.SYSTEM' | translate}}</label>
         <div class="form-group">
             <label for="proCreation">{{'CONFIG.PRO_CREATION_RESTRICTION' | translate}}</label>
             <div class="select">
@@ -9,7 +9,7 @@
                     <option value="adminonly">{{'CONFIG.PRO_CREATION_ADMIN' | translate }}</option>
                 </select>
             </div>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top: -1px;">
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right create-tooltip">
                 <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.PRO_CREATION_RESTRICTION' | translate}}</span>
             </a>
@@ -40,7 +40,7 @@
         <div *ngIf="!withAdmiral" class="form-group">
             <label for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}</label>
             <clr-checkbox name="repoReadOnly" id="repoReadOnly" [clrChecked]="systemSettings.read_only.value" (clrCheckedChange)="setRepoReadOnlyValue($event)">
-                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">
+                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right read-tooltip">
                     <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                     <span class="tooltip-content">{{'CONFIG.TOOLTIP.REPO_TOOLTIP' | translate}}</span>
                 </a>

@@ -1,4 +1,4 @@
-<div style="padding-bottom: 15px;">
+<div class="list-rule">
 <clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" [clDgRowSelection]="true">
     <clr-dg-action-bar>
         <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
@@ -18,12 +18,12 @@
         <clr-dg-cell>
             <div [ngSwitch]="hasDeletedLabel(p)">
                 <clr-tooltip *ngSwitchCase="'disabled'" class="tooltip-lg">
-                    <clr-icon clrTooltipTrigger shape="exclamation-triangle" style="vertical-align: text-bottom;" class="is-warning" size="22"></clr-icon>Disabled
+                    <clr-icon clrTooltipTrigger shape="exclamation-triangle" class="is-warning text-alignment" size="22"></clr-icon>Disabled
                     <clr-tooltip-content clrPosition="top-right" clrSize="xs" *clrIfOpen>
                         <span>{{'REPLICATION.RULE_DISABLED' | translate}}</span>
                     </clr-tooltip-content>
                 </clr-tooltip>
-                <div *ngSwitchCase="'enabled'" ><clr-icon shape="success-standard" style="vertical-align: text-bottom;" class="is-success" size="18"></clr-icon> Enabled</div>
+                <div *ngSwitchCase="'enabled'" ><clr-icon shape="success-standard" class="is-success text-alignment" size="18"></clr-icon> Enabled</div>
             </div>
         </clr-dg-cell>
         <clr-dg-cell *ngIf="!projectScope">

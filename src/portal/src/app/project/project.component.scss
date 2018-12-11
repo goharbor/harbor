@@ -8,6 +8,11 @@
 
 .option-right {
     padding-right: 16px;
+    .select-option {
+        float: left;
+        left: -6px;
+        top: 8px;
+    }
 }
 
 .refresh-btn {
@@ -19,4 +24,9 @@
 }
 .rightPos {
     position: absolute; right: 20px; margin-top: 5px; height:32px; z-index: 100;
+}
+
+.projectPos {
+    padding-left: 15px;
+    padding-right: 15px;
 }

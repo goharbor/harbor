@@ -14,4 +14,18 @@
 .modal-height {
     height: 15.3em;
     overflow-y: hidden;
+    .form-block > div {
+        padding-left: 135px;
+        .input-width {
+            width: 296px;
+        }
+        .public-tooltip {
+            top: -8px;
+            left: -8px;
+        }
+        .inline-help-public {
+            margin-left: 5px;
+        }
+    }
+
 }

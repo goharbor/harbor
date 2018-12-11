@@ -1,5 +1,5 @@
 <div>
-    <div class="row" style="position:relative;">
+    <div class="row position-relative">
         <div class="toolbar">
             <div class="row flex-items-xs-right option-right rightPos">
                 <div class="flex-xs-middle">
@@ -7,7 +7,7 @@
                         <clr-icon shape="download"></clr-icon>
                         {{'CONFIG.REGISTRY_CERTIFICATE' | translate | uppercase}}
                     </a>
-                    <hbr-push-image-button style="display: inline-block;" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
+                    <hbr-push-image-button class="push-image-button" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
                     <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filterEvt)="doSearchRepoNames($event)" [currentValue]="lastFilteredRepoName"></hbr-filter>
                     <span class="card-btn" (click)="showCard(true)" (mouseenter) ="mouseEnter('card') "  (mouseleave) ="mouseLeave('card')">
                         <clr-icon [ngClass]="{'is-highlight': isCardView || isHovering('card') }" shape="view-cards"></clr-icon>
@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <hbr-gridview *ngIf="isCardView" #gridView style="position:relative;" 
+    <hbr-gridview *ngIf="isCardView" #gridView class="position-relative"
     [items]="repositories" 
     [loading]="loading"
     [pageSize]="pageSize"

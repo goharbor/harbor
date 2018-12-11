@@ -9,7 +9,7 @@
                     <option value="uaa_auth">{{'CONFIG.AUTH_MODE_UAA' | translate }}</option>
                 </select>
             </div>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top: -1px;">
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right top-1">
                 <clr-icon shape="info-circle" size="24" class="info-tips-icon"></clr-icon>
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.AUTH_MODE' | translate}}</span>
             </a>
@@ -56,7 +56,7 @@
                     {{'TOOLTIP.ITEM_REQUIRED' | translate}}
                 </span>
             </label>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top:-1px;">
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right top-1">
                 <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_SEARCH_DN' | translate}}</span>
             </a>
@@ -81,7 +81,7 @@
                     {{'TOOLTIP.ITEM_REQUIRED' | translate}}
                 </span>
             </label>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top: -1px;">
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-1">
                 <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_BASE_DN' | translate}}</span>
             </a>
@@ -106,7 +106,7 @@
                     {{'TOOLTIP.ITEM_REQUIRED' | translate}}
                 </span>
             </label>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right" style="top: -1px;">
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right top-1">
                 <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_UID' | translate}}</span>
             </a>
@@ -120,7 +120,7 @@
                     <option value="2">{{'CONFIG.SCOPE_SUBTREE' | translate }}</option>
                 </select>
             </div>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-1px;">
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-1">
                 <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_SCOPE' | translate}}</span>
             </a>
@@ -192,7 +192,7 @@
         <div class="form-group" *ngIf="showSelfReg">
             <label for="selfReg">{{'CONFIG.SELF_REGISTRATION' | translate}}</label>
             <clr-checkbox name="selfReg" id="selfReg" [(ngModel)]="currentConfig.self_registration.value" [disabled]="disabled(currentConfig.self_registration)">
-                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">
+                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-7">
                     <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                     <span *ngIf="checkable; else elseBlock" class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_ENABLE' | translate}}</span>
                     <ng-template #elseBlock>
@@ -207,7 +207,7 @@
             <label for="ldapVerifyCert">{{'CONFIG.LDAP.VERIFY_CERT' | translate}}</label>
             <clr-checkbox name="ldapVerifyCert" id="ldapVerifyCert" [clrChecked]="currentConfig.ldap_verify_cert.value" [clrDisabled]="disabled(currentConfig.ldap_scope)"
                 (clrCheckedChange)="setVerifyCertValue($event)">
-                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right" style="top:-7px;">
+                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-7">
                     <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                     <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_CERT' | translate}}</span>
                 </a>

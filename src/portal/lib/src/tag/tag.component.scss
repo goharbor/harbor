@@ -149,6 +149,24 @@
   min-width: 5rem;
   max-width: 15rem;
   border-radius: .125rem;
+  .form-group input {
+    position: relative;
+    margin-left: .5rem;
+    margin-right: .5rem;
+  }
+}
+
+.no-labels {
+  padding-left: 10px;
+}
+
+.has-label {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.filter-grid {
+  display: grid;
 }
 
 .labelBtn {
@@ -186,12 +204,6 @@
   color: #313131;
 }
 
-.labelFilterPanel .form-group input {
-  position: relative;
-  margin-left: .5rem;
-  margin-right: .5rem;
-}
-
 .filterClose {
   position: absolute;
   right: 8px;
@@ -208,4 +220,41 @@
 
 hbr-image-name-input {
   width: 100%;
+}
+
+.tag-row {
+  position: relative;
+}
+
+.width-100 {
+  width: 100px;
+}
+
+.width-130 {
+  width: 130px;
+}
+
+.width-160 {
+  width: 160px;
+}
+
+.flex-width {
+  min-width: 100px;
+  max-width: 220px;
+}
+
+.flex-min-width {
+  min-width: 130px;
+}
+
+.color-green {
+  color: #1D5100;
+}
+
+.color-red {
+  color: #C92100;
+}
+
+.color-gray {
+  color: #565656;
 }

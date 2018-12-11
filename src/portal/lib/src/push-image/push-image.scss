@@ -45,3 +45,14 @@
 .hide{
     display:none;
 }
+
+.inputTarget {
+    width: 1px;
+    min-width: 0;
+    padding: 0;
+    opacity: .1;
+}
+
+.dropdown-width {
+    min-width: 500px;
+}

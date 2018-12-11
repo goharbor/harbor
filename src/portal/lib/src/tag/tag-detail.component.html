@@ -71,7 +71,7 @@
             <div *ngIf="!withAdmiral && tagDetails?.labels?.length">
                 <div class="third-column detail-title">{{'TAG.LABELS' | translate }}</div>
                 <div class="fourth-column">
-                    <div *ngFor="let label of tagDetails.labels" style="margin-bottom: 2px;">
+                    <div *ngFor="let label of tagDetails.labels" class="detail-tag">
                         <hbr-label-piece [label]="label"></hbr-label-piece>
                     </div>
                 </div>
