@@ -39,3 +39,23 @@
     width: 40px;
     margin-right: 15px;
 }
+
+.nav-icon-width {
+    width: 98px !important;
+    .icon-left {
+        left: -8px;
+    }
+    .currentLang {
+        padding-right: 8px;
+    }
+}
+
+.user-icon {
+    left: -2px;
+}
+
+.headerLogo {
+    width: 36px;
+    height: 36px;
+    object-fit: fill;
+}

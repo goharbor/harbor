@@ -23,7 +23,8 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 
 @Component({
     selector: "new-user-modal",
-    templateUrl: "new-user-modal.component.html"
+    templateUrl: "new-user-modal.component.html",
+    styleUrls: ['../common.scss']
 })
 
 export class NewUserModalComponent {

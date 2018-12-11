@@ -12,32 +12,37 @@
     max-width: 15rem;
     border-radius: .125rem;
     z-index: 100;
+    .filterClose {
+        position: absolute;
+        right: 8px;
+        top: 5px;
+        cursor: pointer;
+        font-size: 20px;
+    }
+    .filterLabelHeader {
+        font-size: .5rem;
+        font-weight: 600;
+        letter-spacing: normal;
+        padding: 0 .5rem;
+        line-height: .75rem;
+        margin: 0;
+        color: #313131;
+    }
+    .no-labels {
+        padding-left: 10px;
+    }
+    .label-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
 }
 
 .filterLabelPanel .filterInput{margin-left: .5rem; margin-right: .5rem;}
-
-.filterLabelHeader {
-    font-size: .5rem;
-    font-weight: 600;
-    letter-spacing: normal;
-    padding: 0 .5rem;
-    line-height: .75rem;
-    margin: 0;
-    color: #313131;
-}
 
 .filterLabelPanel .form-group input {
     position: relative;
     margin-left: .5rem;
     margin-right: .5rem;
-}
-
-.filterClose {
-    position: absolute;
-    right: 8px;
-    top: 5px;
-    cursor: pointer;
-    font-size: 20px;
 }
 
 .pull-left {

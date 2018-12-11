@@ -13,14 +13,6 @@
   padding-right: 16px;
 }
 
-.option-left-down {
-  margin-top: 36px;
-}
-
-.option-right-down {
-  padding-right: 16px;
-  margin-top: 24px;
-}
  .rightPos{
     position: absolute;
     right: 35px;
@@ -37,4 +29,23 @@
 
 .row-right {
   padding-right: 50px;
+}
+
+.replication-row {
+  position: relative;
+}
+
+.jobList {
+  padding-left: 0;
+  .jobsRow {
+    height: 60px;
+    .option-left-down {
+      margin-top: 36px;
+      margin-left: 14px;
+    }
+    .option-right-down {
+      padding-right: 16px;
+      margin-top: 24px;
+    }
+  }
 }

@@ -21,7 +21,8 @@ import {AppConfigService} from "../../app-config.service";
 
 @Component({
   selector: 'total-replication',
-  templateUrl: 'total-replication-page.component.html'
+  templateUrl: 'total-replication-page.component.html',
+  styleUrls: [ './total-replication.component.scss' ]
 })
 export class TotalReplicationPageComponent {
 

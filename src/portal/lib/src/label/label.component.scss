@@ -1,27 +1,25 @@
-.option-left {
-  padding-left: 16px;
-  margin-top: -6px;
+.label-config {
+  position: relative;
+    div.content-mt {
+      margin-top: -12px;
+    }
+    .rightPos {
+      position: absolute;
+      z-index: 100;
+      right: 35px;
+      margin-top: 4px;
+      height: 24px;
+      .option-right {
+        padding-right: 16px;
+          .refresh-btn {
+            cursor: pointer;
+              :hover {
+              color: #007CBB;
+            }
+          }
+      }    
+  }
 }
 
-.option-right {
-  padding-right: 16px;
-}
 
-.refresh-btn {
-  cursor: pointer;
-}
 
-.refresh-btn:hover {
-  color: #007CBB;
-}
-
-.rightPos {
-  position: absolute;
-  z-index: 100;
-  right: 35px;
-  margin-top: 4px;
-  height: 24px;
-}
-.content-mt {
-  margin-top: -12px;
-}

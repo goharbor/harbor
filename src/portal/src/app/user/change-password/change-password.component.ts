@@ -22,7 +22,7 @@ import {TranslateService} from "@ngx-translate/core";
 @Component({
     selector: 'change-password',
     templateUrl: "change-password.component.html",
-    styleUrls: ['./change-password.component.scss']
+    styleUrls: ['./change-password.component.scss', '../../common.scss']
 })
 export class ChangePasswordComponent {
     opened: boolean = false;

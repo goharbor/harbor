@@ -2,7 +2,7 @@
     <clr-alert [clrAlertType]="globalMessage.type" [clrAlertAppLevel]="isAppLevel" [(clrAlertClosed)]="!globalMessageOpened" (clrAlertClosedChange)="onClose()">
         <div class="alert-item">
             <span class="alert-text">{{message}}</span>
-            <div class="alert-actions" *ngIf="needAuth" style="display: inline;">
+            <div class="alert-actions alert-style" *ngIf="needAuth">
                 <button class="btn alert-action" (click)="signIn()">{{ 'BUTTON.LOG_IN' | translate }}</button>
             </div>
         </div>
