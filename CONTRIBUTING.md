@@ -237,10 +237,16 @@ Please don't use `git pull` instead of the above `fetch / rebase`. `git pull` do
 
 ### Commit
 
+As Harbor has integrated the [DCO (Developer Certificate of Origin)](https://probot.github.io/apps/dco/) check tool, contributors are required to sign-off that they adhere to those requirements by adding a `Signed-off-by` line to the commit messages. Git has even provided a `-s` command line option to append that automatically to your commit messages, please use it when you commit your changes.
+
+```bash
+$ git commit -s -m 'This is my commit message'
+```
+
 Commit your changes if they're ready:
 ```
 #git add -A
-git commit #-a
+git commit -s #-a
 git push --force-with-lease $user my_feature
 ```
 
