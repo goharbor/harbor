@@ -29,7 +29,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/docker/distribution/manifest/schema2"
-	registry_error "github.com/goharbor/harbor/src/common/utils/error"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/test"
 )
 
@@ -392,10 +392,10 @@ func TestListTag(t *testing.T) {
 
 func TestParseError(t *testing.T) {
 	err := &url.Error{
-		Err: &registry_error.HTTPError{},
+		Err: &commonhttp.Error{},
 	}
 	e := parseError(err)
-	if _, ok := e.(*registry_error.HTTPError); !ok {
+	if _, ok := e.(*commonhttp.Error); !ok {
 		t.Errorf("error type does not match registry error")
 	}
 }
