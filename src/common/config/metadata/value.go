@@ -37,15 +37,14 @@ type ConfigureValue struct {
 	Value string `json:"value,omitempty"`
 }
 
-// NewConfigureValue ...
-func NewConfigureValue(name, value string) *ConfigureValue {
+// NewCfgValue ... Create checked config value
+func NewCfgValue(name, value string) (*ConfigureValue, error) {
 	result := &ConfigureValue{}
 	err := result.Set(name, value)
 	if err != nil {
-		log.Errorf("Failed to set name:%v, value:%v, error %v", name, value, err)
 		result.Name = name // Keep name to trace error
 	}
-	return result
+	return result, err
 }
 
 // GetString - Get the string value of current configure
@@ -74,7 +73,7 @@ func (c *ConfigureValue) GetInt() int {
 			return intValue
 		}
 	}
-	log.Errorf("The current value's metadata is not defined, %+v", c)
+	log.Errorf("GetInt failed, the current value's metadata is not defined, %+v", c)
 	return 0
 }
 
@@ -90,7 +89,7 @@ func (c *ConfigureValue) GetInt64() int64 {
 			return int64Value
 		}
 	}
-	log.Errorf("The current value's metadata is not defined, %+v", c)
+	log.Errorf("GetInt64 failed, the current value's metadata is not defined, %+v", c)
 	return 0
 }
 
@@ -106,7 +105,7 @@ func (c *ConfigureValue) GetBool() bool {
 			return boolValue
 		}
 	}
-	log.Errorf("The current value's metadata is not defined, %+v", c)
+	log.Errorf("GetBool failed, the current value's metadata is not defined, %+v", c)
 	return false
 }
 
@@ -116,7 +115,7 @@ func (c *ConfigureValue) GetStringToStringMap() map[string]string {
 	if item, ok := Instance().GetByName(c.Name); ok {
 		val, err := item.ItemType.get(c.Value)
 		if err != nil {
-			log.Errorf("The GetBool failed, error: %+v", err)
+			log.Errorf("The GetStringToStringMap failed, error: %+v", err)
 			return result
 		}
 		if mapValue, suc := val.(map[string]string); suc {
