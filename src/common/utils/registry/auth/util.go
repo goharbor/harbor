@@ -21,8 +21,8 @@ import (
 	"net/url"
 
 	"github.com/docker/distribution/registry/auth/token"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
-	registry_error "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 )
 
@@ -73,9 +73,9 @@ func getToken(client *http.Client, credential Credential, realm, service string,
 		return nil, err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, &registry_error.HTTPError{
-			StatusCode: resp.StatusCode,
-			Detail:     string(data),
+		return nil, &commonhttp.Error{
+			Code:    resp.StatusCode,
+			Message: string(data),
 		}
 	}
 
