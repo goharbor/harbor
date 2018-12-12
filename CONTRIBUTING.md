@@ -114,6 +114,9 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   1.2    |    1.7.3      |
 |   1.3    |    1.9.2      |
 |   1.4    |    1.9.2      |
+|   1.5    |    1.9.2      |
+|   1.6    |    1.9.2      |
+|   1.6    |    tbd        |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
@@ -128,9 +131,11 @@ Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and
 |   1.1    |      2.4.1         |       0.8.7        |
 |   1.2    |      4.1.3         |       0.9.8        |
 |   1.3    |      4.3.0         |       0.10.17      |
-|   1.4    |                    |                    |
+| 1.4      |       4.3.0        |       0.10.17      |
+| 1.5      |       4.3.0        |       0.10.27      |
+| 1.6      |       4.3.0        |       0.10.27      |
 
-**Npm Package Dependency:** Run the following commands to restore the package dependencies.
+**npm Package Dependency:** Run the following commands to restore the package dependencies.
 ```
 #For the web UI
 cd $REPO_DIR/src/portal
