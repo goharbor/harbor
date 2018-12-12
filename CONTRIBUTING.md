@@ -131,9 +131,9 @@ Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and
 |   1.1    |      2.4.1         |       0.8.7        |
 |   1.2    |      4.1.3         |       0.9.8        |
 |   1.3    |      4.3.0         |       0.10.17      |
-| 1.4      |       4.3.0        |       0.10.17      |
-| 1.5      |       4.3.0        |       0.10.27      |
-| 1.6      |       4.3.0        |       0.10.27      |
+|   1.4    |       4.3.0        |       0.10.17      |
+|   1.5    |       4.3.0        |       0.10.27      |
+|   1.6    |       4.3.0        |       0.10.27      |
 
 **npm Package Dependency:** Run the following commands to restore the package dependencies.
 ```
@@ -201,6 +201,11 @@ Try to limit column width to 120 characters for both code and markdown documents
 Always run [golint](https://github.com/golang/lint) on source code before
 committing your changes.
 ```
+#Install fgt and golint
+
+go get -u golang.org/x/lint/golint
+go get github.com/GeertJohan/fgt
+
 #In the #working_dir/harbor, run
 
 go list ./... | grep -v -E 'vendor|tests' | xargs -L1 fgt golint
@@ -225,6 +230,7 @@ To build code, please refer to [build](docs/compile_guide.md) guideline.
 
 ###  Keep sync with upstream
 
+```
 Once your branch gets out of sync with the goharbor/master branch, use the following commands to update:
 ```
 git checkout my_feature
@@ -237,10 +243,16 @@ Please don't use `git pull` instead of the above `fetch / rebase`. `git pull` do
 
 ### Commit
 
+As Harbor has integrated the [DCO (Developer Certificate of Origin)](https://probot.github.io/apps/dco/) check tool, contributors are required to sign-off that they adhere to those requirements by adding a `Signed-off-by` line to the commit messages. Git has even provided a `-s` command line option to append that automatically to your commit messages, please use it when you commit your changes.
+
+```bash
+$ git commit -s -m 'This is my commit message'
+```
+
 Commit your changes if they're ready:
 ```
 #git add -A
-git commit #-a
+git commit -s #-a
 git push --force-with-lease $user my_feature
 ```
 
