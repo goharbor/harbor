@@ -15,6 +15,7 @@
 package metadata
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -27,25 +28,36 @@ var testingMetaDataArray = []Item{
 	{Name: "sample_map_setting", ItemType: &MapType{}, Scope: "user", Group: "ldapbasic"},
 }
 
+// createCfgValue ... Create a ConfigureValue object, only used in test
+func createCfgValue(name, value string) *ConfigureValue {
+	result := &ConfigureValue{}
+	err := result.Set(name, value)
+	if err != nil {
+		fmt.Printf("failed to create ConfigureValue name:%v, value:%v, error %v\n", name, value, err)
+		result.Name = name // Keep name to trace error
+	}
+	return result
+}
+
 func TestConfigureValue_GetBool(t *testing.T) {
-	assert.Equal(t, NewConfigureValue("ldap_verify_cert", "true").GetBool(), true)
-	assert.Equal(t, NewConfigureValue("unknown", "false").GetBool(), false)
+	assert.Equal(t, createCfgValue("ldap_verify_cert", "true").GetBool(), true)
+	assert.Equal(t, createCfgValue("unknown", "false").GetBool(), false)
 }
 
 func TestConfigureValue_GetString(t *testing.T) {
-	assert.Equal(t, NewConfigureValue("ldap_url", "ldaps://ldap.vmware.com").GetString(), "ldaps://ldap.vmware.com")
+	assert.Equal(t, createCfgValue("ldap_url", "ldaps://ldap.vmware.com").GetString(), "ldaps://ldap.vmware.com")
 }
 
 func TestConfigureValue_GetStringToStringMap(t *testing.T) {
 	Instance().initFromArray(testingMetaDataArray)
-	assert.Equal(t, NewConfigureValue("sample_map_setting", `{"sample":"abc"}`).GetStringToStringMap(), map[string]string{"sample": "abc"})
+	assert.Equal(t, createCfgValue("sample_map_setting", `{"sample":"abc"}`).GetStringToStringMap(), map[string]string{"sample": "abc"})
 	Instance().init()
 }
 func TestConfigureValue_GetInt(t *testing.T) {
-	assert.Equal(t, NewConfigureValue("ldap_timeout", "5").GetInt(), 5)
+	assert.Equal(t, createCfgValue("ldap_timeout", "5").GetInt(), 5)
 }
 
 func TestConfigureValue_GetInt64(t *testing.T) {
 	Instance().initFromArray(testingMetaDataArray)
-	assert.Equal(t, NewConfigureValue("ulimit", "99999").GetInt64(), int64(99999))
+	assert.Equal(t, createCfgValue("ulimit", "99999").GetInt64(), int64(99999))
 }
