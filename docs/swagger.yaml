@@ -3015,7 +3015,7 @@ paths:
           $ref: '#/definitions/InternalChartAPIError'
         '507':
           $ref: '#/definitions/InsufficientStorageChartAPIError'
-  /chartrepo/:repo/charts/:name/:version/labels:
+  /chartrepo/{repo}/charts/{name}/{version}/labels:
     get:
       summary: Return the attahced labels of chart.
       description: Return the attahced labels of the specified chart version.
@@ -3094,7 +3094,7 @@ paths:
           $ref: '#/definitions/ConflictFormatedError'
         '500':
           $ref: '#/definitions/InternalChartAPIError'
-  /chartrepo/:repo/charts/:name/:version/labels/:id:
+  /chartrepo/{repo}/charts/{name}/{version}/labels/{id}:
     delete:
       summary: Remove label from chart.
       description: Remove label from the specified chart version.
