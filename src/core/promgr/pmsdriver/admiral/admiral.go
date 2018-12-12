@@ -26,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	er "github.com/goharbor/harbor/src/common/utils/error"
@@ -286,20 +287,20 @@ func (d *driver) Create(pro *models.Project) (int64, error) {
 		// Maybe a 409 error will be returned if Admiral team finds the way to
 		// return a specific code in Xenon.
 		// The following codes convert both those two errors to DupProjectErr
-		httpErr, ok := err.(*er.HTTPError)
+		httpErr, ok := err.(*commonhttp.Error)
 		if !ok {
 			return 0, err
 		}
 
-		if httpErr.StatusCode == http.StatusConflict {
+		if httpErr.Code == http.StatusConflict {
 			return 0, er.ErrDupProject
 		}
 
-		if httpErr.StatusCode != http.StatusInternalServerError {
+		if httpErr.Code != http.StatusInternalServerError {
 			return 0, err
 		}
 
-		match, e := regexp.MatchString(dupProjectPattern, httpErr.Detail)
+		match, e := regexp.MatchString(dupProjectPattern, httpErr.Message)
 		if e != nil {
 			log.Errorf("failed to match duplicate project mattern: %v", e)
 		}
@@ -397,9 +398,9 @@ func (d *driver) send(method, path string, body io.Reader) ([]byte, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, &er.HTTPError{
-			StatusCode: resp.StatusCode,
-			Detail:     string(b),
+		return nil, &commonhttp.Error{
+			Code:    resp.StatusCode,
+			Message: string(b),
 		}
 	}
 

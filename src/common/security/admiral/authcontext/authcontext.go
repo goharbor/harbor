@@ -24,9 +24,9 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	http_error "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
@@ -187,9 +187,9 @@ func send(client *http.Client, req *http.Request) (*AuthContext, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, &http_error.HTTPError{
-			StatusCode: resp.StatusCode,
-			Detail:     string(data),
+		return nil, &commonhttp.Error{
+			Code:    resp.StatusCode,
+			Message: string(data),
 		}
 	}
 
