@@ -527,16 +527,11 @@ func validateProjectReq(req *models.ProjectRequest) error {
 		return fmt.Errorf("Project name is illegal in length. (greater than %d or less than %d)", projectNameMaxLen, projectNameMinLen)
 	}
 	validProjectName := regexp.MustCompile(`^` + restrictedNameChars + `$`)
-	legal := validProjectName.MatchString(pn)
+	legal := (validProjectName.MatchString(pn) && (pn[0:3] != "api"))
 	if !legal {
-		return fmt.Errorf("project name is not in lower case or contains illegal characters")
+		return fmt.Errorf("project name is not in lower case or contains illegal characters. Or project name is started with 'api'")
 	}
 
-	validProjectName = regexp.MustCompile(`api(?:[._-][a-z0-9]+)*`)
-	legal = validProjectName.MatchString(pn)
-	if legal {
-		return fmt.Errorf("project name is not started with 'api'")
-	}
 
 	metas, err := validateProjectMetadata(req.Metadata)
 	if err != nil {
