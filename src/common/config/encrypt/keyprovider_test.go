@@ -11,20 +11,34 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package error
+
+package encrypt
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 )
 
-func TestError(t *testing.T) {
-	err := &HTTPError{
-		StatusCode: 404,
-		Detail:     "not found",
+func TestGetOfFileKeyProvider(t *testing.T) {
+	path := "/tmp/key"
+	key := "key_content"
+
+	if err := ioutil.WriteFile(path, []byte(key), 0777); err != nil {
+		t.Errorf("failed to write to file %s: %v", path, err)
+		return
+	}
+	defer os.Remove(path)
+
+	provider := NewFileKeyProvider(path)
+	k, err := provider.Get(nil)
+	if err != nil {
+		t.Errorf("failed to get key from the file provider: %v", err)
+		return
 	}
 
-	if err.Error() != "404 not found" {
-		t.Fatalf("unexpected content: %s != %s",
-			err.Error(), "404 not found")
+	if k != key {
+		t.Errorf("unexpected key: %s != %s", k, key)
+		return
 	}
 }

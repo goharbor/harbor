@@ -26,7 +26,6 @@ import { GlobalSearchComponent } from './global-search/global-search.component';
 import { FooterComponent } from './footer/footer.component';
 import { HarborShellComponent } from './harbor-shell/harbor-shell.component';
 import { SearchResultComponent } from './global-search/search-result.component';
-import { StartPageComponent } from './start-page/start.component';
 
 import { SearchTriggerService } from './global-search/search-trigger.service';
 
@@ -46,7 +45,6 @@ import { SearchTriggerService } from './global-search/search-trigger.service';
     FooterComponent,
     HarborShellComponent,
     SearchResultComponent,
-    StartPageComponent
   ],
   exports: [ HarborShellComponent ],
   providers: [SearchTriggerService]

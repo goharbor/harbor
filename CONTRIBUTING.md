@@ -26,8 +26,8 @@ go get github.com/goharbor/harbor
 cd $GOPATH/src/github.com/goharbor/harbor
 
 #Track repository under your personal account
-git config push.default nothing # Anything to avoid pushing to vmware/harbor by default
-git remote rename origin vmware
+git config push.default nothing # Anything to avoid pushing to goharbor/harbor by default
+git remote rename origin goharbor
 git remote add $USER git@github.com:$USER/harbor.git
 git fetch $USER
 
@@ -42,14 +42,14 @@ Here is the basic structure of the harbor code base. Some of the key folders / f
 ```
 .
 ...
-├── Makefile      #Make file for compile and build code
-├── contrib       #Contain documents, scripts, and other helpful things which are contributed by the community
-├── docs          #Keep documents here
-├── make          #Resource for building and setting up Harbor environment
+├── Makefile      # Make file for compile and build code
+├── contrib       # Contain documents, scripts, and other helpful things which are contributed by the community
+├── docs          # Keep documents here
+├── make          # Resource for building and setting up Harbor environment
 ...
-├── src           #Source code folder
-├── tests         #Test cases for API / e2e testings
-└── tools         #Keep supporting tools
+├── src           # Source code folder
+├── tests         # Test cases for API / e2e testings
+└── tools         # Keep supporting tools
 ...
 ```
 
@@ -114,6 +114,9 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   1.2    |    1.7.3      |
 |   1.3    |    1.9.2      |
 |   1.4    |    1.9.2      |
+|   1.5    |    1.9.2      |
+|   1.6    |    1.9.2      |
+|   1.6    |    tbd        |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
@@ -128,9 +131,11 @@ Harbor web UI is built based on [Clarity](https://vmware.github.io/clarity/) and
 |   1.1    |      2.4.1         |       0.8.7        |
 |   1.2    |      4.1.3         |       0.9.8        |
 |   1.3    |      4.3.0         |       0.10.17      |
-|   1.4    |                    |                    |
+|   1.4    |       4.3.0        |       0.10.17      |
+|   1.5    |       4.3.0        |       0.10.27      |
+|   1.6    |       4.3.0        |       0.10.27      |
 
-**Npm Package Dependency:** Run the following commands to restore the package dependencies.
+**npm Package Dependency:** Run the following commands to restore the package dependencies.
 ```
 #For the web UI
 cd $REPO_DIR/src/portal
@@ -173,12 +178,12 @@ Both `$working_dir` and `$user` are mentioned in the figure above.
 Changes should be made on your own fork in a new branch. The branch should be named  `XXX-description` where XXX is the number of the issue. PR should be rebased on top of master without multiple branches mixed into the PR. If your PR do not merge cleanly, use commands listed below to get it up to date.
 
 ```
-#vmware is the origin upstream
+#goharbor is the origin upstream
 
 cd $working_dir/kubernetes
-git fetch vmware
+git fetch goharbor
 git checkout master
-git rebase vmware/master
+git rebase goharbor/master
 ```
 
 Branch from the updated `master` branch:
@@ -225,11 +230,12 @@ To build code, please refer to [build](docs/compile_guide.md) guideline.
 
 ###  Keep sync with upstream
 
-Once your branch gets out of sync with the vmware/master branch, use the following commands to update:
+```
+Once your branch gets out of sync with the goharbor/master branch, use the following commands to update:
 ```
 git checkout my_feature
 git fetch -a
-git rebase vmware/master
+git rebase goharbor/master
 
 ```
 
@@ -237,10 +243,16 @@ Please don't use `git pull` instead of the above `fetch / rebase`. `git pull` do
 
 ### Commit
 
+As Harbor has integrated the [DCO (Developer Certificate of Origin)](https://probot.github.io/apps/dco/) check tool, contributors are required to sign-off that they adhere to those requirements by adding a `Signed-off-by` line to the commit messages. Git has even provided a `-s` command line option to append that automatically to your commit messages, please use it when you commit your changes.
+
+```bash
+$ git commit -s -m 'This is my commit message'
+```
+
 Commit your changes if they're ready:
 ```
 #git add -A
-git commit #-a
+git commit -s #-a
 git push --force-with-lease $user my_feature
 ```
 
@@ -280,7 +292,7 @@ Commit changes made in response to review comments to the same branch on your fo
 
 It is a great way to contribute to Harbor by reporting an issue. Well-written and complete bug reports are always welcome! Please open an issue on Github and follow the template to fill in required information.
 
-Before opening any issue, please look up the existing [issues](https://github.com/vmware/harbor/issues) to avoid submitting a duplication.
+Before opening any issue, please look up the existing [issues](https://github.com/goharbor/harbor/issues) to avoid submitting a duplication.
 If you find a match, you can "subscribe" to it to get notified on updates. If you have additional helpful information about the issue, please leave a comment.
 
 When reporting issues, always include:
