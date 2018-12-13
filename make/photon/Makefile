@@ -17,7 +17,7 @@ WGET=$(shell which wget)
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build --pull
+DOCKERBUILD=$(DOCKERCMD) build --pull --build-arg=http_proxy=${http_proxy} --build-arg=https_proxy=${https_proxy}
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMASES=$(DOCKERCMD) images
 
