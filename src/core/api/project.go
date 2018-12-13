@@ -532,7 +532,6 @@ func validateProjectReq(req *models.ProjectRequest) error {
 		return fmt.Errorf("project name is not in lower case or contains illegal characters. Or project name is started with 'api'")
 	}
 
-
 	metas, err := validateProjectMetadata(req.Metadata)
 	if err != nil {
 		return err
