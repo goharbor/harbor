@@ -120,7 +120,8 @@
             "GROUP": "组管理",
             "REGISTRY": "仓库管理",
             "REPLICATION": "复制管理",
-            "CONFIG": "配置管理"
+            "CONFIG": "配置管理",
+            "DEVCENTER": "开发者中心"
         },
         "LOGS": "日志"
     },
