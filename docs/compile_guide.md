@@ -9,7 +9,7 @@ Harbor is deployed as several Docker containers and most of the code is written 
 
 Software              | Required Version
 ----------------------|--------------------------
-docker                | 1.12.0 +
+docker                | 17.05 +
 docker-compose        | 1.11.0 +
 python                | 2.7 +
 git                   | 1.9.1 +
