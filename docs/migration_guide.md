@@ -5,7 +5,7 @@ When upgrading your existing Habor instance to a newer version, you may need to 
 *If your install Harbor for the first time, or the database version is the same as that of the lastest version, you do not need any database migration.*
 
 **NOTE:**
-- Please use `goharbor/harbor-db-migrator:1.6.3` instead if you're performing migration, as the v1.6.3 includes a fix for issue https://github.com/goharbor/harbor/issues/6465.
+- Please use `goharbor/harbor-migrator:v1.6.3` instead if you're performing migration, as the v1.6.3 includes a fix for issue https://github.com/goharbor/harbor/issues/6465.
 
 - From v1.6.0 on, Harbor migrates DB from MariaDB to Postgresql, and combines Harbor, Notary and Clair DB into one. 
 
