@@ -73,8 +73,8 @@ class TestProjects(unittest.TestCase):
         #Note: Please make sure that this Image has never been pulled before by any other cases,
         #          so it is a not-scanned image rigth after rpository creation.
         #image = "tomcat"
-        image = "pypy"
-        src_tag = "latest"
+        image = "docker"
+        src_tag = "1.13"
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
         TestProjects.repo_name, tag = push_image_to_project(project_scan_image_name, harbor_server, user_scan_image_name, user_001_password, image, src_tag)
 
