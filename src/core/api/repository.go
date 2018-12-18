@@ -432,11 +432,22 @@ func (ra *RepositoryAPI) Retag() {
 	}
 
 	repoName := ra.GetString(":splat")
+	project, repo := utils.ParseRepository(repoName)
+	if !utils.ValidateRepo(repo) {
+		ra.HandleBadRequest(fmt.Sprintf("invalid repo '%s'", repo))
+		return
+	}
+
 	request := models.RetagRequest{}
 	ra.DecodeJSONReq(&request)
 	srcImage, err := models.ParseImage(request.SrcImage)
 	if err != nil {
 		ra.HandleBadRequest(fmt.Sprintf("invalid src image string '%s', should in format '<project>/<repo>:<tag>'", request.SrcImage))
+		return
+	}
+
+	if !utils.ValidateTag(request.Tag) {
+		ra.HandleBadRequest(fmt.Sprintf("invalid tag '%s'", request.Tag))
 		return
 	}
 
@@ -452,7 +463,6 @@ func (ra *RepositoryAPI) Retag() {
 	}
 
 	// Check whether target project exists
-	project, repo := utils.ParseRepository(repoName)
 	exist, err = ra.ProjectMgr.Exists(project)
 	if err != nil {
 		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s", project), err)
@@ -476,7 +486,7 @@ func (ra *RepositoryAPI) Retag() {
 		}
 	}
 
-	// Check whether use has read permission to source project
+	// Check whether user has read permission to source project
 	if !ra.SecurityCtx.HasReadPerm(srcImage.Project) {
 		log.Errorf("user has no read permission to project '%s'", srcImage.Project)
 		ra.HandleForbidden(fmt.Sprintf("%s has no read permission to project %s", ra.SecurityCtx.GetUsername(), srcImage.Project))
