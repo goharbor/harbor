@@ -89,7 +89,7 @@ class Repository(base.Base):
             raise Exception("Image should be <Not Scanned> state!")
 
     def check_image_scan_result(self, repo_name, tag, expected_scan_status = "finished", **kwargs):
-        timeout_count = 20
+        timeout_count = 30
         while True:
             time.sleep(5)
             timeout_count = timeout_count - 1
