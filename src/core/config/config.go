@@ -135,6 +135,7 @@ func initProjectManager() error {
 		}
 		AdmiralClient = &http.Client{
 			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
 				TLSClientConfig: &tls.Config{
 					RootCAs: pool,
 				},

@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
 	// "time"
 
 	commonhttp "github.com/goharbor/harbor/src/common/http"
@@ -39,11 +40,13 @@ func init() {
 	defaultHTTPTransport = &http.Transport{}
 
 	secureHTTPTransport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: false,
 		},
 	}
 	insecureHTTPTransport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},

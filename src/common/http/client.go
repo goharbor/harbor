@@ -39,7 +39,11 @@ func NewClient(c *http.Client, modifiers ...modifier.Modifier) *Client {
 		client: c,
 	}
 	if client.client == nil {
-		client.client = &http.Client{}
+		client.client = &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
+			},
+		}
 	}
 	if len(modifiers) > 0 {
 		client.modifiers = modifiers
