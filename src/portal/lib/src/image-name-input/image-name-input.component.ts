@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Project } from "../project-policy-config/project";
-import { Observable, Subject } from "rxjs/index";
+import { Subject } from "rxjs/index";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 import { ProjectService } from "../service/project.service";
 import { AbstractControl, FormBuilder, FormGroup, Validators } from "@angular/forms";
@@ -16,6 +16,9 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
     selectedProjectList: Project[] = [];
     proNameChecker: Subject<string> = new Subject<string>();
     imageNameForm: FormGroup;
+    public project: string;
+    public repo: string;
+    public tag: string;
 
     constructor(
         private fb: FormBuilder,
@@ -23,9 +26,20 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
         private proService: ProjectService,
     ) {
         this.imageNameForm = this.fb.group({
-            projectName: ["", Validators.required],
-            repoName: ["", Validators.required],
-            tagName: ["", Validators.required],
+            projectName: ["", Validators.compose([
+                Validators.minLength(2),
+                Validators.required,
+                Validators.pattern('^[a-z0-9]+(?:[._-][a-z0-9]+)*$')
+            ])],
+            repoName: ["", Validators.compose([
+                Validators.required,
+                Validators.maxLength(256),
+                Validators.pattern('^[a-z0-9]+(?:[._-][a-z0-9]+)*(/[a-z0-9]+(?:[._-][a-z0-9]+)*)*')
+            ])],
+            tagName: ["", Validators.compose([
+                Validators.required,
+                Validators.pattern('^[\\w][\\w.-]{0,127}$')
+            ])],
         });
     }
     ngOnInit(): void {
@@ -60,6 +74,23 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
             });
     }
 
+    validateProjectName(): void {
+        let cont = this.imageNameForm.controls["projectName"];
+        if (cont && cont.valid) {
+            this.proNameChecker.next(cont.value);
+        } else {
+            this.noProjectInfo = "PROJECT.NAME_TOOLTIP";
+        }
+    }
+
+    blurProjectInput(): void {
+        this.validateProjectName();
+    }
+
+    get form(): AbstractControl {
+        return this.imageNameForm;
+    }
+
     get projectName(): AbstractControl {
         return this.imageNameForm.get("projectName");
     }
@@ -76,19 +107,6 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
         if (this.proNameChecker) {
             this.proNameChecker.unsubscribe();
         }
-    }
-
-    validateProjectName(): void {
-        let cont = this.imageNameForm.controls["projectName"];
-        if (cont && cont.valid) {
-            this.proNameChecker.next(cont.value);
-        } else {
-            this.noProjectInfo = "PROJECT.NAME_TOOLTIP";
-        }
-    }
-
-    blurProjectInput(): void {
-        this.validateProjectName();
     }
 
     leaveProjectInput(): void {
