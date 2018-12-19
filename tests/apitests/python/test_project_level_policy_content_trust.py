@@ -10,8 +10,7 @@ from library.project import Project
 from library.user import User
 from library.repository import Repository
 from library.repository import push_image_to_project
-from library.repository import pull_harbor_image_successfully
-from library.repository import pull_harbor_image_unsuccessfully
+from library.repository import pull_harbor_image
 
 class TestProjects(unittest.TestCase):
     @classmethod
@@ -77,13 +76,13 @@ class TestProjects(unittest.TestCase):
         self.repo.image_should_exist(TestProjects.repo_name, tag, **TestProjects.USER_CONTENT_TRUST_CLIENT)
 
         #5. Pull image(IA) successfully;
-        pull_harbor_image_successfully(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag)
+        pull_harbor_image(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag)
 
         #6. Enable content trust in project(PA) configuration;
         self.project.update_project(TestProjects.project_content_trust_id, metadata = {"enable_content_trust": "true"}, **TestProjects.USER_CONTENT_TRUST_CLIENT)
 
         #7. Pull image(IA) failed and the reason is "The image is not signed in Notary".
-        pull_harbor_image_unsuccessfully(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag, "The image is not signed in Notary")
+        pull_harbor_image(harbor_server, admin_name, admin_password, TestProjects.repo_name, tag, expected_error_message = "The image is not signed in Notary")
 
 if __name__ == '__main__':
     unittest.main()

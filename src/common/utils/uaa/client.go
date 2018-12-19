@@ -41,7 +41,7 @@ const (
 	UsersURLSuffix = "/Users"
 )
 
-var uaaTransport = &http.Transport{}
+var uaaTransport = &http.Transport{Proxy: http.ProxyFromEnvironment}
 
 // Client provides funcs to interact with UAA.
 type Client interface {

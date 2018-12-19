@@ -21,10 +21,11 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
 	// "time"
 
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
-	registry_error "github.com/goharbor/harbor/src/common/utils/error"
 )
 
 // Registry holds information of a registry entity
@@ -39,11 +40,13 @@ func init() {
 	defaultHTTPTransport = &http.Transport{}
 
 	secureHTTPTransport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: false,
 		},
 	}
 	insecureHTTPTransport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
@@ -118,9 +121,9 @@ func (r *Registry) Catalog() ([]string, error) {
 				suffix = ""
 			}
 		} else {
-			return repos, &registry_error.HTTPError{
-				StatusCode: resp.StatusCode,
-				Detail:     string(b),
+			return repos, &commonhttp.Error{
+				Code:    resp.StatusCode,
+				Message: string(b),
 			}
 		}
 	}
@@ -149,8 +152,8 @@ func (r *Registry) Ping() error {
 		return err
 	}
 
-	return &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	return &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 }

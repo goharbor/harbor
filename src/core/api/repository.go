@@ -32,7 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/clair"
-	registry_error "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/common/utils/registry"
@@ -265,8 +264,8 @@ func (ra *RepositoryAPI) Delete() {
 		if err != nil {
 			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
 
-			if regErr, ok := err.(*registry_error.HTTPError); ok {
-				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+			if regErr, ok := err.(*commonhttp.Error); ok {
+				ra.CustomAbort(regErr.Code, regErr.Message)
 			}
 
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -312,12 +311,12 @@ func (ra *RepositoryAPI) Delete() {
 			return
 		}
 		if err = rc.DeleteTag(t); err != nil {
-			if regErr, ok := err.(*registry_error.HTTPError); ok {
-				if regErr.StatusCode == http.StatusNotFound {
+			if regErr, ok := err.(*commonhttp.Error); ok {
+				if regErr.Code == http.StatusNotFound {
 					continue
 				}
 				log.Errorf("failed to delete tag %s: %v", t, err)
-				ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+				ra.CustomAbort(regErr.Code, regErr.Message)
 			}
 			log.Errorf("error occurred while deleting tag %s:%s: %v", repoName, t, err)
 			ra.CustomAbort(http.StatusInternalServerError, "internal error")
@@ -751,8 +750,8 @@ func (ra *RepositoryAPI) GetManifests() {
 	if err != nil {
 		log.Errorf("error occurred while getting manifest of %s:%s: %v", repoName, tag, err)
 
-		if regErr, ok := err.(*registry_error.HTTPError); ok {
-			ra.CustomAbort(regErr.StatusCode, regErr.Detail)
+		if regErr, ok := err.(*commonhttp.Error); ok {
+			ra.CustomAbort(regErr.Code, regErr.Message)
 		}
 
 		ra.CustomAbort(http.StatusInternalServerError, "internal error")

@@ -119,7 +119,8 @@
             "GROUP": "Grupos",
             "REGISTRY": "Registros",
             "REPLICATION": "Replicações",
-            "CONFIG": "Configuração"
+            "CONFIG": "Configuração",
+            "DEVCENTER": "Developer Center"
         },
         "LOGS": "Logs"
     },
@@ -442,7 +443,7 @@
         "DELETION_TITLE_TAG": "Confirmar remoção de Tag",
         "DELETION_SUMMARY_TAG": "Você quer remover a Tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Tags assinadas não podem ser removidas",
-        "DELETION_SUMMARY_TAG_DENIED": "A tag deve ser removida do Notary antes de ser apagada.\nRemova do Notary com o seguinte comando:\n{{param}}",
+        "DELETION_SUMMARY_TAG_DENIED": "A tag deve ser removida do Notary antes de ser apagada.\nRemova do Notary com o seguinte comando:\n",
         "TAGS_NO_DELETE": "Remover é proibido em modo somente leitura.",
         "FILTER_FOR_REPOSITORIES": "Filtrar repositórios",
         "TAG": "Tag",

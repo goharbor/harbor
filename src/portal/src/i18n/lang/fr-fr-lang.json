@@ -107,7 +107,8 @@
             "USER": "Utilisateurs",
             "GROUP": "Groups",
             "REPLICATION": "Réplication",
-            "CONFIG": "Configuration"
+            "CONFIG": "Configuration",
+            "DEVCENTER": "Developer Center"
         },
         "LOGS": "Logs"
     },
@@ -422,7 +423,7 @@
         "DELETION_TITLE_TAG": "Confirmer la suppression du Tag",
         "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "Un tag signé ne peut être supprimé",
-        "DELETION_SUMMARY_TAG_DENIED": "La balise doit être supprimée du Résumé avant qu'elle ne puisse être supprimée. \nSupprimer du Résumé via cette commande: \n{{param}}",
+        "DELETION_SUMMARY_TAG_DENIED": "La balise doit être supprimée du Résumé avant qu'elle ne puisse être supprimée. \nSupprimer du Résumé via cette commande: \n",
         "TAGS_NO_DELETE": "Upload/Delete is prohibited in read only mode.",
         "FILTER_FOR_REPOSITORIES": "Filtrer les Dépôts",
         "TAG": "Tag",

@@ -30,8 +30,8 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
-	registry_error "github.com/goharbor/harbor/src/common/utils/error"
 )
 
 // Repository holds information of a repository entity
@@ -61,7 +61,7 @@ func NewRepository(name, endpoint string, client *http.Client) (*Repository, err
 
 func parseError(err error) error {
 	if urlErr, ok := err.(*url.Error); ok {
-		if regErr, ok := urlErr.Err.(*registry_error.HTTPError); ok {
+		if regErr, ok := urlErr.Err.(*commonhttp.Error); ok {
 			return regErr
 		}
 	}
@@ -109,9 +109,9 @@ func (r *Repository) ListTag() ([]string, error) {
 		return tags, nil
 	}
 
-	return tags, &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	return tags, &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 
 }
@@ -149,9 +149,9 @@ func (r *Repository) ManifestExist(reference string) (digest string, exist bool,
 		return
 	}
 
-	err = &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	err = &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 	return
 }
@@ -186,9 +186,9 @@ func (r *Repository) PullManifest(reference string, acceptMediaTypes []string) (
 		return
 	}
 
-	err = &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	err = &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 
 	return
@@ -221,9 +221,9 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 		return
 	}
 
-	err = &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	err = &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 
 	return
@@ -252,9 +252,9 @@ func (r *Repository) DeleteManifest(digest string) error {
 		return err
 	}
 
-	return &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	return &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 }
 
@@ -288,8 +288,8 @@ func (r *Repository) DeleteTag(tag string) error {
 	}
 
 	if !exist {
-		return &registry_error.HTTPError{
-			StatusCode: http.StatusNotFound,
+		return &commonhttp.Error{
+			Code: http.StatusNotFound,
 		}
 	}
 
@@ -323,9 +323,9 @@ func (r *Repository) BlobExist(digest string) (bool, error) {
 		return false, err
 	}
 
-	return false, &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	return false, &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 }
 
@@ -359,9 +359,9 @@ func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, er
 		return
 	}
 
-	err = &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	err = &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 
 	return
@@ -390,9 +390,9 @@ func (r *Repository) initiateBlobUpload(name string) (location, uploadUUID strin
 		return
 	}
 
-	err = &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	err = &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 
 	return
@@ -424,9 +424,9 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 		return err
 	}
 
-	return &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	return &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 }
 
@@ -462,9 +462,9 @@ func (r *Repository) DeleteBlob(digest string) error {
 		return err
 	}
 
-	return &registry_error.HTTPError{
-		StatusCode: resp.StatusCode,
-		Detail:     string(b),
+	return &commonhttp.Error{
+		Code:    resp.StatusCode,
+		Message: string(b),
 	}
 }
 

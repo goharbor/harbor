@@ -47,7 +47,7 @@ export class AboutDialogComponent implements OnInit {
 
     public get version(): string {
         let appConfig = this.appConfigService.getConfig();
-        return appConfig ? appConfig.harbor_version : "n/a";
+        return appConfig.harbor_version;
     }
 
     public open(): void {

@@ -34,7 +34,7 @@ type secretHandler struct {
 	secrets map[string]string
 }
 
-// NewSecretHandler creaters a new authentiation handler which adds
+// NewSecretHandler creates a new authentication handler which adds
 // basic authentication credentials to a request.
 func NewSecretHandler(secrets map[string]string) AuthenticationHandler {
 	return &secretHandler{

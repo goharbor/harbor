@@ -120,7 +120,8 @@
             "GROUP": "组管理",
             "REGISTRY": "仓库管理",
             "REPLICATION": "复制管理",
-            "CONFIG": "配置管理"
+            "CONFIG": "配置管理",
+            "DEVCENTER": "开发者中心"
         },
         "LOGS": "日志"
     },
@@ -442,7 +443,7 @@
         "DELETION_TITLE_TAG": "删除镜像标签确认",
         "DELETION_SUMMARY_TAG": "确认删除镜像标签 {{param}}?",
         "DELETION_TITLE_TAG_DENIED": "已签名的镜像不能被删除",
-        "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。\n请执行如下Notary命令删除:\n{{param}}",
+        "DELETION_SUMMARY_TAG_DENIED": "要删除此镜像标签必须首先从Notary中删除。\n请执行如下Notary命令删除:\n",
         "TAGS_NO_DELETE": "在只读模式下删除是被禁止的",
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "标签",
