@@ -1,10 +1,10 @@
 .clr-form {
+    margin-top:30px;
     width:100%;
 }
 
 .select-box {
     position: absolute;
-    width: 100%;
     height: auto;
     background-color: white;
     border: 1px solid rgba(0, 0, 0, .15);
@@ -12,6 +12,8 @@
     border-bottom-width: 2px;
     border-radius: 6px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, .2);
+    z-index:1;
+    width:100%;
 
     ul {
         li {
