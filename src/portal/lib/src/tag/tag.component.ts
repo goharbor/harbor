@@ -22,7 +22,7 @@ import {
   ElementRef, AfterViewInit
 } from "@angular/core";
 import {Subject, forkJoin} from "rxjs";
-import { debounceTime , distinctUntilChanged} from 'rxjs/operators';
+import { debounceTime , distinctUntilChanged, finalize} from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
 import { State, Comparator } from "@clr/angular";
 
@@ -97,7 +97,6 @@ export class TagComponent implements OnInit, AfterViewInit {
   digestId: string;
   staticBackdrop = true;
   closable = false;
-  retagDialogClosable = true;
   lastFilteredTagName: string;
   inprogress: boolean;
   openLabelFilterPanel: boolean;
@@ -587,14 +586,21 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   onRetag() {
-    this.retagDialogOpened = false;
     this.retagService.retag({
         targetProject: this.imageNameInput.projectName.value,
         targetRepo: this.imageNameInput.repoName.value,
         targetTag: this.imageNameInput.tagName.value,
         srcImage: this.retagSrcImage,
         override: true
-     }).subscribe(response => {
+     })
+     .pipe(finalize(() => {
+        this.retagDialogOpened = false;
+        this.imageNameInput.form.reset();
+     }))
+     .subscribe(response => {
+      this.translateService.get('RETAG.MSG_SUCCESS').subscribe((res: string) => {
+        this.errorHandler.info(res);
+      });
     }, error => {
         this.errorHandler.error(error);
     });

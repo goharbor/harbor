@@ -11,7 +11,7 @@
     <button type="button" class="btn btn-primary" [ngxClipboard]="digestTarget" (cbOnSuccess)="onSuccess($event)" (cbOnError)="onError($event)">{{'BUTTON.COPY' | translate}}</button>
   </div>
 </clr-modal>
-<clr-modal class="hidden-tag" [(clrModalOpen)]="retagDialogOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="retagDialogClosable">
+<clr-modal class="hidden-tag" [(clrModalOpen)]="retagDialogOpened" [clrModalStaticBackdrop]="staticBackdrop">
     <h3 class="modal-title">{{ 'REPOSITORY.RETAG' | translate }}</h3>
     <div class="modal-body retag-modal-body">
         <div class="row col-md-12">
