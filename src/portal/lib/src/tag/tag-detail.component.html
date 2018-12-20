@@ -25,6 +25,10 @@
                             <div class="image-details" [title]="tagDetails.os">{{tagDetails.os}}</div>
                         </section>
                         <section class="detail-row">
+                            <label class="detail-label">{{'TAG.OS_VERSION' | translate }}</label>
+                            <div class="image-details" [title]="tagDetails['os.version']">{{tagDetails['os.version']}}</div>
+                        </section>
+                        <section class="detail-row">
                             <label class="detail-label">{{'TAG.DOCKER_VERSION' | translate }}</label>
                             <div class="image-details" [title]="tagDetails.docker_version">{{tagDetails.docker_version}}</div>
                         </section>

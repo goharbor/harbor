@@ -71,6 +71,7 @@ describe("TagDetailComponent (inline template)", () => {
     size: "2049",
     architecture: "amd64",
     os: "linux",
+    'os.version': "",
     docker_version: "1.12.3",
     author: "steven",
     created: new Date("2016-11-08T22:41:15.912313785Z"),
