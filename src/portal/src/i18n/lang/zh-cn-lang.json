@@ -190,7 +190,8 @@
         "LOGS": "日志",
         "LABELS": "标签",
         "PROJECTS": "项目",
-        "CONFIG": "配置管理"
+        "CONFIG": "配置管理",
+        "HELMCHART": "Helm Charts"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "项目仓库",
