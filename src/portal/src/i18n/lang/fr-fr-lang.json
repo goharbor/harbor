@@ -715,6 +715,7 @@
         "DOCKER_VERSION": "Version de Docker",
         "ARCHITECTURE": "Architecture",
         "OS": "OS",
+        "OS_VERSION": "Version de OS",
         "HAVE": "have",
         "HAS": "has",
         "SCAN_COMPLETION_TIME": "Analyse Terminée",

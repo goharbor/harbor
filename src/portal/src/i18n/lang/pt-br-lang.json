@@ -454,6 +454,7 @@
         "DOCKER_VERSION": "Versão do Docker",
         "ARCHITECTURE": "Arquitetura",
         "OS": "SO",
+        "OS_VERSION": "Versão do SO",
         "SHOW_DETAILS": "Exibir detalhes",
         "REPOSITORIES": "Repositórios",
         "OF": "de",
