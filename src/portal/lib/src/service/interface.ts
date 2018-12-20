@@ -55,6 +55,7 @@ export interface Tag extends Base {
   size: string;
   architecture: string;
   os: string;
+  'os.version': string;
   docker_version: string;
   author: string;
   created: Date;

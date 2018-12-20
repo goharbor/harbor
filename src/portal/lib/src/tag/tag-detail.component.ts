@@ -41,6 +41,7 @@ export class TagDetailComponent implements OnInit {
     created: new Date(),
     architecture: "--",
     os: "--",
+    'os.version': "--",
     docker_version: "--",
     digest: "--",
     labels: []

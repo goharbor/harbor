@@ -750,6 +750,7 @@
         "DOCKER_VERSION": "Docker版本",
         "ARCHITECTURE": "架构",
         "OS": "操作系统",
+        "OS_VERSION": "操作系统版本",
         "HAVE": "存在",
         "HAS": "存在",
         "SCAN_COMPLETION_TIME": "扫描完成时间",
