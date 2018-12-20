@@ -192,7 +192,8 @@
         "LOGS": "Logs",
         "LABELS": "Labels",
         "PROJECTS": "Proyectos",
-        "CONFIG": "Configuración"
+        "CONFIG": "Configuración",
+        "HELMCHART": "Helm Charts"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Registro de proyectos",
