@@ -753,6 +753,7 @@
         "DOCKER_VERSION": "Docker Version",
         "ARCHITECTURE": "Architecture",
         "OS": "OS",
+        "OS_VERSION": "OS Version",
         "HAVE": "have",
         "HAS": "has",
         "SCAN_COMPLETION_TIME": "Scan Completed",

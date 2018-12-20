@@ -82,6 +82,7 @@ type tagDetail struct {
 	Size          int64     `json:"size"`
 	Architecture  string    `json:"architecture"`
 	OS            string    `json:"os"`
+	OSVersion     string    `json:"os.version"`
 	DockerVersion string    `json:"docker_version"`
 	Author        string    `json:"author"`
 	Created       time.Time `json:"created"`
