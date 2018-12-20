@@ -69,7 +69,7 @@
         "RULE_USER_EXISTING": "Name is already in use.",
         "EMPTY": "Name is required",
         "NONEMPTY": "Can't be empty",
-        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
+        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
