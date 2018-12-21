@@ -12,3 +12,4 @@ ${target_image_name}  target-alpine
 ${target_tag_value}  3.2.10-target
 ${tag_value_xpath}  //clr-dg-row[contains(.,'${target_tag_value}')]
 ${image_tag}  3.2.10-alpine
+${modal-dialog}  div.modal-dialog
