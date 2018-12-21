@@ -184,7 +184,7 @@ _build_notary:
 _build_registry:
 	@if [ "$(BUILDBIN)" != "true" ] ; then \
 		rm -rf $(DOCKERFILEPATH_REG)/binary && mkdir -p $(DOCKERFILEPATH_REG)/binary && \
-		$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/registry, $(DOCKERFILEPATH_REG)/binary/registry); \
+		$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/registry/release-$(REGISTRYVERSION)/registry, $(DOCKERFILEPATH_REG)/binary/registry); \
 	else \
 		cd $(DOCKERFILEPATH_REG) && $(DOCKERFILEPATH_REG)/builder $(REGISTRYVERSION) && cd - ; \
 	fi
