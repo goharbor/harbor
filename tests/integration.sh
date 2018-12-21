@@ -57,6 +57,7 @@ fi
 
 # GC credentials
 keyfile="/root/harbor-ci-logs.key"
+keyJson="/root/harbor-ci-logs.json"
 botofile="/root/.boto"
 echo -en $GS_PRIVATE_KEY > $keyfile
 chmod 400 $keyfile
@@ -68,6 +69,8 @@ echo "content_language = en" >> $botofile
 echo "default_project_id = $GS_PROJECT_ID" >> $botofile
 container_ip=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
 echo $container_ip
+
+echo $gs_token_key > $keyJson
 
 ## --------------------------------------------- Init Version -----------------------------------------------
 buildinfo=$(drone build info goharbor/harbor $DRONE_BUILD_NUMBER)
@@ -120,9 +123,10 @@ function publishImage {
     echo "Publishing images to Docker Hub..."
     echo "The images on the host:"
     docker images
-    docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+    docker login -u _json_key -p "$(cat $keyJson)" https://gcr.io
     # rename the images with tag "dev" and push to Docker Hub
-    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:dev;docker push \1:dev|p" | bash
+    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 gcr.io/eminent-nation-87317/\1:dev;docker push gcr.io/eminent-nation-87317/\1:dev|p" | bash
+    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 gcr.io/eminent-nation-87317/\1:$git_commit;docker push gcr.io/eminent-nation-87317/\1:$git_commit|p" | bash
     echo "Images are published successfully"
     docker images
 }
