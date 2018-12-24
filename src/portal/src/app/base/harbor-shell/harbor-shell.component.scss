@@ -24,6 +24,29 @@
 .nav-link-override {
     width: 126px !important;
 }
-:host >>> .clr-vertical-nav .nav-trigger+.nav-content{
-    padding-top: 0;
+
+clr-vertical-nav {
+    ::ng-deep {
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+        }
+    }
+    .vertical-nav-footer {
+        margin: 15px 20px;
+        a {
+            display: inline-block;
+            line-height: 0;
+            padding: 0;
+            height: 24px;
+            &:hover {
+                background: transparent;
+                cursor: default;
+            }
+            .api-button {
+                margin: 0;
+            }
+        }
+	}
 }
+
