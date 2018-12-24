@@ -107,10 +107,10 @@
             "USER": "Utilisateurs",
             "GROUP": "Groups",
             "REPLICATION": "Réplication",
-            "CONFIG": "Configuration",
-            "DEVCENTER": "Developer Center"
+            "CONFIG": "Configuration"
         },
-        "LOGS": "Logs"
+        "LOGS": "Logs",
+        "API_EXPLORER": "API EXPLORER"
     },
     "USER": {
         "ADD_ACTION": "UTILISATEUR",

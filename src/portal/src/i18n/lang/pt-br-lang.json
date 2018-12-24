@@ -119,10 +119,10 @@
             "GROUP": "Grupos",
             "REGISTRY": "Registros",
             "REPLICATION": "Replicações",
-            "CONFIG": "Configuração",
-            "DEVCENTER": "Developer Center"
+            "CONFIG": "Configuração"
         },
-        "LOGS": "Logs"
+        "LOGS": "Logs",
+        "API_EXPLORER": "API EXPLORER"
     },
     "USER": {
         "ADD_ACTION": "Novo Usuário",
