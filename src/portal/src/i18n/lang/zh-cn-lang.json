@@ -121,10 +121,10 @@
             "GROUP": "组管理",
             "REGISTRY": "仓库管理",
             "REPLICATION": "复制管理",
-            "CONFIG": "配置管理",
-            "DEVCENTER": "开发者中心"
+            "CONFIG": "配置管理"
         },
-        "LOGS": "日志"
+        "LOGS": "日志",
+        "API_EXPLORER": "API控制中心"
     },
     "USER": {
         "ADD_ACTION": "创建用户",
