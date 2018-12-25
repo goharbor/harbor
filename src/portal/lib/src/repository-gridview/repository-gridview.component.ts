@@ -51,6 +51,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     @Input() urlPrefix: string;
     @Input() hasSignedIn: boolean;
     @Input() hasProjectAdminRole: boolean;
+    @Input() hasCAFile: boolean = false;
     @Input() mode = "admiral";
     @Output() repoClickEvent = new EventEmitter<RepositoryItem>();
     @Output() repoProvisionEvent = new EventEmitter<RepositoryItem>();
@@ -116,6 +117,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
     public get showDBStatusWarning(): boolean {
         return this.withClair && !this.isClairDBReady;
+    }
+
+    get canDownloadCert(): boolean {
+        return this.hasCAFile;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
