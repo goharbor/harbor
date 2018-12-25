@@ -32,8 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
 	jmodel "github.com/goharbor/harbor/src/jobservice/models"
-	"github.com/goharbor/harbor/src/jobservice/logger/sweeper"
-	jmodel "github.com/goharbor/harbor/src/jobservice/models"
 )
 
 const (

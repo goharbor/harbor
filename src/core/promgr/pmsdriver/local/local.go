@@ -133,7 +133,7 @@ func (d *driver) Update(projectIDOrName interface{},
 		Usage: project.Usage,
 	}
 
-	log.Debugf("update project %s: quota %d usage %d", project.Name, project.Quota, project.Usage)
+	log.Debugf("update project %s: quota %d usage %.2f", project.Name, project.Quota, project.Usage)
 	err := dao.UpdateProject(pro)
 	if err != nil {
 		log.Errorf("failed to match duplicate project pattern: %v", err)
