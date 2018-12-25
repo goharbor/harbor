@@ -33,7 +33,7 @@ Test Case - Vulnerability Data Not Ready
 #This case must run before vulnerability db ready
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
+    Go Into Project  library  has_image=${false}
     Vulnerability Not Ready Project Hint
     Switch To Configure
     Go To Vulnerability Config
@@ -215,7 +215,7 @@ Test Case - Project Level Policy Public
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Goto Project Config
     Click Project Public
     Save Project Config
@@ -348,7 +348,7 @@ TestCase - Project Admin Operate Labels
     ${d}=   Get Current Date    result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=test${d}  email=test${d}@vmware.com  realname=test${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
 
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Sleep  2
     # Add labels
     Switch To Project Label
@@ -391,11 +391,11 @@ TestCase - Developer Operate Labels
     Create An New User  url=${HARBOR_URL}  username=bob${d}  email=bob${d}@vmware.com  realname=bob${d}  newPassword=Test1@34  comment=habor
     Logout Harbor
 
-    Manage Project Member  test${d}  Test1@34  project${d}  bob${d}  Add
+    Manage Project Member  test${d}  Test1@34  project${d}  bob${d}  Add  has_image=${false}
     Change User Role In Project  test${d}  Test1@34  project${d}  bob${d}  Developer
 
     Sign In Harbor  ${HARBOR_URL}  bob${d}  Test1@34
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Sleep  3
     Page Should Not Contain Element  xpath=//a[contains(.,'Labels')]
     Close Browser
@@ -613,7 +613,7 @@ Test Case - Delete Multi Member
     Logout Harbor
     Create An New User  ${HARBOR_URL}  test${d}  test${d}@vmware.com  test${d}  Test1@34  harbor
     Create An New Project  project${d}
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Switch To Member
     Add Guest Member to project  testa${d}
     Add Guest Member to project  testb${d}
