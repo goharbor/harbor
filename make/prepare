@@ -4,6 +4,7 @@ from __future__ import print_function, unicode_literals # We require Python 2.6 
 from string import Template
 import random
 import os
+from fnmatch import fnmatch
 import sys
 import string
 import argparse
@@ -26,6 +27,8 @@ DEFAULT_GID = 10000
 base_dir = os.path.dirname(__file__)
 config_dir = os.path.join(base_dir, "common/config")
 templates_dir = os.path.join(base_dir, "common/templates")
+
+custom_nginx_location_file_pattern = 'harbor.https.*.conf'
 
 def validate(conf, args):
 
@@ -308,8 +311,28 @@ if protocol == "https":
             ssl_cert = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_path)),
             ssl_cert_key = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_key_path)))
 else:
-    render(os.path.join(templates_dir, "nginx", "nginx.http.conf"),
-        nginx_conf)
+    render(os.path.join(templates_dir, "nginx", "nginx.http.conf"), nginx_conf)
+    custom_nginx_location_file_pattern = 'harbor.http.*.conf'
+
+def add_additional_location_config(src, dst):
+    """
+    This conf file is used for user that wanna add additional customized locations to harbor proxy
+    :params src: source of the file
+    :params dst: destination file path
+    """
+    if not os.path.isfile(src):
+        return
+    print("Copying nginx configuration file {src} to {dst}".format(src=src, dst=dst))
+    shutil.copy2(src, dst)
+    mark_file(dst)
+
+nginx_template_ext_dir = os.path.join(templates_dir, 'nginx', 'ext')
+if os.path.exists(nginx_template_ext_dir):
+    map(lambda filename: add_additional_location_config(
+        os.path.join(nginx_template_ext_dir, filename),
+        os.path.join(nginx_conf_d, filename)),
+    [fname for fname in os.listdir(nginx_template_ext_dir) if fnmatch(fname, custom_nginx_location_file_pattern)])
+
 #Use reload_key to avoid reload config after restart harbor
 reload_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6)) if reload_config == "true" else ""
 
