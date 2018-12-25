@@ -23,19 +23,15 @@ ${HARBOR_VERSION}  v1.1.1
 Sign In Harbor
     [Arguments]  ${url}  ${user}  ${pw}
     Go To    ${url}
-    Sleep  5
-    ${title}=  Get Title
-    Log To Console  ${title}
-    Run Keyword If  "${title}" != "Harbor"  Capture Screenshot And Source  ELSE  Log  The title is Harbor
-    Should Be Equal  ${title}  Harbor
-    Sleep  2
-    Input Text  login_username  ${user}
-    Input Text  login_password  ${pw}
-    Sleep  2
-    Click button  css=.btn
-    sleep  5
+    Wait Until Element Is Enabled  ${harbor_span_title}
+    Wait Until Element Is Visible  ${login_name}
+    Wait Until Element Is Visible  ${login_pwd}
+    Input Text  ${login_name}  ${user}
+    Input Text  ${login_pwd}  ${pw}
+    Wait Until Element Is Visible  ${login_btn}
+    Click button  ${login_btn}
     Log To Console  ${user}
-    Wait Until Page Contains  ${user}
+    Wait Until Element Is Visible  xpath=//span[contains(., '${user}')]
 
 Capture Screenshot And Source
     Capture Page Screenshot
@@ -47,34 +43,28 @@ Sign Up Should Not Display
 Create An New User
     [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}
     Go To    ${url}
-    sleep  5
-    ${title}=  Get Title
-    Log To Console  ${title}
-    Should Be Equal  ${title}  Harbor
-    ${d}=    Get Current Date    result_format=%m%s
-    Sleep  5
+    Wait Until Element Is Visible  ${harbor_span_title}
+    Wait Until Element Is Visible  xpath=${sign_up_for_an_account_xpath}
     Click Element  xpath=${sign_up_for_an_account_xpath}
-    sleep  3
+    Wait Until Element Is Visible  xpath=${username_xpath}
     Input Text  xpath=${username_xpath}  ${username}
-    sleep  1
+    Wait Until Element Is Visible  xpath=${email_xpath}
     Input Text  xpath=${email_xpath}  ${email}
-    sleep  1
+    Wait Until Element Is Visible  xpath=${realname_xpath}
     Input Text  xpath=${realname_xpath}  ${realname}
-    sleep  1
+    Wait Until Element Is Visible  xpath=${newPassword_xpath}
     Input Text  xpath=${newPassword_xpath}  ${newPassword}
-    sleep  1
+    Wait Until Element Is Visible  xpath=${confirmPassword_xpath}
     Input Text  xpath=${confirmPassword_xpath}  ${newPassword}
-    sleep  1
+    Wait Until Element Is Visible  xpath=${comment_xpath}
     Input Text  xpath=${comment_xpath}  ${comment}
-    sleep  2
+    Wait Until Element Is Visible  xpath=${signup_xpath}
     Click button  xpath=${signup_xpath}
-    sleep  5
-    Input Text  login_username  ${username}
-    Input Text  login_password  ${newPassword}
-    sleep  2
-    Click button  css=.btn
-    sleep  5
-    Wait Until Page Contains  ${username}
-    Sleep  3
-
-
+    Sleep  2
+    Wait Until Element Is Visible  ${login_name}
+    Input Text  ${login_name}  ${username}
+    Wait Until Element Is Visible  ${login_pwd}
+    Input Text  ${login_pwd}  ${newPassword}
+    Wait Until Element Is Visible  ${login_btn}
+    Click button  ${login_btn}
+    Wait Until Element Is Visible  xpath=//span[contains(., '${username}')]
