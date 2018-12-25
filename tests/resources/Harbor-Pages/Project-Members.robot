@@ -21,15 +21,14 @@ ${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Go Into Project
-    [Arguments]  ${project}
-    Sleep  2
-    Click Element  xpath=//*[@id="search_input"]
-    Sleep  2
-    Input Text  xpath=//*[@id="search_input"]  ${project}
-    Sleep  8
+    [Arguments]  ${project}  ${has_image}=${true}
+    Wait Until Element Is Visible  ${search_input}
+    Input Text  ${search_input}  ${project}
     Wait Until Page Contains  ${project}
-    Click Element  xpath=//*[@id="project-results"]//clr-dg-cell[contains(.,"${project}")]/a
-    Sleep  2
+    Wait Until Element Is Visible  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
+    Click Element  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
+    Run Keyword If  ${has_image}==${false}  Wait Until Element Is Visible  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
+    ...  ELSE  Wait Until Element Is Visible  xpath=//clr-dg-cell[contains(.,'${project}/')]
     Capture Page Screenshot  gointo_${project}.png
 
 Add User To Project Admin
@@ -131,9 +130,9 @@ User Should Not Be A Member Of Project
     Cannot Push image  ${ip}  ${user}  ${pwd}  ${project}  ${ip}/${project}/hello-world
 
 Manage Project Member
-    [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${op}
+    [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${op}  ${has_image}=${true}
     Sign In Harbor  ${HARBOR_URL}  ${admin}  ${pwd}
-    Go Into Project  ${project}
+    Go Into Project  ${project}  ${has_image}
     Switch To Member
     Run Keyword If  '${op}' == 'Add'  Add Guest Member To Project  ${user}
     ...    ELSE IF  '${op}' == 'Remove'  Delete Project Member  ${user}

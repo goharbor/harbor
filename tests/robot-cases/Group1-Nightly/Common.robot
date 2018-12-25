@@ -32,7 +32,7 @@ Test Case - Vulnerability Data Not Ready
 #This case must run before vulnerability db ready
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
+    Go Into Project  library  has_image=${false}
     Vulnerability Not Ready Project Hint
     Switch To Configure
     Go To Vulnerability Config
@@ -164,7 +164,7 @@ Test Case - Project Level Policy Public
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Goto Project Config
     Click Project Public
     Save Project Config
@@ -477,7 +477,7 @@ Test Case - Delete Multi Member
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user016  Test1@34    
     Create An New Project  project${d}
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Switch To Member
     Add Guest Member To Project  user017
     Add Guest Member To Project  user018
@@ -490,7 +490,7 @@ Test Case - Project Admin Operate Labels
     ${d}=   Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  user019  Test1@34
     Create An New Project  project${d}
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Sleep  2
     # Add labels
     Switch To Project Label
@@ -531,11 +531,11 @@ Test Case - Developer Operate Labels
     Create An New Project  project${d}
     Logout Harbor
     
-    Manage Project Member  user021  Test1@34  project${d}  user022  Add
+    Manage Project Member  user021  Test1@34  project${d}  user022  Add  ${false}
     Change User Role In Project  user021  Test1@34  project${d}  user022  Developer
 
     Sign In Harbor  ${HARBOR_URL}  user022  Test1@34
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Sleep  3
     Page Should Not Contain Element  xpath=//a[contains(.,'Labels')]
     Close Browser
@@ -546,9 +546,9 @@ Test Case - Scan A Tag In The Repo
 
     Sign In Harbor  ${HARBOR_URL}  user023  Test1@34
     Create An New Project  project${d}
-
-    Go Into Project  project${d}    
+    Go Into Project  project${d}  has_image=${false}    
     Push Image  ${ip}  user023  Test1@34  project${d}  hello-world
+    Sleep  5
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
     Scan Repo  latest  Succeed
@@ -641,7 +641,7 @@ Test Case - List Helm Charts
 
     Sign In Harbor  ${HARBOR_URL}  user027  Test1@34
     Create An New Project  project${d}
-    Go Into Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
     Sleep  2
     
     Switch To Project Charts
@@ -706,7 +706,7 @@ Test Case - Retag A Image Tag
     Create An New Project  project${random_num1}
     Create An New Project  project${random_num2}
     
-    Go Into Project  project${random_num1}
+    Go Into Project  project${random_num1}  has_image=${false}
     Sleep  1
     Push Image With Tag  ${ip}  user028  Test1@34  project${random_num1}  redis  ${image_tag}
     Sleep  1
