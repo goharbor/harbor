@@ -4,7 +4,8 @@
         "HARBOR": "Harbor",
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Gerência",
-        "REG": "Registro"
+        "REG": "Registro",
+        "HARBOR_SWAGGER": "Harbor Swagger"
     },
     "SIGN_IN": {
         "REMEMBER": "Lembrar-se de mim",
