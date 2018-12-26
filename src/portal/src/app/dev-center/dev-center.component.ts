@@ -2,19 +2,37 @@ import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
 import { Http } from '@angular/http';
 import { throwError as observableThrowError, Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { Title } from '@angular/platform-browser';
+import { TranslateService } from '@ngx-translate/core';
 
 
 const SwaggerUI = require('swagger-ui');
 @Component({
   selector: 'dev-center',
   templateUrl: 'dev-center.component.html',
+  viewProviders: [Title],
   styleUrls: ['dev-center.component.scss']
 })
-export class DevCenterComponent implements AfterViewInit {
+export class DevCenterComponent implements AfterViewInit, OnInit {
   private ui: any;
   private host: any;
   private json: any;
-  constructor(private el: ElementRef, private http: Http) {
+  constructor(
+    private el: ElementRef,
+    private http: Http,
+    private translate: TranslateService,
+    private titleService: Title) {
+  }
+
+  ngOnInit() {
+    this.setTitle("APP_TITLE.HARBOR_SWAGGER");
+  }
+
+
+  public setTitle( key: string) {
+    this.translate.get(key).subscribe((res: string) => {
+      this.titleService.setTitle(res);
+  });
   }
 
   ngAfterViewInit() {
