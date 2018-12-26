@@ -8,7 +8,8 @@ import {
     ChangeDetectorRef,
     EventEmitter,
     OnChanges,
-    SimpleChanges
+    SimpleChanges,
+    Inject
 } from "@angular/core";
 import { Router } from "@angular/router";
 import { forkJoin } from "rxjs";
@@ -35,7 +36,7 @@ import {Tag} from '../service/interface';
 import {GridViewComponent} from '../gridview/grid-view.component';
 import {OperationService} from "../operation/operation.service";
 import {OperateInfo, OperationState, operateChanges} from "../operation/operate";
-import { downloadUrl } from '../service.config';
+import {SERVICE_CONFIG, IServiceConfig, downloadUrl } from '../service.config';
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
@@ -50,6 +51,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     @Input() urlPrefix: string;
     @Input() hasSignedIn: boolean;
     @Input() hasProjectAdminRole: boolean;
+    @Input() hasCAFile: boolean = false;
     @Input() mode = "admiral";
     @Output() repoClickEvent = new EventEmitter<RepositoryItem>();
     @Output() repoProvisionEvent = new EventEmitter<RepositoryItem>();
@@ -79,7 +81,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
     @ViewChild("gridView") gridView: GridViewComponent;
 
-    constructor(private errorHandler: ErrorHandler,
+    constructor(@Inject(SERVICE_CONFIG) private configInfo: IServiceConfig,
+                private errorHandler: ErrorHandler,
                 private translateService: TranslateService,
                 private repositoryService: RepositoryService,
                 private systemInfoService: SystemInfoService,
@@ -87,6 +90,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 private operationService: OperationService,
                 private ref: ChangeDetectorRef,
                 private router: Router) {
+                    if (this.configInfo && this.configInfo.systemInfoEndpoint) {
+                        this.downloadLink = this.configInfo.systemInfoEndpoint + "/getcert";
+                    }
     }
 
     public get registryUrl(): string {
@@ -111,6 +117,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
     public get showDBStatusWarning(): boolean {
         return this.withClair && !this.isClairDBReady;
+    }
+
+    get canDownloadCert(): boolean {
+        return this.hasCAFile;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
