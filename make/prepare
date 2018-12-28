@@ -324,7 +324,7 @@ def add_additional_location_config(src, dst):
         return
     print("Copying nginx configuration file {src} to {dst}".format(src=src, dst=dst))
     shutil.copy2(src, dst)
-    mark_file(dst)
+    mark_file(dst, mode=0o644)
 
 nginx_template_ext_dir = os.path.join(templates_dir, 'nginx', 'ext')
 if os.path.exists(nginx_template_ext_dir):
