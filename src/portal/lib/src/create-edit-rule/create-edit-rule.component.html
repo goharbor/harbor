@@ -140,13 +140,13 @@
           </div>
           <div [hidden]="!isImmediate" class="clr-form-control rule-width">
             <clr-checkbox-wrapper>
-              <input type="checkbox" [checked]="false" id="ruleDeletion" formControlName="replicate_deletion" class="clr-checkbox">
+              <input type="checkbox" clrCheckbox [checked]="false" id="ruleDeletion" formControlName="replicate_deletion" class="clr-checkbox">
               <label for="ruleDeletion" class="clr-control-label">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
             </clr-checkbox-wrapper>
           </div>
           <div class="clr-form-control rule-width">
             <clr-checkbox-wrapper>
-              <input type="checkbox" [checked]="true" id="ruleExit" formControlName="replicate_existing_image_now"
+              <input type="checkbox" clrCheckbox [checked]="true" id="ruleExit" formControlName="replicate_existing_image_now"
                 class="clr-checkbox">
               <label for="ruleExit" class="clr-control-label">{{'REPLICATION.REPLICATE_IMMEDIATE' | translate}}</label>
             </clr-checkbox-wrapper>

@@ -239,13 +239,14 @@ hbr-image-name-input {
   width: 160px;
 }
 
-.flex-width {
-  min-width: 100px;
-  max-width: 220px;
-}
-
-.flex-min-width {
-  min-width: 130px;
+.datagrid-top {
+  .flex-width {
+    min-width: 100px;
+    max-width: 220px;
+  }
+  .flex-min-width {
+    min-width: 130px;
+  }
 }
 
 .color-green {
