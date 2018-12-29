@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import { NgForm } from '@angular/forms';
 import { TranslateService } from "@ngx-translate/core";
-import { State } from "@clr/angular";
+import { State } from "../service/interface";
 import { forkJoin, throwError, Observable } from "rxjs";
 import { finalize, map, catchError } from "rxjs/operators";
 import { SystemInfo, SystemInfoService, HelmChartItem } from "../service/index";

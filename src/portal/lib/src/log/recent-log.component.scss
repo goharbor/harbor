@@ -5,10 +5,13 @@
 .action-head-pos {
     padding-right: 18px;
     height: 24px;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .refresh-btn {
     cursor: pointer;
+    margin-top: 7px;
 }
 
 .refresh-btn:hover {

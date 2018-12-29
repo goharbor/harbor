@@ -13,7 +13,7 @@
 // limitations under the License.
 import { NgForm } from '@angular/forms';
 import {RequestOptions, Headers, Response} from "@angular/http";
-import { Comparator, State } from '@clr/angular';
+import { Comparator, State } from '../../../lib/src/service/interface';
 import {RequestQueryParams} from "@harbor/ui";
 
 import { MessageService } from '../global-message/message.service';

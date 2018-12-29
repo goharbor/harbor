@@ -55,48 +55,36 @@
                     <tr>
                         <td class="left cmd-title">{{'HELM_CHART.ADD_REPO' | translate }}</td>
                         <td class="left cmd-content">
-                            <input class="cmd-content" type="text"
-                            [(ngModel)]="addCMD" #addCMDInput readonly/>
+                            <input class="cmd-content" type="text" [(ngModel)]="addCMD" #addCMDInput readonly />
                         </td>
                         <td class="left">
                             <span>
-                                <clr-icon shape="copy" size="24"
-                                [class.is-success]="isCopied('add')"
-                                [ngxClipboard]="addCMDInput"
-                                (cbOnSuccess)="onCopySuccess($event, 'add')"
-                                ></clr-icon>
+                                <clr-icon shape="copy" size="24" [class.is-success]="isCopied('add')" [ngxClipboard]="addCMDInput"
+                                    (cbOnSuccess)="onCopySuccess($event, 'add')"></clr-icon>
                             </span>
                         </td>
                     </tr>
                     <tr>
                         <td class="left cmd-title">{{'HELM_CHART.INSTALL_CHART' | translate }}</td>
                         <td class="left">
-                            <input class="cmd-content" type="text"
-                            [(ngModel)]="installCMD" #installCMDInput readonly/>
+                            <input class="cmd-content" type="text" [(ngModel)]="installCMD" #installCMDInput readonly />
                         </td>
                         <td class="left">
                             <span>
-                                <clr-icon shape="copy" size="24"
-                                [class.is-success]="isCopied('install')"
-                                [ngxClipboard]="installCMDInput"
-                                (cbOnSuccess)="onCopySuccess($event, 'install')"
-                                ></clr-icon>
+                                <clr-icon shape="copy" size="24" [class.is-success]="isCopied('install')"
+                                    [ngxClipboard]="installCMDInput" (cbOnSuccess)="onCopySuccess($event, 'install')"></clr-icon>
                             </span>
                         </td>
                     </tr>
                     <tr *ngIf="prov_ready">
                         <td class="left cmd-title">{{'HELM_CHART.VERIFY_CHART' | translate }}</td>
                         <td class="left">
-                            <input class="cmd-content" type="text"
-                            [(ngModel)]="verifyCMD" #verifyCMDInput readonly/>
+                            <input class="cmd-content" type="text" [(ngModel)]="verifyCMD" #verifyCMDInput readonly />
                         </td>
                         <td class="left">
                             <span>
-                                <clr-icon shape="copy" size="24"
-                                [class.is-success]="isCopied('verify')"
-                                [ngxClipboard]="verifyCMDInput"
-                                (cbOnSuccess)="onCopySuccess($event, 'verify')"
-                                ></clr-icon>
+                                <clr-icon shape="copy" size="24" [class.is-success]="isCopied('verify')" [ngxClipboard]="verifyCMDInput"
+                                    (cbOnSuccess)="onCopySuccess($event, 'verify')"></clr-icon>
                             </span>
                         </td>
                     </tr>
@@ -117,7 +105,8 @@
                             <td class="left">
                                 <span class="content-icon">
                                     <clr-icon shape="shield-check" class="is-success"></clr-icon>
-                                </span>&nbsp;<a href="javascript:void(0)" (click)="downloadChart()">{{'HELM_CHART.READY' | translate }}</a>
+                                </span>&nbsp;<a href="javascript:void(0)" (click)="downloadChart()">{{'HELM_CHART.READY'
+                                    | translate }}</a>
                             </td>
                         </ng-template>
                         <ng-template #unsignedContent>
@@ -144,7 +133,8 @@
                     <tr *ngIf="labels?.length > 0">
                         <td></td>
                         <td class="left">
-                            <hbr-label-piece *ngFor="let label of labels"  [label]="label" [labelWidth]="90"> </hbr-label-piece>
+                            <hbr-label-piece *ngFor="let label of labels" [label]="label" [labelWidth]="90">
+                            </hbr-label-piece>
                         </td>
                     </tr>
                 </tbody>

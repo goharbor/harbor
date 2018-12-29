@@ -24,5 +24,6 @@ ${realname_xpath}  //*[@id="realname"]
 ${newPassword_xpath}  //*[@id="newPassword"]
 ${confirmPassword_xpath}  //*[@id="confirmPassword"]
 ${comment_xpath}  //*[@id="comment"]
-${signup_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/sign-up/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+${signup_xpath}  //clr-modal/div/div[1]/div/div/div[3]/button[2]
+
 

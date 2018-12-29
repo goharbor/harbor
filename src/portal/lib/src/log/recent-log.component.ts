@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, Input } from '@angular/core';
-import { Comparator, State } from '@clr/angular';
+import { Comparator, State } from '../service/interface';
 
 import {
     AccessLogService,
