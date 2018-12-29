@@ -86,7 +86,7 @@ Make Project Private
     Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
     Sleep  1
     Checkbox Should Be Selected  xpath=//input[@name='public']
-    Click Element  //clr-checkbox[@name='public']//label
+    Click Element  //div[@id="clr-wrapper-public"]//label
     Wait Until Element Is Enabled  //button[contains(.,'SAVE')]
     Click Element  //button[contains(.,'SAVE')]
     Wait Until Page Contains  Configuration has been successfully saved
@@ -97,14 +97,14 @@ Make Project Public
     Sleep  1
     Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
     Checkbox Should Not Be Selected  xpath=//input[@name='public']
-    Click Element  //clr-checkbox[@name='public']//label
+    Click Element    //div[@id="clr-wrapper-public"]//label
     Wait Until Element Is Enabled  //button[contains(.,'SAVE')]
     Click Element  //button[contains(.,'SAVE')]
     Wait Until Page Contains  Configuration has been successfully saved
 
 Delete Repo
     [Arguments]  ${projectname}
-    Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox//label
+    Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox-wrapper//label
     Wait Until Element Is Enabled  //button[contains(.,"Delete")]
     Click Element  xpath=//button[contains(.,"Delete")]
     Wait Until Element Is Visible  //clr-modal//button[2]
@@ -121,7 +121,7 @@ Delete Repo on CardView
 Delete Project
     [Arguments]  ${projectname}
     Sleep  1
-    Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox//label
+    Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox-wrapper//label
     Sleep  1
     Click Element  xpath=//button[contains(.,"Delete")]
     Sleep  2
@@ -221,7 +221,7 @@ Edit Repo Info
     Input Text  xpath=//*[@id="info"]/form/div[2]/textarea  test_description_info
     Click Element  xpath=//*[@id="info"]/form/div[3]/button[2]
     Sleep  1
-    Click Element  xpath=//*[@id="info"]/form/confirmation-dialog/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
+    Click Element  xpath=//*[@id="info"]/form/confirmation-dialog/clr-modal/div/div[1]/div[1]/div/div[3]/button[2]
     Sleep  1
     Page Should Contain Element  //*[@id="info"]/form/div[2]
     # Confirm input

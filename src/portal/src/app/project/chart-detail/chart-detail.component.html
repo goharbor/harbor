@@ -6,11 +6,6 @@
     &lt;
     <a (click)="gotoChartVersion()">{{ 'HELM_CHART.CHARTVERSIONS'| translate}}</a>
   </div>
-  <hbr-chart-detail
-  [projectId]="projectId"
-  [project]="project"
-  [chartName]="chartName"
-  [chartVersion]="chartVersion"
-  [roleName]="roleName"
-  ></hbr-chart-detail>
+  <hbr-chart-detail [projectId]="projectId" [project]="project" [chartName]="chartName" [chartVersion]="chartVersion"
+    [roleName]="roleName"></hbr-chart-detail>
 </div>

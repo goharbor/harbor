@@ -4,12 +4,13 @@
         <div class="form-group">
             <label for="proCreation">{{'CONFIG.PRO_CREATION_RESTRICTION' | translate}}</label>
             <div class="select">
-                <select id="proCreation" name="proCreation" [(ngModel)]="systemSettings.project_creation_restriction.value" [disabled]="disabled(systemSettings.project_creation_restriction)">
+                <select id="proCreation" name="proCreation" [(ngModel)]="systemSettings.project_creation_restriction.value"
+                    [disabled]="disabled(systemSettings.project_creation_restriction)">
                     <option value="everyone">{{'CONFIG.PRO_CREATION_EVERYONE' | translate }}</option>
                     <option value="adminonly">{{'CONFIG.PRO_CREATION_ADMIN' | translate }}</option>
                 </select>
             </div>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right create-tooltip">
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right">
                 <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.PRO_CREATION_RESTRICTION' | translate}}</span>
             </a>
@@ -39,17 +40,23 @@
         </div>
         <div *ngIf="!withAdmiral" class="form-group">
             <label for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}</label>
-            <clr-checkbox name="repoReadOnly" id="repoReadOnly" [clrChecked]="systemSettings.read_only.value" (clrCheckedChange)="setRepoReadOnlyValue($event)">
-                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right read-tooltip">
-                    <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                    <span class="tooltip-content">{{'CONFIG.TOOLTIP.REPO_TOOLTIP' | translate}}</span>
-                </a>
-            </clr-checkbox>
+            <clr-checkbox-wrapper>
+                <input type="checkbox" clrCheckbox name="repoReadOnly" id="repoReadOnly" [ngModel]="systemSettings.read_only.value"
+                    (ngModelChange)="setRepoReadOnlyValue($event)" />
+                <label>
+                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right read-tooltip">
+                        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                        <span class="tooltip-content">{{'CONFIG.TOOLTIP.REPO_TOOLTIP' | translate}}</span>
+                    </a>
+                </label>
+            </clr-checkbox-wrapper>
         </div>
     </section>
 </form>
 <div>
-    <button type="button" id="config_system_save" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="cancel()"  [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
+    <button type="button" id="config_system_save" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE'
+        | translate}}</button>
+    <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL'
+        | translate}}</button>
 </div>
 <confirmation-dialog #cfgConfirmationDialog (confirmAction)="confirmCancel($event)"></confirmation-dialog>

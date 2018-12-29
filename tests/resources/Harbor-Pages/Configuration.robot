@@ -191,11 +191,11 @@ Config Email
     Input Text  xpath=//*[@id="emailPassword"]  example
     Input Text  xpath=//*[@id="emailFrom"]  example<example@vmware.com>
     Sleep  1    
-    Mouse Down  xpath=//*[@id="clr-checkbox-emailSSL"]
-    Mouse Up  xpath=//*[@id="clr-checkbox-emailSSL"]
+    Mouse Down  xpath=//*[@id="emailSSL"]
+    Mouse Up  xpath=//*[@id="emailSSL"]
     Sleep  1
-    Mouse Down  xpath=//*[@id="clr-checkbox-emailInsecure"]
-    Mouse Up  xpath=//*[@id="clr-checkbox-emailInsecure"]
+    Mouse Down  xpath=//*[@id="emailInsecure"]
+    Mouse Up  xpath=//*[@id="emailInsecure"]
     Sleep  1
     Click Element  xpath=${config_email_save_button_xpath}
     Sleep  6
@@ -205,8 +205,8 @@ Verify Email
     Textfield Value Should Be  xpath=//*[@id="emailPort"]  25
     Textfield Value Should Be  xpath=//*[@id="emailUsername"]  example@vmware.com
     Textfield Value Should Be  xpath=//*[@id="emailFrom"]  example<example@vmware.com>
-    Checkbox Should Be Selected  xpath=//*[@id="clr-checkbox-emailSSL"]
-    Checkbox Should Not Be Selected  xpath=//*[@id="clr-checkbox-emailInsecure"]
+    Checkbox Should Be Selected  xpath=//*[@id="emailSSL"]
+    Checkbox Should Not Be Selected  xpath=//*[@id="emailInsecure"]
 
 Set Scan All To None
     click element  //vulnerability-config//select
@@ -257,7 +257,7 @@ Create New Labels
 
 Update A Label
     [Arguments]  ${labelname}
-    Click Element  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox
+    Click Element  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox-wrapper
     Sleep  1
     Click Element  xpath=//button[contains(.,'Edit')]
     Sleep  1
@@ -269,7 +269,7 @@ Update A Label
 
 Delete A Label
     [Arguments]  ${labelname}
-    Click Element  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox
+    Click Element  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox-wrapper
     Sleep  1
     Click ELement  xpath=//button[contains(.,'Delete')]
     Sleep  3

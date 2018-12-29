@@ -3,7 +3,7 @@ import { Observable } from "rxjs";
 import { RequestOptions, Headers } from '@angular/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';
-import { Comparator, State } from '@clr/angular';
+import { Comparator, State } from './service/interface';
 
 /**
  * Convert the different async channels to the Promise<T> type.

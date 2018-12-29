@@ -24,7 +24,7 @@ import {
 import {Subject, forkJoin} from "rxjs";
 import { debounceTime , distinctUntilChanged, finalize} from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
-import { State, Comparator } from "@clr/angular";
+import { State, Comparator } from "../service/interface";
 
 import { TagService, RetagService, VulnerabilitySeverity, RequestQueryParams } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";

@@ -47,8 +47,8 @@ export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig
         FormsModule,
         ReactiveFormsModule,
         ClipboardModule,
+        ClarityModule,
         CookieModule.forRoot(),
-        ClarityModule.forRoot(),
         MarkdownModule.forRoot(),
         TranslateModule.forRoot({
             loader: {

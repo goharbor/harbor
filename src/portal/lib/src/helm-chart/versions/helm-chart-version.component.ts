@@ -12,7 +12,7 @@ import { Observable, forkJoin } from "rxjs";
 import { finalize, map } from "rxjs/operators";
 
 import { TranslateService } from "@ngx-translate/core";
-import { State } from "@clr/angular";
+import { State } from "../../service/interface";
 
 import {
   SystemInfo,
