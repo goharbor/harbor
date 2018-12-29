@@ -3,7 +3,7 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { toPromise, compareValue, clone } from '../utils';
 import { ProjectService } from '../service/project.service';
 import { ErrorHandler } from '../error-handler/error-handler';
-import { State } from '@clr/angular';
+import { State } from '../service/interface';
 
 import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
@@ -122,7 +122,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
   }
 
   hasChanges() {
-    return !compareValue(this.orgProjectPolicy, this.projectPolicy);
+      return !compareValue(this.orgProjectPolicy, this.projectPolicy);
   }
 
   save() {

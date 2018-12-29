@@ -154,7 +154,6 @@ describe('RepositoryComponentGridview (inline template)', () => {
       expect(elRepo.textContent).toEqual('library/busybox');
     });
   }));
-
   // Will fail after upgrade to angular 6. todo: need to fix it.
   xit('should filter data by keyword', async(() => {
     fixtureRepo.whenStable().then(() => {
@@ -170,5 +169,4 @@ describe('RepositoryComponentGridview (inline template)', () => {
       expect(el.textContent).toEqual('library/nginx');
     });
   }));
-
 });

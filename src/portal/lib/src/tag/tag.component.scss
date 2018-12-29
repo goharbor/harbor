@@ -51,9 +51,10 @@
 
 .rightPos {
   position: absolute;
-  z-index: 100;
+  z-index: 600;
   right: 35px;
-  margin-top: 4px;
+  margin-top: 20px;
+  display: flex;
 }
 
 .btn-group .dropdown-menu clr-icon {

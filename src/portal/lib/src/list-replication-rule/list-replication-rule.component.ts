@@ -25,7 +25,7 @@ import {
     SimpleChanges
 } from "@angular/core";
 import { forkJoin} from "rxjs";
-import { Comparator } from "@clr/angular";
+import { Comparator } from "../service/interface";
 import { TranslateService } from "@ngx-translate/core";
 
 import {ReplicationService} from "../service/replication.service";

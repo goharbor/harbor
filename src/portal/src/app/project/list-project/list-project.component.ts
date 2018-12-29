@@ -22,7 +22,7 @@ import {
 } from "@angular/core";
 import { Router } from "@angular/router";
 
-import { Comparator, State } from "@clr/angular";
+import { Comparator, State } from "../../../../lib/src/service/interface";
 import {TranslateService} from "@ngx-translate/core";
 
 import { RoleInfo, ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";

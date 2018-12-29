@@ -131,13 +131,13 @@ Verify Project Setting
     \    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     \    Go Into Project  ${project}
     \    Goto Project Config
-    \    Run Keyword If  ${public} == "public"  Checkbox Should Be Checked  //clr-checkbox[@name='public']//label
-    \    Run Keyword If  ${contenttrust} == "true"  Checkbox Should Be Checked  //clr-checkbox[@name='content-trust']//label
-    \    Run Keyword If  ${contenttrust} == "false"  Checkbox Should Not Be Checked  //clr-checkbox[@name='content-trust']//label
-    \    Run Keyword If  ${preventrunning} == "true"  Checkbox Should Be Checked  //clr-checkbox[@name='prevent-vulenrability-image']//label
-    \    Run Keyword If  ${preventrunning} == "false"  Checkbox Should Not Be Checked  //clr-checkbox[@name='prevent-vulenrability-image']//label
-    \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Be Checked  //clr-checkbox[@name='scan-image-on-push']//label
-    \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Not Be Checked  //clr-checkbox[@name='scan-image-on-push']//label
+    \    Run Keyword If  ${public} == "public"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='public']//label
+    \    Run Keyword If  ${contenttrust} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
+    \    Run Keyword If  ${contenttrust} == "false"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
+    \    Run Keyword If  ${preventrunning} == "true"  Checkbox Should Be Checked  //div[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
+    \    Run Keyword If  ${preventrunning} == "false"  Checkbox Should Not Be Checked    //div[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
+    \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//label
+    \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//label
     \   Close Browser
 
 Verify System Setting
@@ -155,8 +155,8 @@ Verify System Setting
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Page Should Contain  @{authtype}[0]
-    Run Keyword If  @{selfreg}[0] == "True"  Checkbox Should Be Checked  //clr-checkbox[@id='selfReg']//label
-    Run Keyword If  @{selfreg}[0] == "False"  Checkbox Should Not Be Checked  //clr-checkbox[@id='selfReg']//label
+    Run Keyword If  @{selfreg}[0] == "True"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
+    Run Keyword If  @{selfreg}[0] == "False"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
     Page Should Contain  @{creation}[0]
     Switch To Email
     Textfield Value Should Be  xpath=//*[@id="mailServer"]  @{emailserver}[0]

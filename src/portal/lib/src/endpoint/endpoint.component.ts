@@ -22,7 +22,7 @@ import {
 import { Subscription} from "rxjs";
 import {forkJoin} from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
-import { Comparator } from "@clr/angular";
+import { Comparator } from "../service/interface";
 
 import { Endpoint } from "../service/interface";
 import { EndpointService } from "../service/endpoint.service";
