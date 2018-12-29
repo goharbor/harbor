@@ -51,7 +51,7 @@
 
 .rightPos {
   position: absolute;
-  z-index: 600;
+  z-index: 700;
   right: 35px;
   margin-top: 20px;
   display: flex;
@@ -108,7 +108,7 @@
 }
 
 .datagrid-action-bar {
-  z-index: 10;
+  z-index: 600;
 }
 
 .trigger-item hbr-label-piece {
@@ -239,13 +239,14 @@ hbr-image-name-input {
   width: 160px;
 }
 
-.flex-width {
-  min-width: 100px;
-  max-width: 220px;
-}
-
-.flex-min-width {
-  min-width: 130px;
+.datagrid-top {
+  .flex-width {
+    min-width: 100px;
+    max-width: 220px;
+  }
+  .flex-min-width {
+    min-width: 130px;
+  }
 }
 
 .color-green {

@@ -17,7 +17,7 @@
 .eventTarget{display: inline-flex; width: 172px; font-size: 12px; flex-shrink:1; overflow: hidden; text-overflow: ellipsis;white-space: nowrap;}
 .eventTime{ float: right; font-size: 12px;}
 :host >>> .nav{padding-left: 38px;}
-.operDiv{position: fixed; top: 60px; right: 0; z-index:100}
+.operDiv{position: fixed; top: 60px; right: 0; z-index:700}
 .toolBar{
     float: left;border-top: 1px solid #ccc;
     transform: rotate(-90deg);
