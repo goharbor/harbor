@@ -48,11 +48,10 @@
             [(ngModel)]="target.password" size="20" name="password" #password="ngModel">
         </div>
         <div class="form-group">
-          <clr-checkbox-wrapper id="destination_insecure_checkbox" class="clr-control-inline col-md-4 form-group-label-override">
-            <input type="checkbox" #insecure id="destination_insecure" [disabled]="testOngoing || !editable" name="insecure"
-              [ngModel]="!target.insecure" (ngModelChange)="setInsecureValue($event)" class="clr-checkbox">
-            <label for="destination_insecure">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</label>
-          </clr-checkbox-wrapper>
+          <label for="destination_insecure" id="destination_insecure_checkbox">{{'CONFIG.VERIFY_REMOTE_CERT' |
+            translate }}</label>
+          <input type="checkbox" clrCheckbox #insecure id="destination_insecure" [disabled]="testOngoing || !editable"
+            name="insecure" [ngModel]="!target.insecure" (ngModelChange)="setInsecureValue($event)" class="clr-checkbox">
           <clr-tooltip>
             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
             <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
