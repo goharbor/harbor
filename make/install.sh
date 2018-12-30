@@ -146,9 +146,38 @@ function check_dockercompose {
 	fi
 }
 
+function check_python {
+	if ! python --version &> /dev/null
+	then
+		error "Need to install Python(2.6.0+) first and run this script again."
+		exit 1
+	fi
+
+	# python has been installed and check its version
+	if [[ $(python --version) =~ (([0-9]+).([0-9]+).([0-9]+)) ]]
+	then
+		python_version=${BASH_REMATCH[1]}
+		python_version_part1=${BASH_REMATCH[2]}
+		python_version_part2=${BASH_REMATCH[3]}
+
+		# the version of python does not meet the requirement
+		if [ "$python_version_part1" -lt 2 ] || ([ "$python_version_part1" -eq 2 ] && [ "$python_version_part2" -lt 6 ])
+		then
+			error "Need to upgrade python package to 2.6.0+."
+			exit 1
+		else
+			note "python version: $python_version"
+		fi
+	else
+		error "Failed to parse python version."
+		exit 1
+	fi
+}
+
 h2 "[Step $item]: checking installation environment ..."; let item+=1
 check_docker
 check_dockercompose
+check_python
 
 if [ -f harbor*.tar.gz ]
 then
