@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/dao"
+
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
@@ -92,13 +94,35 @@ func TestGetHealthStatus(t *testing.T) {
 	}
 }
 
-// Test get index by repo
+// Test getting index by repo
 func TestGetIndexByRepo(t *testing.T) {
 	runCodeCheckingCases(t, &codeCheckingCase{
 		request: &testingRequest{
 			url:        "/chartrepo/library/index.yaml",
 			method:     http.MethodGet,
 			credential: projDeveloper,
+		},
+		code: http.StatusOK,
+	})
+}
+
+// Test getting index by repository name 'api'
+func TestGetIndexByRepoNameApi(t *testing.T) {
+	// Create project with name `api`
+	id, err := dao.AddProject(models.Project{
+		Name:    "api",
+		OwnerID: 1, // Use `admin`
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer dao.DeleteProject(id)
+
+	runCodeCheckingCases(t, &codeCheckingCase{
+		request: &testingRequest{
+			url:        "/chartrepo/api/index.yaml",
+			method:     http.MethodGet,
+			credential: sysAdmin,
 		},
 		code: http.StatusOK,
 	})

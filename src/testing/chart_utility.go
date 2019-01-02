@@ -97,6 +97,16 @@ var MockChartRepoHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 			w.Write([]byte("{}"))
 			return
 		}
+	case "/PWFwaT0=/index.yaml":
+		if r.Method == http.MethodGet {
+			w.Write([]byte(repo1IndexYaml))
+			return
+		}
+	case "/PUFQST0=/index.yaml":
+		if r.Method == http.MethodGet {
+			w.Write([]byte(repo2IndexYaml))
+			return
+		}
 	default:
 		if r.Method == http.MethodGet {
 			if strings.HasSuffix(r.RequestURI, "/index.yaml") {

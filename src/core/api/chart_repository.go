@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -79,6 +80,12 @@ func (cra *ChartRepositoryAPI) Prepare() {
 			return
 		}
 	}
+
+	// IFIX: As the `api` is a segment of upstream chartmuseum URL,
+	// it cannot be directly passed to the chartmuseum or an 404 error will occur.
+	// We'll encode it here with appending "=" prefix and suffix to avoid the potential
+	// namespace conflicts. (The user inputting namespace cannot contain "=")
+	cra.namespace = encodeNamespace(cra.namespace)
 
 	// Init label manager
 	cra.labelManager = &label.BaseManager{}
@@ -514,4 +521,13 @@ func isMultipartFormData(req *http.Request) bool {
 // Return the chart full name
 func chartFullName(namespace, chartName, version string) string {
 	return fmt.Sprintf("%s/%s:%s", namespace, chartName, version)
+}
+
+// Encode the namespace to avoid some name issues, e.g: namespace is 'api'
+func encodeNamespace(namespace string) string {
+	if strings.ToLower(namespace) == "api" {
+		return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("=%s=", namespace)))
+	}
+
+	return namespace
 }
