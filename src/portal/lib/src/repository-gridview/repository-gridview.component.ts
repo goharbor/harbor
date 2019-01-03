@@ -15,7 +15,7 @@ import { Router } from "@angular/router";
 import { forkJoin } from "rxjs";
 import { finalize } from "rxjs/operators";
 import {TranslateService} from "@ngx-translate/core";
-import {Comparator, State} from "@clr/angular";
+import {Comparator, State} from "../service/interface";
 
 import {
     Repository,

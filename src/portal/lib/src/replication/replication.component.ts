@@ -20,7 +20,7 @@ import {
   OnDestroy,
   EventEmitter
 } from "@angular/core";
-import { Comparator, State } from "@clr/angular";
+import { Comparator, State } from "../service/interface";
 import { Subscription, forkJoin, timer} from "rxjs";
 
 

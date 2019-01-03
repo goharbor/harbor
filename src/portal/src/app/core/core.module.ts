@@ -25,7 +25,7 @@ import { MarkdownModule } from 'ngx-markdown';
         BrowserModule,
         FormsModule,
         HttpModule,
-        ClarityModule.forRoot(),
+        ClarityModule,
         CookieModule.forRoot(),
         MarkdownModule.forRoot(),
         BrowserAnimationsModule

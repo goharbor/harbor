@@ -1,4 +1,7 @@
 import { Project } from "../project-policy-config/project";
+import { Observable } from 'rxjs';
+import { ClrModal } from '@clr/angular';
+
 /**
  * The base interface contains the general properties
  *
@@ -403,3 +406,30 @@ export interface RetagRequest {
   srcImage: string;
   override: boolean;
 }
+
+export interface ClrDatagridComparatorInterface<T> {
+  compare(a: T, b: T): number;
+}
+
+export interface ClrDatagridStateInterface {
+  page?: { from?: number; to?: number; size?: number };
+  sort?: { by: string | ClrDatagridComparatorInterface<any>; reverse: boolean };
+  filters?: ({ property: string; value: string } | ClrDatagridFilterInterface<any>)[];
+}
+
+export interface ClrDatagridFilterInterface<T> {
+  isActive(): boolean;
+
+  accepts(item: T): boolean;
+
+  changes: Observable<any>;
+}
+
+/** @deprecated since 0.11 */
+export interface Comparator<T> extends ClrDatagridComparatorInterface<T> {}
+/** @deprecated since 0.11 */
+export interface ClrFilter<T> extends ClrDatagridFilterInterface<T> {}
+/** @deprecated since 0.11 */
+export interface State extends ClrDatagridStateInterface {}
+export interface Modal extends ClrModal {}
+export const Modal = ClrModal;

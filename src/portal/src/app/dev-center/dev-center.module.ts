@@ -14,7 +14,7 @@ import { DevCenterComponent } from "./dev-center.component";
             path: "**",
             component: DevCenterComponent,
         }]),
-        ClarityModule.forRoot(),
+        ClarityModule,
     ],
     declarations: [
         DevCenterComponent,
