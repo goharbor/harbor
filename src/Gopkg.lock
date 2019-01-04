@@ -8,6 +8,12 @@
   version = "v0.3.0"
 
 [[projects]]
+  name = "github.com/Knetic/govaluate"
+  packages = ["."]
+  revision = "d216395917cc49052c7c7094cf57f09657ca08a8"
+  version = "v3.0.0"
+
+[[projects]]
   name = "github.com/Masterminds/semver"
   packages = ["."]
   revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
@@ -58,6 +64,23 @@
   name = "github.com/beego/i18n"
   packages = ["."]
   revision = "e87155e8f0c05bf323d0b13470e1b97af0cb5652"
+
+[[projects]]
+  name = "github.com/casbin/casbin"
+  packages = [
+    ".",
+    "config",
+    "effect",
+    "log",
+    "model",
+    "persist",
+    "persist/file-adapter",
+    "rbac",
+    "rbac/default-role-manager",
+    "util"
+  ]
+  revision = "542e16cac74562eefac970a7d0d1467640d1f1cb"
+  version = "v1.7.0"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -249,6 +272,12 @@
   version = "v1.0.0-rc0"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -360,6 +389,7 @@
 [[projects]]
   name = "k8s.io/helm"
   packages = [
+    "cmd/helm/search",
     "pkg/chartutil",
     "pkg/getter",
     "pkg/helm/environment",
@@ -381,6 +411,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f2bc787303dc9f72125800ed44f5fefed9e832183419e563183e87be26534a1c"
+  inputs-digest = "862941e7de65d953c0133ea4b290a079990f38c7cd6e2f1139ac78706d0912b3"
   solver-name = "gps-cdcl"
   solver-version = 1
