@@ -440,5 +440,33 @@ func TestRetag(t *testing.T) {
 		assert.Equal(int(409), httpStatusCode, "httpStatusCode should be 409")
 	}
 
+	// -------------------case 7 : response code = 400------------------------//
+	fmt.Println("case 7 : response code = 400")
+	retagReq = &apilib.Retag{
+		Tag:      ".0.1",
+		SrcImage: "library/hello-world:latest",
+		Override: true,
+	}
+	code, err = apiTest.RetagImage(*admin, repo, retagReq)
+	if err != nil {
+		t.Errorf("failed to retag: %v", err)
+	} else {
+		assert.Equal(int(400), code, "response code should be 400")
+	}
+
+	// -------------------case 8 : response code = 400------------------------//
+	fmt.Println("case 8 : response code = 400")
+	retagReq = &apilib.Retag{
+		Tag:      "v0.1",
+		SrcImage: "library/hello-world:latest",
+		Override: true,
+	}
+	code, err = apiTest.RetagImage(*admin, "library/Aaaa", retagReq)
+	if err != nil {
+		t.Errorf("failed to retag: %v", err)
+	} else {
+		assert.Equal(int(400), code, "response code should be 400")
+	}
+
 	fmt.Printf("\n")
 }

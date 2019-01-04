@@ -38,7 +38,7 @@ type Image struct {
 func ParseImage(image string) (*Image, error) {
 	repo := strings.SplitN(image, "/", 2)
 	if len(repo) < 2 {
-		return nil, fmt.Errorf("Unable to parse image from string: %s", image)
+		return nil, fmt.Errorf("unable to parse image from string: %s", image)
 	}
 	i := strings.SplitN(repo[1], ":", 2)
 	res := &Image{
