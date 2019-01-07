@@ -37,5 +37,6 @@ func init() {
 		new(ResourceLabel),
 		new(UserGroup),
 		new(AdminJob),
-		new(JobLog))
+		new(JobLog),
+		new(Robot))
 }
