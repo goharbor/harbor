@@ -27,7 +27,7 @@ ${destination_username_xpath}  //*[@id='destination_username']
 ${destination_password_xpath}  //*[@id='destination_password']
 ${replication_save_xpath}  //button[contains(.,'OK')]
 ${replication_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Replication')]
-${destination_insecure_xpath}  //clr-checkbox-wrapper//label[@id="destination_insecure_checkbox"]
+${destination_insecure_xpath}  //label[@id="destination_insecure_checkbox"]
 
 ${new_replication-rule_button}  //button[contains(.,'New Replication Rule')]
 ${link_to_registries}  //clr-modal//span[contains(.,'Endpoint')]
