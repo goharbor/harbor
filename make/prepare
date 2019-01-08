@@ -154,7 +154,14 @@ reload_config = rcp.get("configuration", "reload_config") if rcp.has_option(
     "configuration", "reload_config") else "false"
 hostname = rcp.get("configuration", "hostname")
 protocol = rcp.get("configuration", "ui_url_protocol")
-public_url = protocol + "://" + hostname
+if rcp.has_option("configuration", "public_url"):
+    public_url = rcp.get("configuration", "public_url")
+else:
+    if rcp.has_option("configuration", "public_url_protocol"):
+        public_protocol = rcp.get("configuration", "public_url_protocol")
+        public_url = public_protocol + "://" + hostname
+    else:
+        public_url = protocol + "://" + hostname
 email_identity = rcp.get("configuration", "email_identity")
 email_host = rcp.get("configuration", "email_server")
 email_port = rcp.get("configuration", "email_server_port")
