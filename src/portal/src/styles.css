@@ -75,3 +75,7 @@ body {
     margin-top: 0 !important;
     line-height: 24px;
 }
+
+.datagrid-header{
+    z-index: 1 !important;
+}

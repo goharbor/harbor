@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 log-top">
-        <div class="row flex-items-xs-right option-right">
+        <div class="row flex-items-xs-right option-right display-f">
             <div class="flex-xs-middle">
                 <button class="btn btn-link" (click)="toggleOptionalName(currentOption)">{{toggleName[currentOption] | translate}}</button>
                 <hbr-filter [withDivider]="true" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doSearchAuditLogs($event)"></hbr-filter>
