@@ -75,7 +75,7 @@
             </div>
             </clr-dropdown-menu>
           </clr-dropdown>
-          <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length===1 && guestRoleOrAbove)" (click)="retag(selectedRow)"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}</button>
+          <button type="button" class="btn btn-sm btn-secondary" *ngIf="!withAdmiral" [disabled]="!(selectedRow.length===1 && guestRoleOrAbove)" (click)="retag(selectedRow)"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}</button>
           <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-bar>
         <clr-dg-column style="width: 120px;" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
