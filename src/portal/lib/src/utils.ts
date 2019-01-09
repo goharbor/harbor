@@ -56,6 +56,14 @@ export const HTTP_GET_OPTIONS: RequestOptions = new RequestOptions({
         "Pragma": 'no-cache'
     })
 });
+export const HTTP_GET_OPTIONS_CACHE: RequestOptions = new RequestOptions({
+    headers: new Headers({
+        "Content-Type": 'application/json',
+        "Accept": 'application/json',
+        "Cache-Control": 'no-cache',
+        "Pragma": 'no-cache',
+    })
+});
 
 export const FILE_UPLOAD_OPTION: RequestOptions = new RequestOptions({
     headers: new Headers({

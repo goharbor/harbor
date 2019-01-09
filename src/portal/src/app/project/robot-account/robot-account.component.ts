@@ -25,7 +25,10 @@ import {
   operateChanges,
   OperateInfo,
   OperationService,
-  OperationState
+  OperationState,
+  UserPermissionService,
+  USERSTATICPERMISSION,
+  ErrorHandler
 } from "@harbor/ui";
 
 @Component({
@@ -48,12 +51,17 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
   robots: Robot[];
   projectId: number;
   subscription: Subscription;
+  hasRobotCreatePermission: boolean;
+  hasRobotUpdatePermission: boolean;
+  hasRobotDeletePermission: boolean;
   constructor(
     private route: ActivatedRoute,
     private robotService: RobotService,
     private OperateDialogService: ConfirmationDialogService,
     private operationService: OperationService,
     private translate: TranslateService,
+    private userPermissionService: UserPermissionService,
+    private errorHandler: ErrorHandler,
     private ref: ChangeDetectorRef,
     private messageHandlerService: MessageHandlerService
   ) {
@@ -80,8 +88,24 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
     }
     this.searchRobot = "";
     this.retrieve();
+    this.getPermissionsList(this.projectId);
   }
+  getPermissionsList(projectId: number): void {
+    let permissionsList = [];
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.ROBOT.KEY, USERSTATICPERMISSION.ROBOT.VALUE.CREATE));
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.ROBOT.KEY, USERSTATICPERMISSION.ROBOT.VALUE.UPDATE));
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.ROBOT.KEY, USERSTATICPERMISSION.ROBOT.VALUE.DELETE));
 
+    forkJoin(...permissionsList).subscribe(Rules => {
+      this.hasRobotCreatePermission = Rules[0] as boolean;
+      this.hasRobotUpdatePermission = Rules[1] as boolean;
+      this.hasRobotDeletePermission = Rules[2] as boolean;
+
+    }, error => this.errorHandler.error(error));
+  }
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();
@@ -122,7 +146,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
           this.selectedRow = [];
         })
       )
-      .subscribe(() => {});
+      .subscribe(() => { });
   }
 
   delOperate(robot: Robot) {

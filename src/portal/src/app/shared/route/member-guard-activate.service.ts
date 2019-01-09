@@ -57,7 +57,7 @@ export class MemberGuard implements CanActivate, CanActivateChild {
       () => {
         // Add exception for repository in project detail router activation.
         this.projectService.getProject(projectId).subscribe(project => {
-          if (project.public === 1) {
+          if (project.metadata && project.metadata.public === 'true') {
             return resolve(true);
           }
           this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);

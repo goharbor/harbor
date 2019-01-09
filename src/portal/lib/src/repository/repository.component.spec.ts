@@ -27,6 +27,7 @@ import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { LabelDefaultService, LabelService } from "../service/label.service";
 import { OperationService } from "../operation/operation.service";
 import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagService } from "../service";
+import { UserPermissionDefaultService, UserPermissionService } from "../service/permission.service";
 
 
 class RouterStub {
@@ -178,6 +179,7 @@ describe('RepositoryComponent (inline template)', () => {
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: RetagService, useClass: RetagDefaultService },
         { provide: LabelService, useClass: LabelDefaultService},
+        { provide: UserPermissionService, useClass: UserPermissionDefaultService},
         { provide: ChannelService},
         { provide: OperationService }
       ]

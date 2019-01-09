@@ -219,6 +219,7 @@
         "ROLE": "Rol",
         "SYS_ADMIN": "Administrador del sistema",
         "PROJECT_ADMIN": "Administrador del proyecto",
+        "PROJECT_MASTER": "Mantenedor",
         "DEVELOPER": "Desarrollador",
         "GUEST": "Invitado",
         "DELETE": "Eliminar",

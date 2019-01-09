@@ -19,8 +19,8 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from "@angular/core";
-import { Subscription} from "rxjs";
-import {forkJoin} from "rxjs";
+import { Subscription } from "rxjs";
+import { forkJoin } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { Comparator } from "../service/interface";
 
@@ -29,9 +29,9 @@ import { EndpointService } from "../service/endpoint.service";
 
 import { ErrorHandler } from "../error-handler/index";
 
-import {ConfirmationMessage} from "../confirmation-dialog/confirmation-message";
-import {ConfirmationAcknowledgement} from "../confirmation-dialog/confirmation-state-message";
-import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
+import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
+import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 
 import {
     ConfirmationTargets,
@@ -42,8 +42,9 @@ import {
 import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
 import { toPromise, CustomComparator } from "../utils";
 
-import {operateChanges, OperateInfo, OperationState} from "../operation/operate";
-import {OperationService} from "../operation/operation.service";
+import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
+import { OperationService } from "../operation/operation.service";
+
 
 @Component({
     selector: "hbr-endpoint",
@@ -86,10 +87,10 @@ export class EndpointComponent implements OnInit, OnDestroy {
     }
 
     constructor(private endpointService: EndpointService,
-                private errorHandler: ErrorHandler,
-                private translateService: TranslateService,
-                private operationService: OperationService,
-                private ref: ChangeDetectorRef) {
+        private errorHandler: ErrorHandler,
+        private translateService: TranslateService,
+        private operationService: OperationService,
+        private ref: ChangeDetectorRef) {
         this.forceRefreshView(1000);
     }
 
@@ -208,18 +209,18 @@ export class EndpointComponent implements OnInit, OnDestroy {
                             operateChanges(operMessage, OperationState.success);
                         });
                 }).catch(
-                error => {
-                    if (error && error.status === 412) {
-                        forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                            this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')).subscribe(res => {
-                            operateChanges(operMessage, OperationState.failure, res[1]);
-                        });
-                    } else {
-                        this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
-                            operateChanges(operMessage, OperationState.failure, res);
-                        });
-                    }
-                });
+                    error => {
+                        if (error && error.status === 412) {
+                            forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                                this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')).subscribe(res => {
+                                    operateChanges(operMessage, OperationState.failure, res[1]);
+                                });
+                        } else {
+                            this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+                                operateChanges(operMessage, OperationState.failure, res);
+                            });
+                        }
+                    });
     }
 
     // Forcely refresh the view
