@@ -1,7 +1,10 @@
-create table robot (
+CREATE TABLE robot (
  id SERIAL PRIMARY KEY NOT NULL,
  name varchar(255),
- token varchar(4096),
+ /*
+  The maximum length of token is 7k
+*/
+ token varchar(7168),
  description varchar(1024),
  project_id int,
  disabled boolean DEFAULT false NOT NULL,

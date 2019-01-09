@@ -23,7 +23,7 @@ const RobotTable = "robot"
 
 // Robot holds the details of a robot.
 type Robot struct {
-	ID           int       `orm:"pk;auto;column(id)" json:"id"`
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	Name         string    `orm:"column(name)" json:"name"`
 	Token        string    `orm:"column(token)" json:"token"`
 	Description  string    `orm:"column(description)" json:"description"`
