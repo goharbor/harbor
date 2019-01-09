@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package config provide config for core api and other modules
+// Before accessing user settings, need to call Load()
+// For system settings, no need to call Load()
 package config
 
 import (
@@ -23,15 +26,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/adminserver/client"
 	"github.com/goharbor/harbor/src/common"
 	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/secret"
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver"
@@ -48,11 +48,8 @@ const (
 var (
 	// SecretStore manages secrets
 	SecretStore *secret.Store
-	// AdminserverClient is a client for adminserver
-	AdminserverClient client.Client
 	// GlobalProjectMgr is initialized based on the deploy mode
 	GlobalProjectMgr promgr.ProjectManager
-	mg               *comcfg.Manager
 	keyProvider      comcfg.KeyProvider
 	// AdmiralClient is initialized only under integration deploy mode
 	// and can be passed to project manager as a parameter
@@ -61,48 +58,33 @@ var (
 	TokenReader admiral.TokenReader
 	// defined as a var for testing.
 	defaultCACertPath = "/etc/core/ca/ca.crt"
+	cfgMgr            *comcfg.CfgManager
 )
 
 // Init configurations
 func Init() error {
 	// init key provider
 	initKeyProvider()
-	adminServerURL := os.Getenv("ADMINSERVER_URL")
-	if len(adminServerURL) == 0 {
-		adminServerURL = common.DefaultAdminserverEndpoint
-	}
 
-	return InitByURL(adminServerURL)
+	cfgMgr = comcfg.NewDBCfgManager()
 
-}
-
-// InitByURL Init configurations with given url
-func InitByURL(adminServerURL string) error {
-	log.Infof("initializing client for adminserver %s ...", adminServerURL)
-	cfg := &client.Config{
-		Secret: CoreSecret(),
-	}
-	AdminserverClient = client.NewClient(adminServerURL, cfg)
-	if err := AdminserverClient.Ping(); err != nil {
-		return fmt.Errorf("failed to ping adminserver: %v", err)
-	}
-
-	mg = comcfg.NewManager(AdminserverClient, true)
-
-	if err := Load(); err != nil {
-		return err
-	}
-
+	log.Info("init secret store")
 	// init secret store
 	initSecretStore()
-
+	log.Info("init project manager based on deploy mode")
 	// init project manager based on deploy mode
 	if err := initProjectManager(); err != nil {
 		log.Errorf("Failed to initialise project manager, error: %v", err)
 		return err
 	}
-
 	return nil
+}
+
+// InitWithSettings init config with predefined configs
+func InitWithSettings(cfgs map[string]interface{}) {
+	Init()
+	cfgMgr = comcfg.NewInMemoryManager()
+	cfgMgr.UpdateConfig(cfgs)
 }
 
 func initKeyProvider() {
@@ -163,34 +145,36 @@ func initProjectManager() error {
 
 }
 
+// GetCfgManager return the current config manager
+func GetCfgManager() *comcfg.CfgManager {
+	if cfgMgr == nil {
+		return comcfg.NewDBCfgManager()
+	}
+	return cfgMgr
+}
+
 // Load configurations
 func Load() error {
-	_, err := mg.Load()
-	return err
+	return cfgMgr.Load()
 }
 
-// Reset configurations
-func Reset() error {
-	return mg.Reset()
-}
-
-// Upload uploads all system configurations to admin server
+// Upload save all system configurations
 func Upload(cfg map[string]interface{}) error {
-	return mg.Upload(cfg)
+	return cfgMgr.UpdateConfig(cfg)
 }
 
 // GetSystemCfg returns the system configurations
 func GetSystemCfg() (map[string]interface{}, error) {
-	return mg.Load()
+	return cfgMgr.GetAll(), nil
 }
 
 // AuthMode ...
 func AuthMode() (string, error) {
-	cfg, err := mg.Get()
+	err := cfgMgr.Load()
 	if err != nil {
-		return "", err
+		log.Errorf("failed to load config, error %v", err)
 	}
-	return utils.SafeCastString(cfg[common.AUTHMode]), nil
+	return cfgMgr.Get(common.AUTHMode).GetString(), nil
 }
 
 // TokenPrivateKeyPath returns the path to the key for signing token for registry
@@ -204,84 +188,49 @@ func TokenPrivateKeyPath() string {
 
 // LDAPConf returns the setting of ldap server
 func LDAPConf() (*models.LdapConf, error) {
-	cfg, err := mg.Get()
+	err := cfgMgr.Load()
 	if err != nil {
 		return nil, err
 	}
-	ldapConf := &models.LdapConf{}
-	ldapConf.LdapURL = utils.SafeCastString(cfg[common.LDAPURL])
-	ldapConf.LdapSearchDn = utils.SafeCastString(cfg[common.LDAPSearchDN])
-	ldapConf.LdapSearchPassword = utils.SafeCastString(cfg[common.LDAPSearchPwd])
-	ldapConf.LdapBaseDn = utils.SafeCastString(cfg[common.LDAPBaseDN])
-	ldapConf.LdapUID = utils.SafeCastString(cfg[common.LDAPUID])
-	ldapConf.LdapFilter = utils.SafeCastString(cfg[common.LDAPFilter])
-	ldapConf.LdapScope = int(utils.SafeCastFloat64(cfg[common.LDAPScope]))
-	ldapConf.LdapConnectionTimeout = int(utils.SafeCastFloat64(cfg[common.LDAPTimeout]))
-	if cfg[common.LDAPVerifyCert] != nil {
-		ldapConf.LdapVerifyCert = cfg[common.LDAPVerifyCert].(bool)
-	} else {
-		ldapConf.LdapVerifyCert = true
-	}
-
-	return ldapConf, nil
+	return &models.LdapConf{
+		LdapURL:               cfgMgr.Get(common.LDAPURL).GetString(),
+		LdapSearchDn:          cfgMgr.Get(common.LDAPSearchDN).GetString(),
+		LdapSearchPassword:    cfgMgr.Get(common.LDAPSearchPwd).GetString(),
+		LdapBaseDn:            cfgMgr.Get(common.LDAPBaseDN).GetString(),
+		LdapUID:               cfgMgr.Get(common.LDAPUID).GetString(),
+		LdapFilter:            cfgMgr.Get(common.LDAPFilter).GetString(),
+		LdapScope:             cfgMgr.Get(common.LDAPScope).GetInt(),
+		LdapConnectionTimeout: cfgMgr.Get(common.LDAPTimeout).GetInt(),
+		LdapVerifyCert:        cfgMgr.Get(common.LDAPVerifyCert).GetBool(),
+	}, nil
 }
 
 // LDAPGroupConf returns the setting of ldap group search
 func LDAPGroupConf() (*models.LdapGroupConf, error) {
-
-	cfg, err := mg.Get()
-	if err != nil {
-		return nil, err
-	}
-
-	ldapGroupConf := &models.LdapGroupConf{LdapGroupSearchScope: 2}
-	if _, ok := cfg[common.LDAPGroupBaseDN]; ok {
-		ldapGroupConf.LdapGroupBaseDN = utils.SafeCastString(cfg[common.LDAPGroupBaseDN])
-	}
-	if _, ok := cfg[common.LDAPGroupSearchFilter]; ok {
-		ldapGroupConf.LdapGroupFilter = utils.SafeCastString(cfg[common.LDAPGroupSearchFilter])
-	}
-	if _, ok := cfg[common.LDAPGroupAttributeName]; ok {
-		ldapGroupConf.LdapGroupNameAttribute = utils.SafeCastString(cfg[common.LDAPGroupAttributeName])
-	}
-	if _, ok := cfg[common.LDAPGroupSearchScope]; ok {
-		if scopeStr, ok := cfg[common.LDAPGroupSearchScope].(string); ok {
-			ldapGroupConf.LdapGroupSearchScope, err = strconv.Atoi(scopeStr)
-		}
-		if scopeFloat, ok := cfg[common.LDAPGroupSearchScope].(float64); ok {
-			ldapGroupConf.LdapGroupSearchScope = int(scopeFloat)
-		}
-	}
-	if _, ok := cfg[common.LdapGroupAdminDn]; ok {
-		ldapGroupConf.LdapGroupAdminDN = cfg[common.LdapGroupAdminDn].(string)
-	}
-	return ldapGroupConf, nil
+	return &models.LdapGroupConf{
+		LdapGroupBaseDN:        cfgMgr.Get(common.LDAPGroupBaseDN).GetString(),
+		LdapGroupFilter:        cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
+		LdapGroupNameAttribute: cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
+		LdapGroupSearchScope:   cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
+		LdapGroupAdminDN:       cfgMgr.Get(common.LdapGroupAdminDn).GetString(),
+	}, nil
 }
 
 // TokenExpiration returns the token expiration time (in minute)
 func TokenExpiration() (int, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(utils.SafeCastFloat64(cfg[common.TokenExpiration])), nil
+	return cfgMgr.Get(common.TokenExpiration).GetInt(), nil
 }
 
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
-	}
-	return utils.SafeCastString(cfg[common.ExtEndpoint]), nil
+	return cfgMgr.Get(common.ExtEndpoint).GetString(), nil
 }
 
 // ExtURL returns the external URL: host:port
 func ExtURL() (string, error) {
 	endpoint, err := ExtEndpoint()
 	if err != nil {
-		return "", err
+		log.Errorf("failed to load config, error %v", err)
 	}
 	l := strings.Split(endpoint, "://")
 	if len(l) > 0 {
@@ -297,44 +246,22 @@ func SecretKey() (string, error) {
 
 // SelfRegistration returns the enablement of self registration
 func SelfRegistration() (bool, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return false, err
-	}
-	return utils.SafeCastBool(cfg[common.SelfRegistration]), nil
+	return cfgMgr.Get(common.SelfRegistration).GetBool(), nil
 }
 
 // RegistryURL ...
 func RegistryURL() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
-	}
-	return utils.SafeCastString(cfg[common.RegistryURL]), nil
+	return cfgMgr.Get(common.RegistryURL).GetString(), nil
 }
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers
 func InternalJobServiceURL() string {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Warningf("Failed to Get job service URL from backend, error: %v, will return default value.", err)
-		return common.DefaultJobserviceEndpoint
-	}
-
-	if cfg[common.JobServiceURL] == nil {
-		return common.DefaultJobserviceEndpoint
-	}
-	return strings.TrimSuffix(utils.SafeCastString(cfg[common.JobServiceURL]), "/")
+	return strings.TrimSuffix(cfgMgr.Get(common.JobServiceURL).GetString(), "/")
 }
 
 // InternalCoreURL returns the local harbor core url
 func InternalCoreURL() string {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Warningf("Failed to Get job service Core URL from backend, error: %v, will return default value.", err)
-		return common.DefaultCoreEndpoint
-	}
-	return strings.TrimSuffix(utils.SafeCastString(cfg[common.CoreURL]), "/")
+	return strings.TrimSuffix(cfgMgr.Get(common.CoreURL).GetString(), "/")
 
 }
 
@@ -346,72 +273,45 @@ func InternalTokenServiceEndpoint() string {
 // InternalNotaryEndpoint returns notary server endpoint for internal communication between Harbor containers
 // This is currently a conventional value and can be unaccessible when Harbor is not deployed with Notary.
 func InternalNotaryEndpoint() string {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Warningf("Failed to get Notary endpoint from backend, error: %v, will use default value.", err)
-		return common.DefaultNotaryEndpoint
-	}
-	if cfg[common.NotaryURL] == nil {
-		return common.DefaultNotaryEndpoint
-	}
-	return utils.SafeCastString(cfg[common.NotaryURL])
+	return cfgMgr.Get(common.NotaryURL).GetString()
 }
 
 // InitialAdminPassword returns the initial password for administrator
 func InitialAdminPassword() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
-	}
-	return utils.SafeCastString(cfg[common.AdminInitialPassword]), nil
+	return cfgMgr.Get(common.AdminInitialPassword).GetString(), nil
 }
 
 // OnlyAdminCreateProject returns the flag to restrict that only sys admin can create project
 func OnlyAdminCreateProject() (bool, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return true, err
-	}
-	return utils.SafeCastString(cfg[common.ProjectCreationRestriction]) == common.ProCrtRestrAdmOnly, nil
+	return cfgMgr.Get(common.ProjectCreationRestriction).GetString() == common.ProCrtRestrAdmOnly, nil
 }
 
 // Email returns email server settings
 func Email() (*models.Email, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return nil, err
-	}
-
-	email := &models.Email{}
-	email.Host = utils.SafeCastString(cfg[common.EmailHost])
-	email.Port = int(utils.SafeCastFloat64(cfg[common.EmailPort]))
-	email.Username = utils.SafeCastString(cfg[common.EmailUsername])
-	email.Password = utils.SafeCastString(cfg[common.EmailPassword])
-	email.SSL = utils.SafeCastBool(cfg[common.EmailSSL])
-	email.From = utils.SafeCastString(cfg[common.EmailFrom])
-	email.Identity = utils.SafeCastString(cfg[common.EmailIdentity])
-	email.Insecure = utils.SafeCastBool(cfg[common.EmailInsecure])
-
-	return email, nil
+	return &models.Email{
+		Host:     cfgMgr.Get(common.EmailHost).GetString(),
+		Port:     cfgMgr.Get(common.EmailPort).GetInt(),
+		Username: cfgMgr.Get(common.EmailUsername).GetString(),
+		Password: cfgMgr.Get(common.EmailPassword).GetString(),
+		SSL:      cfgMgr.Get(common.EmailSSL).GetBool(),
+		From:     cfgMgr.Get(common.EmailFrom).GetString(),
+		Identity: cfgMgr.Get(common.EmailIdentity).GetString(),
+		Insecure: cfgMgr.Get(common.EmailInsecure).GetBool(),
+	}, nil
 }
 
 // Database returns database settings
 func Database() (*models.Database, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return nil, err
-	}
-
 	database := &models.Database{}
-	database.Type = cfg[common.DatabaseType].(string)
-
-	postgresql := &models.PostGreSQL{}
-	postgresql.Host = utils.SafeCastString(cfg[common.PostGreSQLHOST])
-	postgresql.Port = int(utils.SafeCastFloat64(cfg[common.PostGreSQLPort]))
-	postgresql.Username = utils.SafeCastString(cfg[common.PostGreSQLUsername])
-	postgresql.Password = utils.SafeCastString(cfg[common.PostGreSQLPassword])
-	postgresql.Database = utils.SafeCastString(cfg[common.PostGreSQLDatabase])
-	postgresql.SSLMode = utils.SafeCastString(cfg[common.PostGreSQLSSLMode])
+	database.Type = cfgMgr.Get(common.DatabaseType).GetString()
+	postgresql := &models.PostGreSQL{
+		Host:     cfgMgr.Get(common.PostGreSQLHOST).GetString(),
+		Port:     cfgMgr.Get(common.PostGreSQLPort).GetInt(),
+		Username: cfgMgr.Get(common.PostGreSQLUsername).GetString(),
+		Password: cfgMgr.Get(common.PostGreSQLPassword).GetString(),
+		Database: cfgMgr.Get(common.PostGreSQLDatabase).GetString(),
+		SSLMode:  cfgMgr.Get(common.PostGreSQLSSLMode).GetString(),
+	}
 	database.PostGreSQL = postgresql
 
 	return database, nil
@@ -432,83 +332,45 @@ func JobserviceSecret() string {
 
 // WithNotary returns a bool value to indicate if Harbor's deployed with Notary
 func WithNotary() bool {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Warningf("Failed to get configuration, will return WithNotary == false")
-		return false
-	}
-	return utils.SafeCastBool(cfg[common.WithNotary])
+	return cfgMgr.Get(common.WithNotary).GetBool()
 }
 
 // WithClair returns a bool value to indicate if Harbor's deployed with Clair
 func WithClair() bool {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Errorf("Failed to get configuration, will return WithClair == false")
-		return false
-	}
-	return utils.SafeCastBool(cfg[common.WithClair])
+	return cfgMgr.Get(common.WithClair).GetBool()
 }
 
 // ClairEndpoint returns the end point of clair instance, by default it's the one deployed within Harbor.
 func ClairEndpoint() string {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Errorf("Failed to get configuration, use default clair endpoint")
-		return common.DefaultClairEndpoint
-	}
-	return utils.SafeCastString(cfg[common.ClairURL])
+	return cfgMgr.Get(common.ClairURL).GetString()
 }
 
 // ClairDB return Clair db info
 func ClairDB() (*models.PostGreSQL, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Errorf("Failed to get configuration of Clair DB, Error detail %v", err)
-		return nil, err
+	clairDB := &models.PostGreSQL{
+		Host:     cfgMgr.Get(common.ClairDBHost).GetString(),
+		Port:     cfgMgr.Get(common.ClairDBPort).GetInt(),
+		Username: cfgMgr.Get(common.ClairDBUsername).GetString(),
+		Password: cfgMgr.Get(common.ClairDBPassword).GetString(),
+		Database: cfgMgr.Get(common.ClairDB).GetString(),
+		SSLMode:  cfgMgr.Get(common.ClairDBSSLMode).GetString(),
 	}
-	clairDB := &models.PostGreSQL{}
-	clairDB.Host = utils.SafeCastString(cfg[common.ClairDBHost])
-	clairDB.Port = int(utils.SafeCastFloat64(cfg[common.ClairDBPort]))
-	clairDB.Username = utils.SafeCastString(cfg[common.ClairDBUsername])
-	clairDB.Password = utils.SafeCastString(cfg[common.ClairDBPassword])
-	clairDB.Database = utils.SafeCastString(cfg[common.ClairDB])
-	clairDB.SSLMode = utils.SafeCastString(cfg[common.ClairDBSSLMode])
 	return clairDB, nil
 }
 
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Errorf("Failed to get configuration, will return empty string as admiral's endpoint, error: %v", err)
+	if cfgMgr.Get(common.AdmiralEndpoint).GetString() == "NA" {
 		return ""
 	}
-
-	if e, ok := cfg[common.AdmiralEndpoint].(string); !ok || e == "NA" {
-		return ""
-	}
-	return utils.SafeCastString(cfg[common.AdmiralEndpoint])
+	return cfgMgr.Get(common.AdmiralEndpoint).GetString()
 }
 
 // ScanAllPolicy returns the policy which controls the scan all.
 func ScanAllPolicy() models.ScanAllPolicy {
 	var res models.ScanAllPolicy
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Errorf("Failed to get configuration, will return default scan all policy, error: %v", err)
-		return models.DefaultScanAllPolicy
-	}
-	v, ok := cfg[common.ScanAllPolicy]
-	if !ok {
-		return models.DefaultScanAllPolicy
-	}
-	b, err := json.Marshal(v)
-	if err != nil {
-		log.Errorf("Failed to Marshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
-		return models.DefaultScanAllPolicy
-	}
-	if err := json.Unmarshal(b, &res); err != nil {
+	log.Infof("Scan all policy %v", cfgMgr.Get(common.ScanAllPolicy).GetString())
+	if err := json.Unmarshal([]byte(cfgMgr.Get(common.ScanAllPolicy).GetString()), &res); err != nil {
 		log.Errorf("Failed to unmarshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
 		return models.DefaultScanAllPolicy
 	}
@@ -522,54 +384,32 @@ func WithAdmiral() bool {
 
 // UAASettings returns the UAASettings to access UAA service.
 func UAASettings() (*models.UAASettings, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return nil, err
-	}
 	us := &models.UAASettings{
-		Endpoint:     utils.SafeCastString(cfg[common.UAAEndpoint]),
-		ClientID:     utils.SafeCastString(cfg[common.UAAClientID]),
-		ClientSecret: utils.SafeCastString(cfg[common.UAAClientSecret]),
-		VerifyCert:   utils.SafeCastBool(cfg[common.UAAVerifyCert]),
+		Endpoint:     cfgMgr.Get(common.UAAEndpoint).GetString(),
+		ClientID:     cfgMgr.Get(common.UAAClientID).GetString(),
+		ClientSecret: cfgMgr.Get(common.UAAClientSecret).GetString(),
+		VerifyCert:   cfgMgr.Get(common.UAAVerifyCert).GetBool(),
 	}
 	return us, nil
 }
 
 // ReadOnly returns a bool to indicates if Harbor is in read only mode.
 func ReadOnly() bool {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Errorf("Failed to get configuration, will return false as read only, error: %v", err)
-		return false
-	}
-	return utils.SafeCastBool(cfg[common.ReadOnly])
+	return cfgMgr.Get(common.ReadOnly).GetBool()
 }
 
 // WithChartMuseum returns a bool to indicate if chartmuseum is deployed with Harbor.
 func WithChartMuseum() bool {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Errorf("Failed to get 'with_chartmuseum' configuration with error: %s; return false as default", err.Error())
-		return false
-	}
-
-	return utils.SafeCastBool(cfg[common.WithChartMuseum])
+	return cfgMgr.Get(common.WithChartMuseum).GetBool()
 }
 
 // GetChartMuseumEndpoint returns the endpoint of the chartmuseum service
 // otherwise an non nil error is returned
 func GetChartMuseumEndpoint() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		log.Errorf("Failed to get 'chart_repository_url' configuration with error: %s; return false as default", err.Error())
-		return "", err
-	}
-
-	chartEndpoint := strings.TrimSpace(utils.SafeCastString(cfg[common.ChartRepoURL]))
+	chartEndpoint := strings.TrimSpace(cfgMgr.Get(common.ChartRepoURL).GetString())
 	if len(chartEndpoint) == 0 {
 		return "", errors.New("empty chartmuseum endpoint")
 	}
-
 	return chartEndpoint, nil
 }
 

@@ -96,6 +96,16 @@ func main() {
 	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
+	if err := dao.UpgradeSchema(database); err != nil {
+		log.Fatalf("failed to upgrade schema: %v", err)
+	}
+	if err := dao.CheckSchemaVersion(); err != nil {
+		log.Fatalf("failed to check schema version: %v", err)
+	}
+
+	if err := config.Load(); err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
 
 	password, err := config.InitialAdminPassword()
 	if err != nil {

@@ -17,33 +17,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/stretchr/testify/assert"
 )
 
 var l = NewUserLock(2 * time.Second)
-
-var adminServerLdapTestConfig = map[string]interface{}{
-	common.ExtEndpoint:          "host01.com",
-	common.AUTHMode:             "ldap_auth",
-	common.DatabaseType:         "postgresql",
-	common.PostGreSQLHOST:       "127.0.0.1",
-	common.PostGreSQLPort:       5432,
-	common.PostGreSQLUsername:   "postgres",
-	common.PostGreSQLPassword:   "root123",
-	common.PostGreSQLDatabase:   "registry",
-	common.LDAPURL:              "ldap://127.0.0.1",
-	common.LDAPSearchDN:         "cn=admin,dc=example,dc=com",
-	common.LDAPSearchPwd:        "admin",
-	common.LDAPBaseDN:           "dc=example,dc=com",
-	common.LDAPUID:              "uid",
-	common.LDAPFilter:           "",
-	common.LDAPScope:            3,
-	common.LDAPTimeout:          30,
-	common.CfgExpiration:        5,
-	common.AdminInitialPassword: "password",
-}
 
 func TestLock(t *testing.T) {
 	t.Log("Locking john")
