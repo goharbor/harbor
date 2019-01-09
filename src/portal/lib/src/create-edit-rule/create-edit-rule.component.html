@@ -69,7 +69,7 @@
                   <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
                 </label>
                 <div class="arrowSet" [hidden]="!(filterListData[i]?.name=='label')" (click)="openLabelList(selectedValue.value, i, $event)">
-                  <clr-icon shape="angle"></clr-icon>
+                  <clr-icon shape="angle" ></clr-icon>
                 </div>
                 <clr-icon shape="warning-standard" class="is-solid is-warning warning-icon" size="14" [hidden]="!deletedLabelCount || !(filterListData[i]?.name=='label')"></clr-icon>
                 <clr-icon shape="times-circle" class="is-solid" (click)="deleteFilter(i)"></clr-icon>
@@ -81,7 +81,7 @@
             </div>
 
           </div>
-          <clr-icon shape="plus-circle" class="is-solid plus-position" [hidden]="isFilterHide" (click)="addNewFilter()"></clr-icon>
+          <clr-icon id="add-label-list" shape="plus-circle" class="is-solid plus-position" [hidden]="isFilterHide" (click)="addNewFilter()"></clr-icon>
 
         </div>
         <!--Targets-->

@@ -34,7 +34,7 @@ ${link_to_registries}  //clr-modal//span[contains(.,'Endpoint')]
 ${new_endpoint_button}  //hbr-endpoint//button[contains(.,'New')]
 ${rule_name}  //input[@id='ruleName']
 ${source_project}    //input[@value='name']
-${source_image_filter_add}  //hbr-create-edit-rule/clr-modal/div/div[1]/div/div[1]/div/div[2]/form/section/div[4]/clr-icon
+${source_image_filter_add}  //hbr-create-edit-rule/clr-modal//clr-icon[@id="add-label-list"]
 ${source_iamge_repo_filter}  //hbr-create-edit-rule//section/div[4]/div/div[1]/div/label/input
 ${source_image_tag_filter}  //hbr-create-edit-rule//section/div[4]/div/div[2]/div/label/input
 ${rule_target_select}  //select[@id='ruleTarget']
@@ -42,7 +42,7 @@ ${rule_trigger_select}  //select[@id="ruleTrigger"]
 ${schedule_type_select}  //select[@name="scheduleType"]
 ${schedule_day_select}  //select[@name="scheduleDay"]
 ${shcedule_time}  //input[@type="time"]
-${destination_insecure_checkbox}    //hbr-create-edit-endpoint/clr-modal//input[@id="clr-checkbox-destination_insecure"]
+${destination_insecure_checkbox}    //hbr-create-edit-endpoint/clr-modal//input[@id="destination_insecure"]
 ${ping_test_button}  //button[contains(.,'Test')]
 ${nav_to_registries}  //clr-vertical-nav//span[contains(.,'Registries')]
 ${nav_to_replications}  //clr-vertical-nav//span[contains(.,'Replications')]
