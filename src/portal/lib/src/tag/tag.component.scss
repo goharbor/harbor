@@ -260,3 +260,8 @@ hbr-image-name-input {
 .color-gray {
   color: #565656;
 }
+clr-datagrid {
+  ::ng-deep .datagrid-table {
+    position: static;
+  }
+}
