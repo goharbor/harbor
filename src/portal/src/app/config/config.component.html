@@ -25,7 +25,10 @@
                     <button id="config-label" clrTabLink>{{'CONFIG.LABEL' | translate }}</button>
                     <ng-template [(clrIfActive)]="labelActive">
 						<clr-tab-content id="system_label" *ngIf="!withAdmiral">
-							<hbr-label [scope]="'g'"></hbr-label>
+                            <hbr-label [scope]="'g'"
+                            [hasCreateLabelPermission]="true"
+                            [hasUpdateLabelPermission]="true"
+                            [hasDeleteLabelPermission]="true"></hbr-label>
 						</clr-tab-content>
 					</ng-template>
                 </clr-tab>

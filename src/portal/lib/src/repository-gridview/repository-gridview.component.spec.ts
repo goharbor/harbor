@@ -24,13 +24,16 @@ import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { OperationService } from "../operation/operation.service";
 import {ProjectDefaultService, ProjectService, RetagDefaultService, RetagService} from "../service";
-
+import { UserPermissionService, UserPermissionDefaultService } from "../service/permission.service";
+import { USERSTATICPERMISSION } from "../service/permission-static";
+import { of } from "rxjs";
 describe('RepositoryComponentGridview (inline template)', () => {
 
   let compRepo: RepositoryGridviewComponent;
   let fixtureRepo: ComponentFixture<RepositoryGridviewComponent>;
   let repositoryService: RepositoryService;
   let systemInfoService: SystemInfoService;
+  let userPermissionService: UserPermissionService;
 
   let spyRepos: jasmine.Spy;
   let spySystemInfo: jasmine.Spy;
@@ -72,7 +75,8 @@ describe('RepositoryComponentGridview (inline template)', () => {
     metadata: {xTotalCount: 2},
     data: mockRepoData
   };
-
+  let mockHasCreateRepositoryPermission: boolean = true;
+  let mockHasDeleteRepositoryPermission: boolean = true;
   // let mockTagData: Tag[] = [
   //   {
   //     "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
@@ -120,6 +124,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: RetagService, useClass: RetagDefaultService },
         { provide: SystemInfoService, useClass: SystemInfoDefaultService },
+        { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         { provide: OperationService }
       ]
     });
@@ -136,9 +141,17 @@ describe('RepositoryComponentGridview (inline template)', () => {
 
     spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepo));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
+
+
+    userPermissionService = fixtureRepo.debugElement.injector.get(UserPermissionService);
+    spyOn(userPermissionService, "getPermission")
+    .withArgs(compRepo.projectId,
+      USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.CREATE )
+    .and.returnValue(of(mockHasCreateRepositoryPermission))
+     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.DELETE )
+     .and.returnValue(of(mockHasDeleteRepositoryPermission));
     fixtureRepo.detectChanges();
   });
-
   it('should create', () => {
     expect(compRepo).toBeTruthy();
   });
