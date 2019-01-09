@@ -58,11 +58,11 @@
         <div class="form-group">
             <label for="selfReg">{{'CONFIG.MAIL_SSL' | translate}}</label>
             <!--for = selfReg?-->
-            <clr-checkbox-wrapper>
+            <clr-checkbox-wrapper id="emailSSL-wrapper">
                 <input type="checkbox" clrCheckbox name="emailSSL" id="emailSSL" [(ngModel)]="currentConfig.email_ssl.value"
                     [disabled]="disabled(currentConfig.email_ssl)" />
                 <label>
-                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-7">
+                    <a role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-7">
                         <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                         <span class="tooltip-content">{{'CONFIG.SSL_TOOLTIP' | translate}}</span>
                     </a>
@@ -71,11 +71,11 @@
         </div>
         <div class="form-group">
             <label for="insecure">{{'CONFIG.MAIL_INSECURE' | translate}}</label>
-            <clr-checkbox-wrapper>
+            <clr-checkbox-wrapper id="emailInsecure-wrapper">
                 <input type="checkbox" clrCheckbox name="emaiInsecure" id="emailInsecure" [ngModel]="!currentConfig.email_insecure.value"
                     [disabled]="disabled(currentConfig.email_insecure)" (ngModelChange)="setInsecureValue($event)" />
                 <label>
-                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-7">
+                    <a role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-7">
                         <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                         <span class="tooltip-content">{{'CONFIG.INSECURE_TOOLTIP' | translate}}</span>
                     </a>
