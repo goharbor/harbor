@@ -81,6 +81,12 @@ func init() {
 	if err := config.Init(); err != nil {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
+
+	cfgs, _ := config.GetSystemCfg()
+	for k, v := range cfgs {
+		fmt.Println(k, "=", v)
+	}
+
 	database, err := config.Database()
 	if err != nil {
 		log.Fatalf("failed to get database configurations: %v", err)
