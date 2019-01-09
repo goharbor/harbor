@@ -8,7 +8,7 @@ import { ProjectService, ProjectDefaultService} from '../service/project.service
 import { SERVICE_CONFIG, IServiceConfig} from '../service.config';
 import { SystemInfo } from '../service/interface';
 import { Project } from './project';
-
+import { UserPermissionService, UserPermissionDefaultService } from '../service/permission.service';
 describe('ProjectPolicyConfigComponent', () => {
 
   let systemInfoService: SystemInfoService;
@@ -102,7 +102,8 @@ describe('ProjectPolicyConfigComponent', () => {
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ProjectService, useClass: ProjectDefaultService },
-        { provide: SystemInfoService, useClass: SystemInfoDefaultService}
+        { provide: SystemInfoService, useClass: SystemInfoDefaultService},
+        { provide: UserPermissionService, useClass: UserPermissionDefaultService},
       ]
     })
     .compileComponents();

@@ -29,7 +29,6 @@ import { CREATE_EDIT_LABEL_DIRECTIVES } from "./create-edit-label/index";
 import { LABEL_PIECE_DIRECTIVES } from "./label-piece/index";
 import { HELMCHART_DIRECTIVE } from "./helm-chart/index";
 import { IMAGE_NAME_INPUT_DIRECTIVES } from "./image-name-input/index";
-
 import {
   SystemInfoService,
   SystemInfoDefaultService,
@@ -56,7 +55,9 @@ import {
   HelmChartService,
   HelmChartDefaultService,
   RetagService,
-  RetagDefaultService
+  RetagDefaultService,
+  UserPermissionService,
+  UserPermissionDefaultService
 } from './service/index';
 import {
   ErrorHandler,
@@ -68,7 +69,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { TranslateServiceInitializer } from './i18n/index';
 import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from './utils';
 import { ChannelService } from './channel/index';
-import { OperationService } from  './operation/operation.service';
+import { OperationService } from './operation/operation.service';
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -151,6 +152,8 @@ export interface HarborModuleConfig {
 
   // Service implementation for helmchart
   helmChartService?: Provider;
+  // Service implementation for userPermission
+  userPermissionService?: Provider;
 }
 
 /**
@@ -248,8 +251,9 @@ export class HarborLibraryModule {
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
-        config.labelService || {provide: LabelService, useClass: LabelDefaultService},
-        config.helmChartService || {provide: HelmChartService, useClass: HelmChartDefaultService},
+        config.labelService || { provide: LabelService, useClass: LabelDefaultService },
+        config.helmChartService || { provide: HelmChartService, useClass: HelmChartDefaultService },
+        config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         // Do initializing
         TranslateServiceInitializer,
         {
@@ -281,8 +285,9 @@ export class HarborLibraryModule {
         config.configService || { provide: ConfigurationService, useClass: ConfigurationDefaultService },
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
-        config.labelService || {provide: LabelService, useClass: LabelDefaultService},
-        config.helmChartService || {provide: HelmChartService, useClass: HelmChartDefaultService},
+        config.labelService || { provide: LabelService, useClass: LabelDefaultService },
+        config.helmChartService || { provide: HelmChartService, useClass: HelmChartDefaultService },
+        config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         ChannelService,
         OperationService
       ]

@@ -219,6 +219,7 @@
         "ROLE": "Role",
         "SYS_ADMIN": "System Admin",
         "PROJECT_ADMIN": "Project Admin",
+        "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
         "GUEST": "Guest",
         "DELETE": "Delete",

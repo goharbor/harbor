@@ -26,8 +26,8 @@ import { AppConfigService } from '../app-config.service';
 import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
 import { User } from './user';
-import {ChangePasswordComponent} from "./change-password/change-password.component";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
+import { ChangePasswordComponent } from "./change-password/change-password.component";
+import { operateChanges, OperateInfo, OperationService, OperationState } from "@harbor/ui";
 /**
  * NOTES:
  *   Pagination for this component is a temporary workaround solution. It will be replaced in future release.
@@ -153,7 +153,7 @@ export class UserComponent implements OnInit, OnDestroy {
     return this.onGoing;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   ngOnDestroy(): void {
     if (this.deletionSubscription) {
@@ -223,15 +223,15 @@ export class UserComponent implements OnInit, OnDestroy {
         }
       }
 
-        Promise.all(promiseLists).then(() => {
-            this.selectedRow = [];
-            this.refresh();
-        })
+      Promise.all(promiseLists).then(() => {
+        this.selectedRow = [];
+        this.refresh();
+      })
         .catch(error => {
-             this.selectedRow = [];
-             this.msgHandler.handleError(error);
-         });
-      }
+          this.selectedRow = [];
+          this.msgHandler.handleError(error);
+        });
+    }
   }
 
   // Delete the specified user
@@ -298,7 +298,7 @@ export class UserComponent implements OnInit, OnDestroy {
       this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
         operateChanges(operMessage, OperationState.failure, res);
       });
-     });
+    });
   }
 
   // Refresh the user list
@@ -310,15 +310,15 @@ export class UserComponent implements OnInit, OnDestroy {
 
     this.originalUsers = this.userService.getUsers();
     this.originalUsers.then(users => {
-        this.onGoing = false;
+      this.onGoing = false;
 
-        this.totalCount = users.length;
-        this.users = users.slice(from, to); // First page
+      this.totalCount = users.length;
+      this.users = users.slice(from, to); // First page
 
-        this.forceRefreshView(5000);
+      this.forceRefreshView(5000);
 
-        return users;
-      })
+      return users;
+    })
       .catch(error => {
         this.onGoing = false;
         this.msgHandler.handleError(error);

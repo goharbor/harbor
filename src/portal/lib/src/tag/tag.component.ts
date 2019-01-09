@@ -21,8 +21,8 @@ import {
   ChangeDetectorRef,
   ElementRef, AfterViewInit
 } from "@angular/core";
-import {Subject, forkJoin} from "rxjs";
-import { debounceTime , distinctUntilChanged, finalize} from 'rxjs/operators';
+import { Subject, forkJoin } from "rxjs";
+import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
 import { State, Comparator } from "../service/interface";
 
@@ -30,9 +30,9 @@ import { TagService, RetagService, VulnerabilitySeverity, RequestQueryParams } f
 import { ErrorHandler } from "../error-handler/error-handler";
 import { ChannelService } from "../channel/index";
 import {
-    ConfirmationTargets,
-    ConfirmationState,
-    ConfirmationButtons, Roles
+  ConfirmationTargets,
+  ConfirmationState,
+  ConfirmationButtons, Roles
 } from "../shared/shared.const";
 
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
@@ -54,6 +54,8 @@ import {
 
 import { CopyInputComponent } from "../push-image/copy-input.component";
 import { LabelService } from "../service/label.service";
+import { UserPermissionService } from "../service/permission.service";
+import { USERSTATICPERMISSION } from "../service/permission-static";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
@@ -71,14 +73,13 @@ export interface LabelState {
 })
 export class TagComponent implements OnInit, AfterViewInit {
 
-  signedCon: {[key: string]: any | string[]} = {};
+  signedCon: { [key: string]: any | string[] } = {};
   @Input() projectId: number;
   @Input() memberRoleID: number;
   @Input() repoName: string;
   @Input() isEmbedded: boolean;
 
   @Input() hasSignedIn: boolean;
-  @Input() hasProjectAdminRole: boolean;
   @Input() isGuest: boolean;
   @Input() registryUrl: string;
   @Input() withNotary: boolean;
@@ -116,8 +117,8 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   labelListOpen = false;
   selectedTag: Tag[];
-  labelNameFilter: Subject<string> = new Subject<string> ();
-  stickLabelNameFilter: Subject<string> = new Subject<string> ();
+  labelNameFilter: Subject<string> = new Subject<string>();
+  stickLabelNameFilter: Subject<string> = new Subject<string>();
   filterOnGoing: boolean;
   stickName = '';
   filterName = '';
@@ -144,10 +145,15 @@ export class TagComponent implements OnInit, AfterViewInit {
   totalCount = 0;
   currentState: State;
 
+  hasAddLabelImagePermission: boolean;
+  hasRetagImagePermission: boolean;
+  hasDeleteImagePermission: boolean;
+  hasScanImagePermission: boolean;
   constructor(
     private errorHandler: ErrorHandler,
     private tagService: TagService,
     private retagService: RetagService,
+    private userPermissionService: UserPermissionService,
     private labelService: LabelService,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef,
@@ -164,50 +170,50 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.errorHandler.error("Repo name cannot be unset.");
       return;
     }
-
     this.retrieve();
     this.lastFilteredTagName = '';
 
     this.labelNameFilter
-        .pipe(debounceTime(500))
-        .pipe(distinctUntilChanged())
-        .subscribe((name: string) => {
-          if (this.filterName.length) {
-            this.filterOnGoing = true;
+      .pipe(debounceTime(500))
+      .pipe(distinctUntilChanged())
+      .subscribe((name: string) => {
+        if (this.filterName.length) {
+          this.filterOnGoing = true;
 
-            this.imageFilterLabels.forEach(data => {
-              if (data.label.name.indexOf(this.filterName) !== -1) {
-                data.show = true;
-              } else {
-                data.show = false;
-              }
-            });
-            setTimeout(() => {
-              setInterval(() => this.ref.markForCheck(), 200);
-            }, 1000);
-          }
-        });
+          this.imageFilterLabels.forEach(data => {
+            if (data.label.name.indexOf(this.filterName) !== -1) {
+              data.show = true;
+            } else {
+              data.show = false;
+            }
+          });
+          setTimeout(() => {
+            setInterval(() => this.ref.markForCheck(), 200);
+          }, 1000);
+        }
+      });
 
     this.stickLabelNameFilter
-        .pipe(debounceTime(500))
-        .pipe(distinctUntilChanged())
-        .subscribe((name: string) => {
-          if (this.stickName.length) {
-            this.filterOnGoing = true;
+      .pipe(debounceTime(500))
+      .pipe(distinctUntilChanged())
+      .subscribe((name: string) => {
+        if (this.stickName.length) {
+          this.filterOnGoing = true;
 
-            this.imageStickLabels.forEach(data => {
-              if (data.label.name.indexOf(this.stickName) !== -1) {
-                data.show = true;
-              } else {
-                data.show = false;
-              }
-            });
-            setTimeout(() => {
-              setInterval(() => this.ref.markForCheck(), 200);
-            }, 1000);
-          }
-        });
+          this.imageStickLabels.forEach(data => {
+            if (data.label.name.indexOf(this.stickName) !== -1) {
+              data.show = true;
+            } else {
+              data.show = false;
+            }
+          });
+          setTimeout(() => {
+            setInterval(() => this.ref.markForCheck(), 200);
+          }, 1000);
+        }
+      });
 
+      this.getImagePermissionRule(this.projectId);
   }
 
   ngAfterViewInit() {
@@ -219,7 +225,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   public get filterLabelPieceWidth() {
     let len = this.lastFilteredTagName.length ? this.lastFilteredTagName.length * 6 + 60 : 115;
     return len > 210 ? 210 : len;
-}
+  }
 
   doSearchTagNames(tagName: string) {
     this.lastFilteredTagName = tagName;
@@ -234,9 +240,9 @@ export class TagComponent implements OnInit, AfterViewInit {
     st.page.to = this.pageSize - 1;
     let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
     if (selectedLab) {
-      st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: selectedLab.label.id}];
+      st.filters = [{ property: 'name', value: this.lastFilteredTagName }, { property: 'labels.id', value: selectedLab.label.id }];
     } else {
-      st.filters = [{property: 'name', value: this.lastFilteredTagName}];
+      st.filters = [{ property: 'name', value: this.lastFilteredTagName }];
     }
 
     this.clrLoad(st);
@@ -286,14 +292,14 @@ export class TagComponent implements OnInit, AfterViewInit {
     toPromise<Label[]>(this.labelService.getGLabels()).then((res: Label[]) => {
       if (res.length) {
         res.forEach(data => {
-          this.imageLabels.push({'iconsShow': false, 'label': data, 'show': true});
+          this.imageLabels.push({ 'iconsShow': false, 'label': data, 'show': true });
         });
       }
 
       toPromise<Label[]>(this.labelService.getPLabels(this.projectId)).then((res1: Label[]) => {
         if (res1.length) {
           res1.forEach(data => {
-            this.imageLabels.push({'iconsShow': false, 'label': data, 'show': true});
+            this.imageLabels.push({ 'iconsShow': false, 'label': data, 'show': true });
           });
         }
         this.imageFilterLabels = clone(this.imageLabels);
@@ -372,15 +378,15 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   unSelectLabel(labelInfo: LabelState): void {
-      if (!this.inprogress) {
-        this.inprogress = true;
-        let labelId = labelInfo.label.id;
-        this.selectedRow = this.selectedTag;
-        toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
-          this.refresh();
+    if (!this.inprogress) {
+      this.inprogress = true;
+      let labelId = labelInfo.label.id;
+      this.selectedRow = this.selectedTag;
+      toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
+        this.refresh();
 
-          // insert the unselected label to groups with the same icons
-          this.sortOperation(this.imageStickLabels, labelInfo);
+        // insert the unselected label to groups with the same icons
+        this.sortOperation(this.imageStickLabels, labelInfo);
         labelInfo.iconsShow = false;
         this.inprogress = false;
       }).catch(err => {
@@ -417,26 +423,26 @@ export class TagComponent implements OnInit, AfterViewInit {
         data.iconsShow = true;
       }
     });
-     this.imageFilterLabels.splice(this.imageFilterLabels.indexOf(labelInfo), 1);
-     this.imageFilterLabels.unshift(labelInfo);
-     this.filterOneLabel = labelInfo.label;
+    this.imageFilterLabels.splice(this.imageFilterLabels.indexOf(labelInfo), 1);
+    this.imageFilterLabels.unshift(labelInfo);
+    this.filterOneLabel = labelInfo.label;
 
-      // reload data
-      this.currentPage = 1;
-      let st: State = this.currentState;
-      if (!st) {
-        st = { page: {} };
-      }
-      st.page.size = this.pageSize;
-      st.page.from = 0;
-      st.page.to = this.pageSize - 1;
-      if (this.lastFilteredTagName) {
-        st.filters = [{property: 'name', value: this.lastFilteredTagName}, {property: 'labels.id', value: labelId}];
-      } else {
-        st.filters = [{property: 'labels.id', value: labelId}];
-      }
+    // reload data
+    this.currentPage = 1;
+    let st: State = this.currentState;
+    if (!st) {
+      st = { page: {} };
+    }
+    st.page.size = this.pageSize;
+    st.page.from = 0;
+    st.page.to = this.pageSize - 1;
+    if (this.lastFilteredTagName) {
+      st.filters = [{ property: 'name', value: this.lastFilteredTagName }, { property: 'labels.id', value: labelId }];
+    } else {
+      st.filters = [{ property: 'labels.id', value: labelId }];
+    }
 
-      this.clrLoad(st);
+    this.clrLoad(st);
   }
 
   unFilterLabel(labelInfo: LabelState): void {
@@ -456,7 +462,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     st.page.from = 0;
     st.page.to = this.pageSize - 1;
     if (this.lastFilteredTagName) {
-      st.filters = [{property: 'name', value: this.lastFilteredTagName}];
+      st.filters = [{ property: 'name', value: this.lastFilteredTagName }];
     } else {
       st.filters = [];
     }
@@ -480,7 +486,7 @@ export class TagComponent implements OnInit, AfterViewInit {
           data.show = false;
         }
       });
-    } else  {
+    } else {
       this.openLabelFilterPanel = false;
       this.openLabelFilterPiece = false;
     }
@@ -523,7 +529,7 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   retrieve() {
     this.tags = [];
-    let signatures: string[] = [] ;
+    let signatures: string[] = [];
     this.loading = true;
 
     toPromise<Tag[]>(this.tagService
@@ -539,15 +545,15 @@ export class TagComponent implements OnInit, AfterViewInit {
               components: {
                 total: 0,
                 summary: []
-            }
-        };
-      }
-      if (t.signature !== null) {
-        signatures.push(t.name);
-      }
-      });
-      this.tags = items;
-        let signedName: {[key: string]: string[]} = {};
+              }
+            };
+          }
+          if (t.signature !== null) {
+            signatures.push(t.name);
+          }
+        });
+        this.tags = items;
+        let signedName: { [key: string]: string[] } = {};
         signedName[this.repoName] = signatures;
         this.signatureOutput.emit(signedName);
         this.loading = false;
@@ -568,9 +574,9 @@ export class TagComponent implements OnInit, AfterViewInit {
     if (Math.pow(1024, 1) <= size && size < Math.pow(1024, 2)) {
       return (size / Math.pow(1024, 1)).toFixed(2) + "KB";
     } else if (Math.pow(1024, 2) <= size && size < Math.pow(1024, 3)) {
-      return  (size / Math.pow(1024, 2)).toFixed(2) + "MB";
+      return (size / Math.pow(1024, 2)).toFixed(2) + "MB";
     } else if (Math.pow(1024, 3) <= size && size < Math.pow(1024, 4)) {
-      return  (size / Math.pow(1024, 3)).toFixed(2) + "GB";
+      return (size / Math.pow(1024, 3)).toFixed(2) + "GB";
     } else {
       return size + "B";
     }
@@ -578,8 +584,8 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   retag(tags: Tag[]) {
     if (tags && tags.length) {
-        this.retagDialogOpened = true;
-        this.retagSrcImage = this.repoName + ":" + tags[0].digest;
+      this.retagDialogOpened = true;
+      this.retagSrcImage = this.repoName + ":" + tags[0].digest;
     } else {
       this.errorHandler.error("One tag should be selected before retag.");
     }
@@ -587,23 +593,23 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   onRetag() {
     this.retagService.retag({
-        targetProject: this.imageNameInput.projectName.value,
-        targetRepo: this.imageNameInput.repoName.value,
-        targetTag: this.imageNameInput.tagName.value,
-        srcImage: this.retagSrcImage,
-        override: true
-     })
-     .pipe(finalize(() => {
+      targetProject: this.imageNameInput.projectName.value,
+      targetRepo: this.imageNameInput.repoName.value,
+      targetTag: this.imageNameInput.tagName.value,
+      srcImage: this.retagSrcImage,
+      override: true
+    })
+      .pipe(finalize(() => {
         this.retagDialogOpened = false;
         this.imageNameInput.form.reset();
-     }))
-     .subscribe(response => {
-      this.translateService.get('RETAG.MSG_SUCCESS').subscribe((res: string) => {
-        this.errorHandler.info(res);
-      });
-    }, error => {
+      }))
+      .subscribe(response => {
+        this.translateService.get('RETAG.MSG_SUCCESS').subscribe((res: string) => {
+          this.errorHandler.info(res);
+        });
+      }, error => {
         this.errorHandler.error(error);
-    });
+      });
   }
 
   deleteTags(tags: Tag[]) {
@@ -631,8 +637,8 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (message &&
-        message.source === ConfirmationTargets.TAG
-        && message.state === ConfirmationState.CONFIRMED) {
+      message.source === ConfirmationTargets.TAG
+      && message.state === ConfirmationState.CONFIRMED) {
       let tags: Tag[] = message.data;
       if (tags && tags.length) {
         let promiseLists: any[] = [];
@@ -660,27 +666,27 @@ export class TagComponent implements OnInit, AfterViewInit {
     if (tag.signature) {
       forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
         this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
-        let wrongInfo: string = res[1] + "notary -s https://" + this.registryUrl +
+          let wrongInfo: string = res[1] + "notary -s https://" + this.registryUrl +
             ":4443 -d ~/.docker/trust remove -p " +
             this.registryUrl + "/" + this.repoName +
             " " + name;
-        operateChanges(operMessage, OperationState.failure, wrongInfo);
-      });
+          operateChanges(operMessage, OperationState.failure, wrongInfo);
+        });
     } else {
       return toPromise<number>(this.tagService
-          .deleteTag(this.repoName, tag.name))
-          .then(
-              response => {
-                this.translateService.get("BATCH.DELETED_SUCCESS")
-                    .subscribe(res =>  {
-                      operateChanges(operMessage, OperationState.success);
-                    });
-              }).catch(error => {
+        .deleteTag(this.repoName, tag.name))
+        .then(
+          response => {
+            this.translateService.get("BATCH.DELETED_SUCCESS")
+              .subscribe(res => {
+                operateChanges(operMessage, OperationState.success);
+              });
+          }).catch(error => {
             if (error.status === 503) {
               forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                  this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
-                operateChanges(operMessage, OperationState.failure, res[1]);
-              });
+                this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
+                  operateChanges(operMessage, OperationState.failure, res[1]);
+                });
               return;
             }
             this.translateService.get("BATCH.DELETED_FAILURE").subscribe(res => {
@@ -744,13 +750,29 @@ export class TagComponent implements OnInit, AfterViewInit {
   // Whether show the 'scan now' menu
   canScanNow(t: Tag[]): boolean {
     if (!this.withClair) { return false; }
-    if (!this.hasProjectAdminRole) { return false; }
-      let st: string = this.scanStatus(t[0]);
+    if (!this.hasScanImagePermission) { return false; }
+    let st: string = this.scanStatus(t[0]);
 
     return st !== VULNERABILITY_SCAN_STATUS.pending &&
       st !== VULNERABILITY_SCAN_STATUS.running;
   }
-
+  getImagePermissionRule(projectId: number): void {
+    let hasAddLabelImagePermission = this.userPermissionService.getPermission(projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY,
+      USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE);
+    let hasRetagImagePermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL);
+    let hasDeleteImagePermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE);
+    let hasScanImagePermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE);
+    forkJoin(hasAddLabelImagePermission, hasRetagImagePermission, hasDeleteImagePermission, hasScanImagePermission)
+    .subscribe(permissions => {
+      this.hasAddLabelImagePermission = permissions[0] as boolean;
+      this.hasRetagImagePermission = permissions[1] as boolean;
+      this.hasDeleteImagePermission = permissions[2] as boolean;
+      this.hasScanImagePermission = permissions[3] as boolean;
+    }, error =>  this.errorHandler.error(error) );
+  }
   // Trigger scan
   scanNow(t: Tag[]): void {
     if (t && t.length) {
@@ -763,14 +785,6 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   // pull command
   onCpError($event: any): void {
-      this.copyInput.setPullCommendShow();
-  }
-
-  public get developerRoleOrAbove(): boolean {
-    return this.memberRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
-  }
-
-  public get guestRoleOrAbove(): boolean {
-      return this.memberRoleID === Roles.GUEST || this.memberRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
+    this.copyInput.setPullCommendShow();
   }
 }

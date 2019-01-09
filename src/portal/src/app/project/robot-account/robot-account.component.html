@@ -14,18 +14,18 @@
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <clr-dg-action-bar>
-      <button class="btn btn-sm btn-secondary"
-        (click)="openAddRobotModal()">
-        <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'ROBOT_ACCOUNT.NEW_ROBOT_ACCOUNT'
-          | translate }}</span>
+      <button class="btn btn-sm btn-secondary" [disabled]="!hasRobotCreatePermission" (click)="openAddRobotModal()">
+        <span>
+          <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'ROBOT_ACCOUNT.NEW_ROBOT_ACCOUNT'
+          | translate }}
+        </span>
       </button>
       <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn btn-sm
-        btn-link"
-        clrDropdownTrigger>
+        btn-link" clrDropdownTrigger>
         <span>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret
             down"></clr-icon></span>
         <clr-dropdown-menu *clrIfOpen>
-          <button clrDropdownItem [disabled]="!(selectedRow.length ==
+          <button clrDropdownItem [disabled]="!hasRobotUpdatePermission||!(selectedRow.length ==
             1)" (click)="changeAccountStatus(selectedRow)">
             <span *ngIf="selectedRow[0] && !selectedRow[0].disabled
               || selectedRow.length!==1">{{'ROBOT_ACCOUNT.DISABLE_ACCOUNT'
@@ -35,9 +35,7 @@
               | translate}}</span>
           </button>
           <div class="dropdown-divider"></div>
-          <button clrDropdownItem
-            (click)="openDeleteRobotsDialog(selectedRow)"
-            [disabled]="!selectedRow.length">{{'ROBOT_ACCOUNT.DELETE'
+          <button clrDropdownItem (click)="openDeleteRobotsDialog(selectedRow)" [disabled]="!hasRobotDeletePermission || !selectedRow.length">{{'ROBOT_ACCOUNT.DELETE'
             | translate}}</button>
         </clr-dropdown-menu>
       </clr-dropdown>
@@ -49,12 +47,8 @@
       <clr-dg-row *clrDgItems="let r of robots" [clrDgItem]="r">
         <clr-dg-cell>{{r.name}}</clr-dg-cell>
         <clr-dg-cell [ngSwitch]="r.disabled">
-          <clr-icon shape="check-circle" *ngSwitchCase="false"
-            size="20"
-            class="color-green"></clr-icon>
-          <clr-icon shape="times-circle" *ngSwitchCase="true"
-            size="16"
-            class="color-red red-position"></clr-icon>
+          <clr-icon shape="check-circle" *ngSwitchCase="false" size="20" class="color-green"></clr-icon>
+          <clr-icon shape="times-circle" *ngSwitchCase="true" size="16" class="color-red red-position"></clr-icon>
         </clr-dg-cell>
         <clr-dg-cell>{{r.description}}</clr-dg-cell>
       </clr-dg-row>
@@ -68,6 +62,5 @@
       </clr-dg-footer>
     </clr-datagrid>
   </div>
-  <add-robot [projectId]="projectId" [projectName]="projectName"
-    (create)="createAccount($event)"></add-robot>
+  <add-robot [projectId]="projectId" [projectName]="projectName" (create)="createAccount($event)"></add-robot>
 </div>

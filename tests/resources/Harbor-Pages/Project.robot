@@ -52,6 +52,7 @@ Go To Project Log
     Sleep  2
 
 Switch To Member
+    Sleep  3
     Click Element  xpath=${project_member_xpath}
     Sleep  1
 
@@ -89,22 +90,22 @@ Search Private Projects
 Make Project Private
     [Arguments]  ${projectname}
     Go Into Project  ${project name}    
-    Sleep  1
+    Sleep  2
     Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
     Sleep  1
     Checkbox Should Be Selected  xpath=//input[@name='public']
-    Click Element  //div[@id='clr-wrapper-public']//label
+    Click Element  //div[@id="clr-wrapper-public"]//label[1]
     Wait Until Element Is Enabled  //button[contains(.,'SAVE')]
     Click Element  //button[contains(.,'SAVE')]
     Wait Until Page Contains  Configuration has been successfully saved
 
 Make Project Public
     [Arguments]  ${projectname}
-    Go Into Project  ${project name}    
-    Sleep  1
+    Go Into Project  ${project name}
+    Sleep  2
     Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
     Checkbox Should Not Be Selected  xpath=//input[@name='public']
-    Click Element    //div[@id='clr-wrapper-public']//label
+    Click Element    //div[@id="clr-wrapper-public"]//label[1]
     Wait Until Element Is Enabled  //button[contains(.,'SAVE')]
     Click Element  //button[contains(.,'SAVE')]
     Wait Until Page Contains  Configuration has been successfully saved
