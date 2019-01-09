@@ -144,6 +144,7 @@ func TestResetConfig(t *testing.T) {
 }
 
 func TestPutConfigMaxLength(t *testing.T) {
+	t.Fail()
 	fmt.Println("Testing modifying configurations with max length.")
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
