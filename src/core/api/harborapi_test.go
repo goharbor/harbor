@@ -79,9 +79,7 @@ type usrInfo struct {
 }
 
 func init() {
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
+	config.InitWithSettings(testutils.CoreTestConfig)
 	database, err := config.Database()
 	if err != nil {
 		log.Fatalf("failed to get database configurations: %v", err)
@@ -145,7 +143,6 @@ func init() {
 	beego.Router("/api/ldap/groups/search", &LdapAPI{}, "get:SearchGroup")
 	beego.Router("/api/ldap/users/import", &LdapAPI{}, "post:ImportUser")
 	beego.Router("/api/configurations", &ConfigAPI{})
-	beego.Router("/api/configurations/reset", &ConfigAPI{}, "post:Reset")
 	beego.Router("/api/configs", &ConfigAPI{}, "get:GetInternalConfig")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 	beego.Router("/api/replications", &ReplicationAPI{})
@@ -603,18 +600,18 @@ func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, interface
 	return http.StatusOK, result, nil
 }
 
-// RetagImage retag image to another tag
-func (a testapi) RetagImage(authInfo usrInfo, repoName string, retag *apilib.Retag) (int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := fmt.Sprintf("/api/repositories/%s/tags", repoName)
-
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(retag)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
+//// RetagImage retag image to another tag
+//func (a testapi) RetagImage(authInfo usrInfo, repoName string, retag *apilib.Retag) (int, error) {
+//	_sling := sling.New().Post(a.basePath)
+//
+//	path := fmt.Sprintf("/api/repositories/%s/tags", repoName)
+//
+//	_sling = _sling.Path(path)
+//	_sling = _sling.BodyJSON(retag)
+//
+//	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+//	return httpStatusCode, err
+//}
 
 // Get manifests of a relevant repository
 func (a testapi) GetReposManifests(authInfo usrInfo, repoName string, tag string) (int, error) {

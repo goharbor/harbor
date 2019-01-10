@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/stretchr/testify/assert"
@@ -72,8 +71,6 @@ func TestMain(m *testing.M) {
 	if rc != 0 {
 		os.Exit(rc)
 	}
-	// Init user Info
-	// admin = &usrInfo{adminName, adminPwd}
 }
 
 // TestUserResettable
@@ -90,19 +87,7 @@ func TestUserResettable(t *testing.T) {
 		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
-	DBAuthAdminsvr, err := test.NewAdminserver(DBAuthConfig)
-	if err != nil {
-		panic(err)
-	}
-	LDAPAuthAdminsvr, err := test.NewAdminserver(LDAPAuthConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer DBAuthAdminsvr.Close()
-	defer LDAPAuthAdminsvr.Close()
-	if err := config.InitByURL(LDAPAuthAdminsvr.URL); err != nil {
-		panic(err)
-	}
+	config.InitWithSettings(LDAPAuthConfig)
 	u1 := &models.User{
 		UserID:   3,
 		Username: "daniel",
@@ -115,9 +100,7 @@ func TestUserResettable(t *testing.T) {
 	}
 	assert.False(isUserResetable(u1))
 	assert.True(isUserResetable(u2))
-	if err := config.InitByURL(DBAuthAdminsvr.URL); err != nil {
-		panic(err)
-	}
+	config.InitWithSettings(DBAuthConfig)
 	assert.True(isUserResetable(u1))
 }
 
@@ -138,10 +121,6 @@ func TestAll(t *testing.T) {
 	}
 
 	assert := assert.New(t)
-
-	//	v := url.Values{}
-	//	v.Set("principal", "admin")
-	//	v.Add("password", "Harbor12345")
 
 	r, _ := http.NewRequest("POST", "/c/login", nil)
 	w := httptest.NewRecorder()
