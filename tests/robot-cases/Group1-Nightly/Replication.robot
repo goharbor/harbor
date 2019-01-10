@@ -182,7 +182,7 @@ Test Case - Project LeveL Replication Operation
     ${d} =  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  proj${d}
-    Go Into Project  proj${d}
+    Go Into Project  proj${d}  has_image=${false}
     Switch To Replication
     Project Create A Rule With Existing Endpoint  rule${d}  proj${d}  edp  Manual
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  proj${d}  hello-world
