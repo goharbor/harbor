@@ -162,6 +162,6 @@ func TraceCfgMap(cfgs map[string]interface{}) {
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		fmt.Printf("%v=%v", k, cfgs[k])
+		fmt.Printf("%v=%v\n", k, cfgs[k])
 	}
 }
