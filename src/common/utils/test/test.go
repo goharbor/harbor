@@ -21,7 +21,10 @@ import (
 	"net/http/httptest"
 	"strings"
 
+	"fmt"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/gorilla/mux"
+	"sort"
 )
 
 // RequestHandlerMapping is a mapping between request and its handler
@@ -86,4 +89,78 @@ func NewServer(mappings ...*RequestHandlerMapping) *httptest.Server {
 	}
 
 	return httptest.NewServer(r)
+}
+
+// AdminServerAPITestConfig configs for testing
+var AdminServerAPITestConfig = map[string]interface{}{
+	common.ExtEndpoint:            "host01.com",
+	common.AUTHMode:               "db_auth",
+	common.DatabaseType:           "postgresql",
+	common.PostGreSQLHOST:         "127.0.0.1",
+	common.PostGreSQLPort:         5432,
+	common.PostGreSQLUsername:     "postgres",
+	common.PostGreSQLPassword:     "root123",
+	common.PostGreSQLDatabase:     "registry",
+	common.LDAPURL:                "ldap://127.0.0.1",
+	common.LDAPSearchDN:           "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:          "admin",
+	common.LDAPBaseDN:             "dc=example,dc=com",
+	common.LDAPUID:                "uid",
+	common.LDAPFilter:             "",
+	common.LDAPScope:              2,
+	common.LDAPTimeout:            30,
+	common.ClairDBHost:            "127.0.0.1",
+	common.CfgExpiration:          5,
+	common.AdminInitialPassword:   "password",
+	common.LDAPGroupSearchFilter:  "objectclass=groupOfNames",
+	common.LDAPGroupBaseDN:        "dc=example,dc=com",
+	common.LDAPGroupAttributeName: "cn",
+	common.LDAPGroupSearchScope:   2,
+	common.LdapGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
+	common.WithNotary:             "false",
+	common.WithChartMuseum:        "false",
+}
+
+// AdminServerAPITestConfig configs for testing
+var CoreTestConfig = map[string]interface{}{
+	common.ExtEndpoint:            "http://reg.mydomain.com",
+	common.AUTHMode:               "db_auth",
+	common.DatabaseType:           "postgresql",
+	common.PostGreSQLHOST:         "postgresql",
+	common.PostGreSQLPort:         5432,
+	common.PostGreSQLUsername:     "postgres",
+	common.PostGreSQLPassword:     "root123",
+	common.PostGreSQLDatabase:     "registry",
+	common.LDAPURL:                "ldap://127.0.0.1",
+	common.LDAPSearchDN:           "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:          "admin",
+	common.LDAPBaseDN:             "dc=example,dc=com",
+	common.LDAPUID:                "uid",
+	common.LDAPFilter:             "",
+	common.LDAPScope:              2,
+	common.LDAPTimeout:            30,
+	common.ClairDBHost:            "postgresql",
+	common.CfgExpiration:          5,
+	common.AdminInitialPassword:   "password",
+	common.LDAPGroupSearchFilter:  "objectclass=groupOfNames",
+	common.LDAPGroupBaseDN:        "dc=example,dc=com",
+	common.LDAPGroupAttributeName: "cn",
+	common.LDAPGroupSearchScope:   2,
+	common.LdapGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
+	common.WithNotary:             "false",
+	common.WithChartMuseum:        "false",
+	common.SelfRegistration:       "true",
+	common.WithClair:              "false",
+}
+
+// TraceCfgMap ...
+func TraceCfgMap(cfgs map[string]interface{}) {
+	var keys []string
+	for k := range cfgs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		fmt.Printf("%v=%v", k, cfgs[k])
+	}
 }

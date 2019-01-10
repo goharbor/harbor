@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
@@ -86,6 +87,10 @@ func init() {
 		log.Fatalf("failed to get database configurations: %v", err)
 	}
 	dao.InitDatabase(database)
+
+	allCfgs, _ := config.GetSystemCfg()
+	testutils.TraceCfgMap(allCfgs)
+
 	_, file, _, _ := runtime.Caller(0)
 	dir := filepath.Dir(file)
 	dir = filepath.Join(dir, "..")

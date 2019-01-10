@@ -3,6 +3,7 @@ package driver
 import (
 	"github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // RESTDriver - config store driver based on REST API
@@ -19,6 +20,7 @@ func NewRESTDriver(coreURL string, modifiers ...modifier.Modifier) *RESTDriver {
 // Load - load config data from REST server
 func (h *RESTDriver) Load() (map[string]interface{}, error) {
 	cfgMap := map[string]interface{}{}
+	log.Infof("get configuration from url: %+v", h.coreURL)
 	err := h.client.Get(h.coreURL, &cfgMap)
 	return cfgMap, err
 }

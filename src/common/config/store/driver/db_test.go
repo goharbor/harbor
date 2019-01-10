@@ -14,6 +14,7 @@
 package driver
 
 import (
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -26,18 +27,22 @@ func TestMain(m *testing.M) {
 }
 
 func TestDatabase_Load(t *testing.T) {
+
+	cfgs := map[string]interface{}{
+		common.AUTHMode: "db_auth",
+		common.LDAPURL:  "ldap://ldap.vmware.com",
+	}
 	driver := Database{}
+	driver.Save(cfgs)
 	cfgMap, err := driver.Load()
 	if err != nil {
 		t.Errorf("failed to load, error %v", err)
 	}
-
-	assert.True(t, len(cfgMap) > 10)
+	assert.True(t, len(cfgMap) >= 1)
 
 	if _, ok := cfgMap["ldap_url"]; !ok {
 		t.Error("Can not find ldap_url")
 	}
-
 }
 
 func TestDatabase_Save(t *testing.T) {

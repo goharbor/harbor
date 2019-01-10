@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/config/store/driver"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"os"
 )
@@ -48,18 +49,20 @@ func NewRESTCfgManager(configURL, secret string) *CfgManager {
 	return manager
 }
 
-// InmemoryDriver driver for unit testing
-type InmemoryDriver struct {
+// InMemoryDriver driver for unit testing
+type InMemoryDriver struct {
 	cfgMap map[string]interface{}
 }
 
-// Load ...
-func (d *InmemoryDriver) Load() (map[string]interface{}, error) {
+// Load load data from driver, for example load from database,
+// it should be invoked before get any user scope config
+// for system scope config, because it is immutable, no need to call this method
+func (d *InMemoryDriver) Load() (map[string]interface{}, error) {
 	return d.cfgMap, nil
 }
 
-// Save ...
-func (d *InmemoryDriver) Save(cfg map[string]interface{}) error {
+// Save only save user config setting to driver, for example: database, REST
+func (d *InMemoryDriver) Save(cfg map[string]interface{}) error {
 	for k, v := range cfg {
 		d.cfgMap[k] = v
 	}
@@ -68,7 +71,12 @@ func (d *InmemoryDriver) Save(cfg map[string]interface{}) error {
 
 // NewInMemoryManager create a manager for unit testing, doesn't involve database or REST
 func NewInMemoryManager() *CfgManager {
-	return &CfgManager{store: store.NewConfigStore(&InmemoryDriver{cfgMap: map[string]interface{}{}})}
+	manager := &CfgManager{store: store.NewConfigStore(&InMemoryDriver{cfgMap: map[string]interface{}{}})}
+	// load default value
+	manager.loadDefault()
+	// load system config from env
+	manager.loadSystemConfigFromEnv()
+	return manager
 }
 
 // loadDefault ...
@@ -106,23 +114,47 @@ func (c *CfgManager) loadSystemConfigFromEnv() {
 	}
 }
 
-// GetAll ... Get all settings
-func (c *CfgManager) GetAll() []metadata.ConfigureValue {
-	results := make([]metadata.ConfigureValue, 0)
+// GetAll get all settings.
+func (c *CfgManager) GetAll() map[string]interface{} {
+	resultMap := map[string]interface{}{}
 	if err := c.store.Load(); err != nil {
 		log.Errorf("GetAll failed, error %v", err)
-		return results
+		return resultMap
 	}
 	metaDataList := metadata.Instance().GetAll()
 	for _, item := range metaDataList {
-		if cfgValue, err := c.store.Get(item.Name); err == nil {
-			results = append(results, *cfgValue)
+		cfgValue, err := c.store.GetAnyType(item.Name)
+		if err != nil {
+			log.Errorf("Failed to get value of key %v, error %v", item.Name, err)
+			continue
 		}
+		resultMap[item.Name] = cfgValue
 	}
-	return results
+	return resultMap
 }
 
-// Load - Load configuration from storage, like database or redis
+// GetUserCfgs retrieve all user configs
+func (c *CfgManager) GetUserCfgs() map[string]interface{} {
+	resultMap := map[string]interface{}{}
+	if err := c.store.Load(); err != nil {
+		log.Errorf("GetUserCfgs failed, error %v", err)
+		return resultMap
+	}
+	metaDataList := metadata.Instance().GetAll()
+	for _, item := range metaDataList {
+		if item.Scope == metadata.UserScope {
+			cfgValue, err := c.store.GetAnyType(item.Name)
+			if err != nil {
+				log.Errorf("Failed to get value of key %v, error %v", item.Name, err)
+				continue
+			}
+			resultMap[item.Name] = cfgValue
+		}
+	}
+	return resultMap
+}
+
+// Load load configuration from storage, like database or redis
 func (c *CfgManager) Load() error {
 	return c.store.Load()
 }
@@ -144,7 +176,7 @@ func (c *CfgManager) Get(key string) *metadata.ConfigureValue {
 
 // Set ...
 func (c *CfgManager) Set(key string, value interface{}) {
-	configValue, err := metadata.NewCfgValue(key, fmt.Sprintf("%v", value))
+	configValue, err := metadata.NewCfgValue(key, utils.GetStrValueOfAnyType(value))
 	if err != nil {
 		log.Errorf("error when setting key: %v,  error %v", key, err)
 		return
@@ -175,7 +207,27 @@ func (c *CfgManager) GetDatabaseCfg() *models.Database {
 	}
 }
 
-// UpdateConfig - Update config store with a specified configuration and also save updated configure
+// UpdateConfig - Update config store with a specified configuration and also save updated configure.
 func (c *CfgManager) UpdateConfig(cfgs map[string]interface{}) error {
 	return c.store.Update(cfgs)
+}
+
+// ValidateCfg validate config by metadata. return the first error if exist.
+func (c *CfgManager) ValidateCfg(cfgs map[string]interface{}) error {
+	for key, value := range cfgs {
+		strVal := utils.GetStrValueOfAnyType(value)
+		_, err := metadata.NewCfgValue(key, strVal)
+		if err != nil {
+			return fmt.Errorf("%v, item name: %v", err, key)
+		}
+	}
+	return nil
+}
+
+// DumpTrace dump all configurations
+func (c *CfgManager) DumpTrace() {
+	cfgs := c.GetAll()
+	for k, v := range cfgs {
+		log.Info(k, ":=", v)
+	}
 }
