@@ -151,6 +151,7 @@ var CoreTestConfig = map[string]interface{}{
 	common.WithChartMuseum:        "false",
 	common.SelfRegistration:       "true",
 	common.WithClair:              "false",
+	common.TokenServiceURL:        "http://core:8080/service/token",
 }
 
 // TraceCfgMap ...

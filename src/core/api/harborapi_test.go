@@ -42,10 +42,12 @@ import (
 	"github.com/dghubble/sling"
 
 	// for test env prepare
+	"github.com/goharbor/harbor/src/common"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/replication/core"
 	_ "github.com/goharbor/harbor/src/replication/event"
+	"os"
 )
 
 const (
@@ -80,6 +82,13 @@ type usrInfo struct {
 
 func init() {
 	config.InitWithSettings(testutils.CoreTestConfig)
+	ipAddress := os.Getenv("IP")
+	custCfgs := map[string]interface{}{
+		common.ExtEndpoint:    fmt.Sprintf("https://%s", ipAddress),
+		common.PostGreSQLHOST: ipAddress,
+		common.RegistryURL:    fmt.Sprintf("http://%s:5000", ipAddress),
+	}
+	config.InitWithSettings(custCfgs)
 	database, err := config.Database()
 	if err != nil {
 		log.Fatalf("failed to get database configurations: %v", err)
