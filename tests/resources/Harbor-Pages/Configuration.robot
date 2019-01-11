@@ -191,11 +191,9 @@ Config Email
     Input Text  xpath=//*[@id="emailPassword"]  example
     Input Text  xpath=//*[@id="emailFrom"]  example<example@vmware.com>
     Sleep  1    
-    Mouse Down  xpath=//*[@id="emailSSL"]
-    Mouse Up  xpath=//*[@id="emailSSL"]
+    Click Element  xpath=//clr-checkbox-wrapper[@id="emailSSL-wrapper"]//label
     Sleep  1
-    Mouse Down  xpath=//*[@id="emailInsecure"]
-    Mouse Up  xpath=//*[@id="emailInsecure"]
+    Click Element  xpath=//clr-checkbox-wrapper[@id="emailInsecure-wrapper"]//label
     Sleep  1
     Click Element  xpath=${config_email_save_button_xpath}
     Sleep  6
