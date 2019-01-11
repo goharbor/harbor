@@ -14,45 +14,44 @@ url = "https://"+args.endpoint+"/api/"
 print url
 
 class HarborAPI:
-
     def create_project(self, project_name):
-        r = requests.post(url+"projects", auth=("admin", "Harbor12345"), json={"project_name": ""+project_name+"", "metadata": {"public": "true"}}, verify=False)
-        print(r.status_code)
+        body=dict(body={"project_name": ""+project_name+"", "metadata": {"public": "true"}})
+        request(url+"projects", 'post', **body)
     
     def create_user(self, username):
         payload = {"username":username, "email":username+"@vmware.com", "password":"Harbor12345", "realname":username, "commment":"string"}
-        r = requests.post(url+"users", auth=("admin", "Harbor12345"), json=payload, verify=False)
-        print(r.status_code)
+        body=dict(body=payload)
+        request(url+"users", 'post', **body)
     
     def set_user_admin(self, user):
-        r = requests.get(url+"users?username="+user+"", auth=("admin", "Harbor12345"), verify=False)
+        r = request(url+"users?username="+user+"", 'get')
         userid = str(r.json()[0]['user_id'])
-        r = requests.put(url+"users/"+userid+"/sysadmin", auth=("admin", "Harbor12345"), json={"has_admin_role": 1}, verify=False)
-        print(r.status_code)
+        body=dict(body={"has_admin_role": 1})
+        request(url+"users/"+userid+"/sysadmin", 'put', **body)
     
     def add_member(self, project, user, role):
-        r = requests.get(url+"projects?name="+project+"", auth=("admin", "Harbor12345"), verify=False)
+        r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
         payload = {"roles": [role], "username":""+user+""}
-        r = requests.post(url+"projects/"+projectid+"/members", auth=("admin", "Harbor12345"), json=payload, verify=False)
-        print(r.status_code)
+        body=dict(body=payload)
+        request(url+"projects/"+projectid+"/members", 'post', **body)
    
     def add_endpoint(self, endpointurl, endpointname, username, password, insecure):
         payload = {"endpoint": ""+endpointurl+"", "name": ""+endpointname+"", "username": ""+username+"", "password": ""+password+"", "insecure": insecure}
-        r = requests.post(url+"targets", auth=("admin", "Harbor12345"), json=payload, verify=False)
-        print(r.status_code)
+        body=dict(body=payload)
+        request(url+"targets", 'post', **body)
     
     def add_replication_rule(self, project, target, trigger, rulename):
-        r = requests.get(url+"projects?name="+project+"", auth=("admin", "Harbor12345"), verify=False)
+        r = request(url+"projects?name="+project+"", 'get')
         projectid = r.json()[0]['project_id']
-        r = requests.get(url+"targets?name="+target+"", auth=("admin", "Harbor12345"), verify=False)
+        r = request(url+"targets?name="+target+"", 'get')
         targetid = r.json()[0]['id']
         payload = {"name": ""+rulename+"", "description": "string", "projects": [{"project_id": projectid,}], "targets": [{"id": targetid,}], "trigger": {"kind": ""+trigger+"", "schedule_param": {"type": "weekly", "weekday": 1, "offtime": 0}}}
-        r = requests.post(url+"policies/replication", auth=("admin", "Harbor12345"), json=payload, verify=False)
-        print(r.status_code)
+        body=dict(body=payload)
+        request(url+"policies/replication", 'post', **body)
     
     def update_project_setting(self, project, contenttrust, preventrunning, preventseverity, scanonpush):
-        r = requests.get(url+"projects?name="+project+"", auth=("admin", "Harbor12345"), verify=False)
+        r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
         payload = {
             "project_name": ""+project+"",
@@ -64,8 +63,8 @@ class HarborAPI:
                 "automatically_scan_images_on_push": scanonpush
             }
         }
-        r = requests.put(url+"projects/"+projectid+"", auth=("admin", "Harbor12345"), json=payload, verify=False)
-        print(r.status_code)
+        body=dict(body=payload)
+        request(url+"projects/"+projectid+"", 'put', **body)
     
     def update_systemsetting(self, emailfrom, emailhost, emailport, emailuser, creation, selfreg, token):
         payload = {
@@ -89,15 +88,21 @@ class HarborAPI:
                 }
             }
         }
-        r = requests.put(url+"configurations", auth=("admin", "Harbor12345"), json=payload, verify=False)
-        print(r.status_code)
+        body=dict(body=payload)
+        request(url+"configurations", 'put', **body)
     
     def update_repoinfo(self, reponame):
-        r = requests.put(url+"repositories/"+reponame+"", auth=("admin", "Harbor12345"), json={"description": "testdescription"}, verify=False)
-        print(r.status_code)
+        payload = {"description": "testdescription"}
+        body=dict(body=payload)
+        request(url+"repositories/"+reponame+"", 'put', **body)
 
     def get_ca(self, target='/harbor/ca/ca.crt'):
-        ca_content = request(args.endpoint, '/systeminfo/getcert', 'get', "admin", "Harbor12345")
+        url = "https://" + args.endpoint + "/api/systeminfo/getcert"
+        resp = request(url, 'get')
+        try:
+            ca_content = json.loads(resp.text)
+        except ValueError:
+            ca_content = resp.text
         ca_path = '/harbor/ca'
         if not os.path.exists(ca_path):
             try:
@@ -106,8 +111,12 @@ class HarborAPI:
                 pass
         open(target, 'wb').write(ca_content)
 
-def request(harbor_endpoint, url, method, user, pwd, **kwargs):
-    url = "https://" + harbor_endpoint + "/api" + url
+    
+def request(url, method, user = None, userp = None, **kwargs):
+    if user is None:
+        user = "admin"
+    if pwuserpd is None:
+        userp = "Harbor12345"
     kwargs.setdefault('headers', kwargs.get('headers', {}))
     kwargs['headers']['Accept'] = 'application/json'
     if 'body' in kwargs:
@@ -115,14 +124,10 @@ def request(harbor_endpoint, url, method, user, pwd, **kwargs):
         kwargs['data'] = json.dumps(kwargs['body'])
         del kwargs['body']
 
-    resp = requests.request(method, url, verify=False, auth=(user, pwd), **kwargs)
+    resp = requests.request(method, url, verify=False, auth=(user, userp), **kwargs)
     if resp.status_code >= 400:
-        raise Exception("Error: %s" % resp.text)
-    try:
-        body = json.loads(resp.text)
-    except ValueError:
-        body = resp.text
-    return body
+        raise Exception("[Exception Message] - {}".format(resp.text))
+    return resp
 
 with open("data.json") as f:
     data = json.load(f)
