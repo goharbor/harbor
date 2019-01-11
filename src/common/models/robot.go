@@ -35,9 +35,10 @@ type Robot struct {
 
 // RobotQuery ...
 type RobotQuery struct {
-	Name      string
-	ProjectID int64
-	Disabled  bool
+	Name           string
+	ProjectID      int64
+	Disabled       bool
+	FuzzyMatchName bool
 	Pagination
 }
 

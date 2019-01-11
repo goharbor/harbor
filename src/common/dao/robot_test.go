@@ -96,12 +96,62 @@ func TestDisableRobot(t *testing.T) {
 	require.Nil(t, err)
 
 	// Disable
-	err = DisableRobot(id)
+	robot.Disabled = true
+	err = UpdateRobot(robot)
 	require.Nil(t, err)
 
 	// Get
 	robot, err = GetRobotByID(id)
 	require.Nil(t, err)
 	assert.Equal(t, true, robot.Disabled)
+
+}
+
+func TestEnableRobot(t *testing.T) {
+	robotName := "test5"
+	robot := &models.Robot{
+		Name:        robotName,
+		Token:       "rKgjKEMpMEK23zqejkWn5GIVvgJps1vKACTa6tnGXXyOlOTsXFESccDvgaJx047q5",
+		Description: "test5 description",
+		Disabled:    true,
+		ProjectID:   1,
+	}
+
+	// add
+	id, err := AddRobot(robot)
+	require.Nil(t, err)
+
+	// Disable
+	robot.Disabled = false
+	err = UpdateRobot(robot)
+	require.Nil(t, err)
+
+	// Get
+	robot, err = GetRobotByID(id)
+	require.Nil(t, err)
+	assert.Equal(t, false, robot.Disabled)
+
+}
+
+func TestDeleteRobot(t *testing.T) {
+	robotName := "test6"
+	robot := &models.Robot{
+		Name:        robotName,
+		Token:       "rKgjKEMpMEK23zqejkWn5GIVvgJps1vKACTa6tnGXXyOlOTsXFESccDvgaJx047q6",
+		Description: "test6 description",
+		ProjectID:   1,
+	}
+
+	// add
+	id, err := AddRobot(robot)
+	require.Nil(t, err)
+
+	// Disable
+	err = DeleteRobot(id)
+	require.Nil(t, err)
+
+	// Get
+	robot, err = GetRobotByID(id)
+	assert.Nil(t, robot)
 
 }
