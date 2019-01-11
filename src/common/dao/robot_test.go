@@ -155,3 +155,11 @@ func TestDeleteRobot(t *testing.T) {
 	assert.Nil(t, robot)
 
 }
+
+func TestListAllRobot(t *testing.T) {
+
+	robots, err := ListRobots(nil)
+	require.Nil(t, err)
+	assert.Equal(t, 5, len(robots))
+
+}
