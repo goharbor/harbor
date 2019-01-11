@@ -63,15 +63,16 @@ Switch To Replication
     Click Element  xpath=${project_replication_xpath}
     Sleep  1
 
-Back To projects
-    Wait Until Element Is Enabled  xpath=${projects_xpath}
-    Wait Until Element Is Visible  xpath=${projects_xpath}
-    Click Element  xpath=${projects_xpath}
+Back To Projects
+    ${element}=  Set Variable  xpath=${projects_xpath}  
+    Wait Until Element Is Visible And Enabled  ${element}
+    Click Element  ${element}
     Sleep  2
 
 Project Should Display
     [Arguments]  ${projectname}
-    Page Should Contain Element  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+    ${element}=  Set Variable  xpath=//project//list-project//clr-dg-cell/a[contains(.,'${projectname}')]
+    Wait Until Element Is Visible And Enabled  ${element}
 
 Project Should Not Display
     [Arguments]  ${projectname}
