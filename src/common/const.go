@@ -115,6 +115,9 @@ const (
 	WithChartMuseum                   = "with_chartmuseum"
 	ChartRepoURL                      = "chart_repository_url"
 	DefaultChartRepoURL               = "http://chartmuseum:9999"
+	DefaultPortalURL                  = "http://portal"
+	DefaultRegistryCtlURL             = "http://registryctl:8080"
+	DefaultClairHealthCheckServerURL  = "http://clair:6061"
 )
 
 // Shared variable, not allowed to modify

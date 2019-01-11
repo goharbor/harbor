@@ -125,6 +125,7 @@ func (b *BaseController) WriteYamlData(object interface{}) {
 
 // Init related objects/configurations for the API controllers
 func Init() error {
+	registerHealthCheckers()
 	// If chart repository is not enabled then directly return
 	if !config.WithChartMuseum() {
 		return nil

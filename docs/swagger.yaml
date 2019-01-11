@@ -19,6 +19,18 @@ securityDefinitions:
 security:
   - basicAuth: []
 paths:
+  /health:
+    get:
+      summary: 'Health check API'
+      description: |
+        The endpoint returns the health stauts of the system.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: The system health status.
+          schema:
+            $ref: '#/definitions/OverallHealthStatus'
   /search:
     get:
       summary: 'Search for projects, repositories and helm charts'
@@ -4514,3 +4526,27 @@ definitions:
     description: A list of label
     items:
       $ref: '#/definitions/Label'
+  OverallHealthStatus:
+    type: object
+    description: The system health status
+    properties:
+      status:
+        type: string
+        description: The overall health status. It is "healthy" only when all the components' status are "healthy" 
+      components:
+        type: array
+        items:
+          $ref: '#/definitions/ComponentHealthStatus'
+  ComponentHealthStatus:
+    type: object
+    description: The health status of component
+    properties:
+      name:
+        type: string
+        description: The component name 
+      status:
+        type: string
+        description: The health status of component
+      error:
+        type: string
+        description: (optional) The error message when the status is "unhealthy"
