@@ -524,7 +524,7 @@ Test Case - Delete A Project
     Project Should Not Be Deleted  project${d}
     Go Into Project  project${d}
     Delete Repo  project${d}
-    Back To projects
+    Back To Projects
     Project Should Be Deleted  project${d}
     Close Browser
 
