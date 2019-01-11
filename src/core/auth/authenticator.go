@@ -123,7 +123,7 @@ func Register(name string, h AuthenticateHelper) {
 		return
 	}
 	registry[name] = h
-	log.Debugf("Registered authencation helper for auth mode: %s", name)
+	log.Debugf("Registered authentication helper for auth mode: %s", name)
 }
 
 // Login authenticates user credentials based on setting.
