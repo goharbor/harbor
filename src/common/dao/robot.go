@@ -45,15 +45,15 @@ func GetRobotByID(id int64) (*models.Robot, error) {
 
 // ListRobots list robots according to the query conditions
 func ListRobots(query *models.RobotQuery) ([]*models.Robot, error) {
-	qs := getRobotQuerySetter(query)
-	if query.Size > 0 {
-		qs = qs.Limit(query.Size)
-		if query.Page > 0 {
-			qs = qs.Offset((query.Page - 1) * query.Size)
+	qs := getRobotQuerySetter(query).OrderBy("Name")
+	if query != nil {
+		if query.Size > 0 {
+			qs = qs.Limit(query.Size)
+			if query.Page > 0 {
+				qs = qs.Offset((query.Page - 1) * query.Size)
+			}
 		}
 	}
-	qs = qs.OrderBy("Name")
-
 	robots := []*models.Robot{}
 	_, err := qs.All(&robots)
 	return robots, err
@@ -61,6 +61,11 @@ func ListRobots(query *models.RobotQuery) ([]*models.Robot, error) {
 
 func getRobotQuerySetter(query *models.RobotQuery) orm.QuerySeter {
 	qs := GetOrmer().QueryTable(&models.Robot{})
+
+	if query == nil {
+		return qs
+	}
+
 	if len(query.Name) > 0 {
 		if query.FuzzyMatchName {
 			qs = qs.Filter("Name__icontains", query.Name)
