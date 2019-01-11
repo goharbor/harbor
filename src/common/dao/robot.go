@@ -15,7 +15,6 @@
 package dao
 
 import (
-	"fmt"
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"time"
@@ -63,24 +62,27 @@ func ListRobots(query *models.RobotQuery) ([]*models.Robot, error) {
 func getRobotQuerySetter(query *models.RobotQuery) orm.QuerySeter {
 	qs := GetOrmer().QueryTable(&models.Robot{})
 	if len(query.Name) > 0 {
-		qs = qs.Filter("Name", query.Name)
+		if query.FuzzyMatchName {
+			qs = qs.Filter("Name__icontains", query.Name)
+		} else {
+			qs = qs.Filter("Name", query.Name)
+		}
 	}
 	if query.ProjectID != 0 {
 		qs = qs.Filter("ProjectID", query.ProjectID)
 	}
-	qs = qs.Filter("Disabled", false)
 	return qs
 }
 
-// DisableRobot ...
-func DisableRobot(id int64) error {
-	robot, err := GetRobotByID(id)
-	if err != nil {
-		return err
-	}
-	robot.Name = fmt.Sprintf("%s#%d", robot.Name, robot.ID)
+// UpdateRobot ...
+func UpdateRobot(robot *models.Robot) error {
 	robot.UpdateTime = time.Now()
-	robot.Disabled = true
-	_, err = GetOrmer().Update(robot, "Name", "UpdateTime", "Disabled")
+	_, err := GetOrmer().Update(robot)
+	return err
+}
+
+// DeleteRobot ...
+func DeleteRobot(id int64) error {
+	_, err := GetOrmer().QueryTable(&models.Robot{}).Filter("ID", id).Delete()
 	return err
 }
