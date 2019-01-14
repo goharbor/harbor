@@ -83,7 +83,7 @@ Test Case - Delete A Project
     Project Should Not Be Deleted  project${d}
     Go Into Project  project${d}
     Delete Repo  project${d}
-    Back To projects
+    Back To Projects
     Project Should Be Deleted  project${d}
     Close Browser
 
@@ -714,7 +714,7 @@ Test Case - Retag A Image Tag
     Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
 
     Wait Until Element Is Not Visible  css=${modal-dialog}
-    Back To projects
+    Back To Projects
     Go Into Project  project${random_num2}
     Sleep  1
     Page Should Contain  ${target_image_name}

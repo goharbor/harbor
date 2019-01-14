@@ -62,6 +62,11 @@ Resource  Nightly-Util.robot
 Resource  APITest-Util.robot
 
 *** Keywords ***
+Wait Until Element Is Visible And Enabled
+    [Arguments]  ${element}
+    Wait Until Element Is Visible  ${element}
+    Wait Until Element Is Enabled  ${element}
+
 Wait Unitl Vul Data Ready
     [Arguments]  ${url}  ${timeout}  ${interval}
     ${n}=  Evaluate  ${timeout}/${interval}

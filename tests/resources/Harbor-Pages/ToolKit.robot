@@ -37,27 +37,37 @@ Delete Fail
 Filter Object
 #Filter project repo user tag.
     [Arguments]    ${kw}
-    Click Element  xpath=//hbr-filter//clr-icon
-    Input Text   xpath=//hbr-filter//input  ${kw}
-    Sleep  1
+    ${element}=  Set Variable  xpath=//hbr-filter//clr-icon
+    Wait Until Element Is Visible And Enabled  ${element}
+    Click Element    ${element}
+    ${element}=  Set Variable  xpath=//hbr-filter//input
+    Wait Until Element Is Visible And Enabled  ${element}   
+    Input Text   ${element}  ${kw}
+    Sleep  3
 
 Select Object
 #select single element such as user project repo tag
     [Arguments]    ${obj}
-    Click Element  //clr-dg-row[contains(.,'${obj}')]//label
+    ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
+    Wait Until Element Is Visible And Enabled  ${element}
+    Click Element  ${element}    
 
 # This func cannot support as the delete user flow changed.
 Multi-delete Object
     [Arguments]    @{obj}
     :For  ${obj}  in  @{obj}
-    \    Click Element  //clr-dg-row[contains(.,'${obj}')]//label
-    Sleep  1
+    \    ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
+    \    Wait Until Element Is Visible And Enabled  ${element}
+    \    Click Element  ${element}
+
     Capture Page Screenshot
-    Click Element  //button[contains(.,'Delete')]
-    Sleep  2
+    ${element}=  Set Variable  xpath=//button[contains(.,'Delete')]
+    Wait Until Element Is Visible And Enabled  ${element}
+    Click Element  ${element}
     Capture Page Screenshot
-    Click Element  //clr-modal//button[contains(.,'DELETE')]
-    Sleep  3
+    ${element}=  Set Variable  xpath=//clr-modal//button[contains(.,'DELETE')]
+    Wait Until Element Is Visible And Enabled  ${element}
+    Click Element  ${element}
     Capture Page Screenshot
 
 Multi-delete User
