@@ -115,7 +115,7 @@ class HarborAPI:
 def request(url, method, user = None, userp = None, **kwargs):
     if user is None:
         user = "admin"
-    if pwuserpd is None:
+    if userp is None:
         userp = "Harbor12345"
     kwargs.setdefault('headers', kwargs.get('headers', {}))
     kwargs['headers']['Accept'] = 'application/json'
