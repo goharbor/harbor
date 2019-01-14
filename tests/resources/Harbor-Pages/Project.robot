@@ -22,19 +22,26 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Create An New Project
     [Arguments]  ${projectname}  ${public}=false
-    Sleep  1
-    Click Button  css=${create_project_button_css}
-    Sleep  1
+    ${element}=  Set Variable  css=${create_project_button_css}
+    Wait Until Element Is Visible And Enabled  ${element}
+    Click Button  ${element}
     Log To Console  Project Name: ${projectname}
-    Input Text  xpath=${project_name_xpath}  ${projectname}
-    Sleep  3
-    Run Keyword If  '${public}' == 'true'  Click Element  xpath=${project_public_xpath}
-    Click Element  xpath=//button[contains(.,'OK')]
-    Sleep  4
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -k -X GET --header 'Accept: application/json' ${HARBOR_URL}/api/projects?name=${projectname}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  ${projectname}
+    ${element}=  Set Variable  xpath=${project_name_xpath}
+    Wait Until Element Is Visible And Enabled  ${element}
+    Input Text  ${element}  ${projectname}
+    ${element}=  Set Variable  xpath=${project_public_xpath}
+    Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element}  AND  Click Element  ${element}
+    ${element}=  Set Variable  xpath=//button[contains(.,'OK')]
+    Wait Until Element Is Visible And Enabled  ${element}
+    Click Element  ${element}
+    ${found_project}=  Set Variable  ${false}
+    :For  ${n}  IN RANGE  1  5
+    \    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -k -X GET --header 'Accept: application/json' ${HARBOR_URL}/api/projects?name=${projectname}
+    \    ${match}  ${regexp_project_name}  Should Match Regexp  ${output}  ,\"name\":\"(\\w+)\",\"creation_time\":
+    \    ${found_project}  Set Variable If  '${rc}' == '0' and '${regexp_project_name}' == '${projectname}'  ${true}
+    \    Run Keyword If  ${found_project} == ${true}  Exit For Loop
+    \    Sleep  1
+    Should Be Equal  ${found_project}  ${true}
 
 Create An New Project With New User
     [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}  ${projectname}  ${public}
