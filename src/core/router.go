@@ -65,6 +65,10 @@ func initRouters() {
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &api.MetadataAPI{}, "put:Put;delete:Delete")
+
+	beego.Router("/api/projects/:pid([0-9]+)/robots", &api.RobotAPI{}, "post:Post;get:List")
+	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &api.RobotAPI{}, "get:Get;put:Put;delete:Delete")
+
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/scanAll", &api.RepositoryAPI{}, "post:ScanAll")
 	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete;put:Put")
