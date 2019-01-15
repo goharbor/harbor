@@ -79,6 +79,11 @@ func getRobotQuerySetter(query *models.RobotQuery) orm.QuerySeter {
 	return qs
 }
 
+// CountRobot ...
+func CountRobot(query *models.RobotQuery) (int64, error) {
+	return getRobotQuerySetter(query).Count()
+}
+
 // UpdateRobot ...
 func UpdateRobot(robot *models.Robot) error {
 	robot.UpdateTime = time.Now()
