@@ -15,6 +15,7 @@
 package ram
 
 import (
+	"fmt"
 	"path"
 )
 
@@ -41,6 +42,18 @@ func (res Resource) Subresource(resources ...Resource) Resource {
 	}
 
 	return Resource(path.Join(elements...))
+}
+
+// GetNamespace returns namespace from resource
+func (res Resource) GetNamespace() (Namespace, error) {
+	for _, parser := range namespaceParsers {
+		namespace, err := parser(res)
+		if err == nil {
+			return namespace, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no namespace found for %s", res)
 }
 
 // Action the type of action

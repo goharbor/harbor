@@ -15,6 +15,7 @@
 package ram
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -351,6 +352,40 @@ func TestResource_Subresource(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.res.Subresource(tt.args.resources...); got != tt.want {
 				t.Errorf("Resource.Subresource() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestResource_GetNamespace(t *testing.T) {
+	tests := []struct {
+		name    string
+		res     Resource
+		want    Namespace
+		wantErr bool
+	}{
+		{
+			name:    "project namespace",
+			res:     Resource("/project/1"),
+			want:    &projectNamespace{int64(1), false},
+			wantErr: false,
+		},
+		{
+			name:    "unknow namespace",
+			res:     Resource("/unknow/1"),
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.res.GetNamespace()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Resource.GetNamespace() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Resource.GetNamespace() = %v, want %v", got, tt.want)
 			}
 		})
 	}
