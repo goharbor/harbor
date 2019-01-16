@@ -109,22 +109,12 @@ func (r *RobotAPI) Post() {
 		Token: "this is a placeholder",
 	}
 
-	robotQuery := models.RobotQuery{
-		Name:      createdName,
-		ProjectID: r.project.ProjectID,
-	}
-	robots, err := dao.ListRobots(&robotQuery)
-	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to list robot account: %v", err))
-		return
-	}
-	if len(robots) > 0 {
-		r.HandleConflict()
-		return
-	}
-
 	id, err := dao.AddRobot(&robot)
 	if err != nil {
+		if err == dao.ErrDupRows {
+			r.HandleConflict()
+			return
+		}
 		r.HandleInternalServerError(fmt.Sprintf("failed to create robot account: %v", err))
 		return
 	}
