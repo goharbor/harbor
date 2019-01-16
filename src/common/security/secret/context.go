@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/ram"
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
@@ -91,6 +92,14 @@ func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 // HasAllPerm returns true if the corresponding user of the secret
 // is jobservice or core service, otherwise returns false
 func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
+	if s.store == nil {
+		return false
+	}
+	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.CoreUser
+}
+
+// Can returns whether the user can do action on resource
+func (s *SecurityContext) Can(action ram.Action, resource ram.Resource) bool {
 	if s.store == nil {
 		return false
 	}
