@@ -15,7 +15,7 @@
 package project
 
 import (
-	"github.com/goharbor/harbor/src/common/ram"
+	"github.com/goharbor/harbor/src/common/rbac"
 )
 
 // visitorContext the context interface for the project visitor
@@ -27,10 +27,10 @@ type visitorContext interface {
 	IsSysAdmin() bool
 }
 
-// visitor implement the ram.User interface for project visitor
+// visitor implement the rbac.User interface for project visitor
 type visitor struct {
 	ctx          visitorContext
-	namespace    ram.Namespace
+	namespace    rbac.Namespace
 	projectRoles []int
 }
 
@@ -45,7 +45,7 @@ func (v *visitor) GetUserName() string {
 }
 
 // GetPolicies returns policies of the visitor
-func (v *visitor) GetPolicies() []*ram.Policy {
+func (v *visitor) GetPolicies() []*rbac.Policy {
 	if v.ctx.IsSysAdmin() {
 		return policiesForSystemAdmin(v.namespace)
 	}
@@ -58,12 +58,12 @@ func (v *visitor) GetPolicies() []*ram.Policy {
 }
 
 // GetRoles returns roles of the visitor
-func (v *visitor) GetRoles() []ram.Role {
+func (v *visitor) GetRoles() []rbac.Role {
 	if !v.ctx.IsAuthenticated() {
 		return nil
 	}
 
-	roles := []ram.Role{}
+	roles := []rbac.Role{}
 
 	for _, roleID := range v.projectRoles {
 		roles = append(roles, &visitorRole{roleID: roleID, namespace: v.namespace})
@@ -72,8 +72,8 @@ func (v *visitor) GetRoles() []ram.Role {
 	return roles
 }
 
-// NewUser returns ram.User interface for the project visitor
-func NewUser(ctx visitorContext, namespace ram.Namespace, projectRoles ...int) ram.User {
+// NewUser returns rbac.User interface for the project visitor
+func NewUser(ctx visitorContext, namespace rbac.Namespace, projectRoles ...int) rbac.User {
 	return &visitor{
 		ctx:          ctx,
 		namespace:    namespace,
