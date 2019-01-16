@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ram
+package rbac
 
 import (
 	"fmt"
@@ -87,14 +87,14 @@ func (p *Policy) GetEffect() string {
 	return eft.String()
 }
 
-// Role the interface of ram role
+// Role the interface of rbac role
 type Role interface {
 	// GetRoleName returns the role identity, if empty string role's policies will be ignore
 	GetRoleName() string
 	GetPolicies() []*Policy
 }
 
-// User the interface of ram user
+// User the interface of rbac user
 type User interface {
 	// GetUserName returns the user identity, if empty string user's all policies will be ignore
 	GetUserName() string
