@@ -190,6 +190,7 @@ ldap_group_scope = rcp.get("configuration", "ldap_group_scope")
 db_password = rcp.get("configuration", "db_password")
 db_host = rcp.get("configuration", "db_host")
 db_user = rcp.get("configuration", "db_user")
+db_name = rcp.get("configuration", "db_name")
 db_port = rcp.get("configuration", "db_port")
 self_registration = rcp.get("configuration", "self_registration")
 if protocol == "https":
@@ -362,6 +363,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         db_password=db_password,
         db_host=db_host,
         db_user=db_user,
+        db_name=db_name,
         db_port=db_port,
         email_host=email_host,
         email_port=email_port,
