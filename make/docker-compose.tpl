@@ -114,7 +114,6 @@ services:
       - /data/ca_download/:/etc/core/ca/:z
       - /data/psc/:/etc/core/token/:z
       - /data/:/data/:z
-      - ./migrations:/harbor/migrations
     networks:
       - harbor
     dns_search: .
