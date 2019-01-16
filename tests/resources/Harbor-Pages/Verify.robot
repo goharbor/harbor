@@ -35,7 +35,9 @@ Verify Image Tag
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     :FOR    ${project}    IN    @{project}
-    \    Go Into Project    ${project}
+    \    @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \    ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \    Go Into Project  ${project}  has_image=${has_image}
     \    @{repo}=  Get Value From Json  ${json}  $.projects[?(@name=${project})]..repo..name
     \    Loop Image Repo  @{repo}
     \    Back To Projects
@@ -52,7 +54,9 @@ Verify Member Exist
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     :For    ${project}    In    @{project}
-    \   Go Into Project    ${project} 
+    \   @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \   ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \   Go Into Project  ${project}  has_image=${has_image}
     \   Switch To Member
     \   @{members}=  Get Value From Json  ${json}  $.projects[?(@name=${project})].member..name
     \   Loop Member  @{members}
@@ -91,12 +95,14 @@ Verify Project Label
    Init Chrome Driver
    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     :For    ${project}    In    @{project}
-   \    Go Into Project  ${project}
-   \    Switch To Project Label
-   \    @{projectlabel}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..labels..name
-   \    :For    ${label}    In    @{label}
-   \    \    Page Should Contain    ${projectlabel}
-   \    Back To Projects
+    \    @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \    ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \    Go Into Project  ${project}  has_image=${has_image}
+    \    Switch To Project Label
+    \    @{projectlabel}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..labels..name
+    \    :For    ${label}    In    @{label}
+    \    \    Page Should Contain    ${projectlabel}
+    \    Back To Projects
    Close Browser
       
 Verify Endpoint
@@ -129,7 +135,9 @@ Verify Project Setting
     \    ${scanonpush}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..automatically_scan_images_on_push
     \    Init Chrome Driver 
     \    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    \    Go Into Project  ${project}
+    \    @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \    ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \    Go Into Project  ${project}  has_image=${has_image}
     \    Goto Project Config
     \    Run Keyword If  ${public} == "public"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='public']//label
     \    Run Keyword If  ${contenttrust} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label

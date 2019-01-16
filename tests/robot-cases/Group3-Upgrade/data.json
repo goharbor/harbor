@@ -92,6 +92,7 @@
         "projects":[
            {
               "name":"project1",
+              "has_image":true,
               "accesslevel":"public",
               "repocounts":2,
               "repo":[
@@ -151,6 +152,7 @@
            },
            {
               "name":"project2",
+              "has_image":false,
               "accesslevel":"public",
               "repocounts":2,
               "repo":[
