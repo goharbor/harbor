@@ -15,6 +15,7 @@
 package dao
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -31,6 +32,9 @@ const (
 	// ClairDBAlias ...
 	ClairDBAlias = "clair-db"
 )
+
+// ErrDupRows is returned by DAO when inserting failed with error "duplicate key value violates unique constraint"
+var ErrDupRows = errors.New("sql: duplicate row in DB")
 
 // Database is an interface of different databases
 type Database interface {
