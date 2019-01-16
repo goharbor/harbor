@@ -22,14 +22,21 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Go Into Project
     [Arguments]  ${project}  ${has_image}=${true}
-    Wait Until Element Is Visible  ${search_input}
+    Wait Until Element Is Visible And Enabled  ${search_input}
     Input Text  ${search_input}  ${project}
     Wait Until Page Contains  ${project}
-    Wait Until Element Is Visible  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
+    Wait Until Element Is Visible And Enabled  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
     Click Element  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
-    Run Keyword If  ${has_image}==${false}  Wait Until Element Is Visible  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
-    ...  ELSE  Wait Until Element Is Visible  xpath=//clr-dg-cell[contains(.,'${project}/')]
-    Capture Page Screenshot  gointo_${project}.png
+    #To prevent waiting for a fixed-period of time for page loading and failure caused by exception, we add loop to re-run <Wait Until Element Is Visible And Enabled> when
+    #    exception was caught.
+    :For  ${n}  IN RANGE  1  5
+    \    ${out}  Run Keyword If  ${has_image}==${false}  Run Keyword And Ignore Error  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
+    \    ...  ELSE  Run Keyword And Ignore Error  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-cell[contains(.,'${project}/')]
+    \    Log To Console  ${out[0]}
+    \    ${result}  Set Variable If  '${out[0]}'=='PASS'  ${true}  ${false}
+    \    Run Keyword If  ${result} == ${true}  Exit For Loop
+    \    Sleep  1
+    Should Be Equal  ${result}  ${true}
 
 Add User To Project Admin
     [Arguments]  ${project}  ${user}
