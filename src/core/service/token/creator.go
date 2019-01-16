@@ -26,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/core/promgr"
 )
 
 var creatorMap map[string]Creator
@@ -127,14 +126,13 @@ func parseImg(s string) (*image, error) {
 
 // An accessFilter will filter access based on userinfo
 type accessFilter interface {
-	filter(ctx security.Context, pm promgr.ProjectManager, a *token.ResourceActions) error
+	filter(ctx security.Context, a *token.ResourceActions) error
 }
 
 type registryFilter struct {
 }
 
-func (reg registryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
-	a *token.ResourceActions) error {
+func (reg registryFilter) filter(ctx security.Context, a *token.ResourceActions) error {
 	// Do not filter if the request is to access registry catalog
 	if a.Name != "catalog" {
 		return fmt.Errorf("Unable to handle, type: %s, name: %s", a.Type, a.Name)
@@ -151,25 +149,14 @@ type repositoryFilter struct {
 	parser imageParser
 }
 
-func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
-	a *token.ResourceActions) error {
-	// clear action list to assign to new acess element after perm check.
+func (rep repositoryFilter) filter(ctx security.Context, a *token.ResourceActions) error {
+	// clear action list to assign to new access element after perm check.
 	img, err := rep.parser.parse(a.Name)
 	if err != nil {
 		return err
 	}
 	project := img.namespace
 	permission := ""
-
-	exist, err := pm.Exists(project)
-	if err != nil {
-		return err
-	}
-	if !exist {
-		log.Debugf("project %s does not exist, set empty permission", project)
-		a.Actions = []string{}
-		return nil
-	}
 
 	if ctx.HasAllPerm(project) {
 		permission = "RWM"
@@ -204,11 +191,6 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 		return nil, fmt.Errorf("failed to  get security context from request")
 	}
 
-	pm, err := filter.GetProjectManager(r)
-	if err != nil {
-		return nil, fmt.Errorf("failed to  get project manager from request")
-	}
-
 	// for docker login
 	if !ctx.IsAuthenticated() {
 		if len(scopes) == 0 {
@@ -216,7 +198,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 		}
 	}
 	access := GetResourceActions(scopes)
-	err = filterAccess(access, ctx, pm, g.filterMap)
+	err = filterAccess(access, ctx, g.filterMap)
 	if err != nil {
 		return nil, err
 	}

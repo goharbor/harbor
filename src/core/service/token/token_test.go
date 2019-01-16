@@ -287,19 +287,19 @@ func TestFilterAccess(t *testing.T) {
 	}
 	err = filterAccess(a1, &fakeSecurityContext{
 		isAdmin: true,
-	}, nil, registryFilterMap)
+	}, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra1, *a1[0], "Mismatch after registry filter Map")
 
 	err = filterAccess(a2, &fakeSecurityContext{
 		isAdmin: true,
-	}, nil, notaryFilterMap)
+	}, notaryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a2[0], "Mismatch after notary filter Map")
 
 	err = filterAccess(a3, &fakeSecurityContext{
 		isAdmin: false,
-	}, nil, registryFilterMap)
+	}, registryFilterMap)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	assert.Equal(t, ra2, *a3[0], "Mismatch after registry filter Map")
 }
