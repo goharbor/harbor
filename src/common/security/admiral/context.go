@@ -15,10 +15,10 @@
 package admiral
 
 import (
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/ram"
+	"github.com/goharbor/harbor/src/common/ram/project"
 	"github.com/goharbor/harbor/src/common/security/admiral/authcontext"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr"
 )
 
@@ -71,70 +71,33 @@ func (s *SecurityContext) IsSolutionUser() bool {
 
 // HasReadPerm returns whether the user has read permission to the project
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	public, err := s.pm.IsPublic(projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to check the public of project %v: %v",
-			projectIDOrName, err)
-		return false
-	}
-	if public {
-		return true
-	}
-
-	// private project
-	if !s.IsAuthenticated() {
-		return false
-	}
-
-	// system admin
-	if s.IsSysAdmin() {
-		return true
-	}
-
-	roles := s.GetProjectRoles(projectIDOrName)
-
-	return len(roles) > 0
+	isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
+	return s.Can(project.ActionPull, ram.NewProjectNamespace(projectIDOrName, isPublicProject).Resource(project.ResourceImage))
 }
 
 // HasWritePerm returns whether the user has write permission to the project
 func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	if !s.IsAuthenticated() {
-		return false
-	}
-
-	// system admin
-	if s.IsSysAdmin() {
-		return true
-	}
-
-	roles := s.GetProjectRoles(projectIDOrName)
-	for _, role := range roles {
-		switch role {
-		case common.RoleProjectAdmin,
-			common.RoleDeveloper:
-			return true
-		}
-	}
-
-	return false
+	isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
+	return s.Can(project.ActionPush, ram.NewProjectNamespace(projectIDOrName, isPublicProject).Resource(project.ResourceImage))
 }
 
 // HasAllPerm returns whether the user has all permissions to the project
 func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
-	if !s.IsAuthenticated() {
-		return false
-	}
+	isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
+	return s.Can(project.ActionPushPull, ram.NewProjectNamespace(projectIDOrName, isPublicProject).Resource(project.ResourceImage))
+}
 
-	// system admin
-	if s.IsSysAdmin() {
-		return true
-	}
-
-	roles := s.GetProjectRoles(projectIDOrName)
-	for _, role := range roles {
-		switch role {
-		case common.RoleProjectAdmin:
-			return true
+// Can returns whether the user can do action on resource
+func (s *SecurityContext) Can(action ram.Action, resource ram.Resource) bool {
+	ns, err := resource.GetNamespace()
+	if err == nil {
+		switch ns.Kind() {
+		case "project":
+			projectIDOrName := ns.Identity()
+			isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
+			projectNamespace := ram.NewProjectNamespace(projectIDOrName, isPublicProject)
+			user := project.NewUser(s, projectNamespace, s.GetProjectRoles(projectIDOrName)...)
+			return ram.HasPermission(user, resource, action)
 		}
 	}
 
