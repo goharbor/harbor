@@ -16,11 +16,11 @@ package project
 
 import (
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/ram"
+	"github.com/goharbor/harbor/src/common/rbac"
 )
 
 var (
-	rolePoliciesMap = map[string][]*ram.Policy{
+	rolePoliciesMap = map[string][]*rbac.Policy{
 		"projectAdmin": {
 			{Resource: ResourceImage, Action: ActionPushPull}, // compatible with security all perm of project
 			{Resource: ResourceImage, Action: ActionPush},
@@ -38,9 +38,9 @@ var (
 	}
 )
 
-// visitorRole implement the ram.Role interface
+// visitorRole implement the rbac.Role interface
 type visitorRole struct {
-	namespace ram.Namespace
+	namespace rbac.Namespace
 	roleID    int
 }
 
@@ -59,8 +59,8 @@ func (role *visitorRole) GetRoleName() string {
 }
 
 // GetPolicies returns policies for the visitor role
-func (role *visitorRole) GetPolicies() []*ram.Policy {
-	policies := []*ram.Policy{}
+func (role *visitorRole) GetPolicies() []*rbac.Policy {
+	policies := []*rbac.Policy{}
 
 	roleName := role.GetRoleName()
 	if roleName == "" {
@@ -68,7 +68,7 @@ func (role *visitorRole) GetPolicies() []*ram.Policy {
 	}
 
 	for _, policy := range rolePoliciesMap[roleName] {
-		policies = append(policies, &ram.Policy{
+		policies = append(policies, &rbac.Policy{
 			Resource: role.namespace.Resource(policy.Resource),
 			Action:   policy.Action,
 			Effect:   policy.Effect,

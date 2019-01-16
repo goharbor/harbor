@@ -18,7 +18,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/ram"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -50,8 +50,8 @@ type VisitorTestSuite struct {
 }
 
 func (suite *VisitorTestSuite) TestGetPolicies() {
-	namespace := ram.NewProjectNamespace("library", false)
-	publicNamespace := ram.NewProjectNamespace("library", true)
+	namespace := rbac.NewProjectNamespace("library", false)
+	publicNamespace := rbac.NewProjectNamespace("library", true)
 
 	anonymous := NewUser(anonymousCtx, namespace)
 	suite.Nil(anonymous.GetPolicies())
@@ -73,7 +73,7 @@ func (suite *VisitorTestSuite) TestGetPolicies() {
 }
 
 func (suite *VisitorTestSuite) TestGetRoles() {
-	namespace := ram.NewProjectNamespace("library", false)
+	namespace := rbac.NewProjectNamespace("library", false)
 
 	anonymous := NewUser(anonymousCtx, namespace)
 	suite.Nil(anonymous.GetRoles())

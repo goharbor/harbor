@@ -12,22 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package project
+package rbac
 
 import (
-	"github.com/goharbor/harbor/src/common/ram"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-// const action variables
-const (
-	ActionAll      = ram.Action("*")
-	ActionPull     = ram.Action("pull")
-	ActionPush     = ram.Action("push")
-	ActionPushPull = ram.Action("push+pull")
-)
+type ProjectParserTestSuite struct {
+	suite.Suite
+}
 
-// const resource variables
-const (
-	ResourceAll   = ram.Resource("*")
-	ResourceImage = ram.Resource("image")
-)
+func (suite *ProjectParserTestSuite) TestParse() {
+	namespace, err := projectNamespaceParser(Resource("/project/1/image"))
+	suite.Equal(namespace, &projectNamespace{projectIDOrName: int64(1)})
+	suite.Nil(err)
+
+	namespace, err = projectNamespaceParser(Resource("/fake/1/image"))
+	suite.Nil(namespace)
+	suite.Error(err)
+}
+
+func TestProjectParserTestSuite(t *testing.T) {
+	suite.Run(t, new(ProjectParserTestSuite))
+}
