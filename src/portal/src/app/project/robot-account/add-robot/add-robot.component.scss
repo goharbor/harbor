@@ -1,0 +1,31 @@
+.rule-width {
+  width: 100%;
+}
+
+.input-width {
+  width: 200px;
+}
+
+.copy-token {
+  .success-icon {
+    color: #318700;
+  }
+  .show-info {
+    .robot-name {
+      margin: 30px 0;
+
+      label {
+        margin-right: 30px;
+      }
+    }
+    .robot-token {
+      margin-bottom: 20px;
+      label {
+        margin-right: 24px;
+      }
+      .copy-input {
+        display: inline-block;
+      }
+    }
+  }
+}

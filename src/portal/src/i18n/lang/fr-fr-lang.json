@@ -180,7 +180,8 @@
         "LABELS": "Labels",
         "PROJECTS": "Projets",
         "CONFIG": "Configuration",
-        "HELMCHART": "Helm Charts"
+        "HELMCHART": "Helm Charts",
+        "ROBOT_ACCOUNTS": "Robot Accounts"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Dépôt du Projet",
@@ -241,6 +242,31 @@
         "OF": "de",
         "SET_ROLE": "SET ROLE",
         "REMOVE": "Remove"
+    },
+    "ROBOT_ACCOUNT": {
+        "NAME": "Nom",
+        "TOKEN": "gage ",
+        "NEW_ROBOT_ACCOUNT": "nouveau robot compte ",
+        "ENABLED_STATE": "état d 'activation",
+        "DESCRIPTION": "Description",
+        "ACTION": "Action",
+        "EDIT": "Edit",
+        "ITEMS": "items",
+        "OF": "of",
+        "DISABLE_ACCOUNT": "désactiver le compte ",
+        "ENABLE_ACCOUNT": "permettre à compte ",
+        "DELETE": "Supprimer",
+        "CREAT_ROBOT_ACCOUNT": "créat robot compte ",
+        "PULL_PERMISSION": "Permission for Pull",
+        "PUSH_PERMISSION": "Permission for Push",
+        "FILTER_PLACEHOLDER": "Filter Robot Accounts",
+        "ROBOT_NAME": "ne peut pas contenir de caractères spéciaux(~#$%) et la longueur maximale devrait être de 255 caractères.",
+        "ACCOUNT_EXISTING": "le robot est existe déjà.",
+        "ALERT_TEXT": "This is the only time to copy your personal access token.You wont't have another opportunity",
+        "CREATED_SUCCESS": "Created '{{param}}' successfully.",
+        "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
+        "DELETION_TITLE": "confirmer l'enlèvement des comptes du robot ",
+        "DELETION_SUMMARY": "Voulez-vous supprimer la règle {{param}}?"
     },
     "GROUP": {
         "Group": "Group",
@@ -765,6 +791,7 @@
         "DELETE_REPO": "Delete repository",
         "DELETE_TAG": "Delete tag",
         "DELETE_USER": "Delete user",
+        "DELETE_ROBOT": "Delete robot",
         "DELETE_REGISTRY": "Delete registry",
         "DELETE_REPLICATION": "Delete replication",
         "DELETE_MEMBER": "Delete member",
