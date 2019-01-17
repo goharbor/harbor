@@ -53,11 +53,7 @@ type RobotReq struct {
 
 // Valid put request validation
 func (rq *RobotReq) Valid(v *validation.Validation) {
-	switch rq.Disabled {
-	case true, false:
-	default:
-		v.SetError("disabled", "must be in [true, false]")
-	}
+	// ToDo: add validation for access info.
 }
 
 // RobotRep ...
