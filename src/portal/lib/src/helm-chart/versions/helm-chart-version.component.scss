@@ -16,7 +16,7 @@
     .toolbar {
         overflow: hidden;
         .rightPos {
-            @include grid-left-top-pos;
+            @include grid-right-top-pos;
             .filter-divider {
                 display: inline-block;
                 height: 16px;

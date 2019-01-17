@@ -1,7 +1,7 @@
 @import '../mixin';
 
 .rightPos{
-    @include grid-left-top-pos;
+    @include grid-right-top-pos;
 }
 
 .toolbar {
