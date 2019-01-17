@@ -45,13 +45,13 @@ func (r *RobotAPI) Prepare() {
 
 	pid, err := r.GetInt64FromPath(":pid")
 	if err != nil || pid <= 0 {
-		text := "invalid project ID: "
+		var errMsg string
 		if err != nil {
-			text += err.Error()
+			errMsg = "failed to get project ID " + err.Error()
 		} else {
-			text += fmt.Sprintf("%d", pid)
+			errMsg = "invalid project ID: " + fmt.Sprintf("%d", pid)
 		}
-		r.HandleBadRequest(text)
+		r.HandleBadRequest(errMsg)
 		return
 	}
 	project, err := r.ProjectMgr.Get(pid)
@@ -137,7 +137,7 @@ func (r *RobotAPI) List() {
 
 	count, err := dao.CountRobot(&query)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to count robots %v", err))
+		r.HandleInternalServerError(fmt.Sprintf("failed to list robots on project: %d, %v", r.project.ProjectID, err))
 		return
 	}
 	query.Page, query.Size = r.GetPaginationParams()
