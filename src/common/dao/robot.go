@@ -17,6 +17,7 @@ package dao
 import (
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
+	"strings"
 	"time"
 )
 
@@ -25,7 +26,14 @@ func AddRobot(robot *models.Robot) (int64, error) {
 	now := time.Now()
 	robot.CreationTime = now
 	robot.UpdateTime = now
-	return GetOrmer().Insert(robot)
+	id, err := GetOrmer().Insert(robot)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return 0, ErrDupRows
+		}
+		return 0, err
+	}
+	return id, nil
 }
 
 // GetRobotByID ...
@@ -77,6 +85,11 @@ func getRobotQuerySetter(query *models.RobotQuery) orm.QuerySeter {
 		qs = qs.Filter("ProjectID", query.ProjectID)
 	}
 	return qs
+}
+
+// CountRobot ...
+func CountRobot(query *models.RobotQuery) (int64, error) {
+	return getRobotQuerySetter(query).Count()
 }
 
 // UpdateRobot ...
