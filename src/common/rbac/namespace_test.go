@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ram
+package rbac
 
 import (
 	"testing"
@@ -20,20 +20,26 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ProjectParserTestSuite struct {
+type ProjectNamespaceTestSuite struct {
 	suite.Suite
 }
 
-func (suite *ProjectParserTestSuite) TestParse() {
-	namespace, err := projectNamespaceParser(Resource("/project/1/image"))
-	suite.Equal(namespace, &projectNamespace{projectIDOrName: int64(1)})
-	suite.Nil(err)
+func (suite *ProjectNamespaceTestSuite) TestResource() {
+	var namespace Namespace
 
-	namespace, err = projectNamespaceParser(Resource("/fake/1/image"))
-	suite.Nil(namespace)
-	suite.Error(err)
+	namespace = &projectNamespace{projectIDOrName: int64(1)}
+
+	suite.Equal(namespace.Resource(Resource("image")), Resource("/project/1/image"))
 }
 
-func TestProjectParserTestSuite(t *testing.T) {
-	suite.Run(t, new(ProjectParserTestSuite))
+func (suite *ProjectNamespaceTestSuite) TestIdentity() {
+	namespace, _ := Resource("/project/1/image").GetNamespace()
+	suite.Equal(namespace.Identity(), int64(1))
+
+	namespace, _ = Resource("/project/library/image").GetNamespace()
+	suite.Equal(namespace.Identity(), "library")
+}
+
+func TestProjectNamespaceTestSuite(t *testing.T) {
+	suite.Run(t, new(ProjectNamespaceTestSuite))
 }

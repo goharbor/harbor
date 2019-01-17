@@ -15,26 +15,26 @@
 package project
 
 import (
-	"github.com/goharbor/harbor/src/common/ram"
+	"github.com/goharbor/harbor/src/common/rbac"
 )
 
 var (
 	// subresource policies for public project
-	publicProjectPolicies = []*ram.Policy{
+	publicProjectPolicies = []*rbac.Policy{
 		{Resource: ResourceImage, Action: ActionPull},
 	}
 
 	// subresource policies for system admin visitor
-	systemAdminProjectPolicies = []*ram.Policy{
+	systemAdminProjectPolicies = []*rbac.Policy{
 		{Resource: ResourceAll, Action: ActionAll},
 	}
 )
 
-func policiesForPublicProject(namespace ram.Namespace) []*ram.Policy {
-	policies := []*ram.Policy{}
+func policiesForPublicProject(namespace rbac.Namespace) []*rbac.Policy {
+	policies := []*rbac.Policy{}
 
 	for _, policy := range publicProjectPolicies {
-		policies = append(policies, &ram.Policy{
+		policies = append(policies, &rbac.Policy{
 			Resource: namespace.Resource(policy.Resource),
 			Action:   policy.Action,
 			Effect:   policy.Effect,
@@ -44,11 +44,11 @@ func policiesForPublicProject(namespace ram.Namespace) []*ram.Policy {
 	return policies
 }
 
-func policiesForSystemAdmin(namespace ram.Namespace) []*ram.Policy {
-	policies := []*ram.Policy{}
+func policiesForSystemAdmin(namespace rbac.Namespace) []*rbac.Policy {
+	policies := []*rbac.Policy{}
 
 	for _, policy := range systemAdminProjectPolicies {
-		policies = append(policies, &ram.Policy{
+		policies = append(policies, &rbac.Policy{
 			Resource: namespace.Resource(policy.Resource),
 			Action:   policy.Action,
 			Effect:   policy.Effect,
