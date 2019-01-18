@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 import argparse
-import requests
 import json
+import requests
 import sys
 
 parser = argparse.ArgumentParser()
@@ -29,7 +29,7 @@ for item in args.config :
 url = "https://"+args.host+"/api/configurations"
 user = args.user
 passwd = args.password
- 
+
 # Make a request to the endpoint using the correct auth values
 auth_values = (user, passwd)
 session = requests.Session()

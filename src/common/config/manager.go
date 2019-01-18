@@ -125,7 +125,7 @@ func (c *CfgManager) GetAll() map[string]interface{} {
 	metaDataList := metadata.Instance().GetAll()
 	for _, item := range metaDataList {
 		cfgValue, err := c.store.GetAnyType(item.Name)
-		if err != nil {
+		if err != metadata.ErrValueNotSet && err != nil {
 			log.Errorf("Failed to get value of key %v, error %v", item.Name, err)
 			continue
 		}
@@ -145,7 +145,7 @@ func (c *CfgManager) GetUserCfgs() map[string]interface{} {
 	for _, item := range metaDataList {
 		if item.Scope == metadata.UserScope {
 			cfgValue, err := c.store.GetAnyType(item.Name)
-			if err != nil {
+			if err != metadata.ErrValueNotSet && err != nil {
 				log.Errorf("Failed to get value of key %v, error %v", item.Name, err)
 				continue
 			}
