@@ -199,7 +199,7 @@ const harborRoutes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(harborRoutes)
+    RouterModule.forRoot(harborRoutes, {onSameUrlNavigation: 'reload'})
   ],
   exports: [RouterModule]
 })
