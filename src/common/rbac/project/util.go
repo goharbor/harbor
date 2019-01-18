@@ -21,7 +21,17 @@ import (
 var (
 	// subresource policies for public project
 	publicProjectPolicies = []*rbac.Policy{
-		{Resource: ResourceImage, Action: ActionPull},
+		{Resource: ResourceSelf, Action: ActionRead},
+
+		{Resource: ResourceRepository, Action: ActionList},
+		{Resource: ResourceRepository, Action: ActionPull},
+
+		{Resource: ResourceHelmChart, Action: ActionDownload},
+		{Resource: ResourceHelmChart, Action: ActionList},
+
+		{Resource: ResourceHelmChartVersion, Action: ActionDownload},
+		{Resource: ResourceHelmChartVersion, Action: ActionRead},
+		{Resource: ResourceHelmChartVersion, Action: ActionList},
 	}
 
 	// subresource policies for system admin visitor

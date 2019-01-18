@@ -22,18 +22,110 @@ import (
 var (
 	rolePoliciesMap = map[string][]*rbac.Policy{
 		"projectAdmin": {
-			{Resource: ResourceImage, Action: ActionPushPull}, // compatible with security all perm of project
-			{Resource: ResourceImage, Action: ActionPush},
-			{Resource: ResourceImage, Action: ActionPull},
+			{Resource: ResourceSelf, Action: ActionRead},
+			{Resource: ResourceSelf, Action: ActionUpdate},
+			{Resource: ResourceSelf, Action: ActionDelete},
+
+			{Resource: ResourceMember, Action: ActionCreate},
+			{Resource: ResourceMember, Action: ActionUpdate},
+			{Resource: ResourceMember, Action: ActionDelete},
+			{Resource: ResourceMember, Action: ActionList},
+
+			{Resource: ResourceLog, Action: ActionList},
+
+			{Resource: ResourceReplication, Action: ActionList},
+
+			{Resource: ResourceLabel, Action: ActionCreate},
+			{Resource: ResourceLabel, Action: ActionUpdate},
+			{Resource: ResourceLabel, Action: ActionDelete},
+			{Resource: ResourceLabel, Action: ActionList},
+
+			{Resource: ResourceRepository, Action: ActionCreate},
+			{Resource: ResourceRepository, Action: ActionUpdate},
+			{Resource: ResourceRepository, Action: ActionDelete},
+			{Resource: ResourceRepository, Action: ActionList},
+			{Resource: ResourceReplication, Action: ActionPushPull}, // compatible with security all perm of project
+			{Resource: ResourceReplication, Action: ActionPush},
+			{Resource: ResourceReplication, Action: ActionPull},
+
+			{Resource: ResourceRepositoryTag, Action: ActionDelete},
+			{Resource: ResourceRepositoryTag, Action: ActionList},
+			{Resource: ResourceRepositoryTag, Action: ActionScan},
+			{Resource: ResourceRepositoryTag, Action: ActionListVulnerabilities},
+			{Resource: ResourceRepositoryTag, Action: ActionReadManifest},
+			{Resource: ResourceRepositoryTag, Action: ActionReTag},
+			{Resource: ResourceRepositoryTag, Action: ActionAddLabel},
+			{Resource: ResourceRepositoryTag, Action: ActionRemoveLabel},
+
+			{Resource: ResourceHelmChart, Action: ActionUpload},
+			{Resource: ResourceHelmChart, Action: ActionDownload},
+			{Resource: ResourceHelmChart, Action: ActionDelete},
+			{Resource: ResourceHelmChart, Action: ActionList},
+
+			{Resource: ResourceHelmChartVersion, Action: ActionDownload},
+			{Resource: ResourceHelmChartVersion, Action: ActionRead},
+			{Resource: ResourceHelmChartVersion, Action: ActionDelete},
+			{Resource: ResourceHelmChartVersion, Action: ActionList},
+			{Resource: ResourceHelmChartVersion, Action: ActionAddLabel},
+			{Resource: ResourceHelmChartVersion, Action: ActionRemoveLabel},
+
+			{Resource: ResourceConfiguration, Action: ActionRead},
+			{Resource: ResourceConfiguration, Action: ActionUpdate},
 		},
 
 		"developer": {
-			{Resource: ResourceImage, Action: ActionPush},
-			{Resource: ResourceImage, Action: ActionPull},
+			{Resource: ResourceSelf, Action: ActionRead},
+
+			{Resource: ResourceMember, Action: ActionList},
+
+			{Resource: ResourceLog, Action: ActionList},
+
+			{Resource: ResourceRepository, Action: ActionCreate},
+			{Resource: ResourceRepository, Action: ActionList},
+			{Resource: ResourceRepository, Action: ActionPush},
+			{Resource: ResourceRepository, Action: ActionPull},
+
+			{Resource: ResourceRepositoryTag, Action: ActionList},
+			{Resource: ResourceRepositoryTag, Action: ActionListVulnerabilities},
+			{Resource: ResourceRepositoryTag, Action: ActionReadManifest},
+			{Resource: ResourceRepositoryTag, Action: ActionAddLabel},
+			{Resource: ResourceRepositoryTag, Action: ActionRemoveLabel},
+
+			{Resource: ResourceHelmChart, Action: ActionUpload},
+			{Resource: ResourceHelmChart, Action: ActionDownload},
+			{Resource: ResourceHelmChart, Action: ActionList},
+
+			{Resource: ResourceHelmChartVersion, Action: ActionDownload},
+			{Resource: ResourceHelmChartVersion, Action: ActionRead},
+			{Resource: ResourceHelmChartVersion, Action: ActionList},
+			{Resource: ResourceHelmChartVersion, Action: ActionAddLabel},
+			{Resource: ResourceHelmChartVersion, Action: ActionRemoveLabel},
+
+			{Resource: ResourceConfiguration, Action: ActionRead},
 		},
 
 		"guest": {
-			{Resource: ResourceImage, Action: ActionPull},
+			{Resource: ResourceSelf, Action: ActionRead},
+
+			{Resource: ResourceMember, Action: ActionList},
+
+			{Resource: ResourceLog, Action: ActionList},
+
+			{Resource: ResourceRepository, Action: ActionList},
+			{Resource: ResourceRepository, Action: ActionPull},
+
+			{Resource: ResourceRepositoryTag, Action: ActionList},
+			{Resource: ResourceRepositoryTag, Action: ActionListVulnerabilities},
+			{Resource: ResourceRepositoryTag, Action: ActionReadManifest},
+
+			{Resource: ResourceHelmChart, Action: ActionDownload},
+			{Resource: ResourceHelmChart, Action: ActionList},
+
+			{Resource: ResourceHelmChartVersion, Action: ActionDownload},
+			{Resource: ResourceHelmChartVersion, Action: ActionRead},
+			{Resource: ResourceHelmChartVersion, Action: ActionList},
+
+			{Resource: ResourceConfiguration, Action: ActionRead},
 		},
 	}
 )

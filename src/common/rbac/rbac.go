@@ -15,8 +15,10 @@
 package rbac
 
 import (
+	"errors"
 	"fmt"
 	"path"
+	"strings"
 )
 
 const (
@@ -31,6 +33,27 @@ type Resource string
 
 func (res Resource) String() string {
 	return string(res)
+}
+
+// RelativeTo returns relative resource to other resource
+func (res Resource) RelativeTo(other Resource) (Resource, error) {
+	prefix := other.String()
+	str := res.String()
+
+	if !strings.HasPrefix(str, prefix) {
+		return Resource(""), errors.New("value error")
+	}
+
+	relative := strings.TrimPrefix(str, prefix)
+	if strings.HasPrefix(relative, "/") {
+		relative = relative[1:]
+	}
+
+	if relative == "" {
+		relative = "."
+	}
+
+	return Resource(relative), nil
 }
 
 // Subresource returns subresource
@@ -123,4 +146,16 @@ func (u *BaseUser) GetPolicies() []*Policy {
 // HasPermission returns whether the user has action permission on resource
 func HasPermission(user User, resource Resource, action Action) bool {
 	return enforcerForUser(user).Enforce(user.GetUserName(), resource.String(), action.String())
+}
+
+// GetPolicies returns all policies for user
+func GetPolicies(user User) []*Policy {
+	policies := []*Policy{}
+
+	policies = append(policies, user.GetPolicies()...)
+	for _, role := range user.GetRoles() {
+		policies = append(policies, role.GetPolicies()...)
+	}
+
+	return policies
 }

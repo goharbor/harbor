@@ -46,6 +46,7 @@ func initRouters() {
 		beego.Router("/api/users/:id", &api.UserAPI{}, "get:Get;delete:Delete;put:Put")
 		beego.Router("/api/users", &api.UserAPI{}, "get:List;post:Post")
 		beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
+		beego.Router("/api/users/:id/permissions", &api.UserAPI{}, "get:ListUserPermissions")
 		beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
 		beego.Router("/api/usergroups/?:ugid([0-9]+)", &api.UserGroupAPI{})
 		beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")

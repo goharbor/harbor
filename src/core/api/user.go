@@ -24,6 +24,8 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
@@ -337,6 +339,56 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 		log.Errorf("Error occurred in ToggleUserAdminRole: %v", err)
 		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
 	}
+}
+
+// ListUserPermissions handles GET to /api/users/{}/permissions
+func (ua *UserAPI) ListUserPermissions() {
+	if ua.userID != ua.currentUserID {
+		log.Errorf("Current user, id: %d can not view other user's permissions", ua.currentUserID)
+		ua.RenderError(http.StatusForbidden, "User does not have permission")
+		return
+	}
+
+	relative := ua.Ctx.Input.Query("relative") == "true"
+
+	scope := rbac.Resource(ua.Ctx.Input.Query("scope"))
+	policies := []*rbac.Policy{}
+
+	namespace, err := scope.GetNamespace()
+	if err == nil {
+		switch namespace.Kind() {
+		case "project":
+			projectIDOrName := namespace.Identity()
+			isPublicProject, _ := ua.ProjectMgr.IsPublic(projectIDOrName)
+			projectNamespace := rbac.NewProjectNamespace(projectIDOrName, isPublicProject)
+			user := project.NewUser(ua.SecurityCtx, projectNamespace, ua.SecurityCtx.GetProjectRoles(projectIDOrName)...)
+
+			policies = append(policies, rbac.GetPolicies(user)...)
+		}
+	}
+
+	results := []map[string]string{}
+	for _, policy := range policies {
+		var resource rbac.Resource
+		if relative {
+			relativeResource, err := policy.Resource.RelativeTo(scope)
+			if err != nil {
+				continue
+			}
+			resource = relativeResource
+		} else {
+			resource = policy.Resource
+		}
+
+		results = append(results, map[string]string{
+			"resource": resource.String(),
+			"action":   policy.Action.String(),
+		})
+	}
+
+	ua.Data["json"] = results
+	ua.ServeJSON()
+	return
 }
 
 // modifiable returns whether the modify is allowed based on current auth mode and context
