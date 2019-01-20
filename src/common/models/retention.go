@@ -29,14 +29,6 @@ type TagRecord struct {
 	Labels     []*Label
 }
 
-// TagAction records when a filter takes an action upon a tag
-type TagAction struct {
-	// The tag the action applies to
-	Target *TagRecord
-	// The filter that took this action
-	ActingFilter Filter
-}
-
 // Filter is a tag filter in a Retention Policy Filter Chain
 type Filter interface {
 	// Process takes tags from the input channel and writes them to one of the three output channels.
@@ -46,7 +38,7 @@ type Filter interface {
 	//      or if the policy does not care if the tag is kept or deleted
 	//
 	// Filters do not own any of the provided channels and should **not** close them under any circumstance
-	Process(input <-chan *TagRecord, toKeep, toDelete chan<- *TagAction, next chan<- *TagRecord) error
+	Process(input <-chan *TagRecord, toKeep, toDelete, next chan<- *TagRecord) error
 
 	// InitializeFor re-initializes the filter for tags from the specified project and repository
 	//
