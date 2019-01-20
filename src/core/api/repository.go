@@ -78,7 +78,7 @@ func (r reposSorter) Less(i, j int) bool {
 	return r[i].Index < r[j].Index
 }
 
-type TagDetail struct {
+type tagDetail struct {
 	Digest        string    `json:"digest"`
 	Name          string    `json:"name"`
 	Size          int64     `json:"size"`
@@ -95,8 +95,8 @@ type cfg struct {
 	Labels map[string]string `json:"labels"`
 }
 
-type TagResp struct {
-	TagDetail
+type tagResp struct {
+	tagDetail
 	Signature    *notary.Target          `json:"signature"`
 	ScanOverview *models.ImgScanOverview `json:"scan_overview,omitempty"`
 	Labels       []*models.Label         `json:"labels"`
@@ -607,7 +607,7 @@ func (ra *RepositoryAPI) GetTags() {
 // get config, signature and scan overview and assemble them into one
 // struct for each tag in tags
 func assembleTagsInParallel(client *registry.Repository, repository string,
-	tags []string, username string) []*TagResp {
+	tags []string, username string) []*tagResp {
 	var err error
 	signatures := map[string][]notary.Target{}
 	if config.WithNotary() {
@@ -618,13 +618,13 @@ func assembleTagsInParallel(client *registry.Repository, repository string,
 		}
 	}
 
-	c := make(chan *TagResp)
+	c := make(chan *tagResp)
 	for _, tag := range tags {
 		go assembleTag(c, client, repository, tag, config.WithClair(),
 			config.WithNotary(), signatures)
 	}
-	result := []*TagResp{}
-	var item *TagResp
+	result := []*tagResp{}
+	var item *tagResp
 	for i := 0; i < len(tags); i++ {
 		item = <-c
 		if item == nil {
@@ -635,10 +635,10 @@ func assembleTagsInParallel(client *registry.Repository, repository string,
 	return result
 }
 
-func assembleTag(c chan *TagResp, client *registry.Repository,
+func assembleTag(c chan *tagResp, client *registry.Repository,
 	repository, tag string, clairEnabled, notaryEnabled bool,
 	signatures map[string][]notary.Target) {
-	item := &TagResp{}
+	item := &tagResp{}
 	// labels
 	image := fmt.Sprintf("%s:%s", repository, tag)
 	labels, err := dao.GetLabelsOfResource(common.ResourceTypeImage, image)
@@ -654,7 +654,7 @@ func assembleTag(c chan *TagResp, client *registry.Repository,
 		log.Errorf("failed to get v2 manifest of %s:%s: %v", repository, tag, err)
 	}
 	if tagDetail != nil {
-		item.TagDetail = *tagDetail
+		item.tagDetail = *tagDetail
 	}
 
 	// scan overview
@@ -677,8 +677,8 @@ func assembleTag(c chan *TagResp, client *registry.Repository,
 
 // getTagDetail returns the detail information for v2 manifest image
 // The information contains architecture, os, author, size, etc.
-func getTagDetail(client *registry.Repository, tag string) (*TagDetail, error) {
-	detail := &TagDetail{
+func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
+	detail := &tagDetail{
 		Name: tag,
 	}
 
@@ -718,7 +718,7 @@ func getTagDetail(client *registry.Repository, tag string) (*TagDetail, error) {
 	return detail, nil
 }
 
-func populateAuthor(detail *TagDetail) {
+func populateAuthor(detail *tagDetail) {
 	// has author info already
 	if len(detail.Author) > 0 {
 		return

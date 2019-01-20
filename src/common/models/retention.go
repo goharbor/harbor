@@ -16,15 +16,17 @@ package models
 
 import (
 	"time"
-
-	"github.com/goharbor/harbor/src/core/api"
 )
 
 // TagRecord represents all pertinent metadata about a tag
 type TagRecord struct {
 	Project    *Project
 	Repository *RepoRecord
-	Tag        *api.TagResp
+
+	Name       string
+	CreatedAt  time.Time
+	LastPullAt time.Time
+	Labels     []*Label
 }
 
 // TagAction records when a filter takes an action upon a tag

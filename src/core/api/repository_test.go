@@ -96,7 +96,7 @@ func TestGetReposTags(t *testing.T) {
 		t.Errorf("failed to get tags of repository %s: %v", repository, err)
 	} else {
 		assert.Equal(int(200), code, "httpStatusCode should be 200")
-		if tg, ok := tags.([]TagResp); ok {
+		if tg, ok := tags.([]tagResp); ok {
 			assert.Equal(1, len(tg), fmt.Sprintf("there should be only one tag, but now %v", tg))
 			assert.Equal(tg[0].Name, "latest", "the tag should be latest")
 		} else {
@@ -207,18 +207,18 @@ func TestGetReposTop(t *testing.T) {
 
 func TestPopulateAuthor(t *testing.T) {
 	author := "author"
-	detail := &TagDetail{
+	detail := &tagDetail{
 		Author: author,
 	}
 	populateAuthor(detail)
 	assert.Equal(t, author, detail.Author)
 
-	detail = &TagDetail{}
+	detail = &tagDetail{}
 	populateAuthor(detail)
 	assert.Equal(t, "", detail.Author)
 
 	maintainer := "maintainer"
-	detail = &TagDetail{
+	detail = &tagDetail{
 		Config: &cfg{
 			Labels: map[string]string{
 				"Maintainer": maintainer,
