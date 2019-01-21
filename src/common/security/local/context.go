@@ -138,6 +138,8 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 		switch role.RoleCode {
 		case "MDRWS":
 			roles = append(roles, common.RoleProjectAdmin)
+		case "DRWS":
+			roles = append(roles, common.RoleMaster)
 		case "RWS":
 			roles = append(roles, common.RoleDeveloper)
 		case "RS":

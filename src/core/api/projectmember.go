@@ -160,7 +160,7 @@ func (pma *ProjectMemberAPI) Put() {
 	pmID := pma.id
 	var req models.Member
 	pma.DecodeJSONReq(&req)
-	if req.Role < 1 || req.Role > 3 {
+	if req.Role < 1 || req.Role > 4 {
 		pma.HandleBadRequest(fmt.Sprintf("Invalid role id %v", req.Role))
 		return
 	}
@@ -226,7 +226,7 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 		return 0, ErrDuplicateProjectMember
 	}
 
-	if member.Role < 1 || member.Role > 3 {
+	if member.Role < 1 || member.Role > 4 {
 		// Return invalid role error
 		return 0, ErrInvalidRole
 	}
