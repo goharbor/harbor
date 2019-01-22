@@ -207,6 +207,10 @@ func LDAPConf() (*models.LdapConf, error) {
 
 // LDAPGroupConf returns the setting of ldap group search
 func LDAPGroupConf() (*models.LdapGroupConf, error) {
+	err := cfgMgr.Load()
+	if err != nil {
+		return nil, err
+	}
 	return &models.LdapGroupConf{
 		LdapGroupBaseDN:        cfgMgr.Get(common.LDAPGroupBaseDN).GetString(),
 		LdapGroupFilter:        cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
@@ -288,6 +292,10 @@ func OnlyAdminCreateProject() (bool, error) {
 
 // Email returns email server settings
 func Email() (*models.Email, error) {
+	err := cfgMgr.Load()
+	if err != nil {
+		return nil, err
+	}
 	return &models.Email{
 		Host:     cfgMgr.Get(common.EmailHost).GetString(),
 		Port:     cfgMgr.Get(common.EmailPort).GetInt(),
@@ -384,6 +392,10 @@ func WithAdmiral() bool {
 
 // UAASettings returns the UAASettings to access UAA service.
 func UAASettings() (*models.UAASettings, error) {
+	err := cfgMgr.Load()
+	if err != nil {
+		return nil, err
+	}
 	us := &models.UAASettings{
 		Endpoint:     cfgMgr.Get(common.UAAEndpoint).GetString(),
 		ClientID:     cfgMgr.Get(common.UAAClientID).GetString(),
