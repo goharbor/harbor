@@ -2851,7 +2851,9 @@ paths:
           description: The chart name
       responses:
         '200':
-          $ref: '#/definitions/ChartVersions'
+          description: Retrieved all versions of the specified chart
+          schema:
+            $ref: '#/definitions/ChartVersions'
         '401':
           $ref: '#/definitions/UnauthorizedChartAPIError'
         '403':
@@ -2911,7 +2913,9 @@ paths:
           description: The chart version
       responses:
         '200':
-          $ref: '#/definitions/ChartVersionDetails'
+          description: Successfully retrieved the chart version
+          schema:
+            $ref: '#/definitions/ChartVersionDetails'
         '401':
           $ref: '#/definitions/UnauthorizedChartAPIError'
         '403':
