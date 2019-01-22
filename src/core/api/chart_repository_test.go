@@ -329,16 +329,19 @@ func (msc *mockSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 // Can returns whether the user can do action on resource
 func (msc *mockSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
 	namespace, err := resource.GetNamespace()
-	if err == nil {
-		switch namespace.Kind() {
-		case "project":
-			projectIDOrName := namespace.Identity()
+	if err != nil || namespace.Kind() != "project" {
+		return false
+	}
 
-			if ns, ok := projectIDOrName.(string); ok {
-				if ns == "library" {
-					return true
-				}
-			}
+	projectIDOrName := namespace.Identity()
+
+	if projectIDOrName == nil {
+		return false
+	}
+
+	if ns, ok := projectIDOrName.(string); ok {
+		if ns == "library" {
+			return true
 		}
 	}
 
