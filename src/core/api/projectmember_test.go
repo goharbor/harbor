@@ -209,6 +209,18 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 			},
 			code: http.StatusOK,
 		},
+		// 200
+		{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    URL,
+				bodyJSON: &models.Member{
+					Role: 4,
+				},
+				credential: admin,
+			},
+			code: http.StatusOK,
+		},
 		// 400
 		{
 			request: &testingRequest{

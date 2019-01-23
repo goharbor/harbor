@@ -4182,7 +4182,7 @@ definitions:
     properties:
       role_id:
         type: integer
-        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest'
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for master'
       member_user:
         $ref: '#/definitions/UserEntity'
       member_group:
@@ -4192,7 +4192,7 @@ definitions:
     properties:
       role_id:
         type: integer
-        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest'
+        description: 'The role id 1 for projectAdmin, 2 for developer, 3 for guest, 4 for master'
   UserEntity:
     type: object
     properties:
