@@ -28,6 +28,7 @@ const (
 	RoleProjectAdmin = 1
 	RoleDeveloper    = 2
 	RoleGuest        = 3
+	RoleMaster       = 4
 
 	LabelLevelSystem  = "s"
 	LabelLevelUser    = "u"
