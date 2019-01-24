@@ -20,6 +20,12 @@ import (
 
 var (
 	// subresource policies for public project
+	// robot account can only access docker pull for the public project.
+	publicProjectPoliciesRobot = []*rbac.Policy{
+		{Resource: ResourceImage, Action: ActionPull},
+	}
+
+	// subresource policies for public project
 	publicProjectPolicies = []*rbac.Policy{
 		{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
 
@@ -104,6 +110,20 @@ var (
 		{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 	}
 )
+
+func policiesForPublicProjectRobot(namespace rbac.Namespace) []*rbac.Policy {
+	policies := []*rbac.Policy{}
+
+	for _, policy := range publicProjectPoliciesRobot {
+		policies = append(policies, &rbac.Policy{
+			Resource: namespace.Resource(policy.Resource),
+			Action:   policy.Action,
+			Effect:   policy.Effect,
+		})
+	}
+
+	return policies
+}
 
 func policiesForPublicProject(namespace rbac.Namespace) []*rbac.Policy {
 	policies := []*rbac.Policy{}
