@@ -78,3 +78,13 @@ Wait Unitl Vul Data Ready
     \    Exit For Loop If  ${contains}
     \    Sleep  ${interval}
     Run Keyword If  ${i+1}==${n}  Fail  The vul data is not ready
+
+Retry Keyword When Error
+    [Arguments]  ${keyword}  ${times}=6
+    :For  ${n}  IN RANGE  1  ${times}
+    \    Log To Console  Attampt to ${keyword} ${n} times ...
+    \    ${out}  Run Keyword And Ignore Error  ${keyword}
+    \    Log To Console  Return value is ${out}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  3
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
