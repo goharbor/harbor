@@ -53,6 +53,11 @@ func TestConfig(t *testing.T) {
 	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
 		t.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
+	oriKeyPath := os.Getenv("TOKEN_PRIVATE_KEY_PATH")
+	if err := os.Setenv("TOKEN_PRIVATE_KEY_PATH", ""); err != nil {
+		t.Fatalf("failed to set env %s: %v", "TOKEN_PRIVATE_KEY_PATH", err)
+	}
+	defer os.Setenv("TOKEN_PRIVATE_KEY_PATH", oriKeyPath)
 
 	if err := Init(); err != nil {
 		t.Fatalf("failed to initialize configurations: %v", err)

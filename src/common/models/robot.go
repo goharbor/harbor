@@ -16,6 +16,7 @@ package models
 
 import (
 	"github.com/astaxie/beego/validation"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"time"
 )
 
@@ -45,10 +46,10 @@ type RobotQuery struct {
 
 // RobotReq ...
 type RobotReq struct {
-	Name        string             `json:"name"`
-	Description string             `json:"description"`
-	Disabled    bool               `json:"disabled"`
-	Access      []*ResourceActions `json:"access"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Disabled    bool           `json:"disabled"`
+	Policy      []*rbac.Policy `json:"access"`
 }
 
 // Valid put request validation
