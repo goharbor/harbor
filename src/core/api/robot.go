@@ -16,15 +16,13 @@ package api
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/token"
 	"net/http"
 	"strconv"
 )
-
-// User this prefix to distinguish harbor user,
-// The prefix contains a specific character($), so it cannot be registered as a harbor user.
-const robotPrefix = "robot$"
 
 // RobotAPI ...
 type RobotAPI struct {
@@ -98,17 +96,14 @@ func (r *RobotAPI) Prepare() {
 func (r *RobotAPI) Post() {
 	var robotReq models.RobotReq
 	r.DecodeJSONReq(&robotReq)
+	createdName := common.RobotPrefix + robotReq.Name
 
-	createdName := robotPrefix + robotReq.Name
-
+	// first to add a robot account, and get its id.
 	robot := models.Robot{
 		Name:        createdName,
 		Description: robotReq.Description,
 		ProjectID:   r.project.ProjectID,
-		// TODO: use token service to generate token per access information
-		Token: "this is a placeholder",
 	}
-
 	id, err := dao.AddRobot(&robot)
 	if err != nil {
 		if err == dao.ErrDupRows {
@@ -119,11 +114,28 @@ func (r *RobotAPI) Post() {
 		return
 	}
 
-	robotRep := models.RobotRep{
-		Name:  robot.Name,
-		Token: robot.Token,
+	// generate the token, and return it with response data.
+	// token is not stored in the database.
+	rClaims := &token.RobotClaims{
+		TokenID:   id,
+		ProjectID: r.project.ProjectID,
+		Policy:    robotReq.Policy,
+	}
+	token := token.NewWithClaims(rClaims)
+	rawTk, err := token.SignedString()
+	if err != nil {
+		r.HandleInternalServerError(fmt.Sprintf("failed to create token for robot account, %v", err))
+		err := dao.DeleteRobot(id)
+		if err != nil {
+			r.HandleInternalServerError(fmt.Sprintf("failed to delete the robot account: %d, %v", id, err))
+		}
+		return
 	}
 
+	robotRep := models.RobotRep{
+		Name:  robot.Name,
+		Token: rawTk,
+	}
 	r.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 	r.Data["json"] = robotRep
 	r.ServeJSON()
