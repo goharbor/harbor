@@ -59,7 +59,6 @@ Multi-delete Object
     \    ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
     \    Wait Until Element Is Visible And Enabled  ${element}
     \    Click Element  ${element}
-
     Capture Page Screenshot
     ${element}=  Set Variable  xpath=//button[contains(.,'Delete')]
     Wait Until Element Is Visible And Enabled  ${element}

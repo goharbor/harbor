@@ -83,7 +83,7 @@ Test Case - Delete A Project
     Project Should Not Be Deleted  project${d}
     Go Into Project  project${d}
     Delete Repo  project${d}
-    Back To Projects
+    Navigate To Projects
     Project Should Be Deleted  project${d}
     Close Browser
 
@@ -115,7 +115,8 @@ Test Case - Staticsinfo
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Wait Until Element Is Visible  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+    ${element}=  Set Variable  ${project_statistics_private_repository_icon}
+    Wait Until Element Is Visible  ${element}
     ${privaterepocount1}=  Get Statics Private Repo
     ${privateprojcount1}=  Get Statics Private Project
     ${publicrepocount1}=  Get Statics Public Repo
@@ -133,9 +134,10 @@ Test Case - Staticsinfo
     ${publicrepocount}=  evaluate  ${publicrepocount1}+1
     ${totalrepocount}=  evaluate  ${totalrepocount1}+2
     ${totalprojcount}=  evaluate  ${totalprojcount1}+2
-    Wait Until Element Is Visible  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+    Navigate To Projects
+    Wait Until Element Is Visible  ${element}
     ${privaterepocountStr}=  Convert To String  ${privaterepocount}
-    Wait Until Element Contains  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]  ${privaterepocountStr}
+    Wait Until Element Contains  ${element}  ${privaterepocountStr}
     ${privaterepocount2}=  Get Statics Private Repo
     ${privateprojcount2}=  get statics private project
     ${publicrepocount2}=  get statics public repo
@@ -418,6 +420,7 @@ Test Case - Delete Multi Project
     Create An New Project  projecta${d}
     Create An New Project  projectb${d}
     Push Image  ${ip}  user012  Test1@34  projecta${d}  hello-world
+    Navigate To Projects
     Filter Object  project
     Wait Until Element Is Not Visible  //clr-datagrid/div/div[2]
     Multi-delete Object  projecta  projectb
@@ -587,7 +590,7 @@ Test Case - Manual Scan All
     Switch To Configure
     Go To Vulnerability Config
     Trigger Scan Now
-    Back To Projects
+    Navigate To Projects
     Go Into Project  library
     Go Into Repo  redis
     Summary Chart Should Display  latest
@@ -671,7 +674,7 @@ Test Case - Retag A Image Tag
     Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
 
     Wait Until Element Is Not Visible  css=${modal-dialog}
-    Back To Projects
+    Navigate To Projects
     Go Into Project  project${random_num2}
     Sleep  1
     Page Should Contain  ${target_image_name}
@@ -688,7 +691,7 @@ Test Case - Scan Image On Push
     Goto Project Config
     Enable Scan On Push
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
-    Back To Projects
+    Navigate To Projects
     Go Into Project  library
     Go Into Repo  memcached
     Summary Chart Should Display  latest
@@ -717,7 +720,7 @@ Test Case - Project Level Image Serverity Policy
     Go Into Project  project${d}
     Go Into Repo  haproxy
     Scan Repo  latest  Succeed
-    Back To Projects
+    Navigate To Projects
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  0
     Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
