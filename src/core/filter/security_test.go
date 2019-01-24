@@ -122,6 +122,23 @@ func TestSecretReqCtxModifier(t *testing.T) {
 	assert.NotNil(t, projectManager(ctx))
 }
 
+func TestRobotReqCtxModifier(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet,
+		"http://127.0.0.1/api/projects/", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", req)
+	}
+	req.SetBasicAuth("robot$test1", "Harbor12345")
+	ctx, err := newContext(req)
+	if err != nil {
+		t.Fatalf("failed to crate context: %v", err)
+	}
+
+	modifier := &robotAuthReqCtxModifier{}
+	modified := modifier.Modify(ctx)
+	assert.False(t, modified)
+}
+
 func TestBasicAuthReqCtxModifier(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)
