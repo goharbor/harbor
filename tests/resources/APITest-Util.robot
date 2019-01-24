@@ -1,8 +1,12 @@
 *** Keywords ***
-Setup API Test
+Make Swagger Client
     ${rc}  ${output}=  Run And Return Rc And Output  make swagger_client 
     Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
+    [Return]  ${rc}
+
+Setup API Test
+    Retry Keyword When Error  Make Swagger Client
+
 Harbor API Test 
     [Arguments]  ${testcase_name}
     ${current_dir}=  Run  pwd
