@@ -34,10 +34,12 @@ Create An New Project
     ${element}=  Set Variable  xpath=//button[contains(.,'OK')]
     Wait Until Element Is Visible And Enabled  ${element}
     Click Element  ${element}
+    #Try to get Project Infomation 5 times at most and sleep 1 second each time if we fail to get it.
     ${found_project}=  Set Variable  ${false}
     :For  ${n}  IN RANGE  1  5
     \    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -k -X GET --header 'Accept: application/json' ${HARBOR_URL}/api/projects?name=${projectname}
-    \    ${match}  ${regexp_project_name}  Should Match Regexp  ${output}  ,\"name\":\"(\\w+)\",\"creation_time\":
+    \    Log To Console  ${output}
+    \    ${match}  ${regexp_project_name}  Should Match Regexp  ${output}  \"name\"\\s*:\\s*\"(\\w+)\"\\s*,
     \    ${found_project}  Set Variable If  '${rc}' == '0' and '${regexp_project_name}' == '${projectname}'  ${true}
     \    Run Keyword If  ${found_project} == ${true}  Exit For Loop
     \    Sleep  1
