@@ -14,7 +14,11 @@
 
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/goharbor/harbor/src/common/models"
+)
 
 // Policy defines the structure of a replication policy
 type Policy struct {
@@ -67,4 +71,13 @@ type Trigger struct {
 // TriggerSettings is the setting about the trigger
 type TriggerSettings struct {
 	Cron string `json:"cron"`
+}
+
+// PolicyQuery defines the query conditions for listing policies
+type PolicyQuery struct {
+	Name string
+	// TODO: need to consider how to support listing the policies
+	// of one namespace in both pull and push modes
+	Namespace string
+	models.Pagination
 }
