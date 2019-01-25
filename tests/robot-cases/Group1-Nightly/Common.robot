@@ -593,20 +593,6 @@ Test Case - Manual Scan All
     Summary Chart Should Display  latest
     Close Browser
 
-Test Case - View Scan Results
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
-    Create An New Project  project${d}    
-    Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/tomcat
-    Scan Repo  latest  Succeed
-    Summary Chart Should Display  latest
-    View Repo Scan Details
-    Close Browser
-
 Test Case - View Scan Error
     Init Chrome Driver
     ${d}=  get current date  result_format=%m%s
@@ -618,21 +604,6 @@ Test Case - View Scan Error
     Go Into Repo  project${d}/vmware/photon
     Scan Repo  1.0  Fail
     View Scan Error Log
-    Close Browser
-
-Test Case - Project Level Image Serverity Policy
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    ${d}=  get current date  result_format=%m%s
-    Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
-    Go Into Project  project${d}
-    Go Into Repo  haproxy
-    Scan Repo  latest  Succeed
-    Back To Projects
-    Go Into Project  project${d}
-    Set Vulnerabilty Serverity  0
-    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
     Close Browser
 
 Test Case - List Helm Charts
@@ -683,20 +654,6 @@ Test Case - Admin Push Signed Image
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  sha256
 
-Test Case - Scan Image On Push
-    Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Goto Project Config
-    Enable Scan On Push
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
-    Back To Projects
-    Go Into Project  library
-    Go Into Repo  memcached
-    Summary Chart Should Display  latest
-    Close Browser
-
 Test Case - Retag A Image Tag
     Init Chrome Driver
     ${random_num1}=   Get Current Date    result_format=%m%s
@@ -721,4 +678,47 @@ Test Case - Retag A Image Tag
     Go Into Repo  project${random_num2}/${target_image_name}
     Sleep  1
     Page Should Contain Element  xpath=${tag_value_xpath}
+    Close Browser
+
+Test Case - Scan Image On Push
+    Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Goto Project Config
+    Enable Scan On Push
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
+    Back To Projects
+    Go Into Project  library
+    Go Into Repo  memcached
+    Summary Chart Should Display  latest
+    Close Browser
+
+Test Case - View Scan Results
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
+    Create An New Project  project${d}    
+    Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/tomcat
+    Scan Repo  latest  Succeed
+    Summary Chart Should Display  latest
+    View Repo Scan Details
+    Close Browser
+
+Test Case - Project Level Image Serverity Policy
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=  get current date  result_format=%m%s
+    Create An New Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
+    Go Into Project  project${d}
+    Go Into Repo  haproxy
+    Scan Repo  latest  Succeed
+    Back To Projects
+    Go Into Project  project${d}
+    Set Vulnerabilty Serverity  0
+    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
     Close Browser
