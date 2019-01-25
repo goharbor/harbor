@@ -1,94 +1,110 @@
 # Installation and Configuration Guide
-Harbor can be installed by one of three approaches: 
 
-- **Online installer:** The installer downloads Harbor's images from Docker hub. For this reason, the installer is very small in size.
+Harbor can be installed using one of two available approaches: 
 
-- **Offline installer:** Use this installer when the host does not have an Internet connection. The installer contains pre-built images so its size is larger.
+- **Online installer:** This installer downloads Harbor's Docker images from [Docker Hub](https://hub.docker.com) and is thus very small in size. Use this installer when the host has access to the Internet.
 
-All installers can be downloaded from the **[official release](https://github.com/goharbor/harbor/releases)** page. 
+- **Offline installer:** This installer contains pre-built images and is thus much larger than the online installer. Use this installer when the host doesn't have an Internet connection.
 
-This guide describes the steps to install and configure Harbor by using the online or offline installer. The installation processes are almost the same. 
+Both installers can be downloaded from Harbor's **[official releases](https://github.com/goharbor/harbor/releases)** page.
 
-If you run a previous version of Harbor, you may need to update ```harbor.cfg``` and migrate the data to fit the new database schema. For more details, please refer to **[Harbor Migration Guide](migration_guide.md)**.
+This guide describes the steps required to install and configure Harbor using the online or offline installer. The installation processes are almost identical.
 
-In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes](kubernetes_deployment.md) for details.
+If you're running an earlier version of Harbor, you may need to update the `harbor.cfg` configuration file and migrate the data to fit the new database schema. For more details, please refer to the [Harbor Migration Guide](migration_guide.md).
+
+> **Kubernetes** --- The deployment instructions for running Harbor on [Kubernetes](https://kubernetes.io) have been contributed by the Harbor community. See [Harbor on Kubernetes](kubernetes_deployment.md) for more details.
 
 ## Prerequisites for the target host
-Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.  
+
+Harbor is deployed as several [Docker](https://docker.com) containers, and thus can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and [Docker Compose](https://docs.docker.com/compose/) to be installed.
+
 ### Hardware
-|Resource|Capacity|Description|
-|---|---|---|
-|CPU|minimal 2 CPU|4 CPU is preferred|
-|Mem|minimal 4GB|8GB is preferred|
-|Disk|minimal 40GB|160GB is preferred|
+
+The table below outlines the minimum and preferred CPU, memory, and disk for running Harbor:
+
+Resource | Minimum | Preferred
+:--------|:--------|:---------
+CPU | 2 CPUs | 4 CPUs
+Memory | 4 GB | 8 GB
+Disk | 40 GB | 160 GB
+
 ### Software
-|Software|Version|Description|
-|---|---|---|
-|Python|version 2.7 or higher|Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default|
-|Docker engine|version 1.10 or higher|For installation instructions, please refer to: https://docs.docker.com/engine/installation/|
-|Docker Compose|version 1.6.0 or higher|For installation instructions, please refer to: https://docs.docker.com/compose/install/|
-|Openssl|latest is preferred|Generate certificate and keys for Harbor|
+
+The table below outlines the software that needs to be installed on hosts running Harbor:
+
+Software | Version | Description
+:--------|:--------|:-----------
+Python | Version 2.7 or higher | Note that you may have to install Python on Linux distributions that do not come with a Python interpreter installed by default (such as Gentoo and Arch)
+Docker Engine | Version 1.10 or higher | For installation instructions, see the [official documentation](https://docs.docker.com/engine/installation)
+Docker Compose | Version 1.6.0 or higher | For installation instructions, see the [official documentation](https://docs.docker.com/compose/install) |
+OpenSSL | Latest is preferred | Generate a certificate and keys for Harbor
+
 ### Network ports 
-|Port|Protocol|Description|
-|---|---|---|
-|443|HTTPS|Harbor portal and core API will accept requests on this port for https protocol|
-|4443|HTTPS|Connections to the Docker Content Trust service for Harbor, only needed when Notary is enabled|
-|80|HTTP|Harbor portal and core API will accept requests on this port for http protocol|
+
+Harbor requires three open ports to function:
+
+Port | Protocol | Description
+:----|:---------|:-----------
+443 | HTTPS | The Harbor portal and core API accept HTTPS requests on this port
+4443 | HTTPS | Connections to the Docker Content Trust service for Harbor, only needed when [Notary](https://github.com/theupdateframework/notary) is enabled
+80 | HTTP | The Harbor portal and core API will accept HTTP requests on this port
 
 ## Installation Steps
 
-The installation steps boil down to the following
+The installation steps boil down to the following:
 
-1. Download the installer;
-2. Configure **harbor.cfg**;
-3. Run **install.sh** to install and start Harbor;
+1. [Download](#download-the-installer) the installer
+2. [Configure](#configuring-harbor) the `harbor.cfg` configuration file
+3. [Run](#finishing-installation-and-starting-harbor) `install.sh` to install and start Harbor
 
 
-#### Downloading the installer:
+#### Downloading the installer
 
-The binary of the installer can be downloaded from the [release](https://github.com/goharbor/harbor/releases) page. Choose either online or offline installer. Use *tar* command to extract the package.
+The binary for the Harbor installer can be downloaded from the [releases](https://github.com/goharbor/harbor/releases) page using a tool like [wget](https://www.gnu.org/software/wget/). Choose either the online or the offline installer. Use the `tar` command to extract the package.
 
 Online installer:
+
+```shell
+$ tar xvf harbor-online-installer-<version>.tgz
 ```
-    $ tar xvf harbor-online-installer-<version>.tgz
-```
+
 Offline installer:
-```
-    $ tar xvf harbor-offline-installer-<version>.tgz
+
+```shell
+$ tar xvf harbor-offline-installer-<version>.tgz
 ```
 
 #### Configuring Harbor
-Configuration parameters are located in the file **harbor.cfg**. 
 
-There are two categories of parameters in harbor.cfg, **required parameters** and **optional parameters**.  
+Configuration parameters are located in the `harbor.cfg` configuration file. There are two categories of parameters in `harbor.cfg`: **required parameters** and **optional parameters**.
 
-* **required parameters**: These parameters are required to be set in the configuration file. They will take effect if a user updates them in ```harbor.cfg``` and run the ```install.sh``` script to reinstall Harbor.
-* **optional parameters**: These parameters are optional for updating, i.e. user can leave them as default and update them on Web Portal after Harbor is started.  If they are set in ```harbor.cfg```, they only take effect in the first launch of Harbor. 
-Subsequent update to these parameters in ```harbor.cfg``` will be ignored. 
+* **Required parameters** must be set in the configuration file. They will take effect if a user updates them in `harbor.cfg` and runs the `install.sh` script to re-install Harbor.
+* **Optional parameters** are optional for updating, i.e. the user can use default values and update them in the Harbor Web Portal after Harbor has been started. If they are set in `harbor.cfg` they will only take effect upon the first launch of Harbor. After that, updates to these parameters in `harbor.cfg` will be ignored. 
 
-    **Note:** If you choose to set these parameters via the Portal, be sure to do so right after Harbor
-is started. In particular, you must set the desired **auth_mode** before registering or creating any new users in Harbor. When there are users in the system (besides the default admin user), 
-**auth_mode** cannot be changed.
+> **Note** --- If you choose to set these parameters via the Portal, be sure to do so right after Harbor has been started. In particular, you must set the desired `auth_mode` before registering or creating any new users in Harbor. When there are users in the system (besides the default admin user), `auth_mode` cannot be changed.
 
-The parameters are described below - note that at the very least, you will need to change the **hostname** attribute. 
+The available parameters are described in the sections below. Please note that you will need to change the `hostname` attribute.
 
 ##### Required parameters:
 
-* **hostname**: The target host's hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ 
-* **ui_url_protocol**: (**http** or **https**.  Default is **http**) The protocol used to access the Portal and the token/notification service.  If Notary is enabled, this parameter has to be _https_.  By default, this is _http_. To set up the https protocol, refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
-* **db_password**: The root password for the PostgreSQL database used for **db_auth**. _Change this password for any production use!_ 
-* **max_job_workers**: (default value is **10**) The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. 
-* **customize_crt**: (**on** or **off**.  Default is **on**) When this attribute is **on**, the prepare script creates private key and root certificate for the generation/verification of the registry's token. Set this attribute to **off** when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.
-* **ssl_cert**: The path of SSL certificate, it's applied only when the protocol is set to https.
-* **ssl_cert_key**: The path of SSL key, it's applied only when the protocol is set to https.
-* **secretkey_path**: The path of key for encrypt or decrypt the password of a remote registry in a replication policy.
-* **log_rotate_count**: Log files are rotated **log_rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
-* **log_rotate_size**: Log files are rotated only if they grow bigger than **log_rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
-* **http_proxy**: Config http proxy for Clair, e.g. `http://my.proxy.com:3128`.
-* **https_proxy**: Config https proxy for Clair, e.g. `http://my.proxy.com:3128`.
-* **no_proxy**: Config no proxy for Clair, e.g. `127.0.0.1,localhost,core,registry`.
+Parameter | Description | Default
+:---------|:------------|:-------
+`hostname` | The target host's hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g. `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_ |
+`ui_url_protocol` | Either `http` or `https`. The protocol used to access the Portal and the token/notification service.  If Notary is enabled, this parameter must be `https`; `http` is the default. To set up the HTTPS protocol, see [Configuring Harbor with HTTPS Access](configure_https.md).  | `http`
+`db_password` | The root password for the PostgreSQL database used for `db_auth`. _Change this password for any production use!_ |
+`max_job_workers` | The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host. | `10`
+`customize_crt` | Either `on` or `off`. When this attribute is `on`, the prepare script creates a private key and root certificate for the generation/verification of the registry's token. Set this attribute to `off` when the key and root certificate are supplied by external sources. Refer to [Customize Key and Certificate of Harbor Token Service](customize_token_service.md) for more info.| `on`
+`ssl_cert` | The path of the SSL certificate. This is applied only when the protocol is set to HTTPS. |
+`ssl_cert_key` | The path of the SSL key. This is applied only when the protocol is set to HTTPS. |
+`secretkey_path` | The path of key used to encrypt or decrypt the password of a remote registry in a replication policy. |
+`log_rotate_count` | Log files are rotated `log_rotate_count` times before being removed. If the count is 0, old versions are removed rather than rotated. |
+`log_rotate_size` | Log files are rotated only if they grow bigger than `log_rotate_size` bytes. If the size is followed by `k`, the size is assumed to be in kilobytes; if `M` is used, the size is in megabytes, while `G` signifies gigabytes. The sizes `100`, `100k`, `100M`, and `100G` are thus all valid. |
+`http_proxy` | The HTTP proxy for Clair, e.g. `http://my.proxy.com:3128`. |
+`https_proxy` | The HTTPS proxy for Clair, e.g. `http://my.proxy.com:3128`. |
+`no_proxy` | Signifies no proxy for Clair, e.g. `127.0.0.1,localhost,core,registry`. |
 
 ##### Optional parameters
+
 * **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**. Setting **email_insecure = true** if the email server uses a self-signed or untrusted certificate. For a detailed description about "email_identity" please refer to [rfc2595](https://tools.ietf.org/rfc/rfc2595.txt)
   * email_server = smtp.mydomain.com 
   * email_server_port = 25
