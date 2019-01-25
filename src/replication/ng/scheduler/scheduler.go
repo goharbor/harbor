@@ -12,17 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package model
+package scheduler
 
-// Namespace represents the full path of resource isolation unit;
-// if the namespace has hierarchical structure, e.g organization->team,
-// it should be converted to organization.team
-type Namespace struct {
-	Name     string                 `json:"name"`
-	Metadata map[string]interface{} `json:"metadata"`
-}
+import (
+	"github.com/goharbor/harbor/src/replication/ng/model"
+)
 
-// NamespaceQuery defines the query condition for listing namespaces
-type NamespaceQuery struct {
-	Name string
+// Scheduler schedules tasks to transfer resource data
+type Scheduler interface {
+	// Schedule tasks for one execution
+	Schedule([]*model.Resource, []*model.Resource) ([]*model.Task, error)
+	// Stop the task specified by ID
+	Stop(id string) error
 }
