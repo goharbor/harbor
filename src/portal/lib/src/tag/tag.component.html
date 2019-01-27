@@ -78,29 +78,29 @@
           <button type="button" class="btn btn-sm btn-secondary" *ngIf="!withAdmiral" [disabled]="!(selectedRow.length===1 && guestRoleOrAbove)" (click)="retag(selectedRow)"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}</button>
           <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-bar>
-        <clr-dg-column class="width-130" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
-        <clr-dg-column class="width-100" [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
-        <clr-dg-column class="flex-width">{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
-        <clr-dg-column class="width-130" *ngIf="withClair">{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
-        <clr-dg-column class="width-100" *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
-        <clr-dg-column class="flex-min-width">{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
-        <clr-dg-column class="width-160" [clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
-        <clr-dg-column class="width-100" [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
-        <clr-dg-column *ngIf="!withAdmiral" class="width-160">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
+        <clr-dg-column class="flex-max-width" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
+        <clr-dg-column *ngIf="withClair">{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
+        <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
+        <clr-dg-column *ngIf="!withAdmiral">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
-          <clr-dg-cell  class="truncated"  class="width-130">
+          <clr-dg-cell  class="truncated flex-max-width">
             <a *ngIf="withClair" href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
             <span *ngIf="!withClair">{{t.name}}</span>
           </clr-dg-cell>
-          <clr-dg-cell class="width-100">{{sizeTransform(t.size)}}</clr-dg-cell>
-          <clr-dg-cell class="truncated flex-width" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">
+          <clr-dg-cell>{{sizeTransform(t.size)}}</clr-dg-cell>
+          <clr-dg-cell class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">
               <hbr-copy-input #copyInput  (onCopyError)="onCpError($event)"  iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
           </clr-dg-cell>
-          <clr-dg-cell class="width-130" *ngIf="withClair">
+          <clr-dg-cell *ngIf="withClair">
             <hbr-vulnerability-bar [repoName]="repoName" [tagId]="t.name" [summary]="t.scan_overview"></hbr-vulnerability-bar>
           </clr-dg-cell>
-          <clr-dg-cell class="width-100" *ngIf="withNotary"  [ngSwitch]="t.signature !== null">
+          <clr-dg-cell *ngIf="withNotary"  [ngSwitch]="t.signature !== null">
             <clr-icon shape="check-circle" *ngSwitchCase="true"  size="20" class="color-green"></clr-icon>
             <clr-icon shape="times-circle" *ngSwitchCase="false"  size="16" class="color-red"></clr-icon>
             <a href="javascript:void(0)" *ngSwitchDefault role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
@@ -108,10 +108,10 @@
               <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
             </a>
           </clr-dg-cell>
-          <clr-dg-cell  class="truncated flex-min-width" title="{{t.author}}">{{t.author}}</clr-dg-cell>
-          <clr-dg-cell class="width-160">{{t.created | date: 'short'}}</clr-dg-cell>
-          <clr-dg-cell class="width-100" *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
-          <clr-dg-cell *ngIf="!withAdmiral" class="width-160">
+          <clr-dg-cell  class="truncated" title="{{t.author}}">{{t.author}}</clr-dg-cell>
+          <clr-dg-cell>{{t.created | date: 'short'}}</clr-dg-cell>
+          <clr-dg-cell *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
+          <clr-dg-cell *ngIf="!withAdmiral">
             <hbr-label-piece *ngIf="t.labels?.length" [label]="t.labels[0]" [labelWidth]="90"> </hbr-label-piece>
             <div class="signpost-item" [hidden]="t.labels?.length<=1">
                 <div class="trigger-item">
