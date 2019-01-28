@@ -717,6 +717,37 @@ paths:
             $ref: '#/definitions/User'
         '401':
           description: User need to log in first.
+  /users/current/permissions:
+    get:
+      summary: Get current user permissions.
+      description: |
+        This endpoint is to get the current user permissions.
+      parameters:
+        - name: scope
+          in: query
+          type: string
+          required: false
+          description: Get permissions of the scope
+        - name: relative
+          in: query
+          type: boolean
+          required: false
+          description: |
+            If true, the resources in the response are relative to the scope,
+            eg for resource '/project/1/repository' if relative is 'true' then the resource in response will be 'repository'.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get current user permission successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Permission'
+        '401':
+          description: User need to log in first.
+        '500':
+          description: Internal errors.
   '/users/{user_id}':
     get:
       summary: Get a user's profile.
@@ -4550,3 +4581,13 @@ definitions:
       error:
         type: string
         description: (optional) The error message when the status is "unhealthy"
+  Permission:
+    type: object
+    description: The permission
+    properties:
+      resource:
+        type: string
+        description: The permission resoruce
+      action:
+        type: string
+        description: The permission action
