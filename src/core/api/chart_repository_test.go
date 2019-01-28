@@ -313,12 +313,12 @@ func (msc *mockSecurityContext) IsSolutionUser() bool {
 
 // HasReadPerm returns whether the user has read permission to the project
 func (msc *mockSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	return msc.Can(project.ActionPull, rbac.NewProjectNamespace(projectIDOrName, false).Resource(project.ResourceImage))
+	return msc.Can(project.ActionPull, rbac.NewProjectNamespace(projectIDOrName, false).Resource(project.ResourceRepository))
 }
 
 // HasWritePerm returns whether the user has write permission to the project
 func (msc *mockSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	return msc.Can(project.ActionPush, rbac.NewProjectNamespace(projectIDOrName, false).Resource(project.ResourceImage))
+	return msc.Can(project.ActionPush, rbac.NewProjectNamespace(projectIDOrName, false).Resource(project.ResourceRepository))
 }
 
 // HasAllPerm returns whether the user has all permissions to the project

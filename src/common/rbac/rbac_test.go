@@ -127,7 +127,7 @@ func TestHasPermissionUserWithoutRoles(t *testing.T) {
 		{
 			name: "project create for user without roles",
 			args: args{
-				&userWithoutRoles{Username: "user1", UserPolicies: []*Policy{{Resource: "project", Action: "create"}}},
+				&userWithoutRoles{Username: "user1", UserPolicies: []*Policy{{Resource: "/project", Action: "create"}}},
 				"/project",
 				"create",
 			},
@@ -136,7 +136,7 @@ func TestHasPermissionUserWithoutRoles(t *testing.T) {
 		{
 			name: "project delete test for user without roles",
 			args: args{
-				&userWithoutRoles{Username: "user1", UserPolicies: []*Policy{{Resource: "project", Action: "create"}}},
+				&userWithoutRoles{Username: "user1", UserPolicies: []*Policy{{Resource: "/project", Action: "create"}}},
 				"/project",
 				"delete",
 			},
@@ -168,7 +168,7 @@ func TestHasPermissionUsernameEmpty(t *testing.T) {
 		{
 			name: "project create for user without roles",
 			args: args{
-				&userWithoutRoles{Username: "", UserPolicies: []*Policy{{Resource: "project", Action: "create"}}},
+				&userWithoutRoles{Username: "", UserPolicies: []*Policy{{Resource: "/project", Action: "create"}}},
 				"/project",
 				"create",
 			},
@@ -386,6 +386,53 @@ func TestResource_GetNamespace(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Resource.GetNamespace() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestResource_RelativeTo(t *testing.T) {
+	type args struct {
+		other Resource
+	}
+	tests := []struct {
+		name    string
+		res     Resource
+		args    args
+		want    Resource
+		wantErr bool
+	}{
+		{
+			name:    "/project/1/image",
+			res:     Resource("/project/1/image"),
+			args:    args{other: Resource("/project/1")},
+			want:    Resource("image"),
+			wantErr: false,
+		},
+		{
+			name:    "/project/1",
+			res:     Resource("/project/1"),
+			args:    args{other: Resource("/project/1")},
+			want:    Resource("."),
+			wantErr: false,
+		},
+		{
+			name:    "/project/1",
+			res:     Resource("/project/1"),
+			args:    args{other: Resource("/system")},
+			want:    Resource(""),
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.res.RelativeTo(tt.args.other)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Resource.RelativeTo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Resource.RelativeTo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
