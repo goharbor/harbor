@@ -56,7 +56,7 @@ Search Project Member
     [Arguments]  ${project}  ${user}
     Go Into Project  ${project}
     Sleep  2   
-    Click Element  xpath=//clr-dg-cell//a[contains(.,"${project}")]
+    Click Element  xpath=//clr-dg-cell//a[contains(.,'${project}')]
     Sleep  1	
     Click Element  xpath=${project_member_search_button_xpath}
     Sleep  1	
@@ -66,14 +66,14 @@ Search Project Member
     
 Change Project Member Role
     [Arguments]  ${project}  ${user}  ${role}
-    Click Element  xpath=//clr-dg-cell//a[contains(.,"${project}")]
+    Click Element  xpath=//clr-dg-cell//a[contains(.,'${project}')]
     Sleep  2    
     Click Element  xpath=${project_member_tag_xpath}
     Sleep  1	
     Click Element  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//label
     Sleep  1
     #change role
-    Click Element  //*[@id="member-action"]
+    Click Element  //*[@id='member-action']
     Click Element  //button[contains(.,'${role}')]
     Sleep  2
     Wait Until Page Contains  ${role}
@@ -149,7 +149,7 @@ Manage Project Member
 Change User Role In Project
     [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${role}
     Sign In Harbor  ${HARBOR_URL}  ${admin}  ${pwd}
-    Wait Until Element Is Visible  //clr-dg-cell//a[contains(.,"${project}")]
+    Wait Until Element Is Visible  //clr-dg-cell//a[contains(.,'${project}')]
     Change Project Member Role  ${project}  ${user}  ${role}
     Logout Harbor
 
