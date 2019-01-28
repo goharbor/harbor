@@ -15,8 +15,10 @@
 package rbac
 
 import (
+	"errors"
 	"fmt"
 	"path"
+	"strings"
 )
 
 const (
@@ -28,6 +30,27 @@ const (
 
 // Resource the type of resource
 type Resource string
+
+// RelativeTo returns relative resource to other resource
+func (res Resource) RelativeTo(other Resource) (Resource, error) {
+	prefix := other.String()
+	str := res.String()
+
+	if !strings.HasPrefix(str, prefix) {
+		return Resource(""), errors.New("value error")
+	}
+
+	relative := strings.TrimPrefix(str, prefix)
+	if strings.HasPrefix(relative, "/") {
+		relative = relative[1:]
+	}
+
+	if relative == "" {
+		relative = "."
+	}
+
+	return Resource(relative), nil
+}
 
 func (res Resource) String() string {
 	return string(res)
