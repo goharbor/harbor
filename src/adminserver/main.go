@@ -15,6 +15,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"net/http"
 	"os"
 
@@ -26,6 +27,8 @@ import (
 // Server for admin component
 type Server struct {
 	Port    string
+	TLSCert string
+	TLSKey  string
 	Handler http.Handler
 }
 
@@ -36,7 +39,26 @@ func (s *Server) Serve() error {
 		Handler: s.Handler,
 	}
 
+	if len(s.TLSCert) >= 0 && len(s.TLSKey) > 0 {
+		tlsCfg := &tls.Config{
+			MinVersion:               tls.VersionTLS12,
+			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+			PreferServerCipherSuites: true,
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+			},
+		}
+
+		server.TLSConfig = tlsCfg
+		server.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
+
+		return server.ListenAndServeTLS(s.TLSCert, s.TLSKey)
+	}
 	return server.ListenAndServe()
+
 }
 
 func main() {
@@ -50,8 +72,14 @@ func main() {
 	if len(port) == 0 {
 		port = "80"
 	}
+
+	tlscert := os.Getenv("TLS_CERT")
+	tlskey := os.Getenv("TLS_KEY")
+
 	server := &Server{
 		Port:    port,
+		TLSCert: tlscert,
+		TLSKey:  tlskey,
 		Handler: handlers.NewHandler(),
 	}
 	if err := server.Serve(); err != nil {
