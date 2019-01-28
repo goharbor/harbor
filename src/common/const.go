@@ -19,6 +19,7 @@ const (
 	DBAuth              = "db_auth"
 	LDAPAuth            = "ldap_auth"
 	UAAAuth             = "uaa_auth"
+	HTTPAuth            = "http_auth"
 	ProCrtRestrEveryone = "everyone"
 	ProCrtRestrAdmOnly  = "adminonly"
 	LDAPScopeBase       = 0
