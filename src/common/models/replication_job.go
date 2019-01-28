@@ -76,6 +76,7 @@ type RepTarget struct {
 	Password     string    `orm:"column(password)" json:"password"`
 	Type         int       `orm:"column(target_type)" json:"type"`
 	Insecure     bool      `orm:"column(insecure)" json:"insecure"`
+	Health       string    `orm:"column(health)" json:"health"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
