@@ -127,7 +127,7 @@ func TestHasPermissionUserWithoutRoles(t *testing.T) {
 		{
 			name: "project create for user without roles",
 			args: args{
-				&userWithoutRoles{Username: "user1", UserPolicies: []*Policy{{Resource: "project", Action: "create"}}},
+				&userWithoutRoles{Username: "user1", UserPolicies: []*Policy{{Resource: "/project", Action: "create"}}},
 				"/project",
 				"create",
 			},
@@ -136,7 +136,7 @@ func TestHasPermissionUserWithoutRoles(t *testing.T) {
 		{
 			name: "project delete test for user without roles",
 			args: args{
-				&userWithoutRoles{Username: "user1", UserPolicies: []*Policy{{Resource: "project", Action: "create"}}},
+				&userWithoutRoles{Username: "user1", UserPolicies: []*Policy{{Resource: "/project", Action: "create"}}},
 				"/project",
 				"delete",
 			},
@@ -168,7 +168,7 @@ func TestHasPermissionUsernameEmpty(t *testing.T) {
 		{
 			name: "project create for user without roles",
 			args: args{
-				&userWithoutRoles{Username: "", UserPolicies: []*Policy{{Resource: "project", Action: "create"}}},
+				&userWithoutRoles{Username: "", UserPolicies: []*Policy{{Resource: "/project", Action: "create"}}},
 				"/project",
 				"create",
 			},
