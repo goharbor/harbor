@@ -17,6 +17,7 @@ package api
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"net/http"
 	"testing"
 )
@@ -27,6 +28,14 @@ var (
 )
 
 func TestRobotAPIPost(t *testing.T) {
+
+	rbacPolicy := &rbac.Policy{
+		Resource: "/project/libray/repository",
+		Action:   "pull",
+	}
+	policies := []*rbac.Policy{}
+	policies = append(policies, rbacPolicy)
+
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -42,7 +51,7 @@ func TestRobotAPIPost(t *testing.T) {
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        robotPath,
-				bodyJSON:   &models.Robot{},
+				bodyJSON:   &models.RobotReq{},
 				credential: nonSysAdmin,
 			},
 			code: http.StatusForbidden,
@@ -52,9 +61,10 @@ func TestRobotAPIPost(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    robotPath,
-				bodyJSON: &models.Robot{
+				bodyJSON: &models.RobotReq{
 					Name:        "test",
 					Description: "test desc",
+					Access:      policies,
 				},
 				credential: projAdmin4Robot,
 			},
@@ -65,7 +75,7 @@ func TestRobotAPIPost(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    robotPath,
-				bodyJSON: &models.Robot{
+				bodyJSON: &models.RobotReq{
 					Name:        "test2",
 					Description: "test2 desc",
 				},
@@ -79,10 +89,10 @@ func TestRobotAPIPost(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    robotPath,
-				bodyJSON: &models.Robot{
+				bodyJSON: &models.RobotReq{
 					Name:        "test",
 					Description: "test desc",
-					ProjectID:   1,
+					Access:      policies,
 				},
 				credential: projAdmin4Robot,
 			},

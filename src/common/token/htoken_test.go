@@ -1,9 +1,7 @@
 package token
 
 import (
-	"fmt"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +30,7 @@ func TestMain(m *testing.M) {
 	}
 }
 
-func TestNewWithClaims(t *testing.T) {
+func TestNew(t *testing.T) {
 	rbacPolicy := &rbac.Policy{
 		Resource: "/project/libray/repository",
 		Action:   "pull",
@@ -40,19 +38,17 @@ func TestNewWithClaims(t *testing.T) {
 	policies := []*rbac.Policy{}
 	policies = append(policies, rbacPolicy)
 
-	policy := &RobotClaims{
-		TokenID:   123,
-		ProjectID: 321,
-		Policy:    policies,
-	}
-	token := NewWithClaims(policy)
+	tokenID := int64(123)
+	projectID := int64(321)
+	token, err := New(tokenID, projectID, policies)
 
+	assert.Nil(t, err)
 	assert.Equal(t, token.Header["alg"], "RS256")
 	assert.Equal(t, token.Header["typ"], "JWT")
 
 }
 
-func TestSignedString(t *testing.T) {
+func TestRaw(t *testing.T) {
 	rbacPolicy := &rbac.Policy{
 		Resource: "/project/library/repository",
 		Action:   "pull",
@@ -60,21 +56,13 @@ func TestSignedString(t *testing.T) {
 	policies := []*rbac.Policy{}
 	policies = append(policies, rbacPolicy)
 
-	policy := &RobotClaims{
-		TokenID:   123,
-		ProjectID: 321,
-		Policy:    policies,
-	}
+	tokenID := int64(123)
+	projectID := int64(321)
 
-	keyPath, err := DefaultOptions.GetKey()
-	if err != nil {
-		log.Infof(fmt.Sprintf("get key error, %v", err))
-	}
-	log.Infof(fmt.Sprintf("get the key path, %s, ", keyPath))
+	token, err := New(tokenID, projectID, policies)
+	assert.Nil(t, err)
 
-	token := NewWithClaims(policy)
-	rawTk, err := token.SignedString()
-
+	rawTk, err := token.Raw()
 	assert.Nil(t, err)
 	assert.NotNil(t, rawTk)
 }
@@ -85,5 +73,5 @@ func TestParseWithClaims(t *testing.T) {
 	_, _ = ParseWithClaims(rawTk, rClaims)
 	assert.Equal(t, int64(123), rClaims.TokenID)
 	assert.Equal(t, int64(0), rClaims.ProjectID)
-	assert.Equal(t, "/project/libray/repository", rClaims.Policy[0].Resource.String())
+	assert.Equal(t, "/project/libray/repository", rClaims.Access[0].Resource.String())
 }
