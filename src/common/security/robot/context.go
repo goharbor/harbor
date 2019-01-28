@@ -84,11 +84,6 @@ func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
 	return nil, nil
 }
 
-// GetPolicies get access infor from the token and convert it to the rbac policy
-func (s *SecurityContext) GetPolicies() []*rbac.Policy {
-	return s.policy
-}
-
 // GetProjectRoles no implementation
 func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 	return nil
@@ -103,7 +98,7 @@ func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
 			projectIDOrName := ns.Identity()
 			isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
 			projectNamespace := rbac.NewProjectNamespace(projectIDOrName, isPublicProject)
-			robot := project.NewRobot(s, projectNamespace)
+			robot := NewRobot(s.GetUsername(), projectNamespace, s.policy)
 			return rbac.HasPermission(robot, resource, action)
 		}
 	}

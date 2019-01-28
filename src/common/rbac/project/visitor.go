@@ -51,7 +51,7 @@ func (v *visitor) GetPolicies() []*rbac.Policy {
 	}
 
 	if v.namespace.IsPublic() {
-		return policiesForPublicProject(v.namespace)
+		return PoliciesForPublicProject(v.namespace)
 	}
 
 	return nil

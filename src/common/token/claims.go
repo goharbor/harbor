@@ -11,19 +11,18 @@ type RobotClaims struct {
 	jwt.StandardClaims
 	TokenID   int64          `json:"id"`
 	ProjectID int64          `json:"pid"`
-	Policy    []*rbac.Policy `json:"access"`
+	Access    []*rbac.Policy `json:"access"`
 }
 
 // Valid valid the claims "tokenID, projectID and access".
 func (rc RobotClaims) Valid() error {
-
 	if rc.TokenID < 0 {
 		return errors.New("Token id must an valid INT")
 	}
 	if rc.ProjectID < 0 {
 		return errors.New("Project id must an valid INT")
 	}
-	if rc.Policy == nil {
+	if rc.Access == nil {
 		return errors.New("The access info cannot be nil")
 	}
 	return nil
