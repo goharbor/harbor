@@ -40,7 +40,7 @@ Verify Image Tag
     \    Go Into Project  ${project}  has_image=${has_image}
     \    @{repo}=  Get Value From Json  ${json}  $.projects[?(@name=${project})]..repo..name
     \    Loop Image Repo  @{repo}
-    \    Back To Projects
+    \    Navigate To Projects
     Close Browser
 
 Loop Image Repo
@@ -60,7 +60,7 @@ Verify Member Exist
     \   Switch To Member
     \   @{members}=  Get Value From Json  ${json}  $.projects[?(@name=${project})].member..name
     \   Loop Member  @{members}
-    \   Back To Projects
+    \   Navigate To Projects
     Close Browser
 
 Loop Member
@@ -102,7 +102,7 @@ Verify Project Label
     \    @{projectlabel}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..labels..name
     \    :For    ${label}    In    @{label}
     \    \    Page Should Contain    ${projectlabel}
-    \    Back To Projects
+    \    Navigate To Projects
    Close Browser
       
 Verify Endpoint
