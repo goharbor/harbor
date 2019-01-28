@@ -49,7 +49,7 @@ type RobotReq struct {
 	Name        string         `json:"name"`
 	Description string         `json:"description"`
 	Disabled    bool           `json:"disabled"`
-	Policy      []*rbac.Policy `json:"access"`
+	Access      []*rbac.Policy `json:"access"`
 }
 
 // Valid put request validation

@@ -57,13 +57,13 @@ func (suite *VisitorTestSuite) TestGetPolicies() {
 	suite.Nil(anonymous.GetPolicies())
 
 	anonymousForPublicProject := NewUser(anonymousCtx, publicNamespace)
-	suite.Equal(anonymousForPublicProject.GetPolicies(), policiesForPublicProject(publicNamespace))
+	suite.Equal(anonymousForPublicProject.GetPolicies(), PoliciesForPublicProject(publicNamespace))
 
 	authenticated := NewUser(authenticatedCtx, namespace)
 	suite.Nil(authenticated.GetPolicies())
 
 	authenticatedForPublicProject := NewUser(authenticatedCtx, publicNamespace)
-	suite.Equal(authenticatedForPublicProject.GetPolicies(), policiesForPublicProject(publicNamespace))
+	suite.Equal(authenticatedForPublicProject.GetPolicies(), PoliciesForPublicProject(publicNamespace))
 
 	systemAdmin := NewUser(sysAdminCtx, namespace)
 	suite.Equal(systemAdmin.GetPolicies(), GetAllPolicies(namespace))

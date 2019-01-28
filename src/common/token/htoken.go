@@ -6,33 +6,40 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"time"
 )
 
-// HToken ...
+// HToken htoken is a jwt token for harbor robot account,
+// which contains the robot ID, project ID and the access permission for the project.
+// It used for authn/authz for robot account in Harbor.
 type HToken struct {
 	jwt.Token
 }
 
-// NewWithClaims ...
-func NewWithClaims(claims *RobotClaims) *HToken {
+// New ...
+func New(tokenID, projectID int64, access []*rbac.Policy) (*HToken, error) {
 	rClaims := &RobotClaims{
-		TokenID:   claims.TokenID,
-		ProjectID: claims.ProjectID,
-		Policy:    claims.Policy,
+		TokenID:   tokenID,
+		ProjectID: projectID,
+		Access:    access,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(DefaultOptions.TTL).Unix(),
 			Issuer:    DefaultOptions.Issuer,
 		},
 	}
+	err := rClaims.Valid()
+	if err != nil {
+		return nil, err
+	}
 	return &HToken{
 		Token: *jwt.NewWithClaims(DefaultOptions.SignMethod, rClaims),
-	}
+	}, nil
 }
 
-// SignedString get the SignedString.
-func (htk *HToken) SignedString() (string, error) {
+// Raw get the Raw string of token
+func (htk *HToken) Raw() (string, error) {
 	key, err := DefaultOptions.GetKey()
 	if err != nil {
 		return "", nil

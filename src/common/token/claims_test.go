@@ -18,7 +18,7 @@ func TestValid(t *testing.T) {
 	rClaims := &RobotClaims{
 		TokenID:   1,
 		ProjectID: 2,
-		Policy:    policies,
+		Access:    policies,
 	}
 	assert.Nil(t, rClaims.Valid())
 }
@@ -35,7 +35,7 @@ func TestUnValidTokenID(t *testing.T) {
 	rClaims := &RobotClaims{
 		TokenID:   -1,
 		ProjectID: 2,
-		Policy:    policies,
+		Access:    policies,
 	}
 	assert.NotNil(t, rClaims.Valid())
 }
@@ -52,7 +52,7 @@ func TestUnValidProjectID(t *testing.T) {
 	rClaims := &RobotClaims{
 		TokenID:   1,
 		ProjectID: -2,
-		Policy:    policies,
+		Access:    policies,
 	}
 	assert.NotNil(t, rClaims.Valid())
 }
@@ -62,7 +62,7 @@ func TestUnValidPolicy(t *testing.T) {
 	rClaims := &RobotClaims{
 		TokenID:   1,
 		ProjectID: 2,
-		Policy:    nil,
+		Access:    nil,
 	}
 	assert.NotNil(t, rClaims.Valid())
 }
