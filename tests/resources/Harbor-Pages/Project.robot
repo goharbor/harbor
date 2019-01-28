@@ -22,28 +22,21 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Create An New Project
     [Arguments]  ${projectname}  ${public}=false
-    ${element}=  Set Variable  css=${create_project_button_css}
-    Wait Until Element Is Visible And Enabled  ${element}
-    Click Button  ${element}
+    Navigate To Projects
+    ${element_create_project_button}=  Set Variable  xpath=${create_project_button_xpath}
+    Wait Until Element Is Visible And Enabled  ${element_create_project_button}
+    Click Button  ${element_create_project_button}
     Log To Console  Project Name: ${projectname}
-    ${element}=  Set Variable  xpath=${project_name_xpath}
-    Wait Until Element Is Visible And Enabled  ${element}
-    Input Text  ${element}  ${projectname}
-    ${element}=  Set Variable  xpath=${project_public_xpath}
-    Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element}  AND  Click Element  ${element}
-    ${element}=  Set Variable  xpath=//button[contains(.,'OK')]
-    Wait Until Element Is Visible And Enabled  ${element}
-    Click Element  ${element}
-    #Try to get Project Infomation 5 times at most and sleep 1 second each time if we fail to get it.
-    ${found_project}=  Set Variable  ${false}
-    :For  ${n}  IN RANGE  1  5
-    \    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -k -X GET --header 'Accept: application/json' ${HARBOR_URL}/api/projects?name=${projectname}
-    \    Log To Console  ${output}
-    \    ${match}  ${regexp_project_name}  Should Match Regexp  ${output}  \"name\"\\s*:\\s*\"(\\w+)\"\\s*,
-    \    ${found_project}  Set Variable If  '${rc}' == '0' and '${regexp_project_name}' == '${projectname}'  ${true}
-    \    Run Keyword If  ${found_project} == ${true}  Exit For Loop
-    \    Sleep  1
-    Should Be Equal  ${found_project}  ${true}
+    ${elemen_project_name}=  Set Variable  xpath=${project_name_xpath}
+    Wait Until Element Is Visible And Enabled  ${elemen_project_name}
+    Input Text  ${elemen_project_name}  ${projectname}
+    ${element_project_public}=  Set Variable  xpath=${project_public_xpath}
+    Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Click Element  ${element_project_public}
+    ${element_create_project_OK_button_xpath}=  Set Variable  ${create_project_OK_button_xpath}
+    Wait Until Element Is Visible And Enabled  ${element_create_project_OK_button_xpath}
+    Click Element  ${element_create_project_OK_button_xpath}
+    Wait Until Page Does Not Contain Element  ${create_project_CANCEL_button_xpath}
+    Go Into Project  ${projectname}  has_image=${false}
 
 Create An New Project With New User
     [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}  ${projectname}  ${public}
@@ -72,7 +65,7 @@ Switch To Replication
     Click Element  xpath=${project_replication_xpath}
     Sleep  1
 
-Back To Projects
+Navigate To Projects
     ${element}=  Set Variable  xpath=${projects_xpath}  
     Wait Until Element Is Visible And Enabled  ${element}
     Click Element  ${element}
@@ -118,11 +111,15 @@ Make Project Public
 
 Delete Repo
     [Arguments]  ${projectname}
-    Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox-wrapper//label
-    Wait Until Element Is Enabled  //button[contains(.,"Delete")]
-    Click Element  xpath=//button[contains(.,"Delete")]
-    Wait Until Element Is Visible  //clr-modal//button[2]
-    Click Element  xpath=//clr-modal//button[2]
+    ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox-wrapper//label
+    Retry Keyword With Element When Error  Wait Until Element Is Visible And Enabled  ${element_repo_checkbox}
+    Retry Keyword With Element When Error  Click Element  ${element_repo_checkbox}
+    ${element_delete_btn}=  Set Variable  xpath=//button[contains(.,"Delete")]
+    Retry Keyword With Element When Error  Wait Until Element Is Visible And Enabled  ${element_delete_btn}
+    Retry Keyword With Element When Error  Click Element  ${element_delete_btn}
+    ${element_delete_confirm_btn}=  Set Variable  xpath=//clr-modal//button[2]
+    Retry Keyword With Element When Error  Wait Until Element Is Visible And Enabled  ${element_delete_confirm_btn}
+    Retry Keyword With Element When Error  Click Element  ${element_delete_confirm_btn}
 
 Delete Repo on CardView
     [Arguments]  ${reponame}
@@ -134,6 +131,7 @@ Delete Repo on CardView
 
 Delete Project
     [Arguments]  ${projectname}
+    Navigate To Projects
     Sleep  1
     Click Element  xpath=//clr-dg-row[contains(.,"${projectname}")]//clr-checkbox-wrapper//label
     Sleep  1
