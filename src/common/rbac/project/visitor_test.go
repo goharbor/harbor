@@ -66,10 +66,10 @@ func (suite *VisitorTestSuite) TestGetPolicies() {
 	suite.Equal(authenticatedForPublicProject.GetPolicies(), policiesForPublicProject(publicNamespace))
 
 	systemAdmin := NewUser(sysAdminCtx, namespace)
-	suite.Equal(systemAdmin.GetPolicies(), policiesForSystemAdmin(namespace))
+	suite.Equal(systemAdmin.GetPolicies(), GetAllPolicies(namespace))
 
 	systemAdminForPublicProject := NewUser(sysAdminCtx, publicNamespace)
-	suite.Equal(systemAdminForPublicProject.GetPolicies(), policiesForSystemAdmin(publicNamespace))
+	suite.Equal(systemAdminForPublicProject.GetPolicies(), GetAllPolicies(publicNamespace))
 }
 
 func (suite *VisitorTestSuite) TestGetRoles() {

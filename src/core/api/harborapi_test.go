@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
+
 	//	"strconv"
 	//	"strings"
 
@@ -103,6 +104,7 @@ func init() {
 	beego.Router("/api/users/:id", &UserAPI{}, "get:Get")
 	beego.Router("/api/users", &UserAPI{}, "get:List;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
+	beego.Router("/api/users/:id/permissions", &UserAPI{}, "get:ListUserPermissions")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
@@ -994,6 +996,23 @@ func (a testapi) UsersUpdatePassword(userID int, password apilib.Password, authI
 	_sling = _sling.BodyJSON(password)
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
+}
+
+func (a testapi) UsersGetPermissions(userID interface{}, scope string, authInfo usrInfo) (int, []apilib.Permission, error) {
+	_sling := sling.New().Get(a.basePath)
+	// create path and map variables
+	path := fmt.Sprintf("/api/users/%v/permissions", userID)
+	_sling = _sling.Path(path)
+	type QueryParams struct {
+		Scope string `url:"scope,omitempty"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{Scope: scope})
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	var successPayLoad []apilib.Permission
+	if 200 == httpStatusCode && nil == err {
+		err = json.Unmarshal(body, &successPayLoad)
+	}
+	return httpStatusCode, successPayLoad, err
 }
 
 // Mark a registered user as be removed.
