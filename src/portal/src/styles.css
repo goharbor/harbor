@@ -79,3 +79,11 @@ body {
 .datagrid-header{
     z-index: 1 !important;
 }
+
+.color-green {
+    color: #1D5100;
+}
+
+.color-red {
+    color: red;
+}
