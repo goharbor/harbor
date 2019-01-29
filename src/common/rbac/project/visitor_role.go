@@ -22,175 +22,187 @@ import (
 var (
 	rolePoliciesMap = map[string][]*rbac.Policy{
 		"projectAdmin": {
-			{Resource: ResourceSelf, Action: ActionRead},
-			{Resource: ResourceSelf, Action: ActionUpdate},
-			{Resource: ResourceSelf, Action: ActionDelete},
+			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceSelf, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceSelf, Action: rbac.ActionDelete},
 
-			{Resource: ResourceMember, Action: ActionCreate},
-			{Resource: ResourceMember, Action: ActionUpdate},
-			{Resource: ResourceMember, Action: ActionDelete},
-			{Resource: ResourceMember, Action: ActionList},
+			{Resource: rbac.ResourceMember, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceMember, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceMember, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
-			{Resource: ResourceLog, Action: ActionList},
+			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
 
-			{Resource: ResourceReplication, Action: ActionRead},
-			{Resource: ResourceReplication, Action: ActionList},
+			{Resource: rbac.ResourceReplication, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceReplication, Action: rbac.ActionList},
 
-			{Resource: ResourceLabel, Action: ActionCreate},
-			{Resource: ResourceLabel, Action: ActionUpdate},
-			{Resource: ResourceLabel, Action: ActionDelete},
-			{Resource: ResourceLabel, Action: ActionList},
+			{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionList},
 
-			{Resource: ResourceRepository, Action: ActionCreate},
-			{Resource: ResourceRepository, Action: ActionUpdate},
-			{Resource: ResourceRepository, Action: ActionDelete},
-			{Resource: ResourceRepository, Action: ActionList},
-			{Resource: ResourceRepository, Action: ActionPushPull}, // compatible with security all perm of project
-			{Resource: ResourceRepository, Action: ActionPush},
-			{Resource: ResourceRepository, Action: ActionPull},
+			{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceLabel, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
 
-			{Resource: ResourceRepositoryTag, Action: ActionDelete},
-			{Resource: ResourceRepositoryTag, Action: ActionList},
-			{Resource: ResourceRepositoryTag, Action: ActionScan},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPushPull}, // compatible with security all perm of project
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPushPull},
 
-			{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionList},
 
-			{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
+			{Resource: rbac.ResourceRepositoryTagScanJob, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceRepositoryTagScanJob, Action: rbac.ActionRead},
 
-			{Resource: ResourceRepositoryTagLabel, Action: ActionCreate},
-			{Resource: ResourceRepositoryTagLabel, Action: ActionDelete},
+			{Resource: rbac.ResourceRepositoryTagVulnerability, Action: rbac.ActionList},
 
-			{Resource: ResourceHelmChart, Action: ActionCreate}, // upload helm chart
-			{Resource: ResourceHelmChart, Action: ActionRead},   // download helm chart
-			{Resource: ResourceHelmChart, Action: ActionDelete},
-			{Resource: ResourceHelmChart, Action: ActionList},
+			{Resource: rbac.ResourceRepositoryTagManifest, Action: rbac.ActionRead},
 
-			{Resource: ResourceHelmChartVersion, Action: ActionCreate}, // upload helm chart version
-			{Resource: ResourceHelmChartVersion, Action: ActionRead},   // read and download helm chart version
-			{Resource: ResourceHelmChartVersion, Action: ActionDelete},
-			{Resource: ResourceHelmChartVersion, Action: ActionList},
+			{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionDelete},
 
-			{Resource: ResourceHelmChartVersionLabel, Action: ActionCreate},
-			{Resource: ResourceHelmChartVersionLabel, Action: ActionDelete},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate}, // upload helm chart
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},   // download helm chart
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
 
-			{Resource: ResourceConfiguration, Action: ActionRead},
-			{Resource: ResourceConfiguration, Action: ActionUpdate},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionCreate}, // upload helm chart version
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},   // read and download helm chart version
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
 
-			{Resource: ResourceRobot, Action: ActionCreate},
-			{Resource: ResourceRobot, Action: ActionRead},
-			{Resource: ResourceRobot, Action: ActionUpdate},
-			{Resource: ResourceRobot, Action: ActionDelete},
-			{Resource: ResourceRobot, Action: ActionList},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
+
+			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionUpdate},
+
+			{Resource: rbac.ResourceRobot, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceRobot, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceRobot, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 		},
 
 		"master": {
-			{Resource: ResourceSelf, Action: ActionRead},
+			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
 
-			{Resource: ResourceMember, Action: ActionList},
+			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
-			{Resource: ResourceLog, Action: ActionList},
+			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
 
-			{Resource: ResourceReplication, Action: ActionRead},
-			{Resource: ResourceReplication, Action: ActionList},
+			{Resource: rbac.ResourceReplication, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceReplication, Action: rbac.ActionList},
 
-			{Resource: ResourceLabel, Action: ActionCreate},
-			{Resource: ResourceLabel, Action: ActionUpdate},
-			{Resource: ResourceLabel, Action: ActionDelete},
-			{Resource: ResourceLabel, Action: ActionList},
+			{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceLabel, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
 
-			{Resource: ResourceRepository, Action: ActionCreate},
-			{Resource: ResourceRepository, Action: ActionUpdate},
-			{Resource: ResourceRepository, Action: ActionDelete},
-			{Resource: ResourceRepository, Action: ActionList},
-			{Resource: ResourceRepository, Action: ActionPush},
-			{Resource: ResourceRepository, Action: ActionPull},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 
-			{Resource: ResourceRepositoryTag, Action: ActionDelete},
-			{Resource: ResourceRepositoryTag, Action: ActionList},
-			{Resource: ResourceRepositoryTag, Action: ActionScan},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionList},
 
-			{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
+			{Resource: rbac.ResourceRepositoryTagScanJob, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceRepositoryTagScanJob, Action: rbac.ActionRead},
 
-			{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
+			{Resource: rbac.ResourceRepositoryTagVulnerability, Action: rbac.ActionList},
 
-			{Resource: ResourceRepositoryTagLabel, Action: ActionCreate},
-			{Resource: ResourceRepositoryTagLabel, Action: ActionDelete},
+			{Resource: rbac.ResourceRepositoryTagManifest, Action: rbac.ActionRead},
 
-			{Resource: ResourceHelmChart, Action: ActionCreate},
-			{Resource: ResourceHelmChart, Action: ActionRead},
-			{Resource: ResourceHelmChart, Action: ActionDelete},
-			{Resource: ResourceHelmChart, Action: ActionList},
+			{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionDelete},
 
-			{Resource: ResourceHelmChartVersion, Action: ActionCreate},
-			{Resource: ResourceHelmChartVersion, Action: ActionRead},
-			{Resource: ResourceHelmChartVersion, Action: ActionDelete},
-			{Resource: ResourceHelmChartVersion, Action: ActionList},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
 
-			{Resource: ResourceHelmChartVersionLabel, Action: ActionCreate},
-			{Resource: ResourceHelmChartVersionLabel, Action: ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
 
-			{Resource: ResourceConfiguration, Action: ActionRead},
-			{Resource: ResourceConfiguration, Action: ActionUpdate},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
+
+			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionUpdate},
 		},
 
 		"developer": {
-			{Resource: ResourceSelf, Action: ActionRead},
+			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
 
-			{Resource: ResourceMember, Action: ActionList},
+			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
-			{Resource: ResourceLog, Action: ActionList},
+			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
 
-			{Resource: ResourceRepository, Action: ActionCreate},
-			{Resource: ResourceRepository, Action: ActionList},
-			{Resource: ResourceRepository, Action: ActionPush},
-			{Resource: ResourceRepository, Action: ActionPull},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 
-			{Resource: ResourceRepositoryTag, Action: ActionList},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionList},
 
-			{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
+			{Resource: rbac.ResourceRepositoryTagVulnerability, Action: rbac.ActionList},
 
-			{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
+			{Resource: rbac.ResourceRepositoryTagManifest, Action: rbac.ActionRead},
 
-			{Resource: ResourceRepositoryTagLabel, Action: ActionCreate},
-			{Resource: ResourceRepositoryTagLabel, Action: ActionDelete},
+			{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionDelete},
 
-			{Resource: ResourceHelmChart, Action: ActionCreate},
-			{Resource: ResourceHelmChart, Action: ActionRead},
-			{Resource: ResourceHelmChart, Action: ActionList},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
 
-			{Resource: ResourceHelmChartVersion, Action: ActionCreate},
-			{Resource: ResourceHelmChartVersion, Action: ActionRead},
-			{Resource: ResourceHelmChartVersion, Action: ActionList},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
 
-			{Resource: ResourceHelmChartVersionLabel, Action: ActionCreate},
-			{Resource: ResourceHelmChartVersionLabel, Action: ActionDelete},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
 
-			{Resource: ResourceConfiguration, Action: ActionRead},
+			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 		},
 
 		"guest": {
-			{Resource: ResourceSelf, Action: ActionRead},
+			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
 
-			{Resource: ResourceMember, Action: ActionList},
+			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
-			{Resource: ResourceLog, Action: ActionList},
+			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
 
-			{Resource: ResourceRepository, Action: ActionList},
-			{Resource: ResourceRepository, Action: ActionPull},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 
-			{Resource: ResourceRepositoryTag, Action: ActionList},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionList},
 
-			{Resource: ResourceRepositoryTagVulnerability, Action: ActionList},
+			{Resource: rbac.ResourceRepositoryTagVulnerability, Action: rbac.ActionList},
 
-			{Resource: ResourceRepositoryTagManifest, Action: ActionRead},
+			{Resource: rbac.ResourceRepositoryTagManifest, Action: rbac.ActionRead},
 
-			{Resource: ResourceHelmChart, Action: ActionRead},
-			{Resource: ResourceHelmChart, Action: ActionList},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
 
-			{Resource: ResourceHelmChartVersion, Action: ActionRead},
-			{Resource: ResourceHelmChartVersion, Action: ActionList},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
 
-			{Resource: ResourceConfiguration, Action: ActionRead},
+			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
 		},
 	}
 )
