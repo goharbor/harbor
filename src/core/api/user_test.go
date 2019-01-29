@@ -201,6 +201,7 @@ func TestUsersGet(t *testing.T) {
 		assert.Equal(200, code, "Get users status should be 200")
 		assert.Equal(1, len(users), "Get users record should be 1 ")
 		testUser0002ID = users[0].UserId
+		assert.Equal("", users[0].Password)
 	}
 }
 

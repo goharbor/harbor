@@ -161,6 +161,10 @@ func (ua *UserAPI) List() {
 		return
 	}
 
+	for _, user := range users {
+		user.Password = ""
+	}
+
 	ua.SetPaginationHeader(total, page, size)
 	ua.Data["json"] = users
 	ua.ServeJSON()
