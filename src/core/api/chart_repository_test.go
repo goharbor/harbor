@@ -9,7 +9,6 @@ import (
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 )
 
@@ -313,12 +312,12 @@ func (msc *mockSecurityContext) IsSolutionUser() bool {
 
 // HasReadPerm returns whether the user has read permission to the project
 func (msc *mockSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	return msc.Can(project.ActionPull, rbac.NewProjectNamespace(projectIDOrName, false).Resource(project.ResourceRepository))
+	return msc.Can(rbac.ActionPull, rbac.NewProjectNamespace(projectIDOrName, false).Resource(rbac.ResourceRepository))
 }
 
 // HasWritePerm returns whether the user has write permission to the project
 func (msc *mockSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	return msc.Can(project.ActionPush, rbac.NewProjectNamespace(projectIDOrName, false).Resource(project.ResourceRepository))
+	return msc.Can(rbac.ActionPush, rbac.NewProjectNamespace(projectIDOrName, false).Resource(rbac.ResourceRepository))
 }
 
 // HasAllPerm returns whether the user has all permissions to the project
