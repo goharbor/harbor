@@ -105,7 +105,8 @@ var (
 	}
 )
 
-func policiesForPublicProject(namespace rbac.Namespace) []*rbac.Policy {
+// PoliciesForPublicProject ...
+func PoliciesForPublicProject(namespace rbac.Namespace) []*rbac.Policy {
 	policies := []*rbac.Policy{}
 
 	for _, policy := range publicProjectPolicies {
