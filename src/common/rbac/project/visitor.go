@@ -47,7 +47,7 @@ func (v *visitor) GetUserName() string {
 // GetPolicies returns policies of the visitor
 func (v *visitor) GetPolicies() []*rbac.Policy {
 	if v.ctx.IsSysAdmin() {
-		return policiesForSystemAdmin(v.namespace)
+		return GetAllPolicies(v.namespace)
 	}
 
 	if v.namespace.IsPublic() {
@@ -59,7 +59,8 @@ func (v *visitor) GetPolicies() []*rbac.Policy {
 
 // GetRoles returns roles of the visitor
 func (v *visitor) GetRoles() []rbac.Role {
-	if !v.ctx.IsAuthenticated() {
+	// Ignore roles when visitor is anonymous or system admin
+	if !v.ctx.IsAuthenticated() || v.ctx.IsSysAdmin() {
 		return nil
 	}
 

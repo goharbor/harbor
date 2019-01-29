@@ -21,12 +21,87 @@ import (
 var (
 	// subresource policies for public project
 	publicProjectPolicies = []*rbac.Policy{
-		{Resource: ResourceImage, Action: ActionPull},
+		{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
+
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
+
+		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
 	}
 
-	// subresource policies for system admin visitor
-	systemAdminProjectPolicies = []*rbac.Policy{
-		{Resource: ResourceAll, Action: ActionAll},
+	// all policies for the projects
+	allPolicies = []*rbac.Policy{
+		{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceSelf, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceSelf, Action: rbac.ActionDelete},
+
+		{Resource: rbac.ResourceMember, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceMember, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceMember, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceMember, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceLog, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceReplication, Action: rbac.ActionList},
+		{Resource: rbac.ResourceReplication, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceReplication, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceReplication, Action: rbac.ActionDelete},
+
+		{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceLabel, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionPushPull}, // compatible with security all perm of project
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
+
+		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceRepositoryTagScanJob, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceRepositoryTagScanJob, Action: rbac.ActionRead},
+
+		{Resource: rbac.ResourceRepositoryTagVulnerability, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceRepositoryTagManifest, Action: rbac.ActionRead},
+
+		{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionDelete},
+
+		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
+
+		{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceConfiguration, Action: rbac.ActionUpdate},
+
+		{Resource: rbac.ResourceRobot, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceRobot, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceRobot, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 	}
 )
 
@@ -44,10 +119,11 @@ func policiesForPublicProject(namespace rbac.Namespace) []*rbac.Policy {
 	return policies
 }
 
-func policiesForSystemAdmin(namespace rbac.Namespace) []*rbac.Policy {
+// GetAllPolicies returns all policies for namespace of the project
+func GetAllPolicies(namespace rbac.Namespace) []*rbac.Policy {
 	policies := []*rbac.Policy{}
 
-	for _, policy := range systemAdminProjectPolicies {
+	for _, policy := range allPolicies {
 		policies = append(policies, &rbac.Policy{
 			Resource: namespace.Resource(policy.Resource),
 			Action:   policy.Action,

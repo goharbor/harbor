@@ -70,19 +70,19 @@ func (s *SecurityContext) IsSolutionUser() bool {
 // HasReadPerm returns whether the user has read permission to the project
 func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
-	return s.Can(project.ActionPull, rbac.NewProjectNamespace(projectIDOrName, isPublicProject).Resource(project.ResourceImage))
+	return s.Can(rbac.ActionPull, rbac.NewProjectNamespace(projectIDOrName, isPublicProject).Resource(rbac.ResourceRepository))
 }
 
 // HasWritePerm returns whether the user has write permission to the project
 func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 	isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
-	return s.Can(project.ActionPush, rbac.NewProjectNamespace(projectIDOrName, isPublicProject).Resource(project.ResourceImage))
+	return s.Can(rbac.ActionPush, rbac.NewProjectNamespace(projectIDOrName, isPublicProject).Resource(rbac.ResourceRepository))
 }
 
 // HasAllPerm returns whether the user has all permissions to the project
 func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
-	return s.Can(project.ActionPushPull, rbac.NewProjectNamespace(projectIDOrName, isPublicProject).Resource(project.ResourceImage))
+	return s.Can(rbac.ActionPushPull, rbac.NewProjectNamespace(projectIDOrName, isPublicProject).Resource(rbac.ResourceRepository))
 }
 
 // Can returns whether the user can do action on resource

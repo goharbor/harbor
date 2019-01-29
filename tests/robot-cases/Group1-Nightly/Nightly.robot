@@ -455,7 +455,7 @@ Test Case - Manual Scan All
     Switch To Configure
     Go To Vulnerability Config
     Trigger Scan Now
-    Back To Projects
+    Navigate To Projects
     Go Into Project  library
     Go Into Repo  redis
     Summary Chart Should Display  latest
@@ -468,7 +468,7 @@ Test Case - Project Level Image Serverity Policy
     Go Into Project  library
     Go Into Repo  haproxy
     Scan Repo  latest  Succeed
-    Back To Projects
+    Navigate To Projects
     Go Into Project  library
     Set Vulnerabilty Serverity  0
     Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  haproxy
@@ -524,7 +524,7 @@ Test Case - Delete A Project
     Project Should Not Be Deleted  project${d}
     Go Into Project  project${d}
     Delete Repo  project${d}
-    Back To Projects
+    Navigate To Projects
     Project Should Be Deleted  project${d}
     Close Browser
 
@@ -680,7 +680,7 @@ Test Case - Scan Image On Push
     Goto Project Config
     Enable Scan On Push
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
-    Back To Projects
+    Navigate To Projects
     Go Into Project  library
     Go Into Repo  memcached
     Summary Chart Should Display  latest

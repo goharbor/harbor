@@ -572,3 +572,28 @@ func TestModifiable(t *testing.T) {
 	}
 	assert.True(ua4.modifiable())
 }
+
+func TestUsersCurrentPermissions(t *testing.T) {
+	fmt.Println("Testing Get Users Current Permissions")
+
+	assert := assert.New(t)
+	apiTest := newHarborAPI()
+
+	httpStatusCode, permissions, err := apiTest.UsersGetPermissions("current", "/project/library", *projAdmin)
+	assert.Nil(err)
+	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+	assert.NotEmpty(permissions, "permissions should not be empty")
+
+	httpStatusCode, permissions, err = apiTest.UsersGetPermissions("current", "/unsupport-scope", *projAdmin)
+	assert.Nil(err)
+	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+	assert.Empty(permissions, "permissions should be empty")
+
+	httpStatusCode, _, err = apiTest.UsersGetPermissions(projAdminID, "/project/library", *projAdmin)
+	assert.Nil(err)
+	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+
+	httpStatusCode, _, err = apiTest.UsersGetPermissions(projDeveloperID, "/project/library", *projAdmin)
+	assert.Nil(err)
+	assert.Equal(int(403), httpStatusCode, "httpStatusCode should be 403")
+}
