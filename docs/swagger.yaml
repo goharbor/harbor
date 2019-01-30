@@ -3179,6 +3179,160 @@ paths:
           $ref: '#/definitions/NotFoundChartAPIError'
         '500':
           $ref: '#/definitions/InternalChartAPIError'
+  '/projects/{project_id}/robots':
+    get:
+      summary: Get all robot accounts of specified project
+      description: Get all robot accounts of specified project
+      parameters:
+      - name: project_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant project ID.
+      tags:
+      - Products
+      - Robot Account
+      responses:
+        '200':
+          description: Get project robot accounts successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/RobotAccount'
+        '400':
+          description: The project id is invalid.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the project.
+        '404':
+          description: Project ID does not exist.
+        '500':
+          description: Unexpected internal errors.
+    post:
+      summary: Create a robot account for project
+      description: Create a robot account for project
+      tags:
+      - Products
+      - Robot Account
+      parameters:
+      - name: project_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant project ID.
+      - name: robot
+        in: body
+        description: Request body of creating a robot account.
+        required: true
+        schema:
+          $ref: '#/definitions/RobotAccountCreate'
+      responses:
+        '201':
+          description: Project member created successfully.
+        '400':
+          description: Project id is not valid.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the project.
+        '409':
+          description: An robot account with same name already exist in the project.
+        '500':
+          description: Unexpected internal errors.
+  '/projects/{project_id}/robots/{robot_id}':
+    get:
+      summary: Return the infor of the specified robot account.
+      description: Return the infor of the specified robot account.
+      tags:
+      - Products
+      - Robot Account
+      parameters:
+      - name: project_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant project ID.
+      - name: robot_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: The ID of robot account.
+      responses:
+        '200':
+          description: '#/definitions/RobotAccount'
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the project.
+        '404':
+          description: The robot account is not found.
+        '500':
+          description: Unexpected internal errors.
+    put:
+      summary: Update status of robot account.
+      description: Used to disable/enable a specified robot account.
+      tags:
+      - Products
+      - Robot Account
+      parameters:
+      - name: project_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant project ID.
+      - name: robot_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: The ID of robot account.
+      - name: robot
+        in: body
+        description: Request body of enable/disable a robot account.
+        required: true
+        schema:
+          $ref: '#/definitions/RobotAccountUpdate'
+      responses:
+        '200':
+          description: Robot account has been modified success.
+        '500':
+          description: Unexpected internal errors.
+    delete:
+      summary: Delete the specified robot account
+      description: Delete the specified robot account
+      tags:
+      - Products
+      - Robot Account
+      parameters:
+      - name: project_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: Relevant project ID.
+      - name: robot_id
+        in: path
+        type: integer
+        format: int64
+        required: true
+        description: The ID of robot account.
+      responses:
+        '200':
+          description: The specified robot account is successfully deleted.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User in session does not have permission to the project.
+        '404':
+          description: The robot account is not found.
+        '500':
+          description: Unexpected internal errors.
 responses:
   UnsupportedMediaType:
     description: 'The Media Type of the request is not supported, it has to be "application/json"'
@@ -4581,6 +4735,60 @@ definitions:
       error:
         type: string
         description: (optional) The error message when the status is "unhealthy"
+  RobotAccount:
+    type: object
+    description: The object of robot account
+    properties:
+      id:
+        type: integer
+        description: The id of robot account
+      name:
+        type: string
+        description: The name of robot account
+      description:
+        type: string
+        description: The description of robot account
+      project_id:
+        type: integer
+        description: The project id of robot account
+      disabled:
+        type: boolean
+        description: The robot account is disable or enable
+      creation_time:
+        type: string
+        description: The creation time of the robot account
+      update_time:
+        type: string
+        description: The update time of the robot account
+  RobotAccountCreate:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of robot account
+      description:
+        type: string
+        description: The description of robot account
+      access:
+        type: array
+        description: The permission of robot account
+        items:
+          $ref: '#/definitions/RobotAccountAccess'
+  RobotAccountAccess:
+    type: object
+    properties:
+      resource:
+        type: string
+        description: the resource of harbor
+      action:
+        type: string
+        description: the action to resource that perdefined in harbor rbac
+  RobotAccountUpdate:
+    type: object
+    properties:
+      disable:
+        type: boolean
+        description: The robot account is disable or enable
   Permission:
     type: object
     description: The permission
