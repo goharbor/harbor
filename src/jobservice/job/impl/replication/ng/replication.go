@@ -19,8 +19,13 @@ import (
 	"fmt"
 
 	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/opm"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/transfer"
+	// import chart transfer
+	_ "github.com/goharbor/harbor/src/replication/ng/transfer/chart"
+	// import repository transfer
+	_ "github.com/goharbor/harbor/src/replication/ng/transfer/repository"
 )
 
 // Replication implements the job interface
@@ -44,22 +49,30 @@ func (r *Replication) Validate(params map[string]interface{}) error {
 // Run gets the corresponding transfer according to the resource type
 // and calls its function to do the real work
 func (r *Replication) Run(ctx env.JobContext, params map[string]interface{}) error {
+	logger := ctx.GetLogger()
+
 	src, dst, err := parseParams(params)
 	if err != nil {
+		logger.Errorf("failed to parse parameters: %v", err)
 		return err
 	}
 
 	factory, err := transfer.GetFactory(src.Type)
 	if err != nil {
+		logger.Errorf("failed to get transfer factory: %v", err)
 		return err
 	}
 
-	cancelFunc := func() bool {
-		_, exist := ctx.OPCommand()
-		return exist
+	stopFunc := func() bool {
+		cmd, exist := ctx.OPCommand()
+		if !exist {
+			return false
+		}
+		return cmd == opm.CtlCommandStop
 	}
-	transfer, err := factory(ctx.GetLogger(), cancelFunc)
+	transfer, err := factory(ctx.GetLogger(), stopFunc)
 	if err != nil {
+		logger.Errorf("failed to create transfer: %v", err)
 		return err
 	}
 
