@@ -62,8 +62,8 @@ Create A Rule With Existing Endpoint
     Click Element  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
     #set trigger  
     Click Element  ${rule_trigger_select}
-    Wait Until Element Is Visible  //select[@id="ruleTrigger"]//option[contains(.,'${mode}')]
-    Click Element  //select[@id="ruleTrigger"]//option[contains(.,'${mode}')]
+    Wait Until Element Is Visible  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
+    Click Element  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
     Run Keyword If  '${mode}' == 'Scheduled'  Setting Replicaiton Schedule  ${plan}  ${weekday}  ${time}
     #click save
     Click Element  ${rule_save_button}
@@ -88,8 +88,8 @@ Project Create A Rule With Existing Endpoint
     Click Element  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
     #set trigger  
     Click Element  ${rule_trigger_select}
-    Wait Until Element Is Visible  //select[@id="ruleTrigger"]//option[contains(.,'${mode}')]
-    Click Element  //select[@id="ruleTrigger"]//option[contains(.,'${mode}')]
+    Wait Until Element Is Visible  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
+    Click Element  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
     Run Keyword If  '${mode}' == 'Scheduled'  Setting Replicaiton Schedule  ${plan}  ${weekday}  ${time}
     #click save
     Click Element  ${rule_save_button}
@@ -97,16 +97,16 @@ Project Create A Rule With Existing Endpoint
 Setting Replication Schedule
     [Arguments]  ${plan}  ${weekday}=1  ${time}=0800a
     Click Element  ${schedule_type_select}
-    Wait Until Element Is Visible  //select[@name="scheduleType"]/option[@value="${plan}"]
-    Click Element  //select[@name="scheduleType"]/option[@value="${plan}"]
+    Wait Until Element Is Visible  //select[@name='scheduleType']/option[@value='${plan}']
+    Click Element  //select[@name='scheduleType']/option[@value='${plan}']
     Run Keyword If  '${plan}' == 'Weekly'  Setting Replication Weekday  ${weekday}
     Input Text  ${shcedule_time}  ${time}
 
 Setting Replication Weekday
     [arguments]  ${day}
     Click Element  ${schedule_day_select}
-    Wait Until Element Is Visible  //select[@name="scheduleDay"]/option[@value='${day}']
-    Click Element  //select[@name="scheduleDay"]/option[@value='${day}']
+    Wait Until Element Is Visible  //select[@name='scheduleDay']/option[@value='${day}']
+    Click Element  //select[@name='scheduleDay']/option[@value='${day}']
 
 Endpoint Is Unpingable
     Click Element  ${ping_test_button}
@@ -146,7 +146,7 @@ Trigger Replication Manual
     Mouse Down  ${dialog_replicate}
     Mouse Up  ${dialog_replicate}
     Sleep  2
-    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${rule}')]/../div/clr-icon[@shape="success-standard"]
+    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${rule}')]/../div/clr-icon[@shape='success-standard']
     Sleep  1
 
 Rename Rule
