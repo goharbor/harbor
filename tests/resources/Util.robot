@@ -109,6 +109,7 @@ Wait Unitl Vul Data Ready
     \    Sleep  ${interval}
     Run Keyword If  ${i+1}==${n}  Fail  The vul data is not ready
 
+
 Retry Keyword When Error
     [Arguments]  ${keyword}  ${element}=${None}  ${times}=6
     :For  ${n}  IN RANGE  1  ${times}
