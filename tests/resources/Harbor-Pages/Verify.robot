@@ -163,13 +163,13 @@ Verify System Setting
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Page Should Contain  @{authtype}[0]
-    Run Keyword If  @{selfreg}[0] == "True"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
-    Run Keyword If  @{selfreg}[0] == "False"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
+    Run Keyword If  @{selfreg}[0] == 'True'  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
+    Run Keyword If  @{selfreg}[0] == 'False'  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='selfReg']//label
     Switch To Email
-    Textfield Value Should Be  xpath=//*[@id="mailServer"]  @{emailserver}[0]
-    Textfield Value Should Be  xpath=//*[@id="emailPort"]  @{emailport}[0]
-    Textfield Value Should Be  xpath=//*[@id="emailUsername"]  @{emailuser}[0]
-    Textfield Value Should Be  xpath=//*[@id="emailFrom"]  @{emailfrom}[0]
+    Textfield Value Should Be  xpath=//*[@id='mailServer']  @{emailserver}[0]
+    Textfield Value Should Be  xpath=//*[@id='emailPort']  @{emailport}[0]
+    Textfield Value Should Be  xpath=//*[@id='emailUsername']  @{emailuser}[0]
+    Textfield Value Should Be  xpath=//*[@id='emailFrom']  @{emailfrom}[0]
     Switch To System Settings
     Page Should Contain  @{creation}[0]
     Token Must Be Match  @{token}[0]
