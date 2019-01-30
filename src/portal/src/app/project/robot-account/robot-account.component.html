@@ -4,8 +4,7 @@
       <div class="flex-xs-middle option-left">
       </div>
       <div class="flex-xs-middle option-right">
-        <hbr-filter [withDivider]="true" filterPlaceholder='{{"
-          ROBOT_ACCOUNT.FILTER_PLACEHOLDER" | translate}}'
+        <hbr-filter [withDivider]="true" filterPlaceholder='{{"ROBOT_ACCOUNT.FILTER_PLACEHOLDER" | translate}}'
           (filterEvt)="doSearch($event)" [currentValue]="searchRobot"></hbr-filter>
         <span class="refresh-btn" (click)="retrieve()">
           <clr-icon shape="refresh"></clr-icon>
