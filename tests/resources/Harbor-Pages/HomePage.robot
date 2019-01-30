@@ -23,15 +23,15 @@ ${HARBOR_VERSION}  v1.1.1
 Sign In Harbor
     [Arguments]  ${url}  ${user}  ${pw}
     Go To    ${url}
-    Wait Until Element Is Enabled  ${harbor_span_title}
-    Wait Until Element Is Visible  ${login_name}
-    Wait Until Element Is Visible  ${login_pwd}
+    Retry Wait Element  ${harbor_span_title}
+    Retry Wait Element  ${login_name}
+    Retry Wait Element  ${login_pwd}
     Input Text  ${login_name}  ${user}
     Input Text  ${login_pwd}  ${pw}
-    Wait Until Element Is Visible  ${login_btn}
-    Click button  ${login_btn}
+    Retry Wait Element  ${login_btn}
+    Retry Button Click  ${login_btn}
     Log To Console  ${user}
-    Wait Until Element Is Visible  xpath=//span[contains(., '${user}')]
+    Retry Wait Element  xpath=//span[contains(., '${user}')]
 
 Capture Screenshot And Source
     Capture Page Screenshot

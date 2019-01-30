@@ -33,19 +33,18 @@ Upload Chart files
 
 Go Into Chart Version
     [Arguments]  ${chart_name}
-    Click Element  xpath=//hbr-helm-chart//a[contains(., "${chart_name}")]
+    Click Element  xpath=//hbr-helm-chart//a[contains(., '${chart_name}')]
     Capture Page Screenshot  viewchartversion.png
 
 Go Into Chart Detail
     [Arguments]  ${version_name}
-    Click Element  xpath=//hbr-helm-chart-version//a[contains(., "${version_name}")]
+    Click Element  xpath=//hbr-helm-chart-version//a[contains(., '${version_name}')]
     Sleep  2
     Page Should Contain Element  ${chart_detail}
 
 Go Back To Versions And Delete
-    Click Element  xpath=${version_bread_crumbs}
-    Sleep  2
-    Click Element  xpath=${version_checkbox}
-    Click Element  xpath=${version_delete}
-    Click Element  xpath=${version_confirm_delete}
-    Wait Until Page Contains Element  xpath=${helmchart_content}
+    Retry Element Click  xpath=${version_bread_crumbs}
+    Retry Element Click  xpath=${version_checkbox}
+    Retry Element Click  xpath=${version_delete}
+    Retry Element Click  xpath=${version_confirm_delete}
+    Retry Keyword When Error  Wait Until Page Contains Element  element=xpath=${helmchart_content}
