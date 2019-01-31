@@ -422,7 +422,7 @@ Test Case - Delete Multi Project
     Push Image  ${ip}  user012  Test1@34  projecta${d}  hello-world
     Navigate To Projects
     Filter Object  project
-    Wait Until Element Is Not Visible  //clr-datagrid/div/div[2]
+    Retry Wait Element Not Visible  //clr-datagrid/div/div[2]
     Multi-delete Object  projecta  projectb
     # Verify delete project with image should not be deleted directly
     Delete Fail  projecta${d}
@@ -452,7 +452,6 @@ Test Case - Delete Multi Tag
     Create An New Project  project${d}
     Push Image With Tag  ${ip}  user014  Test1@34  project${d}  redis  3.2.10-alpine  3.2.10-alpine
     Push Image With Tag  ${ip}  user014  Test1@34  project${d}  redis  4.0.7-alpine  4.0.7-alpine
-    Sleep  2
     Go Into Project  project${d}
     Go Into Repo  redis
     Multi-delete object  3.2.10-alpine  4.0.7-alpine
@@ -467,7 +466,6 @@ Test Case - Delete Repo on CardView
     Create An New Project  project${d}
     Push Image  ${ip}  user015  Test1@34  project${d}  hello-world
     Push Image  ${ip}  user015  Test1@34  project${d}  busybox
-    Sleep  2
     Go Into Project  project${d}
     Switch To CardView
     Delete Repo on CardView  busybox
@@ -511,7 +509,6 @@ Test Case - Project Admin Add Labels To Repo
     Create An New Project  project${d}
     Push Image With Tag  ${ip}  user020  Test1@34  project${d}  redis  3.2.10-alpine  3.2.10-alpine
     Push Image With Tag  ${ip}  user020  Test1@34  project${d}  redis  4.0.7-alpine  4.0.7-alpine
-
     Go Into Project  project${d}
     Sleep  2
     # Add labels
@@ -551,7 +548,6 @@ Test Case - Scan A Tag In The Repo
     Create An New Project  project${d}
     Go Into Project  project${d}  has_image=${false}    
     Push Image  ${ip}  user023  Test1@34  project${d}  hello-world
-    Sleep  5
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
     Scan Repo  latest  Succeed
@@ -672,7 +668,7 @@ Test Case - Retag A Image Tag
     Sleep  1
     Go Into Repo  project${random_num1}/redis
     Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
-    Retry Keyword When Error  Wait Until Element Is Not Visible  element=${repo_retag_confirm_dlg}
+    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
     Go Into Project  project${random_num2}
     Sleep  1
