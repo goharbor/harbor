@@ -31,3 +31,4 @@ ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${project_statistics_private_repository_icon}  xpath=//project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
 ${repo_delete_btn}  xpath=//button[contains(.,'Delete')]
 ${repo_delete_confirm_btn}  xpath=//clr-modal//button[2]
+${repo_retag_confirm_dlg}  css=${modal-dialog}
