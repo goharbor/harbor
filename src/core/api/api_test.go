@@ -40,8 +40,8 @@ import (
 )
 
 var (
-	nonSysAdminID, projAdminID, projDeveloperID, projGuestID int64
-	projAdminPMID, projDeveloperPMID, projGuestPMID          int
+	nonSysAdminID, projAdminID, projDeveloperID, projGuestID, projAdminRobotID int64
+	projAdminPMID, projDeveloperPMID, projGuestPMID, projAdminRobotPMID        int
 	// The following users/credentials are registered and assigned roles at the beginning of
 	// running testing and cleaned up at the end.
 	// Do not try to change the system and project roles that the users have during
@@ -65,6 +65,10 @@ var (
 	}
 	projGuest = &usrInfo{
 		Name:   "proj_guest",
+		Passwd: "Harbor12345",
+	}
+	projAdmin4Robot = &usrInfo{
+		Name:   "proj_admin_robot",
 		Passwd: "Harbor12345",
 	}
 )
@@ -235,6 +239,25 @@ func prepare() error {
 		ProjectID:  1,
 		Role:       models.PROJECTADMIN,
 		EntityID:   int(projAdminID),
+		EntityType: common.UserMember,
+	}); err != nil {
+		return err
+	}
+
+	// register projAdminRobots and assign project admin role
+	projAdminRobotID, err = dao.Register(models.User{
+		Username: projAdmin4Robot.Name,
+		Password: projAdmin4Robot.Passwd,
+		Email:    projAdmin4Robot.Name + "@test.com",
+	})
+	if err != nil {
+		return err
+	}
+
+	if projAdminRobotPMID, err = project.AddProjectMember(models.Member{
+		ProjectID:  1,
+		Role:       models.PROJECTADMIN,
+		EntityID:   int(projAdminRobotID),
 		EntityType: common.UserMember,
 	}); err != nil {
 		return err

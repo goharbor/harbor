@@ -8,6 +8,7 @@ import (
 
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 )
 
@@ -311,37 +312,39 @@ func (msc *mockSecurityContext) IsSolutionUser() bool {
 
 // HasReadPerm returns whether the user has read permission to the project
 func (msc *mockSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	if projectIDOrName == nil {
-		return false
-	}
-
-	if ns, ok := projectIDOrName.(string); ok {
-		if ns == "library" {
-			return true
-		}
-	}
-
-	return false
+	return msc.Can(rbac.ActionPull, rbac.NewProjectNamespace(projectIDOrName, false).Resource(rbac.ResourceRepository))
 }
 
 // HasWritePerm returns whether the user has write permission to the project
 func (msc *mockSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	if projectIDOrName == nil {
-		return false
-	}
-
-	if ns, ok := projectIDOrName.(string); ok {
-		if ns == "library" {
-			return true
-		}
-	}
-
-	return false
+	return msc.Can(rbac.ActionPush, rbac.NewProjectNamespace(projectIDOrName, false).Resource(rbac.ResourceRepository))
 }
 
 // HasAllPerm returns whether the user has all permissions to the project
 func (msc *mockSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
 	return msc.HasReadPerm(projectIDOrName) && msc.HasWritePerm(projectIDOrName)
+}
+
+// Can returns whether the user can do action on resource
+func (msc *mockSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
+	namespace, err := resource.GetNamespace()
+	if err != nil || namespace.Kind() != "project" {
+		return false
+	}
+
+	projectIDOrName := namespace.Identity()
+
+	if projectIDOrName == nil {
+		return false
+	}
+
+	if ns, ok := projectIDOrName.(string); ok {
+		if ns == "library" {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Get current user's all project

@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ram
+package rbac
 
 import (
 	"errors"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/casbin/casbin"
 	"github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
+	"github.com/casbin/casbin/util"
 )
 
 var (
@@ -49,6 +52,30 @@ e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 [matchers]
 m = g(r.sub, p.sub) && keyMatch2(r.obj, p.obj) && (r.act == p.act || p.act == '*')
 `
+
+// keyMatch2 determines whether key1 matches the pattern of key2, its behavior most likely the builtin KeyMatch2
+// except that the match of ("/project/1/robot", "/project/1") will return false
+func keyMatch2(key1 string, key2 string) bool {
+	key2 = strings.Replace(key2, "/*", "/.*", -1)
+
+	re := regexp.MustCompile(`(.*):[^/]+(.*)`)
+	for {
+		if !strings.Contains(key2, "/:") {
+			break
+		}
+
+		key2 = re.ReplaceAllString(key2, "$1[^/]+$2")
+	}
+
+	return util.RegexMatch(key1, "^"+key2+"$")
+}
+
+func keyMatch2Func(args ...interface{}) (interface{}, error) {
+	name1 := args[0].(string)
+	name2 := args[1].(string)
+
+	return bool(keyMatch2(name1, name2)), nil
+}
 
 type userAdapter struct {
 	User
@@ -134,5 +161,8 @@ func (a *userAdapter) RemoveFilteredPolicy(sec string, ptype string, fieldIndex 
 func enforcerForUser(user User) *casbin.Enforcer {
 	m := model.Model{}
 	m.LoadModelFromText(modelText)
-	return casbin.NewEnforcer(m, &userAdapter{User: user})
+
+	e := casbin.NewEnforcer(m, &userAdapter{User: user})
+	e.AddFunction("keyMatch2", keyMatch2Func)
+	return e
 }

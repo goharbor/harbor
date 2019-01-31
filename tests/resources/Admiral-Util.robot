@@ -49,9 +49,9 @@ Login To Admiral
 
 Add Host To Admiral
     [Arguments]  ${address}  ${credentials}=${EMPTY}
-    Wait Until Element Is Visible  css=a[data-cmd="navigation-hosts"]
-    Wait Until Element Is Enabled  css=a[data-cmd="navigation-hosts"]
-    Click Element  css=a[data-cmd="navigation-hosts"]
+    Wait Until Element Is Visible  css=a[data-cmd='navigation-hosts']
+    Wait Until Element Is Enabled  css=a[data-cmd='navigation-hosts']
+    Click Element  css=a[data-cmd='navigation-hosts']
 
     Wait Until Element Is Visible  css=div.query-search-input-controls.form-control
     Wait Until Element Is Enabled  css=div.query-search-input-controls.form-control
@@ -87,9 +87,9 @@ Add Host To Admiral
 
 Add Project to Admiral
     [Arguments]  ${name}
-    Wait Until Element Is Visible  css=a[data-cmd="navigation-placements"]
-    Wait Until Element Is Enabled  css=a[data-cmd="navigation-placements"]
-    Click Element  css=a[data-cmd="navigation-placements"]
+    Wait Until Element Is Visible  css=a[data-cmd='navigation-placements']
+    Wait Until Element Is Enabled  css=a[data-cmd='navigation-placements']
+    Click Element  css=a[data-cmd='navigation-placements']
     
     Wait Until Element Is Visible  css=div.right-context-panel > div.toolbar > div:nth-child(2) > a
     Wait Until Element Is Enabled  css=div.right-context-panel > div.toolbar > div:nth-child(2) > a

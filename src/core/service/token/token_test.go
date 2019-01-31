@@ -30,6 +30,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 )
@@ -258,6 +259,9 @@ func (f *fakeSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
 	return false
 }
 func (f *fakeSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
+	return false
+}
+func (f *fakeSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
 	return false
 }
 func (f *fakeSecurityContext) GetMyProjects() ([]*models.Project, error) {

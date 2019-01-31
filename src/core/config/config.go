@@ -572,3 +572,36 @@ func GetChartMuseumEndpoint() (string, error) {
 
 	return chartEndpoint, nil
 }
+
+// GetRedisOfRegURL returns the URL of Redis used by registry
+func GetRedisOfRegURL() string {
+	return os.Getenv("_REDIS_URL_REG")
+}
+
+// GetPortalURL returns the URL of portal
+func GetPortalURL() string {
+	url := os.Getenv("PORTAL_URL")
+	if len(url) == 0 {
+		return common.DefaultPortalURL
+	}
+	return url
+}
+
+// GetRegistryCtlURL returns the URL of registryctl
+func GetRegistryCtlURL() string {
+	url := os.Getenv("REGISTRYCTL_URL")
+	if len(url) == 0 {
+		return common.DefaultRegistryCtlURL
+	}
+	return url
+}
+
+// GetClairHealthCheckServerURL returns the URL of
+// the health check server of Clair
+func GetClairHealthCheckServerURL() string {
+	url := os.Getenv("CLAIR_HEALTH_CHECK_SERVER_URL")
+	if len(url) == 0 {
+		return common.DefaultClairHealthCheckServerURL
+	}
+	return url
+}

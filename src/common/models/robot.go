@@ -15,6 +15,8 @@
 package models
 
 import (
+	"github.com/astaxie/beego/validation"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"time"
 )
 
@@ -42,7 +44,26 @@ type RobotQuery struct {
 	Pagination
 }
 
+// RobotReq ...
+type RobotReq struct {
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Disabled    bool           `json:"disabled"`
+	Access      []*rbac.Policy `json:"access"`
+}
+
+// Valid put request validation
+func (rq *RobotReq) Valid(v *validation.Validation) {
+	// ToDo: add validation for access info.
+}
+
+// RobotRep ...
+type RobotRep struct {
+	Name  string
+	Token string
+}
+
 // TableName ...
-func (u *Robot) TableName() string {
+func (r *Robot) TableName() string {
 	return RobotTable
 }

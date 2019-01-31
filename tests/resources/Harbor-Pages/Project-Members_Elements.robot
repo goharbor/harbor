@@ -18,7 +18,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 *** Variables ***
 ${project_member_tag_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/nav/ul/li[3]/a
 ${project_member_add_button_xpath}  //project-detail//button[contains(.,'User')]
-${project_member_add_username_xpath}  //*[@id="member_name"]
+${project_member_add_username_xpath}  //*[@id='member_name']
 ${project_member_add_admin_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/ng-component/div/div[1]/div/div[1]/add-member/clr-modal/div/div[1]/div/div[1]/div/div[2]/form/section/div[2]/div[1]/label
 ${project_member_add_save_button_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/project-detail/ng-component/div/div[1]/div/div[1]/add-member/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
 ${project_member_search_button_xpath}  //project-detail//hbr-filter/span/clr-icon
@@ -27,4 +27,4 @@ ${project_member_add_confirmation_ok_xpath}  //project-detail//add-member//butto
 ${project_member_search_button_xpath2}  //button[contains(.,'New')]
 ${project_member_add_button_xpath2}  //project-detail//add-member//button[2]
 ${project_member_guest_radio_checkbox}  //project-detail//form//input[@id='checkrads_guest']
-${project_member_delete_button_xpath}  //button[contains(.,"REMOVE")]
+${project_member_delete_button_xpath}  //button[contains(.,'REMOVE')]
