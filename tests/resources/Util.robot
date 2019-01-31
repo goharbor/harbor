@@ -109,6 +109,19 @@ Wait Unitl Vul Data Ready
     \    Sleep  ${interval}
     Run Keyword If  ${i+1}==${n}  Fail  The vul data is not ready
 
+Wait Unitl Command Success
+    [Arguments]  ${cmd}  ${times}=8  ${positive}=${true}
+    :FOR  ${n}  IN RANGE  1  ${times}
+    \    Log  Trying ${cmd}: ${n} ...  console=True
+    \    ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
+    \    Run Keyword If  ${positive} == ${true}  Exit For Loop If  '${rc}'=='0'
+    \    ...  ELSE  Exit For Loop If  '${rc}'!='0'
+    \    Sleep  2
+    Log  ${output}
+    Run Keyword If  ${positive} == ${true}  Should Be Equal As Strings  '${rc}'  '0'
+    ...  ELSE  Should Not Be Equal As Strings  '${rc}'  '0'   
+    [Return]  ${output}
+
 Retry Keyword When Error
     [Arguments]  ${keyword}  ${element}=${None}  ${times}=6
     :For  ${n}  IN RANGE  1  ${times}
