@@ -77,7 +77,11 @@ Retry Element Click
 
 Retry Wait Element
     [Arguments]  ${element_xpath}
-    Retry Action Keyword  Wait Element  ${element_xpath}
+    Retry Action Keyword  Wait Until Element Is Visible And Enabled  ${element_xpath}
+
+Retry Wait Element Not Visible
+    [Arguments]  ${element_xpath}
+    Retry Action Keyword  Wait Until Element Is Not Visible  ${element_xpath}
 
 Retry Button Click
     [Arguments]  ${element_xpath}
@@ -87,10 +91,6 @@ Element Click
     [Arguments]  ${element_xpath}
     Wait Until Element Is Visible And Enabled  ${element_xpath}
     Click Element  ${element_xpath}
-
-Wait Element
-    [Arguments]  ${element_xpath}
-    Wait Until Element Is Visible And Enabled  ${element_xpath}
 
 Button Click
     [Arguments]  ${element_xpath}
