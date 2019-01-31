@@ -16,5 +16,5 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-${member_action_xpath}  //*[@id='member-action']
-${delete_action_xpath}  //clr-dropdown/clr-dropdown-menu/button[4]
+${member_action_xpath}  //*[@id="member-action"]
+${delete_action_xpath}  //clr-dropdown/clr-dropdown-menu/button[5]

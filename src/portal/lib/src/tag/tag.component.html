@@ -60,7 +60,7 @@
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(canScanNow(selectedRow) && selectedRow.length==1)" (click)="scanNow(selectedRow)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
           <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)" ><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
           <clr-dropdown *ngIf="!withAdmiral">
-            <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1 && developerRoleOrAbove)" (click)="addLabels(selectedRow)" ><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
+            <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1)||!hasAddLabelImagePermission" (click)="addLabels(selectedRow)" ><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
             <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
               <div class="filter-grid">
               <label class="dropdown-header">{{'REPOSITORY.ADD_LABEL_TO_IMAGE' | translate}}</label>
@@ -75,8 +75,8 @@
               </div>
             </clr-dropdown-menu>
           </clr-dropdown>
-          <button type="button" class="btn btn-sm btn-secondary" *ngIf="!withAdmiral" [disabled]="!(selectedRow.length===1 && guestRoleOrAbove)" (click)="retag(selectedRow)"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}</button>
-          <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasProjectAdminRole" (click)="deleteTags(selectedRow)" [disabled]="!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
+          <button type="button" class="btn btn-sm btn-secondary" *ngIf="!withAdmiral" [disabled]="!(selectedRow.length===1)|| !hasRetagImagePermission" (click)="retag(selectedRow)"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}</button>
+          <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasDeleteImagePermission" (click)="deleteTags(selectedRow)" [disabled]="!hasDeleteImagePermission||!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
         </clr-dg-action-bar>
         <clr-dg-column class="flex-max-width" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>

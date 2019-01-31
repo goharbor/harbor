@@ -17,9 +17,11 @@ import { SystemInfo, SystemInfoService, HelmChartItem } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { toPromise, DEFAULT_PAGE_SIZE, downloadFile } from "../utils";
 import { HelmChartService } from "../service/helm-chart.service";
-import { DefaultHelmIcon} from "../shared/shared.const";
+import { DefaultHelmIcon } from "../shared/shared.const";
 import { Roles } from './../shared/shared.const';
 import { OperationService } from "./../operation/operation.service";
+import { UserPermissionService } from "../service/permission.service";
+import { USERSTATICPERMISSION } from "../service/permission-static";
 import {
   OperateInfo,
   OperationState,
@@ -45,7 +47,6 @@ export class HelmChartComponent implements OnInit {
   @Input() urlPrefix: string;
   @Input() hasSignedIn: boolean;
   @Input() projectRoleID = Roles.OTHER;
-  @Input() hasProjectAdminRole: boolean;
   @Output() chartClickEvt = new EventEmitter<any>();
   @Output() chartDownloadEve = new EventEmitter<string>();
   @Input() chartDefaultIcon: string = DefaultHelmIcon;
@@ -76,22 +77,21 @@ export class HelmChartComponent implements OnInit {
   @ViewChild('chartUploadForm') uploadForm: NgForm;
 
   @ViewChild("confirmationDialog") confirmationDialog: ConfirmationDialogComponent;
-
+  hasUploadHelmChartsPermission: boolean;
+  hasDownloadHelmChartsPermission: boolean;
+  hasDeleteHelmChartsPermission: boolean;
   constructor(
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
     private systemInfoService: SystemInfoService,
     private helmChartService: HelmChartService,
+    private userPermissionService: UserPermissionService,
     private operationService: OperationService,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) { }
 
   public get registryUrl(): string {
     return this.systemInfo ? this.systemInfo.registry_url : "";
-  }
-
-  public get developerRoleOrAbove(): boolean {
-    return this.projectRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
   }
 
   ngOnInit(): void {
@@ -101,8 +101,21 @@ export class HelmChartComponent implements OnInit {
       .catch(error => this.errorHandler.error(error));
     this.lastFilteredChartName = "";
     this.refresh();
+    this.getHelmPermissionRule(this.projectId);
   }
-
+  getHelmPermissionRule(projectId: number): void {
+    let hasUploadHelmChartsPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.HELM_CHART.KEY, USERSTATICPERMISSION.HELM_CHART.VALUE.UPLOAD);
+    let hasDownloadHelmChartsPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.HELM_CHART.KEY, USERSTATICPERMISSION.HELM_CHART.VALUE.DOWNLOAD);
+    let hasDeleteHelmChartsPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.HELM_CHART.KEY, USERSTATICPERMISSION.HELM_CHART.VALUE.DELETE);
+    forkJoin(hasUploadHelmChartsPermission, hasDownloadHelmChartsPermission, hasDeleteHelmChartsPermission).subscribe(permissions => {
+      this.hasUploadHelmChartsPermission = permissions[0] as boolean;
+      this.hasDownloadHelmChartsPermission = permissions[1] as boolean;
+      this.hasDeleteHelmChartsPermission = permissions[2] as boolean;
+    }, error => this.errorHandler.error(error));
+  }
   updateFilterValue(value: string) {
     this.lastFilteredChartName = value;
     this.refresh();
@@ -111,22 +124,22 @@ export class HelmChartComponent implements OnInit {
   refresh() {
     this.loading = true;
     this.helmChartService
-    .getHelmCharts(this.projectName)
-    .pipe(finalize(() => {
+      .getHelmCharts(this.projectName)
+      .pipe(finalize(() => {
         let hnd = setInterval(() => this.cdr.markForCheck(), 100);
         setTimeout(() => clearInterval(hnd), 3000);
         this.loading = false;
-    }))
-    .subscribe(
-      charts => {
-        this.charts = charts.filter(x => x.name.includes(this.lastFilteredChartName));
-        this.chartsCopy = charts.map(x => Object.assign({}, x));
-        this.totalCount = charts.length;
-      },
-      err => {
-        this.errorHandler.error(err);
-      }
-    );
+      }))
+      .subscribe(
+        charts => {
+          this.charts = charts.filter(x => x.name.includes(this.lastFilteredChartName));
+          this.chartsCopy = charts.map(x => Object.assign({}, x));
+          this.totalCount = charts.length;
+        },
+        err => {
+          this.errorHandler.error(err);
+        }
+      );
   }
 
   onChartClick(item: HelmChartItem) {
@@ -163,10 +176,10 @@ export class HelmChartComponent implements OnInit {
         this.refresh();
       }))
       .subscribe(() => {
-          this.translateService
-            .get("HELM_CHART.FILE_UPLOADED")
-            .subscribe(res => this.errorHandler.info(res));
-        },
+        this.translateService
+          .get("HELM_CHART.FILE_UPLOADED")
+          .subscribe(res => this.errorHandler.info(res));
+      },
         err => this.errorHandler.error(err)
       );
   }
@@ -192,23 +205,23 @@ export class HelmChartComponent implements OnInit {
     this.operationService.publishInfo(operateMsg);
 
     return this.helmChartService.deleteHelmChart(this.projectName, chartName)
-    .pipe(map(
-      () => operateChanges(operateMsg, OperationState.success),
-      err => operateChanges(operateMsg, OperationState.failure, err)
-    ));
+      .pipe(map(
+        () => operateChanges(operateMsg, OperationState.success),
+        err => operateChanges(operateMsg, OperationState.failure, err)
+      ));
   }
 
   deleteCharts(charts: HelmChartItem[]) {
     if (charts && charts.length < 1) { return; }
     let chartsDelete$ = charts.map(chart => this.deleteChart(chart.name));
     forkJoin(chartsDelete$)
-    .pipe(
-      catchError(err => throwError(err)),
-      finalize(() => {
-        this.refresh();
-        this.selectedRows = [];
-      }))
-    .subscribe(() => {});
+      .pipe(
+        catchError(err => throwError(err)),
+        finalize(() => {
+          this.refresh();
+          this.selectedRows = [];
+        }))
+      .subscribe(() => { });
   }
 
   downloadLatestVersion(evt?: Event, item?: HelmChartItem) {

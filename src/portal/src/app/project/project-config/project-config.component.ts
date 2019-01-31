@@ -28,7 +28,6 @@ export class ProjectConfigComponent implements OnInit {
   projectName: string;
   currentUser: SessionUser;
   hasSignedIn: boolean;
-  hasProjectAdminRole: boolean;
 
   constructor(
     private route: ActivatedRoute,
@@ -42,7 +41,6 @@ export class ProjectConfigComponent implements OnInit {
     let resolverData = this.route.snapshot.parent.data;
     if (resolverData) {
       let pro: Project = <Project>resolverData['projectResolver'];
-      this.hasProjectAdminRole = pro.has_project_admin_role;
       this.projectName = pro.name;
     }
   }

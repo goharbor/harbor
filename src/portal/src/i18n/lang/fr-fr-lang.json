@@ -224,6 +224,7 @@
         "USER_TYPE": "User",
         "SYS_ADMIN": "System Admin",
         "PROJECT_ADMIN": "Project Admin",
+        "PROJECT_MASTER": "préposé à la maintenance",
         "DEVELOPER": "Développeur",
         "GUEST": "Invité",
         "DELETE": "Supprimer",
