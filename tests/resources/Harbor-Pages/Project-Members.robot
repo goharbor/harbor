@@ -134,7 +134,7 @@ User Should Not Be A Member Of Project
     Project Should Not Display  ${project}
     Logout Harbor
     Cannot Pull image  ${ip}  ${user}  ${pwd}  ${project}  ${ip}/${project}/hello-world
-    Cannot Push image  ${ip}  ${user}  ${pwd}  ${project}  ${ip}/${project}/hello-world
+    Cannot Push image  ${ip}  ${user}  ${pwd}  ${project}  hello-world
 
 Manage Project Member
     [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${op}  ${has_image}=${true}

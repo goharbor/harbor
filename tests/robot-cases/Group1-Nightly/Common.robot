@@ -672,8 +672,7 @@ Test Case - Retag A Image Tag
     Sleep  1
     Go Into Repo  project${random_num1}/redis
     Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
-
-    Wait Until Element Is Not Visible  css=${modal-dialog}
+    Retry Keyword When Error  Wait Until Element Is Not Visible  element=${repo_retag_confirm_dlg}
     Navigate To Projects
     Go Into Project  project${random_num2}
     Sleep  1
