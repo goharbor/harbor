@@ -17,29 +17,6 @@ var (
 	crMockServer    *httptest.Server
 )
 
-// Test access checking
-func TestRequireAccess(t *testing.T) {
-	chartAPI := &ChartRepositoryAPI{}
-	chartAPI.SecurityCtx = &mockSecurityContext{}
-
-	ns := "library"
-	if !chartAPI.requireAccess(ns, accessLevelPublic) {
-		t.Fatal("expect true result (public access level is granted) but got false")
-	}
-	if !chartAPI.requireAccess(ns, accessLevelAll) {
-		t.Fatal("expect true result (admin has all perm) but got false")
-	}
-	if !chartAPI.requireAccess(ns, accessLevelRead) {
-		t.Fatal("expect true result (admin has read perm) but got false")
-	}
-	if !chartAPI.requireAccess(ns, accessLevelWrite) {
-		t.Fatal("expect true result (admin has write perm) but got false")
-	}
-	if !chartAPI.requireAccess(ns, accessLevelSystem) {
-		t.Fatal("expect true result (admin has system perm) but got false")
-	}
-}
-
 func TestIsMultipartFormData(t *testing.T) {
 	req, err := createRequest(http.MethodPost, "/api/chartrepo/charts")
 	if err != nil {
@@ -205,7 +182,7 @@ func TestDeleteChart(t *testing.T) {
 		request: &testingRequest{
 			url:        "/api/chartrepo/library/charts/harbor",
 			method:     http.MethodDelete,
-			credential: projDeveloper,
+			credential: projAdmin,
 		},
 		code: http.StatusOK,
 	})
@@ -308,21 +285,6 @@ func (msc *mockSecurityContext) IsSysAdmin() bool {
 // IsSolutionUser returns whether the user is solution user
 func (msc *mockSecurityContext) IsSolutionUser() bool {
 	return false
-}
-
-// HasReadPerm returns whether the user has read permission to the project
-func (msc *mockSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	return msc.Can(rbac.ActionPull, rbac.NewProjectNamespace(projectIDOrName, false).Resource(rbac.ResourceRepository))
-}
-
-// HasWritePerm returns whether the user has write permission to the project
-func (msc *mockSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	return msc.Can(rbac.ActionPush, rbac.NewProjectNamespace(projectIDOrName, false).Resource(rbac.ResourceRepository))
-}
-
-// HasAllPerm returns whether the user has all permissions to the project
-func (msc *mockSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
-	return msc.HasReadPerm(projectIDOrName) && msc.HasWritePerm(projectIDOrName)
 }
 
 // Can returns whether the user can do action on resource

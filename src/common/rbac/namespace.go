@@ -52,6 +52,10 @@ func (ns *projectNamespace) IsPublic() bool {
 }
 
 // NewProjectNamespace returns namespace for project
-func NewProjectNamespace(projectIDOrName interface{}, isPublic bool) Namespace {
-	return &projectNamespace{projectIDOrName: projectIDOrName, isPublic: isPublic}
+func NewProjectNamespace(projectIDOrName interface{}, isPublic ...bool) Namespace {
+	isPublicNamespace := false
+	if len(isPublic) > 0 {
+		isPublicNamespace = isPublic[0]
+	}
+	return &projectNamespace{projectIDOrName: projectIDOrName, isPublic: isPublicNamespace}
 }
