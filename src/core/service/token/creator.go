@@ -22,6 +22,7 @@ import (
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
@@ -158,24 +159,25 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 	if err != nil {
 		return err
 	}
-	project := img.namespace
+	projectName := img.namespace
 	permission := ""
 
-	exist, err := pm.Exists(project)
+	exist, err := pm.Exists(projectName)
 	if err != nil {
 		return err
 	}
 	if !exist {
-		log.Debugf("project %s does not exist, set empty permission", project)
+		log.Debugf("project %s does not exist, set empty permission", projectName)
 		a.Actions = []string{}
 		return nil
 	}
 
-	if ctx.HasAllPerm(project) {
+	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepository)
+	if ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource) {
 		permission = "RWM"
-	} else if ctx.HasWritePerm(project) {
+	} else if ctx.Can(rbac.ActionPush, resource) {
 		permission = "RW"
-	} else if ctx.HasReadPerm(project) {
+	} else if ctx.Can(rbac.ActionPull, resource) {
 		permission = "R"
 	}
 

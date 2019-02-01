@@ -23,8 +23,22 @@ var (
 	publicProjectPolicies = []*rbac.Policy{
 		{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
 
+		{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
+
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
+
+		{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceRepositoryTagVulnerability, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceRepositoryTagManifest, Action: rbac.ActionRead},
 
 		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
@@ -44,10 +58,16 @@ var (
 		{Resource: rbac.ResourceMember, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
+		{Resource: rbac.ResourceMetadata, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceMetadata, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceMetadata, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceMetadata, Action: rbac.ActionDelete},
+
 		{Resource: rbac.ResourceLog, Action: rbac.ActionList},
 
 		{Resource: rbac.ResourceReplication, Action: rbac.ActionList},
 		{Resource: rbac.ResourceReplication, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceReplication, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceReplication, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceReplication, Action: rbac.ActionDelete},
 
@@ -56,17 +76,25 @@ var (
 		{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionList},
 
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
 
+		{Resource: rbac.ResourceLabelResource, Action: rbac.ActionList},
+
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionPushPull}, // compatible with security all perm of project
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
+		{Resource: rbac.ResourceRepository, Action: rbac.ActionPushPull}, // compatible with security all perm of project
+
+		{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionList},
 
 		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionDelete},
@@ -81,12 +109,14 @@ var (
 
 		{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionList},
 
 		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
 
+		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},

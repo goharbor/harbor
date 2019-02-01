@@ -252,15 +252,6 @@ func (f *fakeSecurityContext) IsSysAdmin() bool {
 func (f *fakeSecurityContext) IsSolutionUser() bool {
 	return false
 }
-func (f *fakeSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	return false
-}
-func (f *fakeSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	return false
-}
-func (f *fakeSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
-	return false
-}
 func (f *fakeSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
 	return false
 }

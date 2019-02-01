@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
 )
@@ -73,12 +74,6 @@ func (pma *ProjectMemberAPI) Prepare() {
 	}
 	pma.project = project
 
-	if !(pma.Ctx.Input.IsGet() && pma.SecurityCtx.HasReadPerm(pid) ||
-		pma.SecurityCtx.HasAllPerm(pid)) {
-		pma.HandleForbidden(pma.SecurityCtx.GetUsername())
-		return
-	}
-
 	pmid, err := pma.GetInt64FromPath(":pmid")
 	if err != nil {
 		log.Warningf("Failed to get pmid from path, error %v", err)
@@ -90,6 +85,22 @@ func (pma *ProjectMemberAPI) Prepare() {
 	pma.id = int(pmid)
 }
 
+func (pma *ProjectMemberAPI) requireAccess(action rbac.Action) bool {
+	resource := rbac.NewProjectNamespace(pma.project.ProjectID).Resource(rbac.ResourceMember)
+
+	if !pma.SecurityCtx.Can(action, resource) {
+		if !pma.SecurityCtx.IsAuthenticated() {
+			pma.HandleUnauthorized()
+		} else {
+			pma.HandleForbidden(pma.SecurityCtx.GetUsername())
+		}
+
+		return false
+	}
+
+	return true
+}
+
 // Get ...
 func (pma *ProjectMemberAPI) Get() {
 	projectID := pma.project.ProjectID
@@ -97,6 +108,9 @@ func (pma *ProjectMemberAPI) Get() {
 	queryMember.ProjectID = projectID
 	pma.Data["json"] = make([]models.Member, 0)
 	if pma.id == 0 {
+		if !pma.requireAccess(rbac.ActionList) {
+			return
+		}
 		entityname := pma.GetString("entityname")
 		memberList, err := project.SearchMemberByName(projectID, entityname)
 		if err != nil {
@@ -119,6 +133,10 @@ func (pma *ProjectMemberAPI) Get() {
 			pma.HandleNotFound(fmt.Sprintf("The project member does not exit, pmid:%v", pma.id))
 			return
 		}
+
+		if !pma.requireAccess(rbac.ActionRead) {
+			return
+		}
 		pma.Data["json"] = memberList[0]
 	}
 	pma.ServeJSON()
@@ -126,6 +144,9 @@ func (pma *ProjectMemberAPI) Get() {
 
 // Post ... Add a project member
 func (pma *ProjectMemberAPI) Post() {
+	if !pma.requireAccess(rbac.ActionCreate) {
+		return
+	}
 	projectID := pma.project.ProjectID
 	var request models.MemberReq
 	pma.DecodeJSONReq(&request)
@@ -156,6 +177,9 @@ func (pma *ProjectMemberAPI) Post() {
 
 // Put ... Update an exist project member
 func (pma *ProjectMemberAPI) Put() {
+	if !pma.requireAccess(rbac.ActionUpdate) {
+		return
+	}
 	pid := pma.project.ProjectID
 	pmID := pma.id
 	var req models.Member
@@ -173,6 +197,9 @@ func (pma *ProjectMemberAPI) Put() {
 
 // Delete ...
 func (pma *ProjectMemberAPI) Delete() {
+	if !pma.requireAccess(rbac.ActionDelete) {
+		return
+	}
 	pmid := pma.id
 	err := project.DeleteProjectMemberByID(pmid)
 	if err != nil {

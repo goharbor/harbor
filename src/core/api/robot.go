@@ -16,12 +16,14 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/token"
-	"net/http"
-	"strconv"
 )
 
 // RobotAPI ...
@@ -83,17 +85,24 @@ func (r *RobotAPI) Prepare() {
 
 		r.robot = robot
 	}
+}
 
-	if !(r.Ctx.Input.IsGet() && r.SecurityCtx.HasReadPerm(pid) ||
-		r.SecurityCtx.HasAllPerm(pid)) {
+func (r *RobotAPI) requireAccess(action rbac.Action) bool {
+	resource := rbac.NewProjectNamespace(r.project.ProjectID).Resource(rbac.ResourceRobot)
+	if !r.SecurityCtx.Can(action, resource) {
 		r.HandleForbidden(r.SecurityCtx.GetUsername())
-		return
+		return false
 	}
 
+	return true
 }
 
 // Post ...
 func (r *RobotAPI) Post() {
+	if !r.requireAccess(rbac.ActionCreate) {
+		return
+	}
+
 	var robotReq models.RobotReq
 	r.DecodeJSONReq(&robotReq)
 	createdName := common.RobotPrefix + robotReq.Name
@@ -147,6 +156,10 @@ func (r *RobotAPI) Post() {
 
 // List list all the robots of a project
 func (r *RobotAPI) List() {
+	if !r.requireAccess(rbac.ActionList) {
+		return
+	}
+
 	query := models.RobotQuery{
 		ProjectID: r.project.ProjectID,
 	}
@@ -171,6 +184,10 @@ func (r *RobotAPI) List() {
 
 // Get get robot by id
 func (r *RobotAPI) Get() {
+	if !r.requireAccess(rbac.ActionRead) {
+		return
+	}
+
 	id, err := r.GetInt64FromPath(":id")
 	if err != nil || id <= 0 {
 		r.HandleBadRequest(fmt.Sprintf("invalid robot ID: %s", r.GetStringFromPath(":id")))
@@ -193,6 +210,10 @@ func (r *RobotAPI) Get() {
 
 // Put disable or enable a robot account
 func (r *RobotAPI) Put() {
+	if !r.requireAccess(rbac.ActionUpdate) {
+		return
+	}
+
 	var robotReq models.RobotReq
 	r.DecodeJSONReqAndValidate(&robotReq)
 	r.robot.Disabled = robotReq.Disabled
@@ -206,6 +227,10 @@ func (r *RobotAPI) Put() {
 
 // Delete delete robot by id
 func (r *RobotAPI) Delete() {
+	if !r.requireAccess(rbac.ActionDelete) {
+		return
+	}
+
 	if err := dao.DeleteRobot(r.robot.ID); err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to delete robot %d: %v", r.robot.ID, err))
 		return

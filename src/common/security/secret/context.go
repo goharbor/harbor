@@ -71,34 +71,9 @@ func (s *SecurityContext) IsSolutionUser() bool {
 	return s.IsAuthenticated()
 }
 
-// HasReadPerm returns true if the corresponding user of the secret
-// is jobservice or core service, otherwise returns false
-func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	if s.store == nil {
-		return false
-	}
-	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.CoreUser
-}
-
-// HasWritePerm returns true if the corresponding user of the secret
-// is jobservice or core service, otherwise returns false
-func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	if s.store == nil {
-		return false
-	}
-	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.CoreUser
-}
-
-// HasAllPerm returns true if the corresponding user of the secret
-// is jobservice or core service, otherwise returns false
-func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
-	if s.store == nil {
-		return false
-	}
-	return s.store.GetUsername(s.secret) == secret.JobserviceUser || s.store.GetUsername(s.secret) == secret.CoreUser
-}
-
 // Can returns whether the user can do action on resource
+// returns true if the corresponding user of the secret
+// is jobservice or core service, otherwise returns false
 func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
 	if s.store == nil {
 		return false
@@ -114,7 +89,9 @@ func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
 // GetProjectRoles return guest role if has read permission, otherwise return nil
 func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 	roles := []int{}
-	if s.HasReadPerm(projectIDOrName) {
+	if s.store != nil &&
+		(s.store.GetUsername(s.secret) == secret.JobserviceUser ||
+			s.store.GetUsername(s.secret) == secret.CoreUser) {
 		roles = append(roles, common.RoleGuest)
 	}
 	return roles

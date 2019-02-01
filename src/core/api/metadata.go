@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 )
@@ -72,24 +73,6 @@ func (m *MetadataAPI) Prepare() {
 
 	m.project = project
 
-	switch m.Ctx.Request.Method {
-	case http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete:
-		if !(m.Ctx.Request.Method == http.MethodGet && project.IsPublic()) {
-			if !m.SecurityCtx.IsAuthenticated() {
-				m.HandleUnauthorized()
-				return
-			}
-			if !m.SecurityCtx.HasReadPerm(project.ProjectID) {
-				m.HandleForbidden(m.SecurityCtx.GetUsername())
-				return
-			}
-		}
-	default:
-		log.Debugf("%s method not allowed", m.Ctx.Request.Method)
-		m.RenderError(http.StatusMethodNotAllowed, "")
-		return
-	}
-
 	name := m.GetStringFromPath(":name")
 	if len(name) > 0 {
 		m.name = name
@@ -105,8 +88,27 @@ func (m *MetadataAPI) Prepare() {
 	}
 }
 
+func (m *MetadataAPI) requireAccess(action rbac.Action) bool {
+	resource := rbac.NewProjectNamespace(m.project.ProjectID).Resource(rbac.ResourceMetadata)
+
+	if !m.SecurityCtx.Can(action, resource) {
+		if !m.SecurityCtx.IsAuthenticated() {
+			m.HandleUnauthorized()
+		} else {
+			m.HandleForbidden(m.SecurityCtx.GetUsername())
+		}
+		return false
+	}
+
+	return true
+}
+
 // Get ...
 func (m *MetadataAPI) Get() {
+	if !m.requireAccess(rbac.ActionRead) {
+		return
+	}
+
 	var metas map[string]string
 	var err error
 	if len(m.name) > 0 {
@@ -125,6 +127,10 @@ func (m *MetadataAPI) Get() {
 
 // Post ...
 func (m *MetadataAPI) Post() {
+	if !m.requireAccess(rbac.ActionCreate) {
+		return
+	}
+
 	var metas map[string]string
 	m.DecodeJSONReq(&metas)
 
@@ -161,6 +167,10 @@ func (m *MetadataAPI) Post() {
 
 // Put ...
 func (m *MetadataAPI) Put() {
+	if !m.requireAccess(rbac.ActionUpdate) {
+		return
+	}
+
 	var metas map[string]string
 	m.DecodeJSONReq(&metas)
 
@@ -188,6 +198,10 @@ func (m *MetadataAPI) Put() {
 
 // Delete ...
 func (m *MetadataAPI) Delete() {
+	if !m.requireAccess(rbac.ActionDelete) {
+		return
+	}
+
 	if err := m.metaMgr.Delete(m.project.ProjectID, m.name); err != nil {
 		m.HandleInternalServerError(fmt.Sprintf("failed to delete metadata %s of project %d: %v", m.name, m.project.ProjectID, err))
 		return
