@@ -289,27 +289,15 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   getAllLabels(): void {
-    toPromise<Label[]>(this.labelService.getGLabels()).then((res: Label[]) => {
-      if (res.length) {
-        res.forEach(data => {
+    forkJoin(this.labelService.getGLabels(), this.labelService.getPLabels(this.projectId)).subscribe(results => {
+      results.forEach(labels => {
+        labels.forEach(data => {
           this.imageLabels.push({ 'iconsShow': false, 'label': data, 'show': true });
         });
-      }
-
-      toPromise<Label[]>(this.labelService.getPLabels(this.projectId)).then((res1: Label[]) => {
-        if (res1.length) {
-          res1.forEach(data => {
-            this.imageLabels.push({ 'iconsShow': false, 'label': data, 'show': true });
-          });
-        }
-        this.imageFilterLabels = clone(this.imageLabels);
-        this.imageStickLabels = clone(this.imageLabels);
-      }).catch(error => {
-        this.errorHandler.error(error);
       });
-    }).catch(error => {
-      this.errorHandler.error(error);
-    });
+      this.imageFilterLabels = clone(this.imageLabels);
+      this.imageStickLabels = clone(this.imageLabels);
+    }, error => this.errorHandler.error(error));
   }
 
   labelSelectedChange(tag?: Tag[]): void {
