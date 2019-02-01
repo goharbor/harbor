@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, Inject, OnChanges, SimpleChanges } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Configuration, StringValueItem } from '../config';
-import { SERVICE_CONFIG, IServiceConfig, downloadUrl } from '../../service.config';
+import { SERVICE_CONFIG, IServiceConfig } from '../../service.config';
 import { clone, isEmpty, getChanges, toPromise } from '../../utils';
 import { ErrorHandler } from '../../error-handler/index';
 import { ConfirmationMessage } from '../../confirmation-dialog/confirmation-message';
@@ -23,7 +23,7 @@ export class SystemSettingsComponent implements OnChanges {
     config: Configuration = new Configuration();
     onGoing = false;
     private originalConfig: Configuration;
-    downloadLink: string = downloadUrl;
+    downloadLink: string;
     @Output() configChange: EventEmitter<Configuration> = new EventEmitter<Configuration>();
     @Output() readOnlyChange: EventEmitter<boolean> = new EventEmitter<boolean>();
     @Output() reloadSystemConfig: EventEmitter<any> = new EventEmitter<any>();
