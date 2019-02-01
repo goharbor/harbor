@@ -179,8 +179,10 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     }
 
     selectRule(rule: ReplicationRule): void {
-        this.selectedId = rule.id || "";
-        this.selectOne.emit(rule);
+        if (rule) {
+            this.selectedId = rule.id || "";
+            this.selectOne.emit(rule);
+        }
     }
 
     redirectTo(rule: ReplicationRule): void {

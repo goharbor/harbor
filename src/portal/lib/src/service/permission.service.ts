@@ -45,6 +45,7 @@ export class UserPermissionDefaultService extends UserPermissionService {
         super();
     }
     private permissionCache: Observable<object>;
+    private projectId: number;
     private getPermissionFromBackend(projectId): Observable<object> {
         const userPermissionUrl = `/api/users/current/permissions?scope=/project/${projectId}&relative=true`;
         return this.http.get(userPermissionUrl);
@@ -60,7 +61,8 @@ export class UserPermissionDefaultService extends UserPermissionService {
     }
     public getPermission(projectId, resource, action): Observable<boolean> {
 
-        if (!this.permissionCache) {
+        if (!this.permissionCache || this.projectId !== +projectId) {
+            this.projectId = +projectId;
             this.permissionCache = this.getPermissionFromBackend(projectId).pipe(
                 shareReplay(CACHE_SIZE));
         }
@@ -72,5 +74,6 @@ export class UserPermissionDefaultService extends UserPermissionService {
     }
     public clearPermissionCache() {
         this.permissionCache = null;
+        this.projectId = null;
     }
 }
