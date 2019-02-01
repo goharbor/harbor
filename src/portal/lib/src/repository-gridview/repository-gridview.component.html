@@ -87,7 +87,7 @@
                 <div class="card-footer">
                     <clr-dropdown [clrCloseMenuOnItemClick]="false">
                         <button *ngIf="withAdmiral" type="button" class="btn btn-link" (click)="provisionItemEvent($event, item)" [disabled]="!hasProjectAdminRole">{{'REPOSITORY.DEPLOY' | translate}}</button>
-                        <button type="button" class="btn btn-link" (click)="$event.stopPropagation()" [disabled]="!hasProjectAdminRole" clrDropdownTrigger>
+                        <button type="button" class="btn btn-link" (click)="$event.stopPropagation()" [disabled]="!hasDeleteRepositoryPermission" clrDropdownTrigger>
                             {{'REPOSITORY.ACTION' | translate}}
                             <clr-icon shape="caret down"></clr-icon>
                         </button>
@@ -95,7 +95,7 @@
                             <button *ngIf="withAdmiral" type="button" class="btn btn-link" clrDropdownItem (click)="itemAddInfoEvent($event, item)" [disabled]="!hasProjectAdminRole">
                                 {{'REPOSITORY.ADDITIONAL_INFO' | translate}}
                             </button>
-                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, item)" [disabled]="!hasProjectAdminRole">
+                            <button type="button" class="btn btn-link" clrDropdownItem (click)="deleteItemEvent($event, item)" [disabled]="!hasDeleteRepositoryPermission">
                                 {{'REPOSITORY.DELETE' | translate}}
                             </button>
                         </clr-dropdown-menu>

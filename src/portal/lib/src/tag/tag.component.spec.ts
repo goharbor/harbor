@@ -167,7 +167,7 @@ describe("TagComponent (inline template)", () => {
     labelService = fixture.debugElement.injector.get(LabelService);
 
     spyLabels = spyOn(labelService, "getGLabels").and.returnValues(Promise.resolve(mockLabels));
-    spyLabels1 = spyOn(labelService, "getPLabels").and.returnValues(Promise.resolve(mockLabels1));
+    spyLabels1 = spyOn(labelService, "getPLabels").withArgs(comp.projectId).and.returnValues(Promise.resolve(mockLabels1));
 
     fixture.detectChanges();
   });
