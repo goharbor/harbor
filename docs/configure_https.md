@@ -163,7 +163,7 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
 ```
 
 
-##Troubleshooting
+## Troubleshooting
 1. You may get an intermediate certificate from a certificate issuer. In this case, you should merge the intermediate certificate with your own certificate to create a certificate bundle. You can achieve this by the below command:  
 
     ```
