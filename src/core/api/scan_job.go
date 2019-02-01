@@ -17,6 +17,7 @@ package api
 import (
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/utils"
 
@@ -54,7 +55,9 @@ func (sj *ScanJobAPI) Prepare() {
 		sj.CustomAbort(http.StatusInternalServerError, "Failed to get Job data")
 	}
 	projectName := strings.SplitN(data.Repository, "/", 2)[0]
-	if !sj.SecurityCtx.HasReadPerm(projectName) {
+
+	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTagScanJob)
+	if !sj.SecurityCtx.Can(rbac.ActionRead, resource) {
 		log.Errorf("User does not have read permission for project: %s", projectName)
 		sj.HandleForbidden(sj.SecurityCtx.GetUsername())
 	}
