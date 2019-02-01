@@ -22,6 +22,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	api_models "github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/core/promgr"
@@ -63,7 +64,8 @@ func (pa *RepPolicyAPI) Get() {
 		return
 	}
 
-	if !pa.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+	resource := rbac.NewProjectNamespace(policy.ProjectIDs[0]).Resource(rbac.ResourceReplication)
+	if !pa.SecurityCtx.Can(rbac.ActionRead, resource) {
 		pa.HandleForbidden(pa.SecurityCtx.GetUsername())
 		return
 	}
@@ -105,7 +107,8 @@ func (pa *RepPolicyAPI) List() {
 	if result != nil {
 		total = result.Total
 		for _, policy := range result.Policies {
-			if !pa.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+			resource := rbac.NewProjectNamespace(policy.ProjectIDs[0]).Resource(rbac.ResourceReplication)
+			if !pa.SecurityCtx.Can(rbac.ActionRead, resource) {
 				continue
 			}
 			ply, err := convertFromRepPolicy(pa.ProjectMgr, *policy)

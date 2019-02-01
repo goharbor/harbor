@@ -16,6 +16,7 @@ package robot
 
 import (
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -26,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"strconv"
 )
 
 var (
@@ -147,7 +147,8 @@ func TestHasReadPerm(t *testing.T) {
 	}
 
 	ctx := NewSecurityContext(robot, pm, policies)
-	assert.True(t, ctx.HasReadPerm(private.Name))
+	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
 
 func TestHasWritePerm(t *testing.T) {
@@ -164,7 +165,8 @@ func TestHasWritePerm(t *testing.T) {
 	}
 
 	ctx := NewSecurityContext(robot, pm, policies)
-	assert.True(t, ctx.HasWritePerm(private.Name))
+	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 }
 
 func TestHasAllPerm(t *testing.T) {
@@ -180,7 +182,8 @@ func TestHasAllPerm(t *testing.T) {
 	}
 
 	ctx := NewSecurityContext(robot, pm, policies)
-	assert.True(t, ctx.HasAllPerm(private.Name))
+	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+	assert.True(t, ctx.Can(rbac.ActionPushPull, resource))
 }
 
 func TestGetMyProjects(t *testing.T) {

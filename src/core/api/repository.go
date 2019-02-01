@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -131,7 +132,8 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
-	if !ra.SecurityCtx.HasReadPerm(projectID) {
+	resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceRepository)
+	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
 			return
@@ -247,7 +249,8 @@ func (ra *RepositoryAPI) Delete() {
 		return
 	}
 
-	if !ra.SecurityCtx.HasAllPerm(projectName) {
+	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
+	if !ra.SecurityCtx.Can(rbac.ActionDelete, resource) {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
@@ -393,7 +396,8 @@ func (ra *RepositoryAPI) GetTag() {
 		return
 	}
 	project, _ := utils.ParseRepository(repository)
-	if !ra.SecurityCtx.HasReadPerm(project) {
+	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepositoryTag)
+	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
 			return
@@ -488,14 +492,16 @@ func (ra *RepositoryAPI) Retag() {
 	}
 
 	// Check whether user has read permission to source project
-	if !ra.SecurityCtx.HasReadPerm(srcImage.Project) {
+	srcResource := rbac.NewProjectNamespace(srcImage.Project).Resource(rbac.ResourceRepository)
+	if !ra.SecurityCtx.Can(rbac.ActionPull, srcResource) {
 		log.Errorf("user has no read permission to project '%s'", srcImage.Project)
 		ra.HandleForbidden(fmt.Sprintf("%s has no read permission to project %s", ra.SecurityCtx.GetUsername(), srcImage.Project))
 		return
 	}
 
 	// Check whether user has write permission to target project
-	if !ra.SecurityCtx.HasWritePerm(project) {
+	destResource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepository)
+	if !ra.SecurityCtx.Can(rbac.ActionPush, destResource) {
 		log.Errorf("user has no write permission to project '%s'", project)
 		ra.HandleForbidden(fmt.Sprintf("%s has no write permission to project %s", ra.SecurityCtx.GetUsername(), project))
 		return
@@ -533,7 +539,8 @@ func (ra *RepositoryAPI) GetTags() {
 		return
 	}
 
-	if !ra.SecurityCtx.HasReadPerm(projectName) {
+	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTag)
+	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
 			return
@@ -741,7 +748,8 @@ func (ra *RepositoryAPI) GetManifests() {
 		return
 	}
 
-	if !ra.SecurityCtx.HasReadPerm(projectName) {
+	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTagManifest)
+	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
 			return
@@ -872,7 +880,8 @@ func (ra *RepositoryAPI) Put() {
 	}
 
 	project, _ := utils.ParseRepository(name)
-	if !ra.SecurityCtx.HasWritePerm(project) {
+	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepository)
+	if !ra.SecurityCtx.Can(rbac.ActionUpdate, resource) {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
@@ -906,7 +915,8 @@ func (ra *RepositoryAPI) GetSignatures() {
 		return
 	}
 
-	if !ra.SecurityCtx.HasReadPerm(projectName) {
+	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepository)
+	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
 			return
@@ -949,7 +959,9 @@ func (ra *RepositoryAPI) ScanImage() {
 		ra.HandleUnauthorized()
 		return
 	}
-	if !ra.SecurityCtx.HasAllPerm(projectName) {
+
+	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTagScanJob)
+	if !ra.SecurityCtx.Can(rbac.ActionCreate, resource) {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
@@ -980,7 +992,9 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 		return
 	}
 	project, _ := utils.ParseRepository(repository)
-	if !ra.SecurityCtx.HasReadPerm(project) {
+
+	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepositoryTagVulnerability)
+	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
 			ra.HandleUnauthorized()
 			return
