@@ -15,8 +15,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from "rxjs";
 import {
     Configuration, StringValueItem, SystemSettingsComponent, VulnerabilityConfigComponent,
-    isEmpty, clone, getChanges
-} from '@harbor/ui';
+    isEmpty, clone, getChanges, GcComponent, GcRepoService } from '@harbor/ui';
 
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
@@ -26,7 +25,6 @@ import { MessageHandlerService } from '../shared/message-handler/message-handler
 import { AppConfigService } from '../app-config.service';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
-import { GcComponent } from './gc/gc.component';
 import { ConfigurationService } from './config.service';
 
 

@@ -8,6 +8,7 @@ import { SystemSettingsComponent } from './system/system-settings.component';
 import { VulnerabilityConfigComponent } from './vulnerability/vulnerability-config.component';
 import { RegistryConfigComponent } from './registry-config.component';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
+import { GcComponent } from './gc/gc.component';
 
 import {
   ConfigurationService,
@@ -62,7 +63,8 @@ describe('RegistryConfigComponent (inline template)', () => {
         SystemSettingsComponent,
         VulnerabilityConfigComponent,
         RegistryConfigComponent,
-        ConfirmationDialogComponent
+        ConfirmationDialogComponent,
+        GcComponent
       ],
       providers: [
         ErrorHandler,

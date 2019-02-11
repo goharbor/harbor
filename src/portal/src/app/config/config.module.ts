@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 import { NgModule } from "@angular/core";
 import { CoreModule } from "../core/core.module";
 import { SharedModule } from "../shared/shared.module";
@@ -20,28 +21,19 @@ import { ConfigurationService } from "./config.service";
 import { ConfirmMessageHandler } from "./config.msg.utils";
 import { ConfigurationAuthComponent } from "./auth/config-auth.component";
 import { ConfigurationEmailComponent } from "./email/config-email.component";
-import { GcComponent } from "./gc/gc.component";
-import { GcRepoService } from "./gc/gc.service";
-import { GcApiRepository } from "./gc/gc.api.repository";
 import { RobotApiRepository } from "../project/robot-account/robot.api.repository";
-import { GcViewModelFactory } from "./gc/gc.viewmodel.factory";
-import { GcUtility } from "./gc/gc.utility";
+
 
 @NgModule({
   imports: [CoreModule, SharedModule],
   declarations: [
     ConfigurationComponent,
     ConfigurationAuthComponent,
-    ConfigurationEmailComponent,
-    GcComponent
+    ConfigurationEmailComponent
   ],
   exports: [ConfigurationComponent],
   providers: [
     ConfigurationService,
-    GcRepoService,
-    GcApiRepository,
-    GcViewModelFactory,
-    GcUtility,
     ConfirmMessageHandler,
     RobotApiRepository
   ]
