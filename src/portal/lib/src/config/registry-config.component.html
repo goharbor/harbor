@@ -13,5 +13,11 @@
             <vulnerability-config *ngIf="withClair" #vulnerabilityConfig [(vulnerabilityConfig)]="config" [showSubTitle]="true"></vulnerability-config>
         </clr-tab-content>
     </clr-tab>
+    <clr-tab>
+        <button id="config-gc" clrTabLink>{{'CONFIG.GC' | translate}}</button>
+        <clr-tab-content id="gc" *clrIfActive>
+            <gc-config #gcConfig></gc-config>
+        </clr-tab-content>
+    </clr-tab>
 </clr-tabs>
 <confirmation-dialog #cfgConfirmationDialog (confirmAction)="confirmCancel($event)"></confirmation-dialog>

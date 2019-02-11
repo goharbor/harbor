@@ -59,6 +59,10 @@ import {
   UserPermissionService,
   UserPermissionDefaultService
 } from './service/index';
+import { GcRepoService } from './config/gc/gc.service';
+import { GcUtility } from './config/gc/gc.utility';
+import {GcViewModelFactory} from './config/gc/gc.viewmodel.factory';
+import {GcApiRepository, GcApiDefaultRepository} from './config/gc/gc.api.repository';
 import {
   ErrorHandler,
   DefaultErrorHandler
@@ -98,7 +102,8 @@ export const DefaultServiceConfig: IServiceConfig = {
   scanJobEndpoint: "/api/jobs/scan",
   labelEndpoint: "/api/labels",
   helmChartEndpoint: "/api/chartrepo",
-  downloadChartEndpoint: "/chartrepo"
+  downloadChartEndpoint: "/chartrepo",
+  gcEndpoint: "/api/system/gc"
 };
 
 /**
@@ -154,6 +159,10 @@ export interface HarborModuleConfig {
   helmChartService?: Provider;
   // Service implementation for userPermission
   userPermissionService?: Provider;
+
+  // Service implementation for gc
+  gcApiRepository?: Provider;
+
 }
 
 /**
@@ -254,6 +263,7 @@ export class HarborLibraryModule {
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
         config.helmChartService || { provide: HelmChartService, useClass: HelmChartDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
+        config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
         // Do initializing
         TranslateServiceInitializer,
         {
@@ -263,7 +273,10 @@ export class HarborLibraryModule {
           multi: true
         },
         ChannelService,
-        OperationService
+        OperationService,
+        GcRepoService,
+        GcViewModelFactory,
+        GcUtility
       ]
     };
   }
@@ -288,8 +301,12 @@ export class HarborLibraryModule {
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
         config.helmChartService || { provide: HelmChartService, useClass: HelmChartDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
+        config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
         ChannelService,
-        OperationService
+        OperationService,
+        GcRepoService,
+        GcViewModelFactory,
+        GcUtility
       ]
     };
   }
