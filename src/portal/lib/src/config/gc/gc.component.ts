@@ -5,7 +5,7 @@ import { GcViewModelFactory } from "./gc.viewmodel.factory";
 import { GcRepoService } from "./gc.service";
 import { WEEKDAYS, SCHEDULE_TYPE, ONE_MINITUE, THREE_SECONDS} from './gc.const';
 import { GcUtility } from './gc.utility';
-import { ErrorHandler } from '@harbor/ui';
+import { ErrorHandler } from '../../error-handler/index';
 
 @Component({
   selector: 'gc-config',
