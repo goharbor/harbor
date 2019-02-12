@@ -3266,7 +3266,9 @@ paths:
         description: The ID of robot account.
       responses:
         '200':
-          description: '#/definitions/RobotAccount'
+          description: Robot account information.
+          schema:
+            $ref: '#/definitions/RobotAccount'
         '401':
           description: User need to log in first.
         '403':
