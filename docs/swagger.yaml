@@ -3232,6 +3232,8 @@ paths:
       responses:
         '201':
           description: Project member created successfully.
+          schema:
+            $ref: '#/definitions/RobotAccountPostRep'
         '400':
           description: Project id is not valid.
         '401':
@@ -4774,6 +4776,15 @@ definitions:
         description: The permission of robot account
         items:
           $ref: '#/definitions/RobotAccountAccess'
+  RobotAccountPostRep:
+    type: object
+    properties:
+      name:
+        type: string
+        description: the name of robot account
+      token:
+        type: string
+        description: the token of robot account
   RobotAccountAccess:
     type: object
     properties:

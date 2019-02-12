@@ -59,8 +59,8 @@ func (rq *RobotReq) Valid(v *validation.Validation) {
 
 // RobotRep ...
 type RobotRep struct {
-	Name  string
-	Token string
+	Name  string `json:"name"`
+	Token string `json:"token"`
 }
 
 // TableName ...
