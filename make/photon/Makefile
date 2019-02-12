@@ -204,9 +204,11 @@ _build_redis:
 	@echo "Done."
 
 _build_migrator:
-	@echo "building db migrator container for photon..."
-	@cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(MIGRATORVERSION) .
-	@echo "Done."
+    @if [ "$(MIGRATORFLAG)" = "true" ] ; then \
+        echo "building db migrator container for photon..."; \
+        cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(MIGRATORVERSION) . ; \
+        echo "Done."; \
+    fi
 
 define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
