@@ -1098,12 +1098,8 @@ func TestDeleteRepPolicy(t *testing.T) {
 	}
 	t.Logf("delete rep policy, id: %d", policyID)
 	p, err := GetRepPolicy(policyID)
-	if err != nil && err != orm.ErrNoRows {
-		t.Errorf("Error occurred in GetRepPolicy:%v", err)
-	}
-	if p != nil && !p.Deleted {
-		t.Errorf("Able to find rep policy after deletion, id: %d", policyID)
-	}
+	require.Nil(t, err)
+	assert.Nil(t, p)
 }
 
 func TestGetOrmer(t *testing.T) {
