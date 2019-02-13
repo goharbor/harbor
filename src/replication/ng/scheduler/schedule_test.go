@@ -27,7 +27,42 @@ func (client TestClient) PostAction(uuid, action string) error {
 }
 
 func TestDefaultReplicator_Schedule(t *testing.T) {
+	tasks, err := generateData()
+	if err != nil {
+		t.Error(err)
+	}
+	for _, task := range tasks {
+		t.Log(*task)
+	}
 
+}
+
+//func TestDefaultReplicator_SubmitJobs(t *testing.T) {
+//	config.Init()
+//	tasks, err := generateData()
+//	if err != nil {
+//		t.Error(err)
+//	}
+//	for _, task := range tasks {
+//		task.ID = 22
+//	}
+//	newTasks, newErr := replicator.SubmitTasks(tasks)
+//	if newErr != nil {
+//		t.Error(newErr)
+//	}
+//	for _, task := range newTasks {
+//		t.Log(*task)
+//	}
+//}
+
+func TestDefaultReplicator_StopExecution(t *testing.T) {
+	err := replicator.StopExecution("id")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func generateData() ([]*model.Task, error) {
 	srcResource := &model.Resource{
 		Metadata: &model.ResourceMetadata{
 			Namespace: &model.Namespace{
@@ -48,9 +83,9 @@ func TestDefaultReplicator_Schedule(t *testing.T) {
 		Metadata: &model.ResourceMetadata{
 			Namespace: &model.Namespace{
 				Metadata: map[string]interface{}{
-					"resource":     "1",
-					"dst_registry": "1",
-					"namespace":    "1",
+					"resource":     "2",
+					"dst_registry": "2",
+					"namespace":    "2",
 				},
 			},
 			Vtags:  []string{"latest"},
@@ -61,18 +96,5 @@ func TestDefaultReplicator_Schedule(t *testing.T) {
 		},
 	}
 	tasks, err := replicator.Schedule([]*model.Resource{srcResource}, []*model.Resource{destResource})
-	if err != nil {
-		t.Error(err)
-	}
-	for _, task := range tasks {
-		t.Log(*task)
-	}
-
-}
-
-func TestDefaultReplicator_StopTransfer(t *testing.T) {
-	err := replicator.StopTransfer("job_id")
-	if err != nil {
-		t.Error(err)
-	}
+	return tasks, err
 }
