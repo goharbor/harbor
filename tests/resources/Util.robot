@@ -125,10 +125,11 @@ Wait Unitl Command Success
 Retry Keyword When Error
     [Arguments]  ${keyword}  ${element}=${None}  ${times}=6
     :For  ${n}  IN RANGE  1  ${times}
-    \    Log To Console  Attampt to ${keyword} ${n} times ...
+    \    Log To Console  Trying ${keyword} ${n} times ...
     \    ${out}  Run Keyword If  "${element}"=="${None}"  Run Keyword And Ignore Error  ${keyword}
     \    ...  ELSE  Run Keyword And Ignore Error  ${keyword}  ${element}
     \    Log To Console  Return value is ${out[0]}
     \    Exit For Loop If  '${out[0]}'=='PASS'
-    \    Sleep  1
+    \    Sleep  2
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
