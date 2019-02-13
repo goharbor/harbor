@@ -130,8 +130,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
       .subscribe(
         response => {
           this.isSubmitOnGoing = false;
-          this.robotToken = response.Token;
-          this.robotAccount = response.Name;
+          this.robotToken = response.token;
+          this.robotAccount = response.name;
           this.copyToken = true;
           this.create.emit(true);
           this.translate
