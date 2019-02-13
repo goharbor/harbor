@@ -27,7 +27,6 @@ const RobotTable = "robot"
 type Robot struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	Name         string    `orm:"column(name)" json:"name"`
-	Token        string    `orm:"column(token)" json:"token"`
 	Description  string    `orm:"column(description)" json:"description"`
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	Disabled     bool      `orm:"column(disabled)" json:"disabled"`
