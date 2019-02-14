@@ -17,6 +17,7 @@ package api
 import (
 	"fmt"
 
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -40,33 +41,39 @@ type RepPolicyAPI struct {
 func (pa *RepPolicyAPI) Prepare() {
 	pa.BaseController.Prepare()
 	if !pa.SecurityCtx.IsAuthenticated() {
-		pa.HandleUnauthorized()
+		pa.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 
 	if !(pa.Ctx.Request.Method == http.MethodGet || pa.SecurityCtx.IsSysAdmin()) {
-		pa.HandleForbidden(pa.SecurityCtx.GetUsername())
+		pa.SendForbiddenError(errors.New(pa.SecurityCtx.GetUsername()))
 		return
 	}
 }
 
 // Get ...
 func (pa *RepPolicyAPI) Get() {
-	id := pa.GetIDFromURL()
+	id, err := pa.GetIDFromURL()
+	if err != nil {
+		pa.SendBadRequestError(err)
+		return
+	}
 	policy, err := core.GlobalController.GetPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", id, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		pa.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", id, err))
+		return
+
 	}
 
 	if policy.ID == 0 {
-		pa.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		pa.SendNotFoundError(fmt.Errorf("policy %d not found", id))
 		return
 	}
 
 	resource := rbac.NewProjectNamespace(policy.ProjectIDs[0]).Resource(rbac.ResourceReplication)
 	if !pa.SecurityCtx.Can(rbac.ActionRead, resource) {
-		pa.HandleForbidden(pa.SecurityCtx.GetUsername())
+		pa.SendForbiddenError(errors.New(pa.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -89,17 +96,23 @@ func (pa *RepPolicyAPI) List() {
 	if len(projectIDStr) > 0 {
 		projectID, err := strconv.ParseInt(projectIDStr, 10, 64)
 		if err != nil || projectID <= 0 {
-			pa.HandleBadRequest(fmt.Sprintf("invalid project ID: %s", projectIDStr))
+			pa.SendBadRequestError(fmt.Errorf("invalid project ID: %s", projectIDStr))
 			return
 		}
 		queryParam.ProjectID = projectID
 	}
-	queryParam.Page, queryParam.PageSize = pa.GetPaginationParams()
+	var err error
+	queryParam.Page, queryParam.PageSize, err = pa.GetPaginationParams()
+	if err != nil {
+		pa.SendBadRequestError(err)
+		return
+	}
 
 	result, err := core.GlobalController.GetPolicies(queryParam)
 	if err != nil {
 		log.Errorf("failed to get policies: %v, query parameters: %v", err, queryParam)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		pa.SendInternalServerError(fmt.Errorf("failed to get policies: %v, query parameters: %v", err, queryParam))
+		return
 	}
 
 	var total int64
@@ -129,17 +142,21 @@ func (pa *RepPolicyAPI) List() {
 // Post creates a replicartion policy
 func (pa *RepPolicyAPI) Post() {
 	policy := &api_models.ReplicationPolicy{}
-	pa.DecodeJSONReqAndValidate(policy)
+	isValid, err := pa.DecodeJSONReqAndValidate(policy)
+	if !isValid {
+		pa.SendBadRequestError(err)
+		return
+	}
 
 	// check the name
 	exist, err := exist(policy.Name)
 	if err != nil {
-		pa.HandleInternalServerError(fmt.Sprintf("failed to check the existence of policy %s: %v", policy.Name, err))
+		pa.SendInternalServerError(fmt.Errorf("failed to check the existence of policy %s: %v", policy.Name, err))
 		return
 	}
 
 	if exist {
-		pa.HandleConflict(fmt.Sprintf("name %s is already used", policy.Name))
+		pa.SendConflictError(fmt.Errorf("name %s is already used", policy.Name))
 		return
 	}
 
@@ -151,7 +168,7 @@ func (pa *RepPolicyAPI) Post() {
 			return
 		}
 		if pro == nil {
-			pa.HandleNotFound(fmt.Sprintf("project %d not found", project.ProjectID))
+			pa.SendNotFoundError(fmt.Errorf("project %d not found", project.ProjectID))
 			return
 		}
 		project.Name = pro.Name
@@ -161,12 +178,12 @@ func (pa *RepPolicyAPI) Post() {
 	for _, target := range policy.Targets {
 		t, err := dao.GetRepTarget(target.ID)
 		if err != nil {
-			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", target.ID, err))
+			pa.SendInternalServerError(fmt.Errorf("failed to get target %d: %v", target.ID, err))
 			return
 		}
 
 		if t == nil {
-			pa.HandleNotFound(fmt.Sprintf("target %d not found", target.ID))
+			pa.SendNotFoundError(fmt.Errorf("target %d not found", target.ID))
 			return
 		}
 	}
@@ -177,11 +194,11 @@ func (pa *RepPolicyAPI) Post() {
 			labelID := filter.Value.(int64)
 			label, err := dao.GetLabel(labelID)
 			if err != nil {
-				pa.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", labelID, err))
+				pa.SendInternalServerError(fmt.Errorf("failed to get label %d: %v", labelID, err))
 				return
 			}
 			if label == nil || label.Deleted {
-				pa.HandleNotFound(fmt.Sprintf("label %d not found", labelID))
+				pa.SendNotFoundError(fmt.Errorf("label %d not found", labelID))
 				return
 			}
 		}
@@ -189,7 +206,7 @@ func (pa *RepPolicyAPI) Post() {
 
 	id, err := core.GlobalController.CreatePolicy(convertToRepPolicy(policy))
 	if err != nil {
-		pa.HandleInternalServerError(fmt.Sprintf("failed to create policy: %v", err))
+		pa.SendInternalServerError(fmt.Errorf("failed to create policy: %v", err))
 		return
 	}
 
@@ -224,21 +241,30 @@ func exist(name string) (bool, error) {
 
 // Put updates the replication policy
 func (pa *RepPolicyAPI) Put() {
-	id := pa.GetIDFromURL()
+	id, err := pa.GetIDFromURL()
+	if err != nil {
+		pa.SendBadRequestError(err)
+		return
+	}
 
 	originalPolicy, err := core.GlobalController.GetPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", id, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		pa.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", id, err))
+		return
 	}
 
 	if originalPolicy.ID == 0 {
-		pa.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		pa.SendNotFoundError(fmt.Errorf("policy %d not found", id))
 		return
 	}
 
 	policy := &api_models.ReplicationPolicy{}
-	pa.DecodeJSONReqAndValidate(policy)
+	isValid, err := pa.DecodeJSONReqAndValidate(policy)
+	if !isValid {
+		pa.SendBadRequestError(err)
+		return
+	}
 
 	policy.ID = id
 
@@ -246,12 +272,12 @@ func (pa *RepPolicyAPI) Put() {
 	if policy.Name != originalPolicy.Name {
 		exist, err := exist(policy.Name)
 		if err != nil {
-			pa.HandleInternalServerError(fmt.Sprintf("failed to check the existence of policy %s: %v", policy.Name, err))
+			pa.SendInternalServerError(fmt.Errorf("failed to check the existence of policy %s: %v", policy.Name, err))
 			return
 		}
 
 		if exist {
-			pa.HandleConflict(fmt.Sprintf("name %s is already used", policy.Name))
+			pa.SendConflictError(fmt.Errorf("name %s is already used", policy.Name))
 			return
 		}
 	}
@@ -264,7 +290,7 @@ func (pa *RepPolicyAPI) Put() {
 			return
 		}
 		if pro == nil {
-			pa.HandleNotFound(fmt.Sprintf("project %d not found", project.ProjectID))
+			pa.SendNotFoundError(fmt.Errorf("project %d not found", project.ProjectID))
 			return
 		}
 		project.Name = pro.Name
@@ -274,12 +300,12 @@ func (pa *RepPolicyAPI) Put() {
 	for _, target := range policy.Targets {
 		t, err := dao.GetRepTarget(target.ID)
 		if err != nil {
-			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", target.ID, err))
+			pa.SendInternalServerError(fmt.Errorf("failed to get target %d: %v", target.ID, err))
 			return
 		}
 
 		if t == nil {
-			pa.HandleNotFound(fmt.Sprintf("target %d not found", target.ID))
+			pa.SendNotFoundError(fmt.Errorf("target %d not found", target.ID))
 			return
 		}
 	}
@@ -290,18 +316,18 @@ func (pa *RepPolicyAPI) Put() {
 			labelID := filter.Value.(int64)
 			label, err := dao.GetLabel(labelID)
 			if err != nil {
-				pa.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", labelID, err))
+				pa.SendInternalServerError(fmt.Errorf("failed to get label %d: %v", labelID, err))
 				return
 			}
 			if label == nil || label.Deleted {
-				pa.HandleNotFound(fmt.Sprintf("label %d not found", labelID))
+				pa.SendNotFoundError(fmt.Errorf("label %d not found", labelID))
 				return
 			}
 		}
 	}
 
 	if err = core.GlobalController.UpdatePolicy(convertToRepPolicy(policy)); err != nil {
-		pa.HandleInternalServerError(fmt.Sprintf("failed to update policy %d: %v", id, err))
+		pa.SendInternalServerError(fmt.Errorf("failed to update policy %d: %v", id, err))
 		return
 	}
 
@@ -318,16 +344,21 @@ func (pa *RepPolicyAPI) Put() {
 
 // Delete the replication policy
 func (pa *RepPolicyAPI) Delete() {
-	id := pa.GetIDFromURL()
+	id, err := pa.GetIDFromURL()
+	if err != nil {
+		pa.SendBadRequestError(err)
+		return
+	}
 
 	policy, err := core.GlobalController.GetPolicy(id)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", id, err)
-		pa.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		pa.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", id, err))
+		return
 	}
 
 	if policy.ID == 0 {
-		pa.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		pa.SendNotFoundError(fmt.Errorf("policy %d not found", id))
 		return
 	}
 
@@ -339,15 +370,19 @@ func (pa *RepPolicyAPI) Delete() {
 	})
 	if err != nil {
 		log.Errorf("failed to filter jobs of policy %d: %v", id, err)
-		pa.CustomAbort(http.StatusInternalServerError, "")
+		pa.SendInternalServerError(fmt.Errorf("failed to filter jobs of policy %d: %v", id, err))
+		return
+
 	}
 	if count > 0 {
-		pa.CustomAbort(http.StatusPreconditionFailed, "policy has running/retrying/pending jobs, can not be deleted")
+		pa.SendPreconditionFailedError(errors.New("policy has running/retrying/pending jobs, can not be deleted"))
+		return
 	}
 
 	if err = core.GlobalController.RemovePolicy(id); err != nil {
 		log.Errorf("failed to delete policy %d: %v", id, err)
-		pa.CustomAbort(http.StatusInternalServerError, "")
+		pa.SendInternalServerError(fmt.Errorf("failed to delete policy %d: %v", id, err))
+		return
 	}
 }
 

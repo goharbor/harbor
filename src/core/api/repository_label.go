@@ -114,7 +114,10 @@ func (r *RepositoryLabelAPI) isValidLabelReq() bool {
 	}
 
 	l := &models.Label{}
-	r.DecodeJSONReq(l)
+	if err := r.DecodeJSONReq(l); err != nil {
+		r.SendBadRequestError(err)
+		return false
+	}
 
 	label, ok := r.validate(l.ID, p.ProjectID)
 	if !ok {

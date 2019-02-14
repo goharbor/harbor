@@ -59,7 +59,7 @@ class TestProjects(unittest.TestCase):
 
         #3. Create a new project(PA) by user(UA), and fail to create a new project;
         self.project.create_project(metadata = {"public": "false"}, expect_status_code = 403,
-            expect_response_body = "Only system admin can create project", **TestProjects.USER_edit_project_creation_CLIENT)
+            expect_response_body = "{\"code\":403,\"message\":\"Only system admin can create project\"}", **TestProjects.USER_edit_project_creation_CLIENT)
 
         #4. Set project creation to "everyone";
         self.conf.set_configurations_of_project_creation_restriction("everyone", **ADMIN_CLIENT)

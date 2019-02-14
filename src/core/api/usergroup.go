@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 
+	"errors"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
@@ -42,7 +43,7 @@ const (
 func (uga *UserGroupAPI) Prepare() {
 	uga.BaseController.Prepare()
 	if !uga.SecurityCtx.IsAuthenticated() {
-		uga.HandleUnauthorized()
+		uga.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 
@@ -51,13 +52,13 @@ func (uga *UserGroupAPI) Prepare() {
 		log.Warningf("failed to parse user group id, error: %v", err)
 	}
 	if ugid <= 0 && (uga.Ctx.Input.IsPut() || uga.Ctx.Input.IsDelete()) {
-		uga.HandleBadRequest(fmt.Sprintf("invalid user group ID: %s", uga.GetStringFromPath(":ugid")))
+		uga.SendBadRequestError(fmt.Errorf("invalid user group ID: %s", uga.GetStringFromPath(":ugid")))
 		return
 	}
 	uga.id = int(ugid)
 	// Common user can create/update, only harbor admin can delete user group.
 	if uga.Ctx.Input.IsDelete() && !uga.SecurityCtx.IsSysAdmin() {
-		uga.HandleForbidden(uga.SecurityCtx.GetUsername())
+		uga.SendForbiddenError(errors.New(uga.SecurityCtx.GetUsername()))
 		return
 	}
 }
@@ -71,7 +72,7 @@ func (uga *UserGroupAPI) Get() {
 		query := models.UserGroup{GroupType: common.LdapGroupType} // Current query LDAP group only
 		userGroupList, err := group.QueryUserGroup(query)
 		if err != nil {
-			uga.HandleInternalServerError(fmt.Sprintf("Failed to query database for user group list, error: %v", err))
+			uga.SendInternalServerError(fmt.Errorf("failed to query database for user group list, error: %v", err))
 			return
 		}
 		if len(userGroupList) > 0 {
@@ -81,11 +82,11 @@ func (uga *UserGroupAPI) Get() {
 		// return a specific user group
 		userGroup, err := group.GetUserGroup(ID)
 		if userGroup == nil {
-			uga.HandleNotFound("The user group does not exist.")
+			uga.SendNotFoundError(errors.New("the user group does not exist"))
 			return
 		}
 		if err != nil {
-			uga.HandleInternalServerError(fmt.Sprintf("Failed to query database for user group list, error: %v", err))
+			uga.SendInternalServerError(fmt.Errorf("failed to query database for user group list, error: %v", err))
 			return
 		}
 		uga.Data["json"] = userGroup
@@ -96,43 +97,47 @@ func (uga *UserGroupAPI) Get() {
 // Post ... Create User Group
 func (uga *UserGroupAPI) Post() {
 	userGroup := models.UserGroup{}
-	uga.DecodeJSONReq(&userGroup)
+	if err := uga.DecodeJSONReq(&userGroup); err != nil {
+		uga.SendBadRequestError(err)
+		return
+	}
+
 	userGroup.ID = 0
 	userGroup.GroupType = common.LdapGroupType
 	userGroup.LdapGroupDN = strings.TrimSpace(userGroup.LdapGroupDN)
 	userGroup.GroupName = strings.TrimSpace(userGroup.GroupName)
 	if len(userGroup.GroupName) == 0 {
-		uga.HandleBadRequest(userNameEmptyMsg)
+		uga.SendBadRequestError(errors.New(userNameEmptyMsg))
 		return
 	}
 	query := models.UserGroup{GroupType: userGroup.GroupType, LdapGroupDN: userGroup.LdapGroupDN}
 	result, err := group.QueryUserGroup(query)
 	if err != nil {
-		uga.HandleInternalServerError(fmt.Sprintf("Error occurred in add user group, error: %v", err))
+		uga.SendInternalServerError(fmt.Errorf("error occurred in add user group, error: %v", err))
 		return
 	}
 	if len(result) > 0 {
-		uga.HandleConflict("Error occurred in add user group, duplicate user group exist.")
+		uga.SendConflictError(errors.New("error occurred in add user group, duplicate user group exist"))
 		return
 	}
 	// User can not add ldap group when the ldap server is offline
 	ldapGroup, err := auth.SearchGroup(userGroup.LdapGroupDN)
 	if err == ldap.ErrNotFound || ldapGroup == nil {
-		uga.HandleNotFound(fmt.Sprintf("LDAP Group DN is not found: DN:%v", userGroup.LdapGroupDN))
+		uga.SendNotFoundError(fmt.Errorf("LDAP Group DN is not found: DN:%v", userGroup.LdapGroupDN))
 		return
 	}
 	if err == ldap.ErrDNSyntax {
-		uga.HandleBadRequest(fmt.Sprintf("Invalid DN syntax. DN: %v", userGroup.LdapGroupDN))
+		uga.SendBadRequestError(fmt.Errorf("invalid DN syntax. DN: %v", userGroup.LdapGroupDN))
 		return
 	}
 	if err != nil {
-		uga.HandleInternalServerError(fmt.Sprintf("Error occurred in search user group. error: %v", err))
+		uga.SendInternalServerError(fmt.Errorf("Error occurred in search user group. error: %v", err))
 		return
 	}
 
 	groupID, err := group.AddUserGroup(userGroup)
 	if err != nil {
-		uga.HandleInternalServerError(fmt.Sprintf("Error occurred in add user group, error: %v", err))
+		uga.SendInternalServerError(fmt.Errorf("Error occurred in add user group, error: %v", err))
 		return
 	}
 	uga.Redirect(http.StatusCreated, strconv.FormatInt(int64(groupID), 10))
@@ -141,18 +146,21 @@ func (uga *UserGroupAPI) Post() {
 // Put ... Only support update name
 func (uga *UserGroupAPI) Put() {
 	userGroup := models.UserGroup{}
-	uga.DecodeJSONReq(&userGroup)
+	if err := uga.DecodeJSONReq(&userGroup); err != nil {
+		uga.SendBadRequestError(err)
+		return
+	}
 	ID := uga.id
 	userGroup.GroupName = strings.TrimSpace(userGroup.GroupName)
 	if len(userGroup.GroupName) == 0 {
-		uga.HandleBadRequest(userNameEmptyMsg)
+		uga.SendBadRequestError(errors.New(userNameEmptyMsg))
 		return
 	}
 	userGroup.GroupType = common.LdapGroupType
 	log.Debugf("Updated user group %v", userGroup)
 	err := group.UpdateUserGroupName(ID, userGroup.GroupName)
 	if err != nil {
-		uga.HandleInternalServerError(fmt.Sprintf("Error occurred in update user group, error: %v", err))
+		uga.SendInternalServerError(fmt.Errorf("Error occurred in update user group, error: %v", err))
 		return
 	}
 	return
@@ -162,7 +170,7 @@ func (uga *UserGroupAPI) Put() {
 func (uga *UserGroupAPI) Delete() {
 	err := group.DeleteUserGroup(uga.id)
 	if err != nil {
-		uga.HandleInternalServerError(fmt.Sprintf("Error occurred in update user group, error: %v", err))
+		uga.SendInternalServerError(fmt.Errorf("Error occurred in update user group, error: %v", err))
 		return
 	}
 	return

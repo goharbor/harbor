@@ -15,7 +15,7 @@
 package api
 
 import (
-	"net/http"
+	"errors"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -32,11 +32,11 @@ type InternalAPI struct {
 func (ia *InternalAPI) Prepare() {
 	ia.BaseController.Prepare()
 	if !ia.SecurityCtx.IsAuthenticated() {
-		ia.HandleUnauthorized()
+		ia.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 	if !ia.SecurityCtx.IsSysAdmin() {
-		ia.HandleForbidden(ia.SecurityCtx.GetUsername())
+		ia.SendForbiddenError(errors.New(ia.SecurityCtx.GetUsername()))
 		return
 	}
 }
@@ -45,7 +45,7 @@ func (ia *InternalAPI) Prepare() {
 func (ia *InternalAPI) SyncRegistry() {
 	err := SyncRegistry(ia.ProjectMgr)
 	if err != nil {
-		ia.HandleInternalServerError(err.Error())
+		ia.SendInternalServerError(err)
 		return
 	}
 }
@@ -54,7 +54,8 @@ func (ia *InternalAPI) SyncRegistry() {
 func (ia *InternalAPI) RenameAdmin() {
 	if !dao.IsSuperUser(ia.SecurityCtx.GetUsername()) {
 		log.Errorf("User %s is not super user, not allow to rename admin.", ia.SecurityCtx.GetUsername())
-		ia.CustomAbort(http.StatusForbidden, "")
+		ia.SendForbiddenError(errors.New(ia.SecurityCtx.GetUsername()))
+		return
 	}
 	newName := common.NewHarborAdminName
 	if err := dao.ChangeUserProfile(models.User{
@@ -62,7 +63,8 @@ func (ia *InternalAPI) RenameAdmin() {
 		Username: newName,
 	}, "username"); err != nil {
 		log.Errorf("Failed to change admin's username, error: %v", err)
-		ia.CustomAbort(http.StatusInternalServerError, "Failed to rename admin user.")
+		ia.SendInternalServerError(errors.New("failed to rename admin user"))
+		return
 	}
 	log.Debugf("The super user has been renamed to: %s", newName)
 	ia.DestroySession()

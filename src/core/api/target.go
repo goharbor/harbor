@@ -15,6 +15,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -38,12 +39,12 @@ type TargetAPI struct {
 func (t *TargetAPI) Prepare() {
 	t.BaseController.Prepare()
 	if !t.SecurityCtx.IsAuthenticated() {
-		t.HandleUnauthorized()
+		t.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 
 	if !t.SecurityCtx.IsSysAdmin() {
-		t.HandleForbidden(t.SecurityCtx.GetUsername())
+		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -51,7 +52,8 @@ func (t *TargetAPI) Prepare() {
 	t.secretKey, err = config.SecretKey()
 	if err != nil {
 		log.Errorf("failed to get secret key: %v", err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 }
 
@@ -64,7 +66,7 @@ func (t *TargetAPI) ping(endpoint, username, password string, insecure bool) {
 	if err != nil {
 		log.Errorf("failed to ping target: %v", err)
 		// do not return any detail information of the error, or may cause SSRF security issue #3755
-		t.RenderError(http.StatusBadRequest, "failed to ping target")
+		t.SendConflictError(errors.New("failed to ping target"))
 		return
 	}
 }
@@ -78,24 +80,27 @@ func (t *TargetAPI) Ping() {
 		Password *string `json:"password"`
 		Insecure *bool   `json:"insecure"`
 	}{}
-	t.DecodeJSONReq(&req)
+	if err := t.DecodeJSONReq(&req); err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	target := &models.RepTarget{}
 	if req.ID != nil {
 		var err error
 		target, err = dao.GetRepTarget(*req.ID)
 		if err != nil {
-			t.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", *req.ID, err))
+			t.SendInternalServerError(fmt.Errorf("failed to get target %d: %v", *req.ID, err))
 			return
 		}
 		if target == nil {
-			t.HandleNotFound(fmt.Sprintf("target %d not found", *req.ID))
+			t.SendNotFoundError(fmt.Errorf("target %d not found", *req.ID))
 			return
 		}
 		if len(target.Password) != 0 {
 			target.Password, err = utils.ReversibleDecrypt(target.Password, t.secretKey)
 			if err != nil {
-				t.HandleInternalServerError(fmt.Sprintf("failed to decrypt password: %v", err))
+				t.SendInternalServerError(fmt.Errorf("failed to decrypt password: %v", err))
 				return
 			}
 		}
@@ -104,7 +109,7 @@ func (t *TargetAPI) Ping() {
 	if req.Endpoint != nil {
 		url, err := utils.ParseEndpoint(*req.Endpoint)
 		if err != nil {
-			t.HandleBadRequest(err.Error())
+			t.SendBadRequestError(err)
 			return
 		}
 
@@ -126,16 +131,21 @@ func (t *TargetAPI) Ping() {
 
 // Get ...
 func (t *TargetAPI) Get() {
-	id := t.GetIDFromURL()
+	id, err := t.GetIDFromURL()
+	if err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
 		log.Errorf("failed to get target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	if target == nil {
-		t.HandleNotFound(fmt.Sprintf("target %d not found", id))
+		t.SendNotFoundError(fmt.Errorf("target %d not found", id))
 		return
 	}
 
@@ -151,7 +161,8 @@ func (t *TargetAPI) List() {
 	targets, err := dao.FilterRepTargets(name)
 	if err != nil {
 		log.Errorf("failed to filter targets %s: %v", name, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	for _, target := range targets {
@@ -166,27 +177,33 @@ func (t *TargetAPI) List() {
 // Post ...
 func (t *TargetAPI) Post() {
 	target := &models.RepTarget{}
-	t.DecodeJSONReqAndValidate(target)
+	isValid, err := t.DecodeJSONReqAndValidate(target)
+	if !isValid {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	ta, err := dao.GetRepTargetByName(target.Name)
 	if err != nil {
 		log.Errorf("failed to get target %s: %v", target.Name, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	if ta != nil {
-		t.HandleConflict("name is already used")
+		t.SendConflictError(errors.New("name is already used"))
 		return
 	}
 
 	ta, err = dao.GetRepTargetByEndpoint(target.URL)
 	if err != nil {
 		log.Errorf("failed to get target [ %s ]: %v", target.URL, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	if ta != nil {
-		t.HandleConflict(fmt.Sprintf("the target whose endpoint is %s already exists", target.URL))
+		t.SendConflictError(fmt.Errorf("the target whose endpoint is %s already exists", target.URL))
 		return
 	}
 
@@ -194,14 +211,16 @@ func (t *TargetAPI) Post() {
 		target.Password, err = utils.ReversibleEncrypt(target.Password, t.secretKey)
 		if err != nil {
 			log.Errorf("failed to encrypt password: %v", err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			t.SendInternalServerError(errors.New(""))
+			return
 		}
 	}
 
 	id, err := dao.AddRepTarget(*target)
 	if err != nil {
 		log.Errorf("failed to add target: %v", err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	t.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
@@ -209,16 +228,21 @@ func (t *TargetAPI) Post() {
 
 // Put ...
 func (t *TargetAPI) Put() {
-	id := t.GetIDFromURL()
+	id, err := t.GetIDFromURL()
+	if err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
 		log.Errorf("failed to get target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	if target == nil {
-		t.HandleNotFound(fmt.Sprintf("target %d not found", id))
+		t.SendNotFoundError(fmt.Errorf("target %d not found", id))
 		return
 	}
 
@@ -226,7 +250,8 @@ func (t *TargetAPI) Put() {
 		target.Password, err = utils.ReversibleDecrypt(target.Password, t.secretKey)
 		if err != nil {
 			log.Errorf("failed to decrypt password: %v", err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			t.SendInternalServerError(errors.New(""))
+			return
 		}
 	}
 
@@ -237,7 +262,10 @@ func (t *TargetAPI) Put() {
 		Password *string `json:"password"`
 		Insecure *bool   `json:"insecure"`
 	}{}
-	t.DecodeJSONReq(&req)
+	if err := t.DecodeJSONReq(&req); err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	originalName := target.Name
 	originalURL := target.URL
@@ -264,11 +292,12 @@ func (t *TargetAPI) Put() {
 		ta, err := dao.GetRepTargetByName(target.Name)
 		if err != nil {
 			log.Errorf("failed to get target %s: %v", target.Name, err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			t.SendInternalServerError(errors.New(""))
+			return
 		}
 
 		if ta != nil {
-			t.HandleConflict("name is already used")
+			t.SendConflictError(errors.New("name is already used"))
 			return
 		}
 	}
@@ -277,11 +306,12 @@ func (t *TargetAPI) Put() {
 		ta, err := dao.GetRepTargetByEndpoint(target.URL)
 		if err != nil {
 			log.Errorf("failed to get target [ %s ]: %v", target.URL, err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			t.SendInternalServerError(errors.New(""))
+			return
 		}
 
 		if ta != nil {
-			t.HandleConflict(fmt.Sprintf("the target whose endpoint is %s already exists", target.URL))
+			t.SendConflictError(fmt.Errorf("the target whose endpoint is %s already exists", target.URL))
 			return
 		}
 	}
@@ -290,45 +320,55 @@ func (t *TargetAPI) Put() {
 		target.Password, err = utils.ReversibleEncrypt(target.Password, t.secretKey)
 		if err != nil {
 			log.Errorf("failed to encrypt password: %v", err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			t.SendInternalServerError(errors.New(""))
+			return
 		}
 	}
 
 	if err := dao.UpdateRepTarget(*target); err != nil {
 		log.Errorf("failed to update target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 }
 
 // Delete ...
 func (t *TargetAPI) Delete() {
-	id := t.GetIDFromURL()
+	id, err := t.GetIDFromURL()
+	if err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
 		log.Errorf("failed to get target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	if target == nil {
-		t.HandleNotFound(fmt.Sprintf("target %d not found", id))
+		t.SendNotFoundError(fmt.Errorf("target %d not found", id))
 		return
 	}
 
 	policies, err := dao.GetRepPolicyByTarget(id)
 	if err != nil {
 		log.Errorf("failed to get policies according target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	if len(policies) > 0 {
 		log.Error("the target is used by policies, can not be deleted")
-		t.CustomAbort(http.StatusPreconditionFailed, "the target is used by policies, can not be deleted")
+		t.SendPreconditionFailedError(errors.New("the target is used by policies, can not be deleted"))
+		return
 	}
 
 	if err = dao.DeleteRepTarget(id); err != nil {
 		log.Errorf("failed to delete target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 }
 
@@ -345,23 +385,29 @@ func newRegistryClient(endpoint string, insecure bool, username, password string
 
 // ListPolicies ...
 func (t *TargetAPI) ListPolicies() {
-	id := t.GetIDFromURL()
+	id, err := t.GetIDFromURL()
+	if err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	target, err := dao.GetRepTarget(id)
 	if err != nil {
 		log.Errorf("failed to get target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	if target == nil {
-		t.HandleNotFound(fmt.Sprintf("target %d not found", id))
+		t.SendNotFoundError(fmt.Errorf("target %d not found", id))
 		return
 	}
 
 	policies, err := dao.GetRepPolicyByTarget(id)
 	if err != nil {
 		log.Errorf("failed to get policies according target %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	t.Data["json"] = policies

@@ -15,13 +15,13 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	common_http "github.com/goharbor/harbor/src/common/http"
 	common_job "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -41,19 +41,19 @@ type RepJobAPI struct {
 func (ra *RepJobAPI) Prepare() {
 	ra.BaseController.Prepare()
 	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.HandleUnauthorized()
+		ra.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 
 	if !(ra.Ctx.Request.Method == http.MethodGet || ra.SecurityCtx.IsSysAdmin()) {
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
 	if len(ra.GetStringFromPath(":id")) != 0 {
 		id, err := ra.GetInt64FromPath(":id")
 		if err != nil {
-			ra.HandleBadRequest(fmt.Sprintf("invalid ID: %s", ra.GetStringFromPath(":id")))
+			ra.SendBadRequestError(fmt.Errorf("invalid ID: %s", ra.GetStringFromPath(":id")))
 			return
 		}
 		ra.jobID = id
@@ -66,24 +66,25 @@ func (ra *RepJobAPI) List() {
 
 	policyID, err := ra.GetInt64("policy_id")
 	if err != nil || policyID <= 0 {
-		ra.HandleBadRequest(fmt.Sprintf("invalid policy_id: %s", ra.GetString("policy_id")))
+		ra.SendBadRequestError(fmt.Errorf("invalid policy_id: %s", ra.GetString("policy_id")))
 		return
 	}
 
 	policy, err := core.GlobalController.GetPolicy(policyID)
 	if err != nil {
 		log.Errorf("failed to get policy %d: %v", policyID, err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+		ra.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", policyID, err))
+		return
 	}
 
 	if policy.ID == 0 {
-		ra.HandleNotFound(fmt.Sprintf("policy %d not found", policyID))
+		ra.SendNotFoundError(fmt.Errorf("policy %d not found", policyID))
 		return
 	}
 
 	resource := rbac.NewProjectNamespace(policy.ProjectIDs[0]).Resource(rbac.ResourceReplicationJob)
 	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -102,7 +103,7 @@ func (ra *RepJobAPI) List() {
 	if len(startTimeStr) != 0 {
 		i, err := strconv.ParseInt(startTimeStr, 10, 64)
 		if err != nil {
-			ra.HandleBadRequest(fmt.Sprintf("invalid start_time: %s", startTimeStr))
+			ra.SendBadRequestError(fmt.Errorf("invalid start_time: %s", startTimeStr))
 			return
 		}
 		t := time.Unix(i, 0)
@@ -113,23 +114,27 @@ func (ra *RepJobAPI) List() {
 	if len(endTimeStr) != 0 {
 		i, err := strconv.ParseInt(endTimeStr, 10, 64)
 		if err != nil {
-			ra.HandleBadRequest(fmt.Sprintf("invalid end_time: %s", endTimeStr))
+			ra.SendBadRequestError(fmt.Errorf("invalid end_time: %s", endTimeStr))
 			return
 		}
 		t := time.Unix(i, 0)
 		query.EndTime = &t
 	}
 
-	query.Page, query.Size = ra.GetPaginationParams()
+	query.Page, query.Size, err = ra.GetPaginationParams()
+	if err != nil {
+		ra.SendBadRequestError(err)
+		return
+	}
 
 	total, err := dao.GetTotalCountOfRepJobs(query)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get total count of repository jobs of policy %d: %v", policyID, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to get total count of repository jobs of policy %d: %v", policyID, err))
 		return
 	}
 	jobs, err := dao.GetRepJobs(query)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get repository jobs, query: %v :%v", query, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to get repository jobs, query: %v :%v", query, err))
 		return
 	}
 
@@ -142,79 +147,75 @@ func (ra *RepJobAPI) List() {
 // Delete ...
 func (ra *RepJobAPI) Delete() {
 	if ra.jobID == 0 {
-		ra.HandleBadRequest("ID is nil")
+		ra.SendBadRequestError(errors.New("ID is nil"))
 		return
 	}
 
 	job, err := dao.GetRepJob(ra.jobID)
 	if err != nil {
 		log.Errorf("failed to get job %d: %v", ra.jobID, err)
-		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		ra.SendInternalServerError(fmt.Errorf("failed to get job %d: %v", ra.jobID, err))
+		return
 	}
 
 	if job == nil {
-		ra.HandleNotFound(fmt.Sprintf("job %d not found", ra.jobID))
+		ra.SendNotFoundError(fmt.Errorf("job %d not found", ra.jobID))
 		return
 	}
 
 	if job.Status == models.JobPending || job.Status == models.JobRunning {
-		ra.HandleBadRequest(fmt.Sprintf("job is %s, can not be deleted", job.Status))
+		ra.SendBadRequestError(fmt.Errorf("job is %s, can not be deleted", job.Status))
 		return
 	}
 
 	if err = dao.DeleteRepJob(ra.jobID); err != nil {
 		log.Errorf("failed to deleted job %d: %v", ra.jobID, err)
-		ra.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		ra.SendInternalServerError(fmt.Errorf("failed to deleted job %d: %v", ra.jobID, err))
+		return
 	}
 }
 
 // GetLog ...
 func (ra *RepJobAPI) GetLog() {
 	if ra.jobID == 0 {
-		ra.HandleBadRequest("ID is nil")
+		ra.SendBadRequestError(errors.New("ID is nil"))
 		return
 	}
 
 	job, err := dao.GetRepJob(ra.jobID)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get replication job %d: %v", ra.jobID, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to get replication job %d: %v", ra.jobID, err))
 		return
 	}
 
 	if job == nil {
-		ra.HandleNotFound(fmt.Sprintf("replication job %d not found", ra.jobID))
+		ra.SendNotFoundError(fmt.Errorf("replication job %d not found", ra.jobID))
 		return
 	}
 
 	policy, err := core.GlobalController.GetPolicy(job.PolicyID)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get policy %d: %v", job.PolicyID, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", job.PolicyID, err))
 		return
 	}
 
 	resource := rbac.NewProjectNamespace(policy.ProjectIDs[0]).Resource(rbac.ResourceReplicationJob)
 	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
 	logBytes, err := utils.GetJobServiceClient().GetJobLog(job.UUID)
 	if err != nil {
-		if httpErr, ok := err.(*common_http.Error); ok {
-			ra.RenderError(httpErr.Code, "")
-			log.Errorf(fmt.Sprintf("failed to get log of job %d: %d %s",
-				ra.jobID, httpErr.Code, httpErr.Message))
-			return
-		}
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get log of job %s: %v",
-			job.UUID, err))
+		ra.ParseAndHandleError(fmt.Sprintf("failed to get log of job %s",
+			job.UUID), err)
 		return
 	}
 	ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(logBytes)))
 	ra.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
 	_, err = ra.Ctx.ResponseWriter.Write(logBytes)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to write log of job %s: %v", job.UUID, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to write log of job %s: %v", job.UUID, err))
 		return
 	}
 }
@@ -222,16 +223,20 @@ func (ra *RepJobAPI) GetLog() {
 // StopJobs stop replication jobs for the policy
 func (ra *RepJobAPI) StopJobs() {
 	req := &api_models.StopJobsReq{}
-	ra.DecodeJSONReqAndValidate(req)
+	isValid, err := ra.DecodeJSONReqAndValidate(req)
+	if !isValid {
+		ra.SendBadRequestError(err)
+		return
+	}
 
 	policy, err := core.GlobalController.GetPolicy(req.PolicyID)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get policy %d: %v", req.PolicyID, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", req.PolicyID, err))
 		return
 	}
 
 	if policy.ID == 0 {
-		ra.HandleNotFound(fmt.Sprintf("policy %d not found", req.PolicyID))
+		ra.SendNotFoundError(fmt.Errorf("policy %d not found", req.PolicyID))
 		return
 	}
 
@@ -240,7 +245,7 @@ func (ra *RepJobAPI) StopJobs() {
 		Operations: []string{models.RepOpTransfer, models.RepOpDelete},
 	})
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to list jobs of policy %d: %v", policy.ID, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to list jobs of policy %d: %v", policy.ID, err))
 		return
 	}
 	for _, job := range jobs {
