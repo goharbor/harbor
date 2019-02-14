@@ -12,18 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package test
+package ng
 
-// FakeReplicatoinController ...
-type FakeReplicatoinController struct {
-	FakePolicyManager
-}
+import "github.com/goharbor/harbor/src/replication/ng/registry"
 
-// Init initialize replication controller
-func (f *FakeReplicatoinController) Init(closing chan struct{}) error {
+var (
+	// RegistryMgr is a global registry manager
+	RegistryMgr registry.Manager
+)
+
+// Init the global variables
+func Init() error {
+	// Init registry manager
+	RegistryMgr = registry.NewDefaultManager()
+
 	return nil
 }
-// Replicate ...
-func (f *FakeReplicatoinController) Replicate(policyID int64, metadata ...map[string]interface{}) error {
-	return nil
-}
+

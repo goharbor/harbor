@@ -49,6 +49,7 @@ func (c *HealthChecker) Run() {
 		interval = MinInterval
 	}
 	ticker := time.NewTicker(interval)
+	log.Infof("Start regular health check for registries with interval %v", interval)
 	for {
 		select {
 		case <-ticker.C:

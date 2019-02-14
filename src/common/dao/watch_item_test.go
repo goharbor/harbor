@@ -23,12 +23,12 @@ import (
 )
 
 func TestMethodsOfWatchItem(t *testing.T) {
-	targetID, err := AddRepTarget(models.RepTarget{
+	registryID, err := AddRegistry(&models.Registry{
 		Name: "test_target_for_watch_item",
 		URL:  "http://127.0.0.1",
 	})
 	require.Nil(t, err)
-	defer DeleteRepTarget(targetID)
+	defer DeleteRegistry(registryID)
 
 	policyID, err := AddRepPolicy(models.RepPolicy{
 		Name:      "test_policy_for_watch_item",

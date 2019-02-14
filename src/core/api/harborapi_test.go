@@ -34,9 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
 
-	//	"strconv"
-	//	"strings"
-
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
 
@@ -126,11 +123,8 @@ func init() {
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/repositories/top", &RepositoryAPI{}, "get:GetTopRepos")
-	beego.Router("/api/targets/", &TargetAPI{}, "get:List")
-	beego.Router("/api/targets/", &TargetAPI{}, "post:Post")
-	beego.Router("/api/targets/:id([0-9]+)", &TargetAPI{})
-	beego.Router("/api/targets/:id([0-9]+)/policies/", &TargetAPI{}, "get:ListPolicies")
-	beego.Router("/api/targets/ping", &TargetAPI{}, "post:Ping")
+	beego.Router("/api/registries", &RegistryAPI{}, "get:List;post:Post")
+	beego.Router("/api/registries/:id([0-9]+)", &RegistryAPI{}, "get:Get;put:Put;delete:Delete")
 	beego.Router("/api/policies/replication/:id([0-9]+)", &RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
 	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
@@ -177,7 +171,7 @@ func init() {
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 
-	if err := core.Init(); err != nil {
+	if err := core.Init(make(chan struct{})); err != nil {
 		log.Fatalf("failed to initialize GlobalController: %v", err)
 	}
 

@@ -18,7 +18,9 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
@@ -39,8 +41,6 @@ import (
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/replication/core"
 	_ "github.com/goharbor/harbor/src/replication/event"
-	"os/signal"
-	"syscall"
 )
 
 const (

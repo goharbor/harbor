@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 // Replication holds information for a replication
@@ -32,7 +33,7 @@ type Replication struct {
 	PolicyID   int64
 	OpUUID     string
 	Candidates []models.FilterItem
-	Targets    []*common_models.RepTarget
+	Registries []*model.Registry
 	Operation  string
 }
 
@@ -68,7 +69,7 @@ func (d *DefaultReplicator) Replicate(replication *Replication) error {
 		operation = candidate.Operation
 	}
 
-	for _, target := range replication.Targets {
+	for _, registry := range replication.Registries {
 		for repository, tags := range repositories {
 			// create job in database
 			id, err := dao.AddRepJob(common_models.RepJob{
@@ -84,7 +85,7 @@ func (d *DefaultReplicator) Replicate(replication *Replication) error {
 
 			// submit job to jobservice
 			log.Debugf("submiting replication job to jobservice, repository: %s, tags: %v, operation: %s, target: %s",
-				repository, tags, operation, target.URL)
+				repository, tags, operation, registry.URL)
 			job := &job_models.JobData{
 				Metadata: &job_models.JobMetadata{
 					JobKind: common_job.JobKindGeneric,
@@ -101,20 +102,20 @@ func (d *DefaultReplicator) Replicate(replication *Replication) error {
 					"src_registry_url":      config.InternalCoreURL(),
 					"src_registry_insecure": false,
 					"src_token_service_url": config.InternalTokenServiceEndpoint(),
-					"dst_registry_url":      target.URL,
-					"dst_registry_insecure": target.Insecure,
-					"dst_registry_username": target.Username,
-					"dst_registry_password": target.Password,
+					"dst_registry_url":      registry.URL,
+					"dst_registry_insecure": registry.Insecure,
+					"dst_registry_username": registry.Credential.AccessKey,
+					"dst_registry_password": registry.Credential.AccessSecret,
 				}
 			} else {
 				job.Name = common_job.ImageDelete
 				job.Parameters = map[string]interface{}{
 					"repository":            repository,
 					"tags":                  tags,
-					"dst_registry_url":      target.URL,
-					"dst_registry_insecure": target.Insecure,
-					"dst_registry_username": target.Username,
-					"dst_registry_password": target.Password,
+					"dst_registry_url":      registry.URL,
+					"dst_registry_insecure": registry.Insecure,
+					"dst_registry_username": registry.Credential.AccessKey,
+					"dst_registry_password": registry.Credential.AccessSecret,
 				}
 			}
 

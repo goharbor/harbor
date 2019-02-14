@@ -15,17 +15,18 @@
 package registry
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	utilerr "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 // HealthStatus describes whether a target is healthy or not
@@ -42,10 +43,22 @@ const (
 
 // Manager defines the methods that a target manager should implement
 type Manager interface {
-	GetRegistry(int64) (*models.RepTarget, error)
-	AddRegistry(*models.RepTarget) (int64, error)
-	UpdateRegistry(*models.RepTarget) error
-	DeleteRegistry(int64) error
+	// Add new registry
+	Add(*model.Registry) (int64, error)
+	// List registries, returns total count, registry list and error
+	List(...*model.RegistryQuery) (int64, []*model.Registry, error)
+	// Get the specified registry
+	Get(int64) (*model.Registry, error)
+	// GetByName gets registry by name
+	GetByName(name string) (*model.Registry, error)
+	// GetByURL gets registry by its URL
+	GetByURL(url string) (*model.Registry, error)
+	// Update the registry, the "props" are the properties of registry
+	// that need to be updated
+	Update(registry *model.Registry, props ...string) error
+	// Remove the registry with the specified ID
+	Remove(int64) error
+	// HealthCheck checks health status of all registries and update result in database
 	HealthCheck() error
 }
 
@@ -57,87 +70,120 @@ func NewDefaultManager() *DefaultManager {
 	return &DefaultManager{}
 }
 
-// GetRegistry gets a registry by id
-func (m *DefaultManager) GetRegistry(id int64) (*models.RepTarget, error) {
-	target, err := dao.GetRepTarget(id)
+// Ensure *DefaultManager has implemented Manager interface.
+var _ Manager = (*DefaultManager)(nil)
+
+// Get gets a registry by id
+func (m *DefaultManager) Get(id int64) (*model.Registry, error) {
+	registry, err := dao.GetRegistry(id)
 	if err != nil {
 		return nil, err
 	}
 
-	if target == nil {
-		return nil, fmt.Errorf("target '%d' does not exist", id)
+	if registry == nil {
+		return nil, utilerr.KnownError{
+			Reason:  utilerr.ReasonNotFound,
+			Message: fmt.Sprintf("registry '%d' does not exist", id),
+		}
 	}
 
-	// decrypt the password
-	if len(target.Password) > 0 {
-		key, err := config.SecretKey()
-		if err != nil {
-			return nil, err
-		}
-		pwd, err := utils.ReversibleDecrypt(target.Password, key)
-		if err != nil {
-			return nil, err
-		}
-		target.Password = pwd
-	}
-	return target, nil
+	return fromDaoModel(registry)
 }
 
-// AddRegistry adds a new registry
-func (m *DefaultManager) AddRegistry(registry *models.RepTarget) (int64, error) {
-	var err error
-	if len(registry.Password) != 0 {
-		key, err := config.SecretKey()
-		if err != nil {
-			return -1, err
-		}
-		registry.Password, err = utils.ReversibleEncrypt(registry.Password, key)
-		if err != nil {
-			log.Errorf("failed to encrypt password: %v", err)
-			return -1, err
-		}
+// GetByName gets a registry by its name
+func (m *DefaultManager) GetByName(name string) (*model.Registry, error) {
+	registry, err := dao.GetRegistryByName(name)
+	if err != nil {
+		return nil, err
 	}
 
-	id, err := dao.AddRepTarget(*registry)
-	if err != nil {
-		log.Errorf("failed to add registry: %v", err)
+	if registry == nil {
+		return nil, nil
 	}
+
+	return fromDaoModel(registry)
+}
+
+// GetByURL gets a registry by its URL
+func (m *DefaultManager) GetByURL(url string) (*model.Registry, error) {
+	registry, err := dao.GetRegistryByURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	if registry == nil {
+		return nil, nil
+	}
+
+	return fromDaoModel(registry)
+}
+
+// List lists registries according to query provided.
+func (m *DefaultManager) List(query ...*model.RegistryQuery) (int64, []*model.Registry, error) {
+	var registryQueries []*dao.ListRegistryQuery
+	for _, q := range query {
+		// limit being -1 indicates no pagination specified, result in all registries matching name returned.
+		listQuery := &dao.ListRegistryQuery{
+			Query: q.Name,
+			Limit: -1,
+		}
+		if q.Pagination != nil {
+			listQuery.Offset = q.Pagination.Page * q.Pagination.Size
+			listQuery.Limit = q.Pagination.Size
+		}
+
+		registryQueries = append(registryQueries, listQuery)
+	}
+	total, registries, err := dao.ListRegistries(registryQueries...)
+	if err != nil {
+		return -1, nil, err
+	}
+
+	var results []*model.Registry
+	for _, r := range registries {
+		registry, err := fromDaoModel(r)
+		if err != nil {
+			return -1, nil, err
+		}
+		results = append(results, registry)
+	}
+
+	return total, results, nil
+}
+
+// Add adds a new registry
+func (m *DefaultManager) Add(registry *model.Registry) (int64, error) {
+	r, err := toDaoModel(registry)
+	if err != nil {
+		log.Errorf("Convert registry model to dao layer model error: %v", err)
+		return -1, err
+	}
+
+	id, err := dao.AddRegistry(r)
+	if err != nil {
+		log.Errorf("Add registry error: %v", err)
+		return -1, err
+	}
+
 	return id, nil
 }
 
-// UpdateRegistry updates a registry
-func (m *DefaultManager) UpdateRegistry(registry *models.RepTarget) error {
-	// Encrypt the password if set
-	if len(registry.Password) > 0 {
-		key, err := config.SecretKey()
-		if err != nil {
-			return err
-		}
-		pwd, err := utils.ReversibleEncrypt(registry.Password, key)
-		if err != nil {
-			return err
-		}
-		registry.Password = pwd
-	}
+// Update updates a registry
+func (m *DefaultManager) Update(registry *model.Registry, props ...string) error {
+	// TODO(ChenDe): Only update the given props
 
-	return dao.UpdateRepTarget(*registry)
-}
-
-// DeleteRegistry deletes a registry
-func (m *DefaultManager) DeleteRegistry(id int64) error {
-	policies, err := dao.GetRepPolicyByTarget(id)
+	r, err := toDaoModel(registry)
 	if err != nil {
-		log.Errorf("Get policies related to registry %d error: %v", id, err)
+		log.Errorf("Convert registry model to dao layer model error: %v", err)
 		return err
 	}
 
-	if len(policies) > 0 {
-		msg := fmt.Sprintf("Can't delete registry with replication policies, %d found", len(policies))
-		log.Error(msg)
-		return errors.New(msg)
-	}
+	return dao.UpdateRegistry(r)
+}
 
-	if err = dao.DeleteRepTarget(id); err != nil {
+// Remove deletes a registry
+func (m *DefaultManager) Remove(id int64) error {
+	if err := dao.DeleteRegistry(id); err != nil {
 		log.Errorf("Delete registry %d error: %v", id, err)
 		return err
 	}
@@ -148,16 +194,19 @@ func (m *DefaultManager) DeleteRegistry(id int64) error {
 // HealthCheck checks health status of every registries and update their status. It will check whether a registry
 // is reachable and the credential is valid
 func (m *DefaultManager) HealthCheck() error {
-	registries, err := dao.FilterRepTargets("")
+	_, registries, err := m.List()
 	if err != nil {
 		return err
 	}
 
 	errCount := 0
 	for _, r := range registries {
-		status, _ := healthStatus(r)
-		r.Health = string(status)
-		err := m.UpdateRegistry(r)
+		status, err := healthStatus(r)
+		if err != nil {
+			log.Warningf("Check health status for %s error: %v", r.URL, err)
+		}
+		r.Status = string(status)
+		err = m.Update(r)
 		if err != nil {
 			log.Warningf("Update health status for '%s' error: %v", r.URL, err)
 			errCount++
@@ -171,9 +220,19 @@ func (m *DefaultManager) HealthCheck() error {
 	return nil
 }
 
-func healthStatus(r *models.RepTarget) (HealthStatus, error) {
+func healthStatus(r *model.Registry) (HealthStatus, error) {
+	// TODO(ChenDe): Support other credential type like OAuth, for the moment, only basic auth is supported.
+	if r.Credential.Type != model.CredentialTypeBasic {
+		return Unknown, fmt.Errorf("unknown credential type '%s', only '%s' supported yet", r.Credential.Type, model.CredentialTypeBasic)
+	}
+
+	// TODO(ChenDe): Support health check for other kinds of registry
+	if r.Type != model.RegistryTypeHarbor {
+		return Unknown, fmt.Errorf("unknown registry type '%s'", model.RegistryTypeHarbor)
+	}
+
 	transport := registry.GetHTTPTransport(r.Insecure)
-	credential := auth.NewBasicAuthCredential(r.Username, r.Password)
+	credential := auth.NewBasicAuthCredential(r.Credential.AccessKey, r.Credential.AccessSecret)
 	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
 		Transport: transport,
 	}, credential)
@@ -190,4 +249,92 @@ func healthStatus(r *models.RepTarget) (HealthStatus, error) {
 	}
 
 	return Healthy, nil
+}
+
+// decrypt checks whether access secret is set in the registry, if so, decrypt it.
+func decrypt(registry *model.Registry) error {
+	if len(registry.Credential.AccessSecret) == 0 {
+		return nil
+	}
+
+	key, err := config.SecretKey()
+	if err != nil {
+		return err
+	}
+	decrypted, err := utils.ReversibleDecrypt(registry.Credential.AccessSecret, key)
+	if err != nil {
+		return err
+	}
+	registry.Credential.AccessSecret = decrypted
+
+	return nil
+}
+
+// encrypt checks whether access secret is set in the registry, if so, encrypt it.
+func encrypt(secret string) (string, error) {
+	if len(secret) == 0 {
+		return secret, nil
+	}
+
+	key, err := config.SecretKey()
+	if err != nil {
+		return "", err
+	}
+	encrypted, err := utils.ReversibleEncrypt(secret, key)
+	if err != nil {
+		return "", err
+	}
+
+	return encrypted, nil
+}
+
+// fromDaoModel converts DAO layer registry model to replication model.
+// Also, if access secret is provided, decrypt it.
+func fromDaoModel(registry *models.Registry) (*model.Registry, error) {
+	r := &model.Registry{
+		ID:          registry.ID,
+		Name:        registry.Name,
+		Description: registry.Description,
+		Type:        model.RegistryType(registry.Type),
+		URL:         registry.URL,
+		Credential: &model.Credential{
+			Type:         model.CredentialType(registry.CredentialType),
+			AccessKey:    registry.AccessKey,
+			AccessSecret: registry.AccessSecret,
+		},
+		Insecure:     registry.Insecure,
+		Status:       registry.Health,
+		CreationTime: registry.CreationTime,
+		UpdateTime:   registry.UpdateTime,
+	}
+
+	if err := decrypt(r); err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
+// toDaoModel converts registry model from replication to DAO layer model.
+// Also, if access secret is provided, encrypt it.
+func toDaoModel(registry *model.Registry) (*models.Registry, error) {
+	encrypted, err := encrypt(registry.Credential.AccessSecret)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.Registry{
+		ID:             registry.ID,
+		URL:            registry.URL,
+		Name:           registry.Name,
+		CredentialType: string(registry.Credential.Type),
+		AccessKey:      registry.Credential.AccessKey,
+		AccessSecret:   encrypted,
+		Type:           string(registry.Type),
+		Insecure:       registry.Insecure,
+		Description:    registry.Description,
+		Health:         registry.Status,
+		CreationTime:   registry.CreationTime,
+		UpdateTime:     registry.UpdateTime,
+	}, nil
 }

@@ -25,13 +25,15 @@ import (
 	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/registry"
 	"github.com/goharbor/harbor/src/replication/policy"
-	"github.com/goharbor/harbor/src/replication/registry"
 	"github.com/goharbor/harbor/src/replication/replicator"
 	"github.com/goharbor/harbor/src/replication/source"
 	"github.com/goharbor/harbor/src/replication/trigger"
 
 	"github.com/docker/distribution/uuid"
+	"github.com/goharbor/harbor/src/replication/ng"
 )
 
 // Controller defines the methods that a replicatoin controllter should implement
@@ -89,10 +91,15 @@ func NewDefaultController(cfg ControllerConfig) *DefaultController {
 	return ctl
 }
 
-// Init creates the GlobalController and inits it
+// Init initializes GlobalController and replication related managers
 func Init(closing chan struct{}) error {
-	GlobalController = NewDefaultController(ControllerConfig{}) // Use default data
-	return GlobalController.Init(closing)
+	GlobalController = NewDefaultController(ControllerConfig{})
+	err := GlobalController.Init(closing)
+	if err != nil {
+		return err
+	}
+
+	return ng.Init()
 }
 
 // Init will initialize the controller and the sub components
@@ -219,13 +226,13 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 		log.Debugf("replication candidates are null, no further action needed")
 	}
 
-	targets := []*common_models.RepTarget{}
+	registries := []*model.Registry{}
 	for _, targetID := range policy.TargetIDs {
-		target, err := ctl.registryManager.GetRegistry(targetID)
+		r, err := ctl.registryManager.Get(targetID)
 		if err != nil {
 			return err
 		}
-		targets = append(targets, target)
+		registries = append(registries, r)
 	}
 
 	// Get operation uuid from metadata, if none provided, generate one.
@@ -239,7 +246,7 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 		PolicyID:   policyID,
 		OpUUID:     opUUID,
 		Candidates: candidates,
-		Targets:    targets,
+		Registries: registries,
 	})
 }
 

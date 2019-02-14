@@ -23,14 +23,12 @@ import (
 
 const (
 	// Prepare Test info
-	TestUserName       = "testUser0001"
-	TestUserPwd        = "testUser0001"
-	TestUserEmail      = "testUser0001@mydomain.com"
-	TestProName        = "testProject0001"
-	TestTargetName     = "testTarget0001"
-	TestRepoName       = "testRepo0001"
-	AdminName          = "admin"
-	DefaultProjectName = "library"
+	TestUserName     = "testUser0001"
+	TestUserPwd      = "testUser0001"
+	TestUserEmail    = "testUser0001@mydomain.com"
+	TestProName      = "testProject0001"
+	TestRegistryName = "testRegistry0001"
+	TestRepoName     = "testRepo0001"
 )
 
 func CommonAddUser() {
@@ -83,25 +81,25 @@ func CommonDelProject() {
 	_ = dao.DeleteProject(commonProject.ProjectID)
 }
 
-func CommonAddTarget() {
+func CommonAddRegistry() {
 	endPoint := os.Getenv("REGISTRY_URL")
-	commonTarget := &models.RepTarget{
-		URL:      endPoint,
-		Name:     TestTargetName,
-		Username: adminName,
-		Password: adminPwd,
+	commonRegistry := &models.Registry{
+		URL:          endPoint,
+		Name:         TestRegistryName,
+		AccessKey:    adminName,
+		AccessSecret: adminPwd,
 	}
-	_, _ = dao.AddRepTarget(*commonTarget)
+	_, _ = dao.AddRegistry(commonRegistry)
 }
 
-func CommonGetTarget() int {
-	target, _ := dao.GetRepTargetByName(TestTargetName)
-	return int(target.ID)
+func CommonGetRegistry() int {
+	registry, _ := dao.GetRegistryByName(TestRegistryName)
+	return int(registry.ID)
 }
 
-func CommonDelTarget() {
-	target, _ := dao.GetRepTargetByName(TestTargetName)
-	_ = dao.DeleteRepTarget(target.ID)
+func CommonDelRegistry() {
+	registry, _ := dao.GetRegistryByName(TestRegistryName)
+	_ = dao.DeleteRegistry(registry.ID)
 }
 
 func CommonAddRepository() {

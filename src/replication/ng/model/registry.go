@@ -15,11 +15,18 @@
 package model
 
 import (
+	"time"
+
 	"github.com/goharbor/harbor/src/common/models"
 )
 
 // RegistryType indicates the type of registry
 type RegistryType string
+
+const (
+	// RegistryTypeHarbor indicates registry type harbor
+	RegistryTypeHarbor = "harbor"
+)
 
 // Valid indicates whether the RegistryType is a valid value
 func (r RegistryType) Valid() bool {
@@ -29,6 +36,13 @@ func (r RegistryType) Valid() bool {
 // CredentialType represents the supported credential types
 // e.g: u/p, OAuth token
 type CredentialType string
+
+const (
+	// CredentialTypeBasic indicates credential by user name, password
+	CredentialTypeBasic = "basic"
+	// CredentialTypeOAuth indicates credential by OAuth token
+	CredentialTypeOAuth = "oauth"
+)
 
 // Credential keeps the access key and/or secret for the related registry
 type Credential struct {
@@ -44,18 +58,22 @@ type Credential struct {
 // Data required for the secure access way is not contained here.
 // DAO layer is not considered here
 type Registry struct {
-	ID          int64        `json:"id"`
-	Name        string       `json:"name"`
-	Description string       `json:"description"`
-	Type        RegistryType `json:"type"`
-	URL         string       `json:"url"`
-	Credential  *Credential  `json:"credential"`
-	Insecure    bool         `json:"insecure"`
-	Status      string       `json:"status"`
+	ID           int64        `json:"id"`
+	Name         string       `json:"name"`
+	Description  string       `json:"description"`
+	Type         RegistryType `json:"type"`
+	URL          string       `json:"url"`
+	Credential   *Credential  `json:"credential"`
+	Insecure     bool         `json:"insecure"`
+	Status       string       `json:"status"`
+	CreationTime time.Time    `json:"creation_time"`
+	UpdateTime   time.Time    `json:"update_time"`
 }
 
 // RegistryQuery defines the query conditions for listing registries
 type RegistryQuery struct {
+	// Name is name of the registry to query
 	Name string
-	models.Pagination
+	// Pagination specifies the pagination
+	Pagination *models.Pagination
 }

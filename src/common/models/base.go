@@ -19,7 +19,8 @@ import (
 )
 
 func init() {
-	orm.RegisterModel(new(RepTarget),
+	orm.RegisterModel(
+		new(Registry),
 		new(RepPolicy),
 		new(RepJob),
 		new(User),

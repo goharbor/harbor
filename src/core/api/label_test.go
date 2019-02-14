@@ -455,18 +455,18 @@ func TestListResources(t *testing.T) {
 	require.Nil(t, err)
 	defer dao.DeleteLabel(projectLabelID)
 
-	targetID, err := dao.AddRepTarget(models.RepTarget{
+	registryID, err := dao.AddRegistry(&models.Registry{
 		Name: "target_for_testing_label_resource",
 		URL:  "https://192.168.0.1",
 	})
 	require.Nil(t, err)
-	defer dao.DeleteRepTarget(targetID)
+	defer dao.DeleteRegistry(registryID)
 
 	// create a policy references both global and project labels
 	policyID, err := dao.AddRepPolicy(models.RepPolicy{
 		Name:      "policy_for_testing_label_resource",
 		ProjectID: 1,
-		TargetID:  targetID,
+		TargetID:  registryID,
 		Trigger:   fmt.Sprintf(`{"kind":"%s"}`, replication.TriggerKindManual),
 		Filters: fmt.Sprintf(`[{"kind":"%s","value":%d}, {"kind":"%s","value":%d}]`,
 			replication.FilterItemKindLabel, globalLabelID,

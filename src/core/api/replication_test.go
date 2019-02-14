@@ -30,15 +30,15 @@ const (
 )
 
 func TestReplicationAPIPost(t *testing.T) {
-	targetID, err := dao.AddRepTarget(
-		models.RepTarget{
+	registryID, err := dao.AddRegistry(
+		&models.Registry{
 			Name:     "test_replication_target",
 			URL:      "127.0.0.1",
-			Username: "username",
-			Password: "password",
+			AccessKey: "username",
+			AccessSecret: "password",
 		})
 	require.Nil(t, err)
-	defer dao.DeleteRepTarget(targetID)
+	defer dao.DeleteRegistry(registryID)
 
 	policyID, err := dao.AddRepPolicy(
 		models.RepPolicy{

@@ -670,15 +670,15 @@ func TestChangeUserProfile(t *testing.T) {
 
 var targetID, policyID, policyID2, policyID3, jobID, jobID2, jobID3 int64
 
-func TestAddRepTarget(t *testing.T) {
-	target := models.RepTarget{
-		Name:     "test",
-		URL:      "127.0.0.1:5000",
-		Username: "admin",
-		Password: "admin",
+func TestAddRegistry(t *testing.T) {
+	registry := &models.Registry{
+		Name:         "test",
+		URL:          "127.0.0.1:5000",
+		AccessKey:    "admin",
+		AccessSecret: "admin",
 	}
 	// _, err := AddRepTarget(target)
-	id, err := AddRepTarget(target)
+	id, err := AddRegistry(registry)
 	t.Logf("added target, id: %d", id)
 	if err != nil {
 		t.Errorf("Error occurred in AddRepTarget: %v", err)
@@ -686,118 +686,125 @@ func TestAddRepTarget(t *testing.T) {
 		targetID = id
 	}
 	id2 := id + 99
-	tgt, err := GetRepTarget(id2)
+	r, err := GetRegistry(id2)
 	if err != nil {
-		t.Errorf("Error occurred in GetTarget: %v, id: %d", err, id2)
+		t.Errorf("Error occurred in GetRegistry: %v, id: %d", err, id2)
 	}
-	if tgt != nil {
+	if r != nil {
 		t.Errorf("There should not be a target with id: %d", id2)
 	}
-	tgt, err = GetRepTarget(id)
+	r, err = GetRegistry(id)
 	if err != nil {
 		t.Errorf("Error occurred in GetTarget: %v, id: %d", err, id)
 	}
-	if tgt == nil {
+	if r == nil {
 		t.Errorf("Unable to find a target with id: %d", id)
 	}
-	if tgt.URL != "127.0.0.1:5000" {
-		t.Errorf("Unexpected url in target: %s, expected 127.0.0.1:5000", tgt.URL)
+	if r.URL != "127.0.0.1:5000" {
+		t.Errorf("Unexpected url in target: %s, expected 127.0.0.1:5000", r.URL)
 	}
-	if tgt.Username != "admin" {
-		t.Errorf("Unexpected username in target: %s, expected admin", tgt.Username)
-	}
-}
-
-func TestGetRepTargetByName(t *testing.T) {
-	target, err := GetRepTarget(targetID)
-	if err != nil {
-		t.Fatalf("failed to get target %d: %v", targetID, err)
-	}
-
-	target2, err := GetRepTargetByName(target.Name)
-	if err != nil {
-		t.Fatalf("failed to get target %s: %v", target.Name, err)
-	}
-
-	if target.Name != target2.Name {
-		t.Errorf("unexpected target name: %s, expected: %s", target2.Name, target.Name)
+	if r.AccessKey != "admin" {
+		t.Errorf("Unexpected username in target: %s, expected admin", r.AccessKey)
 	}
 }
 
-func TestGetRepTargetByEndpoint(t *testing.T) {
-	target, err := GetRepTarget(targetID)
+func TestGetRegistryByName(t *testing.T) {
+	r, err := GetRegistry(targetID)
 	if err != nil {
-		t.Fatalf("failed to get target %d: %v", targetID, err)
+		t.Fatalf("failed to get registry %d: %v", targetID, err)
 	}
 
-	target2, err := GetRepTargetByEndpoint(target.URL)
+	r2, err := GetRegistryByName(r.Name)
 	if err != nil {
-		t.Fatalf("failed to get target %s: %v", target.URL, err)
+		t.Fatalf("failed to get registry %s: %v", r.Name, err)
 	}
 
-	if target.URL != target2.URL {
-		t.Errorf("unexpected target URL: %s, expected: %s", target2.URL, target.URL)
+	if r.Name != r2.Name {
+		t.Errorf("unexpected registry name: %s, expected: %s", r2.Name, r.Name)
 	}
 }
 
-func TestUpdateRepTarget(t *testing.T) {
-	target := &models.RepTarget{
-		Name:     "name",
-		URL:      "http://url",
-		Username: "username",
-		Password: "password",
+func TestGetRegistryByURL(t *testing.T) {
+	r, err := GetRegistry(targetID)
+	if err != nil {
+		t.Fatalf("failed to get registry %d: %v", targetID, err)
 	}
 
-	id, err := AddRepTarget(*target)
+	r2, err := GetRegistryByURL(r.URL)
 	if err != nil {
-		t.Fatalf("failed to add target: %v", err)
+		t.Fatalf("failed to get registry %s: %v", r.URL, err)
+	}
+
+	if r.URL != r2.URL {
+		t.Errorf("unexpected registry URL: %s, expected: %s", r2.URL, r.URL)
+	}
+}
+
+func TestUpdateRegistry(t *testing.T) {
+	registry := &models.Registry{
+		Name:         "name",
+		URL:          "http://url",
+		AccessKey:    "username",
+		AccessSecret: "password",
+	}
+
+	id, err := AddRegistry(registry)
+	if err != nil {
+		t.Fatalf("failed to add registry: %v", err)
 	}
 	defer func() {
-		if err := DeleteRepTarget(id); err != nil {
-			t.Logf("failed to delete target %d: %v", id, err)
+		if err := DeleteRegistry(id); err != nil {
+			t.Logf("failed to delete registry %d: %v", id, err)
 		}
 	}()
 
-	target.ID = id
-	target.Name = "new_name"
-	target.URL = "http://new_url"
-	target.Username = "new_username"
-	target.Password = "new_password"
+	registry.ID = id
+	registry.Name = "new_name"
+	registry.URL = "http://new_url"
+	registry.AccessKey = "new_username"
+	registry.AccessSecret = "new_password"
 
-	if err = UpdateRepTarget(*target); err != nil {
-		t.Fatalf("failed to update target: %v", err)
+	if err = UpdateRegistry(registry); err != nil {
+		t.Fatalf("failed to update registry: %v", err)
 	}
 
-	target, err = GetRepTarget(id)
+	registry, err = GetRegistry(id)
 	if err != nil {
 		t.Fatalf("failed to get target %d: %v", id, err)
 	}
 
-	if target.Name != "new_name" {
-		t.Errorf("unexpected name: %s, expected: %s", target.Name, "new_name")
+	if registry.Name != "new_name" {
+		t.Errorf("unexpected name: %s, expected: %s", registry.Name, "new_name")
 	}
 
-	if target.URL != "http://new_url" {
-		t.Errorf("unexpected url: %s, expected: %s", target.URL, "http://new_url")
+	if registry.URL != "http://new_url" {
+		t.Errorf("unexpected url: %s, expected: %s", registry.URL, "http://new_url")
 	}
 
-	if target.Username != "new_username" {
-		t.Errorf("unexpected username: %s, expected: %s", target.Username, "new_username")
+	if registry.AccessKey != "new_username" {
+		t.Errorf("unexpected username: %s, expected: %s", registry.AccessKey, "new_username")
 	}
 
-	if target.Password != "new_password" {
-		t.Errorf("unexpected password: %s, expected: %s", target.Password, "new_password")
+	if registry.AccessSecret != "new_password" {
+		t.Errorf("unexpected password: %s, expected: %s", registry.AccessSecret, "new_password")
 	}
 }
 
-func TestFilterRepTargets(t *testing.T) {
-	targets, err := FilterRepTargets("test")
+func TestListRegistries(t *testing.T) {
+	total, registries, err := ListRegistries(&ListRegistryQuery{
+		Query: "test",
+		Limit: -1,
+	})
 	if err != nil {
-		t.Fatalf("failed to get all targets: %v", err)
+		t.Fatalf("failed to get all registries: %v", err)
 	}
 
-	if len(targets) == 0 {
-		t.Errorf("unexpected num of targets: %d, expected: %d", len(targets), 1)
+	if total == 0 {
+		t.Errorf("unexpected num of registries: %d, expected: %d", total, 1)
+	}
+
+	if total != int64(len(registries)) {
+		t.Errorf("total (%d) should equals to registries count (%d) when pagination not set", total, len(registries))
 	}
 }
 
@@ -1053,14 +1060,14 @@ func TestDeleteRepJob(t *testing.T) {
 	}
 }
 
-func TestDeleteRepTarget(t *testing.T) {
-	err := DeleteRepTarget(targetID)
+func TestDeleteRegistry(t *testing.T) {
+	err := DeleteRegistry(targetID)
 	if err != nil {
 		t.Errorf("Error occurred in DeleteRepTarget: %v, id: %d", err, targetID)
 		return
 	}
 	t.Logf("deleted target, id: %d", targetID)
-	tgt, err := GetRepTarget(targetID)
+	tgt, err := GetRegistry(targetID)
 	if err != nil {
 		t.Errorf("Error occurred in GetTarget: %v, id: %d", err, targetID)
 	}
