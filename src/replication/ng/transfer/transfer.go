@@ -63,14 +63,14 @@ type CancelFunc func() bool
 
 // RegisterFactory registers one transfer factory to the registry
 func RegisterFactory(name model.ResourceType, factory Factory) error {
-	if len(name) == 0 {
-		return errors.New("empty transfer name")
+	if !name.Valid() {
+		return errors.New("invalid resource transfer factory name")
 	}
 	if factory == nil {
-		return errors.New("empty transfer factory")
+		return errors.New("empty resource transfer factory")
 	}
 	if _, exist := registry[name]; exist {
-		return fmt.Errorf("transfer factory for %s already exists", name)
+		return fmt.Errorf("resource transfer factory for %s already exists", name)
 	}
 
 	registry[name] = factory

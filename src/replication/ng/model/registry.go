@@ -14,8 +14,17 @@
 
 package model
 
+import (
+	"github.com/goharbor/harbor/src/common/models"
+)
+
 // RegistryType indicates the type of registry
 type RegistryType string
+
+// Valid indicates whether the RegistryType is a valid value
+func (r RegistryType) Valid() bool {
+	return len(r) > 0
+}
 
 // CredentialType represents the supported credential types
 // e.g: u/p, OAuth token
@@ -43,4 +52,10 @@ type Registry struct {
 	Credential  *Credential  `json:"credential"`
 	Insecure    bool         `json:"insecure"`
 	Status      string       `json:"status"`
+}
+
+// RegistryQuery defines the query conditions for listing registries
+type RegistryQuery struct {
+	Name string
+	models.Pagination
 }
