@@ -283,8 +283,7 @@ func ExtURL() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	l := strings.Split(endpoint, "://")
-	if len(l) > 0 {
+	if l := strings.SplitN(endpoint, "://", 2); len(l) == 2 {
 		return l[1], nil
 	}
 	return endpoint, nil
