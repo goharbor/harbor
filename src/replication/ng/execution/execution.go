@@ -42,6 +42,9 @@ type Manager interface {
 	// Update the task, the "props" are the properties of task
 	// that need to be updated
 	UpdateTask(task *model.Task, props ...string) error
+	// UpdateInitializedTask only updates the task whose status is pending,
+	// the "props" are the properties of task that need to be updated
+	UpdateInitializedTask(task *model.Task, props ...string) error
 	// Remove one task specified by task ID
 	RemoveTask(int64) error
 	// Remove all tasks of one execution specified by the execution ID

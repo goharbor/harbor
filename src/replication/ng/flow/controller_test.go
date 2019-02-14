@@ -19,6 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/scheduler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -95,7 +96,7 @@ func (f *fakedExecutionManager) RemoveAll(int64) error {
 	return nil
 }
 func (f *fakedExecutionManager) CreateTask(*model.Task) (int64, error) {
-	return 0, nil
+	return 1, nil
 }
 func (f *fakedExecutionManager) ListTasks(*model.TaskQuery) (int64, []*model.Task, error) {
 	return 0, nil, nil
@@ -104,6 +105,9 @@ func (f *fakedExecutionManager) GetTask(int64) (*model.Task, error) {
 	return nil, nil
 }
 func (f *fakedExecutionManager) UpdateTask(*model.Task, ...string) error {
+	return nil
+}
+func (f *fakedExecutionManager) UpdateInitializedTask(*model.Task, ...string) error {
 	return nil
 }
 func (f *fakedExecutionManager) RemoveTask(int64) error {
@@ -118,13 +122,25 @@ func (f *fakedExecutionManager) GetTaskLog(int64) ([]byte, error) {
 
 type fakedScheduler struct{}
 
-func (f *fakedScheduler) Schedule(src []*model.Resource, dst []*model.Resource) ([]*model.Task, error) {
-	return []*model.Task{
-		{
-			Status: model.TaskStatusPending,
-			JobID:  "uuid",
-		},
-	}, nil
+func (f *fakedScheduler) Preprocess(src []*model.Resource, dst []*model.Resource) ([]*scheduler.ScheduleItem, error) {
+	items := []*scheduler.ScheduleItem{}
+	for i, res := range src {
+		items = append(items, &scheduler.ScheduleItem{
+			SrcResource: res,
+			DstResource: dst[i],
+		})
+	}
+	return items, nil
+}
+func (f *fakedScheduler) Schedule(items []*scheduler.ScheduleItem) ([]*scheduler.ScheduleResult, error) {
+	results := []*scheduler.ScheduleResult{}
+	for _, item := range items {
+		results = append(results, &scheduler.ScheduleResult{
+			TaskID: item.TaskID,
+			Error:  nil,
+		})
+	}
+	return results, nil
 }
 func (f *fakedScheduler) Stop(id string) error {
 	return nil
@@ -153,7 +169,7 @@ func (f *fakedAdapter) FetchResources(namespace []string, filters []*model.Filte
 		{
 			Type: model.ResourceTypeRepository,
 			Metadata: &model.ResourceMetadata{
-				Name:      "hello-world",
+				Name:      "library/hello-world",
 				Namespace: "library",
 				Vtags:     []string{"latest"},
 			},
