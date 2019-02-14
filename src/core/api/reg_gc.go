@@ -242,6 +242,8 @@ func (gc *GCAPI) submitJob(gr *models.GCReq) {
 	gr.ID = id
 	gr.Parameters = map[string]interface{}{
 		"redis_url_reg": os.Getenv("_REDIS_URL_REG"),
+		// keep the capability to clean cache in GC Job.
+		"cache_clean": false,
 	}
 	job, err := gr.ToJob()
 	if err != nil {

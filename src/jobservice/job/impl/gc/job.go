@@ -48,6 +48,7 @@ type GarbageCollector struct {
 	CoreURL           string
 	insecure          bool
 	redisURL          string
+	cacheClean        bool
 }
 
 // MaxFails implements the interface in job/Interface
@@ -90,8 +91,10 @@ func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{
 		gc.logger.Errorf("failed to get gc result: %v", err)
 		return err
 	}
-	if err := gc.cleanCache(); err != nil {
-		return err
+	if gc.cacheClean {
+		if err := gc.cleanCache(); err != nil {
+			return err
+		}
 	}
 	gc.logger.Infof("GC results: status: %t, message: %s, start: %s, end: %s.", gcr.Status, gcr.Msg, gcr.StartTime, gcr.EndTime)
 	gc.logger.Infof("success to run gc in job.")
@@ -114,6 +117,7 @@ func (gc *GarbageCollector) init(ctx env.JobContext, params map[string]interface
 		return fmt.Errorf(errTpl, common.CoreURL)
 	}
 	gc.redisURL = params["redis_url_reg"].(string)
+	gc.cacheClean = params["cache_clean"].(bool)
 	return nil
 }
 

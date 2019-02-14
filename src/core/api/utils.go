@@ -150,6 +150,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 			}
 
 			// TODO remove the workaround when the bug of registry is fixed
+			// ISSUE: #1585 in docker distribution.
 			client, err := coreutils.NewRepositoryClientForUI("harbor-core", repoInR)
 			if err != nil {
 				return needsAdd, needsDel, err
@@ -170,6 +171,7 @@ func diffRepos(reposInRegistry []string, reposInDB []string,
 			j++
 		} else {
 			// TODO remove the workaround when the bug of registry is fixed
+			// ISSUE: #1585 in docker distribution.
 			client, err := coreutils.NewRepositoryClientForUI("harbor-core", repoInR)
 			if err != nil {
 				return needsAdd, needsDel, err

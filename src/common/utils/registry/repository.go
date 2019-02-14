@@ -103,6 +103,7 @@ func (r *Repository) ListTag() ([]string, error) {
 	} else if resp.StatusCode == http.StatusNotFound {
 
 		// TODO remove the logic if the bug of registry is fixed
+		// ISSUE: #936 in docker distribution
 		// It's a workaround for a bug of registry: when listing tags of
 		// a repository which is being pushed, a "NAME_UNKNOWN" error will
 		// been returned, while the catalog API can list this repository.
