@@ -222,7 +222,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         this.lastFilteredRepoName = repoName;
         this.currentPage = 1;
         let st: State = this.currentState;
-        if (!st) {
+        if (!st || !st.page) {
             st = { page: {} };
         }
         st.page.size = this.pageSize;
