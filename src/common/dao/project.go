@@ -249,7 +249,8 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 				roleID = 2
 			case common.RoleGuest:
 				roleID = 3
-
+			case common.RoleMaster:
+				roleID = 4
 			}
 			params = append(params, roleID)
 		}
@@ -299,7 +300,7 @@ func GetRolesByLDAPGroup(projectID int64, groupDNCondition string) ([]int, error
 	}
 	o := GetOrmer()
 	// Because an LDAP user can be memberof multiple groups,
-	// the role is in descent order (1-admin, 2-developer, 3-guest), use min to select the max privilege role.
+	// the role is in descent order (1-admin, 2-developer, 3-guest, 4-master), use min to select the max privilege role.
 	sql := fmt.Sprintf(
 		`select min(pm.role) from project_member pm 
 		left join user_group ug on pm.entity_type = 'g' and pm.entity_id = ug.id 

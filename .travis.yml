@@ -34,8 +34,9 @@ env:
   - CORE_SECRET: tempString
   - KEY_PATH: "/data/secretkey"
   - REDIS_HOST: localhost
-  - REG_VERSION: v2.6.2
+  - REG_VERSION: v2.7.1
   - UI_BUILDER_VERSION: 1.6.0
+  - TOKEN_PRIVATE_KEY_PATH: "/home/travis/gopath/src/github.com/goharbor/harbor/tests/private_key.pem"
 addons: 
 apt:
   sources:

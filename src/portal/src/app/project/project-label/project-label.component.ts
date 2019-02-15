@@ -16,6 +16,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
 import { SessionUser } from '../../shared/session-user';
 import { Project } from '../project';
+import { forkJoin } from 'rxjs';
+import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler } from "@harbor/ui";
 
 @Component({
   selector: 'app-project-config',
@@ -29,21 +31,34 @@ export class ProjectLabelComponent implements OnInit {
   currentUser: SessionUser;
   hasSignedIn: boolean;
   hasProjectAdminRole: boolean;
-
+  hasCreateLabelPermission: boolean;
+  hasUpdateLabelPermission: boolean;
+  hasDeleteLabelPermission: boolean;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private userPermissionService: UserPermissionService,
+    private errorHandler: ErrorHandler,
     private session: SessionService) {}
 
   ngOnInit() {
     this.projectId = +this.route.snapshot.parent.params['id'];
     this.currentUser = this.session.getCurrentUser();
     this.hasSignedIn = this.session.getCurrentUser() !== null;
-    let resolverData = this.route.snapshot.parent.data;
-    if (resolverData) {
-      let pro: Project = <Project>resolverData['projectResolver'];
-      this.hasProjectAdminRole = pro.has_project_admin_role;
-      this.projectName = pro.name;
-    }
+    this.getLabelPermissionRule(this.projectId);
   }
+
+getLabelPermissionRule(projectId: number): void {
+  const hasCreateLabelPermission = this.userPermissionService.getPermission(projectId,
+    USERSTATICPERMISSION.LABEL.KEY, USERSTATICPERMISSION.LABEL.VALUE.CREATE);
+  const hasUpdateLabelPermission = this.userPermissionService.getPermission(projectId,
+    USERSTATICPERMISSION.LABEL.KEY, USERSTATICPERMISSION.LABEL.VALUE.UPDATE);
+  const hasDeleteLabelPermission = this.userPermissionService.getPermission(projectId,
+    USERSTATICPERMISSION.LABEL.KEY, USERSTATICPERMISSION.LABEL.VALUE.DELETE);
+  forkJoin(hasCreateLabelPermission, hasUpdateLabelPermission, hasDeleteLabelPermission).subscribe(permissions => {
+    this.hasCreateLabelPermission = permissions[0] as boolean;
+    this.hasUpdateLabelPermission = permissions[1] as boolean;
+    this.hasDeleteLabelPermission = permissions[2] as boolean;
+  }, error => this.errorHandler.error(error));
+}
 }

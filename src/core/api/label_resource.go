@@ -22,23 +22,6 @@ func (lra *LabelResourceAPI) Prepare() {
 	lra.labelManager = &label.BaseManager{}
 }
 
-func (lra *LabelResourceAPI) checkPermissions(project string) bool {
-	if lra.Ctx.Request.Method == http.MethodPost ||
-		lra.Ctx.Request.Method == http.MethodDelete {
-		if lra.SecurityCtx.HasWritePerm(project) {
-			return true
-		}
-	}
-
-	if lra.Ctx.Request.Method == http.MethodGet {
-		if lra.SecurityCtx.HasReadPerm(project) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (lra *LabelResourceAPI) getLabelsOfResource(rType string, rIDOrName interface{}) {
 	labels, err := lra.labelManager.GetLabelsOfResource(rType, rIDOrName)
 	if err != nil {

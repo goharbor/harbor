@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/rbac"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 )
 
@@ -45,12 +45,6 @@ func (r *RepositoryLabelAPI) Prepare() {
 	}
 
 	repository := r.GetString(":splat")
-	project, _ := utils.ParseRepository(repository)
-	if !r.checkPermissions(project) {
-		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
-		return
-	}
-
 	repo, err := dao.GetRepositoryByName(repository)
 	if err != nil {
 		r.SendInternalServerError(fmt.Errorf("failed to get repository %s: %v", repository, err))
@@ -77,25 +71,6 @@ func (r *RepositoryLabelAPI) Prepare() {
 		r.tag = tag
 	}
 
-	if r.Ctx.Request.Method == http.MethodPost {
-		p, err := r.ProjectMgr.Get(project)
-		if err != nil {
-			r.SendInternalServerError(err)
-			return
-		}
-
-		l := &models.Label{}
-		r.DecodeJSONReq(l)
-
-		label, ok := r.validate(l.ID, p.ProjectID)
-		if !ok {
-			return
-		}
-		r.label = label
-
-		return
-	}
-
 	if r.Ctx.Request.Method == http.MethodDelete {
 		labelID, err := r.GetInt64FromPath(":id")
 		if err != nil {
@@ -112,13 +87,59 @@ func (r *RepositoryLabelAPI) Prepare() {
 	}
 }
 
+func (r *RepositoryLabelAPI) requireAccess(action rbac.Action, subresource ...rbac.Resource) bool {
+	if len(subresource) == 0 {
+		subresource = append(subresource, rbac.ResourceRepositoryLabel)
+	}
+	resource := rbac.NewProjectNamespace(r.repository.ProjectID).Resource(rbac.ResourceRepositoryLabel)
+
+	if !r.SecurityCtx.Can(action, resource) {
+		if !r.SecurityCtx.IsAuthenticated() {
+			r.SendUnAuthorizedError(errors.New("UnAuthorized"))
+		} else {
+			r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
+		}
+
+		return false
+	}
+
+	return true
+}
+
+func (r *RepositoryLabelAPI) isValidLabelReq() bool {
+	p, err := r.ProjectMgr.Get(r.repository.ProjectID)
+	if err != nil {
+		r.SendInternalServerError(err)
+		return false
+	}
+
+	l := &models.Label{}
+	r.DecodeJSONReq(l)
+
+	label, ok := r.validate(l.ID, p.ProjectID)
+	if !ok {
+		return false
+	}
+	r.label = label
+
+	return true
+}
+
 // GetOfImage returns labels of an image
 func (r *RepositoryLabelAPI) GetOfImage() {
+	if !r.requireAccess(rbac.ActionList, rbac.ResourceRepositoryTagLabel) {
+		return
+	}
+
 	r.getLabelsOfResource(common.ResourceTypeImage, fmt.Sprintf("%s:%s", r.repository.Name, r.tag))
 }
 
 // AddToImage adds the label to an image
 func (r *RepositoryLabelAPI) AddToImage() {
+	if !r.requireAccess(rbac.ActionCreate, rbac.ResourceRepositoryTagLabel) || !r.isValidLabelReq() {
+		return
+	}
+
 	rl := &models.ResourceLabel{
 		LabelID:      r.label.ID,
 		ResourceType: common.ResourceTypeImage,
@@ -129,17 +150,29 @@ func (r *RepositoryLabelAPI) AddToImage() {
 
 // RemoveFromImage removes the label from an image
 func (r *RepositoryLabelAPI) RemoveFromImage() {
+	if !r.requireAccess(rbac.ActionDelete, rbac.ResourceRepositoryTagLabel) {
+		return
+	}
+
 	r.removeLabelFromResource(common.ResourceTypeImage,
 		fmt.Sprintf("%s:%s", r.repository.Name, r.tag), r.label.ID)
 }
 
 // GetOfRepository returns labels of a repository
 func (r *RepositoryLabelAPI) GetOfRepository() {
+	if !r.requireAccess(rbac.ActionList) {
+		return
+	}
+
 	r.getLabelsOfResource(common.ResourceTypeRepository, r.repository.RepositoryID)
 }
 
 // AddToRepository adds the label to a repository
 func (r *RepositoryLabelAPI) AddToRepository() {
+	if !r.requireAccess(rbac.ActionCreate) || !r.isValidLabelReq() {
+		return
+	}
+
 	rl := &models.ResourceLabel{
 		LabelID:      r.label.ID,
 		ResourceType: common.ResourceTypeRepository,
@@ -150,6 +183,10 @@ func (r *RepositoryLabelAPI) AddToRepository() {
 
 // RemoveFromRepository removes the label from a repository
 func (r *RepositoryLabelAPI) RemoveFromRepository() {
+	if !r.requireAccess(rbac.ActionDelete) {
+		return
+	}
+
 	r.removeLabelFromResource(common.ResourceTypeRepository, r.repository.RepositoryID, r.label.ID)
 }
 

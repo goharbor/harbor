@@ -27,5 +27,52 @@ func TestHandleInternalServerError(t *testing.T) {
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusInternalServerError)
 	}
+}
 
+func TestHandleBadRequestError(t *testing.T) {
+	w := httptest.NewRecorder()
+	err := "error message"
+	handleBadRequestError(w, err)
+
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusBadRequest)
+	}
+}
+
+func TestHandleUnauthorized(t *testing.T) {
+	w := httptest.NewRecorder()
+	handleUnauthorized(w)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusUnauthorized)
+	}
+}
+
+func TestWriteJSONNilInterface(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	if err := writeJSON(w, nil); err != nil {
+		t.Errorf("Expected nil error, received: %v", err)
+	}
+}
+
+func TestWriteJSONMarshallErr(t *testing.T) {
+	// Tests capture json.Marshall error
+	x := map[string]interface{}{
+		"foo": make(chan int),
+	}
+
+	w := httptest.NewRecorder()
+
+	if err := writeJSON(w, x); err == nil {
+		t.Errorf("Expected %v error received: no no error", err)
+	}
+}
+
+func TestWriteJSON(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	if err := writeJSON(w, "Pong"); err != nil {
+		t.Errorf("Expected nil error, received: %v", err)
+	}
 }

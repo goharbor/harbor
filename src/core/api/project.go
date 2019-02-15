@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -75,6 +76,25 @@ func (p *ProjectAPI) Prepare() {
 
 		p.project = project
 	}
+}
+
+func (p *ProjectAPI) requireAccess(action rbac.Action, subresource ...rbac.Resource) bool {
+	if len(subresource) == 0 {
+		subresource = append(subresource, rbac.ResourceSelf)
+	}
+	resource := rbac.NewProjectNamespace(p.project.ProjectID).Resource(subresource...)
+
+	if !p.SecurityCtx.Can(action, resource) {
+		if !p.SecurityCtx.IsAuthenticated() {
+			p.HandleUnauthorized()
+		} else {
+			p.HandleForbidden(p.SecurityCtx.GetUsername())
+		}
+
+		return false
+	}
+
+	return true
 }
 
 // Post ...
@@ -187,16 +207,8 @@ func (p *ProjectAPI) Head() {
 
 // Get ...
 func (p *ProjectAPI) Get() {
-	if !p.project.IsPublic() {
-		if !p.SecurityCtx.IsAuthenticated() {
-			p.HandleUnauthorized()
-			return
-		}
-
-		if !p.SecurityCtx.HasReadPerm(p.project.ProjectID) {
-			p.HandleForbidden(p.SecurityCtx.GetUsername())
-			return
-		}
+	if !p.requireAccess(rbac.ActionRead) {
+		return
 	}
 
 	p.populateProperties(p.project)
@@ -207,13 +219,7 @@ func (p *ProjectAPI) Get() {
 
 // Delete ...
 func (p *ProjectAPI) Delete() {
-	if !p.SecurityCtx.IsAuthenticated() {
-		p.HandleUnauthorized()
-		return
-	}
-
-	if !p.SecurityCtx.HasAllPerm(p.project.ProjectID) {
-		p.HandleForbidden(p.SecurityCtx.GetUsername())
+	if !p.requireAccess(rbac.ActionDelete) {
 		return
 	}
 
@@ -248,13 +254,7 @@ func (p *ProjectAPI) Delete() {
 
 // Deletable ...
 func (p *ProjectAPI) Deletable() {
-	if !p.SecurityCtx.IsAuthenticated() {
-		p.HandleUnauthorized()
-		return
-	}
-
-	if !p.SecurityCtx.HasAllPerm(p.project.ProjectID) {
-		p.HandleForbidden(p.SecurityCtx.GetUsername())
+	if !p.requireAccess(rbac.ActionDelete) {
 		return
 	}
 
@@ -433,13 +433,7 @@ func (p *ProjectAPI) populateProperties(project *models.Project) {
 
 // Put ...
 func (p *ProjectAPI) Put() {
-	if !p.SecurityCtx.IsAuthenticated() {
-		p.HandleUnauthorized()
-		return
-	}
-
-	if !p.SecurityCtx.HasAllPerm(p.project.ProjectID) {
-		p.HandleForbidden(p.SecurityCtx.GetUsername())
+	if !p.requireAccess(rbac.ActionUpdate) {
 		return
 	}
 
@@ -458,13 +452,7 @@ func (p *ProjectAPI) Put() {
 
 // Logs ...
 func (p *ProjectAPI) Logs() {
-	if !p.SecurityCtx.IsAuthenticated() {
-		p.HandleUnauthorized()
-		return
-	}
-
-	if !p.SecurityCtx.HasReadPerm(p.project.ProjectID) {
-		p.HandleForbidden(p.SecurityCtx.GetUsername())
+	if !p.requireAccess(rbac.ActionList, rbac.ResourceLog) {
 		return
 	}
 

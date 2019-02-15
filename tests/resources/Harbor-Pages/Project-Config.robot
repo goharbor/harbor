@@ -8,6 +8,7 @@ ${HARBOR_VERSION}  V1.1.1
 *** Keywords ***
 
 Goto Project Config
+    Sleep  3
     Click Element  //project-detail//ul/li[contains(.,'Configuration')]
     Sleep  2
 

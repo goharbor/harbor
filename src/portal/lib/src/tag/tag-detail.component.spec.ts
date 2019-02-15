@@ -25,15 +25,19 @@ import { VULNERABILITY_SCAN_STATUS } from "../utils";
 import { VULNERABILITY_DIRECTIVES } from "../vulnerability-scanning/index";
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { ChannelService } from "../channel/channel.service";
+import { of } from "rxjs";
 import {
   JobLogService,
   JobLogDefaultService
 } from "../service/job-log.service";
+import { UserPermissionService, UserPermissionDefaultService } from "../service/permission.service";
+import { USERSTATICPERMISSION } from "../service/permission-static";
 
 describe("TagDetailComponent (inline template)", () => {
   let comp: TagDetailComponent;
   let fixture: ComponentFixture<TagDetailComponent>;
   let tagService: TagService;
+  let userPermissionService: UserPermissionService;
   let scanningService: ScanningResultService;
   let spy: jasmine.Spy;
   let vulSpy: jasmine.Spy;
@@ -83,13 +87,13 @@ describe("TagDetailComponent (inline template)", () => {
   let config: IServiceConfig = {
     repositoryBaseEndpoint: "/api/repositories/testing"
   };
-
+  let mockHasVulnerabilitiesListPermission: boolean = false;
+  let mockHasBuildHistoryPermission: boolean = true;
   let mockManifest: Manifest = {
     manifset: {},
     // tslint:disable-next-line:max-line-length
     config: `{"architecture":"amd64","config":{"Hostname":"","Domainname":"","User":"","AttachStdin":false,"AttachStdout":false,"AttachStderr":false,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/bin/sh"],"ArgsEscaped":true,"Image":"sha256:fbef17698ac8605733924d5662f0cbfc0b27a51e83ab7d7a4b8d8a9a9fe0d1c2","Volumes":null,"WorkingDir":"","Entrypoint":null,"OnBuild":null,"Labels":null},"container":"30e1a2427aa2325727a092488d304505780501585a6ccf5a6a53c4d83a826101","container_config":{"Hostname":"30e1a2427aa2","Domainname":"","User":"","AttachStdin":false,"AttachStdout":false,"AttachStderr":false,"Tty":false,"OpenStdin":false,"StdinOnce":false,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"],"Cmd":["/bin/sh","-c","#(nop) ","CMD [\\"/bin/sh\\"]"],"ArgsEscaped":true,"Image":"sha256:fbef17698ac8605733924d5662f0cbfc0b27a51e83ab7d7a4b8d8a9a9fe0d1c2","Volumes":null,"WorkingDir":"","Entrypoint":null,"OnBuild":null,"Labels":{}},"created":"2018-01-09T21:10:58.579708634Z","docker_version":"17.06.2-ce","history":[{"created":"2018-01-09T21:10:58.365737589Z","created_by":"/bin/sh -c #(nop) ADD file:093f0723fa46f6cdbd6f7bd146448bb70ecce54254c35701feeceb956414622f in / "},{"created":"2018-01-09T21:10:58.579708634Z","created_by":"/bin/sh -c #(nop)  CMD [\\"/bin/sh\\"]","empty_layer":true}],"os":"linux","rootfs":{"type":"layers","diff_ids":["sha256:cd7100a72410606589a54b932cabd804a17f9ae5b42a1882bd56d263e02b6215"]}}`
   };
-
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [SharedModule],
@@ -108,6 +112,7 @@ describe("TagDetailComponent (inline template)", () => {
         { provide: JobLogService, useClass: JobLogDefaultService },
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: TagService, useClass: TagDefaultService },
+        { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         {
           provide: ScanningResultService,
           useClass: ScanningResultDefaultService
@@ -122,6 +127,8 @@ describe("TagDetailComponent (inline template)", () => {
 
     comp.tagId = "mock_tag";
     comp.repositoryId = "mock_repo";
+    comp.projectId = 1;
+
 
     tagService = fixture.debugElement.injector.get(TagService);
     spy = spyOn(tagService, "getTag").and.returnValues(
@@ -153,7 +160,14 @@ describe("TagDetailComponent (inline template)", () => {
     manifestSpy = spyOn(tagService, "getManifest").and.returnValues(
       Promise.resolve(mockManifest)
     );
+    userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
 
+    spyOn(userPermissionService, "getPermission")
+    .withArgs(comp.projectId,
+      USERSTATICPERMISSION.REPOSITORY_TAG_VULNERABILITY.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_VULNERABILITY.VALUE.LIST )
+    .and.returnValue(of(mockHasVulnerabilitiesListPermission))
+     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_MANIFEST.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_MANIFEST.VALUE.READ )
+     .and.returnValue(of(mockHasBuildHistoryPermission));
     fixture.detectChanges();
   });
 

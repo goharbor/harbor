@@ -95,23 +95,27 @@ export class AuditLogComponent implements OnInit {
 
   }
 
-  retrieve(state?: State): void {
-    if (state) {
-      this.queryParam.page = Math.ceil((state.page.to + 1) / this.pageSize);
-      this.currentPage = this.queryParam.page;
-    }
+  private retrieve(): void {
     this.auditLogService
       .listAuditLogs(this.queryParam)
       .subscribe(
-      response => {
-        this.totalRecordCount = Number.parseInt(response.headers.get('x-total-count'));
-        this.auditLogs = response.json();
-      },
-      error => {
-        this.router.navigate(['/harbor', 'projects']);
-        this.messageHandlerService.handleError(error);
-      }
+        response => {
+          this.totalRecordCount = Number.parseInt(response.headers.get('x-total-count'));
+          this.auditLogs = response.json();
+        },
+        error => {
+          this.router.navigate(['/harbor', 'projects']);
+          this.messageHandlerService.handleError(error);
+        }
       );
+  }
+
+  retrievePage(state: State) {
+    if (state && state.page) {
+      this.queryParam.page = Math.ceil((state.page.to + 1) / this.pageSize);
+      this.currentPage = this.queryParam.page;
+      this.retrieve();
+    }
   }
 
   doSearchAuditLogs(searchUsername: string): void {
@@ -119,7 +123,7 @@ export class AuditLogComponent implements OnInit {
     this.retrieve();
   }
 
-doSearchByStartTime(fromTimestamp: string): void {
+  doSearchByStartTime(fromTimestamp: string): void {
     this.queryParam.begin_timestamp = fromTimestamp;
     this.retrieve();
   }

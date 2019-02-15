@@ -24,28 +24,29 @@ import {
     SimpleChange,
     SimpleChanges
 } from "@angular/core";
-import { forkJoin} from "rxjs";
+import { forkJoin } from "rxjs";
 import { Comparator } from "../service/interface";
 import { TranslateService } from "@ngx-translate/core";
 
-import {ReplicationService} from "../service/replication.service";
+import { ReplicationService } from "../service/replication.service";
+
 import {
     ReplicationJob,
     ReplicationJobItem,
     ReplicationRule
 } from "../service/interface";
-import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
-import {ConfirmationMessage} from "../confirmation-dialog/confirmation-message";
-import {ConfirmationAcknowledgement} from "../confirmation-dialog/confirmation-state-message";
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
+import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
+import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
 import {
     ConfirmationState,
     ConfirmationTargets,
     ConfirmationButtons
 } from "../shared/shared.const";
-import {ErrorHandler} from "../error-handler/error-handler";
-import {toPromise, CustomComparator} from "../utils";
-import {operateChanges, OperateInfo, OperationState} from "../operation/operate";
-import {OperationService} from "../operation/operation.service";
+import { ErrorHandler } from "../error-handler/error-handler";
+import { toPromise, CustomComparator } from "../utils";
+import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
+import { OperationService } from "../operation/operation.service";
 
 
 @Component({
@@ -58,12 +59,14 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     nullTime = "0001-01-01T00:00:00Z";
 
     @Input() projectId: number;
-    @Input() isSystemAdmin: boolean;
     @Input() selectedId: number | string;
     @Input() withReplicationJob: boolean;
 
     @Input() loading = false;
-
+    @Input() hasCreateReplicationPermission: boolean;
+    @Input() hasUpdateReplicationPermission: boolean;
+    @Input() hasDeleteReplicationPermission: boolean;
+    @Input() hasExecuteReplicationPermission: boolean;
     @Output() reload = new EventEmitter<boolean>();
     @Output() selectOne = new EventEmitter<ReplicationRule>();
     @Output() editOne = new EventEmitter<ReplicationRule>();
@@ -92,10 +95,10 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     enabledComparator: Comparator<ReplicationRule> = new CustomComparator<ReplicationRule>("enabled", "number");
 
     constructor(private replicationService: ReplicationService,
-                private translateService: TranslateService,
-                private errorHandler: ErrorHandler,
-                private operationService: OperationService,
-                private ref: ChangeDetectorRef) {
+        private translateService: TranslateService,
+        private errorHandler: ErrorHandler,
+        private operationService: OperationService,
+        private ref: ChangeDetectorRef) {
         setInterval(() => ref.markForCheck(), 500);
     }
 
@@ -113,7 +116,6 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
             this.retrieveRules();
         }
     }
-
     ngOnChanges(changes: SimpleChanges): void {
         let proIdChange: SimpleChange = changes["projectId"];
         if (proIdChange) {
@@ -156,7 +158,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
             let count = 0;
             rule.filters.forEach((data: any) => {
                 if (data.kind === 'label' && data.value.deleted) {
-                    count ++;
+                    count++;
                 }
             });
             if (count === 0) {
@@ -177,8 +179,10 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     }
 
     selectRule(rule: ReplicationRule): void {
-        this.selectedId = rule.id || "";
-        this.selectOne.emit(rule);
+        if (rule) {
+            this.selectedId = rule.id || "";
+            this.selectOne.emit(rule);
+        }
     }
 
     redirectTo(rule: ReplicationRule): void {
@@ -258,8 +262,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         if (!this.canDeleteRule) {
             forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                 this.translateService.get('REPLICATION.DELETION_SUMMARY_FAILURE')).subscribe(res => {
-                operateChanges(operMessage, OperationState.failure, res[1]);
-            });
+                    operateChanges(operMessage, OperationState.failure, res[1]);
+                });
             return null;
         }
 
@@ -273,8 +277,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                 if (error && error.status === 412) {
                     forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
                         this.translateService.get('REPLICATION.FAILED_TO_DELETE_POLICY_ENABLED')).subscribe(res => {
-                        operateChanges(operMessage, OperationState.failure, res[1]);
-                    });
+                            operateChanges(operMessage, OperationState.failure, res[1]);
+                        });
                 } else {
                     this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
                         operateChanges(operMessage, OperationState.failure, res);

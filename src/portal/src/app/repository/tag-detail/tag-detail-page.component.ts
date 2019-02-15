@@ -48,10 +48,6 @@ export class TagDetailPageComponent implements OnInit {
     return this.appConfigService.getConfig().with_clair;
   }
 
-  get withAdminRole(): boolean {
-    return this.session.getCurrentUser().has_admin_role;
-  }
-
   goBack(tag: string): void {
     this.router.navigate(["harbor", "projects", this.projectId, "repositories", tag]);
   }

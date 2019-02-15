@@ -184,7 +184,7 @@ _build_notary:
 _build_registry:
 	@if [ "$(BUILDBIN)" != "true" ] ; then \
 		rm -rf $(DOCKERFILEPATH_REG)/binary && mkdir -p $(DOCKERFILEPATH_REG)/binary && \
-		$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/registry, $(DOCKERFILEPATH_REG)/binary/registry); \
+		$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/registry/release-$(REGISTRYVERSION)/registry, $(DOCKERFILEPATH_REG)/binary/registry); \
 	else \
 		cd $(DOCKERFILEPATH_REG) && $(DOCKERFILEPATH_REG)/builder $(REGISTRYVERSION) && cd - ; \
 	fi
@@ -204,9 +204,11 @@ _build_redis:
 	@echo "Done."
 
 _build_migrator:
-	@echo "building db migrator container for photon..."
-	@cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(MIGRATORVERSION) .
-	@echo "Done."
+	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
+		echo "building db migrator container for photon..."; \
+		cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(MIGRATORVERSION) . ; \
+		echo "Done."; \
+	fi
 
 define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2

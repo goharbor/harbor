@@ -33,6 +33,10 @@
                         <label for="checkrads_project_admin">{{'MEMBER.PROJECT_ADMIN' | translate}}</label>
                     </div>
                     <div class="radio">
+                        <input type="radio" name="member_role" id="checkrads_project_master" [value]=4 [(ngModel)]="member.role_id">
+                        <label for="checkrads_project_master">{{'MEMBER.PROJECT_MASTER' | translate}}</label>
+                    </div>
+                    <div class="radio">
                         <input type="radio" name="member_role" id="checkrads_developer" [value]=2 [(ngModel)]="member.role_id">
                         <label for="checkrads_developer">{{'MEMBER.DEVELOPER' | translate}}</label>
                     </div>
