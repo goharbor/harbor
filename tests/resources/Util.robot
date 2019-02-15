@@ -67,6 +67,36 @@ Wait Until Element Is Visible And Enabled
     Wait Until Element Is Visible  ${element}
     Wait Until Element Is Enabled  ${element}
 
+Retry Action Keyword
+    [Arguments]  ${keyword}  ${element_xpath}
+    Retry Keyword When Error  ${keyword}  element=${element_xpath}
+
+Retry Element Click
+    [Arguments]  ${element_xpath}
+    Retry Action Keyword  Element Click  ${element_xpath}
+
+Retry Wait Element
+    [Arguments]  ${element_xpath}
+    Retry Action Keyword  Wait Until Element Is Visible And Enabled  ${element_xpath}
+
+Retry Wait Element Not Visible
+    [Arguments]  ${element_xpath}
+    Retry Action Keyword  Wait Until Element Is Not Visible  ${element_xpath}
+
+Retry Button Click
+    [Arguments]  ${element_xpath}
+    Retry Action Keyword  Button Click  ${element_xpath}
+
+Element Click
+    [Arguments]  ${element_xpath}
+    Wait Until Element Is Visible And Enabled  ${element_xpath}
+    Click Element  ${element_xpath}
+
+Button Click
+    [Arguments]  ${element_xpath}
+    Wait Until Element Is Visible And Enabled  ${element_xpath}
+    Click button  ${element_xpath}
+
 Wait Unitl Vul Data Ready
     [Arguments]  ${url}  ${timeout}  ${interval}
     ${n}=  Evaluate  ${timeout}/${interval}
@@ -78,3 +108,28 @@ Wait Unitl Vul Data Ready
     \    Exit For Loop If  ${contains}
     \    Sleep  ${interval}
     Run Keyword If  ${i+1}==${n}  Fail  The vul data is not ready
+
+Wait Unitl Command Success
+    [Arguments]  ${cmd}  ${times}=8  ${positive}=${true}
+    :FOR  ${n}  IN RANGE  1  ${times}
+    \    Log  Trying ${cmd}: ${n} ...  console=True
+    \    ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
+    \    Run Keyword If  ${positive} == ${true}  Exit For Loop If  '${rc}'=='0'
+    \    ...  ELSE  Exit For Loop If  '${rc}'!='0'
+    \    Sleep  2
+    Log  ${output}
+    Run Keyword If  ${positive} == ${true}  Should Be Equal As Strings  '${rc}'  '0'
+    ...  ELSE  Should Not Be Equal As Strings  '${rc}'  '0'   
+    [Return]  ${output}
+
+Retry Keyword When Error
+    [Arguments]  ${keyword}  ${element}=${None}  ${times}=6
+    :For  ${n}  IN RANGE  1  ${times}
+    \    Log To Console  Trying ${keyword} ${n} times ...
+    \    ${out}  Run Keyword If  "${element}"=="${None}"  Run Keyword And Ignore Error  ${keyword}
+    \    ...  ELSE  Run Keyword And Ignore Error  ${keyword}  ${element}
+    \    Log To Console  Return value is ${out[0]}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  2
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'

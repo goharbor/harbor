@@ -91,15 +91,15 @@
         </div>
     </section>
     <clr-tabs>
-        <clr-tab *ngIf="withClair">
-            <button clrTabLink class="btn btn-link nav-link" id="tag-vulnerability" [class.active]='isCurrentTabLink("tag-vulnerability")'
+        <clr-tab *ngIf="hasVulnerabilitiesListPermission">
+            <button clrTabLink [clrTabLinkInOverflow]="false" class="btn btn-link nav-link" id="tag-vulnerability" [class.active]='isCurrentTabLink("tag-vulnerability")'
                 type="button" (click)='tabLinkClick("tag-vulnerability")'>{{'REPOSITORY.VULNERABILITY' | translate}}</button>
             <clr-tab-content id="content1" *clrIfActive="true">
-                <hbr-vulnerabilities-grid [repositoryId]="repositoryId" [tagId]="tagId" [withAdminRole]="withAdminRole"></hbr-vulnerabilities-grid>
+                <hbr-vulnerabilities-grid [repositoryId]="repositoryId" [projectId]="projectId" [tagId]="tagId"></hbr-vulnerabilities-grid>
             </clr-tab-content>
         </clr-tab>
         <clr-tab>
-            <button id="tag-history" clrTabLink class="btn btn-link nav-link" [class.active]='isCurrentTabLink("tag-history")'
+            <button [clrTabLinkInOverflow]="false" *ngIf="hasBuildHistoryPermission" id="tag-history" clrTabLink class="btn btn-link nav-link" [class.active]='isCurrentTabLink("tag-history")'
                 type="button" (click)='tabLinkClick("tag-history")'>{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
             <clr-tab-content *clrIfActive>
                 <hbr-tag-history [repositoryId]="repositoryId" [tagId]="tagId">{{ 'REPOSITORY.BUILD_HISTORY' |

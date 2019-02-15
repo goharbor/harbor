@@ -13,6 +13,8 @@ import { TranslateService } from '@ngx-translate/core';
 
 import { Project } from './project';
 import {SystemInfo, SystemInfoService} from '../service/index';
+import { UserPermissionService } from '../service/permission.service';
+import { USERSTATICPERMISSION } from '../service/permission-static';
 
 export class ProjectPolicy {
   Public: boolean;
@@ -56,7 +58,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
   systemInfo: SystemInfo;
   orgProjectPolicy = new ProjectPolicy();
   projectPolicy = new ProjectPolicy();
-
+  hasChangeConfigRole: boolean;
   severityOptions = [
     {severity: 'high', severityLevel: 'VULNERABILITY.SEVERITY.HIGH'},
     {severity: 'medium', severityLevel: 'VULNERABILITY.SEVERITY.MEDIUM'},
@@ -69,6 +71,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     private translate: TranslateService,
     private projectService: ProjectService,
     private systemInfoService: SystemInfoService,
+    private userPermission: UserPermissionService
   ) {}
 
   ngOnInit(): void {
@@ -85,8 +88,14 @@ export class ProjectPolicyConfigComponent implements OnInit {
 
     // retrive project level policy data
     this.retrieve();
+    this.getPermission();
   }
-
+  private getPermission(): void {
+    this.userPermission.getPermission(this.projectId,
+      USERSTATICPERMISSION.CONFIGURATION.KEY, USERSTATICPERMISSION.CONFIGURATION.VALUE.UPDATE).subscribe(permissins => {
+        this.hasChangeConfigRole = permissins as boolean;
+      });
+  }
   public get withNotary(): boolean {
     return this.systemInfo ? this.systemInfo.with_notary : false;
   }

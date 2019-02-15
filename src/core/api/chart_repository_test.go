@@ -8,6 +8,7 @@ import (
 
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 )
 
@@ -15,29 +16,6 @@ var (
 	crOldController *chartserver.Controller
 	crMockServer    *httptest.Server
 )
-
-// Test access checking
-func TestRequireAccess(t *testing.T) {
-	chartAPI := &ChartRepositoryAPI{}
-	chartAPI.SecurityCtx = &mockSecurityContext{}
-
-	ns := "library"
-	if !chartAPI.requireAccess(ns, accessLevelPublic) {
-		t.Fatal("expect true result (public access level is granted) but got false")
-	}
-	if !chartAPI.requireAccess(ns, accessLevelAll) {
-		t.Fatal("expect true result (admin has all perm) but got false")
-	}
-	if !chartAPI.requireAccess(ns, accessLevelRead) {
-		t.Fatal("expect true result (admin has read perm) but got false")
-	}
-	if !chartAPI.requireAccess(ns, accessLevelWrite) {
-		t.Fatal("expect true result (admin has write perm) but got false")
-	}
-	if !chartAPI.requireAccess(ns, accessLevelSystem) {
-		t.Fatal("expect true result (admin has system perm) but got false")
-	}
-}
 
 func TestIsMultipartFormData(t *testing.T) {
 	req, err := createRequest(http.MethodPost, "/api/chartrepo/charts")
@@ -204,7 +182,7 @@ func TestDeleteChart(t *testing.T) {
 		request: &testingRequest{
 			url:        "/api/chartrepo/library/charts/harbor",
 			method:     http.MethodDelete,
-			credential: projDeveloper,
+			credential: projAdmin,
 		},
 		code: http.StatusOK,
 	})
@@ -309,8 +287,15 @@ func (msc *mockSecurityContext) IsSolutionUser() bool {
 	return false
 }
 
-// HasReadPerm returns whether the user has read permission to the project
-func (msc *mockSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
+// Can returns whether the user can do action on resource
+func (msc *mockSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
+	namespace, err := resource.GetNamespace()
+	if err != nil || namespace.Kind() != "project" {
+		return false
+	}
+
+	projectIDOrName := namespace.Identity()
+
 	if projectIDOrName == nil {
 		return false
 	}
@@ -322,26 +307,6 @@ func (msc *mockSecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
 	}
 
 	return false
-}
-
-// HasWritePerm returns whether the user has write permission to the project
-func (msc *mockSecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	if projectIDOrName == nil {
-		return false
-	}
-
-	if ns, ok := projectIDOrName.(string); ok {
-		if ns == "library" {
-			return true
-		}
-	}
-
-	return false
-}
-
-// HasAllPerm returns whether the user has all permissions to the project
-func (msc *mockSecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
-	return msc.HasReadPerm(projectIDOrName) && msc.HasWritePerm(projectIDOrName)
 }
 
 // Get current user's all project

@@ -20,7 +20,7 @@ import { Member } from '../project/member/member';
 
 import { SignInCredential } from './sign-in-credential';
 import { enLang } from '../shared/shared.const';
-import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "./shared.utils";
+import { HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "./shared.utils";
 
 const signInUrl = '/c/login';
 const currentUserEndpoint = "/api/users/current";
@@ -67,7 +67,7 @@ export class SessionService {
     signIn(signInCredential: SignInCredential): Promise<any> {
         // Build the form package
         let queryParam: string = 'principal=' + encodeURIComponent(signInCredential.principal) +
-        '&password=' + encodeURIComponent(signInCredential.password);
+            '&password=' + encodeURIComponent(signInCredential.password);
 
         // Trigger Http
         return this.http.post(signInUrl, queryParam, HTTP_FORM_OPTIONS)
@@ -144,9 +144,9 @@ export class SessionService {
             return Promise.reject("Invalid account settings");
         }
         return this.http.post(renameAdminEndpoint, JSON.stringify({}), HTTP_JSON_OPTIONS)
-        .toPromise()
-        .then(() => null)
-        .catch(error => this.handleError(error));
+            .toPromise()
+            .then(() => null)
+            .catch(error => this.handleError(error));
     }
 
     /**

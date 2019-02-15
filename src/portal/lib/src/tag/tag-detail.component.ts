@@ -4,6 +4,9 @@ import { TagService, Tag, VulnerabilitySeverity } from "../service/index";
 import { toPromise } from "../utils";
 import { ErrorHandler } from "../error-handler/index";
 import { Label } from "../service/interface";
+import { forkJoin } from "rxjs";
+import { UserPermissionService } from "../service/permission.service";
+import { USERSTATICPERMISSION } from "../service/permission-static";
 
 const TabLinkContentMap: { [index: string]: string } = {
   "tag-history": "history",
@@ -32,8 +35,6 @@ export class TagDetailComponent implements OnInit {
   withAdmiral: boolean;
   @Input()
   withClair: boolean;
-  @Input()
-  withAdminRole: boolean;
   tagDetails: Tag = {
     name: "--",
     size: "--",
@@ -51,11 +52,14 @@ export class TagDetailComponent implements OnInit {
   backEvt: EventEmitter<any> = new EventEmitter<any>();
 
   currentTabID = "tag-vulnerability";
-
+  hasVulnerabilitiesListPermission: boolean;
+  hasBuildHistoryPermission: boolean;
+  @Input() projectId: number;
   constructor(
     private tagService: TagService,
-    private errorHandler: ErrorHandler
-  ) {}
+    private errorHandler: ErrorHandler,
+    private userPermissionService: UserPermissionService,
+  ) { }
 
   ngOnInit(): void {
     if (this.repositoryId && this.tagId) {
@@ -90,6 +94,7 @@ export class TagDetailComponent implements OnInit {
         })
         .catch(error => this.errorHandler.error(error));
     }
+    this.getTagPermissions(this.projectId);
   }
 
   onBack(): void {
@@ -172,5 +177,17 @@ export class TagDetailComponent implements OnInit {
 
   tabLinkClick(tabID: string) {
     this.currentTabID = tabID;
+  }
+
+  getTagPermissions(projectId: number): void {
+
+    const hasVulnerabilitiesListPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.REPOSITORY_TAG_VULNERABILITY.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_VULNERABILITY.VALUE.LIST);
+    const hasBuildHistoryPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.REPOSITORY_TAG_MANIFEST.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_MANIFEST.VALUE.READ);
+    forkJoin(hasVulnerabilitiesListPermission, hasBuildHistoryPermission).subscribe(permissions => {
+      this.hasVulnerabilitiesListPermission = permissions[0] as boolean;
+      this.hasBuildHistoryPermission = permissions[1] as boolean;
+    }, error => this.errorHandler.error(error));
   }
 }

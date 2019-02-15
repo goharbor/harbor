@@ -33,6 +33,7 @@ export const enum ConfirmationTargets {
   PROJECT,
   PROJECT_MEMBER,
   USER,
+  ROBOT_ACCOUNT,
   POLICY,
   TOGGLE_CONFIRM,
   TARGET,
@@ -90,12 +91,14 @@ export const LabelColor = [
   { 'color': '#F57600', 'textColor': 'black' }, { 'color': '#FFDC0B', 'textColor': 'black' },
 ];
 
-export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
+export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'master': 'MEMBER.PROJECT_MASTER',
+'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
 
 export const DefaultHelmIcon = '/images/helm-gray.svg';
 
 export enum Roles {
   PROJECT_ADMIN = 1,
+  PROJECT_MASTER = 4,
   DEVELOPER = 2,
   GUEST = 3,
   OTHER = 0,

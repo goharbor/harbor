@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GcComponent } from './gc.component';
+import { AddRobotComponent } from './add-robot.component';
 
-describe('GcComponent', () => {
-  let component: GcComponent;
-  let fixture: ComponentFixture<GcComponent>;
+describe('AddRobotComponent', () => {
+  let component: AddRobotComponent;
+  let fixture: ComponentFixture<AddRobotComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ GcComponent ]
+      declarations: [ AddRobotComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(GcComponent);
+    fixture = TestBed.createComponent(AddRobotComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -19,6 +19,8 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr"
 )
@@ -65,69 +67,20 @@ func (s *SecurityContext) IsSolutionUser() bool {
 	return false
 }
 
-// HasReadPerm returns whether the user has read permission to the project
-func (s *SecurityContext) HasReadPerm(projectIDOrName interface{}) bool {
-	// public project
-	public, err := s.pm.IsPublic(projectIDOrName)
-	if err != nil {
-		log.Errorf("failed to check the public of project %v: %v",
-			projectIDOrName, err)
-		return false
-	}
-	if public {
-		return true
-	}
-
-	// private project
-	if !s.IsAuthenticated() {
-		return false
-	}
-
-	// system admin
-	if s.IsSysAdmin() {
-		return true
-	}
-
-	roles := s.GetProjectRoles(projectIDOrName)
-	return len(roles) > 0
-}
-
-// HasWritePerm returns whether the user has write permission to the project
-func (s *SecurityContext) HasWritePerm(projectIDOrName interface{}) bool {
-	if !s.IsAuthenticated() {
-		return false
-	}
-	// system admin
-	if s.IsSysAdmin() {
-		return true
-	}
-	roles := s.GetProjectRoles(projectIDOrName)
-	for _, role := range roles {
-		switch role {
-		case common.RoleProjectAdmin,
-			common.RoleDeveloper:
-			return true
+// Can returns whether the user can do action on resource
+func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
+	ns, err := resource.GetNamespace()
+	if err == nil {
+		switch ns.Kind() {
+		case "project":
+			projectIDOrName := ns.Identity()
+			isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
+			projectNamespace := rbac.NewProjectNamespace(projectIDOrName, isPublicProject)
+			user := project.NewUser(s, projectNamespace, s.GetProjectRoles(projectIDOrName)...)
+			return rbac.HasPermission(user, resource, action)
 		}
 	}
-	return false
-}
 
-// HasAllPerm returns whether the user has all permissions to the project
-func (s *SecurityContext) HasAllPerm(projectIDOrName interface{}) bool {
-	if !s.IsAuthenticated() {
-		return false
-	}
-	// system admin
-	if s.IsSysAdmin() {
-		return true
-	}
-	roles := s.GetProjectRoles(projectIDOrName)
-	for _, role := range roles {
-		switch role {
-		case common.RoleProjectAdmin:
-			return true
-		}
-	}
 	return false
 }
 
@@ -167,6 +120,8 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 		switch role.RoleCode {
 		case "MDRWS":
 			roles = append(roles, common.RoleProjectAdmin)
+		case "DRWS":
+			roles = append(roles, common.RoleMaster)
 		case "RWS":
 			roles = append(roles, common.RoleDeveloper)
 		case "RS":

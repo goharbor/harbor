@@ -27,6 +27,9 @@ import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { LabelDefaultService, LabelService } from "../service/label.service";
 import { OperationService } from "../operation/operation.service";
 import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagService } from "../service";
+import { UserPermissionDefaultService, UserPermissionService } from "../service/permission.service";
+import { USERSTATICPERMISSION } from "../service/permission-static";
+import { of } from "rxjs";
 
 
 class RouterStub {
@@ -39,6 +42,7 @@ describe('RepositoryComponent (inline template)', () => {
   let fixture: ComponentFixture<RepositoryComponent>;
   let repositoryService: RepositoryService;
   let systemInfoService: SystemInfoService;
+  let userPermissionService: UserPermissionService;
   let tagService: TagService;
   let labelService: LabelService;
 
@@ -149,7 +153,10 @@ describe('RepositoryComponent (inline template)', () => {
     systemInfoEndpoint: '/api/systeminfo/testing',
     targetBaseEndpoint: '/api/tag/testing'
   };
-
+  let mockHasAddLabelImagePermission: boolean = true;
+  let mockHasRetagImagePermission: boolean = true;
+  let mockHasDeleteImagePermission: boolean = true;
+  let mockHasScanImagePermission: boolean = true;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -178,6 +185,7 @@ describe('RepositoryComponent (inline template)', () => {
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: RetagService, useClass: RetagDefaultService },
         { provide: LabelService, useClass: LabelDefaultService},
+        { provide: UserPermissionService, useClass: UserPermissionDefaultService},
         { provide: ChannelService},
         { provide: OperationService }
       ]
@@ -195,6 +203,7 @@ describe('RepositoryComponent (inline template)', () => {
     repositoryService = fixture.debugElement.injector.get(RepositoryService);
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
     tagService = fixture.debugElement.injector.get(TagService);
+    userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     labelService = fixture.debugElement.injector.get(LabelService);
 
     spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepo));
@@ -203,6 +212,16 @@ describe('RepositoryComponent (inline template)', () => {
 
     spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(Promise.resolve(mockLabels));
     spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(Promise.resolve(mockLabels1));
+    spyOn(userPermissionService, "getPermission")
+    .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE )
+    .and.returnValue(of(mockHasAddLabelImagePermission))
+     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL )
+     .and.returnValue(of(mockHasRetagImagePermission))
+     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE )
+     .and.returnValue(of(mockHasDeleteImagePermission))
+     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY
+      , USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE)
+     .and.returnValue(of(mockHasScanImagePermission));
     fixture.detectChanges();
   });
 

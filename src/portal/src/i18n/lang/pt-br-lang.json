@@ -192,7 +192,8 @@
         "LABELS": "Etiquetas",
         "PROJECTS": "Projetos",
         "CONFIG": "Configuração",
-        "HELMCHART": "Helm Charts"
+        "HELMCHART": "Helm Charts",
+        "ROBOT_ACCOUNTS": "Robot Accounts"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Registro do Projeto",
@@ -216,6 +217,7 @@
         "ROLE": "Função",
         "SYS_ADMIN": "Administrador do Sistema",
         "PROJECT_ADMIN": "Administrador do Projeto",
+        "PROJECT_MASTER": "Mantenedor",
         "DEVELOPER": "Desenvolvedor",
         "GUEST": "Visitante",
         "DELETE": "Remover",
@@ -255,6 +257,31 @@
         "SWITCH_SUMMARY": "Você quer alterar os membros do projeto {{param}}?",
         "SET_ROLE": "DEFINIR FUNÇÃO",
         "REMOVE": "Remover"
+    },
+    "ROBOT_ACCOUNT": {
+        "NAME": "Nome",
+        "TOKEN": "Token",
+        "NEW_ROBOT_ACCOUNT": "Novo robô conta",
+        "ENABLED_STATE": "Enabled state",
+        "DESCRIPTION": "Descrição",
+        "ACTION": "AÇÃO",
+        "EDIT": "Editar",
+        "ITEMS": "itens",
+        "OF": "de",
+        "DISABLE_ACCOUNT": "Desactivar a conta",
+        "ENABLE_ACCOUNT": "Ativar conta",
+        "DELETE": "Remover",
+        "CREAT_ROBOT_ACCOUNT": "CRIA robô conta",
+        "PULL_PERMISSION": "Permission for Pull",
+        "PUSH_PERMISSION": "Permission for Push",
+        "FILTER_PLACEHOLDER": "Filtro robot accounts",
+        "ROBOT_NAME": "Não Pode conter caracteres especiais(~#$%) e comprimento máximo deveria ser 255 caracteres.",
+        "ACCOUNT_EXISTING": "Robô conta já existe.",
+        "ALERT_TEXT": "É só copiar o token de acesso Pessoal não VAI ter outra oportunidade.",
+        "CREATED_SUCCESS": "Created '{{param}}' successfully.",
+        "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
+        "DELETION_TITLE": "Confirmar a remoção do robô Contas",
+        "DELETION_SUMMARY": "Você quer remover a regra {{param}}?"
     },
     "GROUP": {
         "GROUP": "Grupo",
@@ -792,6 +819,7 @@
         "DELETE_REPO": "Remover repositório",
         "DELETE_TAG": "Remover tag",
         "DELETE_USER": "Remover usuário",
+        "DELETE_ROBOT": "Delete robot",
         "DELETE_REGISTRY": "Remover registry",
         "DELETE_REPLICATION": "Remover replicação",
         "DELETE_MEMBER": "Remover usuário membro",

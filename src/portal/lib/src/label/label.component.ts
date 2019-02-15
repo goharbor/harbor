@@ -19,22 +19,22 @@ import {
     ChangeDetectorRef,
     Input
 } from "@angular/core";
-import {Label} from "../service/interface";
-import {LabelService} from "../service/label.service";
-import {toPromise} from "../utils";
-import {ErrorHandler} from "../error-handler/error-handler";
-import {CreateEditLabelComponent} from "../create-edit-label/create-edit-label.component";
-import {ConfirmationMessage} from "../confirmation-dialog/confirmation-message";
+import { Label } from "../service/interface";
+import { LabelService } from "../service/label.service";
+import { toPromise } from "../utils";
+import { ErrorHandler } from "../error-handler/error-handler";
+import { CreateEditLabelComponent } from "../create-edit-label/create-edit-label.component";
+import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
 import {
     ConfirmationButtons,
     ConfirmationState,
     ConfirmationTargets
 } from "../shared/shared.const";
-import {ConfirmationAcknowledgement} from "../confirmation-dialog/confirmation-state-message";
-import {TranslateService} from "@ngx-translate/core";
-import {ConfirmationDialogComponent} from "../confirmation-dialog/confirmation-dialog.component";
-import {operateChanges, OperateInfo, OperationState} from "../operation/operate";
-import {OperationService} from "../operation/operation.service";
+import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
+import { TranslateService } from "@ngx-translate/core";
+import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
+import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
+import { OperationService } from "../operation/operation.service";
 
 @Component({
     selector: "hbr-label",
@@ -51,7 +51,9 @@ export class LabelComponent implements OnInit {
 
     @Input() scope: string;
     @Input() projectId = 0;
-    @Input() hasProjectAdminRole: boolean;
+    @Input() hasCreateLabelPermission: boolean;
+    @Input() hasUpdateLabelPermission: boolean;
+    @Input() hasDeleteLabelPermission: boolean;
 
     @ViewChild(CreateEditLabelComponent)
     createEditLabel: CreateEditLabelComponent;
@@ -59,10 +61,10 @@ export class LabelComponent implements OnInit {
     confirmationDialogComponent: ConfirmationDialogComponent;
 
     constructor(private labelService: LabelService,
-                private errorHandler: ErrorHandler,
-                private translateService: TranslateService,
-                private operationService: OperationService,
-                private ref: ChangeDetectorRef) {
+        private errorHandler: ErrorHandler,
+        private translateService: TranslateService,
+        private operationService: OperationService,
+        private ref: ChangeDetectorRef) {
     }
 
     ngOnInit(): void {
@@ -162,11 +164,11 @@ export class LabelComponent implements OnInit {
                             operateChanges(operMessage, OperationState.success);
                         });
                 }).catch(
-                error => {
-                    this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
-                        operateChanges(operMessage, OperationState.failure, res);
+                    error => {
+                        this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+                            operateChanges(operMessage, OperationState.failure, res);
+                        });
                     });
-                });
     }
 
     // Forcely refresh the view
@@ -183,4 +185,5 @@ export class LabelComponent implements OnInit {
             }
         }, duration);
     }
+
 }

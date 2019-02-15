@@ -24,6 +24,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	common_job "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	api_models "github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/core/utils"
@@ -80,7 +81,8 @@ func (ra *RepJobAPI) List() {
 		return
 	}
 
-	if !ra.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+	resource := rbac.NewProjectNamespace(policy.ProjectIDs[0]).Resource(rbac.ResourceReplicationJob)
+	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}
@@ -190,7 +192,8 @@ func (ra *RepJobAPI) GetLog() {
 		return
 	}
 
-	if !ra.SecurityCtx.HasAllPerm(policy.ProjectIDs[0]) {
+	resource := rbac.NewProjectNamespace(policy.ProjectIDs[0]).Resource(rbac.ResourceReplicationJob)
+	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
 		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
 		return
 	}

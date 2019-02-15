@@ -23,14 +23,14 @@ ${HARBOR_VERSION}  v1.1.1
 Delete Success
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape="success-standard"]
+    \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='success-standard']
     Sleep  1
     Capture Page Screenshot
 
 Delete Fail
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape="error-standard"]
+    \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='error-standard']
     Sleep  1
     Capture Page Screenshot
 
@@ -59,7 +59,6 @@ Multi-delete Object
     \    ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
     \    Wait Until Element Is Visible And Enabled  ${element}
     \    Click Element  ${element}
-
     Capture Page Screenshot
     ${element}=  Set Variable  xpath=//button[contains(.,'Delete')]
     Wait Until Element Is Visible And Enabled  ${element}

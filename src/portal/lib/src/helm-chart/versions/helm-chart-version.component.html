@@ -38,18 +38,18 @@
             <clr-datagrid (clrDgRefresh)="refresh()" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
                 <clr-dg-action-bar>
                     <button type="button" class="btn btn-sm btn-secondary"
-                        [disabled]="!(selectedRows.length===1)"
+                        [disabled]="!(selectedRows.length===1) || !hasDownloadHelmChartVersionPermission"
                         (click)="versionDownload()">
                         <clr-icon shape="download" size="16"></clr-icon>&nbsp;{{'HELM_CHART.DOWNLOAD' | translate}}
                     </button>
                     <button type="button" class="btn btn-sm btn-secondary"
-                        [disabled]="selectedRows.length<=0 || !hasProjectAdminRole"
+                        [disabled]="selectedRows.length<=0 || !hasDeleteHelmChartVersionPermission"
                         (click)="openVersionDeleteModal(selectedRows)">
                         <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}
                     </button>
                     <clr-dropdown>
-                        <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger 
-                            [disabled]="!(selectedRows.length===1 && developerRoleOrAbove)">
+                        <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger
+                            [disabled]="!(selectedRows.length===1)|| !hasAddRemoveHelmChartVersionPermission">
                             <clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}
                         </button>
                         <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
@@ -144,7 +144,7 @@
                         <button type="button" class="btn btn-link"
                         (click)="versionDownload($event, item)">{{'HELM_CHART.DOWNLOAD' | translate}}</button>
                         <button type="button" class="btn btn-link"
-                        [disabled]="selectedRows.length<=0 || !hasProjectAdminRole"
+                        [disabled]="selectedRows.length<=0 || !hasDeleteHelmChartVersionPermission"
                         (click)="deleteVersionCard($event, item)">{{'BUTTON.DELETE' | translate}}</button>
                     </clr-dropdown>
                 </div>

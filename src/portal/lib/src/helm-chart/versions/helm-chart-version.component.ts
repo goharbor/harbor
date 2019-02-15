@@ -26,6 +26,8 @@ import { ErrorHandler } from "./../../error-handler/error-handler";
 import { toPromise, DEFAULT_PAGE_SIZE, downloadFile } from "../../utils";
 import { OperationService } from "./../../operation/operation.service";
 import { HelmChartService } from "./../../service/helm-chart.service";
+import { UserPermissionService } from "../../service/permission.service";
+import { USERSTATICPERMISSION } from "../../service/permission-static";
 import { ConfirmationAcknowledgement, ConfirmationDialogComponent, ConfirmationMessage } from "./../../confirmation-dialog";
 import {
   OperateInfo,
@@ -49,13 +51,11 @@ import {
 })
 export class ChartVersionComponent implements OnInit {
   signedCon: { [key: string]: any | string[] } = {};
-  @Input() projectRoleID: number;
   @Input() projectId: number;
   @Input() projectName: string;
   @Input() chartName: string;
   @Input() roleName: string;
   @Input() hasSignedIn: boolean;
-  @Input() hasProjectAdminRole: boolean;
   @Input() chartDefaultIcon: string = DefaultHelmIcon;
   @Output() versionClickEvt = new EventEmitter<string>();
   @Output() backEvt = new EventEmitter<any>();
@@ -85,12 +85,15 @@ export class ChartVersionComponent implements OnInit {
 
   @ViewChild("confirmationDialog")
   confirmationDialog: ConfirmationDialogComponent;
-
+  hasAddRemoveHelmChartVersionPermission: boolean;
+  hasDownloadHelmChartVersionPermission: boolean;
+  hasDeleteHelmChartVersionPermission: boolean;
   constructor(
     private errorHandler: ErrorHandler,
     private systemInfoService: SystemInfoService,
     private helmChartService: HelmChartService,
     private resrouceLabelService: LabelService,
+    public userPermissionService: UserPermissionService,
     private cdr: ChangeDetectorRef,
     private operationService: OperationService,
   ) { }
@@ -107,6 +110,7 @@ export class ChartVersionComponent implements OnInit {
     this.refresh();
     this.getLabels();
     this.lastFilteredVersionName = "";
+    this.getHelmChartVersionPermission(this.projectId);
   }
 
   updateFilterValue(value: string) {
@@ -326,7 +330,19 @@ export class ChartVersionComponent implements OnInit {
       });
   }
 
-  public get developerRoleOrAbove(): boolean {
-    return this.projectRoleID === Roles.DEVELOPER || this.hasProjectAdminRole;
+  getHelmChartVersionPermission(projectId: number): void {
+
+    let hasAddRemoveHelmChartVersionPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.HELM_CHART_VERSION_LABEL.KEY, USERSTATICPERMISSION.HELM_CHART_VERSION_LABEL.VALUE.CREATE);
+    let hasDownloadHelmChartVersionPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.HELM_CHART_VERSION.KEY, USERSTATICPERMISSION.HELM_CHART_VERSION.VALUE.READ);
+    let hasDeleteHelmChartVersionPermission = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.HELM_CHART_VERSION.KEY, USERSTATICPERMISSION.HELM_CHART_VERSION.VALUE.DELETE);
+    forkJoin(hasAddRemoveHelmChartVersionPermission, hasDownloadHelmChartVersionPermission, hasDeleteHelmChartVersionPermission)
+    .subscribe(permissions => {
+      this.hasAddRemoveHelmChartVersionPermission = permissions[0] as boolean;
+      this.hasDownloadHelmChartVersionPermission = permissions[1] as boolean;
+      this.hasDeleteHelmChartVersionPermission = permissions[2] as boolean;
+    }, error => this.errorHandler.error(error));
   }
 }

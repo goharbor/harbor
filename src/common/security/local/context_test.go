@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
@@ -210,66 +211,73 @@ func TestIsSolutionUser(t *testing.T) {
 func TestHasReadPerm(t *testing.T) {
 	// public project
 	ctx := NewSecurityContext(nil, pm)
-	assert.True(t, ctx.HasReadPerm("library"))
+
+	resource := rbac.NewProjectNamespace("library").Resource(rbac.ResourceRepository)
+	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 
 	// private project, unauthenticated
 	ctx = NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasReadPerm(private.Name))
+	resource = rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+	assert.False(t, ctx.Can(rbac.ActionPull, resource))
 
 	// private project, authenticated, has no perm
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
 	}, pm)
-	assert.False(t, ctx.HasReadPerm(private.Name))
+	assert.False(t, ctx.Can(rbac.ActionPull, resource))
 
 	// private project, authenticated, has read perm
 	ctx = NewSecurityContext(guestUser, pm)
-	assert.True(t, ctx.HasReadPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 
 	// private project, authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
 		HasAdminRole: true,
 	}, pm)
-	assert.True(t, ctx.HasReadPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
 
 func TestHasWritePerm(t *testing.T) {
+	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+
 	// unauthenticated
 	ctx := NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasWritePerm(private.Name))
+	assert.False(t, ctx.Can(rbac.ActionPush, resource))
 
 	// authenticated, has read perm
 	ctx = NewSecurityContext(guestUser, pm)
-	assert.False(t, ctx.HasWritePerm(private.Name))
+	assert.False(t, ctx.Can(rbac.ActionPush, resource))
 
 	// authenticated, has write perm
 	ctx = NewSecurityContext(developerUser, pm)
-	assert.True(t, ctx.HasWritePerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
 		HasAdminRole: true,
 	}, pm)
-	assert.True(t, ctx.HasReadPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 }
 
 func TestHasAllPerm(t *testing.T) {
+	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+
 	// unauthenticated
 	ctx := NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasAllPerm(private.Name))
+	assert.False(t, ctx.Can(rbac.ActionPushPull, resource))
 
 	// authenticated, has all perms
 	ctx = NewSecurityContext(projectAdminUser, pm)
-	assert.True(t, ctx.HasAllPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPushPull, resource))
 
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
 		HasAdminRole: true,
 	}, pm)
-	assert.True(t, ctx.HasAllPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPushPull, resource))
 }
 
 func TestHasAllPermWithGroup(t *testing.T) {
@@ -285,10 +293,13 @@ func TestHasAllPermWithGroup(t *testing.T) {
 	developer.GroupList = []*models.UserGroup{
 		{GroupName: "test_group", GroupType: 1, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"},
 	}
+
+	resource := rbac.NewProjectNamespace(project.Name).Resource(rbac.ResourceRepository)
+
 	ctx := NewSecurityContext(developer, pm)
-	assert.False(t, ctx.HasAllPerm(project.Name))
-	assert.True(t, ctx.HasWritePerm(project.Name))
-	assert.True(t, ctx.HasReadPerm(project.Name))
+	assert.False(t, ctx.Can(rbac.ActionPushPull, resource))
+	assert.True(t, ctx.Can(rbac.ActionPush, resource))
+	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
 
 func TestGetMyProjects(t *testing.T) {

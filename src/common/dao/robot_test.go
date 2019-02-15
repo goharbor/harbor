@@ -27,7 +27,6 @@ func TestAddRobot(t *testing.T) {
 	robotName := "test1"
 	robot := &models.Robot{
 		Name:        robotName,
-		Token:       "rKgjKEMpMEK23zqejkWn5GIVvgJps1vKACTa6tnGXXyOlOTsXFESccDvgaJx047q1",
 		Description: "test1 description",
 		ProjectID:   1,
 	}
@@ -46,7 +45,6 @@ func TestGetRobot(t *testing.T) {
 	robotName := "test2"
 	robot := &models.Robot{
 		Name:        robotName,
-		Token:       "rKgjKEMpMEK23zqejkWn5GIVvgJps1vKACTa6tnGXXyOlOTsXFESccDvgaJx047q2",
 		Description: "test2 description",
 		ProjectID:   1,
 	}
@@ -66,7 +64,6 @@ func TestListRobots(t *testing.T) {
 	robotName := "test3"
 	robot := &models.Robot{
 		Name:        robotName,
-		Token:       "rKgjKEMpMEK23zqejkWn5GIVvgJps1vKACTa6tnGXXyOlOTsXFESccDvgaJx047q3",
 		Description: "test3 description",
 		ProjectID:   1,
 	}
@@ -86,7 +83,6 @@ func TestDisableRobot(t *testing.T) {
 	robotName := "test4"
 	robot := &models.Robot{
 		Name:        robotName,
-		Token:       "rKgjKEMpMEK23zqejkWn5GIVvgJps1vKACTa6tnGXXyOlOTsXFESccDvgaJx047q4",
 		Description: "test4 description",
 		ProjectID:   1,
 	}
@@ -111,7 +107,6 @@ func TestEnableRobot(t *testing.T) {
 	robotName := "test5"
 	robot := &models.Robot{
 		Name:        robotName,
-		Token:       "rKgjKEMpMEK23zqejkWn5GIVvgJps1vKACTa6tnGXXyOlOTsXFESccDvgaJx047q5",
 		Description: "test5 description",
 		Disabled:    true,
 		ProjectID:   1,
@@ -137,7 +132,6 @@ func TestDeleteRobot(t *testing.T) {
 	robotName := "test6"
 	robot := &models.Robot{
 		Name:        robotName,
-		Token:       "rKgjKEMpMEK23zqejkWn5GIVvgJps1vKACTa6tnGXXyOlOTsXFESccDvgaJx047q6",
 		Description: "test6 description",
 		ProjectID:   1,
 	}

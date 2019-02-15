@@ -104,6 +104,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @Input() isSystemAdmin: boolean;
   @Input() withAdmiral: boolean;
   @Input() withReplicationJob: boolean;
+  @Input() hasCreateReplicationPermission: boolean;
+  @Input() hasUpdateReplicationPermission: boolean;
+  @Input() hasDeleteReplicationPermission: boolean;
+  @Input() hasExecuteReplicationPermission: boolean;
 
   @Output() redirect = new EventEmitter<ReplicationRule>();
   @Output() openCreateRule = new EventEmitter<any>();
