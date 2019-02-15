@@ -50,12 +50,12 @@ def validate(conf, args):
 
     if project_creation != "everyone" and project_creation != "adminonly":
         raise Exception("Error invalid value for project_creation_restriction: %s" % project_creation)
-    
-    valid_storage_drivers = ["filesystem", "azure", "gcs", "s3", "swift", "oss"]        
+
+    valid_storage_drivers = ["filesystem", "azure", "gcs", "s3", "swift", "oss"]
     storage_provider_name = rcp.get("configuration", "registry_storage_provider_name").strip()
     if storage_provider_name not in valid_storage_drivers:
         raise Exception("Error: storage driver %s is not supported, only the following ones are supported: %s" % (storage_provider_name, ",".join(valid_storage_drivers)))
-        
+
     storage_provider_config = rcp.get("configuration", "registry_storage_provider_config").strip()
     if storage_provider_name != "filesystem":
         if storage_provider_config == "":
@@ -82,7 +82,7 @@ def mark_file(path, mode=0o600, uid=DEFAULT_UID, gid=DEFAULT_GID):
         os.chown(path, uid, gid)
 
 def get_secret_key(path):
-    secret_key = _get_secret(path, "secretkey") 
+    secret_key = _get_secret(path, "secretkey")
     if len(secret_key) != 16:
         raise Exception("secret key's length has to be 16 chars, current length: %d" % len(secret_key))
     return secret_key
@@ -101,7 +101,7 @@ def _get_secret(folder, filename, length=16):
         return key
     if not os.path.isdir(folder):
         os.makedirs(folder)
-    key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(length))  
+    key = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(length))
     with open(key_file, 'w') as f:
         f.write(key)
         print("Generated and saved secret to file: %s" % key_file)
@@ -187,6 +187,9 @@ ldap_group_basedn = rcp.get("configuration", "ldap_group_basedn")
 ldap_group_filter = rcp.get("configuration", "ldap_group_filter")
 ldap_group_gid = rcp.get("configuration", "ldap_group_gid")
 ldap_group_scope = rcp.get("configuration", "ldap_group_scope")
+oidc_provider_url = rcp.get("configuration", "oidc_provider_url")
+oidc_client_id = rcp.get("configuration", "oidc_client_id")
+oidc_client_secret = rcp.get("configuration", "oidc_client_secret")
 db_password = rcp.get("configuration", "db_password")
 db_host = rcp.get("configuration", "db_host")
 db_user = rcp.get("configuration", "db_user")
@@ -250,7 +253,7 @@ storage_provider_config = rcp.get("configuration", "registry_storage_provider_co
 # yaml requires 1 or more spaces between the key and value
 storage_provider_config = storage_provider_config.replace(":", ": ", 1)
 registry_custom_ca_bundle_path = rcp.get("configuration", "registry_custom_ca_bundle").strip()
-core_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
+core_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))
 jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))
 
 adminserver_config_dir = os.path.join(config_dir,"adminserver")
@@ -279,7 +282,7 @@ db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
 cert_dir = os.path.join(config_dir, "nginx", "cert")
-log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf") 
+log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf")
 adminserver_url = "http://adminserver:8080"
 registry_url = "http://registry:5000"
 registry_controller_url = "http://registryctl:8080"
@@ -346,7 +349,7 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         auth_mode=auth_mode,
         self_registration=self_registration,
         ldap_url=ldap_url,
-        ldap_searchdn =ldap_searchdn, 
+        ldap_searchdn =ldap_searchdn,
         ldap_search_pwd =ldap_search_pwd,
         ldap_basedn=ldap_basedn,
         ldap_filter=ldap_filter,
@@ -359,6 +362,9 @@ render(os.path.join(templates_dir, "adminserver", "env"),
         ldap_group_gid=ldap_group_gid,
         ldap_group_scope=ldap_group_scope,
         ldap_group_admin_dn=ldap_group_admin_dn,
+        oidc_provider_url=oidc_provider_url,
+        oidc_client_id=oidc_client_id,
+        oidc_client_secret=oidc_client_secret,
         db_password=db_password,
         db_host=db_host,
         db_user=db_user,
@@ -408,8 +414,8 @@ chart_cache_driver = "memory"
 if len(redis_host) > 0:
     chart_cache_driver = "redis"
 
-render(os.path.join(templates_dir, "core", "env"), 
-        core_conf_env, 
+render(os.path.join(templates_dir, "core", "env"),
+        core_conf_env,
         core_secret=core_secret,
         jobservice_secret=jobservice_secret,
         redis_host=redis_host,
@@ -440,7 +446,7 @@ for c in storage_provider_config.split(","):
 storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
 render(os.path.join(templates_dir, "registry", registry_config_file),
     registry_conf,
-    uid=DEFAULT_UID, 
+    uid=DEFAULT_UID,
     gid=DEFAULT_GID,
     storage_provider_info=storage_provider_info,
     public_url=public_url,
@@ -462,14 +468,14 @@ render(os.path.join(templates_dir, "jobservice", "env"),
 
 render(os.path.join(templates_dir, "jobservice", "config.yml"),
         jobservice_conf,
-        uid=DEFAULT_UID, 
+        uid=DEFAULT_UID,
         gid=DEFAULT_GID,
         max_job_workers=max_job_workers,
         redis_url=redis_url_js)
 
 render(os.path.join(templates_dir, "log", "logrotate.conf"),
         log_rotate_config,
-        uid=DEFAULT_UID, 
+        uid=DEFAULT_UID,
         gid=DEFAULT_GID,
         log_rotate_count=log_rotate_count,
 		log_rotate_size=log_rotate_size)
@@ -538,7 +544,7 @@ def openssl_installed():
         print("Cannot find openssl installed in this computer\nUse default SSL certificate file")
         return False
     return True
-        
+
 
 if customize_crt == 'on' and openssl_installed():
     shell_stat = subprocess.check_call(["which", "openssl"], stdout=FNULL, stderr=subprocess.STDOUT)
@@ -560,11 +566,11 @@ if len(registry_custom_ca_bundle_path) > 0 and os.path.isfile(registry_custom_ca
 
 if args.notary_mode:
     notary_config_dir = prep_conf_dir(config_dir, "notary")
-    notary_temp_dir = os.path.join(templates_dir, "notary") 
+    notary_temp_dir = os.path.join(templates_dir, "notary")
     print("Copying sql file for notary DB")
     # if os.path.exists(os.path.join(notary_config_dir, "postgresql-initdb.d")):
     #     shutil.rmtree(os.path.join(notary_config_dir, "postgresql-initdb.d"))
-    # shutil.copytree(os.path.join(notary_temp_dir, "postgresql-initdb.d"), os.path.join(notary_config_dir, "postgresql-initdb.d")) 
+    # shutil.copytree(os.path.join(notary_temp_dir, "postgresql-initdb.d"), os.path.join(notary_config_dir, "postgresql-initdb.d"))
     if customize_crt == 'on' and openssl_installed():
         try:
             temp_cert_dir = os.path.join(base_dir, "cert_tmp")
@@ -599,21 +605,21 @@ if args.notary_mode:
     mark_file(os.path.join(notary_config_dir, "notary-signer-ca.crt"))
     mark_file(os.path.join(notary_config_dir, "root.crt"))
     print("Copying notary signer configuration file")
-    render(os.path.join(notary_temp_dir, "signer-config.postgres.json"), 
+    render(os.path.join(notary_temp_dir, "signer-config.postgres.json"),
         os.path.join(notary_config_dir, "signer-config.postgres.json"),
-        uid=DEFAULT_UID, 
+        uid=DEFAULT_UID,
         gid=DEFAULT_GID
         )
 
     render(os.path.join(notary_temp_dir, "server-config.postgres.json"),
         os.path.join(notary_config_dir, "server-config.postgres.json"),
-        uid=DEFAULT_UID, 
+        uid=DEFAULT_UID,
         gid=DEFAULT_GID,
         token_endpoint=public_url)
     print("Copying nginx configuration file for notary")
     shutil.copy2(os.path.join(templates_dir, "nginx", "notary.upstream.conf"), nginx_conf_d)
-    render(os.path.join(templates_dir, "nginx", "notary.server.conf"), 
-            os.path.join(nginx_conf_d, "notary.server.conf"), 
+    render(os.path.join(templates_dir, "nginx", "notary.server.conf"),
+            os.path.join(nginx_conf_d, "notary.server.conf"),
             ssl_cert = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_path)),
             ssl_cert_key = os.path.join("/etc/nginx/cert", os.path.basename(target_cert_key_path)))
 
@@ -628,12 +634,12 @@ if args.clair_mode:
         print("Copying offline data file for clair DB")
         shutil.rmtree(os.path.join(clair_config_dir, "postgresql-init.d"))
     shutil.copytree(os.path.join(clair_temp_dir, "postgresql-init.d"), os.path.join(clair_config_dir, "postgresql-init.d"))
-    postgres_env = os.path.join(clair_config_dir, "postgres_env") 
+    postgres_env = os.path.join(clair_config_dir, "postgres_env")
     render(os.path.join(clair_temp_dir, "postgres_env"), postgres_env, password = clair_db_password)
     clair_conf = os.path.join(clair_config_dir, "config.yaml")
     render(os.path.join(clair_temp_dir, "config.yaml"),
             clair_conf,
-            uid=DEFAULT_UID, 
+            uid=DEFAULT_UID,
             gid=DEFAULT_GID,
             password = clair_db_password,
             username = clair_db_username,
@@ -661,13 +667,13 @@ if args.chart_mode:
     if not os.path.isdir(chartm_config_dir):
         print ("Create config folder: %s" % chartm_config_dir)
         os.makedirs(chartm_config_dir)
-    
+
     # process redis info
     cache_store = "redis"
     cache_redis_password = redis_password
     cache_redis_addr = redis_host+":"+redis_port
     cache_redis_db_index = redis_db_index_chart
-    
+
     # process storage info
     #default using local file system
     storage_driver = "local"

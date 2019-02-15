@@ -224,6 +224,30 @@ func (cc *CommonController) ResetPassword() {
 	}
 }
 
+func (cc *CommonController) OauthAuthorize() {
+	u, err := auth.GetAuthorizeURL()
+	if err != nil {
+		log.Errorf("error in OauthAuthorize: %s", err.Error())
+		cc.CustomAbort(http.StatusBadRequest, "Bad Request")
+	}
+
+	cc.Redirect(u, http.StatusFound)
+}
+
+func (cc *CommonController) OauthCallback() {
+	user, err := auth.Callback(cc.GetString("code"))
+	if err != nil {
+		log.Errorf("error in OauthCallback: %s", err.Error())
+		cc.CustomAbort(http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	log.Debugf("%+v", *user)
+	cc.SetSession("userId", user.UserID)
+	cc.SetSession("user", *user)
+	cc.Redirect("/harbor", http.StatusFound)
+}
+
 func isUserResetable(u *models.User) bool {
 	if u == nil {
 		return false

@@ -20,6 +20,8 @@ import (
 	"net/http"
 	"regexp"
 
+	"strings"
+
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/common"
@@ -38,7 +40,6 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/admiral"
-	"strings"
 )
 
 // ContextValueKey for content value

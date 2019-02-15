@@ -31,6 +31,7 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
+	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"

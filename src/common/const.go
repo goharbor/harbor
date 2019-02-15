@@ -20,6 +20,7 @@ const (
 	LDAPAuth            = "ldap_auth"
 	UAAAuth             = "uaa_auth"
 	HTTPAuth            = "http_auth"
+	OIDCAuth            = "oidc_auth"
 	ProCrtRestrEveryone = "everyone"
 	ProCrtRestrAdmOnly  = "adminonly"
 	LDAPScopeBase       = 0
@@ -66,6 +67,9 @@ const (
 	LDAPGroupSearchFilter             = "ldap_group_search_filter"
 	LDAPGroupAttributeName            = "ldap_group_attribute_name"
 	LDAPGroupSearchScope              = "ldap_group_search_scope"
+	OIDCProviderURL                   = "oidc_provider_url"
+	OIDCClientID                      = "oidc_client_id"
+	OIDCClientSecret                  = "oidc_client_secret"
 	TokenServiceURL                   = "token_service_url"
 	RegistryURL                       = "registry_url"
 	EmailHost                         = "email_host"
@@ -141,6 +145,9 @@ var (
 		LDAPGroupBaseDN:            "",
 		LdapGroupAdminDn:           "",
 		LDAPGroupSearchFilter:      "",
+		OIDCProviderURL:            "",
+		OIDCClientID:               "",
+		OIDCClientSecret:           "",
 		EmailHost:                  "smtp.mydomain.com",
 		EmailUsername:              "sample_admin@mydomain.com",
 		EmailPassword:              "abc",

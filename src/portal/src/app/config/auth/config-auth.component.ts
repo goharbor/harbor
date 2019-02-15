@@ -11,11 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, ViewChild, SimpleChanges, OnChanges} from '@angular/core';
+import { Component, Input, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Subscription } from "rxjs";
 
-import { Configuration, clone, isEmpty, getChanges, StringValueItem} from '@harbor/ui';
+import { Configuration, clone, isEmpty, getChanges, StringValueItem } from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../app-config.service';
@@ -41,7 +41,7 @@ export class ConfigurationAuthComponent implements OnChanges {
         private configService: ConfigurationService,
         private appConfigService: AppConfigService,
         private confirmMessageHandler: ConfirmMessageHandler
-        ) {
+    ) {
     }
 
     get checkable() {
@@ -66,11 +66,15 @@ export class ConfigurationAuthComponent implements OnChanges {
         return this.currentConfig && this.currentConfig.auth_mode && this.currentConfig.auth_mode.value === 'uaa_auth';
     }
 
+    public get showOIDC(): boolean {
+        return true
+    }
+
     public get showSelfReg(): boolean {
         if (!this.currentConfig || !this.currentConfig.auth_mode) {
             return true;
         } else {
-            return this.currentConfig.auth_mode.value !== 'ldap_auth' && this.currentConfig.auth_mode.value !== 'uaa_auth';
+            return this.currentConfig.auth_mode.value === 'db_auth';
         }
     }
 
@@ -140,10 +144,10 @@ export class ConfigurationAuthComponent implements OnChanges {
         let changes = {};
         for (let prop in allChanges) {
             if (prop.startsWith('ldap_')
-            || prop.startsWith('uaa_')
-            || prop === 'auth_mode'
-            || prop === 'project_creattion_restriction'
-            || prop === 'self_registration') {
+                || prop.startsWith('uaa_')
+                || prop === 'auth_mode'
+                || prop === 'project_creattion_restriction'
+                || prop === 'self_registration') {
                 changes[prop] = allChanges[prop];
             }
         }
@@ -161,7 +165,7 @@ export class ConfigurationAuthComponent implements OnChanges {
     handleOnChange($event: any): void {
         if ($event && $event.target && $event.target["value"]) {
             let authMode = $event.target["value"];
-            if (authMode === 'ldap_auth' || authMode === 'uaa_auth') {
+            if (authMode === 'ldap_auth' || authMode === 'uaa_auth' || authMode === 'oidc_auth') {
                 if (this.currentConfig.self_registration.value) {
                     this.currentConfig.self_registration.value = false; // unselect
                 }
@@ -169,12 +173,12 @@ export class ConfigurationAuthComponent implements OnChanges {
         }
     }
 
-     /**
-     *
-     * Save the changed values
-     *
-     * @memberOf ConfigurationComponent
-     */
+    /**
+    *
+    * Save the changed values
+    *
+    * @memberOf ConfigurationComponent
+    */
     public save(): void {
         let changes = this.getChanges();
         if (!isEmpty(changes)) {

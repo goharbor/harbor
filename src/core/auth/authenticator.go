@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/auth/oidc"
 	"github.com/goharbor/harbor/src/core/config"
 )
 
@@ -60,7 +61,6 @@ func NewErrAuth(msg string) ErrAuth {
 
 // AuthenticateHelper provides interface for user management in different auth modes.
 type AuthenticateHelper interface {
-
 	// Authenticate authenticate the user based on data in m.  Only when the error returned is an instance
 	// of ErrAuth, it will be considered a bad credentials, other errors will be treated as server side error.
 	Authenticate(m models.AuthModel) (*models.User, error)
@@ -157,6 +157,48 @@ func Login(m models.AuthModel) (*models.User, error) {
 	}
 	err = authenticator.PostAuthenticate(user)
 	return user, err
+}
+
+func GetAuthorizeURL() (string, error) {
+	client, err := oidc.Client()
+	if err != nil {
+		return "", err
+	}
+
+	return client.AuthCodeURL("nostate")
+}
+
+func Callback(code string) (*models.User, error) {
+	client, err := oidc.Client()
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := client.RequestToken(code)
+	if err != nil {
+		return nil, err
+	}
+
+	h, err := getHelper()
+
+	err = dao.OnBoardUser(u)
+	// err = h.OnBoardUser(u)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err = h.SearchUser(u.Username)
+	// u, err = dao.GetUser(models.User{Username: u.Username})
+	if err != nil {
+		return nil, err
+	}
+
+	if u == nil {
+		return nil, fmt.Errorf("no user found")
+	}
+
+	log.Debugf("FROM CALLBACK: %+v", u)
+	return u, nil
 }
 
 func getHelper() (AuthenticateHelper, error) {

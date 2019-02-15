@@ -82,9 +82,9 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             if (customSkinObj.loginBgImg) {
                 this.customLoginBgImg = customSkinObj.loginBgImg;
             }
-           if (customSkinObj.appTitle) {
-               this.customAppTitle = customSkinObj.appTitle;
-           }
+            if (customSkinObj.appTitle) {
+                this.customAppTitle = customSkinObj.appTitle;
+            }
         }
 
         // Make sure the updated configuration can be loaded
@@ -143,7 +143,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     }
 
     public get showForgetPwd(): boolean {
-        return this.appConfig.auth_mode !== 'ldap_auth' && this.appConfig.auth_mode !== 'uaa_auth';
+        return this.appConfig.auth_mode === 'db_auth'
     }
 
     clickRememberMe($event: any): void {
@@ -260,6 +260,10 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             .catch(error => {
                 this.handleError(error);
             });
+    }
+
+    oauth(): void {
+        window.location.href = '/c/oauth2/authorize';
     }
 
     // Open sign up dialog

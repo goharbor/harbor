@@ -83,6 +83,16 @@
   version = "v1.7.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/coreos/go-oidc"
+  packages = [
+    ".",
+    "http",
+    "oauth2"
+  ]
+  revision = "a93f71fdfe73d2c0f5413c0565eea0af6523a6df"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -106,10 +116,12 @@
     ".",
     "context",
     "digest",
+    "health",
     "manifest",
     "manifest/schema1",
     "manifest/schema2",
     "reference",
+    "registry/api/errcode",
     "registry/auth",
     "registry/auth/token",
     "registry/client/auth/challenge",
@@ -284,6 +296,15 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/pquerna/cachecontrol"
+  packages = [
+    ".",
+    "cacheobject"
+  ]
+  revision = "1555304b9b35fdd2b425bccf1a5613677705e7d0"
+
+[[projects]]
   name = "github.com/robfig/cron"
   packages = ["."]
   revision = "b024fc5ea0e34bc3f83d9941c8d60b0622bfaca4"
@@ -299,7 +320,8 @@
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
-    "require"
+    "require",
+    "suite"
   ]
   revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
   version = "v1.2.0"
@@ -308,6 +330,8 @@
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
+    "ed25519",
+    "ed25519/internal/edwards25519",
     "openpgp",
     "openpgp/armor",
     "openpgp/clearsign",
@@ -369,6 +393,16 @@
   version = "v2.5.0"
 
 [[projects]]
+  name = "gopkg.in/square/go-jose.v2"
+  packages = [
+    ".",
+    "cipher",
+    "json"
+  ]
+  revision = "e94fb177d3668d35ab39c61cbb2f311550557e83"
+  version = "v2.2.2"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
@@ -411,6 +445,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "862941e7de65d953c0133ea4b290a079990f38c7cd6e2f1139ac78706d0912b3"
+  inputs-digest = "d1f99920aff915e46d888b89b0a3aeb231ade6461b0132429027ad4344291419"
   solver-name = "gps-cdcl"
   solver-version = 1

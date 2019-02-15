@@ -409,15 +409,15 @@
         "IMMEDIATE": "Imediato",
         "DAILY": "Diário",
         "WEEKLY": "Semanal",
-        "SETTING":"Opções",
-        "TRIGGER":"Condições de disparo",
-        "TARGETS":"Destino",
+        "SETTING": "Opções",
+        "TRIGGER": "Condições de disparo",
+        "TARGETS": "Destino",
         "MODE": "Modo",
         "TRIGGER_MODE": "Modo de disparo",
         "SOURCE_PROJECT": "Projeto de origem",
         "REPLICATE": "Replicar",
-        "DELETE_REMOTE_IMAGES":"Remover imagens remotas quando removido localmente",
-        "REPLICATE_IMMEDIATE":"Replicar imagens existentes imediatamente",
+        "DELETE_REMOTE_IMAGES": "Remover imagens remotas quando removido localmente",
+        "REPLICATE_IMMEDIATE": "Replicar imagens existentes imediatamente",
         "NEW": "Novo",
         "NAME_TOOLTIP": "nome da regra de replicação deve conter ao menos 2 caracteres sendo caracteres minusculos, números e  ._- e devem iniciar com letras e números.",
         "DELETED_LABEL_INFO": "Removidas as label(s) '{{param}}' referenciadas no filtro, clique 'SALVAR' para atualizar o filtro e habilitar essa regra.",
@@ -609,6 +609,7 @@
         "AUTH_MODE_DB": "Banco de Dados",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
+        "AUTH_MODE_OIDC": "OIDC",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
         "SCOPE_SUBTREE": "Subtree",
@@ -652,7 +653,6 @@
             "LDAP_GROUP_ADMIN_DN_INFO": "Especifica um DN de grupo LDAP. Todo usuário do LDAP nesse grupo terã privilégio de administrador. Mantenha em branco caso não deseje esse comportamento.",
             "GROUP_SCOPE": "Escopo de grupo LDAP",
             "GROUP_SCOPE_INFO": "O escopo que deve ser utilizado na busca por grupos, utiliza Subtree por padrão."
-
         },
         "UAA": {
             "ENDPOINT": "Endpoint UAA",
@@ -849,40 +849,38 @@
     "SERVER_ERROR": "Não foi possível executar suas ações pois ocorreram erros internos.",
     "INCONRRECT_OLD_PWD": "A senha antiga está incorreta.",
     "UNKNOWN": "n/a",
-    "STATUS":"Status",
+    "STATUS": "Status",
     "START_TIME": "Início",
     "END_TIME": "Finalização",
-    "DETAILS":"Detalhes",
-    "PENDING":"Pendente",
-    "FINISHED":"Finalizado",
-    "STOPPED":"Parado",
-    "RUNNING":"Executando",
-    "ERROR":"Erro",
+    "DETAILS": "Detalhes",
+    "PENDING": "Pendente",
+    "FINISHED": "Finalizado",
+    "STOPPED": "Parado",
+    "RUNNING": "Executando",
+    "ERROR": "Erro",
     "SCHEDULE": {
         "NONE": "Nenhum",
         "DAILY": "Diário",
         "WEEKLY": "Semanal",
         "MANUAL": "Manual"
-    }, 
+    },
     "GC": {
         "CURRENT_SCHEDULE": "Agendamento atual",
         "ON": "em",
         "AT": "em",
         "GC_NOW": "GC AGORA",
-        "JOB_LIST":"Lista de tarefas de Limpeza",
-        "JOB_ID":"ID DA TAREFA",
+        "JOB_LIST": "Lista de tarefas de Limpeza",
+        "JOB_ID": "ID DA TAREFA",
         "TRIGGER_TYPE": "TIPO DE DISPARO",
         "LATEST_JOBS": "Ultimas tarefas {{param}}",
-        "LOG_DETAIL":"Detalhes de Log",
-        "MSG_SUCCESS":"Garbage Collection efetuado com sucesso",
-        "MSG_SCHEDULE_SET":"Agendamento de Garbage Collection efetuado",
-        "MSG_SCHEDULE_RESET":"Agendamento de Garbage Collection foi redefinido"
+        "LOG_DETAIL": "Detalhes de Log",
+        "MSG_SUCCESS": "Garbage Collection efetuado com sucesso",
+        "MSG_SCHEDULE_SET": "Agendamento de Garbage Collection efetuado",
+        "MSG_SCHEDULE_RESET": "Agendamento de Garbage Collection foi redefinido"
     },
     "RETAG": {
         "MSG_SUCCESS": "Retag successfully",
         "TIP_REPO": "A repository name is broken up into path components. A component of a repository name must be at least one lowercase, alpha-numeric characters, optionally separated by periods, dashes or underscores. More strictly, it must match the regular expression [a-z0-9]+(?:[._-][a-z0-9]+)*.If a repository name has two or more path components, they must be separated by a forward slash ('/').The total length of a repository name, including slashes, must be less the 256 characters.",
         "TIP_TAG": "A tag is a label applied to a Docker image in a repository. Tags are how various images in a repository are distinguished from each other.It need to match Regex: (`[\\w][\\w.-]{0,127}`)"
     }
-
-    
 }

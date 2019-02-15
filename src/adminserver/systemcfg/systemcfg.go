@@ -98,6 +98,9 @@ var (
 			env:   "LDAP_GROUP_SCOPE",
 			parse: parseStringToInt,
 		},
+		common.OIDCProviderURL: "OIDC_PROVIDER_URL",
+		common.OIDCClientID: "OIDC_CLIENT_ID",
+		common.OIDCClientSecret: "OIDC_CLIENT_SECRET",
 		common.EmailHost: "EMAIL_HOST",
 		common.EmailPort: &parser{
 			env:   "EMAIL_PORT",

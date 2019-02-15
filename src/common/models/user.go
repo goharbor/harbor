@@ -30,6 +30,7 @@ type User struct {
 	Realname string `orm:"column(realname)" json:"realname"`
 	Comment  string `orm:"column(comment)" json:"comment"`
 	Deleted  bool   `orm:"column(deleted)" json:"deleted"`
+	External bool   `orm:"-" json:"external"`
 	Rolename string `orm:"-" json:"role_name"`
 	// if this field is named as "RoleID", beego orm can not map role_id
 	// to it.

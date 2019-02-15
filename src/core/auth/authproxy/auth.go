@@ -17,16 +17,17 @@ package authproxy
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/auth"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/auth"
 )
 
 // Auth implements HTTP authenticator the required attributes.

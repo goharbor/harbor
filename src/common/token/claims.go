@@ -6,6 +6,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+type UserClaims struct {
+	jwt.StandardClaims
+	Username string   `json:"name"`
+	Email    string   `json:"email"`
+	Groups   []string `json:"groups"`
+}
+
 // RobotClaims implements the interface of jwt.Claims
 type RobotClaims struct {
 	jwt.StandardClaims

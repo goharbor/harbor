@@ -220,6 +220,48 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 	}, nil
 }
 
+func OIDCProvider() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+
+	if _, ok := cfg[common.OIDCProviderURL].(string); ok {
+
+		return cfg[common.OIDCProviderURL].(string), nil
+	}
+
+	return "", fmt.Errorf("no OIDCProviderURL")
+}
+
+func OIDCClientID() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+
+	if _, ok := cfg[common.OIDCClientID].(string); ok {
+
+		return cfg[common.OIDCClientID].(string), nil
+	}
+
+	return "", fmt.Errorf("no OIDCClientID")
+}
+
+func OIDCClientSecret() (string, error) {
+	cfg, err := mg.Get()
+	if err != nil {
+		return "", err
+	}
+
+	if _, ok := cfg[common.OIDCClientSecret].(string); ok {
+
+		return cfg[common.OIDCClientSecret].(string), nil
+	}
+
+	return "", fmt.Errorf("no OIDCClientSecret")
+}
+
 // TokenExpiration returns the token expiration time (in minute)
 func TokenExpiration() (int, error) {
 	return cfgMgr.Get(common.TokenExpiration).GetInt(), nil
