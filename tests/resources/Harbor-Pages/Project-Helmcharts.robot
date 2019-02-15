@@ -47,4 +47,4 @@ Go Back To Versions And Delete
     Retry Element Click  xpath=${version_checkbox}
     Retry Element Click  xpath=${version_delete}
     Retry Element Click  xpath=${version_confirm_delete}
-    Retry Keyword When Error  Wait Until Page Contains Element  element=xpath=${helmchart_content}
+    Retry Wait Until Page Contains Element  xpath=${helmchart_content}

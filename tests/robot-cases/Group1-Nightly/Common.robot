@@ -41,7 +41,7 @@ Test Case - Vulnerability Data Not Ready
 Test Case - Garbage Collection
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-    
+
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world
@@ -66,7 +66,7 @@ Test Case - Garbage Collection
     Should Contain  ${output}  success to run gc in job.
 
     Close Browser
-    
+
 Test Case - Create An New Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -294,7 +294,7 @@ Test Case - User View Logs
 
     Sign In Harbor  ${HARBOR_URL}  user002  Test1@34
     Create An New Project  project${d}
-    
+
     Push image  ${ip}  user002  Test1@34  project${d}  busybox:latest
     Pull image  ${ip}  user002  Test1@34  project${d}  busybox:latest
 
@@ -313,7 +313,7 @@ Test Case - User View Logs
 Test Case - Manage Project Member
     Init Chrome Driver
     ${d}=    Get current Date  result_format=%m%s
- 
+
     Sign In Harbor  ${HARBOR_URL}  user004  Test1@34
     Create An New Project  project${d}
     Push image  ip=${ip}  user=user004  pwd=Test1@34  project=project${d}  image=hello-world
@@ -326,8 +326,11 @@ Test Case - Manage Project Member
     User Should Be Developer  user005  Test1@34  project${d}
     Change User Role In Project  user004  Test1@34  project${d}  user005  Admin
     User Should Be Admin  user005  Test1@34  project${d}  user006
+    Change User Role In Project  user004  Test1@34  project${d}  user005  Master
+    User Should Be Master  user005  Test1@34  project${d}
     Manage Project Member  user004  Test1@34  project${d}  user005  Remove
     User Should Not Be A Member Of Project  user005  Test1@34  project${d}
+    Push image  ip=${ip}  user=user004  pwd=Test1@34  project=project${d}  image=hello-world
     User Should Be Guest  user006  Test1@34  project${d}
 
     Close Browser
@@ -403,7 +406,7 @@ Test Case - Edit Project Creation
 Test Case - Edit Repo Info
     Init Chrome Driver
     ${d}=  Get Current Date  result_format=%m%s
-    
+
     Sign In Harbor  ${HARBOR_URL}  user011  Test1@34
     Create An New Project  project${d}
     Push Image  ${ip}  user011  Test1@34  project${d}  hello-world
@@ -415,7 +418,7 @@ Test Case - Edit Repo Info
 Test Case - Delete Multi Project
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    
+
     Sign In Harbor  ${HARBOR_URL}  user012  Test1@34
     Create An New Project  projecta${d}
     Create An New Project  projectb${d}
@@ -432,7 +435,7 @@ Test Case - Delete Multi Project
 Test Case - Delete Multi Repo
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-    
+
     Sign In Harbor  ${HARBOR_URL}  user013  Test1@34
     Create An New Project  project${d}
     Push Image  ${ip}  user013  Test1@34  project${d}  hello-world
@@ -447,7 +450,7 @@ Test Case - Delete Multi Repo
 Test Case - Delete Multi Tag
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-    
+
     Sign In Harbor  ${HARBOR_URL}  user014  Test1@34
     Create An New Project  project${d}
     Push Image With Tag  ${ip}  user014  Test1@34  project${d}  redis  3.2.10-alpine  3.2.10-alpine
@@ -476,7 +479,7 @@ Test Case - Delete Repo on CardView
 Test Case - Delete Multi Member
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  user016  Test1@34    
+    Sign In Harbor  ${HARBOR_URL}  user016  Test1@34
     Create An New Project  project${d}
     Go Into Project  project${d}  has_image=${false}
     Switch To Member
@@ -530,7 +533,7 @@ Test Case - Developer Operate Labels
     Sign In Harbor  ${HARBOR_URL}  user021  Test1@34
     Create An New Project  project${d}
     Logout Harbor
-    
+
     Manage Project Member  user021  Test1@34  project${d}  user022  Add  ${false}
     Change User Role In Project  user021  Test1@34  project${d}  user022  Developer
 
@@ -546,7 +549,7 @@ Test Case - Scan A Tag In The Repo
 
     Sign In Harbor  ${HARBOR_URL}  user023  Test1@34
     Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}    
+    Go Into Project  project${d}  has_image=${false}
     Push Image  ${ip}  user023  Test1@34  project${d}  hello-world
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
@@ -560,7 +563,7 @@ Test Case - Scan As An Unprivileged User
     Init Chrome Driver
     ${d}=    get current date    result_format=%m%s
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
- 
+
     Sign In Harbor  ${HARBOR_URL}  user024  Test1@34
     Go Into Project  library
     Go Into Repo  hello-world
@@ -697,7 +700,7 @@ Test Case - View Scan Results
     ${d}=  get current date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
-    Create An New Project  project${d}    
+    Create An New Project  project${d}
     Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
     Go Into Project  project${d}
     Go Into Repo  project${d}/tomcat

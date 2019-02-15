@@ -22,11 +22,10 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Go Into Project
     [Arguments]  ${project}  ${has_image}=${true}
-    Wait Until Element Is Visible And Enabled  ${search_input}
+    Retry Wait Element  ${search_input}
     Input Text  ${search_input}  ${project}
-    Wait Until Page Contains  ${project}
-    Wait Until Element Is Visible And Enabled  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
-    Click Element  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
+    Retry Wait Until Page Contains  ${project}
+    Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
     #To prevent waiting for a fixed-period of time for page loading and failure caused by exception, we add loop to re-run <Wait Until Element Is Visible And Enabled> when
     #    exception was caught.
     :For  ${n}  IN RANGE  1  5
@@ -41,35 +40,35 @@ Go Into Project
 Add User To Project Admin
     [Arguments]  ${project}  ${user}
     Go Into Project
-    Sleep  2  
+    Sleep  2
     Click Element  xpath=${project_member_tag_xpath}
     Sleep  1
     Click Element  xpath=${project_member_add_button_xpath}
-    Sleep  2	
+    Sleep  2
     Input Text  xpath=${project_member_add_username_xpath}  ${user}
     Sleep  3
     Click Element  xpath=${project_member_add_admin_xpath}
     Click Element  xpath=${project_member_add_save_button_xpath}
     Sleep  4
-    
+
 Search Project Member
     [Arguments]  ${project}  ${user}
     Go Into Project  ${project}
-    Sleep  2   
+    Sleep  2
     Click Element  xpath=//clr-dg-cell//a[contains(.,'${project}')]
-    Sleep  1	
+    Sleep  1
     Click Element  xpath=${project_member_search_button_xpath}
-    Sleep  1	
+    Sleep  1
     Click Element  xpath=${project_member_search_text_xpath}
     Sleep  2
-    Wait Until Page Contains  ${user}	
-    
+    Wait Until Page Contains  ${user}
+
 Change Project Member Role
     [Arguments]  ${project}  ${user}  ${role}
     Click Element  xpath=//clr-dg-cell//a[contains(.,'${project}')]
-    Sleep  2    
+    Sleep  2
     Click Element  xpath=${project_member_tag_xpath}
-    Sleep  1	
+    Sleep  1
     Click Element  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//label
     Sleep  1
     #change role
@@ -100,13 +99,12 @@ User Can Not Add Member
 
 Add Guest Member To Project
     [arguments]  ${member}
-    Click Element  xpath=${project_member_add_button_xpath}
-    Sleep  1
-    Input Text  xpath=${project_member_add_username_xpath}  ${member}
+    Retry Element Click  xpath=${project_member_add_button_xpath}
+    Retry Text Input  xpath=${project_member_add_username_xpath}  ${member}
     #select guest
     Mouse Down  xpath=${project_member_guest_radio_checkbox}
     Mouse Up  xpath=${project_member_guest_radio_checkbox}
-    Click Button  xpath=${project_member_add_confirmation_ok_xpath}
+    Retry Button Click  xpath=${project_member_add_confirmation_ok_xpath}
     Sleep  1
 
 Delete Project Member
@@ -187,6 +185,17 @@ User Should Be Admin
     Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Admin')]
     Logout Harbor
     Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  v2
+
+User Should Be Master
+    [Arguments]  ${user}  ${pwd}  ${project}
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Project Should Display  ${project}
+    Go Into Project  ${project}
+    Delete Repo  ${project}
+    Switch To Member
+    Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Master')]
+    Logout Harbor
+    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  v3
 
 Project Should Have Member
     [Arguments]  ${project}  ${user}
