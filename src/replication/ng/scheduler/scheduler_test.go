@@ -1,6 +1,7 @@
-package schedule
+package scheduler
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/job/models"
@@ -26,43 +27,51 @@ func (client TestClient) PostAction(uuid, action string) error {
 	return nil
 }
 
-func TestDefaultReplicator_Schedule(t *testing.T) {
-	tasks, err := generateData()
+func TestDefaultReplicator_Preprocess(t *testing.T) {
+	items, err := generateData()
 	if err != nil {
 		t.Error(err)
 	}
-	for _, task := range tasks {
-		t.Log(*task)
+	for _, item := range items {
+		content, err := json.Marshal(item)
+		if err != nil {
+			t.Error(err)
+		}
+		t.Log(string(content))
 	}
 
 }
 
-//func TestDefaultReplicator_SubmitJobs(t *testing.T) {
-//	config.Init()
-//	tasks, err := generateData()
+//func TestDefaultReplicator_Schedule(t *testing.T) {
+//	//	config.Init()
+//	items, err := generateData()
 //	if err != nil {
 //		t.Error(err)
 //	}
-//	for _, task := range tasks {
-//		task.ID = 22
+//	for _, item := range items {
+//		item.TaskID = 22
 //	}
-//	newTasks, newErr := replicator.SubmitTasks(tasks)
+//	results, newErr := replicator.Schedule(items)
 //	if newErr != nil {
 //		t.Error(newErr)
 //	}
-//	for _, task := range newTasks {
-//		t.Log(*task)
+//	for _, result := range results {
+//		content, err := json.Marshal(result)
+//		if err != nil {
+//			t.Error(err)
+//		}
+//		t.Log(string(content))
 //	}
 //}
-
-func TestDefaultReplicator_StopExecution(t *testing.T) {
-	err := replicator.StopExecution("id")
+//
+func TestDefaultReplicator_Stop(t *testing.T) {
+	err := replicator.Stop("id")
 	if err != nil {
 		t.Error(err)
 	}
 }
 
-func generateData() ([]*model.Task, error) {
+func generateData() ([]*ScheduleItem, error) {
 	srcResource := &model.Resource{
 		Metadata: &model.ResourceMetadata{
 			Namespace: &model.Namespace{
@@ -95,6 +104,6 @@ func generateData() ([]*model.Task, error) {
 			Credential: &model.Credential{},
 		},
 	}
-	tasks, err := replicator.Schedule([]*model.Resource{srcResource}, []*model.Resource{destResource})
-	return tasks, err
+	items, err := replicator.Preprocess([]*model.Resource{srcResource}, []*model.Resource{destResource})
+	return items, err
 }
