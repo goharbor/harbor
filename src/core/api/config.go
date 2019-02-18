@@ -16,6 +16,9 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/config/metadata"
@@ -25,8 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	corecfg "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"net/http"
-	"strings"
 )
 
 // ConfigAPI ...
@@ -67,7 +68,6 @@ type value struct {
 // Get returns configurations
 func (c *ConfigAPI) Get() {
 	configs := c.cfgManager.GetUserCfgs()
-	log.Infof("current configs %+v", configs)
 	m, err := convertForGet(configs)
 	if err != nil {
 		log.Errorf("failed to convert configurations: %v", err)
@@ -108,11 +108,6 @@ func (c *ConfigAPI) Put() {
 	if err := c.cfgManager.UpdateConfig(m); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
 		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	}
-
-	// Everything is ok, detect the configurations to confirm if the option we are caring is changed.
-	if err := watchConfigChanges(m); err != nil {
-		log.Errorf("Failed to watch configuration change with error: %s\n", err)
 	}
 }
 

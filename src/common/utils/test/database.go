@@ -64,17 +64,9 @@ func InitDatabaseFromEnv() {
 
 	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
+	if err := dao.InitAndUpgradeDatabase(database); err != nil {
+		log.Fatalf("failed to init and upgrade database : %v", err)
 	}
-
-	if err := dao.UpgradeSchema(database); err != nil {
-		log.Fatalf("failed to upgrade database schema: %v", err)
-	}
-	if err := dao.CheckSchemaVersion(); err != nil {
-		log.Fatalf("failed to check database schema version: %v", err)
-	}
-
 	if err := updateUserInitialPassword(1, adminPwd); err != nil {
 		log.Fatalf("failed to init password for admin: %v", err)
 	}
