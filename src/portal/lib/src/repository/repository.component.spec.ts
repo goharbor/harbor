@@ -7,7 +7,6 @@ import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { RepositoryComponent } from './repository.component';
-import { RepositoryGridviewComponent } from '../repository-gridview/repository-gridview.component';
 import { GridViewComponent } from '../gridview/grid-view.component';
 import { FilterComponent } from '../filter/filter.component';
 import { TagComponent } from '../tag/tag.component';
@@ -166,7 +165,6 @@ describe('RepositoryComponent (inline template)', () => {
       declarations: [
         RepositoryComponent,
         GridViewComponent,
-        RepositoryGridviewComponent,
         ConfirmationDialogComponent,
         ImageNameInputComponent,
         FilterComponent,
@@ -224,22 +222,30 @@ describe('RepositoryComponent (inline template)', () => {
      .and.returnValue(of(mockHasScanImagePermission));
     fixture.detectChanges();
   });
+  let originalTimeout;
 
+  beforeEach(function () {
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
+  });
+
+  afterEach(function () {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+  });
   it('should create', () => {
     expect(compRepo).toBeTruthy();
   });
 
-  // fail after upgrade to angular 6.
-  xit('should load and render data', async(() => {
+  it('should load and render data', async(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-      let de: DebugElement = fixture.debugElement.query(By.css('datagrid-cell'));
+      let de: DebugElement = fixture.debugElement.query(del => del.classes['datagrid-cell']);
       fixture.detectChanges();
       expect(de).toBeTruthy();
       let el: HTMLElement = de.nativeElement;
       expect(el).toBeTruthy();
-      expect(el.textContent).toEqual('library/busybox');
+      expect(el.textContent).toEqual('1.11.5');
     });
   }));
 });
