@@ -20,6 +20,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"errors"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -31,6 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/systeminfo"
 	"github.com/goharbor/harbor/src/core/systeminfo/imagestorage"
+	"fmt"
 )
 
 // SystemInfoAPI handle requests for getting system info /api/systeminfo
@@ -104,28 +106,24 @@ type GeneralInfo struct {
 	WithChartMuseum             bool                             `json:"with_chartmuseum"`
 }
 
-// validate for validating user if an admin.
-func (sia *SystemInfoAPI) validate() {
+// GetVolumeInfo gets specific volume storage info.
+func (sia *SystemInfoAPI) GetVolumeInfo() {
 	if !sia.SecurityCtx.IsAuthenticated() {
-		sia.HandleUnauthorized()
-		sia.StopRun()
+		sia.SendUnAuthorizedError(errors.New("UnAuthorized"))
+		return
 	}
 
 	if !sia.SecurityCtx.IsSysAdmin() {
-		sia.HandleForbidden(sia.SecurityCtx.GetUsername())
-		sia.StopRun()
+		sia.SendForbiddenError(errors.New(sia.SecurityCtx.GetUsername()))
+		return
 	}
-}
-
-// GetVolumeInfo gets specific volume storage info.
-func (sia *SystemInfoAPI) GetVolumeInfo() {
-	sia.validate()
 
 	systeminfo.Init()
 	capacity, err := imagestorage.GlobalDriver.Cap()
 	if err != nil {
 		log.Errorf("failed to get capacity: %v", err)
-		sia.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		sia.SendInternalServerError(fmt.Errorf("failed to get capacity: %v", err))
+		return
 	}
 	systemInfo := SystemInfo{
 		HarborStorage: Storage{
@@ -146,10 +144,12 @@ func (sia *SystemInfoAPI) GetCert() {
 		http.ServeFile(sia.Ctx.ResponseWriter, sia.Ctx.Request, defaultRootCert)
 	} else if os.IsNotExist(err) {
 		log.Error("No certificate found.")
-		sia.CustomAbort(http.StatusNotFound, "No certificate found.")
+		sia.SendNotFoundError(errors.New("no certificate found"))
+		return
 	} else {
 		log.Errorf("Unexpected error: %v", err)
-		sia.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		sia.SendInternalServerError(fmt.Errorf("Unexpected error: %v", err))
+		return
 	}
 }
 
@@ -158,7 +158,8 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 	cfg, err := config.GetSystemCfg()
 	if err != nil {
 		log.Errorf("Error occurred getting config: %v", err)
-		sia.CustomAbort(http.StatusInternalServerError, "Unexpected error")
+		sia.SendInternalServerError(fmt.Errorf("Unexpected error: %v", err))
+		return
 	}
 	var registryURL string
 	if l := strings.Split(cfg[common.ExtEndpoint].(string), "://"); len(l) > 1 {

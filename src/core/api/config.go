@@ -16,8 +16,8 @@ package api
 
 import (
 	"fmt"
-	"net/http"
 	"reflect"
+	"errors"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -35,11 +35,11 @@ type ConfigAPI struct {
 func (c *ConfigAPI) Prepare() {
 	c.BaseController.Prepare()
 	if !c.SecurityCtx.IsAuthenticated() {
-		c.HandleUnauthorized()
+		c.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 	if !c.SecurityCtx.IsSysAdmin() && !c.SecurityCtx.IsSolutionUser() {
-		c.HandleForbidden(c.SecurityCtx.GetUsername())
+		c.SendForbiddenError(errors.New(c.SecurityCtx.GetUsername()))
 		return
 	}
 }
@@ -54,7 +54,8 @@ func (c *ConfigAPI) Get() {
 	configs, err := config.GetSystemCfg()
 	if err != nil {
 		log.Errorf("failed to get configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(err)
+		return
 	}
 
 	cfgs := map[string]interface{}{}
@@ -67,7 +68,8 @@ func (c *ConfigAPI) Get() {
 	m, err := convertForGet(cfgs)
 	if err != nil {
 		log.Errorf("failed to convert configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(err)
+		return
 	}
 
 	c.Data["json"] = m
@@ -79,7 +81,8 @@ func (c *ConfigAPI) GetInternalConfig() {
 	configs, err := config.GetSystemCfg()
 	if err != nil {
 		log.Errorf("failed to get configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(err)
+		return
 	}
 	c.Data["json"] = configs
 	c.ServeJSON()
@@ -102,20 +105,23 @@ func (c *ConfigAPI) Put() {
 	if err != nil {
 		if isSysErr {
 			log.Errorf("failed to validate configurations: %v", err)
-			c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			c.SendInternalServerError(err)
+			return
 		}
 
-		c.CustomAbort(http.StatusBadRequest, err.Error())
+		c.SendBadRequestError(err)
 	}
 
 	if err := config.Upload(cfg); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(err)
+		return
 	}
 
 	if err := config.Load(); err != nil {
 		log.Errorf("failed to load configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(err)
+		return
 	}
 
 	// Everything is ok, detect the configurations to confirm if the option we are caring is changed.
@@ -128,7 +134,8 @@ func (c *ConfigAPI) Put() {
 func (c *ConfigAPI) Reset() {
 	if err := config.Reset(); err != nil {
 		log.Errorf("failed to reset configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(err)
+		return
 	}
 }
 

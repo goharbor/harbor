@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/pkg/errors"
 )
 
 // LogAPI handles request api/logs
@@ -33,7 +34,7 @@ type LogAPI struct {
 func (l *LogAPI) Prepare() {
 	l.BaseController.Prepare()
 	if !l.SecurityCtx.IsAuthenticated() {
-		l.HandleUnauthorized()
+		l.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 	l.username = l.SecurityCtx.GetUsername()
@@ -58,7 +59,7 @@ func (l *LogAPI) Get() {
 	if len(timestamp) > 0 {
 		t, err := utils.ParseTimeStamp(timestamp)
 		if err != nil {
-			l.HandleBadRequest(fmt.Sprintf("invalid begin_timestamp: %s", timestamp))
+			l.SendBadRequestError(fmt.Errorf("invalid begin_timestamp: %s", timestamp))
 			return
 		}
 		query.BeginTime = t
@@ -68,7 +69,7 @@ func (l *LogAPI) Get() {
 	if len(timestamp) > 0 {
 		t, err := utils.ParseTimeStamp(timestamp)
 		if err != nil {
-			l.HandleBadRequest(fmt.Sprintf("invalid end_timestamp: %s", timestamp))
+			l.SendBadRequestError(fmt.Errorf("invalid end_timestamp: %s", timestamp))
 			return
 		}
 		query.EndTime = t
@@ -77,7 +78,7 @@ func (l *LogAPI) Get() {
 	if !l.isSysAdmin {
 		projects, err := l.SecurityCtx.GetMyProjects()
 		if err != nil {
-			l.HandleInternalServerError(fmt.Sprintf(
+			l.SendInternalServerError(fmt.Errorf(
 				"failed to get projects of user %s: %v", l.username, err))
 			return
 		}
@@ -98,14 +99,14 @@ func (l *LogAPI) Get() {
 
 	total, err := dao.GetTotalOfAccessLogs(query)
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf(
+		l.SendInternalServerError(fmt.Errorf(
 			"failed to get total of access logs: %v", err))
 		return
 	}
 
 	logs, err := dao.GetAccessLogs(query)
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf(
+		l.SendInternalServerError(fmt.Errorf(
 			"failed to get access logs: %v", err))
 		return
 	}

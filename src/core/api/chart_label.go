@@ -61,7 +61,7 @@ func (cla *ChartLabelAPI) requireAccess(action rbac.Action) bool {
 	resource := rbac.NewProjectNamespace(cla.project.ProjectID).Resource(rbac.ResourceHelmChartVersionLabel)
 
 	if !cla.SecurityCtx.Can(action, resource) {
-		cla.HandleForbidden(cla.SecurityCtx.GetUsername())
+		cla.SendForbiddenError(errors.New(cla.SecurityCtx.GetUsername()))
 		return false
 	}
 

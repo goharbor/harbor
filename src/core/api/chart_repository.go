@@ -95,7 +95,7 @@ func (cra *ChartRepositoryAPI) requireAccess(action rbac.Action, subresource ...
 		if !cra.SecurityCtx.IsAuthenticated() {
 			cra.SendUnAuthorizedError(errors.New("Unauthorized"))
 		} else {
-			cra.HandleForbidden(cra.SecurityCtx.GetUsername())
+			cra.SendForbiddenError(errors.New(cra.SecurityCtx.GetUsername()))
 		}
 
 		return false

@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"errors"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -39,7 +40,7 @@ func (r *RobotAPI) Prepare() {
 	method := r.Ctx.Request.Method
 
 	if !r.SecurityCtx.IsAuthenticated() {
-		r.HandleUnauthorized()
+		r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 
@@ -51,7 +52,7 @@ func (r *RobotAPI) Prepare() {
 		} else {
 			errMsg = "invalid project ID: " + fmt.Sprintf("%d", pid)
 		}
-		r.HandleBadRequest(errMsg)
+		r.SendBadRequestError(errors.New(errMsg))
 		return
 	}
 	project, err := r.ProjectMgr.Get(pid)
@@ -60,7 +61,7 @@ func (r *RobotAPI) Prepare() {
 		return
 	}
 	if project == nil {
-		r.HandleNotFound(fmt.Sprintf("project %d not found", pid))
+		r.SendNotFoundError(fmt.Errorf("project %d not found", pid))
 		return
 	}
 	r.project = project
@@ -68,18 +69,18 @@ func (r *RobotAPI) Prepare() {
 	if method == http.MethodPut || method == http.MethodDelete {
 		id, err := r.GetInt64FromPath(":id")
 		if err != nil || id <= 0 {
-			r.HandleBadRequest("invalid robot ID")
+			r.SendBadRequestError(errors.New("invalid robot ID"))
 			return
 		}
 
 		robot, err := dao.GetRobotByID(id)
 		if err != nil {
-			r.HandleInternalServerError(fmt.Sprintf("failed to get robot %d: %v", id, err))
+			r.SendInternalServerError(fmt.Errorf("failed to get robot %d: %v", id, err))
 			return
 		}
 
 		if robot == nil {
-			r.HandleNotFound(fmt.Sprintf("robot %d not found", id))
+			r.SendNotFoundError(fmt.Errorf("robot %d not found", id))
 			return
 		}
 
@@ -90,7 +91,7 @@ func (r *RobotAPI) Prepare() {
 func (r *RobotAPI) requireAccess(action rbac.Action) bool {
 	resource := rbac.NewProjectNamespace(r.project.ProjectID).Resource(rbac.ResourceRobot)
 	if !r.SecurityCtx.Can(action, resource) {
-		r.HandleForbidden(r.SecurityCtx.GetUsername())
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
 		return false
 	}
 
@@ -116,10 +117,10 @@ func (r *RobotAPI) Post() {
 	id, err := dao.AddRobot(&robot)
 	if err != nil {
 		if err == dao.ErrDupRows {
-			r.HandleConflict()
+			r.SendConflictError(errors.New("conflict robot account"))
 			return
 		}
-		r.HandleInternalServerError(fmt.Sprintf("failed to create robot account: %v", err))
+		r.SendInternalServerError(fmt.Errorf("failed to create robot account: %v", err))
 		return
 	}
 
@@ -127,20 +128,20 @@ func (r *RobotAPI) Post() {
 	// token is not stored in the database.
 	jwtToken, err := token.New(id, r.project.ProjectID, robotReq.Access)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to valid parameters to generate token for robot account, %v", err))
+		r.SendInternalServerError(fmt.Errorf("failed to valid parameters to generate token for robot account, %v", err))
 		err := dao.DeleteRobot(id)
 		if err != nil {
-			r.HandleInternalServerError(fmt.Sprintf("failed to delete the robot account: %d, %v", id, err))
+			r.SendInternalServerError(fmt.Errorf("failed to delete the robot account: %d, %v", id, err))
 		}
 		return
 	}
 
 	rawTk, err := jwtToken.Raw()
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to sign token for robot account, %v", err))
+		r.SendInternalServerError(fmt.Errorf("failed to sign token for robot account, %v", err))
 		err := dao.DeleteRobot(id)
 		if err != nil {
-			r.HandleInternalServerError(fmt.Sprintf("failed to delete the robot account: %d, %v", id, err))
+			r.SendInternalServerError(fmt.Errorf("failed to delete the robot account: %d, %v", id, err))
 		}
 		return
 	}
@@ -166,14 +167,14 @@ func (r *RobotAPI) List() {
 
 	count, err := dao.CountRobot(&query)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to list robots on project: %d, %v", r.project.ProjectID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to list robots on project: %d, %v", r.project.ProjectID, err))
 		return
 	}
 	query.Page, query.Size = r.GetPaginationParams()
 
 	robots, err := dao.ListRobots(&query)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get robots %v", err))
+		r.SendInternalServerError(fmt.Errorf("failed to get robots %v", err))
 		return
 	}
 
@@ -190,17 +191,17 @@ func (r *RobotAPI) Get() {
 
 	id, err := r.GetInt64FromPath(":id")
 	if err != nil || id <= 0 {
-		r.HandleBadRequest(fmt.Sprintf("invalid robot ID: %s", r.GetStringFromPath(":id")))
+		r.SendBadRequestError(fmt.Errorf("invalid robot ID: %s", r.GetStringFromPath(":id")))
 		return
 	}
 
 	robot, err := dao.GetRobotByID(id)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get robot %d: %v", id, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get robot %d: %v", id, err))
 		return
 	}
 	if robot == nil {
-		r.HandleNotFound(fmt.Sprintf("robot %d not found", id))
+		r.SendNotFoundError(fmt.Errorf("robot %d not found", id))
 		return
 	}
 
@@ -219,7 +220,7 @@ func (r *RobotAPI) Put() {
 	r.robot.Disabled = robotReq.Disabled
 
 	if err := dao.UpdateRobot(r.robot); err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to update robot %d: %v", r.robot.ID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to update robot %d: %v", r.robot.ID, err))
 		return
 	}
 
@@ -232,7 +233,7 @@ func (r *RobotAPI) Delete() {
 	}
 
 	if err := dao.DeleteRobot(r.robot.ID); err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to delete robot %d: %v", r.robot.ID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to delete robot %d: %v", r.robot.ID, err))
 		return
 	}
 }

@@ -21,7 +21,6 @@ import (
 	"strconv"
 
 	"github.com/astaxie/beego/validation"
-	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 
 	"github.com/astaxie/beego"
@@ -48,76 +47,9 @@ func (b *BaseAPI) GetInt64FromPath(key string) (int64, error) {
 	return strconv.ParseInt(value, 10, 64)
 }
 
-// HandleNotFound ...
-func (b *BaseAPI) HandleNotFound(text string) {
-	log.Info(text)
-	b.RenderError(http.StatusNotFound, text)
-}
-
-// HandleUnauthorized ...
-func (b *BaseAPI) HandleUnauthorized() {
-	log.Info("unauthorized")
-	b.RenderError(http.StatusUnauthorized, "")
-}
-
-// HandleForbidden ...
-func (b *BaseAPI) HandleForbidden(text string) {
-	log.Infof("forbidden: %s", text)
-	b.RenderError(http.StatusForbidden, text)
-}
-
-// HandleBadRequest ...
-func (b *BaseAPI) HandleBadRequest(text string) {
-	log.Info(text)
-	b.RenderError(http.StatusBadRequest, text)
-}
-
-// HandleStatusPreconditionFailed ...
-func (b *BaseAPI) HandleStatusPreconditionFailed(text string) {
-	log.Info(text)
-	b.RenderError(http.StatusPreconditionFailed, text)
-}
-
-// HandleConflict ...
-func (b *BaseAPI) HandleConflict(text ...string) {
-	msg := ""
-	if len(text) > 0 {
-		msg = text[0]
-	}
-	log.Infof("conflict: %s", msg)
-
-	b.RenderError(http.StatusConflict, msg)
-}
-
-// HandleInternalServerError ...
-func (b *BaseAPI) HandleInternalServerError(text string) {
-	log.Error(text)
-	b.RenderError(http.StatusInternalServerError, "")
-}
-
-// ParseAndHandleError : if the err is an instance of utils/error.Error,
-// return the status code and the detail message contained in err, otherwise
-// return 500
-func (b *BaseAPI) ParseAndHandleError(text string, err error) {
-	if err == nil {
-		return
-	}
-	log.Errorf("%s: %v", text, err)
-	if e, ok := err.(*commonhttp.Error); ok {
-		b.RenderError(e.Code, e.Message)
-		return
-	}
-	b.RenderError(http.StatusInternalServerError, "")
-}
-
 // Render returns nil as it won't render template
 func (b *BaseAPI) Render() error {
 	return nil
-}
-
-// RenderError provides shortcut to render http error
-func (b *BaseAPI) RenderError(code int, text string) {
-	http.Error(b.Ctx.ResponseWriter, text, code)
 }
 
 // DecodeJSONReq decodes a json request

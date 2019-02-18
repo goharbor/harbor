@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	utils_core "github.com/goharbor/harbor/src/core/utils"
+	"github.com/pkg/errors"
 )
 
 // GCAPI handles request of harbor admin...
@@ -39,11 +40,11 @@ type GCAPI struct {
 func (gc *GCAPI) Prepare() {
 	gc.BaseController.Prepare()
 	if !gc.SecurityCtx.IsAuthenticated() {
-		gc.HandleUnauthorized()
+		gc.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 	if !gc.SecurityCtx.IsSysAdmin() {
-		gc.HandleForbidden(gc.SecurityCtx.GetUsername())
+		gc.SendForbiddenError(errors.New(gc.SecurityCtx.GetUsername()))
 		return
 	}
 }
@@ -62,7 +63,7 @@ func (gc *GCAPI) Put() {
 	gc.DecodeJSONReqAndValidate(&gr)
 
 	if gr.Schedule.Type == models.ScheduleManual {
-		gc.HandleInternalServerError(fmt.Sprintf("Fail to update GC schedule as wrong schedule type: %s.", gr.Schedule.Type))
+		gc.SendInternalServerError(fmt.Errorf("Fail to update GC schedule as wrong schedule type: %s.", gr.Schedule.Type))
 		return
 	}
 
@@ -72,24 +73,24 @@ func (gc *GCAPI) Put() {
 	}
 	jobs, err := dao.GetAdminJobs(query)
 	if err != nil {
-		gc.HandleInternalServerError(fmt.Sprintf("%v", err))
+		gc.SendInternalServerError(fmt.Errorf("%v", err))
 		return
 	}
 	if len(jobs) != 1 {
-		gc.HandleInternalServerError("Fail to update GC schedule, only one schedule is accepted.")
+		gc.SendInternalServerError(errors.New("Fail to update GC schedule, only one schedule is accepted."))
 		return
 	}
 
 	// stop the scheduled job and remove it.
 	if err = utils_core.GetJobServiceClient().PostAction(jobs[0].UUID, common_job.JobActionStop); err != nil {
 		if e, ok := err.(*common_http.Error); !ok || e.Code != http.StatusNotFound {
-			gc.HandleInternalServerError(fmt.Sprintf("%v", err))
+			gc.SendInternalServerError(fmt.Errorf("%v", err))
 			return
 		}
 	}
 
 	if err = dao.DeleteAdminJob(jobs[0].ID); err != nil {
-		gc.HandleInternalServerError(fmt.Sprintf("%v", err))
+		gc.SendInternalServerError(fmt.Errorf("%v", err))
 		return
 	}
 
@@ -103,7 +104,7 @@ func (gc *GCAPI) Put() {
 func (gc *GCAPI) GetGC() {
 	id, err := gc.GetInt64FromPath(":id")
 	if err != nil {
-		gc.HandleInternalServerError(fmt.Sprintf("need to specify gc id"))
+		gc.SendInternalServerError(fmt.Errorf("need to specify gc id"))
 		return
 	}
 
@@ -115,14 +116,14 @@ func (gc *GCAPI) GetGC() {
 	for _, job := range jobs {
 		gcrep, err := convertToGCRep(job)
 		if err != nil {
-			gc.HandleInternalServerError(fmt.Sprintf("failed to convert gc response: %v", err))
+			gc.SendInternalServerError(fmt.Errorf("failed to convert gc response: %v", err))
 			return
 		}
 		gcreps = append(gcreps, &gcrep)
 	}
 
 	if err != nil {
-		gc.HandleInternalServerError(fmt.Sprintf("failed to get admin jobs: %v", err))
+		gc.SendInternalServerError(fmt.Errorf("failed to get admin jobs: %v", err))
 		return
 	}
 	gc.Data["json"] = gcreps
@@ -133,14 +134,14 @@ func (gc *GCAPI) GetGC() {
 func (gc *GCAPI) List() {
 	jobs, err := dao.GetTop10AdminJobsOfName(common_job.ImageGC)
 	if err != nil {
-		gc.HandleInternalServerError(fmt.Sprintf("failed to get admin jobs: %v", err))
+		gc.SendInternalServerError(fmt.Errorf("failed to get admin jobs: %v", err))
 		return
 	}
 	gcreps := []*models.GCRep{}
 	for _, job := range jobs {
 		gcrep, err := convertToGCRep(job)
 		if err != nil {
-			gc.HandleInternalServerError(fmt.Sprintf("failed to convert gc response: %v", err))
+			gc.SendInternalServerError(fmt.Errorf("failed to convert gc response: %v", err))
 			return
 		}
 		gcreps = append(gcreps, &gcrep)
@@ -156,18 +157,18 @@ func (gc *GCAPI) Get() {
 		Kind: common_job.JobKindPeriodic,
 	})
 	if err != nil {
-		gc.HandleNotFound(fmt.Sprintf("failed to get admin jobs: %v", err))
+		gc.SendNotFoundError(fmt.Errorf("failed to get admin jobs: %v", err))
 		return
 	}
 	if len(jobs) > 1 {
-		gc.HandleInternalServerError("Get more than one GC scheduled job, make sure there has only one.")
+		gc.SendInternalServerError(errors.New("Get more than one GC scheduled job, make sure there has only one."))
 		return
 	}
 	gcreps := []*models.GCRep{}
 	for _, job := range jobs {
 		gcrep, err := convertToGCRep(job)
 		if err != nil {
-			gc.HandleInternalServerError(fmt.Sprintf("failed to convert gc response: %v", err))
+			gc.SendInternalServerError(fmt.Errorf("failed to convert gc response: %v", err))
 			return
 		}
 		gcreps = append(gcreps, &gcrep)
@@ -180,17 +181,19 @@ func (gc *GCAPI) Get() {
 func (gc *GCAPI) GetLog() {
 	id, err := gc.GetInt64FromPath(":id")
 	if err != nil {
-		gc.HandleBadRequest("invalid ID")
+		gc.SendBadRequestError(errors.New("invalid ID"))
 		return
 	}
 	job, err := dao.GetAdminJob(id)
 	if err != nil {
 		log.Errorf("Failed to load job data for job: %d, error: %v", id, err)
-		gc.CustomAbort(http.StatusInternalServerError, "Failed to get Job data")
+		gc.SendInternalServerError(errors.New("Failed to get Job data"))
+		return
 	}
 	if job == nil {
 		log.Errorf("Failed to get admin job: %d", id)
-		gc.CustomAbort(http.StatusNotFound, "Failed to get Job")
+		gc.SendNotFoundError(errors.New("Failed to get Job data"))
+		return
 	}
 
 	logBytes, err := utils_core.GetJobServiceClient().GetJobLog(job.UUID)
@@ -201,14 +204,14 @@ func (gc *GCAPI) GetLog() {
 				id, httpErr.Code, httpErr.Message))
 			return
 		}
-		gc.HandleInternalServerError(fmt.Sprintf("Failed to get job logs, uuid: %s, error: %v", job.UUID, err))
+		gc.SendInternalServerError(fmt.Errorf("Failed to get job logs, uuid: %s, error: %v", job.UUID, err))
 		return
 	}
 	gc.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(logBytes)))
 	gc.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
 	_, err = gc.Ctx.ResponseWriter.Write(logBytes)
 	if err != nil {
-		gc.HandleInternalServerError(fmt.Sprintf("Failed to write job logs, uuid: %s, error: %v", job.UUID, err))
+		gc.SendInternalServerError(fmt.Errorf("Failed to write job logs, uuid: %s, error: %v", job.UUID, err))
 	}
 }
 
@@ -221,11 +224,11 @@ func (gc *GCAPI) submitJob(gr *models.GCReq) {
 			Kind: common_job.JobKindPeriodic,
 		})
 		if err != nil {
-			gc.HandleInternalServerError(fmt.Sprintf("failed to get admin jobs: %v", err))
+			gc.SendInternalServerError(fmt.Errorf("failed to get admin jobs: %v", err))
 			return
 		}
 		if len(jobs) != 0 {
-			gc.HandleStatusPreconditionFailed("Fail to set schedule for GC as always had one, please delete it firstly then to re-schedule.")
+			gc.SendPreconditionFailedError(errors.New("Fail to set schedule for GC as always had one, please delete it firstly then to re-schedule."))
 			return
 		}
 	}
@@ -236,7 +239,7 @@ func (gc *GCAPI) submitJob(gr *models.GCReq) {
 		Cron: gr.CronString(),
 	})
 	if err != nil {
-		gc.HandleInternalServerError(fmt.Sprintf("%v", err))
+		gc.SendInternalServerError(fmt.Errorf("%v", err))
 		return
 	}
 	gr.ID = id
@@ -247,7 +250,7 @@ func (gc *GCAPI) submitJob(gr *models.GCReq) {
 	}
 	job, err := gr.ToJob()
 	if err != nil {
-		gc.HandleInternalServerError(fmt.Sprintf("%v", err))
+		gc.SendInternalServerError(fmt.Errorf("%v", err))
 		return
 	}
 
@@ -258,11 +261,11 @@ func (gc *GCAPI) submitJob(gr *models.GCReq) {
 		if err := dao.DeleteAdminJob(id); err != nil {
 			log.Debugf("Failed to delete admin job, err: %v", err)
 		}
-		gc.HandleInternalServerError(fmt.Sprintf("%v", err))
+		gc.SendInternalServerError(fmt.Errorf("%v", err))
 		return
 	}
 	if err := dao.SetAdminJobUUID(id, uuid); err != nil {
-		gc.HandleInternalServerError(fmt.Sprintf("%v", err))
+		gc.SendInternalServerError(fmt.Errorf("%v", err))
 		return
 	}
 }
