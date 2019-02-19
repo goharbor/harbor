@@ -221,10 +221,7 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 }
 
 func OIDCProvider() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
-	}
+	cfg := cfgMgr.GetAll()
 
 	if _, ok := cfg[common.OIDCProviderURL].(string); ok {
 
@@ -235,10 +232,7 @@ func OIDCProvider() (string, error) {
 }
 
 func OIDCClientID() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
-	}
+	cfg := cfgMgr.GetAll()
 
 	if _, ok := cfg[common.OIDCClientID].(string); ok {
 
@@ -249,10 +243,7 @@ func OIDCClientID() (string, error) {
 }
 
 func OIDCClientSecret() (string, error) {
-	cfg, err := mg.Get()
-	if err != nil {
-		return "", err
-	}
+	cfg := cfgMgr.GetAll()
 
 	if _, ok := cfg[common.OIDCClientSecret].(string); ok {
 
