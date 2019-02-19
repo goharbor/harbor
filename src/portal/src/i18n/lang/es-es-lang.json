@@ -21,6 +21,7 @@
         "OK": "OK",
         "DELETE": "ELIMINAR",
         "LOG_IN": "IDENTIFICARSE",
+        "LOG_IN_SSO": "IDENTIFICARSE CON SSO",
         "SIGN_UP_LINK": "Registrar una cuenta",
         "SIGN_UP": "REGISTRARSE",
         "CONFIRM": "CONFIRMAR",
@@ -659,6 +660,14 @@
             "LDAP_GROUP_ADMIN_DN_INFO": "Specify an LDAP group DN. all LDAP user in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
+        },
+        "OIDC": {
+            "PROVIDER_URL": "OIDC Provider URL",
+            "PROVIDER_URL_INFO": "The URL to your OIDC Provider. Other OIDC endpoints will be discovered using this base URL.",
+            "CLIENT_ID": "OIDC Client ID",
+            "CLIENT_ID_INFO": "The OAuth client ID for Harbor",
+            "CLIENT_SECRET": "OIDC Client Secret",
+            "CLIENT_SECRET_INFO": "The OAuth client secret for Harbor"
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",

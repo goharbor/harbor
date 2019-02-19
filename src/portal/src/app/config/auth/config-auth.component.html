@@ -258,19 +258,40 @@
     </section>
     <section *ngIf="showOIDC">
         <div class="form-group">
-            <label for="OIDCProvider">OIDC Provider URL</label>
-            <input type="text" name="OIDCProvider" id="OIDCProvider"
-                [ngModel]="currentConfig.oidc_provider_url.value" />
+            <label for="OIDCProvider">{{'CONFIG.OIDC.PROVIDER_URL' | translate}}</label>
+            <input type="text" name="OIDCProvider" id="OIDCProvider" [ngModel]="currentConfig.oidc_provider_url.value"
+                (ngModelChange)="setOIDCProvider($event)" size="40" />
+            <label>
+                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+                    class="tooltip tooltip-top-right top-7">
+                    <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                    <span class="tooltip-content">{{'CONFIG.OIDC.PROVIDER_URL_INFO' | translate}}</span>
+                </a>
+            </label>
         </div>
         <div class="form-group">
-            <label for="oidcClientID">OIDC Client ID</label>
-            <label for="oidcClientID" aria-haspopup="true" role="tooltip"
-                class="tooltip tooltip-validation tooltip-md tooltip-top-right" [class.invalid]="false">
-                <input name="oidcClientID" type="text" #oidcClientIDInput="ngModel"
-                    [(ngModel)]="currentConfig.oidc_client_id.value" id="oidcClientID" size="40">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
+            <label for="oidcClientID">{{'CONFIG.OIDC.CLIENT_ID' | translate}}</label>
+            <input type="text" name="oidcClientID" id="oidcClientID" [ngModel]="currentConfig.oidc_client_id.value"
+                (ngModelChange)="setOIDCClientID($event)" size="40" />
+            <label>
+                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+                    class="tooltip tooltip-top-right top-7">
+                    <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                    <span class="tooltip-content">{{'CONFIG.OIDC.CLIENT_ID_INFO' | translate}}</span>
+                </a>
+            </label>
+        </div>
+        <div class="form-group">
+            <label for="oidcClientSecret">{{'CONFIG.OIDC.CLIENT_SECRET' | translate}}</label>
+            <input type="text" name="oidcClientSecret" id="oidcClientSecret"
+                [ngModel]="currentConfig.oidc_client_secret.value" (ngModelChange)="setOIDCClientSecret($event)"
+                size="40" />
+            <label>
+                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+                    class="tooltip tooltip-top-right top-7">
+                    <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                    <span class="tooltip-content">{{'CONFIG.OIDC.CLIENT_SECRET_INFO' | translate}}</span>
+                </a>
             </label>
         </div>
     </section>

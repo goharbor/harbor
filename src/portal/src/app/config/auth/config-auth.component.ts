@@ -90,6 +90,18 @@ export class ConfigurationAuthComponent implements OnChanges {
         this.currentConfig.ldap_verify_cert.value = $event;
     }
 
+    setOIDCProvider($event: string) {
+        this.currentConfig.oidc_provider_url.value = $event;
+    }
+
+    setOIDCClientID($event: string) {
+        this.currentConfig.oidc_client_id.value = $event;
+    }
+
+    setOIDCClientSecret($event: string) {
+        this.currentConfig.oidc_client_secret.value = $event;
+    }
+
     public testLDAPServer(): void {
         if (this.testingLDAPOnGoing) {
             return; // Should not come here
@@ -144,6 +156,7 @@ export class ConfigurationAuthComponent implements OnChanges {
         let changes = {};
         for (let prop in allChanges) {
             if (prop.startsWith('ldap_')
+                || prop.startsWith('oidc_')
                 || prop.startsWith('uaa_')
                 || prop === 'auth_mode'
                 || prop === 'project_creattion_restriction'
@@ -206,7 +219,6 @@ export class ConfigurationAuthComponent implements OnChanges {
         this.configService.getConfiguration()
             .then((configurations: Configuration) => {
                 this.onGoing = false;
-
                 // Add two password fields
                 configurations.ldap_search_password = new StringValueItem(fakePass, true);
                 configurations.uaa_client_secret = new StringValueItem(fakePass, true);

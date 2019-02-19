@@ -662,6 +662,14 @@
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
         },
+        "OIDC": {
+            "PROVIDER_URL": "OIDC Provider URL",
+            "PROVIDER_URL_INFO": "The URL to your OIDC Provider. Other OIDC endpoints will be discovered using this base URL.",
+            "CLIENT_ID": "OIDC Client ID",
+            "CLIENT_ID_INFO": "The OAuth client ID for Harbor",
+            "CLIENT_SECRET": "OIDC Client Secret",
+            "CLIENT_SECRET_INFO": "The OAuth client secret for Harbor"
+        },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
             "CLIENT_ID": "UAA Client ID",

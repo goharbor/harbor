@@ -21,6 +21,7 @@
         "OK": "OK",
         "DELETE": "SUPPRIMER",
         "LOG_IN": "S'IDENTIFIER",
+        "LOG_IN_SSO": "s'identifier avec SSO",
         "SIGN_UP_LINK": "Ouvrir un compte",
         "SIGN_UP": "S'INSCRIRE",
         "CONFIRM": "CONFIRMER",
@@ -631,6 +632,14 @@
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
         },
+        "OIDC": {
+            "PROVIDER_URL": "OIDC Provider URL",
+            "PROVIDER_URL_INFO": "The URL to your OIDC Provider. Other OIDC endpoints will be discovered using this base URL.",
+            "CLIENT_ID": "OIDC Client ID",
+            "CLIENT_ID_INFO": "The OAuth client ID for Harbor",
+            "CLIENT_SECRET": "OIDC Client Secret",
+            "CLIENT_SECRET_INFO": "The OAuth client secret for Harbor"
+        },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Déclenchement d'analyse globale avec succès !",
             "TRIGGER_SCAN_ALL_FAIL": "Echec du déclenchement d'analyse globale avec des erreurs : {{error}",
@@ -853,5 +862,4 @@
         "TIP_REPO": "A repository name is broken up into path components. A component of a repository name must be at least one lowercase, alpha-numeric characters, optionally separated by periods, dashes or underscores. More strictly, it must match the regular expression [a-z0-9]+(?:[._-][a-z0-9]+)*.If a repository name has two or more path components, they must be separated by a forward slash ('/').The total length of a repository name, including slashes, must be less the 256 characters.",
         "TIP_TAG": "A tag is a label applied to a Docker image in a repository. Tags are how various images in a repository are distinguished from each other.It need to match Regex: (`[\\w][\\w.-]{0,127}`)"
     }
-
 }

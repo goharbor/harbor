@@ -17,7 +17,7 @@ import { Http } from '@angular/http';
 
 import { Configuration } from '@harbor/ui';
 
-import {HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS} from "../shared/shared.utils";
+import { HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../shared/shared.utils";
 
 const configEndpoint = "/api/configurations";
 const emailEndpoint = "/api/email/ping";
@@ -30,28 +30,28 @@ export class ConfigurationService {
 
     public getConfiguration(): Promise<Configuration> {
         return this.http.get(configEndpoint, HTTP_GET_OPTIONS).toPromise()
-        .then(response => response.json() as Configuration)
-        .catch(error => Promise.reject(error));
+            .then(response => response.json() as Configuration)
+            .catch(error => Promise.reject(error));
     }
 
     public saveConfiguration(values: any): Promise<any> {
         return this.http.put(configEndpoint, JSON.stringify(values), HTTP_JSON_OPTIONS)
-        .toPromise()
-        .then(response => response)
-        .catch(error => Promise.reject(error));
+            .toPromise()
+            .then(response => response)
+            .catch(error => Promise.reject(error));
     }
 
     public testMailServer(mailSettings: any): Promise<any> {
         return this.http.post(emailEndpoint, JSON.stringify(mailSettings), HTTP_JSON_OPTIONS)
-        .toPromise()
-        .then(response => response)
-        .catch(error => Promise.reject(error));
+            .toPromise()
+            .then(response => response)
+            .catch(error => Promise.reject(error));
     }
 
     public testLDAPServer(ldapSettings: any): Promise<any> {
-         return this.http.post(ldapEndpoint, JSON.stringify(ldapSettings), HTTP_JSON_OPTIONS)
-        .toPromise()
-        .then(response => response)
-        .catch(error => Promise.reject(error));
+        return this.http.post(ldapEndpoint, JSON.stringify(ldapSettings), HTTP_JSON_OPTIONS)
+            .toPromise()
+            .then(response => response)
+            .catch(error => Promise.reject(error));
     }
 }

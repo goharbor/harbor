@@ -69,6 +69,9 @@ export class Configuration {
     ldap_group_search_filter: StringValueItem;
     ldap_group_attribute_name: StringValueItem;
     ldap_group_search_scope: NumberValueItem;
+    oidc_provider_url: StringValueItem;
+    oidc_client_id: StringValueItem;
+    oidc_client_secret: StringValueItem;
     uaa_client_id: StringValueItem;
     uaa_client_secret?: StringValueItem;
     uaa_endpoint: StringValueItem;
@@ -104,6 +107,9 @@ export class Configuration {
         this.ldap_group_search_filter = new StringValueItem("", true);
         this.ldap_group_attribute_name = new StringValueItem("", true);
         this.ldap_group_search_scope = new NumberValueItem(0, true);
+        this.oidc_provider_url = new StringValueItem("", true);
+        this.oidc_client_id = new StringValueItem("", true);
+        this.oidc_client_secret = new StringValueItem("", true);
         this.uaa_client_id = new StringValueItem("", true);
         this.uaa_client_secret = new StringValueItem("", true);
         this.uaa_endpoint = new StringValueItem("", true);
