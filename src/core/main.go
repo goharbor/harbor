@@ -93,8 +93,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-	if err := dao.InitDatabase(database); err != nil {
+	if err := dao.InitAndUpgradeDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
+	}
+	if err := config.Load(); err != nil {
+		log.Fatalf("failed to load config: %v", err)
 	}
 
 	password, err := config.InitialAdminPassword()

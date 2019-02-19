@@ -218,3 +218,19 @@ func ParseOfftime(offtime int64) (hour, minite, second int) {
 func TrimLower(str string) string {
 	return strings.TrimSpace(strings.ToLower(str))
 }
+
+// GetStrValueOfAnyType return string format of any value, for map, need to convert to json
+func GetStrValueOfAnyType(value interface{}) string {
+	var strVal string
+	if _, ok := value.(map[string]interface{}); ok {
+		b, err := json.Marshal(value)
+		if err != nil {
+			log.Errorf("can not marshal json object, error %v", err)
+			return ""
+		}
+		strVal = string(b)
+	} else {
+		strVal = fmt.Sprintf("%v", value)
+	}
+	return strVal
+}

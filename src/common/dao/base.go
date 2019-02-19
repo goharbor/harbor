@@ -90,6 +90,20 @@ func InitDatabase(database *models.Database) error {
 	return nil
 }
 
+// InitAndUpgradeDatabase - init database and upgrade when required
+func InitAndUpgradeDatabase(database *models.Database) error {
+	if err := InitDatabase(database); err != nil {
+		return err
+	}
+	if err := UpgradeSchema(database); err != nil {
+		return err
+	}
+	if err := CheckSchemaVersion(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // CheckSchemaVersion checks that whether the schema version matches with the expected one
 func CheckSchemaVersion() error {
 	version, err := GetSchemaVersion()

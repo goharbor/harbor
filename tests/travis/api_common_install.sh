@@ -15,9 +15,8 @@ if [ "$2" = 'LDAP' ]; then
     cd tests && sudo ./ldapprepare.sh && cd ..
 fi
 
-if [ "$2" = 'DB' ]; then
-    sudo ./tests/hostcfg.sh
-fi
+sudo ./tests/hostcfg.sh
+
 
 # prepare a chart file for API_DB test...
 sudo curl -o /home/travis/gopath/src/github.com/goharbor/harbor/tests/apitests/python/mariadb-4.3.1.tgz https://storage.googleapis.com/harbor-builds/bin/charts/mariadb-4.3.1.tgz

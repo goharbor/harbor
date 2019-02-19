@@ -28,12 +28,12 @@ import (
 	"github.com/astaxie/beego"
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/session"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	commonsecret "github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/security/secret"
+	"github.com/goharbor/harbor/src/common/utils/test"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
@@ -59,18 +59,10 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("failed to create session manager: %v", err)
 	}
+	config.Init()
+	test.InitDatabaseFromEnv()
 
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
-	database, err := config.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configurations: %v", err)
-	}
-	if err = dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
-
+	config.Upload(test.GetUnitTestConfig())
 	Init()
 
 	os.Exit(m.Run())

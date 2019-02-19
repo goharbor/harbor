@@ -20,13 +20,15 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/adminserver/client"
+	"github.com/goharbor/harbor/src/common"
+	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/runtime"
 	"github.com/goharbor/harbor/src/jobservice/utils"
+	"os"
 )
 
 func main() {
@@ -60,9 +62,10 @@ func main() {
 		if utils.IsEmptyStr(secret) {
 			return nil, errors.New("empty auth secret")
 		}
-
-		adminClient := client.NewClient(config.GetAdminServerEndpoint(), &client.Config{Secret: secret})
-		jobCtx := impl.NewContext(ctx.SystemContext, adminClient)
+		coreURL := os.Getenv("CORE_URL")
+		configURL := coreURL + common.CoreConfigPath
+		cfgMgr := comcfg.NewRESTCfgManager(configURL, secret)
+		jobCtx := impl.NewContext(ctx.SystemContext, cfgMgr)
 
 		if err := jobCtx.Init(); err != nil {
 			return nil, err

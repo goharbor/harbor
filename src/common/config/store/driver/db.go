@@ -15,12 +15,13 @@
 package driver
 
 import (
-	"fmt"
 	"github.com/goharbor/harbor/src/common/config/encrypt"
 	"github.com/goharbor/harbor/src/common/config/metadata"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"os"
 )
 
 // Database - Used to load/save configuration in database
@@ -61,11 +62,11 @@ func (d *Database) Save(cfgs map[string]interface{}) error {
 	var configEntries []models.ConfigEntry
 	for key, value := range cfgs {
 		if item, ok := metadata.Instance().GetByName(key); ok {
-			if item.Scope == metadata.SystemScope {
+			if os.Getenv("UTTEST") != "true" && item.Scope == metadata.SystemScope {
 				log.Errorf("system setting can not updated, key %v", key)
 				continue
 			}
-			strValue := fmt.Sprintf("%v", value)
+			strValue := utils.GetStrValueOfAnyType(value)
 			entry := &models.ConfigEntry{Key: key, Value: strValue}
 			if _, ok := item.ItemType.(*metadata.PasswordType); ok {
 				if encryptPassword, err := encrypt.Instance().Encrypt(strValue); err == nil {

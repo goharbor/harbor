@@ -14,7 +14,7 @@
 package token
 
 import (
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/stretchr/testify/assert"
 
@@ -31,20 +31,10 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 )
 
 func TestMain(m *testing.M) {
-	server, err := test.NewAdminserver(nil)
-	if err != nil {
-		panic(err)
-	}
-	defer server.Close()
-
-	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
-		panic(err)
-	}
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
