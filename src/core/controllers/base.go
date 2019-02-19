@@ -242,7 +242,6 @@ func (cc *CommonController) OauthCallback() {
 		return
 	}
 
-	log.Debugf("%+v", *user)
 	cc.SetSession("userId", user.UserID)
 	cc.SetSession("user", *user)
 	cc.Redirect("/harbor", http.StatusFound)

@@ -182,13 +182,11 @@ func Callback(code string) (*models.User, error) {
 	h, err := getHelper()
 
 	err = dao.OnBoardUser(u)
-	// err = h.OnBoardUser(u)
 	if err != nil {
 		return nil, err
 	}
 
 	u, err = h.SearchUser(u.Username)
-	// u, err = dao.GetUser(models.User{Username: u.Username})
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +195,6 @@ func Callback(code string) (*models.User, error) {
 		return nil, fmt.Errorf("no user found")
 	}
 
-	log.Debugf("FROM CALLBACK: %+v", u)
 	return u, nil
 }
 

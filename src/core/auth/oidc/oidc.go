@@ -28,25 +28,6 @@ import (
 	"github.com/coreos/go-oidc/oauth2"
 )
 
-// type AuthenticateHelper interface {
-
-// 	// Authenticate authenticate the user based on data in m.  Only when the error returned is an instance
-// 	// of ErrAuth, it will be considered a bad credentials, other errors will be treated as server side error.
-// 	Authenticate(m models.AuthModel) (*models.User, error)
-// 	// OnBoardUser will check if a user exists in user table, if not insert the user and
-// 	// put the id in the pointer of user model, if it does exist, fill in the user model based
-// 	// on the data record of the user
-// 	OnBoardUser(u *models.User) error
-// 	// Create a group in harbor DB, if altGroupName is not empty, take the altGroupName as groupName in harbor DB.
-// 	OnBoardGroup(g *models.UserGroup, altGroupName string) error
-// 	// Get user information from account repository
-// 	SearchUser(username string) (*models.User, error)
-// 	// Search a group based on specific authentication
-// 	SearchGroup(groupDN string) (*models.UserGroup, error)
-// 	// Update user information after authenticate, such as OnBoard or sync info etc
-// 	PostAuthenticate(u *models.User) error
-// }
-
 type OauthClient interface {
 	AuthCodeURL(state string) (string, error)
 	RequestToken(code string) (*models.User, error)
