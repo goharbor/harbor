@@ -208,7 +208,7 @@ def parse_yaml_config(config_file_path):
     '''
 
     with open(config_file_path) as f:
-        configs = yaml.load(f)
+        configs = yaml.safe_load(f)
 
     config_dict = {}
     config_dict['adminserver_url'] = "http://adminserver:8080"

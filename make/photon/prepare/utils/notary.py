@@ -68,7 +68,7 @@ def prepare_env_notary(customize_crt, nginx_config_dir):
     # print("Copying sql file for notary DB")
     # if os.path.exists(os.path.join(notary_config_dir, "postgresql-initdb.d")):
     #     shutil.rmtree(os.path.join(notary_config_dir, "postgresql-initdb.d"))
-    # shutil.copytree(os.path.join(notary_temp_dir, "postgresql-initdb.d"), os.path.join(notary_config_dir, "postgresql-initdb.d")) 
+    # shutil.copytree(os.path.join(notary_temp_dir, "postgresql-initdb.d"), os.path.join(notary_config_dir, "postgresql-initdb.d"))
 
 
 def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_path):
@@ -78,7 +78,7 @@ def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_pa
     render_jinja(
         notary_signer_pg_template,
         notary_signer_pg_config,
-        uid=DEFAULT_UID, 
+        uid=DEFAULT_UID,
         gid=DEFAULT_GID
         )
 

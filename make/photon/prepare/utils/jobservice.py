@@ -1,7 +1,7 @@
 import os
 
 from g import config_dir, DEFAULT_GID, DEFAULT_UID, templates_dir
-from utils.misc import prepare_config_dir, mark_file
+from utils.misc import prepare_config_dir
 from utils.jinja import render_jinja
 
 job_config_dir = os.path.join(config_dir, "jobservice")

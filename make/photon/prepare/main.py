@@ -1,6 +1,5 @@
 import click
 
-from utils.admin_server import prepare_adminserver
 from utils.misc import delfile
 from utils.configs import validate, parse_yaml_config
 from utils.cert import prepare_ca, SSL_CERT_KEY_PATH, SSL_CERT_PATH, get_secret_key
@@ -16,7 +15,7 @@ from utils.clair import prepare_clair
 from utils.chart import prepare_chartmuseum
 from utils.docker_compose import prepare_docker_compose
 from utils.nginx import prepare_nginx, nginx_confd_dir
-from g import (config_dir, private_key_pem_template, config_file_path, core_cert_dir, private_key_pem, 
+from g import (config_dir, private_key_pem_template, config_file_path, core_cert_dir, private_key_pem,
 root_crt, root_cert_path_template, registry_custom_ca_bundle_config)
 
 # Main function
@@ -33,8 +32,7 @@ def main(conf, with_notary, with_clair, with_chartmuseum):
 
     prepare_log_configs(config_dict)
     prepare_nginx(config_dict)
-    prepare_adminserver(config_dict, with_notary=with_notary, with_clair=with_clair, with_chartmuseum=with_chartmuseum)
-    prepare_core(config_dict)
+    prepare_core(config_dict, with_notary=with_notary, with_clair=with_clair, with_chartmuseum=with_chartmuseum)
     prepare_registry(config_dict)
     prepare_registry_ctl(config_dict)
     prepare_db(config_dict)

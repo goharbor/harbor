@@ -209,7 +209,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 # cmds
-DOCKERSAVE_PARA= $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
+DOCKERSAVE_PARA=$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_CORE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
@@ -219,16 +219,16 @@ DOCKERSAVE_PARA= $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		goharbor/nginx-photon:$(NGINXVERSION) goharbor/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG)
 
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
-		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
-				  $(HARBORPKG)/prepare \
-				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
-				  $(HARBORPKG)/harbor.yml
+					$(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
+					$(HARBORPKG)/prepare \
+					$(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
+					$(HARBORPKG)/harbor.yml
 
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
-		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
-				  $(HARBORPKG)/LICENSE \
-				  $(HARBORPKG)/install.sh \
-				  $(HARBORPKG)/harbor.yml
+					$(HARBORPKG)/prepare \
+					$(HARBORPKG)/LICENSE \
+					$(HARBORPKG)/install.sh \
+					$(HARBORPKG)/harbor.yml
 
 DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
@@ -278,7 +278,7 @@ compile:check_environment compile_core compile_jobservice compile_registryctl co
 	
 prepare:
 	@echo "preparing..."
-	@MAKEPATH=$(MAKEPATH) $(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
+	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
 build:
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG) \
@@ -287,15 +287,6 @@ build:
 	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION) -e MIGRATORVERSION=$(MIGRATORVERSION) \
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER)
 
-modify_sourcefiles:
-	@echo "change mode of source files."
-	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.key
-	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.crt
-	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer-ca.crt
-	@chmod 600 $(MAKEPATH)/common/templates/core/private_key.pem
-	@chmod 600 $(MAKEPATH)/common/templates/registry/root.crt
-
-# install: compile ui_version build modify_sourcefiles prepare start
 install: compile ui_version build prepare start
 
 package_online: prepare

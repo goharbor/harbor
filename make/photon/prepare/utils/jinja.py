@@ -1,5 +1,4 @@
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-from g import templates_dir
+from jinja2 import Environment, FileSystemLoader
 from .misc import mark_file
 
 jinja_env = Environment(loader=FileSystemLoader('/'), trim_blocks=True)
