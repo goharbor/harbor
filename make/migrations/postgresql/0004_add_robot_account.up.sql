@@ -3,6 +3,7 @@ CREATE TABLE robot (
  name varchar(255),
  description varchar(1024),
  project_id int,
+ expiration int,
  disabled boolean DEFAULT false NOT NULL,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP,

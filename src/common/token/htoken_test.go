@@ -3,6 +3,7 @@ package token
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/config"
@@ -30,7 +31,9 @@ func TestNew(t *testing.T) {
 
 	tokenID := int64(123)
 	projectID := int64(321)
-	token, err := New(tokenID, projectID, policies)
+	tokenExpiration := time.Duration(10) * 24 * time.Hour
+	expiresAt := time.Now().UTC().Add(tokenExpiration).Unix()
+	token, err := New(tokenID, projectID, expiresAt, policies)
 
 	assert.Nil(t, err)
 	assert.Equal(t, token.Header["alg"], "RS256")
@@ -49,7 +52,9 @@ func TestRaw(t *testing.T) {
 	tokenID := int64(123)
 	projectID := int64(321)
 
-	token, err := New(tokenID, projectID, policies)
+	tokenExpiration := time.Duration(10) * 24 * time.Hour
+	expiresAt := time.Now().UTC().Add(tokenExpiration).Unix()
+	token, err := New(tokenID, projectID, expiresAt, policies)
 	assert.Nil(t, err)
 
 	rawTk, err := token.Raw()

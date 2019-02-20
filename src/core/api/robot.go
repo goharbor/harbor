@@ -16,14 +16,16 @@ package api
 
 import (
 	"fmt"
-	"net/http"
-	"strconv"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/token"
+	"net/http"
+	"strconv"
+
+	"github.com/goharbor/harbor/src/core/config"
+	"time"
 )
 
 // RobotAPI ...
@@ -104,6 +106,9 @@ func (r *RobotAPI) Post() {
 	}
 
 	var robotReq models.RobotReq
+	// Expiration in days
+	tokenExpiration := time.Duration(config.RobotTokenExpiration()) * 24 * time.Hour
+	expiresAt := time.Now().UTC().Add(tokenExpiration).Unix()
 	r.DecodeJSONReq(&robotReq)
 	createdName := common.RobotPrefix + robotReq.Name
 
@@ -112,6 +117,7 @@ func (r *RobotAPI) Post() {
 		Name:        createdName,
 		Description: robotReq.Description,
 		ProjectID:   r.project.ProjectID,
+		Expiration:  expiresAt,
 	}
 	id, err := dao.AddRobot(&robot)
 	if err != nil {
@@ -125,7 +131,7 @@ func (r *RobotAPI) Post() {
 
 	// generate the token, and return it with response data.
 	// token is not stored in the database.
-	jwtToken, err := token.New(id, r.project.ProjectID, robotReq.Access)
+	jwtToken, err := token.New(id, r.project.ProjectID, expiresAt, robotReq.Access)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to valid parameters to generate token for robot account, %v", err))
 		err := dao.DeleteRobot(id)
