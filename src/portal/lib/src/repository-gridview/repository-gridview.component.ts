@@ -36,7 +36,7 @@ import {Tag} from '../service/interface';
 import {GridViewComponent} from '../gridview/grid-view.component';
 import {OperationService} from "../operation/operation.service";
 import {OperateInfo, OperationState, operateChanges} from "../operation/operate";
-import {SERVICE_CONFIG, IServiceConfig, downloadUrl } from '../service.config';
+import {SERVICE_CONFIG, IServiceConfig} from '../service.config';
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
@@ -45,13 +45,12 @@ import {SERVICE_CONFIG, IServiceConfig, downloadUrl } from '../service.config';
 })
 export class RepositoryGridviewComponent implements OnChanges, OnInit {
     signedCon: { [key: string]: any | string[] } = {};
-    downloadLink: string = downloadUrl;
+    downloadLink: string;
     @Input() projectId: number;
     @Input() projectName = "unknown";
     @Input() urlPrefix: string;
     @Input() hasSignedIn: boolean;
     @Input() hasProjectAdminRole: boolean;
-    @Input() hasCAFile: boolean = false;
     @Input() mode = "admiral";
     @Output() repoClickEvent = new EventEmitter<RepositoryItem>();
     @Output() repoProvisionEvent = new EventEmitter<RepositoryItem>();
@@ -120,7 +119,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     }
 
     get canDownloadCert(): boolean {
-        return this.hasCAFile;
+        return this.systemInfo && this.systemInfo.has_ca_root;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
