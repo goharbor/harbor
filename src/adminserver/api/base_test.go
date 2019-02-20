@@ -15,10 +15,13 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
+
+var capturedData []byte
 
 func TestHandleInternalServerError(t *testing.T) {
 	w := httptest.NewRecorder()
@@ -75,4 +78,32 @@ func TestWriteJSON(t *testing.T) {
 	if err := writeJSON(w, "Pong"); err != nil {
 		t.Errorf("Expected nil error, received: %v", err)
 	}
+}
+
+func TestWriteJSONError(t *testing.T) {
+	var w mockResponseWriterError
+	if err := writeJSON(w, "Pong"); err.Error() != "TestError" {
+		t.Errorf("Expected TestError error, received: %v", err)
+	}
+
+}
+
+// Mock HTML ResponseWriter where an error is generated with the write function
+type mockResponseWriterError struct {
+	header       http.Header
+	capturedData []byte
+}
+
+func (mrw mockResponseWriterError) Header() http.Header {
+	return mrw.header
+}
+
+func (mrw mockResponseWriterError) Write(data []byte) (int, error) {
+	testError := errors.New("TestError")
+	capturedData = data[:]
+	return len(data), testError
+}
+
+func (mrw mockResponseWriterError) WriteHeader(code int) {
+
 }
