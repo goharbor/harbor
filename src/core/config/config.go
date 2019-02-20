@@ -220,6 +220,7 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 	}, nil
 }
 
+// OIDCProvider returns the configured OIDC Provider URL
 func OIDCProvider() (string, error) {
 	cfg := cfgMgr.GetAll()
 
@@ -231,6 +232,7 @@ func OIDCProvider() (string, error) {
 	return "", fmt.Errorf("no OIDCProviderURL")
 }
 
+// OIDCClientID returns the configured OIDC client ID
 func OIDCClientID() (string, error) {
 	cfg := cfgMgr.GetAll()
 
@@ -242,6 +244,7 @@ func OIDCClientID() (string, error) {
 	return "", fmt.Errorf("no OIDCClientID")
 }
 
+// OIDCClientSecret returns the configured OIDC client secret
 func OIDCClientSecret() (string, error) {
 	cfg := cfgMgr.GetAll()
 

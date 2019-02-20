@@ -159,6 +159,8 @@ func Login(m models.AuthModel) (*models.User, error) {
 	return user, err
 }
 
+// GetAuthorizeURL generates a URL to which to redirect the user to start the
+// OAuth flow
 func GetAuthorizeURL() (string, error) {
 	client, err := oidc.Client()
 	if err != nil {
@@ -168,6 +170,8 @@ func GetAuthorizeURL() (string, error) {
 	return client.AuthCodeURL("nostate")
 }
 
+// Callback handles getting an id token using the provided authorization code
+// and onboarding and/or reconciling the federated user with the local store
 func Callback(code string) (*models.User, error) {
 	client, err := oidc.Client()
 	if err != nil {

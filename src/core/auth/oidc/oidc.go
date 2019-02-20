@@ -28,19 +28,21 @@ import (
 	"github.com/coreos/go-oidc/oauth2"
 )
 
+// OauthClient abstracts the authorization code flow of an OAuth client
 type OauthClient interface {
 	AuthCodeURL(state string) (string, error)
 	RequestToken(code string) (*models.User, error)
 }
 
-// Auth is the implementation of AuthenticateHelper to use OIDC
+// defaultOauthClient is the implementation of OauthClient to use OIDC
 type defaultOauthClient struct {
 	OIDCConfig *oidc.Config
 	provider   *oidc.Provider
 	client     *oauth2.Client
 }
 
-// Authenticate ...
+// AuthCodeURL returns a URL to which the user can be redirected to start the
+// OAuth authorization code flow
 func (c *defaultOauthClient) AuthCodeURL(state string) (string, error) {
 	client, err := c.ensureClient()
 	if err != nil {
@@ -50,6 +52,7 @@ func (c *defaultOauthClient) AuthCodeURL(state string) (string, error) {
 	return client.AuthCodeURL(state, oauth2.GrantTypeAuthCode, ""), nil
 }
 
+// RequestToken retrieves a token from the OIDC provider using the provided code
 func (c *defaultOauthClient) RequestToken(code string) (*models.User, error) {
 	_, err := c.ensureClient()
 	if err != nil {
@@ -131,6 +134,7 @@ func (c *defaultOauthClient) ensureClient() (*oauth2.Client, error) {
 	return c.client, nil
 }
 
+// Client configures and returns an instance of defaultOauthClient
 func Client() (OauthClient, error) {
 	harborURL, err := config.ExtEndpoint()
 	if err != nil {
