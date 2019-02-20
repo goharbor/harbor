@@ -222,7 +222,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         this.lastFilteredRepoName = repoName;
         this.currentPage = 1;
         let st: State = this.currentState;
-        if (!st) {
+        if (!st || !st.page) {
             st = { page: {} };
         }
         st.page.size = this.pageSize;
@@ -391,6 +391,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     }
 
     clrLoad(state: State): void {
+        if (!state || !state.page) {
+            return;
+        }
         this.selectedRow = [];
         // Keep it for future filtering and sorting
         this.currentState = state;
@@ -509,8 +512,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         let hasDeleteRepositoryPermission = this.userPermissionService.getPermission(this.projectId,
             USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.DELETE);
         forkJoin(hasCreateRepositoryPermission, hasDeleteRepositoryPermission).subscribe(permissions => {
-          this.hasCreateRepositoryPermission = permissions[0] as boolean;
-          this.hasDeleteRepositoryPermission = permissions[1] as boolean;
+            this.hasCreateRepositoryPermission = permissions[0] as boolean;
+            this.hasDeleteRepositoryPermission = permissions[1] as boolean;
         }, error => this.errorHandler.error(error));
-      }
+    }
 }

@@ -94,5 +94,5 @@ func TestMapType_validate(t *testing.T) {
 func TestMapType_get(t *testing.T) {
 	test := &MapType{}
 	result, _ := test.get(`{"sample":"abc", "another":"welcome"}`)
-	assert.Equal(t, result, map[string]string{"sample": "abc", "another": "welcome"})
+	assert.Equal(t, map[string]interface{}{"sample": "abc", "another": "welcome"}, result)
 }

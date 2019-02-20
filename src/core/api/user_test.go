@@ -27,6 +27,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/astaxie/beego"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 var testUser0002ID, testUser0003ID int
@@ -39,7 +41,9 @@ func TestUsersPost(t *testing.T) {
 
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
-
+	config.Upload(map[string]interface{}{
+		common.AUTHMode: "db_auth",
+	})
 	// case 1: register a new user without admin auth, expect 400, because self registration is on
 	fmt.Println("Register user without admin auth")
 	code, err := apiTest.UsersPost(testUser0002)

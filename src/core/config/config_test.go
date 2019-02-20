@@ -14,35 +14,37 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"path"
 	"runtime"
 	"testing"
 
+	"fmt"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/stretchr/testify/assert"
 )
 
 // test functions under package core/config
 func TestConfig(t *testing.T) {
-
+	test.InitDatabaseFromEnv()
+	dao.PrepareTestData([]string{"delete from properties where k='scan_all_policy'"}, []string{})
 	defaultCACertPath = path.Join(currPath(), "test", "ca.crt")
 	c := map[string]interface{}{
-		common.AdmiralEndpoint: "http://www.vmware.com",
+		common.AdmiralEndpoint: "https://www.vmware.com",
+		common.WithClair:       false,
+		common.WithChartMuseum: false,
+		common.WithNotary:      false,
 	}
-	server, err := test.NewAdminserver(c)
-	if err != nil {
-		t.Fatalf("failed to create a mock admin server: %v", err)
-	}
-	defer server.Close()
+	Init()
 
-	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
-		t.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
-	}
+	Upload(c)
 
 	secretKeyPath := "/tmp/secretkey"
-	_, err = test.GenerateKey(secretKeyPath)
+	_, err := test.GenerateKey(secretKeyPath)
 	if err != nil {
 		t.Errorf("failed to generate secret key: %v", err)
 		return
@@ -139,12 +141,14 @@ func TestConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to get clair DB %v", err)
 	}
-	adminServerDefaultConfig := test.GetDefaultConfigMap()
-	assert.Equal(adminServerDefaultConfig[common.ClairDB], clairDB.Database)
-	assert.Equal(adminServerDefaultConfig[common.ClairDBUsername], clairDB.Username)
-	assert.Equal(adminServerDefaultConfig[common.ClairDBPassword], clairDB.Password)
-	assert.Equal(adminServerDefaultConfig[common.ClairDBHost], clairDB.Host)
-	assert.Equal(adminServerDefaultConfig[common.ClairDBPort], clairDB.Port)
+	defaultConfig := test.GetDefaultConfigMap()
+	defaultConfig[common.AdmiralEndpoint] = "http://www.vmware.com"
+	Upload(defaultConfig)
+	assert.Equal(defaultConfig[common.ClairDB], clairDB.Database)
+	assert.Equal(defaultConfig[common.ClairDBUsername], clairDB.Username)
+	assert.Equal(defaultConfig[common.ClairDBPassword], clairDB.Password)
+	assert.Equal(defaultConfig[common.ClairDBHost], clairDB.Host)
+	assert.Equal(defaultConfig[common.ClairDBPort], clairDB.Port)
 
 	if InternalNotaryEndpoint() != "http://notary-server:4443" {
 		t.Errorf("Unexpected notary endpoint: %s", InternalNotaryEndpoint())
@@ -173,11 +177,6 @@ func TestConfig(t *testing.T) {
 		t.Errorf(`extURL should be "host01.com".`)
 	}
 
-	// reset configurations
-	if err = Reset(); err != nil {
-		t.Errorf("failed to reset configurations: %v", err)
-		return
-	}
 	mode, err = AuthMode()
 	if err != nil {
 		t.Fatalf("failed to get auth mode: %v", err)
@@ -213,4 +212,13 @@ func currPath() string {
 		panic("Failed to get current directory")
 	}
 	return path.Dir(f)
+}
+func TestConfigureValue_GetMap(t *testing.T) {
+	var policy models.ScanAllPolicy
+	value2 := `{"parameter":{"daily_time":0},"type":"daily"}`
+	err := json.Unmarshal([]byte(value2), &policy)
+	if err != nil {
+		t.Errorf("Failed with error %v", err)
+	}
+	fmt.Printf("%+v\n", policy)
 }

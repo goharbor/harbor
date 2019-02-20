@@ -14,7 +14,6 @@
 package models
 
 import (
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,6 +21,9 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	common_job "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/core/config"
+	"os"
+	"strings"
 )
 
 var adminServerTestConfig = map[string]interface{}{
@@ -29,11 +31,11 @@ var adminServerTestConfig = map[string]interface{}{
 }
 
 func TestMain(m *testing.M) {
-	server, err := test.NewAdminserver(adminServerTestConfig)
-	if err != nil {
-		log.Fatalf("failed to create a mock admin server: %v", err)
-	}
-	defer server.Close()
+
+	test.InitDatabaseFromEnv()
+	config.Init()
+	config.Upload(adminServerTestConfig)
+	os.Exit(m.Run())
 
 }
 
@@ -126,5 +128,5 @@ func TestCronString(t *testing.T) {
 		Schedule: schedule,
 	}
 	cronStr := adminjob.CronString()
-	assert.Equal(t, cronStr, "{\"type\":\"Daily\",\"Weekday\":0,\"Offtime\":102}")
+	assert.True(t, strings.EqualFold(cronStr, "{\"type\":\"Daily\",\"Weekday\":0,\"Offtime\":102}"))
 }

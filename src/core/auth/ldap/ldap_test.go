@@ -74,18 +74,11 @@ var adminServerLdapTestConfig = map[string]interface{}{
 }
 
 func TestMain(m *testing.M) {
-	server, err := test.NewAdminserver(adminServerLdapTestConfig)
-	if err != nil {
-		log.Fatalf("failed to create a mock admin server: %v", err)
-	}
-	defer server.Close()
-
-	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
-		log.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
-	}
+	test.InitDatabaseFromEnv()
+	coreConfig.InitWithSettings(adminServerLdapTestConfig)
 
 	secretKeyPath := "/tmp/secretkey"
-	_, err = test.GenerateKey(secretKeyPath)
+	_, err := test.GenerateKey(secretKeyPath)
 	if err != nil {
 		log.Errorf("failed to generate secret key: %v", err)
 		return
@@ -94,19 +87,6 @@ func TestMain(m *testing.M) {
 
 	if err := os.Setenv("KEY_PATH", secretKeyPath); err != nil {
 		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
-	}
-
-	if err := coreConfig.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
-
-	database, err := coreConfig.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configuration: %v", err)
-	}
-
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
 	}
 
 	// Extract to test utils

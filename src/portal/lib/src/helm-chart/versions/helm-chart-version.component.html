@@ -144,7 +144,7 @@
                         <button type="button" class="btn btn-link"
                         (click)="versionDownload($event, item)">{{'HELM_CHART.DOWNLOAD' | translate}}</button>
                         <button type="button" class="btn btn-link"
-                        [disabled]="selectedRows.length<=0 || !hasDeleteHelmChartVersionPermission"
+                        [disabled]="!hasDeleteHelmChartVersionPermission"
                         (click)="deleteVersionCard($event, item)">{{'BUTTON.DELETE' | translate}}</button>
                     </clr-dropdown>
                 </div>

@@ -8,6 +8,7 @@ RUN tdnf install sudo -y >> /dev/null\
 HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/ping || exit 1
 COPY ./make/photon/core/harbor_core ./make/photon/core/start.sh ./UIVERSION /harbor/
 COPY ./src/core/views /harbor/views
+COPY ./make/migrations /harbor/migrations
 
 RUN chmod u+x /harbor/start.sh /harbor/harbor_core
 WORKDIR /harbor/

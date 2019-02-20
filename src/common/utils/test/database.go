@@ -15,11 +15,13 @@
 package test
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
@@ -44,6 +46,7 @@ func InitDatabaseFromEnv() {
 
 	dbPassword := os.Getenv("POSTGRESQL_PWD")
 	dbDatabase := os.Getenv("POSTGRESQL_DATABASE")
+	adminPwd := os.Getenv("HARBOR_ADMIN_PASSWD")
 	if len(dbDatabase) == 0 {
 		log.Fatalf("environment variable POSTGRESQL_DATABASE is not set")
 	}
@@ -61,7 +64,32 @@ func InitDatabaseFromEnv() {
 
 	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
 
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
+	if err := dao.InitAndUpgradeDatabase(database); err != nil {
+		log.Fatalf("failed to init and upgrade database : %v", err)
 	}
+	if err := updateUserInitialPassword(1, adminPwd); err != nil {
+		log.Fatalf("failed to init password for admin: %v", err)
+	}
+
+}
+
+func updateUserInitialPassword(userID int, password string) error {
+	queryUser := models.User{UserID: userID}
+	user, err := dao.GetUser(queryUser)
+	if err != nil {
+		return fmt.Errorf("Failed to get user, userID: %d %v", userID, err)
+	}
+	if user == nil {
+		return fmt.Errorf("user id: %d does not exist", userID)
+	}
+	if user.Salt == "" {
+		user.Salt = utils.GenerateRandomString()
+		user.Password = password
+		err = dao.ChangeUserPassword(*user)
+		if err != nil {
+			return fmt.Errorf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
+		}
+	} else {
+	}
+	return nil
 }

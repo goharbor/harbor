@@ -103,9 +103,9 @@ func initRouters() {
 	beego.Router("/api/targets/:id([0-9]+)/policies/", &api.TargetAPI{}, "get:ListPolicies")
 	beego.Router("/api/targets/ping", &api.TargetAPI{}, "post:Ping")
 	beego.Router("/api/logs", &api.LogAPI{})
-	beego.Router("/api/configs", &api.ConfigAPI{}, "get:GetInternalConfig")
-	beego.Router("/api/configurations", &api.ConfigAPI{})
-	beego.Router("/api/configurations/reset", &api.ConfigAPI{}, "post:Reset")
+
+	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
+	beego.Router("/api/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
 	beego.Router("/api/replications", &api.ReplicationAPI{})
 	beego.Router("/api/labels", &api.LabelAPI{}, "post:Post;get:List")
@@ -118,7 +118,6 @@ func initRouters() {
 
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
-	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig")
 
 	// external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})

@@ -26,6 +26,7 @@ var testingMetaDataArray = []Item{
 	{Name: "ulimit", ItemType: &Int64Type{}, Scope: "user", Group: "ldapbasic"},
 	{Name: "ldap_verify_cert", ItemType: &BoolType{}, Scope: "user", Group: "ldapbasic"},
 	{Name: "sample_map_setting", ItemType: &MapType{}, Scope: "user", Group: "ldapbasic"},
+	{Name: "scan_all_policy", ItemType: &MapType{}, Scope: "user", Group: "basic"},
 }
 
 // createCfgValue ... Create a ConfigureValue object, only used in test
@@ -50,7 +51,11 @@ func TestConfigureValue_GetString(t *testing.T) {
 
 func TestConfigureValue_GetStringToStringMap(t *testing.T) {
 	Instance().initFromArray(testingMetaDataArray)
-	assert.Equal(t, createCfgValue("sample_map_setting", `{"sample":"abc"}`).GetStringToStringMap(), map[string]string{"sample": "abc"})
+	val, err := createCfgValue("sample_map_setting", `{"sample":"abc"}`).GetAnyType()
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Equal(t, val, map[string]interface{}{"sample": "abc"})
 	Instance().init()
 }
 func TestConfigureValue_GetInt(t *testing.T) {
@@ -60,4 +65,13 @@ func TestConfigureValue_GetInt(t *testing.T) {
 func TestConfigureValue_GetInt64(t *testing.T) {
 	Instance().initFromArray(testingMetaDataArray)
 	assert.Equal(t, createCfgValue("ulimit", "99999").GetInt64(), int64(99999))
+}
+
+func TestNewScanAllPolicy(t *testing.T) {
+	Instance().initFromArray(testingMetaDataArray)
+	value, err := NewCfgValue("scan_all_policy", `{"parameter":{"daily_time":0},"type":"daily"}`)
+	if err != nil {
+		t.Errorf("Can not create scan all policy err: %v", err)
+	}
+	fmt.Printf("value %v\n", value.GetString())
 }
