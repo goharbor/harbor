@@ -3,7 +3,7 @@ Test 9-12 User push unsigned images(LDAP mode)
 
 # Purpose:
 
-To verify UI will difference unsiged images from signed.
+To verify UI will difference unsigned images from signed.
 
 # References:
 User guide

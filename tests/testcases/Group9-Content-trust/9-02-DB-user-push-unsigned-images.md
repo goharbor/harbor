@@ -10,7 +10,7 @@ User guide
 
 # Environment:
 
-* This test requires one Harbor instance is runnning and available.
+* This test requires one Harbor instance is running and available.
 * A Linux host with Docker CLI (Docker client) installed.
 
 # Test Steps:
@@ -21,7 +21,7 @@ User guide
 
 # Expected Outcome:
 
-* A red cross will displayed under signed colume in UI.
+* A red cross will displayed under signed column in UI.
 
 # Possible Problems:
 None

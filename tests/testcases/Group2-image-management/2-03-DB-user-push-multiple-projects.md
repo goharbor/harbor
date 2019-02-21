@@ -25,7 +25,7 @@ In below test, user A is non-admin user. User A should be replaced by a longer a
 4. Search projects with keywords to see if the list and pagination update accordingly.
 
 # Expected Outcome:
-* As descirbed in step 3-4.
+* As described in step 3-4.
 
 # Possible Problems:
 None

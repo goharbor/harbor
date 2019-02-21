@@ -16,7 +16,7 @@ User guide
 
 # Test Steps:
 
-1. A user has **NEVER** logged in to Harbor. He/she logs in to the UI for the first time by his/her id in AD. The id could be the cn attribte (or what is configured in ldap_uid) of his/her AD user DN.
+1. A user has **NEVER** logged in to Harbor. He/she logs in to the UI for the first time by his/her id in AD. The id could be the cn attribute (or what is configured in ldap_uid) of his/her AD user DN.
 2. The user logs out from the UI.
 3. The user logs in again to the UI, should not see his/her own account settings and cannot change password(need to go to LDAP/AD for this).
 4. The user logs out from the UI.

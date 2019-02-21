@@ -172,7 +172,7 @@ ctx.Checkin("30%")
 Here is a demo job:
 
 ```go
-// DemoJob is the job to demostrate the job interface.
+// DemoJob is the job to demonstrate the job interface.
 type DemoJob struct{}
 
 // MaxFails is implementation of same method in Interface.

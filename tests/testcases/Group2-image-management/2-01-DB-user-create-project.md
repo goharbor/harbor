@@ -22,7 +22,7 @@ In below test, user A and B are non-admin users. User A, B and project X, Y shou
 1. Log in to UI as user A (non-admin).
 2. Create a new project X with publicity is off (default).
 3. Create another new project Y with publicity is on .
-4. While keeping user A logging on, in another browswer log in as user B (non-admin).
+4. While keeping user A logging on, in another browser log in as user B (non-admin).
 5. User B checks his/her public projects to see if project Y is listed and project X is not listed.
 6. User A changes project X's publicity to on, project Y's publicity to off.
 7. User B refreshes his/her public projects to see if project X is listed and project Y is not listed.

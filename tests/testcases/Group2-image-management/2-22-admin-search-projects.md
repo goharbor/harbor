@@ -27,7 +27,7 @@ In below test, user A is non-admin user. User A should be replaced by a longer a
 6. Check in "Public Projects" to verify the projects with publicity on can be listed.
 
 # Expected Outcome:
-* As descirbed in step 4,6.
+* As described in step 4,6.
 
 # Possible Problems:
 None
