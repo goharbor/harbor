@@ -27,6 +27,8 @@ auth:
     realm: $public_url/service/token
     rootcertbundle: /etc/registry/root.crt
     service: harbor-registry
+validation:
+  disabled: true
 notifications:
   endpoints:
   - name: harbor
