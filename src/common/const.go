@@ -112,6 +112,7 @@ const (
 	DefaultNotaryEndpoint             = "http://notary-server:4443"
 	LdapGroupType                     = 1
 	LdapGroupAdminDn                  = "ldap_group_admin_dn"
+	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
 	WithChartMuseum                   = "with_chartmuseum"
 	ChartRepoURL                      = "chart_repository_url"
