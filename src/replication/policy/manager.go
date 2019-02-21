@@ -196,5 +196,10 @@ func (m *DefaultManager) UpdatePolicy(policy models.ReplicationPolicy) error {
 // RemovePolicy removes the specified policy;
 // If removing failed, error will be returned.
 func (m *DefaultManager) RemovePolicy(policyID int64) error {
+	// delete replication jobs
+	if err := dao.DeleteRepJobs(policyID); err != nil {
+		return err
+	}
+	// delete the replication policy
 	return dao.DeleteRepPolicy(policyID)
 }
