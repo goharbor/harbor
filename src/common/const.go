@@ -107,7 +107,6 @@ const (
 	ClairURL                          = "clair_url"
 	NotaryURL                         = "notary_url"
 	DefaultAdminserverEndpoint        = "http://adminserver:8080"
-	DefaultJobserviceEndpoint         = "http://jobservice:8080"
 	DefaultCoreEndpoint               = "http://core:8080"
 	DefaultNotaryEndpoint             = "http://notary-server:4443"
 	LdapGroupType                     = 1
@@ -121,47 +120,13 @@ const (
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	DefaultClairHealthCheckServerURL  = "http://clair:6061"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
-	RobotPrefix = "robot$"
+	RobotPrefix    = "robot$"
+	CoreConfigPath = "/api/internal/configurations"
 )
 
+// TODO remove with adminserver
 // Shared variable, not allowed to modify
 var (
-	// the keys of configurations which user can modify in PUT method and user can
-	// get in GET method
-	HarborValidKeys = []string{
-		AUTHMode,
-		SelfRegistration,
-		LDAPURL,
-		LDAPSearchDN,
-		LDAPSearchPwd,
-		LDAPBaseDN,
-		LDAPUID,
-		LDAPFilter,
-		LDAPScope,
-		LDAPTimeout,
-		LDAPVerifyCert,
-		LDAPGroupAttributeName,
-		LDAPGroupBaseDN,
-		LDAPGroupSearchFilter,
-		LDAPGroupSearchScope,
-		LdapGroupAdminDn,
-		EmailHost,
-		EmailPort,
-		EmailUsername,
-		EmailPassword,
-		EmailFrom,
-		EmailSSL,
-		EmailIdentity,
-		EmailInsecure,
-		ProjectCreationRestriction,
-		TokenExpiration,
-		ScanAllPolicy,
-		UAAClientID,
-		UAAClientSecret,
-		UAAEndpoint,
-		UAAVerifyCert,
-		ReadOnly,
-	}
 
 	// value is default value
 	HarborStringKeysMap = map[string]string{
@@ -201,11 +166,5 @@ var (
 		LDAPVerifyCert:   true,
 		UAAVerifyCert:    true,
 		ReadOnly:         false,
-	}
-
-	HarborPasswordKeys = []string{
-		EmailPassword,
-		LDAPSearchPwd,
-		UAAClientSecret,
 	}
 )

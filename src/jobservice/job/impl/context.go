@@ -22,8 +22,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/goharbor/harbor/src/adminserver/client"
 	"github.com/goharbor/harbor/src/common"
+	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -59,15 +59,15 @@ type Context struct {
 	properties map[string]interface{}
 
 	// admin server client
-	adminClient client.Client
+	cfgMgr comcfg.CfgManager
 }
 
 // NewContext ...
-func NewContext(sysCtx context.Context, adminClient client.Client) *Context {
+func NewContext(sysCtx context.Context, cfgMgr *comcfg.CfgManager) *Context {
 	return &Context{
-		sysContext:  sysCtx,
-		adminClient: adminClient,
-		properties:  make(map[string]interface{}),
+		sysContext: sysCtx,
+		cfgMgr:     *cfgMgr,
+		properties: make(map[string]interface{}),
 	}
 }
 
@@ -76,12 +76,11 @@ func (c *Context) Init() error {
 	var (
 		counter = 0
 		err     error
-		configs map[string]interface{}
 	)
 
 	for counter == 0 || err != nil {
 		counter++
-		configs, err = c.adminClient.GetCfgs()
+		err = c.cfgMgr.Load()
 		if err != nil {
 			logger.Errorf("Job context initialization error: %s\n", err.Error())
 			if counter < maxRetryTimes {
@@ -94,7 +93,7 @@ func (c *Context) Init() error {
 		}
 	}
 
-	db := getDBFromConfig(configs)
+	db := c.cfgMgr.GetDatabaseCfg()
 
 	err = dao.InitDatabase(db)
 	if err != nil {
@@ -110,9 +109,9 @@ func (c *Context) Init() error {
 // This func will build the job execution context before running
 func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 	jContext := &Context{
-		sysContext:  c.sysContext,
-		adminClient: c.adminClient,
-		properties:  make(map[string]interface{}),
+		sysContext: c.sysContext,
+		cfgMgr:     c.cfgMgr,
+		properties: make(map[string]interface{}),
 	}
 
 	// Copy properties
@@ -122,8 +121,9 @@ func (c *Context) Build(dep env.JobData) (env.JobContext, error) {
 		}
 	}
 
-	// Refresh admin server properties
-	props, err := c.adminClient.GetCfgs()
+	// Refresh config properties
+	err := c.cfgMgr.Load()
+	props := c.cfgMgr.GetAll()
 	if err != nil {
 		return nil, err
 	}

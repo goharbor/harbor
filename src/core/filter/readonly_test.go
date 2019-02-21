@@ -17,11 +17,9 @@ package filter
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -29,29 +27,9 @@ import (
 func TestReadonlyFilter(t *testing.T) {
 
 	var defaultConfig = map[string]interface{}{
-		common.ExtEndpoint:        "host01.com",
-		common.AUTHMode:           "db_auth",
-		common.CfgExpiration:      5,
-		common.TokenExpiration:    30,
-		common.DatabaseType:       "postgresql",
-		common.PostGreSQLDatabase: "registry",
-		common.PostGreSQLHOST:     "127.0.0.1",
-		common.PostGreSQLPort:     5432,
-		common.PostGreSQLPassword: "root123",
-		common.PostGreSQLUsername: "postgres",
-		common.ReadOnly:           true,
+		common.ReadOnly: true,
 	}
-	adminServer, err := utilstest.NewAdminserver(defaultConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer adminServer.Close()
-	if err := os.Setenv("ADMINSERVER_URL", adminServer.URL); err != nil {
-		panic(err)
-	}
-	if err := config.Init(); err != nil {
-		panic(err)
-	}
+	config.Upload(defaultConfig)
 
 	assert := assert.New(t)
 	req1, _ := http.NewRequest("DELETE", "http://127.0.0.1:5000/api/repositories/library/ubuntu", nil)

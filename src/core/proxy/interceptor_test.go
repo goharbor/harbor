@@ -1,12 +1,10 @@
 package proxy
 
 import (
-	"github.com/goharbor/harbor/src/adminserver/client"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
-	utilstest "github.com/goharbor/harbor/src/common/utils/test"
+	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,8 +17,6 @@ import (
 
 var endpoint = "10.117.4.142"
 var notaryServer *httptest.Server
-var adminServer *httptest.Server
-var adminserverClient client.Client
 
 var admiralEndpoint = "http://127.0.0.1:8282"
 var token = ""
@@ -35,18 +31,7 @@ func TestMain(m *testing.M) {
 		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
-	adminServer, err := utilstest.NewAdminserver(defaultConfig)
-	if err != nil {
-		panic(err)
-	}
-	defer adminServer.Close()
-	if err := os.Setenv("ADMINSERVER_URL", adminServer.URL); err != nil {
-		panic(err)
-	}
-	if err := config.Init(); err != nil {
-		panic(err)
-	}
-	adminserverClient = client.NewClient(adminServer.URL, nil)
+	config.InitWithSettings(defaultConfig)
 	result := m.Run()
 	if result != 0 {
 		os.Exit(result)
@@ -123,24 +108,13 @@ func TestPMSPolicyChecker(t *testing.T) {
 		common.PostGreSQLPassword: "root123",
 		common.PostGreSQLDatabase: "registry",
 	}
-	adminServer, err := utilstest.NewAdminserver(defaultConfigAdmiral)
-	if err != nil {
-		panic(err)
-	}
-	defer adminServer.Close()
-	if err := os.Setenv("ADMINSERVER_URL", adminServer.URL); err != nil {
-		panic(err)
-	}
+
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
-	database, err := config.Database()
-	if err != nil {
-		panic(err)
-	}
-	if err := dao.InitDatabase(database); err != nil {
-		panic(err)
-	}
+	testutils.InitDatabaseFromEnv()
+
+	config.Upload(defaultConfigAdmiral)
 
 	name := "project_for_test_get_sev_low"
 	id, err := config.GlobalProjectMgr.Create(&models.Project{

@@ -175,8 +175,7 @@ describe("TagComponent (inline template)", () => {
     expect(spy.calls.any).toBeTruthy();
   }));
 
-  // fail after upgrade to angular 6.
-  xit("should load and render data", async(() => {
+  it("should load and render data", () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -187,7 +186,7 @@ describe("TagComponent (inline template)", () => {
       expect(el).toBeTruthy();
       expect(el.textContent.trim()).toEqual("1.11.5");
     });
-  }));
+  });
 
 });
 

@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/ldap"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/core/config"
 	coreConfig "github.com/goharbor/harbor/src/core/config"
 )
 
@@ -65,18 +66,9 @@ var adminServerTestConfig = map[string]interface{}{
 }
 
 func TestMain(m *testing.M) {
-	server, err := test.NewAdminserver(adminServerTestConfig)
-	if err != nil {
-		log.Fatalf("failed to create a mock admin server: %v", err)
-	}
-	defer server.Close()
-
-	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
-		log.Fatalf("failed to set env %s: %v", "ADMINSERVER_URL", err)
-	}
-
+	test.InitDatabaseFromEnv()
 	secretKeyPath := "/tmp/secretkey"
-	_, err = test.GenerateKey(secretKeyPath)
+	_, err := test.GenerateKey(secretKeyPath)
 	if err != nil {
 		log.Fatalf("failed to generate secret key: %v", err)
 		return
@@ -91,14 +83,9 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
 
-	database, err := coreConfig.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configuration: %v", err)
-	}
-
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
+	config.Upload(adminServerTestConfig)
+	retCode := m.Run()
+	os.Exit(retCode)
 }
 
 func TestSearchUser(t *testing.T) {

@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package metadata define config related metadata
 package metadata
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/goharbor/harbor/src/common"
 	"strconv"
+	"strings"
 )
 
 // Type - Use this interface to define and encapsulate the behavior of validation and transformation
@@ -39,6 +43,46 @@ func (t *StringType) get(str string) (interface{}, error) {
 	return str, nil
 }
 
+// NonEmptyStringType ...
+type NonEmptyStringType struct {
+	StringType
+}
+
+func (t *NonEmptyStringType) validate(str string) error {
+	if len(strings.TrimSpace(str)) == 0 {
+		return ErrStringValueIsEmpty
+	}
+	return nil
+}
+
+// AuthModeType ...
+type AuthModeType struct {
+	StringType
+}
+
+func (t *AuthModeType) validate(str string) error {
+	if str == common.LDAPAuth || str == common.DBAuth || str == common.UAAAuth {
+		return nil
+	}
+	return fmt.Errorf("invalid %s, shoud be one of %s, %s, %s",
+		common.AUTHMode, common.DBAuth, common.LDAPAuth, common.UAAAuth)
+}
+
+// ProjectCreationRestrictionType ...
+type ProjectCreationRestrictionType struct {
+	StringType
+}
+
+func (t *ProjectCreationRestrictionType) validate(str string) error {
+	if !(str == common.ProCrtRestrAdmOnly || str == common.ProCrtRestrEveryone) {
+		return fmt.Errorf("invalid %s, should be %s or %s",
+			common.ProjectCreationRestriction,
+			common.ProCrtRestrAdmOnly,
+			common.ProCrtRestrEveryone)
+	}
+	return nil
+}
+
 // IntType ..
 type IntType struct {
 }
@@ -48,9 +92,29 @@ func (t *IntType) validate(str string) error {
 	return err
 }
 
-// GetInt ...
 func (t *IntType) get(str string) (interface{}, error) {
 	return strconv.Atoi(str)
+}
+
+// PortType ...
+type PortType struct {
+	IntType
+}
+
+func (t *PortType) validate(str string) error {
+	val, err := strconv.Atoi(str)
+	if err != nil {
+		return err
+	}
+	if val < 0 {
+		return fmt.Errorf("network port should be greater than 0")
+	}
+
+	if val > 65535 {
+		return fmt.Errorf("network port should be less than 65535")
+	}
+
+	return err
 }
 
 // LdapScopeType - The LDAP scope is a int type, but its is limit to 0, 1, 2
@@ -58,12 +122,15 @@ type LdapScopeType struct {
 	IntType
 }
 
-// Validate - Verify the range is limited
+// validate - Verify the range is limited
 func (t *LdapScopeType) validate(str string) error {
 	if str == "0" || str == "1" || str == "2" {
 		return nil
 	}
-	return ErrInvalidData
+	return fmt.Errorf("invalid scope, should be %d, %d or %d",
+		common.LDAPScopeBase,
+		common.LDAPScopeOnelevel,
+		common.LDAPScopeSubtree)
 }
 
 // Int64Type ...
@@ -75,7 +142,6 @@ func (t *Int64Type) validate(str string) error {
 	return err
 }
 
-// GetInt64 ...
 func (t *Int64Type) get(str string) (interface{}, error) {
 	return strconv.ParseInt(str, 10, 64)
 }
@@ -116,7 +182,7 @@ func (t *MapType) validate(str string) error {
 }
 
 func (t *MapType) get(str string) (interface{}, error) {
-	result := map[string]string{}
+	result := map[string]interface{}{}
 	err := json.Unmarshal([]byte(str), &result)
 	return result, err
 }

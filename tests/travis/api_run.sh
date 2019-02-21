@@ -32,6 +32,12 @@ if [ "$1" = 'DB' ]; then
     pybot -v ip:$2 -v HARBOR_PASSWORD:Harbor12345 /home/travis/gopath/src/github.com/goharbor/harbor/tests/robot-cases/Group0-BAT/API_DB.robot
 elif [ "$1" = 'LDAP' ]; then
     # run ldap api cases
+    python /home/travis/gopath/src/github.com/goharbor/harbor/tests/configharbor.py -H $IP -u $HARBOR_ADMIN -p $HARBOR_ADMIN_PASSWD -c auth_mode=ldap_auth \
+                                  ldap_url=ldap://$IP \
+                                  ldap_search_dn=cn=admin,dc=example,dc=com \
+                                  ldap_search_password=admin \
+                                  ldap_base_dn=dc=example,dc=com \
+                                  ldap_uid=cn
     pybot -v ip:$2 -v HARBOR_PASSWORD:Harbor12345 /home/travis/gopath/src/github.com/goharbor/harbor/tests/robot-cases/Group0-BAT/API_LDAP.robot
 else
     rc=999

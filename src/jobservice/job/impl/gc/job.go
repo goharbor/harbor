@@ -16,17 +16,13 @@ package gc
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common"
-	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/registryctl"
-	"github.com/goharbor/harbor/src/common/utils"
-	reg "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/registryctl/client"
@@ -44,9 +40,8 @@ const (
 type GarbageCollector struct {
 	registryCtlClient client.Client
 	logger            logger.Interface
-	coreclient        *common_http.Client
+	cfgMgr            *config.CfgManager
 	CoreURL           string
-	insecure          bool
 	redisURL          string
 }
 
@@ -102,40 +97,34 @@ func (gc *GarbageCollector) init(ctx env.JobContext, params map[string]interface
 	registryctl.Init()
 	gc.registryCtlClient = registryctl.RegistryCtlClient
 	gc.logger = ctx.GetLogger()
-	cred := auth.NewSecretAuthorizer(os.Getenv("JOBSERVICE_SECRET"))
-	gc.insecure = false
-	gc.coreclient = common_http.NewClient(&http.Client{
-		Transport: reg.GetHTTPTransport(gc.insecure),
-	}, cred)
+
 	errTpl := "Failed to get required property: %s"
 	if v, ok := ctx.Get(common.CoreURL); ok && len(v.(string)) > 0 {
 		gc.CoreURL = v.(string)
 	} else {
 		return fmt.Errorf(errTpl, common.CoreURL)
 	}
+	secret := os.Getenv("JOBSERVICE_SECRET")
+	configURL := gc.CoreURL + common.CoreConfigPath
+	gc.cfgMgr = config.NewRESTCfgManager(configURL, secret)
 	gc.redisURL = params["redis_url_reg"].(string)
 	return nil
 }
 
 func (gc *GarbageCollector) getReadOnly() (bool, error) {
-	cfgs := map[string]interface{}{}
-	if err := gc.coreclient.Get(fmt.Sprintf("%s/api/configs", gc.CoreURL), &cfgs); err != nil {
+
+	if err := gc.cfgMgr.Load(); err != nil {
 		return false, err
 	}
-	return utils.SafeCastBool(cfgs[common.ReadOnly]), nil
+	return gc.cfgMgr.Get(common.ReadOnly).GetBool(), nil
 }
 
 func (gc *GarbageCollector) setReadOnly(switcher bool) error {
-	if err := gc.coreclient.Put(fmt.Sprintf("%s/api/configurations", gc.CoreURL), struct {
-		ReadOnly bool `json:"read_only"`
-	}{
-		ReadOnly: switcher,
-	}); err != nil {
-		gc.logger.Errorf("failed to send readonly request to %s: %v", gc.CoreURL, err)
-		return err
+	cfg := map[string]interface{}{
+		common.ReadOnly: switcher,
 	}
-	gc.logger.Info("the readonly request has been sent successfully")
-	return nil
+	gc.cfgMgr.UpdateConfig(cfg)
+	return gc.cfgMgr.Save()
 }
 
 // cleanCache is to clean the registry cache for GC.

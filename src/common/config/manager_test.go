@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -16,32 +16,30 @@ var TestDBConfig = map[string]interface{}{
 	"postgresql_sslmode":  "disable",
 	"email_host":          "127.0.0.1",
 	"clair_url":           "http://clair:6060",
+	"scan_all_policy":     `{"parameter":{"daily_time":0},"type":"daily"}`,
 }
 
 var configManager *CfgManager
 
 func TestMain(m *testing.M) {
 	configManager = NewDBCfgManager()
-	dao.InitDatabase(configManager.GetDatabaseCfg())
+	test.InitDatabaseFromEnv()
 	configManager.UpdateConfig(TestDBConfig)
 	os.Exit(m.Run())
 }
 
 func TestLoadFromDatabase(t *testing.T) {
-
-	dao.InitDatabase(configManager.GetDatabaseCfg())
-	configManager.Load()
 	configManager.UpdateConfig(TestDBConfig)
+	configManager.Load()
 	assert.Equal(t, "127.0.0.1", configManager.Get("email_host").GetString())
 	assert.Equal(t, "http://clair:6060", configManager.Get("clair_url").GetString())
+	assert.Equal(t, `{"parameter":{"daily_time":0},"type":"daily"}`, configManager.Get("scan_all_policy").GetString())
 }
 
 func TestSaveToDatabase(t *testing.T) {
-	dao.InitDatabase(configManager.GetDatabaseCfg())
 	fmt.Printf("database config %#v\n", configManager.GetDatabaseCfg())
 	configManager.Load()
 	configManager.Set("read_only", "true")
-	configManager.UpdateConfig(TestDBConfig)
 	configManager.Save()
 	configManager.Load()
 	assert.Equal(t, true, configManager.Get("read_only").GetBool())
@@ -55,7 +53,6 @@ func TestUpdateCfg(t *testing.T) {
 		"ldap_search_password": "admin",
 		"ldap_base_dn":         "dc=example,dc=com",
 	}
-	dao.InitDatabase(configManager.GetDatabaseCfg())
 	configManager.Load()
 	configManager.UpdateConfig(testConfig)
 
@@ -111,3 +108,16 @@ func TestNewInMemoryManager(t *testing.T) {
 	assert.Equal(t, 5, inMemoryManager.Get("ldap_timeout").GetInt())
 	assert.Equal(t, true, inMemoryManager.Get("ldap_verify_cert").GetBool())
 }
+
+/*
+func TestNewRESTCfgManager(t *testing.T) {
+	restMgr := NewRESTCfgManager("http://10.161.47.13:8080"+common.CoreConfigPath, "0XtgSGFx1amMDTaH")
+	err := restMgr.Load()
+	if err != nil {
+		t.Errorf("Failed with error %v", err)
+	}
+	fmt.Printf("db:%v", restMgr.GetDatabaseCfg().Type)
+	fmt.Printf("host:%#v\n", restMgr.GetDatabaseCfg().PostGreSQL.Host)
+	fmt.Printf("port:%#v\n", restMgr.GetDatabaseCfg().PostGreSQL.Port)
+
+}*/

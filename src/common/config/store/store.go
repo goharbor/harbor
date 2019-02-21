@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/config/metadata"
 	"github.com/goharbor/harbor/src/common/config/store/driver"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"sync"
 )
@@ -30,7 +31,17 @@ func (c *ConfigStore) Get(key string) (*metadata.ConfigureValue, error) {
 		return nil, errors.New("data in config store is not a ConfigureValue type")
 	}
 	return nil, metadata.ErrValueNotSet
+}
 
+// GetAnyType get interface{} type for config items
+func (c *ConfigStore) GetAnyType(key string) (interface{}, error) {
+	if value, ok := c.cfgValues.Load(key); ok {
+		if result, ok := value.(metadata.ConfigureValue); ok {
+			return result.GetAnyType()
+		}
+		return nil, errors.New("data in config store is not a ConfigureValue type")
+	}
+	return nil, metadata.ErrValueNotSet
 }
 
 // Set - Set configure value in store, not saved to config driver
@@ -71,7 +82,6 @@ func (c *ConfigStore) Save() error {
 			if _, ok := metadata.Instance().GetByName(keyStr); ok {
 				cfgMap[keyStr] = valueStr
 			} else {
-
 				log.Errorf("failed to get metadata for key %v", keyStr)
 			}
 		}
@@ -89,7 +99,7 @@ func (c *ConfigStore) Save() error {
 func (c *ConfigStore) Update(cfgMap map[string]interface{}) error {
 	// Update to store
 	for key, value := range cfgMap {
-		configValue, err := metadata.NewCfgValue(key, fmt.Sprintf("%v", value))
+		configValue, err := metadata.NewCfgValue(key, utils.GetStrValueOfAnyType(value))
 		if err != nil {
 			log.Warningf("error %v, skip to update configure item, key:%v ", err, key)
 			delete(cfgMap, key)

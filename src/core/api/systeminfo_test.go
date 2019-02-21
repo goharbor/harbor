@@ -16,9 +16,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"testing"
-
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestGetVolumeInfo(t *testing.T) {
@@ -53,6 +54,9 @@ func TestGetVolumeInfo(t *testing.T) {
 }
 
 func TestGetGeneralInfo(t *testing.T) {
+	config.Upload(map[string]interface{}{
+		common.ReadOnly: false,
+	})
 	apiTest := newHarborAPI()
 	code, body, err := apiTest.GetGeneralInfo()
 	assert := assert.New(t)
