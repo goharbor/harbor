@@ -83,7 +83,19 @@ func (d *defaultController) StartReplication(policy *model.Policy) (int64, error
 		return id, nil
 	}
 
-	// schedule the replication
+	// preprocess the resources
+	if err = flow.preprocess(); err != nil {
+		log.Errorf("failed to preprocess the resources for the execution %d: %v", id, err)
+		return id, nil
+	}
+
+	// create task records in database
+	if err = flow.createTasks(); err != nil {
+		log.Errorf("failed to create task records for the execution %d: %v", id, err)
+		return id, nil
+	}
+
+	// schedule the tasks
 	if err = flow.schedule(); err != nil {
 		log.Errorf("failed to schedule the execution %d: %v", id, err)
 		return id, nil

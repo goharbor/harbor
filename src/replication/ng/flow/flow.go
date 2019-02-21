@@ -15,7 +15,9 @@
 package flow
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/replication/ng/scheduler"
@@ -29,15 +31,16 @@ import (
 )
 
 type flow struct {
-	policy       *model.Policy
-	srcRegistry  *model.Registry
-	dstRegistry  *model.Registry
-	srcAdapter   adapter.Adapter
-	dstAdapter   adapter.Adapter
-	executionID  int64
-	resources    []*model.Resource
-	executionMgr execution.Manager
-	scheduler    scheduler.Scheduler
+	policy        *model.Policy
+	srcRegistry   *model.Registry
+	dstRegistry   *model.Registry
+	srcAdapter    adapter.Adapter
+	dstAdapter    adapter.Adapter
+	executionID   int64
+	resources     []*model.Resource
+	executionMgr  execution.Manager
+	scheduler     scheduler.Scheduler
+	scheduleItems []*scheduler.ScheduleItem
 }
 
 func newFlow(policy *model.Policy, registryMgr registry.Manager,
@@ -143,7 +146,7 @@ func (f *flow) createNamespace() error {
 	return nil
 }
 
-func (f *flow) schedule() error {
+func (f *flow) preprocess() error {
 	dstResources := []*model.Resource{}
 	for _, srcResource := range f.resources {
 		dstResource := &model.Resource{
@@ -161,30 +164,78 @@ func (f *flow) schedule() error {
 		dstResources = append(dstResources, dstResource)
 	}
 
-	tasks, err := f.scheduler.Schedule(f.resources, dstResources)
+	items, err := f.scheduler.Preprocess(f.resources, dstResources)
+	if err != nil {
+		f.markExecutionFailure(err)
+		return err
+	}
+	f.scheduleItems = items
+	log.Debugf("the preprocess for resources of the execution %d completed",
+		f.executionID)
+	return nil
+}
+
+func (f *flow) createTasks() error {
+	for _, item := range f.scheduleItems {
+		task := &model.Task{
+			ExecutionID:  f.executionID,
+			Status:       model.TaskStatusInitialized,
+			ResourceType: item.SrcResource.Type,
+			SrcResource:  getResourceName(item.SrcResource),
+			DstResource:  getResourceName(item.DstResource),
+		}
+		id, err := f.executionMgr.CreateTask(task)
+		if err != nil {
+			// if failed to create the task for one of the items,
+			// the whole execution is marked as failure and all
+			// the items will not be submitted
+			f.markExecutionFailure(err)
+			return err
+		}
+		item.TaskID = id
+		log.Debugf("task record %d for the execution %d created",
+			id, f.executionID)
+	}
+	return nil
+}
+
+func (f *flow) schedule() error {
+	results, err := f.scheduler.Schedule(f.scheduleItems)
 	if err != nil {
 		f.markExecutionFailure(err)
 		return err
 	}
 
 	allFailed := true
-	for _, task := range tasks {
-		if task.Status != model.TaskStatusFailed {
-			allFailed = false
+	for _, result := range results {
+		// if the task is failed to be submitted, update the status of the
+		// task as failure
+		if result.Error != nil {
+			log.Errorf("failed to schedule task %d: %v", result.TaskID, err)
+			if err = f.executionMgr.UpdateTaskStatus(result.TaskID, model.TaskStatusFailed); err != nil {
+				log.Errorf("failed to update task status %d: %v", result.TaskID, err)
+			}
+			continue
 		}
-		task.ExecutionID = f.executionID
-		taskID, err := f.executionMgr.CreateTask(task)
-		if err != nil {
-			f.markExecutionFailure(err)
-			return err
+		allFailed = false
+		// if the task is submitted successfully, update the status and start time
+		if err = f.executionMgr.UpdateTaskStatus(result.TaskID, model.TaskStatusPending); err != nil {
+			log.Errorf("failed to update task status %d: %v", result.TaskID, err)
 		}
-		log.Debugf("task record %d for execution %d created", taskID, f.executionID)
+		if err = f.executionMgr.UpdateTask(&model.Task{
+			ID:        result.TaskID,
+			StartTime: time.Now(),
+		}); err != nil {
+			log.Errorf("failed to update task %d: %v", result.TaskID, err)
+		}
+		log.Debugf("the task %d scheduled", result.TaskID)
 	}
 	// if all the tasks are failed, mark the execution failed
 	if allFailed {
+		err = errors.New("all tasks are failed")
 		f.markExecutionFailure(err)
+		return err
 	}
-
 	return nil
 }
 
@@ -193,6 +244,8 @@ func (f *flow) markExecutionFailure(err error) {
 	if err != nil {
 		statusText = err.Error()
 	}
+	log.Errorf("the execution %d is marked as failure because of the error: %s",
+		f.executionID, statusText)
 	err = f.executionMgr.Update(
 		&model.Execution{
 			ID:         f.executionID,
@@ -203,4 +256,20 @@ func (f *flow) markExecutionFailure(err error) {
 	if err != nil {
 		log.Errorf("failed to update the execution %d: %v", f.executionID, err)
 	}
+}
+
+// return the name with format "res_name" or "res_name:[vtag1,vtag2,vtag3]"
+// if the resource has vtags
+func getResourceName(res *model.Resource) string {
+	if res == nil {
+		return ""
+	}
+	meta := res.Metadata
+	if meta == nil {
+		return ""
+	}
+	if len(meta.Vtags) == 0 {
+		return meta.Name
+	}
+	return meta.Name + ":[" + strings.Join(meta.Vtags, ",") + "]"
 }
