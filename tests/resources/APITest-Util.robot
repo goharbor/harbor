@@ -1,13 +1,13 @@
 *** Keywords ***
 Make Swagger Client
-    ${rc}  ${output}=  Run And Return Rc And Output  make swagger_client 
+    ${rc}  ${output}=  Run And Return Rc And Output  make swagger_client
     Log  ${output}
     [Return]  ${rc}
 
 Setup API Test
     Retry Keyword When Error  Make Swagger Client
 
-Harbor API Test 
+Harbor API Test
     [Arguments]  ${testcase_name}
     ${current_dir}=  Run  pwd
     Log To Console  ${current_dir}
