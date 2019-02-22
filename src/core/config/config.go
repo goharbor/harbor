@@ -225,7 +225,7 @@ func TokenExpiration() (int, error) {
 	return cfgMgr.Get(common.TokenExpiration).GetInt(), nil
 }
 
-// RobotTokenExpiration returns the token expiration time of robot account (in day)
+// RobotTokenExpiration returns the token expiration time of robot account (in minute)
 func RobotTokenExpiration() int {
 	return cfgMgr.Get(common.RobotTokenExpiration).GetInt()
 }

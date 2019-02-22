@@ -106,8 +106,8 @@ func (r *RobotAPI) Post() {
 	}
 
 	var robotReq models.RobotReq
-	// Expiration in days
-	tokenExpiration := time.Duration(config.RobotTokenExpiration()) * 24 * time.Hour
+	// Expiration in minutes
+	tokenExpiration := time.Duration(config.RobotTokenExpiration()) * time.Minute
 	expiresAt := time.Now().UTC().Add(tokenExpiration).Unix()
 	r.DecodeJSONReq(&robotReq)
 	createdName := common.RobotPrefix + robotReq.Name
