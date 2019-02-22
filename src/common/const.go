@@ -80,7 +80,6 @@ const (
 	MaxJobWorkers                     = "max_job_workers"
 	TokenExpiration                   = "token_expiration"
 	CfgExpiration                     = "cfg_expiration"
-	JobLogDir                         = "job_log_dir"
 	AdminInitialPassword              = "admin_initial_password"
 	AdmiralEndpoint                   = "admiral_url"
 	WithNotary                        = "with_notary"
@@ -98,7 +97,6 @@ const (
 	UAAVerifyCert                     = "uaa_verify_cert"
 	DefaultClairEndpoint              = "http://clair:6060"
 	CfgDriverDB                       = "db"
-	CfgDriverJSON                     = "json"
 	NewHarborAdminName                = "admin@harbor.local"
 	RegistryStorageProviderName       = "registry_storage_provider_name"
 	UserMember                        = "u"
@@ -106,7 +104,6 @@ const (
 	ReadOnly                          = "read_only"
 	ClairURL                          = "clair_url"
 	NotaryURL                         = "notary_url"
-	DefaultAdminserverEndpoint        = "http://adminserver:8080"
 	DefaultCoreEndpoint               = "http://core:8080"
 	DefaultNotaryEndpoint             = "http://notary-server:4443"
 	LdapGroupType                     = 1
@@ -122,49 +119,4 @@ const (
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
 	RobotPrefix    = "robot$"
 	CoreConfigPath = "/api/internal/configurations"
-)
-
-// TODO remove with adminserver
-// Shared variable, not allowed to modify
-var (
-
-	// value is default value
-	HarborStringKeysMap = map[string]string{
-		AUTHMode:                   "db_auth",
-		LDAPURL:                    "",
-		LDAPSearchDN:               "",
-		LDAPSearchPwd:              "",
-		LDAPBaseDN:                 "",
-		LDAPUID:                    "",
-		LDAPFilter:                 "",
-		LDAPGroupAttributeName:     "",
-		LDAPGroupBaseDN:            "",
-		LdapGroupAdminDn:           "",
-		LDAPGroupSearchFilter:      "",
-		EmailHost:                  "smtp.mydomain.com",
-		EmailUsername:              "sample_admin@mydomain.com",
-		EmailPassword:              "abc",
-		EmailFrom:                  "admin <sample_admin@mydomain.com>",
-		EmailIdentity:              "",
-		ProjectCreationRestriction: ProCrtRestrEveryone,
-		UAAClientID:                "",
-		UAAEndpoint:                "",
-	}
-
-	HarborNumKeysMap = map[string]int{
-		EmailPort:            25,
-		LDAPScope:            2,
-		LDAPTimeout:          5,
-		LDAPGroupSearchScope: 2,
-		TokenExpiration:      30,
-	}
-
-	HarborBoolKeysMap = map[string]bool{
-		EmailSSL:         false,
-		EmailInsecure:    false,
-		SelfRegistration: true,
-		LDAPVerifyCert:   true,
-		UAAVerifyCert:    true,
-		ReadOnly:         false,
-	}
 )

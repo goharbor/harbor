@@ -15,14 +15,10 @@
 package test
 
 import (
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
-
 	"github.com/goharbor/harbor/src/common"
 )
 
-var adminServerDefaultConfig = map[string]interface{}{
+var defaultConfig = map[string]interface{}{
 	common.ExtEndpoint:                "https://host01.com",
 	common.AUTHMode:                   common.DBAuth,
 	common.DatabaseType:               "postgresql",
@@ -77,54 +73,7 @@ var adminServerDefaultConfig = map[string]interface{}{
 	common.NotaryURL:                  "http://notary-server:4443",
 }
 
-// NewAdminserver returns a mock admin server
-func NewAdminserver(config map[string]interface{}) (*httptest.Server, error) {
-	m := []*RequestHandlerMapping{}
-	if config == nil {
-		config = adminServerDefaultConfig
-	} else {
-		for k, v := range adminServerDefaultConfig {
-			if _, ok := config[k]; !ok {
-				config[k] = v
-			}
-		}
-	}
-	b, err := json.Marshal(config)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := &Response{
-		StatusCode: http.StatusOK,
-		Body:       b,
-	}
-
-	m = append(m, &RequestHandlerMapping{
-		Method:  "GET",
-		Pattern: "/api/configs",
-		Handler: Handler(resp),
-	})
-
-	m = append(m, &RequestHandlerMapping{
-		Method:  "PUT",
-		Pattern: "/api/configurations",
-		Handler: Handler(&Response{
-			StatusCode: http.StatusOK,
-		}),
-	})
-
-	m = append(m, &RequestHandlerMapping{
-		Method:  "POST",
-		Pattern: "/api/configurations/reset",
-		Handler: Handler(&Response{
-			StatusCode: http.StatusOK,
-		}),
-	})
-
-	return NewServer(m...), nil
-}
-
 // GetDefaultConfigMap returns the defailt config map for easier modification.
 func GetDefaultConfigMap() map[string]interface{} {
-	return adminServerDefaultConfig
+	return defaultConfig
 }
