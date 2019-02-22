@@ -112,5 +112,26 @@ func (p *pgsql) UpgradeSchema() error {
 		log.Errorf("Failed to upgrade schema, error: %q", err)
 		return err
 	}
-	return nil
+
+	return upgradeSchema()
+}
+
+// This function is used to deleting the replication policies and
+// jobs which are marked as "deleted" to fix #6698.
+//
+// The code only exists on branch 1.7 and the corresponding changes
+// for master branch is put in the upgrade SQL file
+func upgradeSchema() error {
+	sql := `DELETE FROM replication_job AS j
+	USING replication_policy AS p
+	WHERE j.policy_id = p.id AND p.deleted = TRUE`
+	_, err := GetOrmer().Raw(sql).Exec()
+	if err != nil {
+		return err
+	}
+
+	sql = `DELETE FROM replication_policy AS p
+	WHERE p.deleted = TRUE`
+	_, err = GetOrmer().Raw(sql).Exec()
+	return err
 }
