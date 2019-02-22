@@ -4,13 +4,13 @@
 #
 # all:			prepare env, compile binaries, build images and install images
 # prepare: 		prepare env
-# compile: 		compile adminserver, ui and jobservice code
+# compile: 		compile core and jobservice code
 #
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
 #							golang:1.11.2
-# compile_adminserver, compile_core, compile_jobservice: compile specific binary
+# compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
 #
@@ -43,7 +43,7 @@
 #
 # clean:        remove binary, Harbor images, specific version docker-compose \
 #               file, specific version tag and online/offline install package
-# cleanbinary:	remove adminserver, ui and jobservice binary
+# cleanbinary:	remove core and jobservice binary
 # cleanimage: 	remove Harbor images
 # cleandockercomposefile:
 #				remove specific version docker-compose
@@ -129,21 +129,17 @@ GOBUILDIMAGE=golang:1.11.2
 GOBUILDPATH=$(GOBASEPATH)/harbor
 GOIMAGEBUILDCMD=/usr/local/go/bin/go
 GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build
-GOBUILDPATH_ADMINSERVER=$(GOBUILDPATH)/src/adminserver
 GOBUILDPATH_CORE=$(GOBUILDPATH)/src/core
 GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDPATH_REGISTRYCTL=$(GOBUILDPATH)/src/registryctl
 GOBUILDPATH_MIGRATEPATCH=$(GOBUILDPATH)/src/cmd/migrate-patch
 GOBUILDMAKEPATH=$(GOBUILDPATH)/make
-GOBUILDMAKEPATH_ADMINSERVER=$(GOBUILDMAKEPATH)/photon/adminserver
 GOBUILDMAKEPATH_CORE=$(GOBUILDMAKEPATH)/photon/core
 GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/photon/jobservice
 GOBUILDMAKEPATH_REGISTRYCTL=$(GOBUILDMAKEPATH)/photon/registryctl
 GOBUILDMAKEPATH_NOTARY=$(GOBUILDMAKEPATH)/photon/notary
 
 # binary
-ADMINSERVERBINARYPATH=$(MAKEDEVPATH)/adminserver
-ADMINSERVERBINARYNAME=harbor_adminserver
 CORE_BINARYPATH=$(MAKEDEVPATH)/core
 CORE_BINARYNAME=harbor_core
 JOBSERVICEBINARYPATH=$(MAKEDEVPATH)/jobservice
@@ -178,7 +174,6 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 
 # docker image name
-DOCKERIMAGENAME_ADMINSERVER=goharbor/harbor-adminserver
 DOCKERIMAGENAME_PORTAL=goharbor/harbor-portal
 DOCKERIMAGENAME_CORE=goharbor/harbor-core
 DOCKERIMAGENAME_JOBSERVICE=goharbor/harbor-jobservice
@@ -213,8 +208,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 # cmds
-DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
-		$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
+DOCKERSAVE_PARA= $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_CORE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
@@ -268,13 +262,6 @@ ui_version:
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
 
-compile_adminserver:
-	@echo "compiling binary for adminserver (golang image)..."
-	@echo $(GOBASEPATH)
-	@echo $(GOBUILDPATH)
-	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_ADMINSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_ADMINSERVER)/$(ADMINSERVERBINARYNAME)
-	@echo "Done."
-
 compile_core:
 	@echo "compiling binary for core (golang image)..."
 	@echo $(GOBASEPATH)
@@ -297,7 +284,7 @@ compile_notary_migrate_patch:
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_MIGRATEPATCH) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_NOTARY)/$(MIGRATEPATCHBINARYNAME)
 	@echo "Done."
 
-compile:check_environment compile_adminserver compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
+compile:check_environment compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
 	
 prepare:
 	@echo "preparing..."
@@ -417,11 +404,6 @@ govet:
 
 pushimage:
 	@echo "pushing harbor images ..."
-	@$(DOCKERTAG) $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
-	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
-		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
-	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
-
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
@@ -474,13 +456,11 @@ swagger_client:
 
 cleanbinary:
 	@echo "cleaning binary..."
-	@if [ -f $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) ] ; then rm $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) ; fi
 	@if [ -f $(CORE_BINARYPATH)/$(CORE_BINARYNAME) ] ; then rm $(CORE_BINARYPATH)/$(CORE_BINARYNAME) ; fi
 	@if [ -f $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) ] ; then rm $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) ; fi
 
 cleanimage:
 	@echo "cleaning image for photon..."
-	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_CORE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)
