@@ -106,9 +106,9 @@ type Cache struct {
 
 // NewCache is constructor of cache
 func NewCache(capacity int) *Cache {
-	cap := capacity
-	if cap <= 0 {
-		cap = defaultCapacity
+	capa := capacity
+	if capa <= 0 {
+		capa = defaultCapacity
 	}
 
 	// Initialize heap
@@ -116,7 +116,7 @@ func NewCache(capacity int) *Cache {
 	heap.Init(&mq)
 
 	return &Cache{
-		capacity: cap,
+		capacity: capa,
 		lock:     new(sync.RWMutex),
 		hash:     make(map[string]CacheItem),
 		queue:    &mq,

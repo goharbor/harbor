@@ -117,8 +117,8 @@ func formatURL(ldapURL string) (string, error) {
 
 	if strings.Contains(hostport, ":") {
 		splitHostPort := strings.Split(hostport, ":")
-		port, error := strconv.Atoi(splitHostPort[1])
-		if error != nil {
+		port, err := strconv.Atoi(splitHostPort[1])
+		if err != nil {
 			return "", fmt.Errorf("illegal url port")
 		}
 		if port == 636 {
