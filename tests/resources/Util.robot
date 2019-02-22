@@ -119,7 +119,7 @@ Wait Unitl Command Success
     \    Sleep  2
     Log  ${output}
     Run Keyword If  ${positive} == ${true}  Should Be Equal As Strings  '${rc}'  '0'
-    ...  ELSE  Should Not Be Equal As Strings  '${rc}'  '0'   
+    ...  ELSE  Should Not Be Equal As Strings  '${rc}'  '0'
     [Return]  ${output}
 
 Retry Keyword When Error

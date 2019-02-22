@@ -114,7 +114,9 @@ Delete Repo
     [Arguments]  ${projectname}
     ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${projectname}')]//clr-checkbox-wrapper//label
     Retry Element Click  ${element_repo_checkbox}
+    Capture Page Screenshot
     Retry Element Click  ${repo_delete_btn}
+    Capture Page Screenshot
     Retry Element Click  ${repo_delete_confirm_btn}
 
 Delete Repo on CardView
