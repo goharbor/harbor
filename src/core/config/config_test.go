@@ -97,8 +97,8 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get token expiration: %v", err)
 	}
 
-	tkExp := RobotTokenExpiration()
-	assert.Equal(tkExp, 30)
+	tkExp := RobotTokenDuration()
+	assert.Equal(tkExp, 43200)
 
 	if _, err := ExtEndpoint(); err != nil {
 		t.Fatalf("failed to get domain name: %v", err)

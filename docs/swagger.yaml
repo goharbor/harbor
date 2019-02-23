@@ -4734,9 +4734,9 @@ definitions:
       description:
         type: string
         description: The description of robot account
-      expiration:
+      expiresat:
         type: integer
-        description: The expiration of robot account
+        description: The expiration of robot account (in seconds)
       project_id:
         type: integer
         description: The project id of robot account

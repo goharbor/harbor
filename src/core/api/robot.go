@@ -106,9 +106,9 @@ func (r *RobotAPI) Post() {
 	}
 
 	var robotReq models.RobotReq
-	// Expiration in minutes
-	tokenExpiration := time.Duration(config.RobotTokenExpiration()) * time.Minute
-	expiresAt := time.Now().UTC().Add(tokenExpiration).Unix()
+	// Token duration in minutes
+	tokenDuration := time.Duration(config.RobotTokenDuration()) * time.Minute
+	expiresAt := time.Now().UTC().Add(tokenDuration).Unix()
 	r.DecodeJSONReq(&robotReq)
 	createdName := common.RobotPrefix + robotReq.Name
 
@@ -117,7 +117,7 @@ func (r *RobotAPI) Post() {
 		Name:        createdName,
 		Description: robotReq.Description,
 		ProjectID:   r.project.ProjectID,
-		Expiration:  expiresAt,
+		ExpiresAt:   expiresAt,
 	}
 	id, err := dao.AddRobot(&robot)
 	if err != nil {
