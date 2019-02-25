@@ -33,21 +33,16 @@ secretkey_path: /data
 #Admiral's url, comment this attribute, or set its value to NA when Harbor is standalone
 admiral_url: NA
 
-#Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
-log_rotate_count: 50
-#Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes. 
-#If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G 
-#are all valid.
-log_rotate_size: 200M
-
-# The directory that store log files
-log_location: /var/log/harbor
-
-#Config http proxy for Clair, e.g. http://my.proxy.com:3128
-#Clair doesn't need to connect to harbor internal components via http proxy.
-http_proxy:
-https_proxy:
-no_proxy: 127.0.0.1,localhost,core,registry
+# Log configurations
+log:
+  # Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
+  rotate_count: 50
+  # Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes. 
+  # If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G 
+  # are all valid.
+  rotate_size: 200M
+  # The directory that store log files
+  location: /var/log/harbor
 
 #NOTES: The properties between BEGIN INITIAL PROPERTIES and END INITIAL PROPERTIES
 #only take effect in the first boot, the subsequent changes of these properties 
@@ -79,70 +74,66 @@ project_creation_restriction: everyone
 
 #************************END INITIAL PROPERTIES************************
 
-#######Harbor DB configuration section#######
+## Harbor DB configuration
+database:
+  #The address of the Harbor database. Only need to change when using external db.
+  host: postgresql
+  #The port of Harbor database host
+  port: 5432
+  #The user name of Harbor database
+  username: postgres
+  #The password for the root user of Harbor DB. Change this before any production use.
+  password: root123
 
-#The address of the Harbor database. Only need to change when using external db.
-db_host: postgresql
 
-#The password for the root user of Harbor DB. Change this before any production use.
-db_password: root123
+# Redis server configuration
+redis:
+  # Redis connection address
+  host: redis
+  # Redis connection port
+  port: 6379
+  # Redis connection password
+  password:
+  # Redis connection db index
+  # db_index 1,2,3 is for registry, jobservice and chartmuseum. 
+  # db_index 0 is for UI, it's unchangeable
+  db_index: 1,2,3
 
-#The port of Harbor database host
-db_port: 5432
 
-#The user name of Harbor database
-db_user: postgres
+# Clair DB configuration
+clair: 
+  # Clair DB host address. Only change it when using an exteral DB.
+  db_host: postgresql
+  # The password of the Clair's postgres database. Only effective when Harbor is deployed with Clair.
+  # Please update it before deployment. Subsequent update will cause Clair's API server and Harbor unable to access Clair's database.
+  db_password: root123
+  # Clair DB connect port
+  db_port: 5432
+  # Clair DB username
+  db_username: postgres
+  # Clair default database
+  db: postgres
+  # The interval of clair updaters, the unit is hour, set to 0 to disable the updaters.
+  updaters_interval: 12
 
-##### End of Harbor DB configuration#######
+  #Config http proxy for Clair, e.g. http://my.proxy.com:3128
+  #Clair doesn't need to connect to harbor internal components via http proxy.
+  http_proxy:
+  https_proxy:
+  no_proxy: 127.0.0.1,localhost,core,registry
 
-##########Redis server configuration.############
-
-#Redis connection address
-redis_host: redis
-
-#Redis connection port
-redis_port: 6379
-
-#Redis connection password
-redis_password:
-
-#Redis connection db index
-#db_index 1,2,3 is for registry, jobservice and chartmuseum. 
-#db_index 0 is for UI, it's unchangeable
-redis_db_index: 1,2,3
-
-########## End of Redis server configuration ############
-
-##########Clair DB configuration############
-
-#Clair DB host address. Only change it when using an exteral DB.
-clair_db_host: postgresql
-#The password of the Clair's postgres database. Only effective when Harbor is deployed with Clair.
-#Please update it before deployment. Subsequent update will cause Clair's API server and Harbor unable to access Clair's database.
-clair_db_password: root123
-#Clair DB connect port
-clair_db_port: 5432
-#Clair DB username
-clair_db_username: postgres
-#Clair default database
-clair_db: postgres
-
-#The interval of clair updaters, the unit is hour, set to 0 to disable the updaters.
-clair_updaters_interval: 12
-
-##########End of Clair DB configuration############
-
-### Harbor Storage settings ###
-#Please be aware that the following storage settings will be applied to both docker registry and helm chart repository.
-#registry_storage_provider can be: filesystem, s3, gcs, azure, etc.
-registry_storage_provider_name: filesystem
-#registry_storage_provider_config is a comma separated "key: value" pairs, e.g. "key1: value, key2: value2".
-#To avoid duplicated configurations, both docker registry and chart repository follow the same storage configuration specifications of docker registry.
-#Refer to https://docs.docker.com/registry/configuration/#storage for all available configuration.
-registry_storage_provider_config:
-#registry_custom_ca_bundle is the path to the custom root ca certificate, which will be injected into the truststore
-#of registry's and chart repository's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
-registry_custom_ca_bundle:
+# Harbor Storage settings
+storage:
+  #Please be aware that the following storage settings will be applied to both docker registry and helm chart repository.
+  #registry_storage_provider can be: filesystem, s3, gcs, azure, etc.
+  registry_storage_provider_name: filesystem
+  #registry_storage_provider_config is a comma separated "key: value" pairs, e.g. "key1: value, key2: value2".
+  #To avoid duplicated configurations, both docker registry and chart repository follow the same storage configuration specifications of docker registry.
+  #Refer to https://docs.docker.com/registry/configuration/#storage for all available configuration.
+  registry_storage_provider_config:
+  #registry_custom_ca_bundle is the path to the custom root ca certificate, which will be injected into the truststore
+  #of registry's and chart repository's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
+  registry_custom_ca_bundle:
 
 #If reload_config=true, all settings which present in harbor.yml take effect after prepare and restart harbor, it overwrites exsiting settings.
 #reload_config=true

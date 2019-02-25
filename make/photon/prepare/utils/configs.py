@@ -48,159 +48,6 @@ def validate(conf, **kwargs):
              "Error invalid value for redis_db_index: %s. please set it as 1,2,3" % redis_db_index)
 
 
-def parse_configs(config_file_path):
-    '''
-    :param configs: config_parser object
-    :returns: dict of configs
-    '''
-    with open(config_file_path, 'r') as f:
-        formated_config = u'[configuration]\n' + f.read()
-
-    configs = configparser.ConfigParser()
-    configs.read_string(formated_config)
-
-    config_dict = {}
-    config_dict['adminserver_url'] = "http://adminserver:8080"
-    config_dict['registry_url'] = "http://registry:5000"
-    config_dict['registry_controller_url'] = "http://registryctl:8080"
-    config_dict['core_url'] = "http://core:8080"
-    config_dict['token_service_url'] = "http://core:8080/service/token"
-
-    config_dict['jobservice_url'] = "http://jobservice:8080"
-    config_dict['clair_url'] = "http://clair:6060"
-    config_dict['notary_url'] = "http://notary-server:4443"
-    config_dict['chart_repository_url'] = "http://chartmuseum:9999"
-
-    if configs.has_option("configuration", "reload_config"):
-        config_dict['reload_config'] = configs.get("configuration", "reload_config")
-    else:
-        config_dict['reload_config'] = "false"
-    config_dict['hostname'] = configs.get("configuration", "hostname")
-    config_dict['protocol'] = configs.get("configuration", "ui_url_protocol")
-    config_dict['public_url'] = config_dict['protocol'] + "://" + config_dict['hostname']
-
-    # Data path volume
-    config_dict['data_volume'] = configs.get("configuration", "data_volume")
-
-    # Email related configs
-    config_dict['email_identity'] = configs.get("configuration", "email_identity")
-    config_dict['email_host'] = configs.get("configuration", "email_server")
-    config_dict['email_port'] = configs.get("configuration", "email_server_port")
-    config_dict['email_usr'] = configs.get("configuration", "email_username")
-    config_dict['email_pwd'] = configs.get("configuration", "email_password")
-    config_dict['email_from'] = configs.get("configuration", "email_from")
-    config_dict['email_ssl'] = configs.get("configuration", "email_ssl")
-    config_dict['email_insecure'] = configs.get("configuration", "email_insecure")
-    config_dict['harbor_admin_password'] = configs.get("configuration", "harbor_admin_password")
-    config_dict['auth_mode'] = configs.get("configuration", "auth_mode")
-    config_dict['ldap_url'] = configs.get("configuration", "ldap_url")
-
-    # LDAP related configs
-    # this two options are either both set or unset
-    if configs.has_option("configuration", "ldap_searchdn"):
-        config_dict['ldap_searchdn'] = configs.get("configuration", "ldap_searchdn")
-        config_dict['ldap_search_pwd'] = configs.get("configuration", "ldap_search_pwd")
-    else:
-        config_dict['ldap_searchdn'] = ""
-        config_dict['ldap_search_pwd'] = ""
-    config_dict['ldap_basedn'] = configs.get("configuration", "ldap_basedn")
-    # ldap_filter is null by default
-    if configs.has_option("configuration", "ldap_filter"):
-        config_dict['ldap_filter'] = configs.get("configuration", "ldap_filter")
-    else:
-        config_dict['ldap_filter'] = ""
-    config_dict['ldap_uid'] = configs.get("configuration", "ldap_uid")
-    config_dict['ldap_scope'] = configs.get("configuration", "ldap_scope")
-    config_dict['ldap_timeout'] = configs.get("configuration", "ldap_timeout")
-    config_dict['ldap_verify_cert'] = configs.get("configuration", "ldap_verify_cert")
-    config_dict['ldap_group_basedn'] = configs.get("configuration", "ldap_group_basedn")
-    config_dict['ldap_group_filter'] = configs.get("configuration", "ldap_group_filter")
-    config_dict['ldap_group_gid'] = configs.get("configuration", "ldap_group_gid")
-    config_dict['ldap_group_scope'] = configs.get("configuration", "ldap_group_scope")
-
-    # DB configs
-    config_dict['db_password'] = configs.get("configuration", "db_password")
-    config_dict['db_host'] = configs.get("configuration", "db_host")
-    config_dict['db_user'] = configs.get("configuration", "db_user")
-    config_dict['db_port'] = configs.get("configuration", "db_port")
-
-    config_dict['self_registration'] = configs.get("configuration", "self_registration")
-    config_dict['project_creation_restriction'] = configs.get("configuration", "project_creation_restriction")
-
-    # secure configs
-    if config_dict['protocol'] == "https":
-        config_dict['cert_path'] = configs.get("configuration", "ssl_cert")
-        config_dict['cert_key_path'] = configs.get("configuration", "ssl_cert_key")
-    config_dict['customize_crt'] = configs.get("configuration", "customize_crt")
-    config_dict['max_job_workers'] = configs.get("configuration", "max_job_workers")
-    config_dict['token_expiration'] = configs.get("configuration", "token_expiration")
-    config_dict['secretkey_path'] = configs.get("configuration", "secretkey_path")
-
-     # Admiral configs
-    if configs.has_option("configuration", "admiral_url"):
-        config_dict['admiral_url'] = configs.get("configuration", "admiral_url")
-    else:
-        config_dict['admiral_url'] = ""
-
-    # Clair configs
-    config_dict['clair_db_password'] = configs.get("configuration", "clair_db_password")
-    config_dict['clair_db_host'] = configs.get("configuration", "clair_db_host")
-    config_dict['clair_db_port'] = configs.get("configuration", "clair_db_port")
-    config_dict['clair_db_username'] = configs.get("configuration", "clair_db_username")
-    config_dict['clair_db'] = configs.get("configuration", "clair_db")
-    config_dict['clair_updaters_interval'] = configs.get("configuration", "clair_updaters_interval")
-
-    # UAA configs
-    config_dict['uaa_endpoint'] = configs.get("configuration", "uaa_endpoint")
-    config_dict['uaa_clientid'] = configs.get("configuration", "uaa_clientid")
-    config_dict['uaa_clientsecret'] = configs.get("configuration", "uaa_clientsecret")
-    config_dict['uaa_verify_cert'] = configs.get("configuration", "uaa_verify_cert")
-    config_dict['uaa_ca_cert'] = configs.get("configuration", "uaa_ca_cert")
-
-    # Log configs
-    config_dict['log_rotate_count'] = configs.get("configuration", "log_rotate_count")
-    config_dict['log_rotate_size'] = configs.get("configuration", "log_rotate_size")
-
-    # Redis configs
-    config_dict['redis_host'] = configs.get("configuration", "redis_host")
-    config_dict['redis_port'] = int(configs.get("configuration", "redis_port"))
-    config_dict['redis_password'] = configs.get("configuration", "redis_password")
-    config_dict['redis_db_index'] = configs.get("configuration", "redis_db_index")
-
-    db_indexs = config_dict['redis_db_index'].split(',')
-    config_dict['redis_db_index_reg'] = db_indexs[0]
-    config_dict['redis_db_index_js'] = db_indexs[1]
-    config_dict['redis_db_index_chart'] = db_indexs[2]
-
-    # redis://[arbitrary_username:password@]ipaddress:port/database_index
-    if len(config_dict['redis_password']) > 0:
-        config_dict['redis_url_js'] = "redis://anonymous:%s@%s:%s/%s" % (config_dict['redis_password'], config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_js'])
-        config_dict['redis_url_reg'] = "redis://anonymous:%s@%s:%s/%s" % (config_dict['redis_password'], config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_reg'])
-    else:
-        config_dict['redis_url_js'] = "redis://%s:%s/%s" % (config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_js'])
-        config_dict['redis_url_reg'] = "redis://%s:%s/%s" % (config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_reg'])
-
-    if configs.has_option("configuration", "skip_reload_env_pattern"):
-        config_dict['skip_reload_env_pattern'] = configs.get("configuration", "skip_reload_env_pattern")
-    else:
-        config_dict['skip_reload_env_pattern'] = "$^"
-
-    # Registry storage configs
-    config_dict['storage_provider_name'] = configs.get("configuration", "registry_storage_provider_name").strip()
-    config_dict['storage_provider_config'] = configs.get("configuration", "registry_storage_provider_config").strip()
-
-    # yaml requires 1 or more spaces between the key and value
-    config_dict['storage_provider_config'] = config_dict['storage_provider_config'].replace(":", ": ", 1)
-    config_dict['registry_custom_ca_bundle_path'] = configs.get("configuration", "registry_custom_ca_bundle").strip()
-    config_dict['core_secret'] = generate_random_string(16)
-    config_dict['jobservice_secret'] = generate_random_string(16)
-
-    # Admin dn
-    config_dict['ldap_group_admin_dn'] = configs.get("configuration", "ldap_group_admin_dn") if configs.has_option("configuration", "ldap_group_admin_dn") else ""
-
-    return config_dict
-
-
 def parse_yaml_config(config_file_path):
     '''
     :param configs: config_parser object
@@ -208,7 +55,7 @@ def parse_yaml_config(config_file_path):
     '''
 
     with open(config_file_path) as f:
-        configs = yaml.safe_load(f)
+        configs = yaml.load(f)
 
     config_dict = {}
     config_dict['adminserver_url'] = "http://adminserver:8080"
@@ -269,12 +116,15 @@ def parse_yaml_config(config_file_path):
     config_dict['ldap_group_filter'] = configs.get("ldap_group_filter")
     config_dict['ldap_group_gid'] = configs.get("ldap_group_gid")
     config_dict['ldap_group_scope'] = configs.get("ldap_group_scope")
+    # Admin dn
+    config_dict['ldap_group_admin_dn'] = configs.get("ldap_group_admin_dn") or ''
 
     # DB configs
-    config_dict['db_password'] = configs.get("db_password")
-    config_dict['db_host'] = configs.get("db_host")
-    config_dict['db_user'] = configs.get("db_user")
-    config_dict['db_port'] = configs.get("db_port")
+    db_configs = configs.get('database')
+    config_dict['db_host'] = db_configs.get("host")
+    config_dict['db_port'] = db_configs.get("port")
+    config_dict['db_user'] = db_configs.get("username")
+    config_dict['db_password'] = db_configs.get("password")
 
     config_dict['self_registration'] = configs.get("self_registration")
     config_dict['project_creation_restriction'] = configs.get("project_creation_restriction")
@@ -295,12 +145,27 @@ def parse_yaml_config(config_file_path):
         config_dict['admiral_url'] = ""
 
     # Clair configs
-    config_dict['clair_db_password'] = configs.get("clair_db_password")
-    config_dict['clair_db_host'] = configs.get("clair_db_host")
-    config_dict['clair_db_port'] = configs.get("clair_db_port")
-    config_dict['clair_db_username'] = configs.get("clair_db_username")
-    config_dict['clair_db'] = configs.get("clair_db")
-    config_dict['clair_updaters_interval'] = configs.get("clair_updaters_interval")
+    clair_configs = configs.get("clair")
+    if clair_configs:
+        config_dict['clair_db_password'] = clair_configs.get("clair_db_password")
+        config_dict['clair_db_host'] = clair_configs.get("clair_db_host")
+        config_dict['clair_db_port'] = clair_configs.get("clair_db_port")
+        config_dict['clair_db_username'] = clair_configs.get("clair_db_username")
+        config_dict['clair_db'] = clair_configs.get("clair_db")
+        config_dict['clair_updaters_interval'] = clair_configs.get("clair_updaters_interval")
+        config_dict['clair_http_proxy'] = clair_configs.get('http_proxy')
+        config_dict['clair_https_proxy'] = clair_configs.get('https_proxy')
+        config_dict['clair_no_proxy'] = clair_configs.get('no_proxy')
+    else:
+        config_dict['clair_db_password'] = ''
+        config_dict['clair_db_host'] = ''
+        config_dict['clair_db_port'] = ''
+        config_dict['clair_db_username'] = ''
+        config_dict['clair_db'] = ''
+        config_dict['clair_updaters_interval'] = ''
+        config_dict['clair_http_proxy'] = ''
+        config_dict['clair_https_proxy'] = ''
+        config_dict['clair_no_proxy'] = ''
 
     # UAA configs
     config_dict['uaa_endpoint'] = configs.get("uaa_endpoint")
@@ -310,20 +175,30 @@ def parse_yaml_config(config_file_path):
     config_dict['uaa_ca_cert'] = configs.get("uaa_ca_cert")
 
     # Log configs
-    config_dict['log_location'] = configs.get("log_location")
-    config_dict['log_rotate_count'] = configs.get("log_rotate_count")
-    config_dict['log_rotate_size'] = configs.get("log_rotate_size")
+    log_configs = configs.get('log') or {}
+    config_dict['log_location'] = log_configs.get("location")
+    config_dict['log_rotate_count'] = log_configs.get("rotate_count")
+    config_dict['log_rotate_size'] = log_configs.get("rotate_size")
 
     # Redis configs
-    config_dict['redis_host'] = configs.get("redis_host") or ''
-    config_dict['redis_port'] = configs.get("redis_port") or ''
-    config_dict['redis_password'] = configs.get("redis_password") or ''
-    config_dict['redis_db_index'] = configs.get("redis_db_index") or ''
-
-    db_indexs = config_dict['redis_db_index'].split(',')
-    config_dict['redis_db_index_reg'] = db_indexs[0]
-    config_dict['redis_db_index_js'] = db_indexs[1]
-    config_dict['redis_db_index_chart'] = db_indexs[2]
+    redis_configs = configs.get("redis")
+    if redis_configs:
+        config_dict['redis_host'] = redis_configs.get("redis_host") or ''
+        config_dict['redis_port'] = redis_configs.get("redis_port") or ''
+        config_dict['redis_password'] = redis_configs.get("redis_password") or ''
+        config_dict['redis_db_index'] = redis_configs.get("redis_db_index") or ''
+        db_indexs = config_dict['redis_db_index'].split(',')
+        config_dict['redis_db_index_reg'] = db_indexs[0]
+        config_dict['redis_db_index_js'] = db_indexs[1]
+        config_dict['redis_db_index_chart'] = db_indexs[2]
+    else:
+        config_dict['redis_host'] = ''
+        config_dict['redis_port'] = ''
+        config_dict['redis_password'] = ''
+        config_dict['redis_db_index'] = ''
+        config_dict['redis_db_index_reg'] = ''
+        config_dict['redis_db_index_js'] = ''
+        config_dict['redis_db_index_chart'] = ''
 
     # redis://[arbitrary_username:password@]ipaddress:port/database_index
     if config_dict.get('redis_password'):
@@ -339,16 +214,20 @@ def parse_yaml_config(config_file_path):
         config_dict['skip_reload_env_pattern'] = "$^"
 
     # Registry storage configs
-    config_dict['storage_provider_name'] = configs.get("registry_storage_provider_name") or ''
-    config_dict['storage_provider_config'] = configs.get("registry_storage_provider_config") or ''
+    storage_config = configs.get('storage')
+    if storage_config:
+        config_dict['storage_provider_name'] = storage_config.get("registry_storage_provider_name") or ''
+        config_dict['storage_provider_config'] = storage_config.get("registry_storage_provider_config") or ''
+        # yaml requires 1 or more spaces between the key and value
+        config_dict['storage_provider_config'] = config_dict['storage_provider_config'].replace(":", ": ", 1)
+        config_dict['registry_custom_ca_bundle_path'] = storage_config.get("registry_custom_ca_bundle") or ''
+    else:
+        config_dict['storage_provider_name'] = ''
+        config_dict['storage_provider_config'] = ''
+        config_dict['registry_custom_ca_bundle_path'] = ''
 
-    # yaml requires 1 or more spaces between the key and value
-    config_dict['storage_provider_config'] = config_dict['storage_provider_config'].replace(":", ": ", 1)
-    config_dict['registry_custom_ca_bundle_path'] = configs.get("registry_custom_ca_bundle") or ''
+    # auto generate secret string
     config_dict['core_secret'] = generate_random_string(16)
     config_dict['jobservice_secret'] = generate_random_string(16)
-
-    # Admin dn
-    config_dict['ldap_group_admin_dn'] = configs["ldap_group_admin_dn"] if configs.get("ldap_group_admin_dn") else ""
 
     return config_dict
