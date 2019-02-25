@@ -41,7 +41,7 @@ type Manager interface {
 	GetTask(int64) (*model.Task, error)
 	// Update the task, the "props" are the properties of task
 	// that need to be updated, it cannot include "status". If
-	// you want to update the status, use "UpdateTask" instead
+	// you want to update the status, use "UpdateTaskStatus" instead
 	UpdateTask(task *model.Task, props ...string) error
 	// UpdateTaskStatus only updates the task status. If "statusCondition"
 	// presents, only the tasks whose status equal to "statusCondition"
