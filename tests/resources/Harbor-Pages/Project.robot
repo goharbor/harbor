@@ -112,6 +112,9 @@ Delete Repo
     [Arguments]  ${projectname}
     ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${projectname}')]//clr-checkbox-wrapper//label
     Retry Element Click  ${element_repo_checkbox}
+    Capture Page Screenshot
+    Sleep  2
+    Capture Page Screenshot
     Retry Element Click  ${repo_delete_btn}
     Retry Element Click  ${repo_delete_confirm_btn}
 
