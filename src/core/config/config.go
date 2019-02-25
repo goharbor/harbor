@@ -225,6 +225,11 @@ func TokenExpiration() (int, error) {
 	return cfgMgr.Get(common.TokenExpiration).GetInt(), nil
 }
 
+// RobotTokenDuration returns the token expiration time of robot account (in minute)
+func RobotTokenDuration() int {
+	return cfgMgr.Get(common.RobotTokenDuration).GetInt()
+}
+
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
 	return cfgMgr.Get(common.ExtEndpoint).GetString(), nil

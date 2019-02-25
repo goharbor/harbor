@@ -51,7 +51,6 @@ const (
 )
 
 var (
-
 	// ConfigList - All configure items used in harbor
 	// Steps to onboard a new setting
 	// 1. Add configure item in metadatalist.go
@@ -131,5 +130,7 @@ var (
 		{Name: "with_chartmuseum", Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CHARTMUSEUM", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: "with_clair", Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CLAIR", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: "with_notary", Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_NOTARY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
+		// the unit of expiration is minute, 43200 minutes = 30 days
+		{Name: "robot_token_duration", Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "43200", ItemType: &IntType{}, Editable: true},
 	}
 )

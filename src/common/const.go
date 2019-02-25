@@ -117,6 +117,7 @@ const (
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	DefaultClairHealthCheckServerURL  = "http://clair:6061"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
-	RobotPrefix    = "robot$"
-	CoreConfigPath = "/api/internal/configurations"
+	RobotPrefix        = "robot$"
+	CoreConfigPath     = "/api/internal/configurations"
+	RobotTokenDuration = "robot_token_duration"
 )
