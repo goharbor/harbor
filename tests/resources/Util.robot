@@ -141,7 +141,7 @@ Wait Unitl Command Success
     \    Run Keyword If  ${positive} == ${true}  Exit For Loop If  '${rc}'=='0'
     \    ...  ELSE  Exit For Loop If  '${rc}'!='0'
     \    Sleep  2
-    Log  ${output}
+    Log  Command Result is ${output}
     Run Keyword If  ${positive} == ${true}  Should Be Equal As Strings  '${rc}'  '0'
     ...  ELSE  Should Not Be Equal As Strings  '${rc}'  '0'
     [Return]  ${output}
