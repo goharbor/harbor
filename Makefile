@@ -105,7 +105,7 @@ REDISVERSION=$(VERSIONTAG)
 NOTARYMIGRATEVERSION=v3.5.4
 
 # version of chartmuseum
-CHARTMUSEUMVERSION=v0.7.1
+CHARTMUSEUMVERSION=v0.8.1
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
