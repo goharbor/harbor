@@ -153,6 +153,8 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
       .addUserMember(this.projectId, {username: this.member.entity_name}, +this.member.role_id).pipe(
       finalize(() => {
         this.addMemberOpened = false;
+        this.member.role_id = null;
+
         let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
         setTimeout(() => {
           clearInterval(changeTimer);
