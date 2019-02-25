@@ -22,18 +22,23 @@ import (
 
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/docker/distribution/reference"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	secstore "github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
 	admr "github.com/goharbor/harbor/src/common/security/admiral"
 	"github.com/goharbor/harbor/src/common/security/admiral/authcontext"
 	"github.com/goharbor/harbor/src/common/security/local"
+	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/security/secret"
+	"github.com/goharbor/harbor/src/common/token"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/admiral"
+	"strings"
 )
 
 // ContextValueKey for content value
@@ -95,6 +100,7 @@ func Init() {
 	// standalone
 	reqCtxModifiers = []ReqCtxModifier{
 		&secretReqCtxModifier{config.SecretStore},
+		&robotAuthReqCtxModifier{},
 		&basicAuthReqCtxModifier{},
 		&sessionReqCtxModifier{},
 		&unauthorizedReqCtxModifier{}}
@@ -144,6 +150,47 @@ func (s *secretReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 
+	return true
+}
+
+type robotAuthReqCtxModifier struct{}
+
+func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	robotName, robotTk, ok := ctx.Request.BasicAuth()
+	if !ok {
+		return false
+	}
+	if !strings.HasPrefix(robotName, common.RobotPrefix) {
+		return false
+	}
+	rClaims := &token.RobotClaims{}
+	htk, err := token.ParseWithClaims(robotTk, rClaims)
+	if err != nil {
+		log.Errorf("failed to decrypt robot token, %v", err)
+		return false
+	}
+	// Do authn for robot account, as Harbor only stores the token ID, just validate the ID and disable.
+	robot, err := dao.GetRobotByID(htk.Claims.(*token.RobotClaims).TokenID)
+	if err != nil {
+		log.Errorf("failed to get robot %s: %v", robotName, err)
+		return false
+	}
+	if robot == nil {
+		log.Error("the token provided doesn't exist.")
+		return false
+	}
+	if robotName != robot.Name {
+		log.Errorf("failed to authenticate : %v", robotName)
+		return false
+	}
+	if robot.Disabled {
+		log.Errorf("the robot account %s is disabled", robot.Name)
+		return false
+	}
+	log.Debug("creating robot account security context...")
+	pm := config.GlobalProjectMgr
+	securCtx := robotCtx.NewSecurityContext(robot, pm, htk.Claims.(*token.RobotClaims).Access)
+	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
 }
 
@@ -240,7 +287,6 @@ func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Info("can not get user information from session")
 		return false
 	}
-	log.Debugf("Getting user %+v", user)
 	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")

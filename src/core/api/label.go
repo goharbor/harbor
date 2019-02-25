@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/core"
 	rep_models "github.com/goharbor/harbor/src/replication/models"
@@ -65,13 +66,34 @@ func (l *LabelAPI) Prepare() {
 			return
 		}
 
-		if label.Scope == common.LabelScopeGlobal && !l.SecurityCtx.IsSysAdmin() ||
-			label.Scope == common.LabelScopeProject && !l.SecurityCtx.HasAllPerm(label.ProjectID) {
-			l.HandleForbidden(l.SecurityCtx.GetUsername())
-			return
-		}
 		l.label = label
 	}
+}
+
+func (l *LabelAPI) requireAccess(label *models.Label, action rbac.Action, subresources ...rbac.Resource) bool {
+	var hasPermission bool
+
+	switch label.Scope {
+	case common.LabelScopeGlobal:
+		hasPermission = l.SecurityCtx.IsSysAdmin()
+	case common.LabelScopeProject:
+		if len(subresources) == 0 {
+			subresources = append(subresources, rbac.ResourceLabel)
+		}
+		resource := rbac.NewProjectNamespace(label.ProjectID).Resource(subresources...)
+		hasPermission = l.SecurityCtx.Can(action, resource)
+	}
+
+	if !hasPermission {
+		if !l.SecurityCtx.IsAuthenticated() {
+			l.HandleUnauthorized()
+		} else {
+			l.HandleForbidden(l.SecurityCtx.GetUsername())
+		}
+		return false
+	}
+
+	return true
 }
 
 // Post creates a label
@@ -82,10 +104,6 @@ func (l *LabelAPI) Post() {
 
 	switch label.Scope {
 	case common.LabelScopeGlobal:
-		if !l.SecurityCtx.IsSysAdmin() {
-			l.HandleForbidden(l.SecurityCtx.GetUsername())
-			return
-		}
 		label.ProjectID = 0
 	case common.LabelScopeProject:
 		exist, err := l.ProjectMgr.Exists(label.ProjectID)
@@ -98,10 +116,10 @@ func (l *LabelAPI) Post() {
 			l.HandleNotFound(fmt.Sprintf("project %d not found", label.ProjectID))
 			return
 		}
-		if !l.SecurityCtx.HasAllPerm(label.ProjectID) {
-			l.HandleForbidden(l.SecurityCtx.GetUsername())
-			return
-		}
+	}
+
+	if !l.requireAccess(label, rbac.ActionCreate) {
+		return
 	}
 
 	labels, err := dao.ListLabels(&models.LabelQuery{
@@ -147,15 +165,8 @@ func (l *LabelAPI) Get() {
 		return
 	}
 
-	if label.Scope == common.LabelScopeProject {
-		if !l.SecurityCtx.HasReadPerm(label.ProjectID) {
-			if !l.SecurityCtx.IsAuthenticated() {
-				l.HandleUnauthorized()
-				return
-			}
-			l.HandleForbidden(l.SecurityCtx.GetUsername())
-			return
-		}
+	if !l.requireAccess(label, rbac.ActionRead) {
+		return
 	}
 
 	l.Data["json"] = label
@@ -189,7 +200,8 @@ func (l *LabelAPI) List() {
 			return
 		}
 
-		if !l.SecurityCtx.HasReadPerm(projectID) {
+		resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceLabel)
+		if !l.SecurityCtx.Can(rbac.ActionList, resource) {
 			if !l.SecurityCtx.IsAuthenticated() {
 				l.HandleUnauthorized()
 				return
@@ -221,6 +233,10 @@ func (l *LabelAPI) List() {
 
 // Put updates the label
 func (l *LabelAPI) Put() {
+	if !l.requireAccess(l.label, rbac.ActionUpdate) {
+		return
+	}
+
 	label := &models.Label{}
 	l.DecodeJSONReq(label)
 
@@ -259,6 +275,10 @@ func (l *LabelAPI) Put() {
 
 // Delete the label
 func (l *LabelAPI) Delete() {
+	if !l.requireAccess(l.label, rbac.ActionDelete) {
+		return
+	}
+
 	id := l.label.ID
 	if err := dao.DeleteResourceLabelByLabel(id); err != nil {
 		l.HandleInternalServerError(fmt.Sprintf("failed to delete resource label mappings of label %d: %v", id, err))
@@ -272,11 +292,6 @@ func (l *LabelAPI) Delete() {
 
 // ListResources lists the resources that the label is referenced by
 func (l *LabelAPI) ListResources() {
-	if !l.SecurityCtx.IsAuthenticated() {
-		l.HandleUnauthorized()
-		return
-	}
-
 	id, err := l.GetInt64FromPath(":id")
 	if err != nil || id <= 0 {
 		l.HandleBadRequest("invalid label ID")
@@ -294,9 +309,7 @@ func (l *LabelAPI) ListResources() {
 		return
 	}
 
-	if label.Scope == common.LabelScopeGlobal && !l.SecurityCtx.IsSysAdmin() ||
-		label.Scope == common.LabelScopeProject && !l.SecurityCtx.HasAllPerm(label.ProjectID) {
-		l.HandleForbidden(l.SecurityCtx.GetUsername())
+	if !l.requireAccess(label, rbac.ActionList, rbac.ResourceLabelResource) {
 		return
 	}
 

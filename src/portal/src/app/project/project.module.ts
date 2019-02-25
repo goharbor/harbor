@@ -30,6 +30,7 @@ import { AddGroupComponent } from './member/add-group/add-group.component';
 
 import { ProjectService } from './project.service';
 import { MemberService } from './member/member.service';
+import { RobotService } from './robot-account/robot-account.service';
 import { ProjectRoutingResolver } from './project-routing-resolver.service';
 
 import { TargetExistsValidatorDirective } from '../shared/target-exists-directive';
@@ -37,6 +38,8 @@ import { ProjectLabelComponent } from "../project/project-label/project-label.co
 import { ListChartsComponent } from './list-charts/list-charts.component';
 import { ListChartVersionsComponent } from './list-chart-versions/list-chart-versions.component';
 import { ChartDetailComponent } from './chart-detail/chart-detail.component';
+import { RobotAccountComponent } from './robot-account/robot-account.component';
+import { AddRobotComponent } from './robot-account/add-robot/add-robot.component';
 
 @NgModule({
   imports: [
@@ -58,10 +61,12 @@ import { ChartDetailComponent } from './chart-detail/chart-detail.component';
     AddGroupComponent,
     ListChartsComponent,
     ListChartVersionsComponent,
-    ChartDetailComponent
+    ChartDetailComponent,
+    RobotAccountComponent,
+    AddRobotComponent
   ],
   exports: [ProjectComponent, ListProjectComponent],
-  providers: [ProjectRoutingResolver, ProjectService, MemberService]
+  providers: [ProjectRoutingResolver, ProjectService, MemberService, RobotService]
 })
 export class ProjectModule {
 

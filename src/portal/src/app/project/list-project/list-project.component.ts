@@ -113,10 +113,11 @@ export class ListProjectComponent implements OnDestroy {
     }
 
     public get canDelete(): boolean {
-        if (this.projects.length) {
-           return this.projects.some((pro: Project) => pro.current_user_role_id === 1);
+        if (!this.selectedRow.length) {
+            return false;
         }
-        return false;
+
+        return this.isSystemAdmin || this.selectedRow.every((pro: Project) => pro.current_user_role_id === 1);
     }
 
     ngOnDestroy(): void {

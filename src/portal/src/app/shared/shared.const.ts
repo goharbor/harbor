@@ -35,6 +35,7 @@ export const enum ConfirmationTargets {
   EMPTY,
   PROJECT,
   PROJECT_MEMBER,
+  ROBOT_ACCOUNT,
   USER,
   POLICY,
   TOGGLE_CONFIRM,
@@ -77,16 +78,19 @@ export const enum ConfirmationButtons {
 }
 
 export const ProjectTypes = { 0: 'PROJECT.ALL_PROJECTS', 1: 'PROJECT.PRIVATE_PROJECTS', 2: 'PROJECT.PUBLIC_PROJECTS' };
-export const RoleInfo = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST' };
-export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
+export const RoleInfo = { 1: 'MEMBER.PROJECT_ADMIN', 2: 'MEMBER.DEVELOPER', 3: 'MEMBER.GUEST', 4: 'MEMBER.PROJECT_MASTER' };
+export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN',
+'master': 'MEMBER.PROJECT_MASTER', 'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
 export const ProjectRoles = [
   { id: 1, value: "MEMBER.PROJECT_ADMIN" },
   { id: 2, value: "MEMBER.DEVELOPER" },
-  { id: 3, value: "MEMBER.GUEST" }
+  { id: 3, value: "MEMBER.GUEST" },
+  { id: 4, value: "MEMBER.PROJECT_MASTER" },
 ];
 
 export enum Roles {
   PROJECT_ADMIN = 1,
+  PROJECT_MASTER = 4,
   DEVELOPER = 2,
   GUEST = 3,
   OTHER = 0,

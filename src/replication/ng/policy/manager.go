@@ -11,11 +11,24 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package service
+
+package policy
 
 import (
-	"testing"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
-func TestMain(m *testing.M) {
+// Manager manages replication policies
+type Manager interface {
+	// Create new policy
+	Create(*model.Policy) (int64, error)
+	// List the policies, returns the total count, policy list and error
+	List(...*model.PolicyQuery) (int64, []*model.Policy, error)
+	// Get policy with specified ID
+	Get(int64) (*model.Policy, error)
+	// Update the specified policy, the "props" are the properties of policy
+	// that need to be updated
+	Update(policy *model.Policy, props ...string) error
+	// Remove the specified policy
+	Remove(int64) error
 }

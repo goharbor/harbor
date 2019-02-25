@@ -61,8 +61,8 @@ Test Case - Garbage Collection
     ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/system/gc/1/log"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  3 blobs eligible for deletion
-    Should Contain  ${output}  Deleting blob:
+    Should Contain  ${output}  3 blobs and 0 manifests eligible for deletion
+    #Should Contain  ${output}  Deleting blob:
     Should Contain  ${output}  success to run gc in job.
 
     Close Browser
@@ -83,7 +83,7 @@ Test Case - Delete A Project
     Project Should Not Be Deleted  project${d}
     Go Into Project  project${d}
     Delete Repo  project${d}
-    Back To Projects
+    Navigate To Projects
     Project Should Be Deleted  project${d}
     Close Browser
 
@@ -115,7 +115,8 @@ Test Case - Staticsinfo
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Wait Until Element Is Visible  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+    ${element}=  Set Variable  ${project_statistics_private_repository_icon}
+    Wait Until Element Is Visible  ${element}
     ${privaterepocount1}=  Get Statics Private Repo
     ${privateprojcount1}=  Get Statics Private Project
     ${publicrepocount1}=  Get Statics Public Repo
@@ -133,9 +134,10 @@ Test Case - Staticsinfo
     ${publicrepocount}=  evaluate  ${publicrepocount1}+1
     ${totalrepocount}=  evaluate  ${totalrepocount1}+2
     ${totalprojcount}=  evaluate  ${totalprojcount1}+2
-    Wait Until Element Is Visible  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]
+    Navigate To Projects
+    Wait Until Element Is Visible  ${element}
     ${privaterepocountStr}=  Convert To String  ${privaterepocount}
-    Wait Until Element Contains  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[2]/div[2]/statistics/div/span[1]  ${privaterepocountStr}
+    Wait Until Element Contains  ${element}  ${privaterepocountStr}
     ${privaterepocount2}=  Get Statics Private Repo
     ${privateprojcount2}=  get statics private project
     ${publicrepocount2}=  get statics public repo
@@ -418,8 +420,9 @@ Test Case - Delete Multi Project
     Create An New Project  projecta${d}
     Create An New Project  projectb${d}
     Push Image  ${ip}  user012  Test1@34  projecta${d}  hello-world
+    Navigate To Projects
     Filter Object  project
-    Wait Until Element Is Not Visible  //clr-datagrid/div/div[2]
+    Retry Wait Element Not Visible  //clr-datagrid/div/div[2]
     Multi-delete Object  projecta  projectb
     # Verify delete project with image should not be deleted directly
     Delete Fail  projecta${d}
@@ -449,7 +452,6 @@ Test Case - Delete Multi Tag
     Create An New Project  project${d}
     Push Image With Tag  ${ip}  user014  Test1@34  project${d}  redis  3.2.10-alpine  3.2.10-alpine
     Push Image With Tag  ${ip}  user014  Test1@34  project${d}  redis  4.0.7-alpine  4.0.7-alpine
-    Sleep  2
     Go Into Project  project${d}
     Go Into Repo  redis
     Multi-delete object  3.2.10-alpine  4.0.7-alpine
@@ -464,7 +466,6 @@ Test Case - Delete Repo on CardView
     Create An New Project  project${d}
     Push Image  ${ip}  user015  Test1@34  project${d}  hello-world
     Push Image  ${ip}  user015  Test1@34  project${d}  busybox
-    Sleep  2
     Go Into Project  project${d}
     Switch To CardView
     Delete Repo on CardView  busybox
@@ -508,7 +509,6 @@ Test Case - Project Admin Add Labels To Repo
     Create An New Project  project${d}
     Push Image With Tag  ${ip}  user020  Test1@34  project${d}  redis  3.2.10-alpine  3.2.10-alpine
     Push Image With Tag  ${ip}  user020  Test1@34  project${d}  redis  4.0.7-alpine  4.0.7-alpine
-
     Go Into Project  project${d}
     Sleep  2
     # Add labels
@@ -548,7 +548,6 @@ Test Case - Scan A Tag In The Repo
     Create An New Project  project${d}
     Go Into Project  project${d}  has_image=${false}    
     Push Image  ${ip}  user023  Test1@34  project${d}  hello-world
-    Sleep  5
     Go Into Project  project${d}
     Go Into Repo  project${d}/hello-world
     Scan Repo  latest  Succeed
@@ -587,24 +586,10 @@ Test Case - Manual Scan All
     Switch To Configure
     Go To Vulnerability Config
     Trigger Scan Now
-    Back To Projects
+    Navigate To Projects
     Go Into Project  library
     Go Into Repo  redis
     Summary Chart Should Display  latest
-    Close Browser
-
-Test Case - View Scan Results
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
-    Create An New Project  project${d}    
-    Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/tomcat
-    Scan Repo  latest  Succeed
-    Summary Chart Should Display  latest
-    View Repo Scan Details
     Close Browser
 
 Test Case - View Scan Error
@@ -618,21 +603,6 @@ Test Case - View Scan Error
     Go Into Repo  project${d}/vmware/photon
     Scan Repo  1.0  Fail
     View Scan Error Log
-    Close Browser
-
-Test Case - Project Level Image Serverity Policy
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    ${d}=  get current date  result_format=%m%s
-    Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
-    Go Into Project  project${d}
-    Go Into Repo  haproxy
-    Scan Repo  latest  Succeed
-    Back To Projects
-    Go Into Project  project${d}
-    Set Vulnerabilty Serverity  0
-    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
     Close Browser
 
 Test Case - List Helm Charts
@@ -683,20 +653,6 @@ Test Case - Admin Push Signed Image
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  sha256
 
-Test Case - Scan Image On Push
-    Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Goto Project Config
-    Enable Scan On Push
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
-    Back To Projects
-    Go Into Project  library
-    Go Into Repo  memcached
-    Summary Chart Should Display  latest
-    Close Browser
-
 Test Case - Retag A Image Tag
     Init Chrome Driver
     ${random_num1}=   Get Current Date    result_format=%m%s
@@ -712,13 +668,55 @@ Test Case - Retag A Image Tag
     Sleep  1
     Go Into Repo  project${random_num1}/redis
     Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
-
-    Wait Until Element Is Not Visible  css=${modal-dialog}
-    Back To Projects
+    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
+    Navigate To Projects
     Go Into Project  project${random_num2}
     Sleep  1
     Page Should Contain  ${target_image_name}
     Go Into Repo  project${random_num2}/${target_image_name}
     Sleep  1
     Page Should Contain Element  xpath=${tag_value_xpath}
+    Close Browser
+
+Test Case - Scan Image On Push
+    Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Go Into Project  library
+    Goto Project Config
+    Enable Scan On Push
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
+    Navigate To Projects
+    Go Into Project  library
+    Go Into Repo  memcached
+    Summary Chart Should Display  latest
+    Close Browser
+
+Test Case - View Scan Results
+    Init Chrome Driver
+    ${d}=  get current date  result_format=%m%s
+
+    Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
+    Create An New Project  project${d}    
+    Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
+    Go Into Project  project${d}
+    Go Into Repo  project${d}/tomcat
+    Scan Repo  latest  Succeed
+    Summary Chart Should Display  latest
+    View Repo Scan Details
+    Close Browser
+
+Test Case - Project Level Image Serverity Policy
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=  get current date  result_format=%m%s
+    Create An New Project  project${d}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
+    Go Into Project  project${d}
+    Go Into Repo  haproxy
+    Scan Repo  latest  Succeed
+    Navigate To Projects
+    Go Into Project  project${d}
+    Set Vulnerabilty Serverity  0
+    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
     Close Browser

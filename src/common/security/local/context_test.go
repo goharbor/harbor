@@ -16,14 +16,15 @@ package local
 
 import (
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
 	"github.com/stretchr/testify/assert"
@@ -53,45 +54,8 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	dbHost := os.Getenv("POSTGRESQL_HOST")
-	if len(dbHost) == 0 {
-		log.Fatalf("environment variable POSTGRES_HOST is not set")
-	}
-	dbUser := os.Getenv("POSTGRESQL_USR")
-	if len(dbUser) == 0 {
-		log.Fatalf("environment variable POSTGRES_USR is not set")
-	}
-	dbPortStr := os.Getenv("POSTGRESQL_PORT")
-	if len(dbPortStr) == 0 {
-		log.Fatalf("environment variable POSTGRES_PORT is not set")
-	}
-	dbPort, err := strconv.Atoi(dbPortStr)
-	if err != nil {
-		log.Fatalf("invalid POSTGRESQL_PORT: %v", err)
-	}
 
-	dbPassword := os.Getenv("POSTGRESQL_PWD")
-	dbDatabase := os.Getenv("POSTGRESQL_DATABASE")
-	if len(dbDatabase) == 0 {
-		log.Fatalf("environment variable POSTGRESQL_DATABASE is not set")
-	}
-
-	database := &models.Database{
-		Type: "postgresql",
-		PostGreSQL: &models.PostGreSQL{
-			Host:     dbHost,
-			Port:     dbPort,
-			Username: dbUser,
-			Password: dbPassword,
-			Database: dbDatabase,
-		},
-	}
-
-	log.Infof("POSTGRES_HOST: %s, POSTGRES_USR: %s, POSTGRES_PORT: %d, POSTGRES_PWD: %s\n", dbHost, dbUser, dbPort, dbPassword)
-
-	if err := dao.InitDatabase(database); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
+	test.InitDatabaseFromEnv()
 
 	// regiser users
 	id, err := dao.Register(*projectAdminUser)
@@ -210,66 +174,73 @@ func TestIsSolutionUser(t *testing.T) {
 func TestHasReadPerm(t *testing.T) {
 	// public project
 	ctx := NewSecurityContext(nil, pm)
-	assert.True(t, ctx.HasReadPerm("library"))
+
+	resource := rbac.NewProjectNamespace("library").Resource(rbac.ResourceRepository)
+	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 
 	// private project, unauthenticated
 	ctx = NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasReadPerm(private.Name))
+	resource = rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+	assert.False(t, ctx.Can(rbac.ActionPull, resource))
 
 	// private project, authenticated, has no perm
 	ctx = NewSecurityContext(&models.User{
 		Username: "test",
 	}, pm)
-	assert.False(t, ctx.HasReadPerm(private.Name))
+	assert.False(t, ctx.Can(rbac.ActionPull, resource))
 
 	// private project, authenticated, has read perm
 	ctx = NewSecurityContext(guestUser, pm)
-	assert.True(t, ctx.HasReadPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 
 	// private project, authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
 		HasAdminRole: true,
 	}, pm)
-	assert.True(t, ctx.HasReadPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
 
 func TestHasWritePerm(t *testing.T) {
+	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+
 	// unauthenticated
 	ctx := NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasWritePerm(private.Name))
+	assert.False(t, ctx.Can(rbac.ActionPush, resource))
 
 	// authenticated, has read perm
 	ctx = NewSecurityContext(guestUser, pm)
-	assert.False(t, ctx.HasWritePerm(private.Name))
+	assert.False(t, ctx.Can(rbac.ActionPush, resource))
 
 	// authenticated, has write perm
 	ctx = NewSecurityContext(developerUser, pm)
-	assert.True(t, ctx.HasWritePerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
 		HasAdminRole: true,
 	}, pm)
-	assert.True(t, ctx.HasReadPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 }
 
 func TestHasAllPerm(t *testing.T) {
+	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+
 	// unauthenticated
 	ctx := NewSecurityContext(nil, pm)
-	assert.False(t, ctx.HasAllPerm(private.Name))
+	assert.False(t, ctx.Can(rbac.ActionPushPull, resource))
 
 	// authenticated, has all perms
 	ctx = NewSecurityContext(projectAdminUser, pm)
-	assert.True(t, ctx.HasAllPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPushPull, resource))
 
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
 		HasAdminRole: true,
 	}, pm)
-	assert.True(t, ctx.HasAllPerm(private.Name))
+	assert.True(t, ctx.Can(rbac.ActionPushPull, resource))
 }
 
 func TestHasAllPermWithGroup(t *testing.T) {
@@ -285,10 +256,13 @@ func TestHasAllPermWithGroup(t *testing.T) {
 	developer.GroupList = []*models.UserGroup{
 		{GroupName: "test_group", GroupType: 1, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"},
 	}
+
+	resource := rbac.NewProjectNamespace(project.Name).Resource(rbac.ResourceRepository)
+
 	ctx := NewSecurityContext(developer, pm)
-	assert.False(t, ctx.HasAllPerm(project.Name))
-	assert.True(t, ctx.HasWritePerm(project.Name))
-	assert.True(t, ctx.HasReadPerm(project.Name))
+	assert.False(t, ctx.Can(rbac.ActionPushPull, resource))
+	assert.True(t, ctx.Can(rbac.ActionPush, resource))
+	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
 
 func TestGetMyProjects(t *testing.T) {

@@ -23,14 +23,17 @@ import { PUSH_IMAGE_BUTTON_DIRECTIVES } from '../push-image/index';
 import { INLINE_ALERT_DIRECTIVES } from '../inline-alert/index';
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { OperationService } from "../operation/operation.service";
-import {ProjectDefaultService, ProjectService, RetagDefaultService, RetagService} from "../service";
-
+import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagService } from "../service";
+import { UserPermissionService, UserPermissionDefaultService } from "../service/permission.service";
+import { USERSTATICPERMISSION } from "../service/permission-static";
+import { of } from "rxjs";
 describe('RepositoryComponentGridview (inline template)', () => {
 
   let compRepo: RepositoryGridviewComponent;
   let fixtureRepo: ComponentFixture<RepositoryGridviewComponent>;
   let repositoryService: RepositoryService;
   let systemInfoService: SystemInfoService;
+  let userPermissionService: UserPermissionService;
 
   let spyRepos: jasmine.Spy;
   let spySystemInfo: jasmine.Spy;
@@ -67,12 +70,28 @@ describe('RepositoryComponentGridview (inline template)', () => {
       "tags_count": 1
     }
   ];
+  let mockRepoNginxData: RepositoryItem[] = [
+    {
+      "id": 2,
+      "name": "library/nginx",
+      "project_id": 1,
+      "description": "asdf",
+      "pull_count": 0,
+      "star_count": 0,
+      "tags_count": 1
+    }
+  ];
 
   let mockRepo: Repository = {
-    metadata: {xTotalCount: 2},
+    metadata: { xTotalCount: 2 },
     data: mockRepoData
   };
-
+  let mockNginxRepo: Repository = {
+    metadata: { xTotalCount: 2 },
+    data: mockRepoNginxData
+  };
+  let mockHasCreateRepositoryPermission: boolean = true;
+  let mockHasDeleteRepositoryPermission: boolean = true;
   // let mockTagData: Tag[] = [
   //   {
   //     "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
@@ -120,34 +139,58 @@ describe('RepositoryComponentGridview (inline template)', () => {
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: RetagService, useClass: RetagDefaultService },
         { provide: SystemInfoService, useClass: SystemInfoDefaultService },
+        { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         { provide: OperationService }
       ]
     });
   }));
 
-  beforeEach(async() => {
+  beforeEach(async () => {
     fixtureRepo = TestBed.createComponent(RepositoryGridviewComponent);
     compRepo = fixtureRepo.componentInstance;
     compRepo.projectId = 1;
+    compRepo.mode = '';
     compRepo.hasProjectAdminRole = true;
 
     repositoryService = fixtureRepo.debugElement.injector.get(RepositoryService);
     systemInfoService = fixtureRepo.debugElement.injector.get(SystemInfoService);
 
-    spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepo));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
+    spyRepos = spyOn(repositoryService, 'getRepositories')
+      .and.callFake(function (projectId: number, name: string) {
+        if (name === 'nginx') {
+          return Promise.resolve(mockNginxRepo);
+        }
+        return Promise.resolve(mockRepo);
+      });
+    userPermissionService = fixtureRepo.debugElement.injector.get(UserPermissionService);
+    spyOn(userPermissionService, "getPermission")
+      .withArgs(compRepo.projectId,
+        USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.CREATE)
+      .and.returnValue(of(mockHasCreateRepositoryPermission))
+      .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.DELETE)
+      .and.returnValue(of(mockHasDeleteRepositoryPermission));
     fixtureRepo.detectChanges();
   });
+  let originalTimeout;
 
-  it('should create', () => {
-    expect(compRepo).toBeTruthy();
+  beforeEach(function () {
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
   });
 
-  // Will fail after upgrade to angular 6. todo: need to fix it.
-  xit('should load and render data', async(() => {
+  afterEach(function () {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+  });
+
+  it('should create', async(() => {
+    expect(compRepo).toBeTruthy();
+  }));
+
+  it('should load and render data', async(() => {
     fixtureRepo.whenStable().then(() => {
       fixtureRepo.detectChanges();
-      let deRepo: DebugElement = fixtureRepo.debugElement.query(By.css('.datagrid-cell'));
+      let deRepo: DebugElement = fixtureRepo.debugElement.query(del => del.classes['datagrid-cell']);
       expect(deRepo).toBeTruthy();
       let elRepo: HTMLElement = deRepo.nativeElement;
       expect(elRepo).toBeTruthy();
@@ -160,13 +203,17 @@ describe('RepositoryComponentGridview (inline template)', () => {
       fixtureRepo.detectChanges();
 
       compRepo.doSearchRepoNames('nginx');
-      fixtureRepo.detectChanges();
-      let de: DebugElement[] = fixtureRepo.debugElement.queryAll(By.css('.datagrid-cell'));
-      expect(de).toBeTruthy();
-      expect(de.length).toEqual(1);
-      let el: HTMLElement = de[0].nativeElement;
-      expect(el).toBeTruthy();
-      expect(el.textContent).toEqual('library/nginx');
+      fixtureRepo.whenStable().then(() => {
+
+        fixtureRepo.detectChanges();
+        let de: DebugElement[] = fixtureRepo.debugElement.queryAll(By.css('.datagrid-cell'));
+        expect(de).toBeTruthy();
+        expect(compRepo.repositories.length).toEqual(1);
+        expect(de.length).toEqual(1);
+        let el: HTMLElement = de[0].nativeElement;
+        expect(el).toBeTruthy();
+        expect(el.textContent).toEqual('library/nginx');
+      });
     });
   }));
 });

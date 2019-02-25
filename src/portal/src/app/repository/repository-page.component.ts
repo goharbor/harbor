@@ -17,7 +17,6 @@ import { RepositoryItem } from '@harbor/ui';
 
 import { Project } from '../project/project';
 import { SessionService } from '../shared/session.service';
-import { AppConfigService } from '../app-config.service';
 @Component({
   selector: 'repository',
   templateUrl: 'repository-page.component.html'
@@ -33,7 +32,6 @@ export class RepositoryPageComponent implements OnInit {
     private route: ActivatedRoute,
     private session: SessionService,
     private router: Router,
-    private appConfigService: AppConfigService,
   ) {
   }
 
@@ -51,9 +49,5 @@ export class RepositoryPageComponent implements OnInit {
   watchRepoClickEvent(repoEvt: RepositoryItem): void {
     let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name];
     this.router.navigate(linkUrl);
-  }
-
-  public get hasCAFile(): boolean {
-    return this.appConfigService.getConfig().has_ca_root;
   }
 }

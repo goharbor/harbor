@@ -3,8 +3,9 @@ import { Http } from '@angular/http';
 import { Observable, Subscription, Subject, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { GcApiRepository } from './gc.api.repository';
-import { ErrorHandler } from '@harbor/ui';
+import { ErrorHandler } from '../../error-handler/index';
 import { GcJobData } from './gcLog';
+
 
 @Injectable()
 export class GcRepoService {

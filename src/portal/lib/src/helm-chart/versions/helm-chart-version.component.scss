@@ -16,7 +16,7 @@
     .toolbar {
         overflow: hidden;
         .rightPos {
-            @include grid-left-top-pos;
+            @include grid-right-top-pos;
             .filter-divider {
                 display: inline-block;
                 height: 16px;
@@ -48,7 +48,7 @@ hbr-resource-label-signpost {
 }
 
 .card-container {
-    margin-top: 21px;
+    margin-top: 40px;
     .card-header {
         .card-media-block {
             img {

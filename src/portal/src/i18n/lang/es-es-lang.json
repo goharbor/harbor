@@ -194,7 +194,8 @@
         "LABELS": "Labels",
         "PROJECTS": "Proyectos",
         "CONFIG": "Configuración",
-        "HELMCHART": "Helm Charts"
+        "HELMCHART": "Helm Charts",
+        "ROBOT_ACCOUNTS": "Robot Accounts"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Registro de proyectos",
@@ -218,6 +219,7 @@
         "ROLE": "Rol",
         "SYS_ADMIN": "Administrador del sistema",
         "PROJECT_ADMIN": "Administrador del proyecto",
+        "PROJECT_MASTER": "Mantenedor",
         "DEVELOPER": "Desarrollador",
         "GUEST": "Invitado",
         "DELETE": "Eliminar",
@@ -257,6 +259,31 @@
         "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?",
         "SET_ROLE": "SET ROLE",
         "REMOVE": "Remove"
+    },
+    "ROBOT_ACCOUNT": {
+        "NAME": "Name",
+        "TOKEN": "Token",
+        "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
+        "ENABLED_STATE": "Enabled state",
+        "DESCRIPTION": "Description",
+        "ACTION": "Action",
+        "EDIT": "Edit",
+        "ITEMS": "items",
+        "OF": "of",
+        "DISABLE_ACCOUNT": "Disable Account",
+        "ENABLE_ACCOUNT": "Enable Account",
+        "DELETE": "Delete",
+        "CREAT_ROBOT_ACCOUNT": "Creat Robot Account",
+        "PULL_PERMISSION": "Permission for Pull",
+        "PUSH_PERMISSION": "Permission for Push",
+        "FILTER_PLACEHOLDER": "Filter Robot Accounts",
+        "ROBOT_NAME": "Cannot contain special characters(~#$%) and maximum length should be 255 characters.",
+        "ACCOUNT_EXISTING": "Robot Account is already exists.",
+        "ALERT_TEXT": "This is the only time to copy your personal access token.You wont't have another opportunity",
+        "CREATED_SUCCESS": "Created '{{param}}' successfully.",
+        "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
+        "DELETION_TITLE": "Confirm removal of robot accounts",
+        "DELETION_SUMMARY": "Do you want to delete robot accounts {{param}}?"
     },
     "GROUP": {
         "GROUP": "Group",
@@ -802,6 +829,7 @@
         "DELETE_REPO": "Delete repository",
         "DELETE_TAG": "Delete tag",
         "DELETE_USER": "Delete user",
+        "DELETE_ROBOT": "Delete robot",
         "DELETE_REGISTRY": "Delete registry",
         "DELETE_REPLICATION": "Delete replication",
         "DELETE_MEMBER": "Delete user member",

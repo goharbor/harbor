@@ -94,37 +94,12 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "postgresql"
-  adminserver:
-    image: goharbor/harbor-adminserver:__version__
-    container_name: harbor-adminserver
-    env_file:
-      - ./common/config/adminserver/env
-    restart: always
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SETGID
-      - SETUID
-    volumes:
-      - /data/config/:/etc/adminserver/config/:z
-      - /data/secretkey:/etc/adminserver/key:z
-      - /data/:/data/:z
-    networks:
-      - harbor
-    dns_search: .
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:  
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "adminserver"
   core:
     image: goharbor/harbor-core:__version__
     container_name: harbor-core
     env_file:
       - ./common/config/core/env
+      - ./common/config/adminserver/env
     restart: always
     cap_drop:
       - ALL
@@ -144,7 +119,6 @@ services:
     dns_search: .
     depends_on:
       - log
-      - adminserver
       - registry
     logging:
       driver: "syslog"
@@ -195,7 +169,6 @@ services:
     depends_on:
       - redis
       - core
-      - adminserver
     logging:
       driver: "syslog"
       options:

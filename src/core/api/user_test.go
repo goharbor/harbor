@@ -27,6 +27,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/astaxie/beego"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 var testUser0002ID, testUser0003ID int
@@ -39,7 +41,9 @@ func TestUsersPost(t *testing.T) {
 
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
-
+	config.Upload(map[string]interface{}{
+		common.AUTHMode: "db_auth",
+	})
 	// case 1: register a new user without admin auth, expect 400, because self registration is on
 	fmt.Println("Register user without admin auth")
 	code, err := apiTest.UsersPost(testUser0002)
@@ -571,4 +575,29 @@ func TestModifiable(t *testing.T) {
 		AuthMode:         "ldap_auth",
 	}
 	assert.True(ua4.modifiable())
+}
+
+func TestUsersCurrentPermissions(t *testing.T) {
+	fmt.Println("Testing Get Users Current Permissions")
+
+	assert := assert.New(t)
+	apiTest := newHarborAPI()
+
+	httpStatusCode, permissions, err := apiTest.UsersGetPermissions("current", "/project/library", *projAdmin)
+	assert.Nil(err)
+	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+	assert.NotEmpty(permissions, "permissions should not be empty")
+
+	httpStatusCode, permissions, err = apiTest.UsersGetPermissions("current", "/unsupport-scope", *projAdmin)
+	assert.Nil(err)
+	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+	assert.Empty(permissions, "permissions should be empty")
+
+	httpStatusCode, _, err = apiTest.UsersGetPermissions(projAdminID, "/project/library", *projAdmin)
+	assert.Nil(err)
+	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+
+	httpStatusCode, _, err = apiTest.UsersGetPermissions(projDeveloperID, "/project/library", *projAdmin)
+	assert.Nil(err)
+	assert.Equal(int(403), httpStatusCode, "httpStatusCode should be 403")
 }

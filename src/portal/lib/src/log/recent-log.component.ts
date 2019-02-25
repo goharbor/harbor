@@ -110,6 +110,9 @@ export class RecentLogComponent implements OnInit {
     }
 
     load(state: State) {
+        if (!state || !state.page) {
+            return;
+        }
         // Keep it for future filter
         this.currentState = state;
 
@@ -155,7 +158,6 @@ export class RecentLogComponent implements OnInit {
             this.recentLogs = doSorting<AccessLogItem>(this.recentLogs, state);
         }
     }
-
     isMatched(terms: string, log: AccessLogItem): boolean {
         let reg = new RegExp('.*' + terms + '.*', 'i');
         return reg.test(log.username) ||

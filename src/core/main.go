@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
@@ -92,8 +93,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-	if err := dao.InitDatabase(database); err != nil {
+	if err := dao.InitAndUpgradeDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
+	}
+	if err := config.Load(); err != nil {
+		log.Fatalf("failed to load config: %v", err)
 	}
 
 	password, err := config.InitialAdminPassword()

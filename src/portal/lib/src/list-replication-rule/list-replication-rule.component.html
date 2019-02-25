@@ -1,10 +1,10 @@
 <div  class="list-rule">
-<clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" [clrDgRowSelection]="true">
+<clr-datagrid [clrDgLoading]="loading"  [(clrDgSingleSelected)]="selectedRow" (clrDgSingleSelectedChange)="selectRule($event)" [clrDgRowSelection]="true">
     <clr-dg-action-bar>
-        <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
-        <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!selectedRow" (click)="editRule(selectedRow)"><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'REPLICATION.EDIT_POLICY' | translate}}</button>
-        <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!selectedRow" (click)="deleteRule(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPLICATION.DELETE_POLICY' | translate}}</button>
-        <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
+        <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasCreateReplicationPermission" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'REPLICATION.NEW_REPLICATION_RULE' | translate}}</button>
+        <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasUpdateReplicationPermission" [disabled]="!selectedRow" (click)="editRule(selectedRow)"><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'REPLICATION.EDIT_POLICY' | translate}}</button>
+        <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasDeleteReplicationPermission" [disabled]="!selectedRow" (click)="deleteRule(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPLICATION.DELETE_POLICY' | translate}}</button>
+        <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasExecuteReplicationPermission" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
     </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
@@ -13,7 +13,7 @@
     <clr-dg-column >{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.TRIGGER_MODE' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
-    <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p"  (click)="selectRule(p)" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
+    <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-cell>{{p.name}}</clr-dg-cell>
         <clr-dg-cell>
             <div [ngSwitch]="hasDeletedLabel(p)">

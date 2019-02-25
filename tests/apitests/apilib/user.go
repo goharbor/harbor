@@ -53,3 +53,9 @@ type User struct {
 
 	UpdateTime string `json:"update_time,omitempty"`
 }
+
+// Permission the permission type
+type Permission struct {
+	Resource string `json:"resource,omitempty"`
+	Action   string `json:"action,omitempty"`
+}

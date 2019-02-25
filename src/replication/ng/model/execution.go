@@ -14,19 +14,48 @@
 
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/goharbor/harbor/src/common/models"
+)
+
+// execution/task status/trigger const
+const (
+	ExecutionStatusFailed     string = "Failed"
+	ExecutionStatusSucceed    string = "Succeed"
+	ExecutionStatusStopped    string = "Stopped"
+	ExecutionStatusInProgress string = "InProgress"
+
+	ExecutionTriggerManual   string = "Manual"
+	ExecutionTriggerEvent    string = "Event"
+	ExecutionTriggerSchedule string = "Schedule"
+
+	// The task has been persisted in db but not submitted to Jobservice
+	TaskStatusInitialized string = "Initialized"
+	TaskStatusPending     string = "Pending"
+	TaskStatusInProgress  string = "InProgress"
+	TaskStatusSucceed     string = "Succeed"
+	TaskStatusFailed      string = "Failed"
+	TaskStatusStopped     string = "Stopped"
+)
 
 // Execution defines an execution of the replication
 type Execution struct {
-	ID         int64     `json:"id"`
-	PolicyID   int64     `json:"policy_id"`
-	Total      int       `json:"total"`
-	Failed     int       `json:"failed"`
-	Succeed    int       `json:"succeed"`
-	Pending    int       `json:"pending"`
-	InProgress int       `json:"in_progress"`
-	StartTime  time.Time `json:"start_time"`
-	EndTime    time.Time `json:"end_time"`
+	ID          int64     `json:"id"`
+	PolicyID    int64     `json:"policy_id"`
+	Status      string    `json:"status"`
+	StatusText  string    `json:"status_text"`
+	Trigger     string    `json:"trigger"`
+	Total       int       `json:"total"`
+	Failed      int       `json:"failed"`
+	Succeed     int       `json:"succeed"`
+	Pending     int       `json:"pending"`
+	InProgress  int       `json:"in_progress"`
+	Stopped     int       `json:"stopped"`
+	Initialized int       `json:"initialized"`
+	StartTime   time.Time `json:"start_time"`
+	EndTime     time.Time `json:"end_time"`
 }
 
 // Task holds the information of one replication task
@@ -40,4 +69,20 @@ type Task struct {
 	Status       string       `json:"status"`
 	StartTime    time.Time    `json:"start_time"`
 	EndTime      time.Time    `json:"end_time"`
+}
+
+// ExecutionQuery defines the query conditions for listing executions
+type ExecutionQuery struct {
+	PolicyID int64
+	Status   string
+	Trigger  string
+	models.Pagination
+}
+
+// TaskQuery defines the query conditions for listing tasks
+type TaskQuery struct {
+	ExecutionID  int64
+	ResourceType ResourceType
+	Status       string
+	models.Pagination
 }

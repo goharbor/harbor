@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package scheduler
 
 import (
@@ -8,7 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/common/job"
 	common_job "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/opm"
 	"github.com/goharbor/harbor/src/replication/ng/model"
@@ -55,7 +68,6 @@ type Scheduler interface {
 func (d *DefaultReplicator) Preprocess(srcResources []*model.Resource, destResources []*model.Resource) ([]*ScheduleItem, error) {
 	if len(srcResources) != len(destResources) {
 		err := errors.New("srcResources has different length with destResources")
-		log.Errorf(err.Error())
 		return nil, err
 	}
 	var items []*ScheduleItem
@@ -75,32 +87,30 @@ func (d *DefaultReplicator) Preprocess(srcResources []*model.Resource, destResou
 func (d *DefaultReplicator) Schedule(items []*ScheduleItem) ([]*ScheduleResult, error) {
 	var results []*ScheduleResult
 	for _, item := range items {
-		if item.TaskID == 0 {
-			err := errors.New("some tasks do not have a ID")
-			log.Errorf(err.Error())
-			return nil, err
-		}
 		result := &ScheduleResult{
 			TaskID: item.TaskID,
+		}
+		if item.TaskID == 0 {
+			result.Error = errors.New("some tasks do not have a ID")
+			results = append(results, result)
+			continue
 		}
 		job := &models.JobData{
 			Metadata: &models.JobMetadata{
 				JobKind: job.JobKindGeneric,
 			},
-			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/replication/%d", config.InternalCoreURL(), item.TaskID),
+			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/replication/task/%d", config.InternalCoreURL(), item.TaskID),
 		}
 
 		job.Name = common_job.ImageTransfer
 		src, err := json.Marshal(item.SrcResource)
 		if err != nil {
-			log.Errorf("failed to marshal the srcResource of %v.err:%s!", item.SrcResource, err.Error())
 			result.Error = err
 			results = append(results, result)
 			continue
 		}
 		dest, err := json.Marshal(item.DstResource)
 		if err != nil {
-			log.Errorf("failed to marshal the dstResource of %v.err:%s!", item.DstResource, err.Error())
 			result.Error = err
 			results = append(results, result)
 			continue
@@ -111,7 +121,6 @@ func (d *DefaultReplicator) Schedule(items []*ScheduleItem) ([]*ScheduleResult, 
 		}
 		_, joberr := d.client.SubmitJob(job)
 		if joberr != nil {
-			log.Errorf("failed to submit the task:%v .err:%s!", item, joberr.Error())
 			result.Error = joberr
 			results = append(results, result)
 			continue

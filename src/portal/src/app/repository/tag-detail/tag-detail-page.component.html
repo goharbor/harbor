@@ -5,9 +5,9 @@
         <a (click)="goBack(repositoryId)">< {{repositoryId}}</a>
     </div>
     <hbr-tag-detail (backEvt)="goBack($event)" 
-    [tagId]="tagId" 
-    [withClair]="withClair"  
-    [withAdmiral]="withAdmiral" 
-    [repositoryId]="repositoryId"
-    [withAdminRole]="withAdminRole"></hbr-tag-detail>
+    [tagId]="tagId"
+    [withClair]="withClair"
+    [withAdmiral]="withAdmiral"
+    [projectId]="projectId"
+    [repositoryId]="repositoryId"></hbr-tag-detail>
 </div>

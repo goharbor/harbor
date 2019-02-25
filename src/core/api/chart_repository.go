@@ -15,6 +15,7 @@ import (
 	"github.com/goharbor/harbor/src/core/label"
 
 	"github.com/goharbor/harbor/src/chartserver"
+	"github.com/goharbor/harbor/src/common/rbac"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 )
@@ -84,10 +85,35 @@ func (cra *ChartRepositoryAPI) Prepare() {
 	cra.labelManager = &label.BaseManager{}
 }
 
+func (cra *ChartRepositoryAPI) requireAccess(action rbac.Action, subresource ...rbac.Resource) bool {
+	if len(subresource) == 0 {
+		subresource = append(subresource, rbac.ResourceHelmChart)
+	}
+	resource := rbac.NewProjectNamespace(cra.namespace).Resource(subresource...)
+
+	if !cra.SecurityCtx.Can(action, resource) {
+		if !cra.SecurityCtx.IsAuthenticated() {
+			cra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		} else {
+			cra.HandleForbidden(cra.SecurityCtx.GetUsername())
+		}
+
+		return false
+	}
+
+	return true
+}
+
 // GetHealthStatus handles GET /api/chartrepo/health
 func (cra *ChartRepositoryAPI) GetHealthStatus() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelSystem) {
+	if !cra.SecurityCtx.IsAuthenticated() {
+		cra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		return
+	}
+
+	if !cra.SecurityCtx.IsSysAdmin() {
+		cra.HandleForbidden(cra.SecurityCtx.GetUsername())
 		return
 	}
 
@@ -98,7 +124,7 @@ func (cra *ChartRepositoryAPI) GetHealthStatus() {
 // GetIndexByRepo handles GET /:repo/index.yaml
 func (cra *ChartRepositoryAPI) GetIndexByRepo() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionRead) {
 		return
 	}
 
@@ -109,7 +135,13 @@ func (cra *ChartRepositoryAPI) GetIndexByRepo() {
 // GetIndex handles GET /index.yaml
 func (cra *ChartRepositoryAPI) GetIndex() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelSystem) {
+	if !cra.SecurityCtx.IsAuthenticated() {
+		cra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		return
+	}
+
+	if !cra.SecurityCtx.IsSysAdmin() {
+		cra.HandleForbidden(cra.SecurityCtx.GetUsername())
 		return
 	}
 
@@ -136,7 +168,7 @@ func (cra *ChartRepositoryAPI) GetIndex() {
 // DownloadChart handles GET /:repo/charts/:filename
 func (cra *ChartRepositoryAPI) DownloadChart() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionRead) {
 		return
 	}
 
@@ -147,7 +179,7 @@ func (cra *ChartRepositoryAPI) DownloadChart() {
 // ListCharts handles GET /api/:repo/charts
 func (cra *ChartRepositoryAPI) ListCharts() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionList) {
 		return
 	}
 
@@ -163,7 +195,7 @@ func (cra *ChartRepositoryAPI) ListCharts() {
 // ListChartVersions GET /api/:repo/charts/:name
 func (cra *ChartRepositoryAPI) ListChartVersions() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionList, rbac.ResourceHelmChartVersion) {
 		return
 	}
 
@@ -191,7 +223,7 @@ func (cra *ChartRepositoryAPI) ListChartVersions() {
 // GetChartVersion handles GET /api/:repo/charts/:name/:version
 func (cra *ChartRepositoryAPI) GetChartVersion() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelRead) {
+	if !cra.requireAccess(rbac.ActionRead, rbac.ResourceHelmChartVersion) {
 		return
 	}
 
@@ -219,7 +251,7 @@ func (cra *ChartRepositoryAPI) GetChartVersion() {
 // DeleteChartVersion handles DELETE /api/:repo/charts/:name/:version
 func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelAll) {
+	if !cra.requireAccess(rbac.ActionDelete, rbac.ResourceHelmChartVersion) {
 		return
 	}
 
@@ -244,7 +276,7 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 	hlog.Debugf("Header of request of uploading chart: %#v, content-len=%d", cra.Ctx.Request.Header, cra.Ctx.Request.ContentLength)
 
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
+	if !cra.requireAccess(rbac.ActionCreate, rbac.ResourceHelmChartVersion) {
 		return
 	}
 
@@ -272,7 +304,7 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 // UploadChartProvFile handles POST /api/:repo/prov
 func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
+	if !cra.requireAccess(rbac.ActionCreate) {
 		return
 	}
 
@@ -297,7 +329,7 @@ func (cra *ChartRepositoryAPI) UploadChartProvFile() {
 // DeleteChart deletes all the chart versions of the specified chart.
 func (cra *ChartRepositoryAPI) DeleteChart() {
 	// Check access
-	if !cra.requireAccess(cra.namespace, accessLevelWrite) {
+	if !cra.requireAccess(rbac.ActionDelete) {
 		return
 	}
 
@@ -359,62 +391,6 @@ func (cra *ChartRepositoryAPI) requireNamespace(namespace string) bool {
 	// Not existing
 	if !existsing {
 		cra.SendBadRequestError(fmt.Errorf("namespace %s is not existing", namespace))
-		return false
-	}
-
-	return true
-}
-
-// Check if the related access match the expected requirement
-// If with right access, return true
-// If without right access, return false
-func (cra *ChartRepositoryAPI) requireAccess(namespace string, accessLevel uint) bool {
-	if accessLevel == accessLevelPublic {
-		return true // do nothing
-	}
-
-	theLevel := accessLevel
-	// If repo is empty, system admin role must be required
-	if len(namespace) == 0 {
-		theLevel = accessLevelSystem
-	}
-
-	var err error
-
-	switch theLevel {
-	// Should be system admin role
-	case accessLevelSystem:
-		if !cra.SecurityCtx.IsSysAdmin() {
-			err = errors.New("permission denied: system admin role is required")
-		}
-	case accessLevelAll:
-		if !cra.SecurityCtx.HasAllPerm(namespace) {
-			err = errors.New("permission denied: project admin or higher role is required")
-		}
-	case accessLevelWrite:
-		if !cra.SecurityCtx.HasWritePerm(namespace) {
-			err = errors.New("permission denied: developer or higher role is required")
-		}
-	case accessLevelRead:
-		if !cra.SecurityCtx.HasReadPerm(namespace) {
-			err = errors.New("permission denied: guest or higher role is required")
-		}
-	default:
-		// access rejected for invalid scope
-		cra.SendForbiddenError(errors.New("unrecognized access scope"))
-		return false
-	}
-
-	// Access is not granted, check if user has authenticated
-	if err != nil {
-		// Unauthenticated, return 401
-		if !cra.SecurityCtx.IsAuthenticated() {
-			cra.SendUnAuthorizedError(errors.New("Unauthorized"))
-			return false
-		}
-
-		// Authenticated, return 403
-		cra.SendForbiddenError(err)
 		return false
 	}
 

@@ -12,7 +12,7 @@
     @include text-overflow;
 }
 
-@mixin grid-left-top-pos{
+@mixin grid-right-top-pos{
     position: absolute;
     z-index: 100;
     right: 35px;

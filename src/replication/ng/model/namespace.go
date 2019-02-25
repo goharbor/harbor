@@ -21,3 +21,8 @@ type Namespace struct {
 	Name     string                 `json:"name"`
 	Metadata map[string]interface{} `json:"metadata"`
 }
+
+// NamespaceQuery defines the query condition for listing namespaces
+type NamespaceQuery struct {
+	Name string
+}

@@ -13,7 +13,7 @@ import {
     clone
 } from '../utils';
 import { ErrorHandler } from '../error-handler/index';
-import { SystemSettingsComponent, VulnerabilityConfigComponent} from './index';
+import { SystemSettingsComponent, VulnerabilityConfigComponent, GcComponent} from './index';
 import { Configuration } from './config';
 
 @Component({
@@ -30,6 +30,7 @@ export class RegistryConfigComponent implements OnInit {
 
     @ViewChild("systemSettings") systemSettings: SystemSettingsComponent;
     @ViewChild("vulnerabilityConfig") vulnerabilityCfg: VulnerabilityConfigComponent;
+    @ViewChild("gc") gc: GcComponent;
     @ViewChild("cfgConfirmationDialog") confirmationDlg: ConfirmationDialogComponent;
 
     constructor(
