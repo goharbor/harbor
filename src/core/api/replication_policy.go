@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/core"
 	rep_models "github.com/goharbor/harbor/src/replication/models"
+	rep_dao "github.com/goharbor/harbor/src/replication/ng/dao"
 )
 
 // RepPolicyAPI handles /api/replicationPolicies /api/replicationPolicies/:id/enablement
@@ -159,7 +160,7 @@ func (pa *RepPolicyAPI) Post() {
 
 	// check the existence of targets
 	for _, r := range policy.Registries {
-		t, err := dao.GetRegistry(r.ID)
+		t, err := rep_dao.GetRegistry(r.ID)
 		if err != nil {
 			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", r.ID, err))
 			return
@@ -272,7 +273,7 @@ func (pa *RepPolicyAPI) Put() {
 
 	// check the existence of targets
 	for _, r := range policy.Registries {
-		t, err := dao.GetRegistry(r.ID)
+		t, err := rep_dao.GetRegistry(r.ID)
 		if err != nil {
 			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", r.ID, err))
 			return
@@ -379,7 +380,7 @@ func convertFromRepPolicy(projectMgr promgr.ProjectManager, policy rep_models.Re
 
 	// populate targets
 	for _, targetID := range policy.TargetIDs {
-		r, err := dao.GetRegistry(targetID)
+		r, err := rep_dao.GetRegistry(targetID)
 		if err != nil {
 			return nil, err
 		}

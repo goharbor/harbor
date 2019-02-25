@@ -27,6 +27,7 @@ import (
 	api_models "github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/replication"
 	rep_models "github.com/goharbor/harbor/src/replication/models"
+	dao_models "github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -131,7 +132,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ProjectID: projectID,
 						},
 					},
-					Registries: []*models.Registry{
+					Registries: []*dao_models.Registry{
 						{
 							ID: targetID,
 						},
@@ -159,7 +160,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ProjectID: projectID,
 						},
 					},
-					Registries: []*models.Registry{
+					Registries: []*dao_models.Registry{
 						{
 							ID: targetID,
 						},
@@ -190,7 +191,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ProjectID: 10000,
 						},
 					},
-					Registries: []*models.Registry{
+					Registries: []*dao_models.Registry{
 						{
 							ID: targetID,
 						},
@@ -221,7 +222,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ProjectID: projectID,
 						},
 					},
-					Registries: []*models.Registry{
+					Registries: []*dao_models.Registry{
 						{
 							ID: 10000,
 						},
@@ -252,7 +253,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ProjectID: projectID,
 						},
 					},
-					Registries: []*models.Registry{
+					Registries: []*dao_models.Registry{
 						{
 							ID: targetID,
 						},
@@ -287,7 +288,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ProjectID: projectID,
 						},
 					},
-					Registries: []*models.Registry{
+					Registries: []*dao_models.Registry{
 						{
 							ID: targetID,
 						},
@@ -323,7 +324,7 @@ func TestRepPolicyAPIPost(t *testing.T) {
 							ProjectID: projectID,
 						},
 					},
-					Registries: []*models.Registry{
+					Registries: []*dao_models.Registry{
 						{
 							ID: targetID,
 						},
@@ -567,7 +568,7 @@ func TestRepPolicyAPIPut(t *testing.T) {
 							ProjectID: projectID,
 						},
 					},
-					Registries: []*models.Registry{
+					Registries: []*dao_models.Registry{
 						{
 							ID: targetID,
 						},
@@ -598,7 +599,7 @@ func TestRepPolicyAPIPut(t *testing.T) {
 							ProjectID: projectID,
 						},
 					},
-					Registries: []*models.Registry{
+					Registries: []*dao_models.Registry{
 						{
 							ID: targetID,
 						},
@@ -677,7 +678,7 @@ func TestConvertToRepPolicy(t *testing.T) {
 						Name:      "library",
 					},
 				},
-				Registries: []*models.Registry{
+				Registries: []*dao_models.Registry{
 					{
 						ID: 1,
 					},

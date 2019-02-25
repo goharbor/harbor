@@ -27,21 +27,22 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/common/job/test"
-	"github.com/goharbor/harbor/src/common/models"
-	testutils "github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/tests/apitests/apilib"
-
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/job/test"
+	"github.com/goharbor/harbor/src/common/models"
+	testutils "github.com/goharbor/harbor/src/common/utils/test"
+	apimodels "github.com/goharbor/harbor/src/core/api/models"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/replication/core"
 	_ "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/tests/apitests/apilib"
 )
 
 const (
@@ -650,103 +651,6 @@ func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, interface{}, 
 	return http.StatusOK, result, nil
 }
 
-// -------------------------Targets Test---------------------------------------//
-// Create a new replication target
-func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (int, string, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := "/api/targets"
-
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(repTarget)
-
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, string(body), err
-}
-
-// List filters targets by name
-func (a testapi) ListTargets(authInfo usrInfo, targetName string) (int, []apilib.RepTarget, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := "/api/targets?name=" + targetName
-
-	_sling = _sling.Path(path)
-
-	var successPayload []apilib.RepTarget
-
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err == nil && httpStatusCode == 200 {
-		err = json.Unmarshal(body, &successPayload)
-	}
-
-	return httpStatusCode, successPayload, err
-}
-
-// Ping target
-func (a testapi) PingTarget(authInfo usrInfo, body interface{}) (int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := "/api/targets/ping"
-
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(body)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
-
-// Get target by targetID
-func (a testapi) GetTargetByID(authInfo usrInfo, targetID string) (int, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := "/api/targets/" + targetID
-
-	_sling = _sling.Path(path)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return httpStatusCode, err
-}
-
-// Update target by targetID
-func (a testapi) PutTargetByID(authInfo usrInfo, targetID string, repTarget apilib.RepTargetPost) (int, error) {
-	_sling := sling.New().Put(a.basePath)
-
-	path := "/api/targets/" + targetID
-
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(repTarget)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return httpStatusCode, err
-}
-
-// List the target relevant policies by targetID
-func (a testapi) GetTargetPoliciesByID(authInfo usrInfo, targetID string) (int, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := "/api/targets/" + targetID + "/policies/"
-
-	_sling = _sling.Path(path)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return httpStatusCode, err
-}
-
-// Delete target by targetID
-func (a testapi) DeleteTargetsByID(authInfo usrInfo, targetID string) (int, error) {
-	_sling := sling.New().Delete(a.basePath)
-
-	path := "/api/targets/" + targetID
-
-	_sling = _sling.Path(path)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
-
 // --------------------Replication_Policy Test--------------------------------//
 
 // Create a new replication policy
@@ -1185,4 +1089,58 @@ func (a testapi) GCScheduleGet(authInfo usrInfo) (int, []apilib.AdminJob, error)
 	}
 
 	return httpStatusCode, successPayLoad, err
+}
+
+func (a testapi) RegistryGet(authInfo usrInfo, registryID int64) (*model.Registry, int, error) {
+	_sling := sling.New().Base(a.basePath).Get(fmt.Sprintf("/api/registries/%d", registryID))
+	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err == nil && code == http.StatusOK {
+		registry := model.Registry{}
+		if err := json.Unmarshal(body, &registry); err != nil {
+			return nil, code, err
+		}
+		return &registry, code, nil
+	}
+	return nil, code, err
+}
+
+func (a testapi) RegistryList(authInfo usrInfo) ([]*model.Registry, int, error) {
+	_sling := sling.New().Base(a.basePath).Get("/api/registries")
+	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil || code != http.StatusOK {
+		return nil, code, err
+	}
+
+	var registries []*model.Registry
+	if err := json.Unmarshal(body, &registries); err != nil {
+		return nil, code, err
+	}
+
+	return registries, code, nil
+}
+
+func (a testapi) RegistryCreate(authInfo usrInfo, registry *model.Registry) (int, error) {
+	_sling := sling.New().Base(a.basePath).Post("/api/registries").BodyJSON(registry)
+	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return code, err
+}
+
+func (a testapi) RegistryDelete(authInfo usrInfo, registryID int64) (int, error) {
+	_sling := sling.New().Base(a.basePath).Delete(fmt.Sprintf("/api/registries/%d", registryID))
+	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil || code != http.StatusOK {
+		return code, fmt.Errorf("delete registry error: %v", err)
+	}
+
+	return code, nil
+}
+
+func (a testapi) RegistryUpdate(authInfo usrInfo, registryID int64, req *apimodels.RegistryUpdateRequest) (int, error) {
+	_sling := sling.New().Base(a.basePath).Put(fmt.Sprintf("/api/registries/%d", registryID)).BodyJSON(req)
+	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil || code != http.StatusOK {
+		return code, fmt.Errorf("update registry error: %v", err)
+	}
+
+	return code, nil
 }

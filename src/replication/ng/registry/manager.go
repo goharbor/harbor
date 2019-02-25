@@ -18,14 +18,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	utilerr "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/replication/ng/dao"
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
@@ -51,8 +50,6 @@ type Manager interface {
 	Get(int64) (*model.Registry, error)
 	// GetByName gets registry by name
 	GetByName(name string) (*model.Registry, error)
-	// GetByURL gets registry by its URL
-	GetByURL(url string) (*model.Registry, error)
 	// Update the registry, the "props" are the properties of registry
 	// that need to be updated
 	Update(registry *model.Registry, props ...string) error
@@ -81,10 +78,7 @@ func (m *DefaultManager) Get(id int64) (*model.Registry, error) {
 	}
 
 	if registry == nil {
-		return nil, utilerr.KnownError{
-			Reason:  utilerr.ReasonNotFound,
-			Message: fmt.Sprintf("registry '%d' does not exist", id),
-		}
+		return nil, nil
 	}
 
 	return fromDaoModel(registry)
@@ -104,32 +98,18 @@ func (m *DefaultManager) GetByName(name string) (*model.Registry, error) {
 	return fromDaoModel(registry)
 }
 
-// GetByURL gets a registry by its URL
-func (m *DefaultManager) GetByURL(url string) (*model.Registry, error) {
-	registry, err := dao.GetRegistryByURL(url)
-	if err != nil {
-		return nil, err
-	}
-
-	if registry == nil {
-		return nil, nil
-	}
-
-	return fromDaoModel(registry)
-}
-
 // List lists registries according to query provided.
 func (m *DefaultManager) List(query ...*model.RegistryQuery) (int64, []*model.Registry, error) {
 	var registryQueries []*dao.ListRegistryQuery
-	for _, q := range query {
+	if len(query) > 0 {
 		// limit being -1 indicates no pagination specified, result in all registries matching name returned.
 		listQuery := &dao.ListRegistryQuery{
-			Query: q.Name,
+			Query: query[0].Name,
 			Limit: -1,
 		}
-		if q.Pagination != nil {
-			listQuery.Offset = q.Pagination.Page * q.Pagination.Size
-			listQuery.Limit = q.Pagination.Size
+		if query[0].Pagination != nil {
+			listQuery.Offset = query[0].Pagination.Page * query[0].Pagination.Size
+			listQuery.Limit = query[0].Pagination.Size
 		}
 
 		registryQueries = append(registryQueries, listQuery)
@@ -252,22 +232,21 @@ func healthStatus(r *model.Registry) (HealthStatus, error) {
 }
 
 // decrypt checks whether access secret is set in the registry, if so, decrypt it.
-func decrypt(registry *model.Registry) error {
-	if len(registry.Credential.AccessSecret) == 0 {
-		return nil
+func decrypt(secret string) (string, error) {
+	if len(secret) == 0 {
+		return "", nil
 	}
 
 	key, err := config.SecretKey()
 	if err != nil {
-		return err
+		return "", err
 	}
-	decrypted, err := utils.ReversibleDecrypt(registry.Credential.AccessSecret, key)
+	decrypted, err := utils.ReversibleDecrypt(secret, key)
 	if err != nil {
-		return err
+		return "", err
 	}
-	registry.Credential.AccessSecret = decrypted
 
-	return nil
+	return decrypted, nil
 }
 
 // encrypt checks whether access secret is set in the registry, if so, encrypt it.
@@ -291,6 +270,11 @@ func encrypt(secret string) (string, error) {
 // fromDaoModel converts DAO layer registry model to replication model.
 // Also, if access secret is provided, decrypt it.
 func fromDaoModel(registry *models.Registry) (*model.Registry, error) {
+	decrypted, err := decrypt(registry.AccessSecret)
+	if err != nil {
+		return nil, err
+	}
+
 	r := &model.Registry{
 		ID:          registry.ID,
 		Name:        registry.Name,
@@ -300,16 +284,12 @@ func fromDaoModel(registry *models.Registry) (*model.Registry, error) {
 		Credential: &model.Credential{
 			Type:         model.CredentialType(registry.CredentialType),
 			AccessKey:    registry.AccessKey,
-			AccessSecret: registry.AccessSecret,
+			AccessSecret: decrypted,
 		},
 		Insecure:     registry.Insecure,
 		Status:       registry.Health,
 		CreationTime: registry.CreationTime,
 		UpdateTime:   registry.UpdateTime,
-	}
-
-	if err := decrypt(r); err != nil {
-		return nil, err
 	}
 
 	return r, nil

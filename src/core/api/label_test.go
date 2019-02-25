@@ -25,6 +25,8 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/replication"
 	rep_models "github.com/goharbor/harbor/src/replication/models"
+	rep_dao "github.com/goharbor/harbor/src/replication/ng/dao"
+	dao_models "github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -455,12 +457,12 @@ func TestListResources(t *testing.T) {
 	require.Nil(t, err)
 	defer dao.DeleteLabel(projectLabelID)
 
-	registryID, err := dao.AddRegistry(&models.Registry{
+	registryID, err := rep_dao.AddRegistry(&dao_models.Registry{
 		Name: "target_for_testing_label_resource",
 		URL:  "https://192.168.0.1",
 	})
 	require.Nil(t, err)
-	defer dao.DeleteRegistry(registryID)
+	defer rep_dao.DeleteRegistry(registryID)
 
 	// create a policy references both global and project labels
 	policyID, err := dao.AddRepPolicy(models.RepPolicy{

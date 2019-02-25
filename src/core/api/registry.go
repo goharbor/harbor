@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	utilerr "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/replication/ng"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
@@ -41,12 +41,14 @@ func (t *RegistryAPI) Get() {
 
 	registry, err := t.manager.Get(id)
 	if err != nil {
-		if utilerr.Is(err, utilerr.ReasonNotFound) {
-			t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
-			return
-		}
 		log.Errorf("failed to get registry %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	if registry == nil {
+		t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
+		return
 	}
 
 	// Hide access secret
@@ -66,6 +68,7 @@ func (t *RegistryAPI) List() {
 	if err != nil {
 		log.Errorf("failed to list registries %s: %v", name, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
 	}
 
 	// Hide passwords
@@ -87,6 +90,7 @@ func (t *RegistryAPI) Post() {
 	if err != nil {
 		log.Errorf("failed to get registry %s: %v", registry.Name, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
 	}
 
 	if reg != nil {
@@ -98,6 +102,7 @@ func (t *RegistryAPI) Post() {
 	if err != nil {
 		log.Errorf("Add registry '%s' error: %v", registry.URL, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
 	}
 
 	t.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
@@ -111,15 +116,15 @@ func (t *RegistryAPI) Put() {
 	if err != nil {
 		log.Errorf("Get registry by id %d error: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
 	}
 
-	req := struct {
-		Name     *string `json:"name"`
-		Endpoint *string `json:"endpoint"`
-		Username *string `json:"username"`
-		Password *string `json:"password"`
-		Insecure *bool   `json:"insecure"`
-	}{}
+	if registry == nil {
+		t.HandleNotFound(fmt.Sprintf("Registry %d not found", id))
+		return
+	}
+
+	req := models.RegistryUpdateRequest{}
 	t.DecodeJSONReq(&req)
 
 	originalName := registry.Name
@@ -127,14 +132,17 @@ func (t *RegistryAPI) Put() {
 	if req.Name != nil {
 		registry.Name = *req.Name
 	}
-	if req.Endpoint != nil {
-		registry.URL = *req.Endpoint
+	if req.URL != nil {
+		registry.URL = *req.URL
 	}
-	if req.Username != nil {
-		registry.Credential.AccessKey = *req.Username
+	if req.CredentialType != nil {
+		registry.Credential.Type = (model.CredentialType)(*req.CredentialType)
 	}
-	if req.Password != nil {
-		registry.Credential.AccessSecret = *req.Password
+	if req.AccessKey != nil {
+		registry.Credential.AccessKey = *req.AccessKey
+	}
+	if req.AccessSecret != nil {
+		registry.Credential.AccessSecret = *req.AccessSecret
 	}
 	if req.Insecure != nil {
 		registry.Insecure = *req.Insecure
@@ -147,6 +155,7 @@ func (t *RegistryAPI) Put() {
 		if err != nil {
 			log.Errorf("Get registry by name '%s' error: %v", registry.Name, err)
 			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			return
 		}
 
 		if reg != nil {
@@ -158,6 +167,7 @@ func (t *RegistryAPI) Put() {
 	if err := t.manager.Update(registry); err != nil {
 		log.Errorf("Update registry %d error: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
 	}
 }
 
@@ -165,19 +175,20 @@ func (t *RegistryAPI) Put() {
 func (t *RegistryAPI) Delete() {
 	id := t.GetIDFromURL()
 
-	_, err := t.manager.Get(id)
+	registry, err := t.manager.Get(id)
 	if err != nil {
-		if utilerr.Is(err, utilerr.ReasonNotFound) {
-			t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
-			return
-		}
-
 		msg := fmt.Sprintf("Get registry %d error: %v", id, err)
 		log.Error(msg)
 		t.HandleInternalServerError(msg)
 		return
 	}
 
+	if registry == nil {
+		t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
+		return
+	}
+
+	// TODO: Use PolicyManager instead
 	policies, err := dao.GetRepPolicyByTarget(id)
 	if err != nil {
 		msg := fmt.Sprintf("Get policies related to registry %d error: %v", id, err)
@@ -189,7 +200,7 @@ func (t *RegistryAPI) Delete() {
 	if len(policies) > 0 {
 		msg := fmt.Sprintf("Can't delete registry with replication policies, %d found", len(policies))
 		log.Error(msg)
-		t.HandleInternalServerError(msg)
+		t.HandleStatusPreconditionFailed(msg)
 		return
 	}
 
@@ -197,5 +208,6 @@ func (t *RegistryAPI) Delete() {
 		msg := fmt.Sprintf("Delete registry %d error: %v", id, err)
 		log.Error(msg)
 		t.HandleInternalServerError(msg)
+		return
 	}
 }

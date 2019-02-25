@@ -27,7 +27,7 @@ func currPath() string {
 	return path.Dir(f)
 }
 
-// NewJobServiceServer
+// NewJobServiceServer ...
 func NewJobServiceServer() *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc(fmt.Sprintf("%s/%s/log", jobsPrefix, jobUUID),

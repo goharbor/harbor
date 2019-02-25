@@ -38,7 +38,8 @@ var (
 
 // Init the global variables
 func Init() error {
-	// TODO init RegistryMgr
+	// Init registry manager
+	RegistryMgr = registry.NewDefaultManager()
 
 	// TODO init ExecutionMgr
 

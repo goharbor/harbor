@@ -20,29 +20,3 @@ import (
 
 // ErrDupProject is the error returned when creating a duplicate project
 var ErrDupProject = errors.New("duplicate project")
-
-const (
-	// ReasonNotFound indicates resource not found
-	ReasonNotFound = "NotFound"
-)
-
-// KnownError represents known type errors
-type KnownError struct {
-	// Reason is reason of the error, such as NotFound
-	Reason string
-	// Message is the message of the error
-	Message string
-}
-
-// Error returns the error message
-func (e KnownError) Error() string {
-	return e.Message
-}
-
-// Is checks whether a error is a given type error
-func Is(err error, reason string) bool {
-	if e, ok := err.(KnownError); ok && e.Reason == reason {
-		return true
-	}
-	return false
-}

@@ -23,6 +23,7 @@ type FakeReplicatoinController struct {
 func (f *FakeReplicatoinController) Init(closing chan struct{}) error {
 	return nil
 }
+
 // Replicate ...
 func (f *FakeReplicatoinController) Replicate(policyID int64, metadata ...map[string]interface{}) error {
 	return nil

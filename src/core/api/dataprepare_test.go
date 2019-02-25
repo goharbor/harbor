@@ -19,6 +19,8 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	rep_dao "github.com/goharbor/harbor/src/replication/ng/dao"
+	rep_models "github.com/goharbor/harbor/src/replication/ng/dao/models"
 )
 
 const (
@@ -83,23 +85,23 @@ func CommonDelProject() {
 
 func CommonAddRegistry() {
 	endPoint := os.Getenv("REGISTRY_URL")
-	commonRegistry := &models.Registry{
+	commonRegistry := &rep_models.Registry{
 		URL:          endPoint,
 		Name:         TestRegistryName,
 		AccessKey:    adminName,
 		AccessSecret: adminPwd,
 	}
-	_, _ = dao.AddRegistry(commonRegistry)
+	_, _ = rep_dao.AddRegistry(commonRegistry)
 }
 
 func CommonGetRegistry() int {
-	registry, _ := dao.GetRegistryByName(TestRegistryName)
+	registry, _ := rep_dao.GetRegistryByName(TestRegistryName)
 	return int(registry.ID)
 }
 
 func CommonDelRegistry() {
-	registry, _ := dao.GetRegistryByName(TestRegistryName)
-	_ = dao.DeleteRegistry(registry.ID)
+	registry, _ := rep_dao.GetRegistryByName(TestRegistryName)
+	_ = rep_dao.DeleteRegistry(registry.ID)
 }
 
 func CommonAddRepository() {

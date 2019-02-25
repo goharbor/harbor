@@ -8,6 +8,11 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 )
 
+const (
+	// RegistryTable is the table name for registry
+	RegistryTable = "registry"
+)
+
 // Registry is the model for a registry, which wraps the endpoint URL and credential of a remote registry.
 type Registry struct {
 	ID             int64     `orm:"pk;auto;column(id)" json:"id"`
@@ -48,11 +53,5 @@ func (r *Registry) Valid(v *validation.Validation) {
 		if len(r.URL) > 64 {
 			v.SetError("endpoint", "max length is 64")
 		}
-	}
-
-	// password is encoded using base64, the length of this field
-	// in DB is 64, so the max length in request is 48
-	if len(r.AccessSecret) > 48 {
-		v.SetError("password", "max length is 48")
 	}
 }

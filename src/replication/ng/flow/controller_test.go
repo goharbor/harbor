@@ -71,9 +71,6 @@ func (f *fakedRegistryManager) Get(id int64) (*model.Registry, error) {
 func (f *fakedRegistryManager) GetByName(name string) (*model.Registry, error) {
 	return nil, nil
 }
-func (f *fakedRegistryManager) GetByURL(url string) (*model.Registry, error) {
-	return nil, nil
-}
 func (f *fakedRegistryManager) Update(*model.Registry, ...string) error {
 	return nil
 }
