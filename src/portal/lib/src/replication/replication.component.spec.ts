@@ -84,21 +84,29 @@ describe('Replication Component (inline template)', () => {
     let mockEndpoints: Endpoint[] = [
         {
             "id": 1,
-            "url": "https://10.117.4.151",
-            "name": "target_01",
-            "username": "admin",
-            "password": "",
+            "credential": {
+              "access_key": "admin",
+              "access_secret": "",
+              "type": "basic"
+            },
+            "description": "test",
             "insecure": false,
-            "type": "Harbor"
+            "name": "target_01",
+            "type": "Harbor",
+            "url": "https://10.117.4.151"
         },
         {
             "id": 2,
-            "url": "https://10.117.5.142",
-            "name": "target_02",
-            "username": "AAA",
-            "password": "",
+            "credential": {
+              "access_key": "admin",
+              "access_secret": "",
+              "type": "basic"
+            },
+            "description": "test",
             "insecure": false,
-            "type": "Harbor"
+            "name": "target_02",
+            "type": "Harbor",
+            "url": "https://10.117.5.142"
         },
     ];
 

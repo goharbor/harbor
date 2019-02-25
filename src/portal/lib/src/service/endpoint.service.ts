@@ -9,7 +9,7 @@ import {
   HTTP_GET_OPTIONS
 } from "../utils";
 import { RequestQueryParams } from "./RequestQueryParams";
-import { Endpoint, ReplicationRule } from "./interface";
+import { Endpoint, ReplicationRule, Adapter } from "./interface";
 
 /**
  * Define the service methods to handle the endpoint related things.
@@ -53,6 +53,17 @@ export abstract class EndpointService {
    *
    * @abstract
    *  ** deprecated param {Endpoint} endpoint
+   * returns {(Observable<any> | any)}
+   *
+   * @memberOf EndpointService
+   */
+  abstract getAdapters(): Observable<any> | Promise<any> | any;
+
+  /**
+   * Create new endpoint.
+   *
+   * @abstract
+   *  ** deprecated param {Adapter} adapter
    * returns {(Observable<any> | any)}
    *
    * @memberOf EndpointService
@@ -166,6 +177,14 @@ export class EndpointDefaultService extends EndpointService {
       .then(response => response.json() as Endpoint)
       .catch(error => Promise.reject(error));
   }
+
+  public getAdapters(): Observable<any> | Promise<any> | any {
+    return this.http
+    .get(`/api/replication/adapters`)
+    .toPromise()
+    .then(response => response.json() as Adapter)
+    .catch(error => Promise.reject(error));
+}
 
   public createEndpoint(
     endpoint: Endpoint

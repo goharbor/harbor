@@ -176,7 +176,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
   let config: IServiceConfig = {
     replicationBaseEndpoint: "/api/replication/executions/testing",
-    targetBaseEndpoint: "/api/targets/testing"
+    targetBaseEndpoint: "/api/registries/testing"
   };
 
   beforeEach(async(() => {
