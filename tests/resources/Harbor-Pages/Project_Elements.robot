@@ -32,3 +32,4 @@ ${project_statistics_private_repository_icon}  xpath=//project/div/div/div[1]/di
 ${repo_delete_btn}  xpath=//button[contains(.,'Delete')]
 ${repo_delete_confirm_btn}  xpath=//clr-modal//button[2]
 ${repo_retag_confirm_dlg}  css=${modal-dialog}
+${repo_delete_on_card_view_btn}  //clr-modal//button[contains(.,'DELETE')]
