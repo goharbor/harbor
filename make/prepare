@@ -4,7 +4,7 @@ host_make_path="$( cd "$(dirname "$0")" ; pwd -P )"
 
 echo host make path is set to ${host_make_path}
 data_path=$(grep '^[^#]*data_volume' ${host_make_path}/harbor.yml | awk '{print $NF}')
-log_path=$(grep '^[^#]*log_location' ${host_make_path}/harbor.yml | awk '{print $NF}')
+log_path=$(grep '^[^#]*location' ${host_make_path}/harbor.yml | awk '{print $NF}')
 secretkey_path=$(grep '^[^#]*secretkey_path' ${host_make_path}/harbor.yml | awk '{print $NF}')
 
 docker run -it --rm -v ${host_make_path}:/harbor_make -v $data_path:/data -v $log_path:/var/log/harbor -v $secretkey_path:$secretkey_path goharbor/prepare:1.7.1 $@

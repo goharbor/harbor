@@ -147,12 +147,12 @@ def parse_yaml_config(config_file_path):
     # Clair configs
     clair_configs = configs.get("clair")
     if clair_configs:
-        config_dict['clair_db_password'] = clair_configs.get("clair_db_password")
-        config_dict['clair_db_host'] = clair_configs.get("clair_db_host")
-        config_dict['clair_db_port'] = clair_configs.get("clair_db_port")
-        config_dict['clair_db_username'] = clair_configs.get("clair_db_username")
-        config_dict['clair_db'] = clair_configs.get("clair_db")
-        config_dict['clair_updaters_interval'] = clair_configs.get("clair_updaters_interval")
+        config_dict['clair_db_password'] = clair_configs.get("db_password")
+        config_dict['clair_db_host'] = clair_configs.get("db_host")
+        config_dict['clair_db_port'] = clair_configs.get("db_port")
+        config_dict['clair_db_username'] = clair_configs.get("db_username")
+        config_dict['clair_db'] = clair_configs.get("db")
+        config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval")
         config_dict['clair_http_proxy'] = clair_configs.get('http_proxy')
         config_dict['clair_https_proxy'] = clair_configs.get('https_proxy')
         config_dict['clair_no_proxy'] = clair_configs.get('no_proxy')
@@ -183,10 +183,10 @@ def parse_yaml_config(config_file_path):
     # Redis configs
     redis_configs = configs.get("redis")
     if redis_configs:
-        config_dict['redis_host'] = redis_configs.get("redis_host") or ''
-        config_dict['redis_port'] = redis_configs.get("redis_port") or ''
-        config_dict['redis_password'] = redis_configs.get("redis_password") or ''
-        config_dict['redis_db_index'] = redis_configs.get("redis_db_index") or ''
+        config_dict['redis_host'] = redis_configs.get("host") or ''
+        config_dict['redis_port'] = redis_configs.get("port") or ''
+        config_dict['redis_password'] = redis_configs.get("password") or ''
+        config_dict['redis_db_index'] = redis_configs.get("db_index") or ''
         db_indexs = config_dict['redis_db_index'].split(',')
         config_dict['redis_db_index_reg'] = db_indexs[0]
         config_dict['redis_db_index_js'] = db_indexs[1]
