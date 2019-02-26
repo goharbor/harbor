@@ -26,8 +26,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
-	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 type flow struct {
@@ -98,7 +99,7 @@ func newFlow(policy *model.Policy, registryMgr registry.Manager,
 }
 
 func (f *flow) createExecution() (int64, error) {
-	id, err := f.executionMgr.Create(&model.Execution{
+	id, err := f.executionMgr.Create(&models.Execution{
 		PolicyID:  f.policy.ID,
 		Status:    model.ExecutionStatusInProgress,
 		StartTime: time.Now(),
@@ -177,10 +178,10 @@ func (f *flow) preprocess() error {
 
 func (f *flow) createTasks() error {
 	for _, item := range f.scheduleItems {
-		task := &model.Task{
+		task := &models.Task{
 			ExecutionID:  f.executionID,
 			Status:       model.TaskStatusInitialized,
-			ResourceType: item.SrcResource.Type,
+			ResourceType: string(item.SrcResource.Type),
 			SrcResource:  getResourceName(item.SrcResource),
 			DstResource:  getResourceName(item.DstResource),
 		}
@@ -222,7 +223,7 @@ func (f *flow) schedule() error {
 		if err = f.executionMgr.UpdateTaskStatus(result.TaskID, model.TaskStatusPending); err != nil {
 			log.Errorf("failed to update task status %d: %v", result.TaskID, err)
 		}
-		if err = f.executionMgr.UpdateTask(&model.Task{
+		if err = f.executionMgr.UpdateTask(&models.Task{
 			ID:        result.TaskID,
 			StartTime: time.Now(),
 		}); err != nil {
@@ -247,9 +248,9 @@ func (f *flow) markExecutionFailure(err error) {
 	log.Errorf("the execution %d is marked as failure because of the error: %s",
 		f.executionID, statusText)
 	err = f.executionMgr.Update(
-		&model.Execution{
+		&models.Execution{
 			ID:         f.executionID,
-			Status:     model.ExecutionStatusFailed,
+			Status:     models.ExecutionStatusFailed,
 			StatusText: statusText,
 			EndTime:    time.Now(),
 		})
