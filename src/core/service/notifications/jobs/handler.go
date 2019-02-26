@@ -87,3 +87,13 @@ func (h *Handler) HandleReplication() {
 		return
 	}
 }
+
+// HandleReplicationTask handles the webhook of replication task
+func (h *Handler) HandleReplicationTask() {
+	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
+	if _, err := dao.UpdateTaskStatus(h.id, h.status); err != nil {
+		log.Errorf("Failed to update replication task status, id: %d, status: %s", h.id, h.status)
+		h.HandleInternalServerError(err.Error())
+		return
+	}
+}
