@@ -76,7 +76,7 @@ func TestValidate(t *testing.T) {
 
 var transferred = false
 
-var fakedTransferFactory = func(transfer.Logger, transfer.CancelFunc) (transfer.Transfer, error) {
+var fakedTransferFactory = func(transfer.Logger, transfer.StopFunc) (transfer.Transfer, error) {
 	return &fakedTransfer{}, nil
 }
 
