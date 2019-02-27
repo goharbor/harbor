@@ -15,7 +15,10 @@
 package repository
 
 import (
+	"errors"
 	"strings"
+
+	"github.com/goharbor/harbor/src/replication/ng/adapter"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
@@ -51,8 +54,8 @@ func factory(logger trans.Logger, stopFunc trans.StopFunc) (trans.Transfer, erro
 type transfer struct {
 	logger    trans.Logger
 	isStopped trans.StopFunc
-	src       Registry
-	dst       Registry
+	src       adapter.ImageRegistry
+	dst       adapter.ImageRegistry
 }
 
 func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
@@ -85,9 +88,8 @@ func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
 	if t.shouldStop() {
 		return jobStoppedErr
 	}
-
 	// create client for source registry
-	srcReg, err := NewRegistry(src.Registry, src.Metadata.Name)
+	srcReg, err := createRegistry(src.Registry)
 	if err != nil {
 		t.logger.Errorf("failed to create client for source registry: %v", err)
 		return err
@@ -97,7 +99,7 @@ func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
 		src.Registry.Type, src.Registry.URL, src.Registry.Insecure)
 
 	// create client for destination registry
-	dstReg, err := NewRegistry(dst.Registry, dst.Metadata.Name)
+	dstReg, err := createRegistry(dst.Registry)
 	if err != nil {
 		t.logger.Errorf("failed to create client for destination registry: %v", err)
 		return err
@@ -107,6 +109,23 @@ func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
 		dst.Registry.Type, dst.Registry.URL, dst.Registry.Insecure)
 
 	return nil
+}
+
+// TODO handler the tokenServiceURL
+func createRegistry(reg *model.Registry, tokenServiceURL ...string) (adapter.ImageRegistry, error) {
+	factory, err := adapter.GetFactory(reg.Type)
+	if err != nil {
+		return nil, err
+	}
+	ad, err := factory(reg)
+	if err != nil {
+		return nil, err
+	}
+	registry, ok := ad.(adapter.ImageRegistry)
+	if !ok {
+		return nil, errors.New("the adapter doesn't implement the \"ImageRegistry\" interface")
+	}
+	return registry, nil
 }
 
 func (t *transfer) shouldStop() bool {

@@ -20,6 +20,14 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 )
 
+// const definition
+const (
+	FilterTypeResource = "Resource"
+	FilterTypeName     = "Name"
+	FilterTypeVersion  = "Version"
+	FilterTypeLabel    = "Label"
+)
+
 // Policy defines the structure of a replication policy
 type Policy struct {
 	ID          int64  `json:"id"`

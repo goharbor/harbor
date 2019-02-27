@@ -20,6 +20,8 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/goharbor/harbor/src/replication/ng/model"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -30,6 +32,10 @@ import (
 )
 
 type fakeRregistry struct{}
+
+func (f *fakeRregistry) FetchImages([]string, []*model.Filter) ([]*model.Resource, error) {
+	return nil, nil
+}
 
 func (f *fakeRregistry) ManifestExist(repository, reference string) (bool, string, error) {
 	return false, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil

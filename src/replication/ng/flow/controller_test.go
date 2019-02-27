@@ -15,8 +15,10 @@
 package flow
 
 import (
+	"io"
 	"testing"
 
+	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/scheduler"
@@ -158,9 +160,6 @@ func fakedAdapterFactory(*model.Registry) (adapter.Adapter, error) {
 
 type fakedAdapter struct{}
 
-func (f *fakedAdapter) Info() *adapter.Info {
-	return nil
-}
 func (f *fakedAdapter) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
 	return nil, nil
 }
@@ -170,7 +169,7 @@ func (f *fakedAdapter) CreateNamespace(*model.Namespace) error {
 func (f *fakedAdapter) GetNamespace(string) (*model.Namespace, error) {
 	return &model.Namespace{}, nil
 }
-func (f *fakedAdapter) FetchResources(namespace []string, filters []*model.Filter) ([]*model.Resource, error) {
+func (f *fakedAdapter) FetchImages(namespace []string, filters []*model.Filter) ([]*model.Resource, error) {
 	return []*model.Resource{
 		{
 			Type: model.ResourceTypeRepository,
@@ -184,11 +183,30 @@ func (f *fakedAdapter) FetchResources(namespace []string, filters []*model.Filte
 	}, nil
 }
 
+func (f *fakedAdapter) ManifestExist(repository, reference string) (exist bool, digest string, err error) {
+	return false, "", nil
+}
+func (f *fakedAdapter) PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error) {
+	return nil, "", nil
+}
+func (f *fakedAdapter) PushManifest(repository, reference, mediaType string, payload []byte) error {
+	return nil
+}
+func (f *fakedAdapter) BlobExist(repository, digest string) (exist bool, err error) {
+	return false, nil
+}
+func (f *fakedAdapter) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
+	return 0, nil, nil
+}
+func (f *fakedAdapter) PushBlob(repository, digest string, size int64, blob io.Reader) error {
+	return nil
+}
+
 func TestStartReplication(t *testing.T) {
 	err := adapter.RegisterFactory(
 		&adapter.Info{
 			Type:                   "faked_registry",
-			SupportedResourceTypes: []model.ResourceType{"image"},
+			SupportedResourceTypes: []model.ResourceType{"repository"},
 		}, fakedAdapterFactory)
 	require.Nil(t, err)
 
