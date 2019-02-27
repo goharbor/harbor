@@ -272,6 +272,12 @@ func (t *Transfer) transferLayers(tag string, blobs []distribution.Descriptor) e
 		}
 
 		digest := blob.Digest.String()
+
+		if blob.MediaType == schema2.MediaTypeForeignLayer {
+			t.logger.Infof("blob %s of %s:%s is an foreign layer, skip", digest, repository, tag)
+			continue
+		}
+
 		exist, err := t.dstRegistry.BlobExist(digest)
 		if err != nil {
 			t.logger.Errorf("an error occurred while checking existence of blob %s of %s:%s on destination registry: %v",
