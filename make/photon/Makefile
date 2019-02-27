@@ -148,7 +148,7 @@ _build_chart_server:
 	@if [ "$(CHARTFLAG)" = "true" ] ; then \
 		if [ "$(BUILDBIN)" != "true" ] ; then \
 			rm -rf $(DOCKERFILEPATH_CHART_SERVER)/binary && mkdir -p $(DOCKERFILEPATH_CHART_SERVER)/binary && \
-			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/chartm, $(DOCKERFILEPATH_CHART_SERVER)/binary/chartm); \
+			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/chartmuseum/release-$(CHARTMUSEUMVERSION)/chartm, $(DOCKERFILEPATH_CHART_SERVER)/binary/chartm); \
 		else \
 			cd $(DOCKERFILEPATH_CHART_SERVER) && $(DOCKERFILEPATH_CHART_SERVER)/builder $(GOBUILDIMAGE) $(CHART_SERVER_CODE_BASE) $(CHARTMUSEUMVERSION) $(CHART_SERVER_MAIN_PATH) $(CHART_SERVER_BIN_NAME) && cd - ; \
 		fi ; \
@@ -167,13 +167,11 @@ _build_notary:
 	@if [ "$(NOTARYFLAG)" = "true" ] ; then \
 		if [ "$(BUILDBIN)" != "true" ] ; then \
 			rm -rf $(DOCKERFILEPATH_NOTARY)/binary && mkdir -p $(DOCKERFILEPATH_NOTARY)/binary && \
-			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/release-$(NOTARYVERSION)/notary-signer, $(DOCKERFILEPATH_NOTARY)/binary/notary-signer) && \
-			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/release-$(NOTARYVERSION)/notary-server, $(DOCKERFILEPATH_NOTARY)/binary/notary-server) ; \
+			$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/release-$(NOTARYVERSION)/binary-bundle.tgz, $(DOCKERFILEPATH_NOTARY)/binary-bundle.tgz); \
+			cd $(DOCKERFILEPATH_NOTARY) && tar -zvxf binary-bundle.tgz && cd - ; \
 		else \
-			cd $(DOCKERFILEPATH_NOTARY) && $(DOCKERFILEPATH_NOTARY)/builder $(NOTARYVERSION) && cd - ; \
+			cd $(DOCKERFILEPATH_NOTARY) && $(DOCKERFILEPATH_NOTARY)/builder $(NOTARYVERSION) $(NOTARYMIGRATEVERSION) && cd - ; \
 		fi ; \
-		$(call _get_binary, https://storage.googleapis.com/harbor-builds/bin/notary/release-$(NOTARYVERSION)/notary-migrate-postgresql.tgz, $(DOCKERFILEPATH_NOTARY)/binary/notary-migrate.tgz); \
-		cd $(DOCKERFILEPATH_NOTARY)/binary && tar -zvxf notary-migrate.tgz && cd - ; \
 		echo "building notary container for photon..."; \
 		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-signer && $(DOCKERBUILD) -f $(DOCKERFILEPATH_NOTARY)/$(DOCKERFILENAME_NOTARYSIGNER) -t $(DOCKERIMAGENAME_NOTARYSIGNER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
 		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-server && $(DOCKERBUILD) -f $(DOCKERFILEPATH_NOTARY)/$(DOCKERFILENAME_NOTARYSERVER) -t $(DOCKERIMAGENAME_NOTARYSERVER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
