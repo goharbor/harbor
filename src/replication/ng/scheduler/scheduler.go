@@ -18,10 +18,27 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
-// Scheduler schedules tasks to transfer resource data
+// ScheduleItem is an item that can be scheduled
+type ScheduleItem struct {
+	TaskID      int64 // used as the param in the hook
+	SrcResource *model.Resource
+	DstResource *model.Resource
+}
+
+// ScheduleResult is the result of the schedule for one item
+type ScheduleResult struct {
+	TaskID int64
+	Error  error
+}
+
+// Scheduler schedules
 type Scheduler interface {
-	// Schedule tasks for one execution
-	Schedule([]*model.Resource, []*model.Resource) ([]*model.Task, error)
-	// Stop the task specified by ID
+	// Preprocess the resources and returns the item list that can be scheduled
+	Preprocess([]*model.Resource, []*model.Resource) ([]*ScheduleItem, error)
+	// Schedule the items. If got error when scheduling one of the items,
+	// the error should be put in the corresponding ScheduleResult and the
+	// returning error of this function should be nil
+	Schedule([]*ScheduleItem) ([]*ScheduleResult, error)
+	// Stop the job specified by ID
 	Stop(id string) error
 }

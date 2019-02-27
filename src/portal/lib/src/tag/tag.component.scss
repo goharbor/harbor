@@ -65,7 +65,8 @@
   position: relative;
   padding-left: .5rem;
   padding-right: .5rem;
-  line-height: 1.0
+  line-height: 1.0;
+  height: 1.2rem;
 }
 
 .dropdown-menu input {
@@ -227,25 +228,9 @@ hbr-image-name-input {
   position: relative;
 }
 
-.width-100 {
-  width: 100px;
-}
-
-.width-130 {
-  width: 130px;
-}
-
-.width-160 {
-  width: 160px;
-}
-
 .datagrid-top {
-  .flex-width {
-    min-width: 100px;
-    max-width: 220px;
-  }
-  .flex-min-width {
-    min-width: 130px;
+  .flex-max-width {
+    max-width: 220px
   }
 }
 

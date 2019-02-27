@@ -5,7 +5,7 @@ Resource  ../../resources/Util.robot
 
 Retag Image
     [Arguments]  ${tag}  ${projectname}  ${reponame}  ${tagname}
-    Click Element  xpath=//clr-dg-row[contains(.,"${tag}")]//label
+    Click Element  xpath=//clr-dg-row[contains(.,'${tag}')]//label
     Sleep  1
     Click Element  xpath=${retag_btn}
     Sleep  1

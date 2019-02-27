@@ -71,6 +71,9 @@ type GCRep struct {
 
 // Valid validates the gc request
 func (gr *GCReq) Valid(v *validation.Validation) {
+	if gr.Schedule == nil {
+		return
+	}
 	switch gr.Schedule.Type {
 	case ScheduleDaily, ScheduleWeekly:
 		if gr.Schedule.Offtime < 0 || gr.Schedule.Offtime > 3600*24 {

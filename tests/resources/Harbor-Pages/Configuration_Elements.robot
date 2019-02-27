@@ -17,15 +17,15 @@ Documentation  This resource provides any keywords related to the Harbor private
 
 *** Variables ***
 ${project_create_xpath}  //clr-dg-action-bar//button[contains(.,'New')]
-${self_reg_xpath}  //input[@id="selfReg"]
-${test_ldap_xpath}  //*[@id="authentication"]/config-auth/div/button[3]
+${self_reg_xpath}  //input[@id='selfReg']
+${test_ldap_xpath}  //*[@id='authentication']/config-auth/div/button[3]
 ${config_save_button_xpath}  //config//div/button[contains(.,'SAVE')]
-${config_email_save_button_xpath}  //*[@id="config_email_save"]
-${config_auth_save_button_xpath}  //*[@id="config_auth_save"]
-${config_system_save_button_xpath}  //*[@id="config_system_save"]
-${vulnerbility_save_button_xpath}  //*[@id="config_vulnerbility_save"]
+${config_email_save_button_xpath}  //*[@id='config_email_save']
+${config_auth_save_button_xpath}  //*[@id='config_auth_save']
+${config_system_save_button_xpath}  //*[@id='config_system_save']
+${vulnerbility_save_button_xpath}  //*[@id='config_vulnerbility_save']
 ${configuration_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Configuration')]
-${system_config_xpath}  //*[@id="config-system"]
-${garbage_collection_xpath}  //*[@id="config-gc"]
-${gc_now_xpath}  //*[@id="gc"]/gc-config/button
-${gc_log_details_xpath}  //*[@id="clr-dg-row26"]/clr-dg-cell[6]/a
+${system_config_xpath}  //*[@id='config-system']
+${garbage_collection_xpath}  //*[@id='config-gc']
+${gc_now_xpath}  //*[@id='gc']/gc-config/button
+${gc_log_details_xpath}  //*[@id='clr-dg-row26']/clr-dg-cell[6]/a

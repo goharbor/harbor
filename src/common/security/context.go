@@ -16,6 +16,7 @@ package security
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 )
 
 // Context abstracts the operations related with authN and authZ
@@ -28,14 +29,10 @@ type Context interface {
 	IsSysAdmin() bool
 	// IsSolutionUser returns whether the user is solution user
 	IsSolutionUser() bool
-	// HasReadPerm returns whether the user has read permission to the project
-	HasReadPerm(projectIDOrName interface{}) bool
-	// HasWritePerm returns whether the user has write permission to the project
-	HasWritePerm(projectIDOrName interface{}) bool
-	// HasAllPerm returns whether the user has all permissions to the project
-	HasAllPerm(projectIDOrName interface{}) bool
 	// Get current user's all project
 	GetMyProjects() ([]*models.Project, error)
 	// Get user's role in provided project
 	GetProjectRoles(projectIDOrName interface{}) []int
+	// Can returns whether the user can do action on resource
+	Can(action rbac.Action, resource rbac.Resource) bool
 }

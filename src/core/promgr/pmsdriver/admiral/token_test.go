@@ -16,11 +16,11 @@ package admiral
 
 import (
 	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"os"
 )
 
 func TestRawTokenReader(t *testing.T) {
@@ -46,7 +46,7 @@ func TestFileTokenReader(t *testing.T) {
 
 	// file exist
 	path = "/tmp/exist_file"
-	err = ioutil.WriteFile(path, []byte("token"), 0x0666)
+	err = ioutil.WriteFile(path, []byte("token"), 0x0766)
 	require.Nil(t, err)
 	defer os.Remove(path)
 

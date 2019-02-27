@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ram
+package rbac
 
 import (
+	"errors"
+	"fmt"
 	"path"
+	"strings"
 )
 
 const (
@@ -27,6 +30,27 @@ const (
 
 // Resource the type of resource
 type Resource string
+
+// RelativeTo returns relative resource to other resource
+func (res Resource) RelativeTo(other Resource) (Resource, error) {
+	prefix := other.String()
+	str := res.String()
+
+	if !strings.HasPrefix(str, prefix) {
+		return Resource(""), errors.New("value error")
+	}
+
+	relative := strings.TrimPrefix(str, prefix)
+	if strings.HasPrefix(relative, "/") {
+		relative = relative[1:]
+	}
+
+	if relative == "" {
+		relative = "."
+	}
+
+	return Resource(relative), nil
+}
 
 func (res Resource) String() string {
 	return string(res)
@@ -41,6 +65,18 @@ func (res Resource) Subresource(resources ...Resource) Resource {
 	}
 
 	return Resource(path.Join(elements...))
+}
+
+// GetNamespace returns namespace from resource
+func (res Resource) GetNamespace() (Namespace, error) {
+	for _, parser := range namespaceParsers {
+		namespace, err := parser(res)
+		if err == nil {
+			return namespace, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no namespace found for %s", res)
 }
 
 // Action the type of action
@@ -74,14 +110,14 @@ func (p *Policy) GetEffect() string {
 	return eft.String()
 }
 
-// Role the interface of ram role
+// Role the interface of rbac role
 type Role interface {
 	// GetRoleName returns the role identity, if empty string role's policies will be ignore
 	GetRoleName() string
 	GetPolicies() []*Policy
 }
 
-// User the interface of ram user
+// User the interface of rbac user
 type User interface {
 	// GetUserName returns the user identity, if empty string user's all policies will be ignore
 	GetUserName() string

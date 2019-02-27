@@ -29,6 +29,8 @@ var (
 	ErrInvalidData = errors.New("the data provided is invalid")
 	// ErrValueNotSet ...
 	ErrValueNotSet = errors.New("the configure value is not set")
+	// ErrStringValueIsEmpty ...
+	ErrStringValueIsEmpty = errors.New("the configure value can not be empty")
 )
 
 // ConfigureValue - struct to hold a actual value, also include the name of config metadata.
@@ -124,6 +126,14 @@ func (c *ConfigureValue) GetStringToStringMap() map[string]string {
 	}
 	log.Errorf("GetStringToStringMap failed, current value's metadata is not defined, %+v", c)
 	return result
+}
+
+// GetAnyType get the interface{} of current value
+func (c *ConfigureValue) GetAnyType() (interface{}, error) {
+	if item, ok := Instance().GetByName(c.Name); ok {
+		return item.ItemType.get(c.Value)
+	}
+	return nil, ErrNotDefined
 }
 
 // Validate - to validate configure items, if passed, return nil, else return error

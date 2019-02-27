@@ -23,7 +23,7 @@ type Manager interface {
 	// Create a new execution
 	Create(*model.Execution) (int64, error)
 	// List the summaries of executions
-	List(*model.ExecutionQuery) (int64, []*model.Execution, error)
+	List(...*model.ExecutionQuery) (int64, []*model.Execution, error)
 	// Get the specified execution
 	Get(int64) (*model.Execution, error)
 	// Update the data of the specified execution, the "props" are the
@@ -36,12 +36,17 @@ type Manager interface {
 	// Create a task
 	CreateTask(*model.Task) (int64, error)
 	// List the tasks according to the query
-	ListTasks(*model.TaskQuery) (int64, []*model.Task, error)
+	ListTasks(...*model.TaskQuery) (int64, []*model.Task, error)
 	// Get one specified task
 	GetTask(int64) (*model.Task, error)
 	// Update the task, the "props" are the properties of task
-	// that need to be updated
+	// that need to be updated, it cannot include "status". If
+	// you want to update the status, use "UpdateTaskStatus" instead
 	UpdateTask(task *model.Task, props ...string) error
+	// UpdateTaskStatus only updates the task status. If "statusCondition"
+	// presents, only the tasks whose status equal to "statusCondition"
+	// will be updated
+	UpdateTaskStatus(taskID int64, status string, statusCondition ...string) error
 	// Remove one task specified by task ID
 	RemoveTask(int64) error
 	// Remove all tasks of one execution specified by the execution ID

@@ -24,15 +24,27 @@ class DockerAPI(object):
             _tag = tag
         else:
             _tag = "latest"
+        if expected_error_message is "":
+            expected_error_message = None
+        caught_err = False
+        ret = ""
         try:
-            base._get_string_from_unicode(self.DCLIENT.pull(r'{}:{}'.format(image, _tag)))
+            ret = base._get_string_from_unicode(self.DCLIENT.pull(r'{}:{}'.format(image, _tag)))
         except Exception, err:
+            caught_err = True
             if expected_error_message is not None:
                 print "docker image pull error:", str(err)
                 if str(err).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r"Pull image: Return message {} is not as expected {}".format(return_message, expected_error_message))
+                    raise Exception(r"Pull image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
-                raise Exception(r" Docker pull image {} failed, error is [{}]".format (image, e.message))
+                raise Exception(r" Docker pull image {} failed, error is [{}]".format (image, err.message))
+        if caught_err == False:
+            if expected_error_message is not None:
+                if str(ret).lower().find(expected_error_message.lower()) < 0:
+                    raise Exception(r" Failed to catch error [{}] when pull image {}".format (expected_error_message, image))
+            else:
+                if str(ret).lower().find("error".lower()) >= 0:
+                    raise Exception(r" It's was not suppose to catch error when pull image {}, return message is [{}]".format (image, ret))
 
     def docker_image_tag(self, image, harbor_registry, tag = None):
         _tag = base._random_name("tag")
@@ -44,8 +56,25 @@ class DockerAPI(object):
         except docker.errors.APIError, e:
             raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, e.message))
 
-    def docker_image_push(self, harbor_registry, tag):
+    def docker_image_push(self, harbor_registry, tag, expected_error_message = None):
+        caught_err = False
+        ret = ""
+        if expected_error_message is "":
+            expected_error_message = None
         try:
-            base._get_string_from_unicode(self.DCLIENT.push(harbor_registry, tag, stream=True))
-        except docker.errors.APIError, e:
-            raise Exception(r" Docker tag image {} failed, error is [{}]".format (image, e.message))
+            ret = base._get_string_from_unicode(self.DCLIENT.push(harbor_registry, tag, stream=True))
+        except Exception, err:
+            caught_err = True
+            if expected_error_message is not None:
+                print "docker image push error:", str(err)
+                if str(err).lower().find(expected_error_message.lower()) < 0:
+                    raise Exception(r"Push image: Return message {} is not as expected {}".format(str(err), expected_error_message))
+            else:
+                raise Exception(r" Docker push image {} failed, error is [{}]".format (harbor_registry, err.message))
+        if caught_err == False:
+            if expected_error_message is not None:
+                if str(ret).lower().find(expected_error_message.lower()) < 0:
+                    raise Exception(r" Failed to catch error [{}] when push image {}".format (expected_error_message, harbor_registry))
+            else:
+                if str(ret).lower().find("errorDetail".lower()) >= 0:
+                    raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))

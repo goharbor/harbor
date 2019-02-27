@@ -20,16 +20,21 @@ import { ChannelService } from "../channel/index";
 import { CopyInputComponent } from "../push-image/copy-input.component";
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { LabelDefaultService, LabelService } from "../service/label.service";
+import { UserPermissionService, UserPermissionDefaultService } from "../service/permission.service";
+import { USERSTATICPERMISSION } from "../service/permission-static";
 import { OperationService } from "../operation/operation.service";
+import { Observable, of } from "rxjs";
 
 describe("TagComponent (inline template)", () => {
 
   let comp: TagComponent;
   let fixture: ComponentFixture<TagComponent>;
   let tagService: TagService;
+  let userPermissionService: UserPermissionService;
   let spy: jasmine.Spy;
   let spyLabels: jasmine.Spy;
   let spyLabels1: jasmine.Spy;
+
   let mockTags: Tag[] = [
     {
       "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
@@ -95,7 +100,10 @@ describe("TagComponent (inline template)", () => {
   let config: IServiceConfig = {
     repositoryBaseEndpoint: "/api/repositories/testing"
   };
-
+  let mockHasAddLabelImagePermission: boolean = true;
+  let mockHasRetagImagePermission: boolean = true;
+  let mockHasDeleteImagePermission: boolean = true;
+  let mockHasScanImagePermission: boolean = true;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -119,6 +127,7 @@ describe("TagComponent (inline template)", () => {
         { provide: RetagService, useClass: RetagDefaultService },
         { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         { provide: LabelService, useClass: LabelDefaultService },
+        { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         { provide: OperationService }
       ]
     });
@@ -130,10 +139,12 @@ describe("TagComponent (inline template)", () => {
 
     comp.projectId = 1;
     comp.repoName = "library/nginx";
-    comp.hasProjectAdminRole = true;
+    comp.hasDeleteImagePermission = true;
+    comp.hasScanImagePermission = true;
     comp.hasSignedIn = true;
     comp.registryUrl = "http://registry.testing.com";
     comp.withNotary = false;
+    comp.withAdmiral = false;
 
 
     let labelService: LabelService;
@@ -141,21 +152,30 @@ describe("TagComponent (inline template)", () => {
 
     tagService = fixture.debugElement.injector.get(TagService);
     spy = spyOn(tagService, "getTags").and.returnValues(Promise.resolve(mockTags));
+    userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
+
+    spyOn(userPermissionService, "getPermission")
+    .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE )
+    .and.returnValue(of(mockHasAddLabelImagePermission))
+     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL )
+     .and.returnValue(of(mockHasRetagImagePermission))
+     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE )
+     .and.returnValue(of(mockHasDeleteImagePermission))
+     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE)
+     .and.returnValue(of(mockHasScanImagePermission));
 
     labelService = fixture.debugElement.injector.get(LabelService);
 
     spyLabels = spyOn(labelService, "getGLabels").and.returnValues(Promise.resolve(mockLabels));
-    spyLabels1 = spyOn(labelService, "getPLabels").and.returnValues(Promise.resolve(mockLabels1));
+    spyLabels1 = spyOn(labelService, "getPLabels").withArgs(comp.projectId).and.returnValues(Promise.resolve(mockLabels1));
 
     fixture.detectChanges();
   });
-
   it("should load data", async(() => {
     expect(spy.calls.any).toBeTruthy();
   }));
 
-  // fail after upgrade to angular 6.
-  xit("should load and render data", async(() => {
+  it("should load and render data", () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -166,6 +186,8 @@ describe("TagComponent (inline template)", () => {
       expect(el).toBeTruthy();
       expect(el.textContent.trim()).toEqual("1.11.5");
     });
-  }));
+  });
 
 });
+
+

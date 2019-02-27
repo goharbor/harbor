@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/stretchr/testify/assert"
 )
@@ -96,9 +97,11 @@ func TestIsSolutionUser(t *testing.T) {
 }
 
 func TestHasReadPerm(t *testing.T) {
+	readAction := rbac.Action("pull")
+	resource := rbac.Resource("/project/project_name/repository")
 	// secret store is null
 	context := NewSecurityContext("", nil)
-	hasReadPerm := context.HasReadPerm("project_name")
+	hasReadPerm := context.Can(readAction, resource)
 	assert.False(t, hasReadPerm)
 
 	// invalid secret
@@ -106,7 +109,7 @@ func TestHasReadPerm(t *testing.T) {
 		secret.NewStore(map[string]string{
 			"jobservice_secret": secret.JobserviceUser,
 		}))
-	hasReadPerm = context.HasReadPerm("project_name")
+	hasReadPerm = context.Can(readAction, resource)
 	assert.False(t, hasReadPerm)
 
 	// valid secret, project name
@@ -114,11 +117,12 @@ func TestHasReadPerm(t *testing.T) {
 		secret.NewStore(map[string]string{
 			"jobservice_secret": secret.JobserviceUser,
 		}))
-	hasReadPerm = context.HasReadPerm("project_name")
+	hasReadPerm = context.Can(readAction, resource)
 	assert.True(t, hasReadPerm)
 
 	// valid secret, project ID
-	hasReadPerm = context.HasReadPerm(1)
+	resource = rbac.Resource("/project/1/repository")
+	hasReadPerm = context.Can(readAction, resource)
 	assert.True(t, hasReadPerm)
 }
 
@@ -128,12 +132,16 @@ func TestHasWritePerm(t *testing.T) {
 			"secret": "username",
 		}))
 
+	writeAction := rbac.Action("push")
+
 	// project name
-	hasWritePerm := context.HasWritePerm("project_name")
+	resource := rbac.Resource("/project/project_name/repository")
+	hasWritePerm := context.Can(writeAction, resource)
 	assert.False(t, hasWritePerm)
 
 	// project ID
-	hasWritePerm = context.HasWritePerm(1)
+	resource = rbac.Resource("/project/1/repository")
+	hasWritePerm = context.Can(writeAction, resource)
 	assert.False(t, hasWritePerm)
 }
 
@@ -143,12 +151,16 @@ func TestHasAllPerm(t *testing.T) {
 			"secret": "username",
 		}))
 
+	allAction := rbac.Action("push+pull")
+
 	// project name
-	hasAllPerm := context.HasAllPerm("project_name")
+	resource := rbac.Resource("/project/project_name/repository")
+	hasAllPerm := context.Can(allAction, resource)
 	assert.False(t, hasAllPerm)
 
 	// project ID
-	hasAllPerm = context.HasAllPerm(1)
+	resource = rbac.Resource("/project/1/repository")
+	hasAllPerm = context.Can(allAction, resource)
 	assert.False(t, hasAllPerm)
 }
 

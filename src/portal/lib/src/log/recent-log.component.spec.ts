@@ -177,7 +177,7 @@ describe('RecentLogComponent (inline template)', () => {
     });
   }));
 
-  xit('should support refreshing', async(() => {
+  it('should support refreshing', async(() => {
     fixture.detectChanges();
 
     fixture.whenStable().then(() => {

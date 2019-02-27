@@ -7,7 +7,6 @@ import { SharedModule } from '../shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { RepositoryComponent } from './repository.component';
-import { RepositoryGridviewComponent } from '../repository-gridview/repository-gridview.component';
 import { GridViewComponent } from '../gridview/grid-view.component';
 import { FilterComponent } from '../filter/filter.component';
 import { TagComponent } from '../tag/tag.component';
@@ -27,6 +26,9 @@ import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { LabelDefaultService, LabelService } from "../service/label.service";
 import { OperationService } from "../operation/operation.service";
 import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagService } from "../service";
+import { UserPermissionDefaultService, UserPermissionService } from "../service/permission.service";
+import { USERSTATICPERMISSION } from "../service/permission-static";
+import { of } from "rxjs";
 
 
 class RouterStub {
@@ -39,6 +41,7 @@ describe('RepositoryComponent (inline template)', () => {
   let fixture: ComponentFixture<RepositoryComponent>;
   let repositoryService: RepositoryService;
   let systemInfoService: SystemInfoService;
+  let userPermissionService: UserPermissionService;
   let tagService: TagService;
   let labelService: LabelService;
 
@@ -149,7 +152,10 @@ describe('RepositoryComponent (inline template)', () => {
     systemInfoEndpoint: '/api/systeminfo/testing',
     targetBaseEndpoint: '/api/tag/testing'
   };
-
+  let mockHasAddLabelImagePermission: boolean = true;
+  let mockHasRetagImagePermission: boolean = true;
+  let mockHasDeleteImagePermission: boolean = true;
+  let mockHasScanImagePermission: boolean = true;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -159,7 +165,6 @@ describe('RepositoryComponent (inline template)', () => {
       declarations: [
         RepositoryComponent,
         GridViewComponent,
-        RepositoryGridviewComponent,
         ConfirmationDialogComponent,
         ImageNameInputComponent,
         FilterComponent,
@@ -178,6 +183,7 @@ describe('RepositoryComponent (inline template)', () => {
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: RetagService, useClass: RetagDefaultService },
         { provide: LabelService, useClass: LabelDefaultService},
+        { provide: UserPermissionService, useClass: UserPermissionDefaultService},
         { provide: ChannelService},
         { provide: OperationService }
       ]
@@ -195,6 +201,7 @@ describe('RepositoryComponent (inline template)', () => {
     repositoryService = fixture.debugElement.injector.get(RepositoryService);
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
     tagService = fixture.debugElement.injector.get(TagService);
+    userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     labelService = fixture.debugElement.injector.get(LabelService);
 
     spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepo));
@@ -203,24 +210,42 @@ describe('RepositoryComponent (inline template)', () => {
 
     spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(Promise.resolve(mockLabels));
     spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(Promise.resolve(mockLabels1));
+    spyOn(userPermissionService, "getPermission")
+    .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE )
+    .and.returnValue(of(mockHasAddLabelImagePermission))
+     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL )
+     .and.returnValue(of(mockHasRetagImagePermission))
+     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE )
+     .and.returnValue(of(mockHasDeleteImagePermission))
+     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY
+      , USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE)
+     .and.returnValue(of(mockHasScanImagePermission));
     fixture.detectChanges();
   });
+  let originalTimeout;
 
+  beforeEach(function () {
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
+  });
+
+  afterEach(function () {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+  });
   it('should create', () => {
     expect(compRepo).toBeTruthy();
   });
 
-  // fail after upgrade to angular 6.
-  xit('should load and render data', async(() => {
+  it('should load and render data', async(() => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-      let de: DebugElement = fixture.debugElement.query(By.css('datagrid-cell'));
+      let de: DebugElement = fixture.debugElement.query(del => del.classes['datagrid-cell']);
       fixture.detectChanges();
       expect(de).toBeTruthy();
       let el: HTMLElement = de.nativeElement;
       expect(el).toBeTruthy();
-      expect(el.textContent).toEqual('library/busybox');
+      expect(el.textContent).toEqual('1.11.5');
     });
   }));
 });

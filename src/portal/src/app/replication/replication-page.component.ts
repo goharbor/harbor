@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
-import { ReplicationComponent } from '@harbor/ui';
-
-import {SessionService} from "../shared/session.service";
-import {Project} from "../project/project";
-import {ProjectService} from "../project/project.service";
+import { SessionService } from "../shared/session.service";
+import { Project } from "../project/project";
+import { ProjectService } from "../project/project.service";
+import { ReplicationComponent, UserPermissionService, USERSTATICPERMISSION, ErrorHandler } from "@harbor/ui";
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'replication',
@@ -28,25 +28,30 @@ export class ReplicationPageComponent implements OnInit, AfterViewInit {
   projectIdentify: string | number;
   @ViewChild("replicationView") replicationView: ReplicationComponent;
   projectName: string;
-
+  hasCreateReplicationPermission: boolean;
+  hasUpdateReplicationPermission: boolean;
+  hasDeleteReplicationPermission: boolean;
+  hasExecuteReplicationPermission: boolean;
   constructor(private route: ActivatedRoute,
-              private router: Router,
-              private proService: ProjectService,
-              private session: SessionService) { }
+    private router: Router,
+    private proService: ProjectService,
+    private userPermissionService: UserPermissionService,
+    private errorHandler: ErrorHandler,
+    private session: SessionService) { }
 
   ngOnInit(): void {
     this.projectIdentify = +this.route.snapshot.parent.params['id'];
-
+    this.getReplicationPermissions(this.projectIdentify);
     this.proService.listProjects("", undefined).toPromise()
-        .then(response => {
-          let projects = response.json() as Project[];
-          if (projects.length) {
-            let project = projects.find(data => data.project_id === this.projectIdentify);
-            if (project) {
-              this.projectName = project.name;
-            }
+      .then(response => {
+        let projects = response.json() as Project[];
+        if (projects.length) {
+          let project = projects.find(data => data.project_id === this.projectIdentify);
+          if (project) {
+            this.projectName = project.name;
           }
-        });
+        }
+      });
   }
 
   public get isSystemAdmin(): boolean {
@@ -65,5 +70,25 @@ export class ReplicationPageComponent implements OnInit, AfterViewInit {
 
   goRegistry(): void {
     this.router.navigate(['/harbor', 'registries']);
+  }
+
+  getReplicationPermissions(projectId: number): void {
+
+    let permissionsCreate = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.REPLICATION.KEY, USERSTATICPERMISSION.REPLICATION.VALUE.CREATE);
+    let permissionsUpdate = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.REPLICATION.KEY, USERSTATICPERMISSION.REPLICATION.VALUE.UPDATE);
+    let permissionsDelete = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.REPLICATION.KEY, USERSTATICPERMISSION.REPLICATION.VALUE.DELETE);
+    let permissionsExecute = this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.REPLICATION_JOB.KEY, USERSTATICPERMISSION.REPLICATION_JOB.VALUE.CREATE);
+    forkJoin(permissionsCreate, permissionsUpdate, permissionsDelete, permissionsExecute).subscribe(permissions => {
+      this.hasCreateReplicationPermission = permissions[0] as boolean;
+      this.hasUpdateReplicationPermission = permissions[1] as boolean;
+      this.hasDeleteReplicationPermission = permissions[2] as boolean;
+      this.hasExecuteReplicationPermission = permissions[3] as boolean;
+    }, error => {
+      this.errorHandler.error(error);
+    });
   }
 }

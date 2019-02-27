@@ -193,7 +193,8 @@
         "LABELS": "标签",
         "PROJECTS": "项目",
         "CONFIG": "配置管理",
-        "HELMCHART": "Helm Charts"
+        "HELMCHART": "Helm Charts",
+        "ROBOT_ACCOUNTS": "机器人账户"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "项目仓库",
@@ -218,6 +219,7 @@
         "ROLE": "角色",
         "SYS_ADMIN": "系统管理员",
         "PROJECT_ADMIN": "项目管理员",
+        "PROJECT_MASTER": "维护人员",
         "DEVELOPER": "开发人员",
         "GUEST": "访客",
         "DELETE": "删除",
@@ -256,6 +258,31 @@
         "SWITCH_SUMMARY": "你确认切换项目成员 {{param}}??",
         "SET_ROLE": "设置角色",
         "REMOVE": "移除成员"
+    },
+    "ROBOT_ACCOUNT": {
+        "NAME": "姓名",
+        "TOKEN": "令牌",
+        "NEW_ROBOT_ACCOUNT": "添加机器人账户",
+        "ENABLED_STATE": "启用状态",
+        "DESCRIPTION": "描述",
+        "ACTION": "操作",
+        "EDIT": "编辑",
+        "OF": "共计",
+        "ITEMS": "条记录",
+        "DISABLE_ACCOUNT": "禁用账户",
+        "ENABLE_ACCOUNT": "启用账户",
+        "DELETE": "删除",
+        "CREAT_ROBOT_ACCOUNT": "创建机器人账户",
+        "PULL_PERMISSION": "Pull 权限",
+        "PUSH_PERMISSION": "Push 权限",
+        "FILTER_PLACEHOLDER": "过滤机器人账户",
+        "ROBOT_NAME": "不能包含特殊字符(~#$%)且长度不能超过255.",
+        "ACCOUNT_EXISTING": "机器人账户已经存在.",
+        "ALERT_TEXT": "这是唯一一次复制您的个人访问令牌的机会",
+        "CREATED_SUCCESS": "创建账户 '{{param}}' 成功.",
+        "COPY_SUCCESS": "成功复制 '{{param}}' 的令牌",
+        "DELETION_TITLE": "删除账户确认",
+        "DELETION_SUMMARY": "你确认删除机器人账户 {{param}}?"
     },
     "GROUP": {
         "GROUP": "组",
@@ -800,6 +827,7 @@
         "DELETE_REPO": "删除仓库",
         "DELETE_TAG": "删除镜像标签",
         "DELETE_USER": "删除用户",
+        "DELETE_ROBOT": "删除账户",
         "DELETE_REGISTRY": "删除Registry",
         "DELETE_REPLICATION": "删除复制",
         "DELETE_MEMBER": "删除用户成员",

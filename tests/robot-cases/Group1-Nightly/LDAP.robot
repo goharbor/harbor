@@ -45,7 +45,7 @@ Test Case - System Admin On-board New Member
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To User Tag
     Page Should Not Contain  mike02
-    Back To Projects
+    Navigate To Projects
     Create An New Project  project${d}
     Go Into Project  project${d}  has_image=${false}
     Switch To Member

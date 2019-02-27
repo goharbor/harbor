@@ -106,7 +106,7 @@ func CommonDelTarget() {
 
 func CommonAddRepository() {
 	commonRepository := &models.RepoRecord{
-		RepositoryID: 1,
+		RepositoryID: 31,
 		Name:         TestRepoName,
 		ProjectID:    1,
 		PullCount:    1,

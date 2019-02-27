@@ -136,10 +136,10 @@ class System(base.Base):
 
     def validate_deletion_success(self, gc_id, **kwargs):
         log_content = self.get_gc_log_by_id(gc_id, **kwargs)
-        key_message = "blobs eligible for deletion"
+        key_message = "manifests eligible for deletion"
         key_message_pos = log_content.find(key_message)
         full_message = log_content[key_message_pos-30 : key_message_pos + len(key_message)]
-        deleted_files_count_list = re.findall(r'\s+(\d+)\s+blobs eligible for deletion', full_message)
+        deleted_files_count_list = re.findall(r'\s+(\d+)\s+blobs\s+and\s+\d+\s+manifests\s+eligible\s+for\s+deletion', full_message)
 
         if len(deleted_files_count_list) != 1:
             raise Exception(r"Fail to get blobs eligible for deletion in log file, failure is {}.".format(len(deleted_files_count_list)))

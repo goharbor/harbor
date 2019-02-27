@@ -119,8 +119,8 @@ export class Trigger {
   schedule_param:
     | any
     | {
-        [key: string]: any | any[];
-      };
+      [key: string]: any | any[];
+    };
   constructor(kind: string, param: any | { [key: string]: any | any[] }) {
     this.kind = kind;
     this.schedule_param = param;
@@ -395,8 +395,8 @@ export interface HelmChartSignature {
  * interface Manifest
  */
 export interface Manifest {
-    manifset: Object;
-    config: string;
+  manifset: Object;
+  config: string;
 }
 
 export interface RetagRequest {
@@ -426,10 +426,23 @@ export interface ClrDatagridFilterInterface<T> {
 }
 
 /** @deprecated since 0.11 */
-export interface Comparator<T> extends ClrDatagridComparatorInterface<T> {}
+export interface Comparator<T> extends ClrDatagridComparatorInterface<T> { }
 /** @deprecated since 0.11 */
-export interface ClrFilter<T> extends ClrDatagridFilterInterface<T> {}
+export interface ClrFilter<T> extends ClrDatagridFilterInterface<T> { }
 /** @deprecated since 0.11 */
-export interface State extends ClrDatagridStateInterface {}
-export interface Modal extends ClrModal {}
+export interface State extends ClrDatagridStateInterface { }
+export interface Modal extends ClrModal { }
 export const Modal = ClrModal;
+
+/**
+ * The access user privilege from serve.
+ *
+ **
+ * interface UserPrivilegeServe
+ */
+export interface UserPrivilegeServeItem {
+  [key: string]: any | any[];
+  resource: string;
+  action: string;
+}
+

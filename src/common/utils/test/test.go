@@ -21,7 +21,11 @@ import (
 	"net/http/httptest"
 	"strings"
 
+	"fmt"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/gorilla/mux"
+	"os"
+	"sort"
 )
 
 // RequestHandlerMapping is a mapping between request and its handler
@@ -86,4 +90,55 @@ func NewServer(mappings ...*RequestHandlerMapping) *httptest.Server {
 	}
 
 	return httptest.NewServer(r)
+}
+
+// GetUnitTestConfig ...
+func GetUnitTestConfig() map[string]interface{} {
+	ipAddress := os.Getenv("IP")
+	return map[string]interface{}{
+		common.ExtEndpoint:            fmt.Sprintf("https://%s", ipAddress),
+		common.AUTHMode:               "db_auth",
+		common.DatabaseType:           "postgresql",
+		common.PostGreSQLHOST:         ipAddress,
+		common.PostGreSQLPort:         5432,
+		common.PostGreSQLUsername:     "postgres",
+		common.PostGreSQLPassword:     "root123",
+		common.PostGreSQLDatabase:     "registry",
+		common.LDAPURL:                "ldap://ldap.vmware.com",
+		common.LDAPSearchDN:           "cn=admin,dc=example,dc=com",
+		common.LDAPSearchPwd:          "admin",
+		common.LDAPBaseDN:             "dc=example,dc=com",
+		common.LDAPUID:                "uid",
+		common.LDAPFilter:             "",
+		common.LDAPScope:              2,
+		common.LDAPTimeout:            30,
+		common.LDAPVerifyCert:         true,
+		common.UAAVerifyCert:          true,
+		common.ClairDBHost:            "postgresql",
+		common.CfgExpiration:          5,
+		common.AdminInitialPassword:   "Harbor12345",
+		common.LDAPGroupSearchFilter:  "objectclass=groupOfNames",
+		common.LDAPGroupBaseDN:        "dc=example,dc=com",
+		common.LDAPGroupAttributeName: "cn",
+		common.LDAPGroupSearchScope:   2,
+		common.LdapGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
+		common.WithNotary:             "false",
+		common.WithChartMuseum:        "false",
+		common.SelfRegistration:       "true",
+		common.WithClair:              "false",
+		common.TokenServiceURL:        "http://core:8080/service/token",
+		common.RegistryURL:            fmt.Sprintf("http://%s:5000", ipAddress),
+	}
+}
+
+// TraceCfgMap ...
+func TraceCfgMap(cfgs map[string]interface{}) {
+	var keys []string
+	for k := range cfgs {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		fmt.Printf("%v=%v\n", k, cfgs[k])
+	}
 }

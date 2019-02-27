@@ -11,11 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package service
+
+// Package ng ...
+// TODO rename the package name after removing ng
+package ng
 
 import (
 	"testing"
+	// "github.com/stretchr/testify/assert"
+	// "github.com/stretchr/testify/require"
 )
 
-func TestMain(m *testing.M) {
+func TestInit(t *testing.T) {
+	// TODO add testing code
+	// err := Init()
+	// require.Nil(t, err)
+	// assert.NotNil(t, OperationCtl)
+	// TODO add check for RegistryMgr and ExecutionMgr
 }

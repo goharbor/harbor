@@ -12,7 +12,8 @@ $size60:60px;
     .toolbar {
         overflow: hidden;
         .rightPos {
-            @include grid-left-top-pos;
+            @include grid-right-top-pos;
+            margin-top: 20px;
             .filter-divider {
                 display: inline-block;
                 height: 16px;
@@ -30,7 +31,7 @@ $size60:60px;
 }
 
 .card-container {
-    margin-top: 21px;
+    margin-top: 40px;
     .chart-card {
         width: 200px;
         margin: 10px;

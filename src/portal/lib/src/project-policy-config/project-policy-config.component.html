@@ -5,7 +5,7 @@
       <div class="form-content" id="clr-wrapper-public">
         <clr-checkbox-wrapper>
           <input type="checkbox" id="clr-checkbox-wrapper-public" clrCheckbox [(ngModel)]="projectPolicy.Public" name="public"
-            [disabled]="!hasProjectAdminRole" />
+            [disabled]="!hasChangeConfigRole" />
           <label for="clr-checkbox-wrapper-public">{{ 'PROJECT_CONFIG.PUBLIC_TOGGLE' | translate }}</label>
         </clr-checkbox-wrapper>
 
@@ -19,7 +19,7 @@
       <div class="form-content">
         <div *ngIf="withNotary">
           <clr-checkbox-wrapper>
-            <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ContentTrust" name="content-trust" [disabled]="!hasProjectAdminRole" />
+            <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ContentTrust" name="content-trust" [disabled]="!hasChangeConfigRole" />
             <label>{{ 'PROJECT_CONFIG.CONTENT_TRUST_TOGGLE' | translate }}</label>
           </clr-checkbox-wrapper>
 
@@ -28,7 +28,7 @@
         <div *ngIf="withClair" id="prevent-vulenrability-image">
           <clr-checkbox-wrapper>
             <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.PreventVulImg" name="prevent-vulenrability-image-input"
-              [disabled]="!hasProjectAdminRole" />
+              [disabled]="!hasChangeConfigRole" />
             <label>{{ 'PROJECT_CONFIG.PREVENT_VULNERABLE_TOGGLE' | translate }}</label>
           </clr-checkbox-wrapper>
 
@@ -52,16 +52,16 @@
       <label for="projectPolicyForm">{{ 'PROJECT_CONFIG.SCAN' | translate }}</label>
       <div class="form-content">
         <clr-checkbox-wrapper id="scan-image-on-push-wrapper">
-          <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ScanImgOnPush" [disabled]="!hasProjectAdminRole"
+          <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ScanImgOnPush" [disabled]="!hasChangeConfigRole"
             name="scan-image-on-push" />
           <label>{{ 'PROJECT_CONFIG.AUTOSCAN_TOGGLE' | translate }}</label>
         </clr-checkbox-wrapper>
         <div class="chk-explain"><label> {{ 'PROJECT_CONFIG.AUTOSCAN_POLICY' | translate }}</label></div>
       </div>
     </div>
-    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges() || !hasProjectAdminRole">{{'BUTTON.SAVE'
+    <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges() || !hasChangeConfigRole">{{'BUTTON.SAVE'
       | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges() || !hasProjectAdminRole">{{'BUTTON.CANCEL'
+    <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges() || !hasChangeConfigRole">{{'BUTTON.CANCEL'
       | translate}}</button>
     <confirmation-dialog #cfgConfirmationDialog (confirmAction)="confirmCancel($event)"></confirmation-dialog>
   </section>

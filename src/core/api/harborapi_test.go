@@ -27,20 +27,20 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils"
+	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
+
 	//	"strconv"
 	//	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
 
-	// for test env prepare
+	"github.com/goharbor/harbor/src/common/dao"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/replication/core"
@@ -78,14 +78,14 @@ type usrInfo struct {
 }
 
 func init() {
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
-	database, err := config.Database()
-	if err != nil {
-		log.Fatalf("failed to get database configurations: %v", err)
-	}
-	dao.InitDatabase(database)
+	config.Init()
+	testutils.InitDatabaseFromEnv()
+	dao.PrepareTestData([]string{"delete from harbor_user where user_id >2", "delete from project where owner_id >2"}, []string{})
+	config.Upload(testutils.GetUnitTestConfig())
+
+	allCfgs, _ := config.GetSystemCfg()
+	testutils.TraceCfgMap(allCfgs)
+
 	_, file, _, _ := runtime.Caller(0)
 	dir := filepath.Dir(file)
 	dir = filepath.Join(dir, "..")
@@ -96,12 +96,14 @@ func init() {
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 
+	beego.Router("/api/health", &HealthAPI{}, "get:CheckHealth")
 	beego.Router("/api/search/", &SearchAPI{})
 	beego.Router("/api/projects/", &ProjectAPI{}, "get:List;post:Post;head:Head")
 	beego.Router("/api/projects/:id", &ProjectAPI{}, "delete:Delete;get:Get;put:Put")
 	beego.Router("/api/users/:id", &UserAPI{}, "get:Get")
 	beego.Router("/api/users", &UserAPI{}, "get:List;post:Post;delete:Delete;put:Put")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
+	beego.Router("/api/users/:id/permissions", &UserAPI{}, "get:ListUserPermissions")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
@@ -140,7 +142,6 @@ func init() {
 	beego.Router("/api/ldap/groups/search", &LdapAPI{}, "get:SearchGroup")
 	beego.Router("/api/ldap/users/import", &LdapAPI{}, "post:ImportUser")
 	beego.Router("/api/configurations", &ConfigAPI{})
-	beego.Router("/api/configurations/reset", &ConfigAPI{}, "post:Reset")
 	beego.Router("/api/configs", &ConfigAPI{}, "get:GetInternalConfig")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
 	beego.Router("/api/replications", &ReplicationAPI{})
@@ -151,6 +152,9 @@ func init() {
 	beego.Router("/api/system/gc/:id", &GCAPI{}, "get:GetGC")
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &GCAPI{}, "get:GetLog")
 	beego.Router("/api/system/gc/schedule", &GCAPI{}, "get:Get;put:Put;post:Post")
+
+	beego.Router("/api/projects/:pid([0-9]+)/robots/", &RobotAPI{}, "post:Post;get:List")
+	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &RobotAPI{}, "get:Get;put:Put;delete:Delete")
 
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
@@ -172,8 +176,6 @@ func init() {
 	chartLabelAPIType := &ChartLabelAPI{}
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
-
-	_ = updateInitPassword(1, "Harbor12345")
 
 	if err := core.Init(); err != nil {
 		log.Fatalf("failed to initialize GlobalController: %v", err)
@@ -992,6 +994,23 @@ func (a testapi) UsersUpdatePassword(userID int, password apilib.Password, authI
 	return httpStatusCode, err
 }
 
+func (a testapi) UsersGetPermissions(userID interface{}, scope string, authInfo usrInfo) (int, []apilib.Permission, error) {
+	_sling := sling.New().Get(a.basePath)
+	// create path and map variables
+	path := fmt.Sprintf("/api/users/%v/permissions", userID)
+	_sling = _sling.Path(path)
+	type QueryParams struct {
+		Scope string `url:"scope,omitempty"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{Scope: scope})
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	var successPayLoad []apilib.Permission
+	if 200 == httpStatusCode && nil == err {
+		err = json.Unmarshal(body, &successPayLoad)
+	}
+	return httpStatusCode, successPayLoad, err
+}
+
 // Mark a registered user as be removed.
 func (a testapi) UsersDelete(userID int, authInfo usrInfo) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
@@ -1000,27 +1019,6 @@ func (a testapi) UsersDelete(userID int, authInfo usrInfo) (int, error) {
 	_sling = _sling.Path(path)
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
-}
-func updateInitPassword(userID int, password string) error {
-	queryUser := models.User{UserID: userID}
-	user, err := dao.GetUser(queryUser)
-	if err != nil {
-		return fmt.Errorf("Failed to get user, userID: %d %v", userID, err)
-	}
-	if user == nil {
-		return fmt.Errorf("user id: %d does not exist", userID)
-	}
-	if user.Salt == "" {
-		user.Salt = utils.GenerateRandomString()
-		user.Password = password
-		err = dao.ChangeUserPassword(*user)
-		if err != nil {
-			return fmt.Errorf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
-		}
-
-	} else {
-	}
-	return nil
 }
 
 // Get system volume info
