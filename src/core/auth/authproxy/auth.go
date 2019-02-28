@@ -22,27 +22,38 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/core/config"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
+	"time"
 )
+
+const refreshDuration = 5 * time.Second
+const userEntryComment = "By Authproxy"
 
 // Auth implements HTTP authenticator the required attributes.
 // The attribute Endpoint is the HTTP endpoint to which the POST request should be issued for authentication
 type Auth struct {
 	auth.DefaultAuthenticateHelper
 	sync.Mutex
-	Endpoint       string
-	SkipCertVerify bool
-	AlwaysOnboard  bool
-	client         *http.Client
+	Endpoint         string
+	SkipCertVerify   bool
+	AlwaysOnboard    bool
+	settingTimeStamp time.Time
+	client           *http.Client
 }
 
 // Authenticate issues http POST request to Endpoint if it returns 200 the authentication is considered success.
 func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
-	a.ensure()
+	err := a.ensure()
+	if err != nil {
+		if a.Endpoint == "" {
+			return nil, fmt.Errorf("failed to initialize HTTP Auth Proxy Authenticator, error: %v", err)
+		}
+		log.Warningf("Failed to refresh configuration for HTTP Auth Proxy Authenticator, error: %v, old settings will be used", err)
+	}
 	req, err := http.NewRequest(http.MethodPost, a.Endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send request, error: %v", err)
@@ -109,7 +120,7 @@ func (a *Auth) fillInModel(u *models.User) error {
 	}
 	u.Realname = u.Username
 	u.Password = "1234567ab"
-	u.Comment = "By Authproxy"
+	u.Comment = userEntryComment
 	if strings.Contains(u.Username, "@") {
 		u.Email = u.Username
 	} else {
@@ -118,13 +129,17 @@ func (a *Auth) fillInModel(u *models.User) error {
 	return nil
 }
 
-func (a *Auth) ensure() {
+func (a *Auth) ensure() error {
 	a.Lock()
 	defer a.Unlock()
-	if a.Endpoint == "" {
-		a.Endpoint = os.Getenv("AUTHPROXY_ENDPOINT")
-		a.SkipCertVerify = strings.EqualFold(os.Getenv("AUTHPROXY_SKIP_CERT_VERIFY"), "true")
-		a.AlwaysOnboard = strings.EqualFold(os.Getenv("AUTHPROXY_ALWAYS_ONBOARD"), "true")
+	if time.Now().Sub(a.settingTimeStamp) >= refreshDuration {
+		setting, err := config.HTTPAuthProxySetting()
+		if err != nil {
+			return err
+		}
+		a.Endpoint = setting.Endpoint
+		a.SkipCertVerify = setting.SkipCertVerify
+		a.AlwaysOnboard = setting.AlwaysOnBoard
 	}
 	if a.client == nil {
 		tr := &http.Transport{
@@ -136,6 +151,7 @@ func (a *Auth) ensure() {
 			Transport: tr,
 		}
 	}
+	return nil
 }
 
 func init() {
