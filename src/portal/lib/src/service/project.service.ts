@@ -23,7 +23,7 @@ import { RequestQueryParams } from "./RequestQueryParams";
  */
 export abstract class ProjectService {
   /**
-   * Get Infomations of a specific Project.
+   * Get Informations of a specific Project.
    *
    * @abstract
    *  ** deprecated param {string|number} [projectId]
