@@ -65,7 +65,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
     path: /data/registry
   ```
 
-  For more infomation about storage solution, Please check [Kubernetes Document](http://kubernetes.io/docs/user-guide/persistent-volumes/) 
+  For more information about storage solution, Please check [Kubernetes Document](http://kubernetes.io/docs/user-guide/persistent-volumes/) 
 
 Then you can generate ConfigMap files by :
 
@@ -94,7 +94,7 @@ You can find all configs of Harbor in `make/kubernetes/templates/`. There are sp
 
 - `jobservice.cm.yaml`: ENV and web config of jobservice
 - `mysql.cm.yaml`: Root password of MySQL
-- `ingress.yaml`: Https certification and ingress config. If you are fimiliar with ingress, you can modify it.
+- `ingress.yaml`: Https certification and ingress config. If you are familiar with ingress, you can modify it.
 - `registry.cm.yaml`: Token service certification and registry config
   Registry use filesystem to store data of images. You can find it like:
 
@@ -108,7 +108,7 @@ You can find all configs of Harbor in `make/kubernetes/templates/`. There are sp
 - `ui.cm.yaml`: Token service private key, ENV and web config of ui.
 - `adminserver.cm.yaml`: Initial values of configuration attributes of Harbor.
 
-`ui`, `jobservice` and `adminserver` are powered by beego. If you are fimiliar with beego, you can modify configs in `ui.cm.yaml`, `jobservice.cm.yaml` and `adminserver.cm.yaml`.
+`ui`, `jobservice` and `adminserver` are powered by beego. If you are familiar with beego, you can modify configs in `ui.cm.yaml`, `jobservice.cm.yaml` and `adminserver.cm.yaml`.
 
 
 ### Running

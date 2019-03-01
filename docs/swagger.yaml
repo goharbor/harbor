@@ -156,7 +156,7 @@ paths:
           description: Unexpected internal errors.
   '/projects/{project_id}':
     get:
-      summary: Return specific project detail infomation
+      summary: Return specific project detail information
       description: |
         This endpoint returns specific project information by project ID.
       parameters:
@@ -707,7 +707,7 @@ paths:
     get:
       summary: Get current user info.
       description: |
-        This endpoint is to get the current user infomation.
+        This endpoint is to get the current user information.
       tags:
         - Products
       responses:
