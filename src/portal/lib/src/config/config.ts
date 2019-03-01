@@ -82,6 +82,7 @@ export class Configuration {
     email_password?: StringValueItem;
     email_insecure: BoolValueItem;
     verify_remote_cert: BoolValueItem;
+    robot_token_duration: NumberValueItem;
     token_expiration: NumberValueItem;
     cfg_expiration: NumberValueItem;
     scan_all_policy: ComplexValueItem;
@@ -117,6 +118,7 @@ export class Configuration {
         this.email_password = new StringValueItem("", true);
         this.email_insecure = new BoolValueItem(false, true);
         this.token_expiration = new NumberValueItem(30, true);
+        this.robot_token_duration = new NumberValueItem(30, true);
         this.cfg_expiration = new NumberValueItem(30, true);
         this.verify_remote_cert = new BoolValueItem(false, true);
         this.scan_all_policy = new ComplexValueItem({
