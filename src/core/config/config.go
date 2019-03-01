@@ -462,3 +462,17 @@ func GetClairHealthCheckServerURL() string {
 	}
 	return url
 }
+
+// HTTPAuthProxySetting returns the setting of HTTP Auth proxy.  the settings are only meaningful when the auth_mode is
+// set to http_auth
+func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+	return &models.HTTPAuthProxy{
+		Endpoint:       cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
+		SkipCertVerify: cfgMgr.Get(common.HTTPAuthProxySkipCertVerify).GetBool(),
+		AlwaysOnBoard:  cfgMgr.Get(common.HTTPAuthProxyAlwaysOnboard).GetBool(),
+	}, nil
+
+}

@@ -30,7 +30,7 @@ type Item struct {
 	Name string `json:"name,omitempty"`
 	// It can be &IntType{}, &StringType{}, &BoolType{}, &PasswordType{}, &MapType{} etc, any type interface implementation
 	ItemType Type
-	// Is this settign can be modified after configure
+	// TODO: Clarify the usage of this attribute
 	Editable bool `json:"editable,omitempty"`
 }
 
@@ -44,6 +44,7 @@ const (
 	LdapGroupGroup = "ldapgroup"
 	EmailGroup     = "email"
 	UAAGroup       = "uaa"
+	HTTPAuthGroup  = "http_auth"
 	DatabaseGroup  = "database"
 	// Put all config items do not belong a existing group into basic
 	BasicGroup = "basic"
@@ -57,6 +58,7 @@ var (
 	// 2. Get/Set config settings by CfgManager
 	// 3. CfgManager.Load()/CfgManager.Save() to load/save from configure storage.
 	ConfigList = []Item{
+		// TODO: All these Name should be reference to const, see #7040
 		{Name: "admin_initial_password", Scope: SystemScope, Group: BasicGroup, EnvKey: "HARBOR_ADMIN_PASSWORD", DefaultValue: "", ItemType: &PasswordType{}, Editable: true},
 		{Name: "admiral_url", Scope: SystemScope, Group: BasicGroup, EnvKey: "ADMIRAL_URL", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 		{Name: "auth_mode", Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", ItemType: &AuthModeType{}, Editable: false},
@@ -126,6 +128,10 @@ var (
 		{Name: "uaa_client_secret", Scope: UserScope, Group: UAAGroup, EnvKey: "UAA_CLIENTSECRET", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 		{Name: "uaa_endpoint", Scope: UserScope, Group: UAAGroup, EnvKey: "UAA_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 		{Name: "uaa_verify_cert", Scope: UserScope, Group: UAAGroup, EnvKey: "UAA_VERIFY_CERT", DefaultValue: "false", ItemType: &BoolType{}, Editable: false},
+
+		{Name: common.HTTPAuthProxyEndpoint, Scope: UserScope, Group: HTTPAuthGroup, EnvKey: "HTTP_AUTHPROXY_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false},
+		{Name: common.HTTPAuthProxySkipCertVerify, Scope: UserScope, Group: HTTPAuthGroup, EnvKey: "HTTP_AUTHPROXY_SKIP_CERT_VERIFY", DefaultValue: "false", ItemType: &BoolType{}, Editable: false},
+		{Name: common.HTTPAuthProxyAlwaysOnboard, Scope: UserScope, Group: HTTPAuthGroup, EnvKey: "HTTP_AUTHPROXY_ALWAYS_ONBOARD", DefaultValue: "false", ItemType: &BoolType{}, Editable: false},
 
 		{Name: "with_chartmuseum", Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CHARTMUSEUM", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: "with_clair", Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CLAIR", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},

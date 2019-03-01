@@ -65,6 +65,13 @@ type Email struct {
 	Insecure bool   `json:"insecure"`
 }
 
+// HTTPAuthProxy wraps the settings for HTTP auth proxy
+type HTTPAuthProxy struct {
+	Endpoint       string `json:"endpoint"`
+	SkipCertVerify bool   `json:"skip_cert_verify"`
+	AlwaysOnBoard  bool   `json:"always_onboard"`
+}
+
 /*
 // Registry ...
 type Registry struct {
