@@ -18,10 +18,10 @@ export class SearchResults {
   constructor() {
     this.project = [];
     this.repository = [];
-    this.Chart = [];
+    this.chart = [];
   }
 
   project: Project[];
   repository: Repository[];
-  Chart: HelmChartSearchResultItem[];
+  chart: HelmChartSearchResultItem[];
 }
