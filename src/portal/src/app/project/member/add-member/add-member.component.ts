@@ -94,7 +94,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
       hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
     }
     if (hasProjectAdminRole) {
-      this.userService.getUsers()
+      this.userService.getUsersNameList()
         .then(users => {
           this.userLists = users;
         });
