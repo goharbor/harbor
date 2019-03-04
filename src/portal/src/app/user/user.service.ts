@@ -20,6 +20,7 @@ import { User, LDAPUser } from './user';
 import LDAPUsertoUser from './user';
 
 const userMgmtEndpoint = '/api/users';
+const userListSearch = '/api/users/search';
 const ldapUserEndpoint = '/api/ldap/users';
 
 /**
@@ -39,6 +40,11 @@ export class UserService {
     }
 
     // Get the user list
+    getUsersNameList(): Promise<User[]> {
+        return this.http.get(userListSearch, HTTP_GET_OPTIONS).toPromise()
+            .then(response => response.json() as User[])
+            .catch(error => this.handleError(error));
+    }
     getUsers(): Promise<User[]> {
         return this.http.get(userMgmtEndpoint, HTTP_GET_OPTIONS).toPromise()
             .then(response => response.json() as User[])
