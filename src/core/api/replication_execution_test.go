@@ -87,6 +87,14 @@ func (f *fakedPolicyManager) Get(id int64) (*model.Policy, error) {
 	}
 	return nil, nil
 }
+func (f *fakedPolicyManager) GetByName(name string) (*model.Policy, error) {
+	if name == "duplicate_name" {
+		return &model.Policy{
+			Name: "duplicate_name",
+		}, nil
+	}
+	return nil, nil
+}
 func (f *fakedPolicyManager) Update(*model.Policy, ...string) error {
 	return nil
 }

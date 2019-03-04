@@ -31,16 +31,21 @@ func Test_convertFromPersistModel(t *testing.T) {
 		want    *model.Policy
 		wantErr bool
 	}{
-		{name: "Nil Persist Model", from: nil, want: &model.Policy{}},
+		{
+			name:    "Nil Persist Model",
+			from:    nil,
+			want:    nil,
+			wantErr: false,
+		},
 		{
 			name: "parse Filters Error",
 			from: &persist_models.RepPolicy{Filters: "abc"},
-			want: &model.Policy{}, wantErr: true,
+			want: nil, wantErr: true,
 		},
 		{
 			name: "parse Trigger Error",
 			from: &persist_models.RepPolicy{Trigger: "abc"},
-			want: &model.Policy{}, wantErr: true,
+			want: nil, wantErr: true,
 		},
 		{
 			name: "Persist Model", from: &persist_models.RepPolicy{
@@ -80,6 +85,11 @@ func Test_convertFromPersistModel(t *testing.T) {
 
 			if tt.wantErr {
 				require.NotNil(t, err)
+				return
+			}
+
+			if tt.want == nil {
+				require.Nil(t, got)
 				return
 			}
 

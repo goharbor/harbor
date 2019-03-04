@@ -298,9 +298,13 @@ func fromDaoModel(registry *models.Registry) (*model.Registry, error) {
 // toDaoModel converts registry model from replication to DAO layer model.
 // Also, if access secret is provided, encrypt it.
 func toDaoModel(registry *model.Registry) (*models.Registry, error) {
-	encrypted, err := encrypt(registry.Credential.AccessSecret)
-	if err != nil {
-		return nil, err
+	var encrypted string
+	var err error
+	if registry.Credential != nil {
+		encrypted, err = encrypt(registry.Credential.AccessSecret)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &models.Registry{

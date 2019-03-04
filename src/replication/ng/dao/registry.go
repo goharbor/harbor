@@ -82,7 +82,9 @@ func ListRegistries(query ...*ListRegistryQuery) (int64, []*models.Registry, err
 	if err != nil {
 		return total, nil, err
 	}
-
+	if registries == nil {
+		registries = []*models.Registry{}
+	}
 	return total, registries, nil
 }
 

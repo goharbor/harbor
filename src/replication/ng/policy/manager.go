@@ -29,7 +29,7 @@ var errNilPolicyModel = errors.New("nil policy model")
 
 func convertFromPersistModel(policy *persist_models.RepPolicy) (*model.Policy, error) {
 	if policy == nil {
-		return &model.Policy{}, nil
+		return nil, nil
 	}
 
 	ply := model.Policy{
@@ -56,7 +56,7 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (*model.Policy, e
 	if len(policy.Filters) > 0 {
 		filters := []*model.Filter{}
 		if err := json.Unmarshal([]byte(policy.Filters), &filters); err != nil {
-			return &model.Policy{}, err
+			return nil, err
 		}
 		ply.Filters = filters
 	}
@@ -65,7 +65,7 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (*model.Policy, e
 	if len(policy.Trigger) > 0 {
 		trigger := &model.Trigger{}
 		if err := json.Unmarshal([]byte(policy.Trigger), trigger); err != nil {
-			return &model.Policy{}, err
+			return nil, err
 		}
 		ply.Trigger = trigger
 	}
@@ -121,6 +121,8 @@ type Manager interface {
 	List(...*model.PolicyQuery) (int64, []*model.Policy, error)
 	// Get policy with specified ID
 	Get(int64) (*model.Policy, error)
+	// Get policy by the name
+	GetByName(string) (*model.Policy, error)
 	// Update the specified policy, the "props" are the properties of policy
 	// that need to be updated
 	Update(policy *model.Policy, props ...string) error
@@ -150,7 +152,7 @@ func (m *DefaultManager) Create(policy *model.Policy) (int64, error) {
 }
 
 // List returns all the policies
-func (m *DefaultManager) List(queries ...*model.PolicyQuery) (total int64, polices []*model.Policy, err error) {
+func (m *DefaultManager) List(queries ...*model.PolicyQuery) (total int64, policies []*model.Policy, err error) {
 	// default query parameters
 	var name = ""
 	var namespace = ""
@@ -180,7 +182,11 @@ func (m *DefaultManager) List(queries ...*model.PolicyQuery) (total int64, polic
 			return 0, nil, err
 		}
 
-		polices = append(polices, ply)
+		policies = append(policies, ply)
+	}
+
+	if policies == nil {
+		policies = []*model.Policy{}
 	}
 
 	return
@@ -190,7 +196,17 @@ func (m *DefaultManager) List(queries ...*model.PolicyQuery) (total int64, polic
 func (m *DefaultManager) Get(policyID int64) (*model.Policy, error) {
 	policy, err := dao.GetRepPolicy(policyID)
 	if err != nil {
-		return &model.Policy{}, err
+		return nil, err
+	}
+
+	return convertFromPersistModel(policy)
+}
+
+// GetByName returns the policy with the specified name
+func (m *DefaultManager) GetByName(name string) (*model.Policy, error) {
+	policy, err := dao.GetRepPolicyByName(name)
+	if err != nil {
+		return nil, err
 	}
 
 	return convertFromPersistModel(policy)

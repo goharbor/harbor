@@ -53,6 +53,9 @@ func GetRepPolicy(id int64) (policy *models.RepPolicy, err error) {
 	policy = new(models.RepPolicy)
 	err = common_dao.GetOrmer().QueryTable(policy).
 		Filter("id", id).One(policy)
+	if err == orm.ErrNoRows {
+		return nil, nil
+	}
 
 	return
 }
@@ -62,6 +65,9 @@ func GetRepPolicyByName(name string) (policy *models.RepPolicy, err error) {
 	policy = new(models.RepPolicy)
 	err = common_dao.GetOrmer().QueryTable(policy).
 		Filter("name", name).One(policy)
+	if err == orm.ErrNoRows {
+		return nil, nil
+	}
 
 	return
 }

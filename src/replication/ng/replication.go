@@ -45,7 +45,8 @@ var (
 func Init() error {
 	// Init registry manager
 	RegistryMgr = registry.NewDefaultManager()
-	// TODO init PolicyMgr
+	// init policy manager
+	PolicyMgr = policy.NewDefaultManager()
 
 	// TODO init ExecutionMgr
 	var executionMgr execution.Manager
