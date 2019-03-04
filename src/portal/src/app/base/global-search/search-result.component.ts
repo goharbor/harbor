@@ -78,7 +78,9 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         if (src) {
             src.project.forEach(pro => res.project.push(Object.assign({}, pro)));
             src.repository.forEach(repo => res.repository.push(Object.assign({}, repo)));
-            src.Chart.forEach(chart => res.Chart.push(JSON.parse(JSON.stringify(chart))));
+            if (this.withHelmChart) {
+                src.chart.forEach(chart => res.chart.push(JSON.parse(JSON.stringify(chart))));
+            }
             return res;
         }
 
@@ -129,6 +131,9 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         if (term === "") {
             this.searchResults.project = [];
             this.searchResults.repository = [];
+            if (this.withHelmChart) {
+                this.searchResults.chart = [];
+            }
             return;
         }
         // Show spinner
