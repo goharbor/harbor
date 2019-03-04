@@ -20,18 +20,13 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 )
 
-// RegistryType indicates the type of registry
-type RegistryType string
-
 const (
 	// RegistryTypeHarbor indicates registry type harbor
 	RegistryTypeHarbor = "harbor"
 )
 
-// Valid indicates whether the RegistryType is a valid value
-func (r RegistryType) Valid() bool {
-	return len(r) > 0
-}
+// RegistryType indicates the type of registry
+type RegistryType string
 
 // CredentialType represents the supported credential types
 // e.g: u/p, OAuth token

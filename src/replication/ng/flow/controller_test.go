@@ -185,7 +185,11 @@ func (f *fakedAdapter) FetchResources(namespace []string, filters []*model.Filte
 }
 
 func TestStartReplication(t *testing.T) {
-	err := adapter.RegisterFactory("faked_registry", fakedAdapterFactory)
+	err := adapter.RegisterFactory(
+		&adapter.Info{
+			Type:                   "faked_registry",
+			SupportedResourceTypes: []model.ResourceType{"image"},
+		}, fakedAdapterFactory)
 	require.Nil(t, err)
 
 	controller, _ := NewController(

@@ -2080,6 +2080,53 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
+  /replication/adapters:
+    get:
+      summary: List supported adapters.
+      description: |
+        This endpoint let user list supported adapters.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReplicationAdapter'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Unexpected internal errors.
+  /replication/adapters/{type}:
+    get:
+      summary: Get the specified adapter.
+      description: |
+        This endpoint let user get the specified adapter.
+      parameters:
+        - name: type
+          in: path
+          type: string
+          required: true
+          description: The adapter type.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: object
+            $ref: '#/definitions/ReplicationAdapter'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '404':
+          description: Not found.
+        '500':
+          description: Unexpected internal errors.
   /registries:
     get:
       summary: List registries.
@@ -4746,3 +4793,23 @@ definitions:
       action:
         type: string
         description: The permission action
+  ReplicationAdapter:
+    type: object
+    description: The replication adapter
+    properties:
+      type:
+        type: string
+        description: The adapter type
+      description:
+        type: string
+        description: The adapter description
+      supported_resource_types:
+        type: array
+        description: The resource types that the adapter supports
+        items:
+          type: string
+      supported_resource_filters:
+        type: array
+        description: The filters that the adapter supports
+        items:
+          type: string
