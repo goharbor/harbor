@@ -111,17 +111,9 @@ Make Project Public
 Delete Repo
     [Arguments]  ${projectname}
     ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${projectname}')]//clr-checkbox-wrapper//label
-    :For  ${n}  IN RANGE  1  6
-    \    Log To Console  Trying Delete Repo ${n} times ...
-    \    ${out1}  Run Keyword And Ignore Error  Retry Element Click  ${element_repo_checkbox}
-    \    Capture Page Screenshot
-    \    ${out2}  Run Keyword And Ignore Error  Retry Element Click  ${repo_delete_btn}
-    \    Capture Page Screenshot
-    \    Log To Console  Return value is ${out1[0]} ${out2[0]}
-    \    Exit For Loop If  '${out1[0]}'=='PASS' and '${out2[0]}'=='PASS'
-    \    Sleep  2
-    Retry Element Click  ${repo_delete_confirm_btn}
-    Sleep  2
+    Retry Double Keywords When Error  Retry Element Click  ${element_repo_checkbox}  Wait Until Element Is Visible And Enabled  ${repo_delete_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${repo_delete_btn}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
 
 Delete Repo on CardView
     [Arguments]  ${reponame}

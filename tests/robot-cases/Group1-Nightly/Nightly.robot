@@ -536,7 +536,8 @@ Test Case - Delete Multi Project
     Create An New Project  projectb${d}
     Push Image  ${ip}  test${d}  Test1@34  projecta${d}  hello-world
     Filter Object  project
-    Multi-delete Object  projecta  projectb
+    @{project_list}  Create List  projecta  projectb
+    Multi-delete Object  ${project_delete_btn}  @{project_list}
     # Verify delete project with image should not be deleted directly
     Delete Fail  projecta${d}
     Delete Success  projectb${d}
@@ -554,7 +555,8 @@ Test Case - Delete Multi User
     Sign In Harbor  ${HARBOR_URL}  admin  Harbor12345
     Switch To User Tag
     Filter Object  delete
-    Multi-delete Object  deletea  deleteb  deletec
+    @{user_list}  Create List  deletea  deleteb  deletec
+    Multi-delete Object  ${user_delete_btn}  @{user_list}
     # Assert delete
     Delete Success  deletea  deleteb  deletec
     Sleep  1
@@ -569,7 +571,8 @@ Test Case - Delete Multi Repo
     Push Image  ${ip}  test${d}  Test1@34  project${d}  busybox
     Sleep  2
     Go Into Project  project${d}
-    Multi-delete Object  hello-world  busybox
+    @{repo_list}  Create List  hello-world  busybox
+    Multi-delete Object  ${repo_delete_btn}  @{repo_list}
     # Verify
     Delete Success  hello-world  busybox
     Close Browser
@@ -584,7 +587,8 @@ Test Case - Delete Multi Tag
     Sleep  2
     Go Into Project  project${d}
     Go Into Repo  redis
-    Multi-delete object  3.2.10-alpine  4.0.7-alpine
+    @{tag_list}  Create List  3.2.10-alpine  4.0.7-alpine
+    Multi-delete object  ${tag_delete_btn}  @{tag_list}
     # Verify
     Delete Success  3.2.10-alpine  4.0.7-alpine
     Close Browser

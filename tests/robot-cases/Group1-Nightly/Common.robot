@@ -426,7 +426,8 @@ Test Case - Delete Multi Project
     Navigate To Projects
     Filter Object  project
     Retry Wait Element Not Visible  //clr-datagrid/div/div[2]
-    Multi-delete Object  projecta  projectb
+    @{project_list}  Create List  projecta  projectb
+    Multi-delete Object  ${project_delete_btn}  @{project_list}
     # Verify delete project with image should not be deleted directly
     Delete Fail  projecta${d}
     Delete Success  projectb${d}
@@ -442,7 +443,8 @@ Test Case - Delete Multi Repo
     Push Image  ${ip}  user013  Test1@34  project${d}  busybox
     Sleep  2
     Go Into Project  project${d}
-    Multi-delete Object  hello-world  busybox
+    @{repo_list}  Create List  hello-world  busybox
+    Multi-delete Object  ${repo_delete_btn}  @{repo_list}
     # Verify
     Delete Success  hello-world  busybox
     Close Browser
@@ -457,7 +459,8 @@ Test Case - Delete Multi Tag
     Push Image With Tag  ${ip}  user014  Test1@34  project${d}  redis  4.0.7-alpine  4.0.7-alpine
     Go Into Project  project${d}
     Go Into Repo  redis
-    Multi-delete object  3.2.10-alpine  4.0.7-alpine
+    @{tag_list}  Create List  3.2.10-alpine  4.0.7-alpine
+    Multi-delete object  ${tag_delete_btn}  @{tag_list}
     # Verify
     Delete Success  3.2.10-alpine  4.0.7-alpine
     Close Browser
