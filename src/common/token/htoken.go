@@ -19,14 +19,15 @@ type HToken struct {
 }
 
 // New ...
-func New(tokenID, projectID int64, access []*rbac.Policy) (*HToken, error) {
+func New(tokenID, projectID, expiresAt int64, access []*rbac.Policy) (*HToken, error) {
 	rClaims := &RobotClaims{
 		TokenID:   tokenID,
 		ProjectID: projectID,
 		Access:    access,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(DefaultOptions.TTL).Unix(),
-			Issuer:    DefaultOptions.Issuer,
+			IssuedAt:  time.Now().UTC().Unix(),
+			ExpiresAt: expiresAt,
+			Issuer:    DefaultOptions().Issuer,
 		},
 	}
 	err := rClaims.Valid()
@@ -34,13 +35,13 @@ func New(tokenID, projectID int64, access []*rbac.Policy) (*HToken, error) {
 		return nil, err
 	}
 	return &HToken{
-		Token: *jwt.NewWithClaims(DefaultOptions.SignMethod, rClaims),
+		Token: *jwt.NewWithClaims(DefaultOptions().SignMethod, rClaims),
 	}, nil
 }
 
 // Raw get the Raw string of token
 func (htk *HToken) Raw() (string, error) {
-	key, err := DefaultOptions.GetKey()
+	key, err := DefaultOptions().GetKey()
 	if err != nil {
 		return "", nil
 	}
@@ -54,12 +55,12 @@ func (htk *HToken) Raw() (string, error) {
 
 // ParseWithClaims ...
 func ParseWithClaims(rawToken string, claims jwt.Claims) (*HToken, error) {
-	key, err := DefaultOptions.GetKey()
+	key, err := DefaultOptions().GetKey()
 	if err != nil {
 		return nil, err
 	}
 	token, err := jwt.ParseWithClaims(rawToken, claims, func(token *jwt.Token) (interface{}, error) {
-		if token.Method.Alg() != DefaultOptions.SignMethod.Alg() {
+		if token.Method.Alg() != DefaultOptions().SignMethod.Alg() {
 			return nil, errors.New("invalid signing method")
 		}
 		switch k := key.(type) {
@@ -75,9 +76,10 @@ func ParseWithClaims(rawToken string, claims jwt.Claims) (*HToken, error) {
 		log.Errorf(fmt.Sprintf("parse token error, %v", err))
 		return nil, err
 	}
+
 	if !token.Valid {
 		log.Errorf(fmt.Sprintf("invalid jwt token, %v", token))
-		return nil, err
+		return nil, errors.New("invalid jwt token")
 	}
 	return &HToken{
 		Token: *token,

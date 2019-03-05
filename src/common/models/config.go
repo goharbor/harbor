@@ -65,35 +65,12 @@ type Email struct {
 	Insecure bool   `json:"insecure"`
 }
 
-/*
-// Registry ...
-type Registry struct {
-	URL string `json:"url"`
+// HTTPAuthProxy wraps the settings for HTTP auth proxy
+type HTTPAuthProxy struct {
+	Endpoint       string `json:"endpoint"`
+	SkipCertVerify bool   `json:"skip_cert_verify"`
+	AlwaysOnBoard  bool   `json:"always_onboard"`
 }
-
-// TokenService ...
-type TokenService struct {
-	URL string `json:"url"`
-}
-
-// SystemCfg holds all configurations of system
-type SystemCfg struct {
-	DomainName                 string          `json:"domain_name"` // Harbor external URL: protocol://host:port
-	Authentication             *Authentication `json:"authentication"`
-	Database                   *Database       `json:"database"`
-	TokenService               *TokenService   `json:"token_service"`
-	Registry                   *Registry       `json:"registry"`
-	Email                      *Email          `json:"email"`
-	VerifyRemoteCert           bool            `json:"verify_remote_cert"`
-	ProjectCreationRestriction string          `json:"project_creation_restriction"`
-	MaxJobWorkers              int             `json:"max_job_workers"`
-	JobLogDir                  string          `json:"job_log_dir"`
-	InitialAdminPwd            string          `json:"initial_admin_pwd,omitempty"`
-	TokenExpiration            int             `json:"token_expiration"` // in minute
-	SecretKey                  string          `json:"secret_key,omitempty"`
-	CfgExpiration              int             `json:"cfg_expiration"`
-}
-*/
 
 // ConfigEntry ...
 type ConfigEntry struct {

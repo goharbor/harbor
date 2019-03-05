@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, Inject, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, ViewChild, Inject, OnChanges, SimpleChanges } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Configuration, StringValueItem } from '../config';
 import { SERVICE_CONFIG, IServiceConfig } from '../../service.config';
@@ -13,17 +13,19 @@ import {
 } from '../../service/index';
 import { from } from 'rxjs';
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
-
+const ONE_HOUR_MINUTES: number = 60;
+const ONE_DAY_MINUTES: number = 24 * ONE_HOUR_MINUTES;
 @Component({
     selector: 'system-settings',
     templateUrl: './system-settings.component.html',
     styleUrls: ['./system-settings.component.scss', '../registry-config.component.scss']
 })
-export class SystemSettingsComponent implements OnChanges {
+export class SystemSettingsComponent implements OnChanges, OnInit {
     config: Configuration = new Configuration();
     onGoing = false;
     private originalConfig: Configuration;
     downloadLink: string;
+    robotTokenExpiration: string;
     @Output() configChange: EventEmitter<Configuration> = new EventEmitter<Configuration>();
     @Output() readOnlyChange: EventEmitter<boolean> = new EventEmitter<boolean>();
     @Output() reloadSystemConfig: EventEmitter<any> = new EventEmitter<any>();
@@ -51,6 +53,12 @@ export class SystemSettingsComponent implements OnChanges {
             this.systemSettings.token_expiration.editable;
     }
 
+    get robotExpirationEditable(): boolean {
+        return this.systemSettings &&
+            this.systemSettings.robot_token_duration &&
+            this.systemSettings.robot_token_duration.editable;
+    }
+
     public isValid(): boolean {
         return this.systemSettingsForm && this.systemSettingsForm.valid;
     }
@@ -76,7 +84,8 @@ export class SystemSettingsComponent implements OnChanges {
     public getSystemChanges(allChanges: any) {
         let changes = {};
         for (let prop in allChanges) {
-            if (prop === 'token_expiration' || prop === 'read_only' || prop === 'project_creation_restriction') {
+            if (prop === 'token_expiration' || prop === 'read_only' || prop === 'project_creation_restriction'
+            || prop === 'robot_token_duration') {
                 changes[prop] = allChanges[prop];
             }
         }
@@ -165,6 +174,7 @@ export class SystemSettingsComponent implements OnChanges {
             ack.state === ConfirmationState.CONFIRMED) {
             let changes = this.getChanges();
             this.reset(changes);
+            this.initRobotToken();
         }
     }
 
@@ -203,7 +213,27 @@ export class SystemSettingsComponent implements OnChanges {
             this.downloadLink = this.configInfo.systemInfoEndpoint + "/getcert";
         }
     }
+    ngOnInit() {
+        this.initRobotToken();
+    }
 
+    private initRobotToken (): void {
+        if (this.config &&
+            this.config.robot_token_duration ) {
+            let robotExpiration = this.config.robot_token_duration.value;
+            this.robotTokenExpiration = Math.floor(robotExpiration / ONE_DAY_MINUTES) + '';
+        }
+    }
+    changeToken(v: string) {
+        if (!v || v === "") {
+            return;
+        }
+        if (!(this.config &&
+            this.config.robot_token_duration)) {
+            return;
+        }
+        this.config.robot_token_duration.value = +v * ONE_DAY_MINUTES;
+    }
 
 
 }

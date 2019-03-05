@@ -4,13 +4,13 @@
 #
 # all:			prepare env, compile binaries, build images and install images
 # prepare: 		prepare env
-# compile: 		compile adminserver, ui and jobservice code
+# compile: 		compile core and jobservice code
 #
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
 #							golang:1.11.2
-# compile_adminserver, compile_core, compile_jobservice: compile specific binary
+# compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
 #
@@ -43,7 +43,7 @@
 #
 # clean:        remove binary, Harbor images, specific version docker-compose \
 #               file, specific version tag and online/offline install package
-# cleanbinary:	remove adminserver, ui and jobservice binary
+# cleanbinary:	remove core and jobservice binary
 # cleanimage: 	remove Harbor images
 # cleandockercomposefile:
 #				remove specific version docker-compose
@@ -102,6 +102,7 @@ CLAIRVERSION=v2.0.7
 CLAIRDBVERSION=$(VERSIONTAG)
 MIGRATORVERSION=$(VERSIONTAG)
 REDISVERSION=$(VERSIONTAG)
+NOTARYMIGRATEVERSION=v3.5.4
 
 # version of chartmuseum
 CHARTMUSEUMVERSION=v0.8.1
@@ -128,25 +129,24 @@ GOBUILDIMAGE=golang:1.11.2
 GOBUILDPATH=$(GOBASEPATH)/harbor
 GOIMAGEBUILDCMD=/usr/local/go/bin/go
 GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build
-GOBUILDPATH_ADMINSERVER=$(GOBUILDPATH)/src/adminserver
 GOBUILDPATH_CORE=$(GOBUILDPATH)/src/core
 GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDPATH_REGISTRYCTL=$(GOBUILDPATH)/src/registryctl
+GOBUILDPATH_MIGRATEPATCH=$(GOBUILDPATH)/src/cmd/migrate-patch
 GOBUILDMAKEPATH=$(GOBUILDPATH)/make
-GOBUILDMAKEPATH_ADMINSERVER=$(GOBUILDMAKEPATH)/photon/adminserver
 GOBUILDMAKEPATH_CORE=$(GOBUILDMAKEPATH)/photon/core
 GOBUILDMAKEPATH_JOBSERVICE=$(GOBUILDMAKEPATH)/photon/jobservice
 GOBUILDMAKEPATH_REGISTRYCTL=$(GOBUILDMAKEPATH)/photon/registryctl
+GOBUILDMAKEPATH_NOTARY=$(GOBUILDMAKEPATH)/photon/notary
 
 # binary
-ADMINSERVERBINARYPATH=$(MAKEDEVPATH)/adminserver
-ADMINSERVERBINARYNAME=harbor_adminserver
 CORE_BINARYPATH=$(MAKEDEVPATH)/core
 CORE_BINARYNAME=harbor_core
 JOBSERVICEBINARYPATH=$(MAKEDEVPATH)/jobservice
 JOBSERVICEBINARYNAME=harbor_jobservice
 REGISTRYCTLBINARYPATH=$(MAKEDEVPATH)/registryctl
 REGISTRYCTLBINARYNAME=harbor_registryctl
+MIGRATEPATCHBINARYNAME=migrate-patch
 
 # configfile
 CONFIGPATH=$(MAKEPATH)
@@ -174,7 +174,6 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 
 # docker image name
-DOCKERIMAGENAME_ADMINSERVER=goharbor/harbor-adminserver
 DOCKERIMAGENAME_PORTAL=goharbor/harbor-portal
 DOCKERIMAGENAME_CORE=goharbor/harbor-core
 DOCKERIMAGENAME_JOBSERVICE=goharbor/harbor-jobservice
@@ -209,8 +208,7 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 # cmds
-DOCKERSAVE_PARA=$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
-		$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
+DOCKERSAVE_PARA= $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_CORE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
@@ -223,15 +221,13 @@ PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 				  $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
-				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/open_source_license 
-
+				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) 
+				  
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
 				  $(HARBORPKG)/LICENSE \
 				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/harbor.cfg \
-				  $(HARBORPKG)/open_source_license
+				  $(HARBORPKG)/harbor.cfg 				  
 				  
 DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
@@ -264,13 +260,6 @@ ui_version:
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
 
-compile_adminserver:
-	@echo "compiling binary for adminserver (golang image)..."
-	@echo $(GOBASEPATH)
-	@echo $(GOBUILDPATH)
-	$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_ADMINSERVER) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_ADMINSERVER)/$(ADMINSERVERBINARYNAME)
-	@echo "Done."
-
 compile_core:
 	@echo "compiling binary for core (golang image)..."
 	@echo $(GOBASEPATH)
@@ -288,7 +277,12 @@ compile_registryctl:
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
 	@echo "Done."
 
-compile:check_environment compile_adminserver compile_core compile_jobservice compile_registryctl
+compile_notary_migrate_patch:
+	@echo "compiling binary for migrate patch (golang image)..."
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_MIGRATEPATCH) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_NOTARY)/$(MIGRATEPATCHBINARYNAME)
+	@echo "Done."
+
+compile:check_environment compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
 	
 prepare:
 	@echo "preparing..."
@@ -296,7 +290,7 @@ prepare:
 
 build:
 	make -f $(MAKEFILEPATH_PHOTON)/Makefile build -e DEVFLAG=$(DEVFLAG) \
-	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e NGINXVERSION=$(NGINXVERSION) -e NOTARYVERSION=$(NOTARYVERSION) \
+	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e NGINXVERSION=$(NGINXVERSION) -e NOTARYVERSION=$(NOTARYVERSION) -e NOTARYMIGRATEVERSION=$(NOTARYMIGRATEVERSION) \
 	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRDBVERSION=$(CLAIRDBVERSION) -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION) -e MIGRATORVERSION=$(MIGRATORVERSION) \
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER)
@@ -320,7 +314,6 @@ modify_composefile_clair:
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
 	@$(SEDCMD) -i -e 's/__postgresql_version__/$(CLAIRDBVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
 	@$(SEDCMD) -i -e 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
-
 modify_composefile_chartmuseum:
 	@echo "preparing docker-compose chartmuseum file..."
 	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
@@ -344,7 +337,6 @@ package_online: modify_composefile
 		$(HARBORPKG)/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
-	@cp open_source_license $(HARBORPKG)/open_source_license
 	
 	@$(TARCMD) $(PACKAGE_ONLINE_PARA)
 	@rm -rf $(HARBORPKG)
@@ -354,7 +346,6 @@ package_offline: compile ui_version build modify_sourcefiles modify_composefile
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	@cp LICENSE $(HARBORPKG)/LICENSE
-	@cp open_source_license $(HARBORPKG)/open_source_license
 
 	@echo "saving harbor docker image"
 	@$(DOCKERSAVE) $(DOCKERSAVE_PARA) > $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar
@@ -409,11 +400,6 @@ govet:
 
 pushimage:
 	@echo "pushing harbor images ..."
-	@$(DOCKERTAG) $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
-	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG) \
-		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
-	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
-
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
@@ -466,13 +452,11 @@ swagger_client:
 
 cleanbinary:
 	@echo "cleaning binary..."
-	@if [ -f $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) ] ; then rm $(ADMINSERVERBINARYPATH)/$(ADMINSERVERBINARYNAME) ; fi
 	@if [ -f $(CORE_BINARYPATH)/$(CORE_BINARYNAME) ] ; then rm $(CORE_BINARYPATH)/$(CORE_BINARYNAME) ; fi
 	@if [ -f $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) ] ; then rm $(JOBSERVICEBINARYPATH)/$(JOBSERVICEBINARYNAME) ; fi
 
 cleanimage:
 	@echo "cleaning image for photon..."
-	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_ADMINSERVER):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_CORE):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_DB):$(VERSIONTAG)
 	- $(DOCKERRMIMAGE) -f $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG)

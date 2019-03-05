@@ -1,25 +1,16 @@
 package token
 
 import (
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+	"time"
+
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
-	server, err := test.NewAdminserver(nil)
-	if err != nil {
-		panic(err)
-	}
-	defer server.Close()
-
-	if err := os.Setenv("ADMINSERVER_URL", server.URL); err != nil {
-		panic(err)
-	}
-
 	if err := config.Init(); err != nil {
 		panic(err)
 	}
@@ -40,7 +31,9 @@ func TestNew(t *testing.T) {
 
 	tokenID := int64(123)
 	projectID := int64(321)
-	token, err := New(tokenID, projectID, policies)
+	tokenExpiration := time.Duration(10) * 24 * time.Hour
+	expiresAt := time.Now().UTC().Add(tokenExpiration).Unix()
+	token, err := New(tokenID, projectID, expiresAt, policies)
 
 	assert.Nil(t, err)
 	assert.Equal(t, token.Header["alg"], "RS256")
@@ -59,7 +52,9 @@ func TestRaw(t *testing.T) {
 	tokenID := int64(123)
 	projectID := int64(321)
 
-	token, err := New(tokenID, projectID, policies)
+	tokenExpiration := time.Duration(10) * 24 * time.Hour
+	expiresAt := time.Now().UTC().Add(tokenExpiration).Unix()
+	token, err := New(tokenID, projectID, expiresAt, policies)
 	assert.Nil(t, err)
 
 	rawTk, err := token.Raw()

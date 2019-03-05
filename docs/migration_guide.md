@@ -47,8 +47,8 @@ or above it's not necessary to call the migrator tool to migrate the schema.
     ```
     docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:[tag] --cfg up
     ```
-    **NOTE:** The schema upgrade and data migration of Database is performed by adminserver when Harbor starts, if the migration fails, 
-    please check the log of adminserver to debug.
+    **NOTE:** The schema upgrade and data migration of Database is performed by core when Harbor starts, if the migration fails,
+    please check the log of core to debug.
 
 6. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance. If you choose to install Harbor with components like Notary, Clair, and chartmuseum, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.
 

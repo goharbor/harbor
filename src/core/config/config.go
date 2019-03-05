@@ -225,6 +225,11 @@ func TokenExpiration() (int, error) {
 	return cfgMgr.Get(common.TokenExpiration).GetInt(), nil
 }
 
+// RobotTokenDuration returns the token expiration time of robot account (in minute)
+func RobotTokenDuration() int {
+	return cfgMgr.Get(common.RobotTokenDuration).GetInt()
+}
+
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
 func ExtEndpoint() (string, error) {
 	return cfgMgr.Get(common.ExtEndpoint).GetString(), nil
@@ -456,4 +461,18 @@ func GetClairHealthCheckServerURL() string {
 		return common.DefaultClairHealthCheckServerURL
 	}
 	return url
+}
+
+// HTTPAuthProxySetting returns the setting of HTTP Auth proxy.  the settings are only meaningful when the auth_mode is
+// set to http_auth
+func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+	return &models.HTTPAuthProxy{
+		Endpoint:       cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
+		SkipCertVerify: cfgMgr.Get(common.HTTPAuthProxySkipCertVerify).GetBool(),
+		AlwaysOnBoard:  cfgMgr.Get(common.HTTPAuthProxyAlwaysOnboard).GetBool(),
+	}, nil
+
 }

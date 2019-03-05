@@ -210,7 +210,6 @@ Stopping registry           ... done
 Stopping redis              ... done
 Stopping registryctl        ... done
 Stopping harbor-db          ... done
-Stopping harbor-adminserver ... done
 Stopping harbor-log         ... done
 ```  
 Restarting Harbor after stopping:
@@ -220,7 +219,6 @@ Starting log         ... done
 Starting registry    ... done
 Starting registryctl ... done
 Starting postgresql  ... done
-Starting adminserver ... done
 Starting core        ... done
 Starting portal      ... done
 Starting redis       ... done
@@ -390,7 +388,6 @@ By default, Harbor limits the CPU usage of Clair container to 150000 and avoids 
     $ sudo docker-compose ps
         Name                     Command               State                    Ports                   
   -----------------------------------------------------------------------------------------------------------------------------
-  harbor-adminserver  /harbor/start.sh                 Up
   harbor-core         /harbor/start.sh                 Up
   harbor-db           /entrypoint.sh postgres          Up      5432/tcp
   harbor-jobservice   /harbor/start.sh                 Up
