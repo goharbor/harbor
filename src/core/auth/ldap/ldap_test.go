@@ -32,7 +32,7 @@ import (
 	coreConfig "github.com/goharbor/harbor/src/core/config"
 )
 
-var adminServerLdapTestConfig = map[string]interface{}{
+var ldapTestConfig = map[string]interface{}{
 	common.ExtEndpoint:        "host01.com",
 	common.AUTHMode:           "ldap_auth",
 	common.DatabaseType:       "postgresql",
@@ -75,7 +75,7 @@ var adminServerLdapTestConfig = map[string]interface{}{
 
 func TestMain(m *testing.M) {
 	test.InitDatabaseFromEnv()
-	coreConfig.InitWithSettings(adminServerLdapTestConfig)
+	coreConfig.InitWithSettings(ldapTestConfig)
 
 	secretKeyPath := "/tmp/secretkey"
 	_, err := test.GenerateKey(secretKeyPath)
@@ -93,7 +93,8 @@ func TestMain(m *testing.M) {
 	initSqls := []string{
 		"insert into harbor_user (username, email, password, realname)  values ('member_test_01', 'member_test_01@example.com', '123456', 'member_test_01')",
 		"insert into project (name, owner_id) values ('member_test_01', 1)",
-		"insert into user_group (group_name, group_type, group_property) values ('test_group_01', 1, 'CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com')",
+		"insert into project (name, owner_id) values ('member_test_02', 1)",
+		"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_group_01', 1, 'CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com')",
 		"update project set owner_id = (select user_id from harbor_user where username = 'member_test_01') where name = 'member_test_01'",
 		"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select user_id from harbor_user where username = 'member_test_01'), 'u', 1)",
 		"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_group_01'), 'g', 1)",
@@ -101,6 +102,7 @@ func TestMain(m *testing.M) {
 
 	clearSqls := []string{
 		"delete from project where name='member_test_01'",
+		"delete from project where name='member_test_02'",
 		"delete from harbor_user where username='member_test_01' or username='pm_sample'",
 		"delete from user_group",
 		"delete from project_member",
@@ -383,6 +385,25 @@ func TestAddProjectMemberWithLdapUser(t *testing.T) {
 		Role: models.PROJECTADMIN,
 	}
 	pmid, err := api.AddProjectMember(currentProject.ProjectID, member)
+	if err != nil {
+		t.Errorf("Error occurred in AddOrUpdateProjectMember: %v", err)
+	}
+	if pmid == 0 {
+		t.Errorf("Error occurred in AddOrUpdateProjectMember: pmid:%v", pmid)
+	}
+
+	currentProject, err = dao.GetProjectByName("member_test_02")
+	if err != nil {
+		t.Errorf("Error occurred when GetProjectByName: %v", err)
+	}
+	member2 := models.MemberReq{
+		ProjectID: currentProject.ProjectID,
+		MemberUser: models.User{
+			Username: "mike",
+		},
+		Role: models.PROJECTADMIN,
+	}
+	pmid, err = api.AddProjectMember(currentProject.ProjectID, member2)
 	if err != nil {
 		t.Errorf("Error occurred in AddOrUpdateProjectMember: %v", err)
 	}
