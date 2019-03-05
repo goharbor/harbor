@@ -88,7 +88,6 @@ class HarborAPI:
             "read_only": False,
             "self_registration": selfreg,
             "token_expiration": token,
-            "verify_remote_cert": True,
             "scan_all_policy": {
                 "type": "none",
                 "parameter": {
