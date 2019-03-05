@@ -54,6 +54,7 @@
         "ITEM_REQUIRED": "Le champ est obligatoire.",
         "NUMBER_REQUIRED": "Le champ est obligatoire et doit être numérique.",
         "PORT_REQUIRED": "Le champ est obligatoire et doit être un numéro de port valide.",
+        "CRON_REQUIRED": "Le champ est obligatoire et doit être au format cron.",        
         "EMAIL_EXISTING": "L'adresse e-mail existe déjà.",
         "USER_EXISTING": "Le nom d'utilisateur est déjà utilisé.",
         "NONEMPTY": "Can't be empty",
@@ -613,7 +614,10 @@
             "ROOT_CERT_DOWNLOAD": "Téléchargez le certificat racine du dépôt.",
             "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours.",
             "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
-            "GC_POLICY": ""
+            "GC_POLICY": "",
+            "HOURLY_CRON":"Run once an hour, beginning of hour",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
+            "DAILY_CRON":"Run once a day, midnight"
         },
         "LDAP": {
             "URL": "URL LDAP",

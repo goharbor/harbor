@@ -9,6 +9,7 @@ import { VulnerabilityConfigComponent } from './vulnerability/vulnerability-conf
 import { RegistryConfigComponent } from './registry-config.component';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { GcComponent } from './gc/gc.component';
+import { CronScheduleComponent } from '../cron-schedule/cron-schedule.component';
 
 import {
   ConfigurationService,
@@ -64,7 +65,8 @@ describe('RegistryConfigComponent (inline template)', () => {
         VulnerabilityConfigComponent,
         RegistryConfigComponent,
         ConfirmationDialogComponent,
-        GcComponent
+        GcComponent,
+        CronScheduleComponent
       ],
       providers: [
         ErrorHandler,
