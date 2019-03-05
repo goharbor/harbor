@@ -7,6 +7,11 @@ exemptLabels:
   - backlog
   - kind/debt
   - need-triage
+  - kind/requirement
+  - king/bug
+  - Epic 
+  - target/1.7.5
+  - target/1.8.0
 # Label to use when marking an issue as stale
 staleLabel: staled
 # Comment to post when marking an issue as stale. Set to `false` to disable
