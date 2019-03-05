@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fakedFactory Factory = func(Logger, CancelFunc) (Transfer, error) {
+var fakedFactory Factory = func(Logger, StopFunc) (Transfer, error) {
 	return nil, nil
 }
 

@@ -26,10 +26,10 @@ var (
 )
 
 // Factory creates a specific Transfer. The "Logger" is used
-// to log the processing messages and the "CancelFunc"
-// can be used to check whether the task has been cancelled
+// to log the processing messages and the "StopFunc"
+// can be used to check whether the task has been stopped
 // during the processing progress
-type Factory func(Logger, CancelFunc) (Transfer, error)
+type Factory func(Logger, StopFunc) (Transfer, error)
 
 // Transfer defines an interface used to transfer the source
 // resource to the destination
@@ -57,9 +57,9 @@ type Logger interface {
 	Errorf(format string, v ...interface{})
 }
 
-// CancelFunc is a function used to check whether the transfer
-// process is cancelled
-type CancelFunc func() bool
+// StopFunc is a function used to check whether the transfer
+// process is stopped
+type StopFunc func() bool
 
 // RegisterFactory registers one transfer factory to the registry
 func RegisterFactory(name model.ResourceType, factory Factory) error {
