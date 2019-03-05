@@ -41,7 +41,7 @@ type SearchAPI struct {
 type searchResult struct {
 	Project    []*models.Project        `json:"project"`
 	Repository []map[string]interface{} `json:"repository"`
-	Chart      []*search.Result         `json:"chart,omitempty"`
+	Chart      *[]*search.Result        `json:"chart,omitempty"`
 }
 
 // Get ...
@@ -141,8 +141,8 @@ func (s *SearchAPI) Get() {
 			log.Errorf("failed to filter charts: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, err.Error())
 		}
+		result.Chart = &chartResults
 
-		result.Chart = chartResults
 	}
 
 	s.Data["json"] = result
