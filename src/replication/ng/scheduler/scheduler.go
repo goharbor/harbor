@@ -15,8 +15,29 @@
 package scheduler
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
+
+	"github.com/goharbor/harbor/src/common/job"
+	common_job "github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/jobservice/opm"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
+
+// DefaultReplicator provides a default implement for Replicator
+type DefaultReplicator struct {
+	client job.Client
+}
+
+// NewDefaultReplicator returns an instance of DefaultReplicator
+func NewDefaultReplicator(client job.Client) *DefaultReplicator {
+	return &DefaultReplicator{
+		client: client,
+	}
+}
 
 // ScheduleItem is an item that can be scheduled
 type ScheduleItem struct {
@@ -41,4 +62,82 @@ type Scheduler interface {
 	Schedule([]*ScheduleItem) ([]*ScheduleResult, error)
 	// Stop the job specified by ID
 	Stop(id string) error
+}
+
+// Preprocess the resources and returns the item list that can be scheduled
+func (d *DefaultReplicator) Preprocess(srcResources []*model.Resource, destResources []*model.Resource) ([]*ScheduleItem, error) {
+	if len(srcResources) != len(destResources) {
+		err := errors.New("srcResources has different length with destResources")
+		return nil, err
+	}
+	var items []*ScheduleItem
+	for index, srcResource := range srcResources {
+		destResource := destResources[index]
+		item := &ScheduleItem{
+			SrcResource: srcResource,
+			DstResource: destResource,
+		}
+		items = append(items, item)
+
+	}
+	return items, nil
+}
+
+// Schedule transfer the tasks to jobs,and then submit these jobs to job service.
+func (d *DefaultReplicator) Schedule(items []*ScheduleItem) ([]*ScheduleResult, error) {
+	var results []*ScheduleResult
+	for _, item := range items {
+		result := &ScheduleResult{
+			TaskID: item.TaskID,
+		}
+		if item.TaskID == 0 {
+			result.Error = errors.New("some tasks do not have a ID")
+			results = append(results, result)
+			continue
+		}
+		job := &models.JobData{
+			Metadata: &models.JobMetadata{
+				JobKind: job.JobKindGeneric,
+			},
+			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/replication/task/%d", config.InternalCoreURL(), item.TaskID),
+		}
+
+		job.Name = common_job.ImageTransfer
+		src, err := json.Marshal(item.SrcResource)
+		if err != nil {
+			result.Error = err
+			results = append(results, result)
+			continue
+		}
+		dest, err := json.Marshal(item.DstResource)
+		if err != nil {
+			result.Error = err
+			results = append(results, result)
+			continue
+		}
+		job.Parameters = map[string]interface{}{
+			"src_resource": string(src),
+			"dst_resource": string(dest),
+		}
+		_, joberr := d.client.SubmitJob(job)
+		if joberr != nil {
+			result.Error = joberr
+			results = append(results, result)
+			continue
+		}
+		results = append(results, result)
+	}
+	return results, nil
+
+}
+
+// Stop the transfer job
+func (d *DefaultReplicator) Stop(id string) error {
+
+	err := d.client.PostAction(id, opm.CtlCommandStop)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
