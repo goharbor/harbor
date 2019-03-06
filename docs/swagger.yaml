@@ -4671,15 +4671,10 @@ definitions:
     properties:
       type:
         type: string
-        description: The schedule type. The valid values are daily， weekly and None. 'None' means to cancel the schedule.
-      weekday:
-        type: integer
-        format: int8
-        description: 'Optional, only used when the type is weekly. The valid values are 1-7.'
-      offtime:
-        type: integer
-        format: int64
-        description: 'The time offset with the UTC 00:00 in seconds.'
+        description: The schedule type. The valid values are hourly, daily， weekly, custom and None. 'None' means to cancel the schedule.
+      cron:
+        type: string
+        description: A cron expression, a time-based job scheduler.
   SearchResult:
     type: object
     description: The chart search result item

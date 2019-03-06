@@ -41,16 +41,15 @@ func TestMain(m *testing.M) {
 
 func TestToJob(t *testing.T) {
 	schedule := &ScheduleParam{
-		Type:    "Daily",
-		Offtime: 200,
+		Type: "Daily",
+		Cron: "20 3 0 * * *",
 	}
 
 	adminjob := &GCReq{
 		Schedule: schedule,
 	}
 
-	job, err := adminjob.ToJob()
-	assert.Nil(t, err)
+	job := adminjob.ToJob()
 	assert.Equal(t, job.Name, "IMAGE_GC")
 	assert.Equal(t, job.Metadata.JobKind, common_job.JobKindPeriodic)
 	assert.Equal(t, job.Metadata.Cron, "20 3 0 * * *")
@@ -65,29 +64,15 @@ func TestToJobManual(t *testing.T) {
 		Schedule: schedule,
 	}
 
-	job, err := adminjob.ToJob()
-	assert.Nil(t, err)
+	job := adminjob.ToJob()
 	assert.Equal(t, job.Name, "IMAGE_GC")
 	assert.Equal(t, job.Metadata.JobKind, common_job.JobKindGeneric)
 }
 
-func TestToJobErr(t *testing.T) {
-	schedule := &ScheduleParam{
-		Type: "test",
-	}
-
-	adminjob := &GCReq{
-		Schedule: schedule,
-	}
-
-	_, err := adminjob.ToJob()
-	assert.NotNil(t, err)
-}
-
 func TestIsPeriodic(t *testing.T) {
 	schedule := &ScheduleParam{
-		Type:    "Daily",
-		Offtime: 200,
+		Type: "Daily",
+		Cron: "20 3 0 * * *",
 	}
 
 	adminjob := &GCReq{
@@ -100,8 +85,8 @@ func TestIsPeriodic(t *testing.T) {
 
 func TestJobKind(t *testing.T) {
 	schedule := &ScheduleParam{
-		Type:    "Daily",
-		Offtime: 200,
+		Type: "Daily",
+		Cron: "20 3 0 * * *",
 	}
 	adminjob := &GCReq{
 		Schedule: schedule,
@@ -121,12 +106,12 @@ func TestJobKind(t *testing.T) {
 
 func TestCronString(t *testing.T) {
 	schedule := &ScheduleParam{
-		Type:    "Daily",
-		Offtime: 102,
+		Type: "Daily",
+		Cron: "20 3 0 * * *",
 	}
 	adminjob := &GCReq{
 		Schedule: schedule,
 	}
 	cronStr := adminjob.CronString()
-	assert.True(t, strings.EqualFold(cronStr, "{\"type\":\"Daily\",\"Weekday\":0,\"Offtime\":102}"))
+	assert.True(t, strings.EqualFold(cronStr, "{\"type\":\"Daily\",\"Cron\":\"20 3 0 * * *\"}"))
 }
