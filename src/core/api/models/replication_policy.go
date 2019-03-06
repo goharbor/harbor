@@ -20,22 +20,23 @@ import (
 	"github.com/astaxie/beego/validation"
 	common_models "github.com/goharbor/harbor/src/common/models"
 	rep_models "github.com/goharbor/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 )
 
 // ReplicationPolicy defines the data model used in API level
 type ReplicationPolicy struct {
-	ID                        int64                      `json:"id"`
-	Name                      string                     `json:"name"`
-	Description               string                     `json:"description"`
-	Filters                   []rep_models.Filter        `json:"filters"`
-	ReplicateDeletion         bool                       `json:"replicate_deletion"`
-	Trigger                   *rep_models.Trigger        `json:"trigger"`
-	Projects                  []*common_models.Project   `json:"projects"`
-	Targets                   []*common_models.RepTarget `json:"targets"`
-	CreationTime              time.Time                  `json:"creation_time"`
-	UpdateTime                time.Time                  `json:"update_time"`
-	ReplicateExistingImageNow bool                       `json:"replicate_existing_image_now"`
-	ErrorJobCount             int64                      `json:"error_job_count"`
+	ID                        int64                    `json:"id"`
+	Name                      string                   `json:"name"`
+	Description               string                   `json:"description"`
+	Filters                   []rep_models.Filter      `json:"filters"`
+	ReplicateDeletion         bool                     `json:"replicate_deletion"`
+	Trigger                   *rep_models.Trigger      `json:"trigger"`
+	Projects                  []*common_models.Project `json:"projects"`
+	Registries                []*models.Registry       `json:"registries"`
+	CreationTime              time.Time                `json:"creation_time"`
+	UpdateTime                time.Time                `json:"update_time"`
+	ReplicateExistingImageNow bool                     `json:"replicate_existing_image_now"`
+	ErrorJobCount             int64                    `json:"error_job_count"`
 }
 
 // Valid ...
@@ -52,7 +53,7 @@ func (r *ReplicationPolicy) Valid(v *validation.Validation) {
 		v.SetError("projects", "can not be empty")
 	}
 
-	if len(r.Targets) == 0 {
+	if len(r.Registries) == 0 {
 		v.SetError("targets", "can not be empty")
 	}
 

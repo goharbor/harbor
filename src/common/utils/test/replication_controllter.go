@@ -14,13 +14,17 @@
 
 package test
 
+// FakeReplicatoinController ...
 type FakeReplicatoinController struct {
 	FakePolicyManager
 }
 
-func (f *FakeReplicatoinController) Init() error {
+// Init initialize replication controller
+func (f *FakeReplicatoinController) Init(closing chan struct{}) error {
 	return nil
 }
+
+// Replicate ...
 func (f *FakeReplicatoinController) Replicate(policyID int64, metadata ...map[string]interface{}) error {
 	return nil
 }

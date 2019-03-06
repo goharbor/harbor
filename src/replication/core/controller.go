@@ -18,25 +18,28 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	common_models "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/registry"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/replicator"
 	"github.com/goharbor/harbor/src/replication/source"
-	"github.com/goharbor/harbor/src/replication/target"
 	"github.com/goharbor/harbor/src/replication/trigger"
 
 	"github.com/docker/distribution/uuid"
+	"github.com/goharbor/harbor/src/replication/ng"
 )
 
 // Controller defines the methods that a replicatoin controllter should implement
 type Controller interface {
 	policy.Manager
-	Init() error
+	Init(closing chan struct{}) error
 	Replicate(policyID int64, metadata ...map[string]interface{}) error
 }
 
@@ -49,8 +52,8 @@ type DefaultController struct {
 	// Manage the policies
 	policyManager policy.Manager
 
-	// Manage the targets
-	targetManager target.Manager
+	// Manage the registries
+	registryManager registry.Manager
 
 	// Handle the things related with source
 	sourcer *source.Sourcer
@@ -77,10 +80,10 @@ type ControllerConfig struct {
 func NewDefaultController(cfg ControllerConfig) *DefaultController {
 	// Controller refer the default instances
 	ctl := &DefaultController{
-		policyManager:  policy.NewDefaultManager(),
-		targetManager:  target.NewDefaultManager(),
-		sourcer:        source.NewSourcer(),
-		triggerManager: trigger.NewManager(cfg.CacheCapacity),
+		policyManager:   policy.NewDefaultManager(),
+		registryManager: registry.NewDefaultManager(),
+		sourcer:         source.NewSourcer(),
+		triggerManager:  trigger.NewManager(cfg.CacheCapacity),
 	}
 
 	ctl.replicator = replicator.NewDefaultReplicator(utils.GetJobServiceClient())
@@ -88,14 +91,19 @@ func NewDefaultController(cfg ControllerConfig) *DefaultController {
 	return ctl
 }
 
-// Init creates the GlobalController and inits it
-func Init() error {
-	GlobalController = NewDefaultController(ControllerConfig{}) // Use default data
-	return GlobalController.Init()
+// Init initializes GlobalController and replication related managers
+func Init(closing chan struct{}) error {
+	GlobalController = NewDefaultController(ControllerConfig{})
+	err := GlobalController.Init(closing)
+	if err != nil {
+		return err
+	}
+
+	return ng.Init()
 }
 
 // Init will initialize the controller and the sub components
-func (ctl *DefaultController) Init() error {
+func (ctl *DefaultController) Init(closing chan struct{}) error {
 	if ctl.initialized {
 		return nil
 	}
@@ -104,6 +112,9 @@ func (ctl *DefaultController) Init() error {
 	ctl.sourcer.Init()
 
 	ctl.initialized = true
+
+	// Start registry health checker to regularly check registries' health status
+	go registry.NewHealthChecker(time.Second*30, closing).Run()
 
 	return nil
 }
@@ -215,13 +226,13 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 		log.Debugf("replication candidates are null, no further action needed")
 	}
 
-	targets := []*common_models.RepTarget{}
+	registries := []*model.Registry{}
 	for _, targetID := range policy.TargetIDs {
-		target, err := ctl.targetManager.GetTarget(targetID)
+		r, err := ctl.registryManager.Get(targetID)
 		if err != nil {
 			return err
 		}
-		targets = append(targets, target)
+		registries = append(registries, r)
 	}
 
 	// Get operation uuid from metadata, if none provided, generate one.
@@ -235,7 +246,7 @@ func (ctl *DefaultController) Replicate(policyID int64, metadata ...map[string]i
 		PolicyID:   policyID,
 		OpUUID:     opUUID,
 		Candidates: candidates,
-		Targets:    targets,
+		Registries: registries,
 	})
 }
 

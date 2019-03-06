@@ -2080,119 +2080,92 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
-  /targets:
+  /registries:
     get:
-      summary: List filters targets by name.
+      summary: List registries.
       description: |
-        This endpoint let user list filters targets by name, if name is nil, list returns all targets.
+        This endpoint let user list filtered registries by name, if name is nil, list returns all registries.
       parameters:
         - name: name
           in: query
           type: string
           required: false
-          description: The replication's target name.
+          description: Registry's name.
       tags:
         - Products
       responses:
         '200':
-          description: Get policy successfully.
+          description: List registries successfully.
           schema:
             type: array
             items:
-              $ref: '#/definitions/RepTarget'
+              $ref: '#/definitions/Registry'
         '401':
           description: User need to log in first.
         '500':
           description: Unexpected internal errors.
     post:
-      summary: Create a new replication target.
+      summary: Create a new registry.
       description: |
-        This endpoint is for user to create a new replication target.
+        This endpoint is for user to create a new registry.
       parameters:
-        - name: reptarget
+        - name: registry
           in: body
-          description: New created replication target.
+          description: New created registry.
           required: true
           schema:
-            $ref: '#/definitions/RepTargetPost'
+            $ref: '#/definitions/Registry'
       tags:
         - Products
       responses:
         '201':
-          description: Replication target created successfully.
+          description: Registry created successfully.
         '400':
-          description: Unsatisfied with constraints of the target creation.
+          description: Unsatisfied with constraints of the registry creation.
         '401':
           description: User need to log in first.
         '409':
-          description: Replication target name already exists.
+          description: Registry name already exists.
         '415':
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
-  /targets/ping:
-    post:
-      summary: Ping validates target.
-      description: |
-        This endpoint is for ping validates whether the target is reachable and whether the credential is valid.
-      parameters:
-        - name: target
-          in: body
-          description: The target object.
-          required: true
-          schema:
-            $ref: '#/definitions/PingTarget'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Ping target successfully.
-        '400':
-          description: Target id is invalid/ endpoint is needed/ invaild URL/ network issue.
-        '401':
-          description: User need to log in first or wrong username/password for remote target.
-        '404':
-          description: Target not found.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
-        '500':
-          description: Unexpected internal errors.
-  '/targets/{id}':
+  '/registries/{id}':
     put:
-      summary: Update replication's target.
+      summary: Update a given registry.
       description: |
-        This endpoint is for update specific replication's target.
+        This endpoint is for update a given registry.
       parameters:
         - name: id
           in: path
           type: integer
           format: int64
           required: true
-          description: The replication's target ID.
+          description: The registry's ID.
         - name: repo_target
           in: body
           required: true
           schema:
-            $ref: '#/definitions/PutTarget'
-          description: Updates of replication's target.
+            $ref: '#/definitions/PutRegistry'
+          description: Updates registry.
       tags:
         - Products
       responses:
         '200':
-          description: Updated replication's target successfully.
+          description: Updated registry successfully.
         '400':
-          description: The target is associated with policy which is enabled.
+          description: The registry is associated with policy which is enabled.
         '401':
           description: User need to log in first.
         '404':
-          description: Target ID does not exist.
+          description: Registry does not exist.
         '409':
-          description: Target name or endpoint is already used.
+          description: Registry name is already used.
         '500':
           description: Unexpected internal errors.
     get:
-      summary: Get replication's target.
-      description: This endpoint is for get specific replication's target.
+      summary: Get registry.
+      description: This endpoint is for get specific registry.
       tags:
         - Products
       parameters:
@@ -2201,40 +2174,40 @@ paths:
           type: integer
           format: int64
           required: true
-          description: The replication's target ID.
+          description: The registry ID.
       responses:
         '200':
-          description: Get replication's target successfully.
+          description: Get registry successfully.
           schema:
-            $ref: '#/definitions/RepTarget'
+            $ref: '#/definitions/Registry'
         '401':
           description: User need to log in first.
         '404':
-          description: Replication's target not found
+          description: Registry not found
         '500':
           description: Unexpected internal errors.
     delete:
-      summary: Delete specific replication's target.
+      summary: Delete specific registry.
       description: |
-        This endpoint is for to delete specific replication's target.
+        This endpoint is for to delete specific registry.
       parameters:
         - name: id
           in: path
           type: integer
           format: int64
           required: true
-          description: The replication's target ID.
+          description: The registry's ID.
       tags:
         - Products
       responses:
         '200':
-          description: Replication's target deleted successfully.
+          description: Registry deleted successfully.
         '400':
-          description: Replication's target ID is invalid or the target is used by policies.
+          description: Registry's ID is invalid or the registry is used by policies.
         '401':
           description: Only admin has this authority.
         '404':
-          description: Replication's target does not exist.
+          description: Registry does not exist.
         '500':
           description: Unexpected internal errors.
   '/targets/{id}/policies/':
@@ -2672,15 +2645,15 @@ paths:
         - Products
       responses:
         '200':
-          description: Updated replication's target successfully.
+          description: Updated gc's schedule successfully.
         '400':
-          description: The target is associated with policy which is enabled.
+          description: Bad params.
         '401':
           description: User need to log in first.
         '403':
           description: User does not have permission of admin role.
         '404':
-          description: Target ID does not exist.
+          description: GC schedule does not exist.
         '500':
           description: Unexpected internal errors.
     post:
@@ -3624,11 +3597,11 @@ definitions:
         description: The project list that the policy applys to.
         items:
           $ref: '#/definitions/Project'
-      targets:
+      registries:
         type: array
         description: The target list.
         items:
-          $ref: '#/definitions/RepTarget'
+          $ref: '#/definitions/Registry'
       trigger:
         $ref: '#/definitions/RepTrigger'
       filters:
@@ -3688,90 +3661,69 @@ definitions:
       metadata:
         type: object
         description: This map object is the replication policy filter metadata.
-  RepTarget:
+  RegistryCredential:
+    type: object
+    properties:
+      type:
+        type: string
+        description: Credential type, such as 'basic', 'oauth'.
+      access_key:
+        type: string
+        description: Access key, e.g. user name when credential type is 'basic'.
+      access_secret:
+        type: string
+        description: Access secret, e.g. password when credential type is 'basic'.
+  Registry:
     type: object
     properties:
       id:
         type: integer
         format: int64
-        description: The target ID.
-      endpoint:
+        description: The registry ID.
+      url:
         type: string
-        description: The target address URL string.
+        description: The registry URL string.
       name:
         type: string
-        description: The target name.
-      username:
-        type: string
-        description: The target server username.
-      password:
-        type: string
-        description: The target server password.
+        description: The registry name.
+      credential:
+        $ref: '#/definitions/RegistryCredential'
       type:
-        type: integer
-        format: int
-        description: Reserved field.
+        type: string
+        description: Type of the registry, e.g. 'harbor'.
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      description:
+        type: string
+        description: Description of the registry.
+      status:
+        type: string
+        description: Health status of the registry.
       creation_time:
         type: string
         description: The create time of the policy.
       update_time:
         type: string
         description: The update time of the policy.
-  RepTargetPost:
-    type: object
-    properties:
-      endpoint:
-        type: string
-        description: The target address URL string.
-      name:
-        type: string
-        description: The target name.
-      username:
-        type: string
-        description: The target server username.
-      password:
-        type: string
-        description: The target server password.
-      insecure:
-        type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the server.
-  PingTarget:
-    type: object
-    properties:
-      id:
-        type: integer
-        format: int
-        description: Target ID.
-      endpoint:
-        type: string
-        description: The target address URL string.
-      username:
-        type: string
-        description: The target server username.
-      password:
-        type: string
-        description: The target server password.
-      insecure:
-        type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the server.
-  PutTarget:
+  PutRegistry:
     type: object
     properties:
       name:
         type: string
-        description: The target name.
-      endpoint:
+        description: The registry name.
+      url:
         type: string
-        description: The target address URL string.
-      username:
+        description: The registry address URL string.
+      credential_type:
         type: string
-        description: The target server username.
-      password:
+        description: Credential type of the registry, e.g. 'basic'.
+      access_key:
         type: string
-        description: The target server password.
+        description: The registry access key.
+      access_secret:
+        type: string
+        description: The registry access secret.
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.

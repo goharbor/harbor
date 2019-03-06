@@ -15,7 +15,6 @@
 package flow
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -39,7 +38,8 @@ type Controller interface {
 func NewController(registryMgr registry.Manager,
 	executionMgr execution.Manager, scheduler scheduler.Scheduler) (Controller, error) {
 	if registryMgr == nil || executionMgr == nil || scheduler == nil {
-		return nil, errors.New("invalid params")
+		// TODO(ChenDe): Uncomment it when execution manager is ready
+		// return nil, errors.New("invalid params")
 	}
 	return &defaultController{
 		registryMgr:  registryMgr,

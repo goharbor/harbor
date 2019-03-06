@@ -68,10 +68,16 @@ func (f *fakedRegistryManager) Get(id int64) (*model.Registry, error) {
 	}
 	return nil, nil
 }
+func (f *fakedRegistryManager) GetByName(name string) (*model.Registry, error) {
+	return nil, nil
+}
 func (f *fakedRegistryManager) Update(*model.Registry, ...string) error {
 	return nil
 }
 func (f *fakedRegistryManager) Remove(int64) error {
+	return nil
+}
+func (f *fakedRegistryManager) HealthCheck() error {
 	return nil
 }
 

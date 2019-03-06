@@ -21,24 +21,24 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/ng/registry"
 	"github.com/goharbor/harbor/src/replication/source"
-	"github.com/goharbor/harbor/src/replication/target"
 	"github.com/goharbor/harbor/src/replication/trigger"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
 	GlobalController = &DefaultController{
-		policyManager:  &test.FakePolicyManager{},
-		targetManager:  target.NewDefaultManager(),
-		sourcer:        source.NewSourcer(),
-		triggerManager: trigger.NewManager(0),
+		policyManager:   &test.FakePolicyManager{},
+		registryManager: registry.NewDefaultManager(),
+		sourcer:         source.NewSourcer(),
+		triggerManager:  trigger.NewManager(0),
 	}
 	os.Exit(m.Run())
 }
 
 func TestInit(t *testing.T) {
-	assert.Nil(t, GlobalController.Init())
+	assert.Nil(t, GlobalController.Init(make(chan struct{})))
 }
 
 func TestCreatePolicy(t *testing.T) {

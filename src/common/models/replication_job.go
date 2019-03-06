@@ -16,9 +16,6 @@ package models
 
 import (
 	"time"
-
-	"github.com/astaxie/beego/validation"
-	"github.com/goharbor/harbor/src/common/utils"
 )
 
 const (
@@ -28,8 +25,8 @@ const (
 	RepOpDelete string = "delete"
 	// RepOpSchedule represents the operation of a job to schedule the real replication process
 	RepOpSchedule string = "schedule"
-	// RepTargetTable is the table name for replication targets
-	RepTargetTable = "replication_target"
+	// RegistryTable is the table name for registry
+	RegistryTable = "registry"
 	// RepJobTable is the table name for replication jobs
 	RepJobTable = "replication_job"
 	// RepPolicyTable is table name for replication policies
@@ -65,52 +62,6 @@ type RepJob struct {
 	UUID         string    `orm:"column(job_uuid)" json:"-"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
-}
-
-// RepTarget is the model for a replication targe, i.e. destination, which wraps the endpoint URL and username/password of a remote registry.
-type RepTarget struct {
-	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
-	URL          string    `orm:"column(url)" json:"endpoint"`
-	Name         string    `orm:"column(name)" json:"name"`
-	Username     string    `orm:"column(username)" json:"username"`
-	Password     string    `orm:"column(password)" json:"password"`
-	Type         int       `orm:"column(target_type)" json:"type"`
-	Insecure     bool      `orm:"column(insecure)" json:"insecure"`
-	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
-	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
-}
-
-// Valid ...
-func (r *RepTarget) Valid(v *validation.Validation) {
-	if len(r.Name) == 0 {
-		v.SetError("name", "can not be empty")
-	}
-
-	if len(r.Name) > 64 {
-		v.SetError("name", "max length is 64")
-	}
-
-	url, err := utils.ParseEndpoint(r.URL)
-	if err != nil {
-		v.SetError("endpoint", err.Error())
-	} else {
-		// Prevent SSRF security issue #3755
-		r.URL = url.Scheme + "://" + url.Host + url.Path
-		if len(r.URL) > 64 {
-			v.SetError("endpoint", "max length is 64")
-		}
-	}
-
-	// password is encoded using base64, the length of this field
-	// in DB is 64, so the max length in request is 48
-	if len(r.Password) > 48 {
-		v.SetError("password", "max length is 48")
-	}
-}
-
-// TableName is required by by beego orm to map RepTarget to table replication_target
-func (r *RepTarget) TableName() string {
-	return RepTargetTable
 }
 
 // TableName is required by by beego orm to map RepJob to table replication_job

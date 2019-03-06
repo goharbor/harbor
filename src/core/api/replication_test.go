@@ -18,11 +18,14 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	api_models "github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/replication"
-	"github.com/stretchr/testify/require"
+	rep_dao "github.com/goharbor/harbor/src/replication/ng/dao"
+	dao_models "github.com/goharbor/harbor/src/replication/ng/dao/models"
 )
 
 const (
@@ -30,15 +33,15 @@ const (
 )
 
 func TestReplicationAPIPost(t *testing.T) {
-	targetID, err := dao.AddRepTarget(
-		models.RepTarget{
-			Name:     "test_replication_target",
-			URL:      "127.0.0.1",
-			Username: "username",
-			Password: "password",
+	registryID, err := rep_dao.AddRegistry(
+		&dao_models.Registry{
+			Name:         "test_replication_target",
+			URL:          "127.0.0.1",
+			AccessKey:    "username",
+			AccessSecret: "password",
 		})
 	require.Nil(t, err)
-	defer dao.DeleteRepTarget(targetID)
+	defer rep_dao.DeleteRegistry(registryID)
 
 	policyID, err := dao.AddRepPolicy(
 		models.RepPolicy{

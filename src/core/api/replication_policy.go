@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/core"
 	rep_models "github.com/goharbor/harbor/src/replication/models"
+	rep_dao "github.com/goharbor/harbor/src/replication/ng/dao"
 )
 
 // RepPolicyAPI handles /api/replicationPolicies /api/replicationPolicies/:id/enablement
@@ -158,15 +159,15 @@ func (pa *RepPolicyAPI) Post() {
 	}
 
 	// check the existence of targets
-	for _, target := range policy.Targets {
-		t, err := dao.GetRepTarget(target.ID)
+	for _, r := range policy.Registries {
+		t, err := rep_dao.GetRegistry(r.ID)
 		if err != nil {
-			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", target.ID, err))
+			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", r.ID, err))
 			return
 		}
 
 		if t == nil {
-			pa.HandleNotFound(fmt.Sprintf("target %d not found", target.ID))
+			pa.HandleNotFound(fmt.Sprintf("target %d not found", r.ID))
 			return
 		}
 	}
@@ -271,15 +272,15 @@ func (pa *RepPolicyAPI) Put() {
 	}
 
 	// check the existence of targets
-	for _, target := range policy.Targets {
-		t, err := dao.GetRepTarget(target.ID)
+	for _, r := range policy.Registries {
+		t, err := rep_dao.GetRegistry(r.ID)
 		if err != nil {
-			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", target.ID, err))
+			pa.HandleInternalServerError(fmt.Sprintf("failed to get target %d: %v", r.ID, err))
 			return
 		}
 
 		if t == nil {
-			pa.HandleNotFound(fmt.Sprintf("target %d not found", target.ID))
+			pa.HandleNotFound(fmt.Sprintf("target %d not found", r.ID))
 			return
 		}
 	}
@@ -379,12 +380,12 @@ func convertFromRepPolicy(projectMgr promgr.ProjectManager, policy rep_models.Re
 
 	// populate targets
 	for _, targetID := range policy.TargetIDs {
-		target, err := dao.GetRepTarget(targetID)
+		r, err := rep_dao.GetRegistry(targetID)
 		if err != nil {
 			return nil, err
 		}
-		target.Password = ""
-		ply.Targets = append(ply.Targets, target)
+		r.AccessSecret = ""
+		ply.Registries = append(ply.Registries, r)
 	}
 
 	// populate label used in label filter
@@ -434,8 +435,8 @@ func convertToRepPolicy(policy *api_models.ReplicationPolicy) rep_models.Replica
 		ply.Namespaces = append(ply.Namespaces, project.Name)
 	}
 
-	for _, target := range policy.Targets {
-		ply.TargetIDs = append(ply.TargetIDs, target.ID)
+	for _, r := range policy.Registries {
+		ply.TargetIDs = append(ply.TargetIDs, r.ID)
 	}
 
 	return ply

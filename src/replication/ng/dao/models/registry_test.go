@@ -22,58 +22,58 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestValidOfTarget(t *testing.T) {
+func TestValidOfRegistry(t *testing.T) {
 	cases := []struct {
-		target   RepTarget
+		target   Registry
 		err      bool
-		expected RepTarget
+		expected Registry
 	}{
 		// name is null
 		{
-			RepTarget{
+			Registry{
 				Name: "",
 			},
 			true,
-			RepTarget{}},
+			Registry{}},
 
 		// url is null
 		{
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "",
 			},
 			true,
-			RepTarget{},
+			Registry{},
 		},
 
 		// invalid url
 		{
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "ftp://example.com",
 			},
 			true,
-			RepTarget{},
+			Registry{},
 		},
 
 		// invalid url
 		{
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "ftp://example.com",
 			},
 			true,
-			RepTarget{},
+			Registry{},
 		},
 
 		// valid url
 		{
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "example.com",
 			},
 			false,
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "http://example.com",
 			},
@@ -81,12 +81,12 @@ func TestValidOfTarget(t *testing.T) {
 
 		// valid url
 		{
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "http://example.com",
 			},
 			false,
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "http://example.com",
 			},
@@ -94,12 +94,12 @@ func TestValidOfTarget(t *testing.T) {
 
 		// valid url
 		{
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "https://example.com",
 			},
 			false,
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "https://example.com",
 			},
@@ -107,12 +107,12 @@ func TestValidOfTarget(t *testing.T) {
 
 		// valid url
 		{
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "http://example.com/redirect?key=value",
 			},
 			false,
-			RepTarget{
+			Registry{
 				Name: "endpoint01",
 				URL:  "http://example.com/redirect",
 			}},

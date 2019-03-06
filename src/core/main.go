@@ -18,7 +18,9 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
@@ -69,6 +71,13 @@ func updateInitPassword(userID int, password string) error {
 		log.Infof("User id: %d already has its encrypted password.", userID)
 	}
 	return nil
+}
+
+func gracefulShutdown(closing chan struct{}) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	log.Infof("capture system signal %s, to close \"closing\" channel", <-signals)
+	close(closing)
 }
 
 func main() {
@@ -128,7 +137,10 @@ func main() {
 		}
 	}
 
-	if err := core.Init(); err != nil {
+	closing := make(chan struct{})
+	go gracefulShutdown(closing)
+
+	if err := core.Init(closing); err != nil {
 		log.Errorf("failed to initialize the replication controller: %v", err)
 	}
 
