@@ -99,6 +99,9 @@ func initRouters() {
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "post:Post")
 	beego.Router("/api/logs", &api.LogAPI{})
 
+	beego.Router("/api/replication/adapters", &api.ReplicationAdapterAPI{}, "get:List")
+	beego.Router("/api/replication/adapters/:type", &api.ReplicationAdapterAPI{}, "get:Get")
+
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
 	beego.Router("/api/statistics", &api.StatisticAPI{})

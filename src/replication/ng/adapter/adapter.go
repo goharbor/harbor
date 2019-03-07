@@ -21,23 +21,28 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
-var registry = map[model.RegistryType]Factory{}
+// As the Info isn't a valid map key, so we use the slice
+// as the adapter registry
+var registry = []*item{}
 
-// Factory creates a specific Adapter according to the params
-type Factory func(*model.Registry) (Adapter, error)
+type item struct {
+	info    *Info
+	factory Factory
+}
 
 // Info provides base info and capability declarations of the adapter
 type Info struct {
-	Name                     model.RegistryType   `json:"name"`
+	Type                     model.RegistryType   `json:"type"`
 	Description              string               `json:"description"`
 	SupportedResourceTypes   []model.ResourceType `json:"supported_resource_types"`
 	SupportedResourceFilters []model.FilterType   `json:"supported_resource_filters"`
 }
 
+// Factory creates a specific Adapter according to the params
+type Factory func(*model.Registry) (Adapter, error)
+
 // Adapter interface defines the capabilities of registry
 type Adapter interface {
-	// Info return the information of this adapter
-	Info() *Info
 	// Lists the available namespaces under the specified registry with the
 	// provided credential/token
 	ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error)
@@ -55,26 +60,53 @@ type Adapter interface {
 }
 
 // RegisterFactory registers one adapter factory to the registry
-func RegisterFactory(name model.RegistryType, factory Factory) error {
-	if !name.Valid() {
-		return errors.New("invalid adapter factory name")
+func RegisterFactory(info *Info, factory Factory) error {
+	if len(info.Type) == 0 {
+		return errors.New("invalid registry type")
+	}
+	if len(info.SupportedResourceTypes) == 0 {
+		return errors.New("must support at least one resource type")
 	}
 	if factory == nil {
 		return errors.New("empty adapter factory")
 	}
-	if _, exist := registry[name]; exist {
-		return fmt.Errorf("adapter factory for %s already exists", name)
+	for _, item := range registry {
+		if item.info.Type == info.Type {
+			return fmt.Errorf("adapter factory for %s already exists", info.Type)
+		}
 	}
-	registry[name] = factory
+	registry = append(registry, &item{
+		info:    info,
+		factory: factory,
+	})
 	return nil
 }
 
 // GetFactory gets the adapter factory by the specified name
-func GetFactory(name model.RegistryType) (Factory, error) {
-	factory, exist := registry[name]
-	if !exist {
-		return nil, fmt.Errorf("adapter factory for %s not found", name)
+func GetFactory(t model.RegistryType) (Factory, error) {
+	for _, item := range registry {
+		if item.info.Type == t {
+			return item.factory, nil
+		}
 	}
+	return nil, fmt.Errorf("adapter factory for %s not found", t)
+}
 
-	return factory, nil
+// ListAdapterInfos lists the info of registered Adapters
+func ListAdapterInfos() []*Info {
+	infos := []*Info{}
+	for _, item := range registry {
+		infos = append(infos, item.info)
+	}
+	return infos
+}
+
+// GetAdapterInfo returns the info of a specified registry type
+func GetAdapterInfo(t model.RegistryType) *Info {
+	for _, item := range registry {
+		if item.info.Type == t {
+			return item.info
+		}
+	}
+	return nil
 }
