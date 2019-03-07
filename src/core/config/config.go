@@ -212,11 +212,12 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 		return nil, err
 	}
 	return &models.LdapGroupConf{
-		LdapGroupBaseDN:        cfgMgr.Get(common.LDAPGroupBaseDN).GetString(),
-		LdapGroupFilter:        cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
-		LdapGroupNameAttribute: cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
-		LdapGroupSearchScope:   cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
-		LdapGroupAdminDN:       cfgMgr.Get(common.LdapGroupAdminDn).GetString(),
+		LdapGroupBaseDN:              cfgMgr.Get(common.LDAPGroupBaseDN).GetString(),
+		LdapGroupFilter:              cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
+		LdapGroupNameAttribute:       cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
+		LdapGroupSearchScope:         cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
+		LdapGroupAdminDN:             cfgMgr.Get(common.LdapGroupAdminDn).GetString(),
+		LdapGroupMembershipAttribute: cfgMgr.Get(common.LDAPGroupMembershipAttribute).GetString(),
 	}, nil
 }
 
