@@ -102,6 +102,7 @@ func init() {
 	beego.Router("/api/projects/:id", &ProjectAPI{}, "delete:Delete;get:Get;put:Put")
 	beego.Router("/api/users/:id", &UserAPI{}, "get:Get")
 	beego.Router("/api/users", &UserAPI{}, "get:List;post:Post;delete:Delete;put:Put")
+	beego.Router("/api/users/search", &UserAPI{}, "get:Search")
 	beego.Router("/api/users/:id([0-9]+)/password", &UserAPI{}, "put:ChangePassword")
 	beego.Router("/api/users/:id/permissions", &UserAPI{}, "get:ListUserPermissions")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
@@ -907,6 +908,25 @@ func (a testapi) UsersGet(userName string, authInfo usrInfo) (int, []apilib.User
 	_sling = _sling.QueryStruct(&QueryParams{UserName: userName})
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
 	var successPayLoad []apilib.User
+	if 200 == httpStatusCode && nil == err {
+		err = json.Unmarshal(body, &successPayLoad)
+	}
+	return httpStatusCode, successPayLoad, err
+}
+
+// Search registered users of Harbor.
+func (a testapi) UsersSearch(userName string, authInfo ...usrInfo) (int, []apilib.UserSearch, error) {
+	_sling := sling.New().Get(a.basePath)
+	// create path and map variables
+	path := "/api/users/search"
+	_sling = _sling.Path(path)
+	// body params
+	type QueryParams struct {
+		UserName string `url:"username, omitempty"`
+	}
+	_sling = _sling.QueryStruct(&QueryParams{UserName: userName})
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo...)
+	var successPayLoad []apilib.UserSearch
 	if 200 == httpStatusCode && nil == err {
 		err = json.Unmarshal(body, &successPayLoad)
 	}
