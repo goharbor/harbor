@@ -65,6 +65,7 @@
         "ITEM_REQUIRED": "Campo obligatorio.",
         "NUMBER_REQUIRED": "El campo es obligatorio y debería ser un número.",
         "PORT_REQUIRED": "El campo es obligatorio y debería ser un número de puerto válido.",
+        "CRON_REQUIRED": "El campo es obligatorio y debe estar en formato cron.",        
         "EMAIL_EXISTING": "Esa dirección de email ya existe.",
         "USER_EXISTING": "Ese nombre de usuario ya existe.",
         "RULE_USER_EXISTING": "Name is already in use.",
@@ -641,7 +642,10 @@
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
             "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
-            "GC_POLICY": ""
+            "GC_POLICY": "",
+            "HOURLY_CRON":"Run once an hour, beginning of hour",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
+            "DAILY_CRON":"Run once a day, midnight"
 
         },
         "LDAP": {

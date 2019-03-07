@@ -1,0 +1,45 @@
+.flex-layout {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    font-size: .541667rem;
+  }
+  
+  .normal-wrapper {
+    > span:first-child {
+      width: 228px;
+    }
+  
+    > span:not(:first-child) {
+      margin-right: 18px;
+    }
+    > a {
+      margin-left: -10px;
+    }
+    button {
+      margin-left: 10px;
+    }
+  }
+  
+  .setting-wrapper {
+    > span:first-child {
+      width: 228px;
+    }
+  
+    *:not(:first-child) {
+      margin-right: 18px;
+    }
+  
+    .select-schedule {
+      display: inline-block;
+      width: 100px;
+    }
+  
+    .cron-input {
+      width: 195px;
+    }
+  }
+  .font-style {
+    color: #000;
+    font-size: .541667rem;
+  }

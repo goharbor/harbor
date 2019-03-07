@@ -12,8 +12,7 @@ export class GcJobData {
 
 export class Schedule {
     type: string;
-    weekday: number;
-    offtime: number;
+    cron: string;
 }
 export class GcJobViewModel {
     id: number;
@@ -24,14 +23,4 @@ export class GcJobViewModel {
     details: string;
 }
 
-export class WeekDay {
-    value: number;
-    text: string;
-}
-
-export class GcScheduleViewModel {
-    type: string;
-    weekDay: string;
-    dailyTime: string;
-}
 

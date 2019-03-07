@@ -65,6 +65,7 @@
         "ITEM_REQUIRED": "Field is required.",
         "NUMBER_REQUIRED": "Field is required and should be numbers.",
         "PORT_REQUIRED": "Field is required and should be valid port number.",
+        "CRON_REQUIRED": "Field is required and should be in cron format.",
         "EMAIL_EXISTING": "Email address already exists.",
         "USER_EXISTING": "Username is already in use.",
         "RULE_USER_EXISTING": "Name is already in use.",
@@ -642,7 +643,10 @@
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
             "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
-            "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
+            "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
+            "HOURLY_CRON":"Run once an hour, beginning of hour",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
+            "DAILY_CRON":"Run once a day, midnight"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -876,7 +880,10 @@
         "NONE": "None",
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
+        "HOURLY": "Hourly",
+        "CUSTOM": "Custom",
         "MANUAL": "Manual",
+        "CRON": "cron",
         "ON": "on",
         "AT": "at"
     },

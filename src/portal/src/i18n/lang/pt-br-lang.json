@@ -65,6 +65,7 @@
         "ITEM_REQUIRED": "Campo é obrigatório.",
         "NUMBER_REQUIRED": "Campo é obrigatório e deve ser numerico.",
         "PORT_REQUIRED": "Campo é obrigatório e deve ser um número de porta válido.",
+        "CRON_REQUIRED": "O campo é obrigatório e deve estar no formato cron.",        
         "EMAIL_EXISTING": "Email já existe.",
         "USER_EXISTING": "Nome de usuário já está em uso.",
         "RULE_USER_EXISTING": "Nome já em uso.",
@@ -635,7 +636,10 @@
             "SCANNING_POLICY": "Configura a política de análise das imagens baseado em diferentes requisitos. 'Nenhum': Nenhuma política ativa; 'Diariamente em': Dispara a análise diariamente no horário especificado.",
             "VERIFY_CERT": "Verificar o Certificado do Servidor LDAP",
             "READONLY_TOOLTIP": "Em modo somente leitura, você não pode remover repositórios ou tags ou enviar imagens. ",
-            "REPO_TOOLTIP": "Usuários não podem efetuar qualquer operação nas imagens nesse modo."
+            "REPO_TOOLTIP": "Usuários não podem efetuar qualquer operação nas imagens nesse modo.",
+            "HOURLY_CRON":"Run once an hour, beginning of hour",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
+            "DAILY_CRON":"Run once a day, midnight"
         },
         "LDAP": {
             "URL": "URL LDAP",
