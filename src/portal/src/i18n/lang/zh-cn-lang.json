@@ -70,7 +70,8 @@
         "USER_EXISTING": "用户名已经存在。",
         "RULE_USER_EXISTING": "名称已经存在。",
         "EMPTY": "名称为必填项",
-        "NONEMPTY": "不能为空"
+        "NONEMPTY": "不能为空",
+        "ENDPOINT_FORMAT": "Endpoint必须以http或https开头。"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -618,6 +619,7 @@
         "AUTH_MODE_DB": "数据库",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
+        "AUTH_MODE_HTTP": "http_auth",
         "SCOPE_BASE": "本层",
         "SCOPE_ONE_LEVEL": "下一层",
         "SCOPE_SUBTREE": "子树",
@@ -672,6 +674,11 @@
             "CLIENT_ID": "UAA Client ID",
             "CLIENT_SECRET": "UAA Client Secret",
             "VERIFY_CERT": "UAA 检查证书"
+        },
+        "HTTP_AUTH": {
+            "ENDPOINT": "Server Endpoint",
+            "ALWAYS_ONBOARD": "Always Onboard",
+            "VERIFY_CERT": "Authentication验证证书"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",

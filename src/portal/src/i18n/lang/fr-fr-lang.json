@@ -58,7 +58,8 @@
         "EMAIL_EXISTING": "L'adresse e-mail existe déjà.",
         "USER_EXISTING": "Le nom d'utilisateur est déjà utilisé.",
         "NONEMPTY": "Can't be empty",
-        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
+        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
+        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -590,6 +591,7 @@
         "SELF_REGISTRATION": "Autoriser l'Auto-Inscription",
         "AUTH_MODE_DB": "Base de données",
         "AUTH_MODE_LDAP": "LDAP",
+        "AUTH_MODE_HTTP": "http_auth",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "Premier Niveau",
         "SCOPE_SUBTREE": "Sous-arbre",
@@ -638,6 +640,11 @@
             "LDAP_GROUP_ADMIN_DN_INFO": "Specify an LDAP group DN. all LDAP user in this group will have harbor admin privilege. Keep it blank if you do not want to.",
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
+        },
+        "HTTP_AUTH": {
+            "ENDPOINT": "serveur paramètre",
+            "ALWAYS_ONBOARD": "Always Onboard",
+            "VERIFY_CERT": "authentification vérifier cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Déclenchement d'analyse globale avec succès !",

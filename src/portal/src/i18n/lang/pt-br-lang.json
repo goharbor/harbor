@@ -69,7 +69,8 @@
         "EMAIL_EXISTING": "Email já existe.",
         "USER_EXISTING": "Nome de usuário já está em uso.",
         "RULE_USER_EXISTING": "Nome já em uso.",
-        "EMPTY": "Nome é obrigatório"
+        "EMPTY": "Nome é obrigatório",
+        "ENDPOINT_FORMAT": "Avaliação deve começar por HTTP Ou HTTPS."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Insira a senha atual",
@@ -613,6 +614,7 @@
         "AUTH_MODE_DB": "Banco de Dados",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
+        "AUTH_MODE_HTTP": "http_auth",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
         "SCOPE_SUBTREE": "Subtree",
@@ -667,6 +669,11 @@
             "CLIENT_ID": "ID de cliente UAA",
             "CLIENT_SECRET": "Secret de Cliente UAA",
             "VERIFY_CERT": "Verificar certificado UAA"
+        },
+        "HTTP_AUTH": {
+            "ENDPOINT": "server endpoint",
+            "ALWAYS_ONBOARD": "Sempre Onboard",
+            "VERIFY_CERT": "Verificar certificado de Authentication"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Disparo de análise geral efetuado com sucesso!",

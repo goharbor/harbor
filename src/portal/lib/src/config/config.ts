@@ -87,6 +87,9 @@ export class Configuration {
     cfg_expiration: NumberValueItem;
     scan_all_policy: ComplexValueItem;
     read_only: BoolValueItem;
+    http_authproxy_endpoint?: StringValueItem;
+    http_authproxy_skip_cert_verify?: BoolValueItem;
+    http_authproxy_always_onboard?: BoolValueItem;
 
     public constructor() {
         this.auth_mode = new StringValueItem("db_auth", true);
@@ -128,5 +131,8 @@ export class Configuration {
             }
         }, true);
         this.read_only = new BoolValueItem(false, true);
+        this.http_authproxy_endpoint = new StringValueItem("", true);
+        this.http_authproxy_skip_cert_verify = new BoolValueItem(false, true);
+        this.http_authproxy_always_onboard = new BoolValueItem(false, true);
     }
 }

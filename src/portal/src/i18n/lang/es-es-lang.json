@@ -71,7 +71,8 @@
         "RULE_USER_EXISTING": "Name is already in use.",
         "EMPTY": "Name is required",
         "NONEMPTY": "Can't be empty",
-        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
+        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
+        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Introduzca la contraseña actual",
@@ -618,6 +619,7 @@
         "AUTH_MODE_DB": "Base de datos",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
+        "AUTH_MODE_HTTP": "http_auth",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "UnNivel",
         "SCOPE_SUBTREE": "Subárbol",
@@ -673,6 +675,11 @@
             "CLIENT_ID": "UAA Client ID",
             "CLIENT_SECRET": "UAA Client Secret",
             "VERIFY_CERT": "UAA Verify Cert"
+        },
+        "HTTP_AUTH": {
+            "ENDPOINT": "Server Endpoint",
+            "ALWAYS_ONBOARD": "Always Onboard",
+            "VERIFY_CERT": "Authentication Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
