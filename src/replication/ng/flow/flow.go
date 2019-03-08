@@ -109,12 +109,40 @@ func (f *flow) createExecution() (int64, error) {
 }
 
 func (f *flow) fetchResources() error {
-	resources, err := f.srcAdapter.FetchResources(f.policy.SrcNamespaces, f.policy.Filters)
-	f.resources = resources
-	if err != nil {
-		f.markExecutionFailure(err)
-		return err
+	resTypes := []model.ResourceType{}
+	filters := []*model.Filter{}
+	for _, filter := range f.policy.Filters {
+		if filter.Type != model.FilterTypeResource {
+			filters = append(filters, filter)
+			continue
+		}
+		resTypes = append(resTypes, filter.Value.(model.ResourceType))
 	}
+	if len(resTypes) == 0 {
+		resTypes = append(resTypes, adapter.GetAdapterInfo(f.srcRegistry.Type).SupportedResourceTypes...)
+	}
+
+	// TODO consider whether the logic can be refactored by using reflect
+	resources := []*model.Resource{}
+	for _, typ := range resTypes {
+		if typ == model.ResourceTypeRepository {
+			reg, ok := f.srcAdapter.(adapter.ImageRegistry)
+			if !ok {
+				err := fmt.Errorf("the adapter doesn't implement the ImageRegistry interface")
+				f.markExecutionFailure(err)
+				return err
+			}
+			res, err := reg.FetchImages(f.policy.SrcNamespaces, filters)
+			if err != nil {
+				f.markExecutionFailure(err)
+				return err
+			}
+			resources = append(resources, res...)
+			continue
+		}
+		// TODO add support for chart
+	}
+	f.resources = resources
 
 	log.Debugf("resources for the execution %d fetched from the source registry", f.executionID)
 	return nil

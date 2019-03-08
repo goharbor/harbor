@@ -53,10 +53,6 @@ type Adapter interface {
 	// Get the namespace specified by the name, the returning value should
 	// contain the metadata about the namespace if it has
 	GetNamespace(string) (*model.Namespace, error)
-	// Fetch the content resource under the namespace by filters
-	// SUGGESTION: Adapter provider can do their own filter based on the filter pattern
-	// or call the default `DoFilter` function of the filter to complete resource filtering.
-	FetchResources(namespace []string, filters []*model.Filter) ([]*model.Resource, error)
 }
 
 // RegisterFactory registers one adapter factory to the registry
