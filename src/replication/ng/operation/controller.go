@@ -28,6 +28,7 @@ type Controller interface {
 	ListExecutions(...*model.ExecutionQuery) (int64, []*model.Execution, error)
 	GetExecution(int64) (*model.Execution, error)
 	ListTasks(...*model.TaskQuery) (int64, []*model.Task, error)
+	GetTask(int64) (*model.Task, error)
 	GetTaskLog(int64) ([]byte, error)
 }
 
@@ -58,6 +59,9 @@ func (d *defaultController) GetExecution(executionID int64) (*model.Execution, e
 }
 func (d *defaultController) ListTasks(query ...*model.TaskQuery) (int64, []*model.Task, error) {
 	return d.executionMgr.ListTasks(query...)
+}
+func (d *defaultController) GetTask(id int64) (*model.Task, error) {
+	return d.executionMgr.GetTask(id)
 }
 func (d *defaultController) GetTaskLog(taskID int64) ([]byte, error) {
 	return d.executionMgr.GetTaskLog(taskID)

@@ -42,8 +42,10 @@ const (
 	ResourceLog                        = Resource("log")
 	ResourceMember                     = Resource("member")
 	ResourceMetadata                   = Resource("metadata")
-	ResourceReplication                = Resource("replication")
-	ResourceReplicationJob             = Resource("replication-job")
+	ResourceReplication                = Resource("replication")     // TODO remove
+	ResourceReplicationJob             = Resource("replication-job") // TODO remove
+	ResourceReplicationExecution       = Resource("replication-execution")
+	ResourceReplicationTask            = Resource("replication-task")
 	ResourceRepository                 = Resource("repository")
 	ResourceRepositoryLabel            = Resource("repository-label")
 	ResourceRepositoryTag              = Resource("repository-tag")

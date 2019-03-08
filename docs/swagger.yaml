@@ -1539,6 +1539,171 @@ paths:
           description: User need to login first.
         '500':
           description: Unexpected internal errors.
+  /replication/executions:
+    get:
+      summary: List replication executions.
+      description: |
+        This endpoint let user list replication executions.
+      parameters:
+        - name: policy_id
+          in: query
+          type: integer
+          required: false
+          description: The policy ID.
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: The execution status.
+        - name: trigger
+          in: query
+          type: string
+          required: false
+          description: The trigger mode.
+        - name: page
+          in: query
+          type: integer
+          required: false
+          description: The page.
+        - name: page_size
+          in: query
+          type: integer
+          required: false
+          description: The page size.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReplicationExecution'
+        '401':
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
+        '500':
+          description: Unexpected internal errors.
+    post:
+      summary: Start one execution of the replication.
+      description: |
+        This endpoint is for user to start one execution of the replication.
+      parameters:
+        - name: execution
+          in: body
+          description: The execution that needs to be started, only the property "policy_id" is needed.
+          required: true
+          schema:
+            $ref: '#/definitions/ReplicationExecution'
+      tags:
+        - Products
+      responses:
+        '201':
+          description: Success.
+        '400':
+          description: Bad request.
+        '401':
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '500':
+          description: Unexpected internal errors.
+  /replication/executions/{id}:
+    put: 
+      summary: Stop the execution of the replication.
+      description: |
+        This endpoint is for user to stop one execution of the replication.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The execution ID.
+          required: true
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Success.
+        '400':
+          description: Bad request.
+        '401':
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
+        '404':
+          description: Resource requested does not exist.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '500':
+          description: Unexpected internal errors.
+  /replication/executions/{id}/tasks:
+    get: 
+      summary: Get the task list of one execution.
+      description: |
+        This endpoint is for user to get the task list of one execution.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The execution ID.
+          required: true
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReplicationTask'
+        '400':
+          description: Bad request.
+        '401':
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
+        '404':
+          description: Resource requested does not exist.
+        '500':
+          description: Unexpected internal errors.
+  /replication/executions/{id}/tasks/{task_id}/log:
+    get: 
+      summary: Get the log of one task.
+      description: |
+        This endpoint is for user to get the log of one task.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The execution ID.
+          required: true
+        - name: task_id
+          in: path
+          type: integer
+          format: int64
+          description: The task ID.
+          required: true
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Success.
+        '400':
+          description: Bad request.
+        '401':
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
+        '404':
+          description: Resource requested does not exist.
+        '500':
+          description: Unexpected internal errors.
   /jobs/replication:
     get:
       summary: List filters jobs according to the policy and repository
@@ -4813,3 +4978,74 @@ definitions:
         description: The filters that the adapter supports
         items:
           type: string
+  ReplicationExecution:
+    type: object
+    description: The replication execution
+    properties:
+      id:
+        type: integer
+        description: The ID
+      policy_id:
+        type: integer
+        description: The policy ID
+      status:
+        type: string
+        description: The status
+      status_text:
+        type: string
+        description: The status text
+      trigger:
+        type: string
+        description: The trigger mode
+      total:
+        type: integer
+        description: The total count of all tasks
+      failed:
+        type: integer
+        description: The count of failed tasks
+      succeed:
+        type: integer
+        description: The count of succeed tasks
+      in_progress:
+        type: integer
+        description: The count of in_progress tasks
+      stopped:
+        type: integer
+        description: The count of stopped tasks
+      start_time:
+        type: string
+        description: The start time
+      end_time:
+        type: string
+        description: The end time
+  ReplicationTask:
+    type: object
+    description: The replication task
+    properties:
+      id:
+        type: integer
+        description: The ID
+      execution_id:
+        type: integer
+        description: The execution ID
+      resource_type:
+        type: string
+        description: The resource type
+      src_resource:
+        type: string
+        description: The source resource
+      dst_resource:
+        type: string
+        description: The destination resource
+      job_id:
+        type: string
+        description: The job ID
+      status:
+        type: string
+        description: The status
+      start_time:
+        type: string
+        description: The start time
+      end_time:
+        type: string
+        description: The end time
