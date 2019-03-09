@@ -29,6 +29,7 @@ clean_db() {
 }
 
 wait_for_db_ready() {
+    set +e
     TIMEOUT=12
     while [ $TIMEOUT -gt 0 ]; do
         docker exec fix-notary-migration pg_isready | grep "accepting connections"
@@ -43,6 +44,7 @@ wait_for_db_ready() {
         clean_db
         exit 1
     fi
+    set -e
 }
 
 fix_notary_server() {
