@@ -77,6 +77,13 @@ func (d *defaultController) StartReplication(policy *model.Policy) (int64, error
 		return id, nil
 	}
 
+	// if no resources need to be replicated, mark the execution success and return
+	if len(flow.srcResources) == 0 {
+		flow.markExecutionSuccess("no resources need to be replicated")
+		log.Infof("no resources need to be replicated for the execution %d, skip", id)
+		return id, nil
+	}
+
 	// create the namespace on the destination registry
 	if err = flow.createNamespace(); err != nil {
 		log.Errorf("failed to create the namespace %s for the execution %d on the destination registry: %v", policy.DestNamespace, id, err)

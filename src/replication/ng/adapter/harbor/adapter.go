@@ -17,7 +17,7 @@ package harbor
 import (
 	"fmt"
 	"net/http"
-	"strconv"
+	// "strconv"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -96,27 +96,32 @@ func (a *adapter) CreateNamespace(namespace *model.Namespace) error {
 		Name     string                 `json:"project_name"`
 		Metadata map[string]interface{} `json:"metadata"`
 	}{
-		Name: namespace.Name,
+		Name:     namespace.Name,
+		Metadata: namespace.Metadata,
 	}
-	// handle the public of the project
-	if meta, exist := namespace.Metadata["public"]; exist {
-		public := true
-		// if one of them is "private", the set the public as false
-		for _, value := range meta.(map[string]interface{}) {
-			b, err := strconv.ParseBool(value.(string))
-			if err != nil {
-				return err
-			}
-			if !b {
-				public = false
-				break
-			}
 
+	// TODO
+	/*
+		// handle the public of the project
+		if meta, exist := namespace.Metadata["public"]; exist {
+			public := true
+			// if one of them is "private", the set the public as false
+			for _, value := range meta.(map[string]interface{}) {
+				b, err := strconv.ParseBool(value.(string))
+				if err != nil {
+					return err
+				}
+				if !b {
+					public = false
+					break
+				}
+
+			}
+			project.Metadata = map[string]interface{}{
+				"public": public,
+			}
 		}
-		project.Metadata = map[string]interface{}{
-			"public": public,
-		}
-	}
+	*/
 
 	err := a.client.Post(a.coreServiceURL+"/api/projects", project)
 	if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {

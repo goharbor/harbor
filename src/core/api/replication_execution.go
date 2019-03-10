@@ -166,7 +166,10 @@ func (r *ReplicationOperationAPI) ListTasks() {
 	query := &models.TaskQuery{
 		ExecutionID:  executionID,
 		ResourceType: r.GetString("resource_type"),
-		Statuses:     []string{r.GetString("status")},
+	}
+	status := r.GetString("status")
+	if len(status) > 0 {
+		query.Statuses = []string{status}
 	}
 	query.Page, query.Size = r.GetPaginationParams()
 	total, tasks, err := ng.OperationCtl.ListTasks(query)
