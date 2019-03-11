@@ -23,6 +23,7 @@ import (
 func init() {
 	orm.RegisterModel(
 		new(models.Registry),
+		new(models.RepPolicy),
 		new(RepPolicy),
 		new(RepJob),
 		new(User),
