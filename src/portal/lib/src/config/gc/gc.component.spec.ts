@@ -6,7 +6,7 @@ import { GcRepoService } from './gc.service';
 import { SharedModule } from "../../shared/shared.module";
 import { ErrorHandler } from '../../error-handler/error-handler';
 import { GcViewModelFactory } from './gc.viewmodel.factory';
-import { GcUtility } from './gc.utility';
+import { CronScheduleComponent } from '../../cron-schedule/cron-schedule.component';
 import { of } from 'rxjs';
 
 describe('GcComponent', () => {
@@ -33,14 +33,13 @@ describe('GcComponent', () => {
       imports: [
         SharedModule
       ],
-      declarations: [ GcComponent ],
+      declarations: [ GcComponent,  CronScheduleComponent],
       providers: [
         { provide: GcApiRepository, useClass: GcApiDefaultRepository },
         { provide: SERVICE_CONFIG, useValue: config },
         GcRepoService,
         ErrorHandler,
-        GcViewModelFactory,
-        GcUtility
+        GcViewModelFactory
       ]
     })
     .compileComponents();

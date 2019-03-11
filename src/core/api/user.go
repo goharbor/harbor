@@ -46,6 +46,11 @@ type passwordReq struct {
 	NewPassword string `json:"new_password"`
 }
 
+type userSearch struct {
+	UserID   int    `json:"user_id"`
+	Username string `json:"username"`
+}
+
 // Prepare validates the URL and parms
 func (ua *UserAPI) Prepare() {
 	ua.BaseController.Prepare()
@@ -163,6 +168,40 @@ func (ua *UserAPI) List() {
 
 	ua.SetPaginationHeader(total, page, size)
 	ua.Data["json"] = users
+	ua.ServeJSON()
+}
+
+// Search ...
+func (ua *UserAPI) Search() {
+	page, size := ua.GetPaginationParams()
+	query := &models.UserQuery{
+		Username: ua.GetString("username"),
+		Email:    ua.GetString("email"),
+		Pagination: &models.Pagination{
+			Page: page,
+			Size: size,
+		},
+	}
+
+	total, err := dao.GetTotalOfUsers(query)
+	if err != nil {
+		ua.HandleInternalServerError(fmt.Sprintf("failed to get total of users: %v", err))
+		return
+	}
+
+	users, err := dao.ListUsers(query)
+	if err != nil {
+		ua.HandleInternalServerError(fmt.Sprintf("failed to get users: %v", err))
+		return
+	}
+
+	var userSearches []userSearch
+	for _, user := range users {
+		userSearches = append(userSearches, userSearch{UserID: user.UserID, Username: user.Username})
+	}
+
+	ua.SetPaginationHeader(total, page, size)
+	ua.Data["json"] = userSearches
 	ua.ServeJSON()
 }
 

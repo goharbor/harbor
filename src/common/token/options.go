@@ -16,12 +16,6 @@ const (
 	signedMethod = "RS256"
 )
 
-var (
-	privateKey = config.TokenPrivateKeyPath()
-	// DefaultOptions ...
-	DefaultOptions = NewOptions()
-)
-
 // Options ...
 type Options struct {
 	SignMethod jwt.SigningMethod
@@ -31,9 +25,10 @@ type Options struct {
 	Issuer     string
 }
 
-// NewOptions ...
-func NewOptions() *Options {
-	privateKey, err := ioutil.ReadFile(privateKey)
+// DefaultOptions ...
+func DefaultOptions() *Options {
+	privateKeyFile := config.TokenPrivateKeyPath()
+	privateKey, err := ioutil.ReadFile(privateKeyFile)
 	if err != nil {
 		log.Errorf(fmt.Sprintf("failed to read private key %v", err))
 		return nil

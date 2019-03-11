@@ -68,24 +68,48 @@ Wait Until Element Is Visible And Enabled
     Wait Until Element Is Enabled  ${element}
 
 Retry Action Keyword
-    [Arguments]  ${keyword}  ${element_xpath}
-    Retry Keyword When Error  ${keyword}  element=${element_xpath}
-
-Retry Element Click
-    [Arguments]  ${element_xpath}
-    Retry Action Keyword  Element Click  ${element_xpath}
+    [Arguments]  ${keyword}  @{param}
+    Retry Keyword When Error  ${keyword}  @{param}
 
 Retry Wait Element
     [Arguments]  ${element_xpath}
-    Retry Action Keyword  Wait Until Element Is Visible And Enabled  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Element Is Visible And Enabled  @{param}
 
 Retry Wait Element Not Visible
     [Arguments]  ${element_xpath}
-    Retry Action Keyword  Wait Until Element Is Not Visible  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Element Is Not Visible  @{param}
+
+Retry Element Click
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Element Click  @{param}
 
 Retry Button Click
     [Arguments]  ${element_xpath}
-    Retry Action Keyword  Button Click  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Button Click  @{param}
+
+Retry Text Input
+    [Arguments]  ${element_xpath}  ${text}
+    @{param}  Create List  ${element_xpath}  ${text}
+    Retry Action Keyword  Text Input  @{param}
+
+Retry Wait Until Page Contains
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Page Contains  @{param}
+
+Retry Wait Until Page Contains Element
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Page Contains Element  @{param}
+
+Retry Wait Until Page Not Contains Element
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Page Does Not Contain Element  @{param}
 
 Element Click
     [Arguments]  ${element_xpath}
@@ -96,6 +120,11 @@ Button Click
     [Arguments]  ${element_xpath}
     Wait Until Element Is Visible And Enabled  ${element_xpath}
     Click button  ${element_xpath}
+
+Text Input
+    [Arguments]  ${element_xpath}  ${text}
+    Wait Until Element Is Visible And Enabled  ${element_xpath}
+    Input Text  ${element_xpath}  ${text}
 
 Wait Unitl Vul Data Ready
     [Arguments]  ${url}  ${timeout}  ${interval}
@@ -117,19 +146,32 @@ Wait Unitl Command Success
     \    Run Keyword If  ${positive} == ${true}  Exit For Loop If  '${rc}'=='0'
     \    ...  ELSE  Exit For Loop If  '${rc}'!='0'
     \    Sleep  2
-    Log  ${output}
+    Log  Command Result is ${output}
     Run Keyword If  ${positive} == ${true}  Should Be Equal As Strings  '${rc}'  '0'
-    ...  ELSE  Should Not Be Equal As Strings  '${rc}'  '0'   
+    ...  ELSE  Should Not Be Equal As Strings  '${rc}'  '0'
     [Return]  ${output}
 
 Retry Keyword When Error
-    [Arguments]  ${keyword}  ${element}=${None}  ${times}=6
-    :For  ${n}  IN RANGE  1  ${times}
+    [Arguments]  ${keyword}  @{elements}
+    :For  ${n}  IN RANGE  1  6
     \    Log To Console  Trying ${keyword} ${n} times ...
-    \    ${out}  Run Keyword If  "${element}"=="${None}"  Run Keyword And Ignore Error  ${keyword}
-    \    ...  ELSE  Run Keyword And Ignore Error  ${keyword}  ${element}
+    \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
     \    Log To Console  Return value is ${out[0]}
     \    Exit For Loop If  '${out[0]}'=='PASS'
     \    Sleep  2
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Retry Double Keywords When Error
+    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}
+    :For  ${n}  IN RANGE  1  6
+    \    Log To Console  Trying Delete Repo ${n} times ...
+    \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
+    \    Capture Page Screenshot
+    \    ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}
+    \    Capture Page Screenshot
+    \    Log To Console  Return value is ${out1[0]} ${out2[0]}
+    \    Exit For Loop If  '${out1[0]}'=='PASS' and '${out2[0]}'=='PASS'
+    \    Sleep  2
+    Should Be Equal As Strings  '${out1[0]}'  'PASS'
+    Should Be Equal As Strings  '${out2[0]}'  'PASS'

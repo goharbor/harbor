@@ -212,17 +212,23 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 		return nil, err
 	}
 	return &models.LdapGroupConf{
-		LdapGroupBaseDN:        cfgMgr.Get(common.LDAPGroupBaseDN).GetString(),
-		LdapGroupFilter:        cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
-		LdapGroupNameAttribute: cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
-		LdapGroupSearchScope:   cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
-		LdapGroupAdminDN:       cfgMgr.Get(common.LdapGroupAdminDn).GetString(),
+		LdapGroupBaseDN:              cfgMgr.Get(common.LDAPGroupBaseDN).GetString(),
+		LdapGroupFilter:              cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
+		LdapGroupNameAttribute:       cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
+		LdapGroupSearchScope:         cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
+		LdapGroupAdminDN:             cfgMgr.Get(common.LdapGroupAdminDn).GetString(),
+		LdapGroupMembershipAttribute: cfgMgr.Get(common.LDAPGroupMembershipAttribute).GetString(),
 	}, nil
 }
 
 // TokenExpiration returns the token expiration time (in minute)
 func TokenExpiration() (int, error) {
 	return cfgMgr.Get(common.TokenExpiration).GetInt(), nil
+}
+
+// RobotTokenDuration returns the token expiration time of robot account (in minute)
+func RobotTokenDuration() int {
+	return cfgMgr.Get(common.RobotTokenDuration).GetInt()
 }
 
 // ExtEndpoint returns the external URL of Harbor: protocol://host:port
@@ -456,4 +462,18 @@ func GetClairHealthCheckServerURL() string {
 		return common.DefaultClairHealthCheckServerURL
 	}
 	return url
+}
+
+// HTTPAuthProxySetting returns the setting of HTTP Auth proxy.  the settings are only meaningful when the auth_mode is
+// set to http_auth
+func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+	return &models.HTTPAuthProxy{
+		Endpoint:       cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
+		SkipCertVerify: cfgMgr.Get(common.HTTPAuthProxySkipCertVerify).GetBool(),
+		AlwaysOnBoard:  cfgMgr.Get(common.HTTPAuthProxyAlwaysOnboard).GetBool(),
+	}, nil
+
 }

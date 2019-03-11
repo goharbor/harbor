@@ -23,51 +23,46 @@ ${HARBOR_VERSION}  v1.1.1
 Delete Success
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='success-standard']
+    \    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='success-standard']
     Sleep  1
     Capture Page Screenshot
 
 Delete Fail
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='error-standard']
+    \    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='error-standard']
     Sleep  1
     Capture Page Screenshot
 
 Filter Object
 #Filter project repo user tag.
     [Arguments]    ${kw}
-    ${element}=  Set Variable  xpath=//hbr-filter//clr-icon
-    Wait Until Element Is Visible And Enabled  ${element}
-    Click Element    ${element}
+    Retry Element Click  xpath=//hbr-filter//clr-icon
     ${element}=  Set Variable  xpath=//hbr-filter//input
-    Wait Until Element Is Visible And Enabled  ${element}   
+    Wait Until Element Is Visible And Enabled  ${element}
     Input Text   ${element}  ${kw}
     Sleep  3
 
 Select Object
 #select single element such as user project repo tag
     [Arguments]    ${obj}
-    ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
-    Wait Until Element Is Visible And Enabled  ${element}
-    Click Element  ${element}    
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${obj}')]//label
 
 # This func cannot support as the delete user flow changed.
 Multi-delete Object
-    [Arguments]    @{obj}
+    [Arguments]    ${delete_btn}  @{obj}
     :For  ${obj}  in  @{obj}
     \    ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
-    \    Wait Until Element Is Visible And Enabled  ${element}
-    \    Click Element  ${element}
+    \    Retry Element Click  ${element}
+    Sleep  1
     Capture Page Screenshot
-    ${element}=  Set Variable  xpath=//button[contains(.,'Delete')]
-    Wait Until Element Is Visible And Enabled  ${element}
-    Click Element  ${element}
+    Retry Element Click  ${delete_btn}
+    Sleep  1
     Capture Page Screenshot
-    ${element}=  Set Variable  xpath=//clr-modal//button[contains(.,'DELETE')]
-    Wait Until Element Is Visible And Enabled  ${element}
-    Click Element  ${element}
+    Retry Element Click  ${repo_delete_on_card_view_btn}
+    Sleep  1
     Capture Page Screenshot
+    Sleep  1
 
 Multi-delete User
     [Arguments]    @{obj}
@@ -81,7 +76,7 @@ Multi-delete User
     Click Element  //clr-modal//button[contains(.,'DELETE')]
     Sleep  3
 
-Multi-delete Member 
+Multi-delete Member
     [Arguments]    @{obj}
     :For  ${obj}  in  @{obj}
     \    Click Element  //clr-dg-row[contains(.,'${obj}')]//label

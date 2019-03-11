@@ -44,7 +44,7 @@ Create An New Project With New User
     Logout Harbor
     Sign In Harbor  ${url}  ${username}  ${newPassword}
     Create An New Project  ${projectname}  ${public}
-    Sleep  1	
+    Sleep  1
 
 #It's the log of project.
 Go To Project Log
@@ -67,7 +67,7 @@ Switch To Replication
     Sleep  1
 
 Navigate To Projects
-    ${element}=  Set Variable  xpath=${projects_xpath}  
+    ${element}=  Set Variable  xpath=${projects_xpath}
     Wait Until Element Is Visible And Enabled  ${element}
     Click Element  ${element}
     Sleep  2
@@ -89,7 +89,7 @@ Search Private Projects
 
 Make Project Private
     [Arguments]  ${projectname}
-    Go Into Project  ${project name}    
+    Go Into Project  ${project name}
     Sleep  2
     Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
     Sleep  1
@@ -102,28 +102,25 @@ Make Project Private
 Make Project Public
     [Arguments]  ${projectname}
     Go Into Project  ${project name}
-    Sleep  2
-    Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
+    Retry Element Click  xpath=//project-detail//a[contains(.,'Configuration')]
     Checkbox Should Not Be Selected  xpath=//input[@name='public']
-    Click Element    //div[@id="clr-wrapper-public"]//label[1]
-    Wait Until Element Is Enabled  //button[contains(.,'SAVE')]
-    Click Element  //button[contains(.,'SAVE')]
+    Retry Element Click  //div[@id="clr-wrapper-public"]//label[1]
+    Retry Element Click  //button[contains(.,'SAVE')]
     Wait Until Page Contains  Configuration has been successfully saved
 
 Delete Repo
     [Arguments]  ${projectname}
     ${element_repo_checkbox}=  Set Variable  xpath=//clr-dg-row[contains(.,'${projectname}')]//clr-checkbox-wrapper//label
-    Retry Element Click  ${element_repo_checkbox}
-    Retry Element Click  ${repo_delete_btn}
-    Retry Element Click  ${repo_delete_confirm_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${element_repo_checkbox}  Wait Until Element Is Visible And Enabled  ${repo_delete_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${repo_delete_btn}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
 
 Delete Repo on CardView
     [Arguments]  ${reponame}
-    Click Element  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/button
-    Wait Until Element Is Visible  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/clr-dropdown-menu/button[contains(.,'Delete')]
-    Click Element  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/clr-dropdown-menu/button[contains(.,'Delete')]
-    Wait Until Element Is Visible  //clr-modal//button[contains(.,'DELETE')]
-    Click Element  //clr-modal//button[contains(.,'DELETE')]
+    Retry Element Click  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/button
+    Retry Element Click  //hbr-gridview//span[contains(.,'${reponame}')]//clr-dropdown/clr-dropdown-menu/button[contains(.,'Delete')]
+    Retry Element Click  ${repo_delete_on_card_view_btn}
+    Sleep  2
 
 Delete Project
     [Arguments]  ${projectname}
@@ -151,7 +148,7 @@ Project Should Be Deleted
 Advanced Search Should Display
     Page Should Contain Element  xpath=//audit-log//div[@class='flex-xs-middle']/button
 
-# it's not a common keywords, only used into log case.	
+# it's not a common keywords, only used into log case.
 Do Log Advanced Search
     Capture Page Screenshot  LogAdvancedSearch.png
     Sleep  1

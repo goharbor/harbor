@@ -208,6 +208,35 @@ func TestUsersGet(t *testing.T) {
 	}
 }
 
+func TestUsersSearch(t *testing.T) {
+
+	fmt.Println("Testing User Search")
+	assert := assert.New(t)
+	apiTest := newHarborAPI()
+
+	testUser0002.Username = "testUser0002"
+	// case 1: Search user2 without auth, expect 401
+
+	testUser0002Auth = &usrInfo{"testUser0002", "testUser0002"}
+	code, users, err := apiTest.UsersSearch(testUser0002.Username)
+	if err != nil {
+		t.Error("Error occurred while search users", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(401, code, "Search users status should be 401")
+	}
+	// case 2: Search user2 with with common auth, expect 200
+	code, users, err = apiTest.UsersSearch(testUser0002.Username, *testUser0002Auth)
+	if err != nil {
+		t.Error("Error occurred while search users", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(200, code, "Search users status should be 200")
+		assert.Equal(1, len(users), "Search users record should be 1 ")
+		testUser0002ID = users[0].UserID
+	}
+}
+
 func TestUsersGetByID(t *testing.T) {
 
 	fmt.Println("Testing User GetByID")

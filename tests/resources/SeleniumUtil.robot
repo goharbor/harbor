@@ -36,5 +36,13 @@ Init Chrome Driver
     Call Method    ${chrome options}    add_argument    --no-sandbox
     Call Method    ${chrome options}    add_argument    --window-size\=1600,900
     ${chrome options.binary_location}    Set Variable    /usr/bin/google-chrome
-    Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}    desired_capabilities=${capabilities}
+    #Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}    desired_capabilities=${capabilities}
+    :For  ${n}  IN RANGE  1  6
+    \    Log To Console  Trying Create Webdriver ${n} times ...
+    \    ${out}  Run Keyword And Ignore Error  Create Webdriver    Chrome    Chrome_headless    chrome_options=${chrome options}    desired_capabilities=${capabilities}
+    \    Log To Console  Return value is ${out[0]}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  2
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
     Sleep  5

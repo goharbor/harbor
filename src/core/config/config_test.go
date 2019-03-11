@@ -97,6 +97,9 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get token expiration: %v", err)
 	}
 
+	tkExp := RobotTokenDuration()
+	assert.Equal(tkExp, 43200)
+
 	if _, err := ExtEndpoint(); err != nil {
 		t.Fatalf("failed to get domain name: %v", err)
 	}
@@ -221,4 +224,20 @@ func TestConfigureValue_GetMap(t *testing.T) {
 		t.Errorf("Failed with error %v", err)
 	}
 	fmt.Printf("%+v\n", policy)
+}
+
+func TestHTTPAuthProxySetting(t *testing.T) {
+	m := map[string]interface{}{
+		common.HTTPAuthProxyAlwaysOnboard:  "true",
+		common.HTTPAuthProxySkipCertVerify: "true",
+		common.HTTPAuthProxyEndpoint:       "https://auth.proxy/suffix",
+	}
+	InitWithSettings(m)
+	v, e := HTTPAuthProxySetting()
+	assert.Nil(t, e)
+	assert.Equal(t, *v, models.HTTPAuthProxy{
+		Endpoint:       "https://auth.proxy/suffix",
+		AlwaysOnBoard:  true,
+		SkipCertVerify: true,
+	})
 }

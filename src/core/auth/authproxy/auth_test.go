@@ -15,13 +15,16 @@
 package authproxy
 
 import (
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	cut "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/auth/authproxy/test"
 	"github.com/stretchr/testify/assert"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 )
 
 var mockSvr *httptest.Server
@@ -30,13 +33,22 @@ var pwd = "1234567ab"
 var cmt = "By Authproxy"
 
 func TestMain(m *testing.M) {
+	cut.InitDatabaseFromEnv()
+	if err := dao.ClearHTTPAuthProxyUsers(); err != nil {
+		panic(err)
+	}
 	mockSvr = test.NewMockServer(map[string]string{"jt": "pp", "Admin@vsphere.local": "Admin!23"})
 	defer mockSvr.Close()
 	a = &Auth{
 		Endpoint:       mockSvr.URL + "/test/login",
 		SkipCertVerify: true,
+		// So it won't require mocking the cfgManager
+		settingTimeStamp: time.Now(),
 	}
 	rc := m.Run()
+	if err := dao.ClearHTTPAuthProxyUsers(); err != nil {
+		panic(err)
+	}
 	if rc != 0 {
 		os.Exit(rc)
 	}
@@ -104,7 +116,6 @@ func TestAuth_Authenticate(t *testing.T) {
 	}
 }
 
-/* TODO: Enable this case after adminserver refactor is merged.
 func TestAuth_PostAuthenticate(t *testing.T) {
 	type tc struct {
 		input  *models.User
@@ -120,7 +131,7 @@ func TestAuth_PostAuthenticate(t *testing.T) {
 				Email:    "jt@placeholder.com",
 				Realname: "jt",
 				Password: pwd,
-				Comment:  fmt.Sprintf(cmtTmpl, mockSvr.URL+"/test/login"),
+				Comment:  userEntryComment,
 			},
 		},
 		{
@@ -129,16 +140,19 @@ func TestAuth_PostAuthenticate(t *testing.T) {
 			},
 			expect: models.User{
 				Username: "Admin@vsphere.local",
-				Email:    "jt@placeholder.com",
+				Email:    "Admin@vsphere.local",
 				Realname: "Admin@vsphere.local",
 				Password: pwd,
-				Comment:  fmt.Sprintf(cmtTmpl, mockSvr.URL+"/test/login"),
+				Comment:  userEntryComment,
 			},
 		},
 	}
 	for _, c := range suite {
 		a.PostAuthenticate(c.input)
-		assert.Equal(t, c.expect, *c.input)
+		assert.Equal(t, c.expect.Username, c.input.Username)
+		assert.Equal(t, c.expect.Email, c.input.Email)
+		assert.Equal(t, c.expect.Realname, c.input.Realname)
+		assert.Equal(t, c.expect.Comment, c.input.Comment)
 	}
+
 }
-*/

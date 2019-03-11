@@ -46,4 +46,3 @@ if response.status_code == 200 :
 else:
     print("Failed with http return code:"+ str(response.status_code))
     sys.exit(1)
-

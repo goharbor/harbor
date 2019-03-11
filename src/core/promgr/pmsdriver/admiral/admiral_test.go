@@ -188,7 +188,7 @@ func TestGet(t *testing.T) {
 		Name: name,
 	})
 	require.Nil(t, err)
-	defer delete(t, id)
+	defer deleteProject(t, id)
 
 	// get by invalid input type
 	_, err = d.Get([]string{})
@@ -230,7 +230,7 @@ func TestCreate(t *testing.T) {
 		},
 	})
 	require.Nil(t, err)
-	defer delete(t, id)
+	defer deleteProject(t, id)
 
 	project, err := d.Get(id)
 	assert.Nil(t, err)
@@ -288,7 +288,7 @@ func TestList(t *testing.T) {
 		Name: name1,
 	})
 	require.Nil(t, err)
-	defer delete(t, id1)
+	defer deleteProject(t, id1)
 
 	name2 := "project_for_test_get_all_02"
 	id2, err := d.Create(&models.Project{
@@ -298,7 +298,7 @@ func TestList(t *testing.T) {
 		},
 	})
 	require.Nil(t, err)
-	defer delete(t, id2)
+	defer deleteProject(t, id2)
 
 	// no filter
 	result, err := d.List(nil)
@@ -346,7 +346,7 @@ func TestList(t *testing.T) {
 	assert.True(t, found2)
 }
 
-func delete(t *testing.T, id int64) {
+func deleteProject(t *testing.T, id int64) {
 	d := NewDriver(client, endpoint, tokenReader)
 	if err := d.Delete(id); err != nil {
 		t.Logf("failed to delete project %d: %v", id, err)

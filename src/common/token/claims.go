@@ -25,5 +25,9 @@ func (rc RobotClaims) Valid() error {
 	if rc.Access == nil {
 		return errors.New("The access info cannot be nil")
 	}
+	stdErr := rc.StandardClaims.Valid()
+	if stdErr != nil {
+		return stdErr
+	}
 	return nil
 }

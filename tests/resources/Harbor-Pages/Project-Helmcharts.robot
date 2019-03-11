@@ -46,5 +46,12 @@ Go Back To Versions And Delete
     Retry Element Click  xpath=${version_bread_crumbs}
     Retry Element Click  xpath=${version_checkbox}
     Retry Element Click  xpath=${version_delete}
-    Retry Element Click  xpath=${version_confirm_delete}
-    Retry Keyword When Error  Wait Until Page Contains Element  element=xpath=${helmchart_content}
+    :For  ${n}  IN RANGE  1  6
+    \    Log To Console  Trying Go Back To Versions And Delete ${n} times ...
+    \    Retry Element Click  xpath=${version_confirm_delete}
+    \    Capture Page Screenshot
+    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  xpath=${helmchart_content}
+    \    Capture Page Screenshot
+    \    Log To Console  Return value is ${out[0]}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  1

@@ -117,8 +117,8 @@ func formatURL(ldapURL string) (string, error) {
 
 	if strings.Contains(hostport, ":") {
 		splitHostPort := strings.Split(hostport, ":")
-		port, error := strconv.Atoi(splitHostPort[1])
-		if error != nil {
+		port, err := strconv.Atoi(splitHostPort[1])
+		if err != nil {
 			return "", fmt.Errorf("illegal url port")
 		}
 		if port == 636 {
@@ -212,6 +212,7 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 	for _, ldapEntry := range result.Entries {
 		var u models.LdapUser
 		groupDNList := []string{}
+		groupAttr := strings.ToLower(session.ldapGroupConfig.LdapGroupMembershipAttribute)
 		for _, attr := range ldapEntry.Attributes {
 			// OpenLdap sometimes contain leading space in useranme
 			val := strings.TrimSpace(attr.Values[0])
@@ -227,7 +228,7 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 				u.Email = val
 			case "email":
 				u.Email = val
-			case "memberof":
+			case groupAttr:
 				for _, dnItem := range attr.Values {
 					groupDNList = append(groupDNList, strings.TrimSpace(dnItem))
 					log.Debugf("Found memberof %v", dnItem)
@@ -281,12 +282,18 @@ func (session *Session) Open() error {
 
 // SearchLdap to search ldap with the provide filter
 func (session *Session) SearchLdap(filter string) (*goldap.SearchResult, error) {
-	attributes := []string{"uid", "cn", "mail", "email", "memberof"}
+	attributes := []string{"uid", "cn", "mail", "email"}
 	lowerUID := strings.ToLower(session.ldapConfig.LdapUID)
 
 	if lowerUID != "uid" && lowerUID != "cn" && lowerUID != "mail" && lowerUID != "email" {
 		attributes = append(attributes, session.ldapConfig.LdapUID)
 	}
+
+	// Add the Group membership attribute
+	groupAttr := strings.TrimSpace(session.ldapGroupConfig.LdapGroupMembershipAttribute)
+	log.Debugf("Membership attribute: %s\n", groupAttr)
+	attributes = append(attributes, groupAttr)
+
 	return session.SearchLdapAttribute(session.ldapConfig.LdapBaseDn, filter, attributes)
 }
 

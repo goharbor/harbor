@@ -133,3 +133,12 @@ func ArrayEqual(arrayA, arrayB []int) bool {
 	}
 	return true
 }
+
+// ClearHTTPAuthProxyUsers remove the records from harbor_users to delete all user imported via
+// HTTP Auth Proxy
+func ClearHTTPAuthProxyUsers() error {
+	o := GetOrmer()
+	sql := "DELETE FROM harbor_user WHERE comment='By Authproxy'"
+	_, err := o.Raw(sql).Exec()
+	return err
+}

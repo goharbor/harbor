@@ -446,3 +446,8 @@ export interface UserPrivilegeServeItem {
   action: string;
 }
 
+export class OriginCron {
+  type: string;
+  cron: string;
+}
+

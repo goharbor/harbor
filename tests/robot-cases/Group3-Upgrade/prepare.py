@@ -8,7 +8,8 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 parser = argparse.ArgumentParser(description='The script to generate data for harbor v1.4.0')
 parser.add_argument('--endpoint', '-e', dest='endpoint', required=True, help='The endpoint to harbor')
-args = parser.parse_args() 
+parser.add_argument('--version', '-v', dest='version', required=False, help='The version to harbor')
+args = parser.parse_args()
 
 url = "https://"+args.endpoint+"/api/"
 print url
@@ -17,30 +18,37 @@ class HarborAPI:
     def create_project(self, project_name):
         body=dict(body={"project_name": ""+project_name+"", "metadata": {"public": "true"}})
         request(url+"projects", 'post', **body)
-    
+
     def create_user(self, username):
-        payload = {"username":username, "email":username+"@vmware.com", "password":"Harbor12345", "realname":username, "commment":"string"}
+        payload = {"username":username, "email":username+"@vmware.com", "password":"Harbor12345", "realname":username, "comment":"string"}
         body=dict(body=payload)
         request(url+"users", 'post', **body)
-    
+
     def set_user_admin(self, user):
         r = request(url+"users?username="+user+"", 'get')
         userid = str(r.json()[0]['user_id'])
-        body=dict(body={"has_admin_role": 1})
+        if args.version == "1.6":
+            body=dict(body={"has_admin_role": True})
+        else:
+            body=dict(body={"has_admin_role": 1})
         request(url+"users/"+userid+"/sysadmin", 'put', **body)
-    
+
     def add_member(self, project, user, role):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
-        payload = {"roles": [role], "username":""+user+""}
+        if args.version == "1.6":
+            payload = {"member_user":{ "username": ""+user+""},"role_id": role}
+        else:
+            payload = {"roles": [role], "username":""+user+""}
+
         body=dict(body=payload)
         request(url+"projects/"+projectid+"/members", 'post', **body)
-   
+
     def add_endpoint(self, endpointurl, endpointname, username, password, insecure):
         payload = {"endpoint": ""+endpointurl+"", "name": ""+endpointname+"", "username": ""+username+"", "password": ""+password+"", "insecure": insecure}
         body=dict(body=payload)
         request(url+"targets", 'post', **body)
-    
+
     def add_replication_rule(self, project, target, trigger, rulename):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = r.json()[0]['project_id']
@@ -49,7 +57,7 @@ class HarborAPI:
         payload = {"name": ""+rulename+"", "description": "string", "projects": [{"project_id": projectid,}], "targets": [{"id": targetid,}], "trigger": {"kind": ""+trigger+"", "schedule_param": {"type": "weekly", "weekday": 1, "offtime": 0}}}
         body=dict(body=payload)
         request(url+"policies/replication", 'post', **body)
-    
+
     def update_project_setting(self, project, contenttrust, preventrunning, preventseverity, scanonpush):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
@@ -65,7 +73,7 @@ class HarborAPI:
         }
         body=dict(body=payload)
         request(url+"projects/"+projectid+"", 'put', **body)
-    
+
     def update_systemsetting(self, emailfrom, emailhost, emailport, emailuser, creation, selfreg, token):
         payload = {
             "auth_mode": "db_auth",
@@ -80,7 +88,6 @@ class HarborAPI:
             "read_only": False,
             "self_registration": selfreg,
             "token_expiration": token,
-            "verify_remote_cert": True,
             "scan_all_policy": {
                 "type": "none",
                 "parameter": {
@@ -90,7 +97,7 @@ class HarborAPI:
         }
         body=dict(body=payload)
         request(url+"configurations", 'put', **body)
-    
+
     def update_repoinfo(self, reponame):
         payload = {"description": "testdescription"}
         body=dict(body=payload)
@@ -111,7 +118,7 @@ class HarborAPI:
                 pass
         open(target, 'wb').write(ca_content)
 
-    
+
 def request(url, method, user = None, userp = None, **kwargs):
     if user is None:
         user = "admin"
@@ -147,44 +154,39 @@ def push_signed_image(image, project, tag):
 def do_data_creation():
     harborAPI = HarborAPI()
     harborAPI.get_ca()
-    
+
     for user in data["users"]:
         harborAPI.create_user(user["name"])
-    
+
     for user in data["admin"]:
         harborAPI.set_user_admin(user["name"])
-    
+
     for project in data["projects"]:
         harborAPI.create_project(project["name"])
-        for member in project["member"]: 
+        for member in project["member"]:
             harborAPI.add_member(project["name"], member["name"], member["role"])
-    
+
     pull_image("busybox", "redis", "haproxy", "alpine", "httpd:2")
     push_image("busybox", data["projects"][0]["name"])
     push_signed_image("alpine", data["projects"][0]["name"], "latest")
 
-    
     for endpoint in data["endpoint"]:
         harborAPI.add_endpoint(endpoint["url"], endpoint["name"], endpoint["user"], endpoint["pass"], False)
-    
     for replicationrule in data["replicationrule"]:
-        harborAPI.add_replication_rule(replicationrule["project"], 
-                                       replicationrule["endpoint"], replicationrule["trigger"], 
+        harborAPI.add_replication_rule(replicationrule["project"],
+                                       replicationrule["endpoint"], replicationrule["trigger"],
                                        replicationrule["rulename"])
-    
     for project in data["projects"]:
-        harborAPI.update_project_setting(project["name"], 
-                                        project["configuration"]["enable_content_trust"], 
-                                        project["configuration"]["prevent_vulnerable_images_from_running"], 
+        harborAPI.update_project_setting(project["name"],
+                                        project["configuration"]["enable_content_trust"],
+                                        project["configuration"]["prevent_vulnerable_images_from_running"],
                                         project["configuration"]["prevent_vlunerable_images_from_running_severity"], 
                                         project["configuration"]["automatically_scan_images_on_push"])
-    
-    harborAPI.update_systemsetting(data["configuration"]["emailsetting"]["emailfrom"], 
-                                   data["configuration"]["emailsetting"]["emailserver"], 
-                                   float(data["configuration"]["emailsetting"]["emailport"]), 
-                                   data["configuration"]["emailsetting"]["emailuser"], 
+    harborAPI.update_systemsetting(data["configuration"]["emailsetting"]["emailfrom"],
+                                   data["configuration"]["emailsetting"]["emailserver"],
+                                   float(data["configuration"]["emailsetting"]["emailport"]),
+                                   data["configuration"]["emailsetting"]["emailuser"],
                                    data["configuration"]["projectcreation"],
                                    data["configuration"]["selfreg"],
                                    float(data["configuration"]["token"]))
-
 do_data_creation()

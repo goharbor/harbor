@@ -382,7 +382,7 @@ The following configuration options are supported:
 | worker_pool.redis_pool.namespace | The namespace used in redis| JOB_SERVICE_POOL_REDIS_NAMESPACE |
 | loggers | Loggers for job service itself. Refer to [Configure loggers](#configure-loggers)|  |
 | job_loggers | Loggers for the running jobs. Refer to [Configure loggers](#configure-loggers) | |
-| admin_server | The harbor admin server endpoint which used to retrieve Harbor configures| ADMINSERVER_URL |
+| core_server | The harbor core server endpoint which used to retrieve Harbor configures| CORE_URL |
 
 ### Sample
 
@@ -428,9 +428,6 @@ job_loggers:
 loggers:
   - name: "STD_OUTPUT" # Same with above
     level: "DEBUG"
-
-#Admin server endpoint
-admin_server: "http://adminserver:9010/"
 ```
 
 ## API

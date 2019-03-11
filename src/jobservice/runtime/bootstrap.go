@@ -124,7 +124,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	apiServer.Stop()
 
 	// In case stop is called before the server is ready
-	close := make(chan bool, 1)
+	closeChan := make(chan bool, 1)
 	go func() {
 		timer := time.NewTimer(10 * time.Second)
 		defer timer.Stop()
@@ -133,14 +133,14 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		case <-timer.C:
 			// Try again
 			apiServer.Stop()
-		case <-close:
+		case <-closeChan:
 			return
 		}
 
 	}()
 
 	rootContext.WG.Wait()
-	close <- true
+	closeChan <- true
 
 	if err != nil {
 		logger.Fatalf("Server exit with error: %s\n", err)
