@@ -45,8 +45,9 @@ func TestToJob(t *testing.T) {
 		Cron: "20 3 0 * * *",
 	}
 
-	adminjob := &GCReq{
+	adminjob := &AdminJobReq{
 		Schedule: schedule,
+		Name:     common_job.ImageGC,
 	}
 
 	job := adminjob.ToJob()
@@ -60,8 +61,9 @@ func TestToJobManual(t *testing.T) {
 		Type: "Manual",
 	}
 
-	adminjob := &GCReq{
+	adminjob := &AdminJobReq{
 		Schedule: schedule,
+		Name:     common_job.ImageGC,
 	}
 
 	job := adminjob.ToJob()
@@ -75,7 +77,7 @@ func TestIsPeriodic(t *testing.T) {
 		Cron: "20 3 0 * * *",
 	}
 
-	adminjob := &GCReq{
+	adminjob := &AdminJobReq{
 		Schedule: schedule,
 	}
 
@@ -88,7 +90,7 @@ func TestJobKind(t *testing.T) {
 		Type: "Daily",
 		Cron: "20 3 0 * * *",
 	}
-	adminjob := &GCReq{
+	adminjob := &AdminJobReq{
 		Schedule: schedule,
 	}
 	kind := adminjob.JobKind()
@@ -97,7 +99,7 @@ func TestJobKind(t *testing.T) {
 	schedule1 := &ScheduleParam{
 		Type: "Manual",
 	}
-	adminjob1 := &GCReq{
+	adminjob1 := &AdminJobReq{
 		Schedule: schedule1,
 	}
 	kind1 := adminjob1.JobKind()
@@ -109,7 +111,7 @@ func TestCronString(t *testing.T) {
 		Type: "Daily",
 		Cron: "20 3 0 * * *",
 	}
-	adminjob := &GCReq{
+	adminjob := &AdminJobReq{
 		Schedule: schedule,
 	}
 	cronStr := adminjob.CronString()

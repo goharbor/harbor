@@ -34,7 +34,6 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/core/notifier"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/replication/core"
@@ -111,11 +110,6 @@ func main() {
 	// Init API handler
 	if err := api.Init(); err != nil {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
-	}
-
-	// Subscribe the policy change topic.
-	if err = notifier.Subscribe(notifier.ScanAllPolicyTopic, &notifier.ScanPolicyNotificationHandler{}); err != nil {
-		log.Errorf("failed to subscribe scan all policy change topic: %v", err)
 	}
 
 	if config.WithClair() {

@@ -4,6 +4,7 @@ import unittest
 from testutils import harbor_server
 from testutils import TEARDOWN
 from testutils import ADMIN_CLIENT
+from library.system import System
 from library.project import Project
 from library.user import User
 from library.repository import Repository
@@ -12,6 +13,9 @@ from library.repository import push_image_to_project
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
+        system = System()
+        self.system= system
+
         project = Project()
         self.project= project
 
@@ -86,7 +90,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.repo_Luca_name, tag_Luca = push_image_to_project(project_Luca_name, harbor_server, user_Luca_name, user_common_password, image, src_tag)
 
         #4. Trigger scan all event;
-        self.repo.scan_all_image_now(**ADMIN_CLIENT)
+        self.system.scan_now(**ADMIN_CLIENT)
 
         #5. Check if image in project_Alice and another image in project_Luca were both scanned.
         self.repo.check_image_scan_result(TestProjects.repo_Alice_name, tag_Alice, expected_scan_status = "finished", **USER_ALICE_CLIENT)

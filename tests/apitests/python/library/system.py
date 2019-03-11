@@ -71,14 +71,12 @@ class System(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return data
 
-    def set_gc_schedule(self, schedule_type = 'None', offtime = None, weekday = None, expect_status_code = 200, expect_response_body = None, **kwargs):
+    def set_gc_schedule(self, schedule_type = 'None', cron = None, expect_status_code = 200, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
-        gc_schedule = swagger_client.GCSchedule()
+        gc_schedule = swagger_client.AdminJobSchedule()
         gc_schedule.type = schedule_type
-        if offtime is not None:
-            gc_schedule.offtime = offtime
-        if weekday is not None:
-            gc_schedule.weekday = weekday
+        if cron is not None:
+            gc_schedule.cron = cron
         try:
             data, status_code, _ = client.system_gc_schedule_put_with_http_info(gc_schedule)
         except ApiException as e:
@@ -92,16 +90,14 @@ class System(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return data
 
-    def create_gc_schedule(self, schedule_type, offtime = None, weekday = None, expect_status_code = 201, expect_response_body = None, **kwargs):
+    def create_gc_schedule(self, schedule_type, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)
-        gcscheduleschedule = swagger_client.GCScheduleSchedule()
+        gcscheduleschedule = swagger_client.AdminJobScheduleObj()
         gcscheduleschedule.type = schedule_type
-        if offtime is not None:
-            gcscheduleschedule.offtime = offtime
-        if weekday is not None:
-            gcscheduleschedule.weekday = weekday
+        if cron is not None:
+            gcscheduleschedule.cron = cron
 
-        gc_schedule = swagger_client.GCSchedule(gcscheduleschedule)
+        gc_schedule = swagger_client.AdminJobSchedule(gcscheduleschedule)
         try:
             _, status_code, header = client.system_gc_schedule_post_with_http_info(gc_schedule)
         except ApiException as e:
@@ -114,6 +110,31 @@ class System(base.Base):
                 raise Exception(r"Create GC schedule result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
         base._assert_status_code(expect_status_code, status_code)
         return base._get_id_from_header(header)
+
+    def create_scan_all_schedule(self, schedule_type, cron = None, expect_status_code = 201, expect_response_body = None, **kwargs):
+        client = self._get_client(**kwargs)
+        scanschedule = swagger_client.AdminJobScheduleObj()
+        scanschedule.type = schedule_type
+        if cron is not None:
+            scanschedule.cron = cron
+
+        scan_all_schedule = swagger_client.AdminJobSchedule(scanschedule)
+        try:
+            _, status_code, header = client.system_scan_all_schedule_post_with_http_info(scan_all_schedule)
+        except ApiException as e:
+            if e.status == expect_status_code:
+                if expect_response_body is not None and e.body.strip() != expect_response_body.strip():
+                    raise Exception(r"Create Scan All schedule response body is not as expected {} actual status is {}.".format(expect_response_body.strip(), e.body.strip()))
+                else:
+                    return e.reason, e.body
+            else:
+                raise Exception(r"Create Scan All schedule result is not as expected {} actual status is {}.".format(expect_status_code, e.status))
+        base._assert_status_code(expect_status_code, status_code)
+        return base._get_id_from_header(header)
+
+    def scan_now(self, **kwargs):
+        scan_all_id = self.create_scan_all_schedule('Manual', **kwargs)
+        return scan_all_id
 
     def gc_now(self, **kwargs):
         gc_id = self.create_gc_schedule('Manual', **kwargs)

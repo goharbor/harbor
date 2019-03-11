@@ -107,11 +107,6 @@ class Repository(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return data
 
-    def scan_all_image_now(self, expect_status_code = 202, **kwargs):
-        client = self._get_client(**kwargs)
-        _, status_code, _ = client.repositories_scan_all_post_with_http_info()
-        base._assert_status_code(expect_status_code, status_code)
-
     def repository_should_exist(self, project_id, repo_name, **kwargs):
         repositories = self.get_repository(project_id, **kwargs)
         if is_repo_exist_in_project(repositories, repo_name) == False:

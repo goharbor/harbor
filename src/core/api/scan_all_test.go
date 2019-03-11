@@ -7,15 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var adminJob001 apilib.AdminJobReq
+var adminJob002 apilib.AdminJobReq
 
-func TestGCPost(t *testing.T) {
+func TestScanAllPost(t *testing.T) {
 
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
 	// case 1: add a new admin job
-	code, err := apiTest.AddGC(*admin, adminJob001)
+	code, err := apiTest.AddScanAll(*admin, adminJob002)
 	if err != nil {
 		t.Error("Error occurred while add a admin job", err.Error())
 		t.Log(err)
@@ -24,11 +24,11 @@ func TestGCPost(t *testing.T) {
 	}
 }
 
-func TestGCGet(t *testing.T) {
+func TestScanAllGet(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	code, _, err := apiTest.GCScheduleGet(*admin)
+	code, _, err := apiTest.ScanAllScheduleGet(*admin)
 	if err != nil {
 		t.Error("Error occurred while get a admin job", err.Error())
 		t.Log(err)

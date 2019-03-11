@@ -22,8 +22,8 @@
 
 package apilib
 
-// GCReq holds request information for admin job
-type GCReq struct {
+// AdminJobReq holds request information for admin job
+type AdminJobReq struct {
 	Schedule *ScheduleParam `json:"schedule,omitempty"`
 	Status   string         `json:"status,omitempty"`
 	ID       int64          `json:"id,omitempty"`
