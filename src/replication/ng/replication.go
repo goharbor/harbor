@@ -25,6 +25,8 @@ import (
 
 	"github.com/goharbor/harbor/src/replication/ng/scheduler"
 
+	// register the Harbor adapter
+	_ "github.com/goharbor/harbor/src/replication/ng/adapter/harbor"
 	"github.com/goharbor/harbor/src/replication/ng/flow"
 	"github.com/goharbor/harbor/src/replication/ng/operation"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
