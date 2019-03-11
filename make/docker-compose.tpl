@@ -99,7 +99,7 @@ services:
     container_name: harbor-core
     env_file:
       - ./common/config/core/env
-      - ./common/config/adminserver/env
+      - ./common/config/core/config_env
     restart: always
     cap_drop:
       - ALL

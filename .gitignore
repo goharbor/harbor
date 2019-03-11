@@ -40,3 +40,4 @@ src/portal/src/**/*.js.map
 **/aot
 **/dist
 **/.bin
+src/core/conf/app.conf

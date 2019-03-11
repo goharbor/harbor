@@ -65,12 +65,14 @@
         "ITEM_REQUIRED": "Field is required.",
         "NUMBER_REQUIRED": "Field is required and should be numbers.",
         "PORT_REQUIRED": "Field is required and should be valid port number.",
+        "CRON_REQUIRED": "Field is required and should be in cron format.",
         "EMAIL_EXISTING": "Email address already exists.",
         "USER_EXISTING": "Username is already in use.",
         "RULE_USER_EXISTING": "Name is already in use.",
         "EMPTY": "Name is required",
         "NONEMPTY": "Can't be empty",
-        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
+        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
+        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -265,7 +267,10 @@
         "TOKEN": "Token",
         "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
         "ENABLED_STATE": "Enabled state",
+        "NUMBER_REQUIRED":"Field is required and should be an integer other than 0.",
         "DESCRIPTION": "Description",
+        "EXPIRATION": "Expiration",
+        "TOKEN_EXPIRATION":"Robot Token Expiration (Days)",
         "ACTION": "Action",
         "EDIT": "Edit",
         "ITEMS": "items",
@@ -615,6 +620,7 @@
         "AUTH_MODE_DB": "Database",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
+        "AUTH_MODE_HTTP": "http_auth",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
         "SCOPE_SUBTREE": "Subtree",
@@ -633,12 +639,16 @@
             "LDAP_UID": "The attribute used in a search to match a user. It could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD.",
             "LDAP_SCOPE": "The scope to search for users.",
             "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes.",
+            "ROBOT_TOKEN_EXPIRATION": "The expiration time ( in days) of the token of the robot account, Default is 30 days. Show the number of days converted from minutes and rounds down",            
             "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
             "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
-            "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
+            "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
+            "HOURLY_CRON":"Run once an hour, beginning of hour",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
+            "DAILY_CRON":"Run once a day, midnight"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -666,6 +676,11 @@
             "CLIENT_ID": "UAA Client ID",
             "CLIENT_SECRET": "UAA Client Secret",
             "VERIFY_CERT": "UAA Verify Cert"
+        },
+        "HTTP_AUTH": {
+            "ENDPOINT": "Server Endpoint",
+            "ALWAYS_ONBOARD": "Always Onboard",
+            "VERIFY_CERT": "Authentication Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
@@ -872,7 +887,10 @@
         "NONE": "None",
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
+        "HOURLY": "Hourly",
+        "CUSTOM": "Custom",
         "MANUAL": "Manual",
+        "CRON": "cron",
         "ON": "on",
         "AT": "at"
     },

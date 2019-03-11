@@ -47,7 +47,7 @@ describe('ProjectPolicyConfigComponent', () => {
     }
   ];
 
-  let mockPorjectPolicies: Project[] | any[] = [
+  let mockProjectPolicies: Project[] | any[] = [
     {
       'project_id': 1,
       'owner_id': 1,
@@ -122,7 +122,7 @@ describe('ProjectPolicyConfigComponent', () => {
     projectPolicyService = fixture.debugElement.injector.get(ProjectService);
 
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo[0]));
-    spyProjectPolicies = spyOn(projectPolicyService, 'getProject').and.returnValues(Promise.resolve(mockPorjectPolicies[0]));
+    spyProjectPolicies = spyOn(projectPolicyService, 'getProject').and.returnValues(Promise.resolve(mockProjectPolicies[0]));
 
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     spyOn(userPermissionService, "getPermission")

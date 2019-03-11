@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -220,10 +221,19 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 		member.EntityID = request.MemberGroup.ID
 		member.EntityType = common.GroupMember
 	} else if len(request.MemberUser.Username) > 0 {
+		var userID int
 		member.EntityType = common.UserMember
-		userID, err := auth.SearchAndOnBoardUser(request.MemberUser.Username)
+		u, err := dao.GetUser(models.User{Username: request.MemberUser.Username})
 		if err != nil {
 			return 0, err
+		}
+		if u != nil {
+			userID = u.UserID
+		} else {
+			userID, err = auth.SearchAndOnBoardUser(request.MemberUser.Username)
+			if err != nil {
+				return 0, err
+			}
 		}
 		member.EntityID = userID
 	} else if len(request.MemberGroup.LdapGroupDN) > 0 {

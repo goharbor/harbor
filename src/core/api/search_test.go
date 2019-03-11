@@ -201,8 +201,8 @@ func TestSearch(t *testing.T) {
 		credential: sysAdmin,
 	}, result)
 	require.Nil(t, err)
-	require.Equal(t, 1, len(result.Chart))
-	require.Equal(t, "library/harbor", result.Chart[0].Name)
+	require.Equal(t, 1, len(*(result.Chart)))
+	require.Equal(t, "library/harbor", (*result.Chart)[0].Name)
 
 	// Restore chart search handler
 	searchHandler = nil

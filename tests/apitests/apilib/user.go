@@ -54,6 +54,12 @@ type User struct {
 	UpdateTime string `json:"update_time,omitempty"`
 }
 
+// UserSearch the user search type
+type UserSearch struct {
+	UserID   int    `json:"user_id,omitempty"`
+	Username string `json:"username,omitempty"`
+}
+
 // Permission the permission type
 type Permission struct {
 	Resource string `json:"resource,omitempty"`

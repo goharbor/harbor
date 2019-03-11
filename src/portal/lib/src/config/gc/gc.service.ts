@@ -36,29 +36,25 @@ export class GcRepoService {
         return this.gcApiRepository.getSchedule();
     }
 
-    public postScheduleGc(type, offTime, weekday ?): Observable <any> {
+    public postScheduleGc(type, cron): Observable <any> {
         let param = {
             "schedule": {
                 "type": type,
-                "offtime": offTime,
+                "cron": cron,
             }
         };
-        if (weekday) {
-            param.schedule["weekday"] = weekday;
-        }
+
         return this.gcApiRepository.postSchedule(param);
     }
 
-    public putScheduleGc(type, offTime, weekday ?): Observable <any> {
+    public putScheduleGc(type, cron): Observable <any> {
         let param = {
             "schedule": {
                 "type": type,
-                "offtime": offTime,
+                "cron": cron,
             }
         };
-        if (weekday) {
-            param.schedule["weekday"] = weekday;
-        }
+
         return this.gcApiRepository.putSchedule(param);
     }
 }

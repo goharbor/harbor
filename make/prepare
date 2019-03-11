@@ -253,10 +253,6 @@ registry_custom_ca_bundle_path = rcp.get("configuration", "registry_custom_ca_bu
 core_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))  
 jobservice_secret = ''.join(random.choice(string.ascii_letters+string.digits) for i in range(16))
 
-adminserver_config_dir = os.path.join(config_dir,"adminserver")
-if not os.path.exists(adminserver_config_dir):
-    os.makedirs(os.path.join(config_dir, "adminserver"))
-
 core_config_dir = prep_conf_dir(config_dir,"core")
 core_certificates_dir =  prep_conf_dir(core_config_dir,"certificates")
 db_config_dir = prep_conf_dir(config_dir, "db")
@@ -267,7 +263,7 @@ nginx_config_dir = prep_conf_dir (config_dir, "nginx")
 nginx_conf_d = prep_conf_dir(nginx_config_dir, "conf.d")
 log_config_dir = prep_conf_dir (config_dir, "log")
 
-adminserver_conf_env = os.path.join(config_dir, "adminserver", "env")
+conf_env = os.path.join(config_dir, "core", "config_env")
 core_conf_env = os.path.join(config_dir, "core", "env")
 core_conf = os.path.join(config_dir, "core", "app.conf")
 core_cert_dir = os.path.join(config_dir, "core", "certificates")
@@ -279,8 +275,7 @@ db_conf_env = os.path.join(config_dir, "db", "env")
 job_conf_env = os.path.join(config_dir, "jobservice", "env")
 nginx_conf = os.path.join(config_dir, "nginx", "nginx.conf")
 cert_dir = os.path.join(config_dir, "nginx", "cert")
-log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf") 
-adminserver_url = "http://adminserver:8080"
+log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf")
 registry_url = "http://registry:5000"
 registry_controller_url = "http://registryctl:8080"
 core_url = "http://core:8080"
@@ -338,8 +333,8 @@ reload_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for _
 
 ldap_group_admin_dn = rcp.get("configuration", "ldap_group_admin_dn") if rcp.has_option("configuration", "ldap_group_admin_dn") else ""
 
-render(os.path.join(templates_dir, "adminserver", "env"),
-        adminserver_conf_env,
+render(os.path.join(templates_dir, "core", "config_env"),
+        conf_env,
         reload_config=reload_config,
         public_url=public_url,
         core_url=core_url,
@@ -415,7 +410,6 @@ render(os.path.join(templates_dir, "core", "env"),
         redis_host=redis_host,
         redis_port=redis_port,
         redis_password=redis_password,
-        adminserver_url = adminserver_url,
         chart_cache_driver = chart_cache_driver,
         redis_url_reg = redis_url_reg)
 

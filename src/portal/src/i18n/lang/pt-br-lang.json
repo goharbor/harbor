@@ -65,10 +65,12 @@
         "ITEM_REQUIRED": "Campo é obrigatório.",
         "NUMBER_REQUIRED": "Campo é obrigatório e deve ser numerico.",
         "PORT_REQUIRED": "Campo é obrigatório e deve ser um número de porta válido.",
+        "CRON_REQUIRED": "O campo é obrigatório e deve estar no formato cron.",        
         "EMAIL_EXISTING": "Email já existe.",
         "USER_EXISTING": "Nome de usuário já está em uso.",
         "RULE_USER_EXISTING": "Nome já em uso.",
-        "EMPTY": "Nome é obrigatório"
+        "EMPTY": "Nome é obrigatório",
+        "ENDPOINT_FORMAT": "Avaliação deve começar por HTTP Ou HTTPS."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Insira a senha atual",
@@ -263,6 +265,9 @@
         "TOKEN": "Token",
         "NEW_ROBOT_ACCOUNT": "Novo robô conta",
         "ENABLED_STATE": "Enabled state",
+        "EXPIRATION": "Expiration",
+        "NUMBER_REQUIRED":"Field is required and should be an integer other than 0.",
+        "TOKEN_EXPIRATION":"Robot Token Expiration (Days)",
         "DESCRIPTION": "Descrição",
         "ACTION": "AÇÃO",
         "EDIT": "Editar",
@@ -609,6 +614,7 @@
         "AUTH_MODE_DB": "Banco de Dados",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
+        "AUTH_MODE_HTTP": "http_auth",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
         "SCOPE_SUBTREE": "Subtree",
@@ -626,12 +632,16 @@
             "LDAP_UID": "O atributo utilizado na busca de um uusário. Pode ser uid, cn, email, sAMAccountName ou outro atributo dependendo LDAP/AD.",
             "LDAP_SCOPE": "O escopo de busca de usuários.",
             "TOKEN_EXPIRATION": "O tempo de expiração (em minutos) de um token criado pelo serviço de token. O padrão é 30 minutos.",
+            "ROBOT_TOKEN_EXPIRATION": "O tempo de expiração (dias) do token da conta do robô, o padrão é 30 dias. Mostra o número de dias convertidos de minutos e arredonda para baixo",                        
             "PRO_CREATION_RESTRICTION": "A opção para definir quais usuários possuem permissão de criar projetos. Por padrão, qualquer um pode criar projetos. Configure para 'Apenas Administradores' para que apenas Administradores possam criar projetos.",
             "ROOT_CERT_DOWNLOAD": "Baixar o certificado raiz do registry.",
             "SCANNING_POLICY": "Configura a política de análise das imagens baseado em diferentes requisitos. 'Nenhum': Nenhuma política ativa; 'Diariamente em': Dispara a análise diariamente no horário especificado.",
             "VERIFY_CERT": "Verificar o Certificado do Servidor LDAP",
             "READONLY_TOOLTIP": "Em modo somente leitura, você não pode remover repositórios ou tags ou enviar imagens. ",
-            "REPO_TOOLTIP": "Usuários não podem efetuar qualquer operação nas imagens nesse modo."
+            "REPO_TOOLTIP": "Usuários não podem efetuar qualquer operação nas imagens nesse modo.",
+            "HOURLY_CRON":"Run once an hour, beginning of hour",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
+            "DAILY_CRON":"Run once a day, midnight"
         },
         "LDAP": {
             "URL": "URL LDAP",
@@ -659,6 +669,11 @@
             "CLIENT_ID": "ID de cliente UAA",
             "CLIENT_SECRET": "Secret de Cliente UAA",
             "VERIFY_CERT": "Verificar certificado UAA"
+        },
+        "HTTP_AUTH": {
+            "ENDPOINT": "server endpoint",
+            "ALWAYS_ONBOARD": "Sempre Onboard",
+            "VERIFY_CERT": "Verificar certificado de Authentication"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Disparo de análise geral efetuado com sucesso!",

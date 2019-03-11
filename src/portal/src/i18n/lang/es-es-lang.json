@@ -65,12 +65,14 @@
         "ITEM_REQUIRED": "Campo obligatorio.",
         "NUMBER_REQUIRED": "El campo es obligatorio y debería ser un número.",
         "PORT_REQUIRED": "El campo es obligatorio y debería ser un número de puerto válido.",
+        "CRON_REQUIRED": "El campo es obligatorio y debe estar en formato cron.",        
         "EMAIL_EXISTING": "Esa dirección de email ya existe.",
         "USER_EXISTING": "Ese nombre de usuario ya existe.",
         "RULE_USER_EXISTING": "Name is already in use.",
         "EMPTY": "Name is required",
         "NONEMPTY": "Can't be empty",
-        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode."
+        "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
+        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Introduzca la contraseña actual",
@@ -265,6 +267,9 @@
         "TOKEN": "Token",
         "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
         "ENABLED_STATE": "Enabled state",
+        "EXPIRATION": "Expiration",
+        "NUMBER_REQUIRED":"Field is required and should be an integer other than 0.",
+        "TOKEN_EXPIRATION":"Robot Token Expiration (Days)",
         "DESCRIPTION": "Description",
         "ACTION": "Action",
         "EDIT": "Edit",
@@ -614,6 +619,7 @@
         "AUTH_MODE_DB": "Base de datos",
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
+        "AUTH_MODE_HTTP": "http_auth",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "UnNivel",
         "SCOPE_SUBTREE": "Subárbol",
@@ -632,12 +638,16 @@
             "LDAP_UID": "El atributo usado en una búsqueda para encontrar un usuario. Debe ser el uid, cn, email, sAMAccountName u otro atributo dependiendo del LDAP/AD.",
             "LDAP_SCOPE": "El ámbito de búsqueda para usuarios",
             "TOKEN_EXPIRATION": "El tiempo de expiración (en minutos) del token creado por el servicio de tokens. Por defecto son 30 minutos.",
+            "ROBOT_TOKEN_EXPIRATION": "El tiempo de caducidad (días) del token de la cuenta del robot, el valor predeterminado es 30 días. Muestra el número de días convertidos de minutos y redondeos.",                        
             "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
             "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
-            "GC_POLICY": ""
+            "GC_POLICY": "",
+            "HOURLY_CRON":"Run once an hour, beginning of hour",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
+            "DAILY_CRON":"Run once a day, midnight"
 
         },
         "LDAP": {
@@ -665,6 +675,11 @@
             "CLIENT_ID": "UAA Client ID",
             "CLIENT_SECRET": "UAA Client Secret",
             "VERIFY_CERT": "UAA Verify Cert"
+        },
+        "HTTP_AUTH": {
+            "ENDPOINT": "Server Endpoint",
+            "ALWAYS_ONBOARD": "Always Onboard",
+            "VERIFY_CERT": "Authentication Verify Cert"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",

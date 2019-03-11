@@ -65,8 +65,6 @@ type Configuration struct {
 	// Server listening port
 	Port uint `yaml:"port"`
 
-	AdminServer string `yaml:"admin_server"`
-
 	// Additional config when using https
 	HTTPSConfig *HTTPSConfig `yaml:"https_config,omitempty"`
 
@@ -171,11 +169,6 @@ func GetUIAuthSecret() string {
 	return utils.ReadEnv(uiAuthSecret)
 }
 
-// GetAdminServerEndpoint return the admin server endpoint
-func GetAdminServerEndpoint() string {
-	return DefaultConfig.AdminServer
-}
-
 // Load env variables
 func (c *Configuration) loadEnvs() {
 	prot := utils.ReadEnv(jobServiceProtocol)
@@ -251,11 +244,6 @@ func (c *Configuration) loadEnvs() {
 		}
 	}
 
-	// admin server
-	if coreServer := utils.ReadEnv(jobServiceCoreServerEndpoint); !utils.IsEmptyStr(coreServer) {
-		c.AdminServer = coreServer
-	}
-
 }
 
 // Check if the configurations are valid settings.
@@ -323,10 +311,6 @@ func (c *Configuration) validate() error {
 	// Job loggers
 	if len(c.JobLoggerConfigs) == 0 {
 		return errors.New("missing logger config of job")
-	}
-
-	if _, err := url.Parse(c.AdminServer); err != nil {
-		return fmt.Errorf("invalid admin server endpoint: %s", err)
 	}
 
 	return nil // valid

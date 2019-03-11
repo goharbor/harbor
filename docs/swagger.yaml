@@ -748,6 +748,45 @@ paths:
           description: User need to log in first.
         '500':
           description: Internal errors.
+  /users/search:
+    get:
+      summary: Search users by username, email
+      description: |
+        This endpoint is to search the users by username, email.
+      parameters:
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Username for filtering results.
+        - name: email
+          in: query
+          type: string
+          required: false
+          description: Email for filtering results.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: 'The page nubmer, default is 1.'
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Search users by username, email successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserSearch'
+        '500':
+          description: Unexpected internal errors.
   '/users/{user_id}':
     get:
       summary: Get a user's profile.
@@ -3849,6 +3888,15 @@ definitions:
         type: string
       update_time:
         type: string
+  UserSearch:
+    type: object
+    properties:
+      user_id:
+        type: integer
+        format: int
+        description: The ID of the user.
+      username:
+        type: string
   Password:
     type: object
     properties:
@@ -5074,15 +5122,10 @@ definitions:
     properties:
       type:
         type: string
-        description: The schedule type. The valid values are daily， weekly and None. 'None' means to cancel the schedule.
-      weekday:
-        type: integer
-        format: int8
-        description: 'Optional, only used when the type is weekly. The valid values are 1-7.'
-      offtime:
-        type: integer
-        format: int64
-        description: 'The time offset with the UTC 00:00 in seconds.'
+        description: The schedule type. The valid values are hourly, daily， weekly, custom and None. 'None' means to cancel the schedule.
+      cron:
+        type: string
+        description: A cron expression, a time-based job scheduler.
   SearchResult:
     type: object
     description: The chart search result item
@@ -5137,6 +5180,9 @@ definitions:
       description:
         type: string
         description: The description of robot account
+      expiresat:
+        type: integer
+        description: The expiration of robot account (in seconds)
       project_id:
         type: integer
         description: The project id of robot account

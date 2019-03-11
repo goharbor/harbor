@@ -33,7 +33,7 @@ type chartSearchHandler func(string, []string) ([]*search.Result, error)
 
 var searchHandler chartSearchHandler
 
-// SearchAPI handles requesst to /api/search
+// SearchAPI handles request to /api/search
 type SearchAPI struct {
 	BaseController
 }
@@ -41,7 +41,7 @@ type SearchAPI struct {
 type searchResult struct {
 	Project    []*models.Project        `json:"project"`
 	Repository []map[string]interface{} `json:"repository"`
-	Chart      []*search.Result
+	Chart      *[]*search.Result        `json:"chart,omitempty"`
 }
 
 // Get ...
@@ -141,8 +141,8 @@ func (s *SearchAPI) Get() {
 			log.Errorf("failed to filter charts: %v", err)
 			s.CustomAbort(http.StatusInternalServerError, err.Error())
 		}
+		result.Chart = &chartResults
 
-		result.Chart = chartResults
 	}
 
 	s.Data["json"] = result

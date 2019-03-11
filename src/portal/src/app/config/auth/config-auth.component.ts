@@ -65,12 +65,15 @@ export class ConfigurationAuthComponent implements OnChanges {
     public get showUAA(): boolean {
         return this.currentConfig && this.currentConfig.auth_mode && this.currentConfig.auth_mode.value === 'uaa_auth';
     }
-
+    public get showHttpAuth(): boolean {
+        return this.currentConfig && this.currentConfig.auth_mode && this.currentConfig.auth_mode.value === 'http_auth';
+    }
     public get showSelfReg(): boolean {
         if (!this.currentConfig || !this.currentConfig.auth_mode) {
             return true;
         } else {
-            return this.currentConfig.auth_mode.value !== 'ldap_auth' && this.currentConfig.auth_mode.value !== 'uaa_auth';
+            return this.currentConfig.auth_mode.value !== 'ldap_auth' && this.currentConfig.auth_mode.value !== 'uaa_auth'
+            && this.currentConfig.auth_mode.value !== 'http_auth' ;
         }
     }
 
@@ -143,7 +146,11 @@ export class ConfigurationAuthComponent implements OnChanges {
             || prop.startsWith('uaa_')
             || prop === 'auth_mode'
             || prop === 'project_creattion_restriction'
-            || prop === 'self_registration') {
+            || prop === 'self_registration'
+            || prop === 'http_authproxy_endpoint'
+            || prop === 'http_authproxy_skip_cert_verify'
+            || prop === 'http_authproxy_always_onboard'
+            ) {
                 changes[prop] = allChanges[prop];
             }
         }
@@ -161,7 +168,7 @@ export class ConfigurationAuthComponent implements OnChanges {
     handleOnChange($event: any): void {
         if ($event && $event.target && $event.target["value"]) {
             let authMode = $event.target["value"];
-            if (authMode === 'ldap_auth' || authMode === 'uaa_auth') {
+            if (authMode === 'ldap_auth' || authMode === 'uaa_auth' || authMode === 'http_auth') {
                 if (this.currentConfig.self_registration.value) {
                     this.currentConfig.self_registration.value = false; // unselect
                 }

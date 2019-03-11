@@ -15,9 +15,8 @@ all                 | prepare env, compile binaries, build images and install im
 prepare             | prepare env
 compile             | compile ui and jobservice code
 compile_portal      | compile portal code
-compile_ui          | compile ui binary
+compile_core        | compile core binary
 compile_jobservice  | compile jobservice binary
-compile_adminserver | compile admin server binary
 build               | build Harbor docker images (default: using build_photon)
 build_photon        | build Harbor docker images from Photon OS base image
 install             | compile binaries, build images, prepare specific version of compose file and startup Harbor instance

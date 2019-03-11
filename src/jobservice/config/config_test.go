@@ -69,11 +69,6 @@ func TestDefaultConfig(t *testing.T) {
 	if err := DefaultConfig.Load("../config_test.yml", true); err != nil {
 		t.Fatalf("Load config from yaml file, expect nil error but got error '%s'\n", err)
 	}
-
-	if endpoint := GetAdminServerEndpoint(); endpoint != "http://127.0.0.1:8888" {
-		t.Errorf("expect default admin server endpoint 'http://127.0.0.1:8888' but got '%s'\n", endpoint)
-	}
-
 	redisURL := DefaultConfig.PoolConfig.RedisPoolCfg.RedisURL
 	if redisURL != "redis://localhost:6379" {
 		t.Errorf("expect redisURL '%s' but got '%s'\n", "redis://localhost:6379", redisURL)

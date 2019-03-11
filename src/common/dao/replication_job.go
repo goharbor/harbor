@@ -195,13 +195,9 @@ func UpdateRepPolicy(policy *models.RepPolicy) error {
 
 // DeleteRepPolicy ...
 func DeleteRepPolicy(id int64) error {
-	o := GetOrmer()
-	policy := &models.RepPolicy{
-		ID:         id,
-		Deleted:    true,
-		UpdateTime: time.Now(),
-	}
-	_, err := o.Update(policy, "Deleted")
+	_, err := GetOrmer().Delete(&models.RepPolicy{
+		ID: id,
+	})
 	return err
 }
 
@@ -290,6 +286,12 @@ func repJobQueryConditions(query ...*models.RepJobQuery) orm.QuerySeter {
 func DeleteRepJob(id int64) error {
 	o := GetOrmer()
 	_, err := o.Delete(&models.RepJob{ID: id})
+	return err
+}
+
+// DeleteRepJobs deletes replication jobs by policy ID
+func DeleteRepJobs(policyID int64) error {
+	_, err := GetOrmer().QueryTable(&models.RepJob{}).Filter("PolicyID", policyID).Delete()
 	return err
 }
 

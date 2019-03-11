@@ -14,8 +14,4 @@ else
 fi
 echo "server ip is "$IP
 
-sed -i -r "s/POSTGRESQL_HOST=postgresql/POSTGRESQL_HOST=$IP/" make/common/config/adminserver/env
-sed -i -r "s|REGISTRY_URL=http://registry:5000|REGISTRY_URL=http://$IP:5000|" make/common/config/adminserver/env
-sed -i -r "s/CORE_SECRET=.*/CORE_SECRET=$CORE_SECRET/" make/common/config/adminserver/env
-
 chmod 777 /data/
