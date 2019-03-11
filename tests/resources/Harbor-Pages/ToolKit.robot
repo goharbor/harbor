@@ -50,13 +50,13 @@ Select Object
 
 # This func cannot support as the delete user flow changed.
 Multi-delete Object
-    [Arguments]    @{obj}
+    [Arguments]    ${delete_btn}  @{obj}
     :For  ${obj}  in  @{obj}
     \    ${element}=  Set Variable  xpath=//clr-dg-row[contains(.,'${obj}')]//label
     \    Retry Element Click  ${element}
     Sleep  1
     Capture Page Screenshot
-    Retry Element Click  ${repo_delete_btn}
+    Retry Element Click  ${delete_btn}
     Sleep  1
     Capture Page Screenshot
     Retry Element Click  ${repo_delete_on_card_view_btn}
