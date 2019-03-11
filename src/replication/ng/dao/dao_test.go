@@ -23,5 +23,19 @@ import (
 
 func TestMain(m *testing.M) {
 	dao.PrepareTestForPostgresSQL()
-	os.Exit(m.Run())
+
+	var code = m.Run()
+
+	// clear test database
+	var clearSqls = []string{
+		`DROP TABLE "access", "access_log", "admin_job", "alembic_version", "clair_vuln_timestamp",
+  "harbor_label", "harbor_resource_label", "harbor_user", "img_scan_job", "img_scan_overview",
+  "job_log", "project", "project_member", "project_metadata", "properties", "registry",
+  "replication_immediate_trigger", "replication_job", "replication_policy", "replication_policy_ng",
+  "replication_target", "repository", "robot", "role", "schema_migrations", "user_group";`,
+		`DROP FUNCTION "update_update_time_at_column"();`,
+	}
+	dao.PrepareTestData(clearSqls, nil)
+
+	os.Exit(code)
 }
