@@ -85,7 +85,9 @@ func (f *fakedRegistryManager) HealthCheck() error {
 	return nil
 }
 
-type fakedExecutionManager struct{}
+type fakedExecutionManager struct {
+	taskID int64
+}
 
 func (f *fakedExecutionManager) Create(*models.Execution) (int64, error) {
 	return 1, nil
@@ -106,7 +108,9 @@ func (f *fakedExecutionManager) RemoveAll(int64) error {
 	return nil
 }
 func (f *fakedExecutionManager) CreateTask(*models.Task) (int64, error) {
-	return 1, nil
+	f.taskID++
+	id := f.taskID
+	return id, nil
 }
 func (f *fakedExecutionManager) ListTasks(...*models.TaskQuery) (int64, []*models.Task, error) {
 	return 0, nil, nil
@@ -203,13 +207,40 @@ func (f *fakedAdapter) PullBlob(repository, digest string) (size int64, blob io.
 func (f *fakedAdapter) PushBlob(repository, digest string, size int64, blob io.Reader) error {
 	return nil
 }
+func (f *fakedAdapter) FetchCharts(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
+	return []*model.Resource{
+		{
+			Type: model.ResourceTypeChart,
+			Metadata: &model.ResourceMetadata{
+				Name:      "library/harbor",
+				Namespace: "library",
+				Vtags:     []string{"0.2.0"},
+			},
+		},
+	}, nil
+}
+func (f *fakedAdapter) ChartExist(name, version string) (bool, error) {
+	return false, nil
+}
+func (f *fakedAdapter) DownloadChart(name, version string) (io.ReadCloser, error) {
+	return nil, nil
+}
+func (f *fakedAdapter) UploadChart(name, version string, chart io.Reader) error {
+	return nil
+}
+func (f *fakedAdapter) DeleteChart(name, version string) error {
+	return nil
+}
 
 func TestStartReplication(t *testing.T) {
 	config.InitWithSettings(nil)
 	err := adapter.RegisterFactory(
 		&adapter.Info{
-			Type:                   "faked_registry",
-			SupportedResourceTypes: []model.ResourceType{"repository"},
+			Type: "faked_registry",
+			SupportedResourceTypes: []model.ResourceType{
+				model.ResourceTypeRepository,
+				model.ResourceTypeChart,
+			},
 		}, fakedAdapterFactory)
 	require.Nil(t, err)
 

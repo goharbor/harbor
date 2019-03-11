@@ -13,3 +13,18 @@
 // limitations under the License.
 
 package adapter
+
+import (
+	"io"
+
+	"github.com/goharbor/harbor/src/replication/ng/model"
+)
+
+// ChartRegistry defines the capabilities that a chart registry should have
+type ChartRegistry interface {
+	FetchCharts(namespaces []string, filters []*model.Filter) ([]*model.Resource, error)
+	ChartExist(name, version string) (bool, error)
+	DownloadChart(name, version string) (io.ReadCloser, error)
+	UploadChart(name, version string, chart io.Reader) error
+	DeleteChart(name, version string) error
+}
