@@ -49,6 +49,8 @@ type Credential struct {
 	AccessSecret string `json:"access_secret"`
 }
 
+// TODO add validation for Registry
+
 // Registry keeps the related info of registry
 // Data required for the secure access way is not contained here.
 // DAO layer is not considered here

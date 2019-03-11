@@ -3,7 +3,6 @@ package dao
 import (
 	"testing"
 
-	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -303,9 +302,9 @@ func TestDeleteRepPolicy(t *testing.T) {
 			}
 
 			require.Nil(t, err)
-			_, err = GetRepPolicy(tt.id)
-			require.NotNil(t, err)
-			assert.Equal(t, err, orm.ErrNoRows)
+			policy, err := GetRepPolicy(tt.id)
+			require.Nil(t, err)
+			assert.Nil(t, policy)
 		})
 	}
 }

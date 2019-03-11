@@ -17,6 +17,7 @@ package model
 import (
 	"time"
 
+	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/common/models"
 )
 
@@ -33,7 +34,8 @@ type Policy struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Creator     string `json:"creator"`
+	// TODO consider to remove this property?
+	Creator string `json:"creator"`
 	// source
 	SrcRegistryID int64    `json:"src_registry_id"`
 	SrcNamespaces []string `json:"src_namespaces"`
@@ -56,6 +58,33 @@ type Policy struct {
 	Enabled      bool      `json:"enabled"`
 	CreationTime time.Time `json:"creation_time"`
 	UpdateTime   time.Time `json:"update_time"`
+}
+
+// Valid the policy
+func (p *Policy) Valid(v *validation.Validation) {
+	if len(p.Name) == 0 {
+		v.SetError("name", "cannot be empty")
+	}
+
+	// one of the source registry and destination registry must be Harbor itself
+	if p.SrcRegistryID != 0 && p.DestRegistryID != 0 ||
+		p.SrcRegistryID == 0 && p.DestRegistryID == 0 {
+		v.SetError("src_registry_id, dest_registry_id", "one of them should be empty and the other one shouldn't be empty")
+	}
+
+	// source namespaces cannot be empty
+	if len(p.SrcNamespaces) == 0 {
+		v.SetError("src_namespaces", "cannot be empty")
+	} else {
+		for _, namespace := range p.SrcNamespaces {
+			if len(namespace) == 0 {
+				v.SetError("src_namespaces", "cannot contain empty namespace")
+				break
+			}
+		}
+	}
+
+	// TODO valid trigger and filters
 }
 
 // FilterType represents the type info of the filter.

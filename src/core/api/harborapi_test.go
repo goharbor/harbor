@@ -158,6 +158,9 @@ func init() {
 	beego.Router("/api/replication/executions/:id([0-9]+)/tasks", &ReplicationOperationAPI{}, "get:ListTasks")
 	beego.Router("/api/replication/executions/:id([0-9]+)/tasks/:tid([0-9]+)/log", &ReplicationOperationAPI{}, "get:GetTaskLog")
 
+	beego.Router("/api/replication/policies", &ReplicationPolicyAPI{}, "get:List;post:Create")
+	beego.Router("/api/replication/policies/:id([0-9]+)", &ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
+
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
 	beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
