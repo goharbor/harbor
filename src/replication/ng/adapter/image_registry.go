@@ -31,3 +31,43 @@ type ImageRegistry interface {
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
 }
+
+// TODO implement the functions
+
+// DefaultImageRegistry provides a default implementation for interface ImageRegistry
+type DefaultImageRegistry struct{}
+
+// FetchImages ...
+func (d *DefaultImageRegistry) FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
+	return nil, nil
+}
+
+// ManifestExist ...
+func (d *DefaultImageRegistry) ManifestExist(repository, reference string) (exist bool, digest string, err error) {
+	return false, "", nil
+}
+
+// PullManifest ...
+func (d *DefaultImageRegistry) PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error) {
+	return nil, "", nil
+}
+
+// PushManifest ...
+func (d *DefaultImageRegistry) PushManifest(repository, reference, mediaType string, payload []byte) error {
+	return nil
+}
+
+// BlobExist ...
+func (d *DefaultImageRegistry) BlobExist(repository, digest string) (exist bool, err error) {
+	return false, nil
+}
+
+// PullBlob ...
+func (d *DefaultImageRegistry) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
+	return 0, nil, nil
+}
+
+// PushBlob ...
+func (d *DefaultImageRegistry) PushBlob(repository, digest string, size int64, blob io.Reader) error {
+	return nil
+}
