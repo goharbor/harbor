@@ -1,17 +1,18 @@
 package execution
 
 import (
+	"os"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
-	"time"
 )
 
-var executionManager, _ = NewDefaultManager()
+var executionManager = NewDefaultManager()
 
 func TestMain(m *testing.M) {
 	databases := []string{"postgresql"}

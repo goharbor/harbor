@@ -63,7 +63,7 @@ func fakedFactory(*model.Registry) (adapter.Adapter, error) {
 func TestReplicationAdapterAPIGet(t *testing.T) {
 	err := adapter.RegisterFactory(
 		&adapter.Info{
-			Type:                   "harbor",
+			Type:                   "test",
 			SupportedResourceTypes: []model.ResourceType{"image"},
 		}, fakedFactory)
 	require.Nil(t, err)
@@ -73,7 +73,7 @@ func TestReplicationAdapterAPIGet(t *testing.T) {
 		{
 			request: &testingRequest{
 				method: http.MethodGet,
-				url:    "/api/replication/adapters/harbor",
+				url:    "/api/replication/adapters/test",
 			},
 			code: http.StatusUnauthorized,
 		},
@@ -81,7 +81,7 @@ func TestReplicationAdapterAPIGet(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodGet,
-				url:        "/api/replication/adapters/harbor",
+				url:        "/api/replication/adapters/test",
 				credential: nonSysAdmin,
 			},
 			code: http.StatusForbidden,
@@ -99,7 +99,7 @@ func TestReplicationAdapterAPIGet(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodGet,
-				url:        "/api/replication/adapters/harbor",
+				url:        "/api/replication/adapters/test",
 				credential: sysAdmin,
 			},
 			code: http.StatusOK,

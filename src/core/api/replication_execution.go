@@ -74,8 +74,11 @@ func (r *ReplicationOperationAPI) authorized(policy *model.Policy, resource rbac
 // ListExecutions ...
 func (r *ReplicationOperationAPI) ListExecutions() {
 	query := &models.ExecutionQuery{
-		Statuses: []string{r.GetString("status")},
-		Trigger:  r.GetString("trigger"),
+		Trigger: r.GetString("trigger"),
+	}
+
+	if len(r.GetString("status")) > 0 {
+		query.Statuses = []string{r.GetString("status")}
 	}
 	if len(r.GetString("policy_id")) > 0 {
 		policyID, err := r.GetInt64("policy_id")
