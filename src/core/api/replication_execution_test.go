@@ -65,6 +65,9 @@ func (f *fakedOperationController) GetTask(id int64) (*models.Task, error) {
 	}
 	return nil, nil
 }
+func (f *fakedOperationController) UpdateTaskStatus(id int64, status string, statusCondition ...string) error {
+	return nil
+}
 func (f *fakedOperationController) GetTaskLog(int64) ([]byte, error) {
 	return []byte("success"), nil
 }
