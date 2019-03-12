@@ -246,12 +246,13 @@ func (f *flow) schedule() error {
 			continue
 		}
 		allFailed = false
-		// if the task is submitted successfully, update the status and start time
+		// if the task is submitted successfully, update the status, job ID and start time
 		if err = f.executionMgr.UpdateTaskStatus(result.TaskID, model.TaskStatusPending); err != nil {
 			log.Errorf("failed to update task status %d: %v", result.TaskID, err)
 		}
 		if err = f.executionMgr.UpdateTask(&model.Task{
 			ID:        result.TaskID,
+			JobID:     result.JobID,
 			StartTime: time.Now(),
 		}); err != nil {
 			log.Errorf("failed to update task %d: %v", result.TaskID, err)
