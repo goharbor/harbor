@@ -1,6 +1,6 @@
 import os
 
-from g import base_dir, templates_dir
+from g import templates_dir
 from .jinja import render_jinja
 
 
@@ -17,7 +17,7 @@ NGINX_VERSION = VERSION_TAG
 # version of chartmuseum
 
 docker_compose_template_path = os.path.join(templates_dir, 'docker_compose', 'docker-compose.yml.jinja')
-docker_compose_yml_path = os.path.join(base_dir, 'docker-compose.yml')
+docker_compose_yml_path = '/compose_location/docker-compose.yml'
 
 def check_configs(configs):
     pass
@@ -36,10 +36,11 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
         'log_location': configs['log_location'],
         'cert_key_path': configs['cert_key_path'],
         'cert_path': configs['cert_path'],
+        'protocol': configs['protocol'],
+        'registry_custom_ca_bundle_storage_path': configs['registry_custom_ca_bundle_path'],
         'with_notary': with_notary,
         'with_clair': with_clair,
         'with_chartmuseum': with_chartmuseum
     }
-    rendering_variables['secretkey_path'] = configs['secretkey_path']
 
     render_jinja(docker_compose_template_path, docker_compose_yml_path, **rendering_variables)

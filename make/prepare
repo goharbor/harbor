@@ -1,10 +1,49 @@
 #!/bin/bash
 
-host_make_path="$( cd "$(dirname "$0")" ; pwd -P )"
+# If compling source code this dir is harbor's make dir
+# If install harbor via pacakge, this dir is harbor's root dir
+harbor_prepare_path="$( cd "$(dirname "$0")" ; pwd -P )"
 
-echo host make path is set to ${host_make_path}
-data_path=$(grep '^[^#]*data_volume' ${host_make_path}/harbor.yml | awk '{print $NF}')
-log_path=$(grep '^[^#]*location' ${host_make_path}/harbor.yml | awk '{print $NF}')
-secretkey_path=$(grep '^[^#]*secretkey_path' ${host_make_path}/harbor.yml | awk '{print $NF}')
+echo host make path is set to ${harbor_prepare_path}
+data_path=$(grep '^[^#]*data_volume:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
+log_path=$(grep '^[^#]*location:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
+secretkey_path=$(grep '^[^#]*secretkey_path:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
+ssl_cert_path=$(grep '^[^#]*ssl_cert:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
+ssl_cert_key_path=$(grep '^[^#]*ssl_cert_key:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
+registry_custom_ca_bundle=$(grep '^[^#]*registry_custom_ca_bundle:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
+# Create a input dirs
+mkdir -p ${harbor_prepare_path}/input
+input_dir=${harbor_prepare_path}/input
+mkdir -p $input_dir/nginx
+mkdir -p $input_dir/keys
+mkdir -p $input_dir/common
 
-docker run -it --rm -v ${host_make_path}:/harbor_make -v $data_path:/data -v $log_path:/var/log/harbor -v $secretkey_path:$secretkey_path goharbor/prepare:1.7.1 $@
+# Create secret dir
+secret_dir=${data_path}/secret
+config_dir=$harbor_prepare_path/common/config
+
+# Copy nginx config file to input dir
+cp $ssl_cert_path $input_dir/nginx/server.crt
+cp $ssl_cert_key_path $input_dir/nginx/server.key
+
+# Copy secretkey to input dir
+cp -r $secretkey_path $input_dir/keys
+
+# Copy ca bundle to input dir
+if [ -f $registry_custom_ca_bundle ]
+then
+    cp -r $registry_custom_ca_bundle $input_dir/common/custom-ca-bundle.crt
+fi
+
+# Copy harbor.yml to input dir
+cp ${harbor_prepare_path}/harbor.yml $input_dir/harbor.yml
+
+docker run -it --rm -v $input_dir:/input \
+                    -v $harbor_prepare_path:/compose_location \
+                    -v $config_dir:/config \
+                    -v $secret_dir:/secret \
+                    -v $log_path:/var/log/harbor \
+                    goharbor/prepare:1.7.1 $@
+
+# Clean up input dir
+rm -rf ${harbor_prepare_path}/input

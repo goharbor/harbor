@@ -48,29 +48,10 @@ log:
 #only take effect in the first boot, the subsequent changes of these properties 
 #should be performed on web ui
 
-#************************BEGIN INITIAL PROPERTIES************************
-
-##By default the auth mode is db_auth, i.e. the credentials are stored in a local database.
-#Set it to ldap_auth if you want to verify a user's credentials against an LDAP server.
-auth_mode: db_auth
-
-#The base DN from which to look up a user in LDAP/AD
-ldap_basedn: ou=people,dc=mydomain,dc=com
-
-#The attribute used to name a LDAP/AD group, it could be cn, name
-ldap_group_gid: cn
-
-#The following attributes only need to be set when auth mode is uaa_auth
-uaa_ca_cert: $uaa_ca_cert
-
-#The flag to control what users have permission to create projects
-#The default value "everyone" allows everyone to creates a project. 
-#Set to "adminonly" so that only admin user can create project.
-project_creation_restriction: everyone
-
-#************************END INITIAL PROPERTIES************************
-
-
+##The initial password of Harbor admin, only works for the first time when Harbor starts.
+#It has no effect after the first launch of Harbor.
+#Change the admin password from UI after launching Harbor.
+harbor_admin_password: Harbor12345
 
 database:
   #The address of the Harbor database. Only need to change when using external db.

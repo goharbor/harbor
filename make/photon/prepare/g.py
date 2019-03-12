@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 ## Const
 DEFAULT_UID = 10000
@@ -7,14 +8,18 @@ DEFAULT_GID = 10000
 ## Global variable
 base_dir = '/harbor_make'
 templates_dir = "/usr/src/app/templates"
-config_dir = os.path.join(base_dir, "common/config")
-config_file_path = os.path.join(base_dir, 'harbor.yml')
+config_dir = '/config'
 
-private_key_pem_template = os.path.join(templates_dir, "core", "private_key.pem")
-root_cert_path_template = os.path.join(templates_dir, "registry", "root.crt")
+secret_dir = '/secret'
+secret_key_dir='/secret/keys'
+
+private_key_pem_path = Path('/secret/core/private_key.pem')
+root_crt_path = Path('/secret/registry/root.crt')
+
+config_file_path = '/compose_location/harbor.yml'
 
 cert_dir = os.path.join(config_dir, "nginx", "cert")
 core_cert_dir = os.path.join(config_dir, "core", "certificates")
-private_key_pem = os.path.join(config_dir, "core", "private_key.pem")
-root_crt = os.path.join(config_dir, "registry", "root.crt")
-registry_custom_ca_bundle_config = os.path.join(config_dir, "custom-ca-bundle.crt")
+
+registry_custom_ca_bundle_storage_path = Path('/secret/common/custom-ca-bundle.crt')
+registry_custom_ca_bundle_storage_input_path = Path('/input/common/custom-ca-bundle.crt')

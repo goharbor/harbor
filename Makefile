@@ -150,7 +150,7 @@ MIGRATEPATCHBINARYNAME=migrate-patch
 
 # configfile
 CONFIGPATH=$(MAKEPATH)
-INSIDE_CONFIGPATH=/harbor_make
+INSIDE_CONFIGPATH=/compose_location
 CONFIGFILE=harbor.yml
 
 # prepare parameters

@@ -7,16 +7,10 @@ def validate(conf, **kwargs):
         raise Exception(
             "Error: the protocol must be https when Harbor is deployed with Notary")
     if protocol == "https":
-        if not conf.get("cert_path"): ## ssl_path in config
+        if not conf.get("cert_path"):
             raise Exception("Error: The protocol is https but attribute ssl_cert is not set")
         if not conf.get("cert_key_path"):
             raise Exception("Error: The protocol is https but attribute ssl_cert_key is not set")
-
-    # Project validate
-    project_creation = conf.get("project_creation_restriction")
-    if project_creation != "everyone" and project_creation != "adminonly":
-        raise Exception(
-            "Error invalid value for project_creation_restriction: %s" % project_creation)
 
     # Storage validate
     valid_storage_drivers = ["filesystem", "azure", "gcs", "s3", "swift", "oss"]

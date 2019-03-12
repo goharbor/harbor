@@ -1,5 +1,5 @@
 import os, shutil
-from g import base_dir, templates_dir, config_dir, root_crt, DEFAULT_UID, DEFAULT_GID
+from g import base_dir, templates_dir, config_dir, root_crt_path, secret_key_dir,DEFAULT_UID, DEFAULT_GID
 from .cert import openssl_installed, create_cert, create_root_cert, get_alias
 from .jinja import render_jinja
 from .misc import mark_file, prepare_config_dir
@@ -23,7 +23,7 @@ def prepare_env_notary(customize_crt, nginx_config_dir):
     notary_config_dir = prepare_config_dir(config_dir, "notary")
     if (customize_crt == 'on' or customize_crt == True)  and openssl_installed():
         try:
-            temp_cert_dir = os.path.join(base_dir, "cert_tmp")
+            temp_cert_dir = os.path.join('/tmp', "cert_tmp")
             if not os.path.exists(temp_cert_dir):
                 os.makedirs(temp_cert_dir)
             ca_subj = "/C=US/ST=California/L=Palo Alto/O=GoHarbor/OU=Harbor/CN=Self-signed by GoHarbor"
@@ -50,7 +50,7 @@ def prepare_env_notary(customize_crt, nginx_config_dir):
         shutil.copy2(os.path.join(notary_template_dir, "notary-signer.key"), notary_config_dir)
         shutil.copy2(os.path.join(notary_template_dir, "notary-signer-ca.crt"), notary_config_dir)
 
-    shutil.copy2(root_crt, notary_config_dir)
+    shutil.copy2(root_crt_path, notary_config_dir)
     shutil.copy2(
         os.path.join(notary_template_dir, "server_env.jinja"),
         os.path.join(notary_config_dir, "server_env"))
@@ -95,7 +95,7 @@ def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_pa
         ssl_cert=ssl_cert_path,
         ssl_cert_key=ssl_cert_key_path)
 
-    default_alias = get_alias(config_dict['secretkey_path'])
+    default_alias = get_alias(secret_key_dir)
     render_jinja(
         notary_signer_env_template,
         notary_signer_env_path,

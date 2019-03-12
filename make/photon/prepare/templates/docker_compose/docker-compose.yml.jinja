@@ -32,7 +32,10 @@ services:
     volumes:
       - {{data_volume}}/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z
-      - ./common/config/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+      - {{data_volume}}/secret/registry/root.crt:/etc/registry/root.crt:z
+{%if registry_custom_ca_bundle_storage_path %}
+      - {{data_volume}}/secret/common/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+{% endif %}
     networks:
       - harbor
 {% if with_clair %}
@@ -121,9 +124,9 @@ services:
       - SETUID
     volumes:
       - ./common/config/core/app.conf:/etc/core/app.conf:z
-      - ./common/config/core/private_key.pem:/etc/core/private_key.pem:z
       - ./common/config/core/certificates/:/etc/core/certificates/:z
-      - {{secretkey_path}}/secretkey:/etc/core/key:z
+      - {{data_volume}}/secret/core/private_key.pem:/etc/core/private_key.pem:z
+      - {{data_volume}}/secret/keys/secretkey:/etc/core/key:z
       - {{data_volume}}/ca_download/:/etc/core/ca/:z
       - {{data_volume}}/psc/:/etc/core/token/:z
       - {{data_volume}}/:/data/:z
@@ -243,8 +246,10 @@ services:
       - NET_BIND_SERVICE
     volumes:
       - ./common/config/nginx:/etc/nginx:z
-      - {{cert_key_path}}:/etc/nginx/cert/server.key
-      - {{cert_path}}:/etc/nginx/cert/server.crt
+{% if protocol == 'https' %}
+      - {{data_volume}}/secret/nginx/server.key:/etc/nginx/cert/server.key
+      - {{data_volume}}/secret/nginx/server.crt:/etc/nginx/cert/server.crt
+{% endif %}
     networks:
       - harbor
 {% if with_notary %}
@@ -328,7 +333,9 @@ services:
       - postgresql
     volumes:
       - ./common/config/clair/config.yaml:/etc/clair/config.yaml:z
-      - ./common/config/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+{%if registry_custom_ca_bundle_storage_path %}
+      - {{data_volume}}/secret/common/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+{% endif %}
     logging:
       driver: "syslog"
       options:  
@@ -357,7 +364,9 @@ services:
     volumes:
       - {{data_volume}}/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
-      - ./common/config/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+{%if registry_custom_ca_bundle_storage_path %}
+      - {{data_volume}}/secret/common/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+{% endif %}
     logging:
       driver: "syslog"
       options:  
