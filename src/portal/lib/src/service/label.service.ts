@@ -1,6 +1,5 @@
 import { Inject, Injectable } from "@angular/core";
 import { Http } from "@angular/http";
-import { Observable} from "rxjs";
 import { map, catchError} from "rxjs/operators";
 
 import { RequestQueryParams } from "./RequestQueryParams";
@@ -9,18 +8,19 @@ import { Label } from "./interface";
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
 import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from "../utils";
 import { extractJson } from "../shared/shared.utils";
+import { Observable, throwError as observableThrowError } from "rxjs";
 
 export abstract class LabelService {
   abstract getGLabels(
     name?: string,
     queryParams?: RequestQueryParams
-  ): Observable<Label[]> | Promise<Label[]>;
+  ): Observable<Label[]>;
 
   abstract getPLabels(
     projectId: number,
     name?: string,
     queryParams?: RequestQueryParams
-  ): Observable<Label[]> | Promise<Label[]>;
+  ): Observable<Label[]>;
 
   abstract getProjectLabels(
     projectId: number,
@@ -37,16 +37,16 @@ export abstract class LabelService {
 
   abstract createLabel(
     label: Label
-  ): Observable<Label> | Promise<Label> | Label;
+  ): Observable<Label>;
 
-  abstract getLabel(id: number): Observable<Label> | Promise<Label> | Label;
+  abstract getLabel(id: number): Observable<Label>;
 
   abstract updateLabel(
     id: number,
     param: Label
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
-  abstract deleteLabel(id: number): Observable<any> | Promise<any> | any;
+  abstract deleteLabel(id: number): Observable<any>;
 
   abstract getChartVersionLabels(
     projectName: string,
@@ -87,7 +87,7 @@ export class LabelDefaultService extends LabelService {
   getGLabels(
     name?: string,
     queryParams?: RequestQueryParams
-  ): Observable<Label[]> | Promise<Label[]> {
+  ): Observable<Label[]> {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
@@ -98,16 +98,15 @@ export class LabelDefaultService extends LabelService {
     }
     return this.http
       .get(this.labelUrl, buildHttpRequestOptions(queryParams))
-      .toPromise()
-      .then(response => response.json())
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json())
+      , catchError(error => observableThrowError(error)));
   }
 
   getPLabels(
     projectId: number,
     name?: string,
     queryParams?: RequestQueryParams
-  ): Observable<Label[]> | Promise<Label[]> {
+  ): Observable<Label[]> {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
@@ -120,9 +119,8 @@ export class LabelDefaultService extends LabelService {
     }
     return this.http
       .get(this.labelUrl, buildHttpRequestOptions(queryParams))
-      .toPromise()
-      .then(response => response.json())
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json())
+      , catchError(error => observableThrowError(error)));
   }
 
   getProjectLabels(
@@ -165,57 +163,53 @@ export class LabelDefaultService extends LabelService {
     return this.http
       .get(this.labelUrl, buildHttpRequestOptions(queryParams))
       .pipe(map(response => response.json()))
-      .pipe(catchError(error => Promise.reject(error)));
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
-  createLabel(label: Label): Observable<any> | Promise<any> | any {
+  createLabel(label: Label): Observable<any> {
     if (!label) {
-      return Promise.reject("Invalid label.");
+      return observableThrowError("Invalid label.");
     }
     return this.http
       .post(this.labelUrl, JSON.stringify(label), HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response.status)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.status)
+      , catchError(error => observableThrowError(error)));
   }
 
-  getLabel(id: number): Observable<Label> | Promise<Label> | Label {
+  getLabel(id: number): Observable<Label> {
     if (!id || id <= 0) {
-      return Promise.reject("Bad request argument.");
+      return observableThrowError("Bad request argument.");
     }
     let reqUrl = `${this.labelUrl}/${id}`;
     return this.http
       .get(reqUrl, HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response.json())
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json())
+      , catchError(error => observableThrowError(error)));
   }
 
-  updateLabel(id: number, label: Label): Observable<any> | Promise<any> | any {
+  updateLabel(id: number, label: Label): Observable<any> {
     if (!id || id <= 0) {
-      return Promise.reject("Bad request argument.");
+      return observableThrowError("Bad request argument.");
     }
     if (!label) {
-      return Promise.reject("Invalid endpoint.");
+      return observableThrowError("Invalid endpoint.");
     }
     let reqUrl = `${this.labelUrl}/${id}`;
     return this.http
       .put(reqUrl, JSON.stringify(label), HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response.status)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.status)
+      , catchError(error => observableThrowError(error)));
   }
 
-  deleteLabel(id: number): Observable<any> | Promise<any> | any {
+  deleteLabel(id: number): Observable<any> {
     if (!id || id <= 0) {
-      return Promise.reject("Bad request argument.");
+      return observableThrowError("Bad request argument.");
     }
     let reqUrl = `${this.labelUrl}/${id}`;
     return this.http
       .delete(reqUrl)
-      .toPromise()
-      .then(response => response.status)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.status)
+      , catchError(error => observableThrowError(error)));
   }
 
   getChartVersionLabels(

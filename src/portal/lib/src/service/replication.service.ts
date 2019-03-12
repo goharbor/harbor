@@ -1,7 +1,5 @@
 import { Http } from "@angular/http";
 import { Injectable, Inject } from "@angular/core";
-import { Observable } from "rxjs";
-
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import {
   buildHttpRequestOptions,
@@ -14,6 +12,8 @@ import {
   ReplicationJobItem
 } from "./interface";
 import { RequestQueryParams } from "./RequestQueryParams";
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 
 /**
  * Define the service methods to handle the replication (rule and job) related things.
@@ -33,7 +33,7 @@ export abstract class ReplicationService {
    *  ** deprecated param {(number | string)} [projectId]
    *  ** deprecated param {string} [ruleName]
    *  ** deprecated param {RequestQueryParams} [queryParams]
-   * returns {(Observable<ReplicationRule[]> | Promise<ReplicationRule[]> | ReplicationRule[])}
+   * returns {(Observable<ReplicationRule[]>)}
    *
    * @memberOf ReplicationService
    */
@@ -42,93 +42,91 @@ export abstract class ReplicationService {
     ruleName?: string,
     queryParams?: RequestQueryParams
   ):
-    | Observable<ReplicationRule[]>
-    | Promise<ReplicationRule[]>
-    | ReplicationRule[];
+    | Observable<ReplicationRule[]>;
 
   /**
    * Get the specified replication rule.
    *
    * @abstract
    *  ** deprecated param {(number | string)} ruleId
-   * returns {(Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule)}
+   * returns {(Observable<ReplicationRule>)}
    *
    * @memberOf ReplicationService
    */
   abstract getReplicationRule(
     ruleId: number | string
-  ): Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule;
+  ): Observable<ReplicationRule>;
 
   /**
    * Create new replication rule.
    *
    * @abstract
    *  ** deprecated param {ReplicationRule} replicationRule
-   * returns {(Observable<any> | Promise<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf ReplicationService
    */
   abstract createReplicationRule(
     replicationRule: ReplicationRule
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
   /**
    * Update the specified replication rule.
    *
    * @abstract
    *  ** deprecated param {ReplicationRule} replicationRule
-   * returns {(Observable<any> | Promise<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf ReplicationService
    */
   abstract updateReplicationRule(
     id: number,
     rep: ReplicationRule
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
   /**
    * Delete the specified replication rule.
    *
    * @abstract
    *  ** deprecated param {(number | string)} ruleId
-   * returns {(Observable<any> | Promise<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf ReplicationService
    */
   abstract deleteReplicationRule(
     ruleId: number | string
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
   /**
    * Enable the specified replication rule.
    *
    * @abstract
    *  ** deprecated param {(number | string)} ruleId
-   * returns {(Observable<any> | Promise<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf ReplicationService
    */
   abstract enableReplicationRule(
     ruleId: number | string,
     enablement: number
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
   /**
    * Disable the specified replication rule.
    *
    * @abstract
    *  ** deprecated param {(number | string)} ruleId
-   * returns {(Observable<any> | Promise<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf ReplicationService
    */
   abstract disableReplicationRule(
     ruleId: number | string
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any> ;
 
   abstract replicateRule(
     ruleId: number | string
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any> ;
 
   /**
    * Get the jobs for the specified replication rule.
@@ -142,30 +140,30 @@ export abstract class ReplicationService {
    * @abstract
    *  ** deprecated param {(number | string)} ruleId
    *  ** deprecated param {RequestQueryParams} [queryParams]
-   * returns {(Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob)}
+   * returns {(Observable<ReplicationJob>)}
    *
    * @memberOf ReplicationService
    */
   abstract getJobs(
     ruleId: number | string,
     queryParams?: RequestQueryParams
-  ): Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob;
+  ): Observable<ReplicationJob>;
 
   /**
    * Get the log of the specified job.
    *
    * @abstract
    *  ** deprecated param {(number | string)} jobId
-   * returns {(Observable<string> | Promise<string> | string)}
+   * returns {(Observable<string>)}
    * @memberof ReplicationService
    */
   abstract getJobLog(
     jobId: number | string
-  ): Observable<string> | Promise<string> | string;
+  ): Observable<string>;
 
   abstract stopJobs(
     jobId: number | string
-  ): Observable<string> | Promise<string> | string;
+  ): Observable<string>;
 
   abstract getJobBaseUrl(): string;
 }
@@ -220,9 +218,7 @@ export class ReplicationDefaultService extends ReplicationService {
     ruleName?: string,
     queryParams?: RequestQueryParams
   ):
-    | Observable<ReplicationRule[]>
-    | Promise<ReplicationRule[]>
-    | ReplicationRule[] {
+    | Observable<ReplicationRule[]> {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
@@ -237,31 +233,29 @@ export class ReplicationDefaultService extends ReplicationService {
 
     return this.http
       .get(this._ruleBaseUrl, buildHttpRequestOptions(queryParams))
-      .toPromise()
-      .then(response => response.json() as ReplicationRule[])
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json() as ReplicationRule[])
+      , catchError(error => observableThrowError(error)));
   }
 
   public getReplicationRule(
     ruleId: number | string
-  ): Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule {
+  ): Observable<ReplicationRule> {
     if (!ruleId) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     let url: string = `${this._ruleBaseUrl}/${ruleId}`;
     return this.http
       .get(url, HTTP_GET_OPTIONS)
-      .toPromise()
-      .then(response => response.json() as ReplicationRule)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json() as ReplicationRule)
+      , catchError(error => observableThrowError(error)));
   }
 
   public createReplicationRule(
     replicationRule: ReplicationRule
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!this._isValidRule(replicationRule)) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     return this.http
@@ -270,94 +264,88 @@ export class ReplicationDefaultService extends ReplicationService {
         JSON.stringify(replicationRule),
         HTTP_JSON_OPTIONS
       )
-      .toPromise()
-      .then(response => response)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response)
+      , catchError(error => observableThrowError(error)));
   }
 
   public updateReplicationRule(
     id: number,
     rep: ReplicationRule
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!this._isValidRule(rep)) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     let url = `${this._ruleBaseUrl}/${id}`;
     return this.http
       .put(url, JSON.stringify(rep), HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response)
+      , catchError(error => observableThrowError(error)));
   }
 
   public deleteReplicationRule(
     ruleId: number | string
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!ruleId || ruleId <= 0) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     let url: string = `${this._ruleBaseUrl}/${ruleId}`;
     return this.http
       .delete(url, HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response)
+      , catchError(error => observableThrowError(error)));
   }
 
   public replicateRule(
     ruleId: number | string
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!ruleId) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     let url: string = `${this._replicateUrl}`;
     return this.http
       .post(url, { policy_id: ruleId }, HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response)
+      , catchError(error => observableThrowError(error)));
   }
 
   public enableReplicationRule(
     ruleId: number | string,
     enablement: number
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!ruleId || ruleId <= 0) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     let url: string = `${this._ruleBaseUrl}/${ruleId}/enablement`;
     return this.http
       .put(url, { enabled: enablement }, HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response)
+      , catchError(error => observableThrowError(error)));
   }
 
   public disableReplicationRule(
     ruleId: number | string
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!ruleId || ruleId <= 0) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     let url: string = `${this._ruleBaseUrl}/${ruleId}/enablement`;
     return this.http
       .put(url, { enabled: 0 }, HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response)
+      , catchError(error => observableThrowError(error)));
   }
 
   public getJobs(
     ruleId: number | string,
     queryParams?: RequestQueryParams
-  ): Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob {
+  ): Observable<ReplicationJob> {
     if (!ruleId || ruleId <= 0) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     if (!queryParams) {
@@ -367,8 +355,7 @@ export class ReplicationDefaultService extends ReplicationService {
     queryParams.set("policy_id", "" + ruleId);
     return this.http
       .get(this._jobBaseUrl, buildHttpRequestOptions(queryParams))
-      .toPromise()
-      .then(response => {
+      .pipe(map(response => {
         let result: ReplicationJob = {
           metadata: {
             xTotalCount: 0
@@ -391,35 +378,33 @@ export class ReplicationDefaultService extends ReplicationService {
 
         return result;
       })
-      .catch(error => Promise.reject(error));
+      , catchError(error => observableThrowError(error)));
   }
 
   public getJobLog(
     jobId: number | string
-  ): Observable<string> | Promise<string> | string {
+  ): Observable<string> {
     if (!jobId || jobId <= 0) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     let logUrl = `${this._jobBaseUrl}/${jobId}/log`;
     return this.http
       .get(logUrl, HTTP_GET_OPTIONS)
-      .toPromise()
-      .then(response => response.text())
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.text())
+      , catchError(error => observableThrowError(error)));
   }
 
   public stopJobs(
     jobId: number | string
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     return this.http
       .put(
         this._jobBaseUrl,
         JSON.stringify({ policy_id: jobId, status: "stop" }),
         HTTP_JSON_OPTIONS
       )
-      .toPromise()
-      .then(response => response)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response)
+      , catchError(error => observableThrowError(error)));
   }
 }

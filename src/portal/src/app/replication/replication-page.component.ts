@@ -42,8 +42,8 @@ export class ReplicationPageComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.projectIdentify = +this.route.snapshot.parent.params['id'];
     this.getReplicationPermissions(this.projectIdentify);
-    this.proService.listProjects("", undefined).toPromise()
-      .then(response => {
+    this.proService.listProjects("", undefined)
+      .subscribe(response => {
         let projects = response.json() as Project[];
         if (projects.length) {
           let project = projects.find(data => data.project_id === this.projectIdentify);

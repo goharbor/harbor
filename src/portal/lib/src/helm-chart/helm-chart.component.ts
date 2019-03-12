@@ -15,7 +15,7 @@ import { forkJoin, throwError, Observable } from "rxjs";
 import { finalize, map, catchError } from "rxjs/operators";
 import { SystemInfo, SystemInfoService, HelmChartItem } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
-import { toPromise, DEFAULT_PAGE_SIZE, downloadFile } from "../utils";
+import { DEFAULT_PAGE_SIZE, downloadFile } from "../utils";
 import { HelmChartService } from "../service/helm-chart.service";
 import { DefaultHelmIcon } from "../shared/shared.const";
 import { Roles } from './../shared/shared.const';
@@ -96,9 +96,9 @@ export class HelmChartComponent implements OnInit {
 
   ngOnInit(): void {
     // Get system info for tag views
-    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-      .then(systemInfo => (this.systemInfo = systemInfo))
-      .catch(error => this.errorHandler.error(error));
+    this.systemInfoService.getSystemInfo()
+      .subscribe(systemInfo => (this.systemInfo = systemInfo)
+      , error => this.errorHandler.error(error));
     this.lastFilteredChartName = "";
     this.refresh();
     this.getHelmPermissionRule(this.projectId);

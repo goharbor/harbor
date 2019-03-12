@@ -24,6 +24,7 @@ import { UserPermissionService, UserPermissionDefaultService } from "../service/
 import { USERSTATICPERMISSION } from "../service/permission-static";
 import { OperationService } from "../operation/operation.service";
 import { Observable, of } from "rxjs";
+import { delay } from "rxjs/operators";
 
 describe("TagComponent (inline template)", () => {
 
@@ -151,7 +152,7 @@ describe("TagComponent (inline template)", () => {
 
 
     tagService = fixture.debugElement.injector.get(TagService);
-    spy = spyOn(tagService, "getTags").and.returnValues(Promise.resolve(mockTags));
+    spy = spyOn(tagService, "getTags").and.returnValues(of(mockTags).pipe(delay(0)));
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
 
     spyOn(userPermissionService, "getPermission")
@@ -166,8 +167,8 @@ describe("TagComponent (inline template)", () => {
 
     labelService = fixture.debugElement.injector.get(LabelService);
 
-    spyLabels = spyOn(labelService, "getGLabels").and.returnValues(Promise.resolve(mockLabels));
-    spyLabels1 = spyOn(labelService, "getPLabels").withArgs(comp.projectId).and.returnValues(Promise.resolve(mockLabels1));
+    spyLabels = spyOn(labelService, "getGLabels").and.returnValues(of(mockLabels).pipe(delay(0)));
+    spyLabels1 = spyOn(labelService, "getPLabels").withArgs(comp.projectId).and.returnValues(of(mockLabels1).pipe(delay(0)));
 
     fixture.detectChanges();
   });

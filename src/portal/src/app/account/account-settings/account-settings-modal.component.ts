@@ -114,7 +114,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
             this.checkOnGoing = true;
             this.session
               .checkUserExisting("email", this.account.email)
-              .then((res: boolean) => {
+              .subscribe((res: boolean) => {
                 this.checkOnGoing = false;
                 this.validationStateMap[key] = !res;
                 if (res) {
@@ -123,8 +123,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
                 this.mailAlreadyChecked[this.account.email] = {
                   result: res
                 }; // Tag it checked
-              })
-              .catch(error => {
+              }, error => {
                 this.checkOnGoing = false;
                 this.validationStateMap[key] = false; // Not valid @ backend
               });
@@ -185,18 +184,16 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     if (this.canRename) {
         this.session
       .updateAccountSettings(this.account)
-      .then(() => {
+      .subscribe(() => {
         this.session.renameAdmin(this.account)
-        .then(() => {
+        .subscribe(() => {
             this.msgHandler.showSuccess("PROFILE.RENAME_SUCCESS");
             this.opened = false;
             this.logOut();
-        })
-        .catch(error => {
+        }, error => {
             this.msgHandler.handleError(error);
         });
-      })
-      .catch(error => {
+      }, error => {
         this.isOnCalling = false;
         this.error = error;
         if (this.msgHandler.isAppLevel(error)) {
@@ -288,12 +285,11 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
         } else {
             this.session
                 .updateAccountSettings(this.account)
-                .then(() => {
+                .subscribe(() => {
                     this.isOnCalling = false;
                     this.opened = false;
                     this.msgHandler.showSuccess("PROFILE.SAVE_SUCCESS");
-                })
-                .catch(error => {
+                }, error => {
                     this.isOnCalling = false;
                     this.error = error;
                     if (this.msgHandler.isAppLevel(error)) {

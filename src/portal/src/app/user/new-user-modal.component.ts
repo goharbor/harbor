@@ -118,7 +118,7 @@ export class NewUserModalComponent {
         this.onGoing = true;
 
         this.userService.addUser(u)
-            .then(() => {
+            .subscribe(() => {
                 this.onGoing = false;
                 // TODO:
                 // As no response data returned, can not add it to list directly
@@ -126,8 +126,7 @@ export class NewUserModalComponent {
                 this.addNew.emit(u);
                 this.opened = false;
                 this.msgHandler.showSuccess("USER.SAVE_SUCCESS");
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.error = error;
                 if (this.msgHandler.isAppLevel(error)) {

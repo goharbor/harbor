@@ -1,5 +1,5 @@
 
-import {forkJoin as observableForkJoin,  Subscription } from "rxjs";
+import {forkJoin as observableForkJoin,  Subscription, forkJoin } from "rxjs";
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,7 +39,8 @@ import {operateChanges, OperateInfo, OperationService, OperationState} from "@ha
 
 import { Project } from "../project";
 import { ProjectService } from "../project.service";
-
+import { map, catchError } from "rxjs/operators";
+import { throwError as observableThrowError } from "rxjs";
 @Component({
     selector: "list-project",
     templateUrl: "list-project.component.html",
@@ -165,8 +166,8 @@ export class ListProjectComponent implements OnDestroy {
         if (this.filteredType > 0) {
             passInFilteredType = this.filteredType - 1;
         }
-        this.proService.listProjects(this.searchKeyword, passInFilteredType, pageNumber, this.pageSize).toPromise()
-            .then(response => {
+        this.proService.listProjects(this.searchKeyword, passInFilteredType, pageNumber, this.pageSize)
+            .subscribe(response => {
                 // Get total count
                 if (response.headers) {
                     let xHeader: string = response.headers.get("X-Total-Count");
@@ -181,8 +182,7 @@ export class ListProjectComponent implements OnDestroy {
                 this.projects = doSorting<Project>(this.projects, state);
 
                 this.loading = false;
-            })
-            .catch(error => {
+            }, error => {
                 this.loading = false;
                 this.msgHandler.handleError(error);
             });
@@ -244,7 +244,7 @@ export class ListProjectComponent implements OnDestroy {
             projects.forEach(data => {
                 observableLists.push(this.delOperate(data));
             });
-            Promise.all(observableLists).then(item => {
+            forkJoin(...observableLists).subscribe(item => {
                 let st: State = this.getStateAfterDeletion();
                 this.selectedRow = [];
                 if (!st) {
@@ -267,24 +267,24 @@ export class ListProjectComponent implements OnDestroy {
         this.operationService.publishInfo(operMessage);
 
         return this.proService.deleteProject(project.project_id)
-            .then(
+            .pipe(map(
                 () => {
                     this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
                         operateChanges(operMessage, OperationState.success);
                     });
-                },
+                }), catchError(
                 error => {
                     if (error && error.status === 412) {
-                        observableForkJoin(this.translate.get("BATCH.DELETED_FAILURE"),
-                            this.translate.get("PROJECT.FAILED_TO_DELETE_PROJECT")).subscribe(res => {
+                        return observableForkJoin(this.translate.get("BATCH.DELETED_FAILURE"),
+                            this.translate.get("PROJECT.FAILED_TO_DELETE_PROJECT")).pipe(map(res => {
                             operateChanges(operMessage, OperationState.failure, res[1]);
-                        });
+                        }));
                     } else {
-                        this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
+                        return this.translate.get("BATCH.DELETED_FAILURE").pipe(map(res => {
                             operateChanges(operMessage, OperationState.failure, res);
-                        });
+                        }));
                     }
-                });
+                }));
     }
 
     refresh(): void {

@@ -27,7 +27,7 @@ import {
     TagService
 } from '../service/index';
 import { ErrorHandler } from '../error-handler/error-handler';
-import { toPromise, CustomComparator, DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting, clone } from '../utils';
+import { CustomComparator, DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting, clone } from '../utils';
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
@@ -39,6 +39,8 @@ import { UserPermissionService } from "../service/permission.service";
 import { USERSTATICPERMISSION } from "../service/permission-static";
 import { OperateInfo, OperationState, operateChanges } from "../operation/operate";
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
@@ -134,9 +136,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
     ngOnInit(): void {
         // Get system info for tag views
-        toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-            .then(systemInfo => (this.systemInfo = systemInfo))
-            .catch(error => this.errorHandler.error(error));
+        this.systemInfoService.getSystemInfo()
+            .subscribe(systemInfo => (this.systemInfo = systemInfo)
+            , error => this.errorHandler.error(error));
 
         if (this.mode === "admiral") {
             this.isCardView = true;
@@ -155,12 +157,12 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
             let repoLists = message.data;
             if (repoLists && repoLists.length) {
-                let promiseLists: any[] = [];
+                let observableLists: any[] = [];
                 repoLists.forEach(repo => {
-                    promiseLists.push(this.delOperate(repo));
+                    observableLists.push(this.delOperate(repo));
                 });
 
-                Promise.all(promiseLists).then((item) => {
+                forkJoin(observableLists).subscribe((item) => {
                     this.selectedRow = [];
                     this.refresh();
                     let st: State = this.getStateAfterDeletion();
@@ -174,7 +176,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         }
     }
 
-    delOperate(repo: RepositoryItem) {
+    delOperate(repo: RepositoryItem): Observable<any> {
         // init operation info
         let operMessage = new OperateInfo();
         operMessage.name = 'OPERATION.DELETE_REPO';
@@ -184,37 +186,35 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         this.operationService.publishInfo(operMessage);
 
         if (this.signedCon[repo.name].length !== 0) {
-            forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).subscribe(res => {
+            return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).pipe(map(res => {
                     operateChanges(operMessage, OperationState.failure, res[1]);
-                });
+                }));
         } else {
-            return toPromise<number>(this.repositoryService
-                .deleteRepository(repo.name))
-                .then(
+            return this.repositoryService
+                .deleteRepository(repo.name)
+                .pipe(map(
                     response => {
                         this.translateService.get('BATCH.DELETED_SUCCESS').subscribe(res => {
                             operateChanges(operMessage, OperationState.success);
                         });
-                    }).catch(error => {
+                    }), catchError(error => {
                         if (error.status === "412") {
-                            forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                                this.translateService.get('REPOSITORY.TAGS_SIGNED')).subscribe(res => {
+                            return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                                this.translateService.get('REPOSITORY.TAGS_SIGNED')).pipe(map(res => {
                                     operateChanges(operMessage, OperationState.failure, res[1]);
-                                });
-                            return;
+                                }));
                         }
                         if (error.status === 503) {
-                            forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                                this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
+                            return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                                this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).pipe(map(res => {
                                     operateChanges(operMessage, OperationState.failure, res[1]);
-                                });
-                            return;
+                                }));
                         }
-                        this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+                        return this.translateService.get('BATCH.DELETED_FAILURE').pipe(map(res => {
                             operateChanges(operMessage, OperationState.failure, res);
-                        });
-                    });
+                        }));
+                    }));
         }
     }
 
@@ -248,7 +248,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 }
             });
 
-            Promise.all(repArr).then(() => {
+            forkJoin(...repArr).subscribe(() => {
                 this.confirmationDialogSet(
                     'REPOSITORY.DELETION_TITLE_REPO',
                     '',
@@ -256,21 +256,21 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                     repoLists,
                     'REPOSITORY.DELETION_SUMMARY_REPO',
                     ConfirmationButtons.DELETE_CANCEL);
-            });
+            }, error => this.errorHandler.error(error));
         }
     }
 
-    getTagInfo(repoName: string): Promise<void> {
+    getTagInfo(repoName: string): Observable<void> {
         this.signedCon[repoName] = [];
-        return toPromise<Tag[]>(this.tagService.getTags(repoName))
-            .then(items => {
+        return this.tagService.getTags(repoName)
+            .pipe(map(items => {
                 items.forEach((t: Tag) => {
                     if (t.signature !== null) {
                         this.signedCon[repoName].push(t.name);
                     }
                 });
             })
-            .catch(error => this.errorHandler.error(error));
+            , catchError(error => observableThrowError(error)));
     }
 
     confirmationDialogSet(summaryTitle: string, signature: string,
@@ -299,9 +299,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
             });
     }
 
-    containsLatestTag(repo: RepositoryItem): Promise<boolean> {
-        return toPromise<Tag[]>(this.tagService.getTags(repo.name))
-            .then(items => {
+    containsLatestTag(repo: RepositoryItem): Observable<boolean> {
+        return this.tagService.getTags(repo.name)
+            .pipe(map(items => {
                 if (items.some((t: Tag) => {
                     return t.name === 'latest';
                 })) {
@@ -311,7 +311,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 }
 
             })
-            .catch(error => Promise.reject(false));
+            , catchError(error => observableThrowError(false)));
     }
 
     provisionItemEvent(evt: any, repo: RepositoryItem): void {
@@ -319,14 +319,13 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         let repoCopy = clone(repo);
         repoCopy.name = this.registryUrl + ":443/" + repoCopy.name;
         this.containsLatestTag(repo)
-            .then(containsLatest => {
+            .subscribe(containsLatest => {
                 if (containsLatest) {
                     this.repoProvisionEvent.emit(repoCopy);
                 } else {
                     this.addInfoEvent.emit(repoCopy);
                 }
-            })
-            .catch(error => this.errorHandler.error(error));
+            }, error => this.errorHandler.error(error));
 
     }
 
@@ -359,14 +358,12 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         params.set("page_size", "" + this.pageSize);
 
         this.loading = true;
-        toPromise<Repository>(
             this.repositoryService.getRepositories(
                 this.projectId,
                 this.lastFilteredRepoName,
                 params
             )
-        )
-            .then((repo: Repository) => {
+            .subscribe((repo: Repository) => {
                 this.totalCount = repo.metadata.xTotalCount;
                 this.repositoriesCopy = repo.data;
                 this.signedCon = {};
@@ -381,8 +378,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 );
                 this.repositories = this.repositories.concat(this.repositoriesCopy);
                 this.loading = false;
-            })
-            .catch(error => {
+            }, error => {
                 this.loading = false;
                 this.errorHandler.error(error);
             });
@@ -410,14 +406,12 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
         this.loading = true;
 
-        toPromise<Repository>(
             this.repositoryService.getRepositories(
                 this.projectId,
                 this.lastFilteredRepoName,
                 params
             )
-        )
-            .then((repo: Repository) => {
+            .subscribe((repo: Repository) => {
 
                 this.totalCount = repo.metadata.xTotalCount;
                 this.repositories = repo.data;
@@ -430,8 +424,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 );
                 this.repositories = doSorting<RepositoryItem>(this.repositories, state);
                 this.loading = false;
-            })
-            .catch(error => {
+            }, error => {
                 this.loading = false;
                 this.errorHandler.error(error);
             });

@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@angular/core";
 import { Http } from "@angular/http";
-import { Observable } from "rxjs";
+import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
 import {
@@ -10,6 +10,7 @@ import {
 } from "../utils";
 import { RequestQueryParams } from "./RequestQueryParams";
 import { Endpoint, ReplicationRule } from "./interface";
+import { catchError, map } from "rxjs/operators";
 
 /**
  * Define the service methods to handle the endpoint related things.
@@ -33,7 +34,7 @@ export abstract class EndpointService {
   abstract getEndpoints(
     endpointName?: string,
     queryParams?: RequestQueryParams
-  ): Observable<Endpoint[]> | Promise<Endpoint[]> | Endpoint[];
+  ): Observable<Endpoint[]>;
 
   /**
    * Get the specified endpoint.
@@ -46,20 +47,20 @@ export abstract class EndpointService {
    */
   abstract getEndpoint(
     endpointId: number | string
-  ): Observable<Endpoint> | Promise<Endpoint> | Endpoint;
+  ): Observable<Endpoint>;
 
   /**
    * Create new endpoint.
    *
    * @abstract
    *  ** deprecated param {Endpoint} endpoint
-   * returns {(Observable<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf EndpointService
    */
   abstract createEndpoint(
     endpoint: Endpoint
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
   /**
    * Update the specified endpoint.
@@ -67,51 +68,51 @@ export abstract class EndpointService {
    * @abstract
    *  ** deprecated param {(number | string)} endpointId
    *  ** deprecated param {Endpoint} endpoint
-   * returns {(Observable<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf EndpointService
    */
   abstract updateEndpoint(
     endpointId: number | string,
     endpoint: Endpoint
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
   /**
    * Delete the specified endpoint.
    *
    * @abstract
    *  ** deprecated param {(number | string)} endpointId
-   * returns {(Observable<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf EndpointService
    */
   abstract deleteEndpoint(
     endpointId: number | string
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
   /**
    * Ping the specified endpoint.
    *
    * @abstract
    *  ** deprecated param {Endpoint} endpoint
-   * returns {(Observable<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf EndpointService
    */
   abstract pingEndpoint(
     endpoint: Endpoint
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
   /**
    * Check endpoint whether in used with specific replication rule.
    *
    * @abstract
    *  ** deprecated param {{number | string}} endpointId
-   * returns {{Observable<any> | any}}
+   * returns {{Observable<any>}}
    */
   abstract getEndpointWithReplicationRules(
     endpointId: number | string
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 }
 
 /**
@@ -138,7 +139,7 @@ export class EndpointDefaultService extends EndpointService {
   public getEndpoints(
     endpointName?: string,
     queryParams?: RequestQueryParams
-  ): Observable<Endpoint[]> | Promise<Endpoint[]> | Endpoint[] {
+  ): Observable<Endpoint[]> {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
@@ -148,96 +149,89 @@ export class EndpointDefaultService extends EndpointService {
     let requestUrl: string = `${this._endpointUrl}`;
     return this.http
       .get(requestUrl, buildHttpRequestOptions(queryParams))
-      .toPromise()
-      .then(response => response.json())
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json())
+      , catchError(error => observableThrowError(error)));
   }
 
   public getEndpoint(
     endpointId: number | string
-  ): Observable<Endpoint> | Promise<Endpoint> | Endpoint {
+  ): Observable<Endpoint> {
     if (!endpointId || endpointId <= 0) {
-      return Promise.reject("Bad request argument.");
+      return observableThrowError("Bad request argument.");
     }
     let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
     return this.http
       .get(requestUrl, HTTP_GET_OPTIONS)
-      .toPromise()
-      .then(response => response.json() as Endpoint)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json() as Endpoint)
+      , catchError(error => observableThrowError(error)));
   }
 
   public createEndpoint(
     endpoint: Endpoint
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!endpoint) {
-      return Promise.reject("Invalid endpoint.");
+      return  observableThrowError("Invalid endpoint.");
     }
     let requestUrl: string = `${this._endpointUrl}`;
     return this.http
       .post(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response.status)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.status)
+      , catchError(error => observableThrowError(error)));
   }
 
   public updateEndpoint(
     endpointId: number | string,
     endpoint: Endpoint
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!endpointId || endpointId <= 0) {
-      return Promise.reject("Bad request argument.");
+      return  observableThrowError("Bad request argument.");
     }
     if (!endpoint) {
-      return Promise.reject("Invalid endpoint.");
+      return  observableThrowError("Invalid endpoint.");
     }
     let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
     return this.http
       .put(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response.status)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.status)
+      , catchError(error => observableThrowError(error)));
   }
 
   public deleteEndpoint(
     endpointId: number | string
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!endpointId || endpointId <= 0) {
-      return Promise.reject("Bad request argument.");
+      return  observableThrowError("Bad request argument.");
     }
     let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
     return this.http
       .delete(requestUrl)
-      .toPromise()
-      .then(response => response.status)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.status)
+      , catchError(error => observableThrowError(error)));
   }
 
   public pingEndpoint(
     endpoint: Endpoint
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!endpoint) {
-      return Promise.reject("Invalid endpoint.");
+      return  observableThrowError("Invalid endpoint.");
     }
     let requestUrl: string = `${this._endpointUrl}/ping`;
     return this.http
       .post(requestUrl, endpoint, HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(response => response.status)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.status)
+      , catchError(error => observableThrowError(error)));
   }
 
   public getEndpointWithReplicationRules(
     endpointId: number | string
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!endpointId || endpointId <= 0) {
-      return Promise.reject("Bad request argument.");
+      return  observableThrowError("Bad request argument.");
     }
     let requestUrl: string = `${this._endpointUrl}/${endpointId}/policies`;
     return this.http
       .get(requestUrl, HTTP_GET_OPTIONS)
-      .toPromise()
-      .then(response => response.json() as ReplicationRule[])
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json() as ReplicationRule[])
+      , catchError(error => observableThrowError(error)));
   }
 }

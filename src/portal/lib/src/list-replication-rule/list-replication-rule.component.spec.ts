@@ -14,6 +14,7 @@ import { ErrorHandler } from '../error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { ReplicationService, ReplicationDefaultService } from '../service/replication.service';
 import { OperationService } from "../operation/operation.service";
+import { of } from 'rxjs';
 
 describe('ListReplicationRuleComponent (inline template)', () => {
 
@@ -135,7 +136,7 @@ describe('ListReplicationRuleComponent (inline template)', () => {
     fixture = TestBed.createComponent(ListReplicationRuleComponent);
     comp = fixture.componentInstance;
     replicationService = fixture.debugElement.injector.get(ReplicationService);
-    spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(Promise.resolve(mockRules));
+    spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(of(mockRules));
     fixture.detectChanges();
   });
 

@@ -40,6 +40,7 @@ import { OperationService } from "../operation/operation.service";
 import {FilterLabelComponent} from "./filter-label.component";
 import {LabelService} from "../service/label.service";
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import { of } from "rxjs";
 
 describe("CreateEditRuleComponent (inline template)", () => {
   let mockRules: ReplicationRule[] = [
@@ -272,17 +273,17 @@ describe("CreateEditRuleComponent (inline template)", () => {
     spyRules = spyOn(
       replicationService,
       "getReplicationRules"
-    ).and.returnValues(Promise.resolve(mockRules));
+    ).and.returnValues(of(mockRules));
     spyOneRule = spyOn(
       replicationService,
       "getReplicationRule"
-    ).and.returnValue(Promise.resolve(mockRule));
+    ).and.returnValue(of(mockRule));
     spyJobs = spyOn(replicationService, "getJobs").and.returnValues(
-      Promise.resolve(mockJob)
+      of(mockJob)
     );
 
     spyEndpoint = spyOn(endpointService, "getEndpoints").and.returnValues(
-      Promise.resolve(mockEndpoints)
+      of(mockEndpoints)
     );
 
     fixture.detectChanges();

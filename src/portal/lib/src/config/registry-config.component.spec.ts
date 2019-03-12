@@ -21,6 +21,7 @@ import {
   SystemInfo
 } from '../service/index';
 import { Configuration } from './config';
+import { of } from 'rxjs';
 
 describe('RegistryConfigComponent (inline template)', () => {
 
@@ -84,8 +85,8 @@ describe('RegistryConfigComponent (inline template)', () => {
 
     cfgService = fixture.debugElement.injector.get(ConfigurationService);
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
-    spy = spyOn(cfgService, 'getConfigurations').and.returnValue(Promise.resolve(mockConfig));
-    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValue(Promise.resolve(mockSystemInfo));
+    spy = spyOn(cfgService, 'getConfigurations').and.returnValue(of(mockConfig));
+    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValue(of(mockSystemInfo));
 
     fixture.detectChanges();
   });
@@ -100,7 +101,7 @@ describe('RegistryConfigComponent (inline template)', () => {
 
       let el: HTMLInputElement = fixture.nativeElement.querySelector('input[type="text"]');
       expect(el).not.toBeFalsy();
-      expect(el.value).toEqual('30');
+      expect(el.value).toEqual('90');
 
 
       fixture.detectChanges();
