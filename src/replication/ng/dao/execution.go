@@ -27,17 +27,10 @@ import (
 // AddExecution ...
 func AddExecution(execution *models.Execution) (int64, error) {
 	o := dao.GetOrmer()
+	now := time.Now()
+	execution.StartTime = now
 
-	sql := "insert into replication_execution (policy_id, status, status_text, total, failed, succeed, in_progress, stopped, trigger) " +
-		"values (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id"
-
-	var id int64
-	err := o.Raw(sql, execution.PolicyID, execution.Status, execution.StatusText, execution.Total, execution.Failed,
-		execution.Succeed, execution.InProgress, execution.Stopped, execution.Trigger).QueryRow(&id)
-	if err != nil {
-		return 0, err
-	}
-	return id, nil
+	return o.Insert(execution)
 }
 
 // GetTotalOfExecutions returns the total count of replication execution
