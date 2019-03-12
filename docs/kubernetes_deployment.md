@@ -65,7 +65,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
     path: /data/registry
   ```
 
-  For more infomation about storage solution, Please check [Kubernetes Document](http://kubernetes.io/docs/user-guide/persistent-volumes/) 
+  For more information about storage solution, Please check [Kubernetes Document](http://kubernetes.io/docs/user-guide/persistent-volumes/) 
 
 Then you can generate ConfigMap files by :
 
