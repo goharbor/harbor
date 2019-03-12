@@ -125,12 +125,6 @@ func initRouters() {
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 
-	// next generation replication API
-	//beego.Router("/api/replication/executions", &api.ExecutionAPI{}, "get:List")
-	//beego.Router("/api/replication/executions/:id([0-9]+)", &api.ExecutionAPI{}, "get:GetExecution;put:Stop;post:Run")
-	//beego.Router("/api/replication/executions/:id([0-9]+)/jobs", &api.ExecutionAPI{}, "get:ListJobs")
-	//beego.Router("/api/replication/executions/:id([0-9]+)/logs/:logid([0-9]+)", &api.ExecutionAPI{}, "get:GetLog")
-
 	// external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})
 	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
