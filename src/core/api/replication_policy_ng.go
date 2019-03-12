@@ -20,6 +20,7 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/replication/ng"
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
@@ -192,7 +193,7 @@ func (r *ReplicationPolicyAPI) Delete() {
 		return
 	}
 
-	_, executions, err := ng.OperationCtl.ListExecutions(&model.ExecutionQuery{
+	_, executions, err := ng.OperationCtl.ListExecutions(&models.ExecutionQuery{
 		PolicyID: id,
 	})
 	if err != nil {
@@ -201,7 +202,7 @@ func (r *ReplicationPolicyAPI) Delete() {
 	}
 
 	for _, execution := range executions {
-		if execution.Status == model.ExecutionStatusInProgress {
+		if execution.Status == models.ExecutionStatusInProgress {
 			r.HandleStatusPreconditionFailed(fmt.Sprintf("the policy %d has running executions, can not be deleted", id))
 			return
 		}

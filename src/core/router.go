@@ -125,12 +125,19 @@ func initRouters() {
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
 
+	// next generation replication API
+	//beego.Router("/api/replication/executions", &api.ExecutionAPI{}, "get:List")
+	//beego.Router("/api/replication/executions/:id([0-9]+)", &api.ExecutionAPI{}, "get:GetExecution;put:Stop;post:Run")
+	//beego.Router("/api/replication/executions/:id([0-9]+)/jobs", &api.ExecutionAPI{}, "get:ListJobs")
+	//beego.Router("/api/replication/executions/:id([0-9]+)/logs/:logid([0-9]+)", &api.ExecutionAPI{}, "get:GetLog")
+
 	// external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})
 	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
 	beego.Router("/service/notifications/jobs/scan/:id([0-9]+)", &jobs.Handler{}, "post:HandleScan")
 	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplication")
 	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
+	beego.Router("/service/notifications/jobs/replication/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationTask")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/api/registries", &api.RegistryAPI{}, "get:List;post:Post")
