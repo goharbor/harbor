@@ -49,6 +49,7 @@ type ScheduleItem struct {
 // ScheduleResult is the result of the schedule for one item
 type ScheduleResult struct {
 	TaskID int64
+	JobID  string
 	Error  error
 }
 
@@ -119,16 +120,16 @@ func (d *DefaultReplicator) Schedule(items []*ScheduleItem) ([]*ScheduleResult, 
 			"src_resource": string(src),
 			"dst_resource": string(dest),
 		}
-		_, joberr := d.client.SubmitJob(job)
+		id, joberr := d.client.SubmitJob(job)
 		if joberr != nil {
 			result.Error = joberr
 			results = append(results, result)
 			continue
 		}
+		result.JobID = id
 		results = append(results, result)
 	}
 	return results, nil
-
 }
 
 // Stop the transfer job
