@@ -16,6 +16,7 @@ package execution
 
 import (
 	"fmt"
+
 	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication/ng/dao"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
@@ -63,8 +64,8 @@ type DefaultManager struct {
 }
 
 // NewDefaultManager ...
-func NewDefaultManager() (Manager, error) {
-	return &DefaultManager{}, nil
+func NewDefaultManager() Manager {
+	return &DefaultManager{}
 }
 
 // Create a new execution

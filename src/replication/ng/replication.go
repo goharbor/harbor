@@ -47,9 +47,8 @@ func Init() error {
 	RegistryMgr = registry.NewDefaultManager()
 	// init policy manager
 	PolicyMgr = policy.NewDefaultManager()
-
-	// TODO init ExecutionMgr
-	var executionMgr execution.Manager
+	// init ExecutionMgr
+	executionMgr := execution.NewDefaultManager()
 	// TODO init scheduler
 	var scheduler scheduler.Scheduler
 
