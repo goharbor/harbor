@@ -218,7 +218,6 @@ func (a *adapter) PrepareForPush(resource *model.Resource) error {
 					public = false
 					break
 				}
-
 			}
 			project.Metadata = map[string]interface{}{
 				"public": public,
