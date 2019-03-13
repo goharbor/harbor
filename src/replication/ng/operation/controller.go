@@ -15,6 +15,7 @@
 package operation
 
 import (
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/execution"
 	"github.com/goharbor/harbor/src/replication/ng/flow"
 	"github.com/goharbor/harbor/src/replication/ng/model"
@@ -25,10 +26,11 @@ import (
 type Controller interface {
 	StartReplication(policy *model.Policy) (int64, error)
 	StopReplication(int64) error
-	ListExecutions(...*model.ExecutionQuery) (int64, []*model.Execution, error)
-	GetExecution(int64) (*model.Execution, error)
-	ListTasks(...*model.TaskQuery) (int64, []*model.Task, error)
-	GetTask(int64) (*model.Task, error)
+	ListExecutions(...*models.ExecutionQuery) (int64, []*models.Execution, error)
+	GetExecution(int64) (*models.Execution, error)
+	ListTasks(...*models.TaskQuery) (int64, []*models.Task, error)
+	GetTask(int64) (*models.Task, error)
+	UpdateTaskStatus(id int64, status string, statusCondition ...string) error
 	GetTaskLog(int64) ([]byte, error)
 }
 
@@ -51,17 +53,20 @@ func (d *defaultController) StartReplication(policy *model.Policy) (int64, error
 func (d *defaultController) StopReplication(executionID int64) error {
 	return d.flowCtl.StopReplication(executionID)
 }
-func (d *defaultController) ListExecutions(query ...*model.ExecutionQuery) (int64, []*model.Execution, error) {
+func (d *defaultController) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {
 	return d.executionMgr.List(query...)
 }
-func (d *defaultController) GetExecution(executionID int64) (*model.Execution, error) {
+func (d *defaultController) GetExecution(executionID int64) (*models.Execution, error) {
 	return d.executionMgr.Get(executionID)
 }
-func (d *defaultController) ListTasks(query ...*model.TaskQuery) (int64, []*model.Task, error) {
+func (d *defaultController) ListTasks(query ...*models.TaskQuery) (int64, []*models.Task, error) {
 	return d.executionMgr.ListTasks(query...)
 }
-func (d *defaultController) GetTask(id int64) (*model.Task, error) {
+func (d *defaultController) GetTask(id int64) (*models.Task, error) {
 	return d.executionMgr.GetTask(id)
+}
+func (d *defaultController) UpdateTaskStatus(id int64, status string, statusCondition ...string) error {
+	return d.executionMgr.UpdateTaskStatus(id, status, statusCondition...)
 }
 func (d *defaultController) GetTaskLog(taskID int64) ([]byte, error) {
 	return d.executionMgr.GetTaskLog(taskID)

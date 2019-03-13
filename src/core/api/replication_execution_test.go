@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/replication/ng"
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
@@ -30,39 +31,42 @@ func (f *fakedOperationController) StartReplication(policy *model.Policy) (int64
 func (f *fakedOperationController) StopReplication(int64) error {
 	return nil
 }
-func (f *fakedOperationController) ListExecutions(...*model.ExecutionQuery) (int64, []*model.Execution, error) {
-	return 1, []*model.Execution{
+func (f *fakedOperationController) ListExecutions(...*models.ExecutionQuery) (int64, []*models.Execution, error) {
+	return 1, []*models.Execution{
 		{
 			ID:       1,
 			PolicyID: 1,
 		},
 	}, nil
 }
-func (f *fakedOperationController) GetExecution(id int64) (*model.Execution, error) {
+func (f *fakedOperationController) GetExecution(id int64) (*models.Execution, error) {
 	if id == 1 {
-		return &model.Execution{
+		return &models.Execution{
 			ID:       1,
 			PolicyID: 1,
 		}, nil
 	}
 	return nil, nil
 }
-func (f *fakedOperationController) ListTasks(...*model.TaskQuery) (int64, []*model.Task, error) {
-	return 1, []*model.Task{
+func (f *fakedOperationController) ListTasks(...*models.TaskQuery) (int64, []*models.Task, error) {
+	return 1, []*models.Task{
 		{
 			ID:          1,
 			ExecutionID: 1,
 		},
 	}, nil
 }
-func (f *fakedOperationController) GetTask(id int64) (*model.Task, error) {
+func (f *fakedOperationController) GetTask(id int64) (*models.Task, error) {
 	if id == 1 {
-		return &model.Task{
+		return &models.Task{
 			ID:          1,
 			ExecutionID: 1,
 		}, nil
 	}
 	return nil, nil
+}
+func (f *fakedOperationController) UpdateTaskStatus(id int64, status string, statusCondition ...string) error {
+	return nil
 }
 func (f *fakedOperationController) GetTaskLog(int64) ([]byte, error) {
 	return []byte("success"), nil
@@ -174,7 +178,7 @@ func TestCreateExecution(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/replication/executions",
-				bodyJSON: &model.Execution{
+				bodyJSON: &models.Execution{
 					PolicyID: 2,
 				},
 				credential: sysAdmin,
@@ -186,7 +190,7 @@ func TestCreateExecution(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    "/api/replication/executions",
-				bodyJSON: &model.Execution{
+				bodyJSON: &models.Execution{
 					PolicyID: 1,
 				},
 				credential: sysAdmin,

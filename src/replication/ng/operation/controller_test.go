@@ -17,6 +17,7 @@ package operation
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,22 +34,22 @@ func (f *fakedFlowController) StopReplication(int64) error {
 
 type fakedExecutionManager struct{}
 
-func (f *fakedExecutionManager) Create(*model.Execution) (int64, error) {
+func (f *fakedExecutionManager) Create(*models.Execution) (int64, error) {
 	return 1, nil
 }
-func (f *fakedExecutionManager) List(...*model.ExecutionQuery) (int64, []*model.Execution, error) {
-	return 1, []*model.Execution{
+func (f *fakedExecutionManager) List(...*models.ExecutionQuery) (int64, []*models.Execution, error) {
+	return 1, []*models.Execution{
 		{
 			ID: 1,
 		},
 	}, nil
 }
-func (f *fakedExecutionManager) Get(int64) (*model.Execution, error) {
-	return &model.Execution{
+func (f *fakedExecutionManager) Get(int64) (*models.Execution, error) {
+	return &models.Execution{
 		ID: 1,
 	}, nil
 }
-func (f *fakedExecutionManager) Update(*model.Execution, ...string) error {
+func (f *fakedExecutionManager) Update(*models.Execution, ...string) error {
 	return nil
 }
 func (f *fakedExecutionManager) Remove(int64) error {
@@ -57,20 +58,20 @@ func (f *fakedExecutionManager) Remove(int64) error {
 func (f *fakedExecutionManager) RemoveAll(int64) error {
 	return nil
 }
-func (f *fakedExecutionManager) CreateTask(*model.Task) (int64, error) {
+func (f *fakedExecutionManager) CreateTask(*models.Task) (int64, error) {
 	return 1, nil
 }
-func (f *fakedExecutionManager) ListTasks(...*model.TaskQuery) (int64, []*model.Task, error) {
-	return 1, []*model.Task{
+func (f *fakedExecutionManager) ListTasks(...*models.TaskQuery) (int64, []*models.Task, error) {
+	return 1, []*models.Task{
 		{
 			ID: 1,
 		},
 	}, nil
 }
-func (f *fakedExecutionManager) GetTask(int64) (*model.Task, error) {
+func (f *fakedExecutionManager) GetTask(int64) (*models.Task, error) {
 	return nil, nil
 }
-func (f *fakedExecutionManager) UpdateTask(*model.Task, ...string) error {
+func (f *fakedExecutionManager) UpdateTask(*models.Task, ...string) error {
 	return nil
 }
 func (f *fakedExecutionManager) UpdateTaskStatus(int64, string, ...string) error {
