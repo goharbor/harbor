@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/execution"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
@@ -53,45 +54,71 @@ func newFlow(policy *model.Policy, registryMgr registry.Manager,
 		scheduler:    scheduler,
 	}
 
-	// get source registry
-	srcRegistry, err := registryMgr.Get(policy.SrcRegistryID)
+	// TODO consider to put registry model in the policy directly rather than just the registry ID?
+	url, err := config.RegistryURL()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get registry %d: %v", policy.SrcRegistryID, err)
+		return nil, fmt.Errorf("failed to get the registry URL: %v", err)
 	}
-	if srcRegistry == nil {
-		return nil, fmt.Errorf("registry %d not found", policy.SrcRegistryID)
+	registry := &model.Registry{
+		Type: model.RegistryTypeHarbor,
+		Name: "Local",
+		URL:  url,
+		// TODO use the service account
+		Credential: &model.Credential{
+			Type:         model.CredentialTypeBasic,
+			AccessKey:    "admin",
+			AccessSecret: "Harbor12345",
+		},
+		Insecure: true,
 	}
-	f.srcRegistry = srcRegistry
+
+	// get source registry
+	if policy.SrcRegistryID != 0 {
+		srcRegistry, err := registryMgr.Get(policy.SrcRegistryID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get registry %d: %v", policy.SrcRegistryID, err)
+		}
+		if srcRegistry == nil {
+			return nil, fmt.Errorf("registry %d not found", policy.SrcRegistryID)
+		}
+		f.srcRegistry = srcRegistry
+	} else {
+		f.srcRegistry = registry
+	}
 
 	// get destination registry
-	dstRegistry, err := registryMgr.Get(policy.DestRegistryID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get registry %d: %v", policy.DestRegistryID, err)
+	if policy.DestRegistryID != 0 {
+		dstRegistry, err := registryMgr.Get(policy.DestRegistryID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get registry %d: %v", policy.DestRegistryID, err)
+		}
+		if dstRegistry == nil {
+			return nil, fmt.Errorf("registry %d not found", policy.DestRegistryID)
+		}
+		f.dstRegistry = dstRegistry
+	} else {
+		f.dstRegistry = registry
 	}
-	if dstRegistry == nil {
-		return nil, fmt.Errorf("registry %d not found", policy.DestRegistryID)
-	}
-	f.dstRegistry = dstRegistry
 
 	// create the source registry adapter
-	srcFactory, err := adapter.GetFactory(srcRegistry.Type)
+	srcFactory, err := adapter.GetFactory(f.srcRegistry.Type)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", srcRegistry.Type, err)
+		return nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", f.srcRegistry.Type, err)
 	}
-	srcAdapter, err := srcFactory(srcRegistry)
+	srcAdapter, err := srcFactory(f.srcRegistry)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create adapter for source registry %s: %v", srcRegistry.URL, err)
+		return nil, fmt.Errorf("failed to create adapter for source registry %s: %v", f.srcRegistry.URL, err)
 	}
 	f.srcAdapter = srcAdapter
 
 	// create the destination registry adapter
-	dstFactory, err := adapter.GetFactory(dstRegistry.Type)
+	dstFactory, err := adapter.GetFactory(f.dstRegistry.Type)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", dstRegistry.Type, err)
+		return nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", f.dstRegistry.Type, err)
 	}
-	dstAdapter, err := dstFactory(dstRegistry)
+	dstAdapter, err := dstFactory(f.dstRegistry)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create adapter for destination registry %s: %v", dstRegistry.URL, err)
+		return nil, fmt.Errorf("failed to create adapter for destination registry %s: %v", f.dstRegistry.URL, err)
 	}
 	f.dstAdapter = dstAdapter
 
@@ -150,7 +177,30 @@ func (f *flow) fetchResources() error {
 }
 
 func (f *flow) createNamespace() error {
-	// merge the metadata of all source namespaces
+	// Merge the metadata of all source namespaces
+	// eg:
+	// We have two source namespaces:
+	// {
+	//	Name: "source01",
+	//  Metadata: {"public": true}
+	// }
+	// and
+	// {
+	//	Name: "source02",
+	//  Metadata: {"public": false}
+	// }
+	// The name of the destination namespace is "destination",
+	// after merging the metadata, the destination namespace
+	// looks like this:
+	// {
+	//	 Name: "destination",
+	//   Metadata: {
+	//		"public": {
+	//			"source01": true,
+	//			"source02": false,
+	//		},
+	//	 },
+	// }
 	metadata := map[string]interface{}{}
 	for _, srcNamespace := range f.policy.SrcNamespaces {
 		namespace, err := f.srcAdapter.GetNamespace(srcNamespace)
@@ -159,7 +209,13 @@ func (f *flow) createNamespace() error {
 			return err
 		}
 		for key, value := range namespace.Metadata {
-			metadata[namespace.Name+":"+key] = value
+			var m map[string]interface{}
+			if metadata[key] == nil {
+				m = map[string]interface{}{}
+			} else {
+				m = metadata[key].(map[string]interface{})
+			}
+			m[namespace.Name] = value
 		}
 	}
 
@@ -282,7 +338,7 @@ func (f *flow) markExecutionFailure(err error) {
 			Status:     models.ExecutionStatusFailed,
 			StatusText: statusText,
 			EndTime:    time.Now(),
-		})
+		}, "Status", "StatusText", "EndTime")
 	if err != nil {
 		log.Errorf("failed to update the execution %d: %v", f.executionID, err)
 	}

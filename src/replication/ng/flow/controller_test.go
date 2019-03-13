@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/docker/distribution"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
@@ -204,6 +205,7 @@ func (f *fakedAdapter) PushBlob(repository, digest string, size int64, blob io.R
 }
 
 func TestStartReplication(t *testing.T) {
+	config.InitWithSettings(nil)
 	err := adapter.RegisterFactory(
 		&adapter.Info{
 			Type:                   "faked_registry",
