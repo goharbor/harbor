@@ -75,7 +75,8 @@ const uiLibConfig: IServiceConfig = {
   labelEndpoint: "/api/labels",
   helmChartEndpoint: "/api/chartrepo",
   downloadChartEndpoint: "/chartrepo",
-  gcEndpoint: "/api/system/gc"
+  gcEndpoint: "/api/system/gc",
+  ScanAllEndpoint: "/api/system/scanAll"
 };
 
 @NgModule({

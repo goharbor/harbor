@@ -239,4 +239,6 @@ export interface IServiceConfig {
     downloadChartEndpoint?: string;
 
     gcEndpoint?: string;
+
+    ScanAllEndpoint?: string;
 }
