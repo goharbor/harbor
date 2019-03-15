@@ -148,6 +148,13 @@ func TestMethodOfTask(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), n)
 
+	// test update status
+	n, err = UpdateTaskStatus(id1, "Succeed")
+	require.Nil(t, err)
+	assert.Equal(t, int64(1), n)
+	task, _ = GetTask(id1)
+	assert.Equal(t, "Succeed", task.Status)
+
 	// test delete
 	require.Nil(t, DeleteTask(id1))
 	task, err = GetTask(id1)
@@ -162,16 +169,12 @@ func TestMethodOfTask(t *testing.T) {
 	assert.Equal(t, int64(0), n)
 }
 
-func TestUpdateJobStatus(t *testing.T) {
+func TestExecutionFill(t *testing.T) {
 	execution := &models.Execution{
 		PolicyID:   11209,
 		Status:     "InProgress",
 		StatusText: "None",
-		Total:      12,
-		Failed:     0,
-		Succeed:    10,
-		InProgress: 1,
-		Stopped:    1,
+		Total:      2,
 		Trigger:    "Event",
 		StartTime:  time.Now(),
 	}
@@ -183,7 +186,56 @@ func TestUpdateJobStatus(t *testing.T) {
 		SrcResource:  "srcResource1",
 		DstResource:  "dstResource1",
 		JobID:        "jobID1",
-		Status:       "Pending",
+		Status:       "Succeed",
+		StartTime:    time.Now(),
+	}
+	task2 := &models.Task{
+		ID:           20192,
+		ExecutionID:  executionID,
+		ResourceType: "resourceType2",
+		SrcResource:  "srcResource2",
+		DstResource:  "dstResource2",
+		JobID:        "jobID2",
+		Status:       "Stopped",
+		StartTime:    time.Now(),
+		EndTime:      time.Now(),
+	}
+	AddTask(task1)
+	AddTask(task2)
+
+	defer func() {
+		DeleteAllTasks(executionID)
+		DeleteAllExecutions(11209)
+	}()
+
+	// query and fill
+	exe, err := GetExecution(executionID)
+	require.Nil(t, err)
+	assert.Equal(t, "Stopped", exe.Status)
+	assert.Equal(t, 0, exe.InProgress)
+	assert.Equal(t, 1, exe.Stopped)
+	assert.Equal(t, 0, exe.Failed)
+	assert.Equal(t, 1, exe.Succeed)
+}
+
+func TestExecutionFill2(t *testing.T) {
+	execution := &models.Execution{
+		PolicyID:   11209,
+		Status:     "InProgress",
+		StatusText: "None",
+		Total:      2,
+		Trigger:    "Event",
+		StartTime:  time.Now(),
+	}
+	executionID, _ := AddExecution(execution)
+	task1 := &models.Task{
+		ID:           20191,
+		ExecutionID:  executionID,
+		ResourceType: "resourceType1",
+		SrcResource:  "srcResource1",
+		DstResource:  "dstResource1",
+		JobID:        "jobID1",
+		Status:       models.TaskStatusInProgress,
 		StartTime:    time.Now(),
 	}
 	task2 := &models.Task{
@@ -198,40 +250,32 @@ func TestUpdateJobStatus(t *testing.T) {
 		EndTime:      time.Now(),
 	}
 	taskID1, _ := AddTask(task1)
-	taskID2, _ := AddTask(task2)
+	AddTask(task2)
 
 	defer func() {
 		DeleteAllTasks(executionID)
 		DeleteAllExecutions(11209)
 	}()
 
-	// update Pending->InProgress
-	n, err := UpdateTaskStatus(taskID1, "InProgress", "Pending")
+	// query and fill
+	exe, err := GetExecution(executionID)
 	require.Nil(t, err)
-	assert.Equal(t, int64(1), n)
+	assert.Equal(t, models.ExecutionStatusInProgress, exe.Status)
+	assert.Equal(t, 1, exe.InProgress)
+	assert.Equal(t, 1, exe.Stopped)
+	assert.Equal(t, 0, exe.Failed)
+	assert.Equal(t, 0, exe.Succeed)
 
-	execu, err := GetExecution(executionID)
+	// update task status and query and fill
+	UpdateTaskStatus(taskID1, models.TaskStatusFailed)
+	exes, err := GetExecutions(&models.ExecutionQuery{
+		PolicyID: 11209,
+	})
 	require.Nil(t, err)
-	assert.Equal(t, execution.InProgress, execu.InProgress)
-	assert.Equal(t, execution.Status, execu.Status)
-
-	// update InProgress->Failed: Execution.InProgress-1, Failed+1
-	n, err = UpdateTaskStatus(taskID1, "Failed")
-	require.Nil(t, err)
-	assert.Equal(t, int64(1), n)
-
-	execu, err = GetExecution(executionID)
-	require.Nil(t, err)
-	assert.Equal(t, 1, execu.Failed)
-	assert.Equal(t, "Failed", execu.Status)
-
-	// update Stopped->Pending: Execution.Stopped-1, InProgress+1
-	n, err = UpdateTaskStatus(taskID2, "Pending")
-	require.Nil(t, err)
-	assert.Equal(t, int64(1), n)
-
-	execu, err = GetExecution(executionID)
-	require.Nil(t, err)
-	assert.Equal(t, 1, execu.InProgress)
-	assert.Equal(t, "InProgress", execu.Status)
+	assert.Equal(t, 1, len(exes))
+	assert.Equal(t, models.ExecutionStatusFailed, exes[0].Status)
+	assert.Equal(t, 0, exes[0].InProgress)
+	assert.Equal(t, 1, exes[0].Stopped)
+	assert.Equal(t, 1, exes[0].Failed)
+	assert.Equal(t, 0, exes[0].Succeed)
 }

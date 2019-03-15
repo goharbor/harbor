@@ -144,3 +144,9 @@ type TaskQuery struct {
 	ResourceType string
 	Pagination
 }
+
+// TaskStat holds statistics of task by status
+type TaskStat struct {
+	Status string `orm:"column(status)"`
+	C      int    `orm:"column(c)"`
+}
