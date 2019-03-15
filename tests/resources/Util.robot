@@ -96,6 +96,16 @@ Retry Text Input
     @{param}  Create List  ${element_xpath}  ${text}
     Retry Action Keyword  Text Input  @{param}
 
+Retry Checkbox Should Be Selected
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Checkbox Should Be Selected  @{param}
+
+Retry Checkbox Should Not Be Selected
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Checkbox Should Not Be Selected  @{param}
+
 Retry Wait Until Page Contains
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}

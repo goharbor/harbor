@@ -25,6 +25,7 @@ ${projects_xpath}  //clr-main-container//clr-vertical-nav//a[contains(.,'Project
 ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
 ${project_log_xpath}  //project-detail//li[contains(.,'Logs')]
 ${project_member_xpath}  //project-detail//li[contains(.,'Members')]
+${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration')]
 
 ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${create_project_OK_button_xpath}  xpath=//button[contains(.,'OK')]
@@ -44,3 +45,7 @@ ${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//clr-checkbox-wrapper
 ${tag_table_column_signed}  xpath=//clr-dg-column//span[contains(.,'Signed')]
 ${tag_table_column_vulnerability}  xpath=//clr-dg-column//span[contains(.,'Vulnerability')]
 ${tag_images_btn}  xpath=//hbr-repository//button[contains(.,'Images')]
+${project_member_action_xpath}  xpath=//*[@id='member-action']
+${project_member_set_role_xpath}  xpath=//clr-dropdown-menu//label[contains(.,'SET ROLE')]
+${project_config_public_checkbox}  xpath=//input[@name='public']
+${project_config_public_checkbox_label}  xpath=//div[@id='clr-wrapper-public']//label[contains(.,'Public')]
