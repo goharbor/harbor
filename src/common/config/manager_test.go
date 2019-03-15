@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/stretchr/testify/assert"
 )
 
 var TestDBConfig = map[string]interface{}{
@@ -34,6 +35,12 @@ func TestLoadFromDatabase(t *testing.T) {
 	assert.Equal(t, "127.0.0.1", configManager.Get("email_host").GetString())
 	assert.Equal(t, "http://clair:6060", configManager.Get("clair_url").GetString())
 	assert.Equal(t, `{"parameter":{"daily_time":0},"type":"daily"}`, configManager.Get("scan_all_policy").GetString())
+}
+
+func TestLoadUserCfg(t *testing.T) {
+	configMap := configManager.GetUserCfgs()
+	assert.NotNil(t, configMap["ldap_url"])
+	assert.NotNil(t, configMap["ldap_base_dn"])
 }
 
 func TestSaveToDatabase(t *testing.T) {
