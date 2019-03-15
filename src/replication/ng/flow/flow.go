@@ -39,7 +39,8 @@ type flow struct {
 	srcAdapter    adapter.Adapter
 	dstAdapter    adapter.Adapter
 	executionID   int64
-	resources     []*model.Resource
+	srcResources  []*model.Resource
+	dstResources  []*model.Resource
 	executionMgr  execution.Manager
 	scheduler     scheduler.Scheduler
 	scheduleItems []*scheduler.ScheduleItem
@@ -151,7 +152,7 @@ func (f *flow) fetchResources() error {
 	}
 
 	// TODO consider whether the logic can be refactored by using reflect
-	resources := []*model.Resource{}
+	srcResources := []*model.Resource{}
 	for _, typ := range resTypes {
 		if typ == model.ResourceTypeRepository {
 			reg, ok := f.srcAdapter.(adapter.ImageRegistry)
@@ -165,12 +166,38 @@ func (f *flow) fetchResources() error {
 				f.markExecutionFailure(err)
 				return err
 			}
-			resources = append(resources, res...)
+			srcResources = append(srcResources, res...)
 			continue
 		}
 		// TODO add support for chart
 	}
-	f.resources = resources
+
+	dstResources := []*model.Resource{}
+	for _, srcResource := range srcResources {
+		dstResource := &model.Resource{
+			Type: srcResource.Type,
+			Metadata: &model.ResourceMetadata{
+				Name:      srcResource.Metadata.Name,
+				Namespace: srcResource.Metadata.Namespace,
+				Vtags:     srcResource.Metadata.Vtags,
+			},
+			Registry:     f.dstRegistry,
+			ExtendedInfo: srcResource.ExtendedInfo,
+			Deleted:      srcResource.Deleted,
+			Override:     f.policy.Override,
+		}
+		// TODO check whether the logic is applied to chart
+		// if the destination namespace is specified, use the specified one
+		if len(f.policy.DestNamespace) > 0 {
+			dstResource.Metadata.Name = strings.Replace(srcResource.Metadata.Name,
+				srcResource.Metadata.Namespace, f.policy.DestNamespace, 1)
+			dstResource.Metadata.Namespace = f.policy.DestNamespace
+		}
+		dstResources = append(dstResources, dstResource)
+	}
+
+	f.srcResources = srcResources
+	f.dstResources = dstResources
 
 	log.Debugf("resources for the execution %d fetched from the source registry", f.executionID)
 	return nil
@@ -201,55 +228,36 @@ func (f *flow) createNamespace() error {
 	//		},
 	//	 },
 	// }
-	metadata := map[string]interface{}{}
-	for _, srcNamespace := range f.policy.SrcNamespaces {
-		namespace, err := f.srcAdapter.GetNamespace(srcNamespace)
+	// TODO merge the metadata of different namespaces
+	namespaces := []*model.Namespace{}
+	for i, resource := range f.dstResources {
+		namespace := &model.Namespace{
+			Name: resource.Metadata.Namespace,
+		}
+		// get the metadata of the namespace from the source registry
+		ns, err := f.srcAdapter.GetNamespace(f.srcResources[i].Metadata.Namespace)
 		if err != nil {
 			f.markExecutionFailure(err)
 			return err
 		}
-		for key, value := range namespace.Metadata {
-			var m map[string]interface{}
-			if metadata[key] == nil {
-				m = map[string]interface{}{}
-			} else {
-				m = metadata[key].(map[string]interface{})
-			}
-			m[namespace.Name] = value
+		namespace.Metadata = ns.Metadata
+		namespaces = append(namespaces, namespace)
+	}
+
+	for _, namespace := range namespaces {
+		if err := f.dstAdapter.CreateNamespace(namespace); err != nil {
+			f.markExecutionFailure(err)
+			return err
 		}
+
+		log.Debugf("namespace %s for the execution %d created on the destination registry", namespace.Name, f.executionID)
 	}
 
-	if err := f.dstAdapter.CreateNamespace(&model.Namespace{
-		Name:     f.policy.DestNamespace,
-		Metadata: metadata,
-	}); err != nil {
-		f.markExecutionFailure(err)
-		return err
-	}
-
-	log.Debugf("namespace %s for the execution %d created on the destination registry", f.policy.DestNamespace, f.executionID)
 	return nil
 }
 
 func (f *flow) preprocess() error {
-	dstResources := []*model.Resource{}
-	for _, srcResource := range f.resources {
-		dstResource := &model.Resource{
-			Type: srcResource.Type,
-			Metadata: &model.ResourceMetadata{
-				Name:      srcResource.Metadata.Name,
-				Namespace: f.policy.DestNamespace,
-				Vtags:     srcResource.Metadata.Vtags,
-			},
-			Registry:     f.dstRegistry,
-			ExtendedInfo: srcResource.ExtendedInfo,
-			Deleted:      srcResource.Deleted,
-			Override:     f.policy.Override,
-		}
-		dstResources = append(dstResources, dstResource)
-	}
-
-	items, err := f.scheduler.Preprocess(f.resources, dstResources)
+	items, err := f.scheduler.Preprocess(f.srcResources, f.dstResources)
 	if err != nil {
 		f.markExecutionFailure(err)
 		return err
@@ -277,6 +285,7 @@ func (f *flow) createTasks() error {
 			f.markExecutionFailure(err)
 			return err
 		}
+
 		item.TaskID = id
 		log.Debugf("task record %d for the execution %d created",
 			id, f.executionID)
@@ -311,7 +320,7 @@ func (f *flow) schedule() error {
 			ID:        result.TaskID,
 			JobID:     result.JobID,
 			StartTime: time.Now(),
-		}); err != nil {
+		}, "JobID", "StartTime"); err != nil {
 			log.Errorf("failed to update task %d: %v", result.TaskID, err)
 		}
 		log.Debugf("the task %d scheduled", result.TaskID)
@@ -337,6 +346,20 @@ func (f *flow) markExecutionFailure(err error) {
 			ID:         f.executionID,
 			Status:     models.ExecutionStatusFailed,
 			StatusText: statusText,
+			EndTime:    time.Now(),
+		}, "Status", "StatusText", "EndTime")
+	if err != nil {
+		log.Errorf("failed to update the execution %d: %v", f.executionID, err)
+	}
+}
+
+func (f *flow) markExecutionSuccess(msg string) {
+	log.Debugf("the execution %d is marked as success", f.executionID)
+	err := f.executionMgr.Update(
+		&models.Execution{
+			ID:         f.executionID,
+			Status:     models.ExecutionStatusSucceed,
+			StatusText: msg,
 			EndTime:    time.Now(),
 		}, "Status", "StatusText", "EndTime")
 	if err != nil {
