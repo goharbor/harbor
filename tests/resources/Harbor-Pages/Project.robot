@@ -90,23 +90,20 @@ Search Private Projects
 Make Project Private
     [Arguments]  ${projectname}
     Go Into Project  ${project name}
-    Sleep  2
-    Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
-    Sleep  1
-    Checkbox Should Be Selected  xpath=//input[@name='public']
-    Click Element  //div[@id="clr-wrapper-public"]//label[1]
-    Wait Until Element Is Enabled  //button[contains(.,'SAVE')]
-    Click Element  //button[contains(.,'SAVE')]
-    Wait Until Page Contains  Configuration has been successfully saved
+    Retry Element Click  ${project_config_tabsheet}
+    Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
+    Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
+    Retry Element Click  //button[contains(.,'SAVE')]
+    Retry Wait Until Page Contains  Configuration has been successfully saved
 
 Make Project Public
     [Arguments]  ${projectname}
     Go Into Project  ${project name}
-    Retry Element Click  xpath=//project-detail//a[contains(.,'Configuration')]
-    Checkbox Should Not Be Selected  xpath=//input[@name='public']
-    Retry Element Click  //div[@id="clr-wrapper-public"]//label[1]
+    Retry Element Click  ${project_config_tabsheet}
+    Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
+    Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
-    Wait Until Page Contains  Configuration has been successfully saved
+    Retry Wait Until Page Contains  Configuration has been successfully saved
 
 Delete Repo
     [Arguments]  ${projectname}
