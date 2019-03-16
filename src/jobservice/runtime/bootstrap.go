@@ -16,13 +16,17 @@ package runtime
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
+	"regexp"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
 
+	"github.com/FZambia/sentinel"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -172,26 +176,75 @@ func (bs *Bootstrap) loadAndRunAPIServer(ctx *env.Context, cfg *config.Configura
 
 // Load and run the worker pool
 func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Configuration) (pool.Interface, error) {
-	redisPool := &redis.Pool{
-		MaxActive: 6,
-		MaxIdle:   6,
-		Wait:      true,
-		Dial: func() (redis.Conn, error) {
-			return redis.DialURL(
-				cfg.PoolConfig.RedisPoolCfg.RedisURL,
-				redis.DialConnectTimeout(dialConnectionTimeout),
-				redis.DialReadTimeout(dialReadTimeout),
-				redis.DialWriteTimeout(dialWriteTimeout),
-			)
-		},
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+	sentinelURLRegex := regexp.MustCompile(`redis\+sentinel://([^/]+)/([^/]+)/(.+)$`)
+	var getRedisUrl func() (string, error)
+	var testOnBorrow func(c redis.Conn, t time.Time) error
+	if sentinelURLRegex.MatchString(cfg.PoolConfig.RedisPoolCfg.RedisURL) {
+		getRedisUrl = func() (string, error) {
+			m := sentinelURLRegex.FindStringSubmatch(cfg.PoolConfig.RedisPoolCfg.RedisURL)
+			sentinelAddrs := m[1]
+			masterSetName := m[2]
+			urlLastPart := m[3]
+			sntnl := &sentinel.Sentinel{
+				Addrs:      strings.Split(sentinelAddrs, ","),
+				MasterName: masterSetName,
+				Dial: func(addr string) (redis.Conn, error) {
+					c, err := redis.Dial("tcp", addr,
+						redis.DialConnectTimeout(dialConnectionTimeout),
+						redis.DialReadTimeout(dialReadTimeout),
+						redis.DialWriteTimeout(dialWriteTimeout))
+					if err != nil {
+						return nil, err
+					}
+					return c, nil
+				},
+			}
+			masterAddr, err := sntnl.MasterAddr()
+			if err != nil {
+				return "", err
+			}
+			return "redis://" + masterAddr + "/" + urlLastPart, nil
+		}
+
+		testOnBorrow = func(c redis.Conn, t time.Time) error {
+			if !sentinel.TestRole(c, "master") {
+				return errors.New("role check failed")
+			}
+			return nil
+		}
+	} else {
+		getRedisUrl = func() (string, error) {
+			return cfg.PoolConfig.RedisPoolCfg.RedisURL, nil
+		}
+		testOnBorrow = func(c redis.Conn, t time.Time) error {
 			if time.Since(t) < time.Minute {
 				return nil
 			}
 
 			_, err := c.Do("PING")
 			return err
+		}
+	}
+
+	redisPool := &redis.Pool{
+		MaxActive: 6,
+		MaxIdle:   6,
+		Wait:      true,
+		Dial: func() (redis.Conn, error) {
+			redisURL, err := getRedisUrl()
+			if err != nil {
+				return nil, err
+			}
+			c, err := redis.DialURL(redisURL,
+				redis.DialConnectTimeout(dialConnectionTimeout),
+				redis.DialReadTimeout(dialReadTimeout),
+				redis.DialWriteTimeout(dialWriteTimeout))
+			if err != nil {
+				return nil, err
+			}
+			return c, nil
 		},
+		TestOnBorrow: testOnBorrow,
 	}
 
 	redisWorkerPool := pool.NewGoCraftWorkPool(ctx,

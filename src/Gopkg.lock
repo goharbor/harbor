@@ -10,6 +10,14 @@
   version = "v0.3.0"
 
 [[projects]]
+  digest = "1:8e379117c74df8f21127a82e1599de345efad7770fa91dd2ea20195471014fb4"
+  name = "github.com/FZambia/sentinel"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "e69a8dc549bb0aabdc63fbfd9e8bfe971a368153"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:5d3e23515e7916c152cc665eda0f7eaf6fdf8fdfe7c3dbac97049bcbd649b33f"
   name = "github.com/Knetic/govaluate"
   packages = ["."]
@@ -511,6 +519,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/FZambia/sentinel",
     "github.com/Masterminds/semver",
     "github.com/astaxie/beego",
     "github.com/astaxie/beego/cache",
