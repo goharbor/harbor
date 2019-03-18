@@ -27,15 +27,16 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
-// DefaultReplicator provides a default implement for Replicator
-type DefaultReplicator struct {
+type defaultScheduler struct {
 	client job.Client
 }
 
-// NewDefaultReplicator returns an instance of DefaultReplicator
-func NewDefaultReplicator(client job.Client) *DefaultReplicator {
-	return &DefaultReplicator{
-		client: client,
+// TODO use the service account?
+
+// NewScheduler returns an instance of Scheduler
+func NewScheduler(jobserviceURL, secret string) Scheduler {
+	return &defaultScheduler{
+		client: job.NewDefaultClient(jobserviceURL, secret),
 	}
 }
 
@@ -66,7 +67,7 @@ type Scheduler interface {
 }
 
 // Preprocess the resources and returns the item list that can be scheduled
-func (d *DefaultReplicator) Preprocess(srcResources []*model.Resource, destResources []*model.Resource) ([]*ScheduleItem, error) {
+func (d *defaultScheduler) Preprocess(srcResources []*model.Resource, destResources []*model.Resource) ([]*ScheduleItem, error) {
 	if len(srcResources) != len(destResources) {
 		err := errors.New("srcResources has different length with destResources")
 		return nil, err
@@ -85,7 +86,7 @@ func (d *DefaultReplicator) Preprocess(srcResources []*model.Resource, destResou
 }
 
 // Schedule transfer the tasks to jobs,and then submit these jobs to job service.
-func (d *DefaultReplicator) Schedule(items []*ScheduleItem) ([]*ScheduleResult, error) {
+func (d *defaultScheduler) Schedule(items []*ScheduleItem) ([]*ScheduleResult, error) {
 	var results []*ScheduleResult
 	for _, item := range items {
 		result := &ScheduleResult{
@@ -103,7 +104,7 @@ func (d *DefaultReplicator) Schedule(items []*ScheduleItem) ([]*ScheduleResult, 
 			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/replication/task/%d", config.InternalCoreURL(), item.TaskID),
 		}
 
-		job.Name = common_job.ImageTransfer
+		job.Name = common_job.Replication
 		src, err := json.Marshal(item.SrcResource)
 		if err != nil {
 			result.Error = err
@@ -133,8 +134,7 @@ func (d *DefaultReplicator) Schedule(items []*ScheduleItem) ([]*ScheduleResult, 
 }
 
 // Stop the transfer job
-func (d *DefaultReplicator) Stop(id string) error {
-
+func (d *defaultScheduler) Stop(id string) error {
 	err := d.client.PostAction(id, opm.CtlCommandStop)
 	if err != nil {
 		return err

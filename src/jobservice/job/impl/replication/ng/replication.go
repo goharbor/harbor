@@ -26,6 +26,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/ng/transfer/chart"
 	// import repository transfer
 	_ "github.com/goharbor/harbor/src/replication/ng/transfer/repository"
+	// register the Harbor adapter
+	_ "github.com/goharbor/harbor/src/replication/ng/adapter/harbor"
 )
 
 // Replication implements the job interface
