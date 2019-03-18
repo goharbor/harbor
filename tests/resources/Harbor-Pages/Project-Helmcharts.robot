@@ -5,9 +5,8 @@ Resource  ../../resources/Util.robot
 *** Keywords ***
 
 Switch To Project Charts
-    Click Element  xpath=//project-detail//a[contains(.,'Charts')]
-    Sleep  1
-    Page Should Contain Element  xpath=//hbr-helm-chart
+    Retry Element Click  ${project_chart_tabpage}
+    Retry Wait Until Page Contains Element  ${project_chart_list}
 
 Upload Chart files
     ${current_dir}=  Run  pwd
@@ -15,32 +14,29 @@ Upload Chart files
     Run  wget ${harbor_chart_prov_file_url}
     Run  wget ${prometheus_chart_file_url}
 
-    Click Element  xpath=${upload_chart_button}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${upload_chart_button}  Retry Wait Until Page Contains Element  xpath=${upload_action_button}
     ${prometheus_file_path}  Set Variable  ${current_dir}/${prometheus_chart_filename}
     Choose File  xpath=${chart_file_browse}  ${prometheus_file_path}
-    Click Element  xpath=${upload_action_button}
-    Wait Until Page Does Not Contain Element  xpath=${upload_action_button}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${upload_action_button}  Retry Wait Until Page Not Contains Element  xpath=${upload_action_button}
 
-    Click Element  xpath=${upload_chart_button}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${upload_chart_button}  Retry Wait Until Page Contains Element  xpath=${upload_action_button}
     ${harbor_file_path}  Set Variable  ${current_dir}/${harbor_chart_filename}
     ${harbor_prov_file_path}  Set Variable  ${current_dir}/${harbor_chart_prov_filename}
     Choose File  xpath=${chart_file_browse}  ${harbor_file_path}
     Choose File  xpath=${chart_prov_browse}  ${harbor_prov_file_path}
-    Click Element  xpath=${upload_action_button}
-    Sleep  2
+    Retry Double Keywords When Error  Retry Element Click  xpath=${upload_action_button}  Retry Wait Until Page Not Contains Element  xpath=${upload_action_button}
 
-    Wait Until Page Contains  ${prometheus_chart_name}
+    Retry Wait Until Page Contains  ${prometheus_chart_name}
 
 Go Into Chart Version
     [Arguments]  ${chart_name}
-    Click Element  xpath=//hbr-helm-chart//a[contains(., '${chart_name}')]
+    Retry Element Click  xpath=//hbr-helm-chart//a[contains(., '${chart_name}')]
     Capture Page Screenshot  viewchartversion.png
 
 Go Into Chart Detail
     [Arguments]  ${version_name}
-    Click Element  xpath=//hbr-helm-chart-version//a[contains(., '${version_name}')]
-    Sleep  2
-    Page Should Contain Element  ${chart_detail}
+    Retry Element Click  xpath=//hbr-helm-chart-version//a[contains(., '${version_name}')]
+    Retry Wait Until Page Contains Element  ${chart_detail}
 
 Go Back To Versions And Delete
     Retry Element Click  xpath=${version_bread_crumbs}
