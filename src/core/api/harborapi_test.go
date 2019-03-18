@@ -1201,12 +1201,12 @@ func (a testapi) AddGC(authInfor usrInfo, adminReq apilib.AdminJobReq) (int, err
 	return httpStatusCode, err
 }
 
-func (a testapi) GCScheduleGet(authInfo usrInfo) (int, []apilib.AdminJob, error) {
+func (a testapi) GCScheduleGet(authInfo usrInfo) (int, apilib.AdminJobSchedule, error) {
 	_sling := sling.New().Get(a.basePath)
 	path := "/api/system/gc/schedule"
 	_sling = _sling.Path(path)
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	var successPayLoad []apilib.AdminJob
+	var successPayLoad apilib.AdminJobSchedule
 	if 200 == httpStatusCode && nil == err {
 		err = json.Unmarshal(body, &successPayLoad)
 	}
@@ -1231,12 +1231,12 @@ func (a testapi) AddScanAll(authInfor usrInfo, adminReq apilib.AdminJobReq) (int
 	return httpStatusCode, err
 }
 
-func (a testapi) ScanAllScheduleGet(authInfo usrInfo) (int, []apilib.AdminJob, error) {
+func (a testapi) ScanAllScheduleGet(authInfo usrInfo) (int, apilib.AdminJobSchedule, error) {
 	_sling := sling.New().Get(a.basePath)
 	path := "/api/system/scanAll/schedule"
 	_sling = _sling.Path(path)
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	var successPayLoad []apilib.AdminJob
+	var successPayLoad apilib.AdminJobSchedule
 	if 200 == httpStatusCode && nil == err {
 		err = json.Unmarshal(body, &successPayLoad)
 	}

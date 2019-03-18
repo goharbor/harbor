@@ -14,13 +14,13 @@ func TestScanAllPost(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	// case 1: add a new admin job
+	// case 1: add a new scan all job
 	code, err := apiTest.AddScanAll(*admin, adminJob002)
 	if err != nil {
-		t.Error("Error occurred while add a admin job", err.Error())
+		t.Error("Error occurred while add a scan all job", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(200, code, "Add adminjob status should be 200")
+		assert.Equal(200, code, "Add scan all status should be 200")
 	}
 }
 
@@ -30,9 +30,9 @@ func TestScanAllGet(t *testing.T) {
 
 	code, _, err := apiTest.ScanAllScheduleGet(*admin)
 	if err != nil {
-		t.Error("Error occurred while get a admin job", err.Error())
+		t.Error("Error occurred while get a scan all job", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(200, code, "Get adminjob status should be 200")
+		assert.Equal(200, code, "Get scan all status should be 200")
 	}
 }

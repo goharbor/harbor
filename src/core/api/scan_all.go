@@ -10,7 +10,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 )
 
-// ScanAllAPI handles request of harbor admin...
+// ScanAllAPI handles request of scan all images...
 type ScanAllAPI struct {
 	AJAPI
 }
@@ -33,24 +33,49 @@ func (sc *ScanAllAPI) Prepare() {
 	}
 }
 
-// Post ...
+// Post according to the request, it creates a cron schedule or a manual trigger for scan all.
+// create a daily schedule for scan all
+// 	{
+//  "schedule": {
+//    "type": "Daily",
+//    "cron": "0 0 0 * * *"
+//  }
+//	}
+// create a manual trigger for scan all
+// 	{
+//  "schedule": {
+//    "type": "Manual"
+//  }
+//	}
 func (sc *ScanAllAPI) Post() {
 	ajr := models.AdminJobReq{}
 	sc.DecodeJSONReqAndValidate(&ajr)
 	ajr.Name = common_job.ImageScanAllJob
-	sc.submitAdminJob(&ajr)
+	sc.submit(&ajr)
 	sc.Redirect(http.StatusCreated, strconv.FormatInt(ajr.ID, 10))
 }
 
-// Put ...
+// Put handles scan all cron schedule update/delete.
+// Request: delete the schedule of scan all
+// 	{
+//  "schedule": {
+//    "type": "None",
+//    "cron": ""
+//  }
+//	}
 func (sc *ScanAllAPI) Put() {
 	ajr := models.AdminJobReq{}
 	sc.DecodeJSONReqAndValidate(&ajr)
 	ajr.Name = common_job.ImageScanAllJob
-	sc.updateAdminSchedule(ajr)
+	sc.updateSchedule(ajr)
 }
 
-// Get gets GC schedule ...
+// Get gets scan all schedule ...
 func (sc *ScanAllAPI) Get() {
-	sc.getAdminSchedule(common_job.ImageScanAllJob)
+	sc.getSchedule(common_job.ImageScanAllJob)
+}
+
+// List returns the top 10 executions of scan all which includes manual and cron.
+func (sc *ScanAllAPI) List() {
+	sc.list(common_job.ImageScanAllJob)
 }

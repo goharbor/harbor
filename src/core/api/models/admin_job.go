@@ -44,11 +44,16 @@ const (
 
 // AdminJobReq holds request information for admin job
 type AdminJobReq struct {
-	Name       string                 `json:"name"`
-	Schedule   *ScheduleParam         `json:"schedule"`
+	Name string `json:"name"`
+	AdminJobSchedule
 	Status     string                 `json:"status"`
 	ID         int64                  `json:"id"`
 	Parameters map[string]interface{} `json:"parameters"`
+}
+
+// AdminJobSchedule ...
+type AdminJobSchedule struct {
+	Schedule *ScheduleParam `json:"schedule"`
 }
 
 // ScheduleParam defines the parameter of schedule trigger
@@ -59,20 +64,21 @@ type ScheduleParam struct {
 	Cron string `json:"cron"`
 }
 
-// AdminJobRep holds the response of query gc
+// AdminJobRep holds the response of query admin job
 type AdminJobRep struct {
-	ID           int64          `json:"id"`
-	Name         string         `json:"job_name"`
-	Kind         string         `json:"job_kind"`
-	Schedule     *ScheduleParam `json:"schedule"`
-	Status       string         `json:"job_status"`
-	UUID         string         `json:"-"`
-	Deleted      bool           `json:"deleted"`
-	CreationTime time.Time      `json:"creation_time"`
-	UpdateTime   time.Time      `json:"update_time"`
+	ID   int64  `json:"id"`
+	Name string `json:"job_name"`
+	Kind string `json:"job_kind"`
+	AdminJobSchedule
+	Status       string    `json:"job_status"`
+	UUID         string    `json:"-"`
+	Deleted      bool      `json:"deleted"`
+	CreationTime time.Time `json:"creation_time"`
+	UpdateTime   time.Time `json:"update_time"`
 }
 
-// Valid validates the gc request
+// Valid validates the schedule type of a admin job request.
+// Only scheduleHourly, ScheduleDaily, ScheduleWeekly, ScheduleCustom, ScheduleManual, ScheduleNone are accepted.
 func (ar *AdminJobReq) Valid(v *validation.Validation) {
 	if ar.Schedule == nil {
 		return
@@ -88,7 +94,7 @@ func (ar *AdminJobReq) Valid(v *validation.Validation) {
 	}
 }
 
-// ToJob converts request to a job reconiged by job service.
+// ToJob converts request to a job recognized by job service.
 func (ar *AdminJobReq) ToJob() *models.JobData {
 	metadata := &models.JobMetadata{
 		JobKind: ar.JobKind(),

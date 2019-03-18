@@ -40,14 +40,17 @@ func TestMain(m *testing.M) {
 }
 
 func TestToJob(t *testing.T) {
-	schedule := &ScheduleParam{
-		Type: "Daily",
-		Cron: "20 3 0 * * *",
+
+	adminJobSchedule := AdminJobSchedule{
+		Schedule: &ScheduleParam{
+			Type: "Daily",
+			Cron: "20 3 0 * * *",
+		},
 	}
 
 	adminjob := &AdminJobReq{
-		Schedule: schedule,
-		Name:     common_job.ImageGC,
+		Name:             common_job.ImageGC,
+		AdminJobSchedule: adminJobSchedule,
 	}
 
 	job := adminjob.ToJob()
@@ -57,13 +60,16 @@ func TestToJob(t *testing.T) {
 }
 
 func TestToJobManual(t *testing.T) {
-	schedule := &ScheduleParam{
-		Type: "Manual",
+
+	adminJobSchedule := AdminJobSchedule{
+		Schedule: &ScheduleParam{
+			Type: "Manual",
+		},
 	}
 
 	adminjob := &AdminJobReq{
-		Schedule: schedule,
-		Name:     common_job.ImageGC,
+		AdminJobSchedule: adminJobSchedule,
+		Name:             common_job.ImageGC,
 	}
 
 	job := adminjob.ToJob()
@@ -72,13 +78,16 @@ func TestToJobManual(t *testing.T) {
 }
 
 func TestIsPeriodic(t *testing.T) {
-	schedule := &ScheduleParam{
-		Type: "Daily",
-		Cron: "20 3 0 * * *",
+
+	adminJobSchedule := AdminJobSchedule{
+		Schedule: &ScheduleParam{
+			Type: "Daily",
+			Cron: "20 3 0 * * *",
+		},
 	}
 
 	adminjob := &AdminJobReq{
-		Schedule: schedule,
+		AdminJobSchedule: adminJobSchedule,
 	}
 
 	isPeriodic := adminjob.IsPeriodic()
@@ -86,33 +95,44 @@ func TestIsPeriodic(t *testing.T) {
 }
 
 func TestJobKind(t *testing.T) {
-	schedule := &ScheduleParam{
-		Type: "Daily",
-		Cron: "20 3 0 * * *",
+
+	adminJobSchedule := AdminJobSchedule{
+		Schedule: &ScheduleParam{
+			Type: "Daily",
+			Cron: "20 3 0 * * *",
+		},
 	}
+
 	adminjob := &AdminJobReq{
-		Schedule: schedule,
+		AdminJobSchedule: adminJobSchedule,
 	}
+
 	kind := adminjob.JobKind()
 	assert.Equal(t, kind, "Periodic")
 
-	schedule1 := &ScheduleParam{
-		Type: "Manual",
+	adminJobSchedule1 := AdminJobSchedule{
+		Schedule: &ScheduleParam{
+			Type: "Manual",
+		},
 	}
 	adminjob1 := &AdminJobReq{
-		Schedule: schedule1,
+		AdminJobSchedule: adminJobSchedule1,
 	}
 	kind1 := adminjob1.JobKind()
 	assert.Equal(t, kind1, "Generic")
 }
 
 func TestCronString(t *testing.T) {
-	schedule := &ScheduleParam{
-		Type: "Daily",
-		Cron: "20 3 0 * * *",
+
+	adminJobSchedule := AdminJobSchedule{
+		Schedule: &ScheduleParam{
+			Type: "Daily",
+			Cron: "20 3 0 * * *",
+		},
 	}
+
 	adminjob := &AdminJobReq{
-		Schedule: schedule,
+		AdminJobSchedule: adminJobSchedule,
 	}
 	cronStr := adminjob.CronString()
 	assert.True(t, strings.EqualFold(cronStr, "{\"type\":\"Daily\",\"Cron\":\"20 3 0 * * *\"}"))

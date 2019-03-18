@@ -33,3 +33,16 @@ type AdminJob struct {
 	CreationTime string `json:"creation_time,omitempty"`
 	UpdateTime   string `json:"update_time,omitempty"`
 }
+
+// AdminJobSchedule ...
+type AdminJobSchedule struct {
+	Schedule *AdminJobScheduleParam `json:"schedule"`
+}
+
+// AdminJobScheduleParam defines the parameter of schedule trigger
+type AdminJobScheduleParam struct {
+	// Daily, Weekly, Custom, Manual, None
+	Type string `json:"type"`
+	// The cron string of scheduled job
+	Cron string `json:"cron"`
+}

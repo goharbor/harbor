@@ -146,9 +146,7 @@ class System(base.Base):
         while not (get_gc_status_finish):
             time.sleep(5)
             status = self.get_gc_status_by_id(gc_id, **kwargs)
-            if len(status) is not 1:
-                raise Exception(r"Get GC status count expected 1 actual count is {}.".format(len(status)))
-            if status[0].job_status == expected_gc_status:
+            if status.job_status == expected_gc_status:
                 get_gc_status_finish = True
             timeout_count = timeout_count - 1
 

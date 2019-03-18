@@ -24,7 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/core/api/models"
 )
 
-// GCAPI handles request of harbor admin...
+// GCAPI handles request of harbor GC...
 type GCAPI struct {
 	AJAPI
 }
@@ -42,7 +42,20 @@ func (gc *GCAPI) Prepare() {
 	}
 }
 
-// Post ...
+// Post according to the request, it creates a cron schedule or a manual trigger for GC.
+// create a daily schedule for GC
+// 	{
+//  "schedule": {
+//    "type": "Daily",
+//    "cron": "0 0 0 * * *"
+//  }
+//	}
+// create a manual trigger for GC
+// 	{
+//  "schedule": {
+//    "type": "Manual"
+//  }
+//	}
 func (gc *GCAPI) Post() {
 	ajr := models.AdminJobReq{}
 	gc.DecodeJSONReqAndValidate(&ajr)
@@ -50,16 +63,23 @@ func (gc *GCAPI) Post() {
 	ajr.Parameters = map[string]interface{}{
 		"redis_url_reg": os.Getenv("_REDIS_URL_REG"),
 	}
-	gc.submitAdminJob(&ajr)
+	gc.submit(&ajr)
 	gc.Redirect(http.StatusCreated, strconv.FormatInt(ajr.ID, 10))
 }
 
-// Put ...
+// Put handles GC cron schedule update/delete.
+// Request: delete the schedule of GC
+// 	{
+//  "schedule": {
+//    "type": "None",
+//    "cron": ""
+//  }
+//	}
 func (gc *GCAPI) Put() {
 	ajr := models.AdminJobReq{}
 	gc.DecodeJSONReqAndValidate(&ajr)
 	ajr.Name = common_job.ImageGC
-	gc.updateAdminSchedule(ajr)
+	gc.updateSchedule(ajr)
 }
 
 // GetGC ...
@@ -69,17 +89,17 @@ func (gc *GCAPI) GetGC() {
 		gc.HandleInternalServerError(fmt.Sprintf("need to specify gc id"))
 		return
 	}
-	gc.getAdminJob(id)
+	gc.get(id)
 }
 
-// List ...
+// List returns the top 10 executions of GC which includes manual and cron.
 func (gc *GCAPI) List() {
-	gc.listAdminJobs(common_job.ImageGC)
+	gc.list(common_job.ImageGC)
 }
 
 // Get gets GC schedule ...
 func (gc *GCAPI) Get() {
-	gc.getAdminSchedule(common_job.ImageGC)
+	gc.getSchedule(common_job.ImageGC)
 }
 
 // GetLog ...
@@ -89,5 +109,5 @@ func (gc *GCAPI) GetLog() {
 		gc.HandleBadRequest("invalid ID")
 		return
 	}
-	gc.getAdminJobLog(id)
+	gc.getLog(id)
 }

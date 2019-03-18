@@ -2613,8 +2613,6 @@ paths:
         '200':
           description: Get gc results successfully.
           schema:
-            type: array
-            items:
               $ref: '#/definitions/GCResult'
         '401':
           description: User need to log in first.
@@ -2660,8 +2658,6 @@ paths:
         '200':
           description: Get gc's schedule.
           schema:
-            type: array
-            items:
               $ref: '#/definitions/AdminJobSchedule'
         '401':
           description: User need to log in first.
@@ -2679,7 +2675,7 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/AdminJobSchedule'
-          description: Updates of gs's schedule.
+          description: Updates of gc's schedule.
       tags:
         - Products
       responses:
@@ -2722,15 +2718,13 @@ paths:
   /system/scanAll/schedule:
     get:
       summary: Get scan_all's schedule.
-      description: This endpoint is for get schedule of scan_all job.
+      description: This endpoint is for getting a schedule for the scan all job, which scans all of images in Harbor.
       tags:
       - Products
       responses:
         '200':
-          description: Get scan_all's schedule.
+          description: Get a schedule for the scan all job, which scans all of images in Harbor.
           schema:
-            type: array
-            items:
               $ref: '#/definitions/AdminJobSchedule'
         '401':
           description: User need to log in first.
@@ -2741,14 +2735,14 @@ paths:
     put:
       summary: Update scan all's schedule.
       description: |
-        This endpoint is for update scan_all schedule.
+        This endpoint is for updating the schedule of scan all job, which scans all of images in Harbor.
       parameters:
       - name: schedule
         in: body
         required: true
         schema:
           $ref: '#/definitions/AdminJobSchedule'
-        description: Updates of scan_all's schedule.
+        description: Updates the schedule of scan all job, which scans all of images in Harbor.
       tags:
       - Products
       responses:
@@ -2763,16 +2757,16 @@ paths:
         '500':
           description: Unexpected internal errors.
     post:
-      summary: Create a scan all schedule.
+      summary: Create a schedule or a manual trigger for the scan all job.
       description: |
-        This endpoint is for update scan_all schedule.
+        This endpoint is for creating a schedule or a manual trigger for the scan all job, which scans all of images in Harbor.
       parameters:
       - name: schedule
         in: body
         required: true
         schema:
           $ref: '#/definitions/AdminJobSchedule'
-        description: Updates of scan_all's schedule.
+        description: Create a schedule or a manual trigger for the scan all job.
       tags:
       - Products
       responses:

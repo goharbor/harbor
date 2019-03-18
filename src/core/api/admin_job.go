@@ -29,7 +29,7 @@ import (
 	utils_core "github.com/goharbor/harbor/src/core/utils"
 )
 
-// AJAPI handles request of harbor admin job...
+// AJAPI manages the CRUD of admin job and its schedule, any API wants to handle manual and cron job like ScanAll and GC cloud inherit it.
 type AJAPI struct {
 	BaseController
 }
@@ -39,8 +39,8 @@ func (aj *AJAPI) Prepare() {
 	aj.BaseController.Prepare()
 }
 
-// updateAdminSchedule ...
-func (aj *AJAPI) updateAdminSchedule(ajr models.AdminJobReq) {
+// updateSchedule update a schedule of admin job.
+func (aj *AJAPI) updateSchedule(ajr models.AdminJobReq) {
 	if ajr.Schedule.Type == models.ScheduleManual {
 		aj.HandleInternalServerError(fmt.Sprintf("Fail to update admin job schedule as wrong schedule type: %s.", ajr.Schedule.Type))
 		return
@@ -56,7 +56,7 @@ func (aj *AJAPI) updateAdminSchedule(ajr models.AdminJobReq) {
 		return
 	}
 	if len(jobs) != 1 {
-		aj.HandleInternalServerError("Fail to update admin job schedule, only one schedule is accepted.")
+		aj.HandleInternalServerError("Fail to update admin job schedule as we found more than one schedule in system, please ensure that only one schedule left for your job .")
 		return
 	}
 
@@ -75,41 +75,42 @@ func (aj *AJAPI) updateAdminSchedule(ajr models.AdminJobReq) {
 
 	// Set schedule to None means to cancel the schedule, won't add new job.
 	if ajr.Schedule.Type != models.ScheduleNone {
-		aj.submitAdminJob(&ajr)
+		aj.submit(&ajr)
 	}
 }
 
-// getAdminJob ...
-func (aj *AJAPI) getAdminJob(id int64) {
+// get get a execution of admin job by ID
+func (aj *AJAPI) get(id int64) {
 	jobs, err := dao.GetAdminJobs(&common_models.AdminJobQuery{
 		ID: id,
 	})
-
-	AdminJobReps := []*models.AdminJobRep{}
-	for _, job := range jobs {
-		AdminJobRep, err := convertToAdminJobRep(job)
-		if err != nil {
-			aj.HandleInternalServerError(fmt.Sprintf("failed to convert admin job response: %v", err))
-			return
-		}
-		AdminJobReps = append(AdminJobReps, &AdminJobRep)
-	}
-
 	if err != nil {
 		aj.HandleInternalServerError(fmt.Sprintf("failed to get admin jobs: %v", err))
 		return
 	}
-	aj.Data["json"] = AdminJobReps
+	if len(jobs) == 0 {
+		aj.HandleNotFound("No admin job found.")
+		return
+	}
+
+	adminJobRep, err := convertToAdminJobRep(jobs[0])
+	if err != nil {
+		aj.HandleInternalServerError(fmt.Sprintf("failed to convert admin job response: %v", err))
+		return
+	}
+
+	aj.Data["json"] = adminJobRep
 	aj.ServeJSON()
 }
 
-// listAdminJobs ...
-func (aj *AJAPI) listAdminJobs(name string) {
+// list list all executions of admin job by name
+func (aj *AJAPI) list(name string) {
 	jobs, err := dao.GetTop10AdminJobsOfName(name)
 	if err != nil {
 		aj.HandleInternalServerError(fmt.Sprintf("failed to get admin jobs: %v", err))
 		return
 	}
+
 	AdminJobReps := []*models.AdminJobRep{}
 	for _, job := range jobs {
 		AdminJobRep, err := convertToAdminJobRep(job)
@@ -119,39 +120,43 @@ func (aj *AJAPI) listAdminJobs(name string) {
 		}
 		AdminJobReps = append(AdminJobReps, &AdminJobRep)
 	}
+
 	aj.Data["json"] = AdminJobReps
 	aj.ServeJSON()
 }
 
-// getAdminSchedule gets admin job schedule ...
-func (aj *AJAPI) getAdminSchedule(name string) {
+// getSchedule gets admin job schedule ...
+func (aj *AJAPI) getSchedule(name string) {
+	adminJobSchedule := models.AdminJobSchedule{}
+
 	jobs, err := dao.GetAdminJobs(&common_models.AdminJobQuery{
 		Name: name,
 		Kind: common_job.JobKindPeriodic,
 	})
 	if err != nil {
-		aj.HandleNotFound(fmt.Sprintf("failed to get admin jobs: %v", err))
+		aj.HandleInternalServerError(fmt.Sprintf("failed to get admin jobs: %v", err))
 		return
 	}
 	if len(jobs) > 1 {
-		aj.HandleInternalServerError("Get more than one admin job scheduled job, make sure there has only one.")
+		aj.HandleInternalServerError("Get more than one scheduled admin job, make sure there has only one.")
 		return
 	}
-	AdminJobReps := []*models.AdminJobRep{}
-	for _, job := range jobs {
-		AdminJobRep, err := convertToAdminJobRep(job)
+
+	if len(jobs) != 0 {
+		adminJobRep, err := convertToAdminJobRep(jobs[0])
 		if err != nil {
 			aj.HandleInternalServerError(fmt.Sprintf("failed to convert admin job response: %v", err))
 			return
 		}
-		AdminJobReps = append(AdminJobReps, &AdminJobRep)
+		adminJobSchedule.Schedule = adminJobRep.Schedule
 	}
-	aj.Data["json"] = AdminJobReps
+
+	aj.Data["json"] = adminJobSchedule
 	aj.ServeJSON()
 }
 
-// getAdminJobLog ...
-func (aj *AJAPI) getAdminJobLog(id int64) {
+// getLog ...
+func (aj *AJAPI) getLog(id int64) {
 	job, err := dao.GetAdminJob(id)
 	if err != nil {
 		log.Errorf("Failed to load job data for job: %d, error: %v", id, err)
@@ -181,8 +186,8 @@ func (aj *AJAPI) getAdminJobLog(id int64) {
 	}
 }
 
-// submitAdminJob submits a job to job service per request
-func (aj *AJAPI) submitAdminJob(ajr *models.AdminJobReq) {
+// submit submits a job to job service per request
+func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 	// cannot post multiple schedule for admin job.
 	if ajr.IsPeriodic() {
 		jobs, err := dao.GetAdminJobs(&common_models.AdminJobQuery{
@@ -241,10 +246,10 @@ func convertToAdminJobRep(job *common_models.AdminJob) (models.AdminJobRep, erro
 		Name:         job.Name,
 		Kind:         job.Kind,
 		Status:       job.Status,
-		Deleted:      job.Deleted,
 		CreationTime: job.CreationTime,
 		UpdateTime:   job.UpdateTime,
 	}
+
 	if len(job.Cron) > 0 {
 		schedule := &models.ScheduleParam{}
 		if err := json.Unmarshal([]byte(job.Cron), &schedule); err != nil {
