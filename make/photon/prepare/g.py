@@ -20,6 +20,7 @@ private_key_pem_path = Path('/secret/core/private_key.pem')
 root_crt_path = Path('/secret/registry/root.crt')
 
 config_file_path = '/compose_location/harbor.yml'
+versions_file_path = Path('/usr/src/app/versions')
 
 cert_dir = os.path.join(config_dir, "nginx", "cert")
 core_cert_dir = os.path.join(config_dir, "core", "certificates")

@@ -3,7 +3,7 @@ set -e
 cp tests/docker-compose.test.yml make/.
 
 mkdir -p core
-cp make/common/config/core/private_key.pem /etc/core/
+cp /data/secret/core/private_key.pem /etc/core/
 
 mkdir src/core/conf
 cp make/common/config/core/app.conf src/core/conf/

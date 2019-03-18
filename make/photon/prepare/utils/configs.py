@@ -1,4 +1,5 @@
-import yaml, configparser
+import yaml
+from g import versions_file_path
 from .misc import generate_random_string
 
 def validate(conf, **kwargs):
@@ -41,6 +42,12 @@ def validate(conf, **kwargs):
         raise Exception(
              "Error invalid value for redis_db_index: %s. please set it as 1,2,3" % redis_db_index)
 
+def parse_versions():
+    if not versions_file_path.is_file():
+        return {}
+    with open('versions') as f:
+        versions = yaml.load(f)
+    return versions
 
 def parse_yaml_config(config_file_path):
     '''

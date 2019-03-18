@@ -32,7 +32,7 @@ env:
   - HARBOR_ADMIN: admin
   - HARBOR_ADMIN_PASSWD: Harbor12345
   - CORE_SECRET: tempString
-  - KEY_PATH: "/data/secretkey"
+  - KEY_PATH: "/data/secret/keys/secretkey"
   - REDIS_HOST: localhost
   - REG_VERSION: v2.7.1
   - UI_BUILDER_VERSION: 1.6.0

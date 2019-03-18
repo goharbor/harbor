@@ -12,7 +12,6 @@ def mark_file(path, mode=0o600, uid=DEFAULT_UID, gid=DEFAULT_GID):
         os.chmod(path, mode)
     if uid > 0 and gid > 0:
         os.chown(path, uid, gid)
-    pass
 
 
 def validate(conf, **kwargs):
@@ -98,8 +97,8 @@ def delfile(src):
         try:
             os.remove(src)
             print("Clearing the configuration file: %s" % src)
-        except:
-            pass
+        except Exception as e:
+            print(e)
     elif os.path.isdir(src):
         for item in os.listdir(src):
             itemsrc = os.path.join(src, item)

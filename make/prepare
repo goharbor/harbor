@@ -11,16 +11,13 @@ secretkey_path=$(grep '^[^#]*secretkey_path:' ${harbor_prepare_path}/harbor.yml 
 ssl_cert_path=$(grep '^[^#]*ssl_cert:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
 ssl_cert_key_path=$(grep '^[^#]*ssl_cert_key:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
 registry_custom_ca_bundle=$(grep '^[^#]*registry_custom_ca_bundle:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
+
 # Create a input dirs
 mkdir -p ${harbor_prepare_path}/input
 input_dir=${harbor_prepare_path}/input
 mkdir -p $input_dir/nginx
 mkdir -p $input_dir/keys
 mkdir -p $input_dir/common
-
-# Create secret dir
-secret_dir=${data_path}/secret
-config_dir=$harbor_prepare_path/common/config
 
 # Copy nginx config file to input dir
 cp $ssl_cert_path $input_dir/nginx/server.crt
@@ -38,12 +35,17 @@ fi
 # Copy harbor.yml to input dir
 cp ${harbor_prepare_path}/harbor.yml $input_dir/harbor.yml
 
+# Create secret dir
+secret_dir=${data_path}/secret
+config_dir=$harbor_prepare_path/common/config
+
+# Run prepare script
 docker run -it --rm -v $input_dir:/input \
                     -v $harbor_prepare_path:/compose_location \
                     -v $config_dir:/config \
                     -v $secret_dir:/secret \
                     -v $log_path:/var/log/harbor \
-                    goharbor/prepare:1.7.1 $@
+                    goharbor/prepare:dev $@
 
 # Clean up input dir
 rm -rf ${harbor_prepare_path}/input

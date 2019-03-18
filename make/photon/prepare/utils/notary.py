@@ -1,5 +1,5 @@
 import os, shutil, pathlib
-from g import base_dir, templates_dir, config_dir, root_crt_path, secret_key_dir,DEFAULT_UID, DEFAULT_GID
+from g import templates_dir, config_dir, root_crt_path, secret_key_dir,DEFAULT_UID, DEFAULT_GID
 from .cert import openssl_installed, create_cert, create_root_cert, get_alias
 from .jinja import render_jinja
 from .misc import mark_file, prepare_config_dir
@@ -29,8 +29,6 @@ def prepare_env_notary(customize_crt, nginx_config_dir):
     signer_cert_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer.crt'))
     signer_key_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer.key'))
     signer_ca_cert_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer-ca.crt'))
-    notary_root_cert_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'root.crt'))
-
 
     # In version 1.8 the secret path changed
     # If cert, key , ca all are exist in new place don't do anything
@@ -46,7 +44,7 @@ def prepare_env_notary(customize_crt, nginx_config_dir):
             shutil.copy2(old_signer_key_secret_path, signer_key_secret_path)
             shutil.copy2(old_signer_cert_secret_path, signer_cert_secret_path)
         # If certs neither exist in new place nor in the old place, create it and move it to new place
-        else:
+        elif openssl_installed():
             try:
                 temp_cert_dir = os.path.join('/tmp', "cert_tmp")
                 if not os.path.exists(temp_cert_dir):
@@ -69,6 +67,8 @@ def prepare_env_notary(customize_crt, nginx_config_dir):
                     os.remove(srl_tmp)
                 if os.path.isdir(temp_cert_dir):
                     shutil.rmtree(temp_cert_dir, True)
+        else:
+            raise(Exception("No certs for notary"))
 
     # copy server_env to notary config
     shutil.copy2(
@@ -83,7 +83,6 @@ def prepare_env_notary(customize_crt, nginx_config_dir):
     mark_file(os.path.join(notary_secret_dir, "notary-signer.crt"))
     mark_file(os.path.join(notary_secret_dir, "notary-signer.key"))
     mark_file(os.path.join(notary_secret_dir, "notary-signer-ca.crt"))
-    mark_file(os.path.join(notary_secret_dir, "root.crt"))
 
     # print("Copying sql file for notary DB")
     # if os.path.exists(os.path.join(notary_config_dir, "postgresql-initdb.d")):

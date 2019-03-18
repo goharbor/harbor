@@ -1,3 +1,5 @@
+# pylint: disable=no-value-for-parameter
+
 import click
 
 from utils.misc import delfile
@@ -8,14 +10,13 @@ from utils.jobservice import prepare_job_service
 from utils.registry import prepare_registry
 from utils.registry_ctl import prepare_registry_ctl
 from utils.core import prepare_core
-from utils.uaa import prepare_uaa_cert_file
 from utils.notary import prepare_notary
 from utils.log import prepare_log_configs
 from utils.clair import prepare_clair
 from utils.chart import prepare_chartmuseum
 from utils.docker_compose import prepare_docker_compose
 from utils.nginx import prepare_nginx, nginx_confd_dir
-from g import (config_dir, config_file_path, core_cert_dir, private_key_pem_path, root_crt_path, 
+from g import (config_dir, config_file_path, private_key_pem_path, root_crt_path,
 registry_custom_ca_bundle_storage_path, registry_custom_ca_bundle_storage_input_path, secret_key_dir,
 old_private_key_pem_path, old_crt_path)
 

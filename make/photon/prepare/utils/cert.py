@@ -51,7 +51,10 @@ def get_alias(path):
     return alias
 
 def copy_secret_keys():
-    if os.path.isdir(secret_cert) and os.path.isdir(input_secret_keys_dir):
+    """
+    Copy the secret keys, which used for encrypt user password, from input keys dir to secret keys dir
+    """
+    if os.path.isdir(input_secret_keys_dir) and os.path.isdir(secret_keys_dir):
         input_files = os.listdir(input_secret_keys_dir)
         secret_files = os.listdir(secret_keys_dir)
         files_need_copy =  [x for x in input_files if (x in allowed_secret_key_names) and (x not in secret_files) ]
@@ -59,6 +62,9 @@ def copy_secret_keys():
             shutil.copy(f, secret_keys_dir)
 
 def copy_ssl_cert():
+    """
+    Copy the ssl certs key paris, which used in nginx ssl certificate, from input dir to secret cert dir
+    """
     if os.path.isfile(input_cert_key) and os.path.isfile(input_cert):
         os.makedirs(secret_cert_dir, exist_ok=True)
         shutil.copy(input_cert, secret_cert)
@@ -79,26 +85,26 @@ def stat_decorator(func):
 
 @stat_decorator
 def create_root_cert(subj, key_path="./k.key", cert_path="./cert.crt"):
-   rc = subprocess.call(["openssl", "genrsa", "-out", key_path, "4096"], stdout=DEVNULL, stderr=subprocess.STDOUT)
+   rc = subprocess.call(["/usr/bin/openssl", "genrsa", "-out", key_path, "4096"], stdout=DEVNULL, stderr=subprocess.STDOUT)
    if rc != 0:
         return rc
-   return subprocess.call(["openssl", "req", "-new", "-x509", "-key", key_path,\
+   return subprocess.call(["/usr/bin/openssl", "req", "-new", "-x509", "-key", key_path,\
         "-out", cert_path, "-days", "3650", "-subj", subj], stdout=DEVNULL, stderr=subprocess.STDOUT)
 
 @stat_decorator
 def create_cert(subj, ca_key, ca_cert, key_path="./k.key", cert_path="./cert.crt"):
     cert_dir = os.path.dirname(cert_path)
     csr_path = os.path.join(cert_dir, "tmp.csr")
-    rc = subprocess.call(["openssl", "req", "-newkey", "rsa:4096", "-nodes","-sha256","-keyout", key_path,\
+    rc = subprocess.call(["/usr/bin/openssl", "req", "-newkey", "rsa:4096", "-nodes","-sha256","-keyout", key_path,\
         "-out", csr_path, "-subj", subj], stdout=DEVNULL, stderr=subprocess.STDOUT)
     if rc != 0:
         return rc
-    return subprocess.call(["openssl", "x509", "-req", "-days", "3650", "-in", csr_path, "-CA", \
+    return subprocess.call(["/usr/bin/openssl", "x509", "-req", "-days", "3650", "-in", csr_path, "-CA", \
         ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path], stdout=DEVNULL, stderr=subprocess.STDOUT)
 
 
 def openssl_installed():
-    shell_stat = subprocess.check_call(["which", "openssl"], stdout=DEVNULL, stderr=subprocess.STDOUT)
+    shell_stat = subprocess.check_call(["/usr/bin/which", "openssl"], stdout=DEVNULL, stderr=subprocess.STDOUT)
     if shell_stat != 0:
         print("Cannot find openssl installed in this computer\nUse default SSL certificate file")
         return False
@@ -124,8 +130,9 @@ def prepare_ca(
             create_root_cert(empty_subj, key_path=private_key_pem_path, cert_path=root_crt_path)
             mark_file(private_key_pem_path)
             mark_file(root_crt_path)
-        shutil.move(old_crt_path, root_crt_path)
-        shutil.move(old_private_key_pem_path, private_key_pem_path)
+        else:
+            shutil.move(old_crt_path, root_crt_path)
+            shutil.move(old_private_key_pem_path, private_key_pem_path)
 
 
     if not registry_custom_ca_bundle_storage_path.exists() and registry_custom_ca_bundle_config.exists():

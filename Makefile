@@ -65,6 +65,7 @@ SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
 MAKEPATH=$(BUILDPATH)/make
 MAKEDEVPATH=$(MAKEPATH)/dev
+MAKE_PREPARE_PATH=$(MAKEPATH)/photon/prepare
 SRCPATH=./src
 TOOLSPATH=$(BUILDPATH)/tools
 CORE_PATH=$(BUILDPATH)/src/core
@@ -94,6 +95,8 @@ UIVERSIONTAG=dev
 VERSIONFILEPATH=$(CURDIR)
 VERSIONFILENAME=UIVERSION
 
+PREPARE_VERSION_NAME=versions
+
 #versions
 REGISTRYVERSION=v2.7.1
 NGINXVERSION=$(VERSIONTAG)
@@ -106,6 +109,14 @@ NOTARYMIGRATEVERSION=v3.5.4
 
 # version of chartmuseum
 CHARTMUSEUMVERSION=v0.8.1
+
+define VERSIONS_FOR_PREPARE
+VERSION_TAG: $(VERSIONTAG)
+REGISTRY_VERSION: $(REGISTRYVERSION)
+NOTARY_VERSION: $(NOTARYVERSION)
+CLAIR_VERSION: $(CLAIRVERSION)
+CHARTMUSEUM_VERSION: $(CHARTMUSEUMVERSION)
+endef
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -175,6 +186,7 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 
 # docker image name
+DOCKER_IMAGE_NAME_PREPARE=goharbor/prepare
 DOCKERIMAGENAME_PORTAL=goharbor/harbor-portal
 DOCKERIMAGENAME_CORE=goharbor/harbor-core
 DOCKERIMAGENAME_JOBSERVICE=goharbor/harbor-jobservice
@@ -209,7 +221,8 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 # cmds
-DOCKERSAVE_PARA=$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
+DOCKERSAVE_PARA=$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
+		$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_CORE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
@@ -246,8 +259,12 @@ ifeq ($(CHARTFLAG), true)
 	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_CHART_SERVER):$(CHARTMUSEUMVERSION)-$(VERSIONTAG)
 endif
 
+export VERSIONS_FOR_PREPARE
 ui_version:
 	@printf $(UIVERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
+
+versions_prepare:
+	@echo "$$VERSIONS_FOR_PREPARE" > $(MAKE_PREPARE_PATH)/$(PREPARE_VERSION_NAME)
 
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
@@ -274,9 +291,13 @@ compile_notary_migrate_patch:
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_MIGRATEPATCH) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_NOTARY)/$(MIGRATEPATCHBINARYNAME)
 	@echo "Done."
 
-compile:check_environment compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
-	
-prepare:
+compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
+
+update_prepare_version:
+	@echo "substitude the prepare version tag in prepare file..."
+	$(SEDCMD) -i -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) /' $(MAKEPATH)/prepare ;
+
+prepare: update_prepare_version
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
@@ -297,12 +318,13 @@ package_online: prepare
 		$(HARBORPKG)/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
-	
+
 	@$(TARCMD) $(PACKAGE_ONLINE_PARA)
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
-	
-package_offline: compile ui_version build
+
+package_offline: update_prepare_version compile ui_version build
+
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	@cp LICENSE $(HARBORPKG)/LICENSE
@@ -360,6 +382,11 @@ govet:
 
 pushimage:
 	@echo "pushing harbor images ..."
+	@$(DOCKERTAG) $(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG)
+	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
+		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
+	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG)
+
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
