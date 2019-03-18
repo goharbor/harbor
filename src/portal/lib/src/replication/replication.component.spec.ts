@@ -22,6 +22,7 @@ import {ProjectDefaultService, ProjectService} from "../service/project.service"
 import {OperationService} from "../operation/operation.service";
 import {FilterLabelComponent} from "../create-edit-rule/filter-label.component";
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('Replication Component (inline template)', () => {
 
@@ -208,14 +209,15 @@ describe('Replication Component (inline template)', () => {
 
   let config: IServiceConfig = {
     replicationRuleEndpoint: '/api/policies/replication/testing',
-    replicationJobEndpoint: '/api/jobs/replication/testing'
+    replicationBaseEndpoint: '/api/replication/executions/testing'
   };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
-        NoopAnimationsModule
+        NoopAnimationsModule,
+        RouterTestingModule
       ],
       declarations: [
         ReplicationComponent,
@@ -253,7 +255,7 @@ describe('Replication Component (inline template)', () => {
     endpointService = fixtureCreate.debugElement.injector.get(EndpointService);
 
     spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(Promise.resolve(mockRules));
-    spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(Promise.resolve(mockJob));
+    spyJobs = spyOn(replicationService, 'getExecutions').and.returnValues(Promise.resolve(mockJob));
 
     spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(Promise.resolve(mockEndpoints));
 

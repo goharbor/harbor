@@ -132,7 +132,7 @@ export class EndpointDefaultService extends EndpointService {
     super();
     this._endpointUrl = config.targetBaseEndpoint
       ? config.targetBaseEndpoint
-      : "/api/targets";
+      : "/api/registries";
   }
 
   public getEndpoints(

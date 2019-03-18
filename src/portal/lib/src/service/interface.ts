@@ -103,14 +103,24 @@ export interface ReplicationRule extends Base {
   filters: Filter[];
   replicate_existing_image_now?: boolean;
   replicate_deletion?: boolean;
+  // id?: number;
+  // name: string;
+  // description: string;
+  // src_registry_id: number;
+  // src_namespaces: [];
+  // dest_registry_id: number;
+  // dest_namespace: string;
+  // trigger: Trigger;
+  // filter: Filter[];
+  // deletion: boolean;
+  // override: boolean;
+  // enabled: boolean;
 }
 
 export class Filter {
-  kind: string;
-  pattern: string;
-  constructor(kind: string, pattern: string) {
-    this.kind = kind;
-    this.pattern = pattern;
+  type: string;
+  constructor(type: string) {
+    this.type = type;
   }
 }
 
@@ -146,6 +156,7 @@ export interface ReplicationJob {
  */
 export interface ReplicationJobItem extends Base {
   [key: string]: any | any[];
+  id: number;
   status: string;
   repository: string;
   policy_id: number;
@@ -153,6 +164,22 @@ export interface ReplicationJobItem extends Base {
   tags: string;
 }
 
+/**
+ * Interface for replication tasks item.
+ *
+ **
+ * interface ReplicationTasks
+ */
+export interface ReplicationTasks extends Base {
+  [key: string]: any | any[];
+  id: number;
+  execution_id: number;
+  resource_type: string;
+  src_resource: string;
+  dst_resource: string;
+  job_id: number;
+  status: string;
+}
 /**
  * Interface for storing metadata of response.
  *

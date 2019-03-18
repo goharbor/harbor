@@ -82,6 +82,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     changedRules: ReplicationRule[];
     ruleName: string;
     canDeleteRule: boolean;
+    srcRegistry: string = 'docker hub';
 
     selectedRow: ReplicationRule;
 
@@ -201,7 +202,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         let ruleData: ReplicationJobItem[];
         this.canDeleteRule = true;
         let count = 0;
-        return toPromise<ReplicationJob>(this.replicationService.getJobs(id))
+        return toPromise<ReplicationJob>(this.replicationService.getExecutions(id))
             .then(response => {
                 ruleData = response.data;
                 if (ruleData.length) {

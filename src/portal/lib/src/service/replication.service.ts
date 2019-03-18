@@ -1,6 +1,5 @@
 import { Http } from "@angular/http";
 import { Injectable, Inject } from "@angular/core";
-import { Observable } from "rxjs";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import {
@@ -11,10 +10,12 @@ import {
 import {
   ReplicationJob,
   ReplicationRule,
-  ReplicationJobItem
+  ReplicationJobItem,
+  ReplicationTasks
 } from "./interface";
 import { RequestQueryParams } from "./RequestQueryParams";
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 /**
  * Define the service methods to handle the replication (rule and job) related things.
  *
@@ -59,6 +60,18 @@ export abstract class ReplicationService {
     ruleId: number | string
   ): Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule;
 
+
+  /**
+   * Get the specified replication task.
+   *
+   * @abstract
+   * returns {(Observable<ReplicationRule>)}
+   *
+   * @memberOf ReplicationService
+   */
+  abstract getReplicationTasks(
+    executionId: number | string
+  ): Observable<ReplicationTasks>;
   /**
    * Create new replication rule.
    *
@@ -146,7 +159,7 @@ export abstract class ReplicationService {
    *
    * @memberOf ReplicationService
    */
-  abstract getJobs(
+  abstract getExecutions(
     ruleId: number | string,
     queryParams?: RequestQueryParams
   ): Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob;
@@ -165,7 +178,7 @@ export abstract class ReplicationService {
 
   abstract stopJobs(
     jobId: number | string
-  ): Observable<string> | Promise<string> | string;
+  ): Observable<string>;
 
   abstract getJobBaseUrl(): string;
 }
@@ -180,7 +193,6 @@ export abstract class ReplicationService {
 @Injectable()
 export class ReplicationDefaultService extends ReplicationService {
   _ruleBaseUrl: string;
-  _jobBaseUrl: string;
   _replicateUrl: string;
 
   constructor(
@@ -190,13 +202,10 @@ export class ReplicationDefaultService extends ReplicationService {
     super();
     this._ruleBaseUrl = config.replicationRuleEndpoint
       ? config.replicationRuleEndpoint
-      : "/api/policies/replication";
-    this._jobBaseUrl = config.replicationJobEndpoint
-      ? config.replicationJobEndpoint
-      : "/api/jobs/replication";
+      : "/api/replication/policies";
     this._replicateUrl = config.replicationBaseEndpoint
       ? config.replicationBaseEndpoint
-      : "/api/replications";
+      : "/api/replication/executions";
   }
 
   // Private methods
@@ -212,7 +221,7 @@ export class ReplicationDefaultService extends ReplicationService {
   }
 
   public getJobBaseUrl() {
-    return this._jobBaseUrl;
+    return this._replicateUrl;
   }
 
   public getReplicationRules(
@@ -255,6 +264,19 @@ export class ReplicationDefaultService extends ReplicationService {
       .toPromise()
       .then(response => response.json() as ReplicationRule)
       .catch(error => Promise.reject(error));
+  }
+
+  public getReplicationTasks(
+    executionId: number | string
+  ): Observable<ReplicationTasks> {
+    if (!executionId) {
+      return observableThrowError("Bad argument");
+    }
+    let url: string = `${this._replicateUrl}/${executionId}/tasks`;
+    return this.http
+    .get(url, HTTP_GET_OPTIONS)
+    .pipe(map (response => response.json() as ReplicationTasks)
+    , catchError(error => observableThrowError(error)));
   }
 
   public createReplicationRule(
@@ -352,7 +374,7 @@ export class ReplicationDefaultService extends ReplicationService {
       .catch(error => Promise.reject(error));
   }
 
-  public getJobs(
+  public getExecutions(
     ruleId: number | string,
     queryParams?: RequestQueryParams
   ): Observable<ReplicationJob> | Promise<ReplicationJob> | ReplicationJob {
@@ -366,7 +388,7 @@ export class ReplicationDefaultService extends ReplicationService {
 
     queryParams.set("policy_id", "" + ruleId);
     return this.http
-      .get(this._jobBaseUrl, buildHttpRequestOptions(queryParams))
+      .get(this._replicateUrl, buildHttpRequestOptions(queryParams))
       .toPromise()
       .then(response => {
         let result: ReplicationJob = {
@@ -401,7 +423,7 @@ export class ReplicationDefaultService extends ReplicationService {
       return Promise.reject("Bad argument");
     }
 
-    let logUrl = `${this._jobBaseUrl}/${jobId}/log`;
+    let logUrl = `${this._replicateUrl}/${jobId}/log`;
     return this.http
       .get(logUrl, HTTP_GET_OPTIONS)
       .toPromise()
@@ -412,14 +434,16 @@ export class ReplicationDefaultService extends ReplicationService {
   public stopJobs(
     jobId: number | string
   ): Observable<any> | Promise<any> | any {
+    if (!jobId || jobId <= 0) {
+      return observableThrowError("Bad request argument.");
+    }
+    let requestUrl: string = `${this._replicateUrl}/${jobId}`;
     return this.http
       .put(
-        this._jobBaseUrl,
-        JSON.stringify({ policy_id: jobId, status: "stop" }),
+        requestUrl,
         HTTP_JSON_OPTIONS
       )
-      .toPromise()
-      .then(response => response)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response)
+      , catchError(error => observableThrowError(error)));
   }
 }

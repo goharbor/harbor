@@ -18,6 +18,7 @@ import { ReplicationManagementComponent } from './replication-management/replica
 import { ReplicationPageComponent } from './replication-page.component';
 import { TotalReplicationPageComponent } from './total-replication/total-replication-page.component';
 import { DestinationPageComponent } from './destination/destination-page.component';
+import { ReplicationTasksPageComponent } from './replication-tasks-page/replication-tasks-page.component';
 
 import { SharedModule } from '../shared/shared.module';
 import {ReactiveFormsModule} from "@angular/forms";
@@ -32,11 +33,13 @@ import {ReactiveFormsModule} from "@angular/forms";
     ReplicationPageComponent,
     ReplicationManagementComponent,
     TotalReplicationPageComponent,
+    ReplicationTasksPageComponent,
     DestinationPageComponent,
   ],
   exports: [
     ReplicationPageComponent,
     DestinationPageComponent,
+    ReplicationTasksPageComponent,
     TotalReplicationPageComponent,
   ]
 })

@@ -7,28 +7,32 @@
         <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasExecuteReplicationPermission" [disabled]="!selectedRow" (click)="replicateRule(selectedRow)"><clr-icon shape="export" size="16"></clr-icon>&nbsp;{{'REPLICATION.REPLICATE' | translate}}</button>
     </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'REPLICATION.NAME' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
-    <clr-dg-column *ngIf="!projectScope">{{'REPLICATION.PROJECT' | translate}}</clr-dg-column>
+    <clr-dg-column class="min-width">{{'REPLICATION.SRC_NAMESPACE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.REPLICATION_MODE' | translate}}</clr-dg-column>
+    <clr-dg-column class="min-width">{{'REPLICATION.DESTINATION_NAMESPACE' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPLICATION.LAST_REPLICATION' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
-    <clr-dg-column >{{'REPLICATION.DESTINATION_NAME' | translate}}</clr-dg-column>
-    <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.TRIGGER_MODE' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let p of changedRules" [clrDgItem]="p" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-cell>{{p.name}}</clr-dg-cell>
+        <clr-dg-cell class="min-width">
+            {{p.src_registry_id>0? srcRegistry : 'current'}} : {{p.src_namespaces?.length>0 ?  p.src_namespaces[0]: ''}}
+            <clr-tooltip>
+                <clr-icon *ngIf="p.src_namespaces && p.src_namespaces.length > 1" clrTooltipTrigger shape="ellipsis-horizontal" size="18"></clr-icon>
+                <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
+                    <span>{{p.src_namespaces}}</span>
+                </clr-tooltip-content>
+            </clr-tooltip>
+        </clr-dg-cell>
         <clr-dg-cell>
-            <div [ngSwitch]="hasDeletedLabel(p)">
-                <clr-tooltip *ngSwitchCase="'disabled'" class="tooltip-lg">
-                    <clr-icon clrTooltipTrigger shape="exclamation-triangle" class="is-warning text-alignment" size="22"></clr-icon>Disabled
-                    <clr-tooltip-content clrPosition="top-right" clrSize="xs" *clrIfOpen>
-                        <span>{{'REPLICATION.RULE_DISABLED' | translate}}</span>
-                    </clr-tooltip-content>
-                </clr-tooltip>
-                <div *ngSwitchCase="'enabled'" ><clr-icon shape="success-standard" class="is-success text-alignment" size="18"></clr-icon> Enabled</div>
-            </div>
+            {{p.src_registry_id>0? 'pull-based' : 'push-based'}}
         </clr-dg-cell>
-        <clr-dg-cell *ngIf="!projectScope">
-            <a href="javascript:void(0)" (click)="$event.stopPropagation(); redirectTo(p)">{{p.projects?.length>0  ? p.projects[0].name : ''}}</a>
+        <clr-dg-cell class="min-width">
+            {{p.dest_registry_id>0? srcRegistry : 'current'}} : {{p.dest_namespace? p.dest_namespace: ''}}
         </clr-dg-cell>
+        <clr-dg-cell>{{p.update_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{p.trigger ? p.trigger.type : ''}}</clr-dg-cell>
         <clr-dg-cell>
             {{p.description ? trancatedDescription(p.description) : '-'}}
             <clr-tooltip>
@@ -38,8 +42,6 @@
                 </clr-tooltip-content>
             </clr-tooltip>
         </clr-dg-cell>
-        <clr-dg-cell>{{p.targets?.length>0 ? p.targets[0].name : ''}}</clr-dg-cell>
-        <clr-dg-cell>{{p.trigger ? p.trigger.kind : ''}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
       <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{pagination.totalItems }} {{'REPLICATION.ITEMS' | translate}}

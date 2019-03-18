@@ -1,0 +1,63 @@
+.replication-tasks {
+    .overview-section {
+        .title-wrapper {
+            .onback{
+                color: #007cbb;
+                font-size: 12px;
+                cursor: pointer;
+            }
+            h4 {
+                margin-top: 8px;
+            }
+        }
+        .execution-block {
+            margin-top: 24px;
+            display: flex;
+            flex-wrap: row wrap;
+            .execution-detail-label {
+                margin-right: 10px;
+                text-align: left;
+                .detail-row {
+                    display: flex;
+                    .detail-span {
+                        flex:0 0 100px;
+                        font-weight: 600;
+                        margin-top: 10px;
+                    }
+                    .execution-details {
+                        width: 200px;
+                        margin: 8px 35px;
+                    }
+                }
+            }
+            .executions-detail {
+                font-weight: 600;
+                span {
+                    margin-left: 5px;
+                }
+            }
+        }
+    }
+    .tasks-detail {
+        margin-top: 65px;
+        .action-select {
+            padding-right: 18px;
+            height: 24px;
+            display: flex;
+            justify-content: flex-end;
+            
+            .filterTag {
+                float: left;
+                margin-top: 8px;
+            }
+            .refresh-btn {
+                cursor: pointer;
+                margin-top: 7px;
+            }
+            
+            .refresh-btn:hover {
+                color: #007CBB;
+            }
+        }
+    }
+}

@@ -258,9 +258,9 @@ export const DefaultServiceConfig: IServiceConfig = {
   systemInfoEndpoint: "/api/systeminfo",
   repositoryBaseEndpoint: "/api/repositories",
   logBaseEndpoint: "/api/logs",
-  targetBaseEndpoint: "/api/targets",
+  targetBaseEndpoint: "/api/registries",
   replicationRuleEndpoint: "/api/policies/replication",
-  replicationJobEndpoint: "/api/jobs/replication",
+  replicationBaseEndpoint: "/api/replication/executions",
   vulnerabilityScanningBaseEndpoint: "/api/repositories",
   configurationEndpoint: "/api/configurations",
   enablei18Support: false,
@@ -293,11 +293,11 @@ It supports partially overriding. For the items not overridden, default values w
 
 * **logBaseEndpoint:** The base endpoint of the service used to handle the recent access logs. Default is "/api/logs".
 
-* **targetBaseEndpoint:** The base endpoint of the service used to handle the registry endpoints. Default is "/api/targets".
+* **targetBaseEndpoint:** The base endpoint of the service used to handle the registry endpoints. Default is "/api/registries".
 
 * **replicationRuleEndpoint:** The base endpoint of the service used to handle the replication rules. Default is "/api/policies/replication".
 
-* **replicationJobEndpoint:** The base endpoint of the service used to handle the replication jobs. Default is "/api/jobs/replication".
+* **replicationBaseEndpoint:** The base endpoint of the service used to handle the replication executions. Default is "/api/replication/executions".
 
 * **vulnerabilityScanningBaseEndpoint:** The base endpoint of the service used to handle the vulnerability scanning results.Default value is "/api/repositories".
 
