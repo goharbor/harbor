@@ -108,18 +108,25 @@ def openssl_installed():
 def prepare_ca(
     private_key_pem_path: Path,
     root_crt_path: Path,
+    old_private_key_pem_path: Path,
+    old_crt_path: Path,
     registry_custom_ca_bundle_config: Path,
     registry_custom_ca_bundle_storage_path: Path):
+    if not ( private_key_pem_path.exists() and root_crt_path.exists() ):
+        # From version 1.8 the cert storage path is changed
+        # if old key paris not exist create new ones
+        # if old key pairs exist in old place copy it to new place
+        if not (old_crt_path.exists() and old_private_key_pem_path.exists()):
+            private_key_pem_path.parent.mkdir(parents=True, exist_ok=True)
+            root_crt_path.parent.mkdir(parents=True, exist_ok=True)
 
-    if not (private_key_pem_path.exists() and root_crt_path.exists()):
+            empty_subj = "/"
+            create_root_cert(empty_subj, key_path=private_key_pem_path, cert_path=root_crt_path)
+            mark_file(private_key_pem_path)
+            mark_file(root_crt_path)
+        shutil.move(old_crt_path, root_crt_path)
+        shutil.move(old_private_key_pem_path, private_key_pem_path)
 
-        private_key_pem_path.parent.mkdir(parents=True, exist_ok=True)
-        root_crt_path.parent.mkdir(parents=True, exist_ok=True)
-
-        empty_subj = "/"
-        create_root_cert(empty_subj, key_path=private_key_pem_path, cert_path=root_crt_path)
-        mark_file(private_key_pem_path)
-        mark_file(root_crt_path)
 
     if not registry_custom_ca_bundle_storage_path.exists() and registry_custom_ca_bundle_config.exists():
         registry_custom_ca_bundle_storage_path.parent.mkdir(parents=True, exist_ok=True)

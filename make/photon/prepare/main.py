@@ -16,7 +16,8 @@ from utils.chart import prepare_chartmuseum
 from utils.docker_compose import prepare_docker_compose
 from utils.nginx import prepare_nginx, nginx_confd_dir
 from g import (config_dir, config_file_path, core_cert_dir, private_key_pem_path, root_crt_path, 
-registry_custom_ca_bundle_storage_path, registry_custom_ca_bundle_storage_input_path, secret_key_dir)
+registry_custom_ca_bundle_storage_path, registry_custom_ca_bundle_storage_input_path, secret_key_dir,
+old_private_key_pem_path, old_crt_path)
 
 # Main function
 @click.command()
@@ -48,6 +49,8 @@ def main(conf, with_notary, with_clair, with_chartmuseum):
     prepare_ca(
         private_key_pem_path=private_key_pem_path,
         root_crt_path=root_crt_path,
+        old_private_key_pem_path=old_private_key_pem_path,
+        old_crt_path=old_crt_path,
         registry_custom_ca_bundle_config=registry_custom_ca_bundle_storage_input_path,
         registry_custom_ca_bundle_storage_path=registry_custom_ca_bundle_storage_path)
 

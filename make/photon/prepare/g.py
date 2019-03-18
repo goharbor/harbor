@@ -13,6 +13,9 @@ config_dir = '/config'
 secret_dir = '/secret'
 secret_key_dir='/secret/keys'
 
+old_private_key_pem_path = Path('/config/core/private_key.pem')
+old_crt_path = Path('/config/registry/root.crt')
+
 private_key_pem_path = Path('/secret/core/private_key.pem')
 root_crt_path = Path('/secret/registry/root.crt')
 
