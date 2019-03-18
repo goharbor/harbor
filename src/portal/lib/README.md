@@ -394,11 +394,11 @@ export class MyAccessLogService extends AccessLogService {
      * 
      * @param {(number | string)} projectId
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[])}
+     * @returns {(Observable<AccessLog[]>)}
      * 
      * @memberOf AccessLogService
      */
-    getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[]{
+    getAuditLogs(projectId: number | string, queryParams?: RequestQueryParams): Observable<AccessLog[]>  {
         ...
     }
 
@@ -406,11 +406,11 @@ export class MyAccessLogService extends AccessLogService {
      * Get the recent logs.
      * 
      * @param {number} lines : Specify how many lines should be returned.
-     * @returns {(Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[])}
+     * @returns {(Observable<AccessLog[]>)}
      * 
      * @memberOf AccessLogService
      */
-    getRecentLogs(lines: number): Observable<AccessLog[]> | Promise<AccessLog[]> | AccessLog[]{
+    getRecentLogs(lines: number): Observable<AccessLog[]>{
         ...
     }
 }
@@ -437,7 +437,7 @@ export class MyEndpointService extends EndpointService {
      * 
      * @memberOf EndpointService
      */
-    getEndpoints(endpointName?: string, queryParams?: RequestQueryParams): Observable<Endpoint[]> | Promise<Endpoint[]> | Endpoint[] {
+    getEndpoints(endpointName?: string, queryParams?: RequestQueryParams): Observable<Endpoint[]> {
         ...
     }
 
@@ -449,7 +449,7 @@ export class MyEndpointService extends EndpointService {
      * 
      * @memberOf EndpointService
      */
-    getEndpoint(endpointId: number | string): Observable<Endpoint> | Promise<Endpoint> | Endpoint {
+    getEndpoint(endpointId: number | string): Observable<Endpoint>{
         ...
     }
 
@@ -461,7 +461,7 @@ export class MyEndpointService extends EndpointService {
      * 
      * @memberOf EndpointService
      */
-    createEndpoint(endpoint: Endpoint): Observable<any> | Promise<any> | any {
+    createEndpoint(endpoint: Endpoint): Observable<any> {
         ...
     }
 
@@ -474,7 +474,7 @@ export class MyEndpointService extends EndpointService {
      * 
      * @memberOf EndpointService
      */
-    updateEndpoint(endpointId: number | string, endpoint: Endpoint): Observable<any> | Promise<any> | any {
+    updateEndpoint(endpointId: number | string, endpoint: Endpoint): Observable<any> {
         ...
     }
 
@@ -486,7 +486,7 @@ export class MyEndpointService extends EndpointService {
      * 
      * @memberOf EndpointService
      */
-    deleteEndpoint(endpointId: number | string): Observable<any> | Promise<any> | any {
+    deleteEndpoint(endpointId: number | string): Observable<any> {
         ...
     }
 
@@ -498,7 +498,7 @@ export class MyEndpointService extends EndpointService {
      * 
      * @memberOf EndpointService
      */
-    pingEndpoint(endpoint: Endpoint): Observable<any> | Promise<any> | any {
+    pingEndpoint(endpoint: Endpoint): Observable<any> {
         ...
     }
 
@@ -508,7 +508,7 @@ export class MyEndpointService extends EndpointService {
      * @param {{number | string}} endpointId
      * @returns {{Observable<any> | any}}
      */
-    getEndpointWithReplicationRules(endpointId: number | string): Observable<any> | Promise<any> | any {
+    getEndpointWithReplicationRules(endpointId: number | string): Observable<any> {
         ...
     }
 }
@@ -534,11 +534,11 @@ export class MyReplicationService extends ReplicationService {
      * @param {(number | string)} [projectId]
      * @param {string} [ruleName]
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<ReplicationRule[]> | Promise<ReplicationRule[]> | ReplicationRule[])}
+     * @returns {(Observable<ReplicationRule[]>)}
      * 
      * @memberOf ReplicationService
      */
-    getReplicationRules(projectId?: number | string, ruleName?: string, queryParams?: RequestQueryParams): Observable<ReplicationRule[]> | Promise<ReplicationRule[]> | ReplicationRule[] {
+    getReplicationRules(projectId?: number | string, ruleName?: string, queryParams?: RequestQueryParams): Observable<ReplicationRule[]> {
         ...
     }
 
@@ -546,11 +546,11 @@ export class MyReplicationService extends ReplicationService {
      * Get the specified replication rule.
      * 
      * @param {(number | string)} ruleId
-     * @returns {(Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule)}
+     * @returns {(Observable<ReplicationRule>)}
      * 
      * @memberOf ReplicationService
      */
-    getReplicationRule(ruleId: number | string): Observable<ReplicationRule> | Promise<ReplicationRule> | ReplicationRule {
+    getReplicationRule(ruleId: number | string): Observable<ReplicationRule> {
         ...
     }
 
@@ -558,11 +558,11 @@ export class MyReplicationService extends ReplicationService {
      * Create new replication rule.
      * 
      * @param {ReplicationRule} replicationRule
-     * @returns {(Observable<any> | Promise<any> | any)}
+     * @returns {(Observable<any>)}
      * 
      * @memberOf ReplicationService
      */
-    createReplicationRule(replicationRule: ReplicationRule): Observable<any> | Promise<any> | any {
+    createReplicationRule(replicationRule: ReplicationRule): Observable<any> {
         ...
     }
 
@@ -570,11 +570,11 @@ export class MyReplicationService extends ReplicationService {
      * Update the specified replication rule.
      * 
      * @param {ReplicationRule} replicationRule
-     * @returns {(Observable<any> | Promise<any> | any)}
+     * @returns {(Observable<any>)}
      * 
      * @memberOf ReplicationService
      */
-    updateReplicationRule(replicationRule: ReplicationRule): Observable<any> | Promise<any> | any {
+    updateReplicationRule(replicationRule: ReplicationRule): Observable<any> {
         ...
     }
 
@@ -582,11 +582,11 @@ export class MyReplicationService extends ReplicationService {
      * Delete the specified replication rule.
      * 
      * @param {(number | string)} ruleId
-     * @returns {(Observable<any> | Promise<any> | any)}
+     * @returns {(Observable<any>)}
      * 
      * @memberOf ReplicationService
      */
-    deleteReplicationRule(ruleId: number | string): Observable<any> | Promise<any> | any {
+    deleteReplicationRule(ruleId: number | string): Observable<any> {
         ...
     }
 
@@ -594,11 +594,11 @@ export class MyReplicationService extends ReplicationService {
      * Enable the specified replication rule.
      * 
      * @param {(number | string)} ruleId
-     * @returns {(Observable<any> | Promise<any> | any)}
+     * @returns {(Observable<any>)}
      * 
      * @memberOf ReplicationService
      */
-    enableReplicationRule(ruleId: number | string, enablement: number): Observable<any> | Promise<any> | any {
+    enableReplicationRule(ruleId: number | string, enablement: number): Observable<any> {
         ...
     }
 
@@ -606,11 +606,11 @@ export class MyReplicationService extends ReplicationService {
      * Disable the specified replication rule.
      * 
      * @param {(number | string)} ruleId
-     * @returns {(Observable<any> | Promise<any> | any)}
+     * @returns {(Observable<any>)}
      * 
      * @memberOf ReplicationService
      */
-    disableReplicationRule(ruleId: number | string): Observable<any> | Promise<any> | any {
+    disableReplicationRule(ruleId: number | string): Observable<any> {
         ...
     }
 
@@ -625,11 +625,11 @@ export class MyReplicationService extends ReplicationService {
      * 
      * @param {(number | string)} ruleId
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<ReplicationJob> | Promise<ReplicationJob[]> | ReplicationJob)}
+     * @returns {(Observable<ReplicationJob>)}
      * 
      * @memberOf ReplicationService
      */
-    getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> | Promise<ReplicationJob[]> | ReplicationJob[] {
+    getJobs(ruleId: number | string, queryParams?: RequestQueryParams): Observable<ReplicationJob[]> {
         ...
     }
 }
@@ -656,11 +656,11 @@ export class MyRepositoryService extends RepositoryService {
      * @param {(number | string)} projectId
      * @param {string} repositoryName
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<Repository[]> | Promise<Repository[]> | Repository[])}
+     * @returns {(Observable<Repository[]>)}
      * 
      * @memberOf RepositoryService
      */
-    getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository[]> | Promise<Repository[]> | Repository[] {
+    getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams): Observable<Repository[]> {
         ...
     }
 
@@ -668,11 +668,11 @@ export class MyRepositoryService extends RepositoryService {
      * DELETE the specified repository.
      * 
      * @param {string} repositoryName
-     * @returns {(Observable<any> | Promise<any> | any)}
+     * @returns {(Observable<any>)}
      * 
      * @memberOf RepositoryService
      */
-    deleteRepository(repositoryName: string): Observable<any> | Promise<any> | any {
+    deleteRepository(repositoryName: string): Observable<any> {
         ...
     }
 }
@@ -694,11 +694,11 @@ export class MyTagService extends TagService {
      *  
      * @param {string} repositoryName
      * @param {RequestQueryParams} [queryParams]
-     * @returns {(Observable<Tag[]> | Promise<Tag[]> | Tag[])}
+     * @returns {(Observable<Tag[]>)}
      * 
      * @memberOf TagService
      */
-    getTags(repositoryName: string, queryParams?: RequestQueryParams): Observable<Tag[]> | Promise<Tag[]> | Tag[] {
+    getTags(repositoryName: string, queryParams?: RequestQueryParams): Observable<Tag[]> {
         ...
     }
 
@@ -711,7 +711,7 @@ export class MyTagService extends TagService {
      * 
      * @memberOf TagService
      */
-    deleteTag(repositoryName: string, tag: string): Observable<any> | Promise<Tag> | any {
+    deleteTag(repositoryName: string, tag: string): Observable<any> {
         ...
     }
 }
@@ -738,11 +738,11 @@ export class MyScanningResultService extends ScanningResultService {
      * Get the summary of vulnerability scanning result.
      * 
      * @param {string} tagId
-     * @returns {(Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary)}
+     * @returns {(Observable<VulnerabilitySummary>)}
      * 
      * @memberOf ScanningResultService
      */
-    getVulnerabilityScanningSummary(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilitySummary> | Promise<VulnerabilitySummary> | VulnerabilitySummary{
+    getVulnerabilityScanningSummary(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilitySummary> {
         ...
     }
 
@@ -750,11 +750,11 @@ export class MyScanningResultService extends ScanningResultService {
      * Get the detailed vulnerabilities scanning results.
      * 
      * @param {string} tagId
-     * @returns {(Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[])}
+     * @returns {(Observable<VulnerabilityItem[]>)}
      * 
      * @memberOf ScanningResultService
      */
-    getVulnerabilityScanningResults(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilityItem[]> | Promise<VulnerabilityItem[]> | VulnerabilityItem[]{
+    getVulnerabilityScanningResults(repoName: string, tagId: string, queryParams?: RequestQueryParams): Observable<VulnerabilityItem[]> {
         ...
     }
 
@@ -764,11 +764,11 @@ export class MyScanningResultService extends ScanningResultService {
      * 
      * @param {string} repoName
      * @param {string} tagId
-     * @returns {(Observable<any> | Promise<any> | any)}
+     * @returns {(Observable<any>)}
      * 
      * @memberOf ScanningResultService
      */
-    startVulnerabilityScanning(repoName: string, tagId: string): Observable<any> | Promise<any> | any {
+    startVulnerabilityScanning(repoName: string, tagId: string): Observable<any> {
         ...
     }
 }
@@ -792,7 +792,7 @@ export class MySystemInfoService extends SystemInfoService {
    *  Get global system information.
    *  @returns 
    */
-   getSystemInfo(): Observable<SystemInfo> | Promise<SystemInfo> | SystemInfo {
+   getSystemInfo(): Observable<SystemInfo> {
        ...
    }
 }
@@ -820,11 +820,11 @@ export class MyConfigurationService extends ConfigurationService{
      * Get configurations.
      * 
     
-     * @returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+     * @returns {(Observable<Configuration>)}
      * 
      * @memberOf ConfigurationService
      */
-    getConfigurations(): Observable<Configuration> | Promise<Configuration> | Configuration{
+    getConfigurations(): Observable<Configuration> {
         ...
     }
 
@@ -832,11 +832,11 @@ export class MyConfigurationService extends ConfigurationService{
      * Save configurations.
      * 
     
-     * @returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+     * @returns {(Observable<Configuration>)}
      * 
      * @memberOf ConfigurationService
      */
-    saveConfigurations(changedConfigs: any | { [key: string]: any | any[] }): Observable<any> | Promise<any> | any{
+    saveConfigurations(changedConfigs: any | { [key: string]: any | any[] }): Observable<any> {
         ...
     }
 }

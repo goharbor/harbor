@@ -9,6 +9,7 @@ import { Label } from "../service/interface";
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
 import { CreateEditLabelComponent } from "./create-edit-label.component";
 import { LabelDefaultService, LabelService } from "../service/label.service";
+import { of } from "rxjs";
 
 describe("CreateEditLabelComponent (inline template)", () => {
   let mockOneData: Label = {
@@ -57,10 +58,10 @@ describe("CreateEditLabelComponent (inline template)", () => {
     labelService = fixture.debugElement.injector.get(LabelService);
 
     spy = spyOn(labelService, "getLabels").and.returnValue(
-      Promise.resolve(mockOneData)
+      of(mockOneData)
     );
     spyOne = spyOn(labelService, "createLabel").and.returnValue(
-      Promise.resolve(mockOneData)
+      of(mockOneData)
     );
 
     fixture.detectChanges();

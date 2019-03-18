@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 
-import { toPromise, compareValue, clone } from '../utils';
+import { compareValue, clone } from '../utils';
 import { ProjectService } from '../service/project.service';
 import { ErrorHandler } from '../error-handler/error-handler';
 import { State } from '../service/interface';
@@ -82,9 +82,9 @@ export class ProjectPolicyConfigComponent implements OnInit {
     }
 
     // get system info
-    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-    .then(systemInfo => this.systemInfo = systemInfo)
-    .catch(error => this.errorHandler.error(error));
+    this.systemInfoService.getSystemInfo()
+    .subscribe(systemInfo => this.systemInfo = systemInfo
+    , error => this.errorHandler.error(error));
 
     // retrive project level policy data
     this.retrieve();
@@ -105,13 +105,12 @@ export class ProjectPolicyConfigComponent implements OnInit {
   }
 
   retrieve(state?: State): any {
-    toPromise<Project>(this.projectService.getProject(this.projectId))
-    .then(
+    this.projectService.getProject(this.projectId)
+    .subscribe(
       response => {
         this.orgProjectPolicy.initByProject(response);
         this.projectPolicy.initByProject(response);
-      })
-    .catch(error => this.errorHandler.error(error));
+      }, error => this.errorHandler.error(error));
   }
 
   updateProjectPolicy(projectId: string|number, pp: ProjectPolicy) {
@@ -139,16 +138,15 @@ export class ProjectPolicyConfigComponent implements OnInit {
       return;
     }
     this.onGoing = true;
-    toPromise<any>(this.projectService.updateProjectPolicy(this.projectId, this.projectPolicy))
-    .then(() => {
+    this.projectService.updateProjectPolicy(this.projectId, this.projectPolicy)
+    .subscribe(() => {
       this.onGoing = false;
 
       this.translate.get('CONFIG.SAVE_SUCCESS').subscribe((res: string) => {
         this.errorHandler.info(res);
       });
       this.refresh();
-    })
-    .catch(error => {
+    }, error => {
       this.onGoing = false;
       this.errorHandler.error(error);
     });

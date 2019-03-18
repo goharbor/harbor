@@ -92,13 +92,12 @@ export class SignUpPageComponent implements OnInit {
         this.onGoing = true;
 
         this.userService.addUser(u)
-            .then(() => {
+            .subscribe(() => {
                 this.onGoing = false;
                 this.msgService.announceMessage(200, "", AlertType.SUCCESS);
                 // Navigate to embeded sign-in
                 this.router.navigate(['harbor', 'sign-in']);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.error = error;
                 this.msgService.announceMessage(error.status || 500, "", AlertType.WARNING);

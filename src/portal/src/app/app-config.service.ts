@@ -19,7 +19,8 @@ import { CookieService } from 'ngx-cookie';
 import { AppConfig } from './app-config';
 import { CookieKeyOfAdmiral, HarborQueryParamKey } from './shared/shared.const';
 import { maintainUrlQueryParmas, HTTP_GET_OPTIONS} from './shared/shared.utils';
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 export const systemInfoEndpoint = "/api/systeminfo";
 /**
  * Declare service to handle the bootstrap options
@@ -38,9 +39,9 @@ export class AppConfigService {
         private http: Http,
         private cookie: CookieService) { }
 
-    public load(): Promise<AppConfig> {
-        return this.http.get(systemInfoEndpoint, HTTP_GET_OPTIONS).toPromise()
-            .then(response => {
+    public load(): Observable<AppConfig> {
+        return this.http.get(systemInfoEndpoint, HTTP_GET_OPTIONS)
+            .pipe(map(response => {
                 this.configurations = response.json() as AppConfig;
 
                 // Read admiral endpoint from cookie if existing
@@ -51,7 +52,7 @@ export class AppConfigService {
                 }
 
                 return this.configurations;
-            });
+            }));
     }
 
     public getConfig(): AppConfig {

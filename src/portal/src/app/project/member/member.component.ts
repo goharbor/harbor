@@ -15,7 +15,7 @@ import { finalize } from 'rxjs/operators';
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Subscription, forkJoin } from "rxjs";
+import { Subscription, forkJoin, Observable } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { operateChanges, OperateInfo, OperationService, OperationState } from "@harbor/ui";
 
@@ -33,7 +33,8 @@ import { MemberService } from "./member.service";
 import { AddMemberComponent } from "./add-member/add-member.component";
 import { AppConfigService } from "../../app-config.service";
 import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler } from "@harbor/ui";
-
+import { map, catchError } from "rxjs/operators";
+import { throwError as observableThrowError } from "rxjs";
 @Component({
   templateUrl: "member.component.html",
   styleUrls: ["./member.component.scss"],
@@ -185,22 +186,25 @@ export class MemberComponent implements OnInit, OnDestroy {
     let changeOperate = (projectId: number, member: Member, ) => {
       return this.memberService
         .changeMemberRole(projectId, member.id, roleId)
-        .then(() => this.batchChangeRoleInfos[member.id] = 'done')
-        .catch(error => this.messageHandlerService.handleError(error + ": " + member.entity_name));
+        .pipe(map(() => this.batchChangeRoleInfos[member.id] = 'done')
+        , catchError(error => {
+          this.messageHandlerService.handleError(error + ": " + member.entity_name);
+          return observableThrowError(error);
+        }));
     };
 
     // Preparation for members role change
     this.batchChangeRoleInfos = {};
-    let RoleChangePromises: Promise<any>[] = [];
+    let RoleChangeObservables: Observable<any>[] = [];
     members.forEach(member => {
       if (member.entity_type === 'u' && member.entity_id === this.currentUser.user_id) {
         return;
       }
       this.batchChangeRoleInfos[member.id] = 'pending';
-      RoleChangePromises.push(changeOperate(this.projectId, member));
+      RoleChangeObservables.push(changeOperate(this.projectId, member));
     });
 
-    Promise.all(RoleChangePromises).then(() => {
+    forkJoin(...RoleChangeObservables).subscribe(() => {
       this.retrieve(this.projectId, "");
     });
   }
@@ -231,7 +235,7 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   deleteMembers(members: Member[]) {
     if (!members) { return; }
-    let memberDeletingPromises: Promise<any>[] = [];
+    let memberDeletingObservables: Observable<any>[] = [];
 
     // Function to delete specific member
     let deleteMember = (projectId: number, member: Member) => {
@@ -251,22 +255,21 @@ export class MemberComponent implements OnInit, OnDestroy {
 
       return this.memberService
         .deleteMember(projectId, member.id)
-        .then(response => {
+        .pipe(map(response => {
           this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
             operateChanges(operMessage, OperationState.success);
           });
-        })
-        .catch(error => {
-          this.translate.get("BATCH.DELETED_FAILURE").subscribe(res => {
+        }), catchError(error => {
+          return this.translate.get("BATCH.DELETED_FAILURE").pipe(map(res => {
             operateChanges(operMessage, OperationState.failure, res);
-          });
-        });
+          }));
+        }));
     };
 
     // Deleting member then wating for results
-    members.forEach(member => memberDeletingPromises.push(deleteMember(this.projectId, member)));
+    members.forEach(member => memberDeletingObservables.push(deleteMember(this.projectId, member)));
 
-    Promise.all(memberDeletingPromises).then(() => {
+    forkJoin(...memberDeletingObservables).subscribe(() => {
       this.selectedRow = [];
       this.batchOps = 'idle';
       this.retrieve(this.projectId, "");

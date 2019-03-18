@@ -95,7 +95,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
     }
     if (hasProjectAdminRole) {
       this.userService.getUsersNameList()
-        .then(users => {
+        .subscribe(users => {
           this.userLists = users;
         });
 
@@ -109,15 +109,14 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
             if (cont.valid) {
               this.checkOnGoing = true;
               this.memberService
-                .listMembers(this.projectId, cont.value).toPromise()
-                .then((members: Member[]) => {
+                .listMembers(this.projectId, cont.value)
+                .subscribe((members: Member[]) => {
                   if (members.filter(m => { return m.entity_name === cont.value; }).length > 0) {
                     this.isMemberNameValid = false;
                     this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
                   }
                   this.checkOnGoing = false;
-                })
-                .catch(error => {
+                }, error => {
                   this.checkOnGoing = false;
                 });
               // username autocomplete

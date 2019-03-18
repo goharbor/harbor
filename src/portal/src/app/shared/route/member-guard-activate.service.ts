@@ -21,6 +21,7 @@ import {
 import { SessionService } from '../../shared/session.service';
 import { ProjectService } from '../../project/project.service';
 import { CommonRoutes } from '../../shared/shared.const';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class MemberGuard implements CanActivate, CanActivateChild {
@@ -29,49 +30,51 @@ export class MemberGuard implements CanActivate, CanActivateChild {
     private projectService: ProjectService,
     private router: Router) {}
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     let projectId = route.params['id'];
     this.sessionService.setProjectMembers([]);
-    return new Promise((resolve, reject) => {
+    return new Observable((observer) => {
       let user = this.sessionService.getCurrentUser();
       if (user === null) {
         this.sessionService.retrieveUser()
-        .then(() => resolve(this.checkMemberStatus(state.url, projectId)))
-        .catch(() => {
+        .subscribe(() => {
+          this.checkMemberStatus(state.url, projectId).subscribe((res) => observer.next(res));
+        }
+        , error => {
           this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          resolve(false);
+          observer.next(false);
         });
       } else {
-        return resolve(this.checkMemberStatus(state.url, projectId));
+        this.checkMemberStatus(state.url, projectId).subscribe((res) => observer.next(res));
       }
     });
   }
 
-  checkMemberStatus(url: string, projectId: number): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
+  checkMemberStatus(url: string, projectId: number): Observable<boolean> {
+    return new Observable<boolean>((observer) => {
       this.projectService.checkProjectMember(projectId)
       .subscribe(res => {
         this.sessionService.setProjectMembers(res);
-        return resolve(true);
+        return observer.next(true);
       },
       () => {
         // Add exception for repository in project detail router activation.
         this.projectService.getProject(projectId).subscribe(project => {
           if (project.metadata && project.metadata.public === 'true') {
-            return resolve(true);
+            return observer.next(true);
           }
           this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          return resolve(false);
+          return observer.next(false);
         },
         () => {
           this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          return resolve(false);
+          return observer.next(false);
         });
       });
     });
   }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> | boolean {
+  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     return this.canActivate(route, state);
   }
 }

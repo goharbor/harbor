@@ -22,6 +22,7 @@ import {ProjectDefaultService, ProjectService} from "../service/project.service"
 import {OperationService} from "../operation/operation.service";
 import {FilterLabelComponent} from "../create-edit-rule/filter-label.component";
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import { of } from 'rxjs';
 
 describe('Replication Component (inline template)', () => {
 
@@ -252,10 +253,10 @@ describe('Replication Component (inline template)', () => {
 
     endpointService = fixtureCreate.debugElement.injector.get(EndpointService);
 
-    spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(Promise.resolve(mockRules));
-    spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(Promise.resolve(mockJob));
+    spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(of(mockRules));
+    spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(of(mockJob));
 
-    spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(Promise.resolve(mockEndpoints));
+    spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(of(mockEndpoints));
 
     fixture.detectChanges();
     fixture.whenStable().then(() => {

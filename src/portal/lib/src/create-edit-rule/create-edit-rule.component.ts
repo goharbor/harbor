@@ -25,7 +25,7 @@ import { Filter, ReplicationRule, Endpoint, Label } from "../service/interface";
 import { Subject ,  Subscription } from "rxjs";
 import {debounceTime, distinctUntilChanged} from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
-import { clone, compareValue, isEmptyObject, toPromise } from "../utils";
+import { clone, compareValue, isEmptyObject } from "../utils";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { ReplicationService } from "../service/replication.service";
 import { ErrorHandler } from "../error-handler/error-handler";
@@ -141,18 +141,16 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.filterSelect = ["repository", "tag"];
     }
 
-    toPromise<Endpoint[]>(this.endpointService.getEndpoints())
-      .then(targets => {
+    this.endpointService.getEndpoints()
+      .subscribe(targets => {
         this.targetList = targets || [];
-      })
-      .catch((error: any) => this.errorHandler.error(error));
+      }, (error: any) => this.errorHandler.error(error));
 
     if (!this.projectId) {
-      toPromise<Project[]>(this.proService.listProjects("", undefined))
-        .then(targets => {
+      this.proService.listProjects("", undefined)
+        .subscribe(targets => {
           this.projectList = targets || [];
-        })
-        .catch(error => this.errorHandler.error(error));
+        }, error => this.errorHandler.error(error));
     }
 
     this.nameChecker
@@ -164,17 +162,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           this.isRuleNameValid = cont.valid;
           if (this.isRuleNameValid) {
             this.inNameChecking = true;
-            toPromise<ReplicationRule[]>(
               this.repService.getReplicationRules(0, ruleName)
-            )
-              .then(response => {
+              .subscribe(response => {
                 if (response.some(rule => rule.name === ruleName)) {
                   this.ruleNameTooltip = "TOOLTIP.RULE_USER_EXISTING";
                   this.isRuleNameValid = false;
                 }
                 this.inNameChecking = false;
-              })
-              .catch(() => {
+              }, () => {
                 this.inNameChecking = false;
               });
           } else {
@@ -190,8 +185,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         let name = this.ruleForm.controls["projects"].value[0].name;
         this.noProjectInfo = "";
         this.selectedProjectList = [];
-        toPromise<Project[]>(this.proService.listProjects(name, undefined))
-          .then((res: any) => {
+        this.proService.listProjects(name, undefined)
+          .subscribe((res: any) => {
             if (res) {
               this.selectedProjectList = res.slice(0, 10);
               // if input value exit in project list
@@ -208,8 +203,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
               this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
               this.noSelectedProject = true;
             }
-          })
-          .catch((error: any) => {
+          }, (error: any) => {
             this.errorHandler.error(error);
             this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
             this.noSelectedProject = true;
@@ -710,30 +704,28 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     if (this.policyId < 0) {
       this.repService
         .createReplicationRule(copyRuleForm)
-        .then(() => {
+        .subscribe(() => {
           this.translateService
             .get("REPLICATION.CREATED_SUCCESS")
             .subscribe(res => this.errorHandler.info(res));
           this.inProgress = false;
           this.reload.emit(true);
           this.close();
-        })
-        .catch((error: any) => {
+        }, (error: any) => {
           this.inProgress = false;
           this.inlineAlert.showInlineError(error);
         });
     } else {
       this.repService
         .updateReplicationRule(this.policyId, this.ruleForm.value)
-        .then(() => {
+        .subscribe(() => {
           this.translateService
             .get("REPLICATION.UPDATED_SUCCESS")
             .subscribe(res => this.errorHandler.info(res));
           this.inProgress = false;
           this.reload.emit(true);
           this.close();
-        })
-        .catch((error: any) => {
+        }, (error: any) => {
           this.inProgress = false;
           this.inlineAlert.showInlineError(error);
         });
@@ -773,16 +765,15 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     if (ruleId) {
       this.policyId = +ruleId;
       this.headerTitle = "REPLICATION.EDIT_POLICY_TITLE";
-      toPromise(this.repService.getReplicationRule(ruleId))
-        .then(response => {
+      this.repService.getReplicationRule(ruleId)
+        .subscribe(response => {
           this.copyUpdateForm = clone(response);
           // set filter value is [] if callback filter value is null.
           this.updateForm(response);
           // keep trigger same value
           this.copyUpdateForm.trigger = clone(response.trigger);
           this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
-        })
-        .catch((error: any) => {
+        }, (error: any) => {
           this.inlineAlert.showInlineError(error);
         });
     } else {

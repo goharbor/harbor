@@ -2,7 +2,7 @@ import { Component, Input, OnInit, Output, EventEmitter, ViewChild, Inject, OnCh
 import { NgForm } from '@angular/forms';
 import { Configuration, StringValueItem } from '../config';
 import { SERVICE_CONFIG, IServiceConfig } from '../../service.config';
-import { clone, isEmpty, getChanges, toPromise } from '../../utils';
+import { clone, isEmpty, getChanges } from '../../utils';
 import { ErrorHandler } from '../../error-handler/index';
 import { ConfirmationMessage } from '../../confirmation-dialog/confirmation-message';
 import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmation-dialog.component';
@@ -115,7 +115,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
         if (!isEmpty(changes)) {
             this.onGoing = true;
             this.configService.saveConfigurations(changes)
-                .then(response => {
+                .subscribe(response => {
                     this.onGoing = false;
                     // API should return the updated configurations here
                     // Unfortunately API does not do that
@@ -129,8 +129,8 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
 
                     this.reloadSystemConfig.emit();
                     this.errorHandler.info('CONFIG.SAVE_SUCCESS');
-                })
-                .catch(error => {
+                }
+                , error => {
                     this.onGoing = false;
                     this.errorHandler.error(error);
                 });
@@ -142,7 +142,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
 
     retrieveConfig(): void {
         this.onGoing = true;
-        from(toPromise(this.configService.getConfigurations()))
+        this.configService.getConfigurations()
             .subscribe((configurations: Configuration) => {
                 this.onGoing = false;
                 // Add two password fields

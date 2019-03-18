@@ -13,7 +13,8 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { SearchResults } from './search-results';
 import { HTTP_GET_OPTIONS } from "../../shared/shared.utils";
@@ -35,15 +36,15 @@ export class GlobalSearchService {
      * Search related artifacts with the provided keyword
      *
      *  ** deprecated param {string} keyword
-     * returns {Promise<SearchResults>}
+     * returns {Observable<SearchResults>}
      *
      * @memberOf GlobalSearchService
      */
-    doSearch(term: string): Promise<SearchResults> {
+    doSearch(term: string): Observable<SearchResults> {
         let searchUrl = searchEndpoint + "?q=" + term;
 
-        return this.http.get(searchUrl, HTTP_GET_OPTIONS).toPromise()
-            .then(response => response.json() as SearchResults)
-            .catch(error => Promise.reject(error));
+        return this.http.get(searchUrl, HTTP_GET_OPTIONS)
+            .pipe(map(response => response.json() as SearchResults)
+            , catchError(error => observableThrowError(error)));
     }
 }

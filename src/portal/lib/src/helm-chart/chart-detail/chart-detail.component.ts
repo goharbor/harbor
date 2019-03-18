@@ -7,7 +7,7 @@ import {
   ChangeDetectorRef
 } from "@angular/core";
 
-import { downloadFile, toPromise } from "../../utils";
+import { downloadFile } from "../../utils";
 import { SystemInfoService, HelmChartService } from "../../service/index";
 import { HelmChartDetail, SystemInfo } from "./../../service/interface";
 import { ErrorHandler } from "./../../error-handler/error-handler";
@@ -43,16 +43,15 @@ export class ChartDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-      .then(systemInfo => {
+    this.systemInfoService.getSystemInfo()
+      .subscribe(systemInfo => {
         let scheme = 'http://';
         this.systemInfo = systemInfo;
         if (this.systemInfo.has_ca_root) {
           scheme = 'https://';
         }
         this.repoURL = `${scheme}${this.systemInfo.registry_url}`;
-      })
-      .catch(error => this.errorHandler.error(error));
+      }, error => this.errorHandler.error(error));
     this.refresh();
   }
   public get chartNameWithVersion() {
