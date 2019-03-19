@@ -21,7 +21,7 @@ import { User, LDAPUser } from './user';
 import LDAPUsertoUser from './user';
 
 const userMgmtEndpoint = '/api/users';
-const userListSearch = '/api/users/search';
+const userListSearch = '/api/users/search?';
 const ldapUserEndpoint = '/api/ldap/users';
 
 /**
@@ -41,8 +41,8 @@ export class UserService {
     }
 
     // Get the user list
-    getUsersNameList(): Observable<User[]> {
-        return this.http.get(userListSearch, HTTP_GET_OPTIONS)
+    getUsersNameList(name: string, page_size: number): Observable<User[]> {
+        return this.http.get(`${userListSearch}page_size=${page_size}&username=${name}`, HTTP_GET_OPTIONS)
             .pipe(map(response => response.json() as User[])
             , catchError(error => this.handleError(error)));
     }
