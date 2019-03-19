@@ -25,17 +25,34 @@ import (
 // as the adapter registry
 var registry = []*item{}
 
+// const definition
+const (
+	FilterStyleText  = "input"
+	FilterStyleRadio = "radio"
+)
+
+// FilterStyle is used for UI to determine how to render the filter
+type FilterStyle string
+
 type item struct {
 	info    *Info
 	factory Factory
+}
+
+// Filter ...
+type Filter struct {
+	Type   model.FilterType `json:"type"`
+	Style  FilterStyle      `json:"style"`
+	Values []string         `json:"values,omitempty"`
 }
 
 // Info provides base info and capability declarations of the adapter
 type Info struct {
 	Type                     model.RegistryType   `json:"type"`
 	Description              string               `json:"description"`
-	SupportedResourceTypes   []model.ResourceType `json:"supported_resource_types"`
-	SupportedResourceFilters []model.FilterType   `json:"supported_resource_filters"`
+	SupportedResourceTypes   []model.ResourceType `json:"-"`
+	SupportedResourceFilters []*Filter            `json:"supported_resource_filters"`
+	SupportedTriggers        []model.TriggerType  `json:"supported_triggers"`
 }
 
 // Factory creates a specific Adapter according to the params
@@ -62,6 +79,9 @@ func RegisterFactory(info *Info, factory Factory) error {
 	}
 	if len(info.SupportedResourceTypes) == 0 {
 		return errors.New("must support at least one resource type")
+	}
+	if len(info.SupportedTriggers) == 0 {
+		return errors.New("must support at least one trigger")
 	}
 	if factory == nil {
 		return errors.New("empty adapter factory")

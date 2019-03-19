@@ -34,23 +34,32 @@ func TestRegisterFactory(t *testing.T) {
 		&Info{
 			Type: "harbor",
 		}, nil))
+	// empty trigger
+	assert.NotNil(t, RegisterFactory(
+		&Info{
+			Type:                   "harbor",
+			SupportedResourceTypes: []model.ResourceType{"image"},
+		}, nil))
 	// empty factory
 	assert.NotNil(t, RegisterFactory(
 		&Info{
 			Type:                   "harbor",
 			SupportedResourceTypes: []model.ResourceType{"image"},
+			SupportedTriggers:      []model.TriggerType{"mannual"},
 		}, nil))
 	// pass
 	assert.Nil(t, RegisterFactory(
 		&Info{
 			Type:                   "harbor",
 			SupportedResourceTypes: []model.ResourceType{"image"},
+			SupportedTriggers:      []model.TriggerType{"mannual"},
 		}, fakedFactory))
 	// already exists
 	assert.NotNil(t, RegisterFactory(
 		&Info{
 			Type:                   "harbor",
 			SupportedResourceTypes: []model.ResourceType{"image"},
+			SupportedTriggers:      []model.TriggerType{"mannual"},
 		}, fakedFactory))
 }
 
@@ -60,6 +69,7 @@ func TestGetFactory(t *testing.T) {
 		&Info{
 			Type:                   "harbor",
 			SupportedResourceTypes: []model.ResourceType{"image"},
+			SupportedTriggers:      []model.TriggerType{"mannual"},
 		}, fakedFactory))
 	// doesn't exist
 	_, err := GetFactory("gcr")
@@ -80,6 +90,7 @@ func TestListAdapterInfos(t *testing.T) {
 		&Info{
 			Type:                   "harbor",
 			SupportedResourceTypes: []model.ResourceType{"image"},
+			SupportedTriggers:      []model.TriggerType{"mannual"},
 		}, fakedFactory))
 
 	infos = ListAdapterInfos()
@@ -93,6 +104,7 @@ func TestGetAdapterInfo(t *testing.T) {
 		&Info{
 			Type:                   "harbor",
 			SupportedResourceTypes: []model.ResourceType{"image"},
+			SupportedTriggers:      []model.TriggerType{"mannual"},
 		}, fakedFactory))
 
 	// doesn't exist
