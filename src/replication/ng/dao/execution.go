@@ -51,6 +51,12 @@ func GetExecutions(query ...*models.ExecutionQuery) ([]*models.Execution, error)
 	qs = qs.OrderBy("-StartTime")
 
 	_, err := qs.All(&executions)
+	if err != nil || len(executions) == 0 {
+		return executions, err
+	}
+	for _, e := range executions {
+		fillExecution(e)
+	}
 	return executions, err
 }
 
@@ -81,7 +87,111 @@ func GetExecution(id int64) (*models.Execution, error) {
 	if err == orm.ErrNoRows {
 		return nil, nil
 	}
+	if err != nil {
+		return nil, err
+	}
+	fillExecution(&t)
 	return &t, err
+}
+
+// fillExecution will fill the statistics data and status by tasks data
+func fillExecution(execution *models.Execution) error {
+	if executionFinished(execution.Status) {
+		return nil
+	}
+
+	o := dao.GetOrmer()
+	sql := `select status, count(*) as c from replication_task where execution_id = ? group by status`
+	queryParam := make([]interface{}, 1)
+	queryParam = append(queryParam, execution.ID)
+
+	dt := []*models.TaskStat{}
+	count, err := o.Raw(sql, queryParam).QueryRows(&dt)
+
+	if err != nil {
+		log.Errorf("Query tasks error execution %d: %v", execution.ID, err)
+		return err
+	}
+
+	if count == 0 {
+		return nil
+	}
+
+	total := 0
+	for _, d := range dt {
+		status, _ := getStatus(d.Status)
+		updateStatusCount(execution, status, d.C)
+		total += d.C
+	}
+
+	if execution.Total != total {
+		log.Errorf("execution task count inconsistent and fixed, executionID=%d, execution.total=%d, tasks.count=%d",
+			execution.ID, execution.Total, total)
+		execution.Total = total
+	}
+	resetExecutionStatus(execution)
+
+	// if execution status changed to a final status, store to DB
+	if executionFinished(execution.Status) {
+		UpdateExecution(execution, models.ExecutionPropsName.Status, models.ExecutionPropsName.InProgress,
+			models.ExecutionPropsName.Succeed, models.ExecutionPropsName.Failed, models.ExecutionPropsName.Stopped,
+			models.ExecutionPropsName.EndTime, models.ExecutionPropsName.Total)
+	}
+	return nil
+}
+
+func getStatus(status string) (string, error) {
+	switch status {
+	case models.TaskStatusInitialized, models.TaskStatusPending, models.TaskStatusInProgress:
+		return models.ExecutionStatusInProgress, nil
+	case models.TaskStatusSucceed:
+		return models.ExecutionStatusSucceed, nil
+	case models.TaskStatusStopped:
+		return models.ExecutionStatusStopped, nil
+	case models.TaskStatusFailed:
+		return models.ExecutionStatusFailed, nil
+	}
+	return "", fmt.Errorf("Not support task status ")
+}
+
+func updateStatusCount(execution *models.Execution, status string, delta int) error {
+	switch status {
+	case models.ExecutionStatusInProgress:
+		execution.InProgress += delta
+	case models.ExecutionStatusSucceed:
+		execution.Succeed += delta
+	case models.ExecutionStatusStopped:
+		execution.Stopped += delta
+	case models.ExecutionStatusFailed:
+		execution.Failed += delta
+	}
+	return nil
+}
+
+func resetExecutionStatus(execution *models.Execution) error {
+	execution.Status = generateStatus(execution)
+	if executionFinished(execution.Status) {
+		execution.EndTime = time.Now()
+	}
+	return nil
+}
+
+func generateStatus(execution *models.Execution) string {
+	if execution.InProgress > 0 {
+		return models.ExecutionStatusInProgress
+	} else if execution.Failed > 0 {
+		return models.ExecutionStatusFailed
+	} else if execution.Stopped > 0 {
+		return models.ExecutionStatusStopped
+	}
+	return models.ExecutionStatusSucceed
+}
+
+func executionFinished(status string) bool {
+	if status == models.ExecutionStatusInProgress {
+		return false
+	}
+	return true
 }
 
 // DeleteExecution ...
@@ -110,19 +220,10 @@ func UpdateExecution(execution *models.Execution, props ...string) (int64, error
 // AddTask ...
 func AddTask(task *models.Task) (int64, error) {
 	o := dao.GetOrmer()
-	sql := `insert into replication_task (execution_id, resource_type, src_resource, dst_resource, job_id, status) 
-				values (?, ?, ?, ?, ?, ?) RETURNING id`
+	now := time.Now()
+	task.StartTime = now
 
-	args := []interface{}{}
-	args = append(args, task.ExecutionID, task.ResourceType, task.SrcResource, task.DstResource, task.JobID, task.Status)
-
-	var taskID int64
-	err := o.Raw(sql, args).QueryRow(&taskID)
-	if err != nil {
-		return 0, err
-	}
-
-	return taskID, nil
+	return o.Insert(task)
 }
 
 // GetTask ...
@@ -210,40 +311,11 @@ func UpdateTask(task *models.Task, props ...string) (int64, error) {
 
 // UpdateTaskStatus ...
 func UpdateTaskStatus(id int64, status string, statusCondition ...string) (int64, error) {
-	// can not use the globalOrm
-	o := orm.NewOrm()
-	o.Begin()
-
-	// query the task status
-	var task models.Task
-	sql := `select * from replication_task where id = ?`
-	if err := o.Raw(sql, id).QueryRow(&task); err != nil {
-		if err == orm.ErrNoRows {
-			o.Rollback()
-			return 0, err
-		}
-	}
-
-	// check status
-	satisfy := false
-	if len(statusCondition) == 0 {
-		satisfy = true
-	} else {
-		for _, stCondition := range statusCondition {
-			if task.Status == stCondition {
-				satisfy = true
-				break
-			}
-		}
-	}
-	if !satisfy {
-		o.Rollback()
-		return 0, fmt.Errorf("Status condition not match ")
-	}
+	o := dao.GetOrmer()
 
 	// update status
 	params := []interface{}{}
-	sql = `update replication_task set status = ?`
+	sql := `update replication_task set status = ?`
 	params = append(params, status)
 	if taskFinished(status) { // should update endTime
 		sql += ` ,end_time = ?`
@@ -251,49 +323,26 @@ func UpdateTaskStatus(id int64, status string, statusCondition ...string) (int64
 	}
 	sql += ` where id = ?`
 	params = append(params, id)
-	_, err := o.Raw(sql, params).Exec()
-	log.Infof("Update task %d: %s -> %s", id, task.Status, status)
-	if err != nil {
-		log.Errorf("Update task failed %d: %s -> %s", id, task.Status, status)
-		o.Rollback()
-		return 0, err
-	}
-
-	// query the execution
-	var execution models.Execution
-	sql = `select * from replication_execution where id = ?`
-	if err := o.Raw(sql, task.ExecutionID).QueryRow(&execution); err != nil {
-		if err == orm.ErrNoRows {
-			log.Errorf("Execution not found id: %d", task.ExecutionID)
-			o.Rollback()
-			return 0, err
+	if len(statusCondition) > 0 {
+		sql += ` and status in (`
+		for _, stCondition := range statusCondition {
+			sql += ` ?,`
+			params = append(params, stCondition)
 		}
-	}
-	// check execution data
-	execuStatus, _ := getStatus(task.Status)
-	count := getStatusCount(&execution, execuStatus)
-	if count <= 0 {
-		log.Errorf("Task statistics in execution inconsistent")
-		o.Commit()
-		return 1, nil
+		sql = sql[0 : len(sql)-1]
+		sql += `)`
 	}
 
-	// update execution data
-	updateStatusCount(&execution, execuStatus, -1)
-	execuStatusUp, _ := getStatus(status)
-	updateStatusCount(&execution, execuStatusUp, 1)
-
-	resetExecutionStatus(&execution)
-	_, err = o.Update(&execution, models.ExecutionPropsName.Status, models.ExecutionPropsName.Total, models.ExecutionPropsName.InProgress,
-		models.ExecutionPropsName.Failed, models.ExecutionPropsName.Succeed, models.ExecutionPropsName.Stopped,
-		models.ExecutionPropsName.EndTime)
+	log.Infof("Update task %d: -> %s", id, status)
+	res, err := o.Raw(sql, params).Exec()
 	if err != nil {
-		log.Errorf("Update execution status failed %d: %v", execution.ID, err)
-		o.Rollback()
 		return 0, err
 	}
-	o.Commit()
-	return 1, nil
+	count, err := res.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func taskFinished(status string) bool {
@@ -301,70 +350,4 @@ func taskFinished(status string) bool {
 		return true
 	}
 	return false
-}
-
-func getStatus(status string) (string, error) {
-	switch status {
-	case models.TaskStatusInitialized, models.TaskStatusPending, models.TaskStatusInProgress:
-		return models.ExecutionStatusInProgress, nil
-	case models.TaskStatusSucceed:
-		return models.ExecutionStatusSucceed, nil
-	case models.TaskStatusStopped:
-		return models.ExecutionStatusStopped, nil
-	case models.TaskStatusFailed:
-		return models.ExecutionStatusFailed, nil
-	}
-	return "", fmt.Errorf("Not support task status ")
-}
-
-func getStatusCount(execution *models.Execution, status string) int {
-	switch status {
-	case models.ExecutionStatusInProgress:
-		return execution.InProgress
-	case models.ExecutionStatusSucceed:
-		return execution.Succeed
-	case models.ExecutionStatusStopped:
-		return execution.Stopped
-	case models.ExecutionStatusFailed:
-		return execution.Failed
-	}
-	return 0
-}
-
-func updateStatusCount(execution *models.Execution, status string, delta int) error {
-	switch status {
-	case models.ExecutionStatusInProgress:
-		execution.InProgress += delta
-	case models.ExecutionStatusSucceed:
-		execution.Succeed += delta
-	case models.ExecutionStatusStopped:
-		execution.Stopped += delta
-	case models.ExecutionStatusFailed:
-		execution.Failed += delta
-	}
-	return nil
-}
-
-func resetExecutionStatus(execution *models.Execution) error {
-	status := generateStatus(execution)
-	if status != execution.Status {
-		execution.Status = status
-		log.Debugf("Execution status changed %d: %s -> %s", execution.ID, execution.Status, status)
-	}
-	if n := getStatusCount(execution, models.ExecutionStatusInProgress); n == 0 {
-		// execution finished in this time
-		execution.EndTime = time.Now()
-	}
-	return nil
-}
-
-func generateStatus(execution *models.Execution) string {
-	if execution.InProgress > 0 {
-		return models.ExecutionStatusInProgress
-	} else if execution.Failed > 0 {
-		return models.ExecutionStatusFailed
-	} else if execution.Stopped > 0 {
-		return models.ExecutionStatusStopped
-	}
-	return models.ExecutionStatusSucceed
 }

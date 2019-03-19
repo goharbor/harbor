@@ -138,9 +138,9 @@ func TestMethodOfTaskManager(t *testing.T) {
 
 	// UpdateTaskStatus
 	err = executionManager.UpdateTaskStatus(id, models.TaskStatusSucceed)
-	require.NotNil(t, err)
+	require.Nil(t, err)
 	taskUpdate, _ = executionManager.GetTask(id)
-	assert.Equal(t, models.TaskStatusInitialized, taskUpdate.Status)
+	assert.Equal(t, models.TaskStatusSucceed, taskUpdate.Status)
 
 	// Remove
 	require.Nil(t, executionManager.RemoveTask(id))
