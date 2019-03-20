@@ -1,10 +1,11 @@
-import { Observable,  of } from "rxjs";
+import { Observable,  of, throwError as observableThrowError } from "rxjs";
 import { RequestQueryParams } from "./RequestQueryParams";
 import { AccessLog, AccessLogItem } from "./interface";
 import { Injectable, Inject } from "@angular/core";
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import { Http } from "@angular/http";
 import { buildHttpRequestOptions, HTTP_GET_OPTIONS } from "../utils";
+import { map, catchError } from "rxjs/operators";
 
 /**
  * Define service methods to handle the access log related things.
@@ -23,27 +24,27 @@ export abstract class AccessLogService {
    * @abstract
    *  ** deprecated param {(number | string)} projectId
    *  ** deprecated param {RequestQueryParams} [queryParams]
-   * returns {(Observable<AccessLog> | Promise<AccessLog> | AccessLog)}
+   * returns {(Observable<AccessLog> | AccessLog)}
    *
    * @memberOf AccessLogService
    */
   abstract getAuditLogs(
     projectId: number | string,
     queryParams?: RequestQueryParams
-  ): Observable<AccessLog> | Promise<AccessLog> | AccessLog;
+  ): Observable<AccessLog>;
 
   /**
    * Get the recent logs.
    *
    * @abstract
    *  ** deprecated param {RequestQueryParams} [queryParams]
-   * returns {(Observable<AccessLog> | Promise<AccessLog> | AccessLog)}
+   * returns {(Observable<AccessLog> | AccessLog)}
    *
    * @memberOf AccessLogService
    */
   abstract getRecentLogs(
     queryParams?: RequestQueryParams
-  ): Observable<AccessLog> | Promise<AccessLog> | AccessLog;
+  ): Observable<AccessLog>;
 }
 
 /**
@@ -65,13 +66,13 @@ export class AccessLogDefaultService extends AccessLogService {
   public getAuditLogs(
     projectId: number | string,
     queryParams?: RequestQueryParams
-  ): Observable<AccessLog> | Promise<AccessLog> | AccessLog {
+  ): Observable<AccessLog> {
     return of({} as AccessLog);
   }
 
   public getRecentLogs(
     queryParams?: RequestQueryParams
-  ): Observable<AccessLog> | Promise<AccessLog> | AccessLog {
+  ): Observable<AccessLog> {
     let url: string = this.config.logBaseEndpoint
       ? this.config.logBaseEndpoint
       : "";
@@ -84,8 +85,7 @@ export class AccessLogDefaultService extends AccessLogService {
         url,
         queryParams ? buildHttpRequestOptions(queryParams) : HTTP_GET_OPTIONS
       )
-      .toPromise()
-      .then(response => {
+      .pipe(map(response => {
         let result: AccessLog = {
           metadata: {
             xTotalCount: 0
@@ -106,6 +106,6 @@ export class AccessLogDefaultService extends AccessLogService {
 
         return result;
       })
-      .catch(error => Promise.reject(error));
+      , catchError(error => observableThrowError(error)));
   }
 }

@@ -25,7 +25,7 @@ import {
 
 import { Label } from "../service/interface";
 
-import { toPromise, clone, compareValue } from "../utils";
+import { clone, compareValue } from "../utils";
 
 import { LabelService } from "../service/label.service";
 import { ErrorHandler } from "../error-handler/error-handler";
@@ -66,10 +66,8 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.nameChecker.pipe(debounceTime(500)).subscribe((name: string) => {
-      toPromise<Label[]>(
         this.labelService.getLabels(this.scope, this.projectId, name)
-      )
-        .then(targets => {
+        .subscribe(targets => {
           this.isLabelNameExist = false;
           if (targets && targets.length) {
             if (targets.find((target) => {
@@ -78,8 +76,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
               this.isLabelNameExist = true;
             }
           }
-        })
-        .catch(error => {
+        }, error => {
           this.errorHandler.error(error);
         });
       let hnd = setInterval(() => this.ref.markForCheck(), 100);
@@ -145,28 +142,24 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
     if (this.labelId <= 0) {
       this.labelModel.scope = this.scope;
       this.labelModel.project_id = this.projectId;
-      toPromise<Label>(this.labelService.createLabel(this.labelModel))
-        .then(res => {
+      this.labelService.createLabel(this.labelModel)
+        .subscribe(res => {
           this.inProgress = false;
           this.reload.emit();
           this.labelModel = this.initLabel();
           this.formShow = false;
-        })
-        .catch(err => {
+        }, err => {
           this.inProgress = false;
           this.errorHandler.error(err);
         });
     } else {
-      toPromise<Label>(
         this.labelService.updateLabel(this.labelId, this.labelModel)
-      )
-        .then(res => {
+        .subscribe(res => {
           this.inProgress = false;
           this.reload.emit();
           this.labelModel = this.initLabel();
           this.formShow = false;
-        })
-        .catch(err => {
+        }, err => {
           this.inProgress = false;
           this.errorHandler.error(err);
         });

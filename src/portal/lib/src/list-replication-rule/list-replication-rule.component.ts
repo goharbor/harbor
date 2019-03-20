@@ -24,10 +24,10 @@ import {
     SimpleChange,
     SimpleChanges
 } from "@angular/core";
-import { forkJoin } from "rxjs";
 import { Comparator } from "../service/interface";
 import { TranslateService } from "@ngx-translate/core";
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, forkJoin, throwError as observableThrowError } from "rxjs";
 import { ReplicationService } from "../service/replication.service";
 
 import {
@@ -44,7 +44,7 @@ import {
     ConfirmationButtons
 } from "../shared/shared.const";
 import { ErrorHandler } from "../error-handler/error-handler";
-import { toPromise, CustomComparator } from "../utils";
+import { CustomComparator } from "../utils";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 
@@ -134,17 +134,14 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     retrieveRules(ruleName = ""): void {
         this.loading = true;
         /*this.selectedRow = null;*/
-        toPromise<ReplicationRule[]>(
             this.replicationService.getReplicationRules(this.projectId, ruleName)
-        )
-            .then(rules => {
+            .subscribe(rules => {
                 this.rules = rules || [];
                 // job list hidden
                 this.hideJobs.emit();
                 this.changedRules = this.rules;
                 this.loading = false;
-            })
-            .catch(error => {
+            }, error => {
                 this.errorHandler.error(error);
                 this.loading = false;
             });
@@ -198,12 +195,12 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         this.editOne.emit(rule);
     }
 
-    jobList(id: string | number): Promise<void> {
+    jobList(id: string | number): Observable<void> {
         let ruleData: ReplicationJobItem[];
         this.canDeleteRule = true;
         let count = 0;
-        return toPromise<ReplicationJob>(this.replicationService.getExecutions(id))
-            .then(response => {
+        return this.replicationService.getExecutions(id)
+            .pipe(map(response => {
                 ruleData = response.data;
                 if (ruleData.length) {
                     ruleData.forEach(job => {
@@ -217,8 +214,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                     });
                 }
                 this.canDeleteRule = count > 0 ? false : true;
-            })
-            .catch(error => this.errorHandler.error(error));
+            }), catchError(error => observableThrowError(error)));
     }
 
     deleteRule(rule: ReplicationRule) {
@@ -237,11 +233,11 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
 
     deleteOpe(rule: ReplicationRule) {
         if (rule) {
-            let promiseLists: any[] = [];
-            Promise.all([this.jobList(rule.id)]).then(items => {
-                promiseLists.push(this.delOperate(rule));
+            let observableLists: any[] = [];
+            this.jobList(rule.id).subscribe(items => {
+                observableLists.push(this.delOperate(rule));
 
-                Promise.all(promiseLists).then(item => {
+                forkJoin(...observableLists).subscribe(item => {
                     this.selectedRow = null;
                     this.reload.emit(true);
                     let hnd = setInterval(() => this.ref.markForCheck(), 200);
@@ -251,7 +247,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         }
     }
 
-    delOperate(rule: ReplicationRule) {
+    delOperate(rule: ReplicationRule): Observable<any> {
         // init operation info
         let operMessage = new OperateInfo();
         operMessage.name = 'OPERATION.DELETE_REPLICATION';
@@ -261,30 +257,29 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         this.operationService.publishInfo(operMessage);
 
         if (!this.canDeleteRule) {
-            forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                this.translateService.get('REPLICATION.DELETION_SUMMARY_FAILURE')).subscribe(res => {
+            return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                this.translateService.get('REPLICATION.DELETION_SUMMARY_FAILURE')).pipe(map(res => {
                     operateChanges(operMessage, OperationState.failure, res[1]);
-                });
-            return null;
+                }));
         }
 
-        return toPromise<any>(this.replicationService
-            .deleteReplicationRule(+rule.id))
-            .then(() => {
+        return this.replicationService
+            .deleteReplicationRule(+rule.id)
+            .pipe(map(() => {
                 this.translateService.get('BATCH.DELETED_SUCCESS')
                     .subscribe(res => operateChanges(operMessage, OperationState.success));
             })
-            .catch(error => {
+            , catchError(error => {
                 if (error && error.status === 412) {
-                    forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                        this.translateService.get('REPLICATION.FAILED_TO_DELETE_POLICY_ENABLED')).subscribe(res => {
+                    return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                        this.translateService.get('REPLICATION.FAILED_TO_DELETE_POLICY_ENABLED')).pipe(map(res => {
                             operateChanges(operMessage, OperationState.failure, res[1]);
-                        });
+                        }));
                 } else {
-                    this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+                    return this.translateService.get('BATCH.DELETED_FAILURE').pipe(map(res => {
                         operateChanges(operMessage, OperationState.failure, res);
-                    });
+                    }));
                 }
-            });
+            }));
     }
 }

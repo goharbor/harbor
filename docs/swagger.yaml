@@ -156,7 +156,7 @@ paths:
           description: Unexpected internal errors.
   '/projects/{project_id}':
     get:
-      summary: Return specific project detail infomation
+      summary: Return specific project detail information
       description: |
         This endpoint returns specific project information by project ID.
       parameters:
@@ -707,7 +707,7 @@ paths:
     get:
       summary: Get current user info.
       description: |
-        This endpoint is to get the current user infomation.
+        This endpoint is to get the current user information.
       tags:
         - Products
       responses:
@@ -1409,7 +1409,7 @@ paths:
     post:
       summary: Scan all images of the registry.
       description: |
-        The server will launch different jobs to scan each image on the regsitry, so this is equivalent to calling  the API to scan the image one by one in background, so there's no way to track the overall status of the "scan all" action.  Only system adim has permission to call this API.  
+        The server will launch different jobs to scan each image on the regisitry, so this is equivalent to calling  the API to scan the image one by one in background, so there's no way to track the overall status of the "scan all" action.  Only system adim has permission to call this API.
       parameters:
         - name: project_id
           in: query
@@ -5180,7 +5180,7 @@ definitions:
       description:
         type: string
         description: The description of robot account
-      expiresat:
+      expires_at:
         type: integer
         description: The expiration of robot account (in seconds)
       project_id:

@@ -13,7 +13,8 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { Configuration } from '@harbor/ui';
 
@@ -28,30 +29,27 @@ export class ConfigurationService {
 
     constructor(private http: Http) { }
 
-    public getConfiguration(): Promise<Configuration> {
-        return this.http.get(configEndpoint, HTTP_GET_OPTIONS).toPromise()
-        .then(response => response.json() as Configuration)
-        .catch(error => Promise.reject(error));
+    public getConfiguration(): Observable<Configuration> {
+        return this.http.get(configEndpoint, HTTP_GET_OPTIONS)
+        .pipe(map(response => response.json() as Configuration)
+        , catchError(error => observableThrowError(error)));
     }
 
-    public saveConfiguration(values: any): Promise<any> {
+    public saveConfiguration(values: any): Observable<any> {
         return this.http.put(configEndpoint, JSON.stringify(values), HTTP_JSON_OPTIONS)
-        .toPromise()
-        .then(response => response)
-        .catch(error => Promise.reject(error));
+        .pipe(map(response => response)
+        , catchError(error => observableThrowError(error)));
     }
 
-    public testMailServer(mailSettings: any): Promise<any> {
+    public testMailServer(mailSettings: any): Observable<any> {
         return this.http.post(emailEndpoint, JSON.stringify(mailSettings), HTTP_JSON_OPTIONS)
-        .toPromise()
-        .then(response => response)
-        .catch(error => Promise.reject(error));
+        .pipe(map(response => response)
+        , catchError(error => observableThrowError(error)));
     }
 
-    public testLDAPServer(ldapSettings: any): Promise<any> {
+    public testLDAPServer(ldapSettings: any): Observable<any> {
          return this.http.post(ldapEndpoint, JSON.stringify(ldapSettings), HTTP_JSON_OPTIONS)
-        .toPromise()
-        .then(response => response)
-        .catch(error => Promise.reject(error));
+        .pipe(map(response => response)
+        , catchError(error => observableThrowError(error)));
     }
 }

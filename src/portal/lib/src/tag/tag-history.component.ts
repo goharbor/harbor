@@ -1,6 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
 import { TagService, Manifest } from "../service/index";
-import { toPromise } from "../utils";
 import { ErrorHandler } from "../error-handler/index";
 
 @Component({
@@ -36,10 +35,8 @@ export class TagHistoryComponent implements OnInit {
 
   retrieve(repositoryId: string, tagId: string) {
     this.loading = true;
-    toPromise<Manifest>(
       this.tagService.getManifest(this.repositoryId, this.tagId)
-    )
-      .then(data => {
+      .subscribe(data => {
         this.config = JSON.parse(data.config);
         this.config.history.forEach((ele: any) => {
           if (ele.created_by !== undefined) {
@@ -53,8 +50,7 @@ export class TagHistoryComponent implements OnInit {
           this.history.push(ele);
         });
         this.loading = false;
-      })
-      .catch(error => {
+      }, error => {
         this.errorHandler.error(error);
         this.loading = false;
       });

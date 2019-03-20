@@ -18,6 +18,7 @@ import {
   EndpointDefaultService
 } from "../service/endpoint.service";
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
+import { of } from "rxjs";
 describe("CreateEditEndpointComponent (inline template)", () => {
   let mockData: Endpoint = {
     id: 1,
@@ -80,7 +81,7 @@ describe("CreateEditEndpointComponent (inline template)", () => {
     );
 
     spy = spyOn(endpointService, "getEndpoint").and.returnValue(
-      Promise.resolve(mockData)
+      of(mockData)
     );
     fixture.detectChanges();
 

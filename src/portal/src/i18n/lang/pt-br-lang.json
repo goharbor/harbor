@@ -667,9 +667,9 @@
             "VERIFY_CERT": "Verificar o Certificado do Servidor LDAP",
             "READONLY_TOOLTIP": "Em modo somente leitura, você não pode remover repositórios ou tags ou enviar imagens. ",
             "REPO_TOOLTIP": "Usuários não podem efetuar qualquer operação nas imagens nesse modo.",
-            "HOURLY_CRON":"Run once an hour, beginning of hour",
-            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
-            "DAILY_CRON":"Run once a day, midnight"
+            "HOURLY_CRON":"Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
+            "DAILY_CRON":"Run once a day, midnight. Equivalente a 0 0 0 * * *."
         },
         "LDAP": {
             "URL": "URL LDAP",
@@ -905,7 +905,12 @@
         "NONE": "Nenhum",
         "DAILY": "Diário",
         "WEEKLY": "Semanal",
-        "MANUAL": "Manual"
+        "HOURLY": "Hourly",
+        "CUSTOM": "Custom",
+        "MANUAL": "Manual",
+        "CRON": "cron",
+        "ON": "on",
+        "AT": "at"
     }, 
     "GC": {
         "CURRENT_SCHEDULE": "Agendamento atual",

@@ -23,6 +23,7 @@ import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-d
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationState, ConfirmationTargets } from '../shared.const';
 import { TagRepositoryComponent } from '../../repository/tag-repository/tag-repository.component';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class LeavingRepositoryRouteDeactivate implements CanDeactivate<TagRepositoryComponent> {
@@ -33,9 +34,9 @@ export class LeavingRepositoryRouteDeactivate implements CanDeactivate<TagReposi
   canDeactivate(
     tagRepo: TagRepositoryComponent,
     route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Promise<boolean> | boolean {
+    state: RouterStateSnapshot): Observable<boolean> | boolean {
     // Confirmation before leaving config route
-    return new Promise((resolve, reject) => {
+    return new Observable((observer) => {
       if (tagRepo && tagRepo.hasChanges()) {
         let msg: ConfirmationMessage = new ConfirmationMessage(
           "CONFIG.LEAVING_CONFIRMATION_TITLE",
@@ -48,16 +49,16 @@ export class LeavingRepositoryRouteDeactivate implements CanDeactivate<TagReposi
         return this.confirmation.confirmationConfirm$.subscribe(confirmMsg => {
           if (confirmMsg && confirmMsg.source === ConfirmationTargets.REPOSITORY) {
             if (confirmMsg.state === ConfirmationState.CONFIRMED) {
-              return resolve(true);
+              return observer.next(true);
             } else {
-              return resolve(false); // Prevent leading route
+              return observer.next(false); // Prevent leading route
             }
           } else {
-            return resolve(true); // Should go on
+            return observer.next(true); // Should go on
           }
         });
       } else {
-        return resolve(true);
+        return observer.next(true);
       }
     });
   }

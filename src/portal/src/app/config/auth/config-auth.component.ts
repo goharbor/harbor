@@ -20,6 +20,7 @@ import { MessageHandlerService } from '../../shared/message-handler/message-hand
 import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../app-config.service';
 import { ConfigurationService } from '../config.service';
+import { catchError } from 'rxjs/operators';
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 
 @Component({
@@ -114,11 +115,10 @@ export class ConfigurationAuthComponent implements OnChanges {
 
         this.testingLDAPOnGoing = true;
         this.configService.testLDAPServer(ldapSettings)
-            .then(respone => {
+            .subscribe(respone => {
                 this.testingLDAPOnGoing = false;
                 this.msgHandler.showSuccess('CONFIG.TEST_LDAP_SUCCESS');
-            })
-            .catch(error => {
+            }, error => {
                 this.testingLDAPOnGoing = false;
                 let err = error._body;
                 if (!err || !err.trim()) {
@@ -187,14 +187,14 @@ export class ConfigurationAuthComponent implements OnChanges {
         if (!isEmpty(changes)) {
             this.onGoing = true;
             this.configService.saveConfiguration(changes)
-                .then(response => {
+                .subscribe(response => {
                     this.onGoing = false;
                     this.retrieveConfig();
                     // Reload bootstrap option
-                    this.appConfigService.load().catch(error => console.error('Failed to reload bootstrap option with error: ', error));
+                    this.appConfigService.load().subscribe(() => {}
+                    , error => console.error('Failed to reload bootstrap option with error: ', error));
                     this.msgHandler.showSuccess('CONFIG.SAVE_SUCCESS');
-                })
-                .catch(error => {
+                }, error => {
                     this.onGoing = false;
                     this.msgHandler.handleError(error);
                 });
@@ -207,7 +207,7 @@ export class ConfigurationAuthComponent implements OnChanges {
     retrieveConfig(): void {
         this.onGoing = true;
         this.configService.getConfiguration()
-            .then((configurations: Configuration) => {
+            .subscribe((configurations: Configuration) => {
                 this.onGoing = false;
 
                 // Add two password fields
@@ -216,8 +216,7 @@ export class ConfigurationAuthComponent implements OnChanges {
                 this.currentConfig = configurations;
                 // Keep the original copy of the data
                 this.originalConfig = clone(configurations);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.msgHandler.handleError(error);
             });

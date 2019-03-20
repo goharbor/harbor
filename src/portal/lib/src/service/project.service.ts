@@ -27,13 +27,13 @@ export abstract class ProjectService {
    *
    * @abstract
    *  ** deprecated param {string|number} [projectId]
-   * returns {(Observable<Project> | Promise<Project> | Project)}
+   * returns {(Observable<Project> )}
    *
    * @memberOf ProjectService
    */
   abstract getProject(
     projectId: number | string
-  ): Observable<Project> | Promise<Project> | Project;
+  ): Observable<Project> ;
 
   /**
    * Update the specified project.
@@ -41,14 +41,14 @@ export abstract class ProjectService {
    * @abstract
    *  ** deprecated param {(number | string)} projectId
    *  ** deprecated param {ProjectPolicy} projectPolicy
-   * returns {(Observable<any> | Promise<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf EndpointService
    */
   abstract updateProjectPolicy(
     projectId: number | string,
     projectPolicy: ProjectPolicy
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 
   /**
    * Get all projects
@@ -58,7 +58,7 @@ export abstract class ProjectService {
    *  ** deprecated param {number} isPublic
    *  ** deprecated param {number} page
    *  ** deprecated param {number} pageSize
-   * returns {(Observable<any> | Promise<any> | any)}
+   * returns {(Observable<any>)}
    *
    * @memberOf EndpointService
    */
@@ -67,7 +67,7 @@ export abstract class ProjectService {
     isPublic: number,
     page?: number,
     pageSize?: number
-  ): Observable<Project[]> | Promise<Project[]> | Project[];
+  ): Observable<Project[]>;
 }
 
 /**
@@ -88,9 +88,9 @@ export class ProjectDefaultService extends ProjectService {
 
   public getProject(
     projectId: number | string
-  ): Observable<Project> | Promise<Project> | Project {
+  ): Observable<Project> {
     if (!projectId) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
     let baseUrl: string = this.config.projectBaseEndpoint
       ? this.config.projectBaseEndpoint
@@ -106,7 +106,7 @@ export class ProjectDefaultService extends ProjectService {
     isPublic: number,
     page?: number,
     pageSize?: number
-  ): Observable<Project[]> | Promise<Project[]> | Project[] {
+  ): Observable<Project[]> {
     let baseUrl: string = this.config.projectBaseEndpoint
       ? this.config.projectBaseEndpoint
       : "/api/projects";

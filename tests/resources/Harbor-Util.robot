@@ -73,7 +73,7 @@ Package Harbor Online
     Log  ${rc}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    
+
 Switch To LDAP
     Down Harbor
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf /data
@@ -92,27 +92,29 @@ Switch To LDAP
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  docker ps
     Log  ${output}
-    Should Be Equal As Integers  ${rc}  0	
+    Should Be Equal As Integers  ${rc}  0
     Generate Certificate Authority For Chrome
-	
+
 Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
     Log  ${ip}
+    Log To Console  ${ip}
     ${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
     Should Be Equal As Integers  ${rc}  0
-    ${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${notaryServerEndpoint}/
+    Log To Console  ${notaryServerEndpointNoSubDir}
+    ${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${notaryServerEndpointNoSubDir}/
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${notaryServerEndpoint}/
+    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${notaryServerEndpointNoSubDir}/
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     ${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
     Log  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${notaryServerEndpoint}/
+    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${notaryServerEndpointNoSubDir}/
     Log  ${output}
 
 Prepare
@@ -136,7 +138,7 @@ Config Harbor cfg
     Log  ${rc}
     Should Be Equal As Integers  ${rc}  0
     ${out}=  Run  cat ./make/harbor.cfg
-    Log  ${out}		
+    Log  ${out}
 
 Prepare Cert
     # Will change the IP and Protocol in the harbor.cfg
@@ -145,7 +147,7 @@ Prepare Cert
     ${rc}=  Run And Return Rc  sed "s/^IP=.*/IP=${ip}/g" -i ./tests/generateCerts.sh
     Log  ${rc}
     ${out}=  Run  cat ./tests/generateCerts.sh
-    Log  ${out}	
+    Log  ${out}
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/generateCerts.sh
     Should Be Equal As Integers  ${rc}  0
 
@@ -158,7 +160,7 @@ Compile and Up Harbor With Source Code
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
     Sleep  20
-	
+
 Wait for Harbor Ready
     [Arguments]  ${protocol}  ${HARBOR_IP}
     Log To Console  Waiting for Harbor to Come Up...

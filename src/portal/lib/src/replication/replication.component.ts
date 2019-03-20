@@ -21,7 +21,7 @@ import {
   EventEmitter
 } from "@angular/core";
 import { Comparator, State } from "../service/interface";
-import { Subscription, forkJoin, timer, throwError} from "rxjs";
+import { Subscription, forkJoin, timer, throwError, Observable} from "rxjs";
 import { finalize, catchError, map } from "rxjs/operators";
 
 import { TranslateService } from "@ngx-translate/core";
@@ -39,7 +39,6 @@ import {
 } from "../service/interface";
 
 import {
-  toPromise,
   CustomComparator,
   DEFAULT_PAGE_SIZE,
   doFiltering,
@@ -59,7 +58,8 @@ import {operateChanges, OperationState, OperateInfo} from "../operation/operate"
 import {OperationService} from "../operation/operation.service";
 
 import { Router } from "@angular/router";
-
+import { catchError, map } from "rxjs/operators";
+import { throwError as observableThrowError } from "rxjs";
 const ruleStatus: { [key: string]: any } = [
   { key: "all", description: "REPLICATION.ALL_STATUS" },
   { key: "1", description: "REPLICATION.ENABLED" },
@@ -248,10 +248,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
 
     this.jobsLoading = false;
-    toPromise<ReplicationJob>(
       this.replicationService.getExecutions(this.search.ruleId, params)
-    )
-      .then(response => {
+      .subscribe(response => {
         this.totalCount = response.metadata.xTotalCount;
         this.jobs = response.data;
 
@@ -281,8 +279,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
 
         this.jobsLoading = false;
-      })
-      .catch(error => {
+      }, error => {
         this.jobsLoading = false;
         this.errorHandler.error(error);
       });
@@ -337,14 +334,14 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       let rule: ReplicationRule = message.data;
 
       if (rule) {
-        Promise.all([this.replicationOperate(rule)]).then((item) => {
+        forkJoin(this.replicationOperate(rule)).subscribe((item) => {
           this.selectOneRule(rule);
         });
       }
     }
   }
 
-  replicationOperate(rule: ReplicationRule) {
+  replicationOperate(rule: ReplicationRule): Observable<any> {
     // init operation info
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.REPLICATION';
@@ -353,24 +350,24 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     operMessage.data.name = rule.name;
     this.operationService.publishInfo(operMessage);
 
-    return toPromise<any>(this.replicationService.replicateRule(+rule.id))
-        .then(response => {
+    return this.replicationService.replicateRule(+rule.id)
+        .pipe(map(response => {
           this.translateService.get('BATCH.REPLICATE_SUCCESS')
               .subscribe(res => operateChanges(operMessage, OperationState.success));
         })
-        .catch(error => {
+        , catchError(error => {
           if (error && error.status === 412) {
-            forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
+            return forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
                 this.translateService.get('REPLICATION.REPLICATE_SUMMARY_FAILURE'))
-                .subscribe(function (res) {
+                .pipe(map(function (res) {
                   operateChanges(operMessage, OperationState.failure, res[1]);
-            });
+            }));
           } else {
-            this.translateService.get('BATCH.REPLICATE_FAILURE').subscribe(res => {
+            return this.translateService.get('BATCH.REPLICATE_FAILURE').pipe(map(res => {
               operateChanges(operMessage, OperationState.failure, res);
-            });
+            }));
         }
-      });
+      }));
   }
 
   customRedirect(rule: ReplicationRule) {

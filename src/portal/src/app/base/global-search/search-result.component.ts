@@ -140,12 +140,11 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         this.onGoing = true;
 
         this.search.doSearch(term)
-            .then(searchResults => {
+            .subscribe(searchResults => {
                 this.onGoing = false;
                 this.originalCopy = searchResults; // Keep the original data
                 this.searchResults = this.clone(searchResults);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.msgHandler.handleError(error);
             });

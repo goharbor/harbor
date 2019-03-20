@@ -100,11 +100,10 @@ export class ConfigurationEmailComponent implements OnChanges {
 
         this.testingMailOnGoing = true;
         this.configService.testMailServer(mailSettings)
-            .then(response => {
+            .subscribe(response => {
                 this.testingMailOnGoing = false;
                 this.msgHandler.showSuccess('CONFIG.TEST_MAIL_SUCCESS');
-            })
-            .catch(error => {
+            }, error => {
                 this.testingMailOnGoing = false;
                 let err = error._body;
                 if (!err) {
@@ -134,12 +133,11 @@ export class ConfigurationEmailComponent implements OnChanges {
         if (!isEmpty(changes)) {
             this.onGoing = true;
             this.configService.saveConfiguration(changes)
-                .then(response => {
+                .subscribe(response => {
                     this.onGoing = false;
                     this.retrieveConfig();
                     this.msgHandler.showSuccess('CONFIG.SAVE_SUCCESS');
-                })
-                .catch(error => {
+                }, error => {
                     this.onGoing = false;
                     this.msgHandler.handleError(error);
                 });
@@ -152,7 +150,7 @@ export class ConfigurationEmailComponent implements OnChanges {
     retrieveConfig(): void {
         this.onGoing = true;
         this.configService.getConfiguration()
-            .then((configurations: Configuration) => {
+            .subscribe((configurations: Configuration) => {
                 this.onGoing = false;
 
                 // Add two password fields
@@ -160,8 +158,7 @@ export class ConfigurationEmailComponent implements OnChanges {
                 this.currentConfig = configurations;
                 // Keep the original copy of the data
                 this.originalConfig = clone(configurations);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.msgHandler.handleError(error);
             });

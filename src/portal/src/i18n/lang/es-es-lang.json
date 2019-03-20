@@ -673,9 +673,9 @@
             "VERIFY_CERT": "Verify Cert from LDAP Server",
             "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
             "GC_POLICY": "",
-            "HOURLY_CRON":"Run once an hour, beginning of hour",
-            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
-            "DAILY_CRON":"Run once a day, midnight"
+            "HOURLY_CRON":"Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
+            "DAILY_CRON":"Run once a day, midnight. Equivalente a 0 0 0 * * *."
 
         },
         "LDAP": {
@@ -913,7 +913,10 @@
         "NONE": "None",
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
+        "HOURLY": "Hourly",
+        "CUSTOM": "Custom",
         "MANUAL": "Manual",
+        "CRON": "cron",
         "ON": "on",
         "AT": "at"
     },

@@ -1,5 +1,5 @@
 <div class="cron-selection">
-  <cron-selection [labelCurrent]="getLabelCurrent" [labelEdit]='getText' [originCron]='originCron' (inputvalue)="getcron($event)"></cron-selection>
+  <cron-selection [labelCurrent]="getLabelCurrent" [labelEdit]='getText' [originCron]='originCron' (inputvalue)="scheduleGc($event)"></cron-selection>
 </div>
 <button class="btn btn-primary btn-sm gc-start-btn" (click)="gcNow()" [disabled]="disableGC">{{'GC.GC_NOW' | translate}}</button>
 <div class="job-header font-style">{{'GC.JOB_HISTORY' | translate}}</div>

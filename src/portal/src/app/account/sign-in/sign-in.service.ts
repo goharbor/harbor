@@ -13,11 +13,12 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http, URLSearchParams } from '@angular/http';
-import 'rxjs/add/operator/toPromise';
+// import 'rxjs/add/operator/toPromise';
 
 import { SignInCredential } from '../../shared/sign-in-credential';
 import {HTTP_FORM_OPTIONS} from "../../shared/shared.utils";
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 const signInUrl = '/c/login';
 /**
  *
@@ -32,12 +33,12 @@ export class SignInService {
     constructor(private http: Http) {}
 
     // Handle the related exceptions
-    handleError(error: any): Promise<any> {
-        return Promise.reject(error.message || error);
+    handleError(error: any): Observable<any> {
+        return observableThrowError(error.message || error);
     }
 
     // Submit signin form to backend (NOT restful service)
-    signIn(signInCredential: SignInCredential): Promise<any> {
+    signIn(signInCredential: SignInCredential): Observable<any> {
         // Build the form package
         const body = new URLSearchParams();
         body.set('principal', signInCredential.principal);
@@ -45,8 +46,8 @@ export class SignInService {
 
         // Trigger Http
         return this.http.post(signInUrl, body.toString(), HTTP_FORM_OPTIONS)
-        .toPromise()
-        .then(() => null)
-        .catch(this.handleError);
+        .pipe(map(() => null)
+        , catchError(error => observableThrowError(error)));
+
     }
 }

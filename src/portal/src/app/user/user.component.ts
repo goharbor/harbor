@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
-import { Subscription } from "rxjs";
+import { Subscription, Observable, forkJoin } from "rxjs";
 
 import { TranslateService } from '@ngx-translate/core';
 
@@ -28,6 +28,9 @@ import { UserService } from './user.service';
 import { User } from './user';
 import { ChangePasswordComponent } from "./change-password/change-password.component";
 import { operateChanges, OperateInfo, OperationService, OperationState } from "@harbor/ui";
+import { map, catchError } from 'rxjs/operators';
+import { throwError as observableThrowError } from "rxjs";
+
 /**
  * NOTES:
  *   Pagination for this component is a temporary workaround solution. It will be replaced in future release.
@@ -48,7 +51,7 @@ import { operateChanges, OperateInfo, OperationService, OperationState } from "@
 
 export class UserComponent implements OnInit, OnDestroy {
   users: User[] = [];
-  originalUsers: Promise<User[]>;
+  originalUsers: Observable<User[]>;
   selectedRow: User[] = [];
   ISADMNISTRATOR: string = "USER.ENABLE_ADMIN_ACTION";
 
@@ -177,7 +180,7 @@ export class UserComponent implements OnInit, OnDestroy {
   doFilter(terms: string): void {
     this.selectedRow = [];
     this.currentTerm = terms;
-    this.originalUsers.then(users => {
+    this.originalUsers.subscribe(users => {
       if (terms.trim() === "") {
         this.refreshUser((this.currentPage - 1) * 15, this.currentPage * 15);
       } else {
@@ -194,7 +197,7 @@ export class UserComponent implements OnInit, OnDestroy {
 
   // Disable the admin role for the specified user
   changeAdminRole(): void {
-    let promiseLists: any[] = [];
+    let observableLists: any[] = [];
     if (this.selectedRow.length) {
       if (this.ISADMNISTRATOR === 'USER.ENABLE_ADMIN_ACTION') {
         for (let i = 0; i < this.selectedRow.length; i++) {
@@ -206,7 +209,7 @@ export class UserComponent implements OnInit, OnDestroy {
           updatedUser.user_id = this.selectedRow[i].user_id;
 
           updatedUser.has_admin_role = true; // Set as admin
-          promiseLists.push(this.userService.updateUserRole(updatedUser));
+          observableLists.push(this.userService.updateUserRole(updatedUser));
         }
       }
       if (this.ISADMNISTRATOR === 'USER.DISABLE_ADMIN_ACTION') {
@@ -219,15 +222,14 @@ export class UserComponent implements OnInit, OnDestroy {
           updatedUser.user_id = this.selectedRow[i].user_id;
 
           updatedUser.has_admin_role = false; // Set as none admin
-          promiseLists.push(this.userService.updateUserRole(updatedUser));
+          observableLists.push(this.userService.updateUserRole(updatedUser));
         }
       }
 
-      Promise.all(promiseLists).then(() => {
+      forkJoin(...observableLists).subscribe(() => {
         this.selectedRow = [];
         this.refresh();
-      })
-        .catch(error => {
+      }, error => {
           this.selectedRow = [];
           this.msgHandler.handleError(error);
         });
@@ -259,13 +261,13 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   delUser(users: User[]): void {
-    let promiseLists: any[] = [];
+    let observableLists: any[] = [];
     if (users && users.length) {
       users.forEach(user => {
-        promiseLists.push(this.delOperate(user));
+        observableLists.push(this.delOperate(user));
       });
 
-      Promise.all(promiseLists).then((item) => {
+      forkJoin(...observableLists).subscribe((item) => {
         this.selectedRow = [];
         this.currentTerm = '';
         this.refresh();
@@ -273,7 +275,7 @@ export class UserComponent implements OnInit, OnDestroy {
     }
   }
 
-  delOperate(user: User) {
+  delOperate(user: User): Observable<any> {
     // init operation info
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.DELETE_USER';
@@ -283,22 +285,21 @@ export class UserComponent implements OnInit, OnDestroy {
     this.operationService.publishInfo(operMessage);
 
     if (this.isMySelf(user.user_id)) {
-      this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+      return this.translate.get('BATCH.DELETED_FAILURE').pipe(map(res => {
         operateChanges(operMessage, OperationState.failure, res);
-      });
-      return null;
+      }));
     }
 
 
-    return this.userService.deleteUser(user.user_id).then(() => {
+    return this.userService.deleteUser(user.user_id).pipe(map(() => {
       this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
         operateChanges(operMessage, OperationState.success);
       });
-    }).catch(error => {
-      this.translate.get('BATCH.DELETED_FAILURE').subscribe(res => {
+    }, catchError(error => {
+      return this.translate.get('BATCH.DELETED_FAILURE').pipe(map(res => {
         operateChanges(operMessage, OperationState.failure, res);
-      });
-    });
+      }));
+    })));
   }
 
   // Refresh the user list
@@ -309,7 +310,7 @@ export class UserComponent implements OnInit, OnDestroy {
     this.onGoing = true;
 
     this.originalUsers = this.userService.getUsers();
-    this.originalUsers.then(users => {
+    this.originalUsers.subscribe(users => {
       this.onGoing = false;
 
       this.totalCount = users.length;
@@ -318,8 +319,7 @@ export class UserComponent implements OnInit, OnDestroy {
       this.forceRefreshView(5000);
 
       return users;
-    })
-      .catch(error => {
+    }, error => {
         this.onGoing = false;
         this.msgHandler.handleError(error);
         this.forceRefreshView(5000);
@@ -345,7 +345,7 @@ export class UserComponent implements OnInit, OnDestroy {
     this.selectedRow = [];
     if (state && state.page) {
       if (this.originalUsers) {
-        this.originalUsers.then(users => {
+        this.originalUsers.subscribe(users => {
           this.users = users.slice(state.page.from, state.page.to + 1);
         });
         this.forceRefreshView(5000);

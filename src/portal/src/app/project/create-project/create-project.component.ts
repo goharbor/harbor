@@ -81,14 +81,13 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
           if (this.isNameValid) {
             // Check exiting from backend
             this.projectService
-              .checkProjectExists(cont.value).toPromise()
-              .then(() => {
+              .checkProjectExists(cont.value)
+              .subscribe(() => {
                 // Project existing
                 this.isNameValid = false;
                 this.nameTooltipText = "PROJECT.NAME_ALREADY_EXISTS";
                 this.checkOnGoing = false;
-              })
-              .catch(error => {
+              }, error => {
                 this.checkOnGoing = false;
               });
           } else {

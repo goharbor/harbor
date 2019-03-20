@@ -19,6 +19,7 @@ import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
 import { OperationService } from "../operation/operation.service";
 
 import { click } from "../utils";
+import { of } from "rxjs";
 
 describe("EndpointComponent (inline template)", () => {
   let mockData: Endpoint[] = [
@@ -138,7 +139,7 @@ describe("EndpointComponent (inline template)", () => {
     endpointService = fixture.debugElement.injector.get(EndpointService);
 
     spy = spyOn(endpointService, "getEndpoints").and.returnValues(
-      Promise.resolve(mockData)
+      of(mockData)
     );
 
     spyAdapter = spyOn(endpointService, "getAdapters").and.returnValue(
@@ -150,7 +151,7 @@ describe("EndpointComponent (inline template)", () => {
       "getEndpointWithReplicationRules"
     ).and.returnValue([]);
     spyOne = spyOn(endpointService, "getEndpoint").and.returnValue(
-      Promise.resolve(mockOne[0])
+      of(mockOne[0])
     );
     fixture.detectChanges();
   });
