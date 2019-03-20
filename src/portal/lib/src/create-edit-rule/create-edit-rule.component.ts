@@ -105,12 +105,16 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   };
   emptyEndpoint = {
     id: -1,
-    endpoint: "",
+    credential: {
+      access_key: "",
+      access_secret: "",
+      type: ""
+    },
+    description: "",
+    insecure: false,
     name: "",
-    username: "",
-    password: "",
-    insecure: true,
-    type: 0
+    type: "",
+    url: "",
   };
   constructor(
     private fb: FormBuilder,

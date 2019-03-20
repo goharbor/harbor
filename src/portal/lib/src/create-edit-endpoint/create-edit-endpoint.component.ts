@@ -18,7 +18,8 @@ import {
   ViewChild,
   AfterViewChecked,
   ChangeDetectorRef,
-  OnDestroy
+  OnDestroy,
+  OnInit
 } from "@angular/core";
 import { NgForm } from "@angular/forms";
 import { Subscription } from "rxjs";
@@ -27,7 +28,7 @@ import { TranslateService } from "@ngx-translate/core";
 import { EndpointService } from "../service/endpoint.service";
 import { ErrorHandler } from "../error-handler/index";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
-import { Endpoint } from "../service/interface";
+import { Endpoint, Adapter } from "../service/interface";
 import { toPromise, clone, compareValue, isEmptyObject } from "../utils";
 
 
@@ -39,16 +40,17 @@ const FAKE_PASSWORD = "rjGcfuRu";
   styleUrls: ["./create-edit-endpoint.component.scss"]
 })
 export class CreateEditEndpointComponent
-  implements AfterViewChecked, OnDestroy {
+  implements AfterViewChecked, OnDestroy, OnInit {
   modalTitle: string;
+  controlEnabled: boolean = false;
   createEditDestinationOpened: boolean;
   staticBackdrop: boolean = true;
   closable: boolean = false;
   editable: boolean;
-
+  adapterList: Adapter[] = [];
   target: Endpoint = this.initEndpoint();
+  selectedType: string;
   initVal: Endpoint;
-
   targetForm: NgForm;
   @ViewChild("targetForm") currentForm: NgForm;
 
@@ -70,6 +72,14 @@ export class CreateEditEndpointComponent
     private translateService: TranslateService,
     private ref: ChangeDetectorRef
   ) {}
+
+  ngOnInit(): void {
+    toPromise<Adapter[]>(this.endpointService.getAdapters())
+      .then(adapters => {
+        this.adapterList = adapters || [];
+      })
+      .catch((error: any) => this.errorHandler.error(error));
+  }
 
   public get isValid(): boolean {
     return (
@@ -98,13 +108,17 @@ export class CreateEditEndpointComponent
 
   initEndpoint(): Endpoint {
     return {
-      url: "",
-      name: "",
-      username: "",
-      password: "",
+      credential: {
+        access_key: "",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "",
       insecure: false,
-      type: ""
-    };
+      name: "",
+      type: "Harbor",
+      url: "",
+      };
   }
 
   open(): void {
@@ -125,7 +139,6 @@ export class CreateEditEndpointComponent
     this.initVal = this.initEndpoint();
     this.formValues = null;
     this.endpointId = "";
-
     this.inlineAlert.close();
   }
 
@@ -158,11 +171,12 @@ export class CreateEditEndpointComponent
           this.target = target;
           // Keep data cache
           this.initVal = clone(target);
-          this.initVal.password = FAKE_PASSWORD;
-          this.target.password = FAKE_PASSWORD;
+          this.initVal.credential.access_secret = FAKE_PASSWORD;
+          this.target.credential.access_secret = FAKE_PASSWORD;
 
           // Open the modal now
           this.open();
+          this.controlEnabled = true;
           this.forceRefreshView(2000);
         })
         .catch(error => this.errorHandler.error(error));
@@ -173,15 +187,16 @@ export class CreateEditEndpointComponent
         .subscribe(res => (this.modalTitle = res));
       // Directly open the modal
       this.open();
+      this.controlEnabled = false;
     }
   }
 
   testConnection() {
     let payload: Endpoint = this.initEndpoint();
     if (!this.endpointId) {
-      payload.endpoint = this.target.endpoint;
-      payload.username = this.target.username;
-      payload.password = this.target.password;
+      payload.url = this.target.url;
+      payload.credential.access_key = this.target.credential.access_key;
+      payload.credential.access_secret = this.target.credential.access_secret;
       payload.insecure = this.target.insecure;
     } else {
       let changes: { [key: string]: any } = this.getChanges();
@@ -225,7 +240,6 @@ export class CreateEditEndpointComponent
     if (this.onGoing) {
       return; // Avoid duplicated submitting
     }
-
     this.onGoing = true;
     toPromise<number>(this.endpointService.createEndpoint(this.target))
       .then(response => {

@@ -65,6 +65,7 @@ const uiLibConfig: IServiceConfig = {
   targetBaseEndpoint: "/api/registries",
   replicationBaseEndpoint: "/api/replication/executions",
   replicationRuleEndpoint: "/api/replication/policies",
+  adapterEndpoint: "api/replication/adapters",
   vulnerabilityScanningBaseEndpoint: "/api/repositories",
   projectPolicyEndpoint: "/api/projects/configs",
   projectBaseEndpoint: "/api/projects",

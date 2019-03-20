@@ -12,7 +12,7 @@ import { FilterComponent } from "../filter/filter.component";
 import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { ErrorHandler } from "../error-handler/error-handler";
-import { Endpoint } from "../service/interface";
+import { Endpoint, Adapter } from "../service/interface";
 import {
   EndpointService,
   EndpointDefaultService
@@ -21,13 +21,26 @@ import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
 describe("CreateEditEndpointComponent (inline template)", () => {
   let mockData: Endpoint = {
     id: 1,
-    url: "https://10.117.4.151",
-    name: "target_01",
-    username: "admin",
-    password: "",
+    credential: {
+      access_key: "admin",
+      access_secret: "",
+      type: "basic"
+    },
+    description: "test",
     insecure: false,
-    type: "harbor"
+    name: "target_01",
+    type: "Harbor",
+    url: "https://10.117.4.151"
   };
+
+  let mockAdapter: [Adapter] = [{
+    type: "Harbor",
+    description: "test",
+    supported_resource_types: [
+      "repository"
+    ],
+    supported_resource_filters: null
+  }];
 
   let comp: CreateEditEndpointComponent;
   let fixture: ComponentFixture<CreateEditEndpointComponent>;
@@ -39,6 +52,7 @@ describe("CreateEditEndpointComponent (inline template)", () => {
   let endpointService: EndpointService;
 
   let spy: jasmine.Spy;
+  let spyAdapter: jasmine.Spy;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -61,6 +75,10 @@ describe("CreateEditEndpointComponent (inline template)", () => {
     comp = fixture.componentInstance;
 
     endpointService = fixture.debugElement.injector.get(EndpointService);
+    spyAdapter = spyOn(endpointService, "getAdapters").and.returnValue(
+      Promise.resolve(mockAdapter)
+    );
+
     spy = spyOn(endpointService, "getEndpoint").and.returnValue(
       Promise.resolve(mockData)
     );

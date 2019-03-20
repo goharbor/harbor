@@ -75,13 +75,27 @@ export interface Tag extends Base {
  * extends {Base}
  */
 export interface Endpoint extends Base {
-  url: string;
-  name: string;
-  username?: string;
-  password?: string;
+  credential: {
+    access_key?: string,
+    access_secret?: string,
+    type: string;
+  };
+  description: string;
   insecure: boolean;
+  name: string;
   type: string;
-  [key: string]: any;
+  url: string;
+}
+
+export interface Adapter extends Base {
+  type: string;
+  description: string;
+  supported_resource_types: [
+    string
+  ];
+  supported_resource_filters: [
+    string
+  ];
 }
 
 /**

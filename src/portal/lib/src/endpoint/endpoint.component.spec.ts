@@ -10,7 +10,7 @@ import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation
 import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { ErrorHandler } from "../error-handler/error-handler";
-import { Endpoint } from "../service/interface";
+import { Endpoint, Adapter } from "../service/interface";
 import {
   EndpointService,
   EndpointDefaultService
@@ -24,53 +24,82 @@ describe("EndpointComponent (inline template)", () => {
   let mockData: Endpoint[] = [
     {
       id: 1,
-      url: "https://10.117.4.151",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
+      insecure: false,
       name: "target_01",
-      username: "admin",
-      password: "",
-      insecure: true,
-      type: "Harbor"
+      type: "Harbor",
+      url: "https://10.117.4.151"
     },
     {
       id: 2,
-      url: "https://10.117.5.142",
-      name: "target_02",
-      username: "AAA",
-      password: "",
+      credential: {
+        access_key: "AAA",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: "Harbor"
+      name: "target_02",
+      type: "Harbor",
+      url: "https://10.117.5.142"
     },
     {
       id: 3,
-      url: "https://101.1.11.111",
-      name: "target_03",
-      username: "admin",
-      password: "",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: "Harbor"
+      name: "target_03",
+      type: "Harbor",
+      url: "https://101.1.11.111"
     },
     {
       id: 4,
-      url: "http://4.4.4.4",
-      name: "target_04",
-      username: "",
-      password: "",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: "Harbor"
+      name: "target_04",
+      type: "Harbor",
+      url: "https://4.4.4.4"
     }
   ];
 
   let mockOne: Endpoint[] = [
     {
       id: 1,
-      url: "https://10.117.4.151",
-      name: "target_01",
-      username: "admin",
-      password: "",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: "Harbor"
+      name: "target_01",
+      type: "Harbor",
+      url: "https://10.117.4.151"
     }
   ];
+
+  let mockAdapter: [Adapter] = [{
+    type: "Harbor",
+    description: "test",
+    supported_resource_types: [
+      "repository"
+    ],
+    supported_resource_filters: null
+  }];
 
   let comp: EndpointComponent;
   let fixture: ComponentFixture<EndpointComponent>;
@@ -80,6 +109,7 @@ describe("EndpointComponent (inline template)", () => {
 
   let endpointService: EndpointService;
   let spy: jasmine.Spy;
+  let spyAdapter: jasmine.Spy;
   let spyOnRules: jasmine.Spy;
   let spyOne: jasmine.Spy;
   beforeEach(async(() => {
@@ -110,6 +140,11 @@ describe("EndpointComponent (inline template)", () => {
     spy = spyOn(endpointService, "getEndpoints").and.returnValues(
       Promise.resolve(mockData)
     );
+
+    spyAdapter = spyOn(endpointService, "getAdapters").and.returnValue(
+      Promise.resolve(mockAdapter)
+    );
+
     spyOnRules = spyOn(
       endpointService,
       "getEndpointWithReplicationRules"
