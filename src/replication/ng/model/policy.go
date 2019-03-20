@@ -27,6 +27,10 @@ const (
 	FilterTypeName     = "Name"
 	FilterTypeVersion  = "Version"
 	FilterTypeLabel    = "Label"
+
+	TriggerTypeManual     = "Manual"
+	TriggerTypeScheduled  = "Scheduled"
+	TriggerTypeEventBased = "EventBased"
 )
 
 // Policy defines the structure of a replication policy

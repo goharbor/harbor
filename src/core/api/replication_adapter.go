@@ -41,7 +41,10 @@ func (r *ReplicationAdapterAPI) Prepare() {
 
 // List the replication adapters
 func (r *ReplicationAdapterAPI) List() {
-	infos := adapter.ListAdapterInfos()
+	infos := []*adapter.Info{}
+	for _, info := range adapter.ListAdapterInfos() {
+		infos = append(infos, process(info))
+	}
 	r.WriteJSONData(infos)
 }
 
@@ -53,5 +56,38 @@ func (r *ReplicationAdapterAPI) Get() {
 		r.HandleNotFound(fmt.Sprintf("adapter for %s not found", t))
 		return
 	}
+	info = process(info)
 	r.WriteJSONData(info)
+}
+
+// merge "SupportedResourceTypes" into "SupportedResourceFilters" for UI to render easier
+func process(info *adapter.Info) *adapter.Info {
+	if info == nil {
+		return nil
+	}
+
+	in := &adapter.Info{
+		Type:              info.Type,
+		Description:       info.Description,
+		SupportedTriggers: info.SupportedTriggers,
+	}
+
+	filters := []*adapter.Filter{}
+	for _, filter := range info.SupportedResourceFilters {
+		if filter.Type != model.FilterTypeResource {
+			filters = append(filters, filter)
+		}
+	}
+	values := []string{}
+	for _, resourceType := range info.SupportedResourceTypes {
+		values = append(values, string(resourceType))
+	}
+	filters = append(filters, &adapter.Filter{
+		Type:   model.FilterTypeResource,
+		Style:  adapter.FilterStyleRadio,
+		Values: values,
+	})
+	in.SupportedResourceFilters = filters
+
+	return in
 }

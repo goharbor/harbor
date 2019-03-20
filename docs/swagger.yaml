@@ -5262,6 +5262,26 @@ definitions:
         type: array
         description: The filters that the adapter supports
         items:
+          $ref: '#/definitions/ReplicationAdapterFilter'
+      supported_triggers:
+        type: array
+        description: The triggers that the adapter supports
+        items:
+          type: string
+  ReplicationAdapterFilter:
+    type: object
+    description: The replication adapter filter
+    properties:
+      type:
+        type: string
+        description: The filter type
+      style:
+        type: string
+        description: The filter style
+      values:
+        type: array
+        description: The filter values
+        items:
           type: string
   ReplicationExecution:
     type: object

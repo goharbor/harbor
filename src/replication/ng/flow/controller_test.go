@@ -241,6 +241,7 @@ func TestStartReplication(t *testing.T) {
 				model.ResourceTypeRepository,
 				model.ResourceTypeChart,
 			},
+			SupportedTriggers: []model.TriggerType{model.TriggerTypeManual},
 		}, fakedAdapterFactory)
 	require.Nil(t, err)
 

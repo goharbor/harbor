@@ -31,11 +31,31 @@ import (
 // TODO add UT
 
 func init() {
-	// TODO add more information to the info
 	info := &adp.Info{
 		Type: model.RegistryTypeHarbor,
 		SupportedResourceTypes: []model.ResourceType{
-			model.ResourceTypeRepository, model.ResourceTypeChart},
+			model.ResourceTypeRepository,
+			model.ResourceTypeChart,
+		},
+		SupportedResourceFilters: []*adp.Filter{
+			{
+				Type:  model.FilterTypeName,
+				Style: adp.FilterStyleText,
+			},
+			{
+				Type:  model.FilterTypeVersion,
+				Style: adp.FilterStyleText,
+			},
+			{
+				Type:  model.FilterTypeLabel,
+				Style: adp.FilterStyleText,
+			},
+		},
+		SupportedTriggers: []model.TriggerType{
+			model.TriggerTypeManual,
+			model.TriggerTypeScheduled,
+			model.TriggerTypeEventBased,
+		},
 	}
 	// TODO passing coreServiceURL and tokenServiceURL
 	coreServiceURL := "http://core:8080"

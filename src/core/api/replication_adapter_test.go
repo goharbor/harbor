@@ -65,6 +65,7 @@ func TestReplicationAdapterAPIGet(t *testing.T) {
 		&adapter.Info{
 			Type:                   "test",
 			SupportedResourceTypes: []model.ResourceType{"image"},
+			SupportedTriggers:      []model.TriggerType{"mannual"},
 		}, fakedFactory)
 	require.Nil(t, err)
 
