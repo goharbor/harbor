@@ -75,12 +75,12 @@ export interface Tag extends Base {
  * extends {Base}
  */
 export interface Endpoint extends Base {
-  endpoint: string;
+  url: string;
   name: string;
   username?: string;
   password?: string;
   insecure: boolean;
-  type: number;
+  type: string;
   [key: string]: any;
 }
 
@@ -97,24 +97,13 @@ export interface ReplicationRule extends Base {
   id?: number;
   name: string;
   description: string;
-  projects: Project[];
-  targets: Endpoint[];
   trigger: Trigger;
   filters: Filter[];
-  replicate_existing_image_now?: boolean;
-  replicate_deletion?: boolean;
-  // id?: number;
-  // name: string;
-  // description: string;
-  // src_registry_id: number;
-  // src_namespaces: [];
-  // dest_registry_id: number;
-  // dest_namespace: string;
-  // trigger: Trigger;
-  // filter: Filter[];
-  // deletion: boolean;
-  // override: boolean;
-  // enabled: boolean;
+  deletion?: boolean;
+  src_registry_id?: number;
+  dest_registry_id?: number;
+  src_namespaces: string [];
+  dest_namespace?: string;
 }
 
 export class Filter {

@@ -447,7 +447,12 @@
         "NAME_TOOLTIP": "replication rule name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "DELETED_LABEL_INFO": "Deleted label(s) '{{param}}' referenced in the filter, click 'SAVE' to update the filter to enable this rule.",
         "ACKNOWLEDGE": "Acknowledge",
-        "RULE_DISABLED": "This rule has been disabled because a label used in its filter has been deleted. \n Edit the rule and update its filter to enable it."
+        "RULE_DISABLED": "This rule has been disabled because a label used in its filter has been deleted. \n Edit the rule and update its filter to enable it.",
+        "REPLI_MODE": "Replication mode",
+        "SOURCE_REGISTRY":"Source registry",
+        "SOURCE_NAMESPACES":"Source namespaces",
+        "DEST_REGISTRY":"Destination registry",
+        "DEST_NAMESPACE":"Destination namespace"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "New Endpoint",

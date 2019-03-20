@@ -98,12 +98,12 @@ export class CreateEditEndpointComponent
 
   initEndpoint(): Endpoint {
     return {
-      endpoint: "",
+      url: "",
       name: "",
       username: "",
       password: "",
       insecure: false,
-      type: 0
+      type: ""
     };
   }
 
