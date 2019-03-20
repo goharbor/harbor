@@ -25,7 +25,9 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/execution"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
 )
@@ -37,7 +39,8 @@ type flow struct {
 	srcAdapter    adapter.Adapter
 	dstAdapter    adapter.Adapter
 	executionID   int64
-	resources     []*model.Resource
+	srcResources  []*model.Resource
+	dstResources  []*model.Resource
 	executionMgr  execution.Manager
 	scheduler     scheduler.Scheduler
 	scheduleItems []*scheduler.ScheduleItem
@@ -52,45 +55,71 @@ func newFlow(policy *model.Policy, registryMgr registry.Manager,
 		scheduler:    scheduler,
 	}
 
-	// get source registry
-	srcRegistry, err := registryMgr.Get(policy.SrcRegistryID)
+	// TODO consider to put registry model in the policy directly rather than just the registry ID?
+	url, err := config.RegistryURL()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get registry %d: %v", policy.SrcRegistryID, err)
+		return nil, fmt.Errorf("failed to get the registry URL: %v", err)
 	}
-	if srcRegistry == nil {
-		return nil, fmt.Errorf("registry %d not found", policy.SrcRegistryID)
+	registry := &model.Registry{
+		Type: model.RegistryTypeHarbor,
+		Name: "Local",
+		URL:  url,
+		// TODO use the service account
+		Credential: &model.Credential{
+			Type:         model.CredentialTypeBasic,
+			AccessKey:    "admin",
+			AccessSecret: "Harbor12345",
+		},
+		Insecure: true,
 	}
-	f.srcRegistry = srcRegistry
+
+	// get source registry
+	if policy.SrcRegistryID != 0 {
+		srcRegistry, err := registryMgr.Get(policy.SrcRegistryID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get registry %d: %v", policy.SrcRegistryID, err)
+		}
+		if srcRegistry == nil {
+			return nil, fmt.Errorf("registry %d not found", policy.SrcRegistryID)
+		}
+		f.srcRegistry = srcRegistry
+	} else {
+		f.srcRegistry = registry
+	}
 
 	// get destination registry
-	dstRegistry, err := registryMgr.Get(policy.DestRegistryID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get registry %d: %v", policy.DestRegistryID, err)
+	if policy.DestRegistryID != 0 {
+		dstRegistry, err := registryMgr.Get(policy.DestRegistryID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get registry %d: %v", policy.DestRegistryID, err)
+		}
+		if dstRegistry == nil {
+			return nil, fmt.Errorf("registry %d not found", policy.DestRegistryID)
+		}
+		f.dstRegistry = dstRegistry
+	} else {
+		f.dstRegistry = registry
 	}
-	if dstRegistry == nil {
-		return nil, fmt.Errorf("registry %d not found", policy.DestRegistryID)
-	}
-	f.dstRegistry = dstRegistry
 
 	// create the source registry adapter
-	srcFactory, err := adapter.GetFactory(srcRegistry.Type)
+	srcFactory, err := adapter.GetFactory(f.srcRegistry.Type)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", srcRegistry.Type, err)
+		return nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", f.srcRegistry.Type, err)
 	}
-	srcAdapter, err := srcFactory(srcRegistry)
+	srcAdapter, err := srcFactory(f.srcRegistry)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create adapter for source registry %s: %v", srcRegistry.URL, err)
+		return nil, fmt.Errorf("failed to create adapter for source registry %s: %v", f.srcRegistry.URL, err)
 	}
 	f.srcAdapter = srcAdapter
 
 	// create the destination registry adapter
-	dstFactory, err := adapter.GetFactory(dstRegistry.Type)
+	dstFactory, err := adapter.GetFactory(f.dstRegistry.Type)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", dstRegistry.Type, err)
+		return nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", f.dstRegistry.Type, err)
 	}
-	dstAdapter, err := dstFactory(dstRegistry)
+	dstAdapter, err := dstFactory(f.dstRegistry)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create adapter for destination registry %s: %v", dstRegistry.URL, err)
+		return nil, fmt.Errorf("failed to create adapter for destination registry %s: %v", f.dstRegistry.URL, err)
 	}
 	f.dstAdapter = dstAdapter
 
@@ -98,9 +127,9 @@ func newFlow(policy *model.Policy, registryMgr registry.Manager,
 }
 
 func (f *flow) createExecution() (int64, error) {
-	id, err := f.executionMgr.Create(&model.Execution{
+	id, err := f.executionMgr.Create(&models.Execution{
 		PolicyID:  f.policy.ID,
-		Status:    model.ExecutionStatusInProgress,
+		Status:    models.ExecutionStatusInProgress,
 		StartTime: time.Now(),
 	})
 	f.executionID = id
@@ -123,7 +152,7 @@ func (f *flow) fetchResources() error {
 	}
 
 	// TODO consider whether the logic can be refactored by using reflect
-	resources := []*model.Resource{}
+	srcResources := []*model.Resource{}
 	for _, typ := range resTypes {
 		if typ == model.ResourceTypeRepository {
 			reg, ok := f.srcAdapter.(adapter.ImageRegistry)
@@ -137,51 +166,19 @@ func (f *flow) fetchResources() error {
 				f.markExecutionFailure(err)
 				return err
 			}
-			resources = append(resources, res...)
+			srcResources = append(srcResources, res...)
 			continue
 		}
 		// TODO add support for chart
 	}
-	f.resources = resources
 
-	log.Debugf("resources for the execution %d fetched from the source registry", f.executionID)
-	return nil
-}
-
-func (f *flow) createNamespace() error {
-	// merge the metadata of all source namespaces
-	metadata := map[string]interface{}{}
-	for _, srcNamespace := range f.policy.SrcNamespaces {
-		namespace, err := f.srcAdapter.GetNamespace(srcNamespace)
-		if err != nil {
-			f.markExecutionFailure(err)
-			return err
-		}
-		for key, value := range namespace.Metadata {
-			metadata[namespace.Name+":"+key] = value
-		}
-	}
-
-	if err := f.dstAdapter.CreateNamespace(&model.Namespace{
-		Name:     f.policy.DestNamespace,
-		Metadata: metadata,
-	}); err != nil {
-		f.markExecutionFailure(err)
-		return err
-	}
-
-	log.Debugf("namespace %s for the execution %d created on the destination registry", f.policy.DestNamespace, f.executionID)
-	return nil
-}
-
-func (f *flow) preprocess() error {
 	dstResources := []*model.Resource{}
-	for _, srcResource := range f.resources {
+	for _, srcResource := range srcResources {
 		dstResource := &model.Resource{
 			Type: srcResource.Type,
 			Metadata: &model.ResourceMetadata{
 				Name:      srcResource.Metadata.Name,
-				Namespace: f.policy.DestNamespace,
+				Namespace: srcResource.Metadata.Namespace,
 				Vtags:     srcResource.Metadata.Vtags,
 			},
 			Registry:     f.dstRegistry,
@@ -189,10 +186,78 @@ func (f *flow) preprocess() error {
 			Deleted:      srcResource.Deleted,
 			Override:     f.policy.Override,
 		}
+		// TODO check whether the logic is applied to chart
+		// if the destination namespace is specified, use the specified one
+		if len(f.policy.DestNamespace) > 0 {
+			dstResource.Metadata.Name = strings.Replace(srcResource.Metadata.Name,
+				srcResource.Metadata.Namespace, f.policy.DestNamespace, 1)
+			dstResource.Metadata.Namespace = f.policy.DestNamespace
+		}
 		dstResources = append(dstResources, dstResource)
 	}
 
-	items, err := f.scheduler.Preprocess(f.resources, dstResources)
+	f.srcResources = srcResources
+	f.dstResources = dstResources
+
+	log.Debugf("resources for the execution %d fetched from the source registry", f.executionID)
+	return nil
+}
+
+func (f *flow) createNamespace() error {
+	// Merge the metadata of all source namespaces
+	// eg:
+	// We have two source namespaces:
+	// {
+	//	Name: "source01",
+	//  Metadata: {"public": true}
+	// }
+	// and
+	// {
+	//	Name: "source02",
+	//  Metadata: {"public": false}
+	// }
+	// The name of the destination namespace is "destination",
+	// after merging the metadata, the destination namespace
+	// looks like this:
+	// {
+	//	 Name: "destination",
+	//   Metadata: {
+	//		"public": {
+	//			"source01": true,
+	//			"source02": false,
+	//		},
+	//	 },
+	// }
+	// TODO merge the metadata of different namespaces
+	namespaces := []*model.Namespace{}
+	for i, resource := range f.dstResources {
+		namespace := &model.Namespace{
+			Name: resource.Metadata.Namespace,
+		}
+		// get the metadata of the namespace from the source registry
+		ns, err := f.srcAdapter.GetNamespace(f.srcResources[i].Metadata.Namespace)
+		if err != nil {
+			f.markExecutionFailure(err)
+			return err
+		}
+		namespace.Metadata = ns.Metadata
+		namespaces = append(namespaces, namespace)
+	}
+
+	for _, namespace := range namespaces {
+		if err := f.dstAdapter.CreateNamespace(namespace); err != nil {
+			f.markExecutionFailure(err)
+			return err
+		}
+
+		log.Debugf("namespace %s for the execution %d created on the destination registry", namespace.Name, f.executionID)
+	}
+
+	return nil
+}
+
+func (f *flow) preprocess() error {
+	items, err := f.scheduler.Preprocess(f.srcResources, f.dstResources)
 	if err != nil {
 		f.markExecutionFailure(err)
 		return err
@@ -205,10 +270,10 @@ func (f *flow) preprocess() error {
 
 func (f *flow) createTasks() error {
 	for _, item := range f.scheduleItems {
-		task := &model.Task{
+		task := &models.Task{
 			ExecutionID:  f.executionID,
-			Status:       model.TaskStatusInitialized,
-			ResourceType: item.SrcResource.Type,
+			Status:       models.TaskStatusInitialized,
+			ResourceType: string(item.SrcResource.Type),
 			SrcResource:  getResourceName(item.SrcResource),
 			DstResource:  getResourceName(item.DstResource),
 		}
@@ -220,6 +285,7 @@ func (f *flow) createTasks() error {
 			f.markExecutionFailure(err)
 			return err
 		}
+
 		item.TaskID = id
 		log.Debugf("task record %d for the execution %d created",
 			id, f.executionID)
@@ -240,20 +306,21 @@ func (f *flow) schedule() error {
 		// task as failure
 		if result.Error != nil {
 			log.Errorf("failed to schedule task %d: %v", result.TaskID, err)
-			if err = f.executionMgr.UpdateTaskStatus(result.TaskID, model.TaskStatusFailed); err != nil {
+			if err = f.executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusFailed); err != nil {
 				log.Errorf("failed to update task status %d: %v", result.TaskID, err)
 			}
 			continue
 		}
 		allFailed = false
-		// if the task is submitted successfully, update the status and start time
-		if err = f.executionMgr.UpdateTaskStatus(result.TaskID, model.TaskStatusPending); err != nil {
+		// if the task is submitted successfully, update the status, job ID and start time
+		if err = f.executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusPending); err != nil {
 			log.Errorf("failed to update task status %d: %v", result.TaskID, err)
 		}
-		if err = f.executionMgr.UpdateTask(&model.Task{
+		if err = f.executionMgr.UpdateTask(&models.Task{
 			ID:        result.TaskID,
+			JobID:     result.JobID,
 			StartTime: time.Now(),
-		}); err != nil {
+		}, "JobID", "StartTime"); err != nil {
 			log.Errorf("failed to update task %d: %v", result.TaskID, err)
 		}
 		log.Debugf("the task %d scheduled", result.TaskID)
@@ -275,12 +342,26 @@ func (f *flow) markExecutionFailure(err error) {
 	log.Errorf("the execution %d is marked as failure because of the error: %s",
 		f.executionID, statusText)
 	err = f.executionMgr.Update(
-		&model.Execution{
+		&models.Execution{
 			ID:         f.executionID,
-			Status:     model.ExecutionStatusFailed,
+			Status:     models.ExecutionStatusFailed,
 			StatusText: statusText,
 			EndTime:    time.Now(),
-		})
+		}, "Status", "StatusText", "EndTime")
+	if err != nil {
+		log.Errorf("failed to update the execution %d: %v", f.executionID, err)
+	}
+}
+
+func (f *flow) markExecutionSuccess(msg string) {
+	log.Debugf("the execution %d is marked as success", f.executionID)
+	err := f.executionMgr.Update(
+		&models.Execution{
+			ID:         f.executionID,
+			Status:     models.ExecutionStatusSucceed,
+			StatusText: msg,
+			EndTime:    time.Now(),
+		}, "Status", "StatusText", "EndTime")
 	if err != nil {
 		log.Errorf("failed to update the execution %d: %v", f.executionID, err)
 	}

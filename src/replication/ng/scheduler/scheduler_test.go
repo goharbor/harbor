@@ -8,10 +8,8 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
-var replicator *DefaultReplicator
-
-func init() {
-	replicator = NewDefaultReplicator(TestClient{})
+var scheduler = &defaultScheduler{
+	client: TestClient{},
 }
 
 type TestClient struct {
@@ -27,7 +25,7 @@ func (client TestClient) PostAction(uuid, action string) error {
 	return nil
 }
 
-func TestDefaultReplicator_Preprocess(t *testing.T) {
+func TestPreprocess(t *testing.T) {
 	items, err := generateData()
 	if err != nil {
 		t.Error(err)
@@ -42,8 +40,8 @@ func TestDefaultReplicator_Preprocess(t *testing.T) {
 
 }
 
-func TestDefaultReplicator_Stop(t *testing.T) {
-	err := replicator.Stop("id")
+func TestStop(t *testing.T) {
+	err := scheduler.Stop("id")
 	if err != nil {
 		t.Error(err)
 	}
@@ -70,6 +68,6 @@ func generateData() ([]*ScheduleItem, error) {
 			Credential: &model.Credential{},
 		},
 	}
-	items, err := replicator.Preprocess([]*model.Resource{srcResource}, []*model.Resource{destResource})
+	items, err := scheduler.Preprocess([]*model.Resource{srcResource}, []*model.Resource{destResource})
 	return items, err
 }

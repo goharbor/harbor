@@ -20,7 +20,7 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/replication/ng"
-	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 )
 
 // ReplicationOperationAPI handles the replication operation requests
@@ -73,9 +73,12 @@ func (r *ReplicationOperationAPI) authorized(policy *model.Policy, resource rbac
 
 // ListExecutions ...
 func (r *ReplicationOperationAPI) ListExecutions() {
-	query := &model.ExecutionQuery{
-		Status:  r.GetString("status"),
+	query := &models.ExecutionQuery{
 		Trigger: r.GetString("trigger"),
+	}
+
+	if len(r.GetString("status")) > 0 {
+		query.Statuses = []string{r.GetString("status")}
 	}
 	if len(r.GetString("policy_id")) > 0 {
 		policyID, err := r.GetInt64("policy_id")
@@ -97,7 +100,7 @@ func (r *ReplicationOperationAPI) ListExecutions() {
 
 // CreateExecution starts a replication
 func (r *ReplicationOperationAPI) CreateExecution() {
-	execution := &model.Execution{}
+	execution := &models.Execution{}
 	r.DecodeJSONReq(execution)
 	policy, err := ng.PolicyMgr.Get(execution.PolicyID)
 	if err != nil {
@@ -160,10 +163,13 @@ func (r *ReplicationOperationAPI) ListTasks() {
 		return
 	}
 
-	query := &model.TaskQuery{
+	query := &models.TaskQuery{
 		ExecutionID:  executionID,
-		ResourceType: (model.ResourceType)(r.GetString("resource_type")),
-		Status:       r.GetString("status"),
+		ResourceType: r.GetString("resource_type"),
+	}
+	status := r.GetString("status")
+	if len(status) > 0 {
+		query.Statuses = []string{status}
 	}
 	query.Page, query.Size = r.GetPaginationParams()
 	total, tasks, err := ng.OperationCtl.ListTasks(query)

@@ -19,17 +19,15 @@ package ng
 import (
 	"fmt"
 
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication/ng/execution"
-
-	"github.com/goharbor/harbor/src/replication/ng/policy"
-
-	"github.com/goharbor/harbor/src/replication/ng/scheduler"
-
-	// register the Harbor adapter
-	_ "github.com/goharbor/harbor/src/replication/ng/adapter/harbor"
 	"github.com/goharbor/harbor/src/replication/ng/flow"
 	"github.com/goharbor/harbor/src/replication/ng/operation"
+	"github.com/goharbor/harbor/src/replication/ng/policy"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
+	"github.com/goharbor/harbor/src/replication/ng/scheduler"
+	// register the Harbor adapter
+	_ "github.com/goharbor/harbor/src/replication/ng/adapter/harbor"
 )
 
 var (
@@ -47,11 +45,10 @@ func Init() error {
 	RegistryMgr = registry.NewDefaultManager()
 	// init policy manager
 	PolicyMgr = policy.NewDefaultManager()
-
-	// TODO init ExecutionMgr
-	var executionMgr execution.Manager
-	// TODO init scheduler
-	var scheduler scheduler.Scheduler
+	// init ExecutionMgr
+	executionMgr := execution.NewDefaultManager()
+	// init scheduler
+	scheduler := scheduler.NewScheduler(config.InternalJobServiceURL(), config.CoreSecret())
 
 	flowCtl, err := flow.NewController(RegistryMgr, executionMgr, scheduler)
 	if err != nil {

@@ -19,7 +19,9 @@ import (
 	"testing"
 
 	"github.com/docker/distribution"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/scheduler"
 	"github.com/stretchr/testify/assert"
@@ -85,16 +87,16 @@ func (f *fakedRegistryManager) HealthCheck() error {
 
 type fakedExecutionManager struct{}
 
-func (f *fakedExecutionManager) Create(*model.Execution) (int64, error) {
+func (f *fakedExecutionManager) Create(*models.Execution) (int64, error) {
 	return 1, nil
 }
-func (f *fakedExecutionManager) List(...*model.ExecutionQuery) (int64, []*model.Execution, error) {
+func (f *fakedExecutionManager) List(...*models.ExecutionQuery) (int64, []*models.Execution, error) {
 	return 0, nil, nil
 }
-func (f *fakedExecutionManager) Get(int64) (*model.Execution, error) {
+func (f *fakedExecutionManager) Get(int64) (*models.Execution, error) {
 	return nil, nil
 }
-func (f *fakedExecutionManager) Update(*model.Execution, ...string) error {
+func (f *fakedExecutionManager) Update(*models.Execution, ...string) error {
 	return nil
 }
 func (f *fakedExecutionManager) Remove(int64) error {
@@ -103,16 +105,16 @@ func (f *fakedExecutionManager) Remove(int64) error {
 func (f *fakedExecutionManager) RemoveAll(int64) error {
 	return nil
 }
-func (f *fakedExecutionManager) CreateTask(*model.Task) (int64, error) {
+func (f *fakedExecutionManager) CreateTask(*models.Task) (int64, error) {
 	return 1, nil
 }
-func (f *fakedExecutionManager) ListTasks(...*model.TaskQuery) (int64, []*model.Task, error) {
+func (f *fakedExecutionManager) ListTasks(...*models.TaskQuery) (int64, []*models.Task, error) {
 	return 0, nil, nil
 }
-func (f *fakedExecutionManager) GetTask(int64) (*model.Task, error) {
+func (f *fakedExecutionManager) GetTask(int64) (*models.Task, error) {
 	return nil, nil
 }
-func (f *fakedExecutionManager) UpdateTask(*model.Task, ...string) error {
+func (f *fakedExecutionManager) UpdateTask(*models.Task, ...string) error {
 	return nil
 }
 func (f *fakedExecutionManager) UpdateTaskStatus(int64, string, ...string) error {
@@ -203,6 +205,7 @@ func (f *fakedAdapter) PushBlob(repository, digest string, size int64, blob io.R
 }
 
 func TestStartReplication(t *testing.T) {
+	config.InitWithSettings(nil)
 	err := adapter.RegisterFactory(
 		&adapter.Info{
 			Type:                   "faked_registry",
