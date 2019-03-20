@@ -77,12 +77,12 @@ export class EndpointComponent implements OnInit, OnDestroy {
 
     get initEndpoint(): Endpoint {
         return {
-            endpoint: "",
+            url: "",
             name: "",
             username: "",
             password: "",
             insecure: false,
-            type: 0
+            type: ""
         };
     }
 

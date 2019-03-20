@@ -146,12 +146,19 @@ h4 {
 }
 
 .form-group-override {
-    padding-left: 170px !important;
+    padding-left: 200px;
 }
 
-.form-group>label:first-child {
-    font-size: 14px;
-    width: 6.5rem;
+.form-group {
+    >label:first-child{
+        font-size: 14px;
+        width: 7rem;
+    }
+   .radio {
+       label {
+           margin-right:10px;
+       }
+   }
 }
 
 .form-select {
@@ -199,7 +206,7 @@ clr-modal {
     margin-left: -15px;
 }
 
-.plus-position {
+.mr-t-11{
     margin-top: 11px;
 }
 
@@ -214,4 +221,14 @@ clr-modal {
 .loading-center {
     display: block;
     text-align: center;
+}
+ 
+.width-315 {
+    display: flex;
+    align-items: center;
+    width:315px;
+}
+
+.mr-t-15 {
+    margin-top: 15px;
 }

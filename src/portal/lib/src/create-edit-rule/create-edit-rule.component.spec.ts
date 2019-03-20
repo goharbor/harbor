@@ -48,48 +48,14 @@ describe("CreateEditRuleComponent (inline template)", () => {
       id: 1,
       name: "sync_01",
       description: "",
-      projects: [
-        {
-          project_id: 1,
-          owner_id: 0,
-          name: "project_01",
-          creation_time: "",
-          deleted: 0,
-          owner_name: "",
-          togglable: false,
-          update_time: "",
-          current_user_role_id: 0,
-          repo_count: 0,
-          has_project_admin_role: false,
-          is_member: false,
-          role_name: "",
-          metadata: {
-            public: "",
-            enable_content_trust: "",
-            prevent_vul: "",
-            severity: "",
-            auto_scan: ""
-          }
-        }
-      ],
-      targets: [
-        {
-          id: 1,
-          endpoint: "https://10.117.4.151",
-          name: "target_01",
-          username: "admin",
-          password: "",
-          insecure: false,
-          type: 0
-        }
-      ],
+      src_registry_id: 2,
+      src_namespaces: ["name1", "name2"],
       trigger: {
         kind: "Manual",
         schedule_param: null
       },
       filters: [],
-      replicate_existing_image_now: false,
-      replicate_deletion: false
+      deletion: false
     }
   ];
   let mockJobs: ReplicationJobItem[] = [
@@ -127,39 +93,55 @@ describe("CreateEditRuleComponent (inline template)", () => {
   let mockEndpoints: Endpoint[] = [
     {
       id: 1,
-      endpoint: "https://10.117.4.151",
-      name: "target_01",
-      username: "admin",
-      password: "",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: 0
+      name: "target_01",
+      type: "Harbor",
+      url: "https://10.117.4.151"
     },
     {
       id: 2,
-      endpoint: "https://10.117.5.142",
-      name: "target_02",
-      username: "AAA",
-      password: "",
+      credential: {
+        access_key: "AAA",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: 0
+      name: "target_02",
+      type: "Harbor",
+      url: "https://10.117.5.142"
     },
     {
       id: 3,
-      endpoint: "https://101.1.11.111",
-      name: "target_03",
-      username: "admin",
-      password: "",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: 0
+      name: "target_03",
+      type: "Harbor",
+      url: "https://101.1.11.111"
     },
     {
       id: 4,
-      endpoint: "http://4.4.4.4",
-      name: "target_04",
-      username: "",
-      password: "",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: true,
-      type: 0
+      name: "target_04",
+      type: "Harbor",
+      url: "https://4.4.4.4"
     }
   ];
 
@@ -167,48 +149,14 @@ describe("CreateEditRuleComponent (inline template)", () => {
     id: 1,
     name: "sync_01",
     description: "",
-    projects: [
-      {
-        project_id: 1,
-        owner_id: 0,
-        name: "project_01",
-        creation_time: "",
-        deleted: 0,
-        owner_name: "",
-        togglable: false,
-        update_time: "",
-        current_user_role_id: 0,
-        repo_count: 0,
-        has_project_admin_role: false,
-        is_member: false,
-        role_name: "",
-        metadata: {
-          public: "",
-          enable_content_trust: "",
-          prevent_vul: "",
-          severity: "",
-          auto_scan: ""
-        }
-      }
-    ],
-    targets: [
-      {
-        id: 1,
-        endpoint: "https://10.117.4.151",
-        name: "target_01",
-        username: "admin",
-        password: "",
-        insecure: false,
-        type: 0
-      }
-    ],
+    src_namespaces: ["namespace1", "namespace2"],
+    src_registry_id: 10,
     trigger: {
       kind: "Manual",
       schedule_param: null
     },
     filters: [],
-    replicate_existing_image_now: false,
-    replicate_deletion: false
+    deletion: false
   };
 
   let fixture: ComponentFixture<ReplicationComponent>;

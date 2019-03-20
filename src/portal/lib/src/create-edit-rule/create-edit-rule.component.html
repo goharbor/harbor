@@ -2,8 +2,8 @@
   <h3 class="modal-title">{{headerTitle | translate}}</h3>
   <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body modal-body-height">
-    <clr-alert [hidden]='!deletedLabelCount' [clrAlertType]="'alert-warning'" [clrAlertSizeSmall]="true"
-      [clrAlertClosable]="false" [(clrAlertClosed)]="alertClosed">
+    <clr-alert [hidden]='!deletedLabelCount' [clrAlertType]="'alert-warning'" [clrAlertSizeSmall]="true" [clrAlertClosable]="false"
+      [(clrAlertClosed)]="alertClosed">
       <div class="alert-item">
         <span class="alert-text">{{deletedLabelInfo}}</span>
         <div class="alert-actions">
@@ -15,10 +15,9 @@
       <section class="form-block">
         <div class="form-group form-group-override">
           <label class="form-group-label-override required">{{'REPLICATION.NAME' | translate}}</label>
-          <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
-            [class.invalid]='(ruleForm.controls.name.touched && ruleForm.controls.name.invalid) || !isRuleNameValid'>
-            <input type="text" id="ruleName" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required
-              maxlength="255" formControlName="name" #ruleName (keyup)='checkRuleName()' autocomplete="off">
+          <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='(ruleForm.controls.name.touched && ruleForm.controls.name.invalid) || !isRuleNameValid'>
+            <input type="text" id="ruleName" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255" formControlName="name"
+              #ruleName (keyup)='checkRuleName()' autocomplete="off">
             <span class="tooltip-content">{{ruleNameTooltip | translate}}</span>
           </label>
           <span class="spinner spinner-inline spinner-pos" [hidden]="!inNameChecking"></span>
@@ -28,29 +27,42 @@
           <label class="form-group-label-override">{{'REPLICATION.DESCRIPTION' | translate}}</label>
           <textarea type="text" id="ruleDescription" class="inputWidth" row=3 formControlName="description"></textarea>
         </div>
-        <!--Projects-->
+        <!-- replication mode -->
         <div class="form-group form-group-override">
-          <label class="form-group-label-override required">{{'REPLICATION.SOURCE_PROJECT' | translate}}</label>
-          <div formArrayName="projects">
-            <div class="projectInput inputWidth" *ngFor="let project of projects.controls; let i= index"
-              [formGroupName]="i" (mouseleave)="leaveInput()">
-              <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
-                [class.invalid]='noProjectInfo'>
-                <input *ngIf="!projectId" formControlName="name" type="text" class="inputWidth" value="name" required
-                  pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" (keyup)='handleValidation()' (focus)="focusClear($event)"
-                  autocomplete="off">
-                <input *ngIf="projectId" formControlName="name" type="text" class="inputWidth" value="name" readonly>
-                <span class="tooltip-content">{{noProjectInfo | translate}}</span>
-              </label>
-              <div class="selectBox inputWidth" [style.display]="selectedProjectList.length ? 'block' : 'none'">
-                <ul>
-                  <li *ngFor="let project of selectedProjectList" (click)="selectedProjectName(project?.name)">{{project?.name}}</li>
-                </ul>
-              </div>
-            </div>
+          <label class="form-group-label-override">{{'REPLICATION.REPLI_MODE' | translate}}</label>
+          <div class="radio" style="display:inherit;">
+            <input type="radio" id="push_base" name="replicationMode" [value]=true [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
+            <label for="push_base">Push-based</label>
+            <input type="radio" id="pull_base" name="replicationMode" [value]=false [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
+            <label for="pull_base">Pull-based</label>
           </div>
         </div>
-
+        <!--source registry-->
+        <div *ngIf="!isPushMode" class="form-group form-group-override">
+          <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_REGISTRY' | translate}}</label>
+          <div class="form-select">
+            <div class="select endpointSelect pull-left">
+              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry_id">
+                <option *ngFor="let source of sourceList" [ngValue]="source.id">{{source.name}}-{{source.url}}</option>
+              </select>
+            </div>
+          </div>
+          <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
+          <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
+        </div>
+        <!--source namespace -->
+        <div class="form-group form-group-override">
+          <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_NAMESPACES' | translate}}</label>
+          <div formArrayName="src_namespaces">
+            <div class="width-315" *ngFor="let src_namespace of src_namespaces.controls; let i=index">
+              <div class="select endpointSelect pull-left">
+                <input type="text" [formControlName]="i" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255">
+              </div>
+              <clr-icon shape="times-circle" class="is-solid" (click)="deleteNamespace(i)"></clr-icon>
+            </div>
+          </div>
+          <clr-icon id="addSourceNamespace" shape="plus-circle" class="is-solid mr-t-15" (click)="addNewNamespace()"></clr-icon>
+        </div>
         <!--images/Filter-->
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.SOURCE_IMAGES_FILTER' | translate}}</label>
@@ -58,46 +70,52 @@
             <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
               <div [formGroupName]="i">
                 <div class="select floatSetPar">
-                  <select formControlName="kind" #selectedValue (change)="filterChange($event, selectedValue.value)" id="{{i}}"
-                    name="{{filterListData[i]?.name}}">
+                  <select formControlName="kind" #selectedValue (change)="filterChange($event, selectedValue.value)" id="{{i}}" name="{{filterListData[i]?.name}}">
                     <option *ngFor="let opt of filterListData[i]?.options;" value="{{opt}}">{{opt}}</option>
                   </select>
                 </div>
-                <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
-                  [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
+                <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
                   <input type="text" #filterValue required size="14" formControlName="value" [attr.disabled]="(filterListData[i]?.name=='label') ?'' : null">
                   <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
                 </label>
                 <div class="arrowSet" [hidden]="!(filterListData[i]?.name=='label')" (click)="openLabelList(selectedValue.value, i, $event)">
-                  <clr-icon shape="angle" ></clr-icon>
+                  <clr-icon shape="angle"></clr-icon>
                 </div>
                 <clr-icon shape="warning-standard" class="is-solid is-warning warning-icon" size="14" [hidden]="!deletedLabelCount || !(filterListData[i]?.name=='label')"></clr-icon>
                 <clr-icon shape="times-circle" class="is-solid" (click)="deleteFilter(i)"></clr-icon>
                 <div *ngIf="!withAdmiral">
-                  <hbr-filter-label [projectId]="projectId" [selectedLabelInfo]="filterLabelInfo" [isOpen]="filterListData[i].isOpen"
-                    (selectedLabels)="selectedLabelList($event, i)" (closePanelEvent)="filterListData[i].isOpen = false"></hbr-filter-label>
+                  <hbr-filter-label [projectId]="projectId" [selectedLabelInfo]="filterLabelInfo" [isOpen]="filterListData[i].isOpen" (selectedLabels)="selectedLabelList($event, i)"
+                    (closePanelEvent)="filterListData[i].isOpen = false"></hbr-filter-label>
                 </div>
               </div>
             </div>
-
           </div>
-          <clr-icon id="add-label-list" shape="plus-circle" class="is-solid plus-position" [hidden]="isFilterHide" (click)="addNewFilter()"></clr-icon>
+          <clr-icon id="add-label-list" shape="plus-circle" class="is-solid mr-t-11" [hidden]="isFilterHide" (click)="addNewFilter()"></clr-icon>
 
         </div>
-        <!--Targets-->
-        <div class="form-group form-group-override">
-          <label class="form-group-label-override  required">{{'DESTINATION.ENDPOINT' | translate}}</label>
-          <div formArrayName="targets" class="form-select">
-            <div class="select endpointSelect pull-left" *ngFor="let target of targets.controls; let i= index"
-              [formGroupName]="i">
-              <select id="ruleTarget" (change)="targetChange($event)" formControlName="id">
-                <option *ngFor="let target of targetList" value="{{target.id}}">{{target.name}}-{{target.endpoint}}</option>
+        <!--destination registry-->
+        <div *ngIf="isPushMode" class="form-group form-group-override">
+
+          <label class="form-group-label-override  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
+          <div class="form-select">
+            <div class="select endpointSelect pull-left">
+              <select id="dest_registry_id" (change)="targetChange($event)" formControlName="dest_registry_id">
+                <option *ngFor="let target of targetList" [ngValue]="target.id">{{target.name}}-{{target.url}}</option>
               </select>
             </div>
           </div>
           <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
-          <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS'
-            | translate}}</span>
+          <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
+        </div>
+        <!--destination namespaces -->
+        <div class="form-group form-group-override">
+          <label class="form-group-label-override">{{'REPLICATION.DEST_NAMESPACE' | translate}}</label>
+          <div class="form-select">
+            <div class="select endpointSelect pull-left">
+              <input formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth"
+                maxlength="255">
+            </div>
+          </div>
         </div>
 
         <!--Trigger-->
@@ -113,42 +131,22 @@
               </select>
             </div>
             <!--on push-->
-            <div formGroupName="schedule_param" class="schedule-style">
-              <div class="select floatSet" [hidden]="!isScheduleOpt">
-                <select name="scheduleType" formControlName="type" (change)="selectSchedule($event)">
-                  <option value="Daily">{{'REPLICATION.DAILY' | translate}}</option>
-                  <option value="Weekly">{{'REPLICATION.WEEKLY' | translate}}</option>
-                </select>
+            <div formGroupName="schedule_param">
+              <div [hidden]="!isScheduleOpt">
+                <label>Cron String</label>
+                <label for="targetCron" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right">
+                  <input type="text" name=targetCron id="targetCron" required class="form-control cron-input" formControlName="cron">
+                  <span class="tooltip-content">
+                    {{'TOOLTIP.CRON_REQUIRED' | translate }}
+                  </span>
+                </label>
               </div>
-              <!--weekly-->
-              <span [hidden]="!weeklySchedule || !isScheduleOpt">on &nbsp;</span>
-              <div [hidden]="!weeklySchedule || !isScheduleOpt" class="select floatSet weekday-width">
-                <select name="scheduleDay" formControlName="weekday">
-                  <option value="1">{{'WEEKLY.MONDAY' | translate}}</option>
-                  <option value="2">{{'WEEKLY.TUESDAY' | translate}}</option>
-                  <option value="3">{{'WEEKLY.WEDNESDAY' | translate}}</option>
-                  <option value="4">{{'WEEKLY.THURSDAY' | translate}}</option>
-                  <option value="5">{{'WEEKLY.FRIDAY' | translate}}</option>
-                  <option value="6">{{'WEEKLY.SATURDAY' | translate}}</option>
-                  <option value="7">{{'WEEKLY.SUNDAY' | translate}}</option>
-                </select>
-              </div>
-              <!--daily/time-->
-              <span [hidden]="!isScheduleOpt">at &nbsp;</span>
-              <input [hidden]="!isScheduleOpt" type="time" formControlName="offtime" required value="08:00" />
             </div>
           </div>
           <div [hidden]="!isImmediate" class="clr-form-control rule-width">
             <clr-checkbox-wrapper>
-              <input type="checkbox" clrCheckbox [checked]="false" id="ruleDeletion" formControlName="replicate_deletion" class="clr-checkbox">
+              <input type="checkbox" clrCheckbox [checked]="false" id="ruleDeletion" formControlName="deletion" class="clr-checkbox">
               <label for="ruleDeletion" class="clr-control-label">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
-            </clr-checkbox-wrapper>
-          </div>
-          <div class="clr-form-control rule-width">
-            <clr-checkbox-wrapper>
-              <input type="checkbox" clrCheckbox [checked]="true" id="ruleExit" formControlName="replicate_existing_image_now"
-                class="clr-checkbox">
-              <label for="ruleExit" class="clr-control-label">{{'REPLICATION.REPLICATE_IMMEDIATE' | translate}}</label>
             </clr-checkbox-wrapper>
           </div>
         </div>
@@ -159,9 +157,7 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="this.inProgress" (click)="onCancel()">{{
-      'BUTTON.CANCEL' | translate }}</button>
-    <button type="submit" id="ruleBtnOk" class="btn btn-primary" (click)="onSubmit()" [disabled]="!ruleForm.valid || !isValid || !hasFormChange()">{{
-      'BUTTON.SAVE' | translate }}</button>
+    <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="this.inProgress" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
+    <button type="submit" id="ruleBtnOk" class="btn btn-primary" (click)="onSubmit()" [disabled]="!isValid || !hasFormChange()">{{ 'BUTTON.SAVE' | translate }}</button>
   </div>
 </clr-modal>

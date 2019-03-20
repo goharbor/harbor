@@ -29,83 +29,25 @@ describe('Replication Component (inline template)', () => {
   let mockRules: ReplicationRule[] = [
       {
           "id": 1,
-          "projects": [{
-              "project_id": 33,
-              "owner_id": 1,
-              "name": "aeas",
-              "deleted": 0,
-              "togglable": false,
-              "current_user_role_id": 0,
-              "repo_count": 0,
-              "metadata": {
-                  "public": false,
-                  "enable_content_trust": "",
-                  "prevent_vul": "",
-                  "severity": "",
-                  "auto_scan": ""},
-              "owner_name": "",
-              "creation_time": null,
-              "update_time": null,
-              "has_project_admin_role": true,
-              "is_member": true,
-              "role_name": ""
-          }],
-          "targets": [{
-              "id": 1,
-              "endpoint": "https://10.117.4.151",
-              "name": "target_01",
-              "username": "admin",
-              "password": "",
-              "insecure": false,
-              "type": 0
-          }],
           "name": "sync_01",
           "description": "",
           "filters": null,
           "trigger": {"kind": "Manual", "schedule_param": null},
           "error_job_count": 2,
-          "replicate_deletion": false,
-          "replicate_existing_image_now": false,
+          "deletion": false,
+          "src_registry_id": 3,
+          "src_namespaces": ["name1"]
       },
       {
           "id": 2,
-          "projects": [{
-              "project_id": 33,
-              "owner_id": 1,
-              "name": "aeas",
-              "deleted": 0,
-              "togglable": false,
-              "current_user_role_id": 0,
-              "repo_count": 0,
-              "metadata": {
-                  "public": false,
-                  "enable_content_trust": "",
-                  "prevent_vul": "",
-                  "severity": "",
-                  "auto_scan": ""},
-              "owner_name": "",
-              "creation_time": null,
-              "update_time": null,
-              "has_project_admin_role": true,
-              "is_member": true,
-              "role_name": ""
-          }],
-          "targets": [{
-              "id": 1,
-              "endpoint": "https://10.117.4.151",
-              "name": "target_01",
-              "username": "admin",
-              "password": "",
-              "insecure": false,
-              "type": 0
-          }],
           "name": "sync_02",
           "description": "",
           "filters": null,
           "trigger": {"kind": "Manual", "schedule_param": null},
           "error_job_count": 2,
-          "replicate_deletion": false,
-          "replicate_existing_image_now": false,
+          "deletion": false,
+          "dest_registry_id": 5,
+          "src_namespaces": ["name1"]
       }
   ];
 
@@ -142,46 +84,23 @@ describe('Replication Component (inline template)', () => {
     let mockEndpoints: Endpoint[] = [
         {
             "id": 1,
-            "endpoint": "https://10.117.4.151",
+            "url": "https://10.117.4.151",
             "name": "target_01",
             "username": "admin",
             "password": "",
             "insecure": false,
-            "type": 0
+            "type": "Harbor"
         },
         {
             "id": 2,
-            "endpoint": "https://10.117.5.142",
+            "url": "https://10.117.5.142",
             "name": "target_02",
             "username": "AAA",
             "password": "",
             "insecure": false,
-            "type": 0
+            "type": "Harbor"
         },
     ];
-
-    // let mockProjects: Project[] = [
-    //     { "project_id": 1,
-    //         "owner_id": 0,
-    //         "name": 'project_01',
-    //         "creation_time": '',
-    //         "deleted": 0,
-    //         "owner_name": '',
-    //         "togglable": false,
-    //         "update_time": '',
-    //         "current_user_role_id": 0,
-    //         "repo_count": 0,
-    //         "has_project_admin_role": false,
-    //         "is_member": false,
-    //         "role_name": '',
-    //         "metadata": {
-    //             "public": '',
-    //             "enable_content_trust": '',
-    //             "prevent_vul": '',
-    //             "severity": '',
-    //             "auto_scan": '',
-    //         }
-    //     }];
 
   let mockJob: ReplicationJob = {
     metadata: {xTotalCount: 3},
