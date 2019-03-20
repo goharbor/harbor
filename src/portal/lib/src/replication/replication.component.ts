@@ -21,8 +21,8 @@ import {
   EventEmitter
 } from "@angular/core";
 import { Comparator, State } from "../service/interface";
-import { Subscription, forkJoin, timer} from "rxjs";
-
+import { Subscription, forkJoin, timer, throwError} from "rxjs";
+import { finalize, catchError, map } from "rxjs/operators";
 
 import { TranslateService } from "@ngx-translate/core";
 
@@ -57,6 +57,8 @@ import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation
 import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
 import {operateChanges, OperationState, OperateInfo} from "../operation/operate";
 import {OperationService} from "../operation/operation.service";
+
+import { Router } from "@angular/router";
 
 const ruleStatus: { [key: string]: any } = [
   { key: "all", description: "REPLICATION.ALL_STATUS" },
@@ -124,6 +126,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   changedRules: ReplicationRule[];
 
+  selectedRow: ReplicationJobItem[] = [];
   rules: ReplicationRule[];
   loading: boolean;
   isStopOnGoing: boolean;
@@ -144,12 +147,15 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @ViewChild("replicationConfirmDialog")
   replicationConfirmDialog: ConfirmationDialogComponent;
 
+  @ViewChild("StopConfirmDialog")
+  StopConfirmDialog: ConfirmationDialogComponent;
+
   creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
     ReplicationJob
-  >("creation_time", "date");
+  >("start_time", "date");
   updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
     ReplicationJob
-  >("update_time", "date");
+  >("end_time", "date");
 
   // Server driven pagination
   currentPage: number = 1;
@@ -160,6 +166,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   timerDelay: Subscription;
 
   constructor(
+    private router: Router,
     private errorHandler: ErrorHandler,
     private replicationService: ReplicationService,
     private operationService: OperationService,
@@ -195,6 +202,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   goRegistry(): void {
     this.goToRegistry.emit();
+  }
+
+  goToLink(exeId: number): void {
+    let linkUrl = ["harbor", "replications", exeId, "tasks"];
+    this.router.navigate(linkUrl);
   }
 
   // Server driven data loading
@@ -237,7 +249,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
     this.jobsLoading = false;
     toPromise<ReplicationJob>(
-      this.replicationService.getJobs(this.search.ruleId, params)
+      this.replicationService.getExecutions(this.search.ruleId, params)
     )
       .then(response => {
         this.totalCount = response.metadata.xTotalCount;
@@ -394,16 +406,66 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.hiddenJobList = true;
   }
 
-  stopJobs() {
-    if (this.jobs && this.jobs.length) {
-      this.isStopOnGoing = true;
-      toPromise(this.replicationService.stopJobs(this.jobs[0].policy_id))
-        .then(res => {
-          this.refreshJobs();
-          this.isStopOnGoing = false;
-        })
-        .catch(error => this.errorHandler.error(error));
+  openStopExecutionsDialog(targets: ReplicationJobItem[]) {
+    let ExecutionId = targets.map(robot => robot.id).join(",");
+    let StopExecutionsMessage = new ConfirmationMessage(
+      "REPLICATION.STOP_TITLE",
+      "REPLICATION.STOP_SUMMARY",
+      ExecutionId,
+      targets,
+      ConfirmationTargets.STOP_EXECUTIONS,
+      ConfirmationButtons.STOP_CANCEL
+    );
+    this.StopConfirmDialog.open(StopExecutionsMessage);
+  }
+
+  confirmStop(message: ConfirmationAcknowledgement) {
+    if (
+      message &&
+      message.state === ConfirmationState.CONFIRMED &&
+      message.source === ConfirmationTargets.STOP_EXECUTIONS
+    ) {
+      this.StopExecutions(message.data);
     }
+  }
+
+  StopExecutions(targets: ReplicationJobItem[]): void {
+    if (targets && targets.length < 1) {
+      return;
+    }
+
+    this.isStopOnGoing = true;
+    if  (this.jobs && this.jobs.length) {
+      let ExecutionsStop$ = targets.map(target => this.StopOperate(target));
+      forkJoin(ExecutionsStop$)
+        .pipe(
+          catchError(err => throwError(err)),
+          finalize(() => {
+            this.refreshJobs();
+            this.isStopOnGoing = false;
+            this.selectedRow = [];
+          })
+        )
+        .subscribe(() => { });
+    }
+  }
+
+  StopOperate(targets: ReplicationJobItem): any {
+    let operMessage = new OperateInfo();
+    operMessage.name = "OPERATION.STOP_EXECUTIONS";
+    operMessage.data.id = targets.id;
+    operMessage.state = OperationState.progressing;
+    operMessage.data.name = targets.id;
+    this.operationService.publishInfo(operMessage);
+
+    return this.replicationService
+      .stopJobs(targets.id)
+      .pipe(
+        map(
+          () => operateChanges(operMessage, OperationState.success),
+          err => operateChanges(operMessage, OperationState.failure, err)
+        )
+      );
   }
 
   reloadRules(isReady: boolean) {
@@ -452,9 +514,5 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   doJobSearchByEndTime(toTimestamp: string) {
     this.search.endTimestamp = toTimestamp;
     this.loadFirstPage();
-  }
-
-  viewLog(jobId: number | string): string {
-    return this.replicationService.getJobBaseUrl() + "/" + jobId + "/log";
   }
 }

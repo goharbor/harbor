@@ -66,16 +66,6 @@ export interface IServiceConfig {
      */
     replicationRuleEndpoint?: string;
 
-
-    /**
-     * The base endpoint of the service used to handle the replication jobs.
-     *
-     *
-     * * {string}
-     * @memberOf IServiceConfig
-     */
-    replicationJobEndpoint?: string;
-
     /**
      * The base endpoint of the service used to handle vulnerability scanning.
      *

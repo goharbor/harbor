@@ -40,6 +40,7 @@ import { OperationService } from "../operation/operation.service";
 import {FilterLabelComponent} from "./filter-label.component";
 import {LabelService} from "../service/label.service";
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe("CreateEditRuleComponent (inline template)", () => {
   let mockRules: ReplicationRule[] = [
@@ -226,13 +227,13 @@ describe("CreateEditRuleComponent (inline template)", () => {
   let spyEndpoint: jasmine.Spy;
 
   let config: IServiceConfig = {
-    replicationJobEndpoint: "/api/jobs/replication/testing",
+    replicationBaseEndpoint: "/api/replication/executions/testing",
     targetBaseEndpoint: "/api/targets/testing"
   };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [SharedModule, NoopAnimationsModule],
+      imports: [SharedModule, NoopAnimationsModule, RouterTestingModule],
       declarations: [
         ReplicationComponent,
         ListReplicationRuleComponent,
@@ -277,7 +278,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
       replicationService,
       "getReplicationRule"
     ).and.returnValue(Promise.resolve(mockRule));
-    spyJobs = spyOn(replicationService, "getJobs").and.returnValues(
+    spyJobs = spyOn(replicationService, "getExecutions").and.returnValues(
       Promise.resolve(mockJob)
     );
 

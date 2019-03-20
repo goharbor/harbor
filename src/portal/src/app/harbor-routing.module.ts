@@ -30,6 +30,8 @@ import { ResetPasswordComponent } from './account/password-setting/reset-passwor
 import { GroupComponent } from './group/group.component';
 
 import { TotalReplicationPageComponent } from './replication/total-replication/total-replication-page.component';
+import { ReplicationTasksPageComponent } from './replication/replication-tasks-page/replication-tasks-page.component';
+
 import { DestinationPageComponent } from './replication/destination/destination-page.component';
 import { ReplicationPageComponent } from './replication/replication-page.component';
 
@@ -96,6 +98,12 @@ const harborRoutes: Routes = [
       {
         path: 'replications',
         component: TotalReplicationPageComponent,
+        canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
+      },
+      {
+        path: 'replications/:id/:tasks',
+        component: ReplicationTasksPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard],
       },
