@@ -31,16 +31,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type fakeRregistry struct{}
+type fakeRegistry struct{}
 
-func (f *fakeRregistry) FetchImages([]string, []*model.Filter) ([]*model.Resource, error) {
+func (f *fakeRegistry) FetchImages([]string, []*model.Filter) ([]*model.Resource, error) {
 	return nil, nil
 }
 
-func (f *fakeRregistry) ManifestExist(repository, reference string) (bool, string, error) {
+func (f *fakeRegistry) ManifestExist(repository, reference string) (bool, string, error) {
 	return false, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil
 }
-func (f *fakeRregistry) PullManifest(repository, reference string, accepttedMediaTypes []string) (distribution.Manifest, string, error) {
+func (f *fakeRegistry) PullManifest(repository, reference string, accepttedMediaTypes []string) (distribution.Manifest, string, error) {
 	manifest := `{
 		"schemaVersion": 2,
 		"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
@@ -75,17 +75,17 @@ func (f *fakeRregistry) PullManifest(repository, reference string, accepttedMedi
 	}
 	return mani, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil
 }
-func (f *fakeRregistry) PushManifest(repository, reference, mediaType string, payload []byte) error {
+func (f *fakeRegistry) PushManifest(repository, reference, mediaType string, payload []byte) error {
 	return nil
 }
-func (f *fakeRregistry) BlobExist(repository, digest string) (bool, error) {
+func (f *fakeRegistry) BlobExist(repository, digest string) (bool, error) {
 	return false, nil
 }
-func (f *fakeRregistry) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
+func (f *fakeRegistry) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
 	r := ioutil.NopCloser(bytes.NewReader([]byte{'a'}))
 	return 1, r, nil
 }
-func (f *fakeRregistry) PushBlob(repository, digest string, size int64, blob io.Reader) error {
+func (f *fakeRegistry) PushBlob(repository, digest string, size int64, blob io.Reader) error {
 	return nil
 }
 
@@ -118,8 +118,8 @@ func TestCopy(t *testing.T) {
 	tr := &transfer{
 		logger:    log.DefaultLogger(),
 		isStopped: stopFunc,
-		src:       &fakeRregistry{},
-		dst:       &fakeRregistry{},
+		src:       &fakeRegistry{},
+		dst:       &fakeRegistry{},
 	}
 
 	src := &repository{

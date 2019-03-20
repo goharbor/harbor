@@ -154,6 +154,8 @@ func (f *flow) fetchResources() error {
 	// TODO consider whether the logic can be refactored by using reflect
 	srcResources := []*model.Resource{}
 	for _, typ := range resTypes {
+		log.Debugf("fetching %s...", typ)
+		// images
 		if typ == model.ResourceTypeRepository {
 			reg, ok := f.srcAdapter.(adapter.ImageRegistry)
 			if !ok {
@@ -169,7 +171,22 @@ func (f *flow) fetchResources() error {
 			srcResources = append(srcResources, res...)
 			continue
 		}
-		// TODO add support for chart
+		// charts
+		if typ == model.ResourceTypeChart {
+			reg, ok := f.srcAdapter.(adapter.ChartRegistry)
+			if !ok {
+				err := fmt.Errorf("the adapter doesn't implement the ChartRegistry interface")
+				f.markExecutionFailure(err)
+				return err
+			}
+			res, err := reg.FetchCharts(f.policy.SrcNamespaces, filters)
+			if err != nil {
+				f.markExecutionFailure(err)
+				return err
+			}
+			srcResources = append(srcResources, res...)
+			continue
+		}
 	}
 
 	dstResources := []*model.Resource{}
@@ -305,7 +322,7 @@ func (f *flow) schedule() error {
 		// if the task is failed to be submitted, update the status of the
 		// task as failure
 		if result.Error != nil {
-			log.Errorf("failed to schedule task %d: %v", result.TaskID, err)
+			log.Errorf("failed to schedule task %d: %v", result.TaskID, result.Error)
 			if err = f.executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusFailed); err != nil {
 				log.Errorf("failed to update task status %d: %v", result.TaskID, err)
 			}

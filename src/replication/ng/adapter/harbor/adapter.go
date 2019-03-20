@@ -28,11 +28,14 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
+// TODO add UT
+
 func init() {
 	// TODO add more information to the info
 	info := &adp.Info{
-		Type:                   model.RegistryTypeHarbor,
-		SupportedResourceTypes: []model.ResourceType{model.ResourceTypeRepository},
+		Type: model.RegistryTypeHarbor,
+		SupportedResourceTypes: []model.ResourceType{
+			model.ResourceTypeRepository, model.ResourceTypeChart},
 	}
 	// TODO passing coreServiceURL and tokenServiceURL
 	coreServiceURL := "http://core:8080"
@@ -141,57 +144,10 @@ func (a *adapter) GetNamespace(namespace string) (*model.Namespace, error) {
 	}, nil
 }
 
-// TODO implement filter
-func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
-	resources := []*model.Resource{}
-	for _, namespace := range namespaces {
-		project, err := a.getProject(namespace)
-		if err != nil {
-			return nil, err
-		}
-		repositories := []*repository{}
-		url := fmt.Sprintf("%s/api/repositories?project_id=%d", a.coreServiceURL, project.ID)
-		if err = a.client.Get(url, &repositories); err != nil {
-			return nil, err
-		}
-
-		for _, repository := range repositories {
-			url := fmt.Sprintf("%s/api/repositories/%s/tags", a.coreServiceURL, repository.Name)
-			tags := []*tag{}
-			if err = a.client.Get(url, &tags); err != nil {
-				return nil, err
-			}
-			vtags := []string{}
-			for _, tag := range tags {
-				vtags = append(vtags, tag.Name)
-			}
-			resources = append(resources, &model.Resource{
-				Type:     model.ResourceTypeRepository,
-				Registry: a.registry,
-				Metadata: &model.ResourceMetadata{
-					Namespace: namespace,
-					Name:      repository.Name,
-					Vtags:     vtags,
-				},
-			})
-		}
-	}
-
-	return resources, nil
-}
-
 type project struct {
 	ID       int64                  `json:"project_id"`
 	Name     string                 `json:"name"`
 	Metadata map[string]interface{} `json:"metadata"`
-}
-
-type repository struct {
-	Name string `json:"name"`
-}
-
-type tag struct {
-	Name string `json:"name"`
 }
 
 func (a *adapter) getProject(name string) (*project, error) {
