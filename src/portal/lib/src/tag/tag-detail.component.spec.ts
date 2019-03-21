@@ -132,7 +132,7 @@ describe("TagDetailComponent (inline template)", () => {
 
     tagService = fixture.debugElement.injector.get(TagService);
     spy = spyOn(tagService, "getTag").and.returnValues(
-      Promise.resolve(mockTag)
+      of(mockTag)
     );
 
     let mockData: VulnerabilityItem[] = [];
@@ -156,9 +156,9 @@ describe("TagDetailComponent (inline template)", () => {
     vulSpy = spyOn(
       scanningService,
       "getVulnerabilityScanningResults"
-    ).and.returnValue(Promise.resolve(mockData));
+    ).and.returnValue(of(mockData));
     manifestSpy = spyOn(tagService, "getManifest").and.returnValues(
-      Promise.resolve(mockManifest)
+      of(mockManifest)
     );
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
 

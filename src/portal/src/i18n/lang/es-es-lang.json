@@ -674,9 +674,9 @@
             "VERIFY_CERT": "Verify Cert from LDAP Server",
             "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
             "GC_POLICY": "",
-            "HOURLY_CRON":"Run once an hour, beginning of hour",
-            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun",
-            "DAILY_CRON":"Run once a day, midnight"
+            "HOURLY_CRON":"Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
+            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
+            "DAILY_CRON":"Run once a day, midnight. Equivalente a 0 0 0 * * *."
 
         },
         "LDAP": {
@@ -696,6 +696,8 @@
             "LDAP_GROUP_GID_INFO": "The attribute used in a search to match a user, it could be uid, cn or other attributes depending on your LDAP/AD. the group in Harbor is named with this attribute by default.",
             "LDAP_GROUP_ADMIN_DN": "LDAP Group Admin DN",
             "LDAP_GROUP_ADMIN_DN_INFO": "Specify an LDAP group DN. all LDAP user in this group will have harbor admin privilege. Keep it blank if you do not want to.",
+            "LDAP_GROUP_MEMBERSHIP": "LDAP Group Membership",
+            "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\"",
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
         },
@@ -914,7 +916,10 @@
         "NONE": "None",
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
+        "HOURLY": "Hourly",
+        "CUSTOM": "Custom",
         "MANUAL": "Manual",
+        "CRON": "cron",
         "ON": "on",
         "AT": "at"
     },

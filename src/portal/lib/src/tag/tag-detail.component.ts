@@ -1,7 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
 
 import { TagService, Tag, VulnerabilitySeverity } from "../service/index";
-import { toPromise } from "../utils";
 import { ErrorHandler } from "../error-handler/index";
 import { Label } from "../service/interface";
 import { forkJoin } from "rxjs";
@@ -63,8 +62,8 @@ export class TagDetailComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.repositoryId && this.tagId) {
-      toPromise<Tag>(this.tagService.getTag(this.repositoryId, this.tagId))
-        .then(response => {
+      this.tagService.getTag(this.repositoryId, this.tagId)
+        .subscribe(response => {
           this.tagDetails = response;
           if (
             this.tagDetails &&
@@ -91,8 +90,7 @@ export class TagDetailComponent implements OnInit {
               }
             });
           }
-        })
-        .catch(error => this.errorHandler.error(error));
+        }, error => this.errorHandler.error(error));
     }
     this.getTagPermissions(this.projectId);
   }

@@ -13,7 +13,8 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http, URLSearchParams } from '@angular/http';
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { SessionUser } from './session-user';
 import { Member } from '../project/member/member';
@@ -53,8 +54,8 @@ export class SessionService {
     constructor(private http: Http) { }
 
     // Handle the related exceptions
-    handleError(error: any): Promise<any> {
-        return Promise.reject(error.message || error);
+    handleError(error: any): Observable<any> {
+        return observableThrowError(error.message || error);
     }
 
     // Clear session
@@ -64,29 +65,28 @@ export class SessionService {
     }
 
     // Submit signin form to backend (NOT restful service)
-    signIn(signInCredential: SignInCredential): Promise<any> {
+    signIn(signInCredential: SignInCredential): Observable<any> {
         // Build the form package
         let queryParam: string = 'principal=' + encodeURIComponent(signInCredential.principal) +
             '&password=' + encodeURIComponent(signInCredential.password);
 
         // Trigger Http
         return this.http.post(signInUrl, queryParam, HTTP_FORM_OPTIONS)
-            .toPromise()
-            .then(() => null)
-            .catch(error => this.handleError(error));
+            .pipe(map(() => null)
+            , catchError(error => this.handleError(error)));
     }
 
     /**
      * Get the related information of current signed in user from backend
      *
-     * returns {Promise<SessionUser>}
+     * returns {Observable<SessionUser>}
      *
      * @memberOf SessionService
      */
-    retrieveUser(): Promise<SessionUser> {
-        return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS).toPromise()
-            .then(response => this.currentUser = response.json() as SessionUser)
-            .catch(error => this.handleError(error));
+    retrieveUser(): Observable<SessionUser> {
+        return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS)
+            .pipe(map(response => this.currentUser = response.json() as SessionUser)
+            , catchError(error => this.handleError(error)));
     }
 
     /**
@@ -99,13 +99,13 @@ export class SessionService {
     /**
      * Log out the system
      */
-    signOff(): Promise<any> {
-        return this.http.get(signOffEndpoint, HTTP_GET_OPTIONS).toPromise()
-            .then(() => {
+    signOff(): Observable<any> {
+        return this.http.get(signOffEndpoint, HTTP_GET_OPTIONS)
+            .pipe(map(() => {
                 // Destroy current session cache
                 // this.currentUser = null;
             })  // Nothing returned
-            .catch(error => this.handleError(error));
+            , catchError(error => this.handleError(error)));
     }
 
     /**
@@ -113,21 +113,21 @@ export class SessionService {
      * Update accpunt settings
      *
      *  ** deprecated param {SessionUser} account
-     * returns {Promise<any>}
+     * returns {Observable<any>}
      *
      * @memberOf SessionService
      */
-    updateAccountSettings(account: SessionUser): Promise<any> {
+    updateAccountSettings(account: SessionUser): Observable<any> {
         if (!account) {
-            return Promise.reject("Invalid account settings");
+            return observableThrowError("Invalid account settings");
         }
         let putUrl = accountEndpoint.replace(":id", account.user_id + "");
-        return this.http.put(putUrl, JSON.stringify(account), HTTP_JSON_OPTIONS).toPromise()
-            .then(() => {
+        return this.http.put(putUrl, JSON.stringify(account), HTTP_JSON_OPTIONS)
+            .pipe(map(() => {
                 // Retrieve current session user
                 return this.retrieveUser();
             })
-            .catch(error => this.handleError(error));
+            , catchError(error => this.handleError(error)));
     }
 
     /**
@@ -135,26 +135,25 @@ export class SessionService {
      * Update accpunt settings
      *
      *  ** deprecated param {SessionUser} account
-     * returns {Promise<any>}
+     * returns {Observable<any>}
      *
      * @memberOf SessionService
      */
-    renameAdmin(account: SessionUser): Promise<any> {
+    renameAdmin(account: SessionUser): Observable<any> {
         if (!account) {
-            return Promise.reject("Invalid account settings");
+            return observableThrowError("Invalid account settings");
         }
         return this.http.post(renameAdminEndpoint, JSON.stringify({}), HTTP_JSON_OPTIONS)
-            .toPromise()
-            .then(() => null)
-            .catch(error => this.handleError(error));
+            .pipe(map(() => null)
+            , catchError(error => this.handleError(error)));
     }
 
     /**
      * Switch the backend language profile
      */
-    switchLanguage(lang: string): Promise<any> {
+    switchLanguage(lang: string): Observable<any> {
         if (!lang) {
-            return Promise.reject("Invalid language");
+            return observableThrowError("Invalid language");
         }
 
         let backendLang = langMap[lang];
@@ -163,12 +162,12 @@ export class SessionService {
         }
 
         let getUrl = langEndpoint + "?lang=" + backendLang;
-        return this.http.get(getUrl, HTTP_GET_OPTIONS).toPromise()
-            .then(() => null)
-            .catch(error => this.handleError(error));
+        return this.http.get(getUrl, HTTP_GET_OPTIONS)
+            .pipe(map(() => null)
+            , catchError(error => this.handleError(error)));
     }
 
-    checkUserExisting(target: string, value: string): Promise<boolean> {
+    checkUserExisting(target: string, value: string): Observable<boolean> {
         // Build the form package
         const body = new URLSearchParams();
         body.set('target', target);
@@ -176,11 +175,10 @@ export class SessionService {
 
         // Trigger Http
         return this.http.post(userExistsEndpoint, body.toString(), HTTP_FORM_OPTIONS)
-            .toPromise()
-            .then(response => {
+            .pipe(map(response => {
                 return response.json();
             })
-            .catch(error => this.handleError(error));
+            , catchError(error => this.handleError(error)));
     }
 
     setProjectMembers(projectMembers: Member[]): void {

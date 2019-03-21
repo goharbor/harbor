@@ -42,7 +42,6 @@ import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation
 import { Label, Tag, TagClickEvent, RetagRequest } from "../service/interface";
 
 import {
-  toPromise,
   CustomComparator,
   calculatePage,
   doFiltering,
@@ -59,7 +58,8 @@ import { USERSTATICPERMISSION } from "../service/permission-static";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -263,18 +263,17 @@ export class TagComponent implements OnInit, AfterViewInit {
 
     this.loading = true;
 
-    toPromise<Tag[]>(this.tagService.getTags(
+    this.tagService.getTags(
       this.repoName,
-      params))
-      .then((tags: Tag[]) => {
+      params)
+      .subscribe((tags: Tag[]) => {
         this.signedCon = {};
         // Do filtering and sorting
         this.tags = doFiltering<Tag>(tags, state);
         this.tags = doSorting<Tag>(this.tags, state);
 
         this.loading = false;
-      })
-      .catch(error => {
+      }, error => {
         this.loading = false;
         this.errorHandler.error(error);
       });
@@ -339,7 +338,7 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.inprogress = true;
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
-      toPromise<any>(this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
+      this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId).subscribe(res => {
         this.refresh();
 
         // set the selected label in front
@@ -358,7 +357,7 @@ export class TagComponent implements OnInit, AfterViewInit {
 
         labelInfo.iconsShow = true;
         this.inprogress = false;
-      }).catch(err => {
+      }, err => {
         this.inprogress = false;
         this.errorHandler.error(err);
       });
@@ -370,14 +369,14 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.inprogress = true;
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
-      toPromise<any>(this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId)).then(res => {
+      this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId).subscribe(res => {
         this.refresh();
 
         // insert the unselected label to groups with the same icons
         this.sortOperation(this.imageStickLabels, labelInfo);
         labelInfo.iconsShow = false;
         this.inprogress = false;
-      }).catch(err => {
+      }, err => {
         this.inprogress = false;
         this.errorHandler.error(err);
       });
@@ -520,9 +519,9 @@ export class TagComponent implements OnInit, AfterViewInit {
     let signatures: string[] = [];
     this.loading = true;
 
-    toPromise<Tag[]>(this.tagService
-      .getTags(this.repoName))
-      .then(items => {
+    this.tagService
+      .getTags(this.repoName)
+      .subscribe(items => {
         // To keep easy use for vulnerability bar
         items.forEach((t: Tag) => {
           if (!t.scan_overview) {
@@ -548,8 +547,7 @@ export class TagComponent implements OnInit, AfterViewInit {
         if (this.tags && this.tags.length === 0) {
           this.refreshRepo.emit(true);
         }
-      })
-      .catch(error => {
+      }, error => {
         this.errorHandler.error(error);
         this.loading = false;
       });
@@ -629,12 +627,12 @@ export class TagComponent implements OnInit, AfterViewInit {
       && message.state === ConfirmationState.CONFIRMED) {
       let tags: Tag[] = message.data;
       if (tags && tags.length) {
-        let promiseLists: any[] = [];
+        let observableLists: any[] = [];
         tags.forEach(tag => {
-          promiseLists.push(this.delOperate(tag));
+          observableLists.push(this.delOperate(tag));
         });
 
-        Promise.all(promiseLists).then((item) => {
+        forkJoin(...observableLists).subscribe((item) => {
           this.selectedRow = [];
           this.retrieve();
         });
@@ -642,7 +640,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  delOperate(tag: Tag) {
+  delOperate(tag: Tag): Observable<any> | null {
     // init operation info
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.DELETE_TAG';
@@ -661,26 +659,25 @@ export class TagComponent implements OnInit, AfterViewInit {
           operateChanges(operMessage, OperationState.failure, wrongInfo);
         });
     } else {
-      return toPromise<number>(this.tagService
-        .deleteTag(this.repoName, tag.name))
-        .then(
+      return this.tagService
+        .deleteTag(this.repoName, tag.name)
+        .pipe(map(
           response => {
             this.translateService.get("BATCH.DELETED_SUCCESS")
               .subscribe(res => {
                 operateChanges(operMessage, OperationState.success);
               });
-          }).catch(error => {
+          }), catchError(error => {
             if (error.status === 503) {
-              forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).subscribe(res => {
+              return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).pipe(map(res => {
                   operateChanges(operMessage, OperationState.failure, res[1]);
-                });
-              return;
+                }));
             }
-            this.translateService.get("BATCH.DELETED_FAILURE").subscribe(res => {
+            return this.translateService.get("BATCH.DELETED_FAILURE").pipe(map(res => {
               operateChanges(operMessage, OperationState.failure, res);
-            });
-          });
+            }));
+          }));
     }
   }
 

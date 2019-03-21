@@ -39,54 +39,46 @@ Go Into Project
 
 Add User To Project Admin
     [Arguments]  ${project}  ${user}
+    # *** this keyword has not been used ***
     Go Into Project
-    Sleep  2
-    Click Element  xpath=${project_member_tag_xpath}
-    Sleep  1
-    Click Element  xpath=${project_member_add_button_xpath}
-    Sleep  2
-    Input Text  xpath=${project_member_add_username_xpath}  ${user}
-    Sleep  3
-    Click Element  xpath=${project_member_add_admin_xpath}
-    Click Element  xpath=${project_member_add_save_button_xpath}
+    Retry Element Click  xpath=${project_member_tag_xpath}
+    Retry Element Click  xpath=${project_member_add_button_xpath}
+    Retry Text Input  xpath=${project_member_add_username_xpath}  ${user}
+    Retry Element Click  xpath=${project_member_add_admin_xpath}
+    Retry Element Click  xpath=${project_member_add_save_button_xpath}
     Sleep  4
 
 Search Project Member
     [Arguments]  ${project}  ${user}
+    # *** this keyword has not been used ***
     Go Into Project  ${project}
-    Sleep  2
-    Click Element  xpath=//clr-dg-cell//a[contains(.,'${project}')]
-    Sleep  1
-    Click Element  xpath=${project_member_search_button_xpath}
-    Sleep  1
-    Click Element  xpath=${project_member_search_text_xpath}
-    Sleep  2
-    Wait Until Page Contains  ${user}
+    Retry Element Click  xpath=//clr-dg-cell//a[contains(.,'${project}')]
+    Retry Element Click  xpath=${project_member_search_button_xpath}
+    Retry Element Click  xpath=${project_member_search_text_xpath}
+    Retry Wait Until Page Contains  ${user}
 
 Change Project Member Role
     [Arguments]  ${project}  ${user}  ${role}
-    Click Element  xpath=//clr-dg-cell//a[contains(.,'${project}')]
-    Sleep  2
-    Click Element  xpath=${project_member_tag_xpath}
-    Sleep  1
-    Click Element  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//label
-    Sleep  1
+    Retry Element Click  xpath=//clr-dg-cell//a[contains(.,'${project}')]
+    Retry Element Click  xpath=${project_member_tag_xpath}
+    Retry Element Click  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//label
     #change role
-    Click Element  //*[@id='member-action']
-    Click Element  //button[contains(.,'${role}')]
-    Sleep  2
-    Wait Until Page Contains  ${role}
+    Retry Element Click  ${project_member_action_xpath}
+    Retry Element Click  //button[contains(.,'${role}')]
+    Retry Wait Until Page Not Contains Element  ${project_member_set_role_xpath}
+    #Precondition is that only 1 member is in the list.
+    Retry Wait Until Page Contains  ${role}
 
 User Can Change Role
      [arguments]  ${username}
-     Click Element  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
-     Click Element  xpath=//clr-dropdown[@id='member-action']
+     Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
+     Retry Element Click  xpath=//clr-dropdown[@id='member-action']
      Page Should Not Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 User Can Not Change Role
      [arguments]  ${username}
-     Click Element  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
-     Click Element  xpath=//clr-dropdown[@id='member-action']
+     Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
+     Retry Element Click  xpath=//clr-dropdown[@id='member-action']
      Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 #this keyworkd seems will not use any more, will delete in the future
@@ -105,17 +97,17 @@ Add Guest Member To Project
     Mouse Down  xpath=${project_member_guest_radio_checkbox}
     Mouse Up  xpath=${project_member_guest_radio_checkbox}
     Retry Button Click  xpath=${project_member_add_confirmation_ok_xpath}
+    Retry Wait Element  xpath=${project_member_xpath}
     Sleep  1
 
 Delete Project Member
     [arguments]  ${member}
-    Click Element  xpath=//clr-dg-row[contains(.,'${member}')]//input/../label
-    Click Element  ${member_action_xpath}
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${member}')]//input/../label
+    Retry Element Click  ${member_action_xpath}
+    Retry Element Click  ${delete_action_xpath}
+    Retry Element Click  ${repo_delete_on_card_view_btn}
+    Retry Wait Element  xpath=${project_member_xpath}
     Sleep  1
-    Click Element  ${delete_action_xpath}
-    Sleep  2
-    Click Element  //clr-modal//button[contains(.,'DELETE')]
-    Sleep  3
 
 User Should Be Owner Of Project
     [Arguments]  ${user}  ${pwd}  ${project}

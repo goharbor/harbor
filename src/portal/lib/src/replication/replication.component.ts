@@ -21,9 +21,8 @@ import {
   EventEmitter
 } from "@angular/core";
 import { Comparator, State } from "../service/interface";
-import { Subscription, forkJoin, timer, throwError} from "rxjs";
 import { finalize, catchError, map } from "rxjs/operators";
-
+import { Subscription, forkJoin, timer, Observable, throwError } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 
 import { ListReplicationRuleComponent } from "../list-replication-rule/list-replication-rule.component";
@@ -39,7 +38,6 @@ import {
 } from "../service/interface";
 
 import {
-  toPromise,
   CustomComparator,
   DEFAULT_PAGE_SIZE,
   doFiltering,
@@ -55,9 +53,8 @@ import {
 import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
-import {operateChanges, OperationState, OperateInfo} from "../operation/operate";
-import {OperationService} from "../operation/operation.service";
-
+import { operateChanges, OperationState, OperateInfo } from "../operation/operate";
+import { OperationService } from "../operation/operation.service";
 import { Router } from "@angular/router";
 
 const ruleStatus: { [key: string]: any } = [
@@ -152,10 +149,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
     ReplicationJob
-  >("start_time", "date");
+    >("start_time", "date");
   updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
     ReplicationJob
-  >("end_time", "date");
+    >("end_time", "date");
 
   // Server driven pagination
   currentPage: number = 1;
@@ -170,7 +167,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     private errorHandler: ErrorHandler,
     private replicationService: ReplicationService,
     private operationService: OperationService,
-    private translateService: TranslateService) {}
+    private translateService: TranslateService) { }
 
   public get showPaginationIndex(): boolean {
     return this.totalCount > 0;
@@ -248,10 +245,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
 
     this.jobsLoading = false;
-    toPromise<ReplicationJob>(
-      this.replicationService.getExecutions(this.search.ruleId, params)
-    )
-      .then(response => {
+
+    this.replicationService.getExecutions(this.search.ruleId, params)
+      .subscribe(response => {
         this.totalCount = response.metadata.xTotalCount;
         this.jobs = response.data;
 
@@ -281,8 +277,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
 
         this.jobsLoading = false;
-      })
-      .catch(error => {
+      }, error => {
         this.jobsLoading = false;
         this.errorHandler.error(error);
       });
@@ -337,14 +332,14 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       let rule: ReplicationRule = message.data;
 
       if (rule) {
-        Promise.all([this.replicationOperate(rule)]).then((item) => {
+        forkJoin(this.replicationOperate(rule)).subscribe((item) => {
           this.selectOneRule(rule);
         });
       }
     }
   }
 
-  replicationOperate(rule: ReplicationRule) {
+  replicationOperate(rule: ReplicationRule): Observable<any> {
     // init operation info
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.REPLICATION';
@@ -353,24 +348,24 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     operMessage.data.name = rule.name;
     this.operationService.publishInfo(operMessage);
 
-    return toPromise<any>(this.replicationService.replicateRule(+rule.id))
-        .then(response => {
-          this.translateService.get('BATCH.REPLICATE_SUCCESS')
-              .subscribe(res => operateChanges(operMessage, OperationState.success));
-        })
-        .catch(error => {
+    return this.replicationService.replicateRule(+rule.id)
+      .pipe(map(response => {
+        this.translateService.get('BATCH.REPLICATE_SUCCESS')
+          .subscribe(res => operateChanges(operMessage, OperationState.success));
+      })
+        , catchError(error => {
           if (error && error.status === 412) {
-            forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
-                this.translateService.get('REPLICATION.REPLICATE_SUMMARY_FAILURE'))
-                .subscribe(function (res) {
-                  operateChanges(operMessage, OperationState.failure, res[1]);
-            });
+            return forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
+              this.translateService.get('REPLICATION.REPLICATE_SUMMARY_FAILURE'))
+              .pipe(map(function (res) {
+                operateChanges(operMessage, OperationState.failure, res[1]);
+              }));
           } else {
-            this.translateService.get('BATCH.REPLICATE_FAILURE').subscribe(res => {
+            return this.translateService.get('BATCH.REPLICATE_FAILURE').pipe(map(res => {
               operateChanges(operMessage, OperationState.failure, res);
-            });
-        }
-      });
+            }));
+          }
+        }));
   }
 
   customRedirect(rule: ReplicationRule) {
@@ -435,7 +430,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     }
 
     this.isStopOnGoing = true;
-    if  (this.jobs && this.jobs.length) {
+    if (this.jobs && this.jobs.length) {
       let ExecutionsStop$ = targets.map(target => this.StopOperate(target));
       forkJoin(ExecutionsStop$)
         .pipe(

@@ -18,6 +18,8 @@ import { Router, Resolve, RouterStateSnapshot, ActivatedRouteSnapshot } from '@a
 import { Project } from './project';
 import { ProjectService } from './project.service';
 import { SessionService } from '../shared/session.service';
+import { Observable } from 'rxjs';
+import { map, catchError } from "rxjs/operators";
 
 
 import { Roles } from '../shared/shared.const';
@@ -30,7 +32,7 @@ export class ProjectRoutingResolver implements Resolve<Project> {
     private projectService: ProjectService,
     private router: Router) { }
 
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<Project> {
+  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Project> {
     // Support both parameters and query parameters
     let projectId = route.params['id'];
     if (!projectId) {
@@ -38,8 +40,7 @@ export class ProjectRoutingResolver implements Resolve<Project> {
     }
     return this.projectService
       .getProject(projectId)
-      .toPromise()
-      .then((project: Project) => {
+      .pipe(map((project: Project) => {
         if (project) {
           let currentUser = this.sessionService.getCurrentUser();
           if (currentUser) {
@@ -58,10 +59,10 @@ export class ProjectRoutingResolver implements Resolve<Project> {
           this.router.navigate(['/harbor', 'projects']);
           return null;
         }
-      }).catch(error => {
+      }, catchError (error => {
         this.router.navigate(['/harbor', 'projects']);
         return null;
-      });
+      })));
 
   }
 }

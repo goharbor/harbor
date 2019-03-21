@@ -29,7 +29,8 @@ import { EndpointService } from "../service/endpoint.service";
 import { ErrorHandler } from "../error-handler/index";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { Endpoint, Adapter } from "../service/interface";
-import { toPromise, clone, compareValue, isEmptyObject } from "../utils";
+import { clone, compareValue, isEmptyObject } from "../utils";
+
 
 
 const FAKE_PASSWORD = "rjGcfuRu";
@@ -71,14 +72,14 @@ export class CreateEditEndpointComponent
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    toPromise<Adapter[]>(this.endpointService.getAdapters())
-      .then(adapters => {
-        this.adapterList = adapters || [];
-      })
-      .catch((error: any) => this.errorHandler.error(error));
+    this.endpointService.getAdapters().subscribe(adapters => {
+      this.adapterList = adapters || [];
+    }, error => {
+      this.errorHandler.error(error);
+    });
   }
 
   public get isValid(): boolean {
@@ -118,7 +119,7 @@ export class CreateEditEndpointComponent
       name: "",
       type: "Harbor",
       url: "",
-      };
+    };
   }
 
   open(): void {
@@ -166,8 +167,8 @@ export class CreateEditEndpointComponent
       this.translateService
         .get("DESTINATION.TITLE_EDIT")
         .subscribe(res => (this.modalTitle = res));
-      toPromise<Endpoint>(this.endpointService.getEndpoint(targetId))
-        .then(target => {
+      this.endpointService.getEndpoint(targetId)
+        .subscribe(target => {
           this.target = target;
           // Keep data cache
           this.initVal = clone(target);
@@ -178,8 +179,7 @@ export class CreateEditEndpointComponent
           this.open();
           this.controlEnabled = true;
           this.forceRefreshView(2000);
-        })
-        .catch(error => this.errorHandler.error(error));
+        }, error => this.errorHandler.error(error));
     } else {
       this.endpointId = "";
       this.translateService
@@ -213,15 +213,14 @@ export class CreateEditEndpointComponent
     }
 
     this.testOngoing = true;
-    toPromise<Endpoint>(this.endpointService.pingEndpoint(payload))
-      .then(response => {
+    this.endpointService.pingEndpoint(payload)
+      .subscribe(response => {
         this.inlineAlert.showInlineSuccess({
           message: "DESTINATION.TEST_CONNECTION_SUCCESS"
         });
         this.forceRefreshView(2000);
         this.testOngoing = false;
-      })
-      .catch(error => {
+      }, error => {
         this.inlineAlert.showInlineError("DESTINATION.TEST_CONNECTION_FAILURE");
         this.forceRefreshView(2000);
         this.testOngoing = false;
@@ -241,8 +240,8 @@ export class CreateEditEndpointComponent
       return; // Avoid duplicated submitting
     }
     this.onGoing = true;
-    toPromise<number>(this.endpointService.createEndpoint(this.target))
-      .then(response => {
+    this.endpointService.createEndpoint(this.target)
+      .subscribe(response => {
         this.translateService
           .get("DESTINATION.CREATED_SUCCESS")
           .subscribe(res => this.errorHandler.info(res));
@@ -250,8 +249,7 @@ export class CreateEditEndpointComponent
         this.onGoing = false;
         this.close();
         this.forceRefreshView(2000);
-      })
-      .catch(error => {
+      }, error => {
         this.onGoing = false;
         let errorMessageKey = this.handleErrorMessageKey(error.status);
         this.translateService.get(errorMessageKey).subscribe(res => {
@@ -285,10 +283,8 @@ export class CreateEditEndpointComponent
     }
 
     this.onGoing = true;
-    toPromise<number>(
-      this.endpointService.updateEndpoint(this.target.id, payload)
-    )
-      .then(response => {
+    this.endpointService.updateEndpoint(this.target.id, payload)
+      .subscribe(response => {
         this.translateService
           .get("DESTINATION.UPDATED_SUCCESS")
           .subscribe(res => this.errorHandler.info(res));
@@ -296,8 +292,7 @@ export class CreateEditEndpointComponent
         this.close();
         this.onGoing = false;
         this.forceRefreshView(2000);
-      })
-      .catch(error => {
+      }, error => {
         let errorMessageKey = this.handleErrorMessageKey(error.status);
         this.translateService.get(errorMessageKey).subscribe(res => {
           this.inlineAlert.showInlineError(res);

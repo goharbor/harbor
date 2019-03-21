@@ -21,7 +21,6 @@ import {
 } from "@angular/core";
 import { Label } from "../service/interface";
 import { LabelService } from "../service/label.service";
-import { toPromise } from "../utils";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { CreateEditLabelComponent } from "../create-edit-label/create-edit-label.component";
 import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
@@ -35,7 +34,8 @@ import { TranslateService } from "@ngx-translate/core";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError, forkJoin } from "rxjs";
 @Component({
     selector: "hbr-label",
     templateUrl: "./label.component.html",
@@ -75,13 +75,12 @@ export class LabelComponent implements OnInit {
         this.loading = true;
         this.selectedRow = [];
         this.targetName = "";
-        toPromise<Label[]>(this.labelService.getLabels(scope, this.projectId, name))
-            .then(targets => {
+        this.labelService.getLabels(scope, this.projectId, name)
+            .subscribe(targets => {
                 this.targets = targets || [];
                 this.loading = false;
                 this.forceRefreshView(2000);
-            })
-            .catch(error => {
+            }, error => {
                 this.errorHandler.error(error);
                 this.loading = false;
             });
@@ -134,11 +133,11 @@ export class LabelComponent implements OnInit {
             message.state === ConfirmationState.CONFIRMED) {
             let targetLists: Label[] = message.data;
             if (targetLists && targetLists.length) {
-                let promiseLists: any[] = [];
+                let observableLists: any[] = [];
                 targetLists.forEach(target => {
-                    promiseLists.push(this.delOperate(target));
+                    observableLists.push(this.delOperate(target));
                 });
-                Promise.all(promiseLists).then((item) => {
+                forkJoin(...observableLists).subscribe((item) => {
                     this.selectedRow = [];
                     this.retrieve(this.scope);
                 });
@@ -146,7 +145,7 @@ export class LabelComponent implements OnInit {
         }
     }
 
-    delOperate(target: Label) {
+    delOperate(target: Label): Observable<any> {
         // init operation info
         let operMessage = new OperateInfo();
         operMessage.name = 'OPERATION.DELETE_LABEL';
@@ -155,20 +154,19 @@ export class LabelComponent implements OnInit {
         operMessage.data.name = target.name;
         this.operationService.publishInfo(operMessage);
 
-        return toPromise<number>(this.labelService
-            .deleteLabel(target.id))
-            .then(
+        return this.labelService
+            .deleteLabel(target.id)
+            .pipe(map(
                 response => {
                     this.translateService.get('BATCH.DELETED_SUCCESS')
                         .subscribe(res => {
                             operateChanges(operMessage, OperationState.success);
                         });
-                }).catch(
-                    error => {
-                        this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
+                }), catchError( error => {
+                        return this.translateService.get('BATCH.DELETED_FAILURE').pipe(map(res => {
                             operateChanges(operMessage, OperationState.failure, res);
-                        });
-                    });
+                        }));
+                    }));
     }
 
     // Forcely refresh the view

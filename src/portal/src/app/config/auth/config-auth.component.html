@@ -199,6 +199,17 @@
         </div>
         <!-- End of ldap group admin dn -->
         <div class="form-group">
+            <label>{{'CONFIG.LDAP.LDAP_GROUP_MEMBERSHIP' | translate}}</label>
+            <input name="ldapGroupMembership" class="padding-right-28" type="text" #ldapGroupFilterInput="ngModel"
+                [(ngModel)]="currentConfig.ldap_group_membership_attribute.value" id="ldapGroupMembership" size="40" [disabled]="disabled(currentConfig.ldap_group_membership_attribute)">
+            <clr-tooltip>
+                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                    <span>{{'CONFIG.LDAP.LDAP_GROUP_MEMBERSHIP_INFO' | translate}}</span>
+                </clr-tooltip-content>
+            </clr-tooltip>
+        </div>
+        <div class="form-group">
             <label for="ldapGroupScope">{{'CONFIG.LDAP.GROUP_SCOPE' | translate}}</label>
             <div class="select">
                 <select id="ldapGroupScope" name="ldapGroupScope"
@@ -216,6 +227,7 @@
                 </clr-tooltip-content>
             </clr-tooltip>
         </div>
+        
     </section>
     <section class="form-block">
         <div class="form-group" *ngIf="showSelfReg">

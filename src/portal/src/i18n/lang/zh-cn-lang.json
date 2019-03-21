@@ -674,9 +674,9 @@
             "VERIFY_CERT": "检查来自LDAP服务端的证书",
             "READONLY_TOOLTIP": "选中，表示正在维护状态，不可删除仓库及标签,也不可以推送镜像。",
             "REPO_TOOLTIP": "用户在此模式下无法对图像执行任何操作。",
-            "HOURLY_CRON":"每小时运行一次",
-            "WEEKLY_CRON":"每周一次，周六/周日午夜之间开始",
-            "DAILY_CRON":"每天午夜运行一次"
+            "HOURLY_CRON":"每小时运行一次。相当于 0 0 * * * *",
+            "WEEKLY_CRON":"每周一次，周六/周日午夜之间开始。相当于 0 0 * * * *",
+            "DAILY_CRON":"每天午夜运行一次。相当于 0 0 * * * *"
         },
         "LDAP": {
             "URL": "LDAP URL",
@@ -695,6 +695,8 @@
             "LDAP_GROUP_GID_INFO": "LDAP组的GID,用于匹配用户的一个属性，可以是uid,cn或者其他属性",
             "LDAP_GROUP_ADMIN_DN": "LDAP组管理员DN",
             "LDAP_GROUP_ADMIN_DN_INFO": "LDAP组管理员DN，所有组内用户都会有管理员权限，此属性可以为空",
+            "LDAP_GROUP_MEMBERSHIP": "LDAP 组成员",
+            "LDAP_GROUP_MEMBERSHIP_INFO": "LDAP组成员的membership属性，默认为memberof, 在某些LDAP服务器会变为ismemberof",
             "GROUP_SCOPE": "LDAP组搜索范围",
             "GROUP_SCOPE_INFO": "搜索范围"
         },
@@ -912,6 +914,9 @@
         "NONE": "无",
         "DAILY": "每天",
         "WEEKLY": "每周",
+        "HOURLY": "每小时",
+        "CUSTOM": "自定义",
+        "CRON": "cron",
         "MANUAL": "手动",
         "ON": " ",
         "AT": " "
