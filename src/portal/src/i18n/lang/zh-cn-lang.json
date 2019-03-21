@@ -453,7 +453,8 @@
         "SOURCE_REGISTRY":"源Registry",
         "SOURCE_NAMESPACES":"源Namespace",
         "DEST_REGISTRY":"目的Registry",
-        "DEST_NAMESPACE":"目的Namespace"
+        "DEST_NAMESPACE":"目的Namespace",
+        "NAMESPACE_TOOLTIP": "Namespace名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",

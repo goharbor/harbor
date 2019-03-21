@@ -56,7 +56,10 @@
           <div formArrayName="src_namespaces">
             <div class="width-315" *ngFor="let src_namespace of src_namespaces.controls; let i=index">
               <div class="select endpointSelect pull-left">
-                <input type="text" [formControlName]="i" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255">
+                <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='(src_namespace.touched && src_namespace.invalid)'>
+                  <input type="text"  [formControlName]="i" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255">
+                  <span class="tooltip-content">{{'REPLICATION.NAMESPACE_TOOLTIP' | translate}}</span>
+                </label>
               </div>
               <clr-icon shape="times-circle" class="is-solid" (click)="deleteNamespace(i)"></clr-icon>
             </div>
@@ -95,7 +98,6 @@
         </div>
         <!--destination registry-->
         <div *ngIf="isPushMode" class="form-group form-group-override">
-
           <label class="form-group-label-override  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
