@@ -58,7 +58,6 @@ import {operateChanges, OperationState, OperateInfo} from "../operation/operate"
 import {OperationService} from "../operation/operation.service";
 
 import { Router } from "@angular/router";
-import { catchError, map } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs";
 
 const ruleStatus: { [key: string]: any } = [

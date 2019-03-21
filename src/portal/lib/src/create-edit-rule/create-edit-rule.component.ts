@@ -146,7 +146,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.endpointService.getEndpoints().subscribe(endPoints => {
       this.targetList = endPoints || [];
       this.sourceList = endPoints || [];
-    }).catch((error: any) => this.errorHandler.error(error));
+    }, error => {
+      this.errorHandler.error(error);
+    });
     this.nameChecker
       .pipe(debounceTime(300))
       .pipe(distinctUntilChanged())

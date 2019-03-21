@@ -73,11 +73,12 @@ export class CreateEditEndpointComponent
   ) {}
 
   ngOnInit(): void {
-    toPromise<Adapter[]>(this.endpointService.getAdapters())
-      .then(adapters => {
+    this.endpointService.getAdapters().subscribe(
+      adapters => {
         this.adapterList = adapters || [];
-      })
-      .catch((error: any) => this.errorHandler.error(error));
+      }, error => {
+        this.errorHandler.error(error);
+      });
   }
 
   public get isValid(): boolean {
