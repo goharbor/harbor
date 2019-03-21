@@ -1,6 +1,7 @@
 import { Injectable, Inject } from "@angular/core";
 import { Http } from "@angular/http";
-import { Observable } from "rxjs";
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "../utils";
@@ -18,26 +19,24 @@ export abstract class ConfigurationService {
    * Get configurations.
    *
    * @abstract
-   * returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+   * returns {(Observable<Configuration>)}
    *
    * @memberOf ConfigurationService
    */
   abstract getConfigurations():
-    | Observable<Configuration>
-    | Promise<Configuration>
-    | Configuration;
+    | Observable<Configuration>;
 
   /**
    * Save configurations.
    *
    * @abstract
-   * returns {(Observable<Configuration> | Promise<Configuration> | Configuration)}
+   * returns {(Observable<Configuration>)}
    *
    * @memberOf ConfigurationService
    */
   abstract saveConfigurations(
     changedConfigs: any | { [key: string]: any | any[] }
-  ): Observable<any> | Promise<any> | any;
+  ): Observable<any>;
 }
 
 @Injectable()
@@ -57,27 +56,23 @@ export class ConfigurationDefaultService extends ConfigurationService {
   }
 
   getConfigurations():
-    | Observable<Configuration>
-    | Promise<Configuration>
-    | Configuration {
+    | Observable<Configuration> {
     return this.http
       .get(this._baseUrl, HTTP_GET_OPTIONS)
-      .toPromise()
-      .then(response => response.json() as Configuration)
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.json() as Configuration)
+      , catchError(error => observableThrowError(error)));
   }
 
   saveConfigurations(
     changedConfigs: any | { [key: string]: any | any[] }
-  ): Observable<any> | Promise<any> | any {
+  ): Observable<any> {
     if (!changedConfigs) {
-      return Promise.reject("Bad argument!");
+      return observableThrowError("Bad argument!");
     }
 
     return this.http
       .put(this._baseUrl, JSON.stringify(changedConfigs), HTTP_JSON_OPTIONS)
-      .toPromise()
-      .then(() => {})
-      .catch(error => Promise.reject(error));
+      .pipe(map(() => { })
+      , catchError(error => observableThrowError(error)));
   }
 }

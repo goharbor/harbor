@@ -155,13 +155,13 @@ describe('RepositoryComponentGridview (inline template)', () => {
     repositoryService = fixtureRepo.debugElement.injector.get(RepositoryService);
     systemInfoService = fixtureRepo.debugElement.injector.get(SystemInfoService);
 
-    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
+    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(of(mockSystemInfo));
     spyRepos = spyOn(repositoryService, 'getRepositories')
       .and.callFake(function (projectId: number, name: string) {
         if (name === 'nginx') {
-          return Promise.resolve(mockNginxRepo);
+          return of(mockNginxRepo);
         }
-        return Promise.resolve(mockRepo);
+        return of(mockRepo);
       });
     userPermissionService = fixtureRepo.debugElement.injector.get(UserPermissionService);
     spyOn(userPermissionService, "getPermission")

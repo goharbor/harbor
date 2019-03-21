@@ -19,8 +19,7 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from "@angular/core";
-import { Subscription } from "rxjs";
-import { forkJoin } from "rxjs";
+import { Subscription, Observable, forkJoin } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { Comparator } from "../service/interface";
 
@@ -28,7 +27,7 @@ import { Endpoint } from "../service/interface";
 import { EndpointService } from "../service/endpoint.service";
 
 import { ErrorHandler } from "../error-handler/index";
-
+import { map, catchError } from "rxjs/operators";
 import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
@@ -40,7 +39,7 @@ import {
 } from "../shared/shared.const";
 
 import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
-import { toPromise, CustomComparator } from "../utils";
+import { CustomComparator } from "../utils";
 
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
@@ -116,13 +115,12 @@ export class EndpointComponent implements OnInit, OnDestroy {
     retrieve(): void {
         this.loading = true;
         this.selectedRow = [];
-        toPromise<Endpoint[]>(this.endpointService.getEndpoints(this.targetName))
-            .then(targets => {
+        this.endpointService.getEndpoints(this.targetName)
+            .subscribe(targets => {
                 this.targets = targets || [];
                 this.forceRefreshView(1000);
                 this.loading = false;
-            })
-            .catch(error => {
+            }, error => {
                 this.errorHandler.error(error);
                 this.loading = false;
             });
@@ -182,11 +180,11 @@ export class EndpointComponent implements OnInit, OnDestroy {
             message.state === ConfirmationState.CONFIRMED) {
             let targetLists: Endpoint[] = message.data;
             if (targetLists && targetLists.length) {
-                let promiseLists: any[] = [];
+                let observableLists: any[] = [];
                 targetLists.forEach(target => {
-                    promiseLists.push(this.delOperate(target));
+                    observableLists.push(this.delOperate(target));
                 });
-                Promise.all(promiseLists).then((item) => {
+                forkJoin(...observableLists).subscribe((item) => {
                     this.selectedRow = [];
                     this.reload(true);
                     this.forceRefreshView(2000);
@@ -194,8 +192,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
             }
         }
     }
-
-    delOperate(target: Endpoint) {
+    delOperate(target: Endpoint): Observable<any> {
         // init operation info
         let operMessage = new OperateInfo();
         operMessage.name = 'OPERATION.DELETE_REGISTRY';
@@ -204,27 +201,29 @@ export class EndpointComponent implements OnInit, OnDestroy {
         operMessage.data.name = target.name;
         this.operationService.publishInfo(operMessage);
 
-        return toPromise<number>(this.endpointService
-            .deleteEndpoint(target.id))
-            .then(
+        return this.endpointService
+            .deleteEndpoint(target.id)
+            .pipe(map(
                 response => {
                     this.translateService.get('BATCH.DELETED_SUCCESS')
                         .subscribe(res => {
                             operateChanges(operMessage, OperationState.success);
                         });
-                }).catch(
-                    error => {
-                        if (error && error.status === 412) {
-                            forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                                this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')).subscribe(res => {
-                                    operateChanges(operMessage, OperationState.failure, res[1]);
-                                });
-                        } else {
-                            this.translateService.get('BATCH.DELETED_FAILURE').subscribe(res => {
-                                operateChanges(operMessage, OperationState.failure, res);
-                            });
-                        }
-                    });
+                })
+                , catchError(error => {
+                    if (error && error.status === 412) {
+                        return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+                            this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')).pipe(map(res => {
+                                operateChanges(operMessage, OperationState.failure, res[1]);
+                            }));
+                    } else {
+                        return this.translateService.get('BATCH.DELETED_FAILURE').pipe(map(res => {
+                            operateChanges(operMessage, OperationState.failure, res);
+                        }));
+                    }
+
+                }
+                ));
     }
 
     // Forcely refresh the view

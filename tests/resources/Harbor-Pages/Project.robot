@@ -90,23 +90,20 @@ Search Private Projects
 Make Project Private
     [Arguments]  ${projectname}
     Go Into Project  ${project name}
-    Sleep  2
-    Click Element  xpath=//project-detail//a[contains(.,'Configuration')]
-    Sleep  1
-    Checkbox Should Be Selected  xpath=//input[@name='public']
-    Click Element  //div[@id="clr-wrapper-public"]//label[1]
-    Wait Until Element Is Enabled  //button[contains(.,'SAVE')]
-    Click Element  //button[contains(.,'SAVE')]
-    Wait Until Page Contains  Configuration has been successfully saved
+    Retry Element Click  ${project_config_tabsheet}
+    Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
+    Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
+    Retry Element Click  //button[contains(.,'SAVE')]
+    Retry Wait Until Page Contains  Configuration has been successfully saved
 
 Make Project Public
     [Arguments]  ${projectname}
     Go Into Project  ${project name}
-    Retry Element Click  xpath=//project-detail//a[contains(.,'Configuration')]
-    Checkbox Should Not Be Selected  xpath=//input[@name='public']
-    Retry Element Click  //div[@id="clr-wrapper-public"]//label[1]
+    Retry Element Click  ${project_config_tabsheet}
+    Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
+    Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
-    Wait Until Page Contains  Configuration has been successfully saved
+    Retry Wait Until Page Contains  Configuration has been successfully saved
 
 Delete Repo
     [Arguments]  ${projectname}
@@ -197,14 +194,13 @@ Do Log Advanced Search
 
 Go Into Repo
     [Arguments]  ${repoName}
-    Sleep  2
-    Click Element  xpath=//hbr-filter//clr-icon
-    Sleep  2
-    Input Text  xpath=//hbr-filter//input  ${repoName}
-    Sleep  3
-    Wait Until Page Contains  ${repoName}
-    Click Element  xpath=//clr-dg-cell[contains(.,${repoName})]/a
-    Sleep  2
+    ${repo_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${repoName}')]/a
+    Retry Element Click  ${repo_search_icon}
+    Retry Text Input  ${repo_search_input}  ${repoName}
+    Retry Element Click  ${repo_name_element}
+    Retry Wait Element  ${tag_table_column_signed}
+    Retry Wait Element  ${tag_table_column_vulnerability}
+    Retry Wait Element  ${tag_images_btn}
     Capture Page Screenshot  gointo_${repoName}.png
 
 Switch To CardView

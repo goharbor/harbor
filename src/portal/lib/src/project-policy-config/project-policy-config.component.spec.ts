@@ -121,8 +121,8 @@ describe('ProjectPolicyConfigComponent', () => {
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
     projectPolicyService = fixture.debugElement.injector.get(ProjectService);
 
-    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo[0]));
-    spyProjectPolicies = spyOn(projectPolicyService, 'getProject').and.returnValues(Promise.resolve(mockProjectPolicies[0]));
+    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(of(mockSystemInfo[0]));
+    spyProjectPolicies = spyOn(projectPolicyService, 'getProject').and.returnValues(of(mockProjectPolicies[0]));
 
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     spyOn(userPermissionService, "getPermission")

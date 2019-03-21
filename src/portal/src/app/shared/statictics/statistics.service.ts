@@ -13,7 +13,8 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { Statistics } from './statistics';
 import { Volumes } from './volumes';
@@ -33,15 +34,15 @@ export class StatisticsService {
 
     constructor(private http: Http) { }
 
-    getStatistics(): Promise<Statistics> {
-        return this.http.get(statisticsEndpoint, HTTP_GET_OPTIONS).toPromise()
-        .then(response => response.json() as Statistics)
-        .catch(error => Promise.reject(error));
+    getStatistics(): Observable<Statistics> {
+        return this.http.get(statisticsEndpoint, HTTP_GET_OPTIONS)
+        .pipe(map(response => response.json() as Statistics)
+        , catchError(error => observableThrowError(error)));
     }
 
-    getVolumes(): Promise<Volumes> {
-        return this.http.get(volumesEndpoint, HTTP_GET_OPTIONS).toPromise()
-        .then(response => response.json() as Volumes)
-        .catch(error => Promise.reject(error));
+    getVolumes(): Observable<Volumes> {
+        return this.http.get(volumesEndpoint, HTTP_GET_OPTIONS)
+        .pipe(map(response => response.json() as Volumes)
+        , catchError(error => observableThrowError(error)));
     }
 }

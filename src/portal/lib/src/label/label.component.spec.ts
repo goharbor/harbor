@@ -13,6 +13,7 @@ import {ErrorHandler} from "../error-handler/error-handler";
 
 import {IServiceConfig, SERVICE_CONFIG} from "../service.config";
 import { OperationService } from "../operation/operation.service";
+import { of } from "rxjs";
 
 describe('LabelComponent (inline template)', () => {
 
@@ -91,8 +92,8 @@ describe('LabelComponent (inline template)', () => {
 
         labelService = fixture.debugElement.injector.get(LabelService);
 
-        spy = spyOn(labelService, 'getLabels').and.returnValues(Promise.resolve(mockData));
-        spyOneLabel = spyOn(labelService, 'getLabel').and.returnValues(Promise.resolve(mockOneData));
+        spy = spyOn(labelService, 'getLabels').and.returnValues(of(mockData));
+        spyOneLabel = spyOn(labelService, 'getLabel').and.returnValues(of(mockOneData));
         fixture.detectChanges();
     });
 

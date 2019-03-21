@@ -2,7 +2,8 @@
 Documentation  This resource provides any keywords related to the Harbor private registry appliance
 
 *** Variables ***
-
+${project_chart_tabpage}  xpath=//project-detail//a[contains(.,'Charts')]
+${project_chart_list}  xpath=//hbr-helm-chart
 ${upload_chart_button}  //button[contains(.,'Upload')]
 ${chart_file_browse}  //*[@id='chart']
 ${chart_prov_browse}  //*[@id='prov']

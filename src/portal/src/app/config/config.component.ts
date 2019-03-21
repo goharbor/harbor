@@ -129,7 +129,8 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     handleAppConfig(event) {
         // Reload bootstrap option
-        this.appConfigService.load().catch(error => console.error('Failed to reload bootstrap option with error: ', error));
+        this.appConfigService.load().subscribe(() => {}
+        , error => console.error('Failed to reload bootstrap option with error: ', error));
     }
 
     public tabLinkClick(tabLink: string) {
@@ -139,7 +140,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     retrieveConfig(): void {
         this.onGoing = true;
         this.configService.getConfiguration()
-            .then((configurations: Configuration) => {
+            .subscribe((configurations: Configuration) => {
                 this.onGoing = false;
 
                 // Add two password fields
@@ -149,8 +150,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 this.allConfig = configurations;
                 // Keep the original copy of the data
                 this.originalCopy = clone(configurations);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.msgHandler.handleError(error);
             });

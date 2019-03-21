@@ -13,7 +13,8 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 import { Repository } from '@harbor/ui';
 
 import {HTTP_GET_OPTIONS} from "../../shared/shared.utils";
@@ -35,13 +36,13 @@ export class TopRepoService {
      * Get top popular repositories
      *
      *  ** deprecated param {string} keyword
-     * returns {Promise<TopRepo>}
+     * returns {Observable<TopRepo>}
      *
      * @memberOf GlobalSearchService
      */
-    getTopRepos(): Promise<Repository[]> {
-        return this.http.get(topRepoEndpoint, HTTP_GET_OPTIONS).toPromise()
-            .then(response => response.json() as Repository[])
-            .catch(error => Promise.reject(error));
+    getTopRepos(): Observable<Repository[]> {
+        return this.http.get(topRepoEndpoint, HTTP_GET_OPTIONS)
+            .pipe(map(response => response.json() as Repository[])
+            , catchError(error => observableThrowError(error)));
     }
 }

@@ -89,8 +89,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
         // Make sure the updated configuration can be loaded
         this.appConfigService.load()
-            .then(updatedConfig => this.appConfig = updatedConfig)
-            .catch(error => {
+            .subscribe(updatedConfig => this.appConfig = updatedConfig
+                , error => {
                 // Catch the error
                 console.error("Failed to load bootstrap options with error: ", error);
             });
@@ -241,7 +241,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
         // Call the service to send out the http request
         this.session.signIn(this.signInCredential)
-            .then(() => {
+            .subscribe(() => {
                 // Set status
                 // Keep it ongoing to keep the button 'disabled'
                 // this.signInStatus = signInStatusNormal;
@@ -256,8 +256,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                 } else {
                     this.router.navigateByUrl(this.redirectUrl);
                 }
-            })
-            .catch(error => {
+            }, error => {
                 this.handleError(error);
             });
     }

@@ -10,6 +10,8 @@ import { SharedModule } from '../shared/shared.module';
 import { FilterComponent } from '../filter/filter.component';
 
 import { click } from '../utils';
+import { of } from 'rxjs';
+import { startWith, delay } from 'rxjs/operators';
 
 describe('RecentLogComponent (inline template)', () => {
   let component: RecentLogComponent;
@@ -74,21 +76,17 @@ describe('RecentLogComponent (inline template)', () => {
     spy = spyOn(logService, 'getRecentLogs')
       .and.callFake(function (params: RequestQueryParams) {
         if (params && params.get('username')) {
-          return Promise.resolve(mockData2);
+          return of(mockData2).pipe(delay(0));
         } else {
           if (params.get('page') === '1') {
             mockData.data = mockItems.slice(0, 15);
           } else {
             mockData.data = mockItems.slice(15, 18);
           }
-          return Promise.resolve(mockData);
+          return of(mockData).pipe(delay(0));
         }
       });
 
-    fixture.detectChanges();
-  });
-  afterEach(() => {
-    mockItems = [];
     fixture.detectChanges();
   });
 

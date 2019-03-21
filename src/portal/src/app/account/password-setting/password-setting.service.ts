@@ -13,6 +13,8 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Http, URLSearchParams } from '@angular/http';
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 
 
 import { PasswordSetting } from './password-setting';
@@ -27,36 +29,31 @@ export class PasswordSettingService {
 
     constructor(private http: Http) { }
 
-    changePassword(userId: number, setting: PasswordSetting): Promise<any> {
+    changePassword(userId: number, setting: PasswordSetting): Observable<any> {
         if (!setting || setting.new_password.trim() === "" || setting.old_password.trim() === "") {
-            return Promise.reject("Invalid data");
+            return observableThrowError("Invalid data");
         }
 
         let putUrl = passwordChangeEndpoint.replace(":user_id", userId + "");
         return this.http.put(putUrl, JSON.stringify(setting), HTTP_JSON_OPTIONS)
-            .toPromise()
-            .then(() => null)
-            .catch(error => {
-                return Promise.reject(error);
-            });
+            .pipe(map(() => null)
+            , catchError(error => observableThrowError(error)));
     }
 
-    sendResetPasswordMail(email: string): Promise<any> {
+    sendResetPasswordMail(email: string): Observable<any> {
         if (!email) {
-            return Promise.reject("Invalid email");
+            return observableThrowError("Invalid email");
         }
 
         let getUrl = sendEmailEndpoint + "?email=" + email;
-        return this.http.get(getUrl, HTTP_GET_OPTIONS).toPromise()
-            .then(response => response)
-            .catch(error => {
-                return Promise.reject(error);
-            });
+        return this.http.get(getUrl, HTTP_GET_OPTIONS)
+            .pipe(map(response => response)
+            , catchError(error => observableThrowError(error)));
     }
 
-    resetPassword(uuid: string, newPassword: string): Promise<any> {
+    resetPassword(uuid: string, newPassword: string): Observable<any> {
         if (!uuid || !newPassword) {
-            return Promise.reject("Invalid reset uuid or password");
+            return observableThrowError("Invalid reset uuid or password");
         }
 
         let body: URLSearchParams = new URLSearchParams();
@@ -64,11 +61,8 @@ export class PasswordSettingService {
         body.set("password", newPassword);
 
         return this.http.post(resetPasswordEndpoint, body.toString(), HTTP_FORM_OPTIONS)
-            .toPromise()
-            .then(response => response)
-            .catch(error => {
-                return Promise.reject(error);
-            });
+            .pipe(map(response => response)
+            , catchError(error => observableThrowError(error)));
     }
 
 }

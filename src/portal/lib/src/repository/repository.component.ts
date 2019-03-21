@@ -21,8 +21,8 @@ import { Repository, RepositoryItem, Tag, TagClickEvent,
 import { ErrorHandler } from '../error-handler/index';
 import { ConfirmationState, ConfirmationTargets } from '../shared/shared.const';
 import { ConfirmationDialogComponent, ConfirmationMessage, ConfirmationAcknowledgement } from '../confirmation-dialog/index';
-import { toPromise } from '../utils';
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 const TabLinkContentMap: {[index: string]: string} = {
   'repo-info': 'info',
   'repo-image': 'image'
@@ -93,17 +93,15 @@ export class RepositoryComponent implements OnInit {
   }
 
   retrieve(state?: State) {
-    toPromise<Repository>(this.repositoryService.getRepositories(this.projectId, this.repoName))
-      .then( response => {
+    this.repositoryService.getRepositories(this.projectId, this.repoName)
+      .subscribe( response => {
         if (response.metadata.xTotalCount > 0) {
           this.orgImageInfo = response.data[0].description;
           this.imageInfo = response.data[0].description;
         }
-      })
-      .catch(error => this.errorHandler.error(error));
-    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-      .then(systemInfo => this.systemInfo = systemInfo)
-      .catch(error => this.errorHandler.error(error));
+      }, error => this.errorHandler.error(error));
+    this.systemInfoService.getSystemInfo()
+      .subscribe(systemInfo => this.systemInfo = systemInfo, error => this.errorHandler.error(error));
   }
 
   saveSignatures(event: {[key: string]: string[]}): void {
@@ -130,19 +128,19 @@ export class RepositoryComponent implements OnInit {
     this.currentTabID = tabID;
   }
 
-  getTagInfo(repoName: string): Promise<void> {
+  getTagInfo(repoName: string): Observable<void> {
     // this.signedNameArr = [];
    this.signedCon[repoName] = [];
-    return toPromise<Tag[]>(this.tagService
-           .getTags(repoName))
-           .then(items => {
+    return this.tagService
+           .getTags(repoName)
+           .pipe(map(items => {
              items.forEach((t: Tag) => {
                if (t.signature !== null) {
                  this.signedCon[repoName].push(t.name);
                }
              });
            })
-           .catch(error => this.errorHandler.error(error));
+           , catchError(error => observableThrowError(error)));
  }
 
     goBack(): void {
@@ -170,16 +168,15 @@ export class RepositoryComponent implements OnInit {
       return;
     }
     this.onGoing = true;
-    toPromise<any>(this.repositoryService.updateRepositoryDescription(this.repoName, this.imageInfo))
-      .then(() => {
+    this.repositoryService.updateRepositoryDescription(this.repoName, this.imageInfo)
+      .subscribe(() => {
         this.onGoing = false;
         this.translate.get('CONFIG.SAVE_SUCCESS').subscribe((res: string) => {
           this.errorHandler.info(res);
         });
         this.editing = false;
         this.refresh();
-      })
-      .catch(error => {
+      }, error => {
         this.onGoing = false;
         this.errorHandler.error(error);
       });

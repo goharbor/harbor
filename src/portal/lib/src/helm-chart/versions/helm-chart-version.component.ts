@@ -23,7 +23,7 @@ import {
 } from "./../../service/index";
 import { Label } from './../../service/interface';
 import { ErrorHandler } from "./../../error-handler/error-handler";
-import { toPromise, DEFAULT_PAGE_SIZE, downloadFile } from "../../utils";
+import { DEFAULT_PAGE_SIZE, downloadFile } from "../../utils";
 import { OperationService } from "./../../operation/operation.service";
 import { HelmChartService } from "./../../service/helm-chart.service";
 import { UserPermissionService } from "../../service/permission.service";
@@ -104,9 +104,9 @@ export class ChartVersionComponent implements OnInit {
 
   ngOnInit(): void {
     // Get system info for tag views
-    toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-      .then(systemInfo => (this.systemInfo = systemInfo))
-      .catch(error => this.errorHandler.error(error));
+    this.systemInfoService.getSystemInfo()
+      .subscribe(systemInfo => (this.systemInfo = systemInfo)
+      , error => this.errorHandler.error(error));
     this.refresh();
     this.getLabels();
     this.lastFilteredVersionName = "";

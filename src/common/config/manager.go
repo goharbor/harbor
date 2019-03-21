@@ -85,8 +85,7 @@ func (c *CfgManager) loadDefault() {
 	// Init Default Value
 	itemArray := metadata.Instance().GetAll()
 	for _, item := range itemArray {
-		// Every string type have default value, other types should have a default value
-		if _, ok := item.ItemType.(*metadata.StringType); ok || len(item.DefaultValue) > 0 {
+		if len(item.DefaultValue) > 0 {
 			cfgValue, err := metadata.NewCfgValue(item.Name, item.DefaultValue)
 			if err != nil {
 				log.Errorf("loadDefault failed, config item, key: %v,  err: %v", item.Name, err)
@@ -148,10 +147,17 @@ func (c *CfgManager) GetUserCfgs() map[string]interface{} {
 		if item.Scope == metadata.UserScope {
 			cfgValue, err := c.store.GetAnyType(item.Name)
 			if err != nil {
-				if err != metadata.ErrValueNotSet {
+				if err == metadata.ErrValueNotSet {
+					if _, ok := item.ItemType.(*metadata.StringType); ok {
+						cfgValue = ""
+					}
+					if _, ok := item.ItemType.(*metadata.NonEmptyStringType); ok {
+						cfgValue = ""
+					}
+				} else {
 					log.Errorf("Failed to get value of key %v, error %v", item.Name, err)
+					continue
 				}
-				continue
 			}
 			resultMap[item.Name] = cfgValue
 		}

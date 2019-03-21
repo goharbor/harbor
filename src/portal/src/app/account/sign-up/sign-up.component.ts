@@ -119,13 +119,12 @@ export class SignUpComponent {
         this.onGoing = true;
 
         this.userService.addUser(u)
-            .then(() => {
+            .subscribe(() => {
                 this.onGoing = false;
                 this.opened = false;
                 this.modal.close();
                 this.userCreation.emit(u);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 this.error = error;
                 this.inlienAlert.showInlineError(error);

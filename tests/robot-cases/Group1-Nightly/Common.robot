@@ -603,7 +603,7 @@ Test Case - View Scan Error
     ${d}=  get current date  result_format=%m%s
 
     Sign In Harbor  ${HARBOR_URL}  user026  Test1@34
-    Create An New Project  project${d}   
+    Create An New Project  project${d}
     Push Image  ${ip}  user026  Test1@34  project${d}  vmware/photon:1.0
     Go Into Project  project${d}
     Go Into Repo  project${d}/vmware/photon
@@ -618,27 +618,22 @@ Test Case - List Helm Charts
     Sign In Harbor  ${HARBOR_URL}  user027  Test1@34
     Create An New Project  project${d}
     Go Into Project  project${d}  has_image=${false}
-    Sleep  2
-    
+
     Switch To Project Charts
     Upload Chart files
     Go Into Chart Version  ${prometheus_chart_name}
-    Wait Until Page Contains  ${prometheus_chart_version}
+    Retry Wait Until Page Contains  ${prometheus_chart_version}
     Go Into Chart Detail  ${prometheus_chart_version}
 
     # Summary tab
-    Page Should Contain Element  ${summary_markdown}
-    Page Should Contain Element  ${summary_container}
+    Retry Wait Until Page Contains Element  ${summary_markdown}
+    Retry Wait Until Page Contains Element  ${summary_container}
 
     # Dependency tab
-    Click Element  xpath=${detail_dependency}
-    Sleep  1
-    Page Should Contain Element  ${dependency_content}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${detail_dependency}  Retry Wait Until Page Contains Element  ${dependency_content}
 
     # Values tab
-    Click Element  xpath=${detail_value}
-    Sleep  1
-    Page Should Contain Element  ${value_content}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${detail_value}  Retry Wait Until Page Contains Element  ${value_content}
 
     Go Back To Versions And Delete
     Close Browser
@@ -667,7 +662,7 @@ Test Case - Retag A Image Tag
     Sign In Harbor  ${HARBOR_URL}  user028  Test1@34
     Create An New Project  project${random_num1}
     Create An New Project  project${random_num2}
-    
+
     Go Into Project  project${random_num1}  has_image=${false}
     Sleep  1
     Push Image With Tag  ${ip}  user028  Test1@34  project${random_num1}  redis  ${image_tag}
