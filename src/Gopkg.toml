@@ -115,3 +115,7 @@ ignored = ["github.com/goharbor/harbor/tests*"]
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   version = "=2.1.1"
+
+[[constraint]]
+  name = "k8s.io/api"
+  version = "kubernetes-1.13.4"
