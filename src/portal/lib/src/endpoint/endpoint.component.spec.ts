@@ -143,7 +143,7 @@ describe("EndpointComponent (inline template)", () => {
     );
 
     spyAdapter = spyOn(endpointService, "getAdapters").and.returnValue(
-      Promise.resolve(mockAdapter)
+      of(mockAdapter)
     );
 
     spyOnRules = spyOn(

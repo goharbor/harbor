@@ -77,7 +77,7 @@ describe("CreateEditEndpointComponent (inline template)", () => {
 
     endpointService = fixture.debugElement.injector.get(EndpointService);
     spyAdapter = spyOn(endpointService, "getAdapters").and.returnValue(
-      Promise.resolve(mockAdapter)
+      of(mockAdapter)
     );
 
     spy = spyOn(endpointService, "getEndpoint").and.returnValue(
