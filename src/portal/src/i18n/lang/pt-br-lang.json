@@ -660,6 +660,8 @@
             "LDAP_GROUP_GID_INFO": "Atributo utilizado em uma busca para associar a um usuário, pode ser uid, cn ou outros atributos dependendo do seu LDAP/AD. O grupo no Harbor é nomeado com esse atributo por padrão.",
             "LDAP_GROUP_ADMIN_DN": "DN de Grupo ADMIN no LDAP",
             "LDAP_GROUP_ADMIN_DN_INFO": "Especifica um DN de grupo LDAP. Todo usuário do LDAP nesse grupo terã privilégio de administrador. Mantenha em branco caso não deseje esse comportamento.",
+            "LDAP_GROUP_MEMBERSHIP": "LDAP Group Membership",
+            "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\"",
             "GROUP_SCOPE": "Escopo de grupo LDAP",
             "GROUP_SCOPE_INFO": "O escopo que deve ser utilizado na busca por grupos, utiliza Subtree por padrão."
 
