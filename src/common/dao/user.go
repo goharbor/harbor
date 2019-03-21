@@ -106,10 +106,13 @@ func GetTotalOfUsers(query *models.UserQuery) (int64, error) {
 
 // ListUsers lists all users according to different conditions.
 func ListUsers(query *models.UserQuery) ([]models.User, error) {
+	qs := userQueryConditions(query)
+	if query != nil && query.Pagination != nil {
+		offset := (query.Pagination.Page - 1) * query.Pagination.Size
+		qs = qs.Offset(offset).Limit(query.Pagination.Size)
+	}
 	users := []models.User{}
-	_, err := userQueryConditions(query).Limit(-1).
-		OrderBy("username").
-		All(&users)
+	_, err := qs.OrderBy("username").All(&users)
 	return users, err
 }
 

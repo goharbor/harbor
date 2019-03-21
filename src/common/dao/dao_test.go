@@ -318,6 +318,11 @@ func TestListUsers(t *testing.T) {
 	if users2[0].Username != username {
 		t.Errorf("The username in result list does not match, expected: %s, actual: %s", username, users2[0].Username)
 	}
+
+	users3, err := ListUsers(&models.UserQuery{Username: username, Pagination: &models.Pagination{Page: 2, Size: 1}})
+	if len(users3) != 0 {
+		t.Errorf("Expect no user in list, but the acutal length is %d, the list: %+v", len(users3), users3)
+	}
 }
 
 func TestResetUserPassword(t *testing.T) {
