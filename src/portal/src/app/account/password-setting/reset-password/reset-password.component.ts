@@ -105,12 +105,11 @@ export class ResetPasswordComponent implements OnInit {
 
         this.onGoing = true;
         this.pwdService.resetPassword(this.resetUuid, this.password)
-            .then(() => {
+            .subscribe(() => {
                 this.onGoing = false;
                 this.resetOk = true;
                 this.inlineAlert.showInlineSuccess({ message: 'RESET_PWD.RESET_OK' });
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 if (this.msgHandler.isAppLevel(error)) {
                     this.close();

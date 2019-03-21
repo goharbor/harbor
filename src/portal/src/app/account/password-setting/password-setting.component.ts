@@ -166,12 +166,11 @@ export class PasswordSettingComponent implements AfterViewChecked {
                 new_password: this.pwdForm.value.newPassword,
                 old_password: this.pwdForm.value.oldPassword
             })
-            .then(() => {
+            .subscribe(() => {
                 this.onCalling = false;
                 this.opened = false;
                 this.msgHandler.showSuccess("CHANGE_PWD.SAVE_SUCCESS");
-            })
-            .catch(error => {
+            }, error => {
                 this.onCalling = false;
                 this.error = error;
                 if (this.msgHandler.isAppLevel(error)) {

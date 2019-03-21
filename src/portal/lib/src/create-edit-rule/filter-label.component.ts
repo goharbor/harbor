@@ -1,10 +1,10 @@
-import {Component, Input, OnInit, OnChanges, Output, EventEmitter, ChangeDetectorRef, SimpleChanges} from "@angular/core";
-import {LabelService} from "../service/label.service";
-import {toPromise} from "../utils";
-import {Label} from "../service/interface";
-import {ErrorHandler} from "../error-handler/error-handler";
-import {Subject} from "rxjs";
-import {debounceTime, distinctUntilChanged} from "rxjs/operators";
+import { Component, Input, OnInit, OnChanges, Output, EventEmitter, ChangeDetectorRef, SimpleChanges } from "@angular/core";
+import { LabelService } from "../service/label.service";
+import { Label } from "../service/interface";
+import { ErrorHandler } from "../error-handler/error-handler";
+import { Subject, forkJoin, Observable, throwError as observableThrowError } from "rxjs";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { map, catchError } from "rxjs/operators";
 
 export interface LabelState {
     iconsShow: boolean;
@@ -22,7 +22,7 @@ export class FilterLabelComponent implements OnInit, OnChanges {
     openFilterLabelPanel: boolean;
     labelLists: LabelState[] = [];
     filterLabelName = '';
-    labelNameFilter: Subject<string> = new Subject<string> ();
+    labelNameFilter: Subject<string> = new Subject<string>();
     @Input() isOpen: boolean;
     @Input() projectId: number;
     @Input() selectedLabelInfo: Label[];
@@ -30,17 +30,19 @@ export class FilterLabelComponent implements OnInit, OnChanges {
     @Output() closePanelEvent = new EventEmitter();
 
     constructor(private labelService: LabelService,
-                private ref: ChangeDetectorRef,
-                private errorHandler: ErrorHandler) {}
+        private ref: ChangeDetectorRef,
+        private errorHandler: ErrorHandler) { }
 
     ngOnInit(): void {
-        Promise.all([this.getGLabels(), this.getPLabels()]).then(() => {
+        forkJoin(this.getGLabels(), this.getPLabels()).subscribe(() => {
             this.selectedLabelInfo.forEach(info => {
                 if (this.labelLists.length) {
                     let lab = this.labelLists.find(data => data.label.id === info.id);
-                    if (lab) {this.selectOper(lab); }
+                    if (lab) { this.selectOper(lab); }
                 }
             });
+        }, error => {
+            this.errorHandler.error(error);
         });
 
         this.labelNameFilter
@@ -64,32 +66,30 @@ export class FilterLabelComponent implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['isOpen']) {this.openFilterLabelPanel = changes['isOpen'].currentValue; }
+        if (changes['isOpen']) { this.openFilterLabelPanel = changes['isOpen'].currentValue; }
     }
 
     getGLabels() {
-        return toPromise<Label[]>(this.labelService.getGLabels()).then((res: Label[]) => {
+        return this.labelService.getGLabels().pipe(map((res: Label[]) => {
             if (res.length) {
                 res.forEach(data => {
-                    this.labelLists.push({'iconsShow': false, 'label': data, 'show': true});
+                    this.labelLists.push({ 'iconsShow': false, 'label': data, 'show': true });
                 });
             }
-        }).catch(error => {
-            this.errorHandler.error(error);
-        });
+        })
+            , catchError(error => observableThrowError(error)));
     }
 
     getPLabels() {
         if (this.projectId && this.projectId > 0) {
-            return toPromise<Label[]>(this.labelService.getPLabels(this.projectId)).then((res1: Label[]) => {
+            return this.labelService.getPLabels(this.projectId).pipe(map((res1: Label[]) => {
                 if (res1.length) {
                     res1.forEach(data => {
-                        this.labelLists.push({'iconsShow': false, 'label': data, 'show': true});
+                        this.labelLists.push({ 'iconsShow': false, 'label': data, 'show': true });
                     });
                 }
-            }).catch(error => {
-                this.errorHandler.error(error);
-            });
+            })
+                , catchError(error => observableThrowError(error)));
         }
     }
 

@@ -29,6 +29,7 @@ import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagServic
 import { UserPermissionDefaultService, UserPermissionService } from "../service/permission.service";
 import { USERSTATICPERMISSION } from "../service/permission-static";
 import { of } from "rxjs";
+import { delay } from 'rxjs/operators';
 
 
 class RouterStub {
@@ -204,12 +205,12 @@ describe('RepositoryComponent (inline template)', () => {
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     labelService = fixture.debugElement.injector.get(LabelService);
 
-    spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(Promise.resolve(mockRepo));
-    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(Promise.resolve(mockSystemInfo));
-    spyTags = spyOn(tagService, 'getTags').and.returnValues(Promise.resolve(mockTagData));
+    spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(of(mockRepo).pipe(delay(0)));
+    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(of(mockSystemInfo).pipe(delay(0)));
+    spyTags = spyOn(tagService, 'getTags').and.returnValues(of(mockTagData).pipe(delay(0)));
 
-    spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(Promise.resolve(mockLabels));
-    spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(Promise.resolve(mockLabels1));
+    spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(of(mockLabels).pipe(delay(0)));
+    spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(of(mockLabels1).pipe(delay(0)));
     spyOn(userPermissionService, "getPermission")
     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE )
     .and.returnValue(of(mockHasAddLabelImagePermission))

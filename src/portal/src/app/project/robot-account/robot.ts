@@ -3,7 +3,7 @@ export class Robot {
   id: number;
   name: string;
   description: string;
-  expiresat: number;
+  expires_at: number;
   disabled: boolean;
   access: {
     isPull: boolean;

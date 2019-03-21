@@ -1,9 +1,9 @@
-import { Observable } from "rxjs";
 import { Injectable, Inject } from "@angular/core";
 import { Http } from "@angular/http";
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import { HTTP_GET_OPTIONS } from "../utils";
-
+import { map, catchError } from "rxjs/operators";
+import { Observable, throwError as observableThrowError } from "rxjs";
 /**
  * Define the service methods to handle the job log related things.
  *
@@ -18,7 +18,7 @@ export abstract class JobLogService {
    * @abstract
    *  ** deprecated param {string} jobType
    *  ** deprecated param {(number | string)} jobId
-   * returns {(Observable<string> | Promise<string> | string)}
+   * returns {(Observable<string>)}
    * @memberof JobLogService
    */
 
@@ -26,7 +26,7 @@ export abstract class JobLogService {
   abstract getJobLog(
     jobType: string,
     jobId: number | string
-  ): Observable<string> | Promise<string> | string;
+  ): Observable<string>;
 }
 
 /**
@@ -56,12 +56,11 @@ export class JobLogDefaultService extends JobLogService {
     this._supportedJobTypes = ["replication", "scan"];
   }
 
-  _getJobLog(logUrl: string): Observable<string> | Promise<string> | string {
+  _getJobLog(logUrl: string): Observable<string> {
     return this.http
       .get(logUrl, HTTP_GET_OPTIONS)
-      .toPromise()
-      .then(response => response.text())
-      .catch(error => Promise.reject(error));
+      .pipe(map(response => response.text())
+      , catchError(error => observableThrowError(error)));
   }
 
   _isSupportedJobType(jobType: string): boolean {
@@ -79,12 +78,12 @@ export class JobLogDefaultService extends JobLogService {
   public getJobLog(
     jobType: string,
     jobId: number | string
-  ): Observable<string> | Promise<string> | string {
+  ): Observable<string> {
     if (!this._isSupportedJobType(jobType)) {
-      return Promise.reject("Unsupport job type: " + jobType);
+      return observableThrowError("Unsupport job type: " + jobType);
     }
     if (!jobId || jobId <= 0) {
-      return Promise.reject("Bad argument");
+      return observableThrowError("Bad argument");
     }
 
     let logUrl: string = `${this._replicationJobBaseUrl}/${jobId}/log`;

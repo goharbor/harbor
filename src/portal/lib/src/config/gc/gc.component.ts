@@ -97,7 +97,17 @@ export class GcComponent implements OnInit {
     this.disableGC = false;
   }
 
-  getcron(cron: string) {
+  private resetSchedule(cron) {
+    this.schedule = {
+      schedule: {
+        type: this.CronScheduleComponent.scheduleType,
+        cron: cron
+      }
+    };
+    this.getJobs();
+  }
+
+  scheduleGc(cron: string) {
     let schedule = this.schedule;
     if (schedule && schedule.schedule && schedule.schedule.type !== SCHEDULE_TYPE_NONE) {
       this.gcRepoService.putScheduleGc(this.CronScheduleComponent.scheduleType, cron).subscribe(
@@ -107,7 +117,7 @@ export class GcComponent implements OnInit {
             .subscribe((res) => {
               this.errorHandler.info(res);
             });
-          this.getJobs();
+          this.resetSchedule(cron);
         },
         error => {
           this.errorHandler.error(error);
@@ -119,7 +129,7 @@ export class GcComponent implements OnInit {
           this.translate.get("GC.MSG_SCHEDULE_SET").subscribe((res) => {
             this.errorHandler.info(res);
           });
-          this.getJobs();
+          this.resetSchedule(cron);
         },
         error => {
           this.errorHandler.error(error);

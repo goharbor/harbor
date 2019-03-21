@@ -21,7 +21,7 @@ import {
     RequestQueryParams
 } from '../service/index';
 import { ErrorHandler } from '../error-handler/index';
-import { toPromise, CustomComparator } from '../utils';
+import { CustomComparator } from '../utils';
 import {
     DEFAULT_PAGE_SIZE,
     calculatePage,
@@ -127,8 +127,8 @@ export class RecentLogComponent implements OnInit {
             }
 
             this.loading = true;
-            toPromise<AccessLog>(this.logService.getRecentLogs(params))
-                .then(response => {
+            this.logService.getRecentLogs(params)
+                .subscribe(response => {
                     this.logsCache = response; // Keep the data
                     this.recentLogs = this.logsCache.data.filter(log => log.username !== ""); // To display
 
@@ -141,8 +141,7 @@ export class RecentLogComponent implements OnInit {
                     this.currentPagePvt = pageNumber;
 
                     this.loading = false;
-                })
-                .catch(error => {
+                }, error => {
                     this.loading = false;
                     this.errorHandler.error(error);
                 });

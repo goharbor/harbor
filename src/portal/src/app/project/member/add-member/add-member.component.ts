@@ -26,7 +26,7 @@ import {
 import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
 import {ActivatedRoute} from "@angular/router";
-import { Subject } from "rxjs";
+import { Subject, forkJoin } from "rxjs";
 
 
 
@@ -94,11 +94,6 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
       hasProjectAdminRole = (<Project>resolverData['projectResolver']).has_project_admin_role;
     }
     if (hasProjectAdminRole) {
-      this.userService.getUsersNameList()
-        .then(users => {
-          this.userLists = users;
-        });
-
       this.nameChecker.pipe(
         debounceTime(500),
         distinctUntilChanged(), )
@@ -108,33 +103,31 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
             this.isMemberNameValid = cont.valid;
             if (cont.valid) {
               this.checkOnGoing = true;
-              this.memberService
-                .listMembers(this.projectId, cont.value).toPromise()
-                .then((members: Member[]) => {
-                  if (members.filter(m => { return m.entity_name === cont.value; }).length > 0) {
-                    this.isMemberNameValid = false;
-                    this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
-                  }
-                  this.checkOnGoing = false;
-                })
-                .catch(error => {
-                  this.checkOnGoing = false;
-                });
-              // username autocomplete
-              if (this.userLists && this.userLists.length) {
-                this.selectUserName = [];
-                this.userLists.forEach(data => {
-                  if (data.username.startsWith(cont.value) && !this.memberList.find(mem => mem.entity_name === data.username)) {
-                    if (this.selectUserName.length < 10) {
-                      this.selectUserName.push(data.username);
+              forkJoin(this.userService.getUsersNameList(cont.value, 20), this.memberService
+              .listMembers(this.projectId, cont.value)).subscribe((res: Array<any>) => {
+                this.userLists = res[0];
+                if (res[1].filter(m => { return m.entity_name === cont.value; }).length > 0) {
+                  this.isMemberNameValid = false;
+                  this.memberTooltip = 'MEMBER.USERNAME_ALREADY_EXISTS';
+                }
+                this.checkOnGoing = false;
+                if (this.userLists && this.userLists.length) {
+                  this.selectUserName = [];
+                  this.userLists.forEach(data => {
+                    if (data.username.startsWith(cont.value) && !this.memberList.find(mem => mem.entity_name === data.username)) {
+                      if (this.selectUserName.length < 10) {
+                        this.selectUserName.push(data.username);
+                      }
                     }
-                  }
-                });
-                let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
-                setTimeout(() => {
-                  clearInterval(changeTimer);
-                }, 2000);
-              }
+                  });
+                  let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
+                  setTimeout(() => {
+                    clearInterval(changeTimer);
+                  }, 2000);
+                }
+              }, error => {
+                this.checkOnGoing = false;
+              });
             } else {
               this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
             }

@@ -98,15 +98,14 @@ export class ChangePasswordComponent {
 
         this.onGoing = true;
         this.userService.changePassword(this.userId, this.password, this.confirmPwd)
-            .then(() => {
+            .subscribe(() => {
                 this.onGoing = false;
                 this.opened = false;
                 this.msgHandler.showSuccess("USER.RESET_Ok");
 
                 let hnd = setInterval(() => this.ref.markForCheck(), 100);
                 setTimeout(() => clearInterval(hnd), 2000);
-            })
-            .catch(error => {
+            }, error => {
                 this.onGoing = false;
                 if (error.status === 400) {
                     this.translateService.get("USER.EXISTING_PASSWORD").subscribe(

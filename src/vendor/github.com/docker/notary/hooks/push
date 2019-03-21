@@ -1,7 +1,0 @@
-#!/bin/bash
-
-serverTag="server"
-signerTag="signer"
-
-docker push $DOCKER_REPO:${serverTag}-$DOCKER_TAG 
-docker push $DOCKER_REPO:${signerTag}-$DOCKER_TAG 

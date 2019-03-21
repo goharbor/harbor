@@ -7,7 +7,6 @@ import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message
 import { ConfirmationAcknowledgement } from '../confirmation-dialog/confirmation-state-message';
 import { ConfigurationService, SystemInfoService, SystemInfo } from '../service/index';
 import {
-    toPromise,
     compareValue,
     isEmptyObject,
     clone
@@ -15,6 +14,7 @@ import {
 import { ErrorHandler } from '../error-handler/index';
 import { SystemSettingsComponent, VulnerabilityConfigComponent, GcComponent} from './index';
 import { Configuration } from './config';
+import { map, catchError } from "rxjs/operators";
 
 @Component({
     selector: 'hbr-registry-config',
@@ -75,21 +75,21 @@ export class RegistryConfigComponent implements OnInit {
 
     // Get system info
     loadSystemInfo(): void {
-        toPromise<SystemInfo>(this.systemInfoService.getSystemInfo())
-            .then((info: SystemInfo) => this.systemInfo = info)
-            .catch(error => this.errorHandler.error(error));
+        this.systemInfoService.getSystemInfo()
+        .subscribe((info: SystemInfo) => {
+            this.systemInfo = info;
+        }, error => this.errorHandler.error(error));
     }
 
     // Load configurations
     load(): void {
         this.onGoing = true;
-        toPromise<Configuration>(this.configService.getConfigurations())
-            .then((config: Configuration) => {
+        this.configService.getConfigurations()
+            .subscribe((config: Configuration) => {
                 this.configCopy = clone(config);
                 this.config = config;
                 this.onGoing = false;
-            })
-            .catch(error => {
+            }, error => {
                 this.errorHandler.error(error);
                 this.onGoing = false;
             });
@@ -105,8 +105,8 @@ export class RegistryConfigComponent implements OnInit {
         }
 
         this.onGoing = true;
-        toPromise<any>(this.configService.saveConfigurations(changes))
-            .then(() => {
+        this.configService.saveConfigurations(changes)
+            .subscribe(() => {
                 this.onGoing = false;
 
                 this.translate.get("CONFIG.SAVE_SUCCESS").subscribe((res: string) => {
@@ -116,8 +116,8 @@ export class RegistryConfigComponent implements OnInit {
                 this.load();
                 // Reload all system info
                 // this.loadSystemInfo();
-            })
-            .catch(error => {
+            }
+            , error => {
                 this.onGoing = false;
                 this.errorHandler.error(error);
             });

@@ -93,6 +93,7 @@ type GeneralInfo struct {
 	WithAdmiral                 bool                             `json:"with_admiral"`
 	AdmiralEndpoint             string                           `json:"admiral_endpoint"`
 	AuthMode                    string                           `json:"auth_mode"`
+	AuthProxySettings           *models.HTTPAuthProxy            `json:"authproxy_settings,omitempty"`
 	RegistryURL                 string                           `json:"registry_url"`
 	ProjectCreationRestrict     string                           `json:"project_creation_restriction"`
 	SelfRegistration            bool                             `json:"self_registration"`
@@ -185,6 +186,13 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 	}
 	if info.WithClair {
 		info.ClairVulnStatus = getClairVulnStatus()
+	}
+	if info.AuthMode == common.HTTPAuth {
+		if s, err := config.HTTPAuthProxySetting(); err == nil {
+			info.AuthProxySettings = s
+		} else {
+			log.Warningf("Failed to get auth proxy setting, error: %v", err)
+		}
 	}
 	sia.Data["json"] = info
 	sia.ServeJSON()

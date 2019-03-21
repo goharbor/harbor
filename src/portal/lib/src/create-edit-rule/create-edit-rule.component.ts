@@ -22,10 +22,10 @@ import {
   Output
 } from "@angular/core";
 import { Filter, ReplicationRule, Endpoint, Label } from "../service/interface";
-import { Subject ,  Subscription } from "rxjs";
-import {debounceTime, distinctUntilChanged} from "rxjs/operators";
+import { Subject, Subscription } from "rxjs";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
-import { clone, compareValue, isEmptyObject, toPromise } from "../utils";
+import { clone, compareValue, isEmptyObject } from "../utils";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { ReplicationService } from "../service/replication.service";
 import { ErrorHandler } from "../error-handler/error-handler";
@@ -143,12 +143,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.filterSelect = ["type", "repository", "tag"];
     }
 
-    toPromise<Endpoint[]>(this.endpointService.getEndpoints())
-      .then(endPoints => {
-        this.targetList = endPoints || [];
-        this.sourceList = endPoints || [];
-      })
-      .catch((error: any) => this.errorHandler.error(error));
+
+    this.endpointService.getEndpoints().subscribe(endPoints => {
+      this.targetList = endPoints || [];
+      this.sourceList = endPoints || [];
+    }, error => {
+      this.errorHandler.error(error);
+    });
+
 
     this.nameChecker
       .pipe(debounceTime(300))
@@ -159,17 +161,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           this.isRuleNameValid = cont.valid;
           if (this.isRuleNameValid) {
             this.inNameChecking = true;
-            toPromise<ReplicationRule[]>(
-              this.repService.getReplicationRules(0, ruleName)
-            )
-              .then(response => {
+            this.repService.getReplicationRules(0, ruleName)
+              .subscribe(response => {
                 if (response.some(rule => rule.name === ruleName)) {
                   this.ruleNameTooltip = "TOOLTIP.RULE_USER_EXISTING";
                   this.isRuleNameValid = false;
                 }
                 this.inNameChecking = false;
-              })
-              .catch(() => {
+              }, () => {
                 this.inNameChecking = false;
               });
           } else {
@@ -179,7 +178,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       });
   }
 
-  sourceChange($event): void  {
+
+  sourceChange($event): void {
     if ($event && $event.target) {
       if ($event.target["value"] === "-1") {
         this.noSelectedEndpoint = true;
@@ -190,6 +190,38 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       );
       this.noSelectedEndpoint = false;
     }
+
+    this.proNameChecker
+      .pipe(debounceTime(500))
+      .pipe(distinctUntilChanged())
+      .subscribe((resp: string) => {
+        let name = this.ruleForm.controls["projects"].value[0].name;
+        this.noProjectInfo = "";
+        this.selectedProjectList = [];
+        this.proService.listProjects(name, undefined)
+          .subscribe((res: any) => {
+            if (res) {
+              this.selectedProjectList = res.slice(0, 10);
+              // if input value exit in project list
+              let pro = res.find((data: any) => data.name === name);
+              if (!pro) {
+                this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
+                this.noSelectedProject = true;
+              } else {
+                this.noProjectInfo = "";
+                this.noSelectedProject = false;
+                this.setProject([pro]);
+              }
+            } else {
+              this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
+              this.noSelectedProject = true;
+            }
+          }, (error: any) => {
+            this.errorHandler.error(error);
+            this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
+            this.noSelectedProject = true;
+          });
+      });
   }
 
   ngOnDestroy(): void {
@@ -240,7 +272,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       trigger: {
         kind: this.triggerNames[0],
         schedule_param: {
-         cron: ""
+          cron: ""
         }
       },
       deletion: false
@@ -614,30 +646,28 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     if (this.policyId < 0) {
       this.repService
         .createReplicationRule(copyRuleForm)
-        .then(() => {
+        .subscribe(() => {
           this.translateService
             .get("REPLICATION.CREATED_SUCCESS")
             .subscribe(res => this.errorHandler.info(res));
           this.inProgress = false;
           this.reload.emit(true);
           this.close();
-        })
-        .catch((error: any) => {
+        }, (error: any) => {
           this.inProgress = false;
           this.inlineAlert.showInlineError(error);
         });
     } else {
       this.repService
         .updateReplicationRule(this.policyId, this.ruleForm.value)
-        .then(() => {
+        .subscribe(() => {
           this.translateService
             .get("REPLICATION.UPDATED_SUCCESS")
             .subscribe(res => this.errorHandler.info(res));
           this.inProgress = false;
           this.reload.emit(true);
           this.close();
-        })
-        .catch((error: any) => {
+        }, (error: any) => {
           this.inProgress = false;
           this.inlineAlert.showInlineError(error);
         });
@@ -677,16 +707,15 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     if (ruleId) {
       this.policyId = +ruleId;
       this.headerTitle = "REPLICATION.EDIT_POLICY_TITLE";
-      toPromise(this.repService.getReplicationRule(ruleId))
-        .then(response => {
+      this.repService.getReplicationRule(ruleId)
+        .subscribe(response => {
           this.copyUpdateForm = clone(response);
           // set filter value is [] if callback filter value is null.
           this.updateForm(response);
           // keep trigger same value
           this.copyUpdateForm.trigger = clone(response.trigger);
           this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
-        })
-        .catch((error: any) => {
+        }, (error: any) => {
           this.inlineAlert.showInlineError(error);
         });
     } else {

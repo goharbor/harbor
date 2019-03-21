@@ -46,8 +46,8 @@ export class TopRepoComponent implements OnInit {
     // Get top popular repositories
     getTopRepos() {
         this.topRepoService.getTopRepos()
-            .then(repos => this.topRepos = repos )
-            .catch(error => {
+            .subscribe(repos => this.topRepos = repos
+            , error => {
                 this.messageHandlerService.handleError(error);
             });
     }

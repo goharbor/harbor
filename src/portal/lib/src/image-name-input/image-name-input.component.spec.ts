@@ -8,6 +8,7 @@ import { ProjectDefaultService, ProjectService } from "../service/index";
 import { ChannelService } from "../channel/index";
 import { Project } from "../project-policy-config/project";
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
+import { of } from "rxjs";
 
 describe("ImageNameInputComponent (inline template)", () => {
     let comp: ImageNameInputComponent;
@@ -54,7 +55,7 @@ describe("ImageNameInputComponent (inline template)", () => {
 
         let projectService: ProjectService;
         projectService = fixture.debugElement.injector.get(ProjectService);
-        spy = spyOn(projectService, "listProjects").and.returnValues(Promise.resolve(mockProjects));
+        spy = spyOn(projectService, "listProjects").and.returnValues(of(mockProjects));
     });
 
     it("should load data", async(() => {
