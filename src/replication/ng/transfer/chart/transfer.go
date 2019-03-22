@@ -176,9 +176,20 @@ func (t *transfer) copy(src, dst *chart, override bool) error {
 }
 
 func (t *transfer) delete(chart *chart) error {
+	exist, err := t.dst.ChartExist(chart.name, chart.version)
+	if err != nil {
+		t.logger.Errorf("failed to check the existence of chart %s:%s on the destination registry: %v", chart.name, chart.version, err)
+		return err
+	}
+	if !exist {
+		t.logger.Infof("the chart %s:%s doesn't exist on the destination registry, skip",
+			chart.name, chart.version)
+		return nil
+	}
+
 	t.logger.Infof("deleting the chart %s:%s on the destination registry...", chart.name, chart.version)
 	if err := t.dst.DeleteChart(chart.name, chart.version); err != nil {
-		t.logger.Errorf("failed to delete the chart %s:%s on the destination registry", chart.name, chart.version)
+		t.logger.Errorf("failed to delete the chart %s:%s on the destination registry: %v", chart.name, chart.version, err)
 		return err
 	}
 	t.logger.Infof("delete the chart %s:%s on the destination registry completed", chart.name, chart.version)

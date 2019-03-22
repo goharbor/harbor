@@ -38,6 +38,9 @@ func (f *fakeRegistry) FetchImages([]string, []*model.Filter) ([]*model.Resource
 }
 
 func (f *fakeRegistry) ManifestExist(repository, reference string) (bool, string, error) {
+	if repository == "destination" && reference == "b1" {
+		return true, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil
+	}
 	return false, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil
 }
 func (f *fakeRegistry) PullManifest(repository, reference string, accepttedMediaTypes []string) (distribution.Manifest, string, error) {
@@ -76,6 +79,9 @@ func (f *fakeRegistry) PullManifest(repository, reference string, accepttedMedia
 	return mani, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil
 }
 func (f *fakeRegistry) PushManifest(repository, reference, mediaType string, payload []byte) error {
+	return nil
+}
+func (f *fakeRegistry) DeleteManifest(repository, reference string) error {
 	return nil
 }
 func (f *fakeRegistry) BlobExist(repository, digest string) (bool, error) {
@@ -132,5 +138,21 @@ func TestCopy(t *testing.T) {
 	}
 	override := true
 	err := tr.copy(src, dst, override)
+	require.Nil(t, err)
+}
+
+func TestDelete(t *testing.T) {
+	stopFunc := func() bool { return false }
+	tr := &transfer{
+		logger:    log.DefaultLogger(),
+		isStopped: stopFunc,
+		dst:       &fakeRegistry{},
+	}
+
+	repo := &repository{
+		repository: "destination",
+		tags:       []string{"b1", "b2"},
+	}
+	err := tr.delete(repo)
 	require.Nil(t, err)
 }

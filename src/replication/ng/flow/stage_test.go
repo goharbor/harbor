@@ -108,6 +108,9 @@ func (f *fakedAdapter) PullManifest(repository, reference string, accepttedMedia
 func (f *fakedAdapter) PushManifest(repository, reference, mediaType string, payload []byte) error {
 	return nil
 }
+func (f *fakedAdapter) DeleteManifest(repository, digest string) error {
+	return nil
+}
 func (f *fakedAdapter) BlobExist(repository, digest string) (exist bool, err error) {
 	return false, nil
 }

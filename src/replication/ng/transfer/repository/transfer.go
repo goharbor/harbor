@@ -214,7 +214,7 @@ func (t *transfer) pullManifest(repository, tag string) (
 func (t *transfer) exist(repository, tag string) (bool, string, error) {
 	exist, digest, err := t.dst.ManifestExist(repository, tag)
 	if err != nil {
-		t.logger.Errorf("failed to check the existence of the manifest of iage %s:%s in the destination registry: %v",
+		t.logger.Errorf("failed to check the existence of the manifest of image %s:%s on the destination registry: %v",
 			repository, tag, err)
 		return false, "", err
 	}
@@ -275,6 +275,36 @@ func (t *transfer) pushManifest(manifest distribution.Manifest, repository, tag 
 }
 
 func (t *transfer) delete(repo *repository) error {
-	// TODO
+	if t.shouldStop() {
+		return jobStoppedErr
+	}
+
+	digests := map[string]struct{}{}
+	repository := repo.repository
+	for _, tag := range repo.tags {
+		exist, digest, err := t.dst.ManifestExist(repository, tag)
+		if err != nil {
+			t.logger.Errorf("failed to check the existence of the manifest of image %s:%s on the destination registry: %v",
+				repository, tag, err)
+			return err
+		}
+		if !exist {
+			t.logger.Infof("the image %s:%s doesn't exist on the destination registry, skip",
+				repository, tag)
+			continue
+		}
+		t.logger.Infof("the digest of image %s:%s is %s", repository, tag, digest)
+		if _, exist := digests[digest]; !exist {
+			digests[digest] = struct{}{}
+		}
+	}
+	for digest := range digests {
+		if err := t.dst.DeleteManifest(repository, digest); err != nil {
+			t.logger.Errorf("failed to delete the manifest of image %s:%s on the destination registry: %v",
+				repository, digest, err)
+			return err
+		}
+		t.logger.Infof("the manifest of image %s:%s is deleted", repository, digest)
+	}
 	return nil
 }
