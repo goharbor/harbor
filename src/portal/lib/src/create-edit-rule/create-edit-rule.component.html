@@ -126,7 +126,7 @@
           <div formGroupName="trigger">
             <!--on trigger-->
             <div class="select floatSetPar">
-              <select id="ruleTrigger" formControlName="kind" (change)="selectTrigger($event)">
+              <select id="ruleTrigger" formControlName="checkRuleName" (change)="selectTrigger($event)">
                 <option value="Manual">{{'REPLICATION.MANUAL' | translate}}</option>
                 <option value="Immediate">{{'REPLICATION.IMMEDIATE' | translate}}</option>
                 <option value="Scheduled">{{'REPLICATION.SCHEDULE' | translate}}</option>

@@ -71,19 +71,12 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   inNameChecking = false;
   isRuleNameValid = true;
   nameChecker: Subject<string> = new Subject<string>();
-  proNameChecker: Subject<string> = new Subject<string>();
   firstClick = 0;
   policyId: number;
   labelInputVal = '';
   filterLabelInfo: Label[] = [];  // store filter selected labels` id
   deletedLabelCount = 0;
   deletedLabelInfo: string;
-
-  namespaceList: [any] = [{
-    id: 1,
-    name: "namespace1"
-  }];
-
   confirmSub: Subscription;
   ruleForm: FormGroup;
   formArrayLabel: FormArray;
@@ -98,24 +91,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   @Output() reload = new EventEmitter<boolean>();
 
   @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
-
-  emptyProject = {
-    project_id: -1,
-    name: ""
-  };
-  emptyEndpoint = {
-    id: -1,
-    credential: {
-      access_key: "",
-      access_secret: "",
-      type: ""
-    },
-    description: "",
-    insecure: false,
-    name: "",
-    type: "",
-    url: "",
-  };
   constructor(
     private fb: FormBuilder,
     private repService: ReplicationService,
@@ -139,11 +114,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (this.withAdmiral) {
-      this.filterSelect = ["type", "repository", "tag"];
-    }
-
-
     this.endpointService.getEndpoints().subscribe(endPoints => {
       this.targetList = endPoints || [];
       this.sourceList = endPoints || [];
@@ -191,37 +161,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.noSelectedEndpoint = false;
     }
 
-    this.proNameChecker
-      .pipe(debounceTime(500))
-      .pipe(distinctUntilChanged())
-      .subscribe((resp: string) => {
-        let name = this.ruleForm.controls["projects"].value[0].name;
-        this.noProjectInfo = "";
-        this.selectedProjectList = [];
-        this.proService.listProjects(name, undefined)
-          .subscribe((res: any) => {
-            if (res) {
-              this.selectedProjectList = res.slice(0, 10);
-              // if input value exit in project list
-              let pro = res.find((data: any) => data.name === name);
-              if (!pro) {
-                this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-                this.noSelectedProject = true;
-              } else {
-                this.noProjectInfo = "";
-                this.noSelectedProject = false;
-                this.setProject([pro]);
-              }
-            } else {
-              this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-              this.noSelectedProject = true;
-            }
-          }, (error: any) => {
-            this.errorHandler.error(error);
-            this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-            this.noSelectedProject = true;
-          });
-      });
   }
 
   ngOnDestroy(): void {
@@ -230,9 +169,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
     if (this.nameChecker) {
       this.nameChecker.unsubscribe();
-    }
-    if (this.proNameChecker) {
-      this.proNameChecker.unsubscribe();
     }
   }
   get src_namespaces(): FormArray { return this.ruleForm.get('src_namespaces') as FormArray; }
@@ -345,15 +281,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  get projects(): FormArray {
-    return this.ruleForm.get("projects") as FormArray;
-  }
-  setProject(projects: Project[]) {
-    const projectFGs = projects.map(project => this.fb.group(project));
-    const projectFormArray = this.fb.array(projectFGs);
-    this.ruleForm.setControl("projects", projectFormArray);
-  }
-
   get filters(): FormArray {
     return this.ruleForm.get("filters") as FormArray;
   }
@@ -362,8 +289,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     const filterFormArray = this.fb.array(filterFGs);
     this.ruleForm.setControl("filters", filterFormArray);
   }
-
-
 
   initFilter(name: string) {
     return this.fb.group({
@@ -434,14 +359,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Handle the form validation
-  handleValidation(): void {
-    let cont = this.ruleForm.controls["projects"];
-    if (cont && cont.valid) {
-      this.proNameChecker.next(cont.value[0].name);
-    }
-  }
-
   focusClear($event: any): void {
     if (this.policyId < 0 && this.firstClick === 0) {
       if ($event && $event.target && $event.target["value"]) {
@@ -453,25 +370,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   leaveInput() {
     this.selectedProjectList = [];
-  }
-
-  selectedProjectName(projectName: string) {
-    this.noSelectedProject = false;
-    let pro: Project = this.selectedProjectList.find(
-      data => data.name === projectName
-    );
-    this.setProject([pro]);
-    this.selectedProjectList = [];
-    this.noProjectInfo = "";
-  }
-
-  selectedProject(project: Project): void {
-    if (!project) {
-      this.noSelectedProject = true;
-    } else {
-      this.noSelectedProject = false;
-      this.setProject([project]);
-    }
   }
 
   addNewNamespace(): void {
