@@ -113,7 +113,7 @@ func (r *ReplicationOperationAPI) CreateExecution() {
 		return
 	}
 
-	executionID, err := ng.OperationCtl.StartReplication(policy)
+	executionID, err := ng.OperationCtl.StartReplication(policy, nil)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to start replication for policy %d: %v", execution.PolicyID, err))
 		return

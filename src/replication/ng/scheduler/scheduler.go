@@ -22,8 +22,8 @@ import (
 	"github.com/goharbor/harbor/src/common/job"
 	common_job "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/opm"
+	"github.com/goharbor/harbor/src/replication/ng/config"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
@@ -101,7 +101,7 @@ func (d *defaultScheduler) Schedule(items []*ScheduleItem) ([]*ScheduleResult, e
 			Metadata: &models.JobMetadata{
 				JobKind: job.JobKindGeneric,
 			},
-			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/replication/task/%d", config.InternalCoreURL(), item.TaskID),
+			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/replication/task/%d", config.Config.CoreURL, item.TaskID),
 		}
 
 		job.Name = common_job.Replication
