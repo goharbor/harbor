@@ -173,12 +173,11 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 }
 
 func checkEvent(event *models.Event) bool {
-	// pull and push manifest by docker-client or vic or jib
-	if (strings.HasPrefix(event.Request.UserAgent, "docker") || strings.HasPrefix(event.Request.UserAgent, vicPrefix) || strings.HasPrefix(event.Request.UserAgent, "jib")) &&
-		(event.Action == "pull" || event.Action == "push") {
+	// pull and push manifest
+	if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) != "harbor-registry-client" && (event.Action == "pull" || event.Action == "push") {
 		return true
 	}
-	// push manifest by docker-client or job-service
+	// push manifest by job-service
 	if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) == "harbor-registry-client" && event.Action == "push" {
 		return true
 	}
