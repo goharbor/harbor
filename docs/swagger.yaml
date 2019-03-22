@@ -1405,33 +1405,6 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '503':
           description: Harbor is not deployed with Clair.
-  /repositories/scanAll:
-    post:
-      summary: Scan all images of the registry.
-      description: |
-        The server will launch different jobs to scan each image on the regisitry, so this is equivalent to calling  the API to scan the image one by one in background, so there's no way to track the overall status of the "scan all" action.  Only system adim has permission to call this API.
-      parameters:
-        - name: project_id
-          in: query
-          type: integer
-          description: When this parm is set only the images under the project identified by the project_id will be scanned.
-      tags:
-        - Products          
-      responses:
-        '202':
-          description: The action is successully taken in the background.  If some images are failed to scan it will only be reflected in the job status.
-        '401':
-          description: User needs to login or call the API with correct credentials.
-        '403':
-          description: User doesn't have permission to perform the action.
-        '409':
-          description: There is a "scanall" job in progress, so the request cannot be served.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
-        '500':
-          description: Failed to initiate the action.
-        '503':
-          description: Harbor is not deployed with Clair.
   '/repositories/{repo_name}/tags/{tag}/vulnerability/details':
     get:
       summary: Get vulnerability details of the image.
@@ -2986,8 +2959,6 @@ paths:
         '200':
           description: Get gc results successfully.
           schema:
-            type: array
-            items:
               $ref: '#/definitions/GCResult'
         '401':
           description: User need to log in first.
@@ -3033,9 +3004,7 @@ paths:
         '200':
           description: Get gc's schedule.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/GCSchedule'
+              $ref: '#/definitions/AdminJobSchedule'
         '401':
           description: User need to log in first.
         '403':
@@ -3051,21 +3020,19 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/GCSchedule'
-          description: Updates of gs's schedule.
+            $ref: '#/definitions/AdminJobSchedule'
+          description: Updates of gc's schedule.
       tags:
         - Products
       responses:
         '200':
           description: Updated gc's schedule successfully.
         '400':
-          description: Bad params.
+          description: Invalid schedule type.
         '401':
           description: User need to log in first.
         '403':
           description: User does not have permission of admin role.
-        '404':
-          description: GC schedule does not exist.
         '500':
           description: Unexpected internal errors.
     post:
@@ -3077,23 +3044,92 @@ paths:
           in: body
           required: true
           schema:
-            $ref: '#/definitions/GCSchedule'
-          description: Updates of gs's schedule.
+            $ref: '#/definitions/AdminJobSchedule'
+          description: Updates of gc's schedule.
       tags:
         - Products
       responses:
         '200':
-          description: Updated replication's target successfully.
+          description: GC schedule successfully.
         '400':
-          description: The target is associated with policy which is enabled.
+          description: Invalid schedule type.
         '401':
           description: User need to log in first.
         '403':
           description: User does not have permission of admin role.
-        '404':
-          description: Target ID does not exist.
+        '409':
+          description: There is a "gc" job in progress, so the request cannot be served.
         '500':
           description: Unexpected internal errors.
+  /system/scanAll/schedule:
+    get:
+      summary: Get scan_all's schedule.
+      description: This endpoint is for getting a schedule for the scan all job, which scans all of images in Harbor.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Get a schedule for the scan all job, which scans all of images in Harbor.
+          schema:
+              $ref: '#/definitions/AdminJobSchedule'
+        '401':
+          description: User need to log in first.
+        '403':
+          description: Only admin has this authority.
+        '500':
+          description: Unexpected internal errors.
+    put:
+      summary: Update scan all's schedule.
+      description: |
+        This endpoint is for updating the schedule of scan all job, which scans all of images in Harbor.
+      parameters:
+      - name: schedule
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/AdminJobSchedule'
+        description: Updates the schedule of scan all job, which scans all of images in Harbor.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Updated scan_all's schedule successfully.
+        '400':
+          description: Invalid schedule type.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of admin role.
+        '500':
+          description: Unexpected internal errors.
+    post:
+      summary: Create a schedule or a manual trigger for the scan all job.
+      description: |
+        This endpoint is for creating a schedule or a manual trigger for the scan all job, which scans all of images in Harbor.
+      parameters:
+      - name: schedule
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/AdminJobSchedule'
+        description: Create a schedule or a manual trigger for the scan all job.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Updated scan_all's schedule successfully.
+        '400':
+          description: Invalid schedule type.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of admin role.
+        '409':
+          description: There is a "scanall" job in progress, so the request cannot be served.
+        '500':
+          description: Unexpected internal errors.
+        '503':
+          description: Harbor is not deployed with Clair.
   /configurations:
     get:
       summary: Get system configurations.
@@ -5099,7 +5135,7 @@ definitions:
         type: string
         description: the job kind of gc job.
       schedule:
-        $ref: '#/definitions/GCScheduleSchedule'
+        $ref: '#/definitions/AdminJobScheduleObj'
       job_status:
         type: string
         description: the status of gc job.
@@ -5111,13 +5147,13 @@ definitions:
         description: the creation time of gc job.
       update_time:
         type: string
-        description: the update time of gc job.        
-  GCSchedule:
+        description: the update time of gc job.
+  AdminJobSchedule:
     type: object
     properties:
       schedule:
-        $ref: '#/definitions/GCScheduleSchedule'
-  GCScheduleSchedule:
+        $ref: '#/definitions/AdminJobScheduleObj'
+  AdminJobScheduleObj:
     type: object
     properties:
       type:

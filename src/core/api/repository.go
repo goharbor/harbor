@@ -1022,33 +1022,6 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 	ra.ServeJSON()
 }
 
-// ScanAll handles the api to scan all images on Harbor.
-func (ra *RepositoryAPI) ScanAll() {
-	if !config.WithClair() {
-		log.Warningf("Harbor is not deployed with Clair, it's not possible to scan images.")
-		ra.RenderError(http.StatusServiceUnavailable, "")
-		return
-	}
-	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.HandleUnauthorized()
-		return
-	}
-	if !ra.SecurityCtx.IsSysAdmin() {
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
-		return
-	}
-	if err := coreutils.ScanAllImages(); err != nil {
-		log.Errorf("Failed triggering scan all images, error: %v", err)
-		if httpErr, ok := err.(*commonhttp.Error); ok && httpErr.Code == http.StatusConflict {
-			ra.HandleConflict("Conflict when triggering scan all images, please try again later.")
-			return
-		}
-		ra.HandleInternalServerError(fmt.Sprintf("Error: %v", err))
-		return
-	}
-	ra.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
-}
-
 func getSignatures(username, repository string) (map[string][]notary.Target, error) {
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		username, repository)

@@ -37,8 +37,13 @@
     visibility: hidden !important;
 }
 .rightPos {
-    position: absolute; 
-    right: 20px; 
-    height:32px; 
+    position: absolute;
+    right: 20px;
+    height:32px;
     z-index: 100;
+}
+::ng-deep harbor-user{
+    >div{
+        position: relative;
+    }
 }

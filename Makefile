@@ -65,6 +65,7 @@ SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
 MAKEPATH=$(BUILDPATH)/make
 MAKEDEVPATH=$(MAKEPATH)/dev
+MAKE_PREPARE_PATH=$(MAKEPATH)/photon/prepare
 SRCPATH=./src
 TOOLSPATH=$(BUILDPATH)/tools
 CORE_PATH=$(BUILDPATH)/src/core
@@ -94,6 +95,8 @@ UIVERSIONTAG=dev
 VERSIONFILEPATH=$(CURDIR)
 VERSIONFILENAME=UIVERSION
 
+PREPARE_VERSION_NAME=versions
+
 #versions
 REGISTRYVERSION=v2.7.1
 NGINXVERSION=$(VERSIONTAG)
@@ -106,6 +109,14 @@ NOTARYMIGRATEVERSION=v3.5.4
 
 # version of chartmuseum
 CHARTMUSEUMVERSION=v0.8.1
+
+define VERSIONS_FOR_PREPARE
+VERSION_TAG: $(VERSIONTAG)
+REGISTRY_VERSION: $(REGISTRYVERSION)
+NOTARY_VERSION: $(NOTARYVERSION)
+CLAIR_VERSION: $(CLAIRVERSION)
+CHARTMUSEUM_VERSION: $(CHARTMUSEUMVERSION)
+endef
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
@@ -150,12 +161,13 @@ MIGRATEPATCHBINARYNAME=migrate-patch
 
 # configfile
 CONFIGPATH=$(MAKEPATH)
-CONFIGFILE=harbor.cfg
+INSIDE_CONFIGPATH=/compose_location
+CONFIGFILE=harbor.yml
 
 # prepare parameters
 PREPAREPATH=$(TOOLSPATH)
 PREPARECMD=prepare
-PREPARECMD_PARA=--conf $(CONFIGPATH)/$(CONFIGFILE)
+PREPARECMD_PARA=--conf $(INSIDE_CONFIGPATH)/$(CONFIGFILE)
 ifeq ($(NOTARYFLAG), true)
 	PREPARECMD_PARA+= --with-notary
 endif
@@ -174,6 +186,7 @@ MAKEFILEPATH_PHOTON=$(MAKEPATH)/photon
 DOCKERFILEPATH_COMMON=$(MAKEPATH)/common
 
 # docker image name
+DOCKER_IMAGE_NAME_PREPARE=goharbor/prepare
 DOCKERIMAGENAME_PORTAL=goharbor/harbor-portal
 DOCKERIMAGENAME_CORE=goharbor/harbor-core
 DOCKERIMAGENAME_JOBSERVICE=goharbor/harbor-jobservice
@@ -208,7 +221,8 @@ REGISTRYUSER=user
 REGISTRYPASSWORD=default
 
 # cmds
-DOCKERSAVE_PARA= $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
+DOCKERSAVE_PARA=$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
+		$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_CORE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_LOG):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_DB):$(VERSIONTAG) \
@@ -218,30 +232,24 @@ DOCKERSAVE_PARA= $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		goharbor/nginx-photon:$(NGINXVERSION) goharbor/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG)
 
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
-		          $(HARBORPKG)/common/templates $(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
-				  $(HARBORPKG)/prepare \
-				  $(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
-				  $(HARBORPKG)/harbor.cfg $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) 
-				  
+					$(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
+					$(HARBORPKG)/prepare \
+					$(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
+					$(HARBORPKG)/harbor.yml
+
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
-		          $(HARBORPKG)/common/templates $(HARBORPKG)/prepare \
-				  $(HARBORPKG)/LICENSE \
-				  $(HARBORPKG)/install.sh $(HARBORPKG)/$(DOCKERCOMPOSEFILENAME) \
-				  $(HARBORPKG)/harbor.cfg 				  
-				  
+					$(HARBORPKG)/prepare \
+					$(HARBORPKG)/LICENSE \
+					$(HARBORPKG)/install.sh \
+					$(HARBORPKG)/harbor.yml
+
 DOCKERCOMPOSE_LIST=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
 	DOCKERSAVE_PARA+= goharbor/notary-server-photon:$(NOTARYVERSION)-$(VERSIONTAG) goharbor/notary-signer-photon:$(NOTARYVERSION)-$(VERSIONTAG)
-	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
-	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSENOTARYFILENAME)
-	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
 endif
 ifeq ($(CLAIRFLAG), true)
 	DOCKERSAVE_PARA+= goharbor/clair-photon:$(CLAIRVERSION)-$(VERSIONTAG)
-	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
-	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECLAIRFILENAME)
-	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
 endif
 ifeq ($(MIGRATORFLAG), true)
 	DOCKERSAVE_PARA+= goharbor/harbor-migrator:$(MIGRATORVERSION)
@@ -249,13 +257,14 @@ endif
 # append chartmuseum parameters if set
 ifeq ($(CHARTFLAG), true)
 	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_CHART_SERVER):$(CHARTMUSEUMVERSION)-$(VERSIONTAG)
-	PACKAGE_OFFLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
-	PACKAGE_ONLINE_PARA+= $(HARBORPKG)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
-	DOCKERCOMPOSE_LIST+= -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
 endif
 
+export VERSIONS_FOR_PREPARE
 ui_version:
 	@printf $(UIVERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
+
+versions_prepare:
+	@echo "$$VERSIONS_FOR_PREPARE" > $(MAKE_PREPARE_PATH)/$(PREPARE_VERSION_NAME)
 
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
@@ -282,9 +291,13 @@ compile_notary_migrate_patch:
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_MIGRATEPATCH) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_NOTARY)/$(MIGRATEPATCHBINARYNAME)
 	@echo "Done."
 
-compile:check_environment compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
-	
-prepare:
+compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
+
+update_prepare_version:
+	@echo "substitude the prepare version tag in prepare file..."
+	$(SEDCMD) -i -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) /' $(MAKEPATH)/prepare ;
+
+prepare: update_prepare_version
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 
@@ -295,41 +308,9 @@ build:
 	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION) -e MIGRATORVERSION=$(MIGRATORVERSION) \
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER)
 
-modify_composefile: modify_composefile_notary modify_composefile_clair modify_composefile_chartmuseum
-	@echo "preparing docker-compose file..."
-	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSETPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i -e 's/__version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i -e 's/__postgresql_version__/$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i -e 's/__reg_version__/$(REGISTRYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i -e 's/__nginx_version__/$(NGINXVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
-	@$(SEDCMD) -i -e 's/__redis_version__/$(REDISVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
+install: compile ui_version build prepare start
 
-modify_composefile_notary:
-	@echo "preparing docker-compose notary file..."
-	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
-	@$(SEDCMD) -i -e 's/__notary_version__/$(NOTARYVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSENOTARYFILENAME)
-
-modify_composefile_clair:
-	@echo "preparing docker-compose clair file..."
-	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
-	@$(SEDCMD) -i -e 's/__postgresql_version__/$(CLAIRDBVERSION)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
-	@$(SEDCMD) -i -e 's/__clair_version__/$(CLAIRVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECLAIRFILENAME)
-modify_composefile_chartmuseum:
-	@echo "preparing docker-compose chartmuseum file..."
-	@cp $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMTPLFILENAME) $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
-	@$(SEDCMD) -i -e 's/__chartmuseum_version__/$(CHARTMUSEUMVERSION)-$(VERSIONTAG)/g' $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSECHARTMUSEUMFILENAME)
-
-modify_sourcefiles:
-	@echo "change mode of source files."
-	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.key
-	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer.crt
-	@chmod 600 $(MAKEPATH)/common/templates/notary/notary-signer-ca.crt
-	@chmod 600 $(MAKEPATH)/common/templates/core/private_key.pem
-	@chmod 600 $(MAKEPATH)/common/templates/registry/root.crt
-
-install: compile ui_version build modify_sourcefiles prepare modify_composefile start
-
-package_online: modify_composefile
+package_online: prepare
 	@echo "packing online package ..."
 	@cp -r make $(HARBORPKG)
 	@if [ -n "$(REGISTRYSERVER)" ] ; then \
@@ -337,12 +318,13 @@ package_online: modify_composefile
 		$(HARBORPKG)/docker-compose.yml ; \
 	fi
 	@cp LICENSE $(HARBORPKG)/LICENSE
-	
+
 	@$(TARCMD) $(PACKAGE_ONLINE_PARA)
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
-	
-package_offline: compile ui_version build modify_sourcefiles modify_composefile
+
+package_offline: update_prepare_version compile ui_version build
+
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
 	@cp LICENSE $(HARBORPKG)/LICENSE
@@ -400,6 +382,11 @@ govet:
 
 pushimage:
 	@echo "pushing harbor images ..."
+	@$(DOCKERTAG) $(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG)
+	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
+		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
+	@$(DOCKERRMIMAGE) $(REGISTRYSERVER)$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG)
+
 	@$(DOCKERTAG) $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG)
 	@$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) $(REGISTRYSERVER)$(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) \
 		$(REGISTRYUSER) $(REGISTRYPASSWORD) $(REGISTRYSERVER)
