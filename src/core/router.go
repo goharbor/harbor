@@ -101,7 +101,6 @@ func initRouters() {
 	beego.Router("/api/logs", &api.LogAPI{})
 
 	beego.Router("/api/replication/adapters", &api.ReplicationAdapterAPI{}, "get:List")
-	beego.Router("/api/replication/adapters/:type", &api.ReplicationAdapterAPI{}, "get:Get")
 	beego.Router("/api/replication/executions", &api.ReplicationOperationAPI{}, "get:ListExecutions;post:CreateExecution")
 	beego.Router("/api/replication/executions/:id([0-9]+)", &api.ReplicationOperationAPI{}, "put:StopExecution")
 	beego.Router("/api/replication/executions/:id([0-9]+)/tasks", &api.ReplicationOperationAPI{}, "get:ListTasks")
@@ -136,6 +135,7 @@ func initRouters() {
 
 	beego.Router("/api/registries", &api.RegistryAPI{}, "get:List;post:Post")
 	beego.Router("/api/registries/:id([0-9]+)", &api.RegistryAPI{}, "get:Get;put:Put;delete:Delete")
+	beego.Router("/api/registries/:id([0-9]+)/info", &api.RegistryAPI{}, "get:GetInfo")
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 

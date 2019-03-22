@@ -154,7 +154,6 @@ func init() {
 	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &RobotAPI{}, "get:Get;put:Put;delete:Delete")
 
 	beego.Router("/api/replication/adapters", &ReplicationAdapterAPI{}, "get:List")
-	beego.Router("/api/replication/adapters/:type", &ReplicationAdapterAPI{}, "get:Get")
 	beego.Router("/api/replication/executions", &ReplicationOperationAPI{}, "get:ListExecutions;post:CreateExecution")
 	beego.Router("/api/replication/executions/:id([0-9]+)", &ReplicationOperationAPI{}, "put:StopExecution")
 	beego.Router("/api/replication/executions/:id([0-9]+)/tasks", &ReplicationOperationAPI{}, "get:ListTasks")

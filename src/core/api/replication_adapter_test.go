@@ -24,7 +24,13 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
+func fakedFactory(*model.Registry) (adapter.Adapter, error) {
+	return nil, nil
+}
+
 func TestReplicationAdapterAPIList(t *testing.T) {
+	err := adapter.RegisterFactory("test", fakedFactory)
+	require.Nil(t, err)
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -48,59 +54,6 @@ func TestReplicationAdapterAPIList(t *testing.T) {
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/replication/adapters",
-				credential: sysAdmin,
-			},
-			code: http.StatusOK,
-		},
-	}
-
-	runCodeCheckingCases(t, cases...)
-}
-
-func fakedFactory(*model.Registry) (adapter.Adapter, error) {
-	return nil, nil
-}
-func TestReplicationAdapterAPIGet(t *testing.T) {
-	err := adapter.RegisterFactory(
-		&adapter.Info{
-			Type:                   "test",
-			SupportedResourceTypes: []model.ResourceType{"image"},
-			SupportedTriggers:      []model.TriggerType{"mannual"},
-		}, fakedFactory)
-	require.Nil(t, err)
-
-	cases := []*codeCheckingCase{
-		// 401
-		{
-			request: &testingRequest{
-				method: http.MethodGet,
-				url:    "/api/replication/adapters/test",
-			},
-			code: http.StatusUnauthorized,
-		},
-		// 403
-		{
-			request: &testingRequest{
-				method:     http.MethodGet,
-				url:        "/api/replication/adapters/test",
-				credential: nonSysAdmin,
-			},
-			code: http.StatusForbidden,
-		},
-		// 404
-		{
-			request: &testingRequest{
-				method:     http.MethodGet,
-				url:        "/api/replication/adapters/gcs",
-				credential: sysAdmin,
-			},
-			code: http.StatusNotFound,
-		},
-		// 200
-		{
-			request: &testingRequest{
-				method:     http.MethodGet,
-				url:        "/api/replication/adapters/test",
 				credential: sysAdmin,
 			},
 			code: http.StatusOK,

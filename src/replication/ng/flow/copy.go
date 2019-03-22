@@ -47,12 +47,11 @@ func NewCopyFlow(executionMgr execution.Manager, registryMgr registry.Manager,
 }
 
 func (c *copyFlow) Run(interface{}) error {
-	srcRegistry, dstRegistry, srcAdapter, dstAdapter, err := initialize(c.registryMgr, c.policy)
+	_, dstRegistry, srcAdapter, dstAdapter, err := initialize(c.registryMgr, c.policy)
 	if err != nil {
 		return err
 	}
-	// TODO after refactoring the adapter register, the "srcRegistry.Type" is not needed
-	srcResources, err := fetchResources(srcAdapter, srcRegistry.Type, c.policy)
+	srcResources, err := fetchResources(srcAdapter, c.policy)
 	if err != nil {
 		return err
 	}
