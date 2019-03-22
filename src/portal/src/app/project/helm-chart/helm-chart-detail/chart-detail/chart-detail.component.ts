@@ -1,4 +1,4 @@
-import { Project } from "./../../project-policy-config/project";
+import { downloadFile, SystemInfoService, SystemInfo, ErrorHandler } from "@harbor/ui";
 import {
   Component,
   OnInit,
@@ -7,10 +7,9 @@ import {
   ChangeDetectorRef
 } from "@angular/core";
 
-import { downloadFile } from "../../utils";
-import { SystemInfoService, HelmChartService } from "../../service/index";
-import { HelmChartDetail, SystemInfo } from "./../../service/interface";
-import { ErrorHandler } from "./../../error-handler/error-handler";
+import { Project } from "../../../project";
+import { HelmChartService } from "../../helm-chart.service";
+import { HelmChartDetail } from "../../helm-chart.interface.service";
 import { finalize } from "rxjs/operators";
 
 @Component({
@@ -40,7 +39,7 @@ export class ChartDetailComponent implements OnInit {
     private systemInfoService: SystemInfoService,
     private helmChartService: HelmChartService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.systemInfoService.getSystemInfo()

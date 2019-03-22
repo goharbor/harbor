@@ -5,10 +5,8 @@ import { Http, Response, ResponseContentType } from "@angular/http";
 import { map, catchError } from "rxjs/operators";
 import {HttpErrorResponse} from "@angular/common/http";
 
-import { RequestQueryParams } from "./RequestQueryParams";
-import { HelmChartItem, HelmChartVersion, HelmChartDetail } from "./interface";
-import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
-import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "../utils";
+import { HelmChartItem, HelmChartVersion, HelmChartDetail } from "./helm-chart.interface.service";
+import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS, SERVICE_CONFIG, IServiceConfig, RequestQueryParams } from "@harbor/ui";
 
 
 /**

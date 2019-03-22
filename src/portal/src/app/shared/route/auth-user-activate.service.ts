@@ -78,7 +78,7 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
             if (this.isGuest(route, state)) {
               return observer.next(true);
             }
-            // Session retrieving failed.pipe(map redirect to sign-in
+            // Session retrieving failed then redirect to sign-in
             // no matter what status code is.
             // Please pay attention that route 'HARBOR_ROOT' and 'EMBEDDED_SIGN_IN' support anonymous user
             if (state.url !== CommonRoutes.HARBOR_ROOT && !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {

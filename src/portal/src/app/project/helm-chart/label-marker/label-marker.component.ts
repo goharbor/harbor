@@ -2,11 +2,9 @@ import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef, View
 import { fromEvent, Subject } from 'rxjs';
 import { debounceTime, finalize } from 'rxjs/operators';
 
-import { RepositoryItem, HelmChartVersion } from './../../service/interface';
-import {Label} from "../../service/interface";
-import { ResourceType } from '../../shared/shared.const';
-import { LabelService } from '../../service/label.service';
-import { ErrorHandler } from '../../error-handler/error-handler';
+import { HelmChartVersion } from '../helm-chart.interface.service';
+import { Label, LabelService, ErrorHandler } from '@harbor/ui';
+import { ResourceType } from '../../../shared/shared.const';
 
 @Component({
     selector: 'hbr-resource-label-marker',
@@ -18,7 +16,7 @@ export class LabelMarkerComponent implements OnInit {
 
     @Input() labels: Label[] = [];
     @Input() projectName: string;
-    @Input() resource: RepositoryItem | HelmChartVersion;
+    @Input() resource: HelmChartVersion;
     @Input() resourceType: ResourceType;
     @Input() addLabelHeaders: string;
     @Output() changeEvt = new EventEmitter<any>();
@@ -38,8 +36,8 @@ export class LabelMarkerComponent implements OnInit {
         this.sortedLabels = this.labels;
         this.refresh();
         fromEvent(this.filterInputRef.nativeElement, 'keyup')
-        .pipe(debounceTime(500))
-        .subscribe(() => this.refresh());
+            .pipe(debounceTime(500))
+            .subscribe(() => this.refresh());
 
         this.labelChangeDebouncer.pipe(debounceTime(1000)).subscribe(() => this.changeEvt.emit());
     }
@@ -47,7 +45,7 @@ export class LabelMarkerComponent implements OnInit {
     constructor(
         private labelService: LabelService,
         private errorHandler: ErrorHandler,
-        private cdr: ChangeDetectorRef) {}
+        private cdr: ChangeDetectorRef) { }
 
     refresh() {
         this.loading = true;
@@ -56,17 +54,17 @@ export class LabelMarkerComponent implements OnInit {
                 this.projectName,
                 this.resource.name,
                 (this.resource as HelmChartVersion).version)
-            .pipe(finalize(() => {
+                .pipe(finalize(() => {
                     this.loading = false;
                     let hnd = setInterval(() => this.cdr.markForCheck(), 100);
                     setTimeout(() => clearInterval(hnd), 2000);
-                  }))
-            .subscribe( chartVersionLabels => {
-                for (let label of chartVersionLabels) {
-                    this.markedMap.set(label.id, true);
-                }
-                this.sortedLabels = this.getSortedLabels();
-            });
+                }))
+                .subscribe(chartVersionLabels => {
+                    for (let label of chartVersionLabels) {
+                        this.markedMap.set(label.id, true);
+                    }
+                    this.sortedLabels = this.getSortedLabels();
+                });
         }
     }
 
@@ -133,15 +131,15 @@ export class LabelMarkerComponent implements OnInit {
     }
 
     getSortedLabels(): Label[] {
-        return this.labels.filter( l => l.name.includes(this.labelFilter))
-        .sort((a, b) => {
-            if (this.isMarked(a) && !this.isMarked(b)) {
-                return -1;
-            } else if (!this.isMarked(a) && this.isMarked(b)) {
-                return 1;
-            } else {
-                return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
-            }
-        });
+        return this.labels.filter(l => l.name.includes(this.labelFilter))
+            .sort((a, b) => {
+                if (this.isMarked(a) && !this.isMarked(b)) {
+                    return -1;
+                } else if (!this.isMarked(a) && this.isMarked(b)) {
+                    return 1;
+                } else {
+                    return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+                }
+            });
     }
 }

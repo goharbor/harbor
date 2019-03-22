@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ChartDetailComponent } from './chart-detail.component';
+import { HelmChartDetailComponent } from './chart-detail.component';
 
 describe('ChartDetailComponent', () => {
-  let component: ChartDetailComponent;
-  let fixture: ComponentFixture<ChartDetailComponent>;
+  let component: HelmChartDetailComponent;
+  let fixture: ComponentFixture<HelmChartDetailComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ChartDetailComponent ]
+      declarations: [ HelmChartDetailComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ChartDetailComponent);
+    fixture = TestBed.createComponent(HelmChartDetailComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

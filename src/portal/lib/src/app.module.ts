@@ -13,7 +13,7 @@ import { HarborLibraryModule } from './harbor-library.module';
         BrowserModule,
         FormsModule,
         HttpModule,
-        ClarityModule.forRoot(),
+        ClarityModule,
         HarborLibraryModule.forRoot()
     ],
     providers: [],

@@ -27,7 +27,6 @@ import { OPERATION_DIRECTIVES } from './operation/index';
 import { LABEL_DIRECTIVES } from "./label/index";
 import { CREATE_EDIT_LABEL_DIRECTIVES } from "./create-edit-label/index";
 import { LABEL_PIECE_DIRECTIVES } from "./label-piece/index";
-import { HELMCHART_DIRECTIVE } from "./helm-chart/index";
 import { IMAGE_NAME_INPUT_DIRECTIVES } from "./image-name-input/index";
 import { CRON_SCHEDULE_DIRECTIVES } from "./cron-schedule/index";
 import {
@@ -53,8 +52,6 @@ import {
   ProjectDefaultService,
   LabelService,
   LabelDefaultService,
-  HelmChartService,
-  HelmChartDefaultService,
   RetagService,
   RetagDefaultService,
   UserPermissionService,
@@ -209,7 +206,6 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     HBR_GRIDVIEW_DIRECTIVES,
     REPOSITORY_GRIDVIEW_DIRECTIVES,
     OPERATION_DIRECTIVES,
-    HELMCHART_DIRECTIVE,
     IMAGE_NAME_INPUT_DIRECTIVES,
     CRON_SCHEDULE_DIRECTIVES
   ],
@@ -237,9 +233,9 @@ export function initConfig(translateInitializer: TranslateServiceInitializer, co
     HBR_GRIDVIEW_DIRECTIVES,
     REPOSITORY_GRIDVIEW_DIRECTIVES,
     OPERATION_DIRECTIVES,
-    HELMCHART_DIRECTIVE,
     IMAGE_NAME_INPUT_DIRECTIVES,
-    CRON_SCHEDULE_DIRECTIVES
+    CRON_SCHEDULE_DIRECTIVES,
+    SharedModule
   ],
   providers: []
 })
@@ -263,7 +259,6 @@ export class HarborLibraryModule {
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
-        config.helmChartService || { provide: HelmChartService, useClass: HelmChartDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
         // Do initializing
@@ -300,7 +295,6 @@ export class HarborLibraryModule {
         config.jobLogService || { provide: JobLogService, useClass: JobLogDefaultService },
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
-        config.helmChartService || { provide: HelmChartService, useClass: HelmChartDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
         ChannelService,
