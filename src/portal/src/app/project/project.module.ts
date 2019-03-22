@@ -35,9 +35,7 @@ import { ProjectRoutingResolver } from './project-routing-resolver.service';
 
 import { TargetExistsValidatorDirective } from '../shared/target-exists-directive';
 import { ProjectLabelComponent } from "../project/project-label/project-label.component";
-import { ListChartsComponent } from './list-charts/list-charts.component';
-import { ListChartVersionsComponent } from './list-chart-versions/list-chart-versions.component';
-import { ChartDetailComponent } from './chart-detail/chart-detail.component';
+import { HelmChartModule } from './helm-chart/helm-chart.module';
 import { RobotAccountComponent } from './robot-account/robot-account.component';
 import { AddRobotComponent } from './robot-account/add-robot/add-robot.component';
 
@@ -47,7 +45,8 @@ import { AddRobotComponent } from './robot-account/add-robot/add-robot.component
     RepositoryModule,
     ReplicationModule,
     LogModule,
-    RouterModule
+    RouterModule,
+    HelmChartModule
   ],
   declarations: [
     ProjectComponent,
@@ -59,9 +58,6 @@ import { AddRobotComponent } from './robot-account/add-robot/add-robot.component
     TargetExistsValidatorDirective,
     ProjectLabelComponent,
     AddGroupComponent,
-    ListChartsComponent,
-    ListChartVersionsComponent,
-    ChartDetailComponent,
     RobotAccountComponent,
     AddRobotComponent
   ],

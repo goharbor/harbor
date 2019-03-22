@@ -12,28 +12,27 @@ import { Observable, forkJoin } from "rxjs";
 import { finalize, map } from "rxjs/operators";
 
 import { TranslateService } from "@ngx-translate/core";
-import { State } from "../../service/interface";
-
-import {
+import { State,
   SystemInfo,
+  Label,
+  ErrorHandler,
+  DEFAULT_PAGE_SIZE,
+  downloadFile,
   SystemInfoService,
-  HelmChartVersion,
-  HelmChartMaintainer,
-  LabelService
-} from "./../../service/index";
-import { Label } from './../../service/interface';
-import { ErrorHandler } from "./../../error-handler/error-handler";
-import { DEFAULT_PAGE_SIZE, downloadFile } from "../../utils";
-import { OperationService } from "./../../operation/operation.service";
-import { HelmChartService } from "./../../service/helm-chart.service";
-import { UserPermissionService } from "../../service/permission.service";
-import { USERSTATICPERMISSION } from "../../service/permission-static";
-import { ConfirmationAcknowledgement, ConfirmationDialogComponent, ConfirmationMessage } from "./../../confirmation-dialog";
-import {
+  LabelService,
   OperateInfo,
   OperationState,
-  operateChanges
-} from "./../../operation/operate";
+  operateChanges,
+  OperationService,
+  UserPermissionService,
+  USERSTATICPERMISSION } from "@harbor/ui";
+
+import { HelmChartVersion, HelmChartMaintainer } from "../../helm-chart.interface.service";
+import { HelmChartService } from "../../helm-chart.service";
+import { ConfirmationAcknowledgement } from "./../../../../shared/confirmation-dialog/confirmation-state-message";
+import { ConfirmationDialogComponent } from "./../../../../shared/confirmation-dialog/confirmation-dialog.component";
+import { ConfirmationMessage } from "./../../../../shared/confirmation-dialog/confirmation-message";
+
 import {
   ConfirmationButtons,
   ConfirmationTargets,
@@ -41,7 +40,7 @@ import {
   DefaultHelmIcon,
   ResourceType,
   Roles
-} from "../../shared/shared.const";
+} from "../../../../shared/shared.const";
 
 @Component({
   selector: "hbr-helm-chart-version",
@@ -284,7 +283,7 @@ export class ChartVersionComponent implements OnInit {
       ConfirmationTargets.HELM_CHART_VERSION,
       ConfirmationButtons.DELETE_CANCEL
     );
-    this.confirmationDialog.open(message);
+    this.confirmationDialog.openMessage(message);
     let hnd = setInterval(() => this.cdr.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 2000);
   }

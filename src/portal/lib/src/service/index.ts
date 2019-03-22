@@ -11,7 +11,6 @@ export * from "./configuration.service";
 export * from "./job-log.service";
 export * from "./project.service";
 export * from "./label.service";
-export * from "./helm-chart.service";
 export * from "./retag.service";
 export * from "./permission.service";
 export * from "./permission-static";

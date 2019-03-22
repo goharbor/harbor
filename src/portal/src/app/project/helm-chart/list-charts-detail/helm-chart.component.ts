@@ -10,29 +10,24 @@ import {
 } from "@angular/core";
 import { NgForm } from '@angular/forms';
 import { TranslateService } from "@ngx-translate/core";
-import { State } from "../service/interface";
+import {
+  State, ErrorHandler, SystemInfo, SystemInfoService, DEFAULT_PAGE_SIZE, downloadFile
+  , OperationService, UserPermissionService, USERSTATICPERMISSION, OperateInfo, OperationState, operateChanges
+} from "@harbor/ui";
 import { forkJoin, throwError, Observable } from "rxjs";
 import { finalize, map, catchError } from "rxjs/operators";
-import { SystemInfo, SystemInfoService, HelmChartItem } from "../service/index";
-import { ErrorHandler } from "../error-handler/error-handler";
-import { DEFAULT_PAGE_SIZE, downloadFile } from "../utils";
-import { HelmChartService } from "../service/helm-chart.service";
-import { DefaultHelmIcon } from "../shared/shared.const";
-import { Roles } from './../shared/shared.const';
-import { OperationService } from "./../operation/operation.service";
-import { UserPermissionService } from "../service/permission.service";
-import { USERSTATICPERMISSION } from "../service/permission-static";
-import {
-  OperateInfo,
-  OperationState,
-  operateChanges
-} from "./../operation/operate";
-import { ConfirmationAcknowledgement, ConfirmationDialogComponent, ConfirmationMessage } from "./../confirmation-dialog";
+import { HelmChartItem } from "../helm-chart.interface.service";
+import { HelmChartService } from "../helm-chart.service";
+import { DefaultHelmIcon, Roles } from "../../../shared/shared.const";
+
+import { ConfirmationAcknowledgement } from "../../../shared/confirmation-dialog/confirmation-state-message";
+import {  ConfirmationDialogComponent } from "../../../shared/confirmation-dialog/confirmation-dialog.component";
+import { ConfirmationMessage } from "../../../shared/confirmation-dialog/confirmation-message";
 import {
   ConfirmationButtons,
   ConfirmationTargets,
   ConfirmationState,
-} from "./../shared/shared.const";
+} from "../../../shared/shared.const";
 
 @Component({
   selector: "hbr-helm-chart",
@@ -98,7 +93,7 @@ export class HelmChartComponent implements OnInit {
     // Get system info for tag views
     this.systemInfoService.getSystemInfo()
       .subscribe(systemInfo => (this.systemInfo = systemInfo)
-      , error => this.errorHandler.error(error));
+        , error => this.errorHandler.error(error));
     this.lastFilteredChartName = "";
     this.refresh();
     this.getHelmPermissionRule(this.projectId);
@@ -263,7 +258,7 @@ export class HelmChartComponent implements OnInit {
       ConfirmationTargets.HELM_CHART,
       ConfirmationButtons.DELETE_CANCEL
     );
-    this.confirmationDialog.open(message);
+    this.confirmationDialog.openMessage(message);
   }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {

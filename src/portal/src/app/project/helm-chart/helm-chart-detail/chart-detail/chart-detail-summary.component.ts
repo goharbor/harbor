@@ -5,10 +5,9 @@ import {
   Input
 } from "@angular/core";
 
-import { HelmChartMetaData, HelmChartSecurity, Label } from "./../../service/interface";
-import { downloadFile } from './../../utils';
-import { HelmChartService } from "../../service/index";
-import { ErrorHandler } from "./../../error-handler/error-handler";
+import { HelmChartMetaData, HelmChartSecurity } from "./../../helm-chart.interface.service";
+import { downloadFile, Label, ErrorHandler } from '@harbor/ui';
+import { HelmChartService } from "../../helm-chart.service";
 
 @Component({
   selector: "hbr-chart-detail-summary",
