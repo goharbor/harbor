@@ -160,7 +160,7 @@ echo ""
 h2 "[Step $item]: preparing environment ...";  let item+=1
 if [ -n "$host" ]
 then
-	sed "s/^hostname: .*/hostname = $host/g" -i ./harbor.yml
+	sed "s/^hostname: .*/hostname: $host/g" -i ./harbor.yml
 fi
 prepare_para=
 if [ $with_notary ] 
