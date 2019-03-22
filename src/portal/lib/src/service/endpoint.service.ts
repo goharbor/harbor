@@ -59,7 +59,7 @@ export abstract class EndpointService {
    *
    * @memberOf EndpointService
    */
-  abstract getAdapters(): Observable<any> | Promise<any> | any;
+  abstract getAdapters(): Observable<any>;
 
   /**
    * Create new endpoint.
@@ -178,12 +178,11 @@ export class EndpointDefaultService extends EndpointService {
       , catchError(error => observableThrowError(error)));
   }
 
-  public getAdapters(): Observable<any> | Promise<any> | any {
+  public getAdapters(): Observable<any> {
     return this.http
     .get(`/api/replication/adapters`)
-    .toPromise()
-    .then(response => response.json() as Adapter)
-    .catch(error => Promise.reject(error));
+    .pipe(map(response => response.json() as Adapter)
+    , catchError(error => observableThrowError(error)));
 }
 
   public createEndpoint(
