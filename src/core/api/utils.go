@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/service/token"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
@@ -311,10 +310,4 @@ func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*model
 		}
 	}
 	return res
-}
-
-// Watch the configuration changes.
-// Wrap the same method in common utils.
-func watchConfigChanges(cfg map[string]interface{}) error {
-	return notifier.WatchConfigChanges(cfg)
 }

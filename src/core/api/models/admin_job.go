@@ -42,12 +42,18 @@ const (
 	ScheduleNone = "None"
 )
 
-// GCReq holds request information for admin job
-type GCReq struct {
-	Schedule   *ScheduleParam         `json:"schedule"`
+// AdminJobReq holds request information for admin job
+type AdminJobReq struct {
+	AdminJobSchedule
+	Name       string                 `json:"name"`
 	Status     string                 `json:"status"`
 	ID         int64                  `json:"id"`
 	Parameters map[string]interface{} `json:"parameters"`
+}
+
+// AdminJobSchedule ...
+type AdminJobSchedule struct {
+	Schedule *ScheduleParam `json:"schedule"`
 }
 
 // ScheduleParam defines the parameter of schedule trigger
@@ -58,62 +64,63 @@ type ScheduleParam struct {
 	Cron string `json:"cron"`
 }
 
-// GCRep holds the response of query gc
-type GCRep struct {
-	ID           int64          `json:"id"`
-	Name         string         `json:"job_name"`
-	Kind         string         `json:"job_kind"`
-	Schedule     *ScheduleParam `json:"schedule"`
-	Status       string         `json:"job_status"`
-	UUID         string         `json:"-"`
-	Deleted      bool           `json:"deleted"`
-	CreationTime time.Time      `json:"creation_time"`
-	UpdateTime   time.Time      `json:"update_time"`
+// AdminJobRep holds the response of query admin job
+type AdminJobRep struct {
+	AdminJobSchedule
+	ID           int64     `json:"id"`
+	Name         string    `json:"job_name"`
+	Kind         string    `json:"job_kind"`
+	Status       string    `json:"job_status"`
+	UUID         string    `json:"-"`
+	Deleted      bool      `json:"deleted"`
+	CreationTime time.Time `json:"creation_time"`
+	UpdateTime   time.Time `json:"update_time"`
 }
 
-// Valid validates the gc request
-func (gr *GCReq) Valid(v *validation.Validation) {
-	if gr.Schedule == nil {
+// Valid validates the schedule type of a admin job request.
+// Only scheduleHourly, ScheduleDaily, ScheduleWeekly, ScheduleCustom, ScheduleManual, ScheduleNone are accepted.
+func (ar *AdminJobReq) Valid(v *validation.Validation) {
+	if ar.Schedule == nil {
 		return
 	}
-	switch gr.Schedule.Type {
+	switch ar.Schedule.Type {
 	case ScheduleHourly, ScheduleDaily, ScheduleWeekly, ScheduleCustom:
-		if _, err := cron.Parse(gr.Schedule.Cron); err != nil {
-			v.SetError("cron", fmt.Sprintf("Invalid schedule trigger parameter cron: %s", gr.Schedule.Cron))
+		if _, err := cron.Parse(ar.Schedule.Cron); err != nil {
+			v.SetError("cron", fmt.Sprintf("Invalid schedule trigger parameter cron: %s", ar.Schedule.Cron))
 		}
 	case ScheduleManual, ScheduleNone:
 	default:
-		v.SetError("kind", fmt.Sprintf("Invalid schedule kind: %s", gr.Schedule.Type))
+		v.SetError("kind", fmt.Sprintf("Invalid schedule kind: %s", ar.Schedule.Type))
 	}
 }
 
 // ToJob converts request to a job recognized by job service.
-func (gr *GCReq) ToJob() *models.JobData {
+func (ar *AdminJobReq) ToJob() *models.JobData {
 	metadata := &models.JobMetadata{
-		JobKind: gr.JobKind(),
-		Cron:    gr.Schedule.Cron,
+		JobKind: ar.JobKind(),
+		Cron:    ar.Schedule.Cron,
 		// GC job must be unique ...
 		IsUnique: true,
 	}
 
 	jobData := &models.JobData{
-		Name:       job.ImageGC,
-		Parameters: gr.Parameters,
+		Name:       ar.Name,
+		Parameters: ar.Parameters,
 		Metadata:   metadata,
 		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/adminjob/%d",
-			config.InternalCoreURL(), gr.ID),
+			config.InternalCoreURL(), ar.ID),
 	}
 	return jobData
 }
 
 // IsPeriodic ...
-func (gr *GCReq) IsPeriodic() bool {
-	return gr.JobKind() == job.JobKindPeriodic
+func (ar *AdminJobReq) IsPeriodic() bool {
+	return ar.JobKind() == job.JobKindPeriodic
 }
 
 // JobKind ...
-func (gr *GCReq) JobKind() string {
-	switch gr.Schedule.Type {
+func (ar *AdminJobReq) JobKind() string {
+	switch ar.Schedule.Type {
 	case ScheduleHourly, ScheduleDaily, ScheduleWeekly, ScheduleCustom:
 		return job.JobKindPeriodic
 	case ScheduleManual:
@@ -124,8 +131,8 @@ func (gr *GCReq) JobKind() string {
 }
 
 // CronString ...
-func (gr *GCReq) CronString() string {
-	str, err := json.Marshal(gr.Schedule)
+func (ar *AdminJobReq) CronString() string {
+	str, err := json.Marshal(ar.Schedule)
 	if err != nil {
 		log.Debugf("failed to marshal json error, %v", err)
 		return ""

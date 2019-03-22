@@ -33,51 +33,6 @@ var (
 	jobServiceClient job.Client
 )
 
-// ScanAllImages scans all images of Harbor by submiting a scan all job to jobservice, and the job handler will call API
-// on the "core" service
-func ScanAllImages() error {
-	_, err := scanAll("")
-	return err
-}
-
-// ScheduleScanAllImages will schedule a scan all job based on the cron string, add append a record in admin job table.
-func ScheduleScanAllImages(cron string) error {
-	_, err := scanAll(cron)
-	return err
-}
-
-func scanAll(cron string, c ...job.Client) (string, error) {
-	var client job.Client
-	if c == nil || len(c) == 0 {
-		client = GetJobServiceClient()
-	} else {
-		client = c[0]
-	}
-	kind := job.JobKindGeneric
-	if len(cron) > 0 {
-		kind = job.JobKindPeriodic
-	}
-	meta := &jobmodels.JobMetadata{
-		JobKind:  kind,
-		IsUnique: true,
-		Cron:     cron,
-	}
-	id, err := dao.AddAdminJob(&models.AdminJob{
-		Name: job.ImageScanAllJob,
-		Kind: kind,
-	})
-	if err != nil {
-		return "", err
-	}
-	data := &jobmodels.JobData{
-		Name:       job.ImageScanAllJob,
-		Metadata:   meta,
-		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/adminjob/%d", config.InternalCoreURL(), id),
-	}
-	log.Infof("scan_all job scheduled/triggered, cron string: '%s'", cron)
-	return client.SubmitJob(data)
-}
-
 // GetJobServiceClient returns the job service client instance.
 func GetJobServiceClient() job.Client {
 	cl.Lock()

@@ -72,7 +72,6 @@ func initRouters() {
 	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &api.RobotAPI{}, "get:Get;put:Put;delete:Delete")
 
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
-	beego.Router("/api/repositories/scanAll", &api.RepositoryAPI{}, "post:ScanAll")
 	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete;put:Put")
 	beego.Router("/api/repositories/*/labels", &api.RepositoryLabelAPI{}, "get:GetOfRepository;post:AddToRepository")
 	beego.Router("/api/repositories/*/labels/:id([0-9]+)", &api.RepositoryLabelAPI{}, "delete:RemoveFromRepository")
@@ -94,6 +93,7 @@ func initRouters() {
 	beego.Router("/api/system/gc/:id", &api.GCAPI{}, "get:GetGC")
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &api.GCAPI{}, "get:GetLog")
 	beego.Router("/api/system/gc/schedule", &api.GCAPI{}, "get:Get;put:Put;post:Post")
+	beego.Router("/api/system/scanAll/schedule", &api.ScanAllAPI{}, "get:Get;put:Put;post:Post")
 
 	beego.Router("/api/policies/replication/:id([0-9]+)", &api.RepPolicyAPI{})
 	beego.Router("/api/policies/replication", &api.RepPolicyAPI{}, "get:List")
