@@ -208,9 +208,18 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 type authProxyReqCtxModifier struct{}
 
 func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	authMode, err := config.AuthMode()
+	if err != nil {
+		log.Errorf("fail to get auth mode, %v", err)
+		return false
+	}
+	if authMode != common.HTTPAuth {
+		return false
+	}
+
 	// only support docker login
-	if ctx.Request.URL.Path == "/v2/" || ctx.Request.URL.Path == "/service/token" {
-		log.Error("You do not have the proper privileges to perform the action.")
+	if ctx.Request.URL.Path != "/service/token" {
+		log.Debug("Auth proxy modifier only handles docker login request.")
 		return false
 	}
 
@@ -219,21 +228,9 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		return false
 	}
 
-	match, rawUserName := ap.matchAuthProxyUserName(proxyUserName)
+	rawUserName, match := ap.matchAuthProxyUserName(proxyUserName)
 	if !match {
 		log.Errorf("User name %s doesn't meet the auth proxy name pattern", proxyUserName)
-		return false
-	}
-
-	user, err := dao.GetUser(models.User{
-		Username: rawUserName,
-	})
-	if err != nil {
-		log.Errorf("fail to get user: %v", err)
-		return false
-	}
-	if user == nil {
-		log.Errorf("User: %s has not been on boarded yet.", proxyUserName)
 		return false
 	}
 
@@ -245,7 +242,7 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 
 	// Init auth client with the auth proxy endpoint.
 	authClientCfg := &rest.Config{
-		Host: httpAuthProxyConf.Endpoint,
+		Host: httpAuthProxyConf.TokenReviewEndpoint,
 		ContentConfig: rest.ContentConfig{
 			GroupVersion:         &schema.GroupVersion{},
 			NegotiatedSerializer: serializer.DirectCodecFactory{CodecFactory: scheme.Codecs},
@@ -272,7 +269,8 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		},
 	}
 	res := authClient.Post().Body(tokenReviewRequest).Do()
-	if res.Error() != nil {
+	err = res.Error()
+	if err != nil {
 		log.Errorf("fail to POST auth request, %v", err)
 		return false
 	}
@@ -289,12 +287,23 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Errorf("fail to decode token review, %v", err)
 		return false
 	}
-	if rawUserName != tokenReviewResponse.Status.User.Username {
-		log.Errorf("user name doesn't match with token: %s", rawUserName)
+	if !tokenReviewResponse.Status.Authenticated {
+		log.Errorf("fail to auth user: %s", rawUserName)
 		return false
 	}
-	if !tokenReviewResponse.Status.Authenticated {
-		log.Error("fail to auth user: %s", rawUserName)
+	user, err := dao.GetUser(models.User{
+		Username: rawUserName,
+	})
+	if err != nil {
+		log.Errorf("fail to get user: %v", err)
+		return false
+	}
+	if user == nil {
+		log.Errorf("User: %s has not been on boarded yet.", rawUserName)
+		return false
+	}
+	if rawUserName != tokenReviewResponse.Status.User.Username {
+		log.Errorf("user name doesn't match with token: %s", rawUserName)
 		return false
 	}
 
@@ -306,11 +315,11 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	return true
 }
 
-func (ap *authProxyReqCtxModifier) matchAuthProxyUserName(name string) (bool, string) {
+func (ap *authProxyReqCtxModifier) matchAuthProxyUserName(name string) (string, bool) {
 	if !strings.HasPrefix(name, common.AuthProxyUserNamePrefix) {
-		return false, ""
+		return "", false
 	}
-	return true, strings.Replace(name, common.AuthProxyUserNamePrefix, "", -1)
+	return strings.Replace(name, common.AuthProxyUserNamePrefix, "", -1), true
 }
 
 type basicAuthReqCtxModifier struct{}
