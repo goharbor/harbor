@@ -25,7 +25,7 @@ sleep 2
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
-sudo ./make/prepare
+sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"
 sudo mkdir -p /etc/core/ca/ && sudo mv ./tests/ca.crt /etc/core/ca/
 sudo mkdir -p /harbor && sudo mv ./VERSION /harbor/UIVERSION
