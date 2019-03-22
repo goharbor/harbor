@@ -477,3 +477,27 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 	}, nil
 
 }
+
+// OIDCSetting returns the setting of OIDC provider, currently there's only one OIDC provider allowed for Harbor and it's
+// only effective when auth_mode is set to oidc_auth
+func OIDCSetting() (*models.OIDCSetting, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+	scopeStr := cfgMgr.Get(common.OIDCScope).GetString()
+	extEndpoint := strings.TrimSuffix(cfgMgr.Get(common.ExtEndpoint).GetString(), "/")
+	scope := []string{}
+	for _, s := range strings.Split(scopeStr, ",") {
+		scope = append(scope, strings.TrimSpace(s))
+	}
+
+	return &models.OIDCSetting{
+		Name:           cfgMgr.Get(common.OIDCName).GetString(),
+		Endpoint:       cfgMgr.Get(common.OIDCEndpoint).GetString(),
+		SkipCertVerify: cfgMgr.Get(common.OIDCSkipCertVerify).GetBool(),
+		ClientID:       cfgMgr.Get(common.OIDCCLientID).GetString(),
+		ClientSecret:   cfgMgr.Get(common.OIDCClientSecret).GetString(),
+		RedirectURL:    extEndpoint + common.OIDCCallbackPath,
+		Scope:          scope,
+	}, nil
+}
