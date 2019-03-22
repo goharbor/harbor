@@ -55,18 +55,17 @@ export class ConfirmationDialogComponent implements OnDestroy {
         }
     }
 
-    open(): void {
-        this.opened = true;
-    }
-    openMessage(msg: ConfirmationMessage): void {
-        this.dialogTitle = msg.title;
-        this.message = msg;
-        this.translate.get(this.dialogTitle).subscribe((res: string) => this.dialogTitle = res);
-        this.translate.get(msg.message, { 'param': msg.param }).subscribe((res: string) => {
-            this.dialogContent = res;
-        });
-        // Open dialog
-        this.buttons = msg.buttons;
+    open(msg?: ConfirmationMessage): void {
+        if (msg) {
+            this.dialogTitle = msg.title;
+            this.message = msg;
+            this.translate.get(this.dialogTitle).subscribe((res: string) => this.dialogTitle = res);
+            this.translate.get(msg.message, { 'param': msg.param }).subscribe((res: string) => {
+                this.dialogContent = res;
+            });
+            // Open dialog
+            this.buttons = msg.buttons;
+        }
         this.opened = true;
     }
 
