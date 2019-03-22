@@ -29,7 +29,7 @@ import (
 	utils_core "github.com/goharbor/harbor/src/core/utils"
 )
 
-// AJAPI manages the CRUD of admin job and its schedule, any API wants to handle manual and cron job like ScanAll and GC cloud inherit it.
+// AJAPI manages the CRUD of admin job and its schedule, any API wants to handle manual and cron job like ScanAll and GC cloud reuse it.
 type AJAPI struct {
 	BaseController
 }

@@ -44,8 +44,8 @@ const (
 
 // AdminJobReq holds request information for admin job
 type AdminJobReq struct {
-	Name string `json:"name"`
 	AdminJobSchedule
+	Name       string                 `json:"name"`
 	Status     string                 `json:"status"`
 	ID         int64                  `json:"id"`
 	Parameters map[string]interface{} `json:"parameters"`
@@ -66,10 +66,10 @@ type ScheduleParam struct {
 
 // AdminJobRep holds the response of query admin job
 type AdminJobRep struct {
-	ID   int64  `json:"id"`
-	Name string `json:"job_name"`
-	Kind string `json:"job_kind"`
 	AdminJobSchedule
+	ID           int64     `json:"id"`
+	Name         string    `json:"job_name"`
+	Kind         string    `json:"job_kind"`
 	Status       string    `json:"job_status"`
 	UUID         string    `json:"-"`
 	Deleted      bool      `json:"deleted"`

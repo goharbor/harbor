@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
+	api_models "github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
@@ -1201,12 +1202,12 @@ func (a testapi) AddGC(authInfor usrInfo, adminReq apilib.AdminJobReq) (int, err
 	return httpStatusCode, err
 }
 
-func (a testapi) GCScheduleGet(authInfo usrInfo) (int, apilib.AdminJobSchedule, error) {
+func (a testapi) GCScheduleGet(authInfo usrInfo) (int, api_models.AdminJobSchedule, error) {
 	_sling := sling.New().Get(a.basePath)
 	path := "/api/system/gc/schedule"
 	_sling = _sling.Path(path)
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	var successPayLoad apilib.AdminJobSchedule
+	var successPayLoad api_models.AdminJobSchedule
 	if 200 == httpStatusCode && nil == err {
 		err = json.Unmarshal(body, &successPayLoad)
 	}
@@ -1231,12 +1232,12 @@ func (a testapi) AddScanAll(authInfor usrInfo, adminReq apilib.AdminJobReq) (int
 	return httpStatusCode, err
 }
 
-func (a testapi) ScanAllScheduleGet(authInfo usrInfo) (int, apilib.AdminJobSchedule, error) {
+func (a testapi) ScanAllScheduleGet(authInfo usrInfo) (int, api_models.AdminJobSchedule, error) {
 	_sling := sling.New().Get(a.basePath)
 	path := "/api/system/scanAll/schedule"
 	_sling = _sling.Path(path)
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	var successPayLoad apilib.AdminJobSchedule
+	var successPayLoad api_models.AdminJobSchedule
 	if 200 == httpStatusCode && nil == err {
 		err = json.Unmarshal(body, &successPayLoad)
 	}
