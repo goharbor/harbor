@@ -17,11 +17,10 @@
 package ng
 
 import (
-	"fmt"
-
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	cfg "github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/replication/ng/config"
 	"github.com/goharbor/harbor/src/replication/ng/execution"
-	"github.com/goharbor/harbor/src/replication/ng/flow"
 	"github.com/goharbor/harbor/src/replication/ng/operation"
 	"github.com/goharbor/harbor/src/replication/ng/policy"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
@@ -39,21 +38,32 @@ var (
 	OperationCtl operation.Controller
 )
 
-// Init the global variables
+// Init the global variables and configurations
 func Init() error {
+	// init config
+	registryURL, err := cfg.RegistryURL()
+	if err != nil {
+		return err
+	}
+	secretKey, err := cfg.SecretKey()
+	if err != nil {
+		return err
+	}
+	config.Config = &config.Configuration{
+		CoreURL:         cfg.InternalCoreURL(),
+		RegistryURL:     registryURL,
+		TokenServiceURL: cfg.InternalTokenServiceEndpoint(),
+		JobserviceURL:   cfg.InternalJobServiceURL(),
+		SecretKey:       secretKey,
+		Secret:          cfg.CoreSecret(),
+	}
 	// Init registry manager
 	RegistryMgr = registry.NewDefaultManager()
 	// init policy manager
 	PolicyMgr = policy.NewDefaultManager()
-	// init ExecutionMgr
-	executionMgr := execution.NewDefaultManager()
-	// init scheduler
-	scheduler := scheduler.NewScheduler(config.InternalJobServiceURL(), config.CoreSecret())
-
-	flowCtl, err := flow.NewController(RegistryMgr, executionMgr, scheduler)
-	if err != nil {
-		return fmt.Errorf("failed to create the flow controller: %v", err)
-	}
-	OperationCtl = operation.NewController(flowCtl, executionMgr)
+	// init operatoin controller
+	OperationCtl = operation.NewController(execution.NewDefaultManager(), RegistryMgr,
+		scheduler.NewScheduler(config.Config.JobserviceURL, config.Config.Secret))
+	log.Debug("the replication initialization completed")
 	return nil
 }

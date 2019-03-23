@@ -106,6 +106,7 @@ type TaskFieldsName struct {
 }
 
 // Task represent the tasks in one execution.
+// TODO add operation property
 type Task struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	ExecutionID  int64     `orm:"column(execution_id)" json:"execution_id"`

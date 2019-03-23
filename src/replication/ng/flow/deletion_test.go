@@ -12,33 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package ng ...
-// TODO rename the package name after removing ng
-package ng
+package flow
 
 import (
-	"io/ioutil"
-	"os"
-	"path"
 	"testing"
 
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/stretchr/testify/assert"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/stretchr/testify/require"
 )
 
-func TestInit(t *testing.T) {
-	key := path.Join(os.TempDir(), "key")
-	err := ioutil.WriteFile(key, []byte{'k'}, os.ModePerm)
+func TestRunOfDeletionFlow(t *testing.T) {
+	scheduler := &fakedScheduler{}
+	executionMgr := &fakedExecutionManager{}
+	registryMgr := &fakedRegistryManager{}
+	policy := &model.Policy{}
+	resources := []*model.Resource{}
+	flow := NewDeletionFlow(executionMgr, registryMgr, scheduler, 1, policy, resources)
+	err := flow.Run(nil)
 	require.Nil(t, err)
-	defer os.Remove(key)
-	err = os.Setenv("KEY_PATH", key)
-	require.Nil(t, err)
-
-	config.InitWithSettings(nil)
-	err = Init()
-	require.Nil(t, err)
-	assert.NotNil(t, PolicyMgr)
-	assert.NotNil(t, RegistryMgr)
-	assert.NotNil(t, OperationCtl)
 }

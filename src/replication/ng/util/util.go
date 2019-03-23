@@ -12,25 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package flow
+package util
 
-// Flow defines  replication flow
-type Flow interface {
-	Run(interface{}) error
-}
+import (
+	"path/filepath"
+)
 
-// Controller is the controller that controls the replication flows
-type Controller interface {
-	Start(Flow) error
-}
-
-// NewController returns an instance of the default flow controller
-func NewController() Controller {
-	return &controller{}
-}
-
-type controller struct{}
-
-func (c *controller) Start(flow Flow) error {
-	return flow.Run(nil)
+// Match returns whether the str matches the pattern
+func Match(pattern, str string) (bool, error) {
+	return filepath.Match(pattern, str)
 }

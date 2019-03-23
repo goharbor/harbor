@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
+	// TODO use the replication config rather than the core
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication/ng/dao"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"

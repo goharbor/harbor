@@ -44,11 +44,13 @@ type Policy struct {
 	SrcRegistryID int64    `json:"src_registry_id"`
 	SrcNamespaces []string `json:"src_namespaces"`
 	// destination
+	// TODO rename to DstRegistryID
 	DestRegistryID int64 `json:"dest_registry_id"`
 	// Only support two dest namespace modes:
 	// Put all the src resources to the one single dest namespace
 	// or keep namespaces same with the source ones (under this case,
 	// the DestNamespace should be set to empty)
+	// TODO rename to DstNamespace
 	DestNamespace string `json:"dest_namespace"`
 	// Filters
 	Filters []*Filter `json:"filters"`
