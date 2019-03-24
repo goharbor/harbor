@@ -104,6 +104,7 @@ func (d *defaultController) createFlow(executionID int64, policy *model.Policy, 
 			},
 		}
 		filters = append(filters, policy.Filters...)
+		policy.Filters = filters
 	}
 	return flow.NewCopyFlow(d.executionMgr, d.registryMgr, d.scheduler, executionID, policy)
 }

@@ -41,6 +41,7 @@ type ImageRegistry interface {
 	ManifestExist(repository, reference string) (exist bool, digest string, err error)
 	PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error)
 	PushManifest(repository, reference, mediaType string, payload []byte) error
+	DeleteManifest(repository, digest string) error
 	BlobExist(repository, digest string) (exist bool, err error)
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
@@ -164,6 +165,18 @@ func (d *DefaultImageRegistry) PushManifest(repository, reference, mediaType str
 	}
 	_, err = client.PushManifest(reference, mediaType, payload)
 	return err
+}
+
+// TODO monitor the registry API request in core directly rather than using
+// the web hook
+
+// DeleteManifest ...
+func (d *DefaultImageRegistry) DeleteManifest(repository, digest string) error {
+	client, err := d.getClient(repository)
+	if err != nil {
+		return err
+	}
+	return client.DeleteManifest(digest)
 }
 
 // BlobExist ...
