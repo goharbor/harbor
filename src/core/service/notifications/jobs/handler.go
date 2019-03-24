@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/replication/ng"
+	"github.com/goharbor/harbor/src/replication/ng/hook"
 )
 
 var statusMap = map[string]string{
@@ -39,8 +40,9 @@ var statusMap = map[string]string{
 // Handler handles reqeust on /service/notifications/jobs/*, which listens to the webhook of jobservice.
 type Handler struct {
 	api.BaseController
-	id     int64
-	status string
+	id        int64
+	status    string
+	rawStatus string
 }
 
 // Prepare ...
@@ -60,6 +62,7 @@ func (h *Handler) Prepare() {
 		h.Abort("200")
 		return
 	}
+	h.rawStatus = data.Status
 	status, ok := statusMap[data.Status]
 	if !ok {
 		log.Debugf("drop the job status update event: job id-%d, status-%s", id, status)
@@ -92,7 +95,7 @@ func (h *Handler) HandleReplication() {
 // HandleReplicationTask handles the webhook of replication task
 func (h *Handler) HandleReplicationTask() {
 	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
-	if err := ng.OperationCtl.UpdateTaskStatus(h.id, h.status); err != nil {
+	if err := hook.UpdateTask(ng.OperationCtl, h.id, h.rawStatus); err != nil {
 		log.Errorf("Failed to update replication task status, id: %d, status: %s", h.id, h.status)
 		h.HandleInternalServerError(err.Error())
 		return
