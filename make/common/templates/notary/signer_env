@@ -1,3 +1,0 @@
-NOTARY_SIGNER_DEFAULTALIAS=$alias
-MIGRATIONS_PATH=migrations/signer/postgresql
-DB_URL=postgres://signer:password@postgresql:5432/notarysigner?sslmode=disable

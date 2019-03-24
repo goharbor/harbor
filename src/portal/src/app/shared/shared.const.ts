@@ -44,7 +44,9 @@ export const enum ConfirmationTargets {
   TAG,
   CONFIG,
   CONFIG_ROUTE,
-  CONFIG_TAB
+  CONFIG_TAB,
+  HELM_CHART,
+  HELM_CHART_VERSION
 }
 
 export const enum ActionType {
@@ -94,4 +96,10 @@ export enum Roles {
   DEVELOPER = 2,
   GUEST = 3,
   OTHER = 0,
+}
+export const DefaultHelmIcon = '/images/helm-gray.svg';
+export enum ResourceType {
+  REPOSITORY = 1,
+  CHART_VERSION = 2,
+  REPOSITORY_TAG = 3,
 }

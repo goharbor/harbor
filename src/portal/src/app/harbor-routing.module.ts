@@ -50,9 +50,9 @@ import { RobotAccountComponent } from './project/robot-account/robot-account.com
 import { ProjectLabelComponent } from "./project/project-label/project-label.component";
 import { ProjectConfigComponent } from './project/project-config/project-config.component';
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
-import { ListChartsComponent } from './project/list-charts/list-charts.component';
-import { ListChartVersionsComponent } from './project/list-chart-versions/list-chart-versions.component';
-import { ChartDetailComponent } from './project/chart-detail/chart-detail.component';
+import { ListChartsComponent } from './project/helm-chart/list-charts.component';
+import { ListChartVersionsComponent } from './project/helm-chart/list-chart-versions/list-chart-versions.component';
+import { HelmChartDetailComponent } from './project/helm-chart/helm-chart-detail/chart-detail.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -142,7 +142,7 @@ const harborRoutes: Routes = [
       },
       {
         path: 'projects/:id/helm-charts/:chart/versions/:version',
-        component: ChartDetailComponent,
+        component: HelmChartDetailComponent,
         canActivate: [MemberGuard],
         resolve: {
           projectResolver: ProjectRoutingResolver

@@ -2,7 +2,7 @@ import { extractJson } from './../shared.utils';
 import { Router } from '@angular/router';
 import { Component, OnInit, Input } from '@angular/core';
 
-import { HelmChartSearchResultItem, HelmChartVersion, HelmChartMaintainer } from '@harbor/ui';
+import { HelmChartSearchResultItem, HelmChartVersion, HelmChartMaintainer } from '../../project/helm-chart/helm-chart.interface.service';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import { ProjectService } from '../../project/project.service';

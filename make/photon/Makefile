@@ -32,6 +32,10 @@ JOBSERVICEBINARYNAME=harbor_jobservice
 # photon dockerfile
 DOCKERFILEPATH=$(MAKEPATH)/photon
 
+DOCKERFILEPATH_PREPARE=$(DOCKERFILEPATH)/prepare
+DOCKERFILENAME_PREPARE=Dockerfile
+DOCKERIMAGENAME_PREPARE=goharbor/prepare
+
 DOCKERFILEPATH_PORTAL=$(DOCKERFILEPATH)/portal
 DOCKERFILENAME_PORTAL=Dockerfile
 DOCKERIMAGENAME_PORTAL=goharbor/harbor-portal
@@ -92,6 +96,11 @@ DOCKERFILENAME_CHART_SERVER=Dockerfile
 CHART_SERVER_CODE_BASE=github.com/helm/chartmuseum
 CHART_SERVER_MAIN_PATH=cmd/chartmuseum
 CHART_SERVER_BIN_NAME=chartm
+
+_build_prepare:
+	@echo "building prepare container for photon..."
+	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .
+	@echo "Done."
 
 _build_db:
 	@echo "building db container for photon..."
@@ -200,7 +209,7 @@ define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
 endef
 
-build: _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_redis _build_migrator _build_chart_server
+build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_redis _build_migrator _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."

@@ -71,7 +71,7 @@ class CfgMigrator():
             copyfile(self.cfg_path, self.backup_path+"/harbor.cfg")
             print ("Success to backup harbor.cfg.")
             return True
-        except Exception, e:
+        except Exception as e:
             print ("Back up error: %s" % str(e))
             return False 
 
@@ -83,7 +83,7 @@ class CfgMigrator():
             copyfile(self.backup_path+"/harbor.cfg", self.cfg_path)
             print ("Success to restore harbor.cfg.")
             return True
-        except Exception, e:
+        except Exception as e:
             print ("Restore error: %s" % str(e))
             return False
 

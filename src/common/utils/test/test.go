@@ -125,7 +125,7 @@ func GetUnitTestConfig() map[string]interface{} {
 		common.WithNotary:             "false",
 		common.WithChartMuseum:        "false",
 		common.SelfRegistration:       "true",
-		common.WithClair:              "false",
+		common.WithClair:              "true",
 		common.TokenServiceURL:        "http://core:8080/service/token",
 		common.RegistryURL:            fmt.Sprintf("http://%s:5000", ipAddress),
 	}
