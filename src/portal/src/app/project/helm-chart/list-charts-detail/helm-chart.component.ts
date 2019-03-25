@@ -258,7 +258,7 @@ export class HelmChartComponent implements OnInit {
       ConfirmationTargets.HELM_CHART,
       ConfirmationButtons.DELETE_CANCEL
     );
-    this.confirmationDialog.openMessage(message);
+    this.confirmationDialog.open(message);
   }
 
   confirmDeletion(message: ConfirmationAcknowledgement) {
