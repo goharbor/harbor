@@ -31,36 +31,10 @@ import (
 // TODO add UT
 
 func init() {
-	info := &adp.Info{
-		Type: model.RegistryTypeHarbor,
-		SupportedResourceTypes: []model.ResourceType{
-			model.ResourceTypeRepository,
-			model.ResourceTypeChart,
-		},
-		SupportedResourceFilters: []*adp.Filter{
-			{
-				Type:  model.FilterTypeName,
-				Style: adp.FilterStyleText,
-			},
-			{
-				Type:  model.FilterTypeVersion,
-				Style: adp.FilterStyleText,
-			},
-			{
-				Type:  model.FilterTypeLabel,
-				Style: adp.FilterStyleText,
-			},
-		},
-		SupportedTriggers: []model.TriggerType{
-			model.TriggerTypeManual,
-			model.TriggerTypeScheduled,
-			model.TriggerTypeEventBased,
-		},
-	}
 	// TODO passing coreServiceURL and tokenServiceURL
 	coreServiceURL := "http://core:8080"
 	tokenServiceURL := ""
-	if err := adp.RegisterFactory(info, func(registry *model.Registry) (adp.Adapter, error) {
+	if err := adp.RegisterFactory(model.RegistryTypeHarbor, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry, coreServiceURL, tokenServiceURL), nil
 	}); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeHarbor, err)
@@ -108,6 +82,45 @@ func newAdapter(registry *model.Registry, coreServiceURL string,
 			}, modifiers...),
 		DefaultImageRegistry: adp.NewDefaultImageRegistry(registry, tokenServiceURL),
 	}
+}
+
+func (a *adapter) Info() (*model.RegistryInfo, error) {
+	info := &model.RegistryInfo{
+		Type: model.RegistryTypeHarbor,
+		SupportedResourceTypes: []model.ResourceType{
+			model.ResourceTypeRepository,
+		},
+		SupportedResourceFilters: []*model.FilterStyle{
+			{
+				Type:  model.FilterTypeName,
+				Style: model.FilterStyleTypeText,
+			},
+			{
+				Type:  model.FilterTypeTag,
+				Style: model.FilterStyleTypeText,
+			},
+			{
+				Type:  model.FilterTypeLabel,
+				Style: model.FilterStyleTypeText,
+			},
+		},
+		SupportedTriggers: []model.TriggerType{
+			model.TriggerTypeManual,
+			model.TriggerTypeScheduled,
+			model.TriggerTypeEventBased,
+		},
+	}
+
+	sys := &struct {
+		ChartRegistryEnabled bool `json:"with_chartmuseum"`
+	}{}
+	if err := a.client.Get(a.coreServiceURL+"/api/systeminfo", sys); err != nil {
+		return nil, err
+	}
+	if sys.ChartRegistryEnabled {
+		info.SupportedResourceTypes = append(info.SupportedResourceTypes, model.ResourceTypeChart)
+	}
+	return info, nil
 }
 
 // TODO implement the function

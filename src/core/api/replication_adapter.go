@@ -15,8 +15,6 @@
 package api
 
 import (
-	"fmt"
-
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
@@ -41,53 +39,7 @@ func (r *ReplicationAdapterAPI) Prepare() {
 
 // List the replication adapters
 func (r *ReplicationAdapterAPI) List() {
-	infos := []*adapter.Info{}
-	for _, info := range adapter.ListAdapterInfos() {
-		infos = append(infos, process(info))
-	}
-	r.WriteJSONData(infos)
-}
-
-// Get one specified replication adapter
-func (r *ReplicationAdapterAPI) Get() {
-	t := r.GetStringFromPath(":type")
-	info := adapter.GetAdapterInfo(model.RegistryType(t))
-	if info == nil {
-		r.HandleNotFound(fmt.Sprintf("adapter for %s not found", t))
-		return
-	}
-	info = process(info)
-	r.WriteJSONData(info)
-}
-
-// merge "SupportedResourceTypes" into "SupportedResourceFilters" for UI to render easier
-func process(info *adapter.Info) *adapter.Info {
-	if info == nil {
-		return nil
-	}
-
-	in := &adapter.Info{
-		Type:              info.Type,
-		Description:       info.Description,
-		SupportedTriggers: info.SupportedTriggers,
-	}
-
-	filters := []*adapter.Filter{}
-	for _, filter := range info.SupportedResourceFilters {
-		if filter.Type != model.FilterTypeResource {
-			filters = append(filters, filter)
-		}
-	}
-	values := []string{}
-	for _, resourceType := range info.SupportedResourceTypes {
-		values = append(values, string(resourceType))
-	}
-	filters = append(filters, &adapter.Filter{
-		Type:   model.FilterTypeResource,
-		Style:  adapter.FilterStyleRadio,
-		Values: values,
-	})
-	in.SupportedResourceFilters = filters
-
-	return in
+	types := []model.RegistryType{}
+	types = append(types, adapter.ListRegisteredAdapterTypes()...)
+	r.WriteJSONData(types)
 }

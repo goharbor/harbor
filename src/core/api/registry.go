@@ -9,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/replication/ng"
+	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
 )
@@ -210,4 +211,64 @@ func (t *RegistryAPI) Delete() {
 		t.HandleInternalServerError(msg)
 		return
 	}
+}
+
+// GetInfo returns the base info and capability declarations of the registry
+func (t *RegistryAPI) GetInfo() {
+	id := t.GetIDFromURL()
+	registry, err := t.manager.Get(id)
+	if err != nil {
+		t.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", id, err))
+		return
+	}
+	if registry == nil {
+		t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
+		return
+	}
+	factory, err := adapter.GetFactory(registry.Type)
+	if err != nil {
+		t.HandleInternalServerError(fmt.Sprintf("failed to get the adapter factory for registry type %s: %v", registry.Type, err))
+		return
+	}
+	adp, err := factory(registry)
+	if err != nil {
+		t.HandleInternalServerError(fmt.Sprintf("failed to create the adapter for registry %d: %v", registry.ID, err))
+		return
+	}
+	info, err := adp.Info()
+	if err != nil {
+		t.HandleInternalServerError(fmt.Sprintf("failed to get registry info %d: %v", id, err))
+		return
+	}
+	t.WriteJSONData(process(info))
+}
+
+// merge "SupportedResourceTypes" into "SupportedResourceFilters" for UI to render easier
+func process(info *model.RegistryInfo) *model.RegistryInfo {
+	if info == nil {
+		return nil
+	}
+	in := &model.RegistryInfo{
+		Type:              info.Type,
+		Description:       info.Description,
+		SupportedTriggers: info.SupportedTriggers,
+	}
+	filters := []*model.FilterStyle{}
+	for _, filter := range info.SupportedResourceFilters {
+		if filter.Type != model.FilterTypeResource {
+			filters = append(filters, filter)
+		}
+	}
+	values := []string{}
+	for _, resourceType := range info.SupportedResourceTypes {
+		values = append(values, string(resourceType))
+	}
+	filters = append(filters, &model.FilterStyle{
+		Type:   model.FilterTypeResource,
+		Style:  model.FilterStyleTypeRadio,
+		Values: values,
+	})
+	in.SupportedResourceFilters = filters
+
+	return in
 }

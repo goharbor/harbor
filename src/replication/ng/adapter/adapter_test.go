@@ -28,49 +28,18 @@ func fakedFactory(*model.Registry) (Adapter, error) {
 
 func TestRegisterFactory(t *testing.T) {
 	// empty type
-	assert.NotNil(t, RegisterFactory(&Info{}, nil))
-	// empty supportted resource type
-	assert.NotNil(t, RegisterFactory(
-		&Info{
-			Type: "harbor",
-		}, nil))
-	// empty trigger
-	assert.NotNil(t, RegisterFactory(
-		&Info{
-			Type:                   "harbor",
-			SupportedResourceTypes: []model.ResourceType{"image"},
-		}, nil))
+	assert.NotNil(t, RegisterFactory("", nil))
 	// empty factory
-	assert.NotNil(t, RegisterFactory(
-		&Info{
-			Type:                   "harbor",
-			SupportedResourceTypes: []model.ResourceType{"image"},
-			SupportedTriggers:      []model.TriggerType{"mannual"},
-		}, nil))
+	assert.NotNil(t, RegisterFactory("harbor", nil))
 	// pass
-	assert.Nil(t, RegisterFactory(
-		&Info{
-			Type:                   "harbor",
-			SupportedResourceTypes: []model.ResourceType{"image"},
-			SupportedTriggers:      []model.TriggerType{"mannual"},
-		}, fakedFactory))
+	assert.Nil(t, RegisterFactory("harbor", fakedFactory))
 	// already exists
-	assert.NotNil(t, RegisterFactory(
-		&Info{
-			Type:                   "harbor",
-			SupportedResourceTypes: []model.ResourceType{"image"},
-			SupportedTriggers:      []model.TriggerType{"mannual"},
-		}, fakedFactory))
+	assert.NotNil(t, RegisterFactory("harbor", fakedFactory))
 }
 
 func TestGetFactory(t *testing.T) {
-	registry = []*item{}
-	require.Nil(t, RegisterFactory(
-		&Info{
-			Type:                   "harbor",
-			SupportedResourceTypes: []model.ResourceType{"image"},
-			SupportedTriggers:      []model.TriggerType{"mannual"},
-		}, fakedFactory))
+	registry = map[model.RegistryType]Factory{}
+	require.Nil(t, RegisterFactory("harbor", fakedFactory))
 	// doesn't exist
 	_, err := GetFactory("gcr")
 	assert.NotNil(t, err)
@@ -79,40 +48,16 @@ func TestGetFactory(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestListAdapterInfos(t *testing.T) {
-	registry = []*item{}
+func TestListRegisteredAdapterTypes(t *testing.T) {
+	registry = map[model.RegistryType]Factory{}
 	// not register, got nothing
-	infos := ListAdapterInfos()
-	assert.Equal(t, 0, len(infos))
+	types := ListRegisteredAdapterTypes()
+	assert.Equal(t, 0, len(types))
 
 	// register one factory
-	require.Nil(t, RegisterFactory(
-		&Info{
-			Type:                   "harbor",
-			SupportedResourceTypes: []model.ResourceType{"image"},
-			SupportedTriggers:      []model.TriggerType{"mannual"},
-		}, fakedFactory))
+	require.Nil(t, RegisterFactory("harbor", fakedFactory))
 
-	infos = ListAdapterInfos()
-	require.Equal(t, 1, len(infos))
-	assert.Equal(t, "harbor", string(infos[0].Type))
-}
-
-func TestGetAdapterInfo(t *testing.T) {
-	registry = []*item{}
-	require.Nil(t, RegisterFactory(
-		&Info{
-			Type:                   "harbor",
-			SupportedResourceTypes: []model.ResourceType{"image"},
-			SupportedTriggers:      []model.TriggerType{"mannual"},
-		}, fakedFactory))
-
-	// doesn't exist
-	info := GetAdapterInfo("gcr")
-	assert.Nil(t, info)
-
-	// exist
-	info = GetAdapterInfo("harbor")
-	require.NotNil(t, info)
-	assert.Equal(t, "harbor", string(info.Type))
+	types = ListRegisteredAdapterTypes()
+	require.Equal(t, 1, len(types))
+	assert.Equal(t, model.RegistryType("harbor"), types[0])
 }

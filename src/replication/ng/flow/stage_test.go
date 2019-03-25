@@ -67,6 +67,16 @@ func fakedAdapterFactory(*model.Registry) (adapter.Adapter, error) {
 
 type fakedAdapter struct{}
 
+func (f *fakedAdapter) Info() (*model.RegistryInfo, error) {
+	return &model.RegistryInfo{
+		Type: model.RegistryTypeHarbor,
+		SupportedResourceTypes: []model.ResourceType{
+			model.ResourceTypeRepository,
+			model.ResourceTypeChart,
+		},
+		SupportedTriggers: []model.TriggerType{model.TriggerTypeManual},
+	}, nil
+}
 func (f *fakedAdapter) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
 	return nil, nil
 }
@@ -225,15 +235,7 @@ func TestMain(m *testing.M) {
 	config.Config = &config.Configuration{
 		RegistryURL: url,
 	}
-	if err := adapter.RegisterFactory(
-		&adapter.Info{
-			Type: model.RegistryTypeHarbor,
-			SupportedResourceTypes: []model.ResourceType{
-				model.ResourceTypeRepository,
-				model.ResourceTypeChart,
-			},
-			SupportedTriggers: []model.TriggerType{model.TriggerTypeManual},
-		}, fakedAdapterFactory); err != nil {
+	if err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory); err != nil {
 		os.Exit(1)
 	}
 	os.Exit(m.Run())
@@ -255,7 +257,7 @@ func TestInitialize(t *testing.T) {
 func TestFetchResources(t *testing.T) {
 	adapter := &fakedAdapter{}
 	policy := &model.Policy{}
-	resources, err := fetchResources(adapter, model.RegistryTypeHarbor, policy)
+	resources, err := fetchResources(adapter, policy)
 	require.Nil(t, err)
 	assert.Equal(t, 2, len(resources))
 }
@@ -313,7 +315,7 @@ func TestFilterResources(t *testing.T) {
 			Value: "library/harbor",
 		},
 		{
-			Type:  model.FilterTypeVersion,
+			Type:  model.FilterTypeTag,
 			Value: "0.2.?",
 		},
 	}

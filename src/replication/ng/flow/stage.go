@@ -87,7 +87,7 @@ func initialize(mgr registry.Manager, policy *model.Policy) (*model.Registry, *m
 }
 
 // fetch resources from the source registry
-func fetchResources(adapter adp.Adapter, adapterType model.RegistryType, policy *model.Policy) ([]*model.Resource, error) {
+func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resource, error) {
 	resTypes := []model.ResourceType{}
 	filters := []*model.Filter{}
 	for _, filter := range policy.Filters {
@@ -98,7 +98,11 @@ func fetchResources(adapter adp.Adapter, adapterType model.RegistryType, policy 
 		resTypes = append(resTypes, filter.Value.(model.ResourceType))
 	}
 	if len(resTypes) == 0 {
-		resTypes = append(resTypes, adp.GetAdapterInfo(adapterType).SupportedResourceTypes...)
+		info, err := adapter.Info()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get the adapter info: %v", err)
+		}
+		resTypes = append(resTypes, info.SupportedResourceTypes...)
 	}
 
 	resources := []*model.Resource{}
@@ -167,7 +171,7 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 					match = false
 					break
 				}
-			case model.FilterTypeVersion:
+			case model.FilterTypeTag:
 				pattern, ok := filter.Value.(string)
 				if !ok {
 					return nil, fmt.Errorf("%v is not a valid string", filter.Value)

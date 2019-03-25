@@ -20,9 +20,13 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 )
 
+// const definition
 const (
 	// RegistryTypeHarbor indicates registry type harbor
 	RegistryTypeHarbor = "harbor"
+
+	FilterStyleTypeText  = "input"
+	FilterStyleTypeRadio = "radio"
 )
 
 // RegistryType indicates the type of registry
@@ -73,4 +77,20 @@ type RegistryQuery struct {
 	Name string
 	// Pagination specifies the pagination
 	Pagination *models.Pagination
+}
+
+// FilterStyle ...
+type FilterStyle struct {
+	Type   FilterType `json:"type"`
+	Style  string     `json:"style"`
+	Values []string   `json:"values,omitempty"`
+}
+
+// RegistryInfo provides base info and capability declarations of the registry
+type RegistryInfo struct {
+	Type                     RegistryType   `json:"type"`
+	Description              string         `json:"description"`
+	SupportedResourceTypes   []ResourceType `json:"-"`
+	SupportedResourceFilters []*FilterStyle `json:"supported_resource_filters"`
+	SupportedTriggers        []TriggerType  `json:"supported_triggers"`
 }

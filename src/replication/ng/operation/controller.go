@@ -98,7 +98,7 @@ func (d *defaultController) createFlow(executionID int64, policy *model.Policy, 
 				Value: resource.Metadata.Name,
 			},
 			{
-				Type: model.FilterTypeVersion,
+				Type: model.FilterTypeTag,
 				// only support replicate one tag
 				Value: resource.Metadata.Vtags[0],
 			},
