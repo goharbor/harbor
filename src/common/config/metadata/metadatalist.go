@@ -45,6 +45,7 @@ const (
 	EmailGroup     = "email"
 	UAAGroup       = "uaa"
 	HTTPAuthGroup  = "http_auth"
+	OIDCGroup      = "oidc"
 	DatabaseGroup  = "database"
 	// Put all config items do not belong a existing group into basic
 	BasicGroup = "basic"
@@ -130,9 +131,16 @@ var (
 		{Name: "uaa_endpoint", Scope: UserScope, Group: UAAGroup, EnvKey: "UAA_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 		{Name: "uaa_verify_cert", Scope: UserScope, Group: UAAGroup, EnvKey: "UAA_VERIFY_CERT", DefaultValue: "false", ItemType: &BoolType{}, Editable: false},
 
-		{Name: common.HTTPAuthProxyEndpoint, Scope: UserScope, Group: HTTPAuthGroup, EnvKey: "HTTP_AUTHPROXY_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false},
-		{Name: common.HTTPAuthProxySkipCertVerify, Scope: UserScope, Group: HTTPAuthGroup, EnvKey: "HTTP_AUTHPROXY_SKIP_CERT_VERIFY", DefaultValue: "false", ItemType: &BoolType{}, Editable: false},
-		{Name: common.HTTPAuthProxyAlwaysOnboard, Scope: UserScope, Group: HTTPAuthGroup, EnvKey: "HTTP_AUTHPROXY_ALWAYS_ONBOARD", DefaultValue: "false", ItemType: &BoolType{}, Editable: false},
+		{Name: common.HTTPAuthProxyEndpoint, Scope: UserScope, Group: HTTPAuthGroup, ItemType: &StringType{}},
+		{Name: common.HTTPAuthProxySkipCertVerify, Scope: UserScope, Group: HTTPAuthGroup, DefaultValue: "false", ItemType: &BoolType{}},
+		{Name: common.HTTPAuthProxyAlwaysOnboard, Scope: UserScope, Group: HTTPAuthGroup, DefaultValue: "false", ItemType: &BoolType{}},
+
+		{Name: common.OIDCName, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
+		{Name: common.OIDCEndpoint, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
+		{Name: common.OIDCCLientID, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
+		{Name: common.OIDCClientSecret, Scope: UserScope, Group: OIDCGroup, ItemType: &PasswordType{}},
+		{Name: common.OIDCScope, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
+		{Name: common.OIDCSkipCertVerify, Scope: UserScope, Group: OIDCGroup, DefaultValue: "false", ItemType: &BoolType{}},
 
 		{Name: "with_chartmuseum", Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CHARTMUSEUM", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: "with_clair", Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CLAIR", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
