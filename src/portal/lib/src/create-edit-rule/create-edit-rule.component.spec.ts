@@ -17,7 +17,8 @@ import {
   ReplicationRule,
   ReplicationJob,
   Endpoint,
-  ReplicationJobItem
+  ReplicationJobItem,
+  Adapter
 } from "../service/interface";
 
 import { ErrorHandler } from "../error-handler/error-handler";
@@ -160,6 +161,38 @@ describe("CreateEditRuleComponent (inline template)", () => {
     deletion: false
   };
 
+  let mockAdapter: Adapter = {
+    "type": "harbor",
+    "description": "",
+    "supported_resource_filters": [
+      {
+        "type": "Name",
+        "style": "input"
+      },
+      {
+        "type": "Version",
+        "style": "input"
+      },
+      {
+        "type": "Label",
+        "style": "input"
+      },
+      {
+        "type": "Resource",
+        "style": "radio",
+        "values": [
+          "repository",
+          "chart"
+        ]
+      }
+    ],
+    "supported_triggers": [
+      "Manual",
+      "Scheduled",
+      "EventBased"
+    ]
+  };
+
   let fixture: ComponentFixture<ReplicationComponent>;
   let fixtureCreate: ComponentFixture<CreateEditRuleComponent>;
 
@@ -173,10 +206,11 @@ describe("CreateEditRuleComponent (inline template)", () => {
   let spyOneRule: jasmine.Spy;
 
   let spyJobs: jasmine.Spy;
+  let spyAdapter: jasmine.Spy;
   let spyEndpoint: jasmine.Spy;
 
   let config: IServiceConfig = {
-    replicationBaseEndpoint: "/api/replication/executions/testing",
+    replicationBaseEndpoint: "/api/replication/testing",
     targetBaseEndpoint: "/api/registries/testing"
   };
 
@@ -230,6 +264,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
     spyJobs = spyOn(replicationService, "getExecutions").and.returnValues(
       of(mockJob));
 
+    spyAdapter = spyOn(replicationService, "getReplicationAdapter").and.returnValues(
+        of(mockAdapter));
     spyEndpoint = spyOn(endpointService, "getEndpoints").and.returnValues(
       of(mockEndpoints)
     );
@@ -239,6 +275,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
   it("Should open creation modal and load endpoints", async(() => {
     fixture.detectChanges();
+    compCreate.initAdapter("harbor");
     compCreate.openCreateEditRule();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -254,6 +291,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
   it("Should open modal to edit replication rule", async(() => {
     fixture.detectChanges();
+    compCreate.initAdapter("harbor");
     compCreate.openCreateEditRule(mockRule.id);
     fixture.whenStable().then(() => {
       fixture.detectChanges();

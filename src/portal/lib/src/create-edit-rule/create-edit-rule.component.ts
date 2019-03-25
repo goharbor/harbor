@@ -21,7 +21,7 @@ import {
   EventEmitter,
   Output
 } from "@angular/core";
-import { Filter, ReplicationRule, Endpoint, Label } from "../service/interface";
+import { Filter, ReplicationRule, Endpoint, Label, Adapter } from "../service/interface";
 import { Subject, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
@@ -51,8 +51,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   selectedProjectList: Project[] = [];
   isFilterHide = false;
   weeklySchedule: boolean;
-  isScheduleOpt: boolean;
-  isImmediate = false;
   noProjectInfo = "";
   noEndpointInfo = "";
   isPushMode = true;
@@ -60,7 +58,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   noSelectedEndpoint = true;
   filterCount = 0;
   alertClosed = false;
-  triggerNames: string[] = ["Manual", "Immediate", "Scheduled"];
+  TRIGGER_TYPES = {
+    MANUAL: "Manual",
+    SCHEDULED: "Scheduled",
+    EVENT_BASED: "EventBased"
+  };
   filterSelect: string[] = ["type", "repository", "tag", "label"];
   ruleNameTooltip = "REPLICATION.NAME_TOOLTIP";
   headerTitle = "REPLICATION.ADD_POLICY";
@@ -82,6 +84,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   formArrayLabel: FormArray;
   copyUpdateForm: ReplicationRule;
   cronString: string;
+  supportedTriggers: string[];
+  supportedFilters: Filter[];
 
   @Input() projectId: number;
   @Input() projectName: string;
@@ -113,6 +117,13 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     };
   }
 
+  initAdapter(type: string): void {
+    this.repService.getReplicationAdapter(type).subscribe(adapter => {
+      this.supportedFilters = adapter.supported_resource_filters;
+      this.supportedTriggers = adapter.supported_triggers;
+    });
+  }
+
   ngOnInit(): void {
     this.endpointService.getEndpoints().subscribe(endPoints => {
       this.targetList = endPoints || [];
@@ -120,8 +131,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }, error => {
       this.errorHandler.error(error);
     });
-
-
+    this.initAdapter("harbor");
     this.nameChecker
       .pipe(debounceTime(300))
       .pipe(distinctUntilChanged())
@@ -148,18 +158,21 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       });
   }
 
+  modeChange(): void {
+    if (this.isPushMode) {
+      this.initAdapter("harbor");
+    }
+  }
+
 
   sourceChange($event): void {
-    if ($event && $event.target) {
-      if ($event.target["value"] === "-1") {
-        this.noSelectedEndpoint = true;
-        return;
-      }
-      let selecedTarget: Endpoint = this.sourceList.find(
-        source => source.id === +$event.target["value"]
-      );
-      this.noSelectedEndpoint = false;
-    }
+    this.noSelectedEndpoint = false;
+    let selectId = this.ruleForm.get('src_registry_id').value;
+    let selecedTarget: Endpoint = this.sourceList.find(
+      source => source.id === selectId
+    );
+
+    this.initAdapter(selecedTarget.type);
 
   }
 
@@ -191,7 +204,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       dest_registry_id: new FormControl(),
       dest_namespace: "",
       trigger: this.fb.group({
-        kind: this.triggerNames[0],
+        kind: '',
         schedule_param: this.fb.group({
           cron: ""
         })
@@ -201,12 +214,24 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     });
   }
 
+  selectTrigger($event: any): void {
+
+  }
+
+  isNotSchedule(): boolean {
+    return this.ruleForm.get("trigger").get("kind").value !== this.TRIGGER_TYPES.SCHEDULED;
+  }
+
+  isNotEventBased(): boolean {
+    return this.ruleForm.get("trigger").get("kind").value !== this.TRIGGER_TYPES.EVENT_BASED;
+  }
+
   initForm(): void {
     this.ruleForm.reset({
       name: "",
       description: "",
       trigger: {
-        kind: this.triggerNames[0],
+        kind: this.supportedTriggers[0],
         schedule_param: {
           cron: ""
         }
@@ -214,7 +239,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       deletion: false
     });
     this.setFilter([]);
-
     this.copyUpdateForm = clone(this.ruleForm.value);
   }
 
@@ -439,26 +463,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectTrigger($event: any): void {
-    if ($event && $event.target && $event.target["value"]) {
-      let val: string = $event.target["value"];
-      if (val === this.triggerNames[2]) {
-        this.isScheduleOpt = true;
-        this.isImmediate = false;
-      }
-      if (val === this.triggerNames[1]) {
-        this.isScheduleOpt = false;
-        this.isImmediate = true;
-      }
-      if (val === this.triggerNames[0]) {
-        this.isScheduleOpt = false;
-        this.isImmediate = false;
-      }
-    }
-  }
-
   // Replication Schedule select value exchange
   selectSchedule($event: any): void {
+
   }
 
   checkRuleName(): void {
@@ -532,7 +539,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     // add new Replication rule
     this.inProgress = true;
     let copyRuleForm: ReplicationRule = this.ruleForm.value;
-    copyRuleForm.trigger = null;
     if (this.isPushMode) {
       copyRuleForm.src_registry_id = null;
     } else {
@@ -586,8 +592,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.deletedLabelCount = 0;
 
     this.weeklySchedule = false;
-    this.isScheduleOpt = false;
-    this.isImmediate = false;
     this.policyId = -1;
     this.createEditRuleOpened = true;
     this.filterLabelInfo = [];
