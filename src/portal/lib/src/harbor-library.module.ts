@@ -58,8 +58,10 @@ import {
   UserPermissionDefaultService
 } from './service/index';
 import { GcRepoService } from './config/gc/gc.service';
+import { ScanAllRepoService } from './config/vulnerability/scanAll.service';
 import {GcViewModelFactory} from './config/gc/gc.viewmodel.factory';
 import {GcApiRepository, GcApiDefaultRepository} from './config/gc/gc.api.repository';
+import {ScanApiRepository, ScanApiDefaultRepository} from './config/vulnerability/scanAll.api.repository';
 import {
   ErrorHandler,
   DefaultErrorHandler
@@ -100,7 +102,8 @@ export const DefaultServiceConfig: IServiceConfig = {
   labelEndpoint: "/api/labels",
   helmChartEndpoint: "/api/chartrepo",
   downloadChartEndpoint: "/chartrepo",
-  gcEndpoint: "/api/system/gc"
+  gcEndpoint: "/api/system/gc",
+  ScanAllEndpoint: "/api/system/scanAll"
 };
 
 /**
@@ -159,6 +162,9 @@ export interface HarborModuleConfig {
 
   // Service implementation for gc
   gcApiRepository?: Provider;
+
+  // Service implementation for scanAll
+  ScanApiRepository?: Provider;
 
 }
 
@@ -261,6 +267,7 @@ export class HarborLibraryModule {
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
+        config.ScanApiRepository || {provide: ScanApiRepository, useClass: ScanApiDefaultRepository},
         // Do initializing
         TranslateServiceInitializer,
         {
@@ -272,6 +279,7 @@ export class HarborLibraryModule {
         ChannelService,
         OperationService,
         GcRepoService,
+        ScanAllRepoService,
         GcViewModelFactory
       ]
     };
@@ -297,9 +305,11 @@ export class HarborLibraryModule {
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
+        config.ScanApiRepository || {provide: ScanApiRepository, useClass: ScanApiDefaultRepository},
         ChannelService,
         OperationService,
         GcRepoService,
+        ScanAllRepoService,
         GcViewModelFactory
       ]
     };

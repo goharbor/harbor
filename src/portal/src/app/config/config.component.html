@@ -36,7 +36,7 @@
                     <button id="config-vulnerability" clrTabLink>{{'CONFIG.VULNERABILITY' | translate }}</button>
 					<ng-template [(clrIfActive)]="vulnerabilityActive">
 						<clr-tab-content id="vulnerability" *ngIf="withClair">
-							<vulnerability-config [(vulnerabilityConfig)]="allConfig"></vulnerability-config>
+							<vulnerability-config></vulnerability-config>
 						</clr-tab-content>
 					</ng-template>
                 </clr-tab>
