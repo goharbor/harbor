@@ -113,6 +113,10 @@ ignored = ["github.com/goharbor/harbor/tests*"]
   version = "=1.0"
 
 [[constraint]]
+  name = "github.com/coreos/go-oidc"
+  version = "=2.0.0"
+
+[[constraint]]
   name = "gopkg.in/yaml.v2"
   version = "=2.1.1"
 
