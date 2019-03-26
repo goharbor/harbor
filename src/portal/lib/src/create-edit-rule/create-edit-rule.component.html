@@ -2,15 +2,6 @@
   <h3 class="modal-title">{{headerTitle | translate}}</h3>
   <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
   <div class="modal-body modal-body-height">
-    <clr-alert [hidden]='!deletedLabelCount' [clrAlertType]="'alert-warning'" [clrAlertSizeSmall]="true" [clrAlertClosable]="false"
-      [(clrAlertClosed)]="alertClosed">
-      <div class="alert-item">
-        <span class="alert-text">{{deletedLabelInfo}}</span>
-        <div class="alert-actions">
-          <a class="alert-action" (click)=" alertClosed = true">{{'REPLICATION.ACKNOWLEDGE' | translate}}</a>
-        </div>
-      </div>
-    </clr-alert>
     <form [formGroup]="ruleForm" novalidate>
       <section class="form-block">
         <div class="form-group form-group-override">
@@ -31,7 +22,7 @@
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.REPLI_MODE' | translate}}</label>
           <div class="radio" style="display:inherit;">
-            <input type="radio" id="push_base" name="replicationMode" [value]=true [(ngModel)]="isPushMode" (change)="modeChange()"  [ngModelOptions]="{standalone: true}">
+            <input type="radio" id="push_base" name="replicationMode" [value]=true [(ngModel)]="isPushMode" (change)="modeChange()" [ngModelOptions]="{standalone: true}">
             <label for="push_base">Push-based</label>
             <input type="radio" id="pull_base" name="replicationMode" [value]=false [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
             <label for="pull_base">Pull-based</label>
@@ -55,16 +46,16 @@
           <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_NAMESPACES' | translate}}</label>
           <div formArrayName="src_namespaces">
             <div class="width-315" *ngFor="let src_namespace of src_namespaces.controls; let i=index">
-              <div class="select endpointSelect pull-left">
+              <div class="endpointSelect pull-left">
                 <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='(src_namespace.touched && src_namespace.invalid)'>
-                  <input type="text"  [formControlName]="i" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255">
+                  <input type="text" [formControlName]="i" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255">
                   <span class="tooltip-content">{{'REPLICATION.NAMESPACE_TOOLTIP' | translate}}</span>
                 </label>
               </div>
               <clr-icon shape="times-circle" class="is-solid" (click)="deleteNamespace(i)"></clr-icon>
             </div>
           </div>
-          <clr-icon id="addSourceNamespace" shape="plus-circle" class="is-solid mr-t-15" (click)="addNewNamespace()"></clr-icon>
+          <clr-icon id="addSourceNamespace" shape="plus-circle" class="is-solid mr-t-10" (click)="addNewNamespace()"></clr-icon>
         </div>
         <!--images/Filter-->
         <div class="form-group form-group-override">
@@ -72,24 +63,20 @@
           <div formArrayName="filters">
             <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
               <div [formGroupName]="i">
-                <div class="select floatSetPar">
-                  <select formControlName="kind" #selectedValue (change)="filterChange($event, selectedValue.value)" id="{{i}}" name="{{filterListData[i]?.name}}">
-                    <option *ngFor="let opt of filterListData[i]?.options;" value="{{opt}}">{{opt}}</option>
-                  </select>
+                <div class="floatSetPar">
+                  <label>{{supportedFilters[i].type}}:</label>
                 </div>
-                <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
-                  <input type="text" #filterValue required size="14" formControlName="value" [attr.disabled]="(filterListData[i]?.name=='label') ?'' : null">
+                <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
+                  [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
+                  <input type="text" #filterValue required size="14" formControlName="value">
                   <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
                 </label>
-                <div class="arrowSet" [hidden]="!(filterListData[i]?.name=='label')" (click)="openLabelList(selectedValue.value, i, $event)">
-                  <clr-icon shape="angle"></clr-icon>
+                <div class="select inline-block" *ngIf="supportedFilters[i]?.style==='radio'">
+                  <select  formControlName="value" #selectedValue id="{{i}}" name="{{supportedFilters[i]?.type}}">
+                    <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
+                  </select>
                 </div>
-                <clr-icon shape="warning-standard" class="is-solid is-warning warning-icon" size="14" [hidden]="!deletedLabelCount || !(filterListData[i]?.name=='label')"></clr-icon>
-                <clr-icon shape="times-circle" class="is-solid" (click)="deleteFilter(i)"></clr-icon>
-                <div *ngIf="!withAdmiral">
-                  <hbr-filter-label [projectId]="projectId" [selectedLabelInfo]="filterLabelInfo" [isOpen]="filterListData[i].isOpen" (selectedLabels)="selectedLabelList($event, i)"
-                    (closePanelEvent)="filterListData[i].isOpen = false"></hbr-filter-label>
-                </div>
+                <clr-icon *ngIf="i=== filters.length-1" shape="times-circle" class="is-solid" (click)="deleteFilter(i)"></clr-icon>
               </div>
             </div>
           </div>
@@ -113,7 +100,7 @@
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.DEST_NAMESPACE' | translate}}</label>
           <div class="form-select">
-            <div class="select endpointSelect pull-left">
+            <div class="endpointSelect pull-left">
               <input formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth"
                 maxlength="255">
             </div>
@@ -127,7 +114,7 @@
             <!--on trigger-->
             <div class="select floatSetPar">
               <select id="ruleTrigger" formControlName="kind" (change)="selectTrigger($event)">
-                  <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{trigger }}</option>
+                <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{trigger }}</option>
               </select>
             </div>
             <!--on push-->
