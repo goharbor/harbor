@@ -272,7 +272,7 @@ Test Case - Disable Scan Schedule
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Go To Vulnerability Config
-    Page Should Contain  None
+    Retry Wait Until Page Contains  None
     Close Browser
 
 Test Case - User View Projects
