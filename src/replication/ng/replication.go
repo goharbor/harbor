@@ -17,13 +17,16 @@
 package ng
 
 import (
+	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	cfg "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication/ng/config"
+	"github.com/goharbor/harbor/src/replication/ng/event"
 	"github.com/goharbor/harbor/src/replication/ng/operation"
 	"github.com/goharbor/harbor/src/replication/ng/operation/execution"
-	"github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
+	task_scheduler "github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
 	"github.com/goharbor/harbor/src/replication/ng/policy"
+	"github.com/goharbor/harbor/src/replication/ng/policy/controller"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
 
 	// register the Harbor adapter
@@ -31,12 +34,14 @@ import (
 )
 
 var (
-	// PolicyMgr is a global policy manager
-	PolicyMgr policy.Manager
+	// PolicyCtl is a global policy controller
+	PolicyCtl policy.Controller
 	// RegistryMgr is a global registry manager
 	RegistryMgr registry.Manager
 	// OperationCtl is a global operation controller
 	OperationCtl operation.Controller
+	// EventHandler handles images/chart pull/push events
+	EventHandler event.Handler
 )
 
 // Init the global variables and configurations
@@ -58,13 +63,17 @@ func Init() error {
 		SecretKey:       secretKey,
 		Secret:          cfg.CoreSecret(),
 	}
-	// Init registry manager
+	// TODO use a global http transport
+	js := job.NewDefaultClient(config.Config.JobserviceURL, config.Config.Secret)
+	// init registry manager
 	RegistryMgr = registry.NewDefaultManager()
-	// init policy manager
-	PolicyMgr = policy.NewDefaultManager()
-	// init operatoin controller
+	// init policy controller
+	PolicyCtl = controller.NewController(js)
+	// init operation controller
 	OperationCtl = operation.NewController(execution.NewDefaultManager(), RegistryMgr,
-		scheduler.NewScheduler(config.Config.JobserviceURL, config.Config.Secret))
+		task_scheduler.NewScheduler(js))
+	// init event handler
+	EventHandler = event.NewHandler(PolicyCtl, OperationCtl)
 	log.Debug("the replication initialization completed")
 	return nil
 }

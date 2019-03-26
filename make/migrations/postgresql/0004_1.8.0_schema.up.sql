@@ -92,3 +92,14 @@ create table replication_task (
  PRIMARY KEY (id)
 );
 CREATE INDEX task_execution ON replication_task (execution_id);
+
+create table replication_schedule_job (
+ id SERIAL NOT NULL,
+ policy_id int NOT NULL,
+ job_id varchar(64),
+ status varchar(32),
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp NULL,
+ PRIMARY KEY (id)
+);
+CREATE INDEX replication_schedule_job_index ON replication_schedule_job (policy_id);

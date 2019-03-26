@@ -27,10 +27,10 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
-	rep_notification "github.com/goharbor/harbor/src/replication/event/notification"
-	"github.com/goharbor/harbor/src/replication/event/topic"
+	"github.com/goharbor/harbor/src/replication/ng"
+	rep_event "github.com/goharbor/harbor/src/replication/ng/event"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
@@ -111,16 +111,22 @@ func (n *NotificationHandler) Post() {
 				return
 			}
 
+			// TODO: handle image delete event and chart event
 			go func() {
-				image := repository + ":" + tag
-				err := notifier.Publish(topic.ReplicationEventTopicOnPush, rep_notification.OnPushNotification{
-					Image: image,
-				})
-				if err != nil {
-					log.Errorf("failed to publish on push topic for resource %s: %v", image, err)
-					return
+				e := &rep_event.Event{
+					Type: rep_event.EventTypeImagePush,
+					Resource: &model.Resource{
+						Type: model.ResourceTypeRepository,
+						Metadata: &model.ResourceMetadata{
+							Name:      repository,
+							Namespace: project,
+							Vtags:     []string{tag},
+						},
+					},
 				}
-				log.Debugf("the on push topic for resource %s published", image)
+				if err := ng.EventHandler.Handle(e); err != nil {
+					log.Errorf("failed to handle event: %v", err)
+				}
 			}()
 
 			if autoScanEnabled(pro) {

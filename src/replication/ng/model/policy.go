@@ -15,6 +15,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/astaxie/beego/validation"
@@ -57,6 +58,7 @@ type Policy struct {
 	// Trigger
 	Trigger *Trigger `json:"trigger"`
 	// Settings
+	// TODO: rename the property name
 	Deletion bool `json:"deletion"`
 	// If override the image tag
 	Override bool `json:"override"`
@@ -90,7 +92,29 @@ func (p *Policy) Valid(v *validation.Validation) {
 		}
 	}
 
-	// TODO valid trigger and filters
+	// valid the filters
+	for _, filter := range p.Filters {
+		if filter.Type != FilterTypeResource &&
+			filter.Type != FilterTypeName &&
+			filter.Type != FilterTypeTag &&
+			filter.Type != FilterTypeLabel {
+			v.SetError("filters", "invalid filter type")
+			break
+		}
+	}
+
+	// valid trigger
+	if p.Trigger != nil {
+		if p.Trigger.Type != TriggerTypeManual &&
+			p.Trigger.Type != TriggerTypeScheduled &&
+			p.Trigger.Type != TriggerTypeEventBased {
+			v.SetError("trigger", "invalid trigger type")
+		}
+		if p.Trigger.Type == TriggerTypeScheduled &&
+			(p.Trigger.Settings == nil || len(p.Trigger.Settings.Cron) == 0) {
+			v.SetError("trigger", fmt.Sprintf("the cron string cannot be empty when the trigger type is %s", TriggerTypeScheduled))
+		}
+	}
 }
 
 // FilterType represents the type info of the filter.
@@ -105,7 +129,7 @@ type Filter struct {
 // TriggerType represents the type of trigger.
 type TriggerType string
 
-// Trigger holds info fot a trigger
+// Trigger holds info for a trigger
 type Trigger struct {
 	Type     TriggerType      `json:"type"`
 	Settings *TriggerSettings `json:"trigger_settings"`

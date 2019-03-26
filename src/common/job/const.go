@@ -15,6 +15,8 @@ const (
 	ImageGC = "IMAGE_GC"
 	// Replication : the name of the replication job in job service
 	Replication = "REPLICATION"
+	// Scheduler : the name of the scheduler job in job service
+	Scheduler = "SCHEDULER"
 
 	// JobKindGeneric : Kind of generic job
 	JobKindGeneric = "Generic"

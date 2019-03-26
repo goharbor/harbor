@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/replication/ng"
 	"github.com/goharbor/harbor/src/replication/ng/operation/hook"
+	"github.com/goharbor/harbor/src/replication/ng/policy/scheduler"
 )
 
 var statusMap = map[string]string{
@@ -82,10 +83,10 @@ func (h *Handler) HandleScan() {
 	}
 }
 
-// HandleReplication handles the webhook of replication job
-func (h *Handler) HandleReplication() {
-	log.Debugf("received replication job status update event: job-%d, status-%s", h.id, h.status)
-	if err := dao.UpdateRepJobStatus(h.id, h.status); err != nil {
+// HandleReplicationScheduleJob handles the webhook of replication schedule job
+func (h *Handler) HandleReplicationScheduleJob() {
+	log.Debugf("received replication schedule job status update event: schedule-job-%d, status-%s", h.id, h.status)
+	if err := scheduler.UpdateStatus(h.id, h.status); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.HandleInternalServerError(err.Error())
 		return

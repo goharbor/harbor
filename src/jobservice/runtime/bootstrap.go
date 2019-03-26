@@ -34,6 +34,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication/ng"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/scan"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/scheduler"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/models"
 	"github.com/goharbor/harbor/src/jobservice/pool"
@@ -213,6 +214,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(ctx *env.Context, cfg *config.Con
 			job.ImageReplicate:  (*replication.Replicator)(nil),
 			job.ImageGC:         (*gc.GarbageCollector)(nil),
 			job.Replication:     (*ng.Replication)(nil),
+			job.Scheduler:       (*scheduler.Scheduler)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

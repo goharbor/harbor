@@ -55,11 +55,11 @@ func (f *fakedRegistryManager) HealthCheck() error {
 }
 
 func TestReplicationPolicyAPIList(t *testing.T) {
-	policyMgr := ng.PolicyMgr
+	policyMgr := ng.PolicyCtl
 	defer func() {
-		ng.PolicyMgr = policyMgr
+		ng.PolicyCtl = policyMgr
 	}()
-	ng.PolicyMgr = &fakedPolicyManager{}
+	ng.PolicyCtl = &fakedPolicyManager{}
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -93,13 +93,13 @@ func TestReplicationPolicyAPIList(t *testing.T) {
 }
 
 func TestReplicationPolicyAPICreate(t *testing.T) {
-	policyMgr := ng.PolicyMgr
+	policyMgr := ng.PolicyCtl
 	registryMgr := ng.RegistryMgr
 	defer func() {
-		ng.PolicyMgr = policyMgr
+		ng.PolicyCtl = policyMgr
 		ng.RegistryMgr = registryMgr
 	}()
-	ng.PolicyMgr = &fakedPolicyManager{}
+	ng.PolicyCtl = &fakedPolicyManager{}
 	ng.RegistryMgr = &fakedRegistryManager{}
 	cases := []*codeCheckingCase{
 		// 401
@@ -206,11 +206,11 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 }
 
 func TestReplicationPolicyAPIGet(t *testing.T) {
-	policyMgr := ng.PolicyMgr
+	policyMgr := ng.PolicyCtl
 	defer func() {
-		ng.PolicyMgr = policyMgr
+		ng.PolicyCtl = policyMgr
 	}()
-	ng.PolicyMgr = &fakedPolicyManager{}
+	ng.PolicyCtl = &fakedPolicyManager{}
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -253,13 +253,13 @@ func TestReplicationPolicyAPIGet(t *testing.T) {
 }
 
 func TestReplicationPolicyAPIUpdate(t *testing.T) {
-	policyMgr := ng.PolicyMgr
+	policyMgr := ng.PolicyCtl
 	registryMgr := ng.RegistryMgr
 	defer func() {
-		ng.PolicyMgr = policyMgr
+		ng.PolicyCtl = policyMgr
 		ng.RegistryMgr = registryMgr
 	}()
-	ng.PolicyMgr = &fakedPolicyManager{}
+	ng.PolicyCtl = &fakedPolicyManager{}
 	ng.RegistryMgr = &fakedRegistryManager{}
 	cases := []*codeCheckingCase{
 		// 401
@@ -350,11 +350,11 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 }
 
 func TestReplicationPolicyAPIDelete(t *testing.T) {
-	policyMgr := ng.PolicyMgr
+	policyMgr := ng.PolicyCtl
 	defer func() {
-		ng.PolicyMgr = policyMgr
+		ng.PolicyCtl = policyMgr
 	}()
-	ng.PolicyMgr = &fakedPolicyManager{}
+	ng.PolicyCtl = &fakedPolicyManager{}
 	cases := []*codeCheckingCase{
 		// 401
 		{
