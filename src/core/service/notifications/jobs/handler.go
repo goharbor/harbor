@@ -24,7 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/replication/ng"
-	"github.com/goharbor/harbor/src/replication/ng/hook"
+	"github.com/goharbor/harbor/src/replication/ng/operation/hook"
 )
 
 var statusMap = map[string]string{
