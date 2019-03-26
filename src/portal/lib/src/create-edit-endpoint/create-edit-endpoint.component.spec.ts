@@ -34,13 +34,16 @@ describe("CreateEditEndpointComponent (inline template)", () => {
     url: "https://10.117.4.151"
   };
 
-  let mockAdapter: [Adapter] = [{
+  let mockAdapters: Adapter[] = [{
     type: "Harbor",
     description: "test",
-    supported_resource_types: [
-      "repository"
+    supported_resource_filters: [
+      {
+        "type": "Name",
+        "style": "input"
+      }
     ],
-    supported_resource_filters: null
+    supported_triggers: []
   }];
 
   let comp: CreateEditEndpointComponent;
@@ -77,7 +80,7 @@ describe("CreateEditEndpointComponent (inline template)", () => {
 
     endpointService = fixture.debugElement.injector.get(EndpointService);
     spyAdapter = spyOn(endpointService, "getAdapters").and.returnValue(
-      of(mockAdapter)
+      of(mockAdapters)
     );
 
     spy = spyOn(endpointService, "getEndpoint").and.returnValue(

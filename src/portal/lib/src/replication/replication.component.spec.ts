@@ -138,7 +138,7 @@ describe('Replication Component (inline template)', () => {
 
   let config: IServiceConfig = {
     replicationRuleEndpoint: '/api/policies/replication/testing',
-    replicationBaseEndpoint: '/api/replication/executions/testing'
+    replicationBaseEndpoint: '/api/replication/testing'
   };
 
   beforeEach(async(() => {

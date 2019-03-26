@@ -21,7 +21,7 @@ import {
   EventEmitter,
   Output
 } from "@angular/core";
-import { Filter, ReplicationRule, Endpoint, Label } from "../service/interface";
+import { Filter, ReplicationRule, Endpoint, Label, Adapter } from "../service/interface";
 import { Subject, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
@@ -51,8 +51,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   selectedProjectList: Project[] = [];
   isFilterHide = false;
   weeklySchedule: boolean;
-  isScheduleOpt: boolean;
-  isImmediate = false;
   noProjectInfo = "";
   noEndpointInfo = "";
   isPushMode = true;
@@ -60,7 +58,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   noSelectedEndpoint = true;
   filterCount = 0;
   alertClosed = false;
-  triggerNames: string[] = ["Manual", "Immediate", "Scheduled"];
+  TRIGGER_TYPES = {
+    MANUAL: "Manual",
+    SCHEDULED: "Scheduled",
+    EVENT_BASED: "EventBased"
+  };
   filterSelect: string[] = ["type", "repository", "tag", "label"];
   ruleNameTooltip = "REPLICATION.NAME_TOOLTIP";
   headerTitle = "REPLICATION.ADD_POLICY";
@@ -71,24 +73,19 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   inNameChecking = false;
   isRuleNameValid = true;
   nameChecker: Subject<string> = new Subject<string>();
-  proNameChecker: Subject<string> = new Subject<string>();
   firstClick = 0;
   policyId: number;
   labelInputVal = '';
   filterLabelInfo: Label[] = [];  // store filter selected labels` id
   deletedLabelCount = 0;
   deletedLabelInfo: string;
-
-  namespaceList: [any] = [{
-    id: 1,
-    name: "namespace1"
-  }];
-
   confirmSub: Subscription;
   ruleForm: FormGroup;
   formArrayLabel: FormArray;
   copyUpdateForm: ReplicationRule;
   cronString: string;
+  supportedTriggers: string[];
+  supportedFilters: Filter[];
 
   @Input() projectId: number;
   @Input() projectName: string;
@@ -98,24 +95,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   @Output() reload = new EventEmitter<boolean>();
 
   @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
-
-  emptyProject = {
-    project_id: -1,
-    name: ""
-  };
-  emptyEndpoint = {
-    id: -1,
-    credential: {
-      access_key: "",
-      access_secret: "",
-      type: ""
-    },
-    description: "",
-    insecure: false,
-    name: "",
-    type: "",
-    url: "",
-  };
   constructor(
     private fb: FormBuilder,
     private repService: ReplicationService,
@@ -138,20 +117,21 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     };
   }
 
+  initAdapter(type: string): void {
+    this.repService.getReplicationAdapter(type).subscribe(adapter => {
+      this.supportedFilters = adapter.supported_resource_filters;
+      this.supportedTriggers = adapter.supported_triggers;
+    });
+  }
+
   ngOnInit(): void {
-    if (this.withAdmiral) {
-      this.filterSelect = ["type", "repository", "tag"];
-    }
-
-
     this.endpointService.getEndpoints().subscribe(endPoints => {
       this.targetList = endPoints || [];
       this.sourceList = endPoints || [];
     }, error => {
       this.errorHandler.error(error);
     });
-
-
+    this.initAdapter("harbor");
     this.nameChecker
       .pipe(debounceTime(300))
       .pipe(distinctUntilChanged())
@@ -178,50 +158,22 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       });
   }
 
+  modeChange(): void {
+    if (this.isPushMode) {
+      this.initAdapter("harbor");
+    }
+  }
+
 
   sourceChange($event): void {
-    if ($event && $event.target) {
-      if ($event.target["value"] === "-1") {
-        this.noSelectedEndpoint = true;
-        return;
-      }
-      let selecedTarget: Endpoint = this.sourceList.find(
-        source => source.id === +$event.target["value"]
-      );
-      this.noSelectedEndpoint = false;
-    }
+    this.noSelectedEndpoint = false;
+    let selectId = this.ruleForm.get('src_registry_id').value;
+    let selecedTarget: Endpoint = this.sourceList.find(
+      source => source.id === selectId
+    );
 
-    this.proNameChecker
-      .pipe(debounceTime(500))
-      .pipe(distinctUntilChanged())
-      .subscribe((resp: string) => {
-        let name = this.ruleForm.controls["projects"].value[0].name;
-        this.noProjectInfo = "";
-        this.selectedProjectList = [];
-        this.proService.listProjects(name, undefined)
-          .subscribe((res: any) => {
-            if (res) {
-              this.selectedProjectList = res.slice(0, 10);
-              // if input value exit in project list
-              let pro = res.find((data: any) => data.name === name);
-              if (!pro) {
-                this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-                this.noSelectedProject = true;
-              } else {
-                this.noProjectInfo = "";
-                this.noSelectedProject = false;
-                this.setProject([pro]);
-              }
-            } else {
-              this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-              this.noSelectedProject = true;
-            }
-          }, (error: any) => {
-            this.errorHandler.error(error);
-            this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-            this.noSelectedProject = true;
-          });
-      });
+    this.initAdapter(selecedTarget.type);
+
   }
 
   ngOnDestroy(): void {
@@ -230,9 +182,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
     if (this.nameChecker) {
       this.nameChecker.unsubscribe();
-    }
-    if (this.proNameChecker) {
-      this.proNameChecker.unsubscribe();
     }
   }
   get src_namespaces(): FormArray { return this.ruleForm.get('src_namespaces') as FormArray; }
@@ -255,7 +204,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       dest_registry_id: new FormControl(),
       dest_namespace: "",
       trigger: this.fb.group({
-        kind: this.triggerNames[0],
+        kind: '',
         schedule_param: this.fb.group({
           cron: ""
         })
@@ -265,12 +214,24 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     });
   }
 
+  selectTrigger($event: any): void {
+
+  }
+
+  isNotSchedule(): boolean {
+    return this.ruleForm.get("trigger").get("kind").value !== this.TRIGGER_TYPES.SCHEDULED;
+  }
+
+  isNotEventBased(): boolean {
+    return this.ruleForm.get("trigger").get("kind").value !== this.TRIGGER_TYPES.EVENT_BASED;
+  }
+
   initForm(): void {
     this.ruleForm.reset({
       name: "",
       description: "",
       trigger: {
-        kind: this.triggerNames[0],
+        kind: this.supportedTriggers[0],
         schedule_param: {
           cron: ""
         }
@@ -278,7 +239,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       deletion: false
     });
     this.setFilter([]);
-
     this.copyUpdateForm = clone(this.ruleForm.value);
   }
 
@@ -345,15 +305,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  get projects(): FormArray {
-    return this.ruleForm.get("projects") as FormArray;
-  }
-  setProject(projects: Project[]) {
-    const projectFGs = projects.map(project => this.fb.group(project));
-    const projectFormArray = this.fb.array(projectFGs);
-    this.ruleForm.setControl("projects", projectFormArray);
-  }
-
   get filters(): FormArray {
     return this.ruleForm.get("filters") as FormArray;
   }
@@ -362,8 +313,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     const filterFormArray = this.fb.array(filterFGs);
     this.ruleForm.setControl("filters", filterFormArray);
   }
-
-
 
   initFilter(name: string) {
     return this.fb.group({
@@ -434,14 +383,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Handle the form validation
-  handleValidation(): void {
-    let cont = this.ruleForm.controls["projects"];
-    if (cont && cont.valid) {
-      this.proNameChecker.next(cont.value[0].name);
-    }
-  }
-
   focusClear($event: any): void {
     if (this.policyId < 0 && this.firstClick === 0) {
       if ($event && $event.target && $event.target["value"]) {
@@ -453,25 +394,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   leaveInput() {
     this.selectedProjectList = [];
-  }
-
-  selectedProjectName(projectName: string) {
-    this.noSelectedProject = false;
-    let pro: Project = this.selectedProjectList.find(
-      data => data.name === projectName
-    );
-    this.setProject([pro]);
-    this.selectedProjectList = [];
-    this.noProjectInfo = "";
-  }
-
-  selectedProject(project: Project): void {
-    if (!project) {
-      this.noSelectedProject = true;
-    } else {
-      this.noSelectedProject = false;
-      this.setProject([project]);
-    }
   }
 
   addNewNamespace(): void {
@@ -541,26 +463,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectTrigger($event: any): void {
-    if ($event && $event.target && $event.target["value"]) {
-      let val: string = $event.target["value"];
-      if (val === this.triggerNames[2]) {
-        this.isScheduleOpt = true;
-        this.isImmediate = false;
-      }
-      if (val === this.triggerNames[1]) {
-        this.isScheduleOpt = false;
-        this.isImmediate = true;
-      }
-      if (val === this.triggerNames[0]) {
-        this.isScheduleOpt = false;
-        this.isImmediate = false;
-      }
-    }
-  }
-
   // Replication Schedule select value exchange
   selectSchedule($event: any): void {
+
   }
 
   checkRuleName(): void {
@@ -634,7 +539,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     // add new Replication rule
     this.inProgress = true;
     let copyRuleForm: ReplicationRule = this.ruleForm.value;
-    copyRuleForm.trigger = null;
     if (this.isPushMode) {
       copyRuleForm.src_registry_id = null;
     } else {
@@ -688,8 +592,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.deletedLabelCount = 0;
 
     this.weeklySchedule = false;
-    this.isScheduleOpt = false;
-    this.isImmediate = false;
     this.policyId = -1;
     this.createEditRuleOpened = true;
     this.filterLabelInfo = [];

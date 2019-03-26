@@ -10,7 +10,8 @@ import {
   ReplicationJob,
   ReplicationRule,
   ReplicationJobItem,
-  ReplicationTasks
+  ReplicationTasks,
+  Adapter
 } from "./interface";
 import { RequestQueryParams } from "./RequestQueryParams";
 import { map, catchError } from "rxjs/operators";
@@ -140,6 +141,9 @@ export abstract class ReplicationService {
     ruleId: number | string
   ): Observable<any>;
 
+
+  abstract getReplicationAdapter(type: string): Observable<Adapter>;
+
   /**
    * Get the jobs for the specified replication rule.
    * Set query parameters through 'queryParams', support:
@@ -202,7 +206,7 @@ export class ReplicationDefaultService extends ReplicationService {
       : "/api/replication/policies";
     this._replicateUrl = config.replicationBaseEndpoint
       ? config.replicationBaseEndpoint
-      : "/api/replication/executions";
+      : "/api/replication";
   }
 
   // Private methods
@@ -216,6 +220,14 @@ export class ReplicationDefaultService extends ReplicationService {
       rule.src_namespaces && rule.src_namespaces.length > 0 &&
       (!!rule.dest_registry_id || !!rule.src_registry_id)
     );
+  }
+
+  public getReplicationAdapter(type): Observable<Adapter> {
+    let requestUrl: string = `${this._replicateUrl}/adapters/${type}`;
+    return this.http
+      .get(requestUrl)
+      .pipe(map(response => response.json() as Adapter)
+        , catchError(error => observableThrowError(error)));
   }
 
   public getJobBaseUrl() {

@@ -31,7 +31,7 @@
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.REPLI_MODE' | translate}}</label>
           <div class="radio" style="display:inherit;">
-            <input type="radio" id="push_base" name="replicationMode" [value]=true [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
+            <input type="radio" id="push_base" name="replicationMode" [value]=true [(ngModel)]="isPushMode" (change)="modeChange()"  [ngModelOptions]="{standalone: true}">
             <label for="push_base">Push-based</label>
             <input type="radio" id="pull_base" name="replicationMode" [value]=false [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
             <label for="pull_base">Pull-based</label>
@@ -127,14 +127,12 @@
             <!--on trigger-->
             <div class="select floatSetPar">
               <select id="ruleTrigger" formControlName="kind" (change)="selectTrigger($event)">
-                <option value="Manual">{{'REPLICATION.MANUAL' | translate}}</option>
-                <option value="Immediate">{{'REPLICATION.IMMEDIATE' | translate}}</option>
-                <option value="Scheduled">{{'REPLICATION.SCHEDULE' | translate}}</option>
+                  <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{trigger }}</option>
               </select>
             </div>
             <!--on push-->
             <div formGroupName="schedule_param">
-              <div [hidden]="!isScheduleOpt">
+              <div [hidden]="isNotSchedule()">
                 <label>Cron String</label>
                 <label for="targetCron" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right">
                   <input type="text" name=targetCron id="targetCron" required class="form-control cron-input" formControlName="cron">
@@ -145,7 +143,7 @@
               </div>
             </div>
           </div>
-          <div [hidden]="!isImmediate" class="clr-form-control rule-width">
+          <div [hidden]="isNotEventBased()" class="clr-form-control rule-width">
             <clr-checkbox-wrapper>
               <input type="checkbox" clrCheckbox [checked]="false" id="ruleDeletion" formControlName="deletion" class="clr-checkbox">
               <label for="ruleDeletion" class="clr-control-label">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>

@@ -87,15 +87,17 @@ export interface Endpoint extends Base {
   url: string;
 }
 
+export interface Filter {
+   type: string;
+   style: string;
+   values ?: string[];
+}
+
 export interface Adapter extends Base {
   type: string;
   description: string;
-  supported_resource_types: [
-    string
-  ];
-  supported_resource_filters: [
-    string
-  ];
+  supported_triggers: string [];
+  supported_resource_filters: Filter [];
 }
 
 /**

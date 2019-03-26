@@ -49,7 +49,7 @@ export class JobLogDefaultService extends JobLogService {
     super();
     this._replicationJobBaseUrl = config.replicationBaseEndpoint
       ? config.replicationBaseEndpoint
-      : "/api/replication/executions";
+      : "/api/replication";
     this._scanningJobBaseUrl = config.scanJobEndpoint
       ? config.scanJobEndpoint
       : "/api/jobs/scan";

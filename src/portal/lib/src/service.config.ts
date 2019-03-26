@@ -55,11 +55,6 @@ export interface IServiceConfig {
     replicationBaseEndpoint?: string;
 
     /**
-     * The base endpoint of the service used to handle the adapters.
-     */
-    adapterEndpoint?: string;
-
-    /**
      * The base endpoint of the service used to handle the replication rules.
      * Replication rule related endpoints will be built based on this endpoint.
      * E.g:

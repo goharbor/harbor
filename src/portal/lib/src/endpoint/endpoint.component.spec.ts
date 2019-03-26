@@ -93,13 +93,16 @@ describe("EndpointComponent (inline template)", () => {
     }
   ];
 
-  let mockAdapter: [Adapter] = [{
+  let mockAdapters: Adapter[] = [{
     type: "Harbor",
     description: "test",
-    supported_resource_types: [
-      "repository"
+    supported_resource_filters: [
+      {
+        "type": "Name",
+        "style": "input"
+      }
     ],
-    supported_resource_filters: null
+    supported_triggers: []
   }];
 
   let comp: EndpointComponent;
@@ -143,7 +146,7 @@ describe("EndpointComponent (inline template)", () => {
     );
 
     spyAdapter = spyOn(endpointService, "getAdapters").and.returnValue(
-      of(mockAdapter)
+      of(mockAdapters)
     );
 
     spyOnRules = spyOn(

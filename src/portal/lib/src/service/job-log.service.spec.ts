@@ -6,7 +6,7 @@ import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 
 describe('JobLogService', () => {
   const mockConfig: IServiceConfig = {
-    replicationBaseEndpoint: "/api/replication/executions/testing",
+    replicationBaseEndpoint: "/api/replication/testing",
     scanJobEndpoint: "/api/jobs/scan/testing"
   };
 
@@ -33,7 +33,7 @@ describe('JobLogService', () => {
 
   it('should be initialized', inject([JobLogDefaultService], (service: JobLogService) => {
     expect(service).toBeTruthy();
-    expect(config.replicationBaseEndpoint).toEqual("/api/replication/executions/testing");
+    expect(config.replicationBaseEndpoint).toEqual("/api/replication/testing");
     expect(config.scanJobEndpoint).toEqual("/api/jobs/scan/testing");
   }));
 });
