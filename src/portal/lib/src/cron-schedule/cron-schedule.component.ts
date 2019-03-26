@@ -8,6 +8,7 @@ import {
   SimpleChange
 } from "@angular/core";
 import { OriginCron } from "../service/interface";
+import { cronRegex } from "../utils";
 const SCHEDULE_TYPE = {
   NONE: "None",
   DAILY: "Daily",
@@ -24,6 +25,7 @@ export class CronScheduleComponent implements OnChanges {
   @Input() originCron: OriginCron;
   @Input() labelEdit: string;
   @Input() labelCurrent: string;
+  dateInvalid: boolean;
   originScheduleType: string;
   oriCron: string;
   cronString: string;
@@ -52,13 +54,26 @@ export class CronScheduleComponent implements OnChanges {
     }
   }
 
+  inputInvalid() {
+    this.dateInvalid = cronRegex(this.cronString) ? false : true;
+  }
+
+  blurInvalid() {
+    if (!this.cronString) {
+      this.dateInvalid = true;
+    }
+  }
+
   public resetSchedule() {
     this.originScheduleType = this.scheduleType;
-    this.oriCron = this.cronString;
+    this.oriCron = this.cronString.replace(/\s+/g, " ").trim();
     this.isEditMode = false;
   }
 
   save(): void {
+    if (this.dateInvalid && this.scheduleType === SCHEDULE_TYPE.CUSTOM) {
+      return;
+    }
     let scheduleTerm: string = "";
     this.resetSchedule();
     if (this.scheduleType && this.scheduleType === SCHEDULE_TYPE.NONE) {

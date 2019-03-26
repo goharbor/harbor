@@ -31,11 +31,11 @@
     </select>
   </div>
   <span [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
-  <div class="form-group" [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">
-    <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="cronStringInput.invalid && (cronStringInput.dirty || cronStringInput.touched)" class="tooltip tooltip-validation tooltip-md tooltip-top-right cron-label">
-      <input type="text"  name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
+  <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">
+    <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="dateInvalid" class="tooltip tooltip-validation tooltip-md tooltip-top-right cron-label">
+      <input type="text"  (blur)="blurInvalid()" (input)="inputInvalid()" name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
         [(ngModel)]="cronString">
-      <span class="tooltip-content">
+      <span class="tooltip-content" *ngIf="dateInvalid">
         {{'TOOLTIP.CRON_REQUIRED' | translate }}
       </span>
     </label>
