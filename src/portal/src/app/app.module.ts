@@ -40,7 +40,7 @@ registerLocaleData(localeFr, 'fr-fr');
 export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
     return () => {
         skinableService.getCustomFile();
-        configService.load();
+        configService.load().subscribe();
     };
 }
 

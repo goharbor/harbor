@@ -283,7 +283,7 @@ export class ChartVersionComponent implements OnInit {
       ConfirmationTargets.HELM_CHART_VERSION,
       ConfirmationButtons.DELETE_CANCEL
     );
-    this.confirmationDialog.openMessage(message);
+    this.confirmationDialog.open(message);
     let hnd = setInterval(() => this.cdr.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 2000);
   }

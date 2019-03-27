@@ -54,8 +54,8 @@ export class GcComponent implements OnInit {
   }
 
   public initSchedule(schedule: any) {
-    if (schedule && schedule.length > 0) {
-      this.schedule = schedule[0];
+    if (schedule && schedule.schedule !== null) {
+      this.schedule = schedule;
       this.originCron = this.schedule.schedule;
     } else {
       this.originCron = {

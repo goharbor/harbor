@@ -15,14 +15,14 @@
   </a>
   <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
   <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
-  <button class="btn btn-outline btn-sm" (click)="editSchedule()">
+  <button class="btn btn-outline btn-sm" (click)="editSchedule()" id="editSchedule">
     {{ "BUTTON.EDIT" | translate }}
   </button>
 </div>
 <div class="setting-wrapper flex-layout" *ngIf="isEditMode">
   <span class="font-style">{{ labelEdit | translate }}</span>
   <div class="select select-schedule">
-    <select name="gcPolicy" [(ngModel)]="scheduleType">
+    <select name="selectPolicy" id="selectPolicy" [(ngModel)]="scheduleType">
       <option [value]="SCHEDULE_TYPE.NONE">{{'SCHEDULE.NONE' | translate}}</option>
       <option [value]="SCHEDULE_TYPE.HOURLY">{{'SCHEDULE.HOURLY' | translate}}</option>
       <option [value]="SCHEDULE_TYPE.DAILY">{{'SCHEDULE.DAILY' | translate}}</option>
@@ -31,9 +31,9 @@
     </select>
   </div>
   <span [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
-  <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM" >
-    <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="cronStringInput.invalid && (cronStringInput.dirty || cronStringInput.touched)" class="tooltip tooltip-validation tooltip-md tooltip-top-right">
-      <input type="text"  name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control cron-input"
+  <div class="form-group" [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">
+    <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="cronStringInput.invalid && (cronStringInput.dirty || cronStringInput.touched)" class="tooltip tooltip-validation tooltip-md tooltip-top-right cron-label">
+      <input type="text"  name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
         [(ngModel)]="cronString">
       <span class="tooltip-content">
         {{'TOOLTIP.CRON_REQUIRED' | translate }}
@@ -41,10 +41,10 @@
     </label>
   </div>
   <button class="btn btn-primary btn-sm"
-    (click)="save()">
+    (click)="save()" id="config-save">
     {{ "BUTTON.SAVE" | translate }}
   </button>
-  <button class="btn btn-primary btn-sm" (click)="isEditMode= false">
+  <button class="btn btn-primary btn-sm" (click)="isEditMode=false">
     {{ "BUTTON.CANCEL" | translate }}
   </button>
 </div>
