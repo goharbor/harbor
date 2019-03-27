@@ -65,12 +65,17 @@
         "ITEM_REQUIRED": "Campo é obrigatório.",
         "NUMBER_REQUIRED": "Campo é obrigatório e deve ser numerico.",
         "PORT_REQUIRED": "Campo é obrigatório e deve ser um número de porta válido.",
-        "CRON_REQUIRED": "O campo é obrigatório e deve estar no formato cron.",        
+        "CRON_REQUIRED": "O campo é obrigatório e deve estar no formato cron.",
         "EMAIL_EXISTING": "Email já existe.",
         "USER_EXISTING": "Nome de usuário já está em uso.",
         "RULE_USER_EXISTING": "Nome já em uso.",
         "EMPTY": "Nome é obrigatório",
-        "ENDPOINT_FORMAT": "Avaliação deve começar por HTTP Ou HTTPS."
+        "ENDPOINT_FORMAT": "Avaliação deve começar por HTTP Ou HTTPS.",
+        "OIDC_ENDPOIT_FORMAT": "Avaliação deve começar por HTTPS.",
+        "OIDC_NAME": "O Nome do prestador de oidc.",
+        "OIDC_ENDPOINT": "A URL de um servidor oidc denúncia.",
+        "OIDC_SCOPE": "O âmbito de aplicação enviada Ao servidor oidc Durante a autenticação.TEM que conter 'openid' e 'offline_access'.Se você está usando o Google, por favor remova 'offline_access' desse Campo.",
+        "OIDC_SKIPCERTVERIFY": "Assinale esta opção se o SEU servidor está hospedado oidc via self - signed certificate."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Insira a senha atual",
@@ -615,6 +620,7 @@
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
         "AUTH_MODE_HTTP": "http_auth",
+        "AUTH_MODE_OIDC": "OIDC",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "OneLevel",
         "SCOPE_SUBTREE": "Subtree",
@@ -676,6 +682,14 @@
             "ENDPOINT": "server endpoint",
             "ALWAYS_ONBOARD": "Sempre Onboard",
             "VERIFY_CERT": "Verificar certificado de Authentication"
+        },
+        "OIDC": {
+            "OIDC_PROVIDER": "OIDC Fornecedor",
+            "ENDPOINT": "OIDC Endpoint",
+            "CLIENT_ID": "ID de cliente OIDC",
+            "CLIENTSECRET": "OIDC Client Secret",
+            "SCOPE": "Escopo OIDC",
+            "OIDCSKIPCERTVERIFY": "Verificar certificado OIDC"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Disparo de análise geral efetuado com sucesso!",

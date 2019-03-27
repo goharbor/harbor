@@ -147,6 +147,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
                 configurations.email_password = new StringValueItem(fakePass, true);
                 configurations.ldap_search_password = new StringValueItem(fakePass, true);
                 configurations.uaa_client_secret = new StringValueItem(fakePass, true);
+                configurations.oidc_client_secret = new StringValueItem(fakePass, true);
                 this.allConfig = configurations;
                 // Keep the original copy of the data
                 this.originalCopy = clone(configurations);
