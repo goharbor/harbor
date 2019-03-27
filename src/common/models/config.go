@@ -72,6 +72,17 @@ type HTTPAuthProxy struct {
 	AlwaysOnBoard  bool   `json:"always_onboard"`
 }
 
+// OIDCSetting wraps the settings for OIDC auth endpoint
+type OIDCSetting struct {
+	Name           string   `json:"name"`
+	Endpoint       string   `json:"endpoint"`
+	SkipCertVerify bool     `json:"skip_cert_verify"`
+	ClientID       string   `json:"client_id"`
+	ClientSecret   string   `json:"client_secret"`
+	RedirectURL    string   `json:"redirect_url"`
+	Scope          []string `json:"scope"`
+}
+
 // ConfigEntry ...
 type ConfigEntry struct {
 	ID    int64  `orm:"pk;auto;column(id)" json:"-"`

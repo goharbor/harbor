@@ -241,3 +241,25 @@ func TestHTTPAuthProxySetting(t *testing.T) {
 		SkipCertVerify: true,
 	})
 }
+
+func TestOIDCSetting(t *testing.T) {
+	m := map[string]interface{}{
+		common.OIDCName:           "test",
+		common.OIDCEndpoint:       "https://oidc.test",
+		common.OIDCSkipCertVerify: "true",
+		common.OIDCScope:          "openid, profile",
+		common.OIDCCLientID:       "client",
+		common.OIDCClientSecret:   "secret",
+		common.ExtEndpoint:        "https://harbor.test",
+	}
+	InitWithSettings(m)
+	v, e := OIDCSetting()
+	assert.Nil(t, e)
+	assert.Equal(t, "test", v.Name)
+	assert.Equal(t, "https://oidc.test", v.Endpoint)
+	assert.True(t, v.SkipCertVerify)
+	assert.Equal(t, "client", v.ClientID)
+	assert.Equal(t, "secret", v.ClientSecret)
+	assert.Equal(t, "https://harbor.test/c/oidc_callback", v.RedirectURL)
+	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
+}
