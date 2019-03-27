@@ -1,4 +1,4 @@
-FROM node:10.7.0 as nodeportal
+FROM node:10.15.0 as nodeportal
 
 RUN mkdir -p /portal_src
 RUN mkdir -p /build_dir
