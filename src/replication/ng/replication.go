@@ -20,11 +20,12 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	cfg "github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/replication/ng/config"
-	"github.com/goharbor/harbor/src/replication/ng/execution"
 	"github.com/goharbor/harbor/src/replication/ng/operation"
+	"github.com/goharbor/harbor/src/replication/ng/operation/execution"
+	"github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
 	"github.com/goharbor/harbor/src/replication/ng/policy"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
-	"github.com/goharbor/harbor/src/replication/ng/scheduler"
+
 	// register the Harbor adapter
 	_ "github.com/goharbor/harbor/src/replication/ng/adapter/harbor"
 )

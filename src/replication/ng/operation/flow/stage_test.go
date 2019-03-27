@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/config"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
-	"github.com/goharbor/harbor/src/replication/ng/scheduler"
+	"github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

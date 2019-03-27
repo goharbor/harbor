@@ -19,10 +19,10 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
-	"github.com/goharbor/harbor/src/replication/ng/execution"
 	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/operation/execution"
+	"github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
-	"github.com/goharbor/harbor/src/replication/ng/scheduler"
 )
 
 type copyFlow struct {
