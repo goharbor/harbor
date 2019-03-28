@@ -101,6 +101,14 @@
   version = "v1.7.0"
 
 [[projects]]
+  digest = "1:f6e5e1bc64c2908167e6aa9a1fe0c084d515132a1c63ad5b6c84036aa06dc0c1"
+  name = "github.com/coreos/go-oidc"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "1180514eaf4d9f38d0d19eef639a1d695e066e72"
+  version = "v2.0.0"
+
+[[projects]]
   digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -405,6 +413,17 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:bd9efe4e0b0f768302a1e2f0c22458149278de533e521206e5ddc71848c269a0"
+  name = "github.com/pquerna/cachecontrol"
+  packages = [
+    ".",
+    "cacheobject",
+  ]
+  pruneopts = "UT"
+  revision = "1555304b9b35fdd2b425bccf1a5613677705e7d0"
+
+[[projects]]
   digest = "1:3f68283c56d93b885f33c679708079e834815138649e9f59ffbc572c2993e0f8"
   name = "github.com/robfig/cron"
   packages = ["."]
@@ -433,10 +452,12 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:9c94d918a2ac65f60d6b7895b2e9612e4554b40ee2446f2f807cadb3e57da7e2"
+  digest = "1:ab3259b9f5008a18ff8c1cc34623eccce354f3a9faf5b409983cd6717d64b40b"
   name = "golang.org/x/crypto"
   packages = [
     "cast5",
+    "ed25519",
+    "ed25519/internal/edwards25519",
     "openpgp",
     "openpgp/armor",
     "openpgp/clearsign",
@@ -528,6 +549,18 @@
   pruneopts = "UT"
   revision = "8168ee085ee43257585e50c6441aadf54ecb2c9f"
   version = "v2.5.0"
+
+[[projects]]
+  digest = "1:c0c30f47f9c16f227ba82f0bdfd14fa968453c30b7677a07903b3b4f34b98d49"
+  name = "gopkg.in/square/go-jose.v2"
+  packages = [
+    ".",
+    "cipher",
+    "json",
+  ]
+  pruneopts = "UT"
+  revision = "628223f44a71f715d2881ea69afc795a1e9c01be"
+  version = "v2.3.0"
 
 [[projects]]
   digest = "1:2a81c6e126d36ad027328cffaa4888fc3be40f09dc48028d1f93705b718130b9"
@@ -685,6 +718,7 @@
     "github.com/casbin/casbin/model",
     "github.com/casbin/casbin/persist",
     "github.com/casbin/casbin/util",
+    "github.com/coreos/go-oidc",
     "github.com/dghubble/sling",
     "github.com/dgrijalva/jwt-go",
     "github.com/docker/distribution",
