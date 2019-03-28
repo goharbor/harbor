@@ -16,12 +16,15 @@ package oidc
 
 import (
 	"context"
+	"crypto/tls"
+	"errors"
 	"fmt"
 	gooidc "github.com/coreos/go-oidc"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"golang.org/x/oauth2"
+	"net/http"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -32,14 +35,20 @@ const googleEndpoint = "https://accounts.google.com"
 
 type providerHelper struct {
 	sync.Mutex
-	ep       atomic.Value
+	ep       endpoint
 	instance atomic.Value
 	setting  atomic.Value
 }
 
+type endpoint struct {
+	url            string
+	skipCertVerify bool
+}
+
 func (p *providerHelper) get() (*gooidc.Provider, error) {
 	if p.instance.Load() != nil {
-		if p.ep.Load().(string) != p.setting.Load().(models.OIDCSetting).Endpoint {
+		s := p.setting.Load().(models.OIDCSetting)
+		if s.Endpoint != p.ep.url || s.SkipCertVerify != p.ep.skipCertVerify { // relevant settings have changed, need to re-create provider.
 			if err := p.create(); err != nil {
 				return nil, err
 			}
@@ -48,7 +57,7 @@ func (p *providerHelper) get() (*gooidc.Provider, error) {
 		p.Lock()
 		defer p.Unlock()
 		if p.instance.Load() == nil {
-			if err := p.loadConf(); err != nil {
+			if err := p.reload(); err != nil {
 				return nil, err
 			}
 			if err := p.create(); err != nil {
@@ -56,42 +65,66 @@ func (p *providerHelper) get() (*gooidc.Provider, error) {
 			}
 			go func() {
 				for {
-					if err := p.loadConf(); err != nil {
-						log.Warningf(err.Error())
+					if err := p.reload(); err != nil {
+						log.Warningf("Failed to refresh configuration, error: %v", err)
 					}
 					time.Sleep(3 * time.Second)
 				}
 			}()
 		}
 	}
-
 	return p.instance.Load().(*gooidc.Provider), nil
-
 }
 
-func (p *providerHelper) loadConf() error {
-	var c *models.OIDCSetting
-	c, err := config.OIDCSetting()
+func (p *providerHelper) reload() error {
+	conf, err := config.OIDCSetting()
 	if err != nil {
 		return fmt.Errorf("failed to load OIDC setting: %v", err)
 	}
-	p.setting.Store(*c)
+	p.setting.Store(*conf)
 	return nil
 }
 
 func (p *providerHelper) create() error {
-	bc := context.Background()
-	s := p.setting.Load().(models.OIDCSetting)
-	provider, err := gooidc.NewProvider(bc, s.Endpoint)
-	if err != nil {
-		return err
+	if p.setting.Load() == nil {
+		return errors.New("the configuration is not loaded")
 	}
-	p.ep.Store(s.Endpoint)
+	s := p.setting.Load().(models.OIDCSetting)
+	var client *http.Client
+	if s.SkipCertVerify {
+		client = &http.Client{
+			Transport: insecureTransport,
+		}
+	} else {
+		client = &http.Client{}
+	}
+	ctx := context.Background()
+	gooidc.ClientContext(ctx, client)
+	provider, err := gooidc.NewProvider(ctx, s.Endpoint)
+	if err != nil {
+		return fmt.Errorf("failed to create OIDC provider, error: %v", err)
+	}
 	p.instance.Store(provider)
+	p.ep = endpoint{
+		url:            s.Endpoint,
+		skipCertVerify: s.SkipCertVerify,
+	}
 	return nil
 }
 
 var provider = &providerHelper{}
+
+var insecureTransport = &http.Transport{
+	TLSClientConfig: &tls.Config{
+		InsecureSkipVerify: true,
+	},
+}
+
+// Token wraps the attributes of a oauth2 token plus the attribute of ID token
+type Token struct {
+	*oauth2.Token
+	IDToken string `json:"id_token"`
+}
 
 func getOauthConf() (*oauth2.Config, error) {
 	p, err := provider.get()
@@ -128,4 +161,28 @@ func AuthCodeURL(state string) (string, error) {
 		return conf.AuthCodeURL(state, oauth2.AccessTypeOffline), nil
 	}
 	return conf.AuthCodeURL(state), nil
+}
+
+// ExchangeToken get the token from token provider via the code
+func ExchangeToken(ctx context.Context, code string) (*Token, error) {
+	oauth, err := getOauthConf()
+	if err != nil {
+		log.Errorf("Failed to get OAuth configuration, error: %v", err)
+		return nil, err
+	}
+	oauthToken, err := oauth.Exchange(ctx, code)
+	if err != nil {
+		return nil, err
+	}
+	return &Token{Token: oauthToken, IDToken: oauthToken.Extra("id_token").(string)}, nil
+}
+
+// VerifyToken verifies the ID token based on the OIDC settings
+func VerifyToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, error) {
+	p, err := provider.get()
+	if err != nil {
+		return nil, err
+	}
+	verifier := p.Verifier(&gooidc.Config{ClientID: provider.setting.Load().(models.OIDCSetting).ClientID})
+	return verifier.Verify(ctx, rawIDToken)
 }

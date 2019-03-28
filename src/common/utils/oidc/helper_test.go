@@ -44,24 +44,23 @@ func TestMain(m *testing.M) {
 		os.Exit(result)
 	}
 }
-
 func TestHelperLoadConf(t *testing.T) {
 	testP := &providerHelper{}
 	assert.Nil(t, testP.setting.Load())
-	err := testP.loadConf()
+	err := testP.reload()
 	assert.Nil(t, err)
 	assert.Equal(t, "test", testP.setting.Load().(models.OIDCSetting).Name)
-	assert.Nil(t, testP.ep.Load())
+	assert.Equal(t, endpoint{}, testP.ep)
 }
 
 func TestHelperCreate(t *testing.T) {
 	testP := &providerHelper{}
-	err := testP.loadConf()
+	err := testP.reload()
 	assert.Nil(t, err)
 	assert.Nil(t, testP.instance.Load())
 	err = testP.create()
 	assert.Nil(t, err)
-	assert.EqualValues(t, "https://accounts.google.com", testP.ep.Load().(string))
+	assert.EqualValues(t, "https://accounts.google.com", testP.ep.url)
 	assert.NotNil(t, testP.instance.Load())
 }
 
