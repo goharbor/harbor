@@ -1,5 +1,5 @@
 .select {
-    width: 186px;
+    width: 190px;
 }
 
 .select .optionMore {
@@ -40,7 +40,7 @@ h4 {
 
 .endpointSelect {
     width: 270px;
-    margin-right: 20px;
+    margin-right: 10px;
 }
 
 .filterSelect {
@@ -49,11 +49,11 @@ h4 {
 }
 
 .filterSelect clr-icon {
-    margin-left: 15px;
+    margin-left: 10px;
 }
 
 .filterSelect label {
-    width: 136px;
+    width: 190px;
 }
 
 .filterSelect label input {
@@ -70,7 +70,7 @@ h4 {
 
 .floatSetPar {
     display: inline-block;
-    width: 120px;
+    width: 70px;
     margin-right: 10px;
 }
 
@@ -229,6 +229,10 @@ clr-modal {
     width:315px;
 }
 
-.mr-t-15 {
-    margin-top: 15px;
+.mr-t-10 {
+    margin-top: 10px;
+}
+
+.inline-block {
+    display: inline-block;
 }

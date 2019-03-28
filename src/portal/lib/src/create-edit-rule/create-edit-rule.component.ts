@@ -21,7 +21,7 @@ import {
   EventEmitter,
   Output
 } from "@angular/core";
-import { Filter, ReplicationRule, Endpoint, Label, Adapter } from "../service/interface";
+import { Filter, ReplicationRule, Endpoint, Adapter } from "../service/interface";
 import { Subject, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
@@ -31,9 +31,6 @@ import { ReplicationService } from "../service/replication.service";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { TranslateService } from "@ngx-translate/core";
 import { EndpointService } from "../service/endpoint.service";
-import { ProjectService } from "../service/project.service";
-import { Project } from "../project-policy-config/project";
-import { LabelState } from "../tag/tag.component";
 
 const ONE_HOUR_SECONDS = 3600;
 const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
@@ -47,14 +44,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   _localTime: Date = new Date();
   sourceList: Endpoint[] = [];
   targetList: Endpoint[] = [];
-  projectList: Project[] = [];
-  selectedProjectList: Project[] = [];
   isFilterHide = false;
   weeklySchedule: boolean;
-  noProjectInfo = "";
   noEndpointInfo = "";
   isPushMode = true;
-  noSelectedProject = true;
   noSelectedEndpoint = true;
   filterCount = 0;
   alertClosed = false;
@@ -63,7 +56,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     SCHEDULED: "Scheduled",
     EVENT_BASED: "EventBased"
   };
-  filterSelect: string[] = ["type", "repository", "tag", "label"];
+
   ruleNameTooltip = "REPLICATION.NAME_TOOLTIP";
   headerTitle = "REPLICATION.ADD_POLICY";
 
@@ -75,20 +68,12 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   nameChecker: Subject<string> = new Subject<string>();
   firstClick = 0;
   policyId: number;
-  labelInputVal = '';
-  filterLabelInfo: Label[] = [];  // store filter selected labels` id
-  deletedLabelCount = 0;
-  deletedLabelInfo: string;
   confirmSub: Subscription;
   ruleForm: FormGroup;
-  formArrayLabel: FormArray;
   copyUpdateForm: ReplicationRule;
   cronString: string;
   supportedTriggers: string[];
   supportedFilters: Filter[];
-
-  @Input() projectId: number;
-  @Input() projectName: string;
   @Input() withAdmiral: boolean;
 
   @Output() goToRegistry = new EventEmitter<any>();
@@ -100,27 +85,17 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     private repService: ReplicationService,
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
-    private proService: ProjectService,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef
   ) {
     this.createForm();
   }
 
-  baseFilterData(name: string, option: string[], state: boolean) {
-    return {
-      name: name,
-      options: option,
-      state: state,
-      isValid: true,
-      isOpen: false  // label list
-    };
-  }
-
   initAdapter(type: string): void {
     this.repService.getReplicationAdapter(type).subscribe(adapter => {
       this.supportedFilters = adapter.supported_resource_filters;
       this.supportedTriggers = adapter.supported_triggers;
+      this.ruleForm.get("trigger").get("kind").setValue(this.supportedTriggers[0]);
     });
   }
 
@@ -131,7 +106,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }, error => {
       this.errorHandler.error(error);
     });
-    this.initAdapter("harbor");
     this.nameChecker
       .pipe(debounceTime(300))
       .pipe(distinctUntilChanged())
@@ -195,7 +169,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   createForm() {
-    this.formArrayLabel = this.fb.array([]);
     this.ruleForm = this.fb.group({
       name: ["", Validators.required],
       description: "",
@@ -231,7 +204,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       name: "",
       description: "",
       trigger: {
-        kind: this.supportedTriggers[0],
+        kind: '',
         schedule_param: {
           cron: ""
         }
@@ -239,6 +212,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       deletion: false
     });
     this.setFilter([]);
+    this.initAdapter("harbor");
     this.copyUpdateForm = clone(this.ruleForm.value);
   }
 
@@ -252,11 +226,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       deletion: rule.deletion
     });
 
-    this.noSelectedProject = false;
     this.noSelectedEndpoint = false;
 
     if (rule.filters) {
-      this.reOrganizeLabel(rule.filters);
       this.setFilter(rule.filters);
       this.updateFilter(rule.filters);
     }
@@ -264,45 +236,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     // Force refresh view
     let hnd = setInterval(() => this.ref.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 2000);
-  }
-
-  // reorganize filter structure
-  reOrganizeLabel(filterLabels: any[]): void {
-    let count = 0;
-    if (filterLabels.length) {
-      this.filterLabelInfo = [];
-
-      let delLabel = '';
-      filterLabels.forEach((data: any) => {
-        if (data.kind === this.filterSelect[3]) {
-          if (!data.value.deleted) {
-            count++;
-            this.filterLabelInfo.push(data.value);
-          } else {
-            this.deletedLabelCount++;
-            delLabel += data.value.name + ',';
-          }
-        }
-      });
-
-      this.translateService.get('REPLICATION.DELETED_LABEL_INFO', {
-        param: delLabel
-      }).subscribe((res: string) => {
-        this.deletedLabelInfo = res;
-        this.alertClosed = false;
-      });
-
-      // delete api return label info, replace with label count
-      if (delLabel || count) {
-        let len = filterLabels.length;
-        for (let i = 0; i < len; i++) {
-          let lab = filterLabels.find(data => data.kind === this.filterSelect[3]);
-          if (lab) { filterLabels.splice(filterLabels.indexOf(lab), 1); }
-        }
-        filterLabels.push({ kind: 'label', value: count + ' labels' });
-        this.labelInputVal = count.toString();
-      }
-    }
   }
 
   get filters(): FormArray {
@@ -316,61 +249,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   initFilter(name: string) {
     return this.fb.group({
-      kind: name,
+      type: name,
       value: ''
     });
-  }
-
-  filterChange($event: any, selectedValue: string) {
-    if ($event && $event.target["value"]) {
-      let id: number = $event.target.id;
-      let name: string = $event.target.name;
-      let value: string = $event.target["value"];
-
-      const controlArray = <FormArray>this.ruleForm.get('filters');
-      this.filterListData.forEach((data, index) => {
-        if (index === +id) {
-          data.name = $event.target.name = value;
-        } else {
-          data.options.splice(data.options.indexOf(value), 1);
-        }
-        if (data.options.indexOf(name) === -1) {
-          data.options.push(name);
-        }
-
-        // if before select, $event is label
-        if (!this.withAdmiral && name === this.filterSelect[3] && data.name === value) {
-          this.labelInputVal = controlArray.controls[index].get('value').value.split(' ')[0];
-          data.isOpen = false;
-          controlArray.controls[index].get('value').setValue('');
-        }
-        // if before select, $event is  not label
-        if (!this.withAdmiral && data.name === this.filterSelect[2]) {
-          if (this.labelInputVal) {
-            controlArray.controls[index].get('value').setValue(this.labelInputVal + ' labels');
-          } else {
-            controlArray.controls[index].get('value').setValue('');
-          }
-
-          // this.labelInputVal = '';
-          data.isOpen = false;
-        }
-
-      });
-    }
-  }
-
-  // when input value is label, then open label panel
-  openLabelList(labelTag: string, indexId: number, $event: any) {
-    if (!this.withAdmiral && labelTag === this.filterSelect[3]) {
-      this.filterListData.forEach((data, index) => {
-        if (index === indexId) {
-          data.isOpen = true;
-        } else {
-          data.isOpen = false;
-        }
-      });
-    }
   }
 
   targetChange($event: any) {
@@ -392,10 +273,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  leaveInput() {
-    this.selectedProjectList = [];
-  }
-
   addNewNamespace(): void {
     this.src_namespaces.push(new FormControl());
   }
@@ -403,64 +280,22 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   deleteNamespace(index: number): void {
     this.src_namespaces.removeAt(index);
   }
+  getCurrentIndex(): number {
+    return this.filters.length;
+  }
 
   addNewFilter(): void {
-    const controlArray = <FormArray>this.ruleForm.get('filters');
-    if (this.filterCount === 0) {
-      this.filterListData.push(
-        this.baseFilterData(
-          this.filterSelect[0],
-          this.filterSelect.slice(),
-          true,
-        )
-      );
-      controlArray.push(this.initFilter(this.filterSelect[0]));
-    } else {
-      let nameArr: string[] = this.filterSelect.slice();
-      this.filterListData.forEach(data => {
-        nameArr.splice(nameArr.indexOf(data.name), 1);
-      });
-      // when add a new filter,the filterListData should change the options
-      this.filterListData.filter(data => {
-        data.options.splice(data.options.indexOf(nameArr[0]), 1);
-      });
-      this.filterListData.push(this.baseFilterData(nameArr[0], nameArr, true));
-      controlArray.push(this.initFilter(nameArr[0]));
-    }
-    this.filterCount += 1;
-    if (this.filterCount >= this.filterSelect.length) {
+    let index = this.getCurrentIndex();
+    this.filters.push(this.initFilter(this.supportedFilters[index].type));
+    if (index + 1 >= this.supportedFilters.length) {
       this.isFilterHide = true;
     }
-    if (controlArray.controls[this.filterCount - 1].get('kind').value === this.filterSelect[3] && this.labelInputVal) {
-      controlArray.controls[this.filterCount - 1].get('value').setValue(this.labelInputVal + ' labels');
-    }
-
   }
 
   // delete a filter
   deleteFilter(i: number): void {
-    if (i >= 0) {
-      let delFilter = this.filterListData.splice(i, 1)[0];
-      if (this.filterCount === this.filterSelect.length) {
-        this.isFilterHide = false;
-      }
-      this.filterCount -= 1;
-      if (this.filterListData.length) {
-        let optionVal = delFilter.name;
-        this.filterListData.filter(data => {
-          if (data.options.indexOf(optionVal) === -1) {
-            data.options.push(optionVal);
-          }
-        });
-      }
-      const control = <FormArray>this.ruleForm.get('filters');
-      if (control.controls[i].get('kind').value === this.filterSelect[2]) {
-        this.filterLabelInfo = [];
-        this.labelInputVal = "";
-      }
-      control.removeAt(i);
-      this.setFilter(control.value);
-    }
+    this.filters.removeAt(i);
+    this.isFilterHide = false;
   }
 
   // Replication Schedule select value exchange
@@ -478,57 +313,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   updateFilter(filters: any) {
-    let opt: string[] = this.filterSelect.slice();
-    filters.forEach((filter: any) => {
-      opt.splice(opt.indexOf(filter.kind), 1);
-    });
-    filters.forEach((filter: any) => {
-      let option: string[] = opt.slice();
-      option.unshift(filter.kind);
-      this.filterListData.push(this.baseFilterData(filter.kind, option, true));
-    });
-    this.filterCount = filters.length;
-    if (filters.length === this.filterSelect.length) {
-      this.isFilterHide = true;
-    }
-  }
-
-  selectedLabelList(selectedLabels: LabelState[], indexId: number) {
-    // set input value of filter label
-    const controlArray = <FormArray>this.ruleForm.get('filters');
-
-    this.filterListData.forEach((data, index) => {
-      if (data.name === this.filterSelect[2]) {
-        let labelsLength = selectedLabels.filter(lab => lab.iconsShow === true).length;
-        if (labelsLength > 0) {
-          controlArray.controls[index].get('value').setValue(labelsLength + ' labels');
-          this.labelInputVal = labelsLength.toString();
-        } else {
-          controlArray.controls[index].get('value').setValue('');
-        }
-      }
-    });
-
-    // store filter label info
-    this.filterLabelInfo = [];
-    selectedLabels.forEach(data => {
-      if (data.iconsShow === true) {
-        this.filterLabelInfo.push(data.label);
-      }
-    });
-  }
-
-  setFilterLabelVal(filters: any[]) {
-    let labels: any = filters.find(data => data.kind === this.filterSelect[2]);
-
-    if (labels) {
-      filters.splice(filters.indexOf(labels), 1);
-      let info: any[] = [];
-      this.filterLabelInfo.forEach(data => {
-        info.push({ kind: 'label', value: data.id });
-      });
-      filters.push.apply(filters, info);
-    }
   }
 
   public hasFormChange(): boolean {
@@ -544,8 +328,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     } else {
       copyRuleForm.dest_registry_id = null;
     }
-    // rewrite key name of label when filer contain labels.
-    if (copyRuleForm.filters) { this.setFilterLabelVal(copyRuleForm.filters); }
 
     if (this.policyId < 0) {
       this.repService
@@ -581,29 +363,19 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   openCreateEditRule(ruleId?: number | string): void {
     this.initForm();
     this.inlineAlert.close();
-    this.selectedProjectList = [];
     this.filterCount = 0;
     this.isFilterHide = false;
     this.filterListData = [];
     this.firstClick = 0;
-    this.noSelectedProject = true;
     this.noSelectedEndpoint = true;
     this.isRuleNameValid = true;
-    this.deletedLabelCount = 0;
 
     this.weeklySchedule = false;
     this.policyId = -1;
     this.createEditRuleOpened = true;
-    this.filterLabelInfo = [];
-    this.labelInputVal = '';
-
-    this.noProjectInfo = "";
     this.noEndpointInfo = "";
     if (this.targetList.length === 0) {
       this.noEndpointInfo = "REPLICATION.NO_ENDPOINT_INFO";
-    }
-    if (this.projectList.length === 0 && !this.projectName) {
-      this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
     }
 
     if (ruleId) {
@@ -655,18 +427,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     let initValueCopy: any = {};
     for (let key of Object.keys(formValue)) {
       initValueCopy[key] = initValue[key];
-    }
-
-    if (formValue.filters && formValue.filters.length > 0) {
-      formValue.filters.forEach((data, index) => {
-        if (data.kind === this.filterSelect[2]) {
-          formValue.filters.splice(index, 1);
-        }
-      });
-      // rewrite filter label
-      this.filterLabelInfo.forEach(data => {
-        formValue.filters.push({ kind: "label", pattern: "", value: data });
-      });
     }
 
     if (!compareValue(formValue, initValueCopy)) {

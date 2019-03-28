@@ -33,10 +33,7 @@ import {
   EndpointService,
   EndpointDefaultService
 } from "../service/endpoint.service";
-import {
-  ProjectDefaultService,
-  ProjectService
-} from "../service/project.service";
+
 import { OperationService } from "../operation/operation.service";
 import {FilterLabelComponent} from "./filter-label.component";
 import {LabelService} from "../service/label.service";
@@ -233,7 +230,6 @@ describe("CreateEditRuleComponent (inline template)", () => {
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ReplicationService, useClass: ReplicationDefaultService },
         { provide: EndpointService, useClass: EndpointDefaultService },
-        { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: JobLogService, useClass: JobLogDefaultService },
         { provide: OperationService },
         { provide: LabelService }
@@ -275,7 +271,6 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
   it("Should open creation modal and load endpoints", async(() => {
     fixture.detectChanges();
-    compCreate.initAdapter("harbor");
     compCreate.openCreateEditRule();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -291,7 +286,6 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
   it("Should open modal to edit replication rule", async(() => {
     fixture.detectChanges();
-    compCreate.initAdapter("harbor");
     compCreate.openCreateEditRule(mockRule.id);
     fixture.whenStable().then(() => {
       fixture.detectChanges();

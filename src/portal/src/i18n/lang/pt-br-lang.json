@@ -445,7 +445,6 @@
         "REPLICATE_IMMEDIATE":"Replicar imagens existentes imediatamente",
         "NEW": "Novo",
         "NAME_TOOLTIP": "nome da regra de replicação deve conter ao menos 2 caracteres sendo caracteres minusculos, números e  ._- e devem iniciar com letras e números.",
-        "DELETED_LABEL_INFO": "Removidas as label(s) '{{param}}' referenciadas no filtro, clique 'SALVAR' para atualizar o filtro e habilitar essa regra.",
         "ACKNOWLEDGE": "Reconhecer",
         "RULE_DISABLED": "Essa regra foi desabilitada pois uma label usada no seu filtro foi removida. \n Edite a regra e atualize seu filtro para habilitá-la.",
         "REPLI_MODE": "Replication mode",
