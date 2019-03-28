@@ -60,6 +60,7 @@ Resource  Cert-Util.robot
 Resource  SeleniumUtil.robot
 Resource  Nightly-Util.robot
 Resource  APITest-Util.robot
+Resource  TestCaseBody.robot
 
 *** Keywords ***
 Wait Until Element Is Visible And Enabled
