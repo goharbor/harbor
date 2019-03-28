@@ -128,9 +128,12 @@
             "GROUP": "组管理",
             "REGISTRY": "仓库管理",
             "REPLICATION": "复制管理",
-            "CONFIG": "配置管理"
+            "CONFIG": "配置管理",
+            "VULNERABILITY": "漏洞",
+            "GARBAGE_COLLECTION": "垃圾清理"
         },
         "LOGS": "日志",
+        "TASKS": "任务",
         "API_EXPLORER": "API控制中心"
     },
     "USER": {

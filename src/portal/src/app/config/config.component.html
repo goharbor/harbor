@@ -32,22 +32,6 @@
 						</clr-tab-content>
 					</ng-template>
                 </clr-tab>
-                <clr-tab *ngIf="withClair">
-                    <button id="config-vulnerability" clrTabLink>{{'CONFIG.VULNERABILITY' | translate }}</button>
-					<ng-template [(clrIfActive)]="vulnerabilityActive">
-						<clr-tab-content id="vulnerability" *ngIf="withClair">
-							<vulnerability-config></vulnerability-config>
-						</clr-tab-content>
-					</ng-template>
-                </clr-tab>
-                <clr-tab *ngIf="hasAdminRole">
-                    <button id="config-gc" clrTabLink>{{'CONFIG.GC' | translate }}</button>
-					<ng-template [(clrIfActive)]="gcActive">
-						<clr-tab-content id="gc" *ngIf="hasAdminRole">
-							<gc-config></gc-config>
-						</clr-tab-content>
-					</ng-template>
-                </clr-tab>
         </clr-tabs>
     </div>
 </div>

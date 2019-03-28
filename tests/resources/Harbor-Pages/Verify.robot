@@ -173,7 +173,7 @@ Verify System Setting
     Switch To System Settings
     Page Should Contain  @{creation}[0]
     Token Must Be Match  @{token}[0]
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Page Should Contain  None
     Close Browser
 

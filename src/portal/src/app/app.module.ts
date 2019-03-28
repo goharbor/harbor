@@ -32,6 +32,8 @@ import zh from '@angular/common/locales/zh-Hans';
 import es from '@angular/common/locales/es';
 import localeFr from '@angular/common/locales/fr';
 import { DevCenterComponent } from './dev-center/dev-center.component';
+import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-page.component';
+import { GcPageComponent } from './gc-page/gc-page.component';
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
@@ -51,7 +53,9 @@ export function getCurrentLanguage(translateService: TranslateService) {
 @NgModule({
     declarations: [
         AppComponent,
-        ProjectConfigComponent
+        ProjectConfigComponent,
+        VulnerabilityPageComponent,
+        GcPageComponent
     ],
     imports: [
         BrowserModule,

@@ -115,9 +115,12 @@
             "USER": "Utilisateurs",
             "GROUP": "Groups",
             "REPLICATION": "Réplication",
-            "CONFIG": "Configuration"
+            "CONFIG": "Configuration",
+            "VULNERABILITY": "Vulnerability",
+            "GARBAGE_COLLECTION": "Garbage Collection"
         },
         "LOGS": "Logs",
+        "TASKS": "Tasks",
         "API_EXPLORER": "API EXPLORER"
     },
     "USER": {
@@ -874,7 +877,7 @@
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",
         "GC_NOW": "GC NOW",
-        "JOB_HISTORY": "GC Jobs History",
+        "JOB_HISTORY": "GC History",
         "JOB_ID": "Job ID",
         "TRIGGER_TYPE": "Trigger Type",
         "LATEST_JOBS": "Latest {{param}} Jobs",
