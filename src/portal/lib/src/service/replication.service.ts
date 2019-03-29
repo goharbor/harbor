@@ -278,7 +278,7 @@ export class ReplicationDefaultService extends ReplicationService {
     if (!executionId) {
       return observableThrowError("Bad argument");
     }
-    let url: string = `${this._replicateUrl}/${executionId}/tasks`;
+    let url: string = `${this._replicateUrl}/executions/${executionId}/tasks`;
     return this.http
       .get(url, HTTP_GET_OPTIONS)
       .pipe(map(response => response.json() as ReplicationTasks)
@@ -385,10 +385,10 @@ export class ReplicationDefaultService extends ReplicationService {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
-
+    let url: string = `${this._replicateUrl}/executions`;
     queryParams.set("policy_id", "" + ruleId);
     return this.http
-      .get(this._replicateUrl, buildHttpRequestOptions(queryParams))
+      .get(url, buildHttpRequestOptions(queryParams))
       .pipe(map(response => {
         let result: ReplicationJob = {
           metadata: {
@@ -435,7 +435,7 @@ export class ReplicationDefaultService extends ReplicationService {
     if (!jobId || jobId <= 0) {
       return observableThrowError("Bad request argument.");
     }
-    let requestUrl: string = `${this._replicateUrl}/${jobId}`;
+    let requestUrl: string = `${this._replicateUrl}/executions/${jobId}`;
 
     return this.http
       .put(

@@ -15,8 +15,23 @@ import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { ReplicationService, ReplicationDefaultService } from '../service/replication.service';
 import { OperationService } from "../operation/operation.service";
 import { of } from 'rxjs';
+import { EndpointService, EndpointDefaultService } from "../service/endpoint.service";
+import { Endpoint } from "../service/interface";
 
 describe('ListReplicationRuleComponent (inline template)', () => {
+  let mockEndpoint: Endpoint = {
+    id: 1,
+    credential: {
+      access_key: "admin",
+      access_secret: "",
+      type: "basic"
+    },
+    description: "test",
+    insecure: false,
+    name: "target_01",
+    type: "Harbor",
+    url: "https://10.117.4.151"
+  };
 
   let mockRules: ReplicationRule[] = [
     {
@@ -49,10 +64,16 @@ describe('ListReplicationRuleComponent (inline template)', () => {
 
   let replicationService: ReplicationService;
 
+  let endpointService: EndpointService;
+
+
   let spyRules: jasmine.Spy;
 
+  let spyEndpoint: jasmine.Spy;
+
   let config: IServiceConfig = {
-    replicationRuleEndpoint: '/api/policies/replication/testing'
+    replicationRuleEndpoint: '/api/policies/replication/testing',
+    systemInfoEndpoint: "/api/endpoints/testing"
   };
 
   beforeEach(async(() => {
@@ -69,7 +90,8 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ReplicationService, useClass: ReplicationDefaultService },
-        { provide: OperationService }
+        { provide: OperationService },
+        { provide: EndpointService, useClass: EndpointDefaultService }
       ]
     });
   }));
@@ -79,6 +101,11 @@ describe('ListReplicationRuleComponent (inline template)', () => {
     comp = fixture.componentInstance;
     replicationService = fixture.debugElement.injector.get(ReplicationService);
     spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(of(mockRules));
+
+    endpointService = fixture.debugElement.injector.get(EndpointService);
+    spyEndpoint = spyOn(endpointService, "getEndpoint").and.returnValue(
+      of(mockEndpoint)
+    );
     fixture.detectChanges();
   });
 

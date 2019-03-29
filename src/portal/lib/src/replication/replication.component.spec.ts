@@ -27,6 +27,20 @@ import { of } from 'rxjs';
 
 
 describe('Replication Component (inline template)', () => {
+  let mockEndpoint: Endpoint = {
+    id: 1,
+    credential: {
+      access_key: "admin",
+      access_secret: "",
+      type: "basic"
+    },
+    description: "test",
+    insecure: false,
+    name: "target_01",
+    type: "Harbor",
+    url: "https://10.117.4.151"
+  };
+
 
   let mockRules: ReplicationRule[] = [
       {
@@ -128,6 +142,7 @@ describe('Replication Component (inline template)', () => {
   let spyRules: jasmine.Spy;
   let spyJobs: jasmine.Spy;
   let spyEndpoint: jasmine.Spy;
+  let spyEndpoints: jasmine.Spy;
 
   let deGrids: DebugElement[];
   let deRules: DebugElement;
@@ -138,7 +153,7 @@ describe('Replication Component (inline template)', () => {
 
   let config: IServiceConfig = {
     replicationRuleEndpoint: '/api/policies/replication/testing',
-    replicationBaseEndpoint: '/api/replication/testing'
+    systemInfoEndpoint: "/api/endpoints/testing"
   };
 
   beforeEach(async(() => {
@@ -187,8 +202,8 @@ describe('Replication Component (inline template)', () => {
     spyJobs = spyOn(replicationService, 'getExecutions').and.returnValues(of(mockJob));
 
 
-    spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(of(mockEndpoints));
-
+    spyEndpoints = spyOn(endpointService, 'getEndpoints').and.returnValues(of(mockEndpoints));
+    spyEndpoint = spyOn(endpointService, "getEndpoint").and.returnValue(of(mockEndpoint));
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();

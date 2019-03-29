@@ -26,7 +26,7 @@
         <h5 class="flex-items-xs-bottom option-left-down">{{'REPLICATION.REPLICATION_EXECUTIONS' | translate}}</h5>
         <div class="flex-items-xs-bottom option-right-down">
           <button class="btn btn-link" (click)="toggleSearchJobOptionalName(currentJobSearchOption)">{{toggleJobSearchOption[currentJobSearchOption] | translate}}</button>
-          <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_JOBS_PLACEHOLDER" | translate}}' (filterEvt)="doSearchJobs($event)"
+          <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_EXECUTIONS_PLACEHOLDER" | translate}}' (filterEvt)="doSearchJobs($event)"
             [currentValue]="search.repoName"></hbr-filter>
           <span class="refresh-btn" (click)="refreshJobs()">
             <clr-icon shape="refresh"></clr-icon>
