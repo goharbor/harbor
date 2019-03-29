@@ -338,7 +338,7 @@ export class ReplicationDefaultService extends ReplicationService {
       return observableThrowError("Bad argument");
     }
 
-    let url: string = `${this._replicateUrl}`;
+    let url: string = `${this._replicateUrl}/executions`;
     return this.http
       .post(url, { policy_id: ruleId }, HTTP_JSON_OPTIONS)
       .pipe(map(response => response)
