@@ -52,7 +52,7 @@ func (r *ReplicationPolicyAPI) List() {
 	}
 	query.Page, query.Size = r.GetPaginationParams()
 
-	total, policies, err := ng.PolicyMgr.List(query)
+	total, policies, err := ng.PolicyCtl.List(query)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to list policies: %v", err))
 		return
@@ -73,20 +73,17 @@ func (r *ReplicationPolicyAPI) Create() {
 		return
 	}
 
-	id, err := ng.PolicyMgr.Create(policy)
+	id, err := ng.PolicyCtl.Create(policy)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to create the policy: %v", err))
 		return
 	}
-
-	// TODO handle replication_now?
-
 	r.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 }
 
 // make sure the policy name doesn't exist
 func (r *ReplicationPolicyAPI) validateName(policy *model.Policy) bool {
-	p, err := ng.PolicyMgr.GetByName(policy.Name)
+	p, err := ng.PolicyCtl.GetByName(policy.Name)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get policy %s: %v", policy.Name, err))
 		return false
@@ -116,8 +113,6 @@ func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
 	return true
 }
 
-// TODO validate trigger in create and update
-
 // Get the specified replication policy
 func (r *ReplicationPolicyAPI) Get() {
 	id, err := r.GetInt64FromPath(":id")
@@ -126,7 +121,7 @@ func (r *ReplicationPolicyAPI) Get() {
 		return
 	}
 
-	policy, err := ng.PolicyMgr.Get(id)
+	policy, err := ng.PolicyCtl.Get(id)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get the policy %d: %v", id, err))
 		return
@@ -147,7 +142,7 @@ func (r *ReplicationPolicyAPI) Update() {
 		return
 	}
 
-	originalPolicy, err := ng.PolicyMgr.Get(id)
+	originalPolicy, err := ng.PolicyCtl.Get(id)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get the policy %d: %v", id, err))
 		return
@@ -168,8 +163,8 @@ func (r *ReplicationPolicyAPI) Update() {
 		return
 	}
 
-	// TODO passing the properties need to be updated?
-	if err := ng.PolicyMgr.Update(policy); err != nil {
+	policy.ID = id
+	if err := ng.PolicyCtl.Update(policy); err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to update the policy %d: %v", id, err))
 		return
 	}
@@ -183,7 +178,7 @@ func (r *ReplicationPolicyAPI) Delete() {
 		return
 	}
 
-	policy, err := ng.PolicyMgr.Get(id)
+	policy, err := ng.PolicyCtl.Get(id)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get the policy %d: %v", id, err))
 		return
@@ -208,7 +203,7 @@ func (r *ReplicationPolicyAPI) Delete() {
 		}
 	}
 
-	if err := ng.PolicyMgr.Remove(id); err != nil {
+	if err := ng.PolicyCtl.Remove(id); err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to delete the policy %d: %v", id, err))
 		return
 	}

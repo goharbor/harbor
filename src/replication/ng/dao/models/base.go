@@ -9,7 +9,8 @@ func init() {
 		new(Registry),
 		new(RepPolicy),
 		new(Execution),
-		new(Task))
+		new(Task),
+		new(ScheduleJob))
 }
 
 // Pagination ...

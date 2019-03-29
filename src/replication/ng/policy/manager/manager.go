@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package policy
+package manager
 
 import (
 	"encoding/json"
@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/dao"
 	persist_models "github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/policy"
 )
 
 var errNilPolicyModel = errors.New("nil policy model")
@@ -113,27 +114,10 @@ func convertToPersistModel(policy *model.Policy) (*persist_models.RepPolicy, err
 	return ply, nil
 }
 
-// Manager manages replication policies
-type Manager interface {
-	// Create new policy
-	Create(*model.Policy) (int64, error)
-	// List the policies, returns the total count, policy list and error
-	List(...*model.PolicyQuery) (int64, []*model.Policy, error)
-	// Get policy with specified ID
-	Get(int64) (*model.Policy, error)
-	// Get policy by the name
-	GetByName(string) (*model.Policy, error)
-	// Update the specified policy, the "props" are the properties of policy
-	// that need to be updated
-	Update(policy *model.Policy, props ...string) error
-	// Remove the specified policy
-	Remove(int64) error
-}
-
 // DefaultManager provides replication policy CURD capabilities.
 type DefaultManager struct{}
 
-var _ Manager = &DefaultManager{}
+var _ policy.Controller = &DefaultManager{}
 
 // NewDefaultManager is the constructor of DefaultManager.
 func NewDefaultManager() *DefaultManager {

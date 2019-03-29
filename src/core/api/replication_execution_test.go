@@ -147,13 +147,13 @@ func TestListExecutions(t *testing.T) {
 
 func TestCreateExecution(t *testing.T) {
 	operationCtl := ng.OperationCtl
-	policyMgr := ng.PolicyMgr
+	policyMgr := ng.PolicyCtl
 	defer func() {
 		ng.OperationCtl = operationCtl
-		ng.PolicyMgr = policyMgr
+		ng.PolicyCtl = policyMgr
 	}()
 	ng.OperationCtl = &fakedOperationController{}
-	ng.PolicyMgr = &fakedPolicyManager{}
+	ng.PolicyCtl = &fakedPolicyManager{}
 
 	cases := []*codeCheckingCase{
 		// 401

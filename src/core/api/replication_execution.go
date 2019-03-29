@@ -31,9 +31,9 @@ type ReplicationOperationAPI struct {
 // Prepare ...
 func (r *ReplicationOperationAPI) Prepare() {
 	r.BaseController.Prepare()
-	// TODO if we delegate the jobservice to trigger the scheduled replication,
-	// add the logic to check whether the user is a solution user
-	if !r.SecurityCtx.IsSysAdmin() {
+	// As we delegate the jobservice to trigger the scheduled replication,
+	// we need to allow the jobservice to call the API
+	if !(r.SecurityCtx.IsSysAdmin() || r.SecurityCtx.IsSolutionUser()) {
 		if !r.SecurityCtx.IsAuthenticated() {
 			r.HandleUnauthorized()
 			return
@@ -102,7 +102,7 @@ func (r *ReplicationOperationAPI) ListExecutions() {
 func (r *ReplicationOperationAPI) CreateExecution() {
 	execution := &models.Execution{}
 	r.DecodeJSONReq(execution)
-	policy, err := ng.PolicyMgr.Get(execution.PolicyID)
+	policy, err := ng.PolicyCtl.Get(execution.PolicyID)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get policy %d: %v", execution.PolicyID, err))
 		return

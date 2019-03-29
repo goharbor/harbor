@@ -128,8 +128,8 @@ func initRouters() {
 	beego.Router("/service/notifications", &registry.NotificationHandler{})
 	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
 	beego.Router("/service/notifications/jobs/scan/:id([0-9]+)", &jobs.Handler{}, "post:HandleScan")
-	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplication")
 	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
+	beego.Router("/service/notifications/jobs/replication/schedule/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationScheduleJob")
 	beego.Router("/service/notifications/jobs/replication/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationTask")
 	beego.Router("/service/token", &token.Handler{})
 

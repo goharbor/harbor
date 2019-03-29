@@ -38,7 +38,8 @@ func TestInit(t *testing.T) {
 	config.InitWithSettings(nil)
 	err = Init()
 	require.Nil(t, err)
-	assert.NotNil(t, PolicyMgr)
+	assert.NotNil(t, PolicyCtl)
 	assert.NotNil(t, RegistryMgr)
 	assert.NotNil(t, OperationCtl)
+	assert.NotNil(t, EventHandler)
 }
