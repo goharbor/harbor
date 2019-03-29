@@ -1,117 +1,135 @@
 <div class="replication-tasks">
-    <section class="overview-section">
-        <div class="title-wrapper clr-row">
-            <div class="clr-col-lg-9">
-                <div>
-                    <a (click)="onBack()" class="onback">< {{'PROJECT_DETAIL.REPLICATION'| translate}}</a>
-                </div>
-                <div class="title-block clr-row">
-                  <div class="clr-col-2">
-                    <h2 class="custom-h2">{{'REPLICATION.REPLICATION_EXECUTION'| translate}}</h2>
-                    <h4>{{executionId}}</h4>
-                  </div>
-                  <div class="clr-col-3">
-                    <span class="label label-info" *ngIf="executions === 'InProgress'">In Progress</span>
-                    <span class="label label-success" *ngIf="executions === 'success'">Success</span>
-                    <span class="label label-danger" *ngIf="executions=== 'failture'">Failture</span>
-                  </div>
-                </div>
-            </div>
-            <div class="clr-col-3">
-              <button  class="btn btn-outline"  (click)="stopJob()" [disabled]="stopOnGoing">{{'REPLICATION.STOPJOB' | translate}}</button>
-            </div>
+  <section class="overview-section">
+    <div class="title-wrapper">
+      <div>
+        <div>
+          <a (click)="onBack()" class="onback"><{{'PROJECT_DETAIL.REPLICATION'|
+              translate}}</a>
         </div>
-        <div class="execution-block row">
-            <div class="clr-col-sm-12 clr-col-md-6">
-                <div class="flex-block">
-                    <section class="execution-detail-label">
-                        <section class="detail-row">
-                            <span class="label label-purple detail-span">{{'REPLICATION.SUCCESS'| translate}}</span>
-                            <div class="execution-details">{{'1'}}</div>
-                        </section>
-                        <section class="detail-row">
-                            <span class="label label-red detail-span">{{'REPLICATION.FAILTURE'| translate}}</span>
-                            <div class="execution-details">{{'2'}}</div>
-                        </section>
-                        <section class="detail-row">
-                            <span class="label label-light-blue detail-span">{{'REPLICATION.IN_PROGRESS'| translate}}</span>
-                            <div class="execution-details">{{'3'}}</div>
-                        </section>
-                      </section>
-                </div>
+        <div class="title-block">
+          <div>
+            <h2 class="custom-h2 h2-style">{{'REPLICATION.REPLICATION_EXECUTION'|
+              translate}}</h2>
+            <span class="id-divider"></span>
+            <h2 class="custom-h2 h2-style">{{executionId}}</h2>
+          </div>
+          <div>
+            <div class="status-progress" *ngIf="executions === 'InProgress'">
+              <span class="spinner spinner-inline"></span>
+              <span>{{'REPLICATION.IN_PROGRESS'| translate}}</span>
             </div>
-            <div class="clr-col-sm-12 clr-col-md-6">
-              <div class="executions-detail">
-                <div class="policy">
-                  <label>{{'REPLICATION.POLICY' | translate}} :</label>
-                  <span>{{'My 1st policy'}}</span>
-                </div>
-                <div class="trigger">
-                  <label for="">{{'REPLICATION.TRIGGER_MODE' | translate}} :</label>
-                  <span>{{'Schedule'}}</span>
-                </div>
-                <div class="start-time">
-                  <label for="">{{'REPLICATION.CREATION_TIME' | translate}} :</label>
-                  <span>{{'3/14/19, 2:26 PM'}}</span>
-                </div>
-              </div>
+            <div class="status-success" *ngIf="executions === 'success'">
+              <clr-icon size="18" shape="success-standard" class="color-green"></clr-icon>
+              <span>{{'REPLICATION.SUCCESS'| translate}}</span>
             </div>
+            <div class="status-failed" *ngIf="executions === 'failed'">
+              <clr-icon size="18" shape="error-standard" class="color-red"></clr-icon>
+              <span>{{'REPLICATION.FAILTURE'| translate}}</span>
+            </div>
+          </div>
+          <div>
+            <button class="btn btn-primary btn-sm" (click)="stopJob()"
+              [disabled]="stopOnGoing">{{'REPLICATION.STOPJOB' | translate}}</button>
+          </div>
         </div>
-    </section>
+      </div>
 
-    <div class="tasks-detail">
-        <h3 class="modal-title">Tasks</h3>
-        <div class="row flex-items-xs-between flex-items-xs-bottom">
-            <div class="action-select">
-                <div class="select filterTag" [hidden]="!isOpenFilterTag">
-                    <select>
-                        <option value="username">{{"AUDIT_LOG.USERNAME" | translate | lowercase}}</option>
-                        <option value="repository">{{"CONFIG.REPOSITORY" | translate | lowercase}}</option>
-                        <option value="tag">{{"REPOSITORY.TAG" | translate | lowercase}}</option>
-                        <option value="operation">{{"AUDIT_LOG.OPERATION" | translate | lowercase}}</option>
-                    </select>
-                </div>
-                <hbr-filter  [withDivider]="true" (openFlag)="openFilter($event)" filterPlaceholder='{{"AUDIT_LOG.FILTER_PLACEHOLDER" | translate}}'></hbr-filter>
-                <span class="refresh-btn">
-                    <clr-icon shape="refresh"></clr-icon>
-                    <span class="spinner spinner-inline" hidden></span>
-                </span>
-            </div>
-        </div>
-        <clr-datagrid [(clrDgSelected)]="selectedRow">
-            <clr-dg-column>{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'resource_type'">{{'REPLICATION.RECOURCE_TYPE' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'src_resource'">{{'REPLICATION.RECOURCE' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'dst_resource'">{{'REPLICATION.DESTINATION' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="startTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="endTimeComparator">{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
-            <clr-dg-row *clrDgItems="let t of tasks">
-              <clr-dg-cell>{{t.id}}</clr-dg-cell>
-              <clr-dg-cell>{{t.resource_type}}</clr-dg-cell>
-              <clr-dg-cell>{{t.src_resource}}</clr-dg-cell>
-              <clr-dg-cell>{{t.dst_resource}}</clr-dg-cell>
-              <clr-dg-cell>{{t.status}}</clr-dg-cell>
-              <clr-dg-cell>{{t.start_time | date: 'short'}}</clr-dg-cell>
-              <clr-dg-cell>{{t.end_time | date: 'short'}}</clr-dg-cell>
-              <clr-dg-cell>
-                <span *ngIf="t.status=='InProgress'; else elseBlock" class="label">{{'REPLICATION.NO_LOGS' | translate}}</span>
-                <ng-template #elseBlock>
-                <a target="_blank" [href]="viewLog(t.id)">
-                    <clr-icon shape="list"></clr-icon>
-                </a>
-                </ng-template>
-              </clr-dg-cell>
-            </clr-dg-row>
-            <clr-dg-footer>
-              <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}}
-                -
-                {{pagination.lastItem +1 }} {{'ROBOT_ACCOUNT.OF' |
-                translate}} </span>
-              {{pagination.totalItems }} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
-              <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
-            </clr-dg-footer>
-        </clr-datagrid>
     </div>
+    <div class="execution-block">
+      <div class="executions-detail">
+        <div class="policy">
+          <label>{{'REPLICATION.POLICY' | translate}} :</label>
+          <span>{{'My 1st policy'}}</span>
+        </div>
+        <div class="trigger">
+          <label for="">{{'REPLICATION.TRIGGER_MODE' | translate}} :</label>
+          <span>{{'Schedule'}}</span>
+        </div>
+        <div class="start-time">
+          <label for="">{{'REPLICATION.CREATION_TIME' | translate}} :</label>
+          <span>{{'3/14/19, 2:26 PM'}}</span>
+        </div>
+      </div>
+      <div class="flex-block">
+        <section class="execution-detail-label">
+          <section class="detail-row">
+            <span class="label label-purple detail-span">{{'REPLICATION.SUCCESS'| translate}}</span>
+            <div class="execution-details">{{'1'}}</div>
+          </section>
+          <section class="detail-row">
+            <span class="label label-red detail-span">{{'REPLICATION.FAILTURE'| translate}}</span>
+            <div class="execution-details">{{'2'}}</div>
+          </section>
+          <section class="detail-row">
+            <span class="label label-light-blue detail-span">{{'REPLICATION.IN_PROGRESS'| translate}}</span>
+            <div class="execution-details">{{'3'}}</div>
+          </section>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <div class="tasks-detail">
+    <h3 class="modal-title">Tasks</h3>
+    <div class="row flex-items-xs-between flex-items-xs-bottom">
+      <div class="action-select">
+        <div class="select filterTag" [hidden]="!isOpenFilterTag">
+          <select>
+            <option value="recourceType">{{'REPLICATION.RECOURCE_TYPE' |translate}}</option>
+            <option value="recource">{{'REPLICATION.RECOURCE' | translate}}</option>
+            <option value="destination">{{'REPLICATION.DESTINATION' | translate}}</option>
+            <option value="status">{{'REPLICATION.STATUS' | translate}}</option>
+          </select>
+        </div>
+        <hbr-filter [withDivider]="true" (openFlag)="openFilter($event)"
+          filterPlaceholder='{{"REPLICATION.FILTER_PLACEHOLDER" | translate}}'></hbr-filter>
+        <span class="refresh-btn">
+          <clr-icon shape="refresh"></clr-icon>
+          <span class="spinner spinner-inline" hidden></span>
+        </span>
+      </div>
+    </div>
+    <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="loading">
+      <clr-dg-column>{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'resource_type'">{{'REPLICATION.RECOURCE_TYPE'
+        | translate}}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'src_resource'">{{'REPLICATION.RECOURCE' |
+        translate}}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'dst_resource'">{{'REPLICATION.DESTINATION' |
+        translate}}</clr-dg-column>
+      <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' |
+        translate}}</clr-dg-column>
+      <clr-dg-column [clrDgSortBy]="startTimeComparator">{{'REPLICATION.CREATION_TIME'
+        | translate}}</clr-dg-column>
+      <clr-dg-column [clrDgSortBy]="endTimeComparator">{{'REPLICATION.END_TIME'
+        | translate}}</clr-dg-column>
+      <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
+      <clr-dg-row *clrDgItems="let t of tasks">
+        <clr-dg-cell>{{t.id}}</clr-dg-cell>
+        <clr-dg-cell>{{t.resource_type}}</clr-dg-cell>
+        <clr-dg-cell>{{t.src_resource}}</clr-dg-cell>
+        <clr-dg-cell>{{t.dst_resource}}</clr-dg-cell>
+        <clr-dg-cell>{{t.status}}</clr-dg-cell>
+        <clr-dg-cell>{{t.start_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>{{t.end_time | date: 'short'}}</clr-dg-cell>
+        <clr-dg-cell>
+          <span *ngIf="t.status=='InProgress'; else elseBlock" class="label">{{'REPLICATION.NO_LOGS'
+            | translate}}</span>
+          <ng-template #elseBlock>
+            <a target="_blank" [href]="viewLog(t.id)">
+              <clr-icon shape="list"></clr-icon>
+            </a>
+          </ng-template>
+        </clr-dg-cell>
+      </clr-dg-row>
+      <clr-dg-footer>
+        <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}}
+          -
+          {{pagination.lastItem +1 }} {{'ROBOT_ACCOUNT.OF' |
+          translate}} </span>
+        {{pagination.totalItems }} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
+        <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
+      </clr-dg-footer>
+    </clr-datagrid>
+  </div>
 </div>

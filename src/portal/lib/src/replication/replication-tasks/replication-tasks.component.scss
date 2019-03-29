@@ -3,11 +3,33 @@
         .title-wrapper {
             .onback{
                 color: #007cbb;
-                font-size: 12px;
+                font-size: 14px;
                 cursor: pointer;
             }
-            h4 {
-                margin-top: 8px;
+            .title-block {
+                display: flex;
+                align-items: center;
+                >div:first-child {
+                    width: 210px;
+                }
+                >div:nth-child(2) {
+                    width: 140px;
+                    span {
+                        color: #007cbb;
+                        font-size: 12px;
+                        margin-left: 10px;
+                    }
+                }
+                .id-divider {
+                    display: inline-block;
+                    height: 25px;
+                    width: 2px;
+                    background-color: #cccccc;
+                    margin: 0 20px;
+                }
+                .h2-style {
+                    display: inline-block;
+                }
             }
         }
         .execution-block {
@@ -21,7 +43,6 @@
                     display: flex;
                     .detail-span {
                         flex:0 0 100px;
-                        font-weight: 600;
                         margin-top: 10px;
                     }
                     .execution-details {
@@ -31,9 +52,14 @@
                 }
             }
             .executions-detail {
-                font-weight: 600;
-                span {
-                    margin-left: 5px;
+                width: 400px;
+                label {
+                    display: inline-block;
+                    color: black;
+                    width: 120px;
+                }
+                >div {
+                    margin-top: 10px;
                 }
             }
         }

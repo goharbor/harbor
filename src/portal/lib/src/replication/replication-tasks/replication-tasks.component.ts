@@ -1,8 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReplicationService } from "../../service/replication.service";
-import { map, catchError } from "rxjs/operators";
-import { Observable, forkJoin, throwError as observableThrowError } from "rxjs";
+import { TranslateService } from '@ngx-translate/core';
+import { finalize } from "rxjs/operators";
 import { ErrorHandler } from "../../error-handler/error-handler";
 import { ReplicationJob, ReplicationTasks, Comparator, ReplicationJobItem } from "../../service/interface";
 import { CustomComparator } from "../../utils";
@@ -14,7 +14,11 @@ import { CustomComparator } from "../../utils";
 export class ReplicationTasksComponent implements OnInit {
   isOpenFilterTag: boolean;
   selectedRow: [];
+  loading = false;
+  searchTask: string;
+  defaultFilter = "recourceType";
   tasks: ReplicationTasks[] = [];
+  tasksCopy: ReplicationTasks[] = [];
   stopOnGoing: boolean;
   executions: string = 'InProgress';
   @Input() executionId: string;
@@ -26,15 +30,16 @@ export class ReplicationTasksComponent implements OnInit {
   >("end_time", "date");
 
   constructor(
+    private translate: TranslateService,
     private router: Router,
     private replicationService: ReplicationService,
     private errorHandler: ErrorHandler,
   ) { }
 
   ngOnInit(): void {
-    // this.getExecutions();
-    this.getTasks();
+    this.clrLoadTasks();
     // this.executions.status = 'success';
+    this.searchTask = '';
   }
 
   // getExecutions(): void {
@@ -54,9 +59,12 @@ export class ReplicationTasksComponent implements OnInit {
   stopJob() {
     this.stopOnGoing = true;
     this.replicationService.stopJobs(this.executionId)
-    .subscribe(res => {
+    .subscribe(response => {
       this.stopOnGoing = false;
        // this.getExecutions();
+       this.translate.get("REPLICATION.STOP_SUCCESS", { param: this.executionId }).subscribe((res: string) => {
+          this.errorHandler.info(res);
+       });
     },
     error => {
       this.errorHandler.error(error);
@@ -64,13 +72,33 @@ export class ReplicationTasksComponent implements OnInit {
   }
 
   viewLog(taskId: number | string): string {
-    return this.replicationService.getJobBaseUrl() + "/" + this.executionId + "/tasks/" + taskId + "/log";
+    return this.replicationService.getJobBaseUrl() + "/executions/" + this.executionId + "/tasks/" + taskId + "/log";
   }
 
-  getTasks(): void {
+  clrLoadTasks(): void {
+      this.loading = true;
       this.replicationService.getReplicationTasks(this.executionId)
+      .pipe(finalize(() => (this.loading = false)))
       .subscribe(tasks => {
-        this.tasks = tasks.map(x => Object.assign({}, x));
+        if (this.defaultFilter === 'recourceType') {
+            this.tasks = tasks.filter(x =>
+              x.resource_type.includes(this.searchTask)
+            );
+        } else if (this.defaultFilter === 'recource') {
+            this.tasks = tasks.filter(x =>
+              x.src_resource.includes(this.searchTask)
+            );
+        } else if (this.defaultFilter === 'destination') {
+            this.tasks = tasks.filter(x =>
+              x.dst_resource.includes(this.searchTask)
+            );
+        } else {
+            this.tasks = tasks.filter(x =>
+              x.status.includes(this.searchTask)
+            );
+        }
+
+        this.tasksCopy = tasks.map(x => Object.assign({}, x));
       },
       error => {
         this.errorHandler.error(error);
@@ -80,12 +108,31 @@ export class ReplicationTasksComponent implements OnInit {
     this.router.navigate(["harbor", "replications"]);
   }
 
+  selectFilter($event: any): void {
+    this.defaultFilter = $event['target'].value;
+    this.doSearch(this.searchTask);
+  }
+
+  // refresh icon
+  refreshTasks(): void {
+    this.searchTask = '';
+    this.clrLoadTasks();
+  }
+
+  doSearch(value: string): void {
+    if (!value) {
+      return;
+    }
+    this.searchTask = value.trim();
+    this.clrLoadTasks();
+  }
+
   openFilter(isOpen: boolean): void {
     if (isOpen) {
         this.isOpenFilterTag = true;
     } else {
         this.isOpenFilterTag = false;
     }
-}
+  }
 
 }

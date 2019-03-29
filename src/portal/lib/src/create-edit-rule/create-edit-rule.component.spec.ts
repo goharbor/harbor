@@ -42,6 +42,19 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of } from "rxjs";
 
 describe("CreateEditRuleComponent (inline template)", () => {
+  let mockEndpoint: Endpoint = {
+    id: 1,
+    credential: {
+      access_key: "admin",
+      access_secret: "",
+      type: "basic"
+    },
+    description: "test",
+    insecure: false,
+    name: "target_01",
+    type: "Harbor",
+    url: "https://10.117.4.151"
+  };
   let mockRules: ReplicationRule[] = [
     {
       id: 1,
@@ -205,6 +218,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
   let spyJobs: jasmine.Spy;
   let spyAdapter: jasmine.Spy;
   let spyEndpoint: jasmine.Spy;
+  let spyEndpoints: jasmine.Spy;
+
 
   let config: IServiceConfig = {
     replicationBaseEndpoint: "/api/replication/testing",
@@ -262,8 +277,12 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
     spyAdapter = spyOn(replicationService, "getReplicationAdapter").and.returnValues(
         of(mockAdapter));
-    spyEndpoint = spyOn(endpointService, "getEndpoints").and.returnValues(
+    spyEndpoints = spyOn(endpointService, "getEndpoints").and.returnValues(
       of(mockEndpoints)
+    );
+
+    spyEndpoint = spyOn(endpointService, "getEndpoint").and.returnValue(
+      of(mockEndpoint)
     );
 
     fixture.detectChanges();

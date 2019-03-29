@@ -330,7 +330,10 @@
         "OF": "共计"
     },
     "REPLICATION": {
+        "CURRENT": "当前仓库",
+        "FILTER_PLACEHOLDER": "过滤任务",
         "STOP_TITLE": "确认停止任务",
+        "STOP_SUCCESS": "停止任务 {{param}} 成功",
         "STOP_SUMMARY": "确认停止任务{{param}}?",
         "TASK_ID":"任务ID",
         "RECOURCE_TYPE": "源类型",
@@ -348,7 +351,7 @@
         "NEW_REPLICATION_RULE": "新建规则",
         "ENDPOINTS": "目标",
         "FILTER_POLICIES_PLACEHOLDER": "过滤规则",
-        "FILTER_JOBS_PLACEHOLDER": "过滤任务",
+        "FILTER_EXECUTIONS_PLACEHOLDER": "过滤任务",
         "DELETION_TITLE": "删除规则确认",
         "DELETION_SUMMARY": "确认删除规则 {{param}}?",
         "DELETION_TITLE_FAILURE": "规则确认删除失败",
