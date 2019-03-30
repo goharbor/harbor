@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/goharbor/harbor/src/replication/ng/config"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
@@ -104,6 +105,33 @@ func (f *fakedPolicyController) Update(*model.Policy, ...string) error {
 func (f *fakedPolicyController) Remove(int64) error {
 	return nil
 }
+
+type fakedRegistryManager struct{}
+
+func (f *fakedRegistryManager) Add(*model.Registry) (int64, error) {
+	return 0, nil
+}
+func (f *fakedRegistryManager) List(...*model.RegistryQuery) (int64, []*model.Registry, error) {
+	return 0, nil, nil
+}
+func (f *fakedRegistryManager) Get(id int64) (*model.Registry, error) {
+	return &model.Registry{
+		ID:   1,
+		Type: model.RegistryTypeHarbor,
+	}, nil
+}
+func (f *fakedRegistryManager) GetByName(name string) (*model.Registry, error) {
+	return nil, nil
+}
+func (f *fakedRegistryManager) Update(*model.Registry, ...string) error {
+	return nil
+}
+func (f *fakedRegistryManager) Remove(int64) error {
+	return nil
+}
+func (f *fakedRegistryManager) HealthCheck() error {
+	return nil
+}
 func TestGetRelatedPolicies(t *testing.T) {
 	handler := &handler{
 		policyCtl: &fakedPolicyController{},
@@ -121,7 +149,10 @@ func TestGetRelatedPolicies(t *testing.T) {
 }
 
 func TestHandle(t *testing.T) {
-	handler := NewHandler(&fakedPolicyController{}, &fakedOperationController{})
+	config.Config = &config.Configuration{}
+	handler := NewHandler(&fakedPolicyController{},
+		&fakedRegistryManager{},
+		&fakedOperationController{})
 	// nil event
 	err := handler.Handle(nil)
 	require.NotNil(t, err)

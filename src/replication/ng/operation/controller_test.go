@@ -15,11 +15,15 @@
 package operation
 
 import (
+	"io"
 	"testing"
 
+	"github.com/docker/distribution"
+	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/config"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/operation/flow"
 	"github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -82,38 +86,6 @@ func (f *fakedExecutionManager) GetTaskLog(int64) ([]byte, error) {
 	return []byte("message"), nil
 }
 
-type fakedRegistryManager struct{}
-
-func (f *fakedRegistryManager) Add(*model.Registry) (int64, error) {
-	return 0, nil
-}
-func (f *fakedRegistryManager) List(...*model.RegistryQuery) (int64, []*model.Registry, error) {
-	return 0, nil, nil
-}
-func (f *fakedRegistryManager) Get(id int64) (*model.Registry, error) {
-	var registry *model.Registry
-	switch id {
-	case 1:
-		registry = &model.Registry{
-			ID:   1,
-			Type: model.RegistryTypeHarbor,
-		}
-	}
-	return registry, nil
-}
-func (f *fakedRegistryManager) GetByName(name string) (*model.Registry, error) {
-	return nil, nil
-}
-func (f *fakedRegistryManager) Update(*model.Registry, ...string) error {
-	return nil
-}
-func (f *fakedRegistryManager) Remove(int64) error {
-	return nil
-}
-func (f *fakedRegistryManager) HealthCheck() error {
-	return nil
-}
-
 type fakedScheduler struct{}
 
 func (f *fakedScheduler) Preprocess(src []*model.Resource, dst []*model.Resource) ([]*scheduler.ScheduleItem, error) {
@@ -140,12 +112,119 @@ func (f *fakedScheduler) Stop(id string) error {
 	return nil
 }
 
-var ctl = NewController(&fakedExecutionManager{}, &fakedRegistryManager{}, &fakedScheduler{})
+func fakedAdapterFactory(*model.Registry) (adapter.Adapter, error) {
+	return &fakedAdapter{}, nil
+}
+
+type fakedAdapter struct{}
+
+func (f *fakedAdapter) Info() (*model.RegistryInfo, error) {
+	return &model.RegistryInfo{
+		Type: model.RegistryTypeHarbor,
+		SupportedResourceTypes: []model.ResourceType{
+			model.ResourceTypeRepository,
+			model.ResourceTypeChart,
+		},
+		SupportedTriggers: []model.TriggerType{model.TriggerTypeManual},
+	}, nil
+}
+func (f *fakedAdapter) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
+	return nil, nil
+}
+func (f *fakedAdapter) CreateNamespace(*model.Namespace) error {
+	return nil
+}
+func (f *fakedAdapter) GetNamespace(ns string) (*model.Namespace, error) {
+	var namespace *model.Namespace
+	if ns == "library" {
+		namespace = &model.Namespace{
+			Name: "library",
+			Metadata: map[string]interface{}{
+				"public": true,
+			},
+		}
+	}
+	return namespace, nil
+}
+func (f *fakedAdapter) FetchImages(namespace []string, filters []*model.Filter) ([]*model.Resource, error) {
+	return []*model.Resource{
+		{
+			Type: model.ResourceTypeRepository,
+			Metadata: &model.ResourceMetadata{
+				Name:      "library/hello-world",
+				Namespace: "library",
+				Vtags:     []string{"latest"},
+			},
+			Override: false,
+		},
+	}, nil
+}
+
+func (f *fakedAdapter) ManifestExist(repository, reference string) (exist bool, digest string, err error) {
+	return false, "", nil
+}
+func (f *fakedAdapter) PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error) {
+	return nil, "", nil
+}
+func (f *fakedAdapter) PushManifest(repository, reference, mediaType string, payload []byte) error {
+	return nil
+}
+func (f *fakedAdapter) DeleteManifest(repository, digest string) error {
+	return nil
+}
+func (f *fakedAdapter) BlobExist(repository, digest string) (exist bool, err error) {
+	return false, nil
+}
+func (f *fakedAdapter) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
+	return 0, nil, nil
+}
+func (f *fakedAdapter) PushBlob(repository, digest string, size int64, blob io.Reader) error {
+	return nil
+}
+func (f *fakedAdapter) FetchCharts(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
+	return []*model.Resource{
+		{
+			Type: model.ResourceTypeChart,
+			Metadata: &model.ResourceMetadata{
+				Name:      "library/harbor",
+				Namespace: "library",
+				Vtags:     []string{"0.2.0"},
+			},
+		},
+	}, nil
+}
+func (f *fakedAdapter) ChartExist(name, version string) (bool, error) {
+	return false, nil
+}
+func (f *fakedAdapter) DownloadChart(name, version string) (io.ReadCloser, error) {
+	return nil, nil
+}
+func (f *fakedAdapter) UploadChart(name, version string, chart io.Reader) error {
+	return nil
+}
+func (f *fakedAdapter) DeleteChart(name, version string) error {
+	return nil
+}
+
+var ctl = &controller{
+	executionMgr: &fakedExecutionManager{},
+	scheduler:    &fakedScheduler{},
+	flowCtl:      flow.NewController(),
+}
 
 func TestStartReplication(t *testing.T) {
+	err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory)
+	require.Nil(t, err)
 	config.Config = &config.Configuration{}
 	// the resource contains Vtags whose length isn't 1
-	policy := &model.Policy{}
+	policy := &model.Policy{
+		SrcRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+		DestRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+	}
 	resource := &model.Resource{
 		Type: model.ResourceTypeRepository,
 		Metadata: &model.ResourceMetadata{
@@ -153,7 +232,7 @@ func TestStartReplication(t *testing.T) {
 			Vtags: []string{"1.0", "2.0"},
 		},
 	}
-	_, err := ctl.StartReplication(policy, resource)
+	_, err = ctl.StartReplication(policy, resource)
 	require.NotNil(t, err)
 
 	// replicate resource deletion

@@ -30,37 +30,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type fakedRegistryManager struct{}
-
-func (f *fakedRegistryManager) Add(*model.Registry) (int64, error) {
-	return 0, nil
-}
-func (f *fakedRegistryManager) List(...*model.RegistryQuery) (int64, []*model.Registry, error) {
-	return 0, nil, nil
-}
-func (f *fakedRegistryManager) Get(id int64) (*model.Registry, error) {
-	var registry *model.Registry
-	switch id {
-	case 1:
-		registry = &model.Registry{
-			ID:   1,
-			Type: model.RegistryTypeHarbor,
-		}
-	}
-	return registry, nil
-}
-func (f *fakedRegistryManager) GetByName(name string) (*model.Registry, error) {
-	return nil, nil
-}
-func (f *fakedRegistryManager) Update(*model.Registry, ...string) error {
-	return nil
-}
-func (f *fakedRegistryManager) Remove(int64) error {
-	return nil
-}
-func (f *fakedRegistryManager) HealthCheck() error {
-	return nil
-}
 func fakedAdapterFactory(*model.Registry) (adapter.Adapter, error) {
 	return &fakedAdapter{}, nil
 }
@@ -239,19 +208,6 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	os.Exit(m.Run())
-}
-
-func TestInitialize(t *testing.T) {
-	url := "https://registry.harbor.local"
-	registryMgr := &fakedRegistryManager{}
-	policy := &model.Policy{
-		SrcRegistryID:  0,
-		DestRegistryID: 1,
-	}
-	srcRegistry, dstRegistry, _, _, err := initialize(registryMgr, policy)
-	require.Nil(t, err)
-	assert.Equal(t, url, srcRegistry.URL)
-	assert.Equal(t, int64(1), dstRegistry.ID)
 }
 
 func TestFetchResources(t *testing.T) {

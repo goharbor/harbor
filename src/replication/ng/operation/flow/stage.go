@@ -22,68 +22,39 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	adp "github.com/goharbor/harbor/src/replication/ng/adapter"
-	"github.com/goharbor/harbor/src/replication/ng/config"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/operation/execution"
 	"github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
-	"github.com/goharbor/harbor/src/replication/ng/registry"
 	"github.com/goharbor/harbor/src/replication/ng/util"
 )
 
 // get/create the source registry, destination registry, source adapter and destination adapter
-func initialize(mgr registry.Manager, policy *model.Policy) (*model.Registry, *model.Registry, adp.Adapter, adp.Adapter, error) {
-	var srcRegistry, dstRegistry *model.Registry
+func initialize(policy *model.Policy) (adp.Adapter, adp.Adapter, error) {
 	var srcAdapter, dstAdapter adp.Adapter
 	var err error
-	registry := getLocalRegistry()
-	// get source registry
-	if policy.SrcRegistryID != 0 {
-		srcRegistry, err = mgr.Get(policy.SrcRegistryID)
-		if err != nil {
-			return nil, nil, nil, nil, fmt.Errorf("failed to get registry %d: %v", policy.SrcRegistryID, err)
-		}
-		if srcRegistry == nil {
-			return nil, nil, nil, nil, fmt.Errorf("registry %d not found", policy.SrcRegistryID)
-		}
-	} else {
-		srcRegistry = registry
-	}
-
-	// get destination registry
-	if policy.DestRegistryID != 0 {
-		dstRegistry, err = mgr.Get(policy.DestRegistryID)
-		if err != nil {
-			return nil, nil, nil, nil, fmt.Errorf("failed to get registry %d: %v", policy.DestRegistryID, err)
-		}
-		if dstRegistry == nil {
-			return nil, nil, nil, nil, fmt.Errorf("registry %d not found", policy.DestRegistryID)
-		}
-	} else {
-		dstRegistry = registry
-	}
 
 	// create the source registry adapter
-	srcFactory, err := adp.GetFactory(srcRegistry.Type)
+	srcFactory, err := adp.GetFactory(policy.SrcRegistry.Type)
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", srcRegistry.Type, err)
+		return nil, nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", policy.SrcRegistry.Type, err)
 	}
-	srcAdapter, err = srcFactory(srcRegistry)
+	srcAdapter, err = srcFactory(policy.SrcRegistry)
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("failed to create adapter for source registry %s: %v", srcRegistry.URL, err)
+		return nil, nil, fmt.Errorf("failed to create adapter for source registry %s: %v", policy.SrcRegistry.URL, err)
 	}
 
 	// create the destination registry adapter
-	dstFactory, err := adp.GetFactory(dstRegistry.Type)
+	dstFactory, err := adp.GetFactory(policy.DestRegistry.Type)
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", dstRegistry.Type, err)
+		return nil, nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", policy.DestRegistry.Type, err)
 	}
-	dstAdapter, err = dstFactory(dstRegistry)
+	dstAdapter, err = dstFactory(policy.DestRegistry)
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("failed to create adapter for destination registry %s: %v", dstRegistry.URL, err)
+		return nil, nil, fmt.Errorf("failed to create adapter for destination registry %s: %v", policy.DestRegistry.URL, err)
 	}
 	log.Debug("replication flow initialization completed")
-	return srcRegistry, dstRegistry, srcAdapter, dstAdapter, nil
+	return srcAdapter, dstAdapter, nil
 }
 
 // fetch resources from the source registry
@@ -366,19 +337,4 @@ func getResourceName(res *model.Resource) string {
 		return meta.Name
 	}
 	return meta.Name + ":[" + strings.Join(meta.Vtags, ",") + "]"
-}
-
-func getLocalRegistry() *model.Registry {
-	return &model.Registry{
-		Type: model.RegistryTypeHarbor,
-		Name: "Local",
-		URL:  config.Config.RegistryURL,
-		// TODO use the service account
-		Credential: &model.Credential{
-			Type:         model.CredentialTypeBasic,
-			AccessKey:    "admin",
-			AccessSecret: "Harbor12345",
-		},
-		Insecure: true,
-	}
 }

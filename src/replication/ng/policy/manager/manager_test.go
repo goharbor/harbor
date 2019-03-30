@@ -63,19 +63,23 @@ func Test_convertFromPersistModel(t *testing.T) {
 				Trigger:           "",
 				Filters:           "[]",
 			}, want: &model.Policy{
-				ID:             999,
-				Name:           "Policy Test",
-				Description:    "Policy Description",
-				Creator:        "someone",
-				SrcRegistryID:  123,
-				SrcNamespaces:  []string{"ns1", "ns2", "ns3"},
-				DestRegistryID: 456,
-				DestNamespace:  "target_ns",
-				Deletion:       true,
-				Override:       true,
-				Enabled:        true,
-				Trigger:        nil,
-				Filters:        []*model.Filter{},
+				ID:          999,
+				Name:        "Policy Test",
+				Description: "Policy Description",
+				Creator:     "someone",
+				SrcRegistry: &model.Registry{
+					ID: 123,
+				},
+				SrcNamespaces: []string{"ns1", "ns2", "ns3"},
+				DestRegistry: &model.Registry{
+					ID: 456,
+				},
+				DestNamespace: "target_ns",
+				Deletion:      true,
+				Override:      true,
+				Enabled:       true,
+				Trigger:       nil,
+				Filters:       []*model.Filter{},
 			},
 		},
 	}
@@ -98,9 +102,9 @@ func Test_convertFromPersistModel(t *testing.T) {
 			assert.Equal(t, tt.want.Name, got.Name)
 			assert.Equal(t, tt.want.Description, got.Description)
 			assert.Equal(t, tt.want.Creator, got.Creator)
-			assert.Equal(t, tt.want.SrcRegistryID, got.SrcRegistryID)
+			assert.Equal(t, tt.want.SrcRegistry.ID, got.SrcRegistry.ID)
 			assert.Equal(t, tt.want.SrcNamespaces, got.SrcNamespaces)
-			assert.Equal(t, tt.want.DestRegistryID, got.DestRegistryID)
+			assert.Equal(t, tt.want.DestRegistry.ID, got.DestRegistry.ID)
 			assert.Equal(t, tt.want.DestNamespace, got.DestNamespace)
 			assert.Equal(t, tt.want.Deletion, got.Deletion)
 			assert.Equal(t, tt.want.Override, got.Override)
@@ -122,19 +126,23 @@ func Test_convertToPersistModel(t *testing.T) {
 		{name: "Nil Model", from: nil, want: nil, wantErr: true},
 		{
 			name: "Persist Model", from: &model.Policy{
-				ID:             999,
-				Name:           "Policy Test",
-				Description:    "Policy Description",
-				Creator:        "someone",
-				SrcRegistryID:  123,
-				SrcNamespaces:  []string{"ns1", "ns2", "ns3"},
-				DestRegistryID: 456,
-				DestNamespace:  "target_ns",
-				Deletion:       true,
-				Override:       true,
-				Enabled:        true,
-				Trigger:        &model.Trigger{},
-				Filters:        []*model.Filter{{Type: "registry", Value: "abc"}},
+				ID:          999,
+				Name:        "Policy Test",
+				Description: "Policy Description",
+				Creator:     "someone",
+				SrcRegistry: &model.Registry{
+					ID: 123,
+				},
+				SrcNamespaces: []string{"ns1", "ns2", "ns3"},
+				DestRegistry: &model.Registry{
+					ID: 456,
+				},
+				DestNamespace: "target_ns",
+				Deletion:      true,
+				Override:      true,
+				Enabled:       true,
+				Trigger:       &model.Trigger{},
+				Filters:       []*model.Filter{{Type: "registry", Value: "abc"}},
 			}, want: &persist_models.RepPolicy{
 				ID:                999,
 				Name:              "Policy Test",

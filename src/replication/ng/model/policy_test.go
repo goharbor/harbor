@@ -42,39 +42,55 @@ func TestValidOfPolicy(t *testing.T) {
 		// source registry and destination registry both not empty
 		{
 			policy: &Policy{
-				Name:           "policy01",
-				SrcRegistryID:  1,
-				DestRegistryID: 2,
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 1,
+				},
+				DestRegistry: &Registry{
+					ID: 2,
+				},
 			},
 			pass: false,
 		},
 		// empty source namespaces
 		{
 			policy: &Policy{
-				Name:           "policy01",
-				SrcRegistryID:  0,
-				DestRegistryID: 1,
-				SrcNamespaces:  []string{},
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 0,
+				},
+				DestRegistry: &Registry{
+					ID: 1,
+				},
+				SrcNamespaces: []string{},
 			},
 			pass: false,
 		},
 		// empty source namespaces
 		{
 			policy: &Policy{
-				Name:           "policy01",
-				SrcRegistryID:  0,
-				DestRegistryID: 1,
-				SrcNamespaces:  []string{""},
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 0,
+				},
+				DestRegistry: &Registry{
+					ID: 1,
+				},
+				SrcNamespaces: []string{""},
 			},
 			pass: false,
 		},
 		// invalid filter
 		{
 			policy: &Policy{
-				Name:           "policy01",
-				SrcRegistryID:  0,
-				DestRegistryID: 1,
-				SrcNamespaces:  []string{"library"},
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 0,
+				},
+				DestRegistry: &Registry{
+					ID: 1,
+				},
+				SrcNamespaces: []string{"library"},
 				Filters: []*Filter{
 					{
 						Type: "invalid_type",
@@ -86,10 +102,14 @@ func TestValidOfPolicy(t *testing.T) {
 		// invalid trigger
 		{
 			policy: &Policy{
-				Name:           "policy01",
-				SrcRegistryID:  0,
-				DestRegistryID: 1,
-				SrcNamespaces:  []string{"library"},
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 0,
+				},
+				DestRegistry: &Registry{
+					ID: 1,
+				},
+				SrcNamespaces: []string{"library"},
 				Filters: []*Filter{
 					{
 						Type:  FilterTypeName,
@@ -105,10 +125,14 @@ func TestValidOfPolicy(t *testing.T) {
 		// invalid trigger
 		{
 			policy: &Policy{
-				Name:           "policy01",
-				SrcRegistryID:  0,
-				DestRegistryID: 1,
-				SrcNamespaces:  []string{"library"},
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 0,
+				},
+				DestRegistry: &Registry{
+					ID: 1,
+				},
+				SrcNamespaces: []string{"library"},
 				Filters: []*Filter{
 					{
 						Type:  FilterTypeName,
@@ -124,10 +148,14 @@ func TestValidOfPolicy(t *testing.T) {
 		// pass
 		{
 			policy: &Policy{
-				Name:           "policy01",
-				SrcRegistryID:  0,
-				DestRegistryID: 1,
-				SrcNamespaces:  []string{"library"},
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 0,
+				},
+				DestRegistry: &Registry{
+					ID: 1,
+				},
+				SrcNamespaces: []string{"library"},
 				Filters: []*Filter{
 					{
 						Type:  FilterTypeName,

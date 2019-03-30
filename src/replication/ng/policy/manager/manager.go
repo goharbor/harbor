@@ -34,18 +34,26 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (*model.Policy, e
 	}
 
 	ply := model.Policy{
-		ID:             policy.ID,
-		Name:           policy.Name,
-		Description:    policy.Description,
-		Creator:        policy.Creator,
-		SrcRegistryID:  policy.SrcRegistryID,
-		DestRegistryID: policy.DestRegistryID,
-		DestNamespace:  policy.DestNamespace,
-		Deletion:       policy.ReplicateDeletion,
-		Override:       policy.Override,
-		Enabled:        policy.Enabled,
-		CreationTime:   policy.CreationTime,
-		UpdateTime:     policy.UpdateTime,
+		ID:            policy.ID,
+		Name:          policy.Name,
+		Description:   policy.Description,
+		Creator:       policy.Creator,
+		DestNamespace: policy.DestNamespace,
+		Deletion:      policy.ReplicateDeletion,
+		Override:      policy.Override,
+		Enabled:       policy.Enabled,
+		CreationTime:  policy.CreationTime,
+		UpdateTime:    policy.UpdateTime,
+	}
+	if policy.SrcRegistryID > 0 {
+		ply.SrcRegistry = &model.Registry{
+			ID: policy.SrcRegistryID,
+		}
+	}
+	if policy.DestRegistryID > 0 {
+		ply.DestRegistry = &model.Registry{
+			ID: policy.DestRegistryID,
+		}
 	}
 
 	// 1. parse SrcNamespaces to array
@@ -84,15 +92,19 @@ func convertToPersistModel(policy *model.Policy) (*persist_models.RepPolicy, err
 		Name:              policy.Name,
 		Description:       policy.Description,
 		Creator:           policy.Creator,
-		SrcRegistryID:     policy.SrcRegistryID,
 		SrcNamespaces:     strings.Join(policy.SrcNamespaces, ","),
-		DestRegistryID:    policy.DestRegistryID,
 		DestNamespace:     policy.DestNamespace,
 		Override:          policy.Override,
 		Enabled:           policy.Enabled,
 		ReplicateDeletion: policy.Deletion,
 		CreationTime:      policy.CreationTime,
 		UpdateTime:        time.Now(),
+	}
+	if policy.SrcRegistry != nil {
+		ply.SrcRegistryID = policy.SrcRegistry.ID
+	}
+	if policy.DestRegistry != nil {
+		ply.DestRegistryID = policy.DestRegistry.ID
 	}
 
 	if policy.Trigger != nil {

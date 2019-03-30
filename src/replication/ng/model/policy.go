@@ -42,11 +42,11 @@ type Policy struct {
 	// TODO consider to remove this property?
 	Creator string `json:"creator"`
 	// source
-	SrcRegistryID int64    `json:"src_registry_id"`
-	SrcNamespaces []string `json:"src_namespaces"`
+	SrcRegistry   *Registry `json:"src_registry"`
+	SrcNamespaces []string  `json:"src_namespaces"`
 	// destination
-	// TODO rename to DstRegistryID
-	DestRegistryID int64 `json:"dest_registry_id"`
+	// TODO rename to DstRegistry
+	DestRegistry *Registry `json:"dest_registry"`
 	// Only support two dest namespace modes:
 	// Put all the src resources to the one single dest namespace
 	// or keep namespaces same with the source ones (under this case,
@@ -73,11 +73,18 @@ func (p *Policy) Valid(v *validation.Validation) {
 	if len(p.Name) == 0 {
 		v.SetError("name", "cannot be empty")
 	}
+	var srcRegistryID, dstRegistryID int64
+	if p.SrcRegistry != nil {
+		srcRegistryID = p.SrcRegistry.ID
+	}
+	if p.DestRegistry != nil {
+		dstRegistryID = p.DestRegistry.ID
+	}
 
 	// one of the source registry and destination registry must be Harbor itself
-	if p.SrcRegistryID != 0 && p.DestRegistryID != 0 ||
-		p.SrcRegistryID == 0 && p.DestRegistryID == 0 {
-		v.SetError("src_registry_id, dest_registry_id", "one of them should be empty and the other one shouldn't be empty")
+	if srcRegistryID != 0 && dstRegistryID != 0 ||
+		srcRegistryID == 0 && dstRegistryID == 0 {
+		v.SetError("src_registry, dest_registry", "one of them should be empty and the other one shouldn't be empty")
 	}
 
 	// source namespaces cannot be empty

@@ -18,13 +18,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/job"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/operation/execution"
 	"github.com/goharbor/harbor/src/replication/ng/operation/flow"
 	"github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
-	"github.com/goharbor/harbor/src/replication/ng/registry"
 )
 
 // Controller handles the replication-related operations: start,
@@ -41,49 +42,51 @@ type Controller interface {
 }
 
 // NewController returns a controller implementation
-func NewController(executionMgr execution.Manager, registrgMgr registry.Manager,
-	scheduler scheduler.Scheduler) Controller {
-	return &defaultController{
-		executionMgr: executionMgr,
-		registryMgr:  registrgMgr,
-		scheduler:    scheduler,
+func NewController(js job.Client) Controller {
+	return &controller{
+		executionMgr: execution.NewDefaultManager(),
+		scheduler:    scheduler.NewScheduler(js),
 		flowCtl:      flow.NewController(),
 	}
 }
 
-type defaultController struct {
+type controller struct {
 	flowCtl      flow.Controller
 	executionMgr execution.Manager
-	registryMgr  registry.Manager
 	scheduler    scheduler.Scheduler
 }
 
-func (d *defaultController) StartReplication(policy *model.Policy, resource *model.Resource) (int64, error) {
+func (c *controller) StartReplication(policy *model.Policy, resource *model.Resource) (int64, error) {
 	if resource != nil && len(resource.Metadata.Vtags) != 1 {
 		return 0, fmt.Errorf("the length of Vtags must be 1: %v", resource.Metadata.Vtags)
 	}
 
-	id, err := createExecution(d.executionMgr, policy.ID)
+	id, err := createExecution(c.executionMgr, policy.ID)
 	if err != nil {
 		return 0, err
 	}
 
-	flow := d.createFlow(id, policy, resource)
-	if err = d.flowCtl.Start(flow); err != nil {
-		// mark the execution as failure and log the error message
-		// no error will be returned as the execution is created successfully
-		markExecutionFailure(d.executionMgr, id, err.Error())
+	flow := c.createFlow(id, policy, resource)
+	if err = c.flowCtl.Start(flow); err != nil {
+		// just update the status text, the status will be updated automatically
+		// when listing the execution records
+		if e := c.executionMgr.Update(&models.Execution{
+			ID:         id,
+			StatusText: err.Error(),
+		}, "StatusText"); e != nil {
+			log.Errorf("failed to update the execution %d: %v", id, e)
+		}
+		log.Errorf("the execution %d failed: %v", id, err)
 	}
 
 	return id, nil
 }
 
 // create different replication flows according to the input parameters
-func (d *defaultController) createFlow(executionID int64, policy *model.Policy, resource *model.Resource) flow.Flow {
+func (c *controller) createFlow(executionID int64, policy *model.Policy, resource *model.Resource) flow.Flow {
 	// replicate the deletion operation, so create a deletion flow
 	if resource != nil && resource.Deleted {
-		return flow.NewDeletionFlow(d.executionMgr, d.registryMgr, d.scheduler, executionID, policy, []*model.Resource{resource})
-
+		return flow.NewDeletionFlow(c.executionMgr, c.scheduler, executionID, policy, []*model.Resource{resource})
 	}
 	// copy only one resource, add extra filters to the  policy to make sure
 	// only the resource will be filtered out
@@ -106,30 +109,30 @@ func (d *defaultController) createFlow(executionID int64, policy *model.Policy, 
 		filters = append(filters, policy.Filters...)
 		policy.Filters = filters
 	}
-	return flow.NewCopyFlow(d.executionMgr, d.registryMgr, d.scheduler, executionID, policy)
+	return flow.NewCopyFlow(c.executionMgr, c.scheduler, executionID, policy)
 }
 
-func (d *defaultController) StopReplication(executionID int64) error {
+func (c *controller) StopReplication(executionID int64) error {
 	// TODO implement the function
 	return nil
 }
-func (d *defaultController) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {
-	return d.executionMgr.List(query...)
+func (c *controller) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {
+	return c.executionMgr.List(query...)
 }
-func (d *defaultController) GetExecution(executionID int64) (*models.Execution, error) {
-	return d.executionMgr.Get(executionID)
+func (c *controller) GetExecution(executionID int64) (*models.Execution, error) {
+	return c.executionMgr.Get(executionID)
 }
-func (d *defaultController) ListTasks(query ...*models.TaskQuery) (int64, []*models.Task, error) {
-	return d.executionMgr.ListTasks(query...)
+func (c *controller) ListTasks(query ...*models.TaskQuery) (int64, []*models.Task, error) {
+	return c.executionMgr.ListTasks(query...)
 }
-func (d *defaultController) GetTask(id int64) (*models.Task, error) {
-	return d.executionMgr.GetTask(id)
+func (c *controller) GetTask(id int64) (*models.Task, error) {
+	return c.executionMgr.GetTask(id)
 }
-func (d *defaultController) UpdateTaskStatus(id int64, status string, statusCondition ...string) error {
-	return d.executionMgr.UpdateTaskStatus(id, status, statusCondition...)
+func (c *controller) UpdateTaskStatus(id int64, status string, statusCondition ...string) error {
+	return c.executionMgr.UpdateTaskStatus(id, status, statusCondition...)
 }
-func (d *defaultController) GetTaskLog(taskID int64) ([]byte, error) {
-	return d.executionMgr.GetTaskLog(taskID)
+func (c *controller) GetTaskLog(taskID int64) ([]byte, error) {
+	return c.executionMgr.GetTaskLog(taskID)
 }
 
 // create the execution record in database
@@ -144,20 +147,4 @@ func createExecution(mgr execution.Manager, policyID int64) (int64, error) {
 	}
 	log.Debugf("an execution record for replication based on the policy %d created: %d", policyID, id)
 	return id, nil
-}
-
-// mark the execution as failure in database
-func markExecutionFailure(mgr execution.Manager, id int64, message string) {
-	err := mgr.Update(
-		&models.Execution{
-			ID:         id,
-			Status:     models.ExecutionStatusFailed,
-			StatusText: message,
-			EndTime:    time.Now(),
-		}, "Status", "StatusText", "EndTime")
-	if err != nil {
-		log.Errorf("failed to update the execution %d: %v", id, err)
-		return
-	}
-	log.Debugf("the execution %d is marked as failure: %s", id, message)
 }
