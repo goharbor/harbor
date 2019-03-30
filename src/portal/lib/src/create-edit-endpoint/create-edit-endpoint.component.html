@@ -17,7 +17,7 @@
           <div class="form-select">
             <div class="select providerSelect pull-left">
               <select name="adapter" id="adapter" [(ngModel)]="target.type" [disabled]="testOngoing || controlEnabled">
-                <option *ngFor="let adapter of adapterList" [ngValue]="adapter" value="{{adapter.type}}">{{adapter.type}}</option>
+                <option *ngFor="let adapter of adapterList" [ngValue]="adapter" value="{{adapter}}">{{adapter}}</option>
               </select>
             </div>
           </div>

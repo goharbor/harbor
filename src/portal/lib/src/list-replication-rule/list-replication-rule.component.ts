@@ -146,6 +146,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                 // job list hidden
                 this.hideJobs.emit();
                 this.changedRules = this.rules;
+                this.loading = false;
                 // get registry name
                 let targetLists: ReplicationRule[] = rules;
                 if (targetLists && targetLists.length) {
@@ -163,7 +164,6 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                     forkJoin(...registryList).subscribe((item) => {
                         this.selectedRow = null;
                         this.registryName = item.map(target => target.name);
-                        this.loading = false;
                     });
                 }
             }, error => {
