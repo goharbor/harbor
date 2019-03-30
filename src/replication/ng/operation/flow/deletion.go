@@ -19,26 +19,22 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/operation/execution"
 	"github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
-	"github.com/goharbor/harbor/src/replication/ng/registry"
 )
 
 type deletionFlow struct {
 	executionID  int64
 	policy       *model.Policy
 	executionMgr execution.Manager
-	registryMgr  registry.Manager
 	scheduler    scheduler.Scheduler
 	resources    []*model.Resource
 }
 
 // NewDeletionFlow returns an instance of the delete flow which deletes the resources
 // on the destination registry
-func NewDeletionFlow(executionMgr execution.Manager, registryMgr registry.Manager,
-	scheduler scheduler.Scheduler, executionID int64, policy *model.Policy,
-	resources []*model.Resource) Flow {
+func NewDeletionFlow(executionMgr execution.Manager, scheduler scheduler.Scheduler,
+	executionID int64, policy *model.Policy, resources []*model.Resource) Flow {
 	return &deletionFlow{
 		executionMgr: executionMgr,
-		registryMgr:  registryMgr,
 		scheduler:    scheduler,
 		executionID:  executionID,
 		policy:       policy,
@@ -47,13 +43,9 @@ func NewDeletionFlow(executionMgr execution.Manager, registryMgr registry.Manage
 }
 
 func (d *deletionFlow) Run(interface{}) error {
-	srcRegistry, dstRegistry, _, _, err := initialize(d.registryMgr, d.policy)
-	if err != nil {
-		return err
-	}
 	// filling the registry information
 	for _, resource := range d.resources {
-		resource.Registry = srcRegistry
+		resource.Registry = d.policy.SrcRegistry
 	}
 	srcResources, err := filterResources(d.resources, d.policy.Filters)
 	if err != nil {
@@ -64,7 +56,7 @@ func (d *deletionFlow) Run(interface{}) error {
 		log.Infof("no resources need to be replicated for the execution %d, skip", d.executionID)
 		return nil
 	}
-	dstResources := assembleDestinationResources(srcResources, dstRegistry, d.policy.DestNamespace, d.policy.Override)
+	dstResources := assembleDestinationResources(srcResources, d.policy.DestRegistry, d.policy.DestNamespace, d.policy.Override)
 	items, err := preprocess(d.scheduler, srcResources, dstResources)
 	if err != nil {
 		return err

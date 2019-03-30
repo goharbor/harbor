@@ -22,24 +22,21 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/operation/execution"
 	"github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
-	"github.com/goharbor/harbor/src/replication/ng/registry"
 )
 
 type copyFlow struct {
 	executionID  int64
 	policy       *model.Policy
 	executionMgr execution.Manager
-	registryMgr  registry.Manager
 	scheduler    scheduler.Scheduler
 }
 
 // NewCopyFlow returns an instance of the copy flow which replicates the resources from
 // the source registry to the destination registry
-func NewCopyFlow(executionMgr execution.Manager, registryMgr registry.Manager,
-	scheduler scheduler.Scheduler, executionID int64, policy *model.Policy) Flow {
+func NewCopyFlow(executionMgr execution.Manager, scheduler scheduler.Scheduler,
+	executionID int64, policy *model.Policy) Flow {
 	return &copyFlow{
 		executionMgr: executionMgr,
-		registryMgr:  registryMgr,
 		scheduler:    scheduler,
 		executionID:  executionID,
 		policy:       policy,
@@ -47,7 +44,7 @@ func NewCopyFlow(executionMgr execution.Manager, registryMgr registry.Manager,
 }
 
 func (c *copyFlow) Run(interface{}) error {
-	_, dstRegistry, srcAdapter, dstAdapter, err := initialize(c.registryMgr, c.policy)
+	srcAdapter, dstAdapter, err := initialize(c.policy)
 	if err != nil {
 		return err
 	}
@@ -67,7 +64,7 @@ func (c *copyFlow) Run(interface{}) error {
 	if err = createNamespaces(dstAdapter, dstNamespaces); err != nil {
 		return err
 	}
-	dstResources := assembleDestinationResources(srcResources, dstRegistry, c.policy.DestNamespace, c.policy.Override)
+	dstResources := assembleDestinationResources(srcResources, c.policy.DestRegistry, c.policy.DestNamespace, c.policy.Override)
 	items, err := preprocess(c.scheduler, srcResources, dstResources)
 	if err != nil {
 		return err

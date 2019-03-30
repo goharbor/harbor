@@ -23,8 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/config"
 	"github.com/goharbor/harbor/src/replication/ng/event"
 	"github.com/goharbor/harbor/src/replication/ng/operation"
-	"github.com/goharbor/harbor/src/replication/ng/operation/execution"
-	task_scheduler "github.com/goharbor/harbor/src/replication/ng/operation/scheduler"
 	"github.com/goharbor/harbor/src/replication/ng/policy"
 	"github.com/goharbor/harbor/src/replication/ng/policy/controller"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
@@ -70,10 +68,9 @@ func Init() error {
 	// init policy controller
 	PolicyCtl = controller.NewController(js)
 	// init operation controller
-	OperationCtl = operation.NewController(execution.NewDefaultManager(), RegistryMgr,
-		task_scheduler.NewScheduler(js))
+	OperationCtl = operation.NewController(js)
 	// init event handler
-	EventHandler = event.NewHandler(PolicyCtl, OperationCtl)
+	EventHandler = event.NewHandler(PolicyCtl, RegistryMgr, OperationCtl)
 	log.Debug("the replication initialization completed")
 	return nil
 }

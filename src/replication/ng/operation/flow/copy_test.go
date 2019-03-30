@@ -20,9 +20,15 @@ import (
 func TestRunOfCopyFlow(t *testing.T) {
 	scheduler := &fakedScheduler{}
 	executionMgr := &fakedExecutionManager{}
-	registryMgr := &fakedRegistryManager{}
-	policy := &model.Policy{}
-	flow := NewCopyFlow(executionMgr, registryMgr, scheduler, 1, policy)
+	policy := &model.Policy{
+		SrcRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+		DestRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+	}
+	flow := NewCopyFlow(executionMgr, scheduler, 1, policy)
 	err := flow.Run(nil)
 	require.Nil(t, err)
 }

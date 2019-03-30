@@ -24,10 +24,16 @@ import (
 func TestRunOfDeletionFlow(t *testing.T) {
 	scheduler := &fakedScheduler{}
 	executionMgr := &fakedExecutionManager{}
-	registryMgr := &fakedRegistryManager{}
-	policy := &model.Policy{}
+	policy := &model.Policy{
+		SrcRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+		DestRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+	}
 	resources := []*model.Resource{}
-	flow := NewDeletionFlow(executionMgr, registryMgr, scheduler, 1, policy, resources)
+	flow := NewDeletionFlow(executionMgr, scheduler, 1, policy, resources)
 	err := flow.Run(nil)
 	require.Nil(t, err)
 }

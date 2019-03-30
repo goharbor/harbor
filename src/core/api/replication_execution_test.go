@@ -83,10 +83,11 @@ func (f *fakedPolicyManager) List(...*model.PolicyQuery) (int64, []*model.Policy
 func (f *fakedPolicyManager) Get(id int64) (*model.Policy, error) {
 	if id == 1 {
 		return &model.Policy{
-			ID:             1,
-			SrcRegistryID:  1,
-			SrcNamespaces:  []string{"library"},
-			DestRegistryID: 2,
+			ID: 1,
+			SrcRegistry: &model.Registry{
+				ID: 1,
+			},
+			SrcNamespaces: []string{"library"},
 		}, nil
 	}
 	return nil, nil
@@ -148,12 +149,15 @@ func TestListExecutions(t *testing.T) {
 func TestCreateExecution(t *testing.T) {
 	operationCtl := ng.OperationCtl
 	policyMgr := ng.PolicyCtl
+	registryMgr := ng.RegistryMgr
 	defer func() {
 		ng.OperationCtl = operationCtl
 		ng.PolicyCtl = policyMgr
+		ng.RegistryMgr = registryMgr
 	}()
 	ng.OperationCtl = &fakedOperationController{}
 	ng.PolicyCtl = &fakedPolicyManager{}
+	ng.RegistryMgr = &fakedRegistryManager{}
 
 	cases := []*codeCheckingCase{
 		// 401
@@ -202,6 +206,53 @@ func TestCreateExecution(t *testing.T) {
 	runCodeCheckingCases(t, cases...)
 }
 
+func TestGetExecution(t *testing.T) {
+	operationCtl := ng.OperationCtl
+	defer func() {
+		ng.OperationCtl = operationCtl
+	}()
+	ng.OperationCtl = &fakedOperationController{}
+
+	cases := []*codeCheckingCase{
+		// 401
+		{
+			request: &testingRequest{
+				method: http.MethodGet,
+				url:    "/api/replication/executions/1",
+			},
+			code: http.StatusUnauthorized,
+		},
+		// 403
+		{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        "/api/replication/executions/1",
+				credential: nonSysAdmin,
+			},
+			code: http.StatusForbidden,
+		},
+		// 404
+		{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        "/api/replication/executions/2",
+				credential: sysAdmin,
+			},
+			code: http.StatusNotFound,
+		},
+		// 200
+		{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        "/api/replication/executions/1",
+				credential: sysAdmin,
+			},
+			code: http.StatusOK,
+		},
+	}
+
+	runCodeCheckingCases(t, cases...)
+}
 func TestStopExecution(t *testing.T) {
 	operationCtl := ng.OperationCtl
 	defer func() {

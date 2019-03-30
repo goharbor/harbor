@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/goharbor/harbor/src/replication/ng/event"
+
 	"github.com/goharbor/harbor/src/replication/ng"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 )
@@ -113,12 +115,37 @@ func (r *ReplicationOperationAPI) CreateExecution() {
 		return
 	}
 
+	if err = event.PopulateRegistries(ng.RegistryMgr, policy); err != nil {
+		r.HandleInternalServerError(fmt.Sprintf("failed to populate registries for policy %d: %v", execution.PolicyID, err))
+		return
+	}
+
 	executionID, err := ng.OperationCtl.StartReplication(policy, nil)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to start replication for policy %d: %v", execution.PolicyID, err))
 		return
 	}
 	r.Redirect(http.StatusCreated, strconv.FormatInt(executionID, 10))
+}
+
+// GetExecution gets one execution of the replication
+func (r *ReplicationOperationAPI) GetExecution() {
+	executionID, err := r.GetInt64FromPath(":id")
+	if err != nil || executionID <= 0 {
+		r.HandleBadRequest("invalid execution ID")
+		return
+	}
+	execution, err := ng.OperationCtl.GetExecution(executionID)
+	if err != nil {
+		r.HandleInternalServerError(fmt.Sprintf("failed to get execution %d: %v", executionID, err))
+		return
+	}
+
+	if execution == nil {
+		r.HandleNotFound(fmt.Sprintf("execution %d not found", executionID))
+		return
+	}
+	r.WriteJSONData(execution)
 }
 
 // StopExecution stops one execution of the replication

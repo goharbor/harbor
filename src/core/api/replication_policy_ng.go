@@ -19,6 +19,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/goharbor/harbor/src/replication/ng/registry"
+
+	"github.com/goharbor/harbor/src/replication/ng/event"
+
 	"github.com/goharbor/harbor/src/replication/ng"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
@@ -56,6 +60,12 @@ func (r *ReplicationPolicyAPI) List() {
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to list policies: %v", err))
 		return
+	}
+	for _, policy := range policies {
+		if err = populateRegistries(ng.RegistryMgr, policy); err != nil {
+			r.HandleInternalServerError(fmt.Sprintf("failed to populate registries for policy %d: %v", policy.ID, err))
+			return
+		}
 	}
 	r.SetPaginationHeader(total, query.Page, query.Size)
 	r.WriteJSONData(policies)
@@ -97,9 +107,11 @@ func (r *ReplicationPolicyAPI) validateName(policy *model.Policy) bool {
 
 // make the registry referenced exists
 func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
-	registryID := policy.SrcRegistryID
-	if registryID == 0 {
-		registryID = policy.DestRegistryID
+	var registryID int64
+	if policy.SrcRegistry != nil && policy.SrcRegistry.ID > 0 {
+		registryID = policy.SrcRegistry.ID
+	} else {
+		registryID = policy.DestRegistry.ID
 	}
 	registry, err := ng.RegistryMgr.Get(registryID)
 	if err != nil {
@@ -128,6 +140,10 @@ func (r *ReplicationPolicyAPI) Get() {
 	}
 	if policy == nil {
 		r.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		return
+	}
+	if err = populateRegistries(ng.RegistryMgr, policy); err != nil {
+		r.HandleInternalServerError(fmt.Sprintf("failed to populate registries for policy %d: %v", policy.ID, err))
 		return
 	}
 
@@ -207,4 +223,18 @@ func (r *ReplicationPolicyAPI) Delete() {
 		r.HandleInternalServerError(fmt.Sprintf("failed to delete the policy %d: %v", id, err))
 		return
 	}
+}
+
+// ignore the credential for the registries
+func populateRegistries(registryMgr registry.Manager, policy *model.Policy) error {
+	if err := event.PopulateRegistries(registryMgr, policy); err != nil {
+		return err
+	}
+	if policy.SrcRegistry != nil {
+		policy.SrcRegistry.Credential = nil
+	}
+	if policy.DestRegistry != nil {
+		policy.DestRegistry.Credential = nil
+	}
+	return nil
 }

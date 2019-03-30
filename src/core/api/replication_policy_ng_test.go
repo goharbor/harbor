@@ -126,7 +126,9 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 				url:        "/api/replication/policies",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					SrcRegistryID: 1,
+					SrcRegistry: &model.Registry{
+						ID: 1,
+					},
 					SrcNamespaces: []string{"library"},
 				},
 			},
@@ -152,8 +154,10 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 				url:        "/api/replication/policies",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					Name:          "policy01",
-					SrcRegistryID: 1,
+					Name: "policy01",
+					SrcRegistry: &model.Registry{
+						ID: 1,
+					},
 				},
 			},
 			code: http.StatusBadRequest,
@@ -165,8 +169,10 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 				url:        "/api/replication/policies",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					Name:          "duplicate_name",
-					SrcRegistryID: 1,
+					Name: "duplicate_name",
+					SrcRegistry: &model.Registry{
+						ID: 1,
+					},
 					SrcNamespaces: []string{"library"},
 				},
 			},
@@ -179,8 +185,10 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 				url:        "/api/replication/policies",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					Name:          "policy01",
-					SrcRegistryID: 2,
+					Name: "policy01",
+					SrcRegistry: &model.Registry{
+						ID: 2,
+					},
 					SrcNamespaces: []string{"library"},
 				},
 			},
@@ -193,8 +201,10 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 				url:        "/api/replication/policies",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					Name:          "policy01",
-					SrcRegistryID: 1,
+					Name: "policy01",
+					SrcRegistry: &model.Registry{
+						ID: 1,
+					},
 					SrcNamespaces: []string{"library"},
 				},
 			},
@@ -207,10 +217,13 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 
 func TestReplicationPolicyAPIGet(t *testing.T) {
 	policyMgr := ng.PolicyCtl
+	registryMgr := ng.RegistryMgr
 	defer func() {
 		ng.PolicyCtl = policyMgr
+		ng.RegistryMgr = registryMgr
 	}()
 	ng.PolicyCtl = &fakedPolicyManager{}
+	ng.RegistryMgr = &fakedRegistryManager{}
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -296,7 +309,9 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 				url:        "/api/replication/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					SrcRegistryID: 1,
+					SrcRegistry: &model.Registry{
+						ID: 1,
+					},
 					SrcNamespaces: []string{"library"},
 				},
 			},
@@ -309,8 +324,10 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 				url:        "/api/replication/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					Name:          "duplicate_name",
-					SrcRegistryID: 1,
+					Name: "duplicate_name",
+					SrcRegistry: &model.Registry{
+						ID: 1,
+					},
 					SrcNamespaces: []string{"library"},
 				},
 			},
@@ -323,8 +340,10 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 				url:        "/api/replication/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					Name:          "policy01",
-					SrcRegistryID: 2,
+					Name: "policy01",
+					SrcRegistry: &model.Registry{
+						ID: 2,
+					},
 					SrcNamespaces: []string{"library"},
 				},
 			},
@@ -337,8 +356,10 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 				url:        "/api/replication/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					Name:          "policy01",
-					SrcRegistryID: 1,
+					Name: "policy01",
+					SrcRegistry: &model.Registry{
+						ID: 1,
+					},
 					SrcNamespaces: []string{"library"},
 				},
 			},

@@ -1624,6 +1624,36 @@ paths:
         '500':
           description: Unexpected internal errors.
   /replication/executions/{id}:
+    get: 
+      summary: Get the execution of the replication.
+      description: |
+        This endpoint is for user to get one execution of the replication.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The execution ID.
+          required: true
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Success.
+          schema:
+            $ref: '#/definitions/ReplicationExecution'
+        '400':
+          description: Bad request.
+        '401':
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
+        '404':
+          description: Resource requested does not exist.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '500':
+          description: Unexpected internal errors.
     put: 
       summary: Stop the execution of the replication.
       description: |
@@ -4109,19 +4139,17 @@ definitions:
       description:
         type: string
         description: The description of the policy.
-      src_registry_id:
-        type: integer
-        format: int64
-        description: The source registry ID.
+      src_registry:
+        description: The source registry.
+        $ref: '#/definitions/Registry'
       src_namespaces:
         type: array
         description: The source namespaces
         items:
           type: string
-      dest_registry_id:
-        type: integer
-        format: int64
-        description: The destination registry ID.
+      dest_registry:
+        description: The destination registry.
+        $ref: '#/definitions/Registry'
       dest_namespace:
         type: string
         description: The destination namespace.
