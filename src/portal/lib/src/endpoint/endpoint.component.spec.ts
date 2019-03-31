@@ -10,7 +10,7 @@ import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation
 import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { ErrorHandler } from "../error-handler/error-handler";
-import { Endpoint, Adapter } from "../service/interface";
+import { Endpoint } from "../service/interface";
 import {
   EndpointService,
   EndpointDefaultService
@@ -93,17 +93,7 @@ describe("EndpointComponent (inline template)", () => {
     }
   ];
 
-  let mockAdapters: Adapter[] = [{
-    type: "Harbor",
-    description: "test",
-    supported_resource_filters: [
-      {
-        "type": "Name",
-        "style": "input"
-      }
-    ],
-    supported_triggers: []
-  }];
+  let mockAdapters = ['harbor', 'docker hub'];
 
   let comp: EndpointComponent;
   let fixture: ComponentFixture<EndpointComponent>;

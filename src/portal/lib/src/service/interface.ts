@@ -93,13 +93,6 @@ export interface Filter {
    values ?: string[];
 }
 
-export interface Adapter extends Base {
-  type: string;
-  description: string;
-  supported_triggers: string [];
-  supported_resource_filters: Filter [];
-}
-
 /**
  * Interface for replication rule.
  *
@@ -163,10 +156,13 @@ export interface ReplicationJobItem extends Base {
   [key: string]: any | any[];
   id: number;
   status: string;
-  repository: string;
   policy_id: number;
-  operation: string;
-  tags: string;
+  trigger: string;
+  total: number;
+  failed: number;
+  succeed: number;
+  in_progress: number;
+  stopped: number;
 }
 
 /**

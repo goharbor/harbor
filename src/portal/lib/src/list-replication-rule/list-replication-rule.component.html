@@ -16,7 +16,7 @@
     <clr-dg-row *clrDgItems="let p of changedRules; let i=index" [clrDgItem]="p" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
         <clr-dg-cell>{{p.name}}</clr-dg-cell>
         <clr-dg-cell class="min-width">
-            {{p.src_registry_id? registryName[i]:'current'}} : {{p.src_namespaces?.length>0 ?  p.src_namespaces[0]: ''}}
+            {{p.src_registry ? p.src_registry.name : ''}} : {{p.src_namespaces?.length>0 ?  p.src_namespaces[0]: ''}}
             <clr-tooltip>
                 <clr-icon *ngIf="p.src_namespaces && p.src_namespaces.length > 1" clrTooltipTrigger shape="ellipsis-horizontal" size="18"></clr-icon>
                 <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
@@ -25,10 +25,10 @@
             </clr-tooltip>
         </clr-dg-cell>
         <clr-dg-cell>
-            {{p.src_registry_id>0? 'pull-based' : 'push-based'}}
+            {{p.src_registry && p.src_registry.id > 0 ? 'pull-based' : 'push-based'}}
         </clr-dg-cell>
         <clr-dg-cell class="min-width">
-            {{p.dest_registry_id? registryName[i]: 'current'}} : {{p.dest_namespace? p.dest_namespace: ''}}
+            {{p.dest_registry ? p.dest_registry.name : ''}} : {{p.dest_namespace? p.dest_namespace: ''}}
         </clr-dg-cell>
         <clr-dg-cell>{{p.trigger ? p.trigger.type : ''}}</clr-dg-cell>
         <clr-dg-cell>

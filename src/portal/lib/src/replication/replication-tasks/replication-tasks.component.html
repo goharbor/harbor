@@ -14,15 +14,15 @@
             <h2 class="custom-h2 h2-style">{{executionId}}</h2>
           </div>
           <div>
-            <div class="status-progress" *ngIf="executions === 'InProgress'">
+            <div class="status-progress" *ngIf="executions && executions['status'] === 'InProgress'">
               <span class="spinner spinner-inline"></span>
               <span>{{'REPLICATION.IN_PROGRESS'| translate}}</span>
             </div>
-            <div class="status-success" *ngIf="executions === 'success'">
+            <div class="status-success" *ngIf="executions && executions['status'] === 'Succeed'">
               <clr-icon size="18" shape="success-standard" class="color-green"></clr-icon>
               <span>{{'REPLICATION.SUCCESS'| translate}}</span>
             </div>
-            <div class="status-failed" *ngIf="executions === 'failed'">
+            <div class="status-failed" *ngIf="executions && executions['status'] === 'Failed'">
               <clr-icon size="18" shape="error-standard" class="color-red"></clr-icon>
               <span>{{'REPLICATION.FAILTURE'| translate}}</span>
             </div>
@@ -37,17 +37,13 @@
     </div>
     <div class="execution-block">
       <div class="executions-detail">
-        <div class="policy">
-          <label>{{'REPLICATION.POLICY' | translate}} :</label>
-          <span>{{'My 1st policy'}}</span>
+        <div>
+          <label>{{'REPLICATION.TRIGGER_MODE' | translate}} :</label>
+          <span>{{trigger| translate}}</span>
         </div>
-        <div class="trigger">
-          <label for="">{{'REPLICATION.TRIGGER_MODE' | translate}} :</label>
-          <span>{{'Schedule'}}</span>
-        </div>
-        <div class="start-time">
-          <label for="">{{'REPLICATION.CREATION_TIME' | translate}} :</label>
-          <span>{{'3/14/19, 2:26 PM'}}</span>
+        <div>
+          <label>{{'REPLICATION.CREATION_TIME' | translate}} :</label>
+          <span>{{startTime | date: 'short'}}</span>
         </div>
       </div>
       <div class="flex-block">

@@ -10,8 +10,7 @@ import {
   ReplicationJob,
   ReplicationRule,
   ReplicationJobItem,
-  ReplicationTasks,
-  Adapter
+  ReplicationTasks
 } from "./interface";
 import { RequestQueryParams } from "./RequestQueryParams";
 import { map, catchError } from "rxjs/operators";
@@ -142,7 +141,7 @@ export abstract class ReplicationService {
   ): Observable<any>;
 
 
-  abstract getReplicationAdapter(type: string): Observable<Adapter>;
+  abstract getReplicationAdapter(type: string): Observable<any>;
 
   /**
    * Get the jobs for the specified replication rule.
@@ -163,6 +162,19 @@ export abstract class ReplicationService {
   abstract getExecutions(
     ruleId: number | string,
     queryParams?: RequestQueryParams
+  ): Observable<ReplicationJob>;
+
+  /**
+   * Get the specified execution.
+   *
+   * @abstract
+   *  ** deprecated param {(number | string)} endpointId
+   * returns {(Observable<ReplicationJob> | ReplicationJob)}
+   *
+   * @memberOf ReplicationService
+   */
+  abstract getExecutionById(
+    executionId: number | string
   ): Observable<ReplicationJob>;
 
   /**
@@ -222,11 +234,11 @@ export class ReplicationDefaultService extends ReplicationService {
     );
   }
 
-  public getReplicationAdapter(type): Observable<Adapter> {
+  public getReplicationAdapter(type): Observable<any> {
     let requestUrl: string = `${this._replicateUrl}/adapters/${type}`;
     return this.http
       .get(requestUrl)
-      .pipe(map(response => response.json() as Adapter)
+      .pipe(map(response => response.json())
         , catchError(error => observableThrowError(error)));
   }
 
@@ -413,6 +425,41 @@ export class ReplicationDefaultService extends ReplicationService {
         return result;
       })
         , catchError(error => observableThrowError(error)));
+  }
+
+  public getExecutionById(
+    executionId: number | string
+  ): Observable<ReplicationJob> {
+    if (!executionId || executionId <= 0) {
+      return observableThrowError("Bad request argument.");
+    }
+    let requestUrl: string = `${this._replicateUrl}/executions/${executionId}`;
+    return this.http
+      .get(requestUrl, HTTP_GET_OPTIONS)
+      .pipe(map(response => {
+        let result: ReplicationJob = {
+          metadata: {
+            xTotalCount: 0
+          },
+          data: []
+        };
+
+        if (response && response.headers) {
+          let xHeader: string = response.headers.get("X-Total-Count");
+          if (xHeader) {
+            result.metadata.xTotalCount = parseInt(xHeader, 0);
+          }
+        }
+        result.data = response.json() as ReplicationJobItem[];
+        if (result.metadata.xTotalCount === 0) {
+          if (result.data && result.data.length > 0) {
+            result.metadata.xTotalCount = result.data.length;
+          }
+        }
+
+        return result;
+      })
+      , catchError(error => observableThrowError(error)));
   }
 
   public getJobLog(

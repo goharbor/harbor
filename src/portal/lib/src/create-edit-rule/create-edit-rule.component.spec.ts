@@ -17,8 +17,7 @@ import {
   ReplicationRule,
   ReplicationJob,
   Endpoint,
-  ReplicationJobItem,
-  Adapter
+  ReplicationJobItem
 } from "../service/interface";
 
 import { ErrorHandler } from "../error-handler/error-handler";
@@ -42,19 +41,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of } from "rxjs";
 
 describe("CreateEditRuleComponent (inline template)", () => {
-  let mockEndpoint: Endpoint = {
-    id: 1,
-    credential: {
-      access_key: "admin",
-      access_secret: "",
-      type: "basic"
-    },
-    description: "test",
-    insecure: false,
-    name: "target_01",
-    type: "Harbor",
-    url: "https://10.117.4.151"
-  };
   let mockRules: ReplicationRule[] = [
     {
       id: 1,
@@ -74,26 +60,35 @@ describe("CreateEditRuleComponent (inline template)", () => {
     {
       id: 1,
       status: "stopped",
-      repository: "library/busybox",
       policy_id: 1,
-      operation: "transfer",
-      tags: null
+      trigger: "Manual",
+      total: 0,
+      failed: 0,
+      succeed: 0,
+      in_progress: 0,
+      stopped: 0
     },
     {
       id: 2,
       status: "stopped",
-      repository: "library/busybox",
       policy_id: 1,
-      operation: "transfer",
-      tags: null
+      trigger: "Manual",
+      total: 1,
+      failed: 0,
+      succeed: 1,
+      in_progress: 0,
+      stopped: 0
     },
     {
       id: 3,
       status: "stopped",
-      repository: "library/busybox",
       policy_id: 2,
-      operation: "transfer",
-      tags: null
+      trigger: "Manual",
+      total: 1,
+      failed: 1,
+      succeed: 0,
+      in_progress: 0,
+      stopped: 0
     }
   ];
 
@@ -171,7 +166,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
     deletion: false
   };
 
-  let mockAdapter: Adapter = {
+  let mockAdapter = {
     "type": "harbor",
     "description": "",
     "supported_resource_filters": [
@@ -218,7 +213,6 @@ describe("CreateEditRuleComponent (inline template)", () => {
   let spyJobs: jasmine.Spy;
   let spyAdapter: jasmine.Spy;
   let spyEndpoint: jasmine.Spy;
-  let spyEndpoints: jasmine.Spy;
 
 
   let config: IServiceConfig = {
@@ -277,12 +271,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
     spyAdapter = spyOn(replicationService, "getReplicationAdapter").and.returnValues(
         of(mockAdapter));
-    spyEndpoints = spyOn(endpointService, "getEndpoints").and.returnValues(
+    spyEndpoint = spyOn(endpointService, "getEndpoints").and.returnValues(
       of(mockEndpoints)
-    );
-
-    spyEndpoint = spyOn(endpointService, "getEndpoint").and.returnValue(
-      of(mockEndpoint)
     );
 
     fixture.detectChanges();

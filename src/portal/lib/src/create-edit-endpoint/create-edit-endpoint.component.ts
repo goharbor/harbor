@@ -28,7 +28,7 @@ import { TranslateService } from "@ngx-translate/core";
 import { EndpointService } from "../service/endpoint.service";
 import { ErrorHandler } from "../error-handler/index";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
-import { Endpoint, Adapter } from "../service/interface";
+import { Endpoint } from "../service/interface";
 import { clone, compareValue, isEmptyObject } from "../utils";
 
 
@@ -48,7 +48,7 @@ export class CreateEditEndpointComponent
   staticBackdrop: boolean = true;
   closable: boolean = false;
   editable: boolean;
-  adapterList: Adapter[] = [];
+  adapterList: string[];
   target: Endpoint = this.initEndpoint();
   selectedType: string;
   initVal: Endpoint;
@@ -117,7 +117,7 @@ export class CreateEditEndpointComponent
       description: "",
       insecure: false,
       name: "",
-      type: "Harbor",
+      type: "harbor",
       url: "",
     };
   }

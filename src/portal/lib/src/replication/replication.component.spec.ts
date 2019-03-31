@@ -27,20 +27,6 @@ import { of } from 'rxjs';
 
 
 describe('Replication Component (inline template)', () => {
-  let mockEndpoint: Endpoint = {
-    id: 1,
-    credential: {
-      access_key: "admin",
-      access_secret: "",
-      type: "basic"
-    },
-    description: "test",
-    insecure: false,
-    name: "target_01",
-    type: "Harbor",
-    url: "https://10.117.4.151"
-  };
-
 
   let mockRules: ReplicationRule[] = [
       {
@@ -69,31 +55,37 @@ describe('Replication Component (inline template)', () => {
 
   let mockJobs: ReplicationJobItem[] = [
     {
-        "id": 1,
-        "status": "error",
-        "repository": "library/nginx",
-        "policy_id": 1,
-        "operation": "transfer",
-        "update_time": new Date("2017-05-23 12:20:33"),
-        "tags": null
+      id: 1,
+      status: "stopped",
+      policy_id: 1,
+      trigger: "Manual",
+      total: 0,
+      failed: 0,
+      succeed: 0,
+      in_progress: 0,
+      stopped: 0
     },
     {
-        "id": 2,
-        "status": "finished",
-        "repository": "library/mysql",
-        "policy_id": 1,
-        "operation": "transfer",
-        "update_time": new Date("2017-05-27 12:20:33"),
-        "tags": null
+      id: 2,
+      status: "stopped",
+      policy_id: 1,
+      trigger: "Manual",
+      total: 1,
+      failed: 0,
+      succeed: 1,
+      in_progress: 0,
+      stopped: 0
     },
     {
-        "id": 3,
-        "status": "stopped",
-        "repository": "library/busybox",
-        "policy_id": 2,
-        "operation": "transfer",
-        "update_time": new Date("2017-04-23 12:20:33"),
-        "tags": null
+      id: 3,
+      status: "stopped",
+      policy_id: 2,
+      trigger: "Manual",
+      total: 1,
+      failed: 1,
+      succeed: 0,
+      in_progress: 0,
+      stopped: 0
     }
   ];
 
@@ -141,7 +133,6 @@ describe('Replication Component (inline template)', () => {
 
   let spyRules: jasmine.Spy;
   let spyJobs: jasmine.Spy;
-  let spyEndpoint: jasmine.Spy;
   let spyEndpoints: jasmine.Spy;
 
   let deGrids: DebugElement[];
@@ -152,8 +143,7 @@ describe('Replication Component (inline template)', () => {
   let elJob: HTMLElement;
 
   let config: IServiceConfig = {
-    replicationRuleEndpoint: '/api/policies/replication/testing',
-    systemInfoEndpoint: "/api/endpoints/testing"
+    replicationRuleEndpoint: '/api/policies/replication/testing'
   };
 
   beforeEach(async(() => {
@@ -203,7 +193,6 @@ describe('Replication Component (inline template)', () => {
 
 
     spyEndpoints = spyOn(endpointService, 'getEndpoints').and.returnValues(of(mockEndpoints));
-    spyEndpoint = spyOn(endpointService, "getEndpoint").and.returnValue(of(mockEndpoint));
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();

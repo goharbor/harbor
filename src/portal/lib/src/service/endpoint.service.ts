@@ -9,7 +9,7 @@ import {
   HTTP_GET_OPTIONS
 } from "../utils";
 import { RequestQueryParams } from "./RequestQueryParams";
-import { Endpoint, ReplicationRule, Adapter } from "./interface";
+import { Endpoint, ReplicationRule } from "./interface";
 import { catchError, map } from "rxjs/operators";
 
 
@@ -181,7 +181,7 @@ export class EndpointDefaultService extends EndpointService {
   public getAdapters(): Observable<any> {
     return this.http
     .get(`/api/replication/adapters`)
-    .pipe(map(response => response.json() as Adapter)
+    .pipe(map(response => response.json())
     , catchError(error => observableThrowError(error)));
 }
 

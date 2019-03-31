@@ -29,7 +29,6 @@ import { TranslateService } from "@ngx-translate/core";
 import { map, catchError } from "rxjs/operators";
 import { Observable, forkJoin, of, throwError as observableThrowError } from "rxjs";
 import { ReplicationService } from "../service/replication.service";
-import { EndpointService } from "../service/endpoint.service";
 import {
     ReplicationJob,
     ReplicationJobItem,
@@ -82,9 +81,6 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     changedRules: ReplicationRule[];
     ruleName: string;
     canDeleteRule: boolean;
-    registryName: [] = [];
-    desRegistry: [] = [];
-    currentRegistry: string;
 
     selectedRow: ReplicationRule;
 
@@ -98,7 +94,6 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     enabledComparator: Comparator<ReplicationRule> = new CustomComparator<ReplicationRule>("enabled", "number");
 
     constructor(private replicationService: ReplicationService,
-        private endpointService: EndpointService,
         private translateService: TranslateService,
         private errorHandler: ErrorHandler,
         private operationService: OperationService,
@@ -119,9 +114,6 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         if (!this.projectScope) {
             this.retrieveRules();
         }
-        this.translateService.get("REPLICATION.CURRENT").subscribe((res: string) => {
-            this.currentRegistry = res;
-        });
     }
     ngOnChanges(changes: SimpleChanges): void {
         let proIdChange: SimpleChange = changes["projectId"];
@@ -147,33 +139,10 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                 this.hideJobs.emit();
                 this.changedRules = this.rules;
                 this.loading = false;
-                // get registry name
-                let targetLists: ReplicationRule[] = rules;
-                if (targetLists && targetLists.length) {
-                    let registryList: any[] = [];
-                    targetLists.forEach(target => {
-                        let tartId: number;
-                        if (target.src_registry_id > 0) {
-                            tartId = target.src_registry_id;
-                        } else {
-                            tartId = target.dest_registry_id;
-                        }
-                        registryList.push(this.getRegistry(tartId));
-
-                    });
-                    forkJoin(...registryList).subscribe((item) => {
-                        this.selectedRow = null;
-                        this.registryName = item.map(target => target.name);
-                    });
-                }
             }, error => {
                 this.errorHandler.error(error);
                 this.loading = false;
             });
-    }
-
-    getRegistry(endpointId) {
-        return this.endpointService.getEndpoint(endpointId);
     }
 
     replicateRule(rule: ReplicationRule): void {
