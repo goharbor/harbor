@@ -33,6 +33,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/ng/adapter/dockerhub"
 	// register the DockerHub adapter
 	_ "github.com/goharbor/harbor/src/replication/ng/adapter/harbor"
+	// register the Native adapter
+	_ "github.com/goharbor/harbor/src/replication/ng/adapter/native"
 )
 
 var (
