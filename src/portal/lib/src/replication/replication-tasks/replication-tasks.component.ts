@@ -20,7 +20,7 @@ export class ReplicationTasksComponent implements OnInit {
   tasks: ReplicationTasks[] = [];
   tasksCopy: ReplicationTasks[] = [];
   stopOnGoing: boolean;
-  executions: string = 'InProgress';
+  executions: ReplicationJobItem[];
   @Input() executionId: string;
   startTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
   ReplicationJob
@@ -38,23 +38,33 @@ export class ReplicationTasksComponent implements OnInit {
 
   ngOnInit(): void {
     this.clrLoadTasks();
-    // this.executions.status = 'success';
     this.searchTask = '';
+    this.getExecutionDetail();
   }
 
-  // getExecutions(): void {
-  //   if (this.executionId) {
-  //     toPromise<ReplicationJob>(
-  //       this.replicationService.getExecutions(this.executionId)
-  //       )
-  //       .then(executions => {
-  //         console.log(executions);
-  //       })
-  //       .catch(error => {
-  //           this.errorHandler.error(error);
-  //       });
-  //   }
-  // }
+  getExecutionDetail(): void {
+    if (this.executionId) {
+      this.replicationService.getExecutionById(this.executionId)
+        .subscribe(res => {
+          this.executions = res.data;
+        },
+        error => {
+          this.errorHandler.error(error);
+        });
+    }
+  }
+
+  public get trigger(): string {
+    return this.executions && this.executions['trigger']
+      ? this.executions['trigger']
+      : "";
+  }
+
+  public get startTime(): Date {
+    return this.executions && this.executions['start_time']
+      ? this.executions['start_time']
+      : null;
+  }
 
   stopJob() {
     this.stopOnGoing = true;

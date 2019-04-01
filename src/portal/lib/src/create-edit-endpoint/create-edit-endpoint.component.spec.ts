@@ -12,7 +12,7 @@ import { FilterComponent } from "../filter/filter.component";
 import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { ErrorHandler } from "../error-handler/error-handler";
-import { Endpoint, Adapter } from "../service/interface";
+import { Endpoint } from "../service/interface";
 import {
   EndpointService,
   EndpointDefaultService
@@ -34,17 +34,7 @@ describe("CreateEditEndpointComponent (inline template)", () => {
     url: "https://10.117.4.151"
   };
 
-  let mockAdapters: Adapter[] = [{
-    type: "Harbor",
-    description: "test",
-    supported_resource_filters: [
-      {
-        "type": "Name",
-        "style": "input"
-      }
-    ],
-    supported_triggers: []
-  }];
+  let mockAdapters = ['harbor', 'docker hub'];
 
   let comp: CreateEditEndpointComponent;
   let fixture: ComponentFixture<CreateEditEndpointComponent>;

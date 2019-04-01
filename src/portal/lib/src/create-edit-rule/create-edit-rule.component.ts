@@ -21,7 +21,7 @@ import {
   EventEmitter,
   Output
 } from "@angular/core";
-import { Filter, ReplicationRule, Endpoint, Adapter } from "../service/interface";
+import { Filter, ReplicationRule, Endpoint } from "../service/interface";
 import { Subject, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
