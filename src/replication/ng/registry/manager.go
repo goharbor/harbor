@@ -18,12 +18,13 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/goharbor/harbor/src/replication/ng/util"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
-	// TODO use the replication config rather than the core
-	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/replication/ng/config"
 	"github.com/goharbor/harbor/src/replication/ng/dao"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
@@ -212,7 +213,7 @@ func healthStatus(r *model.Registry) (HealthStatus, error) {
 		return Unknown, fmt.Errorf("unknown registry type '%s'", model.RegistryTypeHarbor)
 	}
 
-	transport := registry.GetHTTPTransport(r.Insecure)
+	transport := util.GetHTTPTransport(r.Insecure)
 	credential := auth.NewBasicAuthCredential(r.Credential.AccessKey, r.Credential.AccessSecret)
 	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
 		Transport: transport,
@@ -238,11 +239,7 @@ func decrypt(secret string) (string, error) {
 		return "", nil
 	}
 
-	key, err := config.SecretKey()
-	if err != nil {
-		return "", err
-	}
-	decrypted, err := utils.ReversibleDecrypt(secret, key)
+	decrypted, err := utils.ReversibleDecrypt(secret, config.Config.SecretKey)
 	if err != nil {
 		return "", err
 	}
@@ -256,11 +253,7 @@ func encrypt(secret string) (string, error) {
 		return secret, nil
 	}
 
-	key, err := config.SecretKey()
-	if err != nil {
-		return "", err
-	}
-	encrypted, err := utils.ReversibleEncrypt(secret, key)
+	encrypted, err := utils.ReversibleEncrypt(secret, config.Config.SecretKey)
 	if err != nil {
 		return "", err
 	}

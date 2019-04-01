@@ -22,6 +22,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/goharbor/harbor/src/replication/ng/util"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -59,8 +61,7 @@ type DefaultImageRegistry struct {
 
 // NewDefaultImageRegistry returns an instance of DefaultImageRegistry
 func NewDefaultImageRegistry(registry *model.Registry) *DefaultImageRegistry {
-	// use the same HTTP connection pool for all clients
-	transport := registry_pkg.GetHTTPTransport(registry.Insecure)
+	transport := util.GetHTTPTransport(registry.Insecure)
 	modifiers := []modifier.Modifier{
 		&auth.UserAgentModifier{
 			UserAgent: UserAgentReplicator,
