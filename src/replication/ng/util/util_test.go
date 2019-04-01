@@ -75,3 +75,10 @@ func TestMatch(t *testing.T) {
 		assert.Equal(t, c.match, match)
 	}
 }
+
+func TestGetHTTPTransport(t *testing.T) {
+	transport := GetHTTPTransport(true)
+	assert.True(t, transport.TLSClientConfig.InsecureSkipVerify)
+	transport = GetHTTPTransport(false)
+	assert.False(t, transport.TLSClientConfig.InsecureSkipVerify)
+}

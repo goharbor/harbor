@@ -18,16 +18,14 @@ import (
 	"fmt"
 	"net/http"
 
-	// "strconv"
-
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	registry_pkg "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/util"
 )
 
 // TODO add UT
@@ -50,8 +48,7 @@ type adapter struct {
 }
 
 func newAdapter(registry *model.Registry) *adapter {
-	// TODO use the global transport
-	transport := registry_pkg.GetHTTPTransport(registry.Insecure)
+	transport := util.GetHTTPTransport(registry.Insecure)
 	modifiers := []modifier.Modifier{
 		&auth.UserAgentModifier{
 			UserAgent: adp.UserAgentReplicator,

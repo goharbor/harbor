@@ -31,9 +31,6 @@ type defaultScheduler struct {
 	client job.Client
 }
 
-// TODO use the service account?
-// TODO use the common transport
-
 // NewScheduler returns an instance of Scheduler
 func NewScheduler(js job.Client) Scheduler {
 	return &defaultScheduler{
