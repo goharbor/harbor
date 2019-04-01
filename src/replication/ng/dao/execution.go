@@ -171,7 +171,18 @@ func updateStatusCount(execution *models.Execution, status string, delta int) er
 func resetExecutionStatus(execution *models.Execution) error {
 	execution.Status = generateStatus(execution)
 	if executionFinished(execution.Status) {
-		execution.EndTime = time.Now()
+		o := dao.GetOrmer()
+		sql := `select max(end_time) from replication_task where execution_id = ?`
+		queryParam := make([]interface{}, 1)
+		queryParam = append(queryParam, execution.ID)
+
+		var et time.Time
+		err := o.Raw(sql, queryParam).QueryRow(&et)
+		if err != nil {
+			log.Errorf("Query end_time from tasks error execution %d: %v", execution.ID, err)
+			et = time.Now()
+		}
+		execution.EndTime = et
 	}
 	return nil
 }
