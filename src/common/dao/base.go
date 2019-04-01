@@ -36,6 +36,12 @@ const (
 // ErrDupRows is returned by DAO when inserting failed with error "duplicate key value violates unique constraint"
 var ErrDupRows = errors.New("sql: duplicate row in DB")
 
+// ErrRollback is returned by DAO when transaction roll back failed
+var ErrRollback = errors.New("<Ormer.Rollback> transaction roll back error")
+
+// ErrCommit is returned by DAO when transaction commit failed
+var ErrCommit = errors.New("<Ormer.Commit> transaction roll back error")
+
 // Database is an interface of different databases
 type Database interface {
 	// Name returns the name of database

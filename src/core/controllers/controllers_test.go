@@ -50,7 +50,6 @@ func init() {
 	beego.Router("/c/reset", &CommonController{}, "post:ResetPassword")
 	beego.Router("/c/userExists", &CommonController{}, "post:UserExists")
 	beego.Router("/c/sendEmail", &CommonController{}, "get:SendResetEmail")
-	beego.Router("/c/oidc/onboard", &OIDCController{}, "post:Onboard")
 	beego.Router("/v2/*", &RegistryProxy{}, "*:Handle")
 }
 
@@ -140,8 +139,4 @@ func TestAll(t *testing.T) {
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(int(404), w.Code, "GET v2/noproject/manifests/1.0 should get a 404 response")
 
-	r, _ = http.NewRequest("POST", "/c/oidc/onboard", nil)
-	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(500), w.Code, "/c/oidc/onboard httpStatusCode should be 500")
 }

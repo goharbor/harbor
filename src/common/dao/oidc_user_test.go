@@ -22,44 +22,56 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	user111 = models.User{
+func TestOIDCUserMetaDaoMethods(t *testing.T) {
+
+	user111 := models.User{
 		Username: "user111",
 		Email:    "user111@email.com",
 	}
-	user222 = models.User{
+	user222 := models.User{
 		Username: "user222",
 		Email:    "user222@email.com",
 	}
-	ou111 = &models.OIDCUser{
+	userEmptyOuMeta := models.User{
+		Username: "userEmptyOuMeta",
+		Email:    "userEmptyOuMeta@email.com",
+	}
+	ou111 := models.OIDCUser{
 		SubIss: "QWE123123RT1",
 		Secret: "QWEQWE1",
 	}
-	ou222 = &models.OIDCUser{
+	ou222 := models.OIDCUser{
 		SubIss: "QWE123123RT2",
 		Secret: "QWEQWE2",
 	}
-)
 
-func TestOIDCUserMetaDaoMethods(t *testing.T) {
-
-	err := OnBoardUser(&user111)
+	// onboard OIDC ...
+	user111.OIDCUserMeta = &ou111
+	err := OnBoardOIDCUser(&user111)
 	require.Nil(t, err)
-	ou111.UserID = user111.UserID
-	err = OnBoardUser(&user222)
-	require.Nil(t, err)
-	ou222.UserID = user222.UserID
-
-	// test add
-	_, err = AddOIDCUser(ou111)
-	require.Nil(t, err)
-	_, err = AddOIDCUser(ou222)
+	user222.OIDCUserMeta = &ou222
+	err = OnBoardOIDCUser(&user222)
 	require.Nil(t, err)
 
-	// test get
+	// empty OIDC user meta ...
+	err = OnBoardOIDCUser(&userEmptyOuMeta)
+	require.NotNil(t, err)
+	assert.Equal(t, "unable to onboard as empty oidc user", err.Error())
+
+	// test get by ID
 	oidcUser1, err := GetOIDCUserByID(ou111.ID)
 	require.Nil(t, err)
 	assert.Equal(t, ou111.UserID, oidcUser1.UserID)
+
+	// test get by userID
+	oidcUser2, err := GetOIDCUserByUserID(user111.UserID)
+	require.Nil(t, err)
+	assert.Equal(t, "QWE123123RT1", oidcUser2.SubIss)
+
+	// test get by sub and iss
+	userGetBySubIss, err := GetUserBySubIss("QWE123", "123RT1")
+	require.Nil(t, err)
+	assert.Equal(t, "user111@email.com", userGetBySubIss.Email)
 
 	// test update
 	meta3 := &models.OIDCUser{
@@ -72,9 +84,15 @@ func TestOIDCUserMetaDaoMethods(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, "newSub", oidcUser1Update.SubIss)
 
-	user, err := GetUserBySub("newSub")
+	user, err := GetUserBySubIss("new", "Sub")
 	require.Nil(t, err)
 	assert.Equal(t, "user111", user.Username)
+
+	// clear data
+	defer func() {
+		_, err := GetOrmer().Raw(`delete from oidc_user`).Exec()
+		require.Nil(t, err)
+	}()
 }
 
 func TestOIDCOnboard(t *testing.T) {
@@ -86,38 +104,67 @@ func TestOIDCOnboard(t *testing.T) {
 		Username: "user555",
 		Email:    "user555@email.com",
 	}
+	user666 := models.User{
+		Username: "user666",
+		Email:    "user666@email.com",
+	}
+	userDup := models.User{
+		Username: "user333",
+		Email:    "user333@email.com",
+	}
+
 	ou333 := &models.OIDCUser{
-		UserID: 333,
-		SubIss: "QWE123123RT1",
+		SubIss: "QWE123123RT3",
+		Secret: "QWEQWE333",
+	}
+	ou555 := &models.OIDCUser{
+		SubIss: "QWE123123RT5",
+		Secret: "QWEQWE555",
+	}
+	ouDup := &models.OIDCUser{
+		SubIss: "QWE123123RT3",
 		Secret: "QWEQWE333",
 	}
 	ouDupSub := &models.OIDCUser{
-		UserID: 444,
-		SubIss: "QWE123123RT1",
-		Secret: "QWEQWE444",
+		SubIss: "QWE123123RT3",
+		Secret: "ouDupSub",
 	}
 
+	// data prepare ...
+	user333.OIDCUserMeta = ou333
+	err := OnBoardOIDCUser(&user333)
+	require.Nil(t, err)
+
 	// duplicate user -- ErrDupRows
-	user111.OIDCUserMeta = ou333
-	err := OnBoardOIDCUser(user111)
+	// userDup is duplicate with user333
+	userDup.OIDCUserMeta = ou555
+	err = OnBoardOIDCUser(&userDup)
 	require.NotNil(t, err)
 	require.Equal(t, err, ErrDupRows)
 
 	// duplicate OIDC user -- ErrDupRows
-	user333.OIDCUserMeta = ou111
-	err = OnBoardOIDCUser(user333)
+	// ouDup is duplicate with ou333
+	user555.OIDCUserMeta = ouDup
+	err = OnBoardOIDCUser(&user555)
 	require.NotNil(t, err)
 	require.Equal(t, err, ErrDupRows)
 
 	// success
-	user333.OIDCUserMeta = ou333
-	err = OnBoardOIDCUser(user333)
+	user555.OIDCUserMeta = ou555
+	err = OnBoardOIDCUser(&user555)
 	require.Nil(t, err)
 
 	// duplicate OIDC user's sub -- ErrDupRows
-	user555.OIDCUserMeta = ouDupSub
-	err = OnBoardOIDCUser(user555)
+	// ouDup is duplicate with ou333
+	user666.OIDCUserMeta = ouDupSub
+	err = OnBoardOIDCUser(&user666)
 	require.NotNil(t, err)
 	require.Equal(t, err, ErrDupRows)
+
+	// clear data
+	defer func() {
+		_, err := GetOrmer().Raw(`delete from oidc_user`).Exec()
+		require.Nil(t, err)
+	}()
 
 }

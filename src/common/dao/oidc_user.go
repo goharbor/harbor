@@ -18,26 +18,12 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"errors"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
-
-// AddOIDCUser adds a oidc user
-func AddOIDCUser(meta *models.OIDCUser) (int64, error) {
-	now := time.Now()
-	meta.CreationTime = now
-	meta.UpdateTime = now
-	id, err := GetOrmer().Insert(meta)
-	if err != nil {
-		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			return 0, ErrDupRows
-		}
-		return 0, err
-	}
-	return id, nil
-}
 
 // GetOIDCUserByID ...
 func GetOIDCUserByID(id int64) (*models.OIDCUser, error) {
@@ -54,10 +40,10 @@ func GetOIDCUserByID(id int64) (*models.OIDCUser, error) {
 	return oidcUser, nil
 }
 
-// GetUserBySub ...
-func GetUserBySub(sub string) (*models.User, error) {
+// GetUserBySubIss ...
+func GetUserBySubIss(sub, issuer string) (*models.User, error) {
 	var oidcUsers []models.OIDCUser
-	n, err := GetOrmer().Raw(`select * from oidc_user where subiss = ? `, sub).QueryRows(&oidcUsers)
+	n, err := GetOrmer().Raw(`select * from oidc_user where subiss = ? `, sub+issuer).QueryRows(&oidcUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +71,6 @@ func GetOIDCUserByUserID(userID int) (*models.OIDCUser, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if n == 0 {
 		return nil, nil
 	}
@@ -107,17 +92,22 @@ func DeleteOIDCUser(id int64) error {
 }
 
 // OnBoardOIDCUser onboard OIDC user
-func OnBoardOIDCUser(u models.User) error {
+func OnBoardOIDCUser(u *models.User) error {
+	if u.OIDCUserMeta == nil {
+		return errors.New("unable to onboard as empty oidc user")
+	}
+
 	o := orm.NewOrm()
 	err := o.Begin()
 	if err != nil {
 		return err
 	}
-	// the password is the required attribute of user table,
-	// but not required in the oidc user login scenario.
-	u.Email = "odicpassword"
 	var errInsert error
-	userID, err := o.Insert(&u)
+
+	// insert user
+	now := time.Now()
+	u.CreationTime = now
+	userID, err := o.Insert(u)
 	if err != nil {
 		errInsert = err
 		log.Errorf("fail to insert user, %v", err)
@@ -126,12 +116,18 @@ func OnBoardOIDCUser(u models.User) error {
 		}
 		err := o.Rollback()
 		if err != nil {
-			return err
+			log.Errorf("fail to rollback, %v", err)
+			return ErrRollback
 		}
 		return errInsert
 
 	}
+	u.UserID = int(userID)
 	u.OIDCUserMeta.UserID = int(userID)
+
+	// insert oidc user
+	now = time.Now()
+	u.OIDCUserMeta.CreationTime = now
 	_, err = o.Insert(u.OIDCUserMeta)
 	if err != nil {
 		errInsert = err
@@ -141,13 +137,15 @@ func OnBoardOIDCUser(u models.User) error {
 		}
 		err := o.Rollback()
 		if err != nil {
-			return err
+			log.Errorf("fail to rollback, %v", err)
+			return ErrRollback
 		}
 		return errInsert
 	}
 	err = o.Commit()
 	if err != nil {
-		return err
+		log.Errorf("fail to commit, %v", err)
+		return ErrCommit
 	}
 
 	return nil
