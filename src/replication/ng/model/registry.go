@@ -36,11 +36,14 @@ type RegistryType string
 // e.g: u/p, OAuth token
 type CredentialType string
 
+// const definitions
 const (
 	// CredentialTypeBasic indicates credential by user name, password
 	CredentialTypeBasic = "basic"
 	// CredentialTypeOAuth indicates credential by OAuth token
 	CredentialTypeOAuth = "oauth"
+	// CredentialTypeSecret is only used by the communication of Harbor internal components
+	CredentialTypeSecret = "secret"
 )
 
 // Credential keeps the access key and/or secret for the related registry
@@ -59,16 +62,19 @@ type Credential struct {
 // Data required for the secure access way is not contained here.
 // DAO layer is not considered here
 type Registry struct {
-	ID           int64        `json:"id"`
-	Name         string       `json:"name"`
-	Description  string       `json:"description"`
-	Type         RegistryType `json:"type"`
-	URL          string       `json:"url"`
-	Credential   *Credential  `json:"credential"`
-	Insecure     bool         `json:"insecure"`
-	Status       string       `json:"status"`
-	CreationTime time.Time    `json:"creation_time"`
-	UpdateTime   time.Time    `json:"update_time"`
+	ID          int64        `json:"id"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Type        RegistryType `json:"type"`
+	URL         string       `json:"url"`
+	// CoreURL is only used for local harbor instance to
+	// avoid the requests passing through the external proxy
+	CoreURL      string      `json:"core_url"`
+	Credential   *Credential `json:"credential"`
+	Insecure     bool        `json:"insecure"`
+	Status       string      `json:"status"`
+	CreationTime time.Time   `json:"creation_time"`
+	UpdateTime   time.Time   `json:"update_time"`
 }
 
 // RegistryQuery defines the query conditions for listing registries

@@ -285,13 +285,15 @@ func createTasks(mgr execution.Manager, executionID int64, items []*scheduler.Sc
 }
 
 // schedule the replication tasks and update the task's status
-func schedule(scheduler scheduler.Scheduler, executionMgr execution.Manager, items []*scheduler.ScheduleItem) error {
+// returns the count of tasks which have been scheduled and the error
+func schedule(scheduler scheduler.Scheduler, executionMgr execution.Manager, items []*scheduler.ScheduleItem) (int, error) {
 	results, err := scheduler.Schedule(items)
 	if err != nil {
-		return fmt.Errorf("failed to schedule the tasks: %v", err)
+		return 0, fmt.Errorf("failed to schedule the tasks: %v", err)
 	}
 
 	allFailed := true
+	n := len(results)
 	for _, result := range results {
 		// if the task is failed to be submitted, update the status of the
 		// task as failure
@@ -318,9 +320,9 @@ func schedule(scheduler scheduler.Scheduler, executionMgr execution.Manager, ite
 	}
 	// if all the tasks are failed, return err
 	if allFailed {
-		return errors.New("all tasks are failed")
+		return n, errors.New("all tasks are failed")
 	}
-	return nil
+	return n, nil
 }
 
 // return the name with format "res_name" or "res_name:[vtag1,vtag2,vtag3]"

@@ -13,6 +13,8 @@ package flow
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/stretchr/testify/require"
 )
@@ -29,6 +31,7 @@ func TestRunOfCopyFlow(t *testing.T) {
 		},
 	}
 	flow := NewCopyFlow(executionMgr, scheduler, 1, policy)
-	err := flow.Run(nil)
+	n, err := flow.Run(nil)
 	require.Nil(t, err)
+	assert.Equal(t, 2, n)
 }

@@ -17,18 +17,21 @@ package flow
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/stretchr/testify/require"
 )
 
 type fakedFlow struct{}
 
-func (f *fakedFlow) Run(interface{}) error {
-	return nil
+func (f *fakedFlow) Run(interface{}) (int, error) {
+	return 1, nil
 }
 
 func TestStart(t *testing.T) {
 	flow := &fakedFlow{}
 	controller := NewController()
-	err := controller.Start(flow)
+	n, err := controller.Start(flow)
 	require.Nil(t, err)
+	assert.Equal(t, 1, n)
 }

@@ -14,14 +14,15 @@
 
 package flow
 
-// Flow defines  replication flow
+// Flow defines the replication flow
 type Flow interface {
-	Run(interface{}) error
+	// returns the count of tasks which have been scheduled and the error
+	Run(interface{}) (int, error)
 }
 
 // Controller is the controller that controls the replication flows
 type Controller interface {
-	Start(Flow) error
+	Start(Flow) (int, error)
 }
 
 // NewController returns an instance of the default flow controller
@@ -31,6 +32,6 @@ func NewController() Controller {
 
 type controller struct{}
 
-func (c *controller) Start(flow Flow) error {
+func (c *controller) Start(flow Flow) (int, error) {
 	return flow.Run(nil)
 }

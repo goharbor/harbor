@@ -111,8 +111,7 @@ func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
 	return nil
 }
 
-// TODO handler the tokenServiceURL
-func createRegistry(reg *model.Registry, tokenServiceURL ...string) (adapter.ImageRegistry, error) {
+func createRegistry(reg *model.Registry) (adapter.ImageRegistry, error) {
 	factory, err := adapter.GetFactory(reg.Type)
 	if err != nil {
 		return nil, err

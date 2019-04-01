@@ -67,13 +67,16 @@ func (c *controller) StartReplication(policy *model.Policy, resource *model.Reso
 	}
 
 	flow := c.createFlow(id, policy, resource)
-	if err = c.flowCtl.Start(flow); err != nil {
+	if n, err := c.flowCtl.Start(flow); err != nil {
 		// just update the status text, the status will be updated automatically
 		// when listing the execution records
 		if e := c.executionMgr.Update(&models.Execution{
 			ID:         id,
+			Status:     models.ExecutionStatusFailed,
 			StatusText: err.Error(),
-		}, "StatusText"); e != nil {
+			Total:      n,
+			Failed:     n,
+		}, "Status", "StatusText", "Total", "Failed"); e != nil {
 			log.Errorf("failed to update the execution %d: %v", id, e)
 		}
 		log.Errorf("the execution %d failed: %v", id, err)

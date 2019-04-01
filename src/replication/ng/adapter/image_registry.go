@@ -16,6 +16,7 @@ package adapter
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -24,6 +25,7 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	registry_pkg "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/replication/ng/model"
@@ -55,10 +57,8 @@ type DefaultImageRegistry struct {
 	clients map[string]*registry_pkg.Repository
 }
 
-// TODO: passing the tokenServiceURL
-
 // NewDefaultImageRegistry returns an instance of DefaultImageRegistry
-func NewDefaultImageRegistry(registry *model.Registry, tokenServiceURL ...string) *DefaultImageRegistry {
+func NewDefaultImageRegistry(registry *model.Registry) *DefaultImageRegistry {
 	// use the same HTTP connection pool for all clients
 	transport := registry_pkg.GetHTTPTransport(registry.Insecure)
 	modifiers := []modifier.Modifier{
@@ -67,12 +67,23 @@ func NewDefaultImageRegistry(registry *model.Registry, tokenServiceURL ...string
 		},
 	}
 	if registry.Credential != nil {
-		cred := auth.NewBasicAuthCredential(
-			registry.Credential.AccessKey,
-			registry.Credential.AccessSecret)
+		var cred modifier.Modifier
+		if registry.Credential.Type == model.CredentialTypeSecret {
+			cred = common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
+		} else {
+			cred = auth.NewBasicAuthCredential(
+				registry.Credential.AccessKey,
+				registry.Credential.AccessSecret)
+		}
+		tokenServiceURL := ""
+		// the registry is a local Harbor instance if the core URL is specified,
+		// use the internal token service URL instead
+		if len(registry.CoreURL) > 0 {
+			tokenServiceURL = fmt.Sprintf("%s/service/token", registry.CoreURL)
+		}
 		authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
 			Transport: transport,
-		}, cred, tokenServiceURL...)
+		}, cred, tokenServiceURL)
 
 		modifiers = append(modifiers, authorizer)
 	}

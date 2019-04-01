@@ -395,6 +395,7 @@ func TestSchedule(t *testing.T) {
 			TaskID:      1,
 		},
 	}
-	err := schedule(sched, mgr, items)
+	n, err := schedule(sched, mgr, items)
 	require.Nil(t, err)
+	assert.Equal(t, 1, n)
 }
