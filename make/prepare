@@ -7,7 +7,6 @@ harbor_prepare_path="$( cd "$(dirname "$0")" ; pwd -P )"
 echo host make path is set to ${harbor_prepare_path}
 data_path=$(grep '^[^#]*data_volume:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
 log_path=$(grep '^[^#]*location:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
-secretkey_path=$(grep '^[^#]*secretkey_path:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
 ssl_cert_path=$(grep '^[^#]*ssl_cert:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
 ssl_cert_key_path=$(grep '^[^#]*ssl_cert_key:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
 registry_custom_ca_bundle=$(grep '^[^#]*registry_custom_ca_bundle:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
@@ -22,9 +21,6 @@ mkdir -p $input_dir/common
 # Copy nginx config file to input dir
 cp $ssl_cert_path $input_dir/nginx/server.crt
 cp $ssl_cert_key_path $input_dir/nginx/server.key
-
-# Copy secretkey to input dir
-cp -r $secretkey_path $input_dir/keys
 
 # Copy ca bundle to input dir
 if [ -f $registry_custom_ca_bundle ]

@@ -127,11 +127,8 @@ _version: 1.7.0
 
 # Umcomments if using external Redis server
 # external_redis:
-#   # Redis connection address
 #   host: redis
-#   # Redis connection port
 #   port: 6379
-#   # Redis connection password
 #   password:
 #   # db_index 0 is for core, it's unchangeable
 #   registry_db_index: 1
