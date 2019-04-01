@@ -179,6 +179,8 @@ func TestExecutionFill(t *testing.T) {
 		StartTime:  time.Now(),
 	}
 	executionID, _ := AddExecution(execution)
+	et1, _ := time.Parse("2016-01-02 15:04:05", "2019-03-21 08:01:01")
+	et2, _ := time.Parse("2016-01-02 15:04:05", "2019-04-01 10:11:53")
 	task1 := &models.Task{
 		ID:           20191,
 		ExecutionID:  executionID,
@@ -188,6 +190,7 @@ func TestExecutionFill(t *testing.T) {
 		JobID:        "jobID1",
 		Status:       "Succeed",
 		StartTime:    time.Now(),
+		EndTime:      et1,
 	}
 	task2 := &models.Task{
 		ID:           20192,
@@ -198,7 +201,7 @@ func TestExecutionFill(t *testing.T) {
 		JobID:        "jobID2",
 		Status:       "Stopped",
 		StartTime:    time.Now(),
-		EndTime:      time.Now(),
+		EndTime:      et2,
 	}
 	AddTask(task1)
 	AddTask(task2)
@@ -216,6 +219,7 @@ func TestExecutionFill(t *testing.T) {
 	assert.Equal(t, 1, exe.Stopped)
 	assert.Equal(t, 0, exe.Failed)
 	assert.Equal(t, 1, exe.Succeed)
+	assert.Equal(t, et2.Second(), exe.EndTime.Second())
 }
 
 func TestExecutionFill2(t *testing.T) {
