@@ -11,11 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, ViewChild, SimpleChanges, OnChanges} from '@angular/core';
+import { Component, Input, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Subscription } from "rxjs";
 
-import { Configuration, clone, isEmpty, getChanges, StringValueItem} from '@harbor/ui';
+import { Configuration, clone, isEmpty, getChanges, StringValueItem, BoolValueItem } from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../app-config.service';
@@ -42,7 +42,7 @@ export class ConfigurationAuthComponent implements OnChanges {
         private configService: ConfigurationService,
         private appConfigService: AppConfigService,
         private confirmMessageHandler: ConfirmMessageHandler
-        ) {
+    ) {
     }
 
     get checkable() {
@@ -53,7 +53,9 @@ export class ConfigurationAuthComponent implements OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes && changes["currentConfig"]) {
+
             this.originalConfig = clone(this.currentConfig);
+
         }
     }
 
@@ -66,6 +68,9 @@ export class ConfigurationAuthComponent implements OnChanges {
     public get showUAA(): boolean {
         return this.currentConfig && this.currentConfig.auth_mode && this.currentConfig.auth_mode.value === 'uaa_auth';
     }
+    public get showOIDC(): boolean {
+        return this.currentConfig && this.currentConfig.auth_mode && this.currentConfig.auth_mode.value === 'oidc_auth';
+    }
     public get showHttpAuth(): boolean {
         return this.currentConfig && this.currentConfig.auth_mode && this.currentConfig.auth_mode.value === 'http_auth';
     }
@@ -74,7 +79,7 @@ export class ConfigurationAuthComponent implements OnChanges {
             return true;
         } else {
             return this.currentConfig.auth_mode.value !== 'ldap_auth' && this.currentConfig.auth_mode.value !== 'uaa_auth'
-            && this.currentConfig.auth_mode.value !== 'http_auth' ;
+                && this.currentConfig.auth_mode.value !== 'http_auth' && this.currentConfig.auth_mode.value !== 'oidc_auth';
         }
     }
 
@@ -143,13 +148,13 @@ export class ConfigurationAuthComponent implements OnChanges {
         let changes = {};
         for (let prop in allChanges) {
             if (prop.startsWith('ldap_')
-            || prop.startsWith('uaa_')
-            || prop === 'auth_mode'
-            || prop === 'project_creattion_restriction'
-            || prop === 'self_registration'
-            || prop === 'http_authproxy_endpoint'
-            || prop === 'http_authproxy_skip_cert_verify'
-            || prop === 'http_authproxy_always_onboard'
+                || prop.startsWith('uaa_')
+                || prop === 'auth_mode'
+                || prop === 'project_creattion_restriction'
+                || prop === 'self_registration'
+                || prop === 'http_authproxy_endpoint'
+                || prop === 'http_authproxy_skip_cert_verify'
+                || prop === 'http_authproxy_always_onboard'
             ) {
                 changes[prop] = allChanges[prop];
             }
@@ -168,7 +173,7 @@ export class ConfigurationAuthComponent implements OnChanges {
     handleOnChange($event: any): void {
         if ($event && $event.target && $event.target["value"]) {
             let authMode = $event.target["value"];
-            if (authMode === 'ldap_auth' || authMode === 'uaa_auth' || authMode === 'http_auth') {
+            if (authMode === 'ldap_auth' || authMode === 'uaa_auth' || authMode === 'http_auth' || authMode === 'oidc_auth') {
                 if (this.currentConfig.self_registration.value) {
                     this.currentConfig.self_registration.value = false; // unselect
                 }
@@ -176,12 +181,12 @@ export class ConfigurationAuthComponent implements OnChanges {
         }
     }
 
-     /**
-     *
-     * Save the changed values
-     *
-     * @memberOf ConfigurationComponent
-     */
+    /**
+    *
+    * Save the changed values
+    *
+    * @memberOf ConfigurationComponent
+    */
     public save(): void {
         let changes = this.getChanges();
         if (!isEmpty(changes)) {
@@ -191,8 +196,8 @@ export class ConfigurationAuthComponent implements OnChanges {
                     this.onGoing = false;
                     this.retrieveConfig();
                     // Reload bootstrap option
-                    this.appConfigService.load().subscribe(() => {}
-                    , error => console.error('Failed to reload bootstrap option with error: ', error));
+                    this.appConfigService.load().subscribe(() => { }
+                        , error => console.error('Failed to reload bootstrap option with error: ', error));
                     this.msgHandler.showSuccess('CONFIG.SAVE_SUCCESS');
                 }, error => {
                     this.onGoing = false;
@@ -213,6 +218,7 @@ export class ConfigurationAuthComponent implements OnChanges {
                 // Add two password fields
                 configurations.ldap_search_password = new StringValueItem(fakePass, true);
                 configurations.uaa_client_secret = new StringValueItem(fakePass, true);
+                configurations.oidc_client_secret = new StringValueItem(fakePass, true);
                 this.currentConfig = configurations;
                 // Keep the original copy of the data
                 this.originalConfig = clone(configurations);

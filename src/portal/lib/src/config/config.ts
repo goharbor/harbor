@@ -91,7 +91,12 @@ export class Configuration {
     http_authproxy_endpoint?: StringValueItem;
     http_authproxy_skip_cert_verify?: BoolValueItem;
     http_authproxy_always_onboard?: BoolValueItem;
-
+    oidc_name?: StringValueItem;
+    oidc_endpoint?: StringValueItem;
+    oidc_client_id?: StringValueItem;
+    oidc_client_secret?: StringValueItem;
+    oidc_skip_cert_verify?: BoolValueItem;
+    oidc_scope?: StringValueItem;
     public constructor() {
         this.auth_mode = new StringValueItem("db_auth", true);
         this.project_creation_restriction = new StringValueItem("everyone", true);
@@ -136,5 +141,11 @@ export class Configuration {
         this.http_authproxy_endpoint = new StringValueItem("", true);
         this.http_authproxy_skip_cert_verify = new BoolValueItem(false, true);
         this.http_authproxy_always_onboard = new BoolValueItem(false, true);
+        this.oidc_name = new StringValueItem('', true);
+        this.oidc_endpoint = new StringValueItem('', true);
+        this.oidc_client_id = new StringValueItem('', true);
+        this.oidc_client_secret = new StringValueItem('', true);
+        this.oidc_skip_cert_verify = new BoolValueItem(false, true);
+        this.oidc_scope = new StringValueItem('', true);
     }
 }
