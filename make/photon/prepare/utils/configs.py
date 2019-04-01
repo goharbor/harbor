@@ -70,11 +70,6 @@ def parse_yaml_config(config_file_path):
     config_dict['notary_url'] = "http://notary-server:4443"
     config_dict['chart_repository_url'] = "http://chartmuseum:9999"
 
-    if configs.get("reload_config"):
-        config_dict['reload_config'] = configs.get("reload_config")
-    else:
-        config_dict['reload_config'] = "false"
-
     config_dict['hostname'] = configs.get("hostname")
     config_dict['protocol'] = configs.get("ui_url_protocol")
     config_dict['public_url'] = config_dict['protocol'] + "://" + config_dict['hostname']
