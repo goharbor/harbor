@@ -43,34 +43,34 @@ func NewCopyFlow(executionMgr execution.Manager, scheduler scheduler.Scheduler,
 	}
 }
 
-func (c *copyFlow) Run(interface{}) error {
+func (c *copyFlow) Run(interface{}) (int, error) {
 	srcAdapter, dstAdapter, err := initialize(c.policy)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	srcResources, err := fetchResources(srcAdapter, c.policy)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if len(srcResources) == 0 {
 		markExecutionSuccess(c.executionMgr, c.executionID, "no resources need to be replicated")
 		log.Infof("no resources need to be replicated for the execution %d, skip", c.executionID)
-		return nil
+		return 0, nil
 	}
 	dstNamespaces, err := assembleDestinationNamespaces(srcAdapter, srcResources, c.policy.DestNamespace)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if err = createNamespaces(dstAdapter, dstNamespaces); err != nil {
-		return err
+		return 0, err
 	}
 	dstResources := assembleDestinationResources(srcResources, c.policy.DestRegistry, c.policy.DestNamespace, c.policy.Override)
 	items, err := preprocess(c.scheduler, srcResources, dstResources)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if err = createTasks(c.executionMgr, c.executionID, items); err != nil {
-		return err
+		return 0, err
 	}
 	return schedule(c.scheduler, c.executionMgr, items)
 }

@@ -17,6 +17,8 @@ package flow
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/stretchr/testify/require"
 )
@@ -32,8 +34,17 @@ func TestRunOfDeletionFlow(t *testing.T) {
 			Type: model.RegistryTypeHarbor,
 		},
 	}
-	resources := []*model.Resource{}
+	resources := []*model.Resource{
+		{
+			Metadata: &model.ResourceMetadata{
+				Name:      "library/hello-world",
+				Namespace: "library",
+				Vtags:     []string{"latest"},
+			},
+		},
+	}
 	flow := NewDeletionFlow(executionMgr, scheduler, 1, policy, resources)
-	err := flow.Run(nil)
+	n, err := flow.Run(nil)
 	require.Nil(t, err)
+	assert.Equal(t, 1, n)
 }

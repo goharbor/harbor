@@ -17,10 +17,12 @@ package harbor
 import (
 	"fmt"
 	"net/http"
+
 	// "strconv"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	registry_pkg "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
@@ -31,11 +33,8 @@ import (
 // TODO add UT
 
 func init() {
-	// TODO passing coreServiceURL and tokenServiceURL
-	coreServiceURL := "http://core:8080"
-	tokenServiceURL := ""
 	if err := adp.RegisterFactory(model.RegistryTypeHarbor, func(registry *model.Registry) (adp.Adapter, error) {
-		return newAdapter(registry, coreServiceURL, tokenServiceURL), nil
+		return newAdapter(registry), nil
 	}); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeHarbor, err)
 		return
@@ -50,11 +49,8 @@ type adapter struct {
 	client         *common_http.Client
 }
 
-// The registry URL and core service URL are different when the adapter
-// is created for a local Harbor. If the "coreServicrURL" is null, the
-// registry URL will be used as the coreServiceURL instead
-func newAdapter(registry *model.Registry, coreServiceURL string,
-	tokenServiceURL string) *adapter {
+func newAdapter(registry *model.Registry) *adapter {
+	// TODO use the global transport
 	transport := registry_pkg.GetHTTPTransport(registry.Insecure)
 	modifiers := []modifier.Modifier{
 		&auth.UserAgentModifier{
@@ -62,15 +58,23 @@ func newAdapter(registry *model.Registry, coreServiceURL string,
 		},
 	}
 	if registry.Credential != nil {
-		authorizer := auth.NewBasicAuthCredential(
-			registry.Credential.AccessKey,
-			registry.Credential.AccessSecret)
+		var authorizer modifier.Modifier
+		if registry.Credential.Type == model.CredentialTypeSecret {
+			authorizer = common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
+		} else {
+			authorizer = auth.NewBasicAuthCredential(
+				registry.Credential.AccessKey,
+				registry.Credential.AccessSecret)
+		}
 		modifiers = append(modifiers, authorizer)
 	}
 
+	// The registry URL and core service URL are different when the adapter
+	// is created for a local Harbor. If the "registry.CoreURL" is null, the
+	// registry URL will be used as the coreServiceURL instead
 	url := registry.URL
-	if len(coreServiceURL) > 0 {
-		url = coreServiceURL
+	if len(registry.CoreURL) > 0 {
+		url = registry.CoreURL
 	}
 
 	return &adapter{
@@ -80,7 +84,7 @@ func newAdapter(registry *model.Registry, coreServiceURL string,
 			&http.Client{
 				Transport: transport,
 			}, modifiers...),
-		DefaultImageRegistry: adp.NewDefaultImageRegistry(registry, tokenServiceURL),
+		DefaultImageRegistry: adp.NewDefaultImageRegistry(registry),
 	}
 }
 

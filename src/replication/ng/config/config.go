@@ -26,5 +26,7 @@ type Configuration struct {
 	TokenServiceURL string
 	JobserviceURL   string
 	SecretKey       string
-	Secret          string
+	// TODO consider to use a specified secret for replication
+	CoreSecret       string
+	JobserviceSecret string
 }

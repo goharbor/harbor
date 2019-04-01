@@ -42,27 +42,27 @@ func NewDeletionFlow(executionMgr execution.Manager, scheduler scheduler.Schedul
 	}
 }
 
-func (d *deletionFlow) Run(interface{}) error {
+func (d *deletionFlow) Run(interface{}) (int, error) {
 	// filling the registry information
 	for _, resource := range d.resources {
 		resource.Registry = d.policy.SrcRegistry
 	}
 	srcResources, err := filterResources(d.resources, d.policy.Filters)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if len(srcResources) == 0 {
 		markExecutionSuccess(d.executionMgr, d.executionID, "no resources need to be replicated")
 		log.Infof("no resources need to be replicated for the execution %d, skip", d.executionID)
-		return nil
+		return 0, nil
 	}
 	dstResources := assembleDestinationResources(srcResources, d.policy.DestRegistry, d.policy.DestNamespace, d.policy.Override)
 	items, err := preprocess(d.scheduler, srcResources, dstResources)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if err = createTasks(d.executionMgr, d.executionID, items); err != nil {
-		return err
+		return 0, err
 	}
 	return schedule(d.scheduler, d.executionMgr, items)
 }

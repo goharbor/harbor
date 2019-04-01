@@ -154,15 +154,15 @@ func getRegistry(registryMgr registry.Manager, registry *model.Registry) (*model
 
 func getLocalRegistry() *model.Registry {
 	return &model.Registry{
-		Type:   model.RegistryTypeHarbor,
-		Name:   "Local",
-		URL:    config.Config.RegistryURL,
-		Status: "healthy",
-		// TODO use the service account
+		Type:    model.RegistryTypeHarbor,
+		Name:    "Local",
+		URL:     config.Config.RegistryURL,
+		CoreURL: config.Config.CoreURL,
+		Status:  "healthy",
 		Credential: &model.Credential{
-			Type:         model.CredentialTypeBasic,
-			AccessKey:    "admin",
-			AccessSecret: "Harbor12345",
+			Type: model.CredentialTypeSecret,
+			// use secret to do the auth for the local Harbor
+			AccessSecret: config.Config.JobserviceSecret,
 		},
 		Insecure: true,
 	}

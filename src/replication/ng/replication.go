@@ -54,15 +54,16 @@ func Init() error {
 		return err
 	}
 	config.Config = &config.Configuration{
-		CoreURL:         cfg.InternalCoreURL(),
-		RegistryURL:     registryURL,
-		TokenServiceURL: cfg.InternalTokenServiceEndpoint(),
-		JobserviceURL:   cfg.InternalJobServiceURL(),
-		SecretKey:       secretKey,
-		Secret:          cfg.CoreSecret(),
+		CoreURL:          cfg.InternalCoreURL(),
+		RegistryURL:      registryURL,
+		TokenServiceURL:  cfg.InternalTokenServiceEndpoint(),
+		JobserviceURL:    cfg.InternalJobServiceURL(),
+		SecretKey:        secretKey,
+		CoreSecret:       cfg.CoreSecret(),
+		JobserviceSecret: cfg.JobserviceSecret(),
 	}
 	// TODO use a global http transport
-	js := job.NewDefaultClient(config.Config.JobserviceURL, config.Config.Secret)
+	js := job.NewDefaultClient(config.Config.JobserviceURL, config.Config.CoreSecret)
 	// init registry manager
 	RegistryMgr = registry.NewDefaultManager()
 	// init policy controller
@@ -74,3 +75,6 @@ func Init() error {
 	log.Debug("the replication initialization completed")
 	return nil
 }
+
+// TODO ping target API is needed as other old replication instances will
+// use that
