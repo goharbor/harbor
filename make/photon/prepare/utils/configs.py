@@ -54,27 +54,35 @@ def parse_yaml_config(config_file_path):
     with open(config_file_path) as f:
         configs = yaml.load(f)
 
-    config_dict = {}
-    config_dict['adminserver_url'] = "http://adminserver:8080"
-    config_dict['registry_url'] = "http://registry:5000"
-    config_dict['registry_controller_url'] = "http://registryctl:8080"
-    config_dict['core_url'] = "http://core:8080"
-    config_dict['token_service_url'] = "http://core:8080/service/token"
-
-    config_dict['jobservice_url'] = "http://jobservice:8080"
-    config_dict['clair_url'] = "http://clair:6060"
-    config_dict['notary_url'] = "http://notary-server:4443"
-    config_dict['chart_repository_url'] = "http://chartmuseum:9999"
+    config_dict = {
+        'adminserver_url': "http://adminserver:8080",
+        'registry_url': "http://registry:5000",
+        'registry_controller_url': "http://registryctl:8080",
+        'core_url': "http://core:8080",
+        'token_service_url': "http://core:8080/service/token",
+        'jobservice_url': 'http://jobservice:8080',
+        'clair_url': 'http://clair:6060',
+        'notary_url': 'http://notary-server:4443',
+        'chart_repository_url': 'http://chartmuseum:9999'
+    }
 
     config_dict['hostname'] = configs.get("hostname")
-    config_dict['protocol'] = configs.get("ui_url_protocol")
-    config_dict['public_url'] = config_dict['protocol'] + "://" + config_dict['hostname']
+    http_config = configs.get('http')
+    https_config = configs.get('https')
 
+    if https_config:
+        config_dict['protocol'] = 'https'
+        config_dict['https_port'] = https_config.get('port', 443)
+        config_dict['cert_path'] = https_config.get("certificate")
+        config_dict['cert_key_path'] = https_config.get("private_key")
+    else:
+        config_dict['protocol'] = 'http'
+        config_dict['http_port'] = http_config.get('port', 80)
 
-    # secure configs
-    if config_dict['protocol'] == "https":
-        config_dict['cert_path'] = configs.get("ssl_cert")
-        config_dict['cert_key_path'] = configs.get("ssl_cert_key")
+    if configs.get('external_url'):
+        config_dict['public_url'] = configs['external_url']
+    else:
+        config_dict['public_url'] = '{protocol}://{hostname}'.format(**config_dict)
 
 
     # DB configs
@@ -94,12 +102,30 @@ def parse_yaml_config(config_file_path):
     config_dict['harbor_admin_password'] = configs.get("harbor_admin_password")
 
     # Registry storage configs
-    storage_config = configs.get('storage') or {}
-    config_dict['storage_provider_name'] = storage_config.get("registry_storage_provider_name") or ''
-    config_dict['storage_provider_config'] = storage_config.get("registry_storage_provider_config") or ''
-    # yaml requires 1 or more spaces between the key and value
-    config_dict['storage_provider_config'] = config_dict['storage_provider_config'].replace(":", ": ", 1)
-    config_dict['registry_custom_ca_bundle_path'] = storage_config.get("registry_custom_ca_bundle") or ''
+    storage_config = configs.get('storage_service') or {}
+    if configs.get('filesystem'):
+        print('handle filesystem')
+    elif configs.get('azure'):
+        print('handle azure')
+    elif configs.get('gcs'):
+        print('handle gcs')
+    elif configs.get('s3'):
+        print('handle s3')
+    elif configs.get('swift'):
+        print('handle swift')
+    elif configs.get('oss'):
+        print('handle oss')
+    else:
+        config_dict['storage_provider_name'] = 'filesystem'
+        config_dict['storage_provider_config'] = ''
+        config_dict['registry_custom_ca_bundle_path'] = storage_config.get("ca_bundle") or ''
+
+
+    # config_dict['storage_provider_name'] = storage_config.get("registry_storage_provider_name") or ''
+    # config_dict['storage_provider_config'] = storage_config.get("registry_storage_provider_config") or ''
+    # # yaml requires 1 or more spaces between the key and value
+    # config_dict['storage_provider_config'] = config_dict['storage_provider_config'].replace(":", ": ", 1)
+    # config_dict['registry_custom_ca_bundle_path'] = storage_config.get("registry_custom_ca_bundle") or ''
 
 
     # Clair configs
@@ -112,7 +138,8 @@ def parse_yaml_config(config_file_path):
 
 
     # jobservice config
-    config_dict['max_job_workers'] = configs.get("max_job_workers")
+    js_config = configs.get('jobservice', {})
+    config_dict['max_job_workers'] = js_config.get("max_job_workers", 10)
     config_dict['jobservice_secret'] = generate_random_string(16)
 
 

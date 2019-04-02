@@ -28,7 +28,7 @@ http {
   access_log /dev/stdout timed_combined;
 
   server {
-    listen 80;
+    listen {{http_port}};
     server_tokens off;
     # disable any limits to avoid HTTP 413 for large image uploads
     client_max_body_size 0;
