@@ -66,24 +66,20 @@ def parse_yaml_config(config_file_path):
         'chart_repository_url': 'http://chartmuseum:9999'
     }
 
-    config_dict['hostname'] = configs.get("hostname")
-    http_config = configs.get('http')
-    https_config = configs.get('https')
+    config_dict['hostname'] = configs["hostname"]
 
+    config_dict['protocol'] = 'http'
+    http_config = configs.get('http') or {}
+    config_dict['http_port'] = http_config.get('port', 80)
+
+    https_config = configs.get('https')
     if https_config:
         config_dict['protocol'] = 'https'
         config_dict['https_port'] = https_config.get('port', 443)
-        config_dict['cert_path'] = https_config.get("certificate")
-        config_dict['cert_key_path'] = https_config.get("private_key")
-    else:
-        config_dict['protocol'] = 'http'
-        config_dict['http_port'] = http_config.get('port', 80)
+        config_dict['cert_path'] = https_config["certificate"]
+        config_dict['cert_key_path'] = https_config["private_key"]
 
-    if configs.get('external_url'):
-        config_dict['public_url'] = configs['external_url']
-    else:
-        config_dict['public_url'] = '{protocol}://{hostname}'.format(**config_dict)
-
+    config_dict['public_url'] = configs.get('external_url') or '{protocol}://{hostname}'.format(**config_dict)
 
     # DB configs
     db_configs = configs.get('database')
@@ -91,42 +87,42 @@ def parse_yaml_config(config_file_path):
         config_dict['db_host'] = 'postgresql'
         config_dict['db_port'] = 5432
         config_dict['db_user'] = 'postgres'
-        config_dict['db_password'] = db_configs.get("password") or 'root123'
+        config_dict['db_password'] = db_configs.get("password") or ''
         config_dict['ssl_mode'] = 'disable'
 
 
     # Data path volume
-    config_dict['data_volume'] = configs.get('data_volume')
+    config_dict['data_volume'] = configs['data_volume']
 
     # Initial Admin Password
-    config_dict['harbor_admin_password'] = configs.get("harbor_admin_password")
+    config_dict['harbor_admin_password'] = configs["harbor_admin_password"]
 
     # Registry storage configs
     storage_config = configs.get('storage_service') or {}
-    if configs.get('filesystem'):
-        print('handle filesystem')
-    elif configs.get('azure'):
-        print('handle azure')
-    elif configs.get('gcs'):
-        print('handle gcs')
-    elif configs.get('s3'):
-        print('handle s3')
-    elif configs.get('swift'):
-        print('handle swift')
-    elif configs.get('oss'):
-        print('handle oss')
+
+    config_dict['registry_custom_ca_bundle_path'] = storage_config.get('ca_bundle') or ''
+
+    if storage_config.get('filesystem'):
+        config_dict['storage_provider_name'] = 'filesystem'
+        config_dict['storage_provider_config'] = storage_config['filesystem']
+    elif storage_config.get('azure'):
+        config_dict['storage_provider_name'] = 'azure'
+        config_dict['storage_provider_config'] = storage_config['azure']
+    elif storage_config.get('gcs'):
+        config_dict['storage_provider_name'] = 'gcs'
+        config_dict['storage_provider_config'] = storage_config['gcs']
+    elif storage_config.get('s3'):
+        config_dict['storage_provider_name'] = 's3'
+        config_dict['storage_provider_config'] = storage_config['s3']
+    elif storage_config.get('swift'):
+        config_dict['storage_provider_name'] = 'swift'
+        config_dict['storage_provider_config'] = storage_config['swift']
+    elif storage_config.get('oss'):
+        config_dict['storage_provider_name'] = 'oss'
+        config_dict['storage_provider_config'] = storage_config['oss']
     else:
         config_dict['storage_provider_name'] = 'filesystem'
-        config_dict['storage_provider_config'] = ''
-        config_dict['registry_custom_ca_bundle_path'] = storage_config.get("ca_bundle") or ''
-
-
-    # config_dict['storage_provider_name'] = storage_config.get("registry_storage_provider_name") or ''
-    # config_dict['storage_provider_config'] = storage_config.get("registry_storage_provider_config") or ''
-    # # yaml requires 1 or more spaces between the key and value
-    # config_dict['storage_provider_config'] = config_dict['storage_provider_config'].replace(":", ": ", 1)
-    # config_dict['registry_custom_ca_bundle_path'] = storage_config.get("registry_custom_ca_bundle") or ''
-
+        config_dict['storage_provider_config'] = {}
 
     # Clair configs
     clair_configs = configs.get("clair") or {}
@@ -134,45 +130,51 @@ def parse_yaml_config(config_file_path):
     config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval") or 12
     config_dict['clair_http_proxy'] = clair_configs.get('http_proxy') or ''
     config_dict['clair_https_proxy'] = clair_configs.get('https_proxy') or ''
-    config_dict['clair_no_proxy'] = clair_configs.get('no_proxy') or ''
-
+    config_dict['clair_no_proxy'] = clair_configs.get('no_proxy') or '127.0.0.1,localhost,core,registry'
 
     # jobservice config
-    js_config = configs.get('jobservice', {})
-    config_dict['max_job_workers'] = js_config.get("max_job_workers", 10)
+    js_config = configs.get('jobservice') or {}
+    config_dict['max_job_workers'] = js_config["max_job_workers"]
     config_dict['jobservice_secret'] = generate_random_string(16)
 
 
     # Log configs
     log_configs = configs.get('log') or {}
-    config_dict['log_location'] = log_configs.get("location")
-    config_dict['log_rotate_count'] = log_configs.get("rotate_count")
-    config_dict['log_rotate_size'] = log_configs.get("rotate_size")
-    config_dict['log_level'] = log_configs.get('level')
+    config_dict['log_location'] = log_configs["location"]
+    config_dict['log_rotate_count'] = log_configs["rotate_count"]
+    config_dict['log_rotate_size'] = log_configs["rotate_size"]
+    config_dict['log_level'] = log_configs['level']
 
 
     # external DB, if external_db enabled, it will cover the database config
-    external_db_configs = configs.get('external_database')
+    external_db_configs = configs.get('external_database') or {}
     if external_db_configs:
-        config_dict['db_password'] = external_db_configs.get('password') or 'root123'
-        if external_db_configs.get('host'):
-            config_dict['db_host'] = external_db_configs['host']
-        if external_db_configs.get('port'):
-            config_dict['db_port'] = external_db_configs['port']
-        if  external_db_configs.get('username'):
-            config_dict['db_user'] = db_configs['username']
+        config_dict['db_password'] = external_db_configs.get('password') or ''
+        config_dict['db_host'] = external_db_configs['host']
+        config_dict['db_port'] = external_db_configs['port']
+        config_dict['db_user'] = db_configs['username']
         if external_db_configs.get('ssl_mode'):
             config_dict['db_ssl_mode'] = external_db_configs['ssl_mode']
 
 
-    # external_redis configs
-    redis_configs = configs.get("external_redis") or {}
-    config_dict['redis_host'] = redis_configs.get("host") or 'redis'
-    config_dict['redis_port'] = redis_configs.get("port") or 6379
-    config_dict['redis_password'] = redis_configs.get("password") or ''
-    config_dict['redis_db_index_reg'] = redis_configs.get('registry_db_index') or 1
-    config_dict['redis_db_index_js'] = redis_configs.get('jobservice_db_index') or 2
-    config_dict['redis_db_index_chart'] = redis_configs.get('chartmuseum_db_index') or 3
+    # redis config
+    redis_configs = configs.get("external_redis")
+    if redis_configs:
+        # using external_redis
+        config_dict['redis_host'] = redis_configs['host']
+        config_dict['redis_port'] = redis_configs['port']
+        config_dict['redis_password'] = redis_configs.get("password") or ''
+        config_dict['redis_db_index_reg'] = redis_configs.get('registry_db_index') or 1
+        config_dict['redis_db_index_js'] = redis_configs.get('jobservice_db_index') or 2
+        config_dict['redis_db_index_chart'] = redis_configs.get('chartmuseum_db_index') or 3
+    else:
+        ## Using local redis
+        config_dict['redis_host'] = 'redis'
+        config_dict['redis_port'] = 6379
+        config_dict['redis_password'] = ''
+        config_dict['redis_db_index_reg'] = 1
+        config_dict['redis_db_index_js'] = 2
+        config_dict['redis_db_index_chart'] = 3
 
     # redis://[arbitrary_username:password@]ipaddress:port/database_index
     if config_dict.get('redis_password'):
@@ -182,14 +184,10 @@ def parse_yaml_config(config_file_path):
         config_dict['redis_url_js'] = "redis://%s:%s/%s" % (config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_js'])
         config_dict['redis_url_reg'] = "redis://%s:%s/%s" % (config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_reg'])
 
-
     # auto generated secret string for core
     config_dict['core_secret'] = generate_random_string(16)
 
      # Admiral configs
-    if configs.get("admiral_url"):
-        config_dict['admiral_url'] = configs["admiral_url"]
-    else:
-        config_dict['admiral_url'] = ""
+    config_dict['admiral_url'] = configs.get("admiral_url") or ""
 
     return config_dict

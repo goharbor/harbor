@@ -24,11 +24,6 @@ def prepare_chartmuseum(config_dict):
         print ("Create config folder: %s" % chartm_config_dir)
         os.makedirs(chartm_config_dir)
 
-    # handle custom ca bundle
-    if len(registry_custom_ca_bundle_path) > 0 and os.path.isfile(registry_custom_ca_bundle_path):
-        shutil.copyfile(registry_custom_ca_bundle_path, os.path.join(chartm_config_dir, "custom-ca-bundle.crt"))
-        print("Copied custom ca bundle: %s" % os.path.join(chartm_config_dir, "custom-ca-bundle.crt"))
-
     # process redis info
     cache_store = "redis"
     cache_redis_password = redis_password
@@ -42,17 +37,8 @@ def prepare_chartmuseum(config_dict):
     # storage provider configurations
     # please be aware that, we do not check the validations of the values for the specified keys
     # convert the configs to config map
-    storage_provider_configs = storage_provider_config.split(",")
-    storgae_provider_confg_map = {}
+    storgae_provider_confg_map = storage_provider_config
     storage_provider_config_options = []
-
-    for k_v in storage_provider_configs:
-        if len(k_v) > 0:
-            kvs = k_v.split(": ") # add space suffix to avoid existing ":" in the value
-            if len(kvs) == 2:
-                #key must not be empty
-                if kvs[0].strip() != "":
-                    storgae_provider_confg_map[kvs[0].strip()] = kvs[1].strip()
 
     if storage_provider_name == "s3":
         # aws s3 storage

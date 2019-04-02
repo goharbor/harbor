@@ -9,7 +9,7 @@ http:
 
 # https:
 #   port: 443
-#   #The path of cert and key files for nginx, they are applied only the protocol is set to https
+#   #The path of cert and key files for nginx
 #   certificate: /your/certificate/path
 #   private_key: /your/private/key/path
 
@@ -30,64 +30,19 @@ database:
 # The default data volume
 data_volume: /data
 
-# Harbor Storage settings
-storage_service:
-  # registry_custom_ca_bundle is the path to the custom root ca certificate, which will be injected into the truststore
-  # of registry's and chart repository's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
-  ca_bundle:
+# Harbor Storage settings by default is using /data dir on local filesystem
+# Uncomment storage_service setting If you want to using external storage
+# storage_service:
+#   # ca_bundle is the path to the custom root ca certificate, which will be injected into the truststore
+#   # of registry's and chart repository's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
+#   ca_bundle:
 
-  # storaged in $data_volume/
-  # filesystem: 
-  #   maxthreads: 100
-  # azure:
-  #   accountname: accountname
-  #   accountkey: base64encodedaccountkey
-  #   container: containername
-  # gcs:
-  #   bucket: bucketname
-  #   keyfile: /path/to/keyfile
-  #   rootdirectory: /gcs/object/name/prefix
-  #   chunksize: 5242880
-  # s3:
-  #   accesskey: awsaccesskey
-  #   secretkey: awssecretkey
-  #   region: us-west-1
-  #   regionendpoint: http://myobjects.local
-  #   bucket: bucketname
-  #   encrypt: true
-  #   keyid: mykeyid
-  #   secure: true
-  #   v4auth: true
-  #   chunksize: 5242880
-  #   multipartcopychunksize: 33554432
-  #   multipartcopymaxconcurrency: 100
-  #   multipartcopythresholdsize: 33554432
-  #   rootdirectory: /s3/object/name/prefix
-  # swift:
-  #   username: username
-  #   password: password
-  #   authurl: https://storage.myprovider.com/auth/v1.0 or https://storage.myprovider.com/v2.0 or https://storage.myprovider.com/v3/auth
-  #   tenant: tenantname
-  #   tenantid: tenantid
-  #   domain: domain name for Openstack Identity v3 API
-  #   domainid: domain id for Openstack Identity v3 API
-  #   insecureskipverify: true
-  #   region: fr
-  #   container: containername
-  #   rootdirectory: /swift/object/name/prefix
-  # oss:
-  #   accesskeyid: accesskeyid
-  #   accesskeysecret: accesskeysecret
-  #   region: OSS region name
-  #   endpoint: optional endpoints
-  #   internal: optional internal endpoint
-  #   bucket: OSS bucket
-  #   encrypt: optional data encryption setting
-  #   secure: optional ssl setting
-  #   chunksize: optional size valye
-  #   rootdirectory: optional root directory
+#   # storage backend, default is filesystem, options include filesystem, azure, gcs, s3, swift and oss
+#   # for more info about this configuration please refer https://docs.docker.com/registry/configuration/
+#   filesystem:
+#     maxthreads: 100
 
-# Clair DB configuration
+# Clair configuration
 clair: 
   # The interval of clair updaters, the unit is hour, set to 0 to disable the updaters.
   updaters_interval: 12
@@ -118,7 +73,8 @@ log:
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
 _version: 1.7.0
 
-# Uncomment if using external database. Only support postgres.
+# Uncomment external_database if using external database. And the password will replace the the password setting in database.
+# And currently ontly support postgres.
 # external_database:
 #   host: postgresql
 #   port: 5432
@@ -126,7 +82,7 @@ _version: 1.7.0
 #   password: root123
 #   ssl_mode: disable
 
-# Umcomments if using external Redis server
+# Umcomments external_redis if using external Redis server
 # external_redis:
 #   host: redis
 #   port: 6379
