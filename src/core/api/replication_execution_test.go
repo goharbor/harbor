@@ -25,7 +25,7 @@ import (
 
 type fakedOperationController struct{}
 
-func (f *fakedOperationController) StartReplication(policy *model.Policy, resource *model.Resource) (int64, error) {
+func (f *fakedOperationController) StartReplication(policy *model.Policy, resource *model.Resource, trigger string) (int64, error) {
 	return 1, nil
 }
 func (f *fakedOperationController) StopReplication(int64) error {

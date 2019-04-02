@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/goharbor/harbor/src/replication/ng/model"
+
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/job"
 	job_models "github.com/goharbor/harbor/src/common/job/models"
@@ -60,7 +62,7 @@ func (s *scheduler) Schedule(policyID int64, cron string) error {
 	}
 	log.Debugf("the schedule job record %d added", id)
 
-	replicateURL := fmt.Sprintf("%s/api/replication/executions", config.Config.CoreURL)
+	replicateURL := fmt.Sprintf("%s/api/replication/executions?trigger=%s", config.Config.CoreURL, model.TriggerTypeScheduled)
 	statusHookURL := fmt.Sprintf("%s/service/notifications/jobs/replication/schedule/%d", config.Config.CoreURL, id)
 	jobID, err := s.jobservice.SubmitJob(&job_models.JobData{
 		Name: job.Scheduler,

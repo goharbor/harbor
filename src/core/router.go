@@ -135,7 +135,8 @@ func initRouters() {
 
 	beego.Router("/api/registries", &api.RegistryAPI{}, "get:List;post:Post")
 	beego.Router("/api/registries/:id([0-9]+)", &api.RegistryAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/registries/:id([0-9]+)/info", &api.RegistryAPI{}, "get:GetInfo")
+	// we use "0" as the ID of the local Harbor registry, so don't add "([0-9]+)" in the path
+	beego.Router("/api/registries/:id/info", &api.RegistryAPI{}, "get:GetInfo")
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 

@@ -28,7 +28,7 @@ type fakedOperationController struct {
 	status string
 }
 
-func (f *fakedOperationController) StartReplication(*model.Policy, *model.Resource) (int64, error) {
+func (f *fakedOperationController) StartReplication(*model.Policy, *model.Resource, string) (int64, error) {
 	return 0, nil
 }
 func (f *fakedOperationController) StopReplication(int64) error {

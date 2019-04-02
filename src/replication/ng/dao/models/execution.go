@@ -106,13 +106,13 @@ type TaskFieldsName struct {
 }
 
 // Task represent the tasks in one execution.
-// TODO add operation property
 type Task struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	ExecutionID  int64     `orm:"column(execution_id)" json:"execution_id"`
 	ResourceType string    `orm:"column(resource_type)" json:"resource_type"`
 	SrcResource  string    `orm:"column(src_resource)" json:"src_resource"`
 	DstResource  string    `orm:"column(dst_resource)" json:"dst_resource"`
+	Operation    string    `orm:"column(operation)" json:"operation"`
 	JobID        string    `orm:"column(job_id)" json:"job_id"`
 	Status       string    `orm:"column(status)" json:"status"`
 	StartTime    time.Time `orm:"column(start_time)" json:"start_time"`

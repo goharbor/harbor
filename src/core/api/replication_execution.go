@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/goharbor/harbor/src/replication/ng/model"
+
 	"github.com/goharbor/harbor/src/replication/ng/event"
 
 	"github.com/goharbor/harbor/src/replication/ng"
@@ -120,7 +122,8 @@ func (r *ReplicationOperationAPI) CreateExecution() {
 		return
 	}
 
-	executionID, err := ng.OperationCtl.StartReplication(policy, nil)
+	trigger := r.GetString("trigger", model.TriggerTypeManual)
+	executionID, err := ng.OperationCtl.StartReplication(policy, nil, trigger)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to start replication for policy %d: %v", execution.PolicyID, err))
 		return

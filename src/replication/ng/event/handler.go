@@ -76,7 +76,7 @@ func (h *handler) Handle(event *Event) error {
 		if err := PopulateRegistries(h.registryMgr, policy); err != nil {
 			return err
 		}
-		id, err := h.opCtl.StartReplication(policy, event.Resource)
+		id, err := h.opCtl.StartReplication(policy, event.Resource, model.TriggerTypeEventBased)
 		if err != nil {
 			return err
 		}
@@ -140,7 +140,7 @@ func PopulateRegistries(registryMgr registry.Manager, policy *model.Policy) erro
 
 func getRegistry(registryMgr registry.Manager, registry *model.Registry) (*model.Registry, error) {
 	if registry == nil || registry.ID == 0 {
-		return getLocalRegistry(), nil
+		return GetLocalRegistry(), nil
 	}
 	reg, err := registryMgr.Get(registry.ID)
 	if err != nil {
@@ -152,7 +152,8 @@ func getRegistry(registryMgr registry.Manager, registry *model.Registry) (*model
 	return reg, nil
 }
 
-func getLocalRegistry() *model.Registry {
+// GetLocalRegistry returns the info of the local Harbor registry
+func GetLocalRegistry() *model.Registry {
 	return &model.Registry{
 		Type:    model.RegistryTypeHarbor,
 		Name:    "Local",
