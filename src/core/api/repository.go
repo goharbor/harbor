@@ -37,10 +37,10 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/replication/event/notification"
-	"github.com/goharbor/harbor/src/replication/event/topic"
+	"github.com/goharbor/harbor/src/replication/ng"
+	"github.com/goharbor/harbor/src/replication/ng/event"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -328,15 +328,21 @@ func (ra *RepositoryAPI) Delete() {
 		log.Infof("delete tag: %s:%s", repoName, t)
 
 		go func(tag string) {
-			image := repoName + ":" + tag
-			err := notifier.Publish(topic.ReplicationEventTopicOnDeletion, notification.OnDeletionNotification{
-				Image: image,
-			})
-			if err != nil {
-				log.Errorf("failed to publish on deletion topic for resource %s: %v", image, err)
-				return
+			e := &event.Event{
+				Type: event.EventTypeImagePush,
+				Resource: &model.Resource{
+					Type: model.ResourceTypeRepository,
+					Metadata: &model.ResourceMetadata{
+						Name:      repoName,
+						Namespace: projectName,
+						Vtags:     []string{tag},
+					},
+					Deleted: true,
+				},
 			}
-			log.Debugf("the on deletion topic for resource %s published", image)
+			if err := ng.EventHandler.Handle(e); err != nil {
+				log.Errorf("failed to handle event: %v", err)
+			}
 		}(t)
 
 		go func(tag string) {

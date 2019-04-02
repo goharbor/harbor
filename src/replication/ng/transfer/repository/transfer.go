@@ -278,10 +278,9 @@ func (t *transfer) delete(repo *repository) error {
 		return jobStoppedErr
 	}
 
-	digests := map[string]struct{}{}
 	repository := repo.repository
 	for _, tag := range repo.tags {
-		exist, digest, err := t.dst.ManifestExist(repository, tag)
+		exist, _, err := t.dst.ManifestExist(repository, tag)
 		if err != nil {
 			t.logger.Errorf("failed to check the existence of the manifest of image %s:%s on the destination registry: %v",
 				repository, tag, err)
@@ -292,18 +291,12 @@ func (t *transfer) delete(repo *repository) error {
 				repository, tag)
 			continue
 		}
-		t.logger.Infof("the digest of image %s:%s is %s", repository, tag, digest)
-		if _, exist := digests[digest]; !exist {
-			digests[digest] = struct{}{}
-		}
-	}
-	for digest := range digests {
-		if err := t.dst.DeleteManifest(repository, digest); err != nil {
+		if err := t.dst.DeleteManifest(repository, tag); err != nil {
 			t.logger.Errorf("failed to delete the manifest of image %s:%s on the destination registry: %v",
-				repository, digest, err)
+				repository, tag, err)
 			return err
 		}
-		t.logger.Infof("the manifest of image %s:%s is deleted", repository, digest)
+		t.logger.Infof("the manifest of image %s:%s is deleted", repository, tag)
 	}
 	return nil
 }
