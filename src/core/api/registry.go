@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/goharbor/harbor/src/replication/ng/event"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
@@ -215,16 +217,27 @@ func (t *RegistryAPI) Delete() {
 
 // GetInfo returns the base info and capability declarations of the registry
 func (t *RegistryAPI) GetInfo() {
-	id := t.GetIDFromURL()
-	registry, err := t.manager.Get(id)
-	if err != nil {
-		t.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", id, err))
+	id, err := t.GetInt64FromPath(":id")
+	// "0" is used for the ID of the local Harbor registry
+	if err != nil || id < 0 {
+		t.HandleBadRequest(fmt.Sprintf("invalid registry ID %s", t.GetString(":id")))
 		return
 	}
-	if registry == nil {
-		t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
-		return
+	var registry *model.Registry
+	if id == 0 {
+		registry = event.GetLocalRegistry()
+	} else {
+		registry, err = t.manager.Get(id)
+		if err != nil {
+			t.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", id, err))
+			return
+		}
+		if registry == nil {
+			t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
+			return
+		}
 	}
+
 	factory, err := adapter.GetFactory(registry.Type)
 	if err != nil {
 		t.HandleInternalServerError(fmt.Sprintf("failed to get the adapter factory for registry type %s: %v", registry.Type, err))

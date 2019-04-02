@@ -31,7 +31,8 @@ import (
 // Controller handles the replication-related operations: start,
 // stop, query, etc.
 type Controller interface {
-	StartReplication(policy *model.Policy, resource *model.Resource) (int64, error)
+	// trigger is used to specified that what this replication is triggered by
+	StartReplication(policy *model.Policy, resource *model.Resource, trigger string) (int64, error)
 	StopReplication(int64) error
 	ListExecutions(...*models.ExecutionQuery) (int64, []*models.Execution, error)
 	GetExecution(int64) (*models.Execution, error)
@@ -56,12 +57,14 @@ type controller struct {
 	scheduler    scheduler.Scheduler
 }
 
-func (c *controller) StartReplication(policy *model.Policy, resource *model.Resource) (int64, error) {
+func (c *controller) StartReplication(policy *model.Policy, resource *model.Resource, trigger string) (int64, error) {
 	if resource != nil && len(resource.Metadata.Vtags) != 1 {
 		return 0, fmt.Errorf("the length of Vtags must be 1: %v", resource.Metadata.Vtags)
 	}
-
-	id, err := createExecution(c.executionMgr, policy.ID)
+	if len(trigger) == 0 {
+		trigger = model.TriggerTypeManual
+	}
+	id, err := createExecution(c.executionMgr, policy.ID, trigger)
 	if err != nil {
 		return 0, err
 	}
@@ -139,9 +142,10 @@ func (c *controller) GetTaskLog(taskID int64) ([]byte, error) {
 }
 
 // create the execution record in database
-func createExecution(mgr execution.Manager, policyID int64) (int64, error) {
+func createExecution(mgr execution.Manager, policyID int64, trigger string) (int64, error) {
 	id, err := mgr.Create(&models.Execution{
 		PolicyID:  policyID,
+		Trigger:   trigger,
 		Status:    models.ExecutionStatusInProgress,
 		StartTime: time.Now(),
 	})

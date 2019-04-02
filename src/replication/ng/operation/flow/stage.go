@@ -263,12 +263,17 @@ func preprocess(scheduler scheduler.Scheduler, srcResources, dstResources []*mod
 // create task records in database
 func createTasks(mgr execution.Manager, executionID int64, items []*scheduler.ScheduleItem) error {
 	for _, item := range items {
+		operation := "copy"
+		if item.DstResource.Deleted {
+			operation = "deletion"
+		}
 		task := &models.Task{
 			ExecutionID:  executionID,
 			Status:       models.TaskStatusInitialized,
 			ResourceType: string(item.SrcResource.Type),
 			SrcResource:  getResourceName(item.SrcResource),
 			DstResource:  getResourceName(item.DstResource),
+			Operation:    operation,
 		}
 		id, err := mgr.CreateTask(task)
 		if err != nil {

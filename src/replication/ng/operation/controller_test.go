@@ -232,24 +232,24 @@ func TestStartReplication(t *testing.T) {
 			Vtags: []string{"1.0", "2.0"},
 		},
 	}
-	_, err = ctl.StartReplication(policy, resource)
+	_, err = ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
 	require.NotNil(t, err)
 
 	// replicate resource deletion
 	resource.Metadata.Vtags = []string{"1.0"}
 	resource.Deleted = true
-	id, err := ctl.StartReplication(policy, resource)
+	id, err := ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), id)
 
 	// replicate resource copy
 	resource.Deleted = false
-	id, err = ctl.StartReplication(policy, resource)
+	id, err = ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), id)
 
 	// nil resource
-	id, err = ctl.StartReplication(policy, nil)
+	id, err = ctl.StartReplication(policy, nil, model.TriggerTypeEventBased)
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), id)
 }

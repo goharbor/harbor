@@ -85,6 +85,7 @@ create table replication_task (
  resource_type varchar(64),
  src_resource varchar(256),
  dst_resource varchar(256),
+ operation varchar(32),
  job_id varchar(64),
  status varchar(32),
  start_time timestamp default CURRENT_TIMESTAMP,
