@@ -135,5 +135,5 @@ const (
 	CoreConfigPath          = "/api/internal/configurations"
 	RobotTokenDuration      = "robot_token_duration"
 
-	OIDCCallbackPath = "/c/oidc_callback"
+	OIDCCallbackPath = "/c/oidc/callback"
 )
