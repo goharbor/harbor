@@ -146,27 +146,16 @@ def parse_yaml_config(config_file_path):
         config_dict['admiral_url'] = ""
 
     # Clair configs
-    clair_configs = configs.get("clair")
-    if clair_configs:
-        config_dict['clair_db_password'] = clair_configs.get("db_password")
-        config_dict['clair_db_host'] = clair_configs.get("db_host")
-        config_dict['clair_db_port'] = clair_configs.get("db_port")
-        config_dict['clair_db_username'] = clair_configs.get("db_username")
-        config_dict['clair_db'] = clair_configs.get("db")
-        config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval")
-        config_dict['clair_http_proxy'] = clair_configs.get('http_proxy')
-        config_dict['clair_https_proxy'] = clair_configs.get('https_proxy')
-        config_dict['clair_no_proxy'] = clair_configs.get('no_proxy')
-    else:
-        config_dict['clair_db_password'] = ''
-        config_dict['clair_db_host'] = ''
-        config_dict['clair_db_port'] = ''
-        config_dict['clair_db_username'] = ''
-        config_dict['clair_db'] = ''
-        config_dict['clair_updaters_interval'] = ''
-        config_dict['clair_http_proxy'] = ''
-        config_dict['clair_https_proxy'] = ''
-        config_dict['clair_no_proxy'] = ''
+    clair_configs = configs.get("clair") or {}
+    config_dict['clair_db_password'] = clair_configs.get("db_password") or ''
+    config_dict['clair_db_host'] = clair_configs.get("db_host") or ''
+    config_dict['clair_db_port'] = clair_configs.get("db_port") or ''
+    config_dict['clair_db_username'] = clair_configs.get("db_username") or ''
+    config_dict['clair_db'] = clair_configs.get("db") or ''
+    config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval") or ''
+    config_dict['clair_http_proxy'] = clair_configs.get('http_proxy') or ''
+    config_dict['clair_https_proxy'] = clair_configs.get('https_proxy') or ''
+    config_dict['clair_no_proxy'] = clair_configs.get('no_proxy') or ''
 
     # UAA configs
     config_dict['uaa_endpoint'] = configs.get("uaa_endpoint")
