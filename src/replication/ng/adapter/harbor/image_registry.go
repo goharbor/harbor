@@ -66,3 +66,10 @@ func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*
 
 	return resources, nil
 }
+
+// override the default implementation from the default image registry
+// by calling Harbor API directly
+func (a *adapter) DeleteManifest(repository, reference string) error {
+	url := fmt.Sprintf("%s/api/repositories/%s/tags/%s", a.coreServiceURL, repository, reference)
+	return a.client.Delete(url)
+}

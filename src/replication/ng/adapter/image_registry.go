@@ -22,15 +22,15 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/goharbor/harbor/src/replication/ng/util"
-
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	registry_pkg "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/util"
 )
 
 // const definition
@@ -45,7 +45,8 @@ type ImageRegistry interface {
 	ManifestExist(repository, reference string) (exist bool, digest string, err error)
 	PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error)
 	PushManifest(repository, reference, mediaType string, payload []byte) error
-	DeleteManifest(repository, digest string) error
+	// the "reference" can be "tag" or "digest", the function needs to handle both
+	DeleteManifest(repository, reference string) error
 	BlobExist(repository, digest string) (exist bool, err error)
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
@@ -179,14 +180,23 @@ func (d *DefaultImageRegistry) PushManifest(repository, reference, mediaType str
 	return err
 }
 
-// TODO monitor the registry API request in core directly rather than using
-// the web hook
-
 // DeleteManifest ...
-func (d *DefaultImageRegistry) DeleteManifest(repository, digest string) error {
+func (d *DefaultImageRegistry) DeleteManifest(repository, reference string) error {
 	client, err := d.getClient(repository)
 	if err != nil {
 		return err
+	}
+	digest := reference
+	if !isDigest(digest) {
+		dgt, exist, err := client.ManifestExist(reference)
+		if err != nil {
+			return err
+		}
+		if !exist {
+			log.Debugf("the manifest of %s:%s doesn't exist", repository, reference)
+			return nil
+		}
+		digest = dgt
 	}
 	return client.DeleteManifest(digest)
 }
@@ -216,4 +226,8 @@ func (d *DefaultImageRegistry) PushBlob(repository, digest string, size int64, b
 		return err
 	}
 	return client.PushBlob(digest, size, blob)
+}
+
+func isDigest(str string) bool {
+	return strings.Contains(str, ":")
 }
