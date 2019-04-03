@@ -433,9 +433,9 @@
         "NO_ENDPOINT_INFO": "请先添加一个目标",
         "NO_PROJECT_INFO": "此项目不存在",
         "SOURCE_IMAGES_FILTER": "源镜像过滤器",
-        "SCHEDULE": "定时",
+        "SCHEDULED": "定时",
         "MANUAL": "手动",
-        "IMMEDIATE": "即刻",
+        "EVENT_BASED":"事件驱动",
         "DAILY": "每天",
         "WEEKLY": "每周",
         "SETTING": "设置",
@@ -456,7 +456,10 @@
         "SOURCE_NAMESPACES":"源Namespace",
         "DEST_REGISTRY":"目的Registry",
         "DEST_NAMESPACE":"目的Namespace",
-        "NAMESPACE_TOOLTIP": "Namespace名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。"
+        "NAMESPACE_TOOLTIP": "Namespace名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
+        "TAG":"Tag",
+        "LABEL":"标签",
+        "RESOURCE":"资源"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",

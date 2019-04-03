@@ -166,7 +166,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
     deletion: false
   };
 
-  let mockAdapter = {
+  let mockRegistryInfo = {
     "type": "harbor",
     "description": "",
     "supported_resource_filters": [
@@ -269,8 +269,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
     spyJobs = spyOn(replicationService, "getExecutions").and.returnValues(
       of(mockJob));
 
-    spyAdapter = spyOn(replicationService, "getReplicationAdapter").and.returnValues(
-        of(mockAdapter));
+    spyAdapter = spyOn(replicationService, "getRegistryInfo").and.returnValues(
+        of(mockRegistryInfo));
     spyEndpoint = spyOn(endpointService, "getEndpoints").and.returnValues(
       of(mockEndpoints)
     );

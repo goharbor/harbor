@@ -2,6 +2,7 @@ import { InjectionToken } from '@angular/core';
 
 export let SERVICE_CONFIG = new InjectionToken("service.config");
 export interface IServiceConfig {
+    baseEndpoint?: string;
     /**
      * The base endpoint of service used to retrieve the system configuration information.
      * The configurations may include but not limit:

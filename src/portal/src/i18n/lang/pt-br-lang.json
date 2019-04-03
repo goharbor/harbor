@@ -432,9 +432,9 @@
         "NO_ENDPOINT_INFO": "Por favor adicione antes um endpoint",
         "NO_PROJECT_INFO": "Esse projeto não existe",
         "SOURCE_IMAGES_FILTER": "Filtro de imagens de origem",
-        "SCHEDULE": "Agendado",
+        "SCHEDULED": "Agendado",
         "MANUAL": "Manual",
-        "IMMEDIATE": "Imediato",
+        "EVENT_BASED":"Event Based",
         "DAILY": "Diário",
         "WEEKLY": "Semanal",
         "SETTING":"Opções",
@@ -455,7 +455,10 @@
         "SOURCE_NAMESPACES":"Source namespaces",
         "DEST_REGISTRY":"Destination registry",
         "DEST_NAMESPACE":"Destination namespace",
-        "NAMESPACE_TOOLTIP": "Namespace name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers."
+        "NAMESPACE_TOOLTIP": "Namespace name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "TAG":"Tag",
+        "LABEL":"Label",
+        "RESOURCE":"Resource"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Novo Endpoint",
