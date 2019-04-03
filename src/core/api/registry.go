@@ -55,7 +55,9 @@ func (t *RegistryAPI) Get() {
 	}
 
 	// Hide access secret
-	registry.Credential.AccessSecret = "*****"
+	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
+		registry.Credential.AccessSecret = "*****"
+	}
 
 	t.Data["json"] = registry
 	t.ServeJSON()
@@ -76,7 +78,9 @@ func (t *RegistryAPI) List() {
 
 	// Hide passwords
 	for _, registry := range registries {
-		registry.Credential.AccessSecret = "*****"
+		if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
+			registry.Credential.AccessSecret = "*****"
+		}
 	}
 
 	t.Data["json"] = registries
