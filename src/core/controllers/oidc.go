@@ -15,13 +15,18 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/pkg/errors"
 	"net/http"
+	"strings"
 )
 
 const idTokenKey = "oidc_id_token"
@@ -84,7 +89,12 @@ func (oc *OIDCController) Callback() {
 		oc.RenderFormatedError(http.StatusInternalServerError, err)
 		return
 	}
-	oc.SetSession(idTokenKey, token.IDToken)
+	ouDataStr, err := json.Marshal(d)
+	if err != nil {
+		oc.RenderFormatedError(http.StatusInternalServerError, err)
+		return
+	}
+	oc.SetSession(idTokenKey, string(ouDataStr))
 	// TODO: check and trigger onboard popup or redirect user to project page
 	oc.Data["json"] = d
 	oc.ServeFormatted()
@@ -92,7 +102,49 @@ func (oc *OIDCController) Callback() {
 
 // Onboard handles the request to onboard an user authenticated via OIDC provider
 func (oc *OIDCController) Onboard() {
-	oc.RenderError(http.StatusNotImplemented, "")
-	return
 
+	username := oc.GetString("username")
+	if utils.IsIllegalLength(username, 1, 255) {
+		oc.RenderFormatedError(http.StatusBadRequest, errors.New("username with illegal length"))
+		return
+	}
+	if utils.IsContainIllegalChar(username, []string{",", "~", "#", "$", "%"}) {
+		oc.RenderFormatedError(http.StatusBadRequest, errors.New("username contains illegal characters"))
+		return
+	}
+
+	idTokenStr := oc.GetSession(idTokenKey)
+	d := &oidcUserData{}
+	err := json.Unmarshal([]byte(idTokenStr.(string)), &d)
+	if err != nil {
+		oc.RenderFormatedError(http.StatusInternalServerError, err)
+		return
+	}
+	oidcUser := models.OIDCUser{
+		SubIss: d.Subject + d.Issuer,
+		// TODO: get secret with secret manager.
+		Secret: utils.GenerateRandomString(),
+	}
+
+	var email string
+	if d.Email == "" {
+		email = utils.GenerateRandomString() + "@harbor.com"
+	}
+	user := models.User{
+		Username:     username,
+		Email:        email,
+		OIDCUserMeta: &oidcUser,
+	}
+
+	err = dao.OnBoardOIDCUser(&user)
+	if err != nil {
+		if strings.Contains(err.Error(), dao.ErrDupUser.Error()) {
+			oc.RenderFormatedError(http.StatusConflict, err)
+			return
+		}
+		oc.RenderFormatedError(http.StatusInternalServerError, err)
+		return
+	}
+
+	oc.Controller.Redirect(config.GetPortalURL(), http.StatusMovedPermanently)
 }
