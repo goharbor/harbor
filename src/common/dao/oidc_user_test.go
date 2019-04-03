@@ -49,9 +49,11 @@ func TestOIDCUserMetaDaoMethods(t *testing.T) {
 	user111.OIDCUserMeta = &ou111
 	err := OnBoardOIDCUser(&user111)
 	require.Nil(t, err)
+	defer CleanUser(int64(user111.UserID))
 	user222.OIDCUserMeta = &ou222
 	err = OnBoardOIDCUser(&user222)
 	require.Nil(t, err)
+	defer CleanUser(int64(user222.UserID))
 
 	// empty OIDC user meta ...
 	err = OnBoardOIDCUser(&userEmptyOuMeta)
@@ -110,7 +112,7 @@ func TestOIDCOnboard(t *testing.T) {
 	}
 	userDup := models.User{
 		Username: "user333",
-		Email:    "user333@email.com",
+		Email:    "userDup@email.com",
 	}
 
 	ou333 := &models.OIDCUser{
@@ -134,32 +136,46 @@ func TestOIDCOnboard(t *testing.T) {
 	user333.OIDCUserMeta = ou333
 	err := OnBoardOIDCUser(&user333)
 	require.Nil(t, err)
+	defer CleanUser(int64(user333.UserID))
 
 	// duplicate user -- ErrDupRows
 	// userDup is duplicate with user333
 	userDup.OIDCUserMeta = ou555
 	err = OnBoardOIDCUser(&userDup)
 	require.NotNil(t, err)
-	require.Equal(t, err, ErrDupRows)
+	require.Contains(t, err.Error(), ErrDupUser.Error())
+	exist, err := UserExists(userDup, "email")
+	require.Nil(t, err)
+	require.False(t, exist)
 
 	// duplicate OIDC user -- ErrDupRows
 	// ouDup is duplicate with ou333
 	user555.OIDCUserMeta = ouDup
 	err = OnBoardOIDCUser(&user555)
 	require.NotNil(t, err)
-	require.Equal(t, err, ErrDupRows)
+	require.Contains(t, err.Error(), ErrDupOIDCUser.Error())
+	exist, err = UserExists(user555, "username")
+	require.Nil(t, err)
+	require.False(t, exist)
 
 	// success
 	user555.OIDCUserMeta = ou555
 	err = OnBoardOIDCUser(&user555)
 	require.Nil(t, err)
+	exist, err = UserExists(user555, "username")
+	require.Nil(t, err)
+	require.True(t, exist)
+	defer CleanUser(int64(user555.UserID))
 
 	// duplicate OIDC user's sub -- ErrDupRows
 	// ouDup is duplicate with ou333
 	user666.OIDCUserMeta = ouDupSub
 	err = OnBoardOIDCUser(&user666)
 	require.NotNil(t, err)
-	require.Equal(t, err, ErrDupRows)
+	require.Contains(t, err.Error(), ErrDupOIDCUser.Error())
+	exist, err = UserExists(user666, "username")
+	require.Nil(t, err)
+	require.False(t, exist)
 
 	// clear data
 	defer func() {

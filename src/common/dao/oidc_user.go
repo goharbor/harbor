@@ -18,11 +18,25 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"errors"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/pkg/errors"
+)
+
+var (
+	// ErrDupUser ...
+	ErrDupUser = errors.New("sql: duplicate user in harbor_user")
+
+	// ErrRollBackUser ...
+	ErrRollBackUser = errors.New("sql: transaction roll back error in harbor_user")
+
+	// ErrDupOIDCUser ...
+	ErrDupOIDCUser = errors.New("sql: duplicate user in oicd_user")
+
+	// ErrRollBackOIDCUser ...
+	ErrRollBackOIDCUser = errors.New("sql: transaction roll back error in oicd_user")
 )
 
 // GetOIDCUserByID ...
@@ -92,6 +106,7 @@ func DeleteOIDCUser(id int64) error {
 }
 
 // OnBoardOIDCUser onboard OIDC user
+// For the api caller, should only care about the ErrDupUser. It could lead to http.StatusConflict.
 func OnBoardOIDCUser(u *models.User) error {
 	if u.OIDCUserMeta == nil {
 		return errors.New("unable to onboard as empty oidc user")
@@ -112,12 +127,13 @@ func OnBoardOIDCUser(u *models.User) error {
 		errInsert = err
 		log.Errorf("fail to insert user, %v", err)
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			errInsert = ErrDupRows
+			errInsert = errors.Wrap(errInsert, ErrDupUser.Error())
 		}
 		err := o.Rollback()
 		if err != nil {
-			log.Errorf("fail to rollback, %v", err)
-			return ErrRollback
+			log.Errorf("fail to rollback when to onboard oidc user, %v", err)
+			errInsert = errors.Wrap(errInsert, err.Error())
+			return errors.Wrap(errInsert, ErrRollBackUser.Error())
 		}
 		return errInsert
 
@@ -131,21 +147,21 @@ func OnBoardOIDCUser(u *models.User) error {
 	_, err = o.Insert(u.OIDCUserMeta)
 	if err != nil {
 		errInsert = err
-		log.Errorf("fail to insert user, %v", err)
+		log.Errorf("fail to insert oidc user, %v", err)
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			errInsert = ErrDupRows
+			errInsert = errors.Wrap(errInsert, ErrDupOIDCUser.Error())
 		}
 		err := o.Rollback()
 		if err != nil {
-			log.Errorf("fail to rollback, %v", err)
-			return ErrRollback
+			errInsert = errors.Wrap(errInsert, err.Error())
+			return errors.Wrap(errInsert, ErrRollBackOIDCUser.Error())
 		}
 		return errInsert
 	}
 	err = o.Commit()
 	if err != nil {
-		log.Errorf("fail to commit, %v", err)
-		return ErrCommit
+		log.Errorf("fail to commit when to onboard oidc user, %v", err)
+		return fmt.Errorf("fail to commit when to onboard oidc user, %v", err)
 	}
 
 	return nil
