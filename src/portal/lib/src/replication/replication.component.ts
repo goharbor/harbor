@@ -74,11 +74,6 @@ const jobStatus: { [key: string]: any } = [
   { key: "canceled", description: "REPLICATION.CANCELED" }
 ];
 
-const optionalSearch: {} = {
-  0: "REPLICATION.ADVANCED",
-  1: "REPLICATION.SIMPLE"
-};
-
 export class SearchOption {
   ruleId: number | string;
   ruleName: string = "";
@@ -130,8 +125,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   hiddenJobList = true;
 
   jobs: ReplicationJobItem[];
-
-  toggleJobSearchOption = optionalSearch;
   currentJobSearchOption: number;
 
   @ViewChild(ListReplicationRuleComponent)
