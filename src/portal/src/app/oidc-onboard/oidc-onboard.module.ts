@@ -11,33 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { NgModule } from '@angular/core';
+import { OidcOnboardComponent } from './oidc-onboard.component';
+import { SharedModule } from '../shared/shared.module';
+import { OidcOnboardService } from './oidc-onboard.service';
 
-package models
-
-import (
-	"github.com/astaxie/beego/orm"
-)
-
-func init() {
-	orm.RegisterModel(new(RepTarget),
-		new(RepPolicy),
-		new(RepJob),
-		new(User),
-		new(Project),
-		new(Role),
-		new(AccessLog),
-		new(ScanJob),
-		new(RepoRecord),
-		new(ImgScanOverview),
-		new(ClairVulnTimestamp),
-		new(WatchItem),
-		new(ProjectMetadata),
-		new(ConfigEntry),
-		new(Label),
-		new(ResourceLabel),
-		new(UserGroup),
-		new(AdminJob),
-		new(JobLog),
-		new(Robot),
-		new(OIDCUser))
-}
+@NgModule({
+  imports: [SharedModule],
+  declarations: [
+    OidcOnboardComponent,
+  ],
+  providers: [OidcOnboardService],
+  exports: [
+    OidcOnboardComponent
+  ]
+})
+export class OidcOnboardModule { }

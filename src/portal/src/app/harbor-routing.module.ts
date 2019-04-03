@@ -18,6 +18,7 @@ import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
 import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
 import { MemberGuard } from './shared/route/member-guard-activate.service';
+import { OidcGuard } from './shared/route/oidc-guard-active.service';
 
 import { PageNotFoundComponent } from './shared/not-found/not-found.component';
 import { HarborShellComponent } from './base/harbor-shell/harbor-shell.component';
@@ -53,6 +54,7 @@ import { ProjectRoutingResolver } from './project/project-routing-resolver.servi
 import { ListChartsComponent } from './project/helm-chart/list-charts.component';
 import { ListChartVersionsComponent } from './project/helm-chart/list-chart-versions/list-chart-versions.component';
 import { HelmChartDetailComponent } from './project/helm-chart/helm-chart-detail/chart-detail.component';
+import { OidcOnboardComponent } from './oidc-onboard/oidc-onboard.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -60,6 +62,11 @@ const harborRoutes: Routes = [
   {
     path: 'devcenter',
     component: DevCenterComponent
+  },
+  {
+    path: 'oidc-onboard',
+    component: OidcOnboardComponent,
+    canActivate: [OidcGuard, SignInGuard]
   },
   {
     path: 'harbor',

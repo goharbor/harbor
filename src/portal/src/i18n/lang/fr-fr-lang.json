@@ -21,6 +21,7 @@
         "OK": "OK",
         "DELETE": "SUPPRIMER",
         "LOG_IN": "S'IDENTIFIER",
+        "LOG_IN_OIDC": "Connexion via OIDC fournisseur",
         "SIGN_UP_LINK": "Ouvrir un compte",
         "SIGN_UP": "S'INSCRIRE",
         "CONFIRM": "CONFIRMER",
@@ -663,7 +664,10 @@
             "CLIENT_ID": "no d'identification du client OIDC",
             "CLIENTSECRET": "OIDC Client Secret",
             "SCOPE": "OIDC Scope",
-            "OIDCSKIPCERTVERIFY": "OIDC vérifier cert"
+            "OIDCSKIPCERTVERIFY": "OIDC vérifier cert",
+            "OIDC_SETNAME": "Ensemble OIDC nom d'utilisateur",
+            "OIDC_SETNAMECONTENT": "vous devez créer un Harbor identifiant la première fois lors de la vérification par une tierce partie (oidc). il sera utilisé au sein de port à être associés aux projets, des rôles, etc.",
+            "OIDC_USERNAME": "d'utilisateur"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Déclenchement d'analyse globale avec succès !",
