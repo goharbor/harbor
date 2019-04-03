@@ -694,7 +694,10 @@
             "CLIENT_ID": "OIDC 客户端标识",
             "CLIENTSECRET": "OIDC 客户端密码",
             "SCOPE": "OIDC scope",
-            "OIDCSKIPCERTVERIFY": "OIDC 验证证书"
+            "OIDCSKIPCERTVERIFY": "OIDC 验证证书",
+            "OIDC_SETNAME": "设置OIDC用户名",
+            "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在端口中用于与项目、角色等关联。",
+            "OIDC_USERNAME": "用户名"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",

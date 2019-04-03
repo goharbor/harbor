@@ -696,7 +696,10 @@
             "CLIENT_ID": "OIDC Client ID",
             "CLIENTSECRET": "OIDC Client Secret",
             "SCOPE": "OIDC Scope",
-            "OIDCSKIPCERTVERIFY": "OIDC Verify Cert"
+            "OIDCSKIPCERTVERIFY": "OIDC Verify Cert",
+            "OIDC_SETNAME": "Set OIDC Username",
+            "OIDC_SETNAMECONTENT": "You must create a Harbor username the first time when authenticating via a third party(OIDC).This will be used within Harbor to be associated with projects, roles, etc.",
+            "OIDC_USERNAME": "Username"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
