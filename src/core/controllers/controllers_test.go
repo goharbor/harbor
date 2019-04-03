@@ -138,4 +138,5 @@ func TestAll(t *testing.T) {
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(int(404), w.Code, "GET v2/noproject/manifests/1.0 should get a 404 response")
+
 }
