@@ -33,8 +33,8 @@
           <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry_id">
-                <option *ngFor="let source of sourceList" [ngValue]="source.id">{{source.name}}-{{source.url}}</option>
+              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry">
+                <option *ngFor="let source of sourceList" [ngValue]="source">{{source.name}}-{{source.url}}</option>
               </select>
             </div>
           </div>
@@ -63,8 +63,8 @@
           <div formArrayName="filters">
             <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
               <div [formGroupName]="i">
-                <div class="floatSetPar">
-                  <label>{{supportedFilters[i].type}}:</label>
+                <div class="width-70">
+                  <label>{{"REPLICATION." + supportedFilters[i].type.toUpperCase() | translate}}:</label>
                 </div>
                 <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
                   [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
@@ -88,8 +88,8 @@
           <label class="form-group-label-override  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="dest_registry_id" (change)="targetChange($event)" formControlName="dest_registry_id">
-                <option *ngFor="let target of targetList" [ngValue]="target.id">{{target.name}}-{{target.url}}</option>
+              <select id="dest_registry_id" (change)="targetChange($event)" formControlName="dest_registry">
+                <option *ngFor="let target of targetList" [ngValue]="target">{{target.name}}-{{target.url}}</option>
               </select>
             </div>
           </div>
@@ -112,13 +112,13 @@
           <label class="form-group-label-override">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
           <div formGroupName="trigger">
             <!--on trigger-->
-            <div class="select floatSetPar">
-              <select id="ruleTrigger" formControlName="kind" (change)="selectTrigger($event)">
-                <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{trigger }}</option>
+            <div class="select width-115">
+              <select id="ruleTrigger" formControlName="type" (change)="selectTrigger($event)">
+                <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{'REPLICATION.' + trigger.toUpperCase() | translate }}</option>
               </select>
             </div>
             <!--on push-->
-            <div formGroupName="schedule_param">
+            <div formGroupName="trigger_settings">
               <div [hidden]="isNotSchedule()">
                 <label>Cron String</label>
                 <label for="targetCron" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right">

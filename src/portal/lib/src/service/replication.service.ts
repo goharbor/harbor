@@ -141,7 +141,7 @@ export abstract class ReplicationService {
   ): Observable<any>;
 
 
-  abstract getReplicationAdapter(type: string): Observable<any>;
+  abstract getRegistryInfo(id: number): Observable<any>;
 
   /**
    * Get the jobs for the specified replication rule.
@@ -207,6 +207,7 @@ export abstract class ReplicationService {
 export class ReplicationDefaultService extends ReplicationService {
   _ruleBaseUrl: string;
   _replicateUrl: string;
+  _baseUrl: string;
 
   constructor(
     private http: Http,
@@ -219,6 +220,7 @@ export class ReplicationDefaultService extends ReplicationService {
     this._replicateUrl = config.replicationBaseEndpoint
       ? config.replicationBaseEndpoint
       : "/api/replication";
+    this._baseUrl = config.baseEndpoint ? config.baseEndpoint : "/api";
   }
 
   // Private methods
@@ -230,12 +232,12 @@ export class ReplicationDefaultService extends ReplicationService {
       rule.name !== undefined &&
       rule.name.trim() !== "" &&
       rule.src_namespaces && rule.src_namespaces.length > 0 &&
-      (!!rule.dest_registry_id || !!rule.src_registry_id)
+      (!!rule.dest_registry || !!rule.src_registry)
     );
   }
 
-  public getReplicationAdapter(type): Observable<any> {
-    let requestUrl: string = `${this._replicateUrl}/adapters/${type}`;
+  public getRegistryInfo(id): Observable<any> {
+    let requestUrl: string = `${this._baseUrl}/registries/${id}/info`;
     return this.http
       .get(requestUrl)
       .pipe(map(response => response.json())

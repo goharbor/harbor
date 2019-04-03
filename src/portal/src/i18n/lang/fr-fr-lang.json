@@ -414,9 +414,9 @@
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
         "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_IMAGES_FILTER": "Source images filter",
-        "SCHEDULE": "Scheduled",
+        "SCHEDULED": "Scheduled",
         "MANUAL": "Manual",
-        "IMMEDIATE": "Immediate",
+        "EVENT_BASED":"Event Based",
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
         "SETTING": "Options",
@@ -437,7 +437,10 @@
         "SOURCE_NAMESPACES":"Source namespaces",
         "DEST_REGISTRY":"Destination registry",
         "DEST_NAMESPACE":"Destination namespace",
-        "NAMESPACE_TOOLTIP": "Namespace name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers."
+        "NAMESPACE_TOOLTIP": "Namespace name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "TAG":"Tag",
+        "LABEL":"Label",
+        "RESOURCE":"Resource"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nouveau Point Final",

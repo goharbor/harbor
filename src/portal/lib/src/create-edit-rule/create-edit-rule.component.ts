@@ -52,9 +52,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   filterCount = 0;
   alertClosed = false;
   TRIGGER_TYPES = {
-    MANUAL: "Manual",
-    SCHEDULED: "Scheduled",
-    EVENT_BASED: "EventBased"
+    MANUAL: "manual",
+    SCHEDULED: "scheduled",
+    EVENT_BASED: "eventBased"
   };
 
   ruleNameTooltip = "REPLICATION.NAME_TOOLTIP";
@@ -91,11 +91,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.createForm();
   }
 
-  initAdapter(type: string): void {
-    this.repService.getReplicationAdapter(type).subscribe(adapter => {
+  initRegistryInfo(id: number): void {
+    this.repService.getRegistryInfo(id).subscribe(adapter => {
       this.supportedFilters = adapter.supported_resource_filters;
       this.supportedTriggers = adapter.supported_triggers;
-      this.ruleForm.get("trigger").get("kind").setValue(this.supportedTriggers[0]);
+      this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
     });
   }
 
@@ -134,20 +134,15 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   modeChange(): void {
     if (this.isPushMode) {
-      this.initAdapter("harbor");
+    this.initRegistryInfo(0);
     }
   }
 
 
   sourceChange($event): void {
     this.noSelectedEndpoint = false;
-    let selectId = this.ruleForm.get('src_registry_id').value;
-    let selecedTarget: Endpoint = this.sourceList.find(
-      source => source.id === selectId
-    );
-
-    this.initAdapter(selecedTarget.type);
-
+    let selectId = this.ruleForm.get('src_registry').value;
+    this.initRegistryInfo(selectId.id);
   }
 
   ngOnDestroy(): void {
@@ -172,13 +167,13 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.ruleForm = this.fb.group({
       name: ["", Validators.required],
       description: "",
-      src_registry_id: new FormControl(),
+      src_registry: new FormControl(),
       src_namespaces: new FormArray([new FormControl('')], Validators.required),
-      dest_registry_id: new FormControl(),
+      dest_registry: new FormControl(),
       dest_namespace: "",
       trigger: this.fb.group({
-        kind: '',
-        schedule_param: this.fb.group({
+        type: '',
+        trigger_settings: this.fb.group({
           cron: ""
         })
       }),
@@ -192,11 +187,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   isNotSchedule(): boolean {
-    return this.ruleForm.get("trigger").get("kind").value !== this.TRIGGER_TYPES.SCHEDULED;
+    return this.ruleForm.get("trigger").get("type").value !== this.TRIGGER_TYPES.SCHEDULED;
   }
 
   isNotEventBased(): boolean {
-    return this.ruleForm.get("trigger").get("kind").value !== this.TRIGGER_TYPES.EVENT_BASED;
+    return this.ruleForm.get("trigger").get("type").value !== this.TRIGGER_TYPES.EVENT_BASED;
   }
 
   initForm(): void {
@@ -204,15 +199,15 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       name: "",
       description: "",
       trigger: {
-        kind: '',
-        schedule_param: {
+        type: '',
+        trigger_settings: {
           cron: ""
         }
       },
       deletion: false
     });
     this.setFilter([]);
-    this.initAdapter("harbor");
+    this.initRegistryInfo(0);
     this.copyUpdateForm = clone(this.ruleForm.value);
   }
 
@@ -324,9 +319,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.inProgress = true;
     let copyRuleForm: ReplicationRule = this.ruleForm.value;
     if (this.isPushMode) {
-      copyRuleForm.src_registry_id = null;
+      copyRuleForm.src_registry = null;
     } else {
-      copyRuleForm.dest_registry_id = null;
+      copyRuleForm.dest_registry = null;
     }
 
     if (this.policyId < 0) {
