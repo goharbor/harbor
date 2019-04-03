@@ -234,3 +234,24 @@ func GetStrValueOfAnyType(value interface{}) string {
 	}
 	return strVal
 }
+
+// IsIllegalLength ...
+func IsIllegalLength(s string, min int, max int) bool {
+	if min == -1 {
+		return (len(s) > max)
+	}
+	if max == -1 {
+		return (len(s) <= min)
+	}
+	return (len(s) < min || len(s) > max)
+}
+
+// IsContainIllegalChar ...
+func IsContainIllegalChar(s string, illegalChar []string) bool {
+	for _, c := range illegalChar {
+		if strings.Index(s, c) >= 0 {
+			return true
+		}
+	}
+	return false
+}

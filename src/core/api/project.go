@@ -508,10 +508,10 @@ func (p *ProjectAPI) Logs() {
 	p.ServeJSON()
 }
 
-// TODO move this to package models
+// TODO move this to pa ckage models
 func validateProjectReq(req *models.ProjectRequest) error {
 	pn := req.Name
-	if isIllegalLength(req.Name, projectNameMinLen, projectNameMaxLen) {
+	if utils.IsIllegalLength(req.Name, projectNameMinLen, projectNameMaxLen) {
 		return fmt.Errorf("Project name is illegal in length. (greater than %d or less than %d)", projectNameMaxLen, projectNameMinLen)
 	}
 	validProjectName := regexp.MustCompile(`^` + restrictedNameChars + `$`)
