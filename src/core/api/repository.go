@@ -107,6 +107,10 @@ type manifestResp struct {
 	Config   interface{} `json:"config,omitempty" `
 }
 
+type scanStatus struct {
+	Done          bool `json:"done"`
+}
+
 // Get ...
 func (ra *RepositoryAPI) Get() {
 	projectID, err := ra.GetInt64("project_id")
@@ -1037,6 +1041,45 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 	ra.Data["json"] = res
 	ra.ServeJSON()
 }
+
+
+func (ra *RepositoryAPI) ScanStatus() {
+	if !config.WithClair() {
+		log.Warningf("Harbor is not deployed with Clair, it's impossible to get vulnerability details.")
+		ra.RenderError(http.StatusServiceUnavailable, "")
+		return
+	}
+	repository := ra.GetString(":splat")
+	tag := ra.GetString(":tag")
+	exist, digest, err := ra.checkExistence(repository, tag)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of resource, error: %v", err))
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("resource: %s:%s not found", repository, tag))
+		return
+	}
+	project, _ := utils.ParseRepository(repository)
+
+	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepositoryTagVulnerability)
+	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
+		if !ra.SecurityCtx.IsAuthenticated() {
+			ra.HandleUnauthorized()
+			return
+		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		return
+	}
+	overview, err := dao.GetImgScanOverview(digest)
+	if err != nil {
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get the scan overview, error: %v", err))
+		return
+	}
+	ra.Data["json"]= scanStatus{ overview != nil }
+	ra.ServeJSON()
+}
+
 
 func getSignatures(username, repository string) (map[string][]notary.Target, error) {
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
