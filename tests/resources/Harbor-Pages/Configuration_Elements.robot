@@ -27,5 +27,7 @@ ${vulnerbility_save_button_xpath}  //*[@id='config-save']
 ${configuration_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Configuration')]
 ${system_config_xpath}  //*[@id='config-system']
 ${garbage_collection_xpath}  //*[@id='config-gc']
-${gc_now_xpath}  //*[@id='gc']/gc-config/button
+${gc_log_xpath}  //*[@id='gc-log']
+${gc_config_page}  //clr-vertical-nav-group-children/a[contains(.,'Garbage')]
+${gc_now_xpath}  //*[@id='gc']/gc-config//button[contains(.,'GC')]
 ${gc_log_details_xpath}  //*[@id='clr-dg-row26']/clr-dg-cell[6]/a

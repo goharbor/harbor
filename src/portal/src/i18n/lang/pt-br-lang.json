@@ -128,9 +128,12 @@
             "GROUP": "Grupos",
             "REGISTRY": "Registros",
             "REPLICATION": "Replicações",
-            "CONFIG": "Configuração"
+            "CONFIG": "Configuração",
+            "VULNERABILITY": "Vulnerability",
+            "GARBAGE_COLLECTION": "Garbage Collection"
         },
         "LOGS": "Logs",
+        "TASKS": "Tasks",
         "API_EXPLORER": "API EXPLORER"
     },
     "USER": {
@@ -909,6 +912,7 @@
         "ON": "em",
         "AT": "em",
         "GC_NOW": "GC AGORA",
+        "JOB_HISTORY": "GC History",
         "JOB_LIST":"Lista de tarefas de Limpeza",
         "JOB_ID":"ID DA TAREFA",
         "TRIGGER_TYPE": "TIPO DE DISPARO",

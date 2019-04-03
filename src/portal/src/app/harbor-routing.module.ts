@@ -24,6 +24,8 @@ import { PageNotFoundComponent } from './shared/not-found/not-found.component';
 import { HarborShellComponent } from './base/harbor-shell/harbor-shell.component';
 import { ConfigurationComponent } from './config/config.component';
 import { DevCenterComponent } from './dev-center/dev-center.component';
+import { GcPageComponent } from './gc-page/gc-page.component';
+import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-page.component';
 
 import { UserComponent } from './user/user.component';
 import { SignInComponent } from './account/sign-in/sign-in.component';
@@ -196,6 +198,16 @@ const harborRoutes: Routes = [
       {
         path: 'configs',
         component: ConfigurationComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
+        path: 'vulnerability',
+        component: VulnerabilityPageComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
+        path: 'gc',
+        component: GcPageComponent,
         canActivate: [SystemAdminGuard]
       },
       {

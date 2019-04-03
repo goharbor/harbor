@@ -34,8 +34,7 @@ Test Case - Vulnerability Data Not Ready
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Go Into Project  library  has_image=${false}
     Vulnerability Not Ready Project Hint
-    Switch To Configure
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Vulnerability Not Ready Config Hint
 
 Test Case - Garbage Collection
@@ -56,7 +55,8 @@ Test Case - Garbage Collection
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Garbage Collection
     Sleep  1
-    Wait Until Page Contains  Finished
+    Switch To GC History
+    Retry Wait Until Page Contains  Finished
 
     ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/system/gc/1/log"
     Log To Console  ${output}
@@ -265,13 +265,11 @@ Test Case - Delete Label
 Test Case - Disable Scan Schedule
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Disable Scan Schedule
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Retry Wait Until Page Contains  None
     Close Browser
 
@@ -545,8 +543,7 @@ Test Case - Manual Scan All
     Init Chrome Driver
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Trigger Scan Now
     Navigate To Projects
     Go Into Project  library

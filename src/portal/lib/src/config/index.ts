@@ -5,7 +5,7 @@ import { SystemSettingsComponent } from './system/system-settings.component';
 import { VulnerabilityConfigComponent } from './vulnerability/vulnerability-config.component';
 import { RegistryConfigComponent } from './registry-config.component';
 import { GcComponent } from './gc/gc.component';
-
+import { GcHistoryComponent } from './gc/gc-history/gc-history.component';
 
 export * from './config';
 export * from './replication/replication-config.component';
@@ -16,6 +16,7 @@ export * from './gc/index';
 
 export const CONFIGURATION_DIRECTIVES: Type<any>[] = [
   ReplicationConfigComponent,
+  GcHistoryComponent,
   GcComponent,
   SystemSettingsComponent,
   VulnerabilityConfigComponent,

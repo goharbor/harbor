@@ -1,13 +1,11 @@
 .flex-layout {
-    display: flex;
-    align-items: center;
     margin: 20px 0;
     font-size: .541667rem;
-  }
+}
   
   .normal-wrapper {
     > span:first-child {
-      width: 228px;
+      width: 200px;
     }
   
     > span:not(:first-child) {
@@ -17,13 +15,17 @@
       margin-left: -10px;
     }
     button {
-      margin-left: 10px;
+      margin: 20px 20px 0 200px;
     }
   }
   
   .setting-wrapper {
     > span:first-child {
-      width: 228px;
+      width: 200px;
+    }
+
+    .confirm-button {
+      margin: 20px 0px 0 200px;
     }
   
     *:not(:first-child) {
@@ -39,7 +41,10 @@
       width: 195px;
     }
   }
+
   .font-style {
+    display: inline-block;
     color: #000;
     font-size: .541667rem;
+    width: 200px;
   }
