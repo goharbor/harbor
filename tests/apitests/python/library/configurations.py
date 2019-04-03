@@ -11,6 +11,8 @@ def set_configurations(client, expect_status_code = 200, expect_response_body = 
         conf.project_creation_restriction = config.get("project_creation_restriction")
     if "token_expiration" in config:
         conf.token_expiration = config.get("token_expiration")
+    if "read_only" in config:
+        conf.read_only = config.get("read_only")
 
     try:
         _, status_code, _ = client.configurations_put_with_http_info(conf)
@@ -55,4 +57,10 @@ class Configurations(base.Base):
         client = self._get_client(**kwargs)
 
         config=dict(token_expiration=token_expiration)
+        set_configurations(client, expect_status_code = expect_status_code, **config)
+
+    def set_configurations_of_repo_read_only(self, is_read_only, expect_status_code = 200, **kwargs):
+        client = self._get_client(**kwargs)
+
+        config=dict(read_only=is_read_only)
         set_configurations(client, expect_status_code = expect_status_code, **config)
