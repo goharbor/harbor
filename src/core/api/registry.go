@@ -40,6 +40,44 @@ func (t *RegistryAPI) Prepare() {
 	t.policyCtl = ng.PolicyCtl
 }
 
+// Ping checks health status of a registry
+func (t *RegistryAPI) Ping() {
+	r := &model.Registry{}
+	t.DecodeJSONReqAndValidate(r)
+
+	var err error
+	id := r.ID
+	if id != 0 {
+		r, err = t.manager.Get(id)
+		if err != nil {
+			log.Errorf("failed to get registry %s: %v", r.Name, err)
+			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			return
+		}
+
+		if r == nil {
+			t.CustomAbort(http.StatusNotFound, fmt.Sprintf("Registry %d not found", id))
+			return
+		}
+	}
+
+	if len(r.URL) == 0 || r.Credential == nil {
+		t.CustomAbort(http.StatusBadRequest, "URL or credential emptry")
+		return
+	}
+
+	status, err := registry.CheckHealthStatus(r)
+	if err != nil {
+		t.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Ping registry %s error: %v", r.URL, err))
+		return
+	}
+
+	if status != registry.Healthy {
+		t.CustomAbort(http.StatusBadRequest, fmt.Sprintf("Ping registry %d failed", r.ID))
+	}
+	return
+}
+
 // Get gets a registry by id.
 func (t *RegistryAPI) Get() {
 	id := t.GetIDFromURL()

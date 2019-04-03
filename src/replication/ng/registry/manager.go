@@ -183,7 +183,7 @@ func (m *DefaultManager) HealthCheck() error {
 
 	errCount := 0
 	for _, r := range registries {
-		status, err := healthStatus(r)
+		status, err := CheckHealthStatus(r)
 		if err != nil {
 			log.Warningf("Check health status for %s error: %v", r.URL, err)
 		}
@@ -202,7 +202,8 @@ func (m *DefaultManager) HealthCheck() error {
 	return nil
 }
 
-func healthStatus(r *model.Registry) (HealthStatus, error) {
+// CheckHealthStatus checks status of a given registry
+func CheckHealthStatus(r *model.Registry) (HealthStatus, error) {
 	// TODO(ChenDe): Support other credential type like OAuth, for the moment, only basic auth is supported.
 	if r.Credential.Type != model.CredentialTypeBasic {
 		return Unknown, fmt.Errorf("unknown credential type '%s', only '%s' supported yet", r.Credential.Type, model.CredentialTypeBasic)
@@ -210,7 +211,7 @@ func healthStatus(r *model.Registry) (HealthStatus, error) {
 
 	// TODO(ChenDe): Support health check for other kinds of registry
 	if r.Type != model.RegistryTypeHarbor {
-		return Unknown, fmt.Errorf("unknown registry type '%s'", model.RegistryTypeHarbor)
+		return Unknown, fmt.Errorf("unknown registry type '%s'", r.Type)
 	}
 
 	transport := util.GetHTTPTransport(r.Insecure)

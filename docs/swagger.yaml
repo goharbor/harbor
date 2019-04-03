@@ -2160,6 +2160,33 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
+  /registries/ping:
+    post:
+      summary: Ping status of a registry.
+      description: |
+        This endpoint checks status of a registry, the registry can be given by ID or URL (together with credential)
+      parameters:
+        - name: registry
+          in: body
+          description: Registry to ping.
+          required: true
+          schema:
+            $ref: '#/definitions/Registry'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Registry is healthy.
+        '400':
+          description: No proper registry information provided.
+        '401':
+          description: User need to log in first.
+        '404':
+          description: Registry not found (when registry is provided by ID).
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '500':
+          description: Unexpected internal errors.
   '/registries/{id}':
     put:
       summary: Update a given registry.
