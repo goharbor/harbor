@@ -135,6 +135,9 @@ func (t *RegistryAPI) Put() {
 	if req.Name != nil {
 		registry.Name = *req.Name
 	}
+	if req.Description != nil {
+		registry.Description = *req.Description
+	}
 	if req.URL != nil {
 		registry.URL = *req.URL
 	}

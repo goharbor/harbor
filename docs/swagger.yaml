@@ -4272,6 +4272,9 @@ definitions:
       name:
         type: string
         description: The registry name.
+      description:
+        type: string
+        description: Description of the registry.
       url:
         type: string
         description: The registry address URL string.
