@@ -15,6 +15,12 @@ def is_member_exist_in_project(members, member_user_name, expected_member_role_i
                 return True
     return result
 
+def get_member_id_by_name(members, member_user_name):
+    for member in members:
+        if member.entity_name == member_user_name:
+            return member.id
+    return None
+
 class Project(base.Base):
     def create_project(self, name=None, metadata=None, expect_status_code = 201, expect_response_body = None, **kwargs):
         if name is None:
@@ -130,6 +136,14 @@ class Project(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
         return data
+
+    def get_project_member_id(self, project_id, member_user_name, **kwargs):
+        members = self.get_project_members(project_id, **kwargs)
+        result = get_member_id_by_name(list(members), member_user_name)
+        if result == None:
+            raise Exception(r"Failed to get member id of member {} in project {}.".format(member_user_name, project_id))
+        else:
+            return result
 
     def check_project_member_not_exist(self, project_id, member_user_name, **kwargs):
         members = self.get_project_members(project_id, **kwargs)
