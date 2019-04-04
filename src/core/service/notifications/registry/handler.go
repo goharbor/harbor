@@ -20,6 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/replication/ng/adapter"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	clairdao "github.com/goharbor/harbor/src/common/dao/clair"
 	"github.com/goharbor/harbor/src/common/models"
@@ -179,15 +181,16 @@ func filterEvents(notification *models.Notification) ([]*models.Event, error) {
 }
 
 func checkEvent(event *models.Event) bool {
-	// pull and push manifest
-	if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) != "harbor-registry-client" && (event.Action == "pull" || event.Action == "push") {
+	// push action
+	if event.Action == "push" {
 		return true
 	}
-	// push manifest by job-service
-	if strings.ToLower(strings.TrimSpace(event.Request.UserAgent)) == "harbor-registry-client" && event.Action == "push" {
-		return true
+	// if it is pull action, check the user-agent
+	userAgent := strings.ToLower(strings.TrimSpace(event.Request.UserAgent))
+	if userAgent == "harbor-registry-client" || userAgent == strings.ToLower(adapter.UserAgentReplication) {
+		return false
 	}
-	return false
+	return true
 }
 
 func autoScanEnabled(project *models.Project) bool {

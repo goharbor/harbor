@@ -51,7 +51,7 @@ func newAdapter(registry *model.Registry) *adapter {
 	transport := util.GetHTTPTransport(registry.Insecure)
 	modifiers := []modifier.Modifier{
 		&auth.UserAgentModifier{
-			UserAgent: adp.UserAgentReplicator,
+			UserAgent: adp.UserAgentReplication,
 		},
 	}
 	if registry.Credential != nil {
