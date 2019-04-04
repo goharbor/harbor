@@ -109,10 +109,11 @@ export interface ReplicationRule extends Base {
   trigger: Trigger;
   filters: Filter[];
   deletion?: boolean;
-  src_registry_id?: number;
-  dest_registry_id?: number;
+  src_registry?: any;
+  dest_registry?: any;
   src_namespaces: string [];
   dest_namespace?: string;
+  enabled: boolean;
 }
 
 export class Filter {

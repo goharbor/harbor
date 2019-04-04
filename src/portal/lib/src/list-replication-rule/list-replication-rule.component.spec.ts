@@ -28,7 +28,8 @@ describe('ListReplicationRuleComponent (inline template)', () => {
         "error_job_count": 2,
         "deletion": false,
         "src_namespaces": ["name1", "name2"],
-        "src_registry_id": 3
+        "src_registry": {id: 3},
+        "enabled": true
     },
     {
           "id": 2,
@@ -39,7 +40,8 @@ describe('ListReplicationRuleComponent (inline template)', () => {
           "error_job_count": 2,
           "deletion": false,
           "src_namespaces": ["name1", "name2"],
-          "dest_registry_id": 3
+          "dest_registry": {id: 3},
+          "enabled": true
       },
   ];
 

@@ -37,8 +37,9 @@ describe('Replication Component (inline template)', () => {
           "trigger": {"kind": "Manual", "schedule_param": null},
           "error_job_count": 2,
           "deletion": false,
-          "src_registry_id": 3,
-          "src_namespaces": ["name1"]
+          "src_registry": {id: 3},
+          "src_namespaces": ["name1"],
+          "enabled": true
       },
       {
           "id": 2,
@@ -48,8 +49,9 @@ describe('Replication Component (inline template)', () => {
           "trigger": {"kind": "Manual", "schedule_param": null},
           "error_job_count": 2,
           "deletion": false,
-          "dest_registry_id": 5,
-          "src_namespaces": ["name1"]
+          "dest_registry": {id: 5},
+          "src_namespaces": ["name1"],
+          "enabled": true
       }
   ];
 
