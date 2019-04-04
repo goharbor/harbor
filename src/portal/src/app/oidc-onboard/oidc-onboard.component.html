@@ -1,0 +1,43 @@
+<div class="modal">
+  <div class="modal-dialog" role="dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button (click)="backHarborPage()" class="close">
+          <clr-icon shape="close"></clr-icon>
+        </button>
+        <h3 class="modal-title oidc-header-text"><span>{{'CONFIG.OIDC.OIDC_SETNAME' | translate}}</span>&nbsp;
+        </h3>
+      </div>
+      <div id="error-message">
+        <div class="alert alert-danger" role="alert" *ngIf="errorOpen">
+          <div class="alert-items">
+            <div class="alert-item static">
+              <div class="alert-icon-wrapper">
+                <clr-icon class="alert-icon" size="24" shape="exclamation-circle"></clr-icon>
+              </div>
+              <span class="alert-text">{{errorMessage}}</span>
+            </div>
+          </div>
+          <button type="button" class="close" aria-label="Close" (click)="emptyErrorMessage()">
+            <clr-icon aria-hidden="true" size="16" shape="close"></clr-icon>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <p class="body-message">{{'CONFIG.OIDC.OIDC_SETNAMECONTENT' | translate}}</p>
+      </div>
+      <br />
+      <div class="username-div">
+        <label for="oidcUsername" class="required">{{'CONFIG.OIDC.OIDC_USERNAME' | translate}}</label>
+        <label for="oidcUsername" role="tooltip" class="tooltip tooltip-validation tooltip-lg tooltip-top-right">
+          <input name="oidcUsername" type="text" [formControl]="oidcUsername" required id="oidcUsername" size="40">
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" type="button" (click)="backHarborPage()" id="cancelButton">{{'BUTTON.CANCEL' | translate }}</button>
+        <button class="btn btn-primary" id="saveButton" (click)="clickSaveBtn()" [disabled]="oidcUsername.invalid"
+          type="button">{{'BUTTON.SAVE' | translate }}</button>
+      </div>
+    </div>
+  </div>
+</div>

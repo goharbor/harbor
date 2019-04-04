@@ -39,6 +39,16 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/admiral"
 	"strings"
+
+	"encoding/json"
+	k8s_api_v1beta1 "k8s.io/api/authentication/v1beta1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
 // ContextValueKey for content value
@@ -100,6 +110,7 @@ func Init() {
 	// standalone
 	reqCtxModifiers = []ReqCtxModifier{
 		&secretReqCtxModifier{config.SecretStore},
+		&authProxyReqCtxModifier{},
 		&robotAuthReqCtxModifier{},
 		&basicAuthReqCtxModifier{},
 		&sessionReqCtxModifier{},
@@ -192,6 +203,123 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	securCtx := robotCtx.NewSecurityContext(robot, pm, htk.Claims.(*token.RobotClaims).Access)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
+}
+
+type authProxyReqCtxModifier struct{}
+
+func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	authMode, err := config.AuthMode()
+	if err != nil {
+		log.Errorf("fail to get auth mode, %v", err)
+		return false
+	}
+	if authMode != common.HTTPAuth {
+		return false
+	}
+
+	// only support docker login
+	if ctx.Request.URL.Path != "/service/token" {
+		log.Debug("Auth proxy modifier only handles docker login request.")
+		return false
+	}
+
+	proxyUserName, proxyPwd, ok := ctx.Request.BasicAuth()
+	if !ok {
+		return false
+	}
+
+	rawUserName, match := ap.matchAuthProxyUserName(proxyUserName)
+	if !match {
+		log.Errorf("User name %s doesn't meet the auth proxy name pattern", proxyUserName)
+		return false
+	}
+
+	httpAuthProxyConf, err := config.HTTPAuthProxySetting()
+	if err != nil {
+		log.Errorf("fail to get auth proxy settings, %v", err)
+		return false
+	}
+
+	// Init auth client with the auth proxy endpoint.
+	authClientCfg := &rest.Config{
+		Host: httpAuthProxyConf.TokenReviewEndpoint,
+		ContentConfig: rest.ContentConfig{
+			GroupVersion:         &schema.GroupVersion{},
+			NegotiatedSerializer: serializer.DirectCodecFactory{CodecFactory: scheme.Codecs},
+		},
+		BearerToken: proxyPwd,
+		TLSClientConfig: rest.TLSClientConfig{
+			Insecure: httpAuthProxyConf.SkipCertVerify,
+		},
+	}
+	authClient, err := rest.RESTClientFor(authClientCfg)
+	if err != nil {
+		log.Errorf("fail to create auth client, %v", err)
+		return false
+	}
+
+	// Do auth with the token.
+	tokenReviewRequest := &k8s_api_v1beta1.TokenReview{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "TokenReview",
+			APIVersion: "authentication.k8s.io/v1beta1",
+		},
+		Spec: k8s_api_v1beta1.TokenReviewSpec{
+			Token: proxyPwd,
+		},
+	}
+	res := authClient.Post().Body(tokenReviewRequest).Do()
+	err = res.Error()
+	if err != nil {
+		log.Errorf("fail to POST auth request, %v", err)
+		return false
+	}
+	resRaw, err := res.Raw()
+	if err != nil {
+		log.Errorf("fail to get raw data of token review, %v", err)
+		return false
+	}
+
+	// Parse the auth response, check the user name and authenticated status.
+	tokenReviewResponse := &k8s_api_v1beta1.TokenReview{}
+	err = json.Unmarshal(resRaw, &tokenReviewResponse)
+	if err != nil {
+		log.Errorf("fail to decode token review, %v", err)
+		return false
+	}
+	if !tokenReviewResponse.Status.Authenticated {
+		log.Errorf("fail to auth user: %s", rawUserName)
+		return false
+	}
+	user, err := dao.GetUser(models.User{
+		Username: rawUserName,
+	})
+	if err != nil {
+		log.Errorf("fail to get user: %v", err)
+		return false
+	}
+	if user == nil {
+		log.Errorf("User: %s has not been on boarded yet.", rawUserName)
+		return false
+	}
+	if rawUserName != tokenReviewResponse.Status.User.Username {
+		log.Errorf("user name doesn't match with token: %s", rawUserName)
+		return false
+	}
+
+	log.Debug("using local database project manager")
+	pm := config.GlobalProjectMgr
+	log.Debug("creating local database security context for auth proxy...")
+	securCtx := local.NewSecurityContext(user, pm)
+	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	return true
+}
+
+func (ap *authProxyReqCtxModifier) matchAuthProxyUserName(name string) (string, bool) {
+	if !strings.HasPrefix(name, common.AuthProxyUserNamePrefix) {
+		return "", false
+	}
+	return strings.Replace(name, common.AuthProxyUserNamePrefix, "", -1), true
 }
 
 type basicAuthReqCtxModifier struct{}

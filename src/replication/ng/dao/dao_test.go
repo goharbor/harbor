@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
   "job_log", "project", "project_member", "project_metadata", "properties", "registry",
   "replication_immediate_trigger", "replication_job", "replication_policy", "replication_policy_ng",
   "replication_target", "repository", "robot", "role", "schema_migrations", "user_group",
-  "replication_execution", "replication_task", "replication_schedule_job";`,
+  "replication_execution", "replication_task", "replication_schedule_job", "oidc_user";`,
 		`DROP FUNCTION "update_update_time_at_column"();`,
 	}
 	dao.PrepareTestData(clearSqls, nil)

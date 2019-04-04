@@ -278,7 +278,7 @@ Delete A Label
 ## Garbage Collection	
 Switch To Garbage Collection
     Sleep  1
-    Click Element  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${gc_config_page}
     Wait Until Page Contains Element  ${garbage_collection_xpath} 
     Click Element  xpath=${garbage_collection_xpath}
 
@@ -290,3 +290,8 @@ Click GC Now
 View GC Details
     Click Element  xpath=${gc_log_details_xpath}
     Sleep  2
+
+Switch To GC History
+    Retry Element Click  xpath=${gc_log_xpath}
+    Retry Wait Until Page Contains  Job
+

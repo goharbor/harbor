@@ -28,7 +28,7 @@ ${signup_xpath}  //clr-modal/div/div[1]/div/div/div[3]/button[2]
 
 ${signup_xpath}  /html/body/harbor-app/harbor-shell/clr-main-container/div/div/sign-in/sign-up/clr-modal/div/div[1]/div/div[1]/div/div[3]/button[2]
 ${search_input}  xpath=//*[@id='search_input']
-${login_btn}  css=.btn
+${login_btn}  id=log_in
 ${harbor_span_title}  xpath=//span[contains(., 'Harbor')]
 ${login_name}  id=login_username
 ${login_pwd}  id=login_password

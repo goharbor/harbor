@@ -1,21 +1,23 @@
 <div class="normal-wrapper flex-layout" *ngIf="!isEditMode">
-  <span class="font-style">{{ labelCurrent | translate }}</span>
-  <span>{{(originScheduleType ? 'SCHEDULE.'+ originScheduleType.toUpperCase(): "") | translate}}</span>
-  <a [hidden]="originScheduleType!==SCHEDULE_TYPE.HOURLY" href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
-      <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-      <span class="tooltip-content">{{'CONFIG.TOOLTIP.HOURLY_CRON' | translate}}</span>
-  </a>
-  <a [hidden]="originScheduleType!==SCHEDULE_TYPE.WEEKLY" href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
-      <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-      <span class="tooltip-content">{{'CONFIG.TOOLTIP.WEEKLY_CRON' | translate}}</span>
-  </a>
-  <a [hidden]="originScheduleType!==SCHEDULE_TYPE.DAILY" href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
-      <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-      <span class="tooltip-content">{{'CONFIG.TOOLTIP.DAILY_CRON' | translate}}</span>
-  </a>
-  <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
-  <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
-  <button class="btn btn-outline btn-sm" (click)="editSchedule()" id="editSchedule">
+  <div>
+    <span class="font-style">{{ labelCurrent | translate }}</span>
+    <span>{{(originScheduleType ? 'SCHEDULE.'+ originScheduleType.toUpperCase(): "") | translate}}</span>
+    <a [hidden]="originScheduleType!==SCHEDULE_TYPE.HOURLY" href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+        <span class="tooltip-content">{{'CONFIG.TOOLTIP.HOURLY_CRON' | translate}}</span>
+    </a>
+    <a [hidden]="originScheduleType!==SCHEDULE_TYPE.WEEKLY" href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+        <span class="tooltip-content">{{'CONFIG.TOOLTIP.WEEKLY_CRON' | translate}}</span>
+    </a>
+    <a [hidden]="originScheduleType!==SCHEDULE_TYPE.DAILY" href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+        <span class="tooltip-content">{{'CONFIG.TOOLTIP.DAILY_CRON' | translate}}</span>
+    </a>
+    <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
+    <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
+  </div>
+  <button class="btn btn-primary btn-sm" (click)="editSchedule()" id="editSchedule">
     {{ "BUTTON.EDIT" | translate }}
   </button>
 </div>
@@ -31,20 +33,22 @@
     </select>
   </div>
   <span [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
-  <div class="form-group" [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">
-    <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="cronStringInput.invalid && (cronStringInput.dirty || cronStringInput.touched)" class="tooltip tooltip-validation tooltip-md tooltip-top-right cron-label">
-      <input type="text"  name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
+  <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">
+    <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="dateInvalid" class="tooltip tooltip-validation tooltip-md tooltip-top-right cron-label">
+      <input type="text"  (blur)="blurInvalid()" (input)="inputInvalid()" name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
         [(ngModel)]="cronString">
-      <span class="tooltip-content">
+      <span class="tooltip-content" *ngIf="dateInvalid">
         {{'TOOLTIP.CRON_REQUIRED' | translate }}
       </span>
     </label>
   </div>
-  <button class="btn btn-primary btn-sm"
+  <div class="confirm-button">
+    <button class="btn btn-primary btn-sm"
     (click)="save()" id="config-save">
     {{ "BUTTON.SAVE" | translate }}
-  </button>
-  <button class="btn btn-primary btn-sm" (click)="isEditMode=false">
-    {{ "BUTTON.CANCEL" | translate }}
-  </button>
+    </button>
+    <button class="btn btn-primary btn-sm" (click)="isEditMode=false">
+      {{ "BUTTON.CANCEL" | translate }}
+    </button>
+  </div>
 </div>

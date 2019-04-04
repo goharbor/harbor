@@ -67,9 +67,10 @@ type Email struct {
 
 // HTTPAuthProxy wraps the settings for HTTP auth proxy
 type HTTPAuthProxy struct {
-	Endpoint       string `json:"endpoint"`
-	SkipCertVerify bool   `json:"skip_cert_verify"`
-	AlwaysOnBoard  bool   `json:"always_onboard"`
+	Endpoint            string `json:"endpoint"`
+	TokenReviewEndpoint string `json:"tokenreivew_endpoint"`
+	SkipCertVerify      bool   `json:"skip_cert_verify"`
+	AlwaysOnBoard       bool   `json:"always_onboard"`
 }
 
 // OIDCSetting wraps the settings for OIDC auth endpoint
