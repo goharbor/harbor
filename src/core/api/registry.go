@@ -7,7 +7,6 @@ import (
 
 	"github.com/goharbor/harbor/src/replication/ng/event"
 
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/replication/ng"
@@ -198,8 +197,8 @@ func (t *RegistryAPI) Delete() {
 		return
 	}
 
-	// TODO: Use PolicyManager instead
-	policies, err := dao.GetRepPolicyByTarget(id)
+	// TODO: filter the policies by registry ID
+	_, policies, err := ng.PolicyCtl.List()
 	if err != nil {
 		msg := fmt.Sprintf("Get policies related to registry %d error: %v", id, err)
 		log.Error(msg)

@@ -284,18 +284,6 @@ func (p *ProjectAPI) deletable(projectID int64) (*deletableResp, error) {
 		}, nil
 	}
 
-	policies, err := dao.GetRepPolicyByProject(projectID)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(policies) > 0 {
-		return &deletableResp{
-			Deletable: false,
-			Message:   "the project contains replication rules, can not be deleted",
-		}, nil
-	}
-
 	// Check helm charts number
 	if config.WithChartMuseum() {
 		charts, err := chartController.ListCharts(p.project.Name)
