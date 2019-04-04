@@ -35,6 +35,8 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 )
 
+const userKey = "user"
+
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
 type CommonController struct {
 	beego.Controller
@@ -69,7 +71,7 @@ func (cc *CommonController) Login() {
 	if user == nil {
 		cc.CustomAbort(http.StatusUnauthorized, "")
 	}
-	cc.SetSession("user", *user)
+	cc.SetSession(userKey, *user)
 }
 
 // LogOut Habor UI
