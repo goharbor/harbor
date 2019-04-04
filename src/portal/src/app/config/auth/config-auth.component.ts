@@ -149,6 +149,7 @@ export class ConfigurationAuthComponent implements OnChanges {
         for (let prop in allChanges) {
             if (prop.startsWith('ldap_')
                 || prop.startsWith('uaa_')
+                || prop.startsWith('oidc_')
                 || prop === 'auth_mode'
                 || prop === 'project_creattion_restriction'
                 || prop === 'self_registration'

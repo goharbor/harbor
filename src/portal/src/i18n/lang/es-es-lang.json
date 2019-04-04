@@ -696,7 +696,7 @@
             "CLIENT_ID": "ID de cliente OIDC",
             "CLIENTSECRET": "OIDC Client Secret",
             "SCOPE": "OIDC Ámbito",
-            "OIDCSKIPCERTVERIFY": "OIDC Verify Cert",
+            "OIDCSKIPCERTVERIFY": "OIDC Skip Verificar certificado",
             "OIDC_SETNAME": "Set OIDC nombre de usuario",
             "OIDC_SETNAMECONTENT": "Usted debe crear un Harbor nombre de usuario la primera vez cuando la autenticación a través de un tercero (OIDC). Esta será usada en Harbor para ser asociados con proyectos, funciones, etc.",
             "OIDC_USERNAME": "Usuario"
