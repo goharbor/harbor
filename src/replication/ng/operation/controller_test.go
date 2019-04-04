@@ -15,6 +15,7 @@
 package operation
 
 import (
+	"errors"
 	"io"
 	"testing"
 
@@ -294,4 +295,68 @@ func TestGetTaskLog(t *testing.T) {
 	log, err := ctl.GetTaskLog(1)
 	require.Nil(t, err)
 	assert.Equal(t, "message", string(log))
+}
+
+func TestIsTaskRunning(t *testing.T) {
+	cases := []struct {
+		task      *models.Task
+		isRunning bool
+	}{
+		{
+			task:      nil,
+			isRunning: false,
+		},
+		{
+			task: &models.Task{
+				Status: models.TaskStatusSucceed,
+			},
+			isRunning: false,
+		},
+		{
+			task: &models.Task{
+				Status: models.TaskStatusFailed,
+			},
+			isRunning: false,
+		},
+		{
+			task: &models.Task{
+				Status: models.TaskStatusStopped,
+			},
+			isRunning: false,
+		},
+		{
+			task: &models.Task{
+				Status: models.TaskStatusInProgress,
+			},
+			isRunning: true,
+		},
+	}
+
+	for _, c := range cases {
+		assert.Equal(t, c.isRunning, isTaskRunning(c.task))
+	}
+}
+
+func TestIsNotRunningJobError(t *testing.T) {
+	cases := []struct {
+		err                  error
+		isNotRunningJobError bool
+	}{
+		{
+			err:                  nil,
+			isNotRunningJobError: false,
+		},
+		{
+			err:                  errors.New("not the error"),
+			isNotRunningJobError: false,
+		},
+		{
+			err:                  errors.New(`[ERROR] [handler.go:253]: Serve http request 'POST /api/v1/jobs/734a11140d939ef700889725' error: 500 {"code":10008,"message":"Stop job failed with error","details":"job '734a11140d939ef700889725' is not a running job"}`),
+			isNotRunningJobError: true,
+		},
+	}
+
+	for _, c := range cases {
+		assert.Equal(t, c.isNotRunningJobError, isNotRunningJobError(c.err))
+	}
 }
