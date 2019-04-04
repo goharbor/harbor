@@ -39,8 +39,6 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/replication/core"
-	_ "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
 )
@@ -127,9 +125,6 @@ func init() {
 	beego.Router("/api/repositories/top", &RepositoryAPI{}, "get:GetTopRepos")
 	beego.Router("/api/registries", &RegistryAPI{}, "get:List;post:Post")
 	beego.Router("/api/registries/:id([0-9]+)", &RegistryAPI{}, "get:Get;put:Put;delete:Delete")
-	beego.Router("/api/policies/replication/:id([0-9]+)", &RepPolicyAPI{})
-	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
-	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
 	beego.Router("/api/systeminfo", &SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
@@ -140,7 +135,6 @@ func init() {
 	beego.Router("/api/configurations", &ConfigAPI{})
 	beego.Router("/api/configs", &ConfigAPI{}, "get:GetInternalConfig")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
-	beego.Router("/api/replications", &ReplicationAPI{})
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
 	beego.Router("/api/labels/:id([0-9]+)/resources", &LabelAPI{}, "get:ListResources")
@@ -182,10 +176,6 @@ func init() {
 	chartLabelAPIType := &ChartLabelAPI{}
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
-
-	if err := core.Init(make(chan struct{})); err != nil {
-		log.Fatalf("failed to initialize GlobalController: %v", err)
-	}
 
 	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {

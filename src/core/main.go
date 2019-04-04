@@ -38,8 +38,6 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/goharbor/harbor/src/core/service/token"
-	"github.com/goharbor/harbor/src/replication/core"
-	_ "github.com/goharbor/harbor/src/replication/event"
 )
 
 const (
@@ -133,10 +131,6 @@ func main() {
 
 	closing := make(chan struct{})
 	go gracefulShutdown(closing)
-
-	if err := core.Init(closing); err != nil {
-		log.Errorf("failed to initialize the replication controller: %v", err)
-	}
 
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
