@@ -156,25 +156,8 @@ func (m *DefaultManager) Create(policy *model.Policy) (int64, error) {
 
 // List returns all the policies
 func (m *DefaultManager) List(queries ...*model.PolicyQuery) (total int64, policies []*model.Policy, err error) {
-	// default query parameters
-	var name = ""
-	var namespace = ""
-	var page int64 = 1
-	var pageSize int64 = 15
-
-	if len(queries) > 0 {
-		name = queries[0].Name
-		namespace = queries[0].Namespace
-		page = queries[0].Pagination.Page
-		pageSize = queries[0].Pagination.Size
-	}
-
 	var persistPolicies []*persist_models.RepPolicy
-	persistPolicies, err = dao.GetPolicies(name, namespace, page, pageSize)
-	if err != nil {
-		return
-	}
-	total, err = dao.GetTotalOfRepPolicies(name, namespace)
+	total, persistPolicies, err = dao.GetPolicies(queries...)
 	if err != nil {
 		return
 	}

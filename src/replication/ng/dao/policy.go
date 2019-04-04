@@ -5,8 +5,10 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 // AddRepPolicy insert new policy to DB.
@@ -19,33 +21,53 @@ func AddRepPolicy(policy *models.RepPolicy) (int64, error) {
 	return o.Insert(policy)
 }
 
-func filteredRepPolicyQuerySeter(name, namespace string) orm.QuerySeter {
+// GetPolicies list polices with given query parameters.
+func GetPolicies(queries ...*model.PolicyQuery) (int64, []*models.RepPolicy, error) {
 	var qs = common_dao.GetOrmer().QueryTable(new(models.RepPolicy))
+	var policies []*models.RepPolicy
 
-	// TODO: just filter polices by name now, and need consider how to  filter namespace.
-	qs = qs.Filter("name__icontains", name)
+	if len(queries) == 0 {
+		total, err := qs.Count()
+		if err != nil {
+			return -1, nil, err
+		}
 
-	return qs
-}
+		_, err = qs.All(&policies)
+		if err != nil {
+			return total, nil, err
+		}
 
-// GetTotalOfRepPolicies returns the total count of replication policies
-func GetTotalOfRepPolicies(name, namespace string) (int64, error) {
-	var qs = filteredRepPolicyQuerySeter(name, namespace)
-	return qs.Count()
-}
-
-// GetPolicies filter policies and pagination.
-func GetPolicies(name, namespace string, page, pageSize int64) (policies []*models.RepPolicy, err error) {
-	var qs = filteredRepPolicyQuerySeter(name, namespace)
-
-	// Paginate
-	if page > 0 && pageSize > 0 {
-		qs = qs.Limit(pageSize, (page-1)*pageSize)
+		return total, policies, nil
 	}
 
-	_, err = qs.All(&policies)
+	query := queries[0]
+	if len(query.Name) != 0 {
+		qs = qs.Filter("Name__icontains", query.Name)
+	}
+	if len(query.Namespace) != 0 {
+		// TODO: Namespace filter not implemented yet
+	}
+	if query.SrcRegistry > 0 {
+		qs = qs.Filter("SrcRegistryID__exact", query.SrcRegistry)
+	}
+	if query.DestRegistry > 0 {
+		qs = qs.Filter("DestRegistryID__exact", query.DestRegistry)
+	}
 
-	return
+	total, err := qs.Count()
+	if err != nil {
+		return -1, nil, err
+	}
+
+	if query.Page > 0 && query.Size > 0 {
+		qs = qs.Limit(query.Size, (query.Page-1)*query.Size)
+	}
+	_, err = qs.All(&policies)
+	if err != nil {
+		return total, nil, err
+	}
+
+	return total, policies, nil
 }
 
 // GetRepPolicy return special policy by id.

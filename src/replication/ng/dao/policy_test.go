@@ -3,9 +3,12 @@ package dao
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	common_models "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/replication/ng/dao/models"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 var (
@@ -84,34 +87,6 @@ func TestAddRepPolicy(t *testing.T) {
 	}
 }
 
-func TestGetTotalOfRepPolicies(t *testing.T) {
-	type args struct {
-		name      string
-		namespace string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    int64
-		wantErr bool
-	}{
-		{name: "GetTotalOfRepPolicies 1", args: args{name: "Test 1"}, want: 1},
-		{name: "GetTotalOfRepPolicies 2", args: args{name: "Test"}, want: 3},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTotalOfRepPolicies(tt.args.name, tt.args.namespace)
-			if tt.wantErr {
-				require.NotNil(t, err, "wantErr: %s", err)
-				return
-			}
-
-			require.Nil(t, err)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestGetPolicies(t *testing.T) {
 	type args struct {
 		name      string
@@ -131,7 +106,16 @@ func TestGetPolicies(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPolicies, err := GetPolicies(tt.args.name, tt.args.namespace, tt.args.page, tt.args.pageSize)
+			_, gotPolicies, err := GetPolicies([]*model.PolicyQuery{
+				{
+					Name:      tt.args.name,
+					Namespace: tt.args.namespace,
+					Pagination: common_models.Pagination{
+						Page: tt.args.page,
+						Size: tt.args.pageSize,
+					},
+				},
+			}...)
 			if tt.wantErr {
 				require.NotNil(t, err, "wantErr: %s", err)
 				return
