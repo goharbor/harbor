@@ -152,6 +152,8 @@ type PolicyQuery struct {
 	Name string
 	// TODO: need to consider how to support listing the policies
 	// of one namespace in both pull and push modes
-	Namespace string
+	Namespace    string
+	SrcRegistry  int64
+	DestRegistry int64
 	models.Pagination
 }

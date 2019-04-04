@@ -12,13 +12,15 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng"
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/policy"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
 )
 
 // RegistryAPI handles requests to /api/registries/{}. It manages registries integrated to Harbor.
 type RegistryAPI struct {
 	BaseController
-	manager registry.Manager
+	manager   registry.Manager
+	policyCtl policy.Controller
 }
 
 // Prepare validates the user
@@ -35,6 +37,7 @@ func (t *RegistryAPI) Prepare() {
 	}
 
 	t.manager = ng.RegistryMgr
+	t.policyCtl = ng.PolicyCtl
 }
 
 // Get gets a registry by id.
@@ -193,21 +196,39 @@ func (t *RegistryAPI) Delete() {
 	}
 
 	if registry == nil {
-		t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
+		t.HandleNotFound(fmt.Sprintf("Registry %d not found", id))
 		return
 	}
 
-	// TODO: filter the policies by registry ID
-	_, policies, err := ng.PolicyCtl.List()
+	// Check whether there are replication policies that use this registry as source registry.
+	total, _, err := t.policyCtl.List([]*model.PolicyQuery{
+		{
+			SrcRegistry: id,
+		},
+	}...)
 	if err != nil {
-		msg := fmt.Sprintf("Get policies related to registry %d error: %v", id, err)
+		t.HandleInternalServerError(fmt.Sprintf("List replication policies with source registry %d error: %v", id, err))
+		return
+	}
+	if total > 0 {
+		msg := fmt.Sprintf("Can't delete registry %d,  %d replication policies use it as source registry", id, total)
 		log.Error(msg)
-		t.HandleInternalServerError(msg)
+		t.HandleStatusPreconditionFailed(msg)
 		return
 	}
 
-	if len(policies) > 0 {
-		msg := fmt.Sprintf("Can't delete registry with replication policies, %d found", len(policies))
+	// Check whether there are replication policies that use this registry as destination registry.
+	total, _, err = t.policyCtl.List([]*model.PolicyQuery{
+		{
+			DestRegistry: id,
+		},
+	}...)
+	if err != nil {
+		t.HandleInternalServerError(fmt.Sprintf("List replication policies with destination registry %d error: %v", id, err))
+		return
+	}
+	if total > 0 {
+		msg := fmt.Sprintf("Can't delete registry %d,  %d replication policies use it as destination registry", id, total)
 		log.Error(msg)
 		t.HandleStatusPreconditionFailed(msg)
 		return
