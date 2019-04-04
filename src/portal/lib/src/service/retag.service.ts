@@ -1,10 +1,11 @@
 import { Observable } from "rxjs";
 import { Http } from "@angular/http";
-import { Injectable } from "@angular/core";
+import { Injectable, Inject } from "@angular/core";
 import { RetagRequest } from "./interface";
 import { HTTP_JSON_OPTIONS } from "../utils";
 import { catchError } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs/index";
+import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
 
 /**
  * Define the service methods to perform images retag.
@@ -36,14 +37,16 @@ export abstract class RetagService {
 @Injectable()
 export class RetagDefaultService extends RetagService {
     constructor(
-        private http: Http
+        private http: Http,
+        @Inject(SERVICE_CONFIG) private config: IServiceConfig
     ) {
         super();
     }
 
     retag(request: RetagRequest): Observable<any> {
+        let baseUrl: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
         return this.http
-            .post(`/api/repositories/${request.targetProject}/${request.targetRepo}/tags`,
+            .post(`${baseUrl}/${request.targetProject}/${request.targetRepo}/tags`,
                 {
                     "tag": request.targetTag,
                     "src_image": request.srcImage,

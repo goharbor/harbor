@@ -22,6 +22,7 @@
         "OK": "OK",
         "DELETE": "ELIMINAR",
         "LOG_IN": "IDENTIFICARSE",
+        "LOG_IN_OIDC": "Login Via OIDC proveedor",
         "SIGN_UP_LINK": "Registrar una cuenta",
         "SIGN_UP": "REGISTRARSE",
         "CONFIRM": "CONFIRMAR",
@@ -66,14 +67,19 @@
         "ITEM_REQUIRED": "Campo obligatorio.",
         "NUMBER_REQUIRED": "El campo es obligatorio y debería ser un número.",
         "PORT_REQUIRED": "El campo es obligatorio y debería ser un número de puerto válido.",
-        "CRON_REQUIRED": "El campo es obligatorio y debe estar en formato cron.",        
+        "CRON_REQUIRED": "El campo es obligatorio y debe estar en formato cron.",
         "EMAIL_EXISTING": "Esa dirección de email ya existe.",
         "USER_EXISTING": "Ese nombre de usuario ya existe.",
         "RULE_USER_EXISTING": "Name is already in use.",
         "EMPTY": "Name is required",
         "NONEMPTY": "Can't be empty",
         "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
-        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS."
+        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS.",
+        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS.",
+        "OIDC_NAME": "El nombre de la OIDC proveedor.",
+        "OIDC_ENDPOINT": "La dirección URL de un servidor OIDC denuncia.",
+        "OIDC_SCOPE": "El ámbito de aplicación enviada a OIDC Server durante la autenticación.Tiene que contener 'Openid', y 'offline_access'.Si usted esta usando Google, por favor quitar 'offline_access' de este campo",
+        "OIDC_SKIPCERTVERIFY": "Marque esta casilla si tu OIDC servidor está alojado a través de certificado autofirmado."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Introduzca la contraseña actual",
@@ -125,9 +131,12 @@
             "REGISTRY": "Registries",
             "GROUP": "Groups",
             "REPLICATION": "Replicacións",
-            "CONFIG": "Configuración"
+            "CONFIG": "Configuración",
+            "VULNERABILITY": "Vulnerability",
+            "GARBAGE_COLLECTION": "Garbage Collection"
         },
         "LOGS": "Logs",
+        "TASKS": "Tasks",
         "API_EXPLORER": "API EXPLORER"
     },
     "USER": {
@@ -654,6 +663,7 @@
         "AUTH_MODE_LDAP": "LDAP",
         "AUTH_MODE_UAA": "UAA",
         "AUTH_MODE_HTTP": "http_auth",
+        "AUTH_MODE_OIDC": "OIDC",
         "SCOPE_BASE": "Base",
         "SCOPE_ONE_LEVEL": "UnNivel",
         "SCOPE_SUBTREE": "Subárbol",
@@ -716,6 +726,17 @@
             "ENDPOINT": "Server Endpoint",
             "ALWAYS_ONBOARD": "Always Onboard",
             "VERIFY_CERT": "Authentication Verify Cert"
+        },
+        "OIDC": {
+            "OIDC_PROVIDER": "OIDC Proveedor",
+            "ENDPOINT": "OIDC Endpoint",
+            "CLIENT_ID": "ID de cliente OIDC",
+            "CLIENTSECRET": "OIDC Client Secret",
+            "SCOPE": "OIDC Ámbito",
+            "OIDCSKIPCERTVERIFY": "OIDC Verify Cert",
+            "OIDC_SETNAME": "Set OIDC nombre de usuario",
+            "OIDC_SETNAMECONTENT": "Usted debe crear un Harbor nombre de usuario la primera vez cuando la autenticación a través de un tercero (OIDC). Esta será usada en Harbor para ser asociados con proyectos, funciones, etc.",
+            "OIDC_USERNAME": "Usuario"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
@@ -931,7 +952,7 @@
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",
         "GC_NOW": "GC NOW",
-        "JOB_HISTORY": "GC Jobs History",
+        "JOB_HISTORY": "GC History",
         "JOB_ID": "Job ID",
         "TRIGGER_TYPE": "Trigger Type",
         "LATEST_JOBS": "Latest {{param}} Jobs",

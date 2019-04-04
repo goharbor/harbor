@@ -471,9 +471,10 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 		return nil, err
 	}
 	return &models.HTTPAuthProxy{
-		Endpoint:       cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
-		SkipCertVerify: cfgMgr.Get(common.HTTPAuthProxySkipCertVerify).GetBool(),
-		AlwaysOnBoard:  cfgMgr.Get(common.HTTPAuthProxyAlwaysOnboard).GetBool(),
+		Endpoint:            cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
+		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
+		SkipCertVerify:      cfgMgr.Get(common.HTTPAuthProxySkipCertVerify).GetBool(),
+		AlwaysOnBoard:       cfgMgr.Get(common.HTTPAuthProxyAlwaysOnboard).GetBool(),
 	}, nil
 
 }

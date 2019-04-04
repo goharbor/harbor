@@ -33,6 +33,7 @@ import { AuthCheckGuard } from "./route/auth-user-activate.service";
 import { SignInGuard } from "./route/sign-in-guard-activate.service";
 import { SystemAdminGuard } from "./route/system-admin-activate.service";
 import { MemberGuard } from "./route/member-guard-activate.service";
+import { OidcGuard } from "./route/oidc-guard-active.service";
 import { LeavingRepositoryRouteDeactivate } from "./route/leaving-repository-deactivate.service";
 
 import { PortValidatorDirective } from "./port.directive";
@@ -139,6 +140,7 @@ const uiLibConfig: IServiceConfig = {
     SignInGuard,
     LeavingRepositoryRouteDeactivate,
     MemberGuard,
+    OidcGuard,
     MessageHandlerService,
     StatisticHandler
   ]

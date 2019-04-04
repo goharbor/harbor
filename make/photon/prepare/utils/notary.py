@@ -76,18 +76,13 @@ def prepare_env_notary(customize_crt, nginx_config_dir):
         os.path.join(notary_config_dir, "server_env"))
 
     print("Copying nginx configuration file for notary")
-    notary_nginx_upstream_template_conf = os.path.join(templates_dir, "nginx", "notary.upstream.conf.jinja")
-    notary_server_nginx_config = os.path.join(nginx_config_dir, "notary.server.conf")
-    shutil.copy2(notary_nginx_upstream_template_conf, notary_server_nginx_config)
+    shutil.copy2(
+        os.path.join(templates_dir, "nginx", "notary.upstream.conf.jinja"),
+        os.path.join(nginx_config_dir, "notary.upstream.conf"))
 
     mark_file(os.path.join(notary_secret_dir, "notary-signer.crt"))
     mark_file(os.path.join(notary_secret_dir, "notary-signer.key"))
     mark_file(os.path.join(notary_secret_dir, "notary-signer-ca.crt"))
-
-    # print("Copying sql file for notary DB")
-    # if os.path.exists(os.path.join(notary_config_dir, "postgresql-initdb.d")):
-    #     shutil.rmtree(os.path.join(notary_config_dir, "postgresql-initdb.d"))
-    # shutil.copytree(os.path.join(notary_temp_dir, "postgresql-initdb.d"), os.path.join(notary_config_dir, "postgresql-initdb.d"))
 
 
 def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_path):

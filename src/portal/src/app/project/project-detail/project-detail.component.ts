@@ -85,15 +85,9 @@ export class ProjectDetailComponent implements OnInit {
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.LABEL.KEY, USERSTATICPERMISSION.LABEL.VALUE.CREATE));
     forkJoin(...permissionsList).subscribe(Rules => {
-      this.hasLogListPermission = Rules[0] as boolean;
-      this.hasConfigurationListPermission = Rules[1] as boolean;
-      this.hasMemberListPermission = Rules[2] as boolean;
-      this.hasReplicationListPermission = Rules[3] as boolean;
-      this.hasLabelListPermission = Rules[4] as boolean;
-      this.hasRepositoryListPermission = Rules[5] as boolean;
-      this.hasHelmChartsListPermission = Rules[6] as boolean;
-      this.hasRobotListPermission = Rules[7] as boolean;
-      this.hasLabelCreatePermission = Rules[8] as boolean;
+      [this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission, this.hasReplicationListPermission
+        , this.hasLabelListPermission, this.hasRepositoryListPermission, this.hasHelmChartsListPermission, this.hasRobotListPermission
+        , this.hasLabelCreatePermission] = Rules;
 
     }, error => this.errorHandler.error(error));
   }

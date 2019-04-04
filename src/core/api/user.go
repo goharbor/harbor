@@ -16,11 +16,6 @@ package api
 
 import (
 	"fmt"
-	"net/http"
-	"regexp"
-	"strconv"
-	"strings"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -29,6 +24,9 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"net/http"
+	"regexp"
+	"strconv"
 )
 
 // UserAPI handles request to /api/users/{}
@@ -446,13 +444,13 @@ func (ua *UserAPI) modifiable() bool {
 // validate only validate when user register
 func validate(user models.User) error {
 
-	if isIllegalLength(user.Username, 1, 255) {
+	if utils.IsIllegalLength(user.Username, 1, 255) {
 		return fmt.Errorf("username with illegal length")
 	}
-	if isContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
+	if utils.IsContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
 		return fmt.Errorf("username contains illegal characters")
 	}
-	if isIllegalLength(user.Password, 8, 20) {
+	if utils.IsIllegalLength(user.Password, 8, 20) {
 		return fmt.Errorf("password with illegal length")
 	}
 	return commonValidate(user)
@@ -469,35 +467,16 @@ func commonValidate(user models.User) error {
 		return fmt.Errorf("Email can't be empty")
 	}
 
-	if isIllegalLength(user.Realname, 1, 255) {
+	if utils.IsIllegalLength(user.Realname, 1, 255) {
 		return fmt.Errorf("realname with illegal length")
 	}
 
-	if isContainIllegalChar(user.Realname, []string{",", "~", "#", "$", "%"}) {
+	if utils.IsContainIllegalChar(user.Realname, []string{",", "~", "#", "$", "%"}) {
 		return fmt.Errorf("realname contains illegal characters")
 	}
-	if isIllegalLength(user.Comment, -1, 30) {
+	if utils.IsIllegalLength(user.Comment, -1, 30) {
 		return fmt.Errorf("comment with illegal length")
 	}
 	return nil
 
-}
-
-func isIllegalLength(s string, min int, max int) bool {
-	if min == -1 {
-		return (len(s) > max)
-	}
-	if max == -1 {
-		return (len(s) <= min)
-	}
-	return (len(s) < min || len(s) > max)
-}
-
-func isContainIllegalChar(s string, illegalChar []string) bool {
-	for _, c := range illegalChar {
-		if strings.Index(s, c) >= 0 {
-			return true
-		}
-	}
-	return false
 }

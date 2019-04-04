@@ -34,8 +34,7 @@ Test Case - Vulnerability Data Not Ready
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Go Into Project  library  has_image=${false}
     Vulnerability Not Ready Project Hint
-    Switch To Configure
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Vulnerability Not Ready Config Hint
 
 Test Case - Garbage Collection
@@ -56,7 +55,8 @@ Test Case - Garbage Collection
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Garbage Collection
     Sleep  1
-    Wait Until Page Contains  Finished
+    Switch To GC History
+    Retry Wait Until Page Contains  Finished
 
     ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/system/gc/1/log"
     Log To Console  ${output}
@@ -265,14 +265,12 @@ Test Case - Delete Label
 Test Case - Disable Scan Schedule
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Disable Scan Schedule
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Go To Vulnerability Config
-    Page Should Contain  None
+    Switch To Vulnerability Page
+    Retry Wait Until Page Contains  None
     Close Browser
 
 Test Case - User View Projects
@@ -336,38 +334,7 @@ Test Case - Manage Project Member
     Close Browser
 
 Test Case - Manage project publicity
-    Init Chrome Driver
-    ${d}=    Get Current Date  result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user007  Test1@34
-    Create An New Project  project${d}  public=true
-
-    Push image  ${ip}  user007  Test1@34  project${d}  hello-world:latest
-    Pull image  ${ip}  user008  Test1@34  project${d}  hello-world:latest
-
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  user008  Test1@34
-    Project Should Display  project${d}
-    Search Private Projects
-    Project Should Not Display  project${d}
-
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  user007  Test1@34
-    Make Project Private  project${d}
-
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  user008  Test1@34
-    Project Should Not Display  project${d}
-    Cannot Pull image  ${ip}  user008  Test1@34  project${d}  hello-world:latest
-
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  user007  Test1@34
-    Make Project Public  project${d}
-
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  user008  Test1@34
-    Project Should Display  project${d}
-    Close Browser
+    Body Of Manage project publicity
 
 Test Case - Assign Sys Admin
     Init Chrome Driver
@@ -547,20 +514,7 @@ Test Case - Developer Operate Labels
     Close Browser
 
 Test Case - Scan A Tag In The Repo
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user023  Test1@34
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
-    Push Image  ${ip}  user023  Test1@34  project${d}  hello-world
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/hello-world
-    Scan Repo  latest  Succeed
-    Summary Chart Should Display  latest
-    Pull Image  ${ip}  user023  Test1@34  project${d}  hello-world
-    # Edit Repo Info
-    Close Browser
+    Body Of Scan A Tag In The Repo
 
 Test Case - Scan As An Unprivileged User
     Init Chrome Driver
@@ -589,8 +543,7 @@ Test Case - Manual Scan All
     Init Chrome Driver
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Configure
-    Go To Vulnerability Config
+    Switch To Vulnerability Page
     Trigger Scan Now
     Navigate To Projects
     Go Into Project  library
@@ -612,47 +565,10 @@ Test Case - View Scan Error
     Close Browser
 
 Test Case - List Helm Charts
-    Init Chrome Driver
-    ${d}=   Get Current Date    result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user027  Test1@34
-    Create An New Project  project${d}
-    Go Into Project  project${d}  has_image=${false}
-
-    Switch To Project Charts
-    Upload Chart files
-    Go Into Chart Version  ${prometheus_chart_name}
-    Retry Wait Until Page Contains  ${prometheus_chart_version}
-    Go Into Chart Detail  ${prometheus_chart_version}
-
-    # Summary tab
-    Retry Wait Until Page Contains Element  ${summary_markdown}
-    Retry Wait Until Page Contains Element  ${summary_container}
-
-    # Dependency tab
-    Retry Double Keywords When Error  Retry Element Click  xpath=${detail_dependency}  Retry Wait Until Page Contains Element  ${dependency_content}
-
-    # Values tab
-    Retry Double Keywords When Error  Retry Element Click  xpath=${detail_value}  Retry Wait Until Page Contains Element  ${value_content}
-
-    Go Back To Versions And Delete
-    Close Browser
+    Body Of List Helm Charts
 
 Test Case - Admin Push Signed Image
-    Enable Notary Client
-
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
-    Log  ${output}
-
-    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${notaryServerEndpoint}
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
-
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  sha256
+    Body Of Admin Push Signed Image
 
 Test Case - Retag A Image Tag
     Init Chrome Driver

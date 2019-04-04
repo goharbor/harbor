@@ -260,6 +260,6 @@ func TestOIDCSetting(t *testing.T) {
 	assert.True(t, v.SkipCertVerify)
 	assert.Equal(t, "client", v.ClientID)
 	assert.Equal(t, "secret", v.ClientSecret)
-	assert.Equal(t, "https://harbor.test/c/oidc_callback", v.RedirectURL)
+	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 }
