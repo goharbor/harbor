@@ -4,7 +4,7 @@
         <label class="title"> {{customAppTitle? customAppTitle:(appTitle | translate)}}
         </label>
         <a href="/c/oidc/login" class="login-oidc">
-            <button type="button" class="btn btn-primary btn-block">
+            <button type="button" id="log_oidc" class="btn btn-primary btn-block">
                 <span>{{'BUTTON.LOG_IN_OIDC' | translate }}</span>
             </button>
         </a>
@@ -38,7 +38,7 @@
                 {{ 'SIGN_IN.INVALID_MSG' | translate }}
             </div>
             <button [disabled]="isOnGoing || !isValid" type="submit" class="btn btn-primary"
-                (click)="signIn()">{{ 'BUTTON.LOG_IN' | translate }}</button>
+                (click)="signIn()" id="log_in">{{ 'BUTTON.LOG_IN' | translate }}</button>
             <a href="javascript:void(0)" class="signup" (click)="signUp()"
                 *ngIf="selfSignUp">{{ 'BUTTON.SIGN_UP_LINK' | translate }}</a>
         </div>
