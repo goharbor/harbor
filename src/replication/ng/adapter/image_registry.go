@@ -35,8 +35,7 @@ import (
 
 // const definition
 const (
-	// TODO: add filter for the agent in registry webhook handler
-	UserAgentReplicator = "harbor-replicator"
+	UserAgentReplication = "harbor-replication-service"
 )
 
 // ImageRegistry defines the capabilities that an image registry should have
@@ -65,7 +64,7 @@ func NewDefaultImageRegistry(registry *model.Registry) *DefaultImageRegistry {
 	transport := util.GetHTTPTransport(registry.Insecure)
 	modifiers := []modifier.Modifier{
 		&auth.UserAgentModifier{
-			UserAgent: UserAgentReplicator,
+			UserAgent: UserAgentReplication,
 		},
 	}
 	if registry.Credential != nil {
