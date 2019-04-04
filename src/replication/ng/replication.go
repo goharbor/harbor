@@ -17,6 +17,8 @@
 package ng
 
 import (
+	"time"
+
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	cfg "github.com/goharbor/harbor/src/core/config"
@@ -43,7 +45,7 @@ var (
 )
 
 // Init the global variables and configurations
-func Init() error {
+func Init(closing chan struct{}) error {
 	// init config
 	registryURL, err := cfg.RegistryURL()
 	if err != nil {
@@ -73,6 +75,9 @@ func Init() error {
 	// init event handler
 	EventHandler = event.NewHandler(PolicyCtl, RegistryMgr, OperationCtl)
 	log.Debug("the replication initialization completed")
+
+	// Start health checker for registries
+	go registry.NewHealthChecker(time.Minute*5, closing).Run()
 	return nil
 }
 

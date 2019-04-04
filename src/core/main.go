@@ -130,8 +130,10 @@ func main() {
 		}
 	}
 
-	if err := ng.Init(); err != nil {
-		log.Fatalf("failed to initialize replication: %v", err)
+	closing := make(chan struct{})
+	go gracefulShutdown(closing)
+	if err := ng.Init(closing); err != nil {
+		log.Fatalf("failed to init for replication: %v", err)
 	}
 
 	filter.Init()
