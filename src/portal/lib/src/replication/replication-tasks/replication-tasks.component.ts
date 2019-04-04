@@ -16,7 +16,7 @@ export class ReplicationTasksComponent implements OnInit {
   selectedRow: [];
   loading = false;
   searchTask: string;
-  defaultFilter = "recourceType";
+  defaultFilter = "resourceType";
   tasks: ReplicationTasks[] = [];
   tasksCopy: ReplicationTasks[] = [];
   stopOnGoing: boolean;
@@ -66,12 +66,24 @@ export class ReplicationTasksComponent implements OnInit {
       : null;
   }
 
+  public get successNum(): string {
+    return this.executions && this.executions['succeed'];
+  }
+
+  public get failedNum(): string {
+    return this.executions && this.executions['failed'];
+  }
+
+  public get progressNum(): string {
+    return this.executions && this.executions['in_progress'];
+  }
+
   stopJob() {
     this.stopOnGoing = true;
     this.replicationService.stopJobs(this.executionId)
     .subscribe(response => {
       this.stopOnGoing = false;
-       // this.getExecutions();
+       this.getExecutionDetail();
        this.translate.get("REPLICATION.STOP_SUCCESS", { param: this.executionId }).subscribe((res: string) => {
           this.errorHandler.info(res);
        });
@@ -90,11 +102,11 @@ export class ReplicationTasksComponent implements OnInit {
       this.replicationService.getReplicationTasks(this.executionId)
       .pipe(finalize(() => (this.loading = false)))
       .subscribe(tasks => {
-        if (this.defaultFilter === 'recourceType') {
+        if (this.defaultFilter === 'resourceType') {
             this.tasks = tasks.filter(x =>
               x.resource_type.includes(this.searchTask)
             );
-        } else if (this.defaultFilter === 'recource') {
+        } else if (this.defaultFilter === 'resource') {
             this.tasks = tasks.filter(x =>
               x.src_resource.includes(this.searchTask)
             );
