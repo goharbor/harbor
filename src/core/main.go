@@ -38,6 +38,7 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/replication/ng"
 )
 
 const (
@@ -129,8 +130,9 @@ func main() {
 		}
 	}
 
-	closing := make(chan struct{})
-	go gracefulShutdown(closing)
+	if err := ng.Init(); err != nil {
+		log.Fatalf("failed to initialize replication: %v", err)
+	}
 
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
