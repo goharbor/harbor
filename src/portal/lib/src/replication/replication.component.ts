@@ -53,9 +53,16 @@ import {
 import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
-import { operateChanges, OperationState, OperateInfo } from "../operation/operate";
+import {
+  operateChanges,
+  OperationState,
+  OperateInfo
+} from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 import { Router } from "@angular/router";
+const ONE_HOUR_SECONDS: number = 3600;
+const ONE_MINUTE_SECONDS: number = 60;
+const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
 
 const ruleStatus: { [key: string]: any } = [
   { key: "all", description: "REPLICATION.ALL_STATUS" },
@@ -63,26 +70,11 @@ const ruleStatus: { [key: string]: any } = [
   { key: "0", description: "REPLICATION.DISABLED" }
 ];
 
-const jobStatus: { [key: string]: any } = [
-  { key: "all", description: "REPLICATION.ALL" },
-  { key: "pending", description: "REPLICATION.PENDING" },
-  { key: "running", description: "REPLICATION.RUNNING" },
-  { key: "error", description: "REPLICATION.ERROR" },
-  { key: "retrying", description: "REPLICATION.RETRYING" },
-  { key: "stopped", description: "REPLICATION.STOPPED" },
-  { key: "finished", description: "REPLICATION.FINISHED" },
-  { key: "canceled", description: "REPLICATION.CANCELED" }
-];
-
 export class SearchOption {
   ruleId: number | string;
   ruleName: string = "";
-  repoName: string = "";
+  trigger: string = "";
   status: string = "";
-  startTime: string = "";
-  startTimestamp: string = "";
-  endTime: string = "";
-  endTimestamp: string = "";
   page: number = 1;
   pageSize: number = DEFAULT_PAGE_SIZE;
 }
@@ -109,12 +101,12 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   @Output() goToRegistry = new EventEmitter<any>();
 
   search: SearchOption = new SearchOption();
-
+  isOpenFilterTag: boolean;
   ruleStatus = ruleStatus;
   currentRuleStatus: { key: string; description: string };
 
-  jobStatus = jobStatus;
-  currentJobStatus: { key: string; description: string };
+  currentTerm: string;
+  defaultFilter = "trigger";
 
   changedRules: ReplicationRule[];
 
@@ -125,14 +117,12 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   hiddenJobList = true;
 
   jobs: ReplicationJobItem[];
-  currentJobSearchOption: number;
 
   @ViewChild(ListReplicationRuleComponent)
   listReplicationRule: ListReplicationRuleComponent;
 
   @ViewChild(CreateEditRuleComponent)
   createEditPolicyComponent: CreateEditRuleComponent;
-
 
   @ViewChild("replicationConfirmDialog")
   replicationConfirmDialog: ConfirmationDialogComponent;
@@ -142,10 +132,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
     ReplicationJob
-    >("start_time", "date");
+  >("start_time", "date");
   updateTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
     ReplicationJob
-    >("end_time", "date");
+  >("end_time", "date");
 
   // Server driven pagination
   currentPage: number = 1;
@@ -160,7 +150,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     private errorHandler: ErrorHandler,
     private replicationService: ReplicationService,
     private operationService: OperationService,
-    private translateService: TranslateService) { }
+    private translateService: TranslateService
+  ) {}
 
   public get showPaginationIndex(): boolean {
     return this.totalCount > 0;
@@ -168,8 +159,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentRuleStatus = this.ruleStatus[0];
-    this.currentJobStatus = this.jobStatus[0];
-    this.currentJobSearchOption = 0;
   }
 
   ngOnDestroy() {
@@ -215,43 +204,23 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     // Pagination
     params.set("page", "" + pageNumber);
     params.set("page_size", "" + this.pageSize);
-    // Search by status
-    if (this.search.status.trim()) {
-      params.set("status", this.search.status);
-    }
-    // Search by repository
-    if (this.search.repoName.trim()) {
-      params.set("repository", this.search.repoName);
-    }
-    // Search by timestamps
-    if (this.search.startTimestamp.trim()) {
-      params.set("start_time", this.search.startTimestamp);
-    }
-    if (this.search.endTimestamp.trim()) {
-      params.set("end_time", this.search.endTimestamp);
+
+    if (this.currentTerm && this.currentTerm !== "") {
+      params.set(this.defaultFilter, this.currentTerm);
     }
 
     this.jobsLoading = true;
 
-    // Do filtering and sorting
-    this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
-    this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
-
-    this.jobsLoading = false;
-
-    this.replicationService.getExecutions(this.search.ruleId, params)
-      .subscribe(response => {
+    this.replicationService.getExecutions(this.search.ruleId, params).subscribe(
+      response => {
         this.totalCount = response.metadata.xTotalCount;
         this.jobs = response.data;
-
         if (!this.timerDelay) {
           this.timerDelay = timer(10000, 10000).subscribe(() => {
             let count: number = 0;
             this.jobs.forEach(job => {
               if (
-                job.status === "pending" ||
-                job.status === "running" ||
-                job.status === "retrying"
+                job.status === "InProgress"
               ) {
                 count++;
               }
@@ -264,18 +233,30 @@ export class ReplicationComponent implements OnInit, OnDestroy {
             }
           });
         }
-
         // Do filtering and sorting
         this.jobs = doFiltering<ReplicationJobItem>(this.jobs, state);
         this.jobs = doSorting<ReplicationJobItem>(this.jobs, state);
 
         this.jobsLoading = false;
-      }, error => {
+      },
+      error => {
         this.jobsLoading = false;
         this.errorHandler.error(error);
-      });
+      }
+    );
   }
-
+  public doSearchExecutions(terms: string): void {
+    if (!terms) {
+      return;
+    }
+    this.currentTerm = terms.trim();
+    // Trigger data loading and start from first page
+    this.jobsLoading = true;
+    this.currentPage = 1;
+    this.jobsLoading = true;
+    // Force reloading
+    this.loadFirstPage();
+  }
   loadFirstPage(): void {
     let st: State = this.currentState;
     if (!st) {
@@ -294,10 +275,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     if (rule && rule.id) {
       this.hiddenJobList = false;
       this.search.ruleId = rule.id || "";
-      this.search.repoName = "";
-      this.search.status = "";
-      this.currentJobSearchOption = 0;
-      this.currentJobStatus = { key: "all", description: "REPLICATION.ALL" };
       this.loadFirstPage();
     }
   }
@@ -325,7 +302,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       let rule: ReplicationRule = message.data;
 
       if (rule) {
-        forkJoin(this.replicationOperate(rule)).subscribe((item) => {
+        forkJoin(this.replicationOperate(rule)).subscribe(item => {
           this.selectOneRule(rule);
         });
       }
@@ -335,30 +312,39 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   replicationOperate(rule: ReplicationRule): Observable<any> {
     // init operation info
     let operMessage = new OperateInfo();
-    operMessage.name = 'OPERATION.REPLICATION';
+    operMessage.name = "OPERATION.REPLICATION";
     operMessage.data.id = rule.id;
     operMessage.state = OperationState.progressing;
     operMessage.data.name = rule.name;
     this.operationService.publishInfo(operMessage);
 
-    return this.replicationService.replicateRule(+rule.id)
-      .pipe(map(response => {
-        this.translateService.get('BATCH.REPLICATE_SUCCESS')
-          .subscribe(res => operateChanges(operMessage, OperationState.success));
-      })
-        , catchError(error => {
-          if (error && error.status === 412) {
-            return forkJoin(this.translateService.get('BATCH.REPLICATE_FAILURE'),
-              this.translateService.get('REPLICATION.REPLICATE_SUMMARY_FAILURE'))
-              .pipe(map(function (res) {
-                operateChanges(operMessage, OperationState.failure, res[1]);
-              }));
-          } else {
-            return this.translateService.get('BATCH.REPLICATE_FAILURE').pipe(map(res => {
+    return this.replicationService.replicateRule(+rule.id).pipe(
+      map(response => {
+        this.translateService
+          .get("BATCH.REPLICATE_SUCCESS")
+          .subscribe(res =>
+            operateChanges(operMessage, OperationState.success)
+          );
+      }),
+      catchError(error => {
+        if (error && error.status === 412) {
+          return forkJoin(
+            this.translateService.get("BATCH.REPLICATE_FAILURE"),
+            this.translateService.get("REPLICATION.REPLICATE_SUMMARY_FAILURE")
+          ).pipe(
+            map(function(res) {
+              operateChanges(operMessage, OperationState.failure, res[1]);
+            })
+          );
+        } else {
+          return this.translateService.get("BATCH.REPLICATE_FAILURE").pipe(
+            map(res => {
               operateChanges(operMessage, OperationState.failure, res);
-            }));
-          }
-        }));
+            })
+          );
+        }
+      })
+    );
   }
 
   customRedirect(rule: ReplicationRule) {
@@ -370,21 +356,17 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.listReplicationRule.retrieveRules(ruleName);
   }
 
-  doFilterJobStatus($event: any) {
-    if ($event && $event.target && $event.target["value"]) {
-      let status = $event.target["value"];
-
-      this.currentJobStatus = this.jobStatus.find((r: any) => r.key === status);
-      if (this.currentJobStatus.key === "all") {
-        status = "";
-      }
-      this.search.status = status;
-      this.doSearchJobs(this.search.repoName);
-    }
+  doFilterJob($event: any): void {
+    this.defaultFilter = $event["target"].value;
+    this.doSearchJobs(this.currentTerm);
   }
 
-  doSearchJobs(repoName: string) {
-    this.search.repoName = repoName;
+  doSearchJobs(terms: string) {
+    if (!terms) {
+      return;
+    }
+    this.currentTerm = terms.trim();
+    this.currentPage = 1;
     this.loadFirstPage();
   }
 
@@ -434,7 +416,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
             this.selectedRow = [];
           })
         )
-        .subscribe(() => { });
+        .subscribe(() => {});
     }
   }
 
@@ -468,14 +450,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   }
 
   refreshJobs() {
-    this.currentJobStatus = this.jobStatus[0];
-    this.search.startTime = " ";
-    this.search.endTime = " ";
-    this.search.repoName = "";
-    this.search.startTimestamp = "";
-    this.search.endTimestamp = "";
-    this.search.status = "";
-
+    this.currentTerm = "";
     this.currentPage = 1;
 
     let st: State = {
@@ -488,19 +463,36 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     this.clrLoadJobs(st);
   }
 
-  toggleSearchJobOptionalName(option: number) {
-    option === 1
-      ? (this.currentJobSearchOption = 0)
-      : (this.currentJobSearchOption = 1);
+  openFilter(isOpen: boolean): void {
+    if (isOpen) {
+      this.isOpenFilterTag = true;
+    } else {
+      this.isOpenFilterTag = false;
+    }
   }
+  getDuration(j: ReplicationJobItem) {
+    if (!j) {
+      return;
+    }
+    if (j.status === "Failed") {
+      return "-";
+    }
+    let start_time = new Date(j.start_time).getTime();
+    let end_time = new Date(j.end_time).getTime();
+    let timesDiff = end_time - start_time;
+    let timesDiffSeconds = timesDiff / 1000;
+    let minutes = Math.floor(((timesDiffSeconds % ONE_DAY_SECONDS) % ONE_HOUR_SECONDS) / ONE_MINUTE_SECONDS);
+    let seconds = Math.floor(timesDiffSeconds % ONE_MINUTE_SECONDS);
+    if (minutes > 0) {
+      return minutes + "m" + seconds + "s";
+    }
 
-  doJobSearchByStartTime(fromTimestamp: string) {
-    this.search.startTimestamp = fromTimestamp;
-    this.loadFirstPage();
-  }
+    if (seconds > 0) {
+      return seconds + "s";
+    }
 
-  doJobSearchByEndTime(toTimestamp: string) {
-    this.search.endTimestamp = toTimestamp;
-    this.loadFirstPage();
+    if (seconds <= 0 && timesDiff > 0) {
+      return timesDiff + 'ms';
+    }
   }
 }

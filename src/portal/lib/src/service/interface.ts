@@ -173,6 +173,7 @@ export interface ReplicationJobItem extends Base {
  */
 export interface ReplicationTasks extends Base {
   [key: string]: any | any[];
+  operation: string;
   id: number;
   execution_id: number;
   resource_type: string;

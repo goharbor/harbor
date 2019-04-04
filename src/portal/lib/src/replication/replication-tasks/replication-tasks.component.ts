@@ -4,8 +4,9 @@ import { ReplicationService } from "../../service/replication.service";
 import { TranslateService } from '@ngx-translate/core';
 import { finalize } from "rxjs/operators";
 import { ErrorHandler } from "../../error-handler/error-handler";
-import { ReplicationJob, ReplicationTasks, Comparator, ReplicationJobItem } from "../../service/interface";
-import { CustomComparator } from "../../utils";
+import { ReplicationJob, ReplicationTasks, Comparator, ReplicationJobItem, State } from "../../service/interface";
+import { CustomComparator, DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting } from "../../utils";
+import { RequestQueryParams } from "../../service/RequestQueryParams";
 @Component({
   selector: 'replication-tasks',
   templateUrl: './replication-tasks.component.html',
@@ -14,10 +15,16 @@ import { CustomComparator } from "../../utils";
 export class ReplicationTasksComponent implements OnInit {
   isOpenFilterTag: boolean;
   selectedRow: [];
-  loading = false;
+  currentPage: number = 1;
+  currentPagePvt: number = 0;
+  totalCount: number = 0;
+  pageSize: number = DEFAULT_PAGE_SIZE;
+  currentState: State;
+  loading = true;
   searchTask: string;
-  defaultFilter = "resourceType";
-  tasks: ReplicationTasks[] = [];
+  defaultFilter = "resource_type";
+  tasks: ReplicationTasks;
+  taskItem: ReplicationTasks[] = [];
   tasksCopy: ReplicationTasks[] = [];
   stopOnGoing: boolean;
   executions: ReplicationJobItem[];
@@ -37,7 +44,6 @@ export class ReplicationTasksComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.clrLoadTasks();
     this.searchTask = '';
     this.getExecutionDetail();
   }
@@ -97,34 +103,49 @@ export class ReplicationTasksComponent implements OnInit {
     return this.replicationService.getJobBaseUrl() + "/executions/" + this.executionId + "/tasks/" + taskId + "/log";
   }
 
-  clrLoadTasks(): void {
-      this.loading = true;
-      this.replicationService.getReplicationTasks(this.executionId)
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe(tasks => {
-        if (this.defaultFilter === 'resourceType') {
-            this.tasks = tasks.filter(x =>
-              x.resource_type.includes(this.searchTask)
-            );
-        } else if (this.defaultFilter === 'resource') {
-            this.tasks = tasks.filter(x =>
-              x.src_resource.includes(this.searchTask)
-            );
-        } else if (this.defaultFilter === 'destination') {
-            this.tasks = tasks.filter(x =>
-              x.dst_resource.includes(this.searchTask)
-            );
-        } else {
-            this.tasks = tasks.filter(x =>
-              x.status.includes(this.searchTask)
-            );
+  clrLoadTasks(state: State): void {
+
+      if (!state || !state.page) {
+        return;
+      }
+      // Keep it for future filter
+      this.currentState = state;
+
+      let pageNumber: number = calculatePage(state);
+      if (pageNumber !== this.currentPagePvt) {
+        // load data
+        let params: RequestQueryParams = new RequestQueryParams();
+        params.set("page", '' + pageNumber);
+        params.set("page_size", '' + this.pageSize);
+        if (this.searchTask && this.searchTask !== "") {
+            params.set(this.defaultFilter, this.searchTask);
         }
 
-        this.tasksCopy = tasks.map(x => Object.assign({}, x));
+      this.loading = true;
+      this.replicationService.getReplicationTasks(this.executionId, params)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe(res => {
+        this.totalCount = res.length;
+        this.tasks = res; // Keep the data
+        this.taskItem = this.tasks.filter(tasks => tasks.resource_type !== "");
+        this.taskItem = doFiltering<ReplicationTasks>(this.taskItem, state);
+
+        this.taskItem = doSorting<ReplicationTasks>(this.taskItem, state);
+
+        this.currentPagePvt = pageNumber;
       },
       error => {
         this.errorHandler.error(error);
       });
+      } else {
+
+        this.taskItem = this.tasks.filter(tasks => tasks.resource_type !== "");
+        // Do customized filter
+        this.taskItem = doFiltering<ReplicationTasks>(this.taskItem, state);
+
+        // Do customized sorting
+        this.taskItem = doSorting<ReplicationTasks>(this.taskItem, state);
+      }
   }
   onBack(): void {
     this.router.navigate(["harbor", "replications"]);
@@ -138,15 +159,41 @@ export class ReplicationTasksComponent implements OnInit {
   // refresh icon
   refreshTasks(): void {
     this.searchTask = '';
-    this.clrLoadTasks();
+    this.loading = true;
+    this.replicationService.getReplicationTasks(this.executionId)
+    .subscribe(res => {
+      this.tasks = res;
+      this.loading = false;
+    },
+    error => {
+      this.loading = false;
+      this.errorHandler.error(error);
+    });
   }
 
-  doSearch(value: string): void {
+  public doSearch(value: string): void {
     if (!value) {
       return;
     }
     this.searchTask = value.trim();
-    this.clrLoadTasks();
+    this.loading = true;
+    this.currentPage = 1;
+    if (this.currentPagePvt === 1) {
+        // Force reloading
+        let st: State = this.currentState;
+        if (!st) {
+            st = {
+                page: {}
+            };
+        }
+        st.page.from = 0;
+        st.page.to = this.pageSize - 1;
+        st.page.size = this.pageSize;
+
+        this.currentPagePvt = 0;
+
+        this.clrLoadTasks(st);
+    }
   }
 
   openFilter(isOpen: boolean): void {
