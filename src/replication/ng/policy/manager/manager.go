@@ -67,6 +67,13 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (*model.Policy, e
 		if err := json.Unmarshal([]byte(policy.Filters), &filters); err != nil {
 			return nil, err
 		}
+		// convert the type of value from string to model.ResourceType if the filter
+		// is a resource type filter
+		for _, filter := range filters {
+			if filter.Type == model.FilterTypeResource {
+				filter.Value = (model.ResourceType)(filter.Value.(string))
+			}
+		}
 		ply.Filters = filters
 	}
 
