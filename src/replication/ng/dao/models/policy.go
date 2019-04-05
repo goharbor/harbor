@@ -21,7 +21,7 @@ type RepPolicy struct {
 	UpdateTime        time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
-// TableName set table name for ORM. TODO: replace _ng suffix.
+// TableName set table name for ORM.
 func (r *RepPolicy) TableName() string {
-	return "replication_policy_ng"
+	return "replication_policy"
 }
