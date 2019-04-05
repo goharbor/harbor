@@ -61,6 +61,10 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (*model.Policy, e
 		ply.SrcNamespaces = strings.Split(policy.SrcNamespaces, ",")
 	}
 
+	// TODO need to consider the consistence with the policies from previous versions
+	// of Harbor
+	// both for filter and trigger
+
 	// 2. parse Filters
 	if len(policy.Filters) > 0 {
 		filters := []*model.Filter{}

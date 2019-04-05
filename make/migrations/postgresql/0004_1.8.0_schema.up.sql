@@ -44,42 +44,36 @@ WHERE j.policy_id = p.id AND p.deleted = TRUE;
 DELETE FROM replication_policy AS p
 WHERE p.deleted = TRUE;
 
-CREATE TABLE registry (
- id SERIAL PRIMARY KEY NOT NULL,
- name varchar(256),
- url varchar(256),
- credential_type varchar(16),
- access_key varchar(128),
- access_secret varchar(1024),
- type varchar(32),
- insecure boolean,
- description varchar(1024),
- health varchar(16),
- creation_time timestamp default CURRENT_TIMESTAMP,
- update_time timestamp default CURRENT_TIMESTAMP,
- CONSTRAINT unique_registry_name UNIQUE (name)
-);
+/*upgrade the replication_target to registry*/
+DROP TRIGGER replication_target_update_time_at_modtime ON replication_target;
+ALTER TABLE replication_target RENAME TO registry;
+ALTER TABLE registry ALTER COLUMN url TYPE varchar(256);
+ALTER TABLE registry ADD COLUMN credential_type varchar(16);
+UPDATE registry SET credential_type='basic' WHERE credential_type='';
+ALTER TABLE registry RENAME COLUMN username TO access_key;
+ALTER TABLE registry RENAME COLUMN password TO access_secret;
+ALTER TABLE registry ALTER COLUMN access_secret TYPE varchar(1024);
+ALTER TABLE registry ADD COLUMN type varchar(32);
+UPDATE registry SET type='harbor' WHERE type='';
+ALTER TABLE registry DROP COLUMN target_type;
+ALTER TABLE registry ADD COLUMN description text;
+ALTER TABLE registry ADD COLUMN health varchar(16);
 
-CREATE TABLE "replication_policy_ng" (
-  "id" SERIAL PRIMARY KEY NOT NULL,
-  "name" varchar(256),
-  "description" text,
-  "creator" varchar(256),
-  "src_registry_id" int4,
-  "src_namespaces" varchar(256),
-  "dest_registry_id" int4,
-  "dest_namespace" varchar(256),
-  "override" bool NOT NULL DEFAULT false,
-  "enabled" bool NOT NULL DEFAULT true,
-  "cron_str" varchar(256),
-  "filters" varchar(1024),
-  "replicate_deletion" bool NOT NULL DEFAULT false,
-  "start_time" timestamp(6),
-  "deleted" bool NOT NULL DEFAULT false,
-  "creation_time" timestamp(6) DEFAULT now(),
-  "update_time" timestamp(6) DEFAULT now(),
-  CONSTRAINT unique_policy_ng_name UNIQUE ("name")
-);
+/*upgrade the replication_policy*/
+ALTER TABLE replication_policy ADD COLUMN creator varchar(256);
+ALTER TABLE replication_policy ADD COLUMN src_registry_id int;
+ALTER TABLE replication_policy ADD COLUMN src_namespaces varchar(256);
+/*if harbor is integrated with the external project service, the src_namespaces will be empty,
+which means the repilcation policy cannot work as expected*/
+UPDATE replication_policy r SET src_namespaces=(SELECT p.name FROM project p WHERE p.project_id=r.project_id);
+ALTER TABLE replication_policy RENAME COLUMN target_id TO dest_registry_id;
+ALTER TABLE replication_policy ALTER COLUMN dest_registry_id DROP NOT NULL;
+ALTER TABLE replication_policy ADD COLUMN dest_namespace varchar(256);
+ALTER TABLE replication_policy ADD COLUMN override boolean;
+ALTER TABLE replication_policy DROP COLUMN project_id;
+
+DROP TRIGGER replication_immediate_trigger_update_time_at_modtime ON replication_immediate_trigger;
+DROP TABLE replication_immediate_trigger;
 
 create table replication_execution (
  id SERIAL NOT NULL,
@@ -123,3 +117,11 @@ create table replication_schedule_job (
  PRIMARY KEY (id)
 );
 CREATE INDEX replication_schedule_job_index ON replication_schedule_job (policy_id);
+
+/*
+ * TODO
+ * consider how to handle the replication_job;
+ * the replication_job contains schedule job;
+ * the schedule job has been removed from jobservice, how to handle this?
+ * keep consistent with the webhook handler?
+ */

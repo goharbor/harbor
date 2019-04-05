@@ -112,7 +112,7 @@ func cleanByUser(username string) {
 	if err != nil {
 		log.Error(err)
 	}
-	err = execUpdate(o, `delete from replication_target where id < 99`)
+	err = execUpdate(o, `delete from registry where id < 99`)
 	if err != nil {
 		log.Error(err)
 	}
@@ -164,7 +164,7 @@ func testForAll(m *testing.M) int {
 func clearAll() {
 	tables := []string{"project_member",
 		"project_metadata", "access_log", "repository", "replication_policy",
-		"replication_target", "replication_job", "replication_immediate_trigger", "img_scan_job",
+		"registry", "replication_job", "img_scan_job",
 		"img_scan_overview", "clair_vuln_timestamp", "project", "harbor_user"}
 	for _, t := range tables {
 		if err := ClearTable(t); err != nil {
