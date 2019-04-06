@@ -135,6 +135,9 @@ func (f *fakedAdapter) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace
 func (f *fakedAdapter) CreateNamespace(*model.Namespace) error {
 	return nil
 }
+func (f *fakedAdapter) HealthCheck() (model.HealthStatus, error) {
+	return model.Healthy, nil
+}
 func (f *fakedAdapter) GetNamespace(ns string) (*model.Namespace, error) {
 	var namespace *model.Namespace
 	if ns == "library" {

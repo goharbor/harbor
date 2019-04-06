@@ -61,8 +61,8 @@ func (t *RegistryAPI) Ping() {
 		}
 	}
 
-	if len(r.URL) == 0 || r.Credential == nil {
-		t.CustomAbort(http.StatusBadRequest, "URL or credential emptry")
+	if len(r.URL) == 0 {
+		t.CustomAbort(http.StatusBadRequest, "URL can't be emptry")
 		return
 	}
 
@@ -72,7 +72,7 @@ func (t *RegistryAPI) Ping() {
 		return
 	}
 
-	if status != registry.Healthy {
+	if status != model.Healthy {
 		t.CustomAbort(http.StatusBadRequest, fmt.Sprintf("Ping registry %d failed", r.ID))
 	}
 	return

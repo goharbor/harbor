@@ -56,6 +56,18 @@ type Credential struct {
 	AccessSecret string `json:"access_secret"`
 }
 
+// HealthStatus describes whether a target is healthy or not
+type HealthStatus string
+
+const (
+	// Healthy indicates registry is healthy
+	Healthy = "healthy"
+	// Unhealthy indicates registry is unhealthy
+	Unhealthy = "unhealthy"
+	// Unknown indicates health status of registry is unknown
+	Unknown = "unknown"
+)
+
 // TODO add validation for Registry
 
 // Registry keeps the related info of registry

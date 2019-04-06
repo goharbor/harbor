@@ -28,6 +28,7 @@ import (
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	registry_pkg "github.com/goharbor/harbor/src/common/utils/registry"
+	util_registry "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/util"
@@ -54,9 +55,10 @@ type ImageRegistry interface {
 // DefaultImageRegistry provides a default implementation for interface ImageRegistry
 type DefaultImageRegistry struct {
 	sync.RWMutex
-	client  *http.Client
-	url     string
-	clients map[string]*registry_pkg.Repository
+	registry *model.Registry
+	client   *http.Client
+	url      string
+	clients  map[string]*registry_pkg.Repository
 }
 
 // NewDefaultImageRegistry returns an instance of DefaultImageRegistry
@@ -92,9 +94,10 @@ func NewDefaultImageRegistry(registry *model.Registry) *DefaultImageRegistry {
 		Transport: registry_pkg.NewTransport(transport, modifiers...),
 	}
 	return &DefaultImageRegistry{
-		client:  client,
-		clients: map[string]*registry_pkg.Repository{},
-		url:     registry.URL,
+		client:   client,
+		registry: registry,
+		clients:  map[string]*registry_pkg.Repository{},
+		url:      registry.URL,
 	}
 }
 
@@ -132,6 +135,52 @@ func (d *DefaultImageRegistry) create(repository string) (*registry_pkg.Reposito
 	}
 	d.clients[repository] = client
 	return client, nil
+}
+
+// HealthCheck checks health status of a registry
+func (d *DefaultImageRegistry) HealthCheck() (model.HealthStatus, error) {
+	if d.registry.Credential == nil || (len(d.registry.Credential.AccessKey) == 0 && len(d.registry.Credential.AccessSecret) == 0) {
+		return d.pingAnonymously()
+	}
+
+	// TODO(ChenDe): Support other credential type like OAuth, for the moment, only basic auth is supported.
+	if d.registry.Credential.Type != model.CredentialTypeBasic {
+		return model.Unknown, fmt.Errorf("unknown credential type '%s', only '%s' supported yet", d.registry.Credential.Type, model.CredentialTypeBasic)
+	}
+
+	transport := util.GetHTTPTransport(d.registry.Insecure)
+	credential := auth.NewBasicAuthCredential(d.registry.Credential.AccessKey, d.registry.Credential.AccessSecret)
+	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
+		Transport: transport,
+	}, credential)
+	registry, err := util_registry.NewRegistry(d.registry.URL, &http.Client{
+		Transport: util_registry.NewTransport(transport, authorizer),
+	})
+	if err != nil {
+		return model.Unknown, err
+	}
+
+	err = registry.Ping()
+	if err != nil {
+		return model.Unhealthy, err
+	}
+	return model.Healthy, nil
+}
+
+func (d *DefaultImageRegistry) pingAnonymously() (model.HealthStatus, error) {
+	registry, err := util_registry.NewRegistry(d.registry.URL, &http.Client{
+		Transport: util_registry.NewTransport(util.GetHTTPTransport(d.registry.Insecure)),
+	})
+	if err != nil {
+		return model.Unknown, err
+	}
+
+	err = registry.PingSimple()
+	if err != nil {
+		return model.Unhealthy, err
+	}
+
+	return model.Healthy, nil
 }
 
 // FetchImages ...

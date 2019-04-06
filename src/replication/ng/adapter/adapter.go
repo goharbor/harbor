@@ -40,6 +40,8 @@ type Adapter interface {
 	// Get the namespace specified by the name, the returning value should
 	// contain the metadata about the namespace if it has
 	GetNamespace(string) (*model.Namespace, error)
+	// HealthCheck checks health status of registry
+	HealthCheck() (model.HealthStatus, error)
 }
 
 // RegisterFactory registers one adapter factory to the registry
@@ -65,6 +67,12 @@ func GetFactory(t model.RegistryType) (Factory, error) {
 		return nil, fmt.Errorf("adapter factory for %s not found", t)
 	}
 	return factory, nil
+}
+
+// HasFactory checks whether there is given type adapter factory
+func HasFactory(t model.RegistryType) bool {
+	_, ok := registry[t]
+	return ok
 }
 
 // ListRegisteredAdapterTypes lists the registered Adapter type

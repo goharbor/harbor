@@ -132,9 +132,7 @@ func (suite *RegistrySuite) TestPing() {
 	assert.Nil(err)
 	assert.Equal(http.StatusNotFound, code)
 
-	code, err = suite.testAPI.RegistryPing(*admin, &model.Registry{
-		URL: "http://foo.bar",
-	})
+	code, err = suite.testAPI.RegistryPing(*admin, &model.Registry{})
 	assert.Nil(err)
 	assert.Equal(http.StatusBadRequest, code)
 
