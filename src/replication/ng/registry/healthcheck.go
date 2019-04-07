@@ -15,13 +15,14 @@
 package registry
 
 import (
+	"math/rand"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // MinInterval defines the minimum interval to check registries' health status.
-const MinInterval = time.Second * 3
+const MinInterval = time.Minute * 5
 
 // HealthChecker is used to regularly check all registries' health status and update
 // check result to database
@@ -48,6 +49,11 @@ func (c *HealthChecker) Run() {
 	if c.interval < MinInterval {
 		interval = MinInterval
 	}
+
+	// Wait some random time before starting health checking. If Harbor is deployed in HA mode
+	// with multiple instances, this will avoid instances check health in the same time.
+	<-time.After(time.Duration(rand.Int63n(int64(interval))))
+
 	ticker := time.NewTicker(interval)
 	log.Infof("Start regular health check for registries with interval %v", interval)
 	for {
