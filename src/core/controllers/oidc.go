@@ -30,7 +30,7 @@ import (
 	"strings"
 )
 
-const idTokenKey = "oidc_id_token"
+const tokenKey = "oidc_token"
 const stateKey = "oidc_state"
 const userInfoKey = "oidc_user_info"
 
@@ -105,6 +105,13 @@ func (oc *OIDCController) Callback() {
 		oc.RenderFormatedError(http.StatusInternalServerError, err)
 		return
 	}
+	tokenBytes, err := json.Marshal(token)
+	if err != nil {
+		oc.RenderFormatedError(http.StatusInternalServerError, err)
+
+	}
+	oc.SetSession(tokenKey, tokenBytes)
+
 	if u == nil {
 		oc.SetSession(userInfoKey, string(ouDataStr))
 		oc.Controller.Redirect("/oidc-onboard", http.StatusFound)
@@ -112,6 +119,7 @@ func (oc *OIDCController) Callback() {
 		oc.SetSession(userKey, *u)
 		oc.Controller.Redirect("/", http.StatusFound)
 	}
+
 }
 
 // Onboard handles the request to onboard an user authenticated via OIDC provider
@@ -134,16 +142,26 @@ func (oc *OIDCController) Onboard() {
 		return
 	}
 	log.Debugf("User info string: %s\n", userInfoStr)
+	tb, ok := oc.GetSession(tokenKey).([]byte)
+	if !ok {
+		oc.RenderError(http.StatusBadRequest, "Failed to get OIDC token from session")
+		return
+	}
+	s, t, err := secretAndToken(tb)
+	if err != nil {
+		oc.RenderFormatedError(http.StatusInternalServerError, err)
+		return
+	}
 	d := &oidcUserData{}
-	err := json.Unmarshal([]byte(userInfoStr), &d)
+	err = json.Unmarshal([]byte(userInfoStr), &d)
 	if err != nil {
 		oc.RenderFormatedError(http.StatusInternalServerError, err)
 		return
 	}
 	oidcUser := models.OIDCUser{
 		SubIss: d.Subject + d.Issuer,
-		// TODO: get secret with secret manager.
-		Secret: utils.GenerateRandomString(),
+		Secret: s,
+		Token:  t,
 	}
 
 	email := d.Email
@@ -166,7 +184,25 @@ func (oc *OIDCController) Onboard() {
 		oc.DelSession(userInfoKey)
 		return
 	}
+
 	user.OIDCUserMeta = nil
 	oc.SetSession(userKey, user)
 	oc.DelSession(userInfoKey)
+}
+
+func secretAndToken(tokenBytes []byte) (string, string, error) {
+	key, err := config.SecretKey()
+	if err != nil {
+		return "", "", err
+	}
+	token, err := utils.ReversibleEncrypt((string)(tokenBytes), key)
+	if err != nil {
+		return "", "", err
+	}
+	str := utils.GenerateRandomString()
+	secret, err := utils.ReversibleEncrypt(str, key)
+	if err != nil {
+		return "", "", err
+	}
+	return secret, token, nil
 }

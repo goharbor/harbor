@@ -193,3 +193,20 @@ func clientCtx(ctx context.Context, skipCertVerify bool) context.Context {
 	}
 	return gooidc.ClientContext(ctx, client)
 }
+
+// RefreshToken refreshes the token passed in parameter, and return the new token.
+func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
+	oauth, err := getOauthConf()
+	if err != nil {
+		log.Errorf("Failed to get OAuth configuration, error: %v", err)
+		return nil, err
+	}
+	setting := provider.setting.Load().(models.OIDCSetting)
+	ctx = clientCtx(ctx, setting.SkipCertVerify)
+	ts := oauth.TokenSource(ctx, token.Token)
+	t, err := ts.Token()
+	if err != nil {
+		return nil, err
+	}
+	return &Token{Token: t, IDToken: t.Extra("id_token").(string)}, nil
+}
