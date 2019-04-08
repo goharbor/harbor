@@ -124,6 +124,7 @@ func init() {
 	beego.Router("/api/repositories/*/signatures", &RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/repositories/top", &RepositoryAPI{}, "get:GetTopRepos")
 	beego.Router("/api/registries", &RegistryAPI{}, "get:List;post:Post")
+	beego.Router("/api/registries/ping", &RegistryAPI{}, "post:Ping")
 	beego.Router("/api/registries/:id([0-9]+)", &RegistryAPI{}, "get:Get;put:Put;delete:Delete")
 	beego.Router("/api/systeminfo", &SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
@@ -1171,6 +1172,12 @@ func (a testapi) RegistryList(authInfo usrInfo) ([]*model.Registry, int, error) 
 
 func (a testapi) RegistryCreate(authInfo usrInfo, registry *model.Registry) (int, error) {
 	_sling := sling.New().Base(a.basePath).Post("/api/registries").BodyJSON(registry)
+	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return code, err
+}
+
+func (a testapi) RegistryPing(authInfo usrInfo, registry *model.Registry) (int, error) {
+	_sling := sling.New().Base(a.basePath).Post("/api/registries/ping").BodyJSON(registry)
 	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return code, err
 }

@@ -16,30 +16,14 @@ package registry
 
 import (
 	"fmt"
-	"net/http"
-
-	"github.com/goharbor/harbor/src/replication/ng/util"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
+	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/config"
 	"github.com/goharbor/harbor/src/replication/ng/dao"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
-)
-
-// HealthStatus describes whether a target is healthy or not
-type HealthStatus string
-
-const (
-	// Healthy indicates target is healthy
-	Healthy = "healthy"
-	// Unhealthy indicates target is unhealthy
-	Unhealthy = "unhealthy"
-	// Unknown indicates health status of target is unknown
-	Unknown = "unknown"
 )
 
 // Manager defines the methods that a target manager should implement
@@ -183,7 +167,7 @@ func (m *DefaultManager) HealthCheck() error {
 
 	errCount := 0
 	for _, r := range registries {
-		status, err := healthStatus(r)
+		status, err := CheckHealthStatus(r)
 		if err != nil {
 			log.Warningf("Check health status for %s error: %v", r.URL, err)
 		}
@@ -202,35 +186,23 @@ func (m *DefaultManager) HealthCheck() error {
 	return nil
 }
 
-func healthStatus(r *model.Registry) (HealthStatus, error) {
-	// TODO(ChenDe): Support other credential type like OAuth, for the moment, only basic auth is supported.
-	if r.Credential.Type != model.CredentialTypeBasic {
-		return Unknown, fmt.Errorf("unknown credential type '%s', only '%s' supported yet", r.Credential.Type, model.CredentialTypeBasic)
+// CheckHealthStatus checks status of a given registry
+func CheckHealthStatus(r *model.Registry) (model.HealthStatus, error) {
+	if !adapter.HasFactory(r.Type) {
+		return model.Unknown, fmt.Errorf("no adapter factory for type '%s' registered", r.Type)
 	}
 
-	// TODO(ChenDe): Support health check for other kinds of registry
-	if r.Type != model.RegistryTypeHarbor {
-		return Unknown, fmt.Errorf("unknown registry type '%s'", model.RegistryTypeHarbor)
-	}
-
-	transport := util.GetHTTPTransport(r.Insecure)
-	credential := auth.NewBasicAuthCredential(r.Credential.AccessKey, r.Credential.AccessSecret)
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: transport,
-	}, credential)
-	registry, err := registry.NewRegistry(r.URL, &http.Client{
-		Transport: registry.NewTransport(transport, authorizer),
-	})
+	factory, err := adapter.GetFactory(r.Type)
 	if err != nil {
-		return Unknown, err
+		return model.Unknown, fmt.Errorf("get adaper for type '%s' error: %v", r.Type, err)
 	}
 
-	err = registry.Ping()
+	rAdapter, err := factory(r)
 	if err != nil {
-		return Unhealthy, err
+		return model.Unknown, fmt.Errorf("generate '%s' type adapter form factory error: %v", r.Type, err)
 	}
 
-	return Healthy, nil
+	return rAdapter.HealthCheck()
 }
 
 // decrypt checks whether access secret is set in the registry, if so, decrypt it.

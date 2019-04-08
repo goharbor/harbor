@@ -117,6 +117,43 @@ func (suite *RegistrySuite) TestPost() {
 	assert.Equal(http.StatusForbidden, code)
 }
 
+func (suite *RegistrySuite) TestPing() {
+	assert := assert.New(suite.T())
+
+	code, err := suite.testAPI.RegistryPing(*admin, &model.Registry{
+		ID: suite.defaultRegistry.ID,
+	})
+	assert.Nil(err)
+	assert.Equal(http.StatusInternalServerError, code)
+
+	code, err = suite.testAPI.RegistryPing(*admin, &model.Registry{
+		ID: -1,
+	})
+	assert.Nil(err)
+	assert.Equal(http.StatusNotFound, code)
+
+	code, err = suite.testAPI.RegistryPing(*admin, &model.Registry{})
+	assert.Nil(err)
+	assert.Equal(http.StatusBadRequest, code)
+
+	code, err = suite.testAPI.RegistryPing(*admin, &model.Registry{
+		URL: "http://foo.bar",
+		Credential: &model.Credential{
+			Type:         model.CredentialTypeBasic,
+			AccessKey:    "admin",
+			AccessSecret: "Harbor12345",
+		},
+	})
+	assert.Nil(err)
+	assert.NotEqual(http.StatusBadRequest, code)
+
+	code, err = suite.testAPI.RegistryPing(*testUser, &model.Registry{
+		ID: suite.defaultRegistry.ID,
+	})
+	assert.Nil(err)
+	assert.Equal(http.StatusForbidden, code)
+}
+
 func (suite *RegistrySuite) TestRegistryPut() {
 	assert := assert.New(suite.T())
 

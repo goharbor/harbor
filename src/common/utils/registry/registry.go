@@ -157,3 +157,23 @@ func (r *Registry) Ping() error {
 		Message: string(b),
 	}
 }
+
+// PingSimple checks whether the registry is available. It checks the connectivity and certificate (if TLS enabled)
+// only, regardless of credential.
+func (r *Registry) PingSimple() error {
+	err := r.Ping()
+	if err == nil {
+		return nil
+	}
+
+	httpErr, ok := err.(*commonhttp.Error)
+	if !ok {
+		return err
+	}
+
+	if httpErr.Code < 500 {
+		return nil
+	}
+
+	return httpErr
+}
