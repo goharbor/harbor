@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"fmt"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -199,10 +200,12 @@ func generateStatus(execution *models.Execution) string {
 }
 
 func executionFinished(status string) bool {
-	if status == models.ExecutionStatusInProgress {
-		return false
+	if status == models.ExecutionStatusStopped ||
+		status == models.ExecutionStatusSucceed ||
+		status == models.ExecutionStatusFailed {
+		return true
 	}
-	return true
+	return false
 }
 
 // DeleteExecution ...
