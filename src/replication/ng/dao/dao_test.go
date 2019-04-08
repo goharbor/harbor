@@ -32,8 +32,7 @@ func TestMain(m *testing.M) {
 		`DROP TABLE "access", "access_log", "admin_job", "alembic_version", "clair_vuln_timestamp",
   "harbor_label", "harbor_resource_label", "harbor_user", "img_scan_job", "img_scan_overview",
   "job_log", "project", "project_member", "project_metadata", "properties", "registry",
-  "replication_immediate_trigger", "replication_job", "replication_policy", "replication_policy_ng",
-  "replication_target", "repository", "robot", "role", "schema_migrations", "user_group",
+  "replication_policy", "repository", "robot", "role", "schema_migrations", "user_group",
   "replication_execution", "replication_task", "replication_schedule_job", "oidc_user";`,
 		`DROP FUNCTION "update_update_time_at_column"();`,
 	}
