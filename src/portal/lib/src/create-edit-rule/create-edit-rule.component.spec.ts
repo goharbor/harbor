@@ -46,14 +46,15 @@ describe("CreateEditRuleComponent (inline template)", () => {
       id: 1,
       name: "sync_01",
       description: "",
-      src_registry_id: 2,
+      src_registry: {id: 2},
       src_namespaces: ["name1", "name2"],
       trigger: {
         kind: "Manual",
         schedule_param: {}
       },
       filters: [],
-      deletion: false
+      deletion: false,
+      enabled: true
     }
   ];
   let mockJobs: ReplicationJobItem[] = [
@@ -157,13 +158,14 @@ describe("CreateEditRuleComponent (inline template)", () => {
     name: "sync_01",
     description: "",
     src_namespaces: ["namespace1", "namespace2"],
-    src_registry_id: 10,
+    src_registry: {id: 10 },
     trigger: {
       kind: "Manual",
       schedule_param: {}
     },
     filters: [],
-    deletion: false
+    deletion: false,
+    enabled: true
   };
 
   let mockRegistryInfo = {
@@ -192,9 +194,9 @@ describe("CreateEditRuleComponent (inline template)", () => {
       }
     ],
     "supported_triggers": [
-      "Manual",
-      "Scheduled",
-      "EventBased"
+      "manual",
+      "scheduled",
+      "event_based"
     ]
   };
 

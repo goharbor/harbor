@@ -33,7 +33,7 @@
           <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry">
+              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry" [compareWith]="equals" ngModel>
                 <option *ngFor="let source of sourceList" [ngValue]="source">{{source.name}}-{{source.url}}</option>
               </select>
             </div>
@@ -59,7 +59,7 @@
         </div>
         <!--images/Filter-->
         <div class="form-group form-group-override">
-          <label class="form-group-label-override">{{'REPLICATION.SOURCE_IMAGES_FILTER' | translate}}</label>
+          <label class="form-group-label-override">{{'REPLICATION.SOURCE_RESOURCE_FILTER' | translate}}</label>
           <div formArrayName="filters">
             <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
               <div [formGroupName]="i">
@@ -88,7 +88,7 @@
           <label class="form-group-label-override  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="dest_registry_id" (change)="targetChange($event)" formControlName="dest_registry">
+              <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"  [compareWith]="equals" ngModel>
                 <option *ngFor="let target of targetList" [ngValue]="target">{{target.name}}-{{target.url}}</option>
               </select>
             </div>
@@ -136,6 +136,12 @@
               <label for="ruleDeletion" class="clr-control-label">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
             </clr-checkbox-wrapper>
           </div>
+          <div class="clr-form-control rule-width">
+              <clr-checkbox-wrapper>
+                <input type="checkbox" clrCheckbox [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
+                <label for="enablePolicy" class="clr-control-label">{{'REPLICATION.ENABLED' | translate}}</label>
+              </clr-checkbox-wrapper>
+            </div>
         </div>
         <div class="loading-center">
           <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>

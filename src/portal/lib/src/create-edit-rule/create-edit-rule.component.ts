@@ -54,7 +54,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   TRIGGER_TYPES = {
     MANUAL: "manual",
     SCHEDULED: "scheduled",
-    EVENT_BASED: "eventBased"
+    EVENT_BASED: "event_based"
   };
 
   ruleNameTooltip = "REPLICATION.NAME_TOOLTIP";
@@ -132,6 +132,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       });
   }
 
+  equals(c1: any, c2: any): boolean {
+    return c1 && c2 ? c1.id === c2.id : c1 === c2;
+  }
+
   modeChange(): void {
     if (this.isPushMode) {
     this.initRegistryInfo(0);
@@ -178,7 +182,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         })
       }),
       filters: this.fb.array([]),
-      deletion: false
+      deletion: false,
+      enabled: true
     });
   }
 
@@ -204,7 +209,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           cron: ""
         }
       },
-      deletion: false
+      deletion: false,
+      enabled: true
     });
     this.setFilter([]);
     this.initRegistryInfo(0);
@@ -217,17 +223,17 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       description: rule.description,
       src_namespaces: rule.src_namespaces,
       dest_namespace: rule.dest_namespace,
+      src_registry: rule.src_registry,
+      dest_registry: rule.dest_registry,
       trigger: rule.trigger,
-      deletion: rule.deletion
+      deletion: rule.deletion,
+      enabled: rule.enabled
     });
 
     this.noSelectedEndpoint = false;
-
     if (rule.filters) {
       this.setFilter(rule.filters);
-      this.updateFilter(rule.filters);
     }
-
     // Force refresh view
     let hnd = setInterval(() => this.ref.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 2000);
@@ -305,9 +311,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     } else {
       this.ruleNameTooltip = "REPLICATION.NAME_TOOLTIP";
     }
-  }
-
-  updateFilter(filters: any) {
   }
 
   public hasFormChange(): boolean {
