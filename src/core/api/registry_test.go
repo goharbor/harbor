@@ -16,7 +16,7 @@ import (
 var (
 	testRegistry = &model.Registry{
 		Name: "test1",
-		URL:  "https://test.harbor.io",
+		URL:  "https://127.0.0.1",
 		Type: "harbor",
 		Credential: &model.Credential{
 			Type:         model.CredentialTypeBasic,
@@ -120,35 +120,20 @@ func (suite *RegistrySuite) TestPost() {
 func (suite *RegistrySuite) TestPing() {
 	assert := assert.New(suite.T())
 
-	code, err := suite.testAPI.RegistryPing(*admin, &model.Registry{
-		ID: suite.defaultRegistry.ID,
-	})
-	assert.Nil(err)
-	assert.Equal(http.StatusInternalServerError, code)
-
-	code, err = suite.testAPI.RegistryPing(*admin, &model.Registry{
-		ID: -1,
-	})
+	var id int64 = -1
+	code, err := suite.testAPI.RegistryPing(*admin,
+		&pingReq{
+			ID: &id,
+		})
 	assert.Nil(err)
 	assert.Equal(http.StatusNotFound, code)
 
-	code, err = suite.testAPI.RegistryPing(*admin, &model.Registry{})
+	code, err = suite.testAPI.RegistryPing(*admin, nil)
 	assert.Nil(err)
 	assert.Equal(http.StatusBadRequest, code)
 
-	code, err = suite.testAPI.RegistryPing(*admin, &model.Registry{
-		URL: "http://foo.bar",
-		Credential: &model.Credential{
-			Type:         model.CredentialTypeBasic,
-			AccessKey:    "admin",
-			AccessSecret: "Harbor12345",
-		},
-	})
-	assert.Nil(err)
-	assert.NotEqual(http.StatusBadRequest, code)
-
-	code, err = suite.testAPI.RegistryPing(*testUser, &model.Registry{
-		ID: suite.defaultRegistry.ID,
+	code, err = suite.testAPI.RegistryPing(*testUser, &pingReq{
+		ID: &suite.defaultRegistry.ID,
 	})
 	assert.Nil(err)
 	assert.Equal(http.StatusForbidden, code)

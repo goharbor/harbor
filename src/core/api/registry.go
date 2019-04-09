@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/replication/ng/event"
-
+	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/replication/ng"
 	"github.com/goharbor/harbor/src/replication/ng/adapter"
+	"github.com/goharbor/harbor/src/replication/ng/event"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	"github.com/goharbor/harbor/src/replication/ng/policy"
 	"github.com/goharbor/harbor/src/replication/ng/registry"
@@ -42,38 +43,84 @@ func (t *RegistryAPI) Prepare() {
 
 // Ping checks health status of a registry
 func (t *RegistryAPI) Ping() {
-	r := &model.Registry{}
-	t.DecodeJSONReqAndValidate(r)
+	req := struct {
+		ID             *int64  `json:"id"`
+		Type           *string `json:"type"`
+		URL            *string `json:"url"`
+		CredentialType *string `json:"credential_type"`
+		AccessKey      *string `json:"access_key"`
+		AccessSecret   *string `json:"access_secret"`
+		Insecure       *bool   `json:"insecure"`
+	}{}
+	t.DecodeJSONReq(&req)
 
+	reg := &model.Registry{}
 	var err error
-	id := r.ID
-	if id != 0 {
-		r, err = t.manager.Get(id)
+	if req.ID != nil {
+		reg, err = t.manager.Get(*req.ID)
 		if err != nil {
-			log.Errorf("failed to get registry %s: %v", r.Name, err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			t.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", *req.ID, err))
 			return
 		}
 
-		if r == nil {
-			t.CustomAbort(http.StatusNotFound, fmt.Sprintf("Registry %d not found", id))
+		if reg == nil {
+			t.HandleNotFound(fmt.Sprintf("registry %d not found", *req.ID))
 			return
 		}
 	}
+	if req.Type != nil {
+		reg.Type = model.RegistryType(*req.Type)
+	}
+	if req.URL != nil {
+		url, err := utils.ParseEndpoint(*req.URL)
+		if err != nil {
+			t.HandleBadRequest(err.Error())
+			return
+		}
 
-	if len(r.URL) == 0 {
-		t.CustomAbort(http.StatusBadRequest, "URL can't be emptry")
+		// Prevent SSRF security issue #3755
+		reg.URL = url.Scheme + "://" + url.Host + url.Path
+	}
+	if req.CredentialType != nil {
+		if reg.Credential == nil {
+			reg.Credential = &model.Credential{}
+		}
+		reg.Credential.Type = model.CredentialType(*req.CredentialType)
+	}
+	if req.AccessKey != nil {
+		if reg.Credential == nil {
+			reg.Credential = &model.Credential{}
+		}
+		reg.Credential.AccessKey = *req.AccessKey
+	}
+	if req.AccessSecret != nil {
+		if reg.Credential == nil {
+			reg.Credential = &model.Credential{}
+		}
+		reg.Credential.AccessSecret = *req.AccessSecret
+	}
+	if req.Insecure != nil {
+		reg.Insecure = *req.Insecure
+	}
+	if len(reg.Type) == 0 || len(reg.URL) == 0 {
+		t.HandleBadRequest("type or url cannot be empty")
 		return
 	}
 
-	status, err := registry.CheckHealthStatus(r)
+	status, err := registry.CheckHealthStatus(reg)
 	if err != nil {
-		t.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Ping registry %s error: %v", r.URL, err))
+		e, ok := err.(*common_http.Error)
+		if ok && e.Code == http.StatusUnauthorized {
+			t.HandleBadRequest("invalid credential")
+			return
+		}
+		t.HandleInternalServerError(fmt.Sprintf("failed to check health of registry %s: %v", reg.URL, err))
 		return
 	}
 
 	if status != model.Healthy {
-		t.CustomAbort(http.StatusBadRequest, fmt.Sprintf("Ping registry %d failed", r.ID))
+		t.HandleBadRequest("")
+		return
 	}
 	return
 }
