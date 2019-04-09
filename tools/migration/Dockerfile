@@ -7,7 +7,7 @@ RUN tdnf distro-sync -y \
     && tdnf remove -y toybox \
     && tdnf install -y sed shadow procps-ng gawk gzip sudo net-tools glibc-i18n >> /dev/null\
     && groupadd -r -g 10000 mysql && useradd --no-log-init -r -g 10000 -u 10000 mysql \
-    && tdnf install -y mariadb-server mariadb mariadb-devel python2 python2-devel python-pip gcc \
+    && tdnf install -y mariadb-server mariadb mariadb-devel python2 python2-devel python-pip gcc PyYAML python-jinja2\
     linux-api-headers glibc-devel binutils zlib-devel openssl-devel postgresql python-psycopg2 >> /dev/null \
     && pip install mysqlclient alembic \
     && mkdir /docker-entrypoint-initdb.d /docker-entrypoint-updatedb.d \
