@@ -31,8 +31,6 @@ import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { Endpoint } from "../service/interface";
 import { clone, compareValue, isEmptyObject } from "../utils";
 
-
-
 const FAKE_PASSWORD = "rjGcfuRu";
 
 @Component({
@@ -72,14 +70,17 @@ export class CreateEditEndpointComponent
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.endpointService.getAdapters().subscribe(adapters => {
-      this.adapterList = adapters || [];
-    }, error => {
-      this.errorHandler.error(error);
-    });
+    this.endpointService.getAdapters().subscribe(
+      adapters => {
+        this.adapterList = adapters || [];
+      },
+      error => {
+        this.errorHandler.error(error);
+      }
+    );
   }
 
   public get isValid(): boolean {
@@ -118,7 +119,7 @@ export class CreateEditEndpointComponent
       insecure: false,
       name: "",
       type: "harbor",
-      url: "",
+      url: ""
     };
   }
 
@@ -167,8 +168,8 @@ export class CreateEditEndpointComponent
       this.translateService
         .get("DESTINATION.TITLE_EDIT")
         .subscribe(res => (this.modalTitle = res));
-      this.endpointService.getEndpoint(targetId)
-        .subscribe(target => {
+      this.endpointService.getEndpoint(targetId).subscribe(
+        target => {
           this.target = target;
           // Keep data cache
           this.initVal = clone(target);
@@ -179,7 +180,9 @@ export class CreateEditEndpointComponent
           this.open();
           this.controlEnabled = true;
           this.forceRefreshView(2000);
-        }, error => this.errorHandler.error(error));
+        },
+        error => this.errorHandler.error(error)
+      );
     } else {
       this.endpointId = "";
       this.translateService
@@ -213,18 +216,20 @@ export class CreateEditEndpointComponent
     }
 
     this.testOngoing = true;
-    this.endpointService.pingEndpoint(payload)
-      .subscribe(response => {
+    this.endpointService.pingEndpoint(payload).subscribe(
+      response => {
         this.inlineAlert.showInlineSuccess({
           message: "DESTINATION.TEST_CONNECTION_SUCCESS"
         });
         this.forceRefreshView(2000);
         this.testOngoing = false;
-      }, error => {
+      },
+      error => {
         this.inlineAlert.showInlineError("DESTINATION.TEST_CONNECTION_FAILURE");
         this.forceRefreshView(2000);
         this.testOngoing = false;
-      });
+      }
+    );
   }
 
   onSubmit() {
@@ -240,8 +245,8 @@ export class CreateEditEndpointComponent
       return; // Avoid duplicated submitting
     }
     this.onGoing = true;
-    this.endpointService.createEndpoint(this.target)
-      .subscribe(response => {
+    this.endpointService.createEndpoint(this.target).subscribe(
+      response => {
         this.translateService
           .get("DESTINATION.CREATED_SUCCESS")
           .subscribe(res => this.errorHandler.info(res));
@@ -249,14 +254,16 @@ export class CreateEditEndpointComponent
         this.onGoing = false;
         this.close();
         this.forceRefreshView(2000);
-      }, error => {
+      },
+      error => {
         this.onGoing = false;
         let errorMessageKey = this.handleErrorMessageKey(error.status);
         this.translateService.get(errorMessageKey).subscribe(res => {
           this.inlineAlert.showInlineError(res);
         });
         this.forceRefreshView(2000);
-      });
+      }
+    );
   }
 
   updateEndpoint() {
@@ -272,6 +279,7 @@ export class CreateEditEndpointComponent
     if (isEmptyObject(changes)) {
       return;
     }
+
     let changekeys: { [key: string]: any } = Object.keys(changes);
 
     changekeys.forEach((key: string) => {
@@ -283,8 +291,8 @@ export class CreateEditEndpointComponent
     }
 
     this.onGoing = true;
-    this.endpointService.updateEndpoint(this.target.id, payload)
-      .subscribe(response => {
+    this.endpointService.updateEndpoint(this.target.id, payload).subscribe(
+      response => {
         this.translateService
           .get("DESTINATION.UPDATED_SUCCESS")
           .subscribe(res => this.errorHandler.info(res));
@@ -292,14 +300,16 @@ export class CreateEditEndpointComponent
         this.close();
         this.onGoing = false;
         this.forceRefreshView(2000);
-      }, error => {
+      },
+      error => {
         let errorMessageKey = this.handleErrorMessageKey(error.status);
         this.translateService.get(errorMessageKey).subscribe(res => {
           this.inlineAlert.showInlineError(res);
         });
         this.onGoing = false;
         this.forceRefreshView(2000);
-      });
+      }
+    );
   }
 
   handleErrorMessageKey(status: number): string {
@@ -353,7 +363,6 @@ export class CreateEditEndpointComponent
 
               if (!compareValue(this.formValues, data)) {
                 this.formValues = data;
-                this.inlineAlert.close();
               }
             }
           }
@@ -368,20 +377,36 @@ export class CreateEditEndpointComponent
     }
     for (let prop of Object.keys(this.target)) {
       let field: any = this.initVal[prop];
-      if (!compareValue(field, this.target[prop])) {
-        changes[prop] = this.target[prop];
-        // Number
-        if (typeof field === "number") {
-          changes[prop] = +changes[prop];
-        }
+      if (typeof field !== "object") {
+        if (!compareValue(field, this.target[prop])) {
+          changes[prop] = this.target[prop];
+          // Number
+          if (typeof field === "number") {
+            changes[prop] = +changes[prop];
+          }
 
-        // Trim string value
-        if (typeof field === "string") {
-          changes[prop] = ("" + changes[prop]).trim();
+          // Trim string value
+          if (typeof field === "string") {
+            changes[prop] = ("" + changes[prop]).trim();
+          }
+        }
+      } else {
+        for (let pro of Object.keys(field)) {
+          if (!compareValue(field[pro], this.target[prop][pro])) {
+            changes[pro] = this.target[prop][pro];
+            // Number
+            if (typeof field[pro] === "number") {
+              changes[pro] = +changes[pro];
+            }
+
+            // Trim string value
+            if (typeof field[pro] === "string") {
+              changes[pro] = ("" + changes[pro]).trim();
+            }
+          }
         }
       }
     }
-
     return changes;
   }
 }

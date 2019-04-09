@@ -262,7 +262,6 @@ describe('Replication Component (inline template)', () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-      comp.doFilterJobStatus('finished');
       let el: HTMLElement = deJobs.nativeElement;
       fixture.detectChanges();
       expect(el).toBeTruthy();
@@ -274,8 +273,6 @@ describe('Replication Component (inline template)', () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-      comp.doJobSearchByStartTime('2017-05-01');
-      comp.doJobSearchByEndTime('2015-05-25');
       let el: HTMLElement = deJobs.nativeElement;
       fixture.detectChanges();
       expect(el).toBeTruthy();

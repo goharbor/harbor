@@ -340,6 +340,7 @@
         "OF": "of"
     },
     "REPLICATION": {
+        "OPERATION": "Operation",
         "CURRENT": "current",
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirm Stop Executions",

@@ -67,7 +67,8 @@ export abstract class ReplicationService {
    * @memberOf ReplicationService
    */
   abstract getReplicationTasks(
-    executionId: number | string
+    executionId: number | string,
+    queryParams?: RequestQueryParams
   ): Observable<ReplicationTasks>;
   /**
    * Create new replication rule.
@@ -287,14 +288,16 @@ export class ReplicationDefaultService extends ReplicationService {
   }
 
   public getReplicationTasks(
-    executionId: number | string
+    executionId: number | string,
+    queryParams?: RequestQueryParams
   ): Observable<ReplicationTasks> {
     if (!executionId) {
       return observableThrowError("Bad argument");
     }
     let url: string = `${this._replicateUrl}/executions/${executionId}/tasks`;
     return this.http
-      .get(url, HTTP_GET_OPTIONS)
+      .get(url,
+        queryParams ? buildHttpRequestOptions(queryParams) : HTTP_GET_OPTIONS)
       .pipe(map(response => response.json() as ReplicationTasks)
         , catchError(error => observableThrowError(error)));
   }
