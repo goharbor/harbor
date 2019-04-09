@@ -118,6 +118,7 @@ export interface ReplicationRule extends Base {
 
 export class Filter {
   type: string;
+  value?: string;
   constructor(type: string) {
     this.type = type;
   }

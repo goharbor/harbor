@@ -64,7 +64,7 @@
             <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
               <div [formGroupName]="i">
                 <div class="width-70">
-                  <label>{{"REPLICATION." + supportedFilters[i].type.toUpperCase() | translate}}:</label>
+                  <label>{{"REPLICATION." + supportedFilters[i]?.type.toUpperCase() | translate}}:</label>
                 </div>
                 <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
                   [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
@@ -76,12 +76,9 @@
                     <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
                   </select>
                 </div>
-                <clr-icon *ngIf="i=== filters.length-1" shape="times-circle" class="is-solid" (click)="deleteFilter(i)"></clr-icon>
               </div>
             </div>
           </div>
-          <clr-icon id="add-label-list" shape="plus-circle" class="is-solid mr-t-11" [hidden]="isFilterHide" (click)="addNewFilter()"></clr-icon>
-
         </div>
         <!--destination registry-->
         <div *ngIf="isPushMode" class="form-group form-group-override">
