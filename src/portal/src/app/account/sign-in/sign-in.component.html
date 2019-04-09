@@ -3,7 +3,7 @@
     <form #signInForm="ngForm" class="login">
         <label class="title"> {{customAppTitle? customAppTitle:(appTitle | translate)}}
         </label>
-        <a href="/c/oidc/login" class="login-oidc">
+        <a href="/c/oidc/login" class="login-oidc"  *ngIf="isOidcLoginMode">
             <button type="button" id="log_oidc" class="btn btn-primary btn-block">
                 <span>{{'BUTTON.LOG_IN_OIDC' | translate }}</span>
             </button>

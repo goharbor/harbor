@@ -96,9 +96,7 @@ Add Guest Member To Project
     #select guest
     Mouse Down  xpath=${project_member_guest_radio_checkbox}
     Mouse Up  xpath=${project_member_guest_radio_checkbox}
-    Retry Button Click  xpath=${project_member_add_confirmation_ok_xpath}
-    Retry Wait Element  xpath=${project_member_xpath}
-    Sleep  1
+    Retry Double Keywords When Error  Retry Element Click  xpath=${project_member_add_confirmation_ok_xpath}  Retry Wait Until Page Not Contains Element  xpath=${project_member_add_confirmation_ok_xpath}
 
 Delete Project Member
     [arguments]  ${member}

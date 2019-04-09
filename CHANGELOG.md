@@ -1,5 +1,31 @@
 # Changelog
 
+## v1.7.5 (2019-04-02)
+* Bumped up Clair to v2.0.8
+* Fixed issues in supporting windows images. #6992 #6369
+* Removed user-agent check-in notification handler. #5729
+* Fixed the issue global search not working if chartmusuem is not installed #6753
+
+## v1.7.4 (2019-03-04)
+[Full list of issues fixed in v1.7.4](https://github.com/goharbor/harbor/issues?q=is%3Aissue+is%3Aclosed+label%3Atarget%2F1.7.4)
+
+## v1.7.1 (2019-01-07)
+[Full list of issues fixed in v1.7.1](https://github.com/goharbor/harbor/issues?q=is%3Aissue+is%3Aclosed+label%3Atarget%2F1.7.1)
+
+## v1.7.0 (2018-12-19)
+* Support deploy Harbor with Helm Chart, enables the user to have high availability of Harbor services, refer to the [Installation and Configuration Guide](https://github.com/goharbor/harbor-helm/tree/1.0.0). 
+* Support on-demand Garbage Collection, enables the admin to configure run docker registry garbage collection manually or automatically with a cron schedule.
+* Support Image Retag, enables the user to tag image to different repositories and projects, this is particularly useful in cases when images need to be retagged programmatically in a CI pipeline.
+* Support Image Build History, makes it easy to see the contents of a container image, refer to the [User Guide](https://github.com/goharbor/harbor/blob/release-1.7.0/docs/user_guide.md#build-history).
+* Support Logger customization, enables the user to customize STDOUT / STDERR / FILE / DB logger of running jobs.
+* Improve user experience of Helm Chart Repository:
+   - Chart searching included in the global search results
+   - Show chart versions total number in the chart list
+   - Mark labels to helm charts
+   - The latest version can be downloaded as default one on the chart list view
+   - The chart can be deleted by deleting all the versions under it
+
+
 ## v1.6.0 (2018-09-11)
 
 - Support manages Helm Charts: From version 1.6.0, Harbor is upgraded to be a composite cloud-native registry, which supports both image management and helm charts management.
