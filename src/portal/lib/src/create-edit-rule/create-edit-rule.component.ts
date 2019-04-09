@@ -94,6 +94,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   initRegistryInfo(id: number): void {
     this.repService.getRegistryInfo(id).subscribe(adapter => {
       this.supportedFilters = adapter.supported_resource_filters;
+      this.supportedFilters.forEach(element => {
+        this.filters.push(this.initFilter(element.type));
+      });
+
       this.supportedTriggers = adapter.supported_triggers;
       this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
     });
@@ -138,7 +142,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   modeChange(): void {
     if (this.isPushMode) {
-    this.initRegistryInfo(0);
+      this.initRegistryInfo(0);
     }
   }
 
@@ -230,10 +234,29 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       enabled: rule.enabled
     });
 
-    this.noSelectedEndpoint = false;
-    if (rule.filters) {
-      this.setFilter(rule.filters);
+    // reset the filter list.
+    let filters = [];
+    for (let i = 0; i < this.supportedFilters.length; i++) {
+      let findTag: boolean = false;
+      if (rule.filters) {
+        rule.filters.forEach((ruleItem, j) => {
+          if (this.supportedFilters[i].type === ruleItem.type) {
+            filters.push(ruleItem);
+            findTag = true;
+          }
+        });
+      }
+
+      if (!findTag) {
+        filters.push({ type: this.supportedFilters[i].type, value: "" });
+      }
+
     }
+
+    this.noSelectedEndpoint = false;
+    this.setFilter(filters);
+    // end of reset the filter list.
+
     // Force refresh view
     let hnd = setInterval(() => this.ref.markForCheck(), 100);
     setTimeout(() => clearInterval(hnd), 2000);
@@ -285,20 +308,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     return this.filters.length;
   }
 
-  addNewFilter(): void {
-    let index = this.getCurrentIndex();
-    this.filters.push(this.initFilter(this.supportedFilters[index].type));
-    if (index + 1 >= this.supportedFilters.length) {
-      this.isFilterHide = true;
-    }
-  }
-
-  // delete a filter
-  deleteFilter(i: number): void {
-    this.filters.removeAt(i);
-    this.isFilterHide = false;
-  }
-
   // Replication Schedule select value exchange
   selectSchedule($event: any): void {
 
@@ -325,6 +334,13 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       copyRuleForm.src_registry = null;
     } else {
       copyRuleForm.dest_registry = null;
+    }
+    let filters: any = copyRuleForm.filters;
+    // remove the filters which user not set.
+    for (let i = filters.length - 1; i >= 0; i--) {
+      if (filters[i].value === "") {
+        copyRuleForm.filters.splice(i, 1);
+      }
     }
 
     if (this.policyId < 0) {
