@@ -17,9 +17,11 @@ package manager
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/ng/dao"
 	persist_models "github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
@@ -61,34 +63,19 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (*model.Policy, e
 		ply.SrcNamespaces = strings.Split(policy.SrcNamespaces, ",")
 	}
 
-	// TODO need to consider the consistence with the policies from previous versions
-	// of Harbor
-	// both for filter and trigger
-
 	// 2. parse Filters
-	if len(policy.Filters) > 0 {
-		filters := []*model.Filter{}
-		if err := json.Unmarshal([]byte(policy.Filters), &filters); err != nil {
-			return nil, err
-		}
-		// convert the type of value from string to model.ResourceType if the filter
-		// is a resource type filter
-		for _, filter := range filters {
-			if filter.Type == model.FilterTypeResource {
-				filter.Value = (model.ResourceType)(filter.Value.(string))
-			}
-		}
-		ply.Filters = filters
+	filters, err := parseFilters(policy.Filters)
+	if err != nil {
+		return nil, err
 	}
+	ply.Filters = filters
 
 	// 3. parse Trigger
-	if len(policy.Trigger) > 0 {
-		trigger := &model.Trigger{}
-		if err := json.Unmarshal([]byte(policy.Trigger), trigger); err != nil {
-			return nil, err
-		}
-		ply.Trigger = trigger
+	trigger, err := parseTrigger(policy.Trigger)
+	if err != nil {
+		return nil, err
 	}
+	ply.Trigger = trigger
 
 	return &ply, nil
 }
@@ -215,4 +202,115 @@ func (m *DefaultManager) Update(policy *model.Policy, props ...string) error {
 // Remove Remove the specified policy
 func (m *DefaultManager) Remove(policyID int64) error {
 	return dao.DeleteRepPolicy(policyID)
+}
+
+type filter struct {
+	Type    model.FilterType `json:"type"`
+	Value   interface{}      `json:"value"`
+	Kind    string           `json:"kind"`
+	Pattern string           `json:"pattern"`
+}
+
+type trigger struct {
+	Type          model.TriggerType      `json:"type"`
+	Settings      *model.TriggerSettings `json:"trigger_settings"`
+	Kind          string                 `json:"kind"`
+	ScheduleParam *scheduleParam         `json:"schedule_param"`
+}
+
+type scheduleParam struct {
+	Type    string `json:"type"`
+	Weekday int8   `json:"weekday"`
+	Offtime int64  `json:"offtime"`
+}
+
+func parseFilters(str string) ([]*model.Filter, error) {
+	if len(str) == 0 {
+		return nil, nil
+	}
+	items := []*filter{}
+	if err := json.Unmarshal([]byte(str), &items); err != nil {
+		return nil, err
+	}
+
+	filters := []*model.Filter{}
+	for _, item := range items {
+		filter := &model.Filter{
+			Type:  item.Type,
+			Value: item.Value,
+		}
+		// keep backwards compatibility
+		if len(filter.Type) == 0 {
+			switch item.Kind {
+			case "repository":
+				filter.Type = model.FilterTypeName
+			case "tag":
+				filter.Type = model.FilterTypeTag
+			case "label":
+				// TODO if we support the label filter, remove the checking logic here
+				continue
+			default:
+				log.Warningf("unknown filter type: %s", filter.Type)
+				continue
+			}
+		}
+		if filter.Value == nil {
+			filter.Value = item.Pattern
+		}
+		// convert the type of value from string to model.ResourceType if the filter
+		// is a resource type filter
+		if filter.Type == model.FilterTypeResource {
+			filter.Value = (model.ResourceType)(filter.Value.(string))
+		}
+		filters = append(filters, filter)
+	}
+	return filters, nil
+}
+
+func parseTrigger(str string) (*model.Trigger, error) {
+	if len(str) == 0 {
+		return nil, nil
+	}
+	item := &trigger{}
+	if err := json.Unmarshal([]byte(str), item); err != nil {
+		return nil, err
+	}
+	trigger := &model.Trigger{
+		Type:     item.Type,
+		Settings: item.Settings,
+	}
+	// keep backwards compatibility
+	if len(trigger.Type) == 0 {
+		switch item.Kind {
+		case "Manual":
+			trigger.Type = model.TriggerTypeManual
+		case "Immediate":
+			trigger.Type = model.TriggerTypeEventBased
+		case "Scheduled":
+			trigger.Type = model.TriggerTypeScheduled
+			trigger.Settings = &model.TriggerSettings{
+				Cron: parseScheduleParamToCron(item.ScheduleParam),
+			}
+		default:
+			log.Warningf("unknown trigger type: %s", item.Kind)
+			return nil, nil
+		}
+	}
+	return trigger, nil
+}
+
+func parseScheduleParamToCron(param *scheduleParam) string {
+	if param == nil {
+		return ""
+	}
+	offtime := param.Offtime
+	offtime = offtime % (3600 * 24)
+	hour := int(offtime / 3600)
+	offtime = offtime % 3600
+	minute := int(offtime / 60)
+	second := int(offtime % 60)
+	if param.Type == "Weekly" {
+		return fmt.Sprintf("%d %d %d * * %d", second, minute, hour, param.Weekday%7)
+	}
+	return fmt.Sprintf("%d %d %d * * *", second, minute, hour)
 }

@@ -203,3 +203,70 @@ func TestNewDefaultManager(t *testing.T) {
 		})
 	}
 }
+
+func TestParseFilters(t *testing.T) {
+	// nil filter string
+	str := ""
+	filters, err := parseFilters(str)
+	require.Nil(t, err)
+	assert.Nil(t, filters)
+	// only contains the fields that introduced in the latest version
+	str = `[{"type":"name","value":"library/hello-world"}]`
+	filters, err = parseFilters(str)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(filters))
+	assert.Equal(t, model.FilterTypeName, filters[0].Type)
+	assert.Equal(t, "library/hello-world", filters[0].Value.(string))
+	// contains "kind" from previous versions
+	str = `[{"kind":"repository","value":"library/hello-world"}]`
+	filters, err = parseFilters(str)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(filters))
+	assert.Equal(t, model.FilterTypeName, filters[0].Type)
+	assert.Equal(t, "library/hello-world", filters[0].Value.(string))
+	// contains "pattern" from previous versions
+	str = `[{"kind":"repository","pattern":"library/hello-world"}]`
+	filters, err = parseFilters(str)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(filters))
+	assert.Equal(t, model.FilterTypeName, filters[0].Type)
+	assert.Equal(t, "library/hello-world", filters[0].Value.(string))
+}
+
+func TestParseTrigger(t *testing.T) {
+	// nil trigger string
+	str := ""
+	trigger, err := parseTrigger(str)
+	require.Nil(t, err)
+	assert.Nil(t, trigger)
+	// only contains the fields that introduced in the latest version
+	str = `{"type":"scheduled", "trigger_settings":{"cron":"1 * * * * *"}}`
+	trigger, err = parseTrigger(str)
+	require.Nil(t, err)
+	assert.Equal(t, model.TriggerTypeScheduled, trigger.Type)
+	assert.Equal(t, "1 * * * * *", trigger.Settings.Cron)
+	// contains "kind" from previous versions
+	str = `{"kind":"Manual"}`
+	trigger, err = parseTrigger(str)
+	require.Nil(t, err)
+	assert.Equal(t, model.TriggerTypeManual, trigger.Type)
+	assert.Nil(t, trigger.Settings)
+	// contains "kind" from previous versions
+	str = `{"kind":"Immediate"}`
+	trigger, err = parseTrigger(str)
+	require.Nil(t, err)
+	assert.Equal(t, model.TriggerTypeEventBased, trigger.Type)
+	assert.Nil(t, trigger.Settings)
+	// contains "schedule_param" from previous versions
+	str = `{"kind":"Scheduled","schedule_param":{"type":"Weekly","weekday":1,"offtime":0}}`
+	trigger, err = parseTrigger(str)
+	require.Nil(t, err)
+	assert.Equal(t, model.TriggerTypeScheduled, trigger.Type)
+	assert.Equal(t, "0 0 0 * * 1", trigger.Settings.Cron)
+	// contains "schedule_param" from previous versions
+	str = `{"kind":"Scheduled","schedule_param":{"type":"Daily","offtime":0}}`
+	trigger, err = parseTrigger(str)
+	require.Nil(t, err)
+	assert.Equal(t, model.TriggerTypeScheduled, trigger.Type)
+	assert.Equal(t, "0 0 0 * * *", trigger.Settings.Cron)
+}

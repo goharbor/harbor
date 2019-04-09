@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 const (
@@ -65,18 +67,18 @@ type ExecutionFieldsName struct {
 
 // Execution holds information about once replication execution.
 type Execution struct {
-	ID         int64     `orm:"pk;auto;column(id)" json:"id"`
-	PolicyID   int64     `orm:"column(policy_id)" json:"policy_id"`
-	Status     string    `orm:"column(status)" json:"status"`
-	StatusText string    `orm:"column(status_text)" json:"status_text"`
-	Total      int       `orm:"column(total)" json:"total"`
-	Failed     int       `orm:"column(failed)" json:"failed"`
-	Succeed    int       `orm:"column(succeed)" json:"succeed"`
-	InProgress int       `orm:"column(in_progress)" json:"in_progress"`
-	Stopped    int       `orm:"column(stopped)" json:"stopped"`
-	Trigger    string    `orm:"column(trigger)" json:"trigger"`
-	StartTime  time.Time `orm:"column(start_time)" json:"start_time"`
-	EndTime    time.Time `orm:"column(end_time)" json:"end_time"`
+	ID         int64             `orm:"pk;auto;column(id)" json:"id"`
+	PolicyID   int64             `orm:"column(policy_id)" json:"policy_id"`
+	Status     string            `orm:"column(status)" json:"status"`
+	StatusText string            `orm:"column(status_text)" json:"status_text"`
+	Total      int               `orm:"column(total)" json:"total"`
+	Failed     int               `orm:"column(failed)" json:"failed"`
+	Succeed    int               `orm:"column(succeed)" json:"succeed"`
+	InProgress int               `orm:"column(in_progress)" json:"in_progress"`
+	Stopped    int               `orm:"column(stopped)" json:"stopped"`
+	Trigger    model.TriggerType `orm:"column(trigger)" json:"trigger"`
+	StartTime  time.Time         `orm:"column(start_time)" json:"start_time"`
+	EndTime    time.Time         `orm:"column(end_time)" json:"end_time"`
 }
 
 // TaskPropsName defines the names of fields of Task

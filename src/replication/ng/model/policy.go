@@ -24,14 +24,14 @@ import (
 
 // const definition
 const (
-	FilterTypeResource = "resource"
-	FilterTypeName     = "name"
-	FilterTypeTag      = "tag"
-	FilterTypeLabel    = "label"
+	FilterTypeResource FilterType = "resource"
+	FilterTypeName     FilterType = "name"
+	FilterTypeTag      FilterType = "tag"
+	FilterTypeLabel    FilterType = "label"
 
-	TriggerTypeManual     = "manual"
-	TriggerTypeScheduled  = "scheduled"
-	TriggerTypeEventBased = "event_based"
+	TriggerTypeManual     TriggerType = "manual"
+	TriggerTypeScheduled  TriggerType = "scheduled"
+	TriggerTypeEventBased TriggerType = "event_based"
 )
 
 // Policy defines the structure of a replication policy
