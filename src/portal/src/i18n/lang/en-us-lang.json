@@ -729,12 +729,12 @@
             "VERIFY_CERT": "Authentication Verify Cert"
         },
         "OIDC": {
-            "OIDC_PROVIDER": "OIDC provider",
+            "OIDC_PROVIDER": "OIDC Provider",
             "ENDPOINT": "OIDC Endpoint",
             "CLIENT_ID": "OIDC Client ID",
             "CLIENTSECRET": "OIDC Client Secret",
             "SCOPE": "OIDC Scope",
-            "OIDCSKIPCERTVERIFY": "OIDC Verify Cert",
+            "OIDCSKIPCERTVERIFY": "OIDC Skip Verifying Certificate",
             "OIDC_SETNAME": "Set OIDC Username",
             "OIDC_SETNAMECONTENT": "You must create a Harbor username the first time when authenticating via a third party(OIDC).This will be used within Harbor to be associated with projects, roles, etc.",
             "OIDC_USERNAME": "Username"

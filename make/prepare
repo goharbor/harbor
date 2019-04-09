@@ -1,39 +1,40 @@
 #!/bin/bash
+set +e
 
 # If compling source code this dir is harbor's make dir
 # If install harbor via pacakge, this dir is harbor's root dir
 harbor_prepare_path="$( cd "$(dirname "$0")" ; pwd -P )"
-
-echo host make path is set to ${harbor_prepare_path}
+echo "prepare base dir is set to ${harbor_prepare_path}"
 data_path=$(grep '^[^#]*data_volume:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
-log_path=$(grep '^[^#]*location:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
-secretkey_path=$(grep '^[^#]*secretkey_path:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
-ssl_cert_path=$(grep '^[^#]*ssl_cert:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
-ssl_cert_key_path=$(grep '^[^#]*ssl_cert_key:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
-registry_custom_ca_bundle=$(grep '^[^#]*registry_custom_ca_bundle:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
 
+# If previous secretkeys exist, move it to new location
+previous_secretkey_path=/data/secretkey
+previous_defaultalias_path=/data/defaultalias
+
+if [ -f $previous_secretkey_path ]; then
+    mkdir -p $data_path/secret/keys
+    mv $previous_secretkey_path $data_path/secret/keys
+fi
+if [ -f $previous_defaultalias_path ]; then
+    mkdir -p $data_path/secret/keys
+    mv $previous_defaultalias_path $data_path/secret/keys
+fi
+
+# Clean up input dir
+rm -rf ${harbor_prepare_path}/input
 # Create a input dirs
 mkdir -p ${harbor_prepare_path}/input
 input_dir=${harbor_prepare_path}/input
-mkdir -p $input_dir/nginx
-mkdir -p $input_dir/keys
-mkdir -p $input_dir/common
 
-# Copy nginx config file to input dir
-cp $ssl_cert_path $input_dir/nginx/server.crt
-cp $ssl_cert_key_path $input_dir/nginx/server.key
-
-# Copy secretkey to input dir
-cp -r $secretkey_path $input_dir/keys
-
-# Copy ca bundle to input dir
-if [ -f $registry_custom_ca_bundle ]
-then
-    cp -r $registry_custom_ca_bundle $input_dir/common/custom-ca-bundle.crt
-fi
+set -e
 
 # Copy harbor.yml to input dir
-cp ${harbor_prepare_path}/harbor.yml $input_dir/harbor.yml
+if [[ ! "$1" =~ ^\-\- ]] && [ -f "$1" ]
+then
+    cp $1 $input_dir/harbor.yml 
+else
+    cp ${harbor_prepare_path}/harbor.yml $input_dir/harbor.yml
+fi
 
 # Create secret dir
 secret_dir=${data_path}/secret
@@ -44,8 +45,8 @@ docker run -it --rm -v $input_dir:/input \
                     -v $harbor_prepare_path:/compose_location \
                     -v $config_dir:/config \
                     -v $secret_dir:/secret \
-                    -v $log_path:/var/log/harbor \
                     goharbor/prepare:dev $@
 
+echo "Clean up the input dir"
 # Clean up input dir
 rm -rf ${harbor_prepare_path}/input
