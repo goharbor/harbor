@@ -59,8 +59,8 @@ func initialize(policy *model.Policy) (adp.Adapter, adp.Adapter, error) {
 
 // fetch resources from the source registry
 func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resource, error) {
-	resTypes := []model.ResourceType{}
-	filters := []*model.Filter{}
+	var resTypes []model.ResourceType
+	var filters []*model.Filter
 	for _, filter := range policy.Filters {
 		if filter.Type != model.FilterTypeResource {
 			filters = append(filters, filter)
@@ -111,9 +111,10 @@ func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resourc
 
 // apply the filters to the resources and returns the filtered resources
 func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*model.Resource, error) {
-	res := []*model.Resource{}
+	var res []*model.Resource
 	for _, resource := range resources {
 		match := true
+	FILTER_LOOP:
 		for _, filter := range filters {
 			switch filter.Type {
 			case model.FilterTypeResource:
@@ -123,7 +124,7 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 				}
 				if model.ResourceType(resourceType) != resource.Type {
 					match = false
-					break
+					break FILTER_LOOP
 				}
 			case model.FilterTypeName:
 				pattern, ok := filter.Value.(string)
@@ -132,7 +133,7 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 				}
 				if resource.Metadata == nil {
 					match = false
-					break
+					break FILTER_LOOP
 				}
 				// TODO filter only the repository part?
 				m, err := util.Match(pattern, resource.Metadata.GetResourceName())
@@ -141,7 +142,7 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 				}
 				if !m {
 					match = false
-					break
+					break FILTER_LOOP
 				}
 			case model.FilterTypeTag:
 				pattern, ok := filter.Value.(string)
@@ -150,9 +151,9 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 				}
 				if resource.Metadata == nil {
 					match = false
-					break
+					break FILTER_LOOP
 				}
-				versions := []string{}
+				var versions []string
 				for _, version := range resource.Metadata.Vtags {
 					m, err := util.Match(pattern, version)
 					if err != nil {
@@ -164,12 +165,12 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 				}
 				if len(versions) == 0 {
 					match = false
-					break
+					break FILTER_LOOP
 				}
 				// NOTE: the property "Vtags" of the origin resource struct is overrided here
 				resource.Metadata.Vtags = versions
 			case model.FilterTypeLabel:
-			// TODO add support to label
+				// TODO add support to label
 			default:
 				return nil, fmt.Errorf("unsupportted filter type: %v", filter.Type)
 			}
@@ -185,7 +186,7 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 // assemble the destination resources by filling the metadata, registry and override properties
 func assembleDestinationResources(adapter adp.Adapter, resources []*model.Resource,
 	policy *model.Policy) ([]*model.Resource, error) {
-	result := []*model.Resource{}
+	var result []*model.Resource
 	var namespace *model.Namespace
 	if len(policy.DestNamespace) > 0 {
 		namespace = &model.Namespace{

@@ -31,7 +31,7 @@ import (
 // Controller handles the replication-related operations: start,
 // stop, query, etc.
 type Controller interface {
-	// trigger is used to specified that what this replication is triggered by
+	// trigger is used to specify what this replication is triggered by
 	StartReplication(policy *model.Policy, resource *model.Resource, trigger model.TriggerType) (int64, error)
 	StopReplication(int64) error
 	ListExecutions(...*models.ExecutionQuery) (int64, []*models.Execution, error)
