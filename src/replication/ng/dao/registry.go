@@ -1,8 +1,6 @@
 package dao
 
 import (
-	"time"
-
 	"github.com/astaxie/beego/orm"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -89,16 +87,10 @@ func ListRegistries(query ...*ListRegistryQuery) (int64, []*models.Registry, err
 }
 
 // UpdateRegistry updates one registry
-func UpdateRegistry(registry *models.Registry) error {
+func UpdateRegistry(registry *models.Registry, props ...string) error {
 	o := dao.GetOrmer()
 
-	sql := `update registry
-	set url = ?, name = ?, credential_type = ?, access_key = ?, access_secret = ?, type = ?, insecure = ?, health = ?, description = ?, update_time = ?
-	where id = ?`
-
-	_, err := o.Raw(sql, registry.URL, registry.Name, registry.CredentialType, registry.AccessKey, registry.AccessSecret,
-		registry.Type, registry.Insecure, registry.Health, registry.Description, time.Now(), registry.ID).Exec()
-
+	_, err := o.Update(registry, props...)
 	return err
 }
 
