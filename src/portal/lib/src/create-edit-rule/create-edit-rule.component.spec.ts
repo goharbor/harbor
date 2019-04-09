@@ -159,6 +159,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
     description: "",
     src_namespaces: ["namespace1", "namespace2"],
     src_registry: {id: 10 },
+    dest_registry: {id: 0 },
     trigger: {
       kind: "Manual",
       schedule_param: {}
