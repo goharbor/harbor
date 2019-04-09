@@ -28,8 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/util"
 )
 
-// TODO add UT
-
 func init() {
 	if err := adp.RegisterFactory(model.RegistryTypeHarbor, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry), nil

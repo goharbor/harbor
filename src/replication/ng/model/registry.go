@@ -23,7 +23,7 @@ import (
 // const definition
 const (
 	// RegistryTypeHarbor indicates registry type harbor
-	RegistryTypeHarbor = "harbor"
+	RegistryTypeHarbor RegistryType = "harbor"
 
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"
