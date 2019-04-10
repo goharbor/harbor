@@ -161,9 +161,13 @@ func TestHandle(t *testing.T) {
 	err = handler.Handle(&Event{
 		Resource: &model.Resource{
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/hello-world",
-				Namespace: "library",
-				Vtags:     []string{},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "hello-world",
+				},
+				Vtags: []string{},
 			},
 		},
 		Type: EventTypeImagePush,
@@ -174,9 +178,13 @@ func TestHandle(t *testing.T) {
 	err = handler.Handle(&Event{
 		Resource: &model.Resource{
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/hello-world",
-				Namespace: "library",
-				Vtags:     []string{"latest"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "hello-world",
+				},
+				Vtags: []string{"latest"},
 			},
 		},
 		Type: "unsupported",
@@ -187,9 +195,13 @@ func TestHandle(t *testing.T) {
 	err = handler.Handle(&Event{
 		Resource: &model.Resource{
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/hello-world",
-				Namespace: "library",
-				Vtags:     []string{"latest"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "hello-world",
+				},
+				Vtags: []string{"latest"},
 			},
 		},
 		Type: EventTypeImagePush,
@@ -200,9 +212,13 @@ func TestHandle(t *testing.T) {
 	err = handler.Handle(&Event{
 		Resource: &model.Resource{
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/hello-world",
-				Namespace: "library",
-				Vtags:     []string{"latest"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "hello-world",
+				},
+				Vtags: []string{"latest"},
 			},
 		},
 		Type: EventTypeImageDelete,

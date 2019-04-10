@@ -34,9 +34,13 @@ func (f *fakeRegistry) FetchCharts(namespaces []string, filters []*model.Filter)
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/harbor",
-				Namespace: "library",
-				Vtags:     []string{"0.2.0"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "harbor",
+				},
+				Vtags: []string{"0.2.0"},
 			},
 		},
 	}, nil

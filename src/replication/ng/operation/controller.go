@@ -104,8 +104,9 @@ func (c *controller) createFlow(executionID int64, policy *model.Policy, resourc
 				Value: resource.Type,
 			},
 			{
-				Type:  model.FilterTypeName,
-				Value: resource.Metadata.Name,
+				Type: model.FilterTypeName,
+				// TODO only filter the repo part?
+				Value: resource.Metadata.GetResourceName(),
 			},
 			{
 				Type: model.FilterTypeTag,

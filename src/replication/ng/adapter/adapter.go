@@ -33,12 +33,15 @@ type Adapter interface {
 	// Lists the available namespaces under the specified registry with the
 	// provided credential/token
 	ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error)
-	// Create a new namespace
-	// This method should guarantee it's idempotent
-	// And returns nil if a namespace with the same name already exists
-	CreateNamespace(*model.Namespace) error
+	// ConvertResourceMetadata converts the namespace and repository part of the resource metadata
+	// to the one that the adapter can handle
+	ConvertResourceMetadata(*model.ResourceMetadata, *model.Namespace) (*model.ResourceMetadata, error)
+	// PrepareForPush does the prepare work that needed for pushing/uploading the resource
+	// eg: create the namespace or repository
+	PrepareForPush(*model.Resource) error
 	// Get the namespace specified by the name, the returning value should
 	// contain the metadata about the namespace if it has
+	// TODO remove this method?
 	GetNamespace(string) (*model.Namespace, error)
 	// HealthCheck checks health status of registry
 	HealthCheck() (model.HealthStatus, error)

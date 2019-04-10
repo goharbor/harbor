@@ -120,9 +120,14 @@ func (n *NotificationHandler) Post() {
 					Resource: &model.Resource{
 						Type: model.ResourceTypeRepository,
 						Metadata: &model.ResourceMetadata{
-							Name:      repository,
-							Namespace: project,
-							Vtags:     []string{tag},
+							Namespace: &model.Namespace{
+								Name: project,
+								// TODO filling the metadata
+							},
+							Repository: &model.Repository{
+								Name: strings.TrimPrefix(repository, project+"/"),
+							},
+							Vtags: []string{tag},
 						},
 					},
 				}

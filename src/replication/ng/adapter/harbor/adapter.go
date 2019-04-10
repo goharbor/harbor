@@ -15,8 +15,10 @@
 package harbor
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -85,7 +87,8 @@ func newAdapter(registry *model.Registry) *adapter {
 
 func (a *adapter) Info() (*model.RegistryInfo, error) {
 	info := &model.RegistryInfo{
-		Type: model.RegistryTypeHarbor,
+		Type:             model.RegistryTypeHarbor,
+		SupportNamespace: true,
 		SupportedResourceTypes: []model.ResourceType{
 			model.ResourceTypeRepository,
 		},
@@ -126,13 +129,63 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 func (a *adapter) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
 	return nil, nil
 }
-func (a *adapter) CreateNamespace(namespace *model.Namespace) error {
+func (a *adapter) ConvertResourceMetadata(metadata *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
+	if metadata == nil {
+		return nil, errors.New("the metadata cannot be null")
+	}
+	name := metadata.GetResourceName()
+	strs := strings.SplitN(name, "/", 2)
+	if len(strs) < 2 {
+		return nil, fmt.Errorf("unsupported resource name %s, at least contains one '/'", name)
+	}
+	meta := &model.ResourceMetadata{
+		Vtags:  metadata.Vtags,
+		Labels: metadata.Labels,
+	}
+	meta.Namespace = &model.Namespace{
+		Name: strs[0],
+	}
+	if metadata.Namespace != nil {
+		meta.Namespace.Metadata = metadata.Namespace.Metadata
+	}
+	meta.Repository = &model.Repository{
+		Name: strs[1],
+	}
+	if metadata.Repository != nil {
+		meta.Repository.Metadata = metadata.Repository.Metadata
+	}
+	// replace the namespace if it is specified
+	if namespace == nil || len(namespace.Name) == 0 {
+		return meta, nil
+	}
+	if strings.Contains(namespace.Name, "/") {
+		return nil, fmt.Errorf("the namespace %s cannot contain '/'", namespace.Name)
+	}
+	meta.Namespace.Name = namespace.Name
+	if namespace.Metadata != nil {
+		meta.Namespace.Metadata = namespace.Metadata
+	}
+	return meta, nil
+}
+func (a *adapter) PrepareForPush(resource *model.Resource) error {
+	if resource == nil {
+		return errors.New("the resource cannot be null")
+	}
+	if resource.Metadata == nil {
+		return errors.New("the metadata of resource cannot be null")
+	}
+	if resource.Metadata.Namespace == nil {
+		return errors.New("the namespace of resource cannot be null")
+	}
+	if len(resource.Metadata.Namespace.Name) == 0 {
+		return errors.New("the name of the namespace cannot be null")
+	}
 	project := &struct {
 		Name     string                 `json:"project_name"`
 		Metadata map[string]interface{} `json:"metadata"`
 	}{
-		Name:     namespace.Name,
-		Metadata: namespace.Metadata,
+		Name:     resource.Metadata.Namespace.Name,
+		Metadata: resource.Metadata.Namespace.Metadata,
 	}
 
 	// TODO
@@ -160,11 +213,13 @@ func (a *adapter) CreateNamespace(namespace *model.Namespace) error {
 
 	err := a.client.Post(a.coreServiceURL+"/api/projects", project)
 	if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
-		log.Debugf("got 409 when trying to create project %s", namespace.Name)
+		log.Debugf("got 409 when trying to create project %s", resource.Metadata.Namespace.Name)
 		return nil
 	}
 	return err
 }
+
+// TODO remove this method
 func (a *adapter) GetNamespace(namespace string) (*model.Namespace, error) {
 	project, err := a.getProject(namespace)
 	if err != nil {

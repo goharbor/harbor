@@ -17,10 +17,9 @@ package chart
 import (
 	"errors"
 
-	"github.com/goharbor/harbor/src/replication/ng/adapter"
-
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	trans "github.com/goharbor/harbor/src/replication/ng/transfer"
 )
@@ -63,17 +62,17 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 	// delete the chart on destination registry
 	if dst.Deleted {
 		return t.delete(&chart{
-			name:    dst.Metadata.Name,
+			name:    dst.Metadata.GetResourceName(),
 			version: dst.Metadata.Vtags[0],
 		})
 	}
 
 	srcChart := &chart{
-		name:    src.Metadata.Name,
+		name:    src.Metadata.GetResourceName(),
 		version: src.Metadata.Vtags[0],
 	}
 	dstChart := &chart{
-		name:    dst.Metadata.Name,
+		name:    dst.Metadata.GetResourceName(),
 		version: dst.Metadata.Vtags[0],
 	}
 	// copy the chart from source registry to the destination

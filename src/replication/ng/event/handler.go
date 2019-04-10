@@ -57,9 +57,9 @@ func (h *handler) Handle(event *Event) error {
 	var err error
 	switch event.Type {
 	case EventTypeImagePush, EventTypeChartUpload:
-		policies, err = h.getRelatedPolicies(event.Resource.Metadata.Namespace)
+		policies, err = h.getRelatedPolicies(event.Resource.Metadata.Namespace.Name)
 	case EventTypeImageDelete, EventTypeChartDelete:
-		policies, err = h.getRelatedPolicies(event.Resource.Metadata.Namespace, true)
+		policies, err = h.getRelatedPolicies(event.Resource.Metadata.Namespace.Name, true)
 	default:
 		return fmt.Errorf("unsupported event type %s", event.Type)
 	}

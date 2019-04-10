@@ -67,9 +67,14 @@ func (a *adapter) FetchCharts(namespaces []string, filters []*model.Filter) ([]*
 					Type:     model.ResourceTypeChart,
 					Registry: a.registry,
 					Metadata: &model.ResourceMetadata{
-						Namespace: namespace,
-						Name:      fmt.Sprintf("%s/%s", namespace, chart.Name),
-						Vtags:     []string{version.Version},
+						Namespace: &model.Namespace{
+							Name: namespace,
+							// TODO filling the metadata
+						},
+						Repository: &model.Repository{
+							Name: chart.Name,
+						},
+						Vtags: []string{version.Version},
 					},
 				})
 			}

@@ -333,9 +333,14 @@ func (ra *RepositoryAPI) Delete() {
 				Resource: &model.Resource{
 					Type: model.ResourceTypeRepository,
 					Metadata: &model.ResourceMetadata{
-						Name:      repoName,
-						Namespace: projectName,
-						Vtags:     []string{tag},
+						Namespace: &model.Namespace{
+							Name: projectName,
+							// TODO filling the metadata
+						},
+						Repository: &model.Repository{
+							Name: strings.TrimPrefix(repoName, projectName+"/"),
+						},
+						Vtags: []string{tag},
 					},
 					Deleted: true,
 				},
