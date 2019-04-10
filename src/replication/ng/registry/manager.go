@@ -136,8 +136,6 @@ func (m *DefaultManager) Add(registry *model.Registry) (int64, error) {
 
 // Update updates a registry
 func (m *DefaultManager) Update(registry *model.Registry, props ...string) error {
-	// TODO(ChenDe): Only update the given props
-
 	r, err := toDaoModel(registry)
 	if err != nil {
 		log.Errorf("Convert registry model to dao layer model error: %v", err)
@@ -172,7 +170,7 @@ func (m *DefaultManager) HealthCheck() error {
 			log.Warningf("Check health status for %s error: %v", r.URL, err)
 		}
 		r.Status = string(status)
-		err = m.Update(r)
+		err = m.Update(r, "status")
 		if err != nil {
 			log.Warningf("Update health status for '%s' error: %v", r.URL, err)
 			errCount++
