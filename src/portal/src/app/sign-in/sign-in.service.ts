@@ -15,8 +15,8 @@ import { Injectable } from '@angular/core';
 import { Http, URLSearchParams } from '@angular/http';
 // import 'rxjs/add/operator/toPromise';
 
-import { SignInCredential } from '../../shared/sign-in-credential';
-import {HTTP_FORM_OPTIONS} from "../../shared/shared.utils";
+import { SignInCredential } from '../shared/sign-in-credential';
+import {HTTP_FORM_OPTIONS} from "../shared/shared.utils";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 const signInUrl = '/c/login';
