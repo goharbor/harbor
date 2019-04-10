@@ -29,6 +29,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
   * [Working with Helm CLI](#working-with-helm-cli)
 * [Online Garbage Collection.](#online-garbage-collection)
 * [View build history.](#build-history)
+* [Manage robot account of a project.](#robot-account)
 
 ## Role Based Access Control(RBAC)  
 
@@ -597,3 +598,42 @@ Build history make it easy to see the contents of a container image, find the co
 In Harbor portal, enter your project, select the repository, click on the link of tag name you'd like to see its build history, the detail page will be opened. Then switch to `Build History` tab, you can see the build history information.
 
 ![build_ history](img/build_history.png)
+
+## Robot Account
+Robot Accounts are accounts created by project admins that are intended for automated operations. They have the following limitations:
+
+1, Robot Accounts cannot login Harbor portal
+2, Robot Accounts can only perform `docker push`/`docker pull` operations with a token.
+
+### Add a Robot Account
+If you are a project admin, you can create a Robot Account by clicking "New Robot Account" in the `Robot Accounts` tab of a project, and enter a name, a description and permission.
+![add_robot_account](img/robotaccount/add_robot_account.png)
+
+![add_robot_account](img/robotaccount/add_robot_account_2.png)
+
+> **NOTE:** The name will become `robot$<accountname>` and will be used to distinguish a robot account from a normal harbor user.
+
+![copy_robot_account_token](img/robotaccount/copy_robot_account_token.png)
+As Harbor doesn't store your account token, please make sure to copy it in the pop up dialog after creating, otherwise, there is no way to get it from Harbor.
+
+### Configure duration of robot account
+If you are a system admin, you can configure the robot account token duration in days. 
+![set_robot_account_token_duration](img/robotaccount/set_robot_account_token_duration.png)
+
+### Authenticate with a robot account
+To authenticate with a Robot Account, use `docker login` as below,
+
+```
+docker login harbor.io
+Username: robot$accountname
+Password: Thepasswordgeneratedbyprojectadmin
+```
+
+### Disable a robot account
+If you are a project admin, you can disable a Robot Account by clicking "Disable Account" in the `Robot Accounts` tab of a project.
+![disable_robot_account](img/robotaccount/disable_delete_robot_account.png)
+
+### Delete a robot account
+If you are a project admin, you can delete a Robot Account by clicking "Delete" in the `Robot Accounts` tab of a project.
+![delete_robot_account](img/robotaccount/disable_delete_robot_account.png)
+
