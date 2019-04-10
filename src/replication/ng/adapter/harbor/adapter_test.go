@@ -18,12 +18,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/stretchr/testify/require"
-
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInfo(t *testing.T) {
@@ -77,8 +75,7 @@ func TestListNamespaces(t *testing.T) {
 	// TODO
 }
 
-func TestCreateNamespace(t *testing.T) {
-	// project doesn't exist
+func TestPrepareForPush(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodPost,
 		Pattern: "/api/projects",
@@ -90,10 +87,41 @@ func TestCreateNamespace(t *testing.T) {
 		URL: server.URL,
 	}
 	adapter := newAdapter(registry)
-	err := adapter.CreateNamespace(&model.Namespace{
-		Name: "library",
+	// nil resource
+	err := adapter.PrepareForPush(nil)
+	require.NotNil(t, err)
+	// nil metadata
+	err = adapter.PrepareForPush(&model.Resource{})
+	require.NotNil(t, err)
+	// nil namespace
+	err = adapter.PrepareForPush(&model.Resource{
+		Metadata: &model.ResourceMetadata{},
+	})
+	require.NotNil(t, err)
+	// nil namespace name
+	err = adapter.PrepareForPush(&model.Resource{
+		Metadata: &model.ResourceMetadata{
+			Namespace: &model.Namespace{},
+		},
+	})
+	require.NotNil(t, err)
+	// nil namespace name
+	err = adapter.PrepareForPush(&model.Resource{
+		Metadata: &model.ResourceMetadata{
+			Namespace: &model.Namespace{},
+		},
+	})
+	require.NotNil(t, err)
+	// project doesn't exist
+	err = adapter.PrepareForPush(&model.Resource{
+		Metadata: &model.ResourceMetadata{
+			Namespace: &model.Namespace{
+				Name: "library",
+			},
+		},
 	})
 	require.Nil(t, err)
+
 	server.Close()
 
 	// project already exists
@@ -108,11 +136,14 @@ func TestCreateNamespace(t *testing.T) {
 		URL: server.URL,
 	}
 	adapter = newAdapter(registry)
-	err = adapter.CreateNamespace(&model.Namespace{
-		Name: "library",
+	err = adapter.PrepareForPush(&model.Resource{
+		Metadata: &model.ResourceMetadata{
+			Namespace: &model.Namespace{
+				Name: "library",
+			},
+		},
 	})
 	require.Nil(t, err)
-	server.Close()
 }
 
 func TestGetNamespace(t *testing.T) {

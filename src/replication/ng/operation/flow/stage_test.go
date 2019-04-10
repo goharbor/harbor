@@ -49,7 +49,14 @@ func (f *fakedAdapter) Info() (*model.RegistryInfo, error) {
 func (f *fakedAdapter) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
 	return nil, nil
 }
-func (f *fakedAdapter) CreateNamespace(*model.Namespace) error {
+func (f *fakedAdapter) ConvertResourceMetadata(metadata *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
+	if namespace != nil {
+		metadata.Namespace = namespace
+	}
+	return metadata, nil
+}
+
+func (f *fakedAdapter) PrepareForPush(*model.Resource) error {
 	return nil
 }
 func (f *fakedAdapter) HealthCheck() (model.HealthStatus, error) {
@@ -72,9 +79,13 @@ func (f *fakedAdapter) FetchImages(namespace []string, filters []*model.Filter) 
 		{
 			Type: model.ResourceTypeRepository,
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/hello-world",
-				Namespace: "library",
-				Vtags:     []string{"latest"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "hello-world",
+				},
+				Vtags: []string{"latest"},
 			},
 			Override: false,
 		},
@@ -107,9 +118,13 @@ func (f *fakedAdapter) FetchCharts(namespaces []string, filters []*model.Filter)
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/harbor",
-				Namespace: "library",
-				Vtags:     []string{"0.2.0"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "harbor",
+				},
+				Vtags: []string{"0.2.0"},
 			},
 		},
 	}, nil
@@ -226,9 +241,13 @@ func TestFilterResources(t *testing.T) {
 		{
 			Type: model.ResourceTypeRepository,
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/hello-world",
-				Namespace: "library",
-				Vtags:     []string{"latest"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "hello-world",
+				},
+				Vtags: []string{"latest"},
 				// TODO test labels
 				Labels: nil,
 			},
@@ -238,9 +257,13 @@ func TestFilterResources(t *testing.T) {
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/harbor",
-				Namespace: "library",
-				Vtags:     []string{"0.2.0", "0.3.0"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "harbor",
+				},
+				Vtags: []string{"0.2.0", "0.3.0"},
 				// TODO test labels
 				Labels: nil,
 			},
@@ -250,9 +273,13 @@ func TestFilterResources(t *testing.T) {
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/mysql",
-				Namespace: "library",
-				Vtags:     []string{"1.0"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "mysql",
+				},
+				Vtags: []string{"1.0"},
 				// TODO test labels
 				Labels: nil,
 			},
@@ -281,67 +308,40 @@ func TestFilterResources(t *testing.T) {
 	res, err := filterResources(resources, filters)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(res))
-	assert.Equal(t, "library/harbor", res[0].Metadata.Name)
+	assert.Equal(t, "library", res[0].Metadata.Namespace.Name)
+	assert.Equal(t, "harbor", res[0].Metadata.Repository.Name)
 	assert.Equal(t, 1, len(res[0].Metadata.Vtags))
 	assert.Equal(t, "0.2.0", res[0].Metadata.Vtags[0])
 }
 
-func TestAssembleDestinationNamespaces(t *testing.T) {
-	adapter := &fakedAdapter{}
-	resources := []*model.Resource{
-		{
-			Metadata: &model.ResourceMetadata{
-				Namespace: "library",
-			},
-		},
-	}
-	namespace := ""
-	ns, err := assembleDestinationNamespaces(adapter, resources, namespace)
-	require.Nil(t, err)
-	assert.Equal(t, 1, len(ns))
-	assert.Equal(t, "library", ns[0].Name)
-	assert.Equal(t, true, ns[0].Metadata["public"].(bool))
-
-	namespace = "test"
-	ns, err = assembleDestinationNamespaces(adapter, resources, namespace)
-	require.Nil(t, err)
-	assert.Equal(t, 1, len(ns))
-	assert.Equal(t, "test", ns[0].Name)
-	// TODO add test for merged metadata
-	// assert.Equal(t, true, ns[0].Metadata["public"].(bool))
-}
-
-func TestCreateNamespaces(t *testing.T) {
-	adapter := &fakedAdapter{}
-	namespaces := []*model.Namespace{
-		{
-			Name: "library",
-		},
-	}
-	err := createNamespaces(adapter, namespaces)
-	require.Nil(t, err)
-}
-
 func TestAssembleDestinationResources(t *testing.T) {
+	adapter := &fakedAdapter{}
 	resources := []*model.Resource{
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/hello-world",
-				Namespace: "library",
-				Vtags:     []string{"latest"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "hello-world",
+				},
+				Vtags: []string{"latest"},
 			},
 			Override: false,
 		},
 	}
-	registry := &model.Registry{}
-	namespace := "test"
-	override := true
-	res := assembleDestinationResources(resources, registry, namespace, override)
+	policy := &model.Policy{
+		DestRegistry:  &model.Registry{},
+		DestNamespace: "test",
+		Override:      true,
+	}
+	res, err := assembleDestinationResources(adapter, resources, policy)
+	require.Nil(t, err)
 	assert.Equal(t, 1, len(res))
 	assert.Equal(t, model.ResourceTypeChart, res[0].Type)
-	assert.Equal(t, "test/hello-world", res[0].Metadata.Name)
-	assert.Equal(t, namespace, res[0].Metadata.Namespace)
+	assert.Equal(t, "hello-world", res[0].Metadata.Repository.Name)
+	assert.Equal(t, "test", res[0].Metadata.Namespace.Name)
 	assert.Equal(t, 1, len(res[0].Metadata.Vtags))
 	assert.Equal(t, "latest", res[0].Metadata.Vtags[0])
 }
@@ -352,9 +352,13 @@ func TestPreprocess(t *testing.T) {
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Name:      "library/hello-world",
-				Namespace: "library",
-				Vtags:     []string{"latest"},
+				Namespace: &model.Namespace{
+					Name: "library",
+				},
+				Repository: &model.Repository{
+					Name: "hello-world",
+				},
+				Vtags: []string{"latest"},
 			},
 			Override: false,
 		},
@@ -363,9 +367,13 @@ func TestPreprocess(t *testing.T) {
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Name:      "test/hello-world",
-				Namespace: "test",
-				Vtags:     []string{"latest"},
+				Namespace: &model.Namespace{
+					Name: "test",
+				},
+				Repository: &model.Repository{
+					Name: "hello-world",
+				},
+				Vtags: []string{"latest"},
 			},
 			Override: false,
 		},

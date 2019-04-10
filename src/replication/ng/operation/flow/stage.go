@@ -134,7 +134,8 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 					match = false
 					break
 				}
-				m, err := util.Match(pattern, resource.Metadata.Name)
+				// TODO filter only the repository part?
+				m, err := util.Match(pattern, resource.Metadata.GetResourceName())
 				if err != nil {
 					return nil, err
 				}
@@ -181,73 +182,46 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 	return res, nil
 }
 
-// Assemble the namespaces that need to be created on the destination registry:
-// step 1: get the detail information for each of the source namespaces
-// step 2: if the destination namespace isn't specified in the policy, then the
-// same namespaces with the source will be returned. If it is specified, then
-// returns the specified one with the merged metadatas of all source namespaces
-func assembleDestinationNamespaces(srcAdapter adp.Adapter, srcResources []*model.Resource, dstNamespace string) ([]*model.Namespace, error) {
-	namespaces := []*model.Namespace{}
-	for _, srcResource := range srcResources {
-		namespace, err := srcAdapter.GetNamespace(srcResource.Metadata.Namespace)
-		if err != nil {
-			return nil, err
-		}
-		namespaces = append(namespaces, namespace)
-	}
-
-	if len(dstNamespace) != 0 {
-		namespaces = []*model.Namespace{
-			{
-				Name: dstNamespace,
-				// TODO merge the metadata
-				Metadata: map[string]interface{}{},
-			},
-		}
-	}
-
-	log.Debug("assemble the destination namespaces completed")
-	return namespaces, nil
-}
-
-// create the namespaces on the destination registry
-func createNamespaces(adapter adp.Adapter, namespaces []*model.Namespace) error {
-	for _, namespace := range namespaces {
-		if err := adapter.CreateNamespace(namespace); err != nil {
-			return fmt.Errorf("failed to create the namespace %s on the destination registry: %v", namespace.Name, err)
-		}
-		log.Debugf("namespace %s created on the destination registry", namespace.Name)
-	}
-	return nil
-}
-
-// assemble the destination resources by filling the registry, namespace and override properties
-func assembleDestinationResources(resources []*model.Resource,
-	registry *model.Registry, namespace string, override bool) []*model.Resource {
+// assemble the destination resources by filling the metadata, registry and override properties
+func assembleDestinationResources(adapter adp.Adapter, resources []*model.Resource,
+	policy *model.Policy) ([]*model.Resource, error) {
 	result := []*model.Resource{}
+	var namespace *model.Namespace
+	if len(policy.DestNamespace) > 0 {
+		namespace = &model.Namespace{
+			Name: policy.DestNamespace,
+		}
+	}
 	for _, resource := range resources {
+		metadata, err := adapter.ConvertResourceMetadata(resource.Metadata, namespace)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert the resource metadata of %s: %v", resource.Metadata.GetResourceName(), err)
+		}
 		res := &model.Resource{
-			Type: resource.Type,
-			Metadata: &model.ResourceMetadata{
-				Name:      resource.Metadata.Name,
-				Namespace: resource.Metadata.Namespace,
-				Vtags:     resource.Metadata.Vtags,
-			},
-			Registry:     registry,
+			Type:         resource.Type,
+			Metadata:     metadata,
+			Registry:     policy.DestRegistry,
 			ExtendedInfo: resource.ExtendedInfo,
 			Deleted:      resource.Deleted,
-			Override:     override,
-		}
-		// if the destination namespace is specified, use the specified one
-		if len(namespace) > 0 {
-			res.Metadata.Name = strings.Replace(resource.Metadata.Name,
-				resource.Metadata.Namespace, namespace, 1)
-			res.Metadata.Namespace = namespace
+			Override:     policy.Override,
 		}
 		result = append(result, res)
 	}
 	log.Debug("assemble the destination resources completed")
-	return result
+	return result, nil
+}
+
+// do the prepare work for pushing/uploading the resources: create the namespace or repository
+func prepareForPush(adapter adp.Adapter, resources []*model.Resource) error {
+	// TODO need to consider how to handle that both contains public/private namespace
+	for _, resource := range resources {
+		name := resource.Metadata.GetResourceName()
+		if err := adapter.PrepareForPush(resource); err != nil {
+			return fmt.Errorf("failed to do the prepare work for pushing/uploading %s: %v", name, err)
+		}
+		log.Debugf("the prepare work for pushing/uploading %s completed", name)
+	}
+	return nil
 }
 
 // preprocess
@@ -341,7 +315,7 @@ func getResourceName(res *model.Resource) string {
 		return ""
 	}
 	if len(meta.Vtags) == 0 {
-		return meta.Name
+		return meta.GetResourceName()
 	}
-	return meta.Name + ":[" + strings.Join(meta.Vtags, ",") + "]"
+	return meta.GetResourceName() + ":[" + strings.Join(meta.Vtags, ",") + "]"
 }

@@ -61,8 +61,8 @@ func TestFetchCharts(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, 2, len(resources))
 	assert.Equal(t, model.ResourceTypeChart, resources[0].Type)
-	assert.Equal(t, "library/harbor", resources[0].Metadata.Name)
-	assert.Equal(t, "library", resources[0].Metadata.Namespace)
+	assert.Equal(t, "harbor", resources[0].Metadata.Repository.Name)
+	assert.Equal(t, "library", resources[0].Metadata.Namespace.Name)
 	assert.Equal(t, 1, len(resources[0].Metadata.Vtags))
 	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
 }

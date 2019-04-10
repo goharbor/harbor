@@ -16,6 +16,7 @@ package harbor
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
@@ -56,9 +57,14 @@ func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*
 				Type:     model.ResourceTypeRepository,
 				Registry: a.registry,
 				Metadata: &model.ResourceMetadata{
-					Namespace: namespace,
-					Name:      repository.Name,
-					Vtags:     vtags,
+					Namespace: &model.Namespace{
+						Name: namespace,
+						// TODO filling the metadata
+					},
+					Repository: &model.Repository{
+						Name: strings.TrimPrefix(repository.Name, namespace+"/"),
+					},
+					Vtags: vtags,
 				},
 			})
 		}

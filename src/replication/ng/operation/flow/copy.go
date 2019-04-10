@@ -57,14 +57,13 @@ func (c *copyFlow) Run(interface{}) (int, error) {
 		log.Infof("no resources need to be replicated for the execution %d, skip", c.executionID)
 		return 0, nil
 	}
-	dstNamespaces, err := assembleDestinationNamespaces(srcAdapter, srcResources, c.policy.DestNamespace)
+	dstResources, err := assembleDestinationResources(dstAdapter, srcResources, c.policy)
 	if err != nil {
 		return 0, err
 	}
-	if err = createNamespaces(dstAdapter, dstNamespaces); err != nil {
+	if err = prepareForPush(dstAdapter, dstResources); err != nil {
 		return 0, err
 	}
-	dstResources := assembleDestinationResources(srcResources, c.policy.DestRegistry, c.policy.DestNamespace, c.policy.Override)
 	items, err := preprocess(c.scheduler, srcResources, dstResources)
 	if err != nil {
 		return 0, err

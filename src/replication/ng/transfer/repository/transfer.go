@@ -18,13 +18,12 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/goharbor/harbor/src/replication/ng/adapter"
-
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 	trans "github.com/goharbor/harbor/src/replication/ng/transfer"
 )
@@ -67,17 +66,17 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 	// delete the repository on destination registry
 	if dst.Deleted {
 		return t.delete(&repository{
-			repository: dst.Metadata.Name,
+			repository: dst.Metadata.GetResourceName(),
 			tags:       dst.Metadata.Vtags,
 		})
 	}
 
 	srcRepo := &repository{
-		repository: src.Metadata.Name,
+		repository: src.Metadata.GetResourceName(),
 		tags:       src.Metadata.Vtags,
 	}
 	dstRepo := &repository{
-		repository: dst.Metadata.Name,
+		repository: dst.Metadata.GetResourceName(),
 		tags:       dst.Metadata.Vtags,
 	}
 	// copy the repository from source registry to the destination
