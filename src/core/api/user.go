@@ -444,7 +444,7 @@ func (ua *UserAPI) getOIDCUserInfo() (*models.OIDCUser, error) {
 		return nil, err
 	}
 	o, err := dao.GetOIDCUserByUserID(ua.userID)
-	if err != nil {
+	if err != nil || o == nil {
 		return nil, err
 	}
 	if len(o.Secret) > 0 {

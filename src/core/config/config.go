@@ -80,11 +80,14 @@ func Init() error {
 	return nil
 }
 
-// InitWithSettings init config with predefined configs
-func InitWithSettings(cfgs map[string]interface{}) {
+// InitWithSettings init config with predefined configs, and optionally overwrite the keyprovider
+func InitWithSettings(cfgs map[string]interface{}, kp ...comcfg.KeyProvider) {
 	Init()
 	cfgMgr = comcfg.NewInMemoryManager()
 	cfgMgr.UpdateConfig(cfgs)
+	if len(kp) > 0 {
+		keyProvider = kp[0]
+	}
 }
 
 func initKeyProvider() {
