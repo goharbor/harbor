@@ -108,7 +108,7 @@ func (oc *OIDCController) Callback() {
 	tokenBytes, err := json.Marshal(token)
 	if err != nil {
 		oc.RenderFormatedError(http.StatusInternalServerError, err)
-
+		return
 	}
 	oc.SetSession(tokenKey, tokenBytes)
 

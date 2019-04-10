@@ -80,13 +80,16 @@ func (dm *defaultManager) SetSecret(userID int, secret string, token *Token) err
 // VerifySecret verifies the secret and the token associated with it, it tries to update the token in the DB if it's
 // refreshed during the verification
 func (dm *defaultManager) VerifySecret(ctx context.Context, userID int, secret string) error {
+	oidcUser, err := dao.GetOIDCUserByUserID(userID)
+	if err != nil {
+		return fmt.Errorf("failed to get oidc user info, error: %v", err)
+	}
+	if oidcUser == nil {
+		return fmt.Errorf("user is not onboarded as OIDC user")
+	}
 	key, err := dm.getEncryptKey()
 	if err != nil {
 		return fmt.Errorf("failed to load the key for encryption/decryption： %v", err)
-	}
-	oidcUser, err := dao.GetOIDCUserByUserID(userID)
-	if oidcUser == nil {
-		return fmt.Errorf("failed to get oidc user info, error: %v", err)
 	}
 	plainSecret, err := utils.ReversibleDecrypt(oidcUser.Secret, key)
 	if err != nil {

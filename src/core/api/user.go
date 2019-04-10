@@ -125,12 +125,14 @@ func (ua *UserAPI) Get() {
 		if ua.userID == ua.currentUserID {
 			u.HasAdminRole = ua.SecurityCtx.IsSysAdmin()
 		}
-		o, err := ua.getOIDCUserInfo()
-		if err != nil {
-			ua.RenderFormatedError(http.StatusInternalServerError, err)
-			return
+		if ua.AuthMode == common.OIDCAuth {
+			o, err := ua.getOIDCUserInfo()
+			if err != nil {
+				ua.RenderFormatedError(http.StatusInternalServerError, err)
+				return
+			}
+			u.OIDCUserMeta = o
 		}
-		u.OIDCUserMeta = o
 		ua.Data["json"] = u
 		ua.ServeJSON()
 		return
@@ -437,9 +439,6 @@ func (ua *UserAPI) ListUserPermissions() {
 }
 
 func (ua *UserAPI) getOIDCUserInfo() (*models.OIDCUser, error) {
-	if ua.AuthMode != common.OIDCAuth {
-		return nil, nil
-	}
 	key, err := config.SecretKey()
 	if err != nil {
 		return nil, err

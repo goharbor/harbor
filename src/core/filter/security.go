@@ -231,10 +231,11 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	user, err := dao.GetUser(models.User{
 		Username: username,
 	})
+	if err != nil {
+		log.Errorf("Failed to get user: %v", err)
+		return false
+	}
 	if user == nil {
-		if err != nil {
-			log.Errorf("Failed to get user: %v", err)
-		}
 		return false
 	}
 	if err := oidc.VerifySecret(ctx.Request.Context(), user.UserID, secret); err != nil {
