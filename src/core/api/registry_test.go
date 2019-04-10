@@ -15,24 +15,16 @@ import (
 
 var (
 	testRegistry = &model.Registry{
-		Name: "test1",
-		URL:  "https://127.0.0.1",
-		Type: "harbor",
-		Credential: &model.Credential{
-			Type:         model.CredentialTypeBasic,
-			AccessKey:    "admin",
-			AccessSecret: "Harbor12345",
-		},
+		Name:       "test1",
+		URL:        "https://goharbor.io",
+		Type:       "harbor",
+		Credential: nil,
 	}
 	testRegistry2 = &model.Registry{
-		Name: "test2",
-		URL:  "https://test2.harbor.io",
-		Type: "harbor",
-		Credential: &model.Credential{
-			Type:         model.CredentialTypeBasic,
-			AccessKey:    "admin",
-			AccessSecret: "Harbor12345",
-		},
+		Name:       "test2",
+		URL:        "https://goharbor.io",
+		Type:       "harbor",
+		Credential: nil,
 	}
 )
 
@@ -120,11 +112,16 @@ func (suite *RegistrySuite) TestPost() {
 func (suite *RegistrySuite) TestPing() {
 	assert := assert.New(suite.T())
 
+	code, err := suite.testAPI.RegistryPing(*admin, &pingReq{
+		ID: &suite.defaultRegistry.ID,
+	})
+	assert.Nil(err)
+	assert.Equal(http.StatusOK, code)
+
 	var id int64 = -1
-	code, err := suite.testAPI.RegistryPing(*admin,
-		&pingReq{
-			ID: &id,
-		})
+	code, err = suite.testAPI.RegistryPing(*admin, &pingReq{
+		ID: &id,
+	})
 	assert.Nil(err)
 	assert.Equal(http.StatusNotFound, code)
 
@@ -143,9 +140,9 @@ func (suite *RegistrySuite) TestRegistryPut() {
 	assert := assert.New(suite.T())
 
 	// Update as admin, should succeed
-	newKey := "NewKey"
+	description := "foobar"
 	updateReq := &models.RegistryUpdateRequest{
-		AccessKey: &newKey,
+		Description: &description,
 	}
 	code, err := suite.testAPI.RegistryUpdate(*admin, suite.defaultRegistry.ID, updateReq)
 	assert.Nil(err)
@@ -153,7 +150,7 @@ func (suite *RegistrySuite) TestRegistryPut() {
 	updated, code, err := suite.testAPI.RegistryGet(*admin, suite.defaultRegistry.ID)
 	assert.Nil(err)
 	assert.Equal(http.StatusOK, code)
-	assert.Equal("NewKey", updated.Credential.AccessKey)
+	assert.Equal("foobar", updated.Description)
 
 	// Update as user, should fail
 	code, err = suite.testAPI.RegistryUpdate(*testUser, suite.defaultRegistry.ID, updateReq)
