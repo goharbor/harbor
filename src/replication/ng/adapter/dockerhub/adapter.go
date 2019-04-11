@@ -3,6 +3,7 @@ package dockerhub
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -52,6 +53,12 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 		Type: model.RegistryTypeDockerHub,
 		SupportedResourceTypes: []model.ResourceType{
 			model.ResourceTypeRepository,
+		},
+		SupportedResourceFilters: []*model.FilterStyle{
+			{
+				Type:  model.FilterTypeName,
+				Style: model.FilterStyleTypeText,
+			},
 		},
 		SupportedTriggers: []model.TriggerType{
 			model.TriggerTypeManual,
@@ -176,4 +183,141 @@ func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 	return &model.Namespace{
 		Name: namespace,
 	}, nil
+}
+
+// FetchImages fetches images
+func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
+	var repos []Repo
+	nameFilter := a.getFilter(model.FilterTypeName, filters)
+	for _, ns := range namespaces {
+		name := ""
+		if nameFilter != nil {
+			v, ok := nameFilter.Value.(string)
+			if !ok {
+				msg := fmt.Sprintf("expect name filter value to be string, but got: %v", nameFilter.Value)
+				log.Error(msg)
+				return nil, errors.New(msg)
+			}
+			name = v
+		}
+
+		page := 1
+		pageSize := 100
+		for {
+			pageRepos, err := a.getRepos(ns, name, page, pageSize)
+			if err != nil {
+				return nil, fmt.Errorf("get repos for namespace '%s' from DockerHub error: %v", ns, err)
+			}
+			repos = append(repos, pageRepos.Repos...)
+
+			if len(pageRepos.Next) == 0 {
+				break
+			}
+			page++
+		}
+	}
+
+	log.Infof("%d repos found for namespaces: %v", len(repos), namespaces)
+	var resources []*model.Resource
+	// TODO(ChenDe): Get tags for repos in parallel
+	for _, repo := range repos {
+		var tags []string
+		page := 1
+		pageSize := 100
+		for {
+			pageTags, err := a.getTags(repo.Namespace, repo.Name, page, pageSize)
+			if err != nil {
+				return nil, fmt.Errorf("get tags for repo '%s/%s' from DockerHub error: %v", repo.Namespace, repo.Name, err)
+			}
+			for _, t := range pageTags.Tags {
+				tags = append(tags, t.Name)
+			}
+
+			if len(pageTags.Next) == 0 {
+				break
+			}
+			page++
+		}
+
+		// If the repo has no tags, skip it
+		if len(tags) == 0 {
+			continue
+		}
+
+		resources = append(resources, &model.Resource{
+			Type:     model.ResourceTypeRepository,
+			Registry: a.registry,
+			Metadata: &model.ResourceMetadata{
+				Namespace: repo.Namespace,
+				Name:      fmt.Sprintf("%s/%s", repo.Namespace, repo.Name),
+				Vtags:     tags,
+			},
+		})
+	}
+
+	return resources, nil
+}
+
+// getRepos gets a page of repos from DockerHub
+func (a *adapter) getRepos(namespace, name string, page, pageSize int) (*ReposResp, error) {
+	resp, err := a.client.Do(http.MethodGet, listReposPath(namespace, name, page, pageSize), nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode/100 != 2 {
+		log.Errorf("list repos error: %d -- %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("%d -- %s", resp.StatusCode, body)
+	}
+
+	repos := &ReposResp{}
+	err = json.Unmarshal(body, repos)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal repos list %s error: %v", string(body), err)
+	}
+
+	return repos, nil
+}
+
+// getTags gets a page of tags for a repo from DockerHub
+func (a *adapter) getTags(namespace, repo string, page, pageSize int) (*TagsResp, error) {
+	resp, err := a.client.Do(http.MethodGet, listTagsPath(namespace, repo, page, pageSize), nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode/100 != 2 {
+		log.Errorf("list tags error: %d -- %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("%d -- %s", resp.StatusCode, body)
+	}
+
+	tags := &TagsResp{}
+	err = json.Unmarshal(body, tags)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal tags list %s error: %v", string(body), err)
+	}
+
+	return tags, nil
+}
+
+// getFilter gets specific type filter from filters list.
+func (a *adapter) getFilter(filterType model.FilterType, filters []*model.Filter) *model.Filter {
+	for _, f := range filters {
+		if f.Type == filterType {
+			return f
+		}
+	}
+	return nil
 }

@@ -317,5 +317,10 @@ func getResourceName(res *model.Resource) string {
 	if len(meta.Vtags) == 0 {
 		return meta.GetResourceName()
 	}
-	return meta.GetResourceName() + ":[" + strings.Join(meta.Vtags, ",") + "]"
+
+	if len(meta.Vtags) <= 5 {
+		return meta.GetResourceName() + ":[" + strings.Join(meta.Vtags, ",") + "]"
+	}
+
+	return fmt.Sprintf("%s:[%s ... %d in total]", meta.GetResourceName(), strings.Join(meta.Vtags[:5], ","), len(meta.Vtags))
 }

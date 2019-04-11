@@ -17,12 +17,12 @@ const (
 
 func getAdapter(t *testing.T) adp.Adapter {
 	assert := assert.New(t)
-	factory, err := adp.GetFactory(registryTypeDockerHub)
+	factory, err := adp.GetFactory(model.RegistryTypeDockerHub)
 	assert.Nil(err)
 	assert.NotNil(factory)
 
 	adapter, err := factory(&model.Registry{
-		Type: registryTypeDockerHub,
+		Type: model.RegistryTypeDockerHub,
 		Credential: &model.Credential{
 			AccessKey:    testUser,
 			AccessSecret: testPassword,
