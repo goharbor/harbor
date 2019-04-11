@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package scheduler
+package ng
 
 import (
+	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/goharbor/harbor/src/replication/ng/model"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
@@ -57,12 +60,17 @@ func (s *Scheduler) Run(ctx env.JobContext, params map[string]interface{}) error
 	logger := ctx.GetLogger()
 
 	url := params["url"].(string)
-	data := params["data"]
+	url = fmt.Sprintf("%s/api/replication/executions?trigger=%s", url, model.TriggerTypeScheduled)
+	policyID := (int64)(params["policy_id"].(float64))
 	cred := auth.NewSecretAuthorizer(os.Getenv("JOBSERVICE_SECRET"))
 	client := common_http.NewClient(&http.Client{
 		Transport: reg.GetHTTPTransport(true),
 	}, cred)
-	if err := client.Post(url, data); err != nil {
+	if err := client.Post(url, struct {
+		PolicyID int64 `json:"policy_id"`
+	}{
+		PolicyID: policyID,
+	}); err != nil {
 		logger.Errorf("failed to run the schedule job: %v", err)
 		return err
 	}

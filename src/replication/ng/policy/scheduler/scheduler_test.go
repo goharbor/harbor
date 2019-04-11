@@ -142,9 +142,9 @@ func TestSchedule(t *testing.T) {
 	require.Equal(t, 1, len(sjs))
 	assert.Equal(t, uuid, sjs[0].JobID)
 
-	execution, ok := js.jobData.Parameters["data"].(*rep_models.Execution)
+	policyID, ok := js.jobData.Parameters["policy_id"].(int64)
 	require.True(t, ok)
-	assert.Equal(t, policyID, execution.PolicyID)
+	assert.Equal(t, policyID, policyID)
 }
 
 func TestUnschedule(t *testing.T) {
