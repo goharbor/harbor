@@ -125,10 +125,24 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	return info, nil
 }
 
-// TODO implement the function
-func (a *adapter) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
-	return nil, nil
+func (a *adapter) ListNamespaces(npQuery *model.NamespaceQuery) ([]*model.Namespace, error) {
+	var nps []*model.Namespace
+	projects, err := a.getProjects(npQuery.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pro := range projects {
+		nps = append(nps, &model.Namespace{
+			Name:     pro.Name,
+			Metadata: pro.Metadata,
+		})
+	}
+
+	return nps, nil
+
 }
+
 func (a *adapter) ConvertResourceMetadata(metadata *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
 	if metadata == nil {
 		return nil, errors.New("the metadata cannot be null")
@@ -237,11 +251,19 @@ type project struct {
 	Metadata map[string]interface{} `json:"metadata"`
 }
 
-func (a *adapter) getProject(name string) (*project, error) {
-	// TODO need an API to exact match project by name
+func (a *adapter) getProjects(name string) ([]*project, error) {
 	projects := []*project{}
 	url := fmt.Sprintf("%s/api/projects?name=%s&page=1&page_size=1000", a.coreServiceURL, name)
 	if err := a.client.Get(url, &projects); err != nil {
+		return nil, err
+	}
+	return projects, nil
+}
+
+func (a *adapter) getProject(name string) (*project, error) {
+	// TODO need an API to exact match project by name
+	projects, err := a.getProjects(name)
+	if err != nil {
 		return nil, err
 	}
 
