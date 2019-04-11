@@ -43,3 +43,5 @@ Test Case - List Helm Charts
     Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 Test Case - Assign Sys Admin
     Harbor API Test  ./tests/apitests/python/test_assign_sys_admin.py
+Test Case - Retag Image
+    Harbor API Test  ./tests/apitests/python/test_retag.py
