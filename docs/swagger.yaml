@@ -3840,6 +3840,30 @@ definitions:
       update_time:
         type: string
         description: The update time of the policy.
+  PingRegistry:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of the registry
+      type:
+        type: string
+        description: Type of the registry, e.g. 'harbor'.
+      url:
+        type: string
+        description: The registry address URL string.
+      credential_type:
+        type: string
+        description: Credential type of the registry, e.g. 'basic'.
+      access_key:
+        type: string
+        description: The registry access key.
+      access_secret:
+        type: string
+        description: The registry access secret.
+      insecure:
+        type: boolean
+        description: Whether or not the certificate will be verified when Harbor tries to access the server.
   PutRegistry:
     type: object
     properties:

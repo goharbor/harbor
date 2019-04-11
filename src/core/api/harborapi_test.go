@@ -1176,7 +1176,17 @@ func (a testapi) RegistryCreate(authInfo usrInfo, registry *model.Registry) (int
 	return code, err
 }
 
-func (a testapi) RegistryPing(authInfo usrInfo, registry *model.Registry) (int, error) {
+type pingReq struct {
+	ID             *int64  `json:"id"`
+	Type           *string `json:"type"`
+	URL            *string `json:"url"`
+	CredentialType *string `json:"credential_type"`
+	AccessKey      *string `json:"access_key"`
+	AccessSecret   *string `json:"access_secret"`
+	Insecure       *bool   `json:"insecure"`
+}
+
+func (a testapi) RegistryPing(authInfo usrInfo, registry *pingReq) (int, error) {
 	_sling := sling.New().Base(a.basePath).Post("/api/registries/ping").BodyJSON(registry)
 	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return code, err
