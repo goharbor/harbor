@@ -51,6 +51,19 @@
                     </span>
                     </label>
                 </div>
+                <div class="form-group form-group-override" *ngIf="account.oidc_user_meta">
+                    <label for="cli_password" aria-haspopup="true" class="form-group-label-override"><span class="label-inner-text">{{'PROFILE.CLI_PASSWORD' | translate}}</span>
+                        <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
+                                <span> {{'PROFILE.CLI_PASSWORD_TIP' | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip></label>
+                    <input type="password" name="cli_password" disabled [ngModel]="'account.oidc_user_meta.secret'" size="33">
+                    <div class="rename-tool">
+                        <hbr-copy-input #copyInput (onCopySuccess)="onSuccess($event)" (onCopyError)="onCpError($event)"  iconMode="true" defaultValue="{{account.oidc_user_meta.secret}}"></hbr-copy-input>
+                    </div>
+                </div>
             </section>
         </form>
     </div>

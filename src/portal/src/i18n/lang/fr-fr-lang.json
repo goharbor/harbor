@@ -88,7 +88,11 @@
         "ADMIN_RENAME_BUTTON": "Change username",
         "ADMIN_RENAME_TIP": "Select the button in order to change the username to \"admin@harbor.local\". This operation can not be undone.",
         "RENAME_SUCCESS": "Rename success!",
-        "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone."
+        "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone.",
+        "CLI_PASSWORD": "CLI secret",
+        "CLI_PASSWORD_TIP": "vous pouvez utiliser ce cli secret comme mot de passe quand utiliser docker / barre l'accès à harbor.",
+        "COPY_SUCCESS": "copie de succès",
+        "COPY_ERROR": "copie a échoué"
     },
     "CHANGE_PWD": {
         "TITLE": "Modifier le mot de passe",
