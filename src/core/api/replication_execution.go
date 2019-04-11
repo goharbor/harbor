@@ -19,12 +19,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/replication/ng/model"
-
-	"github.com/goharbor/harbor/src/replication/ng/event"
-
 	"github.com/goharbor/harbor/src/replication/ng"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
+	"github.com/goharbor/harbor/src/replication/ng/event"
+	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 // ReplicationOperationAPI handles the replication operation requests
@@ -111,12 +109,14 @@ func (r *ReplicationOperationAPI) CreateExecution() {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get policy %d: %v", execution.PolicyID, err))
 		return
 	}
-
 	if policy == nil {
 		r.HandleNotFound(fmt.Sprintf("policy %d not found", execution.PolicyID))
 		return
 	}
-
+	if !policy.Enabled {
+		r.HandleBadRequest(fmt.Sprintf("the policy %d is disabled", execution.PolicyID))
+		return
+	}
 	if err = event.PopulateRegistries(ng.RegistryMgr, policy); err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to populate registries for policy %d: %v", execution.PolicyID, err))
 		return

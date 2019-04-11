@@ -376,6 +376,7 @@ func process(info *model.RegistryInfo) *model.RegistryInfo {
 	in := &model.RegistryInfo{
 		Type:              info.Type,
 		Description:       info.Description,
+		SupportNamespace:  info.SupportNamespace,
 		SupportedTriggers: info.SupportedTriggers,
 	}
 	filters := []*model.FilterStyle{}

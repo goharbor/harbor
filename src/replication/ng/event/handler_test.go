@@ -99,7 +99,7 @@ func (f *fakedPolicyController) Get(id int64) (*model.Policy, error) {
 func (f *fakedPolicyController) GetByName(name string) (*model.Policy, error) {
 	return nil, nil
 }
-func (f *fakedPolicyController) Update(*model.Policy, ...string) error {
+func (f *fakedPolicyController) Update(*model.Policy) error {
 	return nil
 }
 func (f *fakedPolicyController) Remove(int64) error {

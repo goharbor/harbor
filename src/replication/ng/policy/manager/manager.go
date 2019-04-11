@@ -190,13 +190,13 @@ func (m *DefaultManager) GetByName(name string) (*model.Policy, error) {
 }
 
 // Update Update the specified policy
-func (m *DefaultManager) Update(policy *model.Policy, props ...string) error {
+func (m *DefaultManager) Update(policy *model.Policy) error {
 	updatePolicy, err := convertToPersistModel(policy)
 	if err != nil {
 		return err
 	}
 
-	return dao.UpdateRepPolicy(updatePolicy, props...)
+	return dao.UpdateRepPolicy(updatePolicy)
 }
 
 // Remove Remove the specified policy
