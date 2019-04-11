@@ -100,7 +100,11 @@
         "ADMIN_RENAME_TIP": "单击将用户名改为 \"admin@harbor.local\", 注意这个操作是无法撤销的",
         "RENAME_SUCCESS": "用户名更改成功！",
         "ADMIN_RENAME_BUTTON": "更改用户名",
-        "RENAME_CONFIRM_INFO": "更改用户名为admin@harbor.local是无法撤销的, 你确定更改吗?"
+        "RENAME_CONFIRM_INFO": "更改用户名为admin@harbor.local是无法撤销的, 你确定更改吗?",
+        "CLI_PASSWORD": "CLI密码",
+        "CLI_PASSWORD_TIP": "使用docker/helm cli访问Harbor时，可以使用此cli密码作为密码。",
+        "COPY_SUCCESS": "复制成功",
+        "COPY_ERROR": "复制失败"
     },
     "CHANGE_PWD": {
         "TITLE": "修改密码",
