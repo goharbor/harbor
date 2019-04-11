@@ -12,6 +12,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	adp "github.com/goharbor/harbor/src/replication/ng/adapter"
 	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/ng/util"
 )
 
 func init() {
@@ -57,6 +58,10 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 		SupportedResourceFilters: []*model.FilterStyle{
 			{
 				Type:  model.FilterTypeName,
+				Style: model.FilterStyleTypeText,
+			},
+			{
+				Type:  model.FilterTypeTag,
 				Style: model.FilterStyleTypeText,
 			},
 		},
@@ -188,23 +193,20 @@ func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 // FetchImages fetches images
 func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
 	var repos []Repo
-	nameFilter := a.getFilter(model.FilterTypeName, filters)
-	for _, ns := range namespaces {
-		name := ""
-		if nameFilter != nil {
-			v, ok := nameFilter.Value.(string)
-			if !ok {
-				msg := fmt.Sprintf("expect name filter value to be string, but got: %v", nameFilter.Value)
-				log.Error(msg)
-				return nil, errors.New(msg)
-			}
-			name = v
-		}
+	nameFilter, err := a.getStringFilterValue(model.FilterTypeName, filters)
+	if err != nil {
+		return nil, err
+	}
+	tagFilter, err := a.getStringFilterValue(model.FilterTypeTag, filters)
+	if err != nil {
+		return nil, err
+	}
 
+	for _, ns := range namespaces {
 		page := 1
 		pageSize := 100
 		for {
-			pageRepos, err := a.getRepos(ns, name, page, pageSize)
+			pageRepos, err := a.getRepos(ns, "", page, pageSize)
 			if err != nil {
 				return nil, fmt.Errorf("get repos for namespace '%s' from DockerHub error: %v", ns, err)
 			}
@@ -221,6 +223,18 @@ func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*
 	var resources []*model.Resource
 	// TODO(ChenDe): Get tags for repos in parallel
 	for _, repo := range repos {
+		// If name filter set, skip repos that don't match the filter pattern.
+		if len(nameFilter) != 0 {
+			m, err := util.Match(nameFilter, repo.Name)
+			if err != nil {
+				return nil, fmt.Errorf("match repo name '%s' against pattern '%s' error: %v", repo.Name, nameFilter, err)
+			}
+
+			if !m {
+				continue
+			}
+		}
+
 		var tags []string
 		page := 1
 		pageSize := 100
@@ -230,6 +244,17 @@ func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*
 				return nil, fmt.Errorf("get tags for repo '%s/%s' from DockerHub error: %v", repo.Namespace, repo.Name, err)
 			}
 			for _, t := range pageTags.Tags {
+				// If tag filter set, skip tags that don't match the filter pattern.
+				if len(tagFilter) != 0 {
+					m, err := util.Match(tagFilter, t.Name)
+					if err != nil {
+						return nil, fmt.Errorf("match tag name '%s' against pattern '%s' error: %v", t.Name, tagFilter, err)
+					}
+
+					if !m {
+						continue
+					}
+				}
 				tags = append(tags, t.Name)
 			}
 
@@ -312,12 +337,18 @@ func (a *adapter) getTags(namespace, repo string, page, pageSize int) (*TagsResp
 	return tags, nil
 }
 
-// getFilter gets specific type filter from filters list.
-func (a *adapter) getFilter(filterType model.FilterType, filters []*model.Filter) *model.Filter {
+// getFilter gets specific type filter value from filters list.
+func (a *adapter) getStringFilterValue(filterType model.FilterType, filters []*model.Filter) (string, error) {
 	for _, f := range filters {
 		if f.Type == filterType {
-			return f
+			v, ok := f.Value.(string)
+			if !ok {
+				msg := fmt.Sprintf("expect filter value to be string, but got: %v", f.Value)
+				log.Error(msg)
+				return "", errors.New(msg)
+			}
+			return v, nil
 		}
 	}
-	return nil
+	return "", nil
 }
