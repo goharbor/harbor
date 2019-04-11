@@ -18,7 +18,6 @@ import { CoreModule } from '../core/core.module';
 import { SharedModule } from '../shared/shared.module';
 import { RepositoryModule } from '../repository/repository.module';
 
-import { SignInComponent } from './sign-in/sign-in.component';
 import { PasswordSettingComponent } from './password-setting/password-setting.component';
 import { AccountSettingsModalComponent } from './account-settings/account-settings-modal.component';
 import { SignUpComponent } from './sign-up/sign-up.component';
@@ -36,7 +35,6 @@ import { PasswordSettingService } from './password-setting/password-setting.serv
     RepositoryModule
   ],
   declarations: [
-    SignInComponent,
     PasswordSettingComponent,
     AccountSettingsModalComponent,
     SignUpComponent,
@@ -44,10 +42,11 @@ import { PasswordSettingService } from './password-setting/password-setting.serv
     ResetPasswordComponent,
     SignUpPageComponent],
   exports: [
-    SignInComponent,
     PasswordSettingComponent,
     AccountSettingsModalComponent,
+    ForgotPasswordComponent,
     ResetPasswordComponent,
+    SignUpComponent,
     SignUpPageComponent],
 
   providers: [PasswordSettingService]

@@ -46,7 +46,7 @@ import { SearchTriggerService } from './global-search/search-trigger.service';
     HarborShellComponent,
     SearchResultComponent,
   ],
-  exports: [ HarborShellComponent ],
+  exports: [ HarborShellComponent, NavigatorComponent, SearchResultComponent ],
   providers: [SearchTriggerService]
 })
 export class BaseModule {
