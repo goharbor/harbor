@@ -16,6 +16,7 @@ package oidc
 
 import (
 	"github.com/goharbor/harbor/src/common"
+	config2 "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
@@ -36,8 +37,9 @@ func TestMain(m *testing.M) {
 		common.OIDCClientSecret:   "secret",
 		common.ExtEndpoint:        "https://harbor.test",
 	}
+	kp := &config2.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
 
-	config.InitWithSettings(conf)
+	config.InitWithSettings(conf, kp)
 
 	result := m.Run()
 	if result != 0 {

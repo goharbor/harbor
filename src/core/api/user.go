@@ -118,11 +118,20 @@ func (ua *UserAPI) Get() {
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
 			log.Errorf("Error occurred in GetUser, error: %v", err)
-			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+			ua.RenderFormatedError(http.StatusInternalServerError, err)
+			return
 		}
 		u.Password = ""
 		if ua.userID == ua.currentUserID {
 			u.HasAdminRole = ua.SecurityCtx.IsSysAdmin()
+		}
+		if ua.AuthMode == common.OIDCAuth {
+			o, err := ua.getOIDCUserInfo()
+			if err != nil {
+				ua.RenderFormatedError(http.StatusInternalServerError, err)
+				return
+			}
+			u.OIDCUserMeta = o
 		}
 		ua.Data["json"] = u
 		ua.ServeJSON()
@@ -427,6 +436,25 @@ func (ua *UserAPI) ListUserPermissions() {
 	ua.Data["json"] = results
 	ua.ServeJSON()
 	return
+}
+
+func (ua *UserAPI) getOIDCUserInfo() (*models.OIDCUser, error) {
+	key, err := config.SecretKey()
+	if err != nil {
+		return nil, err
+	}
+	o, err := dao.GetOIDCUserByUserID(ua.userID)
+	if err != nil || o == nil {
+		return nil, err
+	}
+	if len(o.Secret) > 0 {
+		p, err := utils.ReversibleDecrypt(o.Secret, key)
+		if err != nil {
+			return nil, err
+		}
+		o.PlainSecret = p
+	}
+	return o, nil
 }
 
 // modifiable returns whether the modify is allowed based on current auth mode and context

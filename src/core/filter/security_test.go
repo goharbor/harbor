@@ -16,6 +16,8 @@ package filter
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/utils/oidc"
+	"github.com/stretchr/testify/require"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -28,6 +30,7 @@ import (
 	"github.com/astaxie/beego"
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/session"
+	config2 "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	commonsecret "github.com/goharbor/harbor/src/common/secret"
@@ -118,6 +121,53 @@ func TestSecretReqCtxModifier(t *testing.T) {
 	assert.NotNil(t, projectManager(ctx))
 }
 
+func TestOIDCCliReqCtxModifier(t *testing.T) {
+	conf := map[string]interface{}{
+		common.AUTHMode:           common.OIDCAuth,
+		common.OIDCName:           "test",
+		common.OIDCEndpoint:       "https://accounts.google.com",
+		common.OIDCSkipCertVerify: "false",
+		common.OIDCScope:          "openid, profile, offline_access",
+		common.OIDCCLientID:       "client",
+		common.OIDCClientSecret:   "secret",
+		common.ExtEndpoint:        "https://harbor.test",
+	}
+
+	kp := &config2.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
+	config.InitWithSettings(conf, kp)
+
+	modifier := &oidcCliReqCtxModifier{}
+	req1, err := http.NewRequest(http.MethodGet,
+		"http://127.0.0.1/api/projects/", nil)
+	require.Nil(t, err)
+	ctx1, err := newContext(req1)
+	require.Nil(t, err)
+	assert.False(t, modifier.Modify(ctx1))
+	req2, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
+	require.Nil(t, err)
+	ctx2, err := newContext(req2)
+	require.Nil(t, err)
+	assert.False(t, modifier.Modify(ctx2))
+	username := "oidcModiferTester"
+	password := "oidcSecret"
+	u := &models.User{
+		Username: username,
+		Email:    "testtest@test.org",
+		Password: "12345678",
+	}
+	id, err := dao.Register(*u)
+	require.Nil(t, err)
+	oidc.SetHardcodeVerifierForTest(password)
+	req3, err := http.NewRequest(http.MethodGet, "http://127.0.0.1/service/token", nil)
+	require.Nil(t, err)
+	req3.SetBasicAuth(username, password)
+	ctx3, err := newContext(req3)
+	assert.True(t, modifier.Modify(ctx3))
+	o := dao.GetOrmer()
+	_, err = o.Delete(&models.User{UserID: int(id)})
+	assert.Nil(t, err)
+}
+
 func TestRobotReqCtxModifier(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)
@@ -135,7 +185,7 @@ func TestRobotReqCtxModifier(t *testing.T) {
 	assert.False(t, modified)
 }
 
-func TestAutoProxyReqCtxModifier(t *testing.T) {
+func TestAuthProxyReqCtxModifier(t *testing.T) {
 
 	server, err := fiter_test.NewAuthProxyTestServer()
 	assert.Nil(t, err)

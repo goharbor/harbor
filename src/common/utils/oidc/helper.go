@@ -90,16 +90,7 @@ func (p *providerHelper) create() error {
 		return errors.New("the configuration is not loaded")
 	}
 	s := p.setting.Load().(models.OIDCSetting)
-	var client *http.Client
-	if s.SkipCertVerify {
-		client = &http.Client{
-			Transport: insecureTransport,
-		}
-	} else {
-		client = &http.Client{}
-	}
-	ctx := context.Background()
-	gooidc.ClientContext(ctx, client)
+	ctx := clientCtx(context.Background(), s.SkipCertVerify)
 	provider, err := gooidc.NewProvider(ctx, s.Endpoint)
 	if err != nil {
 		return fmt.Errorf("failed to create OIDC provider, error: %v", err)
@@ -170,6 +161,8 @@ func ExchangeToken(ctx context.Context, code string) (*Token, error) {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
 		return nil, err
 	}
+	setting := provider.setting.Load().(models.OIDCSetting)
+	ctx = clientCtx(ctx, setting.SkipCertVerify)
 	oauthToken, err := oauth.Exchange(ctx, code)
 	if err != nil {
 		return nil, err
@@ -184,5 +177,36 @@ func VerifyToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, error
 		return nil, err
 	}
 	verifier := p.Verifier(&gooidc.Config{ClientID: provider.setting.Load().(models.OIDCSetting).ClientID})
+	setting := provider.setting.Load().(models.OIDCSetting)
+	ctx = clientCtx(ctx, setting.SkipCertVerify)
 	return verifier.Verify(ctx, rawIDToken)
+}
+
+func clientCtx(ctx context.Context, skipCertVerify bool) context.Context {
+	var client *http.Client
+	if skipCertVerify {
+		client = &http.Client{
+			Transport: insecureTransport,
+		}
+	} else {
+		client = &http.Client{}
+	}
+	return gooidc.ClientContext(ctx, client)
+}
+
+// RefreshToken refreshes the token passed in parameter, and return the new token.
+func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
+	oauth, err := getOauthConf()
+	if err != nil {
+		log.Errorf("Failed to get OAuth configuration, error: %v", err)
+		return nil, err
+	}
+	setting := provider.setting.Load().(models.OIDCSetting)
+	ctx = clientCtx(ctx, setting.SkipCertVerify)
+	ts := oauth.TokenSource(ctx, token.Token)
+	t, err := ts.Token()
+	if err != nil {
+		return nil, err
+	}
+	return &Token{Token: t, IDToken: t.Extra("id_token").(string)}, nil
 }

@@ -17,6 +17,7 @@ package filter
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"net/http"
 	"regexp"
 
@@ -110,6 +111,7 @@ func Init() {
 	// standalone
 	reqCtxModifiers = []ReqCtxModifier{
 		&secretReqCtxModifier{config.SecretStore},
+		&oidcCliReqCtxModifier{},
 		&authProxyReqCtxModifier{},
 		&robotAuthReqCtxModifier{},
 		&basicAuthReqCtxModifier{},
@@ -202,6 +204,47 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	pm := config.GlobalProjectMgr
 	securCtx := robotCtx.NewSecurityContext(robot, pm, htk.Claims.(*token.RobotClaims).Access)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	return true
+}
+
+type oidcCliReqCtxModifier struct{}
+
+func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	path := ctx.Request.URL.Path
+	if path != "/service/token" || strings.HasPrefix(path, "/chartrepo/") {
+		log.Debug("OIDC CLI modifer only handles request by docker CLI or helm CLI")
+		return false
+	}
+	authMode, err := config.AuthMode()
+	if err != nil {
+		log.Errorf("fail to get auth mode, %v", err)
+		return false
+	}
+	if authMode != common.OIDCAuth {
+		return false
+	}
+	username, secret, ok := ctx.Request.BasicAuth()
+	if !ok {
+		return false
+	}
+
+	user, err := dao.GetUser(models.User{
+		Username: username,
+	})
+	if err != nil {
+		log.Errorf("Failed to get user: %v", err)
+		return false
+	}
+	if user == nil {
+		return false
+	}
+	if err := oidc.VerifySecret(ctx.Request.Context(), user.UserID, secret); err != nil {
+		log.Errorf("Failed to verify secret: %v", err)
+		return false
+	}
+	pm := config.GlobalProjectMgr
+	sc := local.NewSecurityContext(user, pm)
+	setSecurCtxAndPM(ctx.Request, sc, pm)
 	return true
 }
 
@@ -307,7 +350,6 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		return false
 	}
 
-	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context for auth proxy...")
 	securCtx := local.NewSecurityContext(user, pm)
