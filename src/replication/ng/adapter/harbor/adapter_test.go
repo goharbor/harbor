@@ -72,7 +72,36 @@ func TestInfo(t *testing.T) {
 }
 
 func TestListNamespaces(t *testing.T) {
-	// TODO
+	// project exists
+	server := test.NewServer(&test.RequestHandlerMapping{
+		Method:  http.MethodGet,
+		Pattern: "/api/projects",
+		Handler: func(w http.ResponseWriter, r *http.Request) {
+			data := `[{
+				"name": "library",
+				"metadata": {"public":true}
+
+			},{
+				"name": "library1",
+				"metadata": {"public":true}
+
+			}]`
+			w.Write([]byte(data))
+		},
+	})
+	defer server.Close()
+	registry := &model.Registry{
+		URL: server.URL,
+	}
+	adapter := newAdapter(registry)
+	npQuery := &model.NamespaceQuery{
+		Name: "lib",
+	}
+	namespace, err := adapter.ListNamespaces(npQuery)
+	require.Nil(t, err)
+	assert.Equal(t, 2, len(namespace))
+	assert.Equal(t, "library", namespace[0].Name)
+	assert.True(t, namespace[0].Metadata["public"].(bool))
 }
 
 func TestPrepareForPush(t *testing.T) {
