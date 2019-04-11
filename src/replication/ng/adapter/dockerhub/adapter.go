@@ -51,7 +51,8 @@ var _ adp.Adapter = (*adapter)(nil)
 // Info returns information of the registry
 func (a *adapter) Info() (*model.RegistryInfo, error) {
 	return &model.RegistryInfo{
-		Type: model.RegistryTypeDockerHub,
+		Type:             model.RegistryTypeDockerHub,
+		SupportNamespace: true,
 		SupportedResourceTypes: []model.ResourceType{
 			model.ResourceTypeRepository,
 		},
@@ -67,13 +68,54 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 		},
 		SupportedTriggers: []model.TriggerType{
 			model.TriggerTypeManual,
+			model.TriggerTypeScheduled,
 		},
 	}, nil
 }
 
-// HealthCheck checks health status of the registry
-func (a *adapter) HealthCheck() (model.HealthStatus, error) {
-	return model.Healthy, nil
+// ValidResource checks whether a resource is valid, in DockerHub, multi-parts repo name like 'a/b/c' is not supported.
+func (a *adapter) ValidResource(resource *model.Resource) bool {
+	if resource == nil || resource.Metadata == nil || resource.Metadata.Repository == nil {
+		return false
+	}
+
+	if len(strings.Split(resource.Metadata.Repository.Name, "/")) != 1 {
+		return false
+	}
+
+	return true
+}
+
+// ConvertResourceMetadata converts the namespace and repository part of the resource metadata
+// to the one that the adapter can handle
+func (a *adapter) ConvertResourceMetadata(meta *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
+	return meta, nil
+}
+
+// PrepareForPush does the prepare work that needed for pushing/uploading the resource
+// eg: create the namespace or repository
+func (a *adapter) PrepareForPush(resource *model.Resource) error {
+	if resource == nil {
+		return errors.New("the resource cannot be null")
+	}
+	if resource.Metadata == nil {
+		return errors.New("the metadata of resource cannot be null")
+	}
+	if resource.Metadata.Namespace == nil {
+		return errors.New("the namespace of resource cannot be null")
+	}
+	if len(resource.Metadata.Namespace.Name) == 0 {
+		return errors.New("the name of the namespace cannot be null")
+	}
+
+	err := a.CreateNamespace(&model.Namespace{
+		Name: resource.Metadata.Namespace.Name,
+	})
+	if err != nil {
+		return fmt.Errorf("create namespace '%s' in DockerHub error: %v", resource.Metadata.Namespace.Name, err)
+	}
+
+	return nil
 }
 
 // ListNamespaces lists namespaces from DockerHub with the provided query conditions.
@@ -273,9 +315,13 @@ func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*
 			Type:     model.ResourceTypeRepository,
 			Registry: a.registry,
 			Metadata: &model.ResourceMetadata{
-				Namespace: repo.Namespace,
-				Name:      fmt.Sprintf("%s/%s", repo.Namespace, repo.Name),
-				Vtags:     tags,
+				Namespace: &model.Namespace{
+					Name: repo.Namespace,
+				},
+				Repository: &model.Repository{
+					Name: repo.Name,
+				},
+				Vtags: tags,
 			},
 		})
 	}

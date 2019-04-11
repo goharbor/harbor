@@ -118,6 +118,11 @@ func (adapter Adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceM
 	return metadata, nil
 }
 
+// ValidResource ...
+func (adapter Adapter) ValidResource(*model.Resource) bool {
+	return true
+}
+
 // PrepareForPush prepare for push to Huawei SWR
 func (adapter Adapter) PrepareForPush(resource *model.Resource) error {
 

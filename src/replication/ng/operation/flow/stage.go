@@ -241,6 +241,7 @@ func createTasks(mgr execution.Manager, executionID int64, items []*scheduler.Sc
 		if item.DstResource.Deleted {
 			operation = "deletion"
 		}
+
 		task := &models.Task{
 			ExecutionID:  executionID,
 			Status:       models.TaskStatusInitialized,
@@ -249,6 +250,12 @@ func createTasks(mgr execution.Manager, executionID int64, items []*scheduler.Sc
 			DstResource:  getResourceName(item.DstResource),
 			Operation:    operation,
 		}
+
+		if item.DstResource.Invalid {
+			task.Status = models.TaskStatusFailed
+			task.EndTime = time.Now()
+		}
+
 		id, err := mgr.CreateTask(task)
 		if err != nil {
 			// if failed to create the task for one of the items,

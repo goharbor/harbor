@@ -48,21 +48,3 @@ func TestListNamespaces(t *testing.T) {
 		fmt.Println(ns.Name)
 	}
 }
-
-func TestCreateNamespace(t *testing.T) {
-	if testUser == "" {
-		return
-	}
-
-	assert := assert.New(t)
-	adapter := getAdapter(t)
-
-	err := adapter.CreateNamespace(&model.Namespace{
-		Name: "harborns",
-		Metadata: map[string]interface{}{
-			metadataKeyFullName: "harbor namespace",
-			metadataKeyCompany:  "harbor",
-		},
-	})
-	assert.Nil(err)
-}

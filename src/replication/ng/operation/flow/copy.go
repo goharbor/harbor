@@ -61,6 +61,13 @@ func (c *copyFlow) Run(interface{}) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
+	for i := range dstResources {
+		if !dstAdapter.ValidResource(dstResources[i]) {
+			dstResources[i].Invalid = true
+		}
+	}
+
 	if err = prepareForPush(dstAdapter, dstResources); err != nil {
 		return 0, err
 	}
@@ -71,7 +78,14 @@ func (c *copyFlow) Run(interface{}) (int, error) {
 	if err = createTasks(c.executionMgr, c.executionID, items); err != nil {
 		return 0, err
 	}
-	return schedule(c.scheduler, c.executionMgr, items)
+
+	var filtered []*scheduler.ScheduleItem
+	for _, item := range items {
+		if !item.DstResource.Invalid {
+			filtered = append(filtered, item)
+		}
+	}
+	return schedule(c.scheduler, c.executionMgr, filtered)
 }
 
 // mark the execution as success in database

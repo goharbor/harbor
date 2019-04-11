@@ -39,6 +39,9 @@ type Adapter interface {
 	// PrepareForPush does the prepare work that needed for pushing/uploading the resource
 	// eg: create the namespace or repository
 	PrepareForPush(*model.Resource) error
+	// ValidResource checks whether a resource is valid for the registry. For example, DockerHub don't support
+	// multiple parts repo name like 'a/b/c'.
+	ValidResource(*model.Resource) bool
 	// Get the namespace specified by the name, the returning value should
 	// contain the metadata about the namespace if it has
 	// TODO remove this method?
