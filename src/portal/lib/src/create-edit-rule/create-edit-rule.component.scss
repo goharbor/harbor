@@ -242,3 +242,18 @@ clr-modal {
 .inline-block {
     display: inline-block;
 }
+
+.selectBox{
+    position: absolute;
+    width: 270px;
+    top: 35px;
+    height: auto;
+    border: 1px solid #ccc;
+    background-color: white;
+    border: 1px solid rgba(0,0,0,.15);
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+    z-index: 100;
+}

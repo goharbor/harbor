@@ -116,6 +116,19 @@ export abstract class EndpointService {
   ): Observable<any>;
 
   /**
+   * List namespaces of registry
+   *
+   * @abstract
+   * returns {(Observable<any>)}
+   *
+   * @memberOf EndpointService
+   */
+  abstract listNamespaces(
+    registryId: number | string,
+    name?: string
+  ): Observable<any>;
+
+  /**
    * Check endpoint whether in used with specific replication rule.
    *
    * @abstract
@@ -146,6 +159,17 @@ export class EndpointDefaultService extends EndpointService {
     this._endpointUrl = config.targetBaseEndpoint
       ? config.targetBaseEndpoint
       : "/api/registries";
+  }
+
+  public listNamespaces(
+    registryId: number | string,
+    name?: string
+  ): Observable<any> {
+    let url: string = `${this._endpointUrl}/${registryId}/namespace?name=${name}`;
+    return this.http
+      .get(url, HTTP_GET_OPTIONS)
+      .pipe(map(response => response.json() as any)
+        , catchError(error => observableThrowError(error)));
   }
 
   public getEndpoints(

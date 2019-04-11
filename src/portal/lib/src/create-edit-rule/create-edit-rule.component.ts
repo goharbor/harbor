@@ -44,6 +44,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   _localTime: Date = new Date();
   sourceList: Endpoint[] = [];
   targetList: Endpoint[] = [];
+  selectSrcNamespaces: any[] = [];
+  selectDestNamespaces: any = [];
+  selectSrcNamespacesNoSrcInfo: string;
+  selectDestNamespacesNoSrcInfo: string;
+  disabled: boolean;
   isFilterHide = false;
   weeklySchedule: boolean;
   noEndpointInfo = "";
@@ -66,7 +71,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   inNameChecking = false;
   isRuleNameValid = true;
   nameChecker: Subject<string> = new Subject<string>();
+  namespaceChecker: Subject<object> = new Subject<{}>();
   firstClick = 0;
+  isNamespacesValid: Boolean;
   policyId: number;
   confirmSub: Subscription;
   ruleForm: FormGroup;
@@ -80,6 +87,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   @Output() reload = new EventEmitter<boolean>();
 
   @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
+  // the index when user input src_namespace_list ;
+  src_namespace_index: number = 0;
   constructor(
     private fb: FormBuilder,
     private repService: ReplicationService,
@@ -89,6 +98,38 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     private ref: ChangeDetectorRef
   ) {
     this.createForm();
+  }
+  /**
+   * src_namespaces or dest_namespace input
+   * @param index form array index
+   * @param formControlName src_namespaces / dest_namespace
+   * @param selectRegistryId push or pull : dest_registry.id/0 or   0/src_registry
+   * @param acceptArrayName array name of project list
+   */
+  handleValidation(index: number, formControlName: string, selectRegistryId = 0, acceptArrayName): void {
+      let cont = this.ruleForm.controls[formControlName] as FormArray ;
+      let cont1 = cont.controls[index].value;
+
+      if (cont1) {
+        this.namespaceChecker.next({value: cont1, index: index, formControlName: formControlName
+          , selectRegistryId: selectRegistryId, acceptArrayName: acceptArrayName});
+      }
+  }
+
+  leaveInput() {
+    this.selectSrcNamespaces = [];
+    this.selectDestNamespaces = [];
+  }
+
+  selectedSrcName(srcName: string, index, formControlName: string, acceptArray: any) {
+    let pro: any = acceptArray.find(
+      data => data.name === srcName
+    );
+    let pro1 = pro.name;
+    this.setNamespace(pro1, index, formControlName);
+    acceptArray = [];
+    this.selectSrcNamespacesNoSrcInfo = "";
+    this.selectDestNamespacesNoSrcInfo = "";
   }
 
   initRegistryInfo(id: number): void {
@@ -134,21 +175,49 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           }
         }
       });
+
+      this.namespaceChecker
+      .pipe(debounceTime(500))
+      .pipe(distinctUntilChanged())
+      .subscribe((resn: any) => {
+        let inputValue = resn.value;
+        this.selectSrcNamespacesNoSrcInfo = "";
+        this.selectDestNamespacesNoSrcInfo = "";
+        this[resn.acceptArrayName] = [];
+        this.endpointService.listNamespaces(resn.selectRegistryId, inputValue)
+        .subscribe(res => {
+          if (res) {
+            this[resn.acceptArrayName] = res.slice(0, 10);
+            let pro = res.find((data: any) => data.name === inputValue);
+            if (!pro) {
+              this[`${resn.acceptArrayName}NoSrcInfo`] = "REPLICATION.NO_PROJECT_INFO";
+            } else {
+              pro = pro.name;
+              this[`${resn.acceptArrayName}NoSrcInfo`] = "";
+              this.setNamespace(pro, resn.index, resn.formControlName);
+            }
+          } else {
+            this[`${resn.acceptArrayName}NoSrcInfo`] = "REPLICATION.NO_PROJECT_INFO";
+          }
+        }, error => {
+          this[`${resn.acceptArrayName}NoSrcInfo`] = "REPLICATION.NO_PROJECT_INFO";
+        });
+      });
   }
 
   equals(c1: any, c2: any): boolean {
     return c1 && c2 ? c1.id === c2.id : c1 === c2;
   }
 
-  modeChange(): void {
-    if (this.isPushMode) {
-      this.setFilter([]);
-      this.initRegistryInfo(0);
-    }
+  pushModeChange(): void {
+    this.setFilter([]);
+    this.initRegistryInfo(0);
+
+  }
+  pullModeChange(): void {
   }
 
-
-  sourceChange($event): void {
+  sourceChange($event: any): void {
     this.noSelectedEndpoint = false;
     let selectId = this.ruleForm.get('src_registry').value;
     this.setFilter([]);
@@ -164,11 +233,21 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
   get src_namespaces(): FormArray { return this.ruleForm.get('src_namespaces') as FormArray; }
+  get dest_namespace(): FormArray { return this.ruleForm.get('dest_namespace') as FormArray; }
+
+  setNamespace(namespaces: string, index: number, formControlName: string): void {
+    let newNameForm = this.ruleForm.controls[formControlName] as FormArray;
+    newNameForm.controls[index].setValue(namespaces);
+  }
 
   get isValid() {
+    let controlName = this.ruleForm.controls["name"].invalid;
+    let controlSrcNamespace = this.ruleForm.controls["src_namespaces"].invalid;
     return !(
+      controlName ||
       !this.isRuleNameValid ||
       this.noSelectedEndpoint ||
+      controlSrcNamespace ||
       this.inProgress
     );
   }
@@ -180,7 +259,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       src_registry: new FormControl(),
       src_namespaces: new FormArray([new FormControl('')], Validators.required),
       dest_registry: new FormControl(),
-      dest_namespace: "",
+      dest_namespace: new FormArray([new FormControl('')]),
       trigger: this.fb.group({
         type: '',
         trigger_settings: this.fb.group({
@@ -234,17 +313,18 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     } else {
       this.isPushMode = true;
     }
-    this.ruleForm.reset({
-      name: rule.name,
-      description: rule.description,
-      src_namespaces: rule.src_namespaces,
-      dest_namespace: rule.dest_namespace,
-      src_registry: rule.src_registry,
-      dest_registry: rule.dest_registry,
-      trigger: rule.trigger,
-      deletion: rule.deletion,
-      enabled: rule.enabled
-    });
+    setTimeout(() => {
+      this.ruleForm.reset({
+        name: rule.name,
+        description: rule.description,
+        src_namespaces: rule.src_namespaces,
+        dest_namespace: [rule.dest_namespace],
+        src_registry: rule.src_registry,
+        dest_registry: rule.dest_registry,
+        trigger: rule.trigger,
+        deletion: rule.deletion,
+        enabled: rule.enabled
+      });
     // reset the filter list.
     let filters = [];
     for (let i = 0; i < this.supportedFilters.length; i++) {
@@ -266,6 +346,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
     this.noSelectedEndpoint = false;
     this.setFilter(filters);
+    }, 100);
     // end of reset the filter list.
   }
 
@@ -334,6 +415,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     // add new Replication rule
     this.inProgress = true;
     let copyRuleForm: ReplicationRule = this.ruleForm.value;
+    // for dest_namespace array type change
+    copyRuleForm.dest_namespace = copyRuleForm.dest_namespace.length ? copyRuleForm.dest_namespace[0] : '';
     if (this.isPushMode) {
       copyRuleForm.src_registry = null;
     } else {
@@ -388,38 +471,49 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.firstClick = 0;
     this.noSelectedEndpoint = true;
     this.isRuleNameValid = true;
+    this.selectSrcNamespaces = [];
+    this.selectDestNamespaces = [];
 
     this.weeklySchedule = false;
     this.policyId = -1;
     this.createEditRuleOpened = true;
     this.noEndpointInfo = "";
+    this.selectSrcNamespacesNoSrcInfo = "";
+    this.selectDestNamespacesNoSrcInfo = "";
     if (this.targetList.length === 0) {
       this.noEndpointInfo = "REPLICATION.NO_ENDPOINT_INFO";
     }
-    let registryObs = this.repService.getRegistryInfo(0);
+
     if (ruleId) {
       this.policyId = +ruleId;
       this.headerTitle = "REPLICATION.EDIT_POLICY_TITLE";
-      zip(registryObs, this.repService.getReplicationRule(ruleId))
-        .subscribe(([adapter, ruleInfo]) => {
-          this.setFilterAndTrigger(adapter);
-          this.copyUpdateForm = clone(ruleInfo);
-          // set filter value is [] if callback filter value is null.
-          this.updateForm(ruleInfo);
-          // keep trigger same value
-          this.copyUpdateForm.trigger = clone(ruleInfo.trigger);
-          this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
+      this.repService.getReplicationRule(ruleId)
+        .subscribe((ruleInfo) => {
+          let srcRegistryId = ruleInfo.src_registry.id;
+          this.repService.getRegistryInfo(srcRegistryId)
+            .subscribe(adapter => {
+              this.setFilterAndTrigger(adapter);
+              this.copyUpdateForm = clone(ruleInfo);
+              // set filter value is [] if callback filter value is null.
+              this.updateForm(ruleInfo);
+              // keep trigger same value
+              this.copyUpdateForm.trigger = clone(ruleInfo.trigger);
+              this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
+          }, (error: any) => {
+            this.inlineAlert.showInlineError(error);
+          });
         }, (error: any) => {
           this.inlineAlert.showInlineError(error);
         });
     } else {
+      let registryObs = this.repService.getRegistryInfo(0);
       registryObs.subscribe(adapter => { this.setFilterAndTrigger(adapter); });
       this.headerTitle = "REPLICATION.ADD_POLICY";
       this.copyUpdateForm = clone(this.ruleForm.value);
     }
   }
 
-  setFilterAndTrigger(adapter) {
+  setFilterAndTrigger(adapter: { supported_resource_filters: Filter[]; supported_triggers: string[]; }) {
     this.supportedFilters = adapter.supported_resource_filters;
     this.setFilter([]);
     this.supportedFilters.forEach(element => {

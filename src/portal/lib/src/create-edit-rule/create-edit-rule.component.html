@@ -22,9 +22,9 @@
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.REPLI_MODE' | translate}}</label>
           <div class="radio" style="display:inherit;">
-            <input type="radio" id="push_base" name="replicationMode" [value]=true [(ngModel)]="isPushMode" (change)="modeChange()" [ngModelOptions]="{standalone: true}">
+            <input type="radio" id="push_base" name="replicationMode" [value]=true [(ngModel)]="isPushMode" (change)="pushModeChange()" [ngModelOptions]="{standalone: true}">
             <label for="push_base">Push-based</label>
-            <input type="radio" id="pull_base" name="replicationMode" [value]=false [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
+            <input type="radio" id="pull_base" name="replicationMode" [value]=false [(ngModel)]="isPushMode" (change)="pullModeChange()" [ngModelOptions]="{standalone: true}">
             <label for="pull_base">Pull-based</label>
           </div>
         </div>
@@ -33,8 +33,8 @@
           <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry" [compareWith]="equals" ngModel>
-                <option *ngFor="let source of sourceList" [ngValue]="source">{{source.name}}-{{source.url}}</option>
+              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry" [compareWith]="equals">
+                <option *ngFor="let source of sourceList; let i=index" [ngValue]="source">{{source.name}}-{{source.url}}</option>
               </select>
             </div>
           </div>
@@ -42,20 +42,25 @@
           <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
         </div>
         <!--source namespace -->
-        <div class="form-group form-group-override">
+        <div class="form-group form-group-override" *ngIf="isPushMode? true:ruleForm.controls.src_registry.value?.id">
           <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_NAMESPACES' | translate}}</label>
           <div formArrayName="src_namespaces">
             <div class="width-315" *ngFor="let src_namespace of src_namespaces.controls; let i=index">
-              <div class="endpointSelect pull-left">
-                <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='(src_namespace.touched && src_namespace.invalid)'>
-                  <input type="text" [formControlName]="i" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255">
-                  <span class="tooltip-content">{{'REPLICATION.NAMESPACE_TOOLTIP' | translate}}</span>
+              <div class="endpointSelect pull-left" >
+                <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]='selectSrcNamespacesNoSrcInfo'>
+                  <input type="text" (keyup)='handleValidation(i, "src_namespaces",isPushMode?0:ruleForm.controls.src_registry.value.id, "selectSrcNamespaces");src_namespace_index =i' [formControlName]="i" class="inputWidth" required maxlength="255">
+                  <span class="tooltip-content">{{ selectSrcNamespacesNoSrcInfo | translate}}</span>
                 </label>
               </div>
               <clr-icon shape="times-circle" class="is-solid" (click)="deleteNamespace(i)"></clr-icon>
             </div>
           </div>
           <clr-icon id="addSourceNamespace" shape="plus-circle" class="is-solid mr-t-10" (click)="addNewNamespace()"></clr-icon>
+          <div class="selectBox" [style.display]="selectSrcNamespaces.length ? 'block' : 'none'">
+            <ul (mouseleave)="leaveInput()">
+                <li *ngFor="let sname of selectSrcNamespaces" (click)="selectedSrcName(sname?.name, src_namespace_index, 'src_namespaces',selectSrcNamespaces);leaveInput()">{{sname?.name}}</li>
+            </ul>
+          </div>
         </div>
         <!--images/Filter-->
         <div class="form-group form-group-override">
@@ -85,7 +90,7 @@
           <label class="form-group-label-override  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"  [compareWith]="equals" ngModel>
+              <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"  [compareWith]="equals">
                 <option *ngFor="let target of targetList" [ngValue]="target">{{target.name}}-{{target.url}}</option>
               </select>
             </div>
@@ -94,13 +99,21 @@
           <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
         </div>
         <!--destination namespaces -->
-        <div class="form-group form-group-override">
+        <div class="form-group form-group-override" *ngIf="isPushMode? ruleForm.controls.dest_registry.value?.id: true">
           <label class="form-group-label-override">{{'REPLICATION.DEST_NAMESPACE' | translate}}</label>
-          <div class="form-select">
-            <div class="endpointSelect pull-left">
-              <input formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth"
+          <div class="form-select" formArrayName="dest_namespace">
+            <div class="endpointSelect pull-left" *ngFor="let dest_name of dest_namespace.controls; let i=index">
+              <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]='selectDestNamespacesNoSrcInfo'>
+                <input [formControlName]="i" (keyup)='handleValidation(0, "dest_namespace",isPushMode?ruleForm.controls.dest_registry.value.id:0, "selectDestNamespaces");' type="text" id="dest_namespace--{{i}}" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth"
                 maxlength="255">
+                <span class="tooltip-content">{{ selectDestNamespacesNoSrcInfo | translate}}</span>
+              </label>
             </div>
+          </div>
+          <div class="selectBox" [style.display]="selectDestNamespaces.length ? 'block' : 'none'">
+            <ul (mouseleave)="leaveInput()">
+                <li *ngFor="let sname of selectDestNamespaces" (click)="selectedSrcName(sname?.name, 0, 'dest_namespace',selectDestNamespaces);leaveInput()">{{sname?.name}}</li>
+            </ul>
           </div>
         </div>
 
