@@ -28,6 +28,7 @@ Resource  VCH-Util.robot
 Resource  Drone-Util.robot
 Resource  Github-Util.robot
 Resource  Harbor-Util.robot
+Resource  Harbor-Pages/Public_Elements.robot
 Resource  Harbor-Pages/HomePage.robot
 Resource  Harbor-Pages/HomePage_Elements.robot
 Resource  Harbor-Pages/Project.robot
