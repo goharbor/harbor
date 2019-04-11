@@ -2291,6 +2291,39 @@ paths:
           description: Registry not found
         '500':
           description: Unexpected internal errors.
+  /registries/{id}/namespace:
+    get:
+      summary: List namespaces of registry
+      description: |
+        This endpoint let user list namespaces of registry according to query.
+      parameters:
+      - name: id
+        in: query
+        type: integer
+        required: true
+        description: The registry ID.
+      - name: name
+        in: query
+        type: string
+        required: false
+        description: The name of namespace.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Namespace'
+        '401':
+          description: User need to login first.
+        '404':
+          description: No registry found.
+        '403':
+          description: User has no privilege for the operation.
+        '500':
+          description: Unexpected internal errors.
   /internal/syncregistry:
     post:
       summary: Sync repositories from registry to DB.
@@ -4990,3 +5023,13 @@ definitions:
       end_time:
         type: string
         description: The end time
+  Namespace:
+    type: object
+    description: The namespace of registry
+    properties:
+      name:
+        type: string
+        description: The name of namespace
+      metadata:
+        type: object
+        description: The metadata of namespace

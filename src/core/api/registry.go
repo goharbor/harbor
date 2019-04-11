@@ -368,6 +368,60 @@ func (t *RegistryAPI) GetInfo() {
 	t.WriteJSONData(process(info))
 }
 
+// GetNamespace get the namespace of a registry
+func (t *RegistryAPI) GetNamespace() {
+	var registry *model.Registry
+	var err error
+
+	id, err := t.GetInt64FromPath(":id")
+	if err != nil || id < 0 {
+		t.HandleBadRequest(fmt.Sprintf("invalid registry ID %s", t.GetString(":id")))
+		return
+	}
+	if id > 0 {
+		registry, err = t.manager.Get(id)
+		if err != nil {
+			t.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", id, err))
+			return
+		}
+	} else if id == 0 {
+		registry = event.GetLocalRegistry()
+	}
+
+	if registry == nil {
+		t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
+		return
+	}
+
+	if !adapter.HasFactory(registry.Type) {
+		t.HandleInternalServerError(fmt.Sprintf("no adapter factory found for %s", registry.Type))
+		return
+	}
+
+	regFactory, err := adapter.GetFactory(registry.Type)
+	if err != nil {
+		t.HandleInternalServerError(fmt.Sprintf("fail to get adapter factory %s", registry.Type))
+		return
+	}
+	regAdapter, err := regFactory(registry)
+	if err != nil {
+		t.HandleInternalServerError(fmt.Sprintf("fail to get adapter %s", registry.Type))
+		return
+	}
+
+	query := &model.NamespaceQuery{
+		Name: t.GetString("name"),
+	}
+	npResults, err := regAdapter.ListNamespaces(query)
+	if err != nil {
+		t.HandleInternalServerError(fmt.Sprintf("fail to list namespaces %s %v", registry.Type, err))
+		return
+	}
+
+	t.Data["json"] = npResults
+	t.ServeJSON()
+}
+
 // merge "SupportedResourceTypes" into "SupportedResourceFilters" for UI to render easier
 func process(info *model.RegistryInfo) *model.RegistryInfo {
 	if info == nil {
