@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
@@ -33,11 +34,39 @@ type chart struct {
 	Name string `json:"name"`
 }
 
+func (c *chart) Match(filters []*model.Filter) (bool, error) {
+	supportedFilters := []*model.Filter{}
+	for _, filter := range filters {
+		if filter.Type == model.FilterTypeName {
+			supportedFilters = append(supportedFilters, filter)
+		}
+	}
+	// trim the project part
+	_, name := utils.ParseRepository(c.Name)
+	item := &FilterItem{
+		Value: name,
+	}
+	return item.Match(supportedFilters)
+}
+
 type chartVersion struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 	// TODO handle system/project level labels
 	// Labels string `json:"labels"`
+}
+
+func (c *chartVersion) Match(filters []*model.Filter) (bool, error) {
+	supportedFilters := []*model.Filter{}
+	for _, filter := range filters {
+		if filter.Type == model.FilterTypeTag {
+			supportedFilters = append(supportedFilters, filter)
+		}
+	}
+	item := &FilterItem{
+		Value: c.Version,
+	}
+	return item.Match(supportedFilters)
 }
 
 type chartVersionDetail struct {
@@ -56,10 +85,18 @@ func (a *adapter) FetchCharts(namespaces []string, filters []*model.Filter) ([]*
 		if err := a.client.Get(url, &charts); err != nil {
 			return nil, err
 		}
+		charts, err := filterCharts(charts, filters)
+		if err != nil {
+			return nil, err
+		}
 		for _, chart := range charts {
 			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.coreServiceURL, namespace, chart.Name)
 			chartVersions := []*chartVersion{}
 			if err := a.client.Get(url, &chartVersions); err != nil {
+				return nil, err
+			}
+			chartVersions, err = filterChartVersions(chartVersions, filters)
+			if err != nil {
 				return nil, err
 			}
 			for _, version := range chartVersions {
@@ -195,10 +232,39 @@ func (a *adapter) DeleteChart(name, version string) error {
 	return a.client.Delete(url)
 }
 
+// TODO merge this method and utils.ParseRepository?
 func parseChartName(name string) (string, string, error) {
 	strs := strings.Split(name, "/")
 	if len(strs) == 2 && len(strs[0]) > 0 && len(strs[1]) > 0 {
 		return strs[0], strs[1], nil
 	}
 	return "", "", fmt.Errorf("invalid chart name format: %s", name)
+}
+
+func filterCharts(charts []*chart, filters []*model.Filter) ([]*chart, error) {
+	result := []*chart{}
+	for _, chart := range charts {
+		match, err := chart.Match(filters)
+		if err != nil {
+			return nil, err
+		}
+		if match {
+			result = append(result, chart)
+		}
+	}
+	return result, nil
+}
+
+func filterChartVersions(chartVersions []*chartVersion, filters []*model.Filter) ([]*chartVersion, error) {
+	result := []*chartVersion{}
+	for _, chartVersion := range chartVersions {
+		match, err := chartVersion.Match(filters)
+		if err != nil {
+			return nil, err
+		}
+		if match {
+			result = append(result, chartVersion)
+		}
+	}
+	return result, nil
 }
