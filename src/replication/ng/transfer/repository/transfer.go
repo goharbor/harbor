@@ -225,6 +225,10 @@ func (t *transfer) copyBlobs(blobs []distribution.Descriptor, srcRepo, dstRepo s
 			return jobStoppedErr
 		}
 		digest := blob.Digest.String()
+		if blob.MediaType == schema2.MediaTypeForeignLayer {
+			t.logger.Infof("the blob %s is a foreign layer, skip", digest)
+			continue
+		}
 		t.logger.Infof("copying the blob %s...", digest)
 		exist, err := t.dst.BlobExist(dstRepo, digest)
 		if err != nil {
