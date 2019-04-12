@@ -276,11 +276,6 @@ func (d *DefaultImageRegistry) PushBlob(repository, digest string, size int64, b
 	return client.PushBlob(digest, size, blob)
 }
 
-// ValidResource ...
-func (d *DefaultImageRegistry) ValidResource(*model.Resource) bool {
-	return true
-}
-
 func isDigest(str string) bool {
 	return strings.Contains(str, ":")
 }

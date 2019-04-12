@@ -65,12 +65,6 @@ func (d *deletionFlow) Run(interface{}) (int, error) {
 		return 0, err
 	}
 
-	for i := range dstResources {
-		if !dstAdapter.ValidResource(dstResources[i]) {
-			dstResources[i].Invalid = true
-		}
-	}
-
 	items, err := preprocess(d.scheduler, srcResources, dstResources)
 	if err != nil {
 		return 0, err
@@ -79,12 +73,5 @@ func (d *deletionFlow) Run(interface{}) (int, error) {
 		return 0, err
 	}
 
-	var filtered []*scheduler.ScheduleItem
-	for _, item := range items {
-		if !item.DstResource.Invalid {
-			filtered = append(filtered, item)
-		}
-	}
-
-	return schedule(d.scheduler, d.executionMgr, filtered)
+	return schedule(d.scheduler, d.executionMgr, items)
 }

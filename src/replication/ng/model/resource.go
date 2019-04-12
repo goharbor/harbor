@@ -69,6 +69,4 @@ type Resource struct {
 	Deleted bool `json:"deleted"`
 	// indicate whether the resource can be overridden
 	Override bool `json:"override"`
-	// Invalid indicates the resource is invalid for the registry
-	Invalid bool `json:"invalid"`
 }

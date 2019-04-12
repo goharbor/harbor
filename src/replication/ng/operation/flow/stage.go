@@ -251,11 +251,6 @@ func createTasks(mgr execution.Manager, executionID int64, items []*scheduler.Sc
 			Operation:    operation,
 		}
 
-		if item.DstResource.Invalid {
-			task.Status = models.TaskStatusFailed
-			task.EndTime = time.Now()
-		}
-
 		id, err := mgr.CreateTask(task)
 		if err != nil {
 			// if failed to create the task for one of the items,

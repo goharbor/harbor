@@ -149,9 +149,6 @@ func (f *fakedAdapter) PrepareForPush(*model.Resource) error {
 func (f *fakedAdapter) HealthCheck() (model.HealthStatus, error) {
 	return model.Healthy, nil
 }
-func (f *fakedAdapter) ValidResource(*model.Resource) bool {
-	return true
-}
 func (f *fakedAdapter) GetNamespace(ns string) (*model.Namespace, error) {
 	var namespace *model.Namespace
 	if ns == "library" {

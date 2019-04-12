@@ -73,19 +73,6 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	}, nil
 }
 
-// ValidResource checks whether a resource is valid, in DockerHub, multi-parts repo name like 'a/b/c' is not supported.
-func (a *adapter) ValidResource(resource *model.Resource) bool {
-	if resource == nil || resource.Metadata == nil || resource.Metadata.Repository == nil {
-		return false
-	}
-
-	if len(strings.Split(resource.Metadata.Repository.Name, "/")) != 1 {
-		return false
-	}
-
-	return true
-}
-
 // ConvertResourceMetadata converts the namespace and repository part of the resource metadata
 // to the one that the adapter can handle
 func (a *adapter) ConvertResourceMetadata(meta *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
