@@ -105,7 +105,7 @@ func (r *ReplicationPolicyAPI) validateName(policy *model.Policy) bool {
 	return true
 }
 
-// make the registry referenced exists
+// make sure the registry referred exists
 func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
 	var registryID int64
 	if policy.SrcRegistry != nil && policy.SrcRegistry.ID > 0 {
