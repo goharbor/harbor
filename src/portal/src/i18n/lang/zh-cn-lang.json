@@ -72,8 +72,8 @@
         "RULE_USER_EXISTING": "名称已经存在。",
         "EMPTY": "名称为必填项",
         "NONEMPTY": "不能为空",
-        "ENDPOINT_FORMAT": "Endpoint必须以http或https开头。",
-        "OIDC_ENDPOIT_FORMAT": "Endpoint必须以https开头。",
+        "ENDPOINT_FORMAT": "Endpoint必须以http://或https://开头。",
+        "OIDC_ENDPOIT_FORMAT": "Endpoint必须以https://开头。",
         "OIDC_NAME": "OIDC提供商的名称.",
         "OIDC_ENDPOINT": "OIDC服务器的地址.",
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
@@ -693,6 +693,7 @@
         },
         "HTTP_AUTH": {
             "ENDPOINT": "Server Endpoint",
+            "TOKEN_REVIEW": "Token Review Endpoint",
             "ALWAYS_ONBOARD": "Always Onboard",
             "VERIFY_CERT": "Authentication验证证书"
         },

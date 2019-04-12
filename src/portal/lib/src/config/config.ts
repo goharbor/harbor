@@ -89,6 +89,7 @@ export class Configuration {
     scan_all_policy: ComplexValueItem;
     read_only: BoolValueItem;
     http_authproxy_endpoint?: StringValueItem;
+    http_authproxy_tokenreview_endpoint?: StringValueItem;
     http_authproxy_skip_cert_verify?: BoolValueItem;
     http_authproxy_always_onboard?: BoolValueItem;
     oidc_name?: StringValueItem;
@@ -139,6 +140,7 @@ export class Configuration {
         }, true);
         this.read_only = new BoolValueItem(false, true);
         this.http_authproxy_endpoint = new StringValueItem("", true);
+        this.http_authproxy_tokenreview_endpoint = new StringValueItem("", true);
         this.http_authproxy_skip_cert_verify = new BoolValueItem(false, true);
         this.http_authproxy_always_onboard = new BoolValueItem(false, true);
         this.oidc_name = new StringValueItem('', true);

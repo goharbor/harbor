@@ -287,6 +287,19 @@
             </label>
         </div>
         <div class="form-group">
+            <label for="http_authproxy_tokenreview_endpoint" class="required">{{'CONFIG.HTTP_AUTH.TOKEN_REVIEW' | translate}}</label>
+            <label for="http_authproxy_tokenreview_endpoint" aria-haspopup="true" role="tooltip"
+                class="tooltip tooltip-validation tooltip-md tooltip-top-right"
+                [class.invalid]="httpAuthproxyTokenReviewInput.invalid && (httpAuthproxyTokenReviewInput.dirty || httpAuthproxyTokenReviewInput.touched)">
+                <input type="text" #httpAuthproxyTokenReviewInput="ngModel" pattern="^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(.*?)*$"
+                 required id="http_authproxy_tokenreview_endpoint" name="http_authproxy_tokenreview_endpoint" size="35"
+                 [(ngModel)]="currentConfig.http_authproxy_tokenreview_endpoint.value" [disabled]="!currentConfig.http_authproxy_tokenreview_endpoint.editable">
+                <span class="tooltip-content">
+                    {{'TOOLTIP.ENDPOINT_FORMAT' | translate}}
+                </span>
+            </label>
+        </div>
+        <div class="form-group">
             <label for="http_authproxy_skip_cert_verify"
                 class="required">{{'CONFIG.HTTP_AUTH.VERIFY_CERT' | translate}}</label>
             <clr-checkbox-wrapper>
