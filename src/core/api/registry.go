@@ -9,12 +9,12 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
-	"github.com/goharbor/harbor/src/replication/ng"
-	"github.com/goharbor/harbor/src/replication/ng/adapter"
-	"github.com/goharbor/harbor/src/replication/ng/event"
-	"github.com/goharbor/harbor/src/replication/ng/model"
-	"github.com/goharbor/harbor/src/replication/ng/policy"
-	"github.com/goharbor/harbor/src/replication/ng/registry"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/replication/policy"
+	"github.com/goharbor/harbor/src/replication/registry"
 )
 
 // RegistryAPI handles requests to /api/registries/{}. It manages registries integrated to Harbor.
@@ -37,8 +37,8 @@ func (t *RegistryAPI) Prepare() {
 		return
 	}
 
-	t.manager = ng.RegistryMgr
-	t.policyCtl = ng.PolicyCtl
+	t.manager = replication.RegistryMgr
+	t.policyCtl = replication.PolicyCtl
 }
 
 // Ping checks health status of a registry

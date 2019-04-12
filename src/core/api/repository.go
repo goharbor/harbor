@@ -38,9 +38,9 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/replication/ng"
-	"github.com/goharbor/harbor/src/replication/ng/event"
-	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -345,7 +345,7 @@ func (ra *RepositoryAPI) Delete() {
 					Deleted: true,
 				},
 			}
-			if err := ng.EventHandler.Handle(e); err != nil {
+			if err := replication.EventHandler.Handle(e); err != nil {
 				log.Errorf("failed to handle event: %v", err)
 			}
 		}(t)

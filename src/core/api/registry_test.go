@@ -4,13 +4,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/goharbor/harbor/src/core/api/models"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/dao"
+	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-
-	"github.com/goharbor/harbor/src/core/api/models"
-	"github.com/goharbor/harbor/src/replication/ng"
-	"github.com/goharbor/harbor/src/replication/ng/dao"
-	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 var (
@@ -36,7 +35,7 @@ type RegistrySuite struct {
 
 func (suite *RegistrySuite) SetupSuite() {
 	assert := assert.New(suite.T())
-	assert.Nil(ng.Init(make(chan struct{})))
+	assert.Nil(replication.Init(make(chan struct{})))
 
 	suite.testAPI = newHarborAPI()
 	code, err := suite.testAPI.RegistryCreate(*admin, testRegistry)

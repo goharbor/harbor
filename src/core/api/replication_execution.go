@@ -19,10 +19,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/replication/ng"
-	"github.com/goharbor/harbor/src/replication/ng/dao/models"
-	"github.com/goharbor/harbor/src/replication/ng/event"
-	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/dao/models"
+	"github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 // ReplicationOperationAPI handles the replication operation requests
@@ -91,7 +91,7 @@ func (r *ReplicationOperationAPI) ListExecutions() {
 		query.PolicyID = policyID
 	}
 	query.Page, query.Size = r.GetPaginationParams()
-	total, executions, err := ng.OperationCtl.ListExecutions(query)
+	total, executions, err := replication.OperationCtl.ListExecutions(query)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to list executions: %v", err))
 		return
@@ -104,7 +104,7 @@ func (r *ReplicationOperationAPI) ListExecutions() {
 func (r *ReplicationOperationAPI) CreateExecution() {
 	execution := &models.Execution{}
 	r.DecodeJSONReq(execution)
-	policy, err := ng.PolicyCtl.Get(execution.PolicyID)
+	policy, err := replication.PolicyCtl.Get(execution.PolicyID)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get policy %d: %v", execution.PolicyID, err))
 		return
@@ -117,13 +117,13 @@ func (r *ReplicationOperationAPI) CreateExecution() {
 		r.HandleBadRequest(fmt.Sprintf("the policy %d is disabled", execution.PolicyID))
 		return
 	}
-	if err = event.PopulateRegistries(ng.RegistryMgr, policy); err != nil {
+	if err = event.PopulateRegistries(replication.RegistryMgr, policy); err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to populate registries for policy %d: %v", execution.PolicyID, err))
 		return
 	}
 
 	trigger := r.GetString("trigger", string(model.TriggerTypeManual))
-	executionID, err := ng.OperationCtl.StartReplication(policy, nil, model.TriggerType(trigger))
+	executionID, err := replication.OperationCtl.StartReplication(policy, nil, model.TriggerType(trigger))
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to start replication for policy %d: %v", execution.PolicyID, err))
 		return
@@ -138,7 +138,7 @@ func (r *ReplicationOperationAPI) GetExecution() {
 		r.HandleBadRequest("invalid execution ID")
 		return
 	}
-	execution, err := ng.OperationCtl.GetExecution(executionID)
+	execution, err := replication.OperationCtl.GetExecution(executionID)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get execution %d: %v", executionID, err))
 		return
@@ -158,7 +158,7 @@ func (r *ReplicationOperationAPI) StopExecution() {
 		r.HandleBadRequest("invalid execution ID")
 		return
 	}
-	execution, err := ng.OperationCtl.GetExecution(executionID)
+	execution, err := replication.OperationCtl.GetExecution(executionID)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get execution %d: %v", executionID, err))
 		return
@@ -169,7 +169,7 @@ func (r *ReplicationOperationAPI) StopExecution() {
 		return
 	}
 
-	if err := ng.OperationCtl.StopReplication(executionID); err != nil {
+	if err := replication.OperationCtl.StopReplication(executionID); err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to stop execution %d: %v", executionID, err))
 		return
 	}
@@ -183,7 +183,7 @@ func (r *ReplicationOperationAPI) ListTasks() {
 		return
 	}
 
-	execution, err := ng.OperationCtl.GetExecution(executionID)
+	execution, err := replication.OperationCtl.GetExecution(executionID)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get execution %d: %v", executionID, err))
 		return
@@ -202,7 +202,7 @@ func (r *ReplicationOperationAPI) ListTasks() {
 		query.Statuses = []string{status}
 	}
 	query.Page, query.Size = r.GetPaginationParams()
-	total, tasks, err := ng.OperationCtl.ListTasks(query)
+	total, tasks, err := replication.OperationCtl.ListTasks(query)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to list tasks: %v", err))
 		return
@@ -219,7 +219,7 @@ func (r *ReplicationOperationAPI) GetTaskLog() {
 		return
 	}
 
-	execution, err := ng.OperationCtl.GetExecution(executionID)
+	execution, err := replication.OperationCtl.GetExecution(executionID)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get execution %d: %v", executionID, err))
 		return
@@ -234,7 +234,7 @@ func (r *ReplicationOperationAPI) GetTaskLog() {
 		r.HandleBadRequest("invalid task ID")
 		return
 	}
-	task, err := ng.OperationCtl.GetTask(taskID)
+	task, err := replication.OperationCtl.GetTask(taskID)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get task %d: %v", taskID, err))
 		return
@@ -244,7 +244,7 @@ func (r *ReplicationOperationAPI) GetTaskLog() {
 		return
 	}
 
-	logBytes, err := ng.OperationCtl.GetTaskLog(taskID)
+	logBytes, err := replication.OperationCtl.GetTaskLog(taskID)
 	if err != nil {
 		r.HandleInternalServerError(fmt.Sprintf("failed to get log of task %d: %v", taskID, err))
 		return

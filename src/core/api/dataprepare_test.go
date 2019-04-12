@@ -19,8 +19,8 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	rep_dao "github.com/goharbor/harbor/src/replication/ng/dao"
-	rep_models "github.com/goharbor/harbor/src/replication/ng/dao/models"
+	rep_dao "github.com/goharbor/harbor/src/replication/dao"
+	rep_models "github.com/goharbor/harbor/src/replication/dao/models"
 )
 
 const (

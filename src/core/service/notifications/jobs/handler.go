@@ -23,9 +23,9 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
-	"github.com/goharbor/harbor/src/replication/ng"
-	"github.com/goharbor/harbor/src/replication/ng/operation/hook"
-	"github.com/goharbor/harbor/src/replication/ng/policy/scheduler"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/operation/hook"
+	"github.com/goharbor/harbor/src/replication/policy/scheduler"
 )
 
 var statusMap = map[string]string{
@@ -96,7 +96,7 @@ func (h *Handler) HandleReplicationScheduleJob() {
 // HandleReplicationTask handles the webhook of replication task
 func (h *Handler) HandleReplicationTask() {
 	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
-	if err := hook.UpdateTask(ng.OperationCtl, h.id, h.rawStatus); err != nil {
+	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus); err != nil {
 		log.Errorf("Failed to update replication task status, id: %d, status: %s", h.id, h.status)
 		h.HandleInternalServerError(err.Error())
 		return

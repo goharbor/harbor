@@ -18,9 +18,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/replication/ng"
-	"github.com/goharbor/harbor/src/replication/ng/dao/models"
-	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication"
+
+	"github.com/goharbor/harbor/src/replication/dao/models"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 type fakedOperationController struct{}
@@ -119,11 +120,11 @@ func (f *fakedPolicyManager) Remove(int64) error {
 }
 
 func TestListExecutions(t *testing.T) {
-	operationCtl := ng.OperationCtl
+	operationCtl := replication.OperationCtl
 	defer func() {
-		ng.OperationCtl = operationCtl
+		replication.OperationCtl = operationCtl
 	}()
-	ng.OperationCtl = &fakedOperationController{}
+	replication.OperationCtl = &fakedOperationController{}
 
 	cases := []*codeCheckingCase{
 		// 401
@@ -158,17 +159,17 @@ func TestListExecutions(t *testing.T) {
 }
 
 func TestCreateExecution(t *testing.T) {
-	operationCtl := ng.OperationCtl
-	policyMgr := ng.PolicyCtl
-	registryMgr := ng.RegistryMgr
+	operationCtl := replication.OperationCtl
+	policyMgr := replication.PolicyCtl
+	registryMgr := replication.RegistryMgr
 	defer func() {
-		ng.OperationCtl = operationCtl
-		ng.PolicyCtl = policyMgr
-		ng.RegistryMgr = registryMgr
+		replication.OperationCtl = operationCtl
+		replication.PolicyCtl = policyMgr
+		replication.RegistryMgr = registryMgr
 	}()
-	ng.OperationCtl = &fakedOperationController{}
-	ng.PolicyCtl = &fakedPolicyManager{}
-	ng.RegistryMgr = &fakedRegistryManager{}
+	replication.OperationCtl = &fakedOperationController{}
+	replication.PolicyCtl = &fakedPolicyManager{}
+	replication.RegistryMgr = &fakedRegistryManager{}
 
 	cases := []*codeCheckingCase{
 		// 401
@@ -230,11 +231,11 @@ func TestCreateExecution(t *testing.T) {
 }
 
 func TestGetExecution(t *testing.T) {
-	operationCtl := ng.OperationCtl
+	operationCtl := replication.OperationCtl
 	defer func() {
-		ng.OperationCtl = operationCtl
+		replication.OperationCtl = operationCtl
 	}()
-	ng.OperationCtl = &fakedOperationController{}
+	replication.OperationCtl = &fakedOperationController{}
 
 	cases := []*codeCheckingCase{
 		// 401
@@ -277,11 +278,11 @@ func TestGetExecution(t *testing.T) {
 	runCodeCheckingCases(t, cases...)
 }
 func TestStopExecution(t *testing.T) {
-	operationCtl := ng.OperationCtl
+	operationCtl := replication.OperationCtl
 	defer func() {
-		ng.OperationCtl = operationCtl
+		replication.OperationCtl = operationCtl
 	}()
-	ng.OperationCtl = &fakedOperationController{}
+	replication.OperationCtl = &fakedOperationController{}
 
 	cases := []*codeCheckingCase{
 		// 401
@@ -325,11 +326,11 @@ func TestStopExecution(t *testing.T) {
 }
 
 func TestListTasks(t *testing.T) {
-	operationCtl := ng.OperationCtl
+	operationCtl := replication.OperationCtl
 	defer func() {
-		ng.OperationCtl = operationCtl
+		replication.OperationCtl = operationCtl
 	}()
-	ng.OperationCtl = &fakedOperationController{}
+	replication.OperationCtl = &fakedOperationController{}
 
 	cases := []*codeCheckingCase{
 		// 401
@@ -373,11 +374,11 @@ func TestListTasks(t *testing.T) {
 }
 
 func TestGetTaskLog(t *testing.T) {
-	operationCtl := ng.OperationCtl
+	operationCtl := replication.OperationCtl
 	defer func() {
-		ng.OperationCtl = operationCtl
+		replication.OperationCtl = operationCtl
 	}()
-	ng.OperationCtl = &fakedOperationController{}
+	replication.OperationCtl = &fakedOperationController{}
 
 	cases := []*codeCheckingCase{
 		// 401
