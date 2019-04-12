@@ -30,6 +30,8 @@ import (
 	"github.com/goharbor/harbor/src/replication/ng/registry"
 
 	// register the Harbor adapter
+	_ "github.com/goharbor/harbor/src/replication/ng/adapter/dockerhub"
+	// register the DockerHub adapter
 	_ "github.com/goharbor/harbor/src/replication/ng/adapter/harbor"
 )
 

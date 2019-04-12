@@ -28,6 +28,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/ng/transfer/repository"
 	// register the Harbor adapter
 	_ "github.com/goharbor/harbor/src/replication/ng/adapter/harbor"
+	// register the DockerHub adapter
+	_ "github.com/goharbor/harbor/src/replication/ng/adapter/dockerhub"
 )
 
 // Replication implements the job interface

@@ -22,6 +22,19 @@ type Namespace struct {
 	Metadata map[string]interface{} `json:"metadata"`
 }
 
+// GetStringMetadata get a string value metadata from the namespace, if not found, return the default value.
+func (n *Namespace) GetStringMetadata(key string, defaultValue string) string {
+	if n.Metadata == nil {
+		return defaultValue
+	}
+
+	if v, ok := n.Metadata[key]; ok {
+		return v.(string)
+	}
+
+	return defaultValue
+}
+
 // NamespaceQuery defines the query condition for listing namespaces
 type NamespaceQuery struct {
 	Name string

@@ -64,6 +64,7 @@ func (d *deletionFlow) Run(interface{}) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	items, err := preprocess(d.scheduler, srcResources, dstResources)
 	if err != nil {
 		return 0, err
@@ -71,5 +72,6 @@ func (d *deletionFlow) Run(interface{}) (int, error) {
 	if err = createTasks(d.executionMgr, d.executionID, items); err != nil {
 		return 0, err
 	}
+
 	return schedule(d.scheduler, d.executionMgr, items)
 }

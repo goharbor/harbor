@@ -61,6 +61,7 @@ func (c *copyFlow) Run(interface{}) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	if err = prepareForPush(dstAdapter, dstResources); err != nil {
 		return 0, err
 	}
@@ -71,6 +72,7 @@ func (c *copyFlow) Run(interface{}) (int, error) {
 	if err = createTasks(c.executionMgr, c.executionID, items); err != nil {
 		return 0, err
 	}
+
 	return schedule(c.scheduler, c.executionMgr, items)
 }
 
