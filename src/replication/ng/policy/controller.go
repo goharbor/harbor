@@ -28,9 +28,8 @@ type Controller interface {
 	Get(int64) (*model.Policy, error)
 	// Get policy by the name
 	GetByName(string) (*model.Policy, error)
-	// Update the specified policy, the "props" are the properties of policy
-	// that need to be updated
-	Update(policy *model.Policy, props ...string) error
+	// Update the specified policy
+	Update(policy *model.Policy) error
 	// Remove the specified policy
 	Remove(int64) error
 }

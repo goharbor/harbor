@@ -246,7 +246,7 @@ func TestReplicationPolicyAPIGet(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodGet,
-				url:        "/api/replication/policies/2",
+				url:        "/api/replication/policies/3",
 				credential: sysAdmin,
 			},
 			code: http.StatusNotFound,
@@ -296,7 +296,7 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodPut,
-				url:        "/api/replication/policies/2",
+				url:        "/api/replication/policies/3",
 				credential: sysAdmin,
 				bodyJSON:   &model.Policy{},
 			},
@@ -398,7 +398,7 @@ func TestReplicationPolicyAPIDelete(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodDelete,
-				url:        "/api/replication/policies/2",
+				url:        "/api/replication/policies/3",
 				credential: sysAdmin,
 			},
 			code: http.StatusNotFound,

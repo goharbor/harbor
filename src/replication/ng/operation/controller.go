@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
-
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/ng/dao/models"
 	"github.com/goharbor/harbor/src/replication/ng/model"
@@ -59,6 +58,8 @@ type controller struct {
 }
 
 func (c *controller) StartReplication(policy *model.Policy, resource *model.Resource, trigger model.TriggerType) (int64, error) {
+	// only support one tag if the resource is specified as we append the tag name as a filter
+	// when creating the flow in function "createFlow"
 	if resource != nil && len(resource.Metadata.Vtags) != 1 {
 		return 0, fmt.Errorf("the length of Vtags must be 1: %v", resource.Metadata.Vtags)
 	}
@@ -72,7 +73,8 @@ func (c *controller) StartReplication(policy *model.Policy, resource *model.Reso
 
 	flow := c.createFlow(id, policy, resource)
 	if n, err := c.flowCtl.Start(flow); err != nil {
-		// just update the status text, the status will be updated automatically
+		// only update the execution when got error.
+		// if got no error, it will be updated automatically
 		// when listing the execution records
 		if e := c.executionMgr.Update(&models.Execution{
 			ID:         id,
@@ -95,8 +97,8 @@ func (c *controller) createFlow(executionID int64, policy *model.Policy, resourc
 	if resource != nil && resource.Deleted {
 		return flow.NewDeletionFlow(c.executionMgr, c.scheduler, executionID, policy, []*model.Resource{resource})
 	}
-	// copy only one resource, add extra filters to the  policy to make sure
-	// only the resource will be filtered out
+	// copy only one resource, add extra filters to the policy to make sure
+	// only the specified resource will be filtered out
 	if resource != nil {
 		filters := []*model.Filter{
 			{

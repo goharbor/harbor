@@ -101,10 +101,11 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 				Type:  model.FilterTypeTag,
 				Style: model.FilterStyleTypeText,
 			},
-			{
-				Type:  model.FilterTypeLabel,
-				Style: model.FilterStyleTypeText,
-			},
+			// TODO add support for label filter
+			// {
+			//	 Type:  model.FilterTypeLabel,
+			//	 Style: model.FilterStyleTypeText,
+			// },
 		},
 		SupportedTriggers: []model.TriggerType{
 			model.TriggerTypeManual,

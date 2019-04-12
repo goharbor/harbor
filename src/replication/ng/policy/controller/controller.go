@@ -57,7 +57,7 @@ func (c *controller) Create(policy *model.Policy) (int64, error) {
 	return id, nil
 }
 
-func (c *controller) Update(policy *model.Policy, props ...string) error {
+func (c *controller) Update(policy *model.Policy) error {
 	origin, err := c.Controller.Get(policy.ID)
 	if err != nil {
 		return err
@@ -66,8 +66,8 @@ func (c *controller) Update(policy *model.Policy, props ...string) error {
 		return fmt.Errorf("policy %d not found", policy.ID)
 	}
 	// if no need to reschedule the policy, just update it
-	if !isScheduleTriggerChanged(origin, policy, props...) {
-		return c.Controller.Update(policy, props...)
+	if !isScheduleTriggerChanged(origin, policy) {
+		return c.Controller.Update(policy)
 	}
 	// need to reschedule the policy
 	// unschedule first if needed
@@ -77,7 +77,7 @@ func (c *controller) Update(policy *model.Policy, props ...string) error {
 		}
 	}
 	// update the policy
-	if err = c.Controller.Update(policy, props...); err != nil {
+	if err = c.Controller.Update(policy); err != nil {
 		return err
 	}
 	// schedule again if needed
@@ -109,27 +109,16 @@ func isScheduledTrigger(policy *model.Policy) bool {
 	if policy == nil {
 		return false
 	}
+	if !policy.Enabled {
+		return false
+	}
 	if policy.Trigger == nil {
 		return false
 	}
 	return policy.Trigger.Type == model.TriggerTypeScheduled
 }
 
-func isScheduleTriggerChanged(origin, current *model.Policy, props ...string) bool {
-	// doesn't update the trigger property
-	if len(props) > 0 {
-		found := false
-		for _, prop := range props {
-			if prop == "Trigger" || prop == "cron_str" {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-
+func isScheduleTriggerChanged(origin, current *model.Policy) bool {
 	o := isScheduledTrigger(origin)
 	c := isScheduledTrigger(current)
 	// both triggers are not scheduled

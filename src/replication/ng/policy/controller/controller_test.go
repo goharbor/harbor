@@ -40,7 +40,7 @@ func (f *fakedPolicyController) Get(id int64) (*model.Policy, error) {
 func (f *fakedPolicyController) GetByName(name string) (*model.Policy, error) {
 	return nil, nil
 }
-func (f *fakedPolicyController) Update(*model.Policy, ...string) error {
+func (f *fakedPolicyController) Update(*model.Policy) error {
 	return nil
 }
 func (f *fakedPolicyController) Remove(int64) error {
@@ -71,14 +71,24 @@ func TestIsScheduledTrigger(t *testing.T) {
 			policy:   nil,
 			expected: false,
 		},
+		// policy is disabled
+		{
+			policy: &model.Policy{
+				Enabled: false,
+			},
+			expected: false,
+		},
 		// trigger is nil
 		{
-			policy:   &model.Policy{},
+			policy: &model.Policy{
+				Enabled: true,
+			},
 			expected: false,
 		},
 		// trigger type isn't scheduled
 		{
 			policy: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeManual,
 				},
@@ -88,6 +98,7 @@ func TestIsScheduledTrigger(t *testing.T) {
 		// trigger type is scheduled
 		{
 			policy: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeScheduled,
 				},
@@ -104,34 +115,28 @@ func TestIsScheduleTriggerChanged(t *testing.T) {
 	cases := []struct {
 		origin   *model.Policy
 		current  *model.Policy
-		props    []string
 		expected bool
 	}{
-		// props contains no trigger field
-		{
-			props:    []string{"name"},
-			expected: false,
-		},
 		// both triggers are not scheduled
 		{
-
 			origin: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeManual,
 				},
 			},
 			current: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeManual,
 				},
 			},
-			props:    []string{"Trigger"},
 			expected: false,
 		},
 		// both triggers are scheduled and the crons are not same
 		{
-
 			origin: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeScheduled,
 					Settings: &model.TriggerSettings{
@@ -140,6 +145,7 @@ func TestIsScheduleTriggerChanged(t *testing.T) {
 				},
 			},
 			current: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeScheduled,
 					Settings: &model.TriggerSettings{
@@ -147,13 +153,12 @@ func TestIsScheduleTriggerChanged(t *testing.T) {
 					},
 				},
 			},
-			props:    []string{"Trigger"},
 			expected: true,
 		},
 		// both triggers are scheduled and the crons are same
 		{
-
 			origin: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeScheduled,
 					Settings: &model.TriggerSettings{
@@ -162,6 +167,7 @@ func TestIsScheduleTriggerChanged(t *testing.T) {
 				},
 			},
 			current: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeScheduled,
 					Settings: &model.TriggerSettings{
@@ -169,13 +175,12 @@ func TestIsScheduleTriggerChanged(t *testing.T) {
 					},
 				},
 			},
-			props:    []string{"Trigger"},
 			expected: false,
 		},
 		// one trigger is scheduled but the other one isn't
 		{
-
 			origin: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeScheduled,
 					Settings: &model.TriggerSettings{
@@ -184,16 +189,39 @@ func TestIsScheduleTriggerChanged(t *testing.T) {
 				},
 			},
 			current: &model.Policy{
+				Enabled: true,
 				Trigger: &model.Trigger{
 					Type: model.TriggerTypeManual,
 				},
 			},
-			props:    []string{"Trigger"},
+			expected: true,
+		},
+		// one trigger is scheduled but disabled and
+		// the other one is scheduled but enabled
+		{
+			origin: &model.Policy{
+				Enabled: false,
+				Trigger: &model.Trigger{
+					Type: model.TriggerTypeScheduled,
+					Settings: &model.TriggerSettings{
+						Cron: "03 05 * * *",
+					},
+				},
+			},
+			current: &model.Policy{
+				Enabled: true,
+				Trigger: &model.Trigger{
+					Type: model.TriggerTypeScheduled,
+					Settings: &model.TriggerSettings{
+						Cron: "03 05 * * *",
+					},
+				},
+			},
 			expected: true,
 		},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.expected, isScheduleTriggerChanged(c.origin, c.current, c.props...))
+		assert.Equal(t, c.expected, isScheduleTriggerChanged(c.origin, c.current))
 	}
 }
 
@@ -211,6 +239,7 @@ func TestCreate(t *testing.T) {
 
 	// scheduled trigger
 	_, err = ctl.Create(&model.Policy{
+		Enabled: true,
 		Trigger: &model.Trigger{
 			Type: model.TriggerTypeScheduled,
 			Settings: &model.TriggerSettings{
@@ -233,25 +262,28 @@ func TestUpdate(t *testing.T) {
 	var origin, current *model.Policy
 	// origin policy is nil
 	current = &model.Policy{
-		ID: 1,
+		ID:      1,
+		Enabled: true,
 	}
 	err := ctl.Update(current)
 	assert.NotNil(t, err)
 
 	// the trigger doesn't change
 	origin = &model.Policy{
-		ID: 1,
+		ID:      1,
+		Enabled: true,
 	}
 	c.policy = origin
 	current = origin
-	err = ctl.Update(current, "Trigger")
+	err = ctl.Update(current)
 	require.Nil(t, err)
 	assert.False(t, scheduler.scheduled)
 	assert.False(t, scheduler.unscheduled)
 
 	// the trigger changed
 	origin = &model.Policy{
-		ID: 1,
+		ID:      1,
+		Enabled: true,
 		Trigger: &model.Trigger{
 			Type: model.TriggerTypeScheduled,
 			Settings: &model.TriggerSettings{
@@ -261,6 +293,7 @@ func TestUpdate(t *testing.T) {
 	}
 	c.policy = origin
 	current = &model.Policy{
+		Enabled: true,
 		Trigger: &model.Trigger{
 			Type: model.TriggerTypeScheduled,
 			Settings: &model.TriggerSettings{
@@ -268,7 +301,7 @@ func TestUpdate(t *testing.T) {
 			},
 		},
 	}
-	err = ctl.Update(current, "Trigger")
+	err = ctl.Update(current)
 	require.Nil(t, err)
 	assert.True(t, scheduler.unscheduled)
 	assert.True(t, scheduler.scheduled)
@@ -288,7 +321,8 @@ func TestRemove(t *testing.T) {
 
 	// the trigger type isn't scheduled
 	policy := &model.Policy{
-		ID: 1,
+		ID:      1,
+		Enabled: true,
 		Trigger: &model.Trigger{
 			Type: model.TriggerTypeManual,
 		},
@@ -300,7 +334,8 @@ func TestRemove(t *testing.T) {
 
 	// the trigger type is scheduled
 	policy = &model.Policy{
-		ID: 1,
+		ID:      1,
+		Enabled: true,
 		Trigger: &model.Trigger{
 			Type: model.TriggerTypeScheduled,
 			Settings: &model.TriggerSettings{
