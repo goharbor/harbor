@@ -73,8 +73,8 @@
         "EMPTY": "Name is required",
         "NONEMPTY": "Can't be empty",
         "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
-        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS.",
-        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS.",
+        "ENDPOINT_FORMAT": "Endpoint must start with HTTP:// or HTTPS://.",
+        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS://.",
         "OIDC_NAME": "El nombre de la OIDC proveedor.",
         "OIDC_ENDPOINT": "La dirección URL de un servidor OIDC denuncia.",
         "OIDC_SCOPE": "El ámbito de aplicación enviada a OIDC Server durante la autenticación.Tiene que contener 'Openid', y 'offline_access'.Si usted esta usando Google, por favor quitar 'offline_access' de este campo",
@@ -694,6 +694,7 @@
         },
         "HTTP_AUTH": {
             "ENDPOINT": "Server Endpoint",
+            "TOKEN_REVIEW": "Review Endpoint De Token",
             "ALWAYS_ONBOARD": "Always Onboard",
             "VERIFY_CERT": "Authentication Verify Cert"
         },

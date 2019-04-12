@@ -60,8 +60,8 @@
         "USER_EXISTING": "Le nom d'utilisateur est déjà utilisé.",
         "NONEMPTY": "Can't be empty",
         "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
-        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS.",
-        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS.",
+        "ENDPOINT_FORMAT": "Endpoint must start with HTTP:// or HTTPS://.",
+        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS://.",
         "OIDC_NAME": "le nom du fournisseur de oidc.",
         "OIDC_ENDPOINT": "l'url d'un serveur oidc plainte.",
         "OIDC_SCOPE": "le champ envoyés au serveur au cours oidc l'authentification.il doit contenir 'openid', et 'offline_access'.si vous utilisez google, veuillez supprimer 'offline_access' dans ce domaine",
@@ -659,7 +659,8 @@
         },
         "HTTP_AUTH": {
             "ENDPOINT": "serveur paramètre",
-            "ALWAYS_ONBOARD": "Always Onboard",
+            "TOKEN_REVIEW": "examen symbolique paramètre",
+            "ALWAYS_ONBOARD": "always onboard",
             "VERIFY_CERT": "authentification vérifier cert"
         },
         "OIDC": {
