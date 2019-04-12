@@ -20,8 +20,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/replication/ng/adapter"
-
 	"github.com/goharbor/harbor/src/common/dao"
 	clairdao "github.com/goharbor/harbor/src/common/dao/clair"
 	"github.com/goharbor/harbor/src/common/models"
@@ -30,9 +28,10 @@ import (
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/replication/ng"
-	rep_event "github.com/goharbor/harbor/src/replication/ng/event"
-	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/adapter"
+	rep_event "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
@@ -131,7 +130,7 @@ func (n *NotificationHandler) Post() {
 						},
 					},
 				}
-				if err := ng.EventHandler.Handle(e); err != nil {
+				if err := replication.EventHandler.Handle(e); err != nil {
 					log.Errorf("failed to handle event: %v", err)
 				}
 			}()

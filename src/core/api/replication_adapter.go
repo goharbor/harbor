@@ -15,8 +15,8 @@
 package api
 
 import (
-	"github.com/goharbor/harbor/src/replication/ng/adapter"
-	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 // ReplicationAdapterAPI handles the replication adapter requests

@@ -24,7 +24,6 @@ import (
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
-
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -38,7 +37,7 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/goharbor/harbor/src/core/service/token"
-	"github.com/goharbor/harbor/src/replication/ng"
+	"github.com/goharbor/harbor/src/replication"
 )
 
 const (
@@ -132,7 +131,7 @@ func main() {
 
 	closing := make(chan struct{})
 	go gracefulShutdown(closing)
-	if err := ng.Init(closing); err != nil {
+	if err := replication.Init(closing); err != nil {
 		log.Fatalf("failed to init for replication: %v", err)
 	}
 

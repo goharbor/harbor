@@ -39,7 +39,7 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/replication/ng/model"
+	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/tests/apitests/apilib"
 )
 

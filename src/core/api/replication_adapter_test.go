@@ -18,10 +18,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/require"
-
-	"github.com/goharbor/harbor/src/replication/ng/adapter"
-	"github.com/goharbor/harbor/src/replication/ng/model"
 )
 
 func fakedFactory(*model.Registry) (adapter.Adapter, error) {
