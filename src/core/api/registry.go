@@ -129,24 +129,24 @@ func (t *RegistryAPI) Ping() {
 func (t *RegistryAPI) Get() {
 	id := t.GetIDFromURL()
 
-	registry, err := t.manager.Get(id)
+	r, err := t.manager.Get(id)
 	if err != nil {
 		log.Errorf("failed to get registry %d: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
 
-	if registry == nil {
+	if r == nil {
 		t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
 		return
 	}
 
 	// Hide access secret
-	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
-		registry.Credential.AccessSecret = "*****"
+	if r.Credential != nil && len(r.Credential.AccessSecret) != 0 {
+		r.Credential.AccessSecret = "*****"
 	}
 
-	t.Data["json"] = registry
+	t.Data["json"] = r
 	t.ServeJSON()
 }
 
@@ -164,9 +164,9 @@ func (t *RegistryAPI) List() {
 	}
 
 	// Hide passwords
-	for _, registry := range registries {
-		if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
-			registry.Credential.AccessSecret = "*****"
+	for _, r := range registries {
+		if r.Credential != nil && len(r.Credential.AccessSecret) != 0 {
+			r.Credential.AccessSecret = "*****"
 		}
 	}
 
@@ -177,24 +177,34 @@ func (t *RegistryAPI) List() {
 
 // Post creates a registry
 func (t *RegistryAPI) Post() {
-	registry := &model.Registry{}
-	t.DecodeJSONReqAndValidate(registry)
+	r := &model.Registry{}
+	t.DecodeJSONReqAndValidate(r)
 
-	reg, err := t.manager.GetByName(registry.Name)
+	reg, err := t.manager.GetByName(r.Name)
 	if err != nil {
-		log.Errorf("failed to get registry %s: %v", registry.Name, err)
+		log.Errorf("failed to get registry %s: %v", r.Name, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
 
 	if reg != nil {
-		t.HandleConflict(fmt.Sprintf("name '%s' is already used", registry.Name))
+		t.HandleConflict(fmt.Sprintf("name '%s' is already used", r.Name))
 		return
 	}
 
-	id, err := t.manager.Add(registry)
+	status, err := registry.CheckHealthStatus(r)
 	if err != nil {
-		log.Errorf("Add registry '%s' error: %v", registry.URL, err)
+		t.HandleBadRequest(fmt.Sprintf("health check to registry %s failed: %v", r.URL, err))
+		return
+	}
+	if status != model.Healthy {
+		t.HandleBadRequest(fmt.Sprintf("registry %s is unhealthy: %s", r.URL, status))
+		return
+	}
+
+	id, err := t.manager.Add(r)
+	if err != nil {
+		log.Errorf("Add registry '%s' error: %v", r.URL, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
@@ -206,14 +216,14 @@ func (t *RegistryAPI) Post() {
 func (t *RegistryAPI) Put() {
 	id := t.GetIDFromURL()
 
-	registry, err := t.manager.Get(id)
+	r, err := t.manager.Get(id)
 	if err != nil {
 		log.Errorf("Get registry by id %d error: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
 
-	if registry == nil {
+	if r == nil {
 		t.HandleNotFound(fmt.Sprintf("Registry %d not found", id))
 		return
 	}
@@ -221,36 +231,36 @@ func (t *RegistryAPI) Put() {
 	req := models.RegistryUpdateRequest{}
 	t.DecodeJSONReq(&req)
 
-	originalName := registry.Name
+	originalName := r.Name
 
 	if req.Name != nil {
-		registry.Name = *req.Name
+		r.Name = *req.Name
 	}
 	if req.Description != nil {
-		registry.Description = *req.Description
+		r.Description = *req.Description
 	}
 	if req.URL != nil {
-		registry.URL = *req.URL
+		r.URL = *req.URL
 	}
 	if req.CredentialType != nil {
-		registry.Credential.Type = (model.CredentialType)(*req.CredentialType)
+		r.Credential.Type = (model.CredentialType)(*req.CredentialType)
 	}
 	if req.AccessKey != nil {
-		registry.Credential.AccessKey = *req.AccessKey
+		r.Credential.AccessKey = *req.AccessKey
 	}
 	if req.AccessSecret != nil {
-		registry.Credential.AccessSecret = *req.AccessSecret
+		r.Credential.AccessSecret = *req.AccessSecret
 	}
 	if req.Insecure != nil {
-		registry.Insecure = *req.Insecure
+		r.Insecure = *req.Insecure
 	}
 
-	t.Validate(registry)
+	t.Validate(r)
 
-	if registry.Name != originalName {
-		reg, err := t.manager.GetByName(registry.Name)
+	if r.Name != originalName {
+		reg, err := t.manager.GetByName(r.Name)
 		if err != nil {
-			log.Errorf("Get registry by name '%s' error: %v", registry.Name, err)
+			log.Errorf("Get registry by name '%s' error: %v", r.Name, err)
 			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 			return
 		}
@@ -261,7 +271,17 @@ func (t *RegistryAPI) Put() {
 		}
 	}
 
-	if err := t.manager.Update(registry); err != nil {
+	status, err := registry.CheckHealthStatus(r)
+	if err != nil {
+		t.HandleBadRequest(fmt.Sprintf("health check to registry %s failed: %v", r.URL, err))
+		return
+	}
+	if status != model.Healthy {
+		t.HandleBadRequest(fmt.Sprintf("registry %s is unhealthy: %s", r.URL, status))
+		return
+	}
+
+	if err := t.manager.Update(r); err != nil {
 		log.Errorf("Update registry %d error: %v", id, err)
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
