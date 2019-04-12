@@ -76,7 +76,7 @@
         "OIDC_NAME": "O Nome do prestador de oidc.",
         "OIDC_ENDPOINT": "A URL de um servidor oidc denúncia.",
         "OIDC_SCOPE": "O âmbito de aplicação enviada Ao servidor oidc Durante a autenticação.TEM que conter 'openid' e 'offline_access'.Se você está usando o Google, por favor remova 'offline_access' desse Campo.",
-        "OIDC_SKIPCERTVERIFY": "Assinale esta opção se o SEU servidor está hospedado oidc via self - signed certificate."
+        "OIDC_VERIFYCERT": "Desmarque esta opção se o SEU servidor está hospedado oidc via self - signed certificate."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Insira a senha atual",
@@ -698,7 +698,7 @@
             "CLIENT_ID": "ID de cliente OIDC",
             "CLIENTSECRET": "OIDC Client Secret",
             "SCOPE": "Escopo OIDC",
-            "OIDCSKIPCERTVERIFY": "OIDC Skip Verificar Certificado",
+            "OIDC_VERIFYCERT": "Verificar Certificado",
             "OIDC_SETNAME": "Definir o Utilizador OIDC",
             "OIDC_SETNAMECONTENT": "Você deve Criar um Nome de usuário do Porto a primeira vez que autenticar através de um terceiro (OIDC). Isto será usado Dentro de Harbor para ser associado a projetos, papéis, etc.",
             "OIDC_USERNAME": "Utilizador"

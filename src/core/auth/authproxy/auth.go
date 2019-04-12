@@ -94,18 +94,11 @@ func (a *Auth) PostAuthenticate(u *models.User) error {
 	return a.OnBoardUser(u)
 }
 
-// SearchUser - TODO: Remove this workaround when #6767 is fixed.
-// When the flag is set it always return the default model without searching
+// SearchUser returns nil as authproxy does not have such capability.
+// When AlwaysOnboard is set it always return the default model.
 func (a *Auth) SearchUser(username string) (*models.User, error) {
-	a.ensure()
-	var queryCondition = models.User{
-		Username: username,
-	}
-	u, err := dao.GetUser(queryCondition)
-	if err != nil {
-		return nil, err
-	}
-	if a.AlwaysOnboard && u == nil {
+	var u *models.User
+	if a.AlwaysOnboard {
 		u = &models.User{Username: username}
 		if err := a.fillInModel(u); err != nil {
 			return nil, err
@@ -138,7 +131,7 @@ func (a *Auth) ensure() error {
 			return err
 		}
 		a.Endpoint = setting.Endpoint
-		a.SkipCertVerify = setting.SkipCertVerify
+		a.SkipCertVerify = !setting.VerifyCert
 		a.AlwaysOnboard = setting.AlwaysOnBoard
 	}
 	if a.client == nil {

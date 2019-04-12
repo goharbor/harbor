@@ -65,7 +65,7 @@
         "OIDC_NAME": "le nom du fournisseur de oidc.",
         "OIDC_ENDPOINT": "l'url d'un serveur oidc plainte.",
         "OIDC_SCOPE": "le champ envoyés au serveur au cours oidc l'authentification.il doit contenir 'openid', et 'offline_access'.si vous utilisez google, veuillez supprimer 'offline_access' dans ce domaine",
-        "OIDC_SKIPCERTVERIFY": "cocher cette case si votre oidc serveur est accueilli par auto - certificat signé."
+        "OIDC_VERIFYCERT": "décocher cette case si votre oidc serveur est accueilli par auto - certificat signé."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -669,7 +669,7 @@
             "CLIENT_ID": "no d'identification du client OIDC",
             "CLIENTSECRET": "OIDC Client Secret",
             "SCOPE": "OIDC Scope",
-            "OIDCSKIPCERTVERIFY": "Certificat OIDC skip vérifier",
+            "OIDC_VERIFYCERT": "Certificat vérifier",
             "OIDC_SETNAME": "Ensemble OIDC nom d'utilisateur",
             "OIDC_SETNAMECONTENT": "vous devez créer un Harbor identifiant la première fois lors de la vérification par une tierce partie (oidc). il sera utilisé au sein de port à être associés aux projets, des rôles, etc.",
             "OIDC_USERNAME": "d'utilisateur"

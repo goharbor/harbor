@@ -77,7 +77,7 @@
         "OIDC_NAME": "OIDC提供商的名称.",
         "OIDC_ENDPOINT": "OIDC服务器的地址.",
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
-        "OIDC_SKIPCERTVERIFY": "如果您的OIDC服务器是通过自签名证书托管的，请选中此框。"
+        "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -703,7 +703,7 @@
             "CLIENT_ID": "OIDC 客户端标识",
             "CLIENTSECRET": "OIDC 客户端密码",
             "SCOPE": "OIDC Scope",
-            "OIDCSKIPCERTVERIFY": "OIDC 验证证书",
+            "OIDC_VERIFYCERT": "验证证书",
             "OIDC_SETNAME": "设置OIDC用户名",
             "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在端口中用于与项目、角色等关联。",
             "OIDC_USERNAME": "用户名"
