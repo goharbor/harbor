@@ -61,7 +61,6 @@ install:
   LDAP; fi
 script:
 - if [ "$UTTEST" == true ]; then bash ./tests/travis/ut_run.sh $IP; fi
-# TODO(ChenDe): Enable API test when API test problems resolved
-#- if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_run.sh DB $IP; fi
-#- if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_run.sh LDAP $IP; fi
+- if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_run.sh DB $IP; fi
+- if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_run.sh LDAP $IP; fi
 - if [ "$OFFLINE" == true ]; then bash ./tests/travis/distro_installer.sh; fi
