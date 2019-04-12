@@ -279,3 +279,23 @@ func (d *DefaultImageRegistry) PushBlob(repository, digest string, size int64, b
 func isDigest(str string) bool {
 	return strings.Contains(str, ":")
 }
+
+// ListTag ...
+func (d *DefaultImageRegistry) ListTag(repository string) ([]string, error) {
+	client, err := d.getClient(repository)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return client.ListTag()
+}
+
+// Catalog ...
+func (d *DefaultImageRegistry) Catalog() ([]string, error) {
+	client, err := registry_pkg.NewRegistry(d.registry.URL, d.client)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.Catalog()
+}
