@@ -80,6 +80,3 @@ func Init(closing chan struct{}) error {
 	go registry.NewHealthChecker(time.Minute*5, closing).Run()
 	return nil
 }
-
-// TODO ping target API is needed as other old replication instances will
-// use that
