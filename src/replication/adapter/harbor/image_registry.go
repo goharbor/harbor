@@ -59,6 +59,15 @@ func (t *tag) Match(filters []*model.Filter) (bool, error) {
 }
 
 func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
+	if len(namespaces) == 0 {
+		nms, err := a.ListNamespaces(nil)
+		if err != nil {
+			return nil, err
+		}
+		for _, nm := range nms {
+			namespaces = append(namespaces, nm.Name)
+		}
+	}
 	resources := []*model.Resource{}
 	for _, namespace := range namespaces {
 		project, err := a.getProject(namespace)

@@ -87,18 +87,6 @@ func (p *Policy) Valid(v *validation.Validation) {
 		v.SetError("src_registry, dest_registry", "one of them should be empty and the other one shouldn't be empty")
 	}
 
-	// source namespaces cannot be empty
-	if len(p.SrcNamespaces) == 0 {
-		v.SetError("src_namespaces", "cannot be empty")
-	} else {
-		for _, namespace := range p.SrcNamespaces {
-			if len(namespace) == 0 {
-				v.SetError("src_namespaces", "cannot contain empty namespace")
-				break
-			}
-		}
-	}
-
 	// valid the filters
 	for _, filter := range p.Filters {
 		if filter.Type != FilterTypeResource &&

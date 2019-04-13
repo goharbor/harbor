@@ -51,34 +51,6 @@ func TestValidOfPolicy(t *testing.T) {
 			},
 			pass: false,
 		},
-		// empty source namespaces
-		{
-			policy: &Policy{
-				Name: "policy01",
-				SrcRegistry: &Registry{
-					ID: 0,
-				},
-				DestRegistry: &Registry{
-					ID: 1,
-				},
-				SrcNamespaces: []string{},
-			},
-			pass: false,
-		},
-		// empty source namespaces
-		{
-			policy: &Policy{
-				Name: "policy01",
-				SrcRegistry: &Registry{
-					ID: 0,
-				},
-				DestRegistry: &Registry{
-					ID: 1,
-				},
-				SrcNamespaces: []string{""},
-			},
-			pass: false,
-		},
 		// invalid filter
 		{
 			policy: &Policy{

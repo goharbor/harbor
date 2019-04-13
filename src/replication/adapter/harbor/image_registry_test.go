@@ -33,7 +33,6 @@ func TestFetchImages(t *testing.T) {
 				data := `[{
 					"name": "library",
 					"metadata": {"public":true}
-	
 				}]`
 				w.Write([]byte(data))
 			},
@@ -43,10 +42,10 @@ func TestFetchImages(t *testing.T) {
 			Pattern: "/api/repositories/library/hello-world/tags",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
-				"name": "1.0"
-			},{
-				"name": "2.0"
-			}]`
+					"name": "1.0"
+				},{
+					"name": "2.0"
+				}]`
 				w.Write([]byte(data))
 			},
 		},
@@ -55,8 +54,8 @@ func TestFetchImages(t *testing.T) {
 			Pattern: "/api/repositories",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
-				"name": "library/hello-world"
-			}]`
+					"name": "library/hello-world"
+				}]`
 				w.Write([]byte(data))
 			},
 		},
@@ -67,7 +66,18 @@ func TestFetchImages(t *testing.T) {
 	}
 	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
+	// not nil namespaces
 	resources, err := adapter.FetchImages([]string{"library"}, nil)
+	require.Nil(t, err)
+	assert.Equal(t, 1, len(resources))
+	assert.Equal(t, model.ResourceTypeRepository, resources[0].Type)
+	assert.Equal(t, "hello-world", resources[0].Metadata.Repository.Name)
+	assert.Equal(t, "library", resources[0].Metadata.Namespace.Name)
+	assert.Equal(t, 2, len(resources[0].Metadata.Vtags))
+	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
+	assert.Equal(t, "2.0", resources[0].Metadata.Vtags[1])
+	// nil namespaces
+	resources, err = adapter.FetchImages(nil, nil)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(resources))
 	assert.Equal(t, model.ResourceTypeRepository, resources[0].Type)
