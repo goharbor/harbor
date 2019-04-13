@@ -130,22 +130,25 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	return info, nil
 }
 
-func (a *adapter) ListNamespaces(npQuery *model.NamespaceQuery) ([]*model.Namespace, error) {
-	var nps []*model.Namespace
-	projects, err := a.getProjects(npQuery.Name)
+func (a *adapter) ListNamespaces(query *model.NamespaceQuery) ([]*model.Namespace, error) {
+	var namespaces []*model.Namespace
+	name := ""
+	if query != nil {
+		name = query.Name
+	}
+	projects, err := a.getProjects(name)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, pro := range projects {
-		nps = append(nps, &model.Namespace{
-			Name:     pro.Name,
-			Metadata: pro.Metadata,
+	for _, project := range projects {
+		namespaces = append(namespaces, &model.Namespace{
+			Name:     project.Name,
+			Metadata: project.Metadata,
 		})
 	}
 
-	return nps, nil
-
+	return namespaces, nil
 }
 
 func (a *adapter) ConvertResourceMetadata(metadata *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {

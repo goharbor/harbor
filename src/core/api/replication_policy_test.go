@@ -146,21 +146,6 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 			},
 			code: http.StatusBadRequest,
 		},
-		// 400 empty source namespaces
-		{
-			request: &testingRequest{
-				method:     http.MethodPost,
-				url:        "/api/replication/policies",
-				credential: sysAdmin,
-				bodyJSON: &model.Policy{
-					Name: "policy01",
-					SrcRegistry: &model.Registry{
-						ID: 1,
-					},
-				},
-			},
-			code: http.StatusBadRequest,
-		},
 		// 409, duplicate policy name
 		{
 			request: &testingRequest{
