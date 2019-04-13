@@ -37,7 +37,8 @@ func TestInfo(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
 	info, err := adapter.Info()
 	require.Nil(t, err)
 	assert.Equal(t, model.RegistryTypeHarbor, info.Type)
@@ -60,7 +61,8 @@ func TestInfo(t *testing.T) {
 	registry = &model.Registry{
 		URL: server.URL,
 	}
-	adapter = newAdapter(registry)
+	adapter, err = newAdapter(registry)
+	require.Nil(t, err)
 	info, err = adapter.Info()
 	require.Nil(t, err)
 	assert.Equal(t, model.RegistryTypeHarbor, info.Type)
@@ -91,7 +93,8 @@ func TestListNamespaces(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
 	npQuery := &model.NamespaceQuery{
 		Name: "lib",
 	}
@@ -113,9 +116,10 @@ func TestPrepareForPush(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
 	// nil resource
-	err := adapter.PrepareForPush(nil)
+	err = adapter.PrepareForPush(nil)
 	require.NotNil(t, err)
 	// nil metadata
 	err = adapter.PrepareForPush(&model.Resource{})
@@ -162,7 +166,8 @@ func TestPrepareForPush(t *testing.T) {
 	registry = &model.Registry{
 		URL: server.URL,
 	}
-	adapter = newAdapter(registry)
+	adapter, err = newAdapter(registry)
+	require.Nil(t, err)
 	err = adapter.PrepareForPush(&model.Resource{
 		Metadata: &model.ResourceMetadata{
 			Namespace: &model.Namespace{
@@ -171,33 +176,4 @@ func TestPrepareForPush(t *testing.T) {
 		},
 	})
 	require.Nil(t, err)
-}
-
-func TestGetNamespace(t *testing.T) {
-	// project exists
-	server := test.NewServer(&test.RequestHandlerMapping{
-		Method:  http.MethodGet,
-		Pattern: "/api/projects",
-		Handler: func(w http.ResponseWriter, r *http.Request) {
-			data := `[{
-				"name": "library",
-				"metadata": {"public":true}
-
-			}]`
-			w.Write([]byte(data))
-		},
-	})
-	defer server.Close()
-	registry := &model.Registry{
-		URL: server.URL,
-	}
-	adapter := newAdapter(registry)
-	namespace, err := adapter.GetNamespace("library")
-	require.Nil(t, err)
-	assert.Equal(t, "library", namespace.Name)
-	assert.True(t, namespace.Metadata["public"].(bool))
-
-	// project doesn't exists
-	namespace, err = adapter.GetNamespace("test")
-	require.NotNil(t, err)
 }

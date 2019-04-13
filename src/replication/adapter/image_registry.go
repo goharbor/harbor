@@ -28,7 +28,6 @@ import (
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	registry_pkg "github.com/goharbor/harbor/src/common/utils/registry"
-	util_registry "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
@@ -55,14 +54,14 @@ type ImageRegistry interface {
 // DefaultImageRegistry provides a default implementation for interface ImageRegistry
 type DefaultImageRegistry struct {
 	sync.RWMutex
+	*registry_pkg.Registry
 	registry *model.Registry
 	client   *http.Client
-	url      string
 	clients  map[string]*registry_pkg.Repository
 }
 
 // NewDefaultImageRegistry returns an instance of DefaultImageRegistry
-func NewDefaultImageRegistry(registry *model.Registry) *DefaultImageRegistry {
+func NewDefaultImageRegistry(registry *model.Registry) (*DefaultImageRegistry, error) {
 	transport := util.GetHTTPTransport(registry.Insecure)
 	modifiers := []modifier.Modifier{
 		&auth.UserAgentModifier{
@@ -93,31 +92,27 @@ func NewDefaultImageRegistry(registry *model.Registry) *DefaultImageRegistry {
 	client := &http.Client{
 		Transport: registry_pkg.NewTransport(transport, modifiers...),
 	}
+	reg, err := registry_pkg.NewRegistry(registry.URL, client)
+	if err != nil {
+		return nil, err
+	}
 	return &DefaultImageRegistry{
+		Registry: reg,
 		client:   client,
 		registry: registry,
 		clients:  map[string]*registry_pkg.Repository{},
-		url:      registry.URL,
-	}
+	}, nil
 }
 
 func (d *DefaultImageRegistry) getClient(repository string) (*registry_pkg.Repository, error) {
-	client := d.get(repository)
-	if client != nil {
-		return client, nil
-	}
-
-	return d.create(repository)
-}
-
-func (d *DefaultImageRegistry) get(repository string) *registry_pkg.Repository {
 	d.RLock()
 	defer d.RUnlock()
 	client, exist := d.clients[repository]
 	if exist {
-		return client
+		return client, nil
 	}
-	return nil
+
+	return d.create(repository)
 }
 
 func (d *DefaultImageRegistry) create(repository string) (*registry_pkg.Repository, error) {
@@ -129,7 +124,7 @@ func (d *DefaultImageRegistry) create(repository string) (*registry_pkg.Reposito
 		return client, nil
 	}
 
-	client, err := registry_pkg.NewRepository(repository, d.url, d.client)
+	client, err := registry_pkg.NewRepository(repository, d.registry.URL, d.client)
 	if err != nil {
 		return nil, err
 	}
@@ -139,47 +134,16 @@ func (d *DefaultImageRegistry) create(repository string) (*registry_pkg.Reposito
 
 // HealthCheck checks health status of a registry
 func (d *DefaultImageRegistry) HealthCheck() (model.HealthStatus, error) {
-	if d.registry.Credential == nil || (len(d.registry.Credential.AccessKey) == 0 && len(d.registry.Credential.AccessSecret) == 0) {
-		return d.pingAnonymously()
+	var err error
+	if d.registry.Credential == nil {
+		err = d.PingSimple()
+	} else {
+		err = d.Ping()
 	}
-
-	// TODO(ChenDe): Support other credential type like OAuth, for the moment, only basic auth is supported.
-	if d.registry.Credential.Type != model.CredentialTypeBasic {
-		return model.Unknown, fmt.Errorf("unknown credential type '%s', only '%s' supported yet", d.registry.Credential.Type, model.CredentialTypeBasic)
-	}
-
-	transport := util.GetHTTPTransport(d.registry.Insecure)
-	credential := auth.NewBasicAuthCredential(d.registry.Credential.AccessKey, d.registry.Credential.AccessSecret)
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: transport,
-	}, credential)
-	registry, err := util_registry.NewRegistry(d.registry.URL, &http.Client{
-		Transport: util_registry.NewTransport(transport, authorizer),
-	})
 	if err != nil {
-		return model.Unknown, err
+		log.Errorf("failed to ping registry %s: %v", d.registry.URL, err)
+		return model.Unhealthy, nil
 	}
-
-	err = registry.Ping()
-	if err != nil {
-		return model.Unhealthy, err
-	}
-	return model.Healthy, nil
-}
-
-func (d *DefaultImageRegistry) pingAnonymously() (model.HealthStatus, error) {
-	registry, err := util_registry.NewRegistry(d.registry.URL, &http.Client{
-		Transport: util_registry.NewTransport(util.GetHTTPTransport(d.registry.Insecure)),
-	})
-	if err != nil {
-		return model.Unknown, err
-	}
-
-	err = registry.PingSimple()
-	if err != nil {
-		return model.Unhealthy, err
-	}
-
 	return model.Healthy, nil
 }
 
@@ -288,14 +252,4 @@ func (d *DefaultImageRegistry) ListTag(repository string) ([]string, error) {
 	}
 
 	return client.ListTag()
-}
-
-// Catalog ...
-func (d *DefaultImageRegistry) Catalog() ([]string, error) {
-	client, err := registry_pkg.NewRegistry(d.registry.URL, d.client)
-	if err != nil {
-		return nil, err
-	}
-
-	return client.Catalog()
 }
