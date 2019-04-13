@@ -23,12 +23,12 @@ type ChartClient struct {
 	httpClient *http.Client
 
 	// Auth info
-	credentail *Credential
+	credential *Credential
 }
 
 // NewChartClient is constructor of ChartClient
-// credentail can be nil
-func NewChartClient(credentail *Credential) *ChartClient { // Create http client with customized timeouts
+// credential can be nil
+func NewChartClient(credential *Credential) *ChartClient { // Create http client with customized timeouts
 	client := &http.Client{
 		Timeout: clientTimeout,
 		Transport: &http.Transport{
@@ -39,7 +39,7 @@ func NewChartClient(credentail *Credential) *ChartClient { // Create http client
 
 	return &ChartClient{
 		httpClient: client,
-		credentail: credentail,
+		credential: credential,
 	}
 }
 
@@ -82,8 +82,8 @@ func (cc *ChartClient) sendRequest(addr string, method string, body io.Reader, e
 	}
 
 	// Set basic auth
-	if cc.credentail != nil {
-		request.SetBasicAuth(cc.credentail.Username, cc.credentail.Password)
+	if cc.credential != nil {
+		request.SetBasicAuth(cc.credential.Username, cc.credential.Password)
 	}
 
 	response, err := cc.httpClient.Do(request)
