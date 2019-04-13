@@ -21,16 +21,20 @@ func init() {
 		if err != nil {
 			return nil, err
 		}
+		reg, err := adp.NewDefaultImageRegistry(&model.Registry{
+			Name:       registry.Name,
+			URL:        registryURL,
+			Credential: registry.Credential,
+			Insecure:   registry.Insecure,
+		})
+		if err != nil {
+			return nil, err
+		}
 
 		return &adapter{
-			client:   client,
-			registry: registry,
-			DefaultImageRegistry: adp.NewDefaultImageRegistry(&model.Registry{
-				Name:       registry.Name,
-				URL:        registryURL,
-				Credential: registry.Credential,
-				Insecure:   registry.Insecure,
-			}),
+			client:               client,
+			registry:             registry,
+			DefaultImageRegistry: reg,
 		}, nil
 	}); err != nil {
 		log.Errorf("Register adapter factory for %s error: %v", model.RegistryTypeDockerHub, err)
@@ -182,13 +186,6 @@ func (a *adapter) CreateNamespace(namespace *model.Namespace) error {
 	}
 
 	return nil
-}
-
-// GetNamespace gets a namespace from DockerHub.
-func (a *adapter) GetNamespace(namespace string) (*model.Namespace, error) {
-	return &model.Namespace{
-		Name: namespace,
-	}, nil
 }
 
 // getNamespace get namespace from DockerHub, if the namespace not found, two nil would be returned.

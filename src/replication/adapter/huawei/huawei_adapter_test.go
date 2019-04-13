@@ -94,17 +94,3 @@ func TestAdapter_PrepareForPush(t *testing.T) {
 		t.Log("success prepare for push")
 	}
 }
-
-func TestAdapter_GetNamespace(t *testing.T) {
-	ns, err := hwAdapter.GetNamespace("huaweicloud_namespace_name")
-	if err != nil {
-		if strings.HasPrefix(err.Error(), "[401]") {
-			t.Log("huawei ak/sk is not available", err.Error())
-		} else {
-			t.Error(err)
-		}
-	} else {
-		t.Log(ns)
-	}
-
-}

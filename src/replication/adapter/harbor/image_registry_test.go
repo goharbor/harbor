@@ -65,7 +65,8 @@ func TestFetchImages(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
 	resources, err := adapter.FetchImages([]string{"library"}, nil)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(resources))
@@ -88,7 +89,8 @@ func TestDeleteManifest(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
-	err := adapter.DeleteManifest("library/hello-world", "1.0")
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
+	err = adapter.DeleteManifest("library/hello-world", "1.0")
 	require.Nil(t, err)
 }

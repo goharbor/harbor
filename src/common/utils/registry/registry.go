@@ -165,15 +165,13 @@ func (r *Registry) PingSimple() error {
 	if err == nil {
 		return nil
 	}
-
 	httpErr, ok := err.(*commonhttp.Error)
 	if !ok {
 		return err
 	}
-
-	if httpErr.Code < 500 {
+	if httpErr.Code == http.StatusUnauthorized ||
+		httpErr.Code == http.StatusForbidden {
 		return nil
 	}
-
 	return httpErr
 }

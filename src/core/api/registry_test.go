@@ -15,13 +15,13 @@ import (
 var (
 	testRegistry = &model.Registry{
 		Name:       "test1",
-		URL:        "https://goharbor.io",
+		URL:        "https://registry-1.docker.io",
 		Type:       "harbor",
 		Credential: nil,
 	}
 	testRegistry2 = &model.Registry{
 		Name:       "test2",
-		URL:        "https://goharbor.io",
+		URL:        "https://registry-1.docker.io",
 		Type:       "harbor",
 		Credential: nil,
 	}

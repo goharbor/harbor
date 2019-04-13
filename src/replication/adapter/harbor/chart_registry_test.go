@@ -56,7 +56,8 @@ func TestFetchCharts(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
 	resources, err := adapter.FetchCharts([]string{"library"}, nil)
 	require.Nil(t, err)
 	assert.Equal(t, 2, len(resources))
@@ -84,7 +85,8 @@ func TestChartExist(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
 	exist, err := adapter.ChartExist("library/harbor", "1.0")
 	require.Nil(t, err)
 	require.True(t, exist)
@@ -116,8 +118,9 @@ func TestDownloadChart(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
-	_, err := adapter.DownloadChart("library/harbor", "1.0")
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
+	_, err = adapter.DownloadChart("library/harbor", "1.0")
 	require.Nil(t, err)
 }
 
@@ -133,8 +136,9 @@ func TestUploadChart(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
-	err := adapter.UploadChart("library/harbor", "1.0", bytes.NewBuffer(nil))
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
+	err = adapter.UploadChart("library/harbor", "1.0", bytes.NewBuffer(nil))
 	require.Nil(t, err)
 }
 
@@ -150,7 +154,8 @@ func TestDeleteChart(t *testing.T) {
 	registry := &model.Registry{
 		URL: server.URL,
 	}
-	adapter := newAdapter(registry)
-	err := adapter.DeleteChart("library/harbor", "1.0")
+	adapter, err := newAdapter(registry)
+	require.Nil(t, err)
+	err = adapter.DeleteChart("library/harbor", "1.0")
 	require.Nil(t, err)
 }

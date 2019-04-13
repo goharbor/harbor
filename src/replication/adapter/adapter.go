@@ -39,10 +39,6 @@ type Adapter interface {
 	// PrepareForPush does the prepare work that needed for pushing/uploading the resource
 	// eg: create the namespace or repository
 	PrepareForPush(*model.Resource) error
-	// Get the namespace specified by the name, the returning value should
-	// contain the metadata about the namespace if it has
-	// TODO remove this method?
-	GetNamespace(string) (*model.Namespace, error)
 	// HealthCheck checks health status of registry
 	HealthCheck() (model.HealthStatus, error)
 }

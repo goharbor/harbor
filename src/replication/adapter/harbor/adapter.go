@@ -32,7 +32,7 @@ import (
 
 func init() {
 	if err := adp.RegisterFactory(model.RegistryTypeHarbor, func(registry *model.Registry) (adp.Adapter, error) {
-		return newAdapter(registry), nil
+		return newAdapter(registry)
 	}); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeHarbor, err)
 		return
@@ -47,7 +47,7 @@ type adapter struct {
 	client         *common_http.Client
 }
 
-func newAdapter(registry *model.Registry) *adapter {
+func newAdapter(registry *model.Registry) (*adapter, error) {
 	transport := util.GetHTTPTransport(registry.Insecure)
 	modifiers := []modifier.Modifier{
 		&auth.UserAgentModifier{
@@ -74,6 +74,10 @@ func newAdapter(registry *model.Registry) *adapter {
 		url = registry.CoreURL
 	}
 
+	reg, err := adp.NewDefaultImageRegistry(registry)
+	if err != nil {
+		return nil, err
+	}
 	return &adapter{
 		registry:       registry,
 		coreServiceURL: url,
@@ -81,8 +85,8 @@ func newAdapter(registry *model.Registry) *adapter {
 			&http.Client{
 				Transport: transport,
 			}, modifiers...),
-		DefaultImageRegistry: adp.NewDefaultImageRegistry(registry),
-	}
+		DefaultImageRegistry: reg,
+	}, nil
 }
 
 func (a *adapter) Info() (*model.RegistryInfo, error) {
@@ -231,18 +235,6 @@ func (a *adapter) PrepareForPush(resource *model.Resource) error {
 		return nil
 	}
 	return err
-}
-
-// TODO remove this method
-func (a *adapter) GetNamespace(namespace string) (*model.Namespace, error) {
-	project, err := a.getProject(namespace)
-	if err != nil {
-		return nil, err
-	}
-	return &model.Namespace{
-		Name:     namespace,
-		Metadata: project.Metadata,
-	}, nil
 }
 
 type project struct {

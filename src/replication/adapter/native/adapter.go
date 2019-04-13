@@ -12,9 +12,13 @@ const registryTypeNative model.RegistryType = "native"
 
 func init() {
 	if err := adp.RegisterFactory(registryTypeNative, func(registry *model.Registry) (adp.Adapter, error) {
+		reg, err := adp.NewDefaultImageRegistry(registry)
+		if err != nil {
+			return nil, err
+		}
 		return &native{
 			registry:             registry,
-			DefaultImageRegistry: adp.NewDefaultImageRegistry(registry),
+			DefaultImageRegistry: reg,
 		}, nil
 	}); err != nil {
 		log.Errorf("failed to register factory for %s: %v", registryTypeNative, err)
@@ -78,11 +82,6 @@ func (native) ConvertResourceMetadata(metadata *model.ResourceMetadata, namespac
 
 // PrepareForPush nothing need to do.
 func (native) PrepareForPush(*model.Resource) error { return nil }
-
-// GetNamespace naitve registry no namespace.
-func (native) GetNamespace(name string) (*model.Namespace, error) {
-	return &model.Namespace{Name: name}, nil
-}
 
 // ListNamespaces native registry no namespaces, so list empty array.
 func (native) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
