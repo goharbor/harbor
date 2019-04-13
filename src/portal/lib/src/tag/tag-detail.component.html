@@ -83,7 +83,7 @@
         </div>
     </section>
     <clr-tabs>
-        <clr-tab *ngIf="hasVulnerabilitiesListPermission">
+        <clr-tab *ngIf="hasVulnerabilitiesListPermission && withClair">
             <button clrTabLink [clrTabLinkInOverflow]="false" class="btn btn-link nav-link" id="tag-vulnerability" [class.active]='isCurrentTabLink("tag-vulnerability")' type="button" (click)='tabLinkClick("tag-vulnerability")'>{{'REPOSITORY.VULNERABILITY' | translate}}</button>
             <clr-tab-content id="content1" *clrIfActive="true">
                 <hbr-vulnerabilities-grid [repositoryId]="repositoryId" [projectId]="projectId" [tagId]="tagId"></hbr-vulnerabilities-grid>

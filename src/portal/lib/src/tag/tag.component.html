@@ -88,8 +88,7 @@
             <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
                 <clr-dg-cell class="truncated flex-max-width">
-                    <a *ngIf="withClair" href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
-                    <span *ngIf="!withClair">{{t.name}}</span>
+                    <a href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
                 </clr-dg-cell>
                 <clr-dg-cell>{{sizeTransform(t.size)}}</clr-dg-cell>
                 <clr-dg-cell class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">
