@@ -292,7 +292,7 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		},
 		BearerToken: proxyPwd,
 		TLSClientConfig: rest.TLSClientConfig{
-			Insecure: httpAuthProxyConf.SkipCertVerify,
+			Insecure: !httpAuthProxyConf.VerifyCert,
 		},
 	}
 	authClient, err := rest.RESTClientFor(authClientCfg)

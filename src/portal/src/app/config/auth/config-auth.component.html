@@ -300,13 +300,13 @@
             </label>
         </div>
         <div class="form-group">
-            <label for="http_authproxy_skip_cert_verify"
+            <label for="http_authproxy_verify_cert"
                 class="required">{{'CONFIG.HTTP_AUTH.VERIFY_CERT' | translate}}</label>
             <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox name="http_authproxy_skip_cert_verify"
-                    id="http_authproxy_skip_cert_verify"
-                    [(ngModel)]="currentConfig.http_authproxy_skip_cert_verify.value"
-                    [disabled]="!currentConfig.http_authproxy_skip_cert_verify.editable" />
+                <input type="checkbox" clrCheckbox name="http_authproxy_verify_cert"
+                    id="http_authproxy_verify_cert"
+                    [(ngModel)]="currentConfig.http_authproxy_verify_cert.value"
+                    [disabled]="!currentConfig.http_authproxy_verify_cert.editable" />
             </clr-checkbox-wrapper>
         </div>
         <div class="form-group">
@@ -403,16 +403,16 @@
             </a>
         </div>
         <div class="form-group">
-            <label for="oidc_skip_cert_verify">{{'CONFIG.OIDC.OIDCSKIPCERTVERIFY' | translate}}</label>
+            <label for="oidc_verify_cert">{{'CONFIG.OIDC.OIDC_VERIFYCERT' | translate}}</label>
             <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox name="oidc_skip_cert_verify" id="oidc_skip_cert_verify"
-                    [disabled]="disabled(currentConfig.oidc_skip_cert_verify)"
-                    [(ngModel)]="currentConfig.oidc_skip_cert_verify.value" />
+                <input type="checkbox" clrCheckbox name="oidc_verify_cert" id="oidc_verify_cert"
+                    [disabled]="disabled(currentConfig.oidc_verify_cert)"
+                    [(ngModel)]="currentConfig.oidc_verify_cert.value" />
             </clr-checkbox-wrapper>
             <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
                 class="tooltip tooltip-lg tooltip-top-right top-1px">
                 <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                <span class="tooltip-content">{{'TOOLTIP.OIDC_SKIPCERTVERIFY' | translate}}</span>
+                <span class="tooltip-content">{{'TOOLTIP.OIDC_VERIFYCERT' | translate}}</span>
             </a>
         </div>
     </section>

@@ -29,13 +29,13 @@ import (
 
 func TestMain(m *testing.M) {
 	conf := map[string]interface{}{
-		common.OIDCName:           "test",
-		common.OIDCEndpoint:       "https://accounts.google.com",
-		common.OIDCSkipCertVerify: "false",
-		common.OIDCScope:          "openid, profile, offline_access",
-		common.OIDCCLientID:       "client",
-		common.OIDCClientSecret:   "secret",
-		common.ExtEndpoint:        "https://harbor.test",
+		common.OIDCName:         "test",
+		common.OIDCEndpoint:     "https://accounts.google.com",
+		common.OIDCVerifyCert:   "true",
+		common.OIDCScope:        "openid, profile, offline_access",
+		common.OIDCCLientID:     "client",
+		common.OIDCClientSecret: "secret",
+		common.ExtEndpoint:      "https://harbor.test",
 	}
 	kp := &config2.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
 
@@ -73,13 +73,13 @@ func TestHelperGet(t *testing.T) {
 	assert.Equal(t, "https://oauth2.googleapis.com/token", p.Endpoint().TokenURL)
 
 	update := map[string]interface{}{
-		common.OIDCName:           "test",
-		common.OIDCEndpoint:       "https://accounts.google.com",
-		common.OIDCSkipCertVerify: "false",
-		common.OIDCScope:          "openid, profile, offline_access",
-		common.OIDCCLientID:       "client",
-		common.OIDCClientSecret:   "new-secret",
-		common.ExtEndpoint:        "https://harbor.test",
+		common.OIDCName:         "test",
+		common.OIDCEndpoint:     "https://accounts.google.com",
+		common.OIDCVerifyCert:   "true",
+		common.OIDCScope:        "openid, profile, offline_access",
+		common.OIDCCLientID:     "client",
+		common.OIDCClientSecret: "new-secret",
+		common.ExtEndpoint:      "https://harbor.test",
 	}
 	config.GetCfgManager().UpdateConfig(update)
 

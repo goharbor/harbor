@@ -123,14 +123,14 @@ func TestSecretReqCtxModifier(t *testing.T) {
 
 func TestOIDCCliReqCtxModifier(t *testing.T) {
 	conf := map[string]interface{}{
-		common.AUTHMode:           common.OIDCAuth,
-		common.OIDCName:           "test",
-		common.OIDCEndpoint:       "https://accounts.google.com",
-		common.OIDCSkipCertVerify: "false",
-		common.OIDCScope:          "openid, profile, offline_access",
-		common.OIDCCLientID:       "client",
-		common.OIDCClientSecret:   "secret",
-		common.ExtEndpoint:        "https://harbor.test",
+		common.AUTHMode:         common.OIDCAuth,
+		common.OIDCName:         "test",
+		common.OIDCEndpoint:     "https://accounts.google.com",
+		common.OIDCVerifyCert:   "true",
+		common.OIDCScope:        "openid, profile, offline_access",
+		common.OIDCCLientID:     "client",
+		common.OIDCClientSecret: "secret",
+		common.ExtEndpoint:      "https://harbor.test",
 	}
 
 	kp := &config2.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
@@ -193,7 +193,7 @@ func TestAuthProxyReqCtxModifier(t *testing.T) {
 
 	c := map[string]interface{}{
 		common.HTTPAuthProxyAlwaysOnboard:       "true",
-		common.HTTPAuthProxySkipCertVerify:      "true",
+		common.HTTPAuthProxyVerifyCert:          "false",
 		common.HTTPAuthProxyEndpoint:            "https://auth.proxy/suffix",
 		common.HTTPAuthProxyTokenReviewEndpoint: server.URL,
 		common.AUTHMode:                         common.HTTPAuth,
@@ -205,7 +205,7 @@ func TestAuthProxyReqCtxModifier(t *testing.T) {
 	assert.Equal(t, *v, models.HTTPAuthProxy{
 		Endpoint:            "https://auth.proxy/suffix",
 		AlwaysOnBoard:       true,
-		SkipCertVerify:      true,
+		VerifyCert:          false,
 		TokenReviewEndpoint: server.URL,
 	})
 
