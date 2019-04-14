@@ -17,6 +17,7 @@ import (
 
 func init() {
 	if err := adp.RegisterFactory(model.RegistryTypeDockerHub, func(registry *model.Registry) (adp.Adapter, error) {
+		registry.URL = baseURL
 		client, err := NewClient(registry)
 		if err != nil {
 			return nil, err
