@@ -1,9 +1,25 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package native
 
 import (
 	"errors"
+	"net/http"
 	"strings"
 
+	common_http "github.com/goharbor/harbor/src/common/http"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
@@ -11,119 +27,106 @@ import (
 
 var _ adp.ImageRegistry = native{}
 
-// TODO: support other filters
-// MUST have filters and name filter
-// NOT support namespaces
 func (n native) FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
 	if len(namespaces) > 0 {
 		return nil, errors.New("native registry adapter not support namespace")
 	}
 
-	if len(filters) < 1 {
-		return nil, errors.New("no any repository filter")
-	}
-
-	var resources = []*model.Resource{}
-	var nameFilter, tagFilter *model.Filter
-	for i, filter := range filters {
+	nameFilterPattern := ""
+	tagFilterPattern := ""
+	for _, filter := range filters {
 		switch filter.Type {
 		case model.FilterTypeName:
-			nameFilter = filters[i]
+			nameFilterPattern = filter.Value.(string)
 		case model.FilterTypeTag:
-			tagFilter = filters[i]
+			tagFilterPattern = filter.Value.(string)
 		}
 	}
-
-	repositories, err := n.filterRepoistory(nameFilter)
+	repositories, err := n.filterRepositories(nameFilterPattern)
 	if err != nil {
 		return nil, err
 	}
 
-	var tagFilterTerm string
-	var haveWildcardChars bool
-
-	if tagFilter != nil {
-		tagFilterTerm = tagFilter.Value.(string)
-	}
-
-	if strings.ContainsAny(tagFilterTerm, "?*") {
-		haveWildcardChars = true
-	}
-
-	if haveWildcardChars || tagFilterTerm == "" {
-		// need call list tag api
-		for _, repository := range repositories {
-			var tags []string
-			resp, err := n.DefaultImageRegistry.ListTag(repository)
-			if err != nil {
-				return nil, err
-			}
-
-			if haveWildcardChars {
-				for _, tag := range resp {
-					if m, _ := util.Match(tagFilterTerm, tag); m {
-						tags = append(tags, tag)
-					}
-				}
-			} else {
-				tags = resp
-			}
-
-			resources = append(resources, &model.Resource{
-				Type:     model.ResourceTypeRepository,
-				Registry: n.registry,
-				Metadata: &model.ResourceMetadata{
-					Repository: &model.Repository{
-						Name: repository,
-					},
-					Vtags: tags,
-				},
-			})
+	resources := []*model.Resource{}
+	for _, repository := range repositories {
+		tags, err := n.filterTags(repository, tagFilterPattern)
+		if err != nil {
+			return nil, err
 		}
-	} else if tagFilterTerm != "" {
-		for _, repository := range repositories {
-			resources = append(resources, &model.Resource{
-				Type:     model.ResourceTypeRepository,
-				Registry: n.registry,
-				Metadata: &model.ResourceMetadata{
-					Repository: &model.Repository{
-						Name: repository,
-					},
-					Vtags: []string{tagFilterTerm},
-				},
-			})
+		if len(tags) == 0 {
+			continue
 		}
+		resources = append(resources, &model.Resource{
+			Type:     model.ResourceTypeRepository,
+			Registry: n.registry,
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: repository,
+				},
+				Vtags: tags,
+			},
+		})
 	}
 
 	return resources, nil
 }
 
-func (n native) filterRepoistory(nameFilter *model.Filter) (repositories []string, err error) {
-	if nameFilter == nil {
-		return nil, errors.New("native registry adapter must have repository filter")
+func (n native) filterRepositories(pattern string) ([]string, error) {
+	// if the pattern contains no "*" and "?", it is a specific repository name
+	// just to make sure the repository exists
+	if len(pattern) > 0 && !strings.ContainsAny(pattern, "*?") {
+		_, err := n.ListTag(pattern)
+		// the repository exists
+		if err == nil {
+			return []string{pattern}, nil
+		}
+		// the repository doesn't exist
+		if e, ok := err.(*common_http.Error); ok && e.Code == http.StatusNotFound {
+			return nil, nil
+		}
+		// other error
+		return nil, err
 	}
-	var nameFilterTerm = nameFilter.Value.(string)
-
-	// search repoistories from catalog api
-	if strings.ContainsAny(nameFilterTerm, "*?") {
-		repos, err := n.DefaultImageRegistry.Catalog()
+	// search repositories from catalog api
+	repositories, err := n.Catalog()
+	if err != nil {
+		return nil, err
+	}
+	// if the pattern is null, just return the result of catalog API
+	if len(pattern) == 0 {
+		return repositories, nil
+	}
+	result := []string{}
+	for _, repository := range repositories {
+		match, err := util.Match(pattern, repository)
 		if err != nil {
 			return nil, err
 		}
-
-		for _, repo := range repos {
-			m, err := util.Match(nameFilterTerm, repo)
-			if err != nil {
-				return nil, err
-			}
-			if m {
-				repositories = append(repositories, repo)
-			}
+		if match {
+			result = append(result, repository)
 		}
-	} else if nameFilterTerm != "" {
-		// only single repository
-		repositories = []string{nameFilterTerm}
+	}
+	return result, nil
+}
+
+func (n native) filterTags(repository, pattern string) ([]string, error) {
+	tags, err := n.ListTag(repository)
+	if err != nil {
+		return nil, err
+	}
+	if len(pattern) == 0 {
+		return tags, nil
 	}
 
-	return
+	result := []string{}
+	for _, tag := range tags {
+		match, err := util.Match(pattern, tag)
+		if err != nil {
+			return nil, err
+		}
+		if match {
+			result = append(result, tag)
+		}
+	}
+	return result, nil
 }
