@@ -105,8 +105,6 @@ func NewDefaultImageRegistry(registry *model.Registry) (*DefaultImageRegistry, e
 }
 
 func (d *DefaultImageRegistry) getClient(repository string) (*registry_pkg.Repository, error) {
-	d.RLock()
-	defer d.RUnlock()
 	client, exist := d.clients[repository]
 	if exist {
 		return client, nil
@@ -250,6 +248,5 @@ func (d *DefaultImageRegistry) ListTag(repository string) ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-
 	return client.ListTag()
 }
