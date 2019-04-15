@@ -25,13 +25,19 @@ func NewClient(registry *model.Registry) (*Client, error) {
 	client := &Client{
 		host:   registry.URL,
 		client: http.DefaultClient,
-		credential: LoginCredential{
-			User:     registry.Credential.AccessKey,
-			Password: registry.Credential.AccessSecret,
-		},
+	}
+
+	// For anonymous access, no need to refresh token.
+	if registry.Credential == nil ||
+		(len(registry.Credential.AccessKey) == 0 && len(registry.Credential.AccessSecret) == 0) {
+		return client, nil
 	}
 
 	// Login to DockerHub to get access token, default expire date is 30d.
+	client.credential = LoginCredential{
+		User:     registry.Credential.AccessKey,
+		Password: registry.Credential.AccessSecret,
+	}
 	err := client.refreshToken()
 	if err != nil {
 		return nil, fmt.Errorf("login to dockerhub error: %v", err)

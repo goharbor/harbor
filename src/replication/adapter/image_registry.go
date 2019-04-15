@@ -68,7 +68,7 @@ func NewDefaultImageRegistry(registry *model.Registry) (*DefaultImageRegistry, e
 			UserAgent: UserAgentReplication,
 		},
 	}
-	if registry.Credential != nil {
+	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
 		var cred modifier.Modifier
 		if registry.Credential.Type == model.CredentialTypeSecret {
 			cred = common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
@@ -135,7 +135,8 @@ func (d *DefaultImageRegistry) create(repository string) (*registry_pkg.Reposito
 // HealthCheck checks health status of a registry
 func (d *DefaultImageRegistry) HealthCheck() (model.HealthStatus, error) {
 	var err error
-	if d.registry.Credential == nil {
+	if d.registry.Credential == nil ||
+		(len(d.registry.Credential.AccessKey) == 0 && len(d.registry.Credential.AccessSecret) == 0) {
 		err = d.PingSimple()
 	} else {
 		err = d.Ping()
