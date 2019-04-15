@@ -141,10 +141,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   modeChange(): void {
-    if (this.isPushMode) {
-      this.setFilter([]);
-      this.initRegistryInfo(0);
-    }
+    this.setFilter([]);
+    this.initRegistryInfo(0);
   }
 
 
@@ -166,7 +164,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   get src_namespaces(): FormArray { return this.ruleForm.get('src_namespaces') as FormArray; }
 
   get isValid() {
+    let controlName = this.ruleForm.controls["name"].invalid;
+    let controlSrcNamespace = this.ruleForm.controls["src_namespaces"].invalid;
     return !(
+      controlName ||
+      controlSrcNamespace ||
       !this.isRuleNameValid ||
       this.noSelectedEndpoint ||
       this.inProgress
@@ -234,38 +236,40 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     } else {
       this.isPushMode = true;
     }
-    this.ruleForm.reset({
-      name: rule.name,
-      description: rule.description,
-      src_namespaces: rule.src_namespaces,
-      dest_namespace: rule.dest_namespace,
-      src_registry: rule.src_registry,
-      dest_registry: rule.dest_registry,
-      trigger: rule.trigger,
-      deletion: rule.deletion,
-      enabled: rule.enabled
-    });
-    // reset the filter list.
-    let filters = [];
-    for (let i = 0; i < this.supportedFilters.length; i++) {
-      let findTag: boolean = false;
-      if (rule.filters) {
-        rule.filters.forEach((ruleItem, j) => {
-          if (this.supportedFilters[i].type === ruleItem.type) {
-            filters.push(ruleItem);
-            findTag = true;
-          }
-        });
+    setTimeout(() => {
+      this.ruleForm.reset({
+        name: rule.name,
+        description: rule.description,
+        src_namespaces: rule.src_namespaces,
+        dest_namespace: rule.dest_namespace,
+        src_registry: rule.src_registry,
+        dest_registry: rule.dest_registry,
+        trigger: rule.trigger,
+        deletion: rule.deletion,
+        enabled: rule.enabled
+      });
+      // reset the filter list.
+      let filters = [];
+      for (let i = 0; i < this.supportedFilters.length; i++) {
+        let findTag: boolean = false;
+        if (rule.filters) {
+          rule.filters.forEach((ruleItem, j) => {
+            if (this.supportedFilters[i].type === ruleItem.type) {
+              filters.push(ruleItem);
+              findTag = true;
+            }
+          });
+        }
+
+        if (!findTag) {
+          filters.push({ type: this.supportedFilters[i].type, value: "" });
+        }
+
       }
 
-      if (!findTag) {
-        filters.push({ type: this.supportedFilters[i].type, value: "" });
-      }
-
-    }
-
-    this.noSelectedEndpoint = false;
-    this.setFilter(filters);
+      this.noSelectedEndpoint = false;
+      this.setFilter(filters);
+    }, 100);
     // end of reset the filter list.
   }
 
@@ -396,23 +400,29 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     if (this.targetList.length === 0) {
       this.noEndpointInfo = "REPLICATION.NO_ENDPOINT_INFO";
     }
-    let registryObs = this.repService.getRegistryInfo(0);
     if (ruleId) {
       this.policyId = +ruleId;
       this.headerTitle = "REPLICATION.EDIT_POLICY_TITLE";
-      zip(registryObs, this.repService.getReplicationRule(ruleId))
-        .subscribe(([adapter, ruleInfo]) => {
-          this.setFilterAndTrigger(adapter);
-          this.copyUpdateForm = clone(ruleInfo);
-          // set filter value is [] if callback filter value is null.
-          this.updateForm(ruleInfo);
-          // keep trigger same value
-          this.copyUpdateForm.trigger = clone(ruleInfo.trigger);
-          this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
+      this.repService.getReplicationRule(ruleId)
+        .subscribe((ruleInfo) => {
+          let srcRegistryId = ruleInfo.src_registry.id;
+          this.repService.getRegistryInfo(srcRegistryId)
+            .subscribe(adapter => {
+              this.setFilterAndTrigger(adapter);
+              this.copyUpdateForm = clone(ruleInfo);
+              // keep trigger same value
+              this.copyUpdateForm.trigger = clone(ruleInfo.trigger);
+              this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
+              // set filter value is [] if callback filter value is null.
+              this.updateForm(ruleInfo);
+          }, (error: any) => {
+            this.inlineAlert.showInlineError(error);
+          });
         }, (error: any) => {
           this.inlineAlert.showInlineError(error);
         });
     } else {
+      let registryObs = this.repService.getRegistryInfo(0);
       registryObs.subscribe(adapter => { this.setFilterAndTrigger(adapter); });
       this.headerTitle = "REPLICATION.ADD_POLICY";
       this.copyUpdateForm = clone(this.ruleForm.value);
