@@ -257,10 +257,7 @@ export class CreateEditEndpointComponent
       },
       error => {
         this.onGoing = false;
-        let errorMessageKey = this.handleErrorMessageKey(error.status);
-        this.translateService.get(errorMessageKey).subscribe(res => {
-          this.inlineAlert.showInlineError(res);
-        });
+        this.inlineAlert.showInlineError(error);
         this.forceRefreshView(2000);
       }
     );
@@ -302,25 +299,11 @@ export class CreateEditEndpointComponent
         this.forceRefreshView(2000);
       },
       error => {
-        let errorMessageKey = this.handleErrorMessageKey(error.status);
-        this.translateService.get(errorMessageKey).subscribe(res => {
-          this.inlineAlert.showInlineError(res);
-        });
+        this.inlineAlert.showInlineError(error);
         this.onGoing = false;
         this.forceRefreshView(2000);
       }
     );
-  }
-
-  handleErrorMessageKey(status: number): string {
-    switch (status) {
-      case 409:
-        return "DESTINATION.CONFLICT_NAME";
-      case 400:
-        return "DESTINATION.INVALID_NAME";
-      default:
-        return "UNKNOWN_ERROR";
-    }
   }
 
   onCancel() {

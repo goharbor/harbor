@@ -55,6 +55,7 @@
         <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.DURATION' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.SUCCESS_RATE' | translate}}</clr-dg-column>
+        <clr-dg-column>{{'REPLICATION.TOTAL' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgField]="'status'">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
         <clr-dg-placeholder>{{'REPLICATION.JOB_PLACEHOLDER' | translate }}</clr-dg-placeholder>
         <clr-dg-row *ngFor="let j of jobs" [clrDgItem]="j">
@@ -67,6 +68,7 @@
           <clr-dg-cell>
             {{(j.succeed > 0 ? j.succeed / j.total : 0) | percent }}
           </clr-dg-cell>
+          <clr-dg-cell>{{j.total}}</clr-dg-cell>
           <clr-dg-cell>
             {{j.status}}
             <clr-tooltip>

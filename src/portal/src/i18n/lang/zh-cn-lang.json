@@ -339,6 +339,8 @@
         "OF": "共计"
     },
     "REPLICATION": {
+        "TOTAL": "总数",
+        "OVERRIDE": "覆盖",
         "CURRENT": "当前仓库",
         "FILTER_PLACEHOLDER": "过滤任务",
         "STOP_TITLE": "确认停止任务",
@@ -386,7 +388,7 @@
         "ENABLE": "启用",
         "DISABLE": "停用",
         "REPLICATION_MODE": "复制模式",
-        "SRC_NAMESPACE": "源仓库:命名空间",
+        "SRC_REGISTRY": "源仓库",
         "DESTINATION_NAMESPACE": "目标仓库:命名空间",
         "LAST_REPLICATION":"最后一次复制",
         "DESTINATION_NAME_IS_REQUIRED": "目标名称为必填项。",

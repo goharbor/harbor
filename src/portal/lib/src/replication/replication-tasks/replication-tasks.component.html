@@ -49,16 +49,24 @@
       <div class="flex-block">
         <section class="execution-detail-label">
           <section class="detail-row">
-            <span class="label label-purple detail-span">{{'REPLICATION.SUCCESS'| translate}}</span>
+            <div class="num-success common-style"></div>
+            <label class="detail-span">{{'REPLICATION.SUCCESS'| translate}}</label>
             <div class="execution-details">{{successNum}}</div>
           </section>
           <section class="detail-row">
-            <span class="label label-red detail-span">{{'REPLICATION.FAILURE'| translate}}</span>
+            <div class="num-failed common-style"></div>
+            <label class="detail-span">{{'REPLICATION.FAILURE'| translate}}</label>
             <div class="execution-details">{{failedNum}}</div>
           </section>
           <section class="detail-row">
-            <span class="label label-light-blue detail-span">{{'REPLICATION.IN_PROGRESS'| translate}}</span>
+            <div class="num-progress common-style"></div>
+            <label class="detail-span">{{'REPLICATION.IN_PROGRESS'| translate}}</label>
             <div class="execution-details">{{progressNum}}</div>
+          </section>
+          <section class="detail-row">
+            <div class="num-stopped common-style"></div>
+            <label class="detail-span">{{'REPLICATION.STOPPED'| translate}}</label>
+            <div class="execution-details">{{stoppedNum}}</div>
           </section>
         </section>
       </div>

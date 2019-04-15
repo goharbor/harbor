@@ -114,6 +114,7 @@ export interface ReplicationRule extends Base {
   src_namespaces: string [];
   dest_namespace?: string;
   enabled: boolean;
+  override: boolean;
 }
 
 export class Filter {

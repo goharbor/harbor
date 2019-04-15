@@ -339,6 +339,8 @@
         "OF": "of"
     },
     "REPLICATION": {
+        "TOTAL": "Total",
+        "OVERRIDE": "Anular",
         "CURRENT": "current",
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirme Stop Executions",
@@ -386,7 +388,7 @@
         "ENABLE": "Activar",
         "DISABLE": "Desactivar",
         "REPLICATION_MODE": "Replication Mode",
-        "SRC_NAMESPACE": "Source registry:Namespace",
+        "SRC_REGISTRY": "Source registry",
         "DESTINATION_NAMESPACE": "Destination registry:Namespace",
         "LAST_REPLICATION":"Last Replication",
         "DESTINATION_NAME_IS_REQUIRED": "El nombre del endpoint es obligatorio.",

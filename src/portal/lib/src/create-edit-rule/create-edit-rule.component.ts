@@ -191,7 +191,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       }),
       filters: this.fb.array([]),
       deletion: false,
-      enabled: true
+      enabled: true,
+      override: true
     });
   }
 
@@ -218,7 +219,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         }
       },
       deletion: false,
-      enabled: true
+      enabled: true,
+      override: true
     });
     this.isPushMode = true;
   }
@@ -236,6 +238,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     } else {
       this.isPushMode = true;
     }
+
     setTimeout(() => {
       this.ruleForm.reset({
         name: rule.name,
@@ -246,7 +249,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         dest_registry: rule.dest_registry,
         trigger: rule.trigger,
         deletion: rule.deletion,
-        enabled: rule.enabled
+        enabled: rule.enabled,
+        override: rule.override
       });
       // reset the filter list.
       let filters = [];
@@ -260,7 +264,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             }
           });
         }
-
         if (!findTag) {
           filters.push({ type: this.supportedFilters[i].type, value: "" });
         }
