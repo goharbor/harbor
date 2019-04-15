@@ -198,7 +198,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
     });
   }));
   // Will fail after upgrade to angular 6. todo: need to fix it.
-  xit('should filter data by keyword', async(() => {
+  it('should filter data by keyword', async(() => {
     fixtureRepo.whenStable().then(() => {
       fixtureRepo.detectChanges();
 
