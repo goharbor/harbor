@@ -26,19 +26,23 @@ const registryTypeNative model.RegistryType = "native"
 
 func init() {
 	if err := adp.RegisterFactory(registryTypeNative, func(registry *model.Registry) (adp.Adapter, error) {
-		reg, err := adp.NewDefaultImageRegistry(registry)
-		if err != nil {
-			return nil, err
-		}
-		return &native{
-			registry:             registry,
-			DefaultImageRegistry: reg,
-		}, nil
+		return newAdapter(registry)
 	}); err != nil {
 		log.Errorf("failed to register factory for %s: %v", registryTypeNative, err)
 		return
 	}
 	log.Infof("the factory for adapter %s registered", registryTypeNative)
+}
+
+func newAdapter(registry *model.Registry) (*native, error) {
+	reg, err := adp.NewDefaultImageRegistry(registry)
+	if err != nil {
+		return nil, err
+	}
+	return &native{
+		registry:             registry,
+		DefaultImageRegistry: reg,
+	}, nil
 }
 
 type native struct {
