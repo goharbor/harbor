@@ -33,7 +33,7 @@
           <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry" [compareWith]="equals" ngModel>
+              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry" [compareWith]="equals">
                 <option *ngFor="let source of sourceList" [ngValue]="source">{{source.name}}-{{source.url}}</option>
               </select>
             </div>
@@ -85,7 +85,7 @@
           <label class="form-group-label-override  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"  [compareWith]="equals" ngModel>
+              <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"  [compareWith]="equals">
                 <option *ngFor="let target of targetList" [ngValue]="target">{{target.name}}-{{target.url}}</option>
               </select>
             </div>
@@ -138,7 +138,7 @@
                 <input type="checkbox" clrCheckbox [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
                 <label for="enablePolicy" class="clr-control-label">{{'REPLICATION.ENABLED' | translate}}</label>
               </clr-checkbox-wrapper>
-            </div>
+          </div>
         </div>
         <div class="loading-center">
           <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
