@@ -11,7 +11,6 @@ import (
 	"github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
-	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/registry"
@@ -186,10 +185,23 @@ func (t *RegistryAPI) Post() {
 		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
-
 	if reg != nil {
 		t.HandleConflict(fmt.Sprintf("name '%s' is already used", r.Name))
 		return
+	}
+
+	if r.Type == model.RegistryTypeLocalHarbor {
+		n, _, err := t.manager.List(&model.RegistryQuery{
+			Type: string(model.RegistryTypeLocalHarbor),
+		})
+		if err != nil {
+			t.HandleInternalServerError(fmt.Sprintf("failed to list registries: %v", err))
+			return
+		}
+		if n > 0 {
+			t.HandleBadRequest(fmt.Sprintf("can only add one registry whose type is %s", model.RegistryTypeLocalHarbor))
+			return
+		}
 	}
 
 	status, err := registry.CheckHealthStatus(r)
@@ -350,26 +362,19 @@ func (t *RegistryAPI) Delete() {
 // GetInfo returns the base info and capability declarations of the registry
 func (t *RegistryAPI) GetInfo() {
 	id, err := t.GetInt64FromPath(":id")
-	// "0" is used for the ID of the local Harbor registry
-	if err != nil || id < 0 {
+	if err != nil || id <= 0 {
 		t.HandleBadRequest(fmt.Sprintf("invalid registry ID %s", t.GetString(":id")))
 		return
 	}
-	var registry *model.Registry
-	if id == 0 {
-		registry = event.GetLocalRegistry()
-	} else {
-		registry, err = t.manager.Get(id)
-		if err != nil {
-			t.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", id, err))
-			return
-		}
-		if registry == nil {
-			t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
-			return
-		}
+	registry, err := t.manager.Get(id)
+	if err != nil {
+		t.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", id, err))
+		return
 	}
-
+	if registry == nil {
+		t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
+		return
+	}
 	factory, err := adapter.GetFactory(registry.Type)
 	if err != nil {
 		t.HandleInternalServerError(fmt.Sprintf("failed to get the adapter factory for registry type %s: %v", registry.Type, err))

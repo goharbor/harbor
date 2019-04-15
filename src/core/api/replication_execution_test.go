@@ -89,6 +89,9 @@ func (f *fakedPolicyManager) Get(id int64) (*model.Policy, error) {
 			SrcRegistry: &model.Registry{
 				ID: 1,
 			},
+			DestRegistry: &model.Registry{
+				ID: 2,
+			},
 		}, nil
 	}
 	if id == 2 {
@@ -199,7 +202,7 @@ func TestCreateExecution(t *testing.T) {
 			},
 			code: http.StatusNotFound,
 		},
-		// 400
+		// 400 the policy is disabled
 		{
 			request: &testingRequest{
 				method: http.MethodPost,

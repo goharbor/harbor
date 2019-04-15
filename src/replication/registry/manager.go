@@ -91,6 +91,7 @@ func (m *DefaultManager) List(query ...*model.RegistryQuery) (int64, []*model.Re
 		// limit being -1 indicates no pagination specified, result in all registries matching name returned.
 		listQuery := &dao.ListRegistryQuery{
 			Query: query[0].Name,
+			Type:  query[0].Type,
 			Limit: -1,
 		}
 		if query[0].Pagination != nil {

@@ -10,6 +10,7 @@ import (
 type ListRegistryQuery struct {
 	// Query is name query
 	Query string
+	Type  string
 	// Offset specifies the offset in the registry list to return
 	Offset int64
 	// Limit specifies the maximum registries to return
@@ -61,8 +62,13 @@ func ListRegistries(query ...*ListRegistryQuery) (int64, []*models.Registry, err
 	o := dao.GetOrmer()
 
 	q := o.QueryTable(&models.Registry{})
-	if len(query) > 0 && len(query[0].Query) > 0 {
-		q = q.Filter("name__contains", query[0].Query)
+	if len(query) > 0 && query[0] != nil {
+		if len(query[0].Query) > 0 {
+			q = q.Filter("name__contains", query[0].Query)
+		}
+		if len(query[0].Type) > 0 {
+			q = q.Filter("type", query[0].Type)
+		}
 	}
 
 	total, err := q.Count()

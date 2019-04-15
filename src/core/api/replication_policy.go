@@ -26,8 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/replication/registry"
 )
 
-// TODO rename the file to "replication.go"
-
 // ReplicationPolicyAPI handles the replication policy requests
 type ReplicationPolicyAPI struct {
 	BaseController
@@ -105,21 +103,30 @@ func (r *ReplicationPolicyAPI) validateName(policy *model.Policy) bool {
 
 // make sure the registry referred exists
 func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
-	var registryID int64
-	if policy.SrcRegistry != nil && policy.SrcRegistry.ID > 0 {
-		registryID = policy.SrcRegistry.ID
-	} else {
-		registryID = policy.DestRegistry.ID
-	}
-	registry, err := replication.RegistryMgr.Get(registryID)
+	srcRegistry, err := replication.RegistryMgr.Get(policy.SrcRegistry.ID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", registryID, err))
+		r.HandleInternalServerError(fmt.Sprintf("failed to get source registry %d: %v", policy.SrcRegistry.ID, err))
 		return false
 	}
-	if registry == nil {
-		r.HandleNotFound(fmt.Sprintf("registry %d not found", registryID))
+	if srcRegistry == nil {
+		r.HandleNotFound(fmt.Sprintf("source registry %d not found", policy.SrcRegistry.ID))
 		return false
 	}
+	dstRegistry, err := replication.RegistryMgr.Get(policy.DestRegistry.ID)
+	if err != nil {
+		r.HandleInternalServerError(fmt.Sprintf("failed to get destination registry %d: %v", policy.DestRegistry.ID, err))
+		return false
+	}
+	if dstRegistry == nil {
+		r.HandleNotFound(fmt.Sprintf("destination registry %d not found", policy.DestRegistry.ID))
+		return false
+	}
+	// one of the source registry or destination registry must be local Harbor
+	if srcRegistry.Type != model.RegistryTypeLocalHarbor && dstRegistry.Type != model.RegistryTypeLocalHarbor {
+		r.HandleBadRequest(fmt.Sprintf("at least one of the registries' type is %s", model.RegistryTypeLocalHarbor))
+		return false
+	}
+
 	return true
 }
 
