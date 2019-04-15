@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -297,8 +298,28 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 		}
 	}
 
+	// set namespace/repository/version for replication event.
+	_, header, err := cra.GetFile(formFieldNameForChart)
+	if err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+
+	req := cra.Ctx.Request
+	charFileName := header.Filename
+	if !strings.HasSuffix(charFileName, ".tgz") {
+		cra.SendInternalServerError(fmt.Errorf("chart file expected %s to end with .tgz", charFileName))
+		return
+	}
+	charFileName = strings.TrimSuffix(charFileName, ".tgz")
+	// colon cannot be used as namespace
+	charFileName = strings.Replace(charFileName, "-", ":", -1)
+	// value sample: library:redis:4.0.3 (namespace:repository:version)
+	ctx := context.WithValue(cra.Ctx.Request.Context(), common.ChartUploadCtxKey, cra.namespace+":"+charFileName)
+	req = req.WithContext(ctx)
+
 	// Directly proxy to the backend
-	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, req)
 }
 
 // UploadChartProvFile handles POST /api/:repo/prov
