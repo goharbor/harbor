@@ -289,7 +289,7 @@ func TestFilterResources(t *testing.T) {
 	filters := []*model.Filter{
 		{
 			Type:  model.FilterTypeResource,
-			Value: string(model.ResourceTypeChart),
+			Value: model.ResourceTypeChart,
 		},
 		{
 			Type:  model.FilterTypeName,

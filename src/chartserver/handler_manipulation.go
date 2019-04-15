@@ -7,7 +7,13 @@ import (
 	"strings"
 
 	"github.com/ghodss/yaml"
+	"github.com/goharbor/harbor/src/replication"
+	rep_event "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
 	helm_repo "k8s.io/helm/pkg/repo"
+
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"os"
 )
 
 // ListCharts gets the chart list under the namespace
@@ -63,7 +69,38 @@ func (c *Controller) DeleteChartVersion(namespace, chartName, version string) er
 
 	url := fmt.Sprintf("%s/%s/%s", c.APIPrefix(namespace), chartName, version)
 
-	return c.apiClient.DeleteContent(url)
+	err := c.apiClient.DeleteContent(url)
+	if err != nil {
+		return err
+	}
+
+	// send notification to replication handler
+	// Todo: it used as the replacement of webhook, will be removed when webhook to be introduced.
+	if os.Getenv("UTTEST") != "true" {
+		go func() {
+			e := &rep_event.Event{
+				Type: rep_event.EventTypeChartDelete,
+				Resource: &model.Resource{
+					Type:    model.ResourceTypeChart,
+					Deleted: true,
+					Metadata: &model.ResourceMetadata{
+						Namespace: &model.Namespace{
+							Name: namespace,
+						},
+						Repository: &model.Repository{
+							Name: chartName,
+						},
+						Vtags: []string{version},
+					},
+				},
+			}
+			if err := replication.EventHandler.Handle(e); err != nil {
+				log.Errorf("failed to handle event: %v", err)
+			}
+		}()
+	}
+
+	return nil
 }
 
 // GetChartVersion returns the summary of the specified chart version.
