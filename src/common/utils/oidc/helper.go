@@ -113,7 +113,7 @@ var insecureTransport = &http.Transport{
 
 // Token wraps the attributes of a oauth2 token plus the attribute of ID token
 type Token struct {
-	*oauth2.Token
+	oauth2.Token
 	IDToken string `json:"id_token"`
 }
 
@@ -167,7 +167,7 @@ func ExchangeToken(ctx context.Context, code string) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Token{Token: oauthToken, IDToken: oauthToken.Extra("id_token").(string)}, nil
+	return &Token{Token: *oauthToken, IDToken: oauthToken.Extra("id_token").(string)}, nil
 }
 
 // VerifyToken verifies the ID token based on the OIDC settings
@@ -203,10 +203,10 @@ func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
 	}
 	setting := provider.setting.Load().(models.OIDCSetting)
 	ctx = clientCtx(ctx, setting.VerifyCert)
-	ts := oauth.TokenSource(ctx, token.Token)
+	ts := oauth.TokenSource(ctx, &token.Token)
 	t, err := ts.Token()
 	if err != nil {
 		return nil, err
 	}
-	return &Token{Token: t, IDToken: t.Extra("id_token").(string)}, nil
+	return &Token{Token: *t, IDToken: t.Extra("id_token").(string)}, nil
 }
