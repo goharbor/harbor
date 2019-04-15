@@ -82,3 +82,26 @@ func TestGetHTTPTransport(t *testing.T) {
 	transport = GetHTTPTransport(false)
 	assert.False(t, transport.TLSClientConfig.InsecureSkipVerify)
 }
+
+func TestParseRepository(t *testing.T) {
+	// empty repository
+	repository := ""
+	namespace, rest := ParseRepository(repository)
+	assert.Equal(t, "", namespace)
+	assert.Equal(t, "", rest)
+	// repository contains no "/"
+	repository = "c"
+	namespace, rest = ParseRepository(repository)
+	assert.Equal(t, "", namespace)
+	assert.Equal(t, "c", rest)
+	// repository contains only one "/"
+	repository = "b/c"
+	namespace, rest = ParseRepository(repository)
+	assert.Equal(t, "b", namespace)
+	assert.Equal(t, "c", rest)
+	// repository contains more than one "/"
+	repository = "a/b/c"
+	namespace, rest = ParseRepository(repository)
+	assert.Equal(t, "a/b", namespace)
+	assert.Equal(t, "c", rest)
+}

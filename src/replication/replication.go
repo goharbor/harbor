@@ -28,9 +28,9 @@ import (
 	"github.com/goharbor/harbor/src/replication/registry"
 
 	// register the Harbor adapter
-	_ "github.com/goharbor/harbor/src/replication/adapter/dockerhub"
-	// register the DockerHub adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/harbor"
+	// register the DockerHub adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/dockerhub"
 	// register the Native adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/native"
 )

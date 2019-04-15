@@ -66,26 +66,33 @@ func TestFetchImages(t *testing.T) {
 	}
 	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
-	// not nil namespaces
-	resources, err := adapter.FetchImages([]string{"library"}, nil)
+	// nil filter
+	resources, err := adapter.FetchImages(nil)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(resources))
 	assert.Equal(t, model.ResourceTypeRepository, resources[0].Type)
-	assert.Equal(t, "hello-world", resources[0].Metadata.Repository.Name)
-	assert.Equal(t, "library", resources[0].Metadata.Namespace.Name)
+	assert.Equal(t, "library/hello-world", resources[0].Metadata.Repository.Name)
 	assert.Equal(t, 2, len(resources[0].Metadata.Vtags))
 	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
 	assert.Equal(t, "2.0", resources[0].Metadata.Vtags[1])
-	// nil namespaces
-	resources, err = adapter.FetchImages(nil, nil)
+	// not nil filter
+	filters := []*model.Filter{
+		{
+			Type:  model.FilterTypeName,
+			Value: "library/*",
+		},
+		{
+			Type:  model.FilterTypeTag,
+			Value: "1.0",
+		},
+	}
+	resources, err = adapter.FetchImages(filters)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(resources))
 	assert.Equal(t, model.ResourceTypeRepository, resources[0].Type)
-	assert.Equal(t, "hello-world", resources[0].Metadata.Repository.Name)
-	assert.Equal(t, "library", resources[0].Metadata.Namespace.Name)
-	assert.Equal(t, 2, len(resources[0].Metadata.Vtags))
+	assert.Equal(t, "library/hello-world", resources[0].Metadata.Repository.Name)
+	assert.Equal(t, 1, len(resources[0].Metadata.Vtags))
 	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
-	assert.Equal(t, "2.0", resources[0].Metadata.Vtags[1])
 }
 
 func TestDeleteManifest(t *testing.T) {

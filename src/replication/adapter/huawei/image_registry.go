@@ -84,16 +84,12 @@ func parseRepoQueryResultToResource(repo hwRepoQueryResult) *model.Resource {
 	info["status"] = repo.Status
 	info["total_range"] = repo.TotalRange
 
-	namespace := &model.Namespace{
-		Name: repo.NamespaceName,
-	}
 	repository := &model.Repository{
 		Name:     repo.Name,
 		Metadata: info,
 	}
 	resource.ExtendedInfo = info
 	resource.Metadata = &model.ResourceMetadata{
-		Namespace:  namespace,
 		Repository: repository,
 		Vtags:      repo.Tags,
 		Labels:     []string{},
@@ -101,7 +97,6 @@ func parseRepoQueryResultToResource(repo hwRepoQueryResult) *model.Resource {
 	resource.Deleted = false
 	resource.Override = false
 	resource.Type = model.ResourceTypeRepository
-	resource.URI = repo.Path
 
 	return &resource
 }

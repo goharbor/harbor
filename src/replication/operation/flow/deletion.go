@@ -43,10 +43,6 @@ func NewDeletionFlow(executionMgr execution.Manager, scheduler scheduler.Schedul
 }
 
 func (d *deletionFlow) Run(interface{}) (int, error) {
-	_, dstAdapter, err := initialize(d.policy)
-	if err != nil {
-		return 0, err
-	}
 	// filling the registry information
 	for _, resource := range d.resources {
 		resource.Registry = d.policy.SrcRegistry
@@ -60,10 +56,8 @@ func (d *deletionFlow) Run(interface{}) (int, error) {
 		log.Infof("no resources need to be replicated for the execution %d, skip", d.executionID)
 		return 0, nil
 	}
-	dstResources, err := assembleDestinationResources(dstAdapter, srcResources, d.policy)
-	if err != nil {
-		return 0, err
-	}
+
+	dstResources := assembleDestinationResources(srcResources, d.policy)
 
 	items, err := preprocess(d.scheduler, srcResources, dstResources)
 	if err != nil {

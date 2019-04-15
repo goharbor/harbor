@@ -42,8 +42,7 @@ type Policy struct {
 	// TODO consider to remove this property?
 	Creator string `json:"creator"`
 	// source
-	SrcRegistry   *Registry `json:"src_registry"`
-	SrcNamespaces []string  `json:"src_namespaces"`
+	SrcRegistry *Registry `json:"src_registry"`
 	// destination
 	// TODO rename to DstRegistry
 	DestRegistry *Registry `json:"dest_registry"`

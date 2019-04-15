@@ -24,14 +24,14 @@ import (
 	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
 // TODO review the logic in this file
 
 type chart struct {
-	Name string `json:"name"`
+	Name    string `json:"name"`
+	Project string
 }
 
 func (c *chart) Match(filters []*model.Filter) (bool, error) {
@@ -41,10 +41,8 @@ func (c *chart) Match(filters []*model.Filter) (bool, error) {
 			supportedFilters = append(supportedFilters, filter)
 		}
 	}
-	// trim the project part
-	_, name := utils.ParseRepository(c.Name)
 	item := &FilterItem{
-		Value: name,
+		Value: fmt.Sprintf("%s/%s", c.Project, c.Name),
 	}
 	return item.Match(supportedFilters)
 }
@@ -77,20 +75,28 @@ type chartVersionMetadata struct {
 	URLs []string `json:"urls"`
 }
 
-func (a *adapter) FetchCharts(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
+func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
+	// TODO optimize the performance
+	projects, err := a.getProjects("")
+	if err != nil {
+		return nil, err
+	}
 	resources := []*model.Resource{}
-	for _, namespace := range namespaces {
-		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.coreServiceURL, namespace)
+	for _, project := range projects {
+		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.coreServiceURL, project.Name)
 		charts := []*chart{}
 		if err := a.client.Get(url, &charts); err != nil {
 			return nil, err
+		}
+		for _, chart := range charts {
+			chart.Project = project.Name
 		}
 		charts, err := filterCharts(charts, filters)
 		if err != nil {
 			return nil, err
 		}
 		for _, chart := range charts {
-			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.coreServiceURL, namespace, chart.Name)
+			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.coreServiceURL, project.Name, chart.Name)
 			chartVersions := []*chartVersion{}
 			if err := a.client.Get(url, &chartVersions); err != nil {
 				return nil, err
@@ -104,18 +110,14 @@ func (a *adapter) FetchCharts(namespaces []string, filters []*model.Filter) ([]*
 					Type:     model.ResourceTypeChart,
 					Registry: a.registry,
 					Metadata: &model.ResourceMetadata{
-						Namespace: &model.Namespace{
-							Name: namespace,
-							// TODO filling the metadata
-						},
 						Repository: &model.Repository{
-							Name: chart.Name,
+							Name: fmt.Sprintf("%s/%s", project.Name, chart.Name),
+							// TODO handle the metadata
 						},
 						Vtags: []string{version.Version},
 					},
 				})
 			}
-
 		}
 	}
 	return resources, nil

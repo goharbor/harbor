@@ -128,7 +128,6 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 1,
 					},
-					SrcNamespaces: []string{"library"},
 				},
 			},
 			code: http.StatusBadRequest,
@@ -140,8 +139,7 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 				url:        "/api/replication/policies",
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
-					Name:          "policy01",
-					SrcNamespaces: []string{"library"},
+					Name: "policy01",
 				},
 			},
 			code: http.StatusBadRequest,
@@ -157,7 +155,6 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 1,
 					},
-					SrcNamespaces: []string{"library"},
 				},
 			},
 			code: http.StatusConflict,
@@ -173,7 +170,6 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 2,
 					},
-					SrcNamespaces: []string{"library"},
 				},
 			},
 			code: http.StatusNotFound,
@@ -189,7 +185,6 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 1,
 					},
-					SrcNamespaces: []string{"library"},
 				},
 			},
 			code: http.StatusCreated,
@@ -296,7 +291,6 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 1,
 					},
-					SrcNamespaces: []string{"library"},
 				},
 			},
 			code: http.StatusBadRequest,
@@ -312,7 +306,6 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 1,
 					},
-					SrcNamespaces: []string{"library"},
 				},
 			},
 			code: http.StatusConflict,
@@ -328,7 +321,6 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 2,
 					},
-					SrcNamespaces: []string{"library"},
 				},
 			},
 			code: http.StatusNotFound,
@@ -344,7 +336,6 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 1,
 					},
-					SrcNamespaces: []string{"library"},
 				},
 			},
 			code: http.StatusOK,

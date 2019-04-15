@@ -17,6 +17,7 @@ package util
 import (
 	"net/http"
 	"path/filepath"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils/registry"
 )
@@ -29,4 +30,20 @@ func Match(pattern, str string) (bool, error) {
 // GetHTTPTransport can be used to share the common HTTP transport
 func GetHTTPTransport(insecure bool) *http.Transport {
 	return registry.GetHTTPTransport(insecure)
+}
+
+// ParseRepository parses the "repository" provided into two parts: namespace and the rest
+// the string before the last "/" is the namespace part
+// c -> [,c]
+// b/c -> [b,c]
+// a/b/c -> [a/b,c]
+func ParseRepository(repository string) (string, string) {
+	if len(repository) == 0 {
+		return "", ""
+	}
+	index := strings.LastIndex(repository, "/")
+	if index == -1 {
+		return "", repository
+	}
+	return repository[:index], repository[index+1:]
 }

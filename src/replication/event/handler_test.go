@@ -59,33 +59,75 @@ func (f *fakedPolicyController) Create(*model.Policy) (int64, error) {
 func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Policy, error) {
 	polices := []*model.Policy{
 		{
-			ID:            1,
-			SrcNamespaces: []string{"test"},
-			Deletion:      false,
+			ID:       1,
+			Enabled:  true,
+			Deletion: true,
 			Trigger: &model.Trigger{
 				Type: model.TriggerTypeEventBased,
 			},
+			Filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeName,
+					Value: "test/*",
+				},
+			},
 		},
+		// nil trigger
 		{
-			ID:            2,
-			SrcNamespaces: []string{"library"},
-			Deletion:      true,
-			Trigger:       nil,
+			ID:       2,
+			Enabled:  true,
+			Deletion: true,
+			Trigger:  nil,
+			Filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeName,
+					Value: "library/*",
+				},
+			},
 		},
+		// doesn't replicate deletion
 		{
-			ID:            3,
-			SrcNamespaces: []string{"library"},
-			Deletion:      false,
+			ID:       3,
+			Enabled:  true,
+			Deletion: false,
 			Trigger: &model.Trigger{
 				Type: model.TriggerTypeEventBased,
 			},
+			Filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeName,
+					Value: "library/*",
+				},
+			},
 		},
+		// replicate deletion
 		{
-			ID:            4,
-			SrcNamespaces: []string{"library"},
-			Deletion:      true,
+			ID:       4,
+			Enabled:  true,
+			Deletion: true,
 			Trigger: &model.Trigger{
 				Type: model.TriggerTypeEventBased,
+			},
+			Filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeName,
+					Value: "library/*",
+				},
+			},
+		},
+		// disabled
+		{
+			ID:       5,
+			Enabled:  false,
+			Deletion: true,
+			Trigger: &model.Trigger{
+				Type: model.TriggerTypeEventBased,
+			},
+			Filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeName,
+					Value: "library/*",
+				},
 			},
 		},
 	}
@@ -134,13 +176,26 @@ func TestGetRelatedPolicies(t *testing.T) {
 	handler := &handler{
 		policyCtl: &fakedPolicyController{},
 	}
-	policies, err := handler.getRelatedPolicies("library")
+	policies, err := handler.getRelatedPolicies(&model.Resource{
+		Metadata: &model.ResourceMetadata{
+			Repository: &model.Repository{
+				Name: "library/hello-world",
+			},
+		},
+	})
 	require.Nil(t, err)
 	assert.Equal(t, 2, len(policies))
 	assert.Equal(t, int64(3), policies[0].ID)
 	assert.Equal(t, int64(4), policies[1].ID)
 
-	policies, err = handler.getRelatedPolicies("library", true)
+	policies, err = handler.getRelatedPolicies(&model.Resource{
+		Metadata: &model.ResourceMetadata{
+			Repository: &model.Repository{
+				Name: "library/hello-world",
+			},
+		},
+		Deleted: true,
+	})
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(policies))
 	assert.Equal(t, int64(4), policies[0].ID)
@@ -159,11 +214,8 @@ func TestHandle(t *testing.T) {
 	err = handler.Handle(&Event{
 		Resource: &model.Resource{
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{},
 			},
@@ -176,11 +228,8 @@ func TestHandle(t *testing.T) {
 	err = handler.Handle(&Event{
 		Resource: &model.Resource{
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{"latest"},
 			},
@@ -193,11 +242,8 @@ func TestHandle(t *testing.T) {
 	err = handler.Handle(&Event{
 		Resource: &model.Resource{
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{"latest"},
 			},
@@ -210,11 +256,8 @@ func TestHandle(t *testing.T) {
 	err = handler.Handle(&Event{
 		Resource: &model.Resource{
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{"latest"},
 			},

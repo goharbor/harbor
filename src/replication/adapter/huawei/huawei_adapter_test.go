@@ -39,49 +39,15 @@ func TestAdapter_Info(t *testing.T) {
 	t.Log(info)
 }
 
-func TestAdapter_ListNamespaces(t *testing.T) {
-	namespaces, err := hwAdapter.ListNamespaces(&model.NamespaceQuery{Name: "o"})
-	if err != nil {
-		if strings.HasPrefix(err.Error(), "[401]") {
-			t.Log("huawei ak/sk is not available", err.Error())
-		} else {
-			t.Error(err)
-		}
-	} else {
-		for _, namespace := range namespaces {
-			t.Log(namespace.Name, namespace.Metadata)
-		}
-	}
-}
-
-func TestAdapter_ConvertResourceMetadata(t *testing.T) {
-	metadata := &model.ResourceMetadata{}
-
-	namespace := &model.Namespace{
-		Name:     "domain_repo_new",
-		Metadata: make(map[string]interface{}),
-	}
-
-	metadata, err := hwAdapter.ConvertResourceMetadata(metadata, namespace)
-	if err != nil {
-		if strings.HasPrefix(err.Error(), "[401]") {
-			t.Log("huawei ak/sk is not available", err.Error())
-		} else {
-			t.Error(err)
-		}
-	} else {
-		t.Log("success convert resource metadata")
-		t.Log(metadata)
-	}
-}
-
 func TestAdapter_PrepareForPush(t *testing.T) {
-	namespace := &model.Namespace{
+	repository := &model.Repository{
 		Name:     "domain_repo_new",
 		Metadata: make(map[string]interface{}),
 	}
 	resource := &model.Resource{}
-	metadata := &model.ResourceMetadata{Namespace: namespace}
+	metadata := &model.ResourceMetadata{
+		Repository: repository,
+	}
 	resource.Metadata = metadata
 	err := hwAdapter.PrepareForPush(resource)
 	if err != nil {

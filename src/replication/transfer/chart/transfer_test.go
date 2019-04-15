@@ -29,16 +29,13 @@ import (
 
 type fakeRegistry struct{}
 
-func (f *fakeRegistry) FetchCharts(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
+func (f *fakeRegistry) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
 	return []*model.Resource{
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "harbor",
+					Name: "library/harbor",
 				},
 				Vtags: []string{"0.2.0"},
 			},

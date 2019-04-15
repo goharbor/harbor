@@ -57,10 +57,8 @@ func (c *copyFlow) Run(interface{}) (int, error) {
 		log.Infof("no resources need to be replicated for the execution %d, skip", c.executionID)
 		return 0, nil
 	}
-	dstResources, err := assembleDestinationResources(dstAdapter, srcResources, c.policy)
-	if err != nil {
-		return 0, err
-	}
+
+	dstResources := assembleDestinationResources(srcResources, c.policy)
 
 	if err = prepareForPush(dstAdapter, dstResources); err != nil {
 		return 0, err

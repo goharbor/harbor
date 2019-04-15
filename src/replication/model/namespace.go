@@ -14,6 +14,8 @@
 
 package model
 
+// TODO remove
+
 // Namespace represents the full path of resource isolation unit;
 // if the namespace has hierarchical structure, e.g organization->team,
 // it should be converted to organization.team

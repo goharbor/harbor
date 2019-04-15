@@ -45,15 +45,6 @@ func (f *fakedAdapter) Info() (*model.RegistryInfo, error) {
 		SupportedTriggers: []model.TriggerType{model.TriggerTypeManual},
 	}, nil
 }
-func (f *fakedAdapter) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
-	return nil, nil
-}
-func (f *fakedAdapter) ConvertResourceMetadata(metadata *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
-	if namespace != nil {
-		metadata.Namespace = namespace
-	}
-	return metadata, nil
-}
 
 func (f *fakedAdapter) PrepareForPush(*model.Resource) error {
 	return nil
@@ -61,28 +52,13 @@ func (f *fakedAdapter) PrepareForPush(*model.Resource) error {
 func (f *fakedAdapter) HealthCheck() (model.HealthStatus, error) {
 	return model.Healthy, nil
 }
-func (f *fakedAdapter) GetNamespace(ns string) (*model.Namespace, error) {
-	var namespace *model.Namespace
-	if ns == "library" {
-		namespace = &model.Namespace{
-			Name: "library",
-			Metadata: map[string]interface{}{
-				"public": true,
-			},
-		}
-	}
-	return namespace, nil
-}
-func (f *fakedAdapter) FetchImages(namespace []string, filters []*model.Filter) ([]*model.Resource, error) {
+func (f *fakedAdapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
 	return []*model.Resource{
 		{
 			Type: model.ResourceTypeRepository,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{"latest"},
 			},
@@ -112,16 +88,13 @@ func (f *fakedAdapter) PullBlob(repository, digest string) (size int64, blob io.
 func (f *fakedAdapter) PushBlob(repository, digest string, size int64, blob io.Reader) error {
 	return nil
 }
-func (f *fakedAdapter) FetchCharts(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
+func (f *fakedAdapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
 	return []*model.Resource{
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "harbor",
+					Name: "library/harbor",
 				},
 				Vtags: []string{"0.2.0"},
 			},
@@ -240,11 +213,8 @@ func TestFilterResources(t *testing.T) {
 		{
 			Type: model.ResourceTypeRepository,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{"latest"},
 				// TODO test labels
@@ -256,11 +226,8 @@ func TestFilterResources(t *testing.T) {
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "harbor",
+					Name: "library/harbor",
 				},
 				Vtags: []string{"0.2.0", "0.3.0"},
 				// TODO test labels
@@ -272,11 +239,8 @@ func TestFilterResources(t *testing.T) {
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "mysql",
+					Name: "library/mysql",
 				},
 				Vtags: []string{"1.0"},
 				// TODO test labels
@@ -307,23 +271,18 @@ func TestFilterResources(t *testing.T) {
 	res, err := filterResources(resources, filters)
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(res))
-	assert.Equal(t, "library", res[0].Metadata.Namespace.Name)
-	assert.Equal(t, "harbor", res[0].Metadata.Repository.Name)
+	assert.Equal(t, "library/harbor", res[0].Metadata.Repository.Name)
 	assert.Equal(t, 1, len(res[0].Metadata.Vtags))
 	assert.Equal(t, "0.2.0", res[0].Metadata.Vtags[0])
 }
 
 func TestAssembleDestinationResources(t *testing.T) {
-	adapter := &fakedAdapter{}
 	resources := []*model.Resource{
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{"latest"},
 			},
@@ -335,12 +294,10 @@ func TestAssembleDestinationResources(t *testing.T) {
 		DestNamespace: "test",
 		Override:      true,
 	}
-	res, err := assembleDestinationResources(adapter, resources, policy)
-	require.Nil(t, err)
+	res := assembleDestinationResources(resources, policy)
 	assert.Equal(t, 1, len(res))
 	assert.Equal(t, model.ResourceTypeChart, res[0].Type)
-	assert.Equal(t, "hello-world", res[0].Metadata.Repository.Name)
-	assert.Equal(t, "test", res[0].Metadata.Namespace.Name)
+	assert.Equal(t, "test/hello-world", res[0].Metadata.Repository.Name)
 	assert.Equal(t, 1, len(res[0].Metadata.Vtags))
 	assert.Equal(t, "latest", res[0].Metadata.Vtags[0])
 }
@@ -351,11 +308,8 @@ func TestPreprocess(t *testing.T) {
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{"latest"},
 			},
@@ -366,11 +320,8 @@ func TestPreprocess(t *testing.T) {
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "test",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "test/hello-world",
 				},
 				Vtags: []string{"latest"},
 			},
@@ -408,4 +359,27 @@ func TestSchedule(t *testing.T) {
 	n, err := schedule(sched, mgr, items)
 	require.Nil(t, err)
 	assert.Equal(t, 1, n)
+}
+
+func TestReplaceNamespace(t *testing.T) {
+	// empty namespace
+	repository := "c"
+	namespace := ""
+	result := replaceNamespace(repository, namespace)
+	assert.Equal(t, "c", result)
+	// repository contains no "/"
+	repository = "c"
+	namespace = "n"
+	result = replaceNamespace(repository, namespace)
+	assert.Equal(t, "n/c", result)
+	// repository contains only one "/"
+	repository = "b/c"
+	namespace = "n"
+	result = replaceNamespace(repository, namespace)
+	assert.Equal(t, "n/c", result)
+	// repository contains more than one "/"
+	repository = "a/b/c"
+	namespace = "n"
+	result = replaceNamespace(repository, namespace)
+	assert.Equal(t, "n/c", result)
 }

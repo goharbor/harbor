@@ -32,7 +32,7 @@ import (
 
 type fakeRegistry struct{}
 
-func (f *fakeRegistry) FetchImages([]string, []*model.Filter) ([]*model.Resource, error) {
+func (f *fakeRegistry) FetchImages([]*model.Filter) ([]*model.Resource, error) {
 	return nil, nil
 }
 

@@ -16,9 +16,7 @@ package harbor
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
@@ -33,10 +31,8 @@ func (r *repository) Match(filters []*model.Filter) (bool, error) {
 			supportedFilters = append(supportedFilters, filter)
 		}
 	}
-	// trim the project part
-	_, name := utils.ParseRepository(r.Name)
 	item := &FilterItem{
-		Value: name,
+		Value: r.Name,
 	}
 	return item.Match(supportedFilters)
 }
@@ -58,22 +54,14 @@ func (t *tag) Match(filters []*model.Filter) (bool, error) {
 	return item.Match(supportedFilters)
 }
 
-func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
-	if len(namespaces) == 0 {
-		nms, err := a.ListNamespaces(nil)
-		if err != nil {
-			return nil, err
-		}
-		for _, nm := range nms {
-			namespaces = append(namespaces, nm.Name)
-		}
+func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+	// TODO optimize the performance
+	projects, err := a.getProjects("")
+	if err != nil {
+		return nil, err
 	}
 	resources := []*model.Resource{}
-	for _, namespace := range namespaces {
-		project, err := a.getProject(namespace)
-		if err != nil {
-			return nil, err
-		}
+	for _, project := range projects {
 		repositories := []*repository{}
 		url := fmt.Sprintf("%s/api/repositories?project_id=%d", a.coreServiceURL, project.ID)
 		if err = a.client.Get(url, &repositories); err != nil {
@@ -104,12 +92,9 @@ func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*
 				Type:     model.ResourceTypeRepository,
 				Registry: a.registry,
 				Metadata: &model.ResourceMetadata{
-					Namespace: &model.Namespace{
-						Name: namespace,
-						// TODO filling the metadata
-					},
 					Repository: &model.Repository{
-						Name: strings.TrimPrefix(repository.Name, namespace+"/"),
+						Name: repository.Name,
+						// TODO handle the metadata
 					},
 					Vtags: vtags,
 				},

@@ -109,7 +109,6 @@ type FilterStyle struct {
 type RegistryInfo struct {
 	Type                     RegistryType   `json:"type"`
 	Description              string         `json:"description"`
-	SupportNamespace         bool           `json:"support_namespace"`
 	SupportedResourceTypes   []ResourceType `json:"-"`
 	SupportedResourceFilters []*FilterStyle `json:"supported_resource_filters"`
 	SupportedTriggers        []TriggerType  `json:"supported_triggers"`

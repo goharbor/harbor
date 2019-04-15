@@ -12,8 +12,9 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 	helm_repo "k8s.io/helm/pkg/repo"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"os"
+
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // ListCharts gets the chart list under the namespace
@@ -84,11 +85,8 @@ func (c *Controller) DeleteChartVersion(namespace, chartName, version string) er
 					Type:    model.ResourceTypeChart,
 					Deleted: true,
 					Metadata: &model.ResourceMetadata{
-						Namespace: &model.Namespace{
-							Name: namespace,
-						},
 						Repository: &model.Repository{
-							Name: chartName,
+							Name: fmt.Sprintf("%s/%s", namespace, chartName),
 						},
 						Vtags: []string{version},
 					},

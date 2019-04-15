@@ -39,7 +39,8 @@ func TestListNamespaces(t *testing.T) {
 	}
 
 	assert := assert.New(t)
-	adapter := getAdapter(t)
+	ad := getAdapter(t)
+	adapter := ad.(*adapter)
 
 	namespaces, err := adapter.ListNamespaces(nil)
 	assert.Nil(err)

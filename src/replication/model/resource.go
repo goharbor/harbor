@@ -30,7 +30,6 @@ func (r ResourceType) Valid() bool {
 
 // ResourceMetadata of resource
 type ResourceMetadata struct {
-	Namespace  *Namespace  `json:"namespace"`
 	Repository *Repository `json:"repository"`
 	Vtags      []string    `json:"v_tags"`
 	// TODO the labels should be put into tag and repository level?
@@ -38,18 +37,12 @@ type ResourceMetadata struct {
 }
 
 // GetResourceName returns the name of the resource
+// TODO remove
 func (r *ResourceMetadata) GetResourceName() string {
-	name := ""
-	if r.Namespace != nil && len(r.Namespace.Name) > 0 {
-		name += r.Namespace.Name
+	if r.Repository == nil {
+		return ""
 	}
-	if r.Repository != nil && len(r.Repository.Name) > 0 {
-		if len(name) > 0 {
-			name += "/"
-		}
-		name += r.Repository.Name
-	}
-	return name
+	return r.Repository.Name
 }
 
 // Repository info of the resource
@@ -61,7 +54,6 @@ type Repository struct {
 // Resource represents the general replicating content
 type Resource struct {
 	Type         ResourceType           `json:"type"`
-	URI          string                 `json:"uri"`
 	Metadata     *ResourceMetadata      `json:"metadata"`
 	Registry     *Registry              `json:"registry"`
 	ExtendedInfo map[string]interface{} `json:"extended_info"`

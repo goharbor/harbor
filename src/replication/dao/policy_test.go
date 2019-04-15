@@ -17,7 +17,6 @@ var (
 		Description:       "Policy Description",
 		Creator:           "someone",
 		SrcRegistryID:     123,
-		SrcNamespaces:     "ns1,ns2,ns3",
 		DestRegistryID:    456,
 		DestNamespace:     "target_ns",
 		ReplicateDeletion: true,
@@ -33,7 +32,6 @@ var (
 		Description:       "Policy Description",
 		Creator:           "someone",
 		SrcRegistryID:     123,
-		SrcNamespaces:     "ns1,ns2,ns3",
 		DestRegistryID:    456,
 		DestNamespace:     "target_ns",
 		ReplicateDeletion: true,
@@ -49,7 +47,6 @@ var (
 		Description:       "Policy Description",
 		Creator:           "someone",
 		SrcRegistryID:     123,
-		SrcNamespaces:     "ns1,ns2,ns3",
 		DestRegistryID:    456,
 		DestNamespace:     "target_ns",
 		ReplicateDeletion: true,
@@ -126,7 +123,6 @@ func TestGetPolicies(t *testing.T) {
 				assert.Equal(t, tt.wantPolicies[i].Description, gotPolicy.Description)
 				assert.Equal(t, tt.wantPolicies[i].Creator, gotPolicy.Creator)
 				assert.Equal(t, tt.wantPolicies[i].SrcRegistryID, gotPolicy.SrcRegistryID)
-				assert.Equal(t, tt.wantPolicies[i].SrcNamespaces, gotPolicy.SrcNamespaces)
 				assert.Equal(t, tt.wantPolicies[i].DestRegistryID, gotPolicy.DestRegistryID)
 				assert.Equal(t, tt.wantPolicies[i].DestNamespace, gotPolicy.DestNamespace)
 				assert.Equal(t, tt.wantPolicies[i].ReplicateDeletion, gotPolicy.ReplicateDeletion)
@@ -163,7 +159,6 @@ func TestGetRepPolicy(t *testing.T) {
 			assert.Equal(t, tt.wantPolicy.Description, gotPolicy.Description)
 			assert.Equal(t, tt.wantPolicy.Creator, gotPolicy.Creator)
 			assert.Equal(t, tt.wantPolicy.SrcRegistryID, gotPolicy.SrcRegistryID)
-			assert.Equal(t, tt.wantPolicy.SrcNamespaces, gotPolicy.SrcNamespaces)
 			assert.Equal(t, tt.wantPolicy.DestRegistryID, gotPolicy.DestRegistryID)
 			assert.Equal(t, tt.wantPolicy.DestNamespace, gotPolicy.DestNamespace)
 			assert.Equal(t, tt.wantPolicy.ReplicateDeletion, gotPolicy.ReplicateDeletion)
@@ -202,7 +197,6 @@ func TestGetRepPolicyByName(t *testing.T) {
 			assert.Equal(t, tt.wantPolicy.Description, gotPolicy.Description)
 			assert.Equal(t, tt.wantPolicy.Creator, gotPolicy.Creator)
 			assert.Equal(t, tt.wantPolicy.SrcRegistryID, gotPolicy.SrcRegistryID)
-			assert.Equal(t, tt.wantPolicy.SrcNamespaces, gotPolicy.SrcNamespaces)
 			assert.Equal(t, tt.wantPolicy.DestRegistryID, gotPolicy.DestRegistryID)
 			assert.Equal(t, tt.wantPolicy.DestNamespace, gotPolicy.DestNamespace)
 			assert.Equal(t, tt.wantPolicy.ReplicateDeletion, gotPolicy.ReplicateDeletion)

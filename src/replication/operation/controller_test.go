@@ -129,48 +129,20 @@ func (f *fakedAdapter) Info() (*model.RegistryInfo, error) {
 		SupportedTriggers: []model.TriggerType{model.TriggerTypeManual},
 	}, nil
 }
-func (f *fakedAdapter) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
-	return nil, nil
-}
-func (f *fakedAdapter) ConvertResourceMetadata(*model.ResourceMetadata, *model.Namespace) (*model.ResourceMetadata, error) {
-	return &model.ResourceMetadata{
-		Namespace: &model.Namespace{
-			Name: "library",
-		},
-		Repository: &model.Repository{
-			Name: "hello-world",
-		},
-		Vtags: []string{"latest"},
-	}, nil
-}
+
 func (f *fakedAdapter) PrepareForPush(*model.Resource) error {
 	return nil
 }
 func (f *fakedAdapter) HealthCheck() (model.HealthStatus, error) {
 	return model.Healthy, nil
 }
-func (f *fakedAdapter) GetNamespace(ns string) (*model.Namespace, error) {
-	var namespace *model.Namespace
-	if ns == "library" {
-		namespace = &model.Namespace{
-			Name: "library",
-			Metadata: map[string]interface{}{
-				"public": true,
-			},
-		}
-	}
-	return namespace, nil
-}
 func (f *fakedAdapter) FetchImages(namespace []string, filters []*model.Filter) ([]*model.Resource, error) {
 	return []*model.Resource{
 		{
 			Type: model.ResourceTypeRepository,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{"latest"},
 			},
@@ -205,11 +177,8 @@ func (f *fakedAdapter) FetchCharts(namespaces []string, filters []*model.Filter)
 		{
 			Type: model.ResourceTypeChart,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "harbor",
+					Name: "library/harbor",
 				},
 				Vtags: []string{"0.2.0"},
 			},
@@ -239,7 +208,6 @@ func TestStartReplication(t *testing.T) {
 	err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory)
 	require.Nil(t, err)
 	config.Config = &config.Configuration{}
-	// the resource contains Vtags whose length isn't 1
 	policy := &model.Policy{
 		SrcRegistry: &model.Registry{
 			Type: model.RegistryTypeHarbor,
@@ -251,15 +219,18 @@ func TestStartReplication(t *testing.T) {
 	resource := &model.Resource{
 		Type: model.ResourceTypeRepository,
 		Metadata: &model.ResourceMetadata{
-			Namespace: &model.Namespace{
-				Name: "library",
-			},
 			Repository: &model.Repository{
-				Name: "hello-world",
+				Name: "library/hello-world",
 			},
 			Vtags: []string{"1.0", "2.0"},
 		},
 	}
+	// policy is disabled
+	_, err = ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
+	require.NotNil(t, err)
+
+	policy.Enabled = true
+	// the resource contains Vtags whose length isn't 1
 	_, err = ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
 	require.NotNil(t, err)
 

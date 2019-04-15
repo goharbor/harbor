@@ -30,12 +30,6 @@ type Factory func(*model.Registry) (Adapter, error)
 type Adapter interface {
 	// Info return the information of this adapter
 	Info() (*model.RegistryInfo, error)
-	// Lists the available namespaces under the specified registry with the
-	// provided credential/token
-	ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error)
-	// ConvertResourceMetadata converts the namespace and repository part of the resource metadata
-	// to the one that the adapter can handle
-	ConvertResourceMetadata(*model.ResourceMetadata, *model.Namespace) (*model.ResourceMetadata, error)
 	// PrepareForPush does the prepare work that needed for pushing/uploading the resource
 	// eg: create the namespace or repository
 	PrepareForPush(*model.Resource) error

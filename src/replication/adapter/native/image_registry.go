@@ -15,7 +15,6 @@
 package native
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 
@@ -27,11 +26,7 @@ import (
 
 var _ adp.ImageRegistry = native{}
 
-func (n native) FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
-	if len(namespaces) > 0 {
-		return nil, errors.New("native registry adapter not support namespace")
-	}
-
+func (n native) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
 	nameFilterPattern := ""
 	tagFilterPattern := ""
 	for _, filter := range filters {

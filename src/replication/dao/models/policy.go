@@ -9,7 +9,6 @@ type RepPolicy struct {
 	Description    string `orm:"column(description)" json:"description"`
 	Creator        string `orm:"column(creator)" json:"creator"`
 	SrcRegistryID  int64  `orm:"column(src_registry_id)" json:"src_registry_id"`
-	SrcNamespaces  string `orm:"column(src_namespaces)" json:"src_namespaces"`
 	DestRegistryID int64  `orm:"column(dest_registry_id)" json:"dest_registry_id"`
 	DestNamespace  string `orm:"column(dest_namespace)" json:"dest_namespace"`
 	Override       bool   `orm:"column(override)" json:"override"`
