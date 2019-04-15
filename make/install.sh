@@ -192,7 +192,7 @@ docker-compose up -d
 protocol=http
 hostname=reg.mydomain.com
 
-if [ -n "$(grep '^[^#]*https:' ./harbor.yml)"]
+if [ -n "$(grep '^[^#]*https:' ./harbor.yml)" ]
 then
 protocol=https
 fi
