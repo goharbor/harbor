@@ -16,15 +16,15 @@ package util
 
 import (
 	"net/http"
-	"path/filepath"
 	"strings"
 
+	"github.com/bmatcuk/doublestar"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 )
 
 // Match returns whether the str matches the pattern
 func Match(pattern, str string) (bool, error) {
-	return filepath.Match(pattern, str)
+	return doublestar.Match(pattern, str)
 }
 
 // GetHTTPTransport can be used to share the common HTTP transport

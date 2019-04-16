@@ -33,13 +33,28 @@ func TestMatch(t *testing.T) {
 			match:   true,
 		},
 		{
-			pattern: "1.*",
-			str:     "1.0",
+			pattern: "*",
+			str:     "library",
 			match:   true,
 		},
 		{
-			pattern: "1.*",
-			str:     "1.01",
+			pattern: "*",
+			str:     "library/hello-world",
+			match:   false,
+		},
+		{
+			pattern: "**",
+			str:     "library/hello-world",
+			match:   true,
+		},
+		{
+			pattern: "{library,harbor}/**",
+			str:     "library/hello-world",
+			match:   true,
+		},
+		{
+			pattern: "{library,harbor}/**",
+			str:     "harbor/hello-world",
 			match:   true,
 		},
 		{
@@ -51,22 +66,6 @@ func TestMatch(t *testing.T) {
 			pattern: "1.?",
 			str:     "1.01",
 			match:   false,
-		},
-
-		{
-			pattern: "library/*",
-			str:     "library/hello-world",
-			match:   true,
-		},
-		{
-			pattern: "lib*",
-			str:     "library/hello-world",
-			match:   false,
-		},
-		{
-			pattern: "lib*/*",
-			str:     "library/hello-world",
-			match:   true,
 		},
 	}
 	for _, c := range cases {
