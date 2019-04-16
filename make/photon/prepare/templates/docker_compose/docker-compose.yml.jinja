@@ -261,8 +261,12 @@ services:
     dns_search: .
     ports:
       - {{http_port}}:80
+{% if protocol == 'https' %}
       - {{https_port}}:443
+{% endif %}
+{% if with_notary %}
       - 4443:4443
+{% endif %}
     depends_on:
       - postgresql
       - registry
