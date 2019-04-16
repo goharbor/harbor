@@ -118,7 +118,6 @@ export class EndpointComponent implements OnInit, OnDestroy {
         this.endpointService.getEndpoints(this.targetName)
             .subscribe(targets => {
                 this.targets = targets || [];
-                this.forceRefreshView(1000);
                 this.loading = false;
             }, error => {
                 this.errorHandler.error(error);

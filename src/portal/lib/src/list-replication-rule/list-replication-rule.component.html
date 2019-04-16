@@ -8,10 +8,10 @@
     </clr-dg-action-bar>
     <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'status'" class="status-width">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
-    <clr-dg-column class="min-width">{{'REPLICATION.SRC_NAMESPACE' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPLICATION.REPLICATION_MODE' | translate}}</clr-dg-column>
+    <clr-dg-column class="min-width">{{'REPLICATION.SRC_REGISTRY' | translate}}</clr-dg-column>
     <clr-dg-column class="min-width">{{'REPLICATION.DESTINATION_NAMESPACE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgField]="'override'" class="status-width">{{'REPLICATION.OVERRIDE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let p of changedRules; let i=index" [clrDgItem]="p" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
@@ -28,7 +28,7 @@
             </div>
         </clr-dg-cell>
         <clr-dg-cell class="min-width">
-            {{p.src_registry ? p.src_registry.name : ''}} : {{p.src_namespaces?.length>0 ?  p.src_namespaces[0]: ''}}
+            {{p.src_registry ? p.src_registry.name : ''}}
             <clr-tooltip>
                 <clr-icon *ngIf="p.src_namespaces && p.src_namespaces.length > 1" clrTooltipTrigger shape="ellipsis-horizontal" size="18"></clr-icon>
                 <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
@@ -36,13 +36,14 @@
                 </clr-tooltip-content>
             </clr-tooltip>
         </clr-dg-cell>
-        <clr-dg-cell>
-            {{p.src_registry && p.src_registry.id > 0 ? 'pull-based' : 'push-based'}}
-        </clr-dg-cell>
         <clr-dg-cell class="min-width">
             {{p.dest_registry ? p.dest_registry.name : ''}} : {{p.dest_namespace? p.dest_namespace: '-'}}
         </clr-dg-cell>
         <clr-dg-cell>{{p.trigger ? p.trigger.type : ''}}</clr-dg-cell>
+        <clr-dg-cell [ngSwitch]="p.override">
+            <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>
+            <clr-icon shape="times-circle" *ngSwitchCase="false" size="16" class="icon-style"></clr-icon>
+        </clr-dg-cell>
         <clr-dg-cell>
             {{p.description ? trancatedDescription(p.description) : '-'}}
             <clr-tooltip>

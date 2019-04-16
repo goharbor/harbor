@@ -324,6 +324,8 @@
         "OF": "de"
     },
     "REPLICATION": {
+        "TOTAL": "Total",
+        "OVERRIDE": "Passer outre",
         "CURRENT": "current",
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirmer arrêter les exécutions",
@@ -368,7 +370,7 @@
         "ENABLE": "Activer",
         "DISABLE": "Désactiver",
         "REPLICATION_MODE": "Replication Mode",
-        "SRC_NAMESPACE": "Source registry:Namespace",
+        "SRC_REGISTRY": "Source registry",
         "DESTINATION_NAMESPACE": "Destination registry:Namespace",
         "LAST_REPLICATION":"Last Replication",
         "DESTINATION_NAME_IS_REQUIRED": "Le nom du Point Final est obligatoire.",
@@ -390,7 +392,7 @@
         "RUNNING": "En fonctionnement",
         "ERROR": "Erreur",
         "RETRYING": "En train de réessayer",
-        "STOPPED": "Stoppé",
+        "STOPPED": "STOPPED",
         "FINISHED": "Terminé",
         "CANCELED": "Annulé",
         "SIMPLE": "Simple",

@@ -1,18 +1,20 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReplicationService } from "../../service/replication.service";
 import { TranslateService } from '@ngx-translate/core';
 import { finalize } from "rxjs/operators";
+import { Subscription, timer } from "rxjs";
 import { ErrorHandler } from "../../error-handler/error-handler";
 import { ReplicationJob, ReplicationTasks, Comparator, ReplicationJobItem, State } from "../../service/interface";
 import { CustomComparator, DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting } from "../../utils";
 import { RequestQueryParams } from "../../service/RequestQueryParams";
+const taskStatus = 'InProgress';
 @Component({
   selector: 'replication-tasks',
   templateUrl: './replication-tasks.component.html',
   styleUrls: ['./replication-tasks.component.scss']
 })
-export class ReplicationTasksComponent implements OnInit {
+export class ReplicationTasksComponent implements OnInit, OnDestroy {
   isOpenFilterTag: boolean;
   selectedRow: [];
   currentPage: number = 1;
@@ -28,6 +30,7 @@ export class ReplicationTasksComponent implements OnInit {
   tasksCopy: ReplicationTasks[] = [];
   stopOnGoing: boolean;
   executions: ReplicationJobItem[];
+  timerDelay: Subscription;
   @Input() executionId: string;
   startTimeComparator: Comparator<ReplicationJob> = new CustomComparator<
   ReplicationJob
@@ -84,6 +87,10 @@ export class ReplicationTasksComponent implements OnInit {
     return this.executions && this.executions['in_progress'];
   }
 
+  public get stoppedNum(): string {
+    return this.executions && this.executions['stopped'];
+  }
+
   stopJob() {
     this.stopOnGoing = true;
     this.replicationService.stopJobs(this.executionId)
@@ -103,8 +110,13 @@ export class ReplicationTasksComponent implements OnInit {
     return this.replicationService.getJobBaseUrl() + "/executions/" + this.executionId + "/tasks/" + taskId + "/log";
   }
 
-  clrLoadTasks(state: State): void {
+  ngOnDestroy() {
+    if (this.timerDelay) {
+      this.timerDelay.unsubscribe();
+    }
+  }
 
+  clrLoadTasks(state: State): void {
       if (!state || !state.page) {
         return;
       }
@@ -128,6 +140,24 @@ export class ReplicationTasksComponent implements OnInit {
         this.totalCount = res.length;
         this.tasks = res; // Keep the data
         this.taskItem = this.tasks.filter(tasks => tasks.resource_type !== "");
+        if (!this.timerDelay) {
+          this.timerDelay = timer(10000, 10000).subscribe(() => {
+            let count: number = 0;
+            this.tasks.forEach(tasks => {
+              if (
+                tasks.status === taskStatus
+              ) {
+                count++;
+              }
+            });
+            if (count > 0) {
+              this.clrLoadTasks(this.currentState);
+            } else {
+              this.timerDelay.unsubscribe();
+              this.timerDelay = null;
+            }
+          });
+        }
         this.taskItem = doFiltering<ReplicationTasks>(this.taskItem, state);
 
         this.taskItem = doSorting<ReplicationTasks>(this.taskItem, state);

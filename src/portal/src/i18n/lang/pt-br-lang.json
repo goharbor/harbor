@@ -338,6 +338,8 @@
         "OF": "de"
     },
     "REPLICATION": {
+        "TOTAL": "Total",
+        "OVERRIDE": "Substituir",
         "CURRENT": "current",
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirme as execuções de parada",
@@ -385,7 +387,7 @@
         "ENABLE": "Habilitar",
         "DISABLE": "Desabilitar",
         "REPLICATION_MODE": "Replication Mode",
-        "SRC_NAMESPACE": "Source registry:Namespace",
+        "SRC_REGISTRY": "Source registry",
         "DESTINATION_NAMESPACE": "Destination registry:Namespace",
         "LAST_REPLICATION":"Last Replication",
         "DESTINATION_NAME_IS_REQUIRED": "Nome do Endpoint é obrigatório.",
@@ -408,7 +410,7 @@
         "RUNNING": "Executando",
         "ERROR": "Erro",
         "RETRYING": "Tentando novamente",
-        "STOPPED": "Parada",
+        "STOPPED": "STOPPED",
         "FINISHED": "Finalizada",
         "CANCELED": "Cancelada",
         "SIMPLE": "Simples",

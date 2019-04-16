@@ -54,7 +54,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
       },
       filters: [],
       deletion: false,
-      enabled: true
+      enabled: true,
+      override: true
     }
   ];
   let mockJobs: ReplicationJobItem[] = [
@@ -166,7 +167,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
     },
     filters: [],
     deletion: false,
-    enabled: true
+    enabled: true,
+    override: true
   };
 
   let mockRegistryInfo = {

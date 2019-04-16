@@ -41,9 +41,27 @@
                 text-align: left;
                 .detail-row {
                     display: flex;
+                    height: 27px;
+                    .common-style {
+                        width: 12px;
+                        height: 12px;
+                        margin-top: 16px;
+                    }
+                    .num-success {
+                        background-color: #308700;
+                    }
+                    .num-failed {
+                        background-color: #C92101;
+                    }
+                    .num-progress {
+                        background-color: #1C5898;
+                    }
+                    .num-stopped {
+                        background-color: #A1A1A1;
+                    }
                     .detail-span {
                         flex:0 0 100px;
-                        margin-top: 10px;
+                        margin: 10px 0 0 10px;
                     }
                     .execution-details {
                         width: 200px;

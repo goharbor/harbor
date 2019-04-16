@@ -39,7 +39,8 @@ describe('Replication Component (inline template)', () => {
           "deletion": false,
           "src_registry": {id: 3},
           "src_namespaces": ["name1"],
-          "enabled": true
+          "enabled": true,
+          "override": true
       },
       {
           "id": 2,
@@ -51,7 +52,8 @@ describe('Replication Component (inline template)', () => {
           "deletion": false,
           "dest_registry": {id: 5},
           "src_namespaces": ["name1"],
-          "enabled": true
+          "enabled": true,
+          "override": true
       }
   ];
 
